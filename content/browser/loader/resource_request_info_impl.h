@@ -24,6 +24,7 @@ namespace content {
 class CrossSiteResourceHandler;
 class ResourceContext;
 struct GlobalRequestID;
+struct GlobalRoutingID;
 
 // Holds the data ResourceDispatcherHost associates with each request.
 // Retrieve this data by calling ResourceDispatcherHost::InfoForRequest.
@@ -82,6 +83,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   CONTENT_EXPORT void AssociateWithRequest(net::URLRequest* request);
 
   CONTENT_EXPORT GlobalRequestID GetGlobalRequestID() const;
+  GlobalRoutingID GetGlobalRoutingID() const;
 
   // CrossSiteResourceHandler for this request.  May be null.
   CrossSiteResourceHandler* cross_site_handler() {

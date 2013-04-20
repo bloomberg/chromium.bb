@@ -878,6 +878,7 @@ TEST(HttpCache, SimpleGET_CacheOverride_Network) {
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_FALSE(response_info.server_data_unavailable);
+  EXPECT_TRUE(response_info.network_accessed);
 
   RemoveMockTransaction(&transaction);
 }
@@ -917,6 +918,7 @@ TEST(HttpCache, SimpleGET_CacheOverride_Offline) {
   ASSERT_TRUE(response_info);
   EXPECT_TRUE(response_info->server_data_unavailable);
   EXPECT_TRUE(response_info->was_cached);
+  EXPECT_FALSE(response_info->network_accessed);
   ReadAndVerifyTransaction(trans.get(), transaction);
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
 
@@ -924,7 +926,7 @@ TEST(HttpCache, SimpleGET_CacheOverride_Offline) {
 }
 
 // Tests that LOAD_FROM_CACHE_IF_OFFLINE returns proper response on
-// non-offline failure failure
+// non-offline failure.
 TEST(HttpCache, SimpleGET_CacheOverride_NonOffline) {
   MockHttpCache cache;
 
@@ -951,6 +953,43 @@ TEST(HttpCache, SimpleGET_CacheOverride_NonOffline) {
   EXPECT_FALSE(response_info2.server_data_unavailable);
 
   RemoveMockTransaction(&transaction);
+}
+
+// Confirm if we have an empty cache, a read is marked as network verified.
+TEST(HttpCache, SimpleGET_NetworkAccessed_Network) {
+  MockHttpCache cache;
+
+  // write to the cache
+  net::HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), kSimpleGET_Transaction,
+                                     &response_info);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+  EXPECT_TRUE(response_info.network_accessed);
+}
+
+// Confirm if we have a fresh entry in cache, it isn't marked as
+// network verified.
+TEST(HttpCache, SimpleGET_NetworkAccessed_Cache) {
+  MockHttpCache cache;
+
+  // Prime cache.
+  MockTransaction transaction(kSimpleGET_Transaction);
+
+  RunTransactionTest(cache.http_cache(), transaction);
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Re-run transaction; make sure we don't mark the network as accessed.
+  net::HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
+
+  EXPECT_EQ(1, cache.network_layer()->transaction_count());
+  EXPECT_FALSE(response_info.server_data_unavailable);
+  EXPECT_FALSE(response_info.network_accessed);
 }
 
 TEST(HttpCache, SimpleGET_LoadBypassCache) {
@@ -1044,11 +1083,14 @@ TEST(HttpCache, SimpleGET_LoadValidateCache) {
   MockTransaction transaction(kSimpleGET_Transaction);
   transaction.load_flags |= net::LOAD_VALIDATE_CACHE;
 
-  RunTransactionTest(cache.http_cache(), transaction);
+  net::HttpResponseInfo response_info;
+  RunTransactionTestWithResponseInfo(cache.http_cache(), transaction,
+                                     &response_info);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
+  EXPECT_TRUE(response_info.network_accessed);
 }
 
 TEST(HttpCache, SimpleGET_LoadValidateCache_Implicit) {

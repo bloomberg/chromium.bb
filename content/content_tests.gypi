@@ -304,6 +304,7 @@
         'browser/in_process_webkit/webkit_thread_unittest.cc',
         'browser/indexed_db/indexed_db_unittest.cc',
         'browser/indexed_db/indexed_db_quota_client_unittest.cc',
+	'browser/loader/offline_policy_unittest.cc',
         'browser/loader/resource_buffer_unittest.cc',
         'browser/loader/resource_dispatcher_host_unittest.cc',
         'browser/loader/resource_loader_unittest.cc',

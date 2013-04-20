@@ -826,6 +826,7 @@ int HttpNetworkTransaction::DoSendRequestComplete(int result) {
   send_end_time_ = base::TimeTicks::Now();
   if (result < 0)
     return HandleIOError(result);
+  response_.network_accessed = true;
   next_state_ = STATE_READ_HEADERS;
   return OK;
 }

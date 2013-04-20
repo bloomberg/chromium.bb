@@ -264,6 +264,7 @@ int MockNetworkTransaction::Start(const net::HttpRequestInfo* request,
     response_.request_time = t->request_time;
 
   response_.was_cached = false;
+  response_.network_accessed = true;
 
   response_.response_time = base::Time::Now();
   if (!t->response_time.is_null())

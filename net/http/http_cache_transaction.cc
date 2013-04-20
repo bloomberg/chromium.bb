@@ -1176,6 +1176,7 @@ int HttpCache::Transaction::DoUpdateCachedResponse() {
   response_.headers->Update(*new_response_->headers);
   response_.response_time = new_response_->response_time;
   response_.request_time = new_response_->request_time;
+  response_.network_accessed = new_response_->network_accessed;
 
   if (response_.headers->HasHeaderValue("cache-control", "no-store")) {
     if (!entry_->doomed) {

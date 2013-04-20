@@ -88,12 +88,12 @@ TEST_F(HttpNetworkLayerTest, GET) {
   };
   MockWrite data_writes[] = {
     MockWrite("GET / HTTP/1.1\r\n"
-                   "Host: www.google.com\r\n"
-                   "Connection: keep-alive\r\n"
-                   "User-Agent: Foo/1.0\r\n\r\n"),
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n"
+              "User-Agent: Foo/1.0\r\n\r\n"),
   };
   StaticSocketDataProvider data(data_reads, arraysize(data_reads),
-                                     data_writes, arraysize(data_writes));
+                                data_writes, arraysize(data_writes));
   mock_socket_factory_.AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -110,8 +110,7 @@ TEST_F(HttpNetworkLayerTest, GET) {
   EXPECT_EQ(OK, rv);
 
   rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
-  if (rv == ERR_IO_PENDING)
-    rv = callback.WaitForResult();
+  rv = callback.GetResult(rv);
   ASSERT_EQ(OK, rv);
 
   std::string contents;
@@ -288,6 +287,76 @@ TEST_F(HttpNetworkLayerTest, ProxyBypassIgnoredOnDirectConnection) {
 
   // We should have no entries in our bad proxy list.
   ASSERT_EQ(0u, proxy_service_->proxy_retry_info().size());
+}
+
+TEST_F(HttpNetworkLayerTest, NetworkVerified) {
+  MockRead data_reads[] = {
+    MockRead("HTTP/1.0 200 OK\r\n\r\n"),
+    MockRead("hello world"),
+    MockRead(SYNCHRONOUS, OK),
+  };
+  MockWrite data_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n"
+              "User-Agent: Foo/1.0\r\n\r\n"),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
+                                data_writes, arraysize(data_writes));
+  mock_socket_factory_.AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  HttpRequestInfo request_info;
+  request_info.url = GURL("http://www.google.com/");
+  request_info.method = "GET";
+  request_info.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
+                                       "Foo/1.0");
+  request_info.load_flags = LOAD_NORMAL;
+
+  scoped_ptr<HttpTransaction> trans;
+  int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans, NULL);
+  EXPECT_EQ(OK, rv);
+
+  rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
+  ASSERT_EQ(OK, callback.GetResult(rv));
+
+  EXPECT_TRUE(trans->GetResponseInfo()->network_accessed);
+}
+
+TEST_F(HttpNetworkLayerTest, NetworkUnVerified) {
+  MockRead data_reads[] = {
+    MockRead(ASYNC, ERR_CONNECTION_RESET),
+  };
+  MockWrite data_writes[] = {
+    MockWrite("GET / HTTP/1.1\r\n"
+              "Host: www.google.com\r\n"
+              "Connection: keep-alive\r\n"
+              "User-Agent: Foo/1.0\r\n\r\n"),
+  };
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
+                                data_writes, arraysize(data_writes));
+  mock_socket_factory_.AddSocketDataProvider(&data);
+
+  TestCompletionCallback callback;
+
+  HttpRequestInfo request_info;
+  request_info.url = GURL("http://www.google.com/");
+  request_info.method = "GET";
+  request_info.extra_headers.SetHeader(HttpRequestHeaders::kUserAgent,
+                                       "Foo/1.0");
+  request_info.load_flags = LOAD_NORMAL;
+
+  scoped_ptr<HttpTransaction> trans;
+  int rv = factory_->CreateTransaction(DEFAULT_PRIORITY, &trans, NULL);
+  EXPECT_EQ(OK, rv);
+
+  rv = trans->Start(&request_info, callback.callback(), BoundNetLog());
+  ASSERT_EQ(ERR_CONNECTION_RESET, callback.GetResult(rv));
+
+  // If the response info is null, that means that any consumer won't
+  // see the network accessed bit set.
+  EXPECT_EQ(NULL, trans->GetResponseInfo());
 }
 
 }  // namespace

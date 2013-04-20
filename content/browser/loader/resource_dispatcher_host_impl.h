@@ -25,6 +25,8 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "content/browser/download/download_resource_handler.h"
+#include "content/browser/loader/global_routing_id.h"
+#include "content/browser/loader/offline_policy.h"
 #include "content/browser/loader/render_view_host_tracker.h"
 #include "content/browser/loader/resource_loader.h"
 #include "content/browser/loader/resource_loader_delegate.h"
@@ -32,6 +34,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/download_id.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "ipc/ipc_message.h"
@@ -60,7 +63,6 @@ class ResourceRequestInfoImpl;
 class SaveFileManager;
 class WebContentsImpl;
 struct DownloadSaveInfo;
-struct GlobalRequestID;
 struct Referrer;
 
 class CONTENT_EXPORT ResourceDispatcherHostImpl
@@ -409,8 +411,7 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   bool is_shutdown_;
 
   typedef std::vector<linked_ptr<ResourceLoader> > BlockedLoadersList;
-  typedef std::pair<int, int> ProcessRouteIDs;
-  typedef std::map<ProcessRouteIDs, BlockedLoadersList*> BlockedLoadersMap;
+  typedef std::map<GlobalRoutingID, BlockedLoadersList*> BlockedLoadersMap;
   BlockedLoadersMap blocked_loaders_map_;
 
   // Maps the child_ids to the approximate number of bytes
@@ -451,6 +452,10 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   scoped_ptr<ResourceScheduler> scheduler_;
 
   RenderViewHostTracker tracker_;  // Lives on UI thread.
+
+  typedef std::map<GlobalRoutingID, OfflinePolicy*> OfflineMap;
+
+  OfflineMap offline_policy_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };

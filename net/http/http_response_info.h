@@ -64,6 +64,10 @@ class NET_EXPORT HttpResponseInfo {
   // was unable to contact the server.
   bool server_data_unavailable;
 
+  // True if the request accessed the network in the process of retrieving
+  // data.
+  bool network_accessed;
+
   // True if the request was fetched over a SPDY channel.
   bool was_fetched_via_spdy;
 

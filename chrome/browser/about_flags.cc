@@ -1297,6 +1297,13 @@ const Experiment kExperiments[] = {
     kOsAndroid | kOsLinux | kOsCrOS,
     MULTI_VALUE_TYPE(kMaxTilesForInterestAreaChoices)
   },
+  {
+    "enable-offline-mode",
+    IDS_FLAGS_ENABLE_OFFLINE_MODE_NAME,
+    IDS_FLAGS_ENABLE_OFFLINE_MODE_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kEnableOfflineCacheAccess)
+  },
   // TODO(sky): ifdef needed until focus sorted out in DesktopNativeWidgetAura.
 #if !defined(USE_AURA)
   {

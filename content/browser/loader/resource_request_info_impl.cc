@@ -4,6 +4,7 @@
 
 #include "content/browser/loader/resource_request_info_impl.h"
 
+#include "content/browser/loader/global_routing_id.h"
 #include "content/browser/worker_host/worker_service_impl.h"
 #include "content/common/net/url_request_user_data.h"
 #include "content/public/browser/global_request_id.h"
@@ -219,6 +220,10 @@ void ResourceRequestInfoImpl::AssociateWithRequest(net::URLRequest* request) {
 
 GlobalRequestID ResourceRequestInfoImpl::GetGlobalRequestID() const {
   return GlobalRequestID(child_id_, request_id_);
+}
+
+GlobalRoutingID ResourceRequestInfoImpl::GetGlobalRoutingID() const {
+  return GlobalRoutingID(child_id_, route_id_);
 }
 
 void ResourceRequestInfoImpl::set_requested_blob_data(

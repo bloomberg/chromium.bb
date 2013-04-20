@@ -339,6 +339,9 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 const char kEnablePinch[]                   = "enable-pinch";
 const char kDisablePinch[]                  = "disable-pinch";
 
+// Enables use of cache if offline, even if it's stale
+const char kEnableOfflineCacheAccess[]      = "enable-offline-cache-access";
+
 // Enable caching of pre-parsed JS script data.  See http://crbug.com/32407.
 const char kEnablePreparsedJsCaching[]      = "enable-preparsed-js-caching";
 

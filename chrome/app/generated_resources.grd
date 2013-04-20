@@ -14917,6 +14917,12 @@ Some features may be unavailable.  Please check that the profile exists and you 
     <message name="IDS_FLAGS_ENABLE_GOOGLE_NOW_INTEGRATION_DESCRIPTION" desc="Description of about:flags option to turn on Google Now integration">
       Enable Google Now notifications support.
     </message>
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_MODE_NAME" desc="Name of the flag to make reads in offline mode come from the cache even if it's stale">
+      Enable Offline Cache Mode
+    </message>
+    <message name="IDS_FLAGS_ENABLE_OFFLINE_MODE_DESCRIPTION" desc="Description of the flag to make reads in offline mode come from the cache even if it's stale">
+      Reads from web resources when the source is unavailable will be satisfied from available stale cache entries.  
+    </message>
 
     <message name="IDS_FLAGS_ENABLE_TRANSLATE_ALPHA_LANGUAGES_NAME"
              desc="Name of about:flag option to turn on Translate alpha languages support">
