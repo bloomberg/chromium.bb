@@ -146,6 +146,9 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
   void RejectSimulatedPairing(
       const dbus::ObjectPath& object_path,
       const ErrorCallback& error_callback);
+  void AddInputDeviceIfNeeded(
+      const dbus::ObjectPath& object_path,
+      Properties* properties);
 
   void PinCodeCallback(
       const dbus::ObjectPath& object_path,

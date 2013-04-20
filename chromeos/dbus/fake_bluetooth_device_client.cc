@@ -19,6 +19,7 @@
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_service_provider.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "dbus/object_path.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -224,6 +225,8 @@ void FakeBluetoothDeviceClient::Connect(
   // The device can be connected.
   properties->connected.ReplaceValue(true);
 
+  AddInputDeviceIfNeeded(object_path, properties);
+
   callback.Run();
   properties->NotifyPropertyChanged(properties->connected.name());
 }
@@ -412,6 +415,15 @@ void FakeBluetoothDeviceClient::RemoveDevice(
 
   VLOG(1) << "removing device: " << properties->alias.value();
   device_list_.erase(listiter);
+
+  // Remove the Input interface if it exists. This should be called before the
+  // ExperimentalBluetoothDeviceClient::Observer::DeviceRemoved because it
+  // deletes the BluetoothDeviceExperimentalChromeOS object, including the
+  // device_path referenced here.
+  FakeBluetoothInputClient* fake_bluetooth_input_client =
+      static_cast<FakeBluetoothInputClient*>(
+          DBusThreadManager::Get()->GetExperimentalBluetoothInputClient());
+  fake_bluetooth_input_client->RemoveInputDevice(device_path);
 
   FOR_EACH_OBSERVER(ExperimentalBluetoothDeviceClient::Observer, observers_,
                     DeviceRemoved(device_path));
@@ -628,6 +640,8 @@ void FakeBluetoothDeviceClient::CompleteSimulatedPairing(
 
     properties->paired.ReplaceValue(true);
 
+    AddInputDeviceIfNeeded(object_path, properties);
+
     callback.Run();
     properties->NotifyPropertyChanged(properties->paired.name());
   }
@@ -658,6 +672,26 @@ void FakeBluetoothDeviceClient::RejectSimulatedPairing(
 
   error_callback.Run(bluetooth_adapter::kErrorAuthenticationRejected,
                      "Rejected");
+}
+
+void FakeBluetoothDeviceClient::AddInputDeviceIfNeeded(
+    const dbus::ObjectPath& object_path,
+    Properties* properties) {
+  // If the paired device is a HID device based on it's bluetooth class,
+  // simulate the Input interface.
+  FakeBluetoothInputClient* fake_bluetooth_input_client =
+      static_cast<FakeBluetoothInputClient*>(
+          DBusThreadManager::Get()->GetExperimentalBluetoothInputClient());
+
+  if ((properties->bluetooth_class.value() & 0x001f03) == 0x000500) {
+    std::vector<std::string> uuids = properties->uuids.value();
+    if (std::find(uuids.begin(), uuids.end(),
+        "00001124-0000-1000-8000-00805f9b34fb") == uuids.end()) {
+      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+      properties->uuids.ReplaceValue(uuids);
+      fake_bluetooth_input_client->AddInputDevice(object_path);
+    }
+  }
 }
 
 void FakeBluetoothDeviceClient::PinCodeCallback(

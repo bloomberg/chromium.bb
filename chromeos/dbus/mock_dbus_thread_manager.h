@@ -82,6 +82,8 @@ class MockDBusThreadManager : public DBusThreadManager {
                ExperimentalBluetoothAgentManagerClient*(void));
   MOCK_METHOD0(GetExperimentalBluetoothDeviceClient,
                ExperimentalBluetoothDeviceClient*(void));
+  MOCK_METHOD0(GetExperimentalBluetoothInputClient,
+               ExperimentalBluetoothInputClient*(void));
   MOCK_METHOD0(GetExperimentalBluetoothProfileManagerClient,
                ExperimentalBluetoothProfileManagerClient*(void));
   MOCK_METHOD0(GetShillDeviceClient, ShillDeviceClient*(void));

@@ -22,6 +22,7 @@ class DBusThreadManagerObserver;
 class FakeBluetoothAdapterClient;
 class FakeBluetoothAgentManagerClient;
 class FakeBluetoothDeviceClient;
+class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
 class MockIBusClient;
 class MockIBusConfigClient;
@@ -60,6 +61,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
       GetExperimentalBluetoothAgentManagerClient() OVERRIDE;
   virtual ExperimentalBluetoothDeviceClient*
       GetExperimentalBluetoothDeviceClient() OVERRIDE;
+  virtual ExperimentalBluetoothInputClient*
+      GetExperimentalBluetoothInputClient() OVERRIDE;
   virtual ExperimentalBluetoothProfileManagerClient*
       GetExperimentalBluetoothProfileManagerClient() OVERRIDE;
   virtual ShillDeviceClient* GetShillDeviceClient() OVERRIDE;
@@ -101,6 +104,10 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
     return fake_bluetooth_device_client_.get();
   }
 
+  FakeBluetoothInputClient* fake_bluetooth_input_client() {
+    return fake_bluetooth_input_client_.get();
+  }
+
   FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client() {
     return fake_bluetooth_profile_manager_client_.get();
   }
@@ -138,6 +145,7 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeBluetoothAgentManagerClient>
       fake_bluetooth_agent_manager_client_;
   scoped_ptr<FakeBluetoothDeviceClient> fake_bluetooth_device_client_;
+  scoped_ptr<FakeBluetoothInputClient> fake_bluetooth_input_client_;
   scoped_ptr<FakeBluetoothProfileManagerClient>
       fake_bluetooth_profile_manager_client_;
   scoped_ptr<MockIBusClient> mock_ibus_client_;

@@ -39,6 +39,7 @@ class DebugDaemonClient;
 class ExperimentalBluetoothAdapterClient;
 class ExperimentalBluetoothAgentManagerClient;
 class ExperimentalBluetoothDeviceClient;
+class ExperimentalBluetoothInputClient;
 class ExperimentalBluetoothProfileManagerClient;
 class GsmSMSClient;
 class IBusClient;
@@ -141,6 +142,8 @@ class CHROMEOS_EXPORT DBusThreadManager {
       GetExperimentalBluetoothAgentManagerClient() = 0;
   virtual ExperimentalBluetoothDeviceClient*
       GetExperimentalBluetoothDeviceClient() = 0;
+  virtual ExperimentalBluetoothInputClient*
+      GetExperimentalBluetoothInputClient() = 0;
   virtual ExperimentalBluetoothProfileManagerClient*
       GetExperimentalBluetoothProfileManagerClient() = 0;
   virtual GsmSMSClient* GetGsmSMSClient() = 0;

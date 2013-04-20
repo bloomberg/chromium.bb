@@ -755,8 +755,10 @@ TEST_F(BluetoothExperimentalChromeOSTest, DeviceProperties) {
   EXPECT_EQ(BluetoothDevice::DEVICE_COMPUTER, devices[0]->GetDeviceType());
   EXPECT_TRUE(devices[0]->IsPaired());
   EXPECT_FALSE(devices[0]->IsConnected());
-  EXPECT_FALSE(devices[0]->IsConnectable());
   EXPECT_FALSE(devices[0]->IsConnecting());
+
+  // Non HID devices are always connectable.
+  EXPECT_TRUE(devices[0]->IsConnectable());
 
   BluetoothDevice::ServiceList uuids = devices[0]->GetServices();
   ASSERT_EQ(2U, uuids.size());
@@ -1009,6 +1011,12 @@ TEST_F(BluetoothExperimentalChromeOSTest, ConnectUnpairableDevice) {
       fake_bluetooth_device_client_->GetProperties(
           dbus::ObjectPath(FakeBluetoothDeviceClient::kMicrosoftMousePath));
   EXPECT_TRUE(properties->trusted.value());
+
+  // Verify is a HID device and is not connectable.
+  BluetoothDevice::ServiceList uuids = device->GetServices();
+  ASSERT_EQ(1U, uuids.size());
+  EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
+  EXPECT_FALSE(device->IsConnectable());
 }
 
 TEST_F(BluetoothExperimentalChromeOSTest, ConnectConnectedDevice) {
@@ -1197,6 +1205,12 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairAppleMouse) {
 
   EXPECT_TRUE(device->IsPaired());
 
+  // Verify is a HID device and is connectable.
+  BluetoothDevice::ServiceList uuids = device->GetServices();
+  ASSERT_EQ(1U, uuids.size());
+  EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
+  EXPECT_TRUE(device->IsConnectable());
+
   // Pairing dialog should be dismissed
   EXPECT_EQ(1, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.dismiss_count_);
@@ -1251,6 +1265,12 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairAppleKeyboard) {
   EXPECT_FALSE(device->IsConnecting());
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Verify is a HID device and is connectable.
+  BluetoothDevice::ServiceList uuids = device->GetServices();
+  ASSERT_EQ(1U, uuids.size());
+  EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
+  EXPECT_TRUE(device->IsConnectable());
 
   // Pairing dialog should be dismissed
   EXPECT_EQ(1, pairing_delegate.dismiss_count_);
@@ -1325,6 +1345,14 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairMotorolaKeyboard) {
 
   EXPECT_TRUE(device->IsPaired());
 
+  // Verify is a HID device.
+  BluetoothDevice::ServiceList uuids = device->GetServices();
+  ASSERT_EQ(1U, uuids.size());
+  EXPECT_EQ(uuids[0], "00001124-0000-1000-8000-00805f9b34fb");
+
+  // Fake MotorolaKeyboard is not connectable.
+  EXPECT_FALSE(device->IsConnectable());
+
   // Pairing dialog should be dismissed
   EXPECT_EQ(1, pairing_delegate.dismiss_count_);
 
@@ -1378,6 +1406,13 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairSonyHeadphones) {
   EXPECT_FALSE(device->IsConnecting());
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Verify is not a HID device.
+  BluetoothDevice::ServiceList uuids = device->GetServices();
+  ASSERT_EQ(0U, uuids.size());
+
+  // Non HID devices are always connectable.
+  EXPECT_TRUE(device->IsConnectable());
 
   // Pairing dialog should be dismissed
   EXPECT_EQ(2, pairing_delegate.call_count_);
@@ -1435,6 +1470,9 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairPhone) {
 
   EXPECT_TRUE(device->IsPaired());
 
+  // Non HID devices are always connectable.
+  EXPECT_TRUE(device->IsConnectable());
+
   // Pairing dialog should be dismissed
   EXPECT_EQ(2, pairing_delegate.call_count_);
   EXPECT_EQ(1, pairing_delegate.dismiss_count_);
@@ -1491,6 +1529,9 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairWeirdDevice) {
   EXPECT_FALSE(device->IsConnecting());
 
   EXPECT_TRUE(device->IsPaired());
+
+  // Non HID devices are always connectable.
+  EXPECT_TRUE(device->IsConnectable());
 
   // Pairing dialog should be dismissed
   EXPECT_EQ(2, pairing_delegate.call_count_);

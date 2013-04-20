@@ -10,6 +10,7 @@
 #include "chromeos/dbus/experimental_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/experimental_bluetooth_agent_service_provider.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/experimental_bluetooth_input_client.h"
 #include "dbus/bus.h"
 #include "device/bluetooth/bluetooth_adapter_experimental_chromeos.h"
 #include "device/bluetooth/bluetooth_socket.h"
@@ -90,8 +91,15 @@ bool BluetoothDeviceExperimentalChromeOS::IsConnected() const {
 }
 
 bool BluetoothDeviceExperimentalChromeOS::IsConnectable() const {
-  // TODO(deymo): implement
-  return false;
+  ExperimentalBluetoothInputClient::Properties* input_properties =
+      DBusThreadManager::Get()->GetExperimentalBluetoothInputClient()->
+          GetProperties(object_path_);
+  // GetProperties returns NULL when the device does not implement the given
+  // interface. Non HID devices are normally connectable.
+  if (!input_properties)
+    return true;
+
+  return input_properties->reconnect_mode.value() != "device";
 }
 
 bool BluetoothDeviceExperimentalChromeOS::IsConnecting() const {

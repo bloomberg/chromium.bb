@@ -26,6 +26,7 @@
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "chromeos/dbus/experimental_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/experimental_bluetooth_input_client.h"
 #include "chromeos/dbus/experimental_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
 #include "chromeos/dbus/shill_device_client.h"
@@ -117,6 +118,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
             client_type_, system_bus_.get()));
     experimental_bluetooth_device_client_.reset(
         ExperimentalBluetoothDeviceClient::Create(
+            client_type_, system_bus_.get()));
+    experimental_bluetooth_input_client_.reset(
+        ExperimentalBluetoothInputClient::Create(
             client_type_, system_bus_.get()));
     experimental_bluetooth_profile_manager_client_.reset(
         ExperimentalBluetoothProfileManagerClient::Create(
@@ -296,6 +300,11 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return experimental_bluetooth_device_client_.get();
   }
 
+  virtual ExperimentalBluetoothInputClient*
+        GetExperimentalBluetoothInputClient() OVERRIDE {
+    return experimental_bluetooth_input_client_.get();
+  }
+
   virtual ExperimentalBluetoothProfileManagerClient*
         GetExperimentalBluetoothProfileManagerClient() OVERRIDE {
     return experimental_bluetooth_profile_manager_client_.get();
@@ -436,6 +445,8 @@ class DBusThreadManagerImpl : public DBusThreadManager {
       experimental_bluetooth_agent_manager_client_;
   scoped_ptr<ExperimentalBluetoothDeviceClient>
       experimental_bluetooth_device_client_;
+  scoped_ptr<ExperimentalBluetoothInputClient>
+      experimental_bluetooth_input_client_;
   scoped_ptr<ExperimentalBluetoothProfileManagerClient>
       experimental_bluetooth_profile_manager_client_;
   scoped_ptr<ShillDeviceClient> shill_device_client_;

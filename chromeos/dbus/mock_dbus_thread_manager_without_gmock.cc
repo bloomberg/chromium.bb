@@ -8,6 +8,7 @@
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_config_client.h"
@@ -22,6 +23,7 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
   : fake_bluetooth_adapter_client_(new FakeBluetoothAdapterClient()),
     fake_bluetooth_agent_manager_client_(new FakeBluetoothAgentManagerClient()),
     fake_bluetooth_device_client_(new FakeBluetoothDeviceClient()),
+    fake_bluetooth_input_client_(new FakeBluetoothInputClient()),
     fake_bluetooth_profile_manager_client_(
         new FakeBluetoothProfileManagerClient()),
     mock_ibus_client_(new MockIBusClient),
@@ -125,6 +127,11 @@ ExperimentalBluetoothAgentManagerClient*
 ExperimentalBluetoothDeviceClient*
     MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothDeviceClient() {
   return fake_bluetooth_device_client_.get();
+}
+
+ExperimentalBluetoothInputClient*
+    MockDBusThreadManagerWithoutGMock::GetExperimentalBluetoothInputClient() {
+  return fake_bluetooth_input_client_.get();
 }
 
 ExperimentalBluetoothProfileManagerClient*
