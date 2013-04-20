@@ -136,6 +136,14 @@
             }],
           ],
         }],
+        ['OS=="linux" and enable_webrtc==1', {
+          'dependencies': [
+            # TODO(tommi): Figure out why the 32bit lucid builder fails to
+            # find this dependency for this target (other builders pick it up
+            # correctly).  crbug.com/231068.
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
+          ],
+        }],
       ],
     },
     {
@@ -2239,6 +2247,14 @@
             '../build/linux/system.gyp:gtk',
           ],
         },],
+        ['OS=="linux" and enable_webrtc==1', {
+          'dependencies': [
+            # TODO(tommi): Figure out why the 32bit lucid builder fails to
+            # find this dependency for this target (other builders pick it up
+            # correctly).  crbug.com/231068.
+            '../third_party/libjingle/libjingle.gyp:libpeerconnection',
+          ],
+        }],
       ],
     },
     {
@@ -2803,6 +2819,14 @@
                     '../base/allocator/allocator.gyp:allocator',
                   ],
                 }],
+              ],
+            }],
+            ['OS=="linux" and enable_webrtc==1', {
+              'dependencies': [
+                # TODO(tommi): Figure out why the 32bit lucid builder fails to
+                # find this dependency for this target (other builders pick it up
+                # correctly).  crbug.com/231068.
+                '../third_party/libjingle/libjingle.gyp:libpeerconnection',
               ],
             }],
           ],
