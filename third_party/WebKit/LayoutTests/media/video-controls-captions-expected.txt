@@ -1,7 +1,5 @@
 Tests that the closed captions button, when toggled, updates the text track display area.
 
-Set the user language preference so that the track will be chosen when the CC button is clicked.
-RUN(internals.setUserPreferredLanguages(['en']))
 EVENT(canplaythrough)
 
 ** Caption button should be visible and enabled because we have a captions track.

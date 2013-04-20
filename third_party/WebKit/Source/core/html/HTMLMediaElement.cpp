@@ -936,7 +936,7 @@ static bool eventTimeCueCompare(const std::pair<double, TextTrackCue*>& a,
 
 void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
 {
-    LOG(Media, "HTMLMediaElement::updateActiveTextTracks");
+    LOG(Media, "HTMLMediaElement::updateActiveTextTrackCues");
 
     // 4.8.10.8 Playing the media resource
 
@@ -1152,7 +1152,7 @@ void HTMLMediaElement::updateActiveTextTrackCues(double movieTime)
             HTMLTrackElement* trackElement = static_cast<LoadableTextTrack*>(affectedTracks[i])->trackElement();
             ASSERT(trackElement);
             event->setTarget(trackElement);
-            
+
             m_asyncEventQueue->enqueueEvent(event.release());
         }
     }
@@ -1232,13 +1232,14 @@ void HTMLMediaElement::textTrackModeChanged(TextTrack* track)
             }
             break;
         }
-    }
+    } else if (track->trackType() == TextTrack::AddTrack && track->mode() != TextTrack::disabledKeyword())
+        textTrackAddCues(track, track->cues());
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
     if (platformTextTrackMenu())
         platformTextTrackMenu()->trackWasSelected(track->platformTextTrack());
 #endif
-    
+
     configureTextTrackDisplay();
     updateActiveTextTrackCues(currentTime());
 }
@@ -1264,6 +1265,8 @@ void HTMLMediaElement::endIgnoringTrackDisplayUpdateRequests()
 
 void HTMLMediaElement::textTrackAddCues(TextTrack*, const TextTrackCueList* cues) 
 {
+    LOG(Media, "HTMLMediaElement::textTrackAddCues");
+
     TrackDisplayUpdateScope scope(this);
     for (size_t i = 0; i < cues->length(); ++i)
         textTrackAddCue(cues->item(i)->track(), cues->item(i));
@@ -1271,6 +1274,8 @@ void HTMLMediaElement::textTrackAddCues(TextTrack*, const TextTrackCueList* cues
 
 void HTMLMediaElement::textTrackRemoveCues(TextTrack*, const TextTrackCueList* cues) 
 {
+    LOG(Media, "HTMLMediaElement::textTrackRemoveCues");
+
     TrackDisplayUpdateScope scope(this);
     for (size_t i = 0; i < cues->length(); ++i)
         textTrackRemoveCue(cues->item(i)->track(), cues->item(i));
@@ -1298,8 +1303,10 @@ void HTMLMediaElement::textTrackRemoveCue(TextTrack*, PassRefPtr<TextTrackCue> c
     m_cueTree.remove(interval);
 
     size_t index = m_currentlyActiveCues.find(interval);
-    if (index != notFound)
+    if (index != notFound) {
         m_currentlyActiveCues.remove(index);
+        cue->setIsActive(false);
+    }
 
     cue->removeDisplayTree();
     updateActiveTextTrackCues(currentTime());
@@ -2859,6 +2866,8 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 {
     ASSERT(group.tracks.size());
 
+    LOG(Media, "HTMLMediaElement::configureTextTrackGroup(%d)", group.kind);
+
     Page* page = document()->page();
     CaptionUserPreferences* captionPreferences = page? page->group().captionPreferences() : 0;
 
@@ -2907,6 +2916,9 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 
     // If no track matches the user's preferred language and non was marked 'default', enable the first track
     // because the user has explicitly stated a preference for this kind of track.
+    if (!fallbackTrack && m_closedCaptionsVisible && group.kind == TrackGroup::CaptionsAndSubtitles)
+        fallbackTrack = group.tracks[0];
+
     if (!trackToEnable && fallbackTrack)
         trackToEnable = fallbackTrack;
 
@@ -2920,8 +2932,6 @@ void HTMLMediaElement::configureTextTrackGroup(const TrackGroup& group)
 
     if (trackToEnable)
         trackToEnable->setMode(TextTrack::showingKeyword());
-
-    m_processingPreferenceChange = false;
 }
 
 void HTMLMediaElement::setSelectedTextTrack(TextTrack* trackToSelect)
@@ -3882,9 +3892,11 @@ bool HTMLMediaElement::closedCaptionsVisible() const
 
 void HTMLMediaElement::updateTextTrackDisplay()
 {
+    LOG(Media, "HTMLMediaElement::updateTextTrackDisplay");
+
     if (!hasMediaControls() && !createMediaControls())
         return;
-    
+
     mediaControls()->updateTextTrackDisplay();
 }
 
@@ -3901,6 +3913,8 @@ void HTMLMediaElement::setClosedCaptionsVisible(bool closedCaptionVisible)
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled()) {
         m_processingPreferenceChange = true;
         markCaptionAndSubtitleTracksAsUnconfigured();
+        m_processingPreferenceChange = false;
+
         updateTextTrackDisplay();
     }
 }
@@ -4039,6 +4053,7 @@ void HTMLMediaElement::configureMediaControls()
 void HTMLMediaElement::configureTextTrackDisplay()
 {
     ASSERT(m_textTracks);
+    LOG(Media, "HTMLMediaElement::configureTextTrackDisplay");
 
     if (m_processingPreferenceChange)
         return;
@@ -4062,7 +4077,7 @@ void HTMLMediaElement::configureTextTrackDisplay()
         return;
 
     mediaControls()->changedClosedCaptionsVisibility();
-    
+
     if (RuntimeEnabledFeatures::webkitVideoTrackEnabled())
         updateTextTrackDisplay();
 }
@@ -4089,7 +4104,6 @@ void HTMLMediaElement::markCaptionAndSubtitleTracksAsUnconfigured()
     // captions and non-default tracks should be displayed based on language
     // preferences if the user has turned captions on).
     for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-        
         RefPtr<TextTrack> textTrack = m_textTracks->item(i);
         String kind = textTrack->kind();
 

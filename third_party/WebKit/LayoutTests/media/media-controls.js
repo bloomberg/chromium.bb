@@ -1,3 +1,5 @@
+var captionsButtonElement;
+var captionsButtonCoordinates;
 
 function mediaControlsElement(first, id)
 {
@@ -72,4 +74,37 @@ function textTrackDisplayElement(parentElement, id, cueNumber)
     }
 
     return displayElement;
+}
+
+function testClosedCaptionsButtonVisibility(expected)
+{
+    try {
+        captionsButtonElement = mediaControlsElement(internals.shadowRoot(video).firstChild, "-webkit-media-controls-toggle-closed-captions-button");
+        captionsButtonCoordinates = mediaControlsButtonCoordinates(video, "toggle-closed-captions-button");
+    } catch (exception) {
+        consoleWrite("Failed to find a closed captions button or its coordinates: " + exception);
+        if (expected)
+            failTest();
+        return;
+    }
+
+    consoleWrite("");
+    if (expected == true) {
+        consoleWrite("** Caption button should be visible and enabled because we have a captions track.");
+        testExpected("captionsButtonCoordinates[0]", 0, ">");
+        testExpected("captionsButtonCoordinates[1]", 0, ">");
+        testExpected("captionsButtonElement.disabled", false);
+    } else {
+        consoleWrite("** Caption button should not be visible as there are no caption tracks.");
+        testExpected("captionsButtonCoordinates[0]", 0, "<=");
+        testExpected("captionsButtonCoordinates[1]", 0, "<=");
+    }
+}
+
+function clickCCButton()
+{
+    consoleWrite("*** Click the CC button.");
+    eventSender.mouseMoveTo(captionsButtonCoordinates[0], captionsButtonCoordinates[1]);
+    eventSender.mouseDown();
+    eventSender.mouseUp();
 }
