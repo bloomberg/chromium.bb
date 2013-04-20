@@ -55,7 +55,7 @@ public:
     {
         m_wasErrorCalled = true;
     }
-    virtual void onSuccess(PassRefPtr<DOMStringList>) { }
+    virtual void onSuccess(const Vector<String>&) { }
     virtual void onSuccess(PassRefPtr<IDBCursorBackendInterface>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey>, PassRefPtr<SharedBuffer>) { }
     virtual void onSuccess(PassRefPtr<IDBDatabaseBackendInterface>, const IDBDatabaseMetadata&)
     {

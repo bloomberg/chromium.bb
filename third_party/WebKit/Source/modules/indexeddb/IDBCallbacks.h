@@ -37,7 +37,6 @@
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
-class DOMStringList;
 class IDBCursorBackendInterface;
 
 class IDBCallbacks : public RefCounted<IDBCallbacks> {
@@ -46,7 +45,7 @@ public:
 
     virtual void onError(PassRefPtr<IDBDatabaseError>) = 0;
     // From IDBFactory.webkitGetDatabaseNames()
-    virtual void onSuccess(PassRefPtr<DOMStringList>) = 0;
+    virtual void onSuccess(const Vector<String>&) = 0;
     // From IDBObjectStore/IDBIndex.openCursor(), IDBIndex.openKeyCursor()
     virtual void onSuccess(PassRefPtr<IDBCursorBackendInterface>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>) = 0;
     // From IDBObjectStore.add()/put(), IDBIndex.getKey()

@@ -60,7 +60,18 @@ void WebIDBCallbacksImpl::onError(const WebIDBDatabaseError& error)
 
 void WebIDBCallbacksImpl::onSuccess(const WebDOMStringList& domStringList)
 {
-    m_callbacks->onSuccess(domStringList);
+    Vector<String> stringList(domStringList.length());
+    for (size_t i = 0; i < domStringList.length(); ++i)
+        stringList.append(domStringList.item(i));
+    m_callbacks->onSuccess(stringList);
+}
+
+void WebIDBCallbacksImpl::onSuccess(const WebVector<WebString>& webStringList)
+{
+    Vector<String> stringList;
+    for (size_t i = 0; i < webStringList.size(); ++i)
+        stringList.append(webStringList[i]);
+    m_callbacks->onSuccess(stringList);
 }
 
 void WebIDBCallbacksImpl::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value)

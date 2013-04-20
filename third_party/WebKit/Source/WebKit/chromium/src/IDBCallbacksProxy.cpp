@@ -95,10 +95,13 @@ void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBKey> idbKey)
     m_callbacks->onSuccess(WebIDBKey(idbKey));
 }
 
-void IDBCallbacksProxy::onSuccess(PassRefPtr<DOMStringList> domStringList)
+void IDBCallbacksProxy::onSuccess(const Vector<String>& stringList)
 {
     m_didComplete = true;
-    m_callbacks->onSuccess(WebDOMStringList(domStringList));
+    WebDOMStringList domStringList;
+    for (size_t i = 0; i < stringList.size(); ++i)
+        domStringList.append(stringList[i]);
+    m_callbacks->onSuccess(WebVector<WebString>(stringList));
 }
 
 void IDBCallbacksProxy::onSuccess(PassRefPtr<SharedBuffer> value)

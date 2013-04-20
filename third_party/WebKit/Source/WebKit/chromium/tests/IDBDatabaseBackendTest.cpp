@@ -70,7 +70,7 @@ public:
         EXPECT_TRUE(m_wasSuccessDBCalled);
     }
     virtual void onError(PassRefPtr<IDBDatabaseError>) OVERRIDE { }
-    virtual void onSuccess(PassRefPtr<DOMStringList>) OVERRIDE { }
+    virtual void onSuccess(const Vector<String>&) OVERRIDE { }
     virtual void onSuccess(PassRefPtr<IDBCursorBackendInterface>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey>, PassRefPtr<SharedBuffer>) OVERRIDE { }
     virtual void onSuccess(PassRefPtr<IDBDatabaseBackendInterface>, const IDBDatabaseMetadata&) OVERRIDE
     {

@@ -275,13 +275,16 @@ static PassRefPtr<Event> createSuccessEvent()
     return Event::create(eventNames().successEvent, false, false);
 }
 
-void IDBRequest::onSuccess(PassRefPtr<DOMStringList> domStringList)
+void IDBRequest::onSuccess(const Vector<String>& stringList)
 {
-    IDB_TRACE("IDBRequest::onSuccess(DOMStringList)");
+    IDB_TRACE("IDBRequest::onSuccess(StringList)");
     if (!shouldEnqueueEvent())
         return;
 
-    m_result = IDBAny::create(domStringList);
+    RefPtr<DOMStringList> domStringList = DOMStringList::create();
+    for (size_t i = 0; i < stringList.size(); ++i)
+        domStringList->append(stringList[i]);
+    m_result = IDBAny::create(domStringList.release());
     enqueueEvent(createSuccessEvent());
 }
 

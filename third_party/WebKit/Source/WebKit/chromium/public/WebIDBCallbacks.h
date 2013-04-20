@@ -26,12 +26,12 @@
 #ifndef WebIDBCallbacks_h
 #define WebIDBCallbacks_h
 
+#include "WebDOMStringList.h"
 #include "../../../Platform/chromium/public/WebCommon.h"
 #include "../../../Platform/chromium/public/WebVector.h"
 
 namespace WebKit {
 
-class WebDOMStringList;
 class WebData;
 class WebIDBCursor;
 class WebIDBDatabase;
@@ -39,6 +39,7 @@ class WebIDBDatabaseError;
 class WebIDBIndex;
 class WebIDBKey;
 class WebIDBKeyPath;
+class WebString;
 struct WebIDBMetadata;
 
 class WebIDBCallbacks {
@@ -49,6 +50,13 @@ public:
     // For the rest, pass ownership to the callee via a pointer.
     virtual void onError(const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(const WebDOMStringList&) { WEBKIT_ASSERT_NOT_REACHED(); }
+    virtual void onSuccess(const WebVector<WebString>& stringList)
+    {
+        WebDOMStringList domStringList;
+        for (size_t i = 0; i < stringList.size(); ++i)
+            domStringList.append(stringList[i]);
+        onSuccess(domStringList);
+    }
     virtual void onSuccess(WebIDBCursor*, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(WebIDBDatabase*) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { WEBKIT_ASSERT_NOT_REACHED(); }

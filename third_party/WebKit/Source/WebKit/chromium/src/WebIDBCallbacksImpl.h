@@ -46,6 +46,7 @@ public:
 
     virtual void onError(const WebIDBDatabaseError&);
     virtual void onSuccess(const WebDOMStringList&);
+    virtual void onSuccess(const WebVector<WebString>&);
     virtual void onSuccess(WebIDBCursor*, const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&);
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&);
     virtual void onSuccess(const WebIDBKey&);

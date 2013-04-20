@@ -88,13 +88,7 @@ void IDBFactoryBackendImpl::getDatabaseNames(PassRefPtr<IDBCallbacks> callbacks,
         return;
     }
 
-    RefPtr<DOMStringList> databaseNames = DOMStringList::create();
-
-    Vector<String> foundNames = backingStore->getDatabaseNames();
-    for (Vector<String>::const_iterator it = foundNames.begin(); it != foundNames.end(); ++it)
-        databaseNames->append(*it);
-
-    callbacks->onSuccess(databaseNames.release());
+    callbacks->onSuccess(backingStore->getDatabaseNames());
 }
 
 void IDBFactoryBackendImpl::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> callbacks, PassRefPtr<SecurityOrigin> securityOrigin, ScriptExecutionContext*, const String& dataDirectory)
