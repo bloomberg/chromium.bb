@@ -60,10 +60,10 @@ const size_t kMessageCharacterLimit =
 
 // Notification colors. The text background colors below are used only to keep
 // view::Label from modifying the text color and will not actually be drawn.
-// See view::Label's SetEnabledColor() and SetBackgroundColor() for details.
+// See view::Label's RecalculateColors() for details.
 const SkColor kRegularTextBackgroundColor = SK_ColorWHITE;
 const SkColor kDimTextColor = SkColorSetRGB(102, 102, 102);
-const SkColor kDimTextBackgroundColor = SK_ColorBLACK;
+const SkColor kDimTextBackgroundColor = SK_ColorWHITE;
 const SkColor kButtonSeparatorColor = SkColorSetRGB(234, 234, 234);
 const SkColor kHoveredButtonBackgroundColor = SkColorSetRGB(243, 243, 243);
 
