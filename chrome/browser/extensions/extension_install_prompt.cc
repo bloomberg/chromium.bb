@@ -520,12 +520,15 @@ void ExtensionInstallPrompt::ConfirmReEnable(Delegate* delegate,
 }
 
 void ExtensionInstallPrompt::ConfirmExternalInstall(
-    Delegate* delegate, const Extension* extension) {
+    Delegate* delegate,
+    const Extension* extension,
+    const ShowDialogCallback& show_dialog_callback) {
   DCHECK(ui_loop_ == MessageLoop::current());
   extension_ = extension;
   permissions_ = extension->GetActivePermissions();
   delegate_ = delegate;
   prompt_.set_type(EXTERNAL_INSTALL_PROMPT);
+  show_dialog_callback_ = show_dialog_callback;
 
   LoadImageIfNeeded();
 }

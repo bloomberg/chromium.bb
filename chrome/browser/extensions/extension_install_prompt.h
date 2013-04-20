@@ -268,8 +268,10 @@ class ExtensionInstallPrompt
   // extension should be enabled (external extensions are installed disabled).
   //
   // We *MUST* eventually call either Proceed() or Abort() on |delegate|.
-  virtual void ConfirmExternalInstall(Delegate* delegate,
-                                      const extensions::Extension* extension);
+  virtual void ConfirmExternalInstall(
+      Delegate* delegate,
+      const extensions::Extension* extension,
+      const ShowDialogCallback& show_dialog_callback);
 
   // This is called by the extension permissions API to verify whether an
   // extension may be granted additional permissions.
