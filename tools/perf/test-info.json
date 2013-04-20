@@ -49,70 +49,70 @@
     ]
   },
   "dromaeo_jslibattrjquery": {
-    "description": "",
+    "description": "Setting and getting DOM node attributes using the jQuery JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibattrjquery.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibattrprototype": {
-    "description": "",
+    "description": "Setting and getting DOM node attributes using the Prototype JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibattrprototype.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibeventjquery": {
-    "description": "",
+    "description": "Binding, removing, and triggering DOM events using the jQuery JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibattrprototype.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibeventprototype": {
-    "description": "",
+    "description": "Binding, removing, and triggering DOM events using the Prototype JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibeventprototype.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibmodifyjquery": {
-    "description": "",
+    "description": "Creating and injecting DOM nodes into a document using the jQuery JavaScript Library",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibmodifyjquery.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibmodifyprototype": {
-    "description": "",
+    "description": "Creating and injecting DOM nodes into a document using the Prototype JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibmodifyprototype.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibstylejquery": {
-    "description": "",
+    "description": "Getting and setting CSS information on DOM elements using the jQuery JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibstylejquery.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibstyleprototype": {
-    "description": "",
+    "description": "Getting and setting CSS information on DOM elements using the Prototype JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibstyleprototype.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibtraversejquery": {
-    "description": "",
+    "description": "Traversing a DOM structure using the jQuery JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibtraversejquery.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
     ]
   },
   "dromaeo_jslibtraverseprototype": {
-    "description": "",
+    "description": "Traversing a DOM structure using the Prototype JavaScript Library.",
     "code": [
       "chrome/src/tools/perf/page_sets/dromaeo/jslibtraverseprototype.json",
       "chrome/src/tools/perf/perf_tools/dromaeo.py"
@@ -200,6 +200,10 @@
   "scrolling_benchmark": {
     "description": "Measures frame rate and a variety of other statistics while scrolling down the top 25 web pages. [Documentation](http://www.chromium.org/developers/design-documents/rendering-benchmarks).",
     "code": ["chrome/src/tools/perf/perf_tools/scrolling_benchmark.py"]
+  },
+  "sizes": {
+    "description": "Tracks binary sizes and number of static initializers.",
+    "code": ["chrome/tools/build/scripts/slave/chromium/sizes.py"]
   },
   "spaceport": {
     "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
