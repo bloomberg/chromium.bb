@@ -1669,9 +1669,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FullscreenBookmarkBar) {
 #if defined(OS_MACOSX)
   EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 #elif defined(OS_CHROMEOS)
-  // TODO(jamescook): When immersive fullscreen is enabled by default, test
-  // for BookmarkBar::SHOW.
-  EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
+  // TODO(jamescook): If immersive fullscreen is disabled by default, test
+  // for BookmarkBar::HIDDEN.
+  EXPECT_EQ(BookmarkBar::SHOW, browser()->bookmark_bar_state());
 #else
   EXPECT_EQ(BookmarkBar::HIDDEN, browser()->bookmark_bar_state());
 #endif

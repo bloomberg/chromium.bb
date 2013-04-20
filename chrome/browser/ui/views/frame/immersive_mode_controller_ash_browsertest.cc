@@ -58,7 +58,7 @@ class ImmersiveModeControllerAshTest : public InProcessBrowserTest {
 
   // content::BrowserTestBase overrides:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(ash::switches::kAshImmersiveFullscreen);
+    chrome::EnableImmersiveFullscreenForTest();
   }
 
  private:

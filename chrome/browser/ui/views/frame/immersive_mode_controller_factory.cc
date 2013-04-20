@@ -17,20 +17,20 @@ namespace chrome {
 
 bool UseImmersiveFullscreen() {
 #if defined(OS_CHROMEOS)
+  CommandLine* command = CommandLine::ForCurrentProcess();
   // Kiosk mode needs the whole screen.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kKioskMode) &&
-      command_line->HasSwitch(ash::switches::kAshImmersiveFullscreen);
+  if (command->HasSwitch(switches::kKioskMode))
+    return false;
+  // Immersive fullscreen is on by default.
+  return !command->HasSwitch(ash::switches::kAshDisableImmersiveFullscreen);
 #endif
   return false;
 }
 
 // Implemented here so all the code dealing with flags lives in one place.
 void EnableImmersiveFullscreenForTest() {
-#if defined(OS_CHROMEOS)
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(ash::switches::kAshImmersiveFullscreen);
-#endif
+  // Immersive fullscreen is on by default. If we turn it off, this function
+  // will need to add kAshEnableImmersiveFullscreen to the command line.
 }
 
 ImmersiveModeController* CreateImmersiveModeController() {

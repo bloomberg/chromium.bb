@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
@@ -60,17 +61,6 @@ ChromeShellDelegate::ChromeShellDelegate()
 ChromeShellDelegate::~ChromeShellDelegate() {
   if (instance_ == this)
     instance_ = NULL;
-}
-
-// static
-bool ChromeShellDelegate::UseImmersiveFullscreen() {
-#if defined(OS_CHROMEOS)
-  // Kiosk mode needs the whole screen.
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  return !command_line->HasSwitch(switches::kKioskMode) &&
-      command_line->HasSwitch(ash::switches::kAshImmersiveFullscreen);
-#endif
-  return false;
 }
 
 bool ChromeShellDelegate::IsMultiProfilesEnabled() const {
@@ -110,7 +100,7 @@ void ChromeShellDelegate::ToggleMaximized() {
 
   // TODO(jamescook): If immersive mode replaces fullscreen, rename this
   // function and the interface to ToggleFullscreen.
-  if (UseImmersiveFullscreen()) {
+  if (chrome::UseImmersiveFullscreen()) {
     chrome::ToggleFullscreenMode(GetTargetBrowser());
     return;
   }

@@ -1,0 +1,6 @@
+include_rules = [
+  # TODO(jamescook): Remove this when immersive fullscreen is no longer
+  # optional. This is better than duplicating the flag-reading code in
+  # chrome_shell_delegate.cc.
+  "!chrome/browser/ui/views/frame/immersive_mode_controller.h"
+]
