@@ -110,17 +110,13 @@ _OS_NEGATIVE_FILTER['linux'] = [
 ]
 _OS_NEGATIVE_FILTER['mac'] = []
 _OS_NEGATIVE_FILTER['android'] = [
-    'BasicMouseInterfaceTest.testDoubleClick',
-    'BasicMouseInterfaceTest.testDoubleClickThenGet',
-    'BasicMouseInterfaceTest.testDragAndDrop',
-    'BasicMouseInterfaceTest.testDraggingElementWithMouseFiresEvents',
-    'BasicMouseInterfaceTest.testDraggingElementWithMouseMovesItToAnotherList',
-    'BasicMouseInterfaceTest.testMoveAndClick',
+    'BasicKeyboardInterfaceTest.*',
+    'BasicMouseInterfaceTest.*',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrameThatIsOutOfView',
     'ClickScrollingTest.testShouldBeAbleToClickElementThatIsOutOfViewInANestedFrame',
     'ClickTest.testCanClickOnAnElementWithTopSetToANegativeNumber',
     'ClickTest.testShouldOnlyFollowHrefOnce',
-    'CombinedInputActionsTest.testCombiningShiftAndClickResultsInANewWindow',
+    'CombinedInputActionsTest.*',
     'CoordinatesTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
     'CoordinatesTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
     'CoordinatesTest.testShouldGetCoordinatesOfAHiddenElement',
