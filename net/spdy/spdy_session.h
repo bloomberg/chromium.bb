@@ -62,6 +62,8 @@ class SSLInfo;
 
 // NOTE: There's an enum of the same name (also with numeric suffixes)
 // in histograms.xml.
+//
+// WARNING: DO NOT INSERT ENUMS INTO THIS LIST! Add only to the end.
 enum SpdyProtocolErrorDetails {
   // SpdyFramer::SpdyErrors
   SPDY_ERROR_NO_ERROR,
@@ -74,7 +76,6 @@ enum SpdyProtocolErrorDetails {
   SPDY_ERROR_CREDENTIAL_FRAME_CORRUPT,
   SPDY_ERROR_INVALID_DATA_FRAME_FLAGS,
   SPDY_ERROR_INVALID_CONTROL_FRAME_FLAGS,
-
   // SpdyRstStreamStatus
   STATUS_CODE_INVALID,
   STATUS_CODE_PROTOCOL_ERROR,
@@ -88,7 +89,6 @@ enum SpdyProtocolErrorDetails {
   STATUS_CODE_STREAM_ALREADY_CLOSED,
   STATUS_CODE_INVALID_CREDENTIALS,
   STATUS_CODE_FRAME_TOO_LARGE,
-
   // SpdySession errors
   PROTOCOL_ERROR_UNEXPECTED_PING,
   PROTOCOL_ERROR_RST_STREAM_FOR_NON_ACTIVE_STREAM,

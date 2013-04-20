@@ -2004,7 +2004,12 @@ other types of suffix sets.
   <obsolete>
     Replaced by SpdySessionErrorDetails2 on 2013-04-19.
   </obsolete>
-  <summary>The type of SPDY Protocol error encountered.</summary>
+  <summary>
+    WARNING: r181910 added an enum value in the middle, so don't trust the
+    counts for values 9 and above for Chrome builds after that revision.
+
+    The type of SPDY Protocol error encountered.
+  </summary>
 </histogram>
 
 <histogram name="Net.SpdySessionErrorDetails2" enum="SpdyProtocolErrorDetails2"
@@ -2026,6 +2031,9 @@ other types of suffix sets.
 <histogram name="Net.SpdySessionErrorDetails_Google2"
     enum="SpdyProtocolErrorDetails2" units="count">
   <summary>
+    WARNING: r181910 added an enum value in the middle, so don't trust the
+    counts for values 9 and above for Chrome builds after that revision.
+
     The type of SPDY Protocol error encountered when talking to a google.com
     server.
   </summary>
