@@ -2969,6 +2969,13 @@
               '-Xclang', '-add-plugin', '-Xclang', '<(clang_add_plugin)',
             ],
           }],
+          ['clang==1 and target_arch=="ia32"', {
+            'cflags': [
+              # Else building libyuv gives clang's register allocator issues,
+              # see llvm.org/PR15798 / crbug.com/233709
+              '-momit-leaf-frame-pointer',
+            ],
+          }],
           ['clang==1 and "<(GENERATOR)"=="ninja"', {
             'cflags': [
               # See http://crbug.com/110262
