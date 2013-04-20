@@ -1993,7 +1993,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Net.SpdySession.ClosedOnError" units="NetErrorCodes">
+<histogram name="Net.SpdySession.ClosedOnError" enum="NetErrorCodes">
   <summary>
     Net error codes when SpdySession was closed, doesn't inlcuding net::OK.
   </summary>
