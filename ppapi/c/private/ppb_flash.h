@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_flash.idl modified Thu Apr 18 15:06:12 2013. */
+/* From private/ppb_flash.idl modified Thu Mar 28 10:30:53 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_FLASH_H_
 #define PPAPI_C_PRIVATE_PPB_FLASH_H_
@@ -118,11 +118,7 @@ typedef enum {
   /**
    * Specifies the document URL which contains the flash instance.
    */
-  PP_FLASHCRASHKEY_URL = 1,
-  /**
-   * Specifies the URL of the current swf.
-   */
-  PP_FLASHCRASHKEY_RESOURCE_URL = 2
+  PP_FLASHCRASHKEY_URL = 1
 } PP_FlashCrashKey;
 PP_COMPILE_ASSERT_SIZE_IN_BYTES(PP_FlashCrashKey, 4);
 /**
