@@ -47,10 +47,8 @@
 #define WINVER 0x0502
 #endif
 
-#if !USE(CURL)
 #ifndef _WINSOCKAPI_
 #define _WINSOCKAPI_ // Prevent inclusion of winsock.h in windows.h
-#endif
 #endif
 
 // If we don't define these, they get defined in windef.h. 
