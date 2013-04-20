@@ -1925,18 +1925,6 @@ String Internals::getImageSourceURL(Element* element, ExceptionCode& ec)
     return element->imageSourceURL();
 }
 
-#if ENABLE(VIDEO)
-void Internals::simulateAudioInterruption(Node* node)
-{
-#if USE(GSTREAMER)
-    HTMLMediaElement* element = toMediaElement(node);
-    element->player()->simulateAudioInterruption();
-#else
-    UNUSED_PARAM(node);
-#endif
-}
-#endif
-
 bool Internals::isSelectPopupVisible(Node* node)
 {
     if (!isHTMLSelectElement(node))

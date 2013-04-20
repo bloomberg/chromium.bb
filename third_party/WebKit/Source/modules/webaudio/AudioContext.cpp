@@ -76,10 +76,6 @@
 #include <stdio.h>
 #endif
 
-#if USE(GSTREAMER)
-#include "GStreamerUtilities.h"
-#endif
-
 #include <wtf/ArrayBuffer.h>
 #include <wtf/Atomics.h>
 #include <wtf/MainThread.h>
@@ -175,10 +171,6 @@ void AudioContext::constructCommon()
     // According to spec AudioContext must die only after page navigate.
     // Lets mark it as ActiveDOMObject with pending activity and unmark it in clear method.
     setPendingActivity(this);
-
-#if USE(GSTREAMER)
-    initializeGStreamer();
-#endif
 
     FFTFrame::initialize();
     

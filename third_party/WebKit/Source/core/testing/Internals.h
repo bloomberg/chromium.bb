@@ -288,10 +288,6 @@ public:
 
     String getImageSourceURL(Element*, ExceptionCode&);
 
-#if ENABLE(VIDEO)
-    void simulateAudioInterruption(Node*);
-#endif
-
     bool isSelectPopupVisible(Node*);
 
 private:

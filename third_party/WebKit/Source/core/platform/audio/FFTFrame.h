@@ -47,13 +47,6 @@
 #include "mkl_dfti.h"
 #endif // USE(WEBAUDIO_MKL)
 
-#if USE(WEBAUDIO_GSTREAMER)
-#include <glib.h>
-G_BEGIN_DECLS
-#include <gst/fft/gstfftf32.h>
-G_END_DECLS
-#endif // USE(WEBAUDIO_GSTREAMER)
-
 #if USE(WEBAUDIO_OPENMAX_DL_FFT)
 #include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
@@ -161,14 +154,6 @@ private:
     AudioFloatArray m_realData;
     AudioFloatArray m_imagData;
 #endif // USE(WEBAUDIO_FFMPEG)
-
-#if USE(WEBAUDIO_GSTREAMER)
-    GstFFTF32* m_fft;
-    GstFFTF32* m_inverseFft;
-    GstFFTF32Complex* m_complexData;
-    AudioFloatArray m_realData;
-    AudioFloatArray m_imagData;
-#endif // USE(WEBAUDIO_GSTREAMER)
 
 #if USE(WEBAUDIO_IPP)
     Ipp8u* m_buffer;

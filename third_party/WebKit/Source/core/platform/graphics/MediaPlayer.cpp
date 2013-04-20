@@ -47,11 +47,6 @@
 #include "MediaSource.h"
 #endif
 
-#if USE(GSTREAMER)
-#include "MediaPlayerPrivateGStreamer.h"
-#define PlatformMediaEngineClassName MediaPlayerPrivateGStreamer
-#endif
-
 #include "MediaPlayerPrivateChromium.h"
 #define PlatformMediaEngineClassName MediaPlayerPrivate
 
@@ -1011,16 +1006,6 @@ void MediaPlayer::resetMediaEngines()
 {
     installedMediaEngines(ResetEngines);
 }
-
-#if USE(GSTREAMER)
-void MediaPlayer::simulateAudioInterruption()
-{
-    if (!m_private)
-        return;
-
-    m_private->simulateAudioInterruption();
-}
-#endif
 
 }
 
