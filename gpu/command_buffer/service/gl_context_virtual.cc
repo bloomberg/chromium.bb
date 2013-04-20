@@ -73,7 +73,7 @@ bool GLContextVirtual::IsCurrent(gfx::GLSurface* surface) {
 }
 
 void* GLContextVirtual::GetHandle() {
-  return NULL;
+  return shared_context_->GetHandle();
 }
 
 gfx::GLStateRestorer* GLContextVirtual::GetGLStateRestorer() {
