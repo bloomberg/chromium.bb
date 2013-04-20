@@ -52,5 +52,17 @@ IDR_MAINFRAME           ICON                    "theme\chromium\chromium.ico"
 // constants are used in Chrome code to identify it.
 IDR_X_APP_LIST          ICON                    "theme\\app_list.ico"
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// GOOGLEUPDATEAPPLICATIONCOMMANDS is a "well-known" marker resource defined
+// by Omaha. Executables must both be signed by Google and contain the marker
+// in order to expose application commands.
+//
+#define IDR_GOOGLE_UPDATE_APP_COMMANDS_MARKUP 1
+
+IDR_GOOGLE_UPDATE_APP_COMMANDS_MARKUP GOOGLEUPDATEAPPLICATIONCOMMANDS { 1L }
+
+
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
