@@ -7060,12 +7060,6 @@
    fun:_ZN10extensions51WebstoreInlineInstallerTest_DomainVerification_Test8TestBodyEv
 }
 {
-   bug_233149
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN8chromeos52DeviceOAuth2TokenServiceTest_SaveEncryptedToken_Test8TestBodyEv
-}
-{
    bug_233541
    Memcheck:Leak
    fun:_Znw*

@@ -61,9 +61,7 @@ TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedToken) {
       .WillOnce(Return("test-token"));
 
   DeviceOAuth2TokenService oauth2_service(
-      new net::TestURLRequestContextGetter(
-          content::BrowserThread::GetMessageLoopProxyForThread(
-              content::BrowserThread::IO)),
+      new net::TestURLRequestContextGetter(message_loop_.message_loop_proxy()),
       scoped_testing_local_state_.Get());
 
   ASSERT_EQ("", oauth2_service.GetRefreshToken());
