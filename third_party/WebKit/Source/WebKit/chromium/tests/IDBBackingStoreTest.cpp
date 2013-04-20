@@ -45,9 +45,8 @@ public:
     IDBBackingStoreTest() { }
     void SetUp()
     {
-        SecurityOrigin* securityOrigin = 0;
         String fileIdentifier;
-        m_backingStore = IDBBackingStore::openInMemory(securityOrigin, fileIdentifier);
+        m_backingStore = IDBBackingStore::openInMemory(fileIdentifier);
 
         // useful keys and values during tests
         const char rawValue1[] = "value1";
@@ -268,7 +267,7 @@ public:
 
     PassRefPtr<IDBBackingStore> testOpenBackingStore(PassRefPtr<SecurityOrigin> origin, const String& dataDirectory)
     {
-        return openBackingStore(origin, dataDirectory);
+        return openBackingStore(origin->databaseIdentifier(), dataDirectory);
     }
 };
 

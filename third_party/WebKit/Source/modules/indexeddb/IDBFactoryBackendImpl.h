@@ -63,7 +63,7 @@ public:
 
 protected:
     IDBFactoryBackendImpl();
-    virtual PassRefPtr<IDBBackingStore> openBackingStore(PassRefPtr<SecurityOrigin>, const String& dataDir);
+    virtual PassRefPtr<IDBBackingStore> openBackingStore(const String& databaseIdentifier, const String& dataDir);
 
 private:
     typedef HashMap<String, RefPtr<IDBDatabaseBackendImpl> > IDBDatabaseBackendMap;

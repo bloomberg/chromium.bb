@@ -39,7 +39,6 @@
 #include "LevelDBIterator.h"
 #include "LevelDBSlice.h"
 #include "LevelDBTransaction.h"
-#include "SecurityOrigin.h"
 #include "SharedBuffer.h"
 #include <public/Platform.h>
 #include <wtf/Assertions.h>
@@ -371,13 +370,13 @@ enum IDBLevelDBBackingStoreOpenResult {
     IDBLevelDBBackingStoreOpenMax,
 };
 
-PassRefPtr<IDBBackingStore> IDBBackingStore::open(SecurityOrigin* securityOrigin, const String& pathBaseArg, const String& fileIdentifier)
+PassRefPtr<IDBBackingStore> IDBBackingStore::open(const String& databaseIdentifier, const String& pathBaseArg, const String& fileIdentifier)
 {
     DefaultLevelDBFactory levelDBFactory;
-    return IDBBackingStore::open(securityOrigin, pathBaseArg, fileIdentifier, &levelDBFactory);
+    return IDBBackingStore::open(databaseIdentifier, pathBaseArg, fileIdentifier, &levelDBFactory);
 }
 
-PassRefPtr<IDBBackingStore> IDBBackingStore::open(SecurityOrigin* securityOrigin, const String& pathBaseArg, const String& fileIdentifier, LevelDBFactory* levelDBFactory)
+PassRefPtr<IDBBackingStore> IDBBackingStore::open(const String& databaseIdentifier, const String& pathBaseArg, const String& fileIdentifier, LevelDBFactory* levelDBFactory)
 {
     IDB_TRACE("IDBBackingStore::open");
     ASSERT(!pathBaseArg.isEmpty());
@@ -394,7 +393,7 @@ PassRefPtr<IDBBackingStore> IDBBackingStore::open(SecurityOrigin* securityOrigin
         return PassRefPtr<IDBBackingStore>();
     }
 
-    String path = pathByAppendingComponent(pathBase, securityOrigin->databaseIdentifier() + ".indexeddb.leveldb");
+    String path = pathByAppendingComponent(pathBase, databaseIdentifier + ".indexeddb.leveldb");
 
     db = levelDBFactory->openLevelDB(path, comparator.get());
     if (db) {
@@ -441,13 +440,13 @@ PassRefPtr<IDBBackingStore> IDBBackingStore::open(SecurityOrigin* securityOrigin
     return create(fileIdentifier, db.release(), comparator.release());
 }
 
-PassRefPtr<IDBBackingStore> IDBBackingStore::openInMemory(SecurityOrigin* securityOrigin, const String& identifier)
+PassRefPtr<IDBBackingStore> IDBBackingStore::openInMemory(const String& identifier)
 {
     DefaultLevelDBFactory levelDBFactory;
-    return IDBBackingStore::openInMemory(securityOrigin, identifier, &levelDBFactory);
+    return IDBBackingStore::openInMemory(identifier, &levelDBFactory);
 }
 
-PassRefPtr<IDBBackingStore> IDBBackingStore::openInMemory(SecurityOrigin* securityOrigin, const String& identifier, LevelDBFactory* levelDBFactory)
+PassRefPtr<IDBBackingStore> IDBBackingStore::openInMemory(const String& identifier, LevelDBFactory* levelDBFactory)
 {
     IDB_TRACE("IDBBackingStore::openInMemory");
 

@@ -76,7 +76,7 @@ TEST(IDBIOErrorTest, CleanUpTest)
     const String path = String::fromUTF8(tempDirectory->path().c_str());
     String dummyFileIdentifier;
     MockLevelDBFactory mockLevelDBFactory;
-    RefPtr<IDBBackingStore> backingStore = IDBBackingStore::open(origin.get(), path, dummyFileIdentifier, &mockLevelDBFactory);
+    RefPtr<IDBBackingStore> backingStore = IDBBackingStore::open(origin->databaseIdentifier(), path, dummyFileIdentifier, &mockLevelDBFactory);
 }
 
 } // namespace

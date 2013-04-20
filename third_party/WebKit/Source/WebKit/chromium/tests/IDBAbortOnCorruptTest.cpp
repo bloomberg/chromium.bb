@@ -97,7 +97,7 @@ public:
     virtual void removeIDBDatabaseBackend(const WTF::String &) { }
 
 protected:
-    virtual PassRefPtr<IDBBackingStore> openBackingStore(PassRefPtr<SecurityOrigin> prpOrigin, const String& dataDir)
+    virtual PassRefPtr<IDBBackingStore> openBackingStore(const String&, const String& dataDir)
     {
         return FailingBackingStore::open();
     }

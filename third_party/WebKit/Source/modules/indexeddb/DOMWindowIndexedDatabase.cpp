@@ -31,7 +31,6 @@
 #include "IDBFactory.h"
 #include "Page.h"
 #include "PageGroupIndexedDatabase.h"
-#include "SecurityOrigin.h"
 
 namespace WebCore {
 
