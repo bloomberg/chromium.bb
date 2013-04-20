@@ -45,6 +45,10 @@ bool GLContext::GetTotalGpuMemory(size_t* bytes) {
 void GLContext::SetSafeToForceGpuSwitch() {
 }
 
+void GLContext::SetRecreateSurfaceOnMakeCurrent() {
+  NOTIMPLEMENTED();
+}
+
 std::string GLContext::GetExtensions() {
   DCHECK(IsCurrent(NULL));
   const char* ext = reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS));

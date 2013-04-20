@@ -60,6 +60,7 @@ class GL_EXPORT NativeViewGLSurfaceEGL : public GLSurfaceEGL {
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
+  virtual bool Recreate() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;

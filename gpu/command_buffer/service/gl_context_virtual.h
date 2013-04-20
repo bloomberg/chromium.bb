@@ -48,6 +48,7 @@ class GPU_EXPORT GLContextVirtual : public gfx::GLContext {
   virtual bool GetTotalGpuMemory(size_t* bytes) OVERRIDE;
   virtual void SetSafeToForceGpuSwitch() OVERRIDE;
   virtual bool WasAllocatedUsingRobustnessExtension() OVERRIDE;
+  virtual void SetRecreateSurfaceOnMakeCurrent() OVERRIDE;
 
  protected:
   virtual ~GLContextVirtual();

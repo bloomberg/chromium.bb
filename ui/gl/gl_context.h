@@ -65,6 +65,10 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // transitioning can cause corruption and hangs (OS X only).
   virtual void SetSafeToForceGpuSwitch();
 
+  // Indicate that the real context switches should recreate the surface
+  // (For an Android work-around only).
+  virtual void SetRecreateSurfaceOnMakeCurrent();
+
   // Returns whether the current context supports the named extension. The
   // context must be current.
   bool HasExtension(const char* name);

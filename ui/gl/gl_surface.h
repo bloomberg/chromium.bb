@@ -39,6 +39,9 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
 
   virtual bool Resize(const gfx::Size& size);
 
+  // Recreate the surface without changing the size.
+  virtual bool Recreate();
+
   // Unschedule the GpuScheduler and return true to abort the processing of
   // a GL draw call to this surface and defer it until the GpuScheduler is
   // rescheduled.
@@ -137,6 +140,7 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
   virtual bool Initialize() OVERRIDE;
   virtual void Destroy() OVERRIDE;
   virtual bool Resize(const gfx::Size& size) OVERRIDE;
+  virtual bool Recreate() OVERRIDE;
   virtual bool DeferDraws() OVERRIDE;
   virtual bool IsOffscreen() OVERRIDE;
   virtual bool SwapBuffers() OVERRIDE;

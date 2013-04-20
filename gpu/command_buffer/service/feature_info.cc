@@ -191,6 +191,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
   bool is_qualcomm = false;
   bool is_imagination = false;
   bool is_arm = false;
+  bool is_hisilicon = false;
   const char* gl_strings[2];
   gl_strings[0] = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
   gl_strings[1] = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
@@ -208,6 +209,7 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
         is_qualcomm |= string_set.Contains("qualcomm");
         is_imagination |= string_set.Contains("imagination");
         is_arm |= string_set.Contains("arm");
+        is_hisilicon |= string_set.Contains("hisilicon");
       }
     }
 
@@ -220,6 +222,9 @@ void FeatureInfo::AddFeatures(const CommandLine& command_line) {
       workarounds_.restore_scissor_on_fbo_change = true;
       workarounds_.flush_on_context_switch = true;
       workarounds_.delete_instead_of_resize_fbo = true;
+    }
+    if (is_hisilicon) {
+      workarounds_.makecurrent_recreates_surfaces = true;
     }
 #if defined(OS_MACOSX)
     workarounds_.needs_offscreen_buffer_workaround = is_nvidia;

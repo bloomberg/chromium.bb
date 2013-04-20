@@ -411,6 +411,15 @@ bool NativeViewGLSurfaceEGL::Resize(const gfx::Size& size) {
   return true;
 }
 
+bool NativeViewGLSurfaceEGL::Recreate() {
+  Destroy();
+  if (!Initialize()) {
+    LOG(ERROR) << "Failed to create surface.";
+    return false;
+  }
+  return true;
+}
+
 EGLSurface NativeViewGLSurfaceEGL::GetHandle() {
   return surface_;
 }

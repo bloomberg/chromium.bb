@@ -103,6 +103,10 @@ bool GLContextVirtual::WasAllocatedUsingRobustnessExtension() {
   return shared_context_->WasAllocatedUsingRobustnessExtension();
 }
 
+void GLContextVirtual::SetRecreateSurfaceOnMakeCurrent() {
+  shared_context_->SetRecreateSurfaceOnMakeCurrent();
+}
+
 GLContextVirtual::~GLContextVirtual() {
   Destroy();
 }

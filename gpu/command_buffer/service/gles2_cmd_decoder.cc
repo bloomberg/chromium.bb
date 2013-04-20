@@ -2532,6 +2532,12 @@ bool GLES2DecoderImpl::Initialize(
     glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN, GL_LOWER_LEFT);
   }
 
+#if defined(OS_ANDROID)
+  if (feature_info_->workarounds().makecurrent_recreates_surfaces) {
+    context_->SetRecreateSurfaceOnMakeCurrent();
+  }
+#endif
+
   // Only compositor contexts are known to use only the subset of GL
   // that can be safely migrated between the iGPU and the dGPU. Mark
   // those contexts as safe to forcibly transition between the GPUs.
