@@ -52,11 +52,11 @@ TouchEvent::TouchEvent(TouchList* touches, TouchList* targetTouches,
     , m_targetTouches(targetTouches)
     , m_changedTouches(changedTouches)
 {
+    ScriptWrappable::init(this);
 }
 
 TouchEvent::~TouchEvent()
 {
-    ScriptWrappable::init(this);
 }
 
 void TouchEvent::initTouchEvent(TouchList* touches, TouchList* targetTouches,

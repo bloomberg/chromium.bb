@@ -273,6 +273,8 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName, Document* docum
 #endif
 {
     LOG(Media, "HTMLMediaElement::HTMLMediaElement");
+    ScriptWrappable::init(this);
+
     document->registerForMediaVolumeCallbacks(this);
 
     if (document->settings() && document->settings()->mediaPlaybackRequiresUserGesture()) {
@@ -455,8 +457,6 @@ void HTMLMediaElement::finishParsingChildren()
             break;
         }
     }
-
-    ScriptWrappable::init(this);
 }
 
 bool HTMLMediaElement::rendererIsNeeded(const NodeRenderingContext& context)
