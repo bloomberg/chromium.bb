@@ -171,8 +171,10 @@ int MediaStreamCaptureIndicator::WebContentsDeviceUsage::AddDevices(
       stop_screen_capture_callback_ = close_callback;
     } else if (content::IsAudioMediaType(it->type)) {
       ++audio_ref_count_;
+      incremented_audio_count = true;
     } else if (content::IsVideoMediaType(it->type)) {
       ++video_ref_count_;
+      incremented_video_count = true;
     } else {
       NOTIMPLEMENTED();
     }
