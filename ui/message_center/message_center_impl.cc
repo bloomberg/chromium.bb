@@ -106,8 +106,15 @@ void MessageCenterImpl::UpdateNotification(
     const base::DictionaryValue* optional_fields) {
   notification_list_->UpdateNotificationMessage(
       old_id, new_id, title, message, optional_fields);
-  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
-                    OnNotificationUpdated(new_id));
+  if (old_id == new_id) {
+    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                      OnNotificationUpdated(new_id));
+  } else {
+    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                      OnNotificationRemoved(old_id, false));
+    FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                      OnNotificationAdded(new_id));
+  }
 }
 
 void MessageCenterImpl::RemoveNotification(const std::string& id,
