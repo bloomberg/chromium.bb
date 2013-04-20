@@ -17,13 +17,6 @@
         ],
       },
     }],
-    ['OS=="linux" or OS=="mac" or OS=="win"', {
-      'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/resources.pak',
-        ],
-      },
-    }],
     ['OS=="linux" or OS=="win"', {
       'variables': {
         'command': [
@@ -35,6 +28,7 @@
           '<(PRODUCT_DIR)/locales/en-US.pak',
           '<(PRODUCT_DIR)/locales/fr.pak',
           '<(PRODUCT_DIR)/nacl_irt_x86_64.nexe',
+          '<(PRODUCT_DIR)/resources.pak',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/lib64/',
@@ -45,8 +39,8 @@
     }],
     ['OS=="mac"', {
       'variables': {
-        'isolate_dependency_tracked': [
-          '<(PRODUCT_DIR)/ffmpegsumo.so',
+        'command': [
+          '<(PRODUCT_DIR)/Chromium.app/Contents/MacOS/Chromium',
         ],
         'isolate_dependency_untracked': [
           '<(PRODUCT_DIR)/Chromium Framework.framework/',
