@@ -195,14 +195,6 @@ public:
     const ViewportConstrainedObjectSet* viewportConstrainedObjects() const { return m_viewportConstrainedObjects.get(); }
     bool hasViewportConstrainedObjects() const { return m_viewportConstrainedObjects && m_viewportConstrainedObjects->size() > 0; }
 
-    // Functions for querying the current scrolled position, negating the effects of overhang
-    // and adjusting for page scale.
-    IntSize scrollOffsetForFixedPosition() const;
-    // Static function can be called from another thread.
-    static IntSize scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, bool fixedElementsLayoutRelativeToFrame);
-
-    bool fixedElementsLayoutRelativeToFrame() const;
-
     void beginDeferredRepaints();
     void endDeferredRepaints();
     void handleLoadCompleted();
@@ -349,6 +341,9 @@ public:
     GraphicsLayer* setWantsLayerForTopOverHangArea(bool) const;
     GraphicsLayer* setWantsLayerForBottomOverHangArea(bool) const;
 #endif
+
+    // DEPRECATED: Use viewportConstrainedVisibleContentRect() instead.
+    IntSize scrollOffsetForFixedPosition() const;
 
 protected:
     virtual bool scrollContentsFastPath(const IntSize& scrollDelta, const IntRect& rectToScroll, const IntRect& clipRect);

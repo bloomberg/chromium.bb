@@ -623,11 +623,6 @@ LayoutRect RenderBox::reflectedRect(const LayoutRect& r) const
     return result;
 }
 
-bool RenderBox::fixedElementLaysOutRelativeToFrame(Frame* frame, FrameView* frameView) const
-{
-    return style() && style()->position() == FixedPosition && container()->isRenderView() && frame && frameView && frameView->fixedElementsLayoutRelativeToFrame();
-}
-
 bool RenderBox::includeVerticalScrollbarSize() const
 {
     return hasOverflowClip() && !layer()->hasOverlayScrollbars()
@@ -2875,14 +2870,17 @@ void RenderBox::computeAndSetBlockDirectionMargins(const RenderBlock* containing
 LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxModelObject* containingBlock, RenderRegion* region,
     LayoutUnit offsetFromLogicalTopOfFirstPage, bool checkForPerpendicularWritingMode) const
 {
-    // Container for position:fixed is the frame.
-    Frame* frame = view() ? view()->frame(): 0;
-    FrameView* frameView = view() ? view()->frameView() : 0;
-    if (fixedElementLaysOutRelativeToFrame(frame, frameView))
-        return (view()->isHorizontalWritingMode() ? frameView->visibleWidth() : frameView->visibleHeight());
-
     if (checkForPerpendicularWritingMode && containingBlock->isHorizontalWritingMode() != isHorizontalWritingMode())
         return containingBlockLogicalHeightForPositioned(containingBlock, false);
+
+    // Use viewport as container for top-level fixed-position elements.
+    if (style()->position() == FixedPosition && containingBlock->isRenderView()) {
+        const RenderView* view = static_cast<const RenderView*>(containingBlock);
+        if (FrameView* frameView = view->frameView()) {
+            LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
+            return containingBlock->isHorizontalWritingMode() ? viewportRect.width() : viewportRect.height();
+        }
+    }
 
     if (containingBlock->isBox()) {
         RenderFlowThread* flowThread = flowThreadContainingBlock();
@@ -2934,13 +2932,17 @@ LayoutUnit RenderBox::containingBlockLogicalWidthForPositioned(const RenderBoxMo
 
 LayoutUnit RenderBox::containingBlockLogicalHeightForPositioned(const RenderBoxModelObject* containingBlock, bool checkForPerpendicularWritingMode) const
 {
-    Frame* frame = view() ? view()->frame(): 0;
-    FrameView* frameView = view() ? view()->frameView() : 0;
-    if (fixedElementLaysOutRelativeToFrame(frame, frameView))
-        return (view()->isHorizontalWritingMode() ? frameView->visibleHeight() : frameView->visibleWidth());
-
     if (checkForPerpendicularWritingMode && containingBlock->isHorizontalWritingMode() != isHorizontalWritingMode())
         return containingBlockLogicalWidthForPositioned(containingBlock, 0, 0, false);
+
+    // Use viewport as container for top-level fixed-position elements.
+    if (style()->position() == FixedPosition && containingBlock->isRenderView()) {
+        const RenderView* view = static_cast<const RenderView*>(containingBlock);
+        if (FrameView* frameView = view->frameView()) {
+            LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
+            return containingBlock->isHorizontalWritingMode() ? viewportRect.height() : viewportRect.width();
+        }
+    }
 
     if (containingBlock->isBox()) {
         const RenderBlock* cb = toRenderBlock(containingBlock);

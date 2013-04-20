@@ -401,39 +401,9 @@ IntRect ScrollableArea::visibleContentRect(VisibleContentRectIncludesScrollbars 
                    std::max(0, visibleHeight() + horizontalScrollbarHeight));
 }
 
-static int constrainedScrollPosition(int visibleContentSize, int contentsSize, int scrollPosition, int scrollOrigin)
+IntPoint ScrollableArea::clampScrollPosition(const IntPoint& scrollPosition) const
 {
-    int maxValue = contentsSize - visibleContentSize;
-    if (maxValue <= 0)
-        return 0;
-
-    if (!scrollOrigin) {
-        if (scrollPosition <= 0)
-            return 0;
-        if (scrollPosition > maxValue)
-            scrollPosition = maxValue;
-    } else {
-        // FIXME: position:fixed elements are currently broken when there is a non-zero y-value in the scroll origin
-        // such as when -webkit-writing-mode:horizontal-bt; is set. But when we fix that, we need to make such
-        // pages work correctly with headers and footers as well. https://bugs.webkit.org/show_bug.cgi?id=113741
-        if (scrollPosition >= 0)
-            return 0;
-        if (scrollPosition < -maxValue)
-            scrollPosition = -maxValue;
-    }
-
-    return scrollPosition;
-}
-
-IntPoint ScrollableArea::constrainScrollPositionForOverhang(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin)
-{
-    return IntPoint(constrainedScrollPosition(visibleContentRect.width(), contentsSize.width(), scrollPosition.x(), scrollOrigin.x()),
-        constrainedScrollPosition(visibleContentRect.height(), contentsSize.height(), scrollPosition.y(), scrollOrigin.y()));
-}
-
-IntPoint ScrollableArea::constrainScrollPositionForOverhang(const IntPoint& scrollPosition)
-{
-    return constrainScrollPositionForOverhang(visibleContentRect(), contentsSize(), scrollPosition, scrollOrigin());
+    return scrollPosition.shrunkTo(maximumScrollPosition()).expandedTo(minimumScrollPosition());
 }
 
 void ScrollableArea::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

@@ -651,7 +651,7 @@ void Page::setPageScaleFactor(float scale, const IntPoint& origin)
 
     mainFrame()->deviceOrPageScaleFactorChanged();
 
-    if (view && view->fixedElementsLayoutRelativeToFrame())
+    if (view)
         view->setViewportConstrainedObjectsNeedLayout();
 
     if (view && view->scrollPosition() != origin)

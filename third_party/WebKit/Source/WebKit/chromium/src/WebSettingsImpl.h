@@ -95,7 +95,6 @@ public:
     virtual void setExperimentalCSSVariablesEnabled(bool);
     virtual void setExperimentalWebGLEnabled(bool);
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
-    virtual void setFixedElementsLayoutRelativeToFrame(bool);
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON);
     virtual void setFixedPositionCreatesStackingContext(bool);
     virtual void setFontRenderingModeNormal();

@@ -1352,38 +1352,15 @@ void FrameView::removeViewportConstrainedObject(RenderObject* object)
 LayoutRect FrameView::viewportConstrainedVisibleContentRect() const
 {
     LayoutRect viewportRect = visibleContentRect();
-    viewportRect.setLocation(toPoint(scrollOffsetForFixedPosition()));
+    // Ignore overhang. No-op when not using rubber banding.
+    viewportRect.setLocation(clampScrollPosition(scrollPosition()));
     return viewportRect;
 }
 
-IntSize FrameView::scrollOffsetForFixedPosition(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin, bool fixedElementsLayoutRelativeToFrame)
-{
-    IntPoint constrainedPosition = ScrollableArea::constrainScrollPositionForOverhang(visibleContentRect, contentsSize, scrollPosition, scrollOrigin);
-
-    IntSize maxSize = contentsSize - visibleContentRect.size();
-
-    float dragFactorX = (fixedElementsLayoutRelativeToFrame || !maxSize.width()) ? 1 : (contentsSize.width() - visibleContentRect.width()) / maxSize.width();
-    float dragFactorY = (fixedElementsLayoutRelativeToFrame || !maxSize.height()) ? 1 : (contentsSize.height() - visibleContentRect.height()) / maxSize.height();
-
-    return IntSize(constrainedPosition.x() * dragFactorX, constrainedPosition.y() * dragFactorY);
-}
 
 IntSize FrameView::scrollOffsetForFixedPosition() const
 {
-    IntRect visibleContentRect = this->visibleContentRect();
-    IntSize contentsSize = this->contentsSize();
-    IntPoint scrollPosition = this->scrollPosition();
-    IntPoint scrollOrigin = this->scrollOrigin();
-    return scrollOffsetForFixedPosition(visibleContentRect, contentsSize, scrollPosition, scrollOrigin, fixedElementsLayoutRelativeToFrame());
-}
-
-bool FrameView::fixedElementsLayoutRelativeToFrame() const
-{
-    ASSERT(m_frame);
-    if (!m_frame->settings())
-        return false;
-
-    return m_frame->settings()->fixedElementsLayoutRelativeToFrame();
+    return toIntSize(clampScrollPosition(scrollPosition()));
 }
 
 IntPoint FrameView::lastKnownMousePosition() const

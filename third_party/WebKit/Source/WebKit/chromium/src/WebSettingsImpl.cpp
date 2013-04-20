@@ -303,11 +303,6 @@ void WebSettingsImpl::setDNSPrefetchingEnabled(bool enabled)
     m_settings->setDNSPrefetchingEnabled(enabled);
 }
 
-void WebSettingsImpl::setFixedElementsLayoutRelativeToFrame(bool fixedElementsLayoutRelativeToFrame)
-{
-    m_settings->setFixedElementsLayoutRelativeToFrame(fixedElementsLayoutRelativeToFrame);
-}
-
 void WebSettingsImpl::setLocalStorageEnabled(bool enabled)
 {
     m_settings->setLocalStorageEnabled(enabled);

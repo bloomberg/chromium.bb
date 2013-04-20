@@ -627,8 +627,6 @@ private:
     void updateExclusionShapeOutsideInfoAfterStyleChange(const ExclusionShapeValue* shapeOutside, const ExclusionShapeValue* oldShapeOutside);
 #endif
 
-    bool fixedElementLaysOutRelativeToFrame(Frame*, FrameView*) const;
-
     bool includeVerticalScrollbarSize() const;
     bool includeHorizontalScrollbarSize() const;
 

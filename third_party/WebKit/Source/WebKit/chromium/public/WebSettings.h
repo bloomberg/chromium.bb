@@ -102,7 +102,6 @@ public:
     virtual void setExperimentalCSSVariablesEnabled(bool) = 0;
     virtual void setExperimentalWebGLEnabled(bool) = 0;
     virtual void setFantasyFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
-    virtual void setFixedElementsLayoutRelativeToFrame(bool) = 0;
     virtual void setFixedFontFamily(const WebString&, UScriptCode = USCRIPT_COMMON) = 0;
     virtual void setFixedPositionCreatesStackingContext(bool) = 0;
     virtual void setFontRenderingModeNormal() = 0;
@@ -176,9 +175,10 @@ public:
     virtual void setWebSecurityEnabled(bool) = 0;
     virtual void setXSSAuditorEnabled(bool) = 0;
 
-    // TODO(aelias): Delete after Chromium-side calls deleted.
+    // DEPRECATED: Delete after Chromium-side calls deleted.
     void setApplyPageScaleFactorInCompositor(bool enabled) { }
     void setApplyDefaultDeviceScaleFactorInCompositor(bool enabled) { }
+    void setFixedElementsLayoutRelativeToFrame(bool) { }
 
 protected:
     ~WebSettings() { }

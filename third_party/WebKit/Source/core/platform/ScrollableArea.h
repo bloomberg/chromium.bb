@@ -164,8 +164,7 @@ public:
     // NOTE: Only called from Internals for testing.
     void setScrollOffsetFromInternals(const IntPoint&);
 
-    static IntPoint constrainScrollPositionForOverhang(const IntRect& visibleContentRect, const IntSize& contentsSize, const IntPoint& scrollPosition, const IntPoint& scrollOrigin);
-    IntPoint constrainScrollPositionForOverhang(const IntPoint& scrollPosition);
+    IntPoint clampScrollPosition(const IntPoint&) const;
 
     // Let subclasses provide a way of asking for and servicing scroll
     // animations.

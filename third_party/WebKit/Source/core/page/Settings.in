@@ -90,7 +90,6 @@ interactiveFormValidationEnabled initial=false
 
 hyperlinkAuditingEnabled initial=false
 forceCompositingMode initial=false
-fixedElementsLayoutRelativeToFrame initial=false
 allowDisplayOfInsecureContent initial=true
 allowRunningOfInsecureContent initial=true
 mediaPlaybackRequiresUserGesture initial=false
