@@ -244,11 +244,8 @@ void BluetoothAdapterExperimentalChromeOS::DevicePropertyChanged(
       property_name == properties->alias.name() ||
       property_name == properties->paired.name() ||
       property_name == properties->connected.name() ||
-      property_name == properties->uuids.name()) {
-    FOR_EACH_OBSERVER(
-        BluetoothAdapter::Observer, observers_,
-        DeviceChanged(this, device_chromeos));
-  }
+      property_name == properties->uuids.name())
+    NotifyDeviceChanged(device_chromeos);
 }
 
 BluetoothDeviceExperimentalChromeOS*
@@ -343,6 +340,14 @@ void BluetoothAdapterExperimentalChromeOS::DiscoveringChanged(
 void BluetoothAdapterExperimentalChromeOS::PresentChanged(bool present) {
   FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                     AdapterPresentChanged(this, present));
+}
+
+void BluetoothAdapterExperimentalChromeOS::NotifyDeviceChanged(
+    BluetoothDeviceExperimentalChromeOS* device) {
+  DCHECK(device->adapter_ == this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceChanged(this, device));
 }
 
 void BluetoothAdapterExperimentalChromeOS::OnSetPowered(

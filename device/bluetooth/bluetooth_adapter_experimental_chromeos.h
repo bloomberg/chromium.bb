@@ -98,6 +98,10 @@ class BluetoothAdapterExperimentalChromeOS
   void DiscoveringChanged(bool discovering);
   void PresentChanged(bool present);
 
+  // Announce to observers a change in device state that is not reflected by
+  // its D-Bus properties.
+  void NotifyDeviceChanged(BluetoothDeviceExperimentalChromeOS* device);
+
   // Called by dbus:: on completion of the powered property change.
   void OnSetPowered(const base::Closure& callback,
                     const ErrorCallback& error_callback,

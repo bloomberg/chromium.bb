@@ -138,7 +138,9 @@ void BluetoothDeviceExperimentalChromeOS::Connect(
     BluetoothDevice::PairingDelegate* pairing_delegate,
     const base::Closure& callback,
     const ConnectErrorCallback& error_callback) {
-  ++num_connecting_calls_;
+  if (num_connecting_calls_++ == 0)
+    adapter_->NotifyDeviceChanged(this);
+
   VLOG(1) << object_path_.value() << ": Connecting, " << num_connecting_calls_
           << " in progress";
 
@@ -399,7 +401,9 @@ void BluetoothDeviceExperimentalChromeOS::ConnectInternal(
 
 void BluetoothDeviceExperimentalChromeOS::OnConnect(
     const base::Closure& callback) {
-  --num_connecting_calls_;
+  if (--num_connecting_calls_ == 0)
+    adapter_->NotifyDeviceChanged(this);
+
   DCHECK(num_connecting_calls_ >= 0);
   VLOG(1) << object_path_.value() << ": Connected, " << num_connecting_calls_
         << " still in progress";
@@ -413,7 +417,9 @@ void BluetoothDeviceExperimentalChromeOS::OnConnectError(
     const ConnectErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  --num_connecting_calls_;
+  if (--num_connecting_calls_ == 0)
+    adapter_->NotifyDeviceChanged(this);
+
   DCHECK(num_connecting_calls_ >= 0);
   LOG(WARNING) << object_path_.value() << ": Failed to connect device: "
                << error_name << ": " << error_message;
@@ -454,7 +460,9 @@ void BluetoothDeviceExperimentalChromeOS::OnRegisterAgentError(
     const ConnectErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  --num_connecting_calls_;
+  if (--num_connecting_calls_ == 0)
+    adapter_->NotifyDeviceChanged(this);
+
   DCHECK(num_connecting_calls_ >= 0);
   LOG(WARNING) << object_path_.value() << ": Failed to register agent: "
                << error_name << ": " << error_message;
@@ -484,7 +492,9 @@ void BluetoothDeviceExperimentalChromeOS::OnPairError(
     const ConnectErrorCallback& error_callback,
     const std::string& error_name,
     const std::string& error_message) {
-  --num_connecting_calls_;
+  if (--num_connecting_calls_ == 0)
+    adapter_->NotifyDeviceChanged(this);
+
   DCHECK(num_connecting_calls_ >= 0);
   LOG(WARNING) << object_path_.value() << ": Failed to pair device: "
                << error_name << ": " << error_message;

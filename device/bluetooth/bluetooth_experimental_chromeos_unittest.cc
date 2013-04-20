@@ -967,7 +967,7 @@ TEST_F(BluetoothExperimentalChromeOSTest, ConnectPairedDevice) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  EXPECT_EQ(1, observer.device_changed_count_);
+  EXPECT_EQ(3, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -998,7 +998,7 @@ TEST_F(BluetoothExperimentalChromeOSTest, ConnectUnpairableDevice) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  EXPECT_EQ(1, observer.device_changed_count_);
+  EXPECT_EQ(3, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1047,7 +1047,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, ConnectConnectedDevice) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Connecting will trigger true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
 
   EXPECT_TRUE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
@@ -1078,7 +1079,7 @@ TEST_F(BluetoothExperimentalChromeOSTest, ConnectDeviceFails) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_);
 
-  EXPECT_EQ(0, observer.device_changed_count_);
+  EXPECT_EQ(2, observer.device_changed_count_);
 
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
@@ -1187,8 +1188,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairAppleMouse) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One change for connected, and one for paired.
-  EXPECT_EQ(2, observer.device_changed_count_);
+  // Two changes for connecting, one change for connected, and one for paired.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1242,8 +1243,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairAppleKeyboard) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One change for connected, and one for paired.
-  EXPECT_EQ(2, observer.device_changed_count_);
+  // Two changes for connecting, one change for connected, and one for paired.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1315,8 +1316,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairMotorolaKeyboard) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One change for connected, and one for paired.
-  EXPECT_EQ(2, observer.device_changed_count_);
+  // Two changes for connecting, one change for connected, and one for paired.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1369,8 +1370,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairSonyHeadphones) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One change for connected, and one for paired.
-  EXPECT_EQ(2, observer.device_changed_count_);
+  // Two changes for connecting, one change for connected, and one for paired.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1425,8 +1426,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairPhone) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One change for connected, and one for paired.
-  EXPECT_EQ(2, observer.device_changed_count_);
+  // Two changes for connecting, one change for connected, and one for paired.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1482,8 +1483,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairWeirdDevice) {
   EXPECT_EQ(1, callback_count_);
   EXPECT_EQ(0, error_callback_count_);
 
-  // One change for connected, and one for paired.
-  EXPECT_EQ(2, observer.device_changed_count_);
+  // Two changes for connecting, one change for connected, and one for paired.
+  EXPECT_EQ(4, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_TRUE(device->IsConnected());
@@ -1580,8 +1581,9 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingFailsAtConnection) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_);
 
-  // Just one change for paired, the device should not be connected.
-  EXPECT_EQ(1, observer.device_changed_count_);
+  // Two changes for connecting, and one for paired; the device should not be
+  // connected.
+  EXPECT_EQ(3, observer.device_changed_count_);
   EXPECT_EQ(device, observer.last_device_);
 
   EXPECT_FALSE(device->IsConnected());
@@ -1637,8 +1639,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingRejectedAtPinCode) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_REJECTED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
@@ -1684,8 +1686,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingCancelledAtPinCode) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_CANCELED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
@@ -1731,8 +1733,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingRejectedAtPasskey) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_REJECTED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
@@ -1778,8 +1780,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingCancelledAtPasskey) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_CANCELED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
@@ -1825,8 +1827,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingRejectedAtConfirmation) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_REJECTED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
@@ -1872,8 +1874,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingCancelledAtConfirmation) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_CANCELED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
@@ -1918,8 +1920,8 @@ TEST_F(BluetoothExperimentalChromeOSTest, PairingCancelledInFlight) {
   EXPECT_EQ(1, error_callback_count_);
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_CANCELED, last_connect_error_);
 
-  // Should be no changes.
-  EXPECT_EQ(0, observer.device_changed_count_);
+  // Should be no changes except connecting going true and false.
+  EXPECT_EQ(2, observer.device_changed_count_);
   EXPECT_FALSE(device->IsConnected());
   EXPECT_FALSE(device->IsConnecting());
   EXPECT_FALSE(device->IsPaired());
