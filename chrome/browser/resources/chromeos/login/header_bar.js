@@ -226,6 +226,20 @@ cr.define('login', function() {
     },
   };
 
+  /**
+   * Convenience wrapper of animateOut.
+   */
+  HeaderBar.animateOut = function(callback) {
+    $('login-header-bar').animateOut(callback);
+  };
+
+  /**
+   * Convenience wrapper of animateIn.
+   */
+  HeaderBar.animateIn = function() {
+    $('login-header-bar').animateIn();
+  }
+
   return {
     HeaderBar: HeaderBar
   };
