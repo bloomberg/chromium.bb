@@ -66,6 +66,12 @@
     'rendering': {
       'filepath': 'Source/core/rendering'
     },
+    'layers': {
+      'filepath': 'Source/WebCore/page/scrolling/ScrollingCoordinator.*' \
+                  '|Source/WebCore/platform/graphics/GraphicsLayer.*' \
+                  '|Source/WebCore/rendering/RenderLayer.*' \
+                  '|Source/WebKit/chromium/src/NonCompositedContentHost.*'
+    },
     "content_security_policy": {
       'filepath': 'Source/core/page/.*SecurityPolicy' \
                   '|Source/core/dom/SecurityPolicyViolationEvent' \
@@ -126,6 +132,7 @@
     'bindings': [ 'abarth@chromium.org',
                   'japhet@chromium.org',
                   'haraken@chromium.org' ],
+    'layers': [ 'blink-layers@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
     'owners': [ 'abarth@chromium.org'],
     'test_runner': [ 'jochen+watch@chromium.org' ],
