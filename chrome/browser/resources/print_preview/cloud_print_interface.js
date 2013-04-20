@@ -10,16 +10,25 @@ cr.define('cloudprint', function() {
    * @param {string} baseUrl Base part of the Google Cloud Print service URL
    *     with no trailing slash. For example,
    *     'https://www.google.com/cloudprint'.
+   * @param {!print_preview.NativeLayer} nativeLayer Native layer used to get
+   *     Auth2 tokens.
    * @constructor
    * @extends {cr.EventTarget}
    */
-  function CloudPrintInterface(baseUrl) {
+  function CloudPrintInterface(baseUrl, nativeLayer) {
     /**
      * The base URL of the Google Cloud Print API.
      * @type {string}
      * @private
      */
     this.baseUrl_ = baseUrl;
+
+    /**
+     * Used to get Auth2 tokens.
+     * @type {!print_preview.NativeLayer}
+     * @private
+     */
+    this.nativeLayer_ = nativeLayer;
 
     /**
      * Last received XSRF token. Sent as a parameter in every request.
@@ -29,11 +38,27 @@ cr.define('cloudprint', function() {
     this.xsrfToken_ = '';
 
     /**
+     * Pending requests delayed until we get access token.
+     * @type {!Array.<!CloudPrintRequest>}
+     * @private
+     */
+    this.requestQueue_ = [];
+
+    /**
      * Number of outstanding cloud destination search requests.
      * @type {number}
      * @private
      */
     this.outstandingCloudSearchRequestCount_ = 0;
+
+    /**
+     * Event tracker used to keep track of native layer events.
+     * @type {!EventTracker}
+     * @private
+     */
+    this.tracker_ = new EventTracker();
+
+    this.addEventListeners_();
   };
 
   /**
@@ -97,6 +122,19 @@ cr.define('cloudprint', function() {
     PRINTER: 'printer'
   };
 
+  /**
+   * Could Print origins used to search printers.
+   * @type {!Array.<!print_preview.Destination.Origin>}
+   * @const
+   * @private
+   */
+  CloudPrintInterface.CLOUD_ORIGINS_ = [
+      print_preview.Destination.Origin.COOKIES,
+      print_preview.Destination.Origin.DEVICE
+      // TODO(vitalybuka): Enable when implemented.
+      // ready print_preview.Destination.Origin.PROFILE
+  ];
+
   CloudPrintInterface.prototype = {
     __proto__: cr.EventTarget.prototype,
 
@@ -126,9 +164,13 @@ cr.define('cloudprint', function() {
       if (isRecent) {
         params.push(new HttpParam('q', '^recent'));
       }
-      ++this.outstandingCloudSearchRequestCount_;
-      this.sendRequest_('GET', 'search', params,
-                        this.onSearchDone_.bind(this, isRecent));
+      CloudPrintInterface.CLOUD_ORIGINS_.forEach(function(origin) {
+        ++this.outstandingCloudSearchRequestCount_;
+        var cpRequest =
+            this.buildRequest_('GET', 'search', params, origin,
+                               this.onSearchDone_.bind(this, isRecent));
+        this.sendOrQueueRequest_(cpRequest);
+      }, this);
     },
 
     /**
@@ -157,21 +199,26 @@ cr.define('cloudprint', function() {
                       '__google__chrome_version=' + chromeVersion),
         new HttpParam('tag', '__google__os=' + navigator.platform)
       ];
-      this.sendRequest_('POST', 'submit', params,
-                        this.onSubmitDone_.bind(this));
+      var cpRequest = this.buildRequest_('POST', 'submit', params,
+                                         destination.origin,
+                                         this.onSubmitDone_.bind(this));
+      this.sendOrQueueRequest_(cpRequest);
     },
 
     /**
      * Sends a Google Cloud Print printer API request.
      * @param {string} printerId ID of the printer to lookup.
+     * @param {!print_preview.Destination.Origin} origin Origin of the printer.
      */
-    printer: function(printerId) {
+    printer: function(printerId, origin) {
       var params = [
         new HttpParam('printerid', printerId),
         new HttpParam('use_cdd', 'true')
       ];
-      this.sendRequest_('GET', 'printer', params,
-                        this.onPrinterDone_.bind(this, printerId));
+      var cpRequest =
+          this.buildRequest_('GET', 'printer', params, origin,
+                             this.onPrinterDone_.bind(this, printerId));
+      this.sendOrQueueRequest_(cpRequest);
     },
 
     /**
@@ -179,16 +226,30 @@ cr.define('cloudprint', function() {
      * terms-of-service of the given printer.
      * @param {string} printerId ID of the printer to accept the
      *     terms-of-service for.
+     * @param {!print_preview.Destination.Origin} origin Origin of the printer.
      * @param {boolean} isAccepted Whether the user accepted the
      *     terms-of-service.
      */
-    updatePrinterTosAcceptance: function(printerId, isAccepted) {
+    updatePrinterTosAcceptance: function(printerId, origin, isAccepted) {
       var params = [
         new HttpParam('printerid', printerId),
         new HttpParam('is_tos_accepted', isAccepted)
       ];
-      this.sendRequest_('POST', 'update', params,
-                        this.onUpdatePrinterTosAcceptanceDone_.bind(this));
+      var cpRequest =
+          this.buildRequest_('POST', 'update', params, origin,
+                             this.onUpdatePrinterTosAcceptanceDone_.bind(this));
+      this.sendOrQueueRequest_(cpRequest);
+    },
+
+    /**
+     * Adds event listeners to the relevant native layer events.
+     * @private
+     */
+    addEventListeners_: function() {
+      this.tracker_.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.ACCESS_TOKEN_READY,
+          this.onAccessTokenReady_.bind(this));
     },
 
     /**
@@ -246,22 +307,28 @@ cr.define('cloudprint', function() {
     },
 
     /**
-     * Sends a request to the Google Cloud Print API.
+     * Builds request to the Google Cloud Print API.
      * @param {string} method HTTP method of the request.
      * @param {string} action Google Cloud Print action to perform.
      * @param {Array.<!HttpParam>} params HTTP parameters to include in the
      *     request.
-     * @param {function(number, Object)} callback Callback to invoke when
-     *     request completes.
+     * @param {!print_preview.Destination.Origin} origin Origin for destination.
+     * @param {function(number, Object, !print_preview.Destination.Origin)}
+     *     callback Callback to invoke when request completes.
+     * @return {!CloudPrintRequest} Partially prepared request.
+     * @private
      */
-    sendRequest_: function(method, action, params, callback) {
-      if (!this.xsrfToken_) {
-        // TODO(rltoscano): Should throw an error if not a read-only action or
-        // issue an xsrf token request.
+    buildRequest_: function(method, action, params, origin, callback) {
+      var url = this.baseUrl_ + '/' + action + '?xsrf=';
+      if (origin == print_preview.Destination.Origin.COOKIES) {
+        if (!this.xsrfToken_) {
+          // TODO(rltoscano): Should throw an error if not a read-only action or
+          // issue an xsrf token request.
+        } else {
+          url = url + this.xsrfToken_;
+        }
       }
-      var url = this.baseUrl_ + '/' + action + '?xsrf=' + this.xsrfToken_;
       var body = null;
-
       if (params) {
         if (method == 'GET') {
           url = params.reduce(function(partialUrl, param) {
@@ -286,50 +353,106 @@ cr.define('cloudprint', function() {
       }
 
       var xhr = new XMLHttpRequest();
-      xhr.onreadystatechange =
-          this.onReadyStateChange_.bind(this, xhr, callback);
       xhr.open(method, url, true);
-      xhr.withCredentials = true;
+      xhr.withCredentials =
+          (origin == print_preview.Destination.Origin.COOKIES);
       for (var header in headers) {
         xhr.setRequestHeader(header, headers[header]);
       }
-      xhr.send(body);
+
+      return new CloudPrintRequest(xhr, body, origin, callback);
+    },
+
+    /**
+     * Sends a request to the Google Cloud Print API or queues if it needs to
+     *     wait OAuth2 access token.
+     * @param {!CloudPrintRequest} request Request to send or queue.
+     * @private
+     */
+    sendOrQueueRequest_: function(request) {
+      if (request.origin == print_preview.Destination.Origin.COOKIES) {
+        return this.sendRequest_(request);
+      } else {
+        this.requestQueue_.push(request);
+        this.nativeLayer_.startGetAccessToken(request.origin);
+      }
+    },
+
+    /**
+     * Sends a request to the Google Cloud Print API.
+     * @param {!CloudPrintRequest} request Request to send.
+     * @private
+     */
+    sendRequest_: function(request) {
+      request.xhr.onreadystatechange =
+          this.onReadyStateChange_.bind(this, request);
+      request.xhr.send(request.body);
     },
 
     /**
      * Creates a Google Cloud Print interface error that is ready to dispatch.
      * @param {!CloudPrintInterface.EventType} type Type of the error.
-     * @param {number} status HTTP status code of the failed request.
-     * @param {Object} result JSON response of the request. {@code null} if
-     *     status was not 200.
+     * @param {!CloudPrintRequest} request Request that has been completed.
      * @return {!cr.Event} Google Cloud Print interface error event.
      * @private
      */
-    createErrorEvent_: function(type, status, result) {
+    createErrorEvent_: function(type, request) {
       var errorEvent = new cr.Event(type);
-      errorEvent.status = status;
-      errorEvent.errorCode = status == 200 ? result['errorCode'] : 0;
-      errorEvent.message = status == 200 ? result['message'] : '';
+      errorEvent.status = request.xhr.status;
+      if (request.xhr.status == 200) {
+        errorEvent.errorCode = request.result['errorCode'];
+        errorEvent.message = request.result['message'];
+      } else {
+        errorEvent.errorCode = 0;
+        errorEvent.message = '';
+      }
+      errorEvent.origin = request.origin;
       return errorEvent;
+    },
+
+    /**
+     * Called when a native layer receives access token.
+     * @param {cr.Event} evt Contains the authetication type and access token.
+     * @private
+     */
+    onAccessTokenReady_: function(event) {
+      // TODO(vitalybuka): remove when other Origins implemented.
+      assert(event.authType == print_preview.Destination.Origin.DEVICE);
+      this.requestQueue_ = this.requestQueue_.filter(function(request) {
+        assert(request.origin == print_preview.Destination.Origin.DEVICE);
+        if (request.origin != event.authType) {
+          return true;
+        }
+        if (event.accessToken) {
+          request.xhr.setRequestHeader('Authorization',
+                                       'Bearer ' + event.accessToken);
+          this.sendRequest_(request);
+        } else {  // No valid token.
+          // Without abort status does not exists.
+          request.xhr.abort();
+          request.callback(request);
+        }
+        return false;
+      }, this);
     },
 
     /**
      * Called when the ready-state of a XML http request changes.
      * Calls the successCallback with the result or dispatches an ERROR event.
-     * @param {XMLHttpRequest} xhr XML http request that changed.
-     * @param {function(number, Object)} callback Callback to invoke when
-     *     request completes.
+     * @param {!CloudPrintRequest} request Request that was changed.
      * @private
      */
-    onReadyStateChange_: function(xhr, callback) {
-      if (xhr.readyState == 4) {
-        if (xhr.status == 200) {
-          var result = JSON.parse(xhr.responseText);
-          if (result['success']) {
-            this.xsrfToken_ = result['xsrf_token'];
+    onReadyStateChange_: function(request) {
+      if (request.xhr.readyState == 4) {
+        if (request.xhr.status == 200) {
+          request.result = JSON.parse(request.xhr.responseText);
+          if (request.origin == print_preview.Destination.Origin.COOKIES &&
+              request.result['success']) {
+            this.xsrfToken_ = request.result['xsrf_token'];
           }
         }
-        callback(xhr.status, result);
+        request.status = request.xhr.status;
+        request.callback(request);
       }
     },
 
@@ -337,20 +460,19 @@ cr.define('cloudprint', function() {
      * Called when the search request completes.
      * @param {boolean} isRecent Whether the search request was for recent
      *     destinations.
-     * @param {number} status Status of the HTTP request.
-     * @param {Object} result JSON response.
+     * @param {!CloudPrintRequest} request Request that has been completed.
      * @private
      */
-    onSearchDone_: function(isRecent, status, result) {
+    onSearchDone_: function(isRecent, request) {
       --this.outstandingCloudSearchRequestCount_;
-      if (status == 200 && result['success']) {
-        var printerListJson = result['printers'] || [];
+      if (request.xhr.status == 200 && request.result['success']) {
+        var printerListJson = request.result['printers'] || [];
         var printerList = [];
         printerListJson.forEach(function(printerJson) {
           try {
             printerList.push(
-                cloudprint.CloudDestinationParser.parse(
-                    printerJson, print_preview.Destination.Origin.COOKIES));
+                cloudprint.CloudDestinationParser.parse(printerJson,
+                                                        request.origin));
           } catch (err) {
             console.error('Unable to parse cloud print destination: ' + err);
           }
@@ -358,31 +480,31 @@ cr.define('cloudprint', function() {
         var searchDoneEvent =
             new cr.Event(CloudPrintInterface.EventType.SEARCH_DONE);
         searchDoneEvent.printers = printerList;
+        searchDoneEvent.origin = request.origin;
         searchDoneEvent.isRecent = isRecent;
-        searchDoneEvent.email = result['request']['user'];
+        searchDoneEvent.email = request.result['request']['user'];
         this.dispatchEvent(searchDoneEvent);
       } else {
         var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.SEARCH_FAILED, status, result);
+            CloudPrintInterface.EventType.SEARCH_FAILED, request);
         this.dispatchEvent(errorEvent);
       }
     },
 
     /**
      * Called when the submit request completes.
-     * @param {number} status Status of the HTTP request.
-     * @param {Object} result JSON response.
+     * @param {!CloudPrintRequest} request Request that has been completed.
      * @private
      */
-    onSubmitDone_: function(status, result) {
-      if (status == 200 && result['success']) {
+    onSubmitDone_: function(request) {
+      if (request.xhr.status == 200 && request.result['success']) {
         var submitDoneEvent = new cr.Event(
             CloudPrintInterface.EventType.SUBMIT_DONE);
         submitDoneEvent.jobId = result['job']['id'];
         this.dispatchEvent(submitDoneEvent);
       } else {
         var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.SUBMIT_FAILED, status, result);
+            CloudPrintInterface.EventType.SUBMIT_FAILED, request);
         this.dispatchEvent(errorEvent);
       }
     },
@@ -390,17 +512,16 @@ cr.define('cloudprint', function() {
     /**
      * Called when the printer request completes.
      * @param {string} destinationId ID of the destination that was looked up.
-     * @param {number} status Status of the HTTP request.
-     * @param {Object} result JSON response.
+     * @param {!CloudPrintRequest} request Request that has been completed.
      * @private
      */
-    onPrinterDone_: function(destinationId, status, result) {
-      if (status == 200 && result['success']) {
-        var printerJson = result['printers'][0];
+    onPrinterDone_: function(destinationId, request) {
+      if (request.xhr.status == 200 && request.result['success']) {
+        var printerJson = request.result['printers'][0];
         var printer;
         try {
-          printer = cloudprint.CloudDestinationParser.parse(
-              printerJson, print_preview.Destination.Origin.COOKIES);
+          printer = cloudprint.CloudDestinationParser.parse(printerJson,
+                                                            request.origin);
         } catch (err) {
           console.error('Failed to parse cloud print destination: ' +
               JSON.stringify(printerJson));
@@ -412,28 +533,68 @@ cr.define('cloudprint', function() {
         this.dispatchEvent(printerDoneEvent);
       } else {
         var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.PRINTER_FAILED, status, result);
+            CloudPrintInterface.EventType.PRINTER_FAILED, request);
         errorEvent.destinationId = destinationId;
-        errorEvent.destinationOrigin = print_preview.Destination.Origin.COOKIES;
-        this.dispatchEvent(errorEvent);
+        errorEvent.destinationOrigin = request.origin;
+        this.dispatchEvent(errorEvent, request.origin);
       }
     },
 
     /**
      * Called when the update printer TOS acceptance request completes.
-     * @param {number} status Status of the HTTP request.
-     * @param {Object} result JSON response.
+     * @param {!CloudPrintRequest} request Request that has been completed.
      * @private
      */
-    onUpdatePrinterTosAcceptanceDone_: function(status, result) {
-      if (status == 200 && result['success']) {
+    onUpdatePrinterTosAcceptanceDone_: function(request) {
+      if (request.xhr.status == 200 && request.result['success']) {
         // Do nothing.
       } else {
         var errorEvent = this.createErrorEvent_(
-            CloudPrintInterface.EventType.SUBMIT_FAILED, status, result);
+            CloudPrintInterface.EventType.SUBMIT_FAILED, request);
         this.dispatchEvent(errorEvent);
       }
     }
+  };
+
+  /**
+   * Data structure that holds data for Cloud Print requests.
+   * @param {!XMLHttpRequest} xhr Partially prepared http request.
+   * @param {string} body Data to send with POST requests.
+   * @param {!print_preview.Destination.Origin} origin Origin for destination.
+   * @param {function(!CloudPrintRequest)} callback Callback to invoke when
+   *     request completes.
+   * @constructor
+   */
+  function CloudPrintRequest(xhr, body, origin, callback) {
+    /**
+     * Partially prepared http request.
+     * @type {!XMLHttpRequest}
+     */
+    this.xhr = xhr;
+
+    /**
+     * Data to send with POST requests.
+     * @type {string}
+     */
+    this.body = body;
+
+    /**
+     * Origin for destination.
+     * @type {!print_preview.Destination.Origin}
+     */
+    this.origin = origin;
+
+    /**
+     * Callback to invoke when request completes.
+     * @type {function(!CloudPrintRequest)}
+     */
+    this.callback = callback;
+
+    /**
+     * Result for requests.
+     * @type {Object} JSON response.
+     */
+    this.result = null;
   };
 
   /**

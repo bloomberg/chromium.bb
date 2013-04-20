@@ -308,6 +308,7 @@ cr.define('print_preview', function() {
                'not enabled');
         destination.isTosAccepted = true;
         this.cloudPrintInterface_.updatePrinterTosAcceptance(destination.id,
+                                                             destination.origin,
                                                              true);
       }
       this.appState_.persistSelectedDestination(this.selectedDestination_);

@@ -72,8 +72,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSearchDone_: function(event) {
-      this.userEmail_ = event.email;
-      cr.dispatchSimpleEvent(this, UserInfo.EventType.EMAIL_CHANGE);
+      if (event.origin == print_preview.Destination.Origin.COOKIES) {
+        this.userEmail_ = event.email;
+        cr.dispatchSimpleEvent(this, UserInfo.EventType.EMAIL_CHANGE);
+      }
     }
   };
 

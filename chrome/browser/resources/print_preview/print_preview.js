@@ -496,7 +496,8 @@ cr.define('print_preview', function() {
      */
     onCloudPrintEnable_: function(event) {
       this.cloudPrintInterface_ =
-          new cloudprint.CloudPrintInterface(event.baseCloudPrintUrl);
+          new cloudprint.CloudPrintInterface(event.baseCloudPrintUrl,
+                                             this.nativeLayer_);
       this.tracker.add(
           this.cloudPrintInterface_,
           cloudprint.CloudPrintInterface.EventType.SUBMIT_DONE,
