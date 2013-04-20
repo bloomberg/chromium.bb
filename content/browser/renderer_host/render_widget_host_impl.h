@@ -17,6 +17,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/process_util.h"
 #include "base/string16.h"
 #include "base/time.h"
@@ -777,7 +778,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   base::TimeTicks input_event_start_time_;
 
   // Keyboard event listeners.
-  std::list<KeyboardListener*> keyboard_listeners_;
+  ObserverList<KeyboardListener> keyboard_listeners_;
 
   // If true, then we should repaint when restoring even if we have a
   // backingstore.  This flag is set to true if we receive a paint message

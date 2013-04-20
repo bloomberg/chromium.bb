@@ -587,6 +587,31 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
+IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillSelectViaTab) {
+  CreateTestProfile();
+
+  // Load the test page.
+  ASSERT_NO_FATAL_FAILURE(ui_test_utils::NavigateToURL(browser(),
+      GURL(std::string(kDataURIPrefix) + kTestFormString)));
+
+  // Focus a fillable field.
+  FocusFirstNameField();
+
+  // Press the down arrow to initiate Autofill and wait for the popup to be
+  // shown.
+  SendKeyToPageAndWait(ui::VKEY_DOWN);
+
+  // Press the down arrow to select the suggestion and preview the autofilled
+  // form.
+  SendKeyToPopupAndWait(ui::VKEY_DOWN);
+
+  // Press tab to accept the autofill suggestions.
+  SendKeyToPopupAndWait(ui::VKEY_TAB);
+
+  // The form should be filled.
+  ExpectFilledTestForm();
+}
+
 // http://crbug.com/150084
 #if defined(OS_MACOSX)
 #define MAYBE_OnChangeAfterAutofill OnChangeAfterAutofill

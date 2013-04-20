@@ -1241,15 +1241,14 @@ void RenderWidgetHostImpl::ForwardTouchEvent(
 }
 
 void RenderWidgetHostImpl::AddKeyboardListener(KeyboardListener* listener) {
-  keyboard_listeners_.push_back(listener);
+  keyboard_listeners_.AddObserver(listener);
 }
 
 void RenderWidgetHostImpl::RemoveKeyboardListener(
     KeyboardListener* listener) {
-  // Ensure that the element is actually in the list.
-  DCHECK(std::find(keyboard_listeners_.begin(), keyboard_listeners_.end(),
-                   listener) != keyboard_listeners_.end());
-  keyboard_listeners_.remove(listener);
+  // Ensure that the element is actually an observer.
+  DCHECK(keyboard_listeners_.HasObserver(listener));
+  keyboard_listeners_.RemoveObserver(listener);
 }
 
 void RenderWidgetHostImpl::GetWebScreenInfo(WebKit::WebScreenInfo* result) {
@@ -2205,9 +2204,10 @@ bool RenderWidgetHostImpl::KeyPressListenersHandleEvent(
   if (event.skip_in_browser || event.type != WebKeyboardEvent::RawKeyDown)
     return false;
 
-  for (std::list<KeyboardListener*>::iterator it = keyboard_listeners_.begin();
-       it != keyboard_listeners_.end(); ++it) {
-    if ((*it)->HandleKeyPressEvent(event))
+  ObserverList<KeyboardListener>::Iterator it(keyboard_listeners_);
+  KeyboardListener* listener;
+  while ((listener = it.GetNext()) != NULL) {
+    if (listener->HandleKeyPressEvent(event))
       return true;
   }
 

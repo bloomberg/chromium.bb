@@ -210,6 +210,12 @@ bool AutofillPopupControllerImpl::HandleKeyPressEvent(
     case ui::VKEY_DELETE:
       return (event.modifiers & content::NativeWebKeyboardEvent::ShiftKey) &&
              RemoveSelectedLine();
+    case ui::VKEY_TAB:
+      // A tab press should cause the highlighted line to be selected, but still
+      // return false so the tab key press propagates and changes the cursor
+      // location.
+      AcceptSelectedLine();
+      return false;
     case ui::VKEY_RETURN:
       return AcceptSelectedLine();
     default:
