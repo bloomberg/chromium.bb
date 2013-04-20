@@ -17,7 +17,10 @@ enum {
   EXPERIMENT_DELETED_LIST_OUT = 11,
   EXPERIMENT_DELETED_LIST_CONTROL = 12,
   EXPERIMENT_DELETED_LIST_IN = 13,
-  EXPERIMENT_DELETED_LIST_OUT2 = 14
+  EXPERIMENT_DELETED_LIST_OUT2 = 14,
+  // There is no EXPERIMENT_SIMPLE_YES since this enum is used in the standard
+  // backend only.
+  EXPERIMENT_SIMPLE_CONTROL = 15,
 };
 
 }  // namespace disk_cache

@@ -76,11 +76,21 @@ size_t GetIndexSize(int table_len) {
 
 // Sets group for the current experiment. Returns false if the files should be
 // discarded.
-bool InitExperiment(disk_cache::IndexHeader* header) {
+bool InitExperiment(disk_cache::IndexHeader* header, bool cache_created) {
   if (header->experiment == disk_cache::EXPERIMENT_OLD_FILE1 ||
       header->experiment == disk_cache::EXPERIMENT_OLD_FILE2) {
     // Discard current cache.
     return false;
+  }
+
+  if (base::FieldTrialList::FindFullName("SimpleCacheTrial") ==
+          "ExperimentControl") {
+    if (cache_created) {
+      header->experiment = disk_cache::EXPERIMENT_SIMPLE_CONTROL;
+      return true;
+    } else if (header->experiment != disk_cache::EXPERIMENT_SIMPLE_CONTROL) {
+      return false;
+    }
   }
 
   header->experiment = disk_cache::NO_EXPERIMENT;
@@ -258,9 +268,10 @@ int BackendImpl::SyncInit() {
   if (!restarted_ && (create_files || !data_->header.num_entries))
     ReportError(ERR_CACHE_CREATED);
 
-  if (!(user_flags_ & kNoRandom) &&
-      cache_type_ == net::DISK_CACHE && !InitExperiment(&data_->header))
+  if (!(user_flags_ & kNoRandom) && cache_type_ == net::DISK_CACHE &&
+      !InitExperiment(&data_->header, create_files)) {
     return net::ERR_FAILED;
+  }
 
   // We don't care if the value overflows. The only thing we care about is that
   // the id cannot be zero, because that value is used as "not dirty".
