@@ -45,6 +45,10 @@ class GLInProcessContext;
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DInProcessCommandBufferImpl
     : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3D) {
  public:
+  // Must be called before any WebGraphicsContext3DInProcessCommandBufferImpl
+  // instances are created. Default value is false.
+  static void EnableVirtualizedContext();
+
   static WebGraphicsContext3DInProcessCommandBufferImpl*
       CreateViewContext(
           const WebKit::WebGraphicsContext3D::Attributes& attributes,

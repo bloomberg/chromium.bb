@@ -31,8 +31,9 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
-#include "gpu/command_buffer/service/transfer_buffer_manager.h"
+#include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
@@ -240,6 +241,8 @@ static base::LazyInstance<base::Lock> g_decoder_lock =
 static base::LazyInstance<
     std::set<GLInProcessContext*> >
         g_all_shared_contexts = LAZY_INSTANCE_INITIALIZER;
+
+static bool g_use_virtualized_gl_context = false;
 
 namespace {
 
@@ -478,9 +481,29 @@ bool GLInProcessContext::Initialize(
       return false;
     }
 
-    context_ = gfx::GLContext::CreateGLContext(share_group.get(),
-                                               surface_.get(),
-                                               gpu_preference);
+    if (g_use_virtualized_gl_context) {
+      context_ = share_group->GetSharedContext();
+      if (!context_) {
+        context_ = gfx::GLContext::CreateGLContext(share_group.get(),
+                                                   surface_.get(),
+                                                   gpu_preference);
+        share_group->SetSharedContext(context_);
+      }
+
+      context_ = new ::gpu::GLContextVirtual(share_group.get(),
+                                             context_,
+                                             decoder_->AsWeakPtr());
+      if (context_->Initialize(surface_, gpu_preference)) {
+        VLOG(1) << "Created virtual GL context.";
+      } else {
+        context_ = NULL;
+      }
+    } else {
+      context_ = gfx::GLContext::CreateGLContext(share_group.get(),
+                                                 surface_.get(),
+                                                 gpu_preference);
+    }
+
     if (!context_.get()) {
       LOG(ERROR) << "Could not create GLContext.";
       Destroy();
@@ -583,6 +606,18 @@ void GLInProcessContext::OnContextLost() {
     context_lost_callback_.Run();
 }
 
+// static
+void
+WebGraphicsContext3DInProcessCommandBufferImpl::EnableVirtualizedContext() {
+#if !defined(NDEBUG)
+  {
+    AutoLockAndDecoderDetachThread lock(g_decoder_lock.Get(),
+                                        g_all_shared_contexts.Get());
+    DCHECK(g_all_shared_contexts.Get().empty());
+  }
+#endif  // !defined(NDEBUG)
+  g_use_virtualized_gl_context = true;
+}
 
 // static
 WebGraphicsContext3DInProcessCommandBufferImpl*
