@@ -1209,10 +1209,9 @@ TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL(MouseCursor)
 
-// On Mac 10.6, GetTable returns data that is slightly different (checksum?).
 // On Windows XP, GetTableTags returns an empty list (too small read?).
-// TODO(bbudge) Fix implementations so tests pass on XP and OSX 10.6.
-#if defined(OS_MACOSX) || defined(OS_WIN)
+// TODO(bbudge) Fix implementations so tests pass on XP.
+#if defined(OS_WIN)
 #define MAYBE_TrueTypeFont DISABLED_TrueTypeFont
 #else
 #define MAYBE_TrueTypeFont TrueTypeFont
