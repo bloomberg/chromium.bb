@@ -6,6 +6,7 @@
 #define CC_RESOURCES_PICTURE_H_
 
 #include <list>
+#include <string>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -30,6 +31,8 @@ class CC_EXPORT Picture
     : public base::RefCountedThreadSafe<Picture> {
  public:
   static scoped_refptr<Picture> Create(gfx::Rect layer_rect);
+  static scoped_refptr<Picture> CreateFromBase64String(
+      const std::string& encoded_string);
 
   const gfx::Rect& LayerRect() const { return layer_rect_; }
   const gfx::Rect& OpaqueRect() const { return opaque_rect_; }
@@ -59,8 +62,11 @@ class CC_EXPORT Picture
       const gfx::Rect& layer_rect,
       std::list<skia::LazyPixelRef*>& pixel_ref_list);
 
+  void AsBase64String(std::string* output) const;
+
  private:
   explicit Picture(gfx::Rect layer_rect);
+  Picture(const std::string& encoded_string, bool* success);
   // This constructor assumes SkPicture is already ref'd and transfers
   // ownership to this picture.
   Picture(const skia::RefPtr<SkPicture>&,

@@ -2,15 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/resources/picture.h"
+
+#include "base/base64.h"
 #include "base/debug/trace_event.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/layers/content_layer_client.h"
-#include "cc/resources/picture.h"
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkData.h"
 #include "third_party/skia/include/core/SkDrawFilter.h"
 #include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/utils/SkPictureUtils.h"
 #include "ui/gfx/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -18,6 +21,11 @@
 namespace {
 // URI label for a lazily decoded SkPixelRef.
 const char kLabelLazyDecoded[] = "lazy";
+// Version ID; to be used in serialization.
+const int kPictureVersion = 1;
+// Minimum size of a decoded stream that we need.
+// 4 bytes for version, 4 * 4 for each of the 2 rects.
+const unsigned int kMinPictureSizeBytes = 36;
 
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
@@ -38,8 +46,57 @@ scoped_refptr<Picture> Picture::Create(gfx::Rect layer_rect) {
   return make_scoped_refptr(new Picture(layer_rect));
 }
 
+scoped_refptr<Picture> Picture::CreateFromBase64String(
+    const std::string& encoded_string) {
+  bool success;
+  scoped_refptr<Picture> picture =
+    make_scoped_refptr(new Picture(encoded_string, &success));
+  if (!success)
+    picture = NULL;
+  return picture;
+}
+
 Picture::Picture(gfx::Rect layer_rect)
     : layer_rect_(layer_rect) {
+}
+
+Picture::Picture(const std::string& encoded_string, bool* success) {
+  // Decode the picture from base64.
+  std::string decoded;
+  base::Base64Decode(encoded_string, &decoded);
+  SkMemoryStream stream(decoded.data(), decoded.size());
+
+  if (decoded.size() < kMinPictureSizeBytes) {
+    *success = false;
+    return;
+  }
+
+  int version = stream.readS32();
+  if (version != kPictureVersion) {
+    *success = false;
+    return;
+  }
+
+  // First, read the layer and opaque rects.
+  int layer_rect_x = stream.readS32();
+  int layer_rect_y = stream.readS32();
+  int layer_rect_width = stream.readS32();
+  int layer_rect_height = stream.readS32();
+  layer_rect_ = gfx::Rect(layer_rect_x,
+                          layer_rect_y,
+                          layer_rect_width,
+                          layer_rect_height);
+  int opaque_rect_x = stream.readS32();
+  int opaque_rect_y = stream.readS32();
+  int opaque_rect_width = stream.readS32();
+  int opaque_rect_height = stream.readS32();
+  opaque_rect_ = gfx::Rect(opaque_rect_x,
+                           opaque_rect_y,
+                           opaque_rect_width,
+                           opaque_rect_height);
+
+  // Read the picture. This creates an empty picture on failure.
+  picture_ = skia::AdoptRef(new SkPicture(&stream, success, NULL));
 }
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
@@ -176,6 +233,33 @@ void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
     refs++;
   }
   pixel_refs->unref();
+}
+
+void Picture::AsBase64String(std::string* output) const {
+  SkDynamicMemoryWStream stream;
+
+  // First save the version, layer_rect_ and opaque_rect.
+  stream.write32(kPictureVersion);
+
+  stream.write32(layer_rect_.x());
+  stream.write32(layer_rect_.y());
+  stream.write32(layer_rect_.width());
+  stream.write32(layer_rect_.height());
+
+  stream.write32(opaque_rect_.x());
+  stream.write32(opaque_rect_.y());
+  stream.write32(opaque_rect_.width());
+  stream.write32(opaque_rect_.height());
+
+  // Serialize the picture.
+  picture_->serialize(&stream);
+
+  // Encode the picture as base64.
+  size_t serialized_size = stream.bytesWritten();
+  scoped_ptr<char[]> serialized_picture(new char[serialized_size]);
+  stream.copyTo(serialized_picture.get());
+  base::Base64Encode(std::string(serialized_picture.get(), serialized_size),
+                     output);
 }
 
 }  // namespace cc

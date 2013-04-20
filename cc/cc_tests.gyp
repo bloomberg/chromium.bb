@@ -51,6 +51,7 @@
       'resources/picture_layer_tiling_set_unittest.cc',
       'resources/picture_layer_tiling_unittest.cc',
       'resources/picture_pile_impl_unittest.cc',
+      'resources/picture_unittest.cc',
       'resources/prioritized_resource_unittest.cc',
       'trees/quad_culler_unittest.cc',
       'base/region_unittest.cc',
