@@ -493,6 +493,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Linux.GlibcVersion" enum="LinuxGlibcVersion">
+  <summary>The version of glibc used. (Linux only)</summary>
+</histogram>
+
 <histogram name="Media.DetectedAudioCodec" enum="FFmpegCodecs">
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
@@ -5583,6 +5587,20 @@ other types of suffix sets.
   <int value="16" label="UnlockFile"/>
   <int value="17" label="GetTestDirectory"/>
   <int value="18" label="NewLogger"/>
+</enum>
+
+<enum name="LinuxGlibcVersion" type="int">
+  <int value="0" label="Not Parseable"/>
+  <int value="1" label="Unknown"/>
+  <int value="2" label="2.11"/>
+  <int value="3" label="2.12"/>
+  <int value="4" label="2.13"/>
+  <int value="5" label="2.14"/>
+  <int value="6" label="2.15"/>
+  <int value="7" label="2.16"/>
+  <int value="8" label="2.17"/>
+  <int value="9" label="2.18"/>
+  <int value="10" label="2.19"/>
 </enum>
 
 <enum name="LoadType" type="int">
