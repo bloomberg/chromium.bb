@@ -132,7 +132,6 @@ static const int firstDayOfMonth[2][12] = {
     {0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335}
 };
 
-#if !OS(WINCE)
 static inline void getLocalTime(const time_t* localTime, struct tm* localTM)
 {
 #if COMPILER(MSVC7_OR_LOWER) || COMPILER(MINGW)
@@ -143,7 +142,6 @@ static inline void getLocalTime(const time_t* localTime, struct tm* localTM)
     localtime_r(localTime, localTM);
 #endif
 }
-#endif
 
 bool isLeapYear(int year)
 {
@@ -420,11 +418,6 @@ int32_t calculateUTCOffset()
  */
 static double calculateDSTOffsetSimple(double localTimeSeconds, double utcOffset)
 {
-#if OS(WINCE)
-    UNUSED_PARAM(localTimeSeconds);
-    UNUSED_PARAM(utcOffset);
-    return 0;
-#else
     if (localTimeSeconds > maxUnixTime)
         localTimeSeconds = maxUnixTime;
     else if (localTimeSeconds < 0) // Go ahead a day to make localtime work (does not work with 0)
@@ -449,7 +442,6 @@ static double calculateDSTOffsetSimple(double localTimeSeconds, double utcOffset
         diff += secondsPerDay;
 
     return (diff * msPerSecond);
-#endif
 }
 
 // Get the DST offset, given a time in UTC

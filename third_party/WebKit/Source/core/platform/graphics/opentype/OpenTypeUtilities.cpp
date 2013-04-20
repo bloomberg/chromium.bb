@@ -399,29 +399,6 @@ static size_t renameFontInternal(SharedBuffer* fontData, const String& fontName,
     return nameTableSize;
 }
 
-#if OS(WINCE)
-// AddFontMemResourceEx does not exist on WinCE, so we must handle the font data manually
-// This function just renames the font and overwrites the old font data with the new
-bool renameFont(SharedBuffer* fontData, const String& fontName)
-{
-    // abort if the data is too small to be a font header with a "tables" entry
-    if (fontData->size() < offsetof(sfntHeader, tables))
-        return false;
-
-    // abort if the data is too small to hold all the tables specified in the header
-    const sfntHeader* header = reinterpret_cast<const sfntHeader*>(fontData->data());
-    if (fontData->size() < offsetof(sfntHeader, tables) + header->numTables * sizeof(TableDirectoryEntry))
-        return false;
-
-    Vector<char> rewrittenFontData;
-    if (!renameFontInternal(fontData, fontName, rewrittenFontData))
-        return false;
-
-    fontData->clear();
-    fontData->append(rewrittenFontData.data(), rewrittenFontData.size());
-    return true;
-}
-#else
 // Rename the font and install the new font data into the system
 HANDLE renameAndActivateFont(SharedBuffer* fontData, const String& fontName)
 {
@@ -440,6 +417,5 @@ HANDLE renameAndActivateFont(SharedBuffer* fontData, const String& fontName)
 
     return fontHandle;
 }
-#endif
 
 }

@@ -293,20 +293,10 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
         GlyphData data = fallbackPage && fallbackPage->fontDataForCharacter(c) ? fallbackPage->glyphDataForCharacter(c) : characterFontData->missingGlyphData();
         // Cache it so we don't have to do system fallback again next time.
         if (variant == NormalVariant) {
-#if OS(WINCE)
-            // missingGlyphData returns a null character, which is not suitable for GDI to display.
-            // Also, sometimes we cannot map a font for the character on WINCE, but GDI can still
-            // display the character, probably because the font package is not installed correctly.
-            // So we just always set the glyph to be same as the character, and let GDI solve it.
-            page->setGlyphDataForCharacter(c, c, characterFontData.get());
-            characterFontData->setMaxGlyphPageTreeLevel(max(characterFontData->maxGlyphPageTreeLevel(), node->level()));
-            return make_pair(page->glyphDataForCharacter(c), page);
-#else
             page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
             data.fontData->setMaxGlyphPageTreeLevel(max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
             if (!isCJKIdeographOrSymbol(c) && data.fontData->platformData().orientation() != Horizontal && !data.fontData->isTextOrientationFallback())
                 return glyphDataAndPageForNonCJKCharacterWithGlyphOrientation(c, m_fontDescription.nonCJKGlyphOrientation(), data, fallbackPage, pageNumber);
-#endif
         }
         return make_pair(data, page);
     }
@@ -315,15 +305,8 @@ std::pair<GlyphData, GlyphPage*> Font::glyphDataAndPageForCharacter(UChar32 c, b
     // FIXME: It would be nicer to use the missing glyph from the last resort font instead.
     GlyphData data = primaryFont()->missingGlyphData();
     if (variant == NormalVariant) {
-#if OS(WINCE)
-        // See comment about WINCE GDI handling near setGlyphDataForCharacter above.
-        page->setGlyphDataForCharacter(c, c, data.fontData);
-        data.fontData->setMaxGlyphPageTreeLevel(max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
-        return make_pair(page->glyphDataForCharacter(c), page);
-#else
         page->setGlyphDataForCharacter(c, data.glyph, data.fontData);
         data.fontData->setMaxGlyphPageTreeLevel(max(data.fontData->maxGlyphPageTreeLevel(), node->level()));
-#endif
     }
     return make_pair(data, page);
 }

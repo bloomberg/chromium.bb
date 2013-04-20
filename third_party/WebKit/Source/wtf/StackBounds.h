@@ -97,11 +97,7 @@ private:
     bool isGrowingDownward() const
     {
         ASSERT(m_origin && m_bound);
-#if OS(WINCE)
-        return m_origin > m_bound;
-#else
         return true;
-#endif
     }
 
     void checkConsistency() const

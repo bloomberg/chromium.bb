@@ -43,11 +43,7 @@ namespace WebCore {
 
 class SimpleFontData;
 
-#if OS(WINCE)
-typedef wchar_t GlyphBufferGlyph;
-#else
 typedef Glyph GlyphBufferGlyph;
-#endif
 
 // CG uses CGSize instead of FloatSize so that the result of advances()
 // can be passed directly to CGContextShowGlyphsWithAdvances in FontMac.mm

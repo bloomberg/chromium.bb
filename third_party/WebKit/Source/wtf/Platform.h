@@ -401,11 +401,6 @@
 #define WTF_OS_SOLARIS 1
 #endif
 
-/* OS(WINCE) - Windows CE; note that for this platform OS(WINDOWS) is also defined */
-#if defined(_WIN32_WCE)
-#define WTF_OS_WINCE 1
-#endif
-
 /* OS(WINDOWS) - Any version of Windows */
 #if defined(WIN32) || defined(_WIN32)
 #define WTF_OS_WINDOWS 1

@@ -60,7 +60,7 @@ namespace WTF {
 // These platforms should now be working correctly:
 //     DARWIN, QNX, UNIX
 // These platforms are not:
-//     WINDOWS, SOLARIS, OPENBSD, WINCE
+//     WINDOWS, SOLARIS, OPENBSD
 //
 // FIXME: remove this! - this code unsafely guesses at stack sizes!
 #if OS(WINDOWS) || OS(SOLARIS) || OS(OPENBSD)
@@ -151,76 +151,6 @@ void StackBounds::initialize()
     pthread_attr_destroy(&sattr);
     m_bound = stackBase;
     m_origin = static_cast<char*>(stackBase) + stackSize;
-}
-
-#elif OS(WINCE)
-
-static bool detectGrowingDownward(void* previousFrame)
-{
-    // Find the address of this stack frame by taking the address of a local variable.
-    int thisFrame;
-    return previousFrame > &thisFrame;
-}
-
-static inline bool isPageWritable(void* page)
-{
-    MEMORY_BASIC_INFORMATION memoryInformation;
-    DWORD result = VirtualQuery(page, &memoryInformation, sizeof(memoryInformation));
-
-    // return false on error, including ptr outside memory
-    if (result != sizeof(memoryInformation))
-        return false;
-
-    DWORD protect = memoryInformation.Protect & ~(PAGE_GUARD | PAGE_NOCACHE);
-    return protect == PAGE_READWRITE
-        || protect == PAGE_WRITECOPY
-        || protect == PAGE_EXECUTE_READWRITE
-        || protect == PAGE_EXECUTE_WRITECOPY;
-}
-
-static inline void* getLowerStackBound(char* currentPage, DWORD pageSize)
-{
-    while (currentPage > 0) {
-        // check for underflow
-        if (currentPage >= reinterpret_cast<char*>(pageSize))
-            currentPage -= pageSize;
-        else
-            currentPage = 0;
-
-        if (!isPageWritable(currentPage))
-            return currentPage + pageSize;
-    }
-
-    return 0;
-}
-
-static inline void* getUpperStackBound(char* currentPage, DWORD pageSize)
-{
-    do {
-        // guaranteed to complete because isPageWritable returns false at end of memory
-        currentPage += pageSize;
-    } while (isPageWritable(currentPage));
-
-    return currentPage - pageSize;
-}
-
-void StackBounds::initialize()
-{
-    // find the address of this stack frame by taking the address of a local variable
-    void* thisFrame = &thisFrame;
-    bool isGrowingDownward = detectGrowingDownward(thisFrame);
-
-    SYSTEM_INFO systemInfo;
-    GetSystemInfo(&systemInfo);
-    DWORD pageSize = systemInfo.dwPageSize;
-
-    // scan all of memory starting from this frame, and return the last writeable page found
-    char* currentPage = reinterpret_cast<char*>(reinterpret_cast<DWORD>(thisFrame) & ~(pageSize - 1));
-    void* lowerStackBound = getLowerStackBound(currentPage, pageSize);
-    void* upperStackBound = getUpperStackBound(currentPage, pageSize);
-
-    m_origin = isGrowingDownward ? upperStackBound : lowerStackBound;
-    m_bound = isGrowingDownward ? lowerStackBound : upperStackBound;
 }
 
 #elif OS(WINDOWS)

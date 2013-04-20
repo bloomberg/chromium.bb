@@ -34,12 +34,6 @@
 #include <unistd.h>
 #endif
 
-#if OS(WINCE)
-#ifndef _IONBF
-#define _IONBF 0x0004
-#endif
-#endif
-
 #define DATA_LOG_TO_FILE 0
 
 // Uncomment to force logging to the given file regardless of what the environment variable says. Note that
