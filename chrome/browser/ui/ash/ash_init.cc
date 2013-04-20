@@ -17,7 +17,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/event_rewriter.h"
 #include "chrome/browser/ui/ash/screenshot_taker.h"
@@ -69,9 +68,7 @@ void OpenAsh() {
   shell->event_rewriter_filter()->SetEventRewriterDelegate(
       scoped_ptr<ash::EventRewriterDelegate>(new EventRewriter).Pass());
   shell->accelerator_controller()->SetScreenshotDelegate(
-      scoped_ptr<ash::ScreenshotDelegate>(
-          new ScreenshotTaker(
-              ProfileManager::GetDefaultProfileOrOffTheRecord())).Pass());
+      scoped_ptr<ash::ScreenshotDelegate>(new ScreenshotTaker).Pass());
 #if defined(OS_CHROMEOS)
   shell->accelerator_controller()->SetBrightnessControlDelegate(
       scoped_ptr<ash::BrightnessControlDelegate>(

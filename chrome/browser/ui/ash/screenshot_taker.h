@@ -49,7 +49,7 @@ class ScreenshotTakerObserver {
 
 class ScreenshotTaker : public ash::ScreenshotDelegate {
  public:
-  explicit ScreenshotTaker(Profile* profile);
+  ScreenshotTaker();
 
   virtual ~ScreenshotTaker();
 
@@ -70,10 +70,10 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
  private:
   friend class ash::test::ScreenshotTakerTest;
 
+  Profile* GetProfile();
   void SetScreenshotDirectoryForTest(const base::FilePath& directory);
   void SetScreenshotBasenameForTest(const std::string& basename);
-
-  Profile* profile_;
+  void SetScreenshotProfileForTest(Profile* profile);
 
   base::WeakPtrFactory<ScreenshotTaker> factory_;
 
@@ -81,8 +81,10 @@ class ScreenshotTaker : public ash::ScreenshotDelegate {
   base::Time last_screenshot_timestamp_;
 
   ObserverList<ScreenshotTakerObserver> observers_;
+
   base::FilePath screenshot_directory_for_test_;
   std::string screenshot_basename_for_test_;
+  Profile* profile_for_test_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenshotTaker);
 };

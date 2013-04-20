@@ -63,7 +63,7 @@ class ScreenshotTakerTest : public AshTestBase,
 
  protected:
   // ScreenshotTakerTest is a friend of ScreenshotTaker and therefore
-  // allowed to set the directory and basename.
+  // allowed to set the directory, basename and profile.
   void SetScreenshotDirectoryForTest(
       ScreenshotTaker* screenshot_taker,
       const base::FilePath& screenshot_directory) {
@@ -73,6 +73,11 @@ class ScreenshotTakerTest : public AshTestBase,
       ScreenshotTaker* screenshot_taker,
       const std::string& screenshot_basename) {
     screenshot_taker->SetScreenshotBasenameForTest(screenshot_basename);
+  }
+  void SetScreenshotProfileForTest(
+      ScreenshotTaker* screenshot_taker,
+      Profile* profile) {
+    screenshot_taker->SetScreenshotProfileForTest(profile);
   }
 
   void Wait() {
@@ -97,12 +102,13 @@ class ScreenshotTakerTest : public AshTestBase,
 
 TEST_F(ScreenshotTakerTest, TakeScreenshot) {
   TestingProfile profile;
-  ScreenshotTaker screenshot_taker(&profile);
+  ScreenshotTaker screenshot_taker;
   screenshot_taker.AddObserver(this);
   base::ScopedTempDir directory;
   ASSERT_TRUE(directory.CreateUniqueTempDir());
   SetScreenshotDirectoryForTest(&screenshot_taker, directory.path());
   SetScreenshotBasenameForTest(&screenshot_taker, "Screenshot");
+  SetScreenshotProfileForTest(&screenshot_taker, &profile);
 
   EXPECT_TRUE(screenshot_taker.CanTakeScreenshot());
 
@@ -116,7 +122,7 @@ TEST_F(ScreenshotTakerTest, TakeScreenshot) {
 #if defined(OS_CHROMEOS)
   // Screenshot notifications on Windows not yet turned on.
   EXPECT_TRUE(g_browser_process->notification_ui_manager()->DoesIdExist(
-                  std::string("screenshot_001")));
+                  std::string("screenshot")));
   g_browser_process->notification_ui_manager()->CancelAll();
 #endif
 
