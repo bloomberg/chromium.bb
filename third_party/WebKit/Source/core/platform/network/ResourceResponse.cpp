@@ -21,11 +21,11 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "config.h"
-#include "ResourceResponseBase.h"
+#include "ResourceResponse.h"
 
 #include "HTTPParsers.h"
 #include "PlatformMemoryInstrumentation.h"
@@ -35,18 +35,11 @@
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/StdLibExtras.h>
 
-using namespace std;
-
 namespace WebCore {
 
 static void parseCacheHeader(const String& header, Vector<pair<String, String> >& result);
 
-inline const ResourceResponse& ResourceResponseBase::asResourceResponse() const
-{
-    return *static_cast<const ResourceResponse*>(this);
-}
-
-ResourceResponseBase::ResourceResponseBase()  
+ResourceResponse::ResourceResponse()
     : m_expectedContentLength(0)
     , m_httpStatusCode(0)
     , m_lastModifiedDate(0)
@@ -67,10 +60,19 @@ ResourceResponseBase::ResourceResponseBase()
     , m_date(0.0)
     , m_expires(0.0)
     , m_lastModified(0.0)
+    , m_httpVersion(Unknown)
+    , m_appCacheID(0)
+    , m_isMultipartPayload(false)
+    , m_wasFetchedViaSPDY(false)
+    , m_wasNpnNegotiated(false)
+    , m_wasAlternateProtocolAvailable(false)
+    , m_wasFetchedViaProxy(false)
+    , m_responseTime(0)
+    , m_remotePort(0)
 {
 }
 
-ResourceResponseBase::ResourceResponseBase(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename)
+ResourceResponse::ResourceResponse(const KURL& url, const String& mimeType, long long expectedLength, const String& textEncodingName, const String& filename)
     : m_url(url)
     , m_mimeType(mimeType)
     , m_expectedContentLength(expectedLength)
@@ -95,10 +97,19 @@ ResourceResponseBase::ResourceResponseBase(const KURL& url, const String& mimeTy
     , m_date(0.0)
     , m_expires(0.0)
     , m_lastModified(0.0)
+    , m_httpVersion(Unknown)
+    , m_appCacheID(0)
+    , m_isMultipartPayload(false)
+    , m_wasFetchedViaSPDY(false)
+    , m_wasNpnNegotiated(false)
+    , m_wasAlternateProtocolAvailable(false)
+    , m_wasFetchedViaProxy(false)
+    , m_responseTime(0)
+    , m_remotePort(0)
 {
 }
 
-PassOwnPtr<ResourceResponse> ResourceResponseBase::adopt(PassOwnPtr<CrossThreadResourceResponseData> data)
+PassOwnPtr<ResourceResponse> ResourceResponse::adopt(PassOwnPtr<CrossThreadResourceResponseData> data)
 {
     OwnPtr<ResourceResponse> response = adoptPtr(new ResourceResponse);
     response->setURL(data->m_url);
@@ -110,15 +121,29 @@ PassOwnPtr<ResourceResponse> ResourceResponseBase::adopt(PassOwnPtr<CrossThreadR
     response->setHTTPStatusCode(data->m_httpStatusCode);
     response->setHTTPStatusText(data->m_httpStatusText);
 
-    response->lazyInit(CommonAndUncommonFields);
     response->m_httpHeaderFields.adopt(data->m_httpHeaders.release());
     response->setLastModifiedDate(data->m_lastModifiedDate);
     response->setResourceLoadTiming(data->m_resourceLoadTiming.release());
-    response->doPlatformAdopt(data);
+    response->m_securityInfo = data->m_securityInfo;
+    response->m_httpVersion = data->m_httpVersion;
+    response->m_appCacheID = data->m_appCacheID;
+    response->m_appCacheManifestURL = data->m_appCacheManifestURL.copy();
+    response->m_isMultipartPayload = data->m_isMultipartPayload;
+    response->m_wasFetchedViaSPDY = data->m_wasFetchedViaSPDY;
+    response->m_wasNpnNegotiated = data->m_wasNpnNegotiated;
+    response->m_wasAlternateProtocolAvailable = data->m_wasAlternateProtocolAvailable;
+    response->m_wasFetchedViaProxy = data->m_wasFetchedViaProxy;
+    response->m_responseTime = data->m_responseTime;
+    response->m_remoteIPAddress = data->m_remoteIPAddress;
+    response->m_remotePort = data->m_remotePort;
+
+    // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support m_downloadedFile,
+    // or whatever values may be present in the opaque m_extraData structure.
+
     return response.release();
 }
 
-PassOwnPtr<CrossThreadResourceResponseData> ResourceResponseBase::copyData() const
+PassOwnPtr<CrossThreadResourceResponseData> ResourceResponse::copyData() const
 {
     OwnPtr<CrossThreadResourceResponseData> data = adoptPtr(new CrossThreadResourceResponseData);
     data->m_url = url().copy();
@@ -132,169 +157,128 @@ PassOwnPtr<CrossThreadResourceResponseData> ResourceResponseBase::copyData() con
     data->m_lastModifiedDate = lastModifiedDate();
     if (m_resourceLoadTiming)
         data->m_resourceLoadTiming = m_resourceLoadTiming->deepCopy();
-    return asResourceResponse().doPlatformCopyData(data.release());
+    data->m_securityInfo = CString(m_securityInfo.data(), m_securityInfo.length());
+    data->m_httpVersion = m_httpVersion;
+    data->m_appCacheID = m_appCacheID;
+    data->m_appCacheManifestURL = m_appCacheManifestURL.copy();
+    data->m_isMultipartPayload = m_isMultipartPayload;
+    data->m_wasFetchedViaSPDY = m_wasFetchedViaSPDY;
+    data->m_wasNpnNegotiated = m_wasNpnNegotiated;
+    data->m_wasAlternateProtocolAvailable = m_wasAlternateProtocolAvailable;
+    data->m_wasFetchedViaProxy = m_wasFetchedViaProxy;
+    data->m_responseTime = m_responseTime;
+    data->m_remoteIPAddress = m_remoteIPAddress.isolatedCopy();
+    data->m_remotePort = m_remotePort;
+
+    // Bug https://bugs.webkit.org/show_bug.cgi?id=60397 this doesn't support m_downloadedFile,
+    // or whatever values may be present in the opaque m_extraData structure.
+
+    return data.release();
 }
 
-bool ResourceResponseBase::isHTTP() const
+bool ResourceResponse::isHTTP() const
 {
-    lazyInit(CommonFieldsOnly);
-
     String protocol = m_url.protocol();
 
     return equalIgnoringCase(protocol, "http")  || equalIgnoringCase(protocol, "https");
 }
 
-const KURL& ResourceResponseBase::url() const
+const KURL& ResourceResponse::url() const
 {
-    lazyInit(CommonFieldsOnly);
-
-    return m_url; 
+    return m_url;
 }
 
-void ResourceResponseBase::setURL(const KURL& url)
+void ResourceResponse::setURL(const KURL& url)
 {
-    lazyInit(CommonFieldsOnly);
     m_isNull = false;
 
     m_url = url;
-
-    // FIXME: Should invalidate or update platform response if present.
 }
 
-const String& ResourceResponseBase::mimeType() const
+const String& ResourceResponse::mimeType() const
 {
-    lazyInit(CommonFieldsOnly);
-
-    return m_mimeType; 
+    return m_mimeType;
 }
 
-void ResourceResponseBase::setMimeType(const String& mimeType)
+void ResourceResponse::setMimeType(const String& mimeType)
 {
-    lazyInit(CommonFieldsOnly);
     m_isNull = false;
 
     // FIXME: MIME type is determined by HTTP Content-Type header. We should update the header, so that it doesn't disagree with m_mimeType.
     m_mimeType = mimeType;
-
-    // FIXME: Should invalidate or update platform response if present.
 }
 
-long long ResourceResponseBase::expectedContentLength() const 
+long long ResourceResponse::expectedContentLength() const
 {
-    lazyInit(CommonFieldsOnly);
-
     return m_expectedContentLength;
 }
 
-void ResourceResponseBase::setExpectedContentLength(long long expectedContentLength)
+void ResourceResponse::setExpectedContentLength(long long expectedContentLength)
 {
-    lazyInit(CommonFieldsOnly);
     m_isNull = false;
 
     // FIXME: Content length is determined by HTTP Content-Length header. We should update the header, so that it doesn't disagree with m_expectedContentLength.
-    m_expectedContentLength = expectedContentLength; 
-
-    // FIXME: Should invalidate or update platform response if present.
+    m_expectedContentLength = expectedContentLength;
 }
 
-const String& ResourceResponseBase::textEncodingName() const
+const String& ResourceResponse::textEncodingName() const
 {
-    lazyInit(CommonFieldsOnly);
-
     return m_textEncodingName;
 }
 
-void ResourceResponseBase::setTextEncodingName(const String& encodingName)
+void ResourceResponse::setTextEncodingName(const String& encodingName)
 {
-    lazyInit(CommonFieldsOnly);
     m_isNull = false;
 
     // FIXME: Text encoding is determined by HTTP Content-Type header. We should update the header, so that it doesn't disagree with m_textEncodingName.
     m_textEncodingName = encodingName;
-
-    // FIXME: Should invalidate or update platform response if present.
 }
 
 // FIXME should compute this on the fly
-const String& ResourceResponseBase::suggestedFilename() const
+const String& ResourceResponse::suggestedFilename() const
 {
-    lazyInit(AllFields);
-
     return m_suggestedFilename;
 }
 
-void ResourceResponseBase::setSuggestedFilename(const String& suggestedName)
+void ResourceResponse::setSuggestedFilename(const String& suggestedName)
 {
-    lazyInit(AllFields);
     m_isNull = false;
 
     // FIXME: Suggested file name is calculated based on other headers. There should not be a setter for it.
-    m_suggestedFilename = suggestedName; 
-
-    // FIXME: Should invalidate or update platform response if present.
+    m_suggestedFilename = suggestedName;
 }
 
-int ResourceResponseBase::httpStatusCode() const
+int ResourceResponse::httpStatusCode() const
 {
-    lazyInit(CommonFieldsOnly);
-
     return m_httpStatusCode;
 }
 
-void ResourceResponseBase::setHTTPStatusCode(int statusCode)
+void ResourceResponse::setHTTPStatusCode(int statusCode)
 {
-    lazyInit(CommonFieldsOnly);
-
     m_httpStatusCode = statusCode;
-
-    // FIXME: Should invalidate or update platform response if present.
 }
 
-const String& ResourceResponseBase::httpStatusText() const 
+const String& ResourceResponse::httpStatusText() const
 {
-    lazyInit(CommonAndUncommonFields);
-
-    return m_httpStatusText; 
+    return m_httpStatusText;
 }
 
-void ResourceResponseBase::setHTTPStatusText(const String& statusText) 
+void ResourceResponse::setHTTPStatusText(const String& statusText)
 {
-    lazyInit(CommonAndUncommonFields);
-
-    m_httpStatusText = statusText; 
-
-    // FIXME: Should invalidate or update platform response if present.
+    m_httpStatusText = statusText;
 }
 
-String ResourceResponseBase::httpHeaderField(const AtomicString& name) const
+String ResourceResponse::httpHeaderField(const AtomicString& name) const
 {
-    lazyInit(CommonFieldsOnly);
-
-    // If we already have the header, just return it instead of consuming memory by grabing all headers.
-    String value = m_httpHeaderFields.get(name);
-    if (!value.isEmpty())        
-        return value;
-
-    lazyInit(CommonAndUncommonFields);
-
-    return m_httpHeaderFields.get(name); 
+    return m_httpHeaderFields.get(name);
 }
 
-String ResourceResponseBase::httpHeaderField(const char* name) const
+String ResourceResponse::httpHeaderField(const char* name) const
 {
-    lazyInit(CommonFieldsOnly);
-
-    // If we already have the header, just return it instead of consuming memory by grabing all headers.
-    String value = m_httpHeaderFields.get(name);
-    if (!value.isEmpty())
-        return value;
-
-    lazyInit(CommonAndUncommonFields);
-
-    return m_httpHeaderFields.get(name); 
+    return m_httpHeaderFields.get(name);
 }
 
-void ResourceResponseBase::updateHeaderParsedState(const AtomicString& name)
+void ResourceResponse::updateHeaderParsedState(const AtomicString& name)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, ageHeader, ("age", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, cacheControlHeader, ("cache-control", AtomicString::ConstructFromLiteral));
@@ -315,21 +299,15 @@ void ResourceResponseBase::updateHeaderParsedState(const AtomicString& name)
         m_haveParsedLastModifiedHeader = false;
 }
 
-void ResourceResponseBase::setHTTPHeaderField(const AtomicString& name, const String& value)
+void ResourceResponse::setHTTPHeaderField(const AtomicString& name, const String& value)
 {
-    lazyInit(CommonAndUncommonFields);
-
     updateHeaderParsedState(name);
 
     m_httpHeaderFields.set(name, value);
-
-    // FIXME: Should invalidate or update platform response if present.
 }
 
-void ResourceResponseBase::addHTTPHeaderField(const AtomicString& name, const String& value)
+void ResourceResponse::addHTTPHeaderField(const AtomicString& name, const String& value)
 {
-    lazyInit(CommonAndUncommonFields);
-
     updateHeaderParsedState(name);
 
     HTTPHeaderMap::AddResult result = m_httpHeaderFields.add(name, value);
@@ -337,24 +315,20 @@ void ResourceResponseBase::addHTTPHeaderField(const AtomicString& name, const St
         result.iterator->value.append(", " + value);
 }
 
-const HTTPHeaderMap& ResourceResponseBase::httpHeaderFields() const
+const HTTPHeaderMap& ResourceResponse::httpHeaderFields() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_httpHeaderFields;
 }
 
-void ResourceResponseBase::parseCacheControlDirectives() const
+void ResourceResponse::parseCacheControlDirectives() const
 {
     ASSERT(!m_haveParsedCacheControlHeader);
-
-    lazyInit(CommonFieldsOnly);
 
     m_haveParsedCacheControlHeader = true;
 
     m_cacheControlContainsMustRevalidate = false;
     m_cacheControlContainsNoCache = false;
-    m_cacheControlMaxAge = numeric_limits<double>::quiet_NaN();
+    m_cacheControlMaxAge = std::numeric_limits<double>::quiet_NaN();
 
     DEFINE_STATIC_LOCAL(const AtomicString, cacheControlString, ("cache-control", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, noCacheDirective, ("no-cache", AtomicString::ConstructFromLiteral));
@@ -400,38 +374,36 @@ void ResourceResponseBase::parseCacheControlDirectives() const
         m_cacheControlContainsNoCache = pragmaValue.lower().contains(noCacheDirective);
     }
 }
-    
-bool ResourceResponseBase::cacheControlContainsNoCache() const
+
+bool ResourceResponse::cacheControlContainsNoCache() const
 {
     if (!m_haveParsedCacheControlHeader)
         parseCacheControlDirectives();
     return m_cacheControlContainsNoCache;
 }
 
-bool ResourceResponseBase::cacheControlContainsNoStore() const
+bool ResourceResponse::cacheControlContainsNoStore() const
 {
     if (!m_haveParsedCacheControlHeader)
         parseCacheControlDirectives();
     return m_cacheControlContainsNoStore;
 }
 
-bool ResourceResponseBase::cacheControlContainsMustRevalidate() const
+bool ResourceResponse::cacheControlContainsMustRevalidate() const
 {
     if (!m_haveParsedCacheControlHeader)
         parseCacheControlDirectives();
     return m_cacheControlContainsMustRevalidate;
 }
 
-bool ResourceResponseBase::hasCacheValidatorFields() const
+bool ResourceResponse::hasCacheValidatorFields() const
 {
-    lazyInit(CommonFieldsOnly);
-
     DEFINE_STATIC_LOCAL(const AtomicString, lastModifiedHeader, ("last-modified", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, eTagHeader, ("etag", AtomicString::ConstructFromLiteral));
     return !m_httpHeaderFields.get(lastModifiedHeader).isEmpty() || !m_httpHeaderFields.get(eTagHeader).isEmpty();
 }
 
-double ResourceResponseBase::cacheControlMaxAge() const
+double ResourceResponse::cacheControlMaxAge() const
 {
     if (!m_haveParsedCacheControlHeader)
         parseCacheControlDirectives();
@@ -442,7 +414,7 @@ static double parseDateValueInHeader(const HTTPHeaderMap& headers, const AtomicS
 {
     String headerValue = headers.get(headerName);
     if (headerValue.isEmpty())
-        return std::numeric_limits<double>::quiet_NaN(); 
+        return std::numeric_limits<double>::quiet_NaN();
     // This handles all date formats required by RFC2616:
     // Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
     // Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
@@ -453,10 +425,8 @@ static double parseDateValueInHeader(const HTTPHeaderMap& headers, const AtomicS
     return dateInMilliseconds / 1000;
 }
 
-double ResourceResponseBase::date() const
+double ResourceResponse::date() const
 {
-    lazyInit(CommonFieldsOnly);
-
     if (!m_haveParsedDateHeader) {
         DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("date", AtomicString::ConstructFromLiteral));
         m_date = parseDateValueInHeader(m_httpHeaderFields, headerName);
@@ -465,10 +435,8 @@ double ResourceResponseBase::date() const
     return m_date;
 }
 
-double ResourceResponseBase::age() const
+double ResourceResponse::age() const
 {
-    lazyInit(CommonFieldsOnly);
-
     if (!m_haveParsedAgeHeader) {
         DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("age", AtomicString::ConstructFromLiteral));
         String headerValue = m_httpHeaderFields.get(headerName);
@@ -481,10 +449,8 @@ double ResourceResponseBase::age() const
     return m_age;
 }
 
-double ResourceResponseBase::expires() const
+double ResourceResponse::expires() const
 {
-    lazyInit(CommonFieldsOnly);
-
     if (!m_haveParsedExpiresHeader) {
         DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("expires", AtomicString::ConstructFromLiteral));
         m_expires = parseDateValueInHeader(m_httpHeaderFields, headerName);
@@ -493,10 +459,8 @@ double ResourceResponseBase::expires() const
     return m_expires;
 }
 
-double ResourceResponseBase::lastModified() const
+double ResourceResponse::lastModified() const
 {
-    lazyInit(CommonFieldsOnly);
-
     if (!m_haveParsedLastModifiedHeader) {
         DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("last-modified", AtomicString::ConstructFromLiteral));
         m_lastModified = parseDateValueInHeader(m_httpHeaderFields, headerName);
@@ -505,10 +469,8 @@ double ResourceResponseBase::lastModified() const
     return m_lastModified;
 }
 
-bool ResourceResponseBase::isAttachment() const
+bool ResourceResponse::isAttachment() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     DEFINE_STATIC_LOCAL(const AtomicString, headerName, ("content-disposition", AtomicString::ConstructFromLiteral));
     String value = m_httpHeaderFields.get(headerName);
     size_t loc = value.find(';');
@@ -518,97 +480,68 @@ bool ResourceResponseBase::isAttachment() const
     DEFINE_STATIC_LOCAL(const AtomicString, attachmentString, ("attachment", AtomicString::ConstructFromLiteral));
     return equalIgnoringCase(value, attachmentString);
 }
-  
-void ResourceResponseBase::setLastModifiedDate(time_t lastModifiedDate)
+
+void ResourceResponse::setLastModifiedDate(time_t lastModifiedDate)
 {
-    lazyInit(CommonAndUncommonFields);
-
     m_lastModifiedDate = lastModifiedDate;
-
-    // FIXME: Should invalidate or update platform response if present.
 }
 
-time_t ResourceResponseBase::lastModifiedDate() const
+time_t ResourceResponse::lastModifiedDate() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_lastModifiedDate;
 }
 
-bool ResourceResponseBase::wasCached() const
+bool ResourceResponse::wasCached() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_wasCached;
 }
 
-void ResourceResponseBase::setWasCached(bool value)
+void ResourceResponse::setWasCached(bool value)
 {
     m_wasCached = value;
 }
 
-bool ResourceResponseBase::connectionReused() const
+bool ResourceResponse::connectionReused() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_connectionReused;
 }
 
-void ResourceResponseBase::setConnectionReused(bool connectionReused)
+void ResourceResponse::setConnectionReused(bool connectionReused)
 {
-    lazyInit(CommonAndUncommonFields);
-
     m_connectionReused = connectionReused;
 }
 
-unsigned ResourceResponseBase::connectionID() const
+unsigned ResourceResponse::connectionID() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_connectionID;
 }
 
-void ResourceResponseBase::setConnectionID(unsigned connectionID)
+void ResourceResponse::setConnectionID(unsigned connectionID)
 {
-    lazyInit(CommonAndUncommonFields);
-
     m_connectionID = connectionID;
 }
 
-ResourceLoadTiming* ResourceResponseBase::resourceLoadTiming() const
+ResourceLoadTiming* ResourceResponse::resourceLoadTiming() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_resourceLoadTiming.get();
 }
 
-void ResourceResponseBase::setResourceLoadTiming(PassRefPtr<ResourceLoadTiming> resourceLoadTiming)
+void ResourceResponse::setResourceLoadTiming(PassRefPtr<ResourceLoadTiming> resourceLoadTiming)
 {
-    lazyInit(CommonAndUncommonFields);
-
     m_resourceLoadTiming = resourceLoadTiming;
 }
 
-PassRefPtr<ResourceLoadInfo> ResourceResponseBase::resourceLoadInfo() const
+PassRefPtr<ResourceLoadInfo> ResourceResponse::resourceLoadInfo() const
 {
-    lazyInit(CommonAndUncommonFields);
-
     return m_resourceLoadInfo.get();
 }
 
-void ResourceResponseBase::setResourceLoadInfo(PassRefPtr<ResourceLoadInfo> loadInfo)
+void ResourceResponse::setResourceLoadInfo(PassRefPtr<ResourceLoadInfo> loadInfo)
 {
-    lazyInit(CommonAndUncommonFields);
-
     m_resourceLoadInfo = loadInfo;
 }
 
-void ResourceResponseBase::lazyInit(InitLevel initLevel) const
-{
-    const_cast<ResourceResponse*>(static_cast<const ResourceResponse*>(this))->platformLazyInit(initLevel);
-}
-
-void ResourceResponseBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void ResourceResponse::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, PlatformMemoryTypes::Loader);
     info.addMember(m_url, "url");
@@ -620,11 +553,11 @@ void ResourceResponseBase::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo)
     info.addMember(m_resourceLoadTiming, "resourceLoadTiming");
     info.addMember(m_resourceLoadInfo, "resourceLoadInfo");
 }
-    
-bool ResourceResponseBase::compare(const ResourceResponse& a, const ResourceResponse& b)
+
+bool ResourceResponse::compare(const ResourceResponse& a, const ResourceResponse& b)
 {
     if (a.isNull() != b.isNull())
-        return false;  
+        return false;
     if (a.url() != b.url())
         return false;
     if (a.mimeType() != b.mimeType())
@@ -642,10 +575,10 @@ bool ResourceResponseBase::compare(const ResourceResponse& a, const ResourceResp
     if (a.httpHeaderFields() != b.httpHeaderFields())
         return false;
     if (a.resourceLoadTiming() && b.resourceLoadTiming() && *a.resourceLoadTiming() == *b.resourceLoadTiming())
-        return ResourceResponse::platformCompare(a, b);
+        return true;
     if (a.resourceLoadTiming() != b.resourceLoadTiming())
         return false;
-    return ResourceResponse::platformCompare(a, b);
+    return true;
 }
 
 static bool isCacheHeaderSeparator(UChar c)
