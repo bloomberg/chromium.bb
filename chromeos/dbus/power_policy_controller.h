@@ -10,7 +10,6 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "base/prefs/pref_service.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_thread_manager_observer.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
@@ -34,37 +33,47 @@ class CHROMEOS_EXPORT PowerPolicyController
     ACTION_DO_NOTHING   = 3,
   };
 
+  // Values of various power-management-related preferences.
+  struct PrefValues {
+    PrefValues();
+
+    int ac_screen_dim_delay_ms;
+    int ac_screen_off_delay_ms;
+    int ac_screen_lock_delay_ms;
+    int ac_idle_warning_delay_ms;
+    int ac_idle_delay_ms;
+    int battery_screen_dim_delay_ms;
+    int battery_screen_off_delay_ms;
+    int battery_screen_lock_delay_ms;
+    int battery_idle_warning_delay_ms;
+    int battery_idle_delay_ms;
+    Action idle_action;
+    Action lid_closed_action;
+    bool use_audio_activity;
+    bool use_video_activity;
+    bool enable_screen_lock;
+    double presentation_idle_delay_factor;
+  };
+
+  // Returns a string describing |policy|.  Useful for tests.
+  static std::string GetPolicyDebugString(
+      const power_manager::PowerManagementPolicy& policy);
+
   PowerPolicyController(DBusThreadManager* manager, PowerManagerClient* client);
   virtual ~PowerPolicyController();
 
-  // Sends an updated policy to the power manager based on the current
-  // values of the passed-in prefs.
-  void UpdatePolicyFromPrefs(
-      const PrefService::Preference& ac_screen_dim_delay_ms_pref,
-      const PrefService::Preference& ac_screen_off_delay_ms_pref,
-      const PrefService::Preference& ac_screen_lock_delay_ms_pref,
-      const PrefService::Preference& ac_idle_warning_delay_ms_pref,
-      const PrefService::Preference& ac_idle_delay_ms_pref,
-      const PrefService::Preference& battery_screen_dim_delay_ms_pref,
-      const PrefService::Preference& battery_screen_off_delay_ms_pref,
-      const PrefService::Preference& battery_screen_lock_delay_ms_pref,
-      const PrefService::Preference& battery_idle_warning_delay_ms_pref,
-      const PrefService::Preference& battery_idle_delay_ms_pref,
-      const PrefService::Preference& idle_action_pref,
-      const PrefService::Preference& lid_closed_action_pref,
-      const PrefService::Preference& use_audio_activity_pref,
-      const PrefService::Preference& use_video_activity_pref,
-      const PrefService::Preference& presentation_idle_delay_factor_pref);
+  // Updates |prefs_policy_| with |values| and sends an updated policy.
+  void ApplyPrefs(const PrefValues& values);
 
   // Registers a request to temporarily prevent the screen from getting
   // dimmed or turned off or the system from suspending in response to user
-  // inactivity.  Returns a unique ID that can be passed to RemoveBlock()
-  // later.
+  // inactivity and sends an updated policy.  Returns a unique ID that can
+  // be passed to RemoveBlock() later.
   int AddScreenBlock(const std::string& reason);
   int AddSuspendBlock(const std::string& reason);
 
   // Unregisters a request previously created via AddScreenBlock() or
-  // AddSuspendBlock().
+  // AddSuspendBlock() and sends an updated policy.
   void RemoveBlock(int id);
 
   // DBusThreadManagerObserver implementation:
@@ -86,11 +95,10 @@ class CHROMEOS_EXPORT PowerPolicyController
   DBusThreadManager* manager_;  // not owned
   PowerManagerClient* client_;  // not owned
 
-  // Policy specified by the prefs that were last passed to
-  // UpdatePolicyFromPrefs().
+  // Policy derived from values passed to ApplyPrefs().
   power_manager::PowerManagementPolicy prefs_policy_;
 
-  // Are one or more fields set in |prefs_policy_|?
+  // Was ApplyPrefs() called?
   bool prefs_were_set_;
 
   // Maps from an ID representing a request to prevent the screen from

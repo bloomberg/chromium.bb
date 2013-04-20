@@ -283,13 +283,6 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 
-  // TODO(derat): Right now, these values are just copied from powerd's
-  // defaults.  Make this file be the canonical source of default power
-  // management settings.  Note that these prefs' default values aren't
-  // currently expressive enough to convey powerd's default behavior, e.g.
-  // powerd shuts down instead of suspending when no user is logged in, and
-  // the default screen-lock delays are only used when
-  // prefs::kEnableScreenLock is set.
   registry->RegisterIntegerPref(prefs::kPowerAcScreenDimDelayMs,
                                 420000,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -297,7 +290,7 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 480000,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerAcScreenLockDelayMs,
-                                600000,
+                                0,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerAcIdleWarningDelayMs,
                                 0,
@@ -312,7 +305,7 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 360000,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerBatteryScreenLockDelayMs,
-                                600000,
+                                0,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerBatteryIdleWarningDelayMs,
                                 0,
@@ -321,10 +314,10 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                 600000,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerIdleAction,
-                                chromeos::PowerPolicyController::ACTION_SUSPEND,
+                                PowerPolicyController::ACTION_SUSPEND,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterIntegerPref(prefs::kPowerLidClosedAction,
-                                chromeos::PowerPolicyController::ACTION_SUSPEND,
+                                PowerPolicyController::ACTION_SUSPEND,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kPowerUseAudioActivity,
                                 true,
@@ -789,23 +782,35 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       *pref_name == prefs::kPowerLidClosedAction ||
       *pref_name == prefs::kPowerUseAudioActivity ||
       *pref_name == prefs::kPowerUseVideoActivity ||
-      *pref_name == prefs::kPowerPresentationIdleDelayFactor) {
-    DBusThreadManager::Get()->GetPowerPolicyController()->UpdatePolicyFromPrefs(
-        *prefs_->FindPreference(prefs::kPowerAcScreenDimDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcScreenOffDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcScreenLockDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcIdleWarningDelayMs),
-        *prefs_->FindPreference(prefs::kPowerAcIdleDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryScreenDimDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryScreenOffDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryScreenLockDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryIdleWarningDelayMs),
-        *prefs_->FindPreference(prefs::kPowerBatteryIdleDelayMs),
-        *prefs_->FindPreference(prefs::kPowerIdleAction),
-        *prefs_->FindPreference(prefs::kPowerLidClosedAction),
-        *prefs_->FindPreference(prefs::kPowerUseAudioActivity),
-        *prefs_->FindPreference(prefs::kPowerUseVideoActivity),
-        *prefs_->FindPreference(prefs::kPowerPresentationIdleDelayFactor));
+      *pref_name == prefs::kPowerPresentationIdleDelayFactor ||
+      *pref_name == prefs::kEnableScreenLock) {
+    PowerPolicyController::PrefValues values;
+    values.ac_screen_dim_delay_ms = power_ac_screen_dim_delay_ms_.GetValue();
+    values.ac_screen_off_delay_ms = power_ac_screen_off_delay_ms_.GetValue();
+    values.ac_screen_lock_delay_ms = power_ac_screen_lock_delay_ms_.GetValue();
+    values.ac_idle_warning_delay_ms =
+        power_ac_idle_warning_delay_ms_.GetValue();
+    values.ac_idle_delay_ms = power_ac_idle_delay_ms_.GetValue();
+    values.battery_screen_dim_delay_ms =
+        power_battery_screen_dim_delay_ms_.GetValue();
+    values.battery_screen_off_delay_ms =
+        power_battery_screen_off_delay_ms_.GetValue();
+    values.battery_screen_lock_delay_ms =
+        power_battery_screen_lock_delay_ms_.GetValue();
+    values.battery_idle_warning_delay_ms =
+        power_battery_idle_warning_delay_ms_.GetValue();
+    values.battery_idle_delay_ms = power_battery_idle_delay_ms_.GetValue();
+    values.idle_action = static_cast<PowerPolicyController::Action>(
+        power_idle_action_.GetValue());
+    values.lid_closed_action = static_cast<PowerPolicyController::Action>(
+        power_lid_closed_action_.GetValue());
+    values.use_audio_activity = power_use_audio_activity_.GetValue();
+    values.use_video_activity = power_use_video_activity_.GetValue();
+    values.enable_screen_lock = enable_screen_lock_.GetValue();
+    values.presentation_idle_delay_factor =
+        power_presentation_idle_delay_factor_.GetValue();
+
+    DBusThreadManager::Get()->GetPowerPolicyController()->ApplyPrefs(values);
   }
 }
 
