@@ -28,9 +28,9 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <errno.h>
-#include <unicode/ucnv.h>
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/icu/public/common/unicode/ucnv.h"
 #include "url/url_canon.h"
 #include "url/url_canon_icu.h"
 #include "url/url_canon_internal.h"

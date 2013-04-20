@@ -31,11 +31,11 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <unicode/ucnv.h>
-#include <unicode/ucnv_cb.h>
-#include <unicode/uidna.h>
 
 #include "base/logging.h"
+#include "third_party/icu/public/common/unicode/ucnv.h"
+#include "third_party/icu/public/common/unicode/ucnv_cb.h"
+#include "third_party/icu/public/common/unicode/uidna.h"
 #include "url/url_canon_icu.h"
 #include "url/url_canon_internal.h"  // for _itoa_s
 
