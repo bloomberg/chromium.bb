@@ -35,6 +35,7 @@
 #include "ui/aura/window_observer.h"
 
 class AppSyncUIState;
+class BaseWindow;
 class Browser;
 class BrowserLauncherItemControllerTest;
 class ExtensionEnableFlow;
@@ -251,6 +252,11 @@ class ChromeLauncherControllerPerApp
   // Returns the extension identified by |app_id|.
   virtual const extensions::Extension* GetExtensionForAppID(
       const std::string& app_id) const OVERRIDE;
+
+  // Activates a |window|. If |allow_minimize| is true and the system allows
+  // it, the the window will get minimized instead.
+  virtual void ActivateWindowOrMinimizeIfActive(BaseWindow* window,
+                                                bool allow_minimize) OVERRIDE;
 
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE;

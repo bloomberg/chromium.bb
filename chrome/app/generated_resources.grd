@@ -6898,6 +6898,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_SHOW_LAUNCHER_ALIGNMENT_MENU_DESCRIPTION" desc="Description for the flag to show a menu that lets you change the alignment of the launcher.">
         Enables a menu that allows changing the side the launcher is aligned to.
       </message>
+      <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME" desc="Name for the flag which allows to minimize a window upon launcher item click under certain conditions.">
+        Disallow launcher to minimize-on-click
+      </message>
+      <message name="IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION" desc="Description for the flag which allows to minimize a window upon launcher item click under certain conditions.">
+        Disallow the launcher to minimize a window if a launcher item gets clicked which has only a single, already active, window associated with it.
+      </message>
 
       <message name="IDS_FLAGS_SHOW_TOUCH_HUD_NAME" desc="Name for the flag to show a heads-up display for tracking touch-points.">
         Show HUD for touch points

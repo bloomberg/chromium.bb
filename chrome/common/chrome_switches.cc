@@ -338,6 +338,11 @@ const char kDisableIPPooling[]              = "disable-ip-pooling";
 const char kDisableLocalOnlyInstantExtendedAPI[] =
     "disable-local-only-instant-extended-api";
 
+// Disable the behavior that the second click on a launcher item (the click when
+// the item is already active) minimizes the item.
+const char kDisableMinimizeOnSecondLauncherItemClick[] =
+    "disable-minimize-on-second-launcher-item-click";
+
 // Disables the native Autofill UI, which is part of the browser process rather
 // than part of the renderer process.  http://crbug.com/51644
 const char kDisableNativeAutofillUi[]       = "disable-new-autofill-ui";

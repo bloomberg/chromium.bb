@@ -972,6 +972,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kShowLauncherAlignmentMenu)
   },
   {
+    "disable-minimize-on-second-launcher-item-click",
+    IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_NAME,
+    IDS_FLAGS_DISABLE_MINIMIZE_ON_SECOND_LAUNCHER_ITEM_CLICK_DESCRIPTION,
+    kOsAll,
+    SINGLE_VALUE_TYPE(switches::kDisableMinimizeOnSecondLauncherItemClick)
+  },
+  {
     "show-touch-hud",
     IDS_FLAGS_SHOW_TOUCH_HUD_NAME,
     IDS_FLAGS_SHOW_TOUCH_HUD_DESCRIPTION,

@@ -254,6 +254,28 @@ class LauncherPerAppAppBrowserTestNoDefaultBrowser
   DISALLOW_COPY_AND_ASSIGN(LauncherPerAppAppBrowserTestNoDefaultBrowser);
 };
 
+// Since the default for minimizing on click might change, I added both classes
+// to either get the minimize on click or not.
+class LauncherPerAppAppBrowserNoMinimizeOnClick
+    : public LauncherPlatformPerAppAppBrowserTest {
+ protected:
+  LauncherPerAppAppBrowserNoMinimizeOnClick() {}
+  virtual ~LauncherPerAppAppBrowserNoMinimizeOnClick() {}
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    LauncherPlatformPerAppAppBrowserTest::SetUpCommandLine(command_line);
+    command_line->AppendSwitch(
+        switches::kDisableMinimizeOnSecondLauncherItemClick);
+  }
+
+ private:
+
+  DISALLOW_COPY_AND_ASSIGN(LauncherPerAppAppBrowserNoMinimizeOnClick);
+};
+
+typedef LauncherPlatformPerAppAppBrowserTest
+    LauncherPerAppAppBrowserMinimizeOnClick;
+
 // Test that we can launch a platform app and get a running item.
 IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, LaunchUnpinned) {
   int item_count = launcher_model()->item_count();
@@ -552,7 +574,8 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, WindowActivation) {
 }
 
 // Confirm that Click behavior for app windows is correnct.
-IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, AppClickBehavior) {
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserNoMinimizeOnClick,
+                       AppClickBehavior) {
   // Launch a platform app and create a window for it.
   const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
   ShellWindow* window1 = CreateShellWindow(extension1);
@@ -586,6 +609,64 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformPerAppAppBrowserTest, AppClickBehavior) {
   EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
   EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
   EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
+}
+
+// Confirm the minimizing click behavior for apps.
+IN_PROC_BROWSER_TEST_F(LauncherPerAppAppBrowserMinimizeOnClick,
+                       PackagedAppClickBehaviorInMinimizeMode) {
+  // Launch one platform app and create a window for it.
+  const Extension* extension1 = LoadAndLaunchPlatformApp("launch");
+  ShellWindow* window1 = CreateShellWindow(extension1);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+
+  // Confirm that a controller item was created and is the correct state.
+  const ash::LauncherItem& item1 = GetLastLauncherItem();
+  LauncherItemController* item1_controller = GetItemController(item1.id);
+  EXPECT_EQ(ash::TYPE_PLATFORM_APP, item1.type);
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  EXPECT_EQ(LauncherItemController::TYPE_APP, item1_controller->type());
+  // Since it is already active, clicking it should minimize.
+  TestEvent click_event(ui::ET_MOUSE_PRESSED);
+  item1_controller->Clicked(click_event);
+  EXPECT_FALSE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_FALSE(window1->GetBaseWindow()->IsActive());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsMinimized());
+  EXPECT_EQ(ash::STATUS_RUNNING, item1.status);
+  // Clicking the item again should activate the window again.
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
+  // Maximizing a window should preserve state after minimize + click.
+  window1->GetBaseWindow()->Maximize();
+  window1->GetBaseWindow()->Minimize();
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsMaximized());
+  window1->GetBaseWindow()->Restore();
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_FALSE(window1->GetBaseWindow()->IsMaximized());
+
+  // Creating a second window of the same type should change the behavior so
+  // that a click does not change the activation state.
+  ShellWindow* window1a = CreateShellWindow(extension1);
+  EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1a->GetBaseWindow()->IsActive());
+  // The first click does nothing.
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
+  // The second neither.
+  item1_controller->Clicked(click_event);
+  EXPECT_TRUE(window1->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1a->GetNativeWindow()->IsVisible());
+  EXPECT_TRUE(window1->GetBaseWindow()->IsActive());
+  EXPECT_FALSE(window1a->GetBaseWindow()->IsActive());
 }
 
 // Confirm that click behavior for app panels is correct.

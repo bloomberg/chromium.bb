@@ -70,6 +70,7 @@
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/views/corewm/window_animations.h"
 
 using extensions::Extension;
 using content::WebContents;
@@ -873,6 +874,23 @@ const Extension* ChromeLauncherControllerPerApp::GetExtensionForAppID(
   return profile_->GetExtensionService()->GetInstalledExtension(app_id);
 }
 
+void ChromeLauncherControllerPerApp::ActivateWindowOrMinimizeIfActive(
+    BaseWindow* window,
+    bool allow_minimize) {
+  if (window->IsActive() && allow_minimize) {
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kDisableMinimizeOnSecondLauncherItemClick)) {
+      AnimateWindow(window->GetNativeWindow(),
+                    views::corewm::WINDOW_ANIMATION_TYPE_BOUNCE);
+    } else {
+      window->Minimize();
+    }
+  } else {
+    window->Show();
+    window->Activate();
+  }
+}
+
 void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
     int event_flags) {
   if (event_flags & ui::EF_CONTROL_DOWN) {
@@ -888,9 +906,8 @@ void ChromeLauncherControllerPerApp::OnBrowserShortcutClicked(
     return;
   }
 
-  aura::Window* window = last_browser->window()->GetNativeWindow();
-  window->Show();
-  ash::wm::ActivateWindow(window);
+  ActivateWindowOrMinimizeIfActive(last_browser->window(),
+                                   GetBrowserApplicationList(0).size() == 2);
 }
 
 void ChromeLauncherControllerPerApp::ItemClicked(const ash::LauncherItem& item,

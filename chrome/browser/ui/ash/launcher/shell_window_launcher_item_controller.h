@@ -80,7 +80,7 @@ class ShellWindowLauncherItemController : public LauncherItemController,
  private:
   typedef std::list<ShellWindow*> ShellWindowList;
 
-  void ShowAndActivate(ShellWindow* shell_window);
+  void ShowAndActivateOrMinimize(ShellWindow* shell_window);
 
   // List of associated shell windows
   ShellWindowList shell_windows_;

@@ -88,9 +88,13 @@ void AppShortcutLauncherItemController::Activate() {
   TabStripModel* tab_strip = browser->tab_strip_model();
   int index = tab_strip->GetIndexOfWebContents(content);
   DCHECK_NE(TabStripModel::kNoTab, index);
-  tab_strip->ActivateTabAt(index, false);
-  browser->window()->Show();
-  ash::wm::ActivateWindow(browser->window()->GetNativeWindow());
+
+  int old_index = tab_strip->active_index();
+  if (index != old_index)
+    tab_strip->ActivateTabAt(index, false);
+  app_controller_->ActivateWindowOrMinimizeIfActive(
+      browser->window(),
+      index == old_index && GetRunningApplications().size() == 1);
 }
 
 void AppShortcutLauncherItemController::Close() {

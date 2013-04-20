@@ -853,6 +853,13 @@ const Extension* ChromeLauncherControllerPerBrowser::GetExtensionForAppID(
   return profile_->GetExtensionService()->GetInstalledExtension(app_id);
 }
 
+void ChromeLauncherControllerPerBrowser::ActivateWindowOrMinimizeIfActive(
+    BaseWindow* window,
+    bool allow_minimize) {
+  window->Show();
+  window->Activate();
+}
+
 void ChromeLauncherControllerPerBrowser::OnBrowserShortcutClicked(
     int event_flags) {
   if (event_flags & ui::EF_CONTROL_DOWN) {

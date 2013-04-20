@@ -103,6 +103,7 @@ extern const char kDisableInstantExtendedAPI[];
 extern const char kDisableIPv6[];
 extern const char kDisableIPPooling[];
 extern const char kDisableLocalOnlyInstantExtendedAPI[];
+extern const char kDisableMinimizeOnSecondLauncherItemClick[];
 extern const char kDisableNativeAutofillUi[];
 extern const char kDisableNTPOtherSessionsMenu[];
 extern const char kDisablePopupBlocking[];

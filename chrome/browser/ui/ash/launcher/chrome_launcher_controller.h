@@ -14,6 +14,7 @@
 #include "chrome/browser/extensions/app_icon_loader.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 
+class BaseWindow;
 class BrowserLauncherItemControllerTest;
 class LauncherItemController;
 class Profile;
@@ -256,6 +257,10 @@ class ChromeLauncherController
   virtual const extensions::Extension* GetExtensionForAppID(
       const std::string& app_id) const = 0;
 
+  // Activates a |window|. If |allow_minimize| is true and the system allows
+  // it, the the window will get minimized instead.
+  virtual void ActivateWindowOrMinimizeIfActive(BaseWindow* window,
+                                                bool allow_minimize) = 0;
   // ash::LauncherDelegate overrides:
   virtual void OnBrowserShortcutClicked(int event_flags) OVERRIDE = 0;
   virtual void ItemClicked(const ash::LauncherItem& item,
