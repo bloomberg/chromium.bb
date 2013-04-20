@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_com_initializer.h"
+#include "base/win/windows_version.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/scoped_sc_handle_win.h"
 #include "remoting/base/stoppable.h"
@@ -61,15 +62,18 @@ const char kConsoleSwitchName[] = "console";
 // permission bits that is used in the SDDL definition below.
 #define SDDL_COM_EXECUTE_LOCAL L"0x3"
 
-// A security descriptor allowing local processes running under SYSTEM or
-// LocalService accounts at medium integrity level or higher to call COM
-// methods exposed by the daemon.
+// Security descriptor allowing local processes running under SYSTEM or
+// LocalService accounts to call COM methods exposed by the daemon.
 const wchar_t kComProcessSd[] =
     SDDL_OWNER L":" SDDL_LOCAL_SYSTEM
     SDDL_GROUP L":" SDDL_LOCAL_SYSTEM
     SDDL_DACL L":"
     SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_LOCAL_SYSTEM)
-    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_LOCAL_SERVICE)
+    SDDL_ACE(SDDL_ACCESS_ALLOWED, SDDL_COM_EXECUTE_LOCAL, SDDL_LOCAL_SERVICE);
+
+// Appended to |kComProcessSd| to specify that only callers running at medium or
+// higher integrity level are allowed to call COM methods exposed by the daemon.
+const wchar_t kComProcessMandatoryLabel[] =
     SDDL_SACL L":"
     SDDL_ACE(SDDL_MANDATORY_LABEL, SDDL_NO_EXECUTE_UP, SDDL_ML_MEDIUM);
 
@@ -79,8 +83,13 @@ const wchar_t kComProcessSd[] =
 // Allows incoming calls from clients running under SYSTEM or LocalService at
 // medium integrity level.
 bool InitializeComSecurity() {
+  std::string sddl = WideToUTF8(kComProcessSd);
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
+    sddl += WideToUTF8(kComProcessMandatoryLabel);
+  }
+
   // Convert the SDDL description into a security descriptor in absolute format.
-  ScopedSd relative_sd = ConvertSddlToSd(WideToUTF8(kComProcessSd));
+  ScopedSd relative_sd = ConvertSddlToSd(sddl);
   if (!relative_sd) {
     LOG_GETLASTERROR(ERROR) << "Failed to create a security descriptor";
     return false;
