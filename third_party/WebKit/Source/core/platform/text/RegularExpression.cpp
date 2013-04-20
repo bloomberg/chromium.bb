@@ -131,31 +131,6 @@ int RegularExpression::match(const String& str, int startFrom, int* matchLength)
     return offsetVector[0];
 }
 
-int RegularExpression::searchRev(const String& str) const
-{
-    // FIXME: This could be faster if it actually searched backwards.
-    // Instead, it just searches forwards, multiple times until it finds the last match.
-
-    int start = 0;
-    int pos;
-    int lastPos = -1;
-    int lastMatchLength = -1;
-    do {
-        int matchLength;
-        pos = match(str, start, &matchLength);
-        if (pos >= 0) {
-            if (pos + matchLength > lastPos + lastMatchLength) {
-                // replace last match if this one is later and not a subset of the last match
-                lastPos = pos;
-                lastMatchLength = matchLength;
-            }
-            start = pos + 1;
-        }
-    } while (pos != -1);
-    d->lastMatchLength = lastMatchLength;
-    return lastPos;
-}
-
 int RegularExpression::matchedLength() const
 {
     return d->lastMatchLength;
