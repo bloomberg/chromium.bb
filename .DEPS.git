@@ -9,7 +9,9 @@ vars = {
     'webkit_url':
          'https://chromium.googlesource.com/chromium/blink.git',
     'git_url':
-         'https://chromium.googlesource.com'
+         'https://chromium.googlesource.com',
+    'webkit_rev':
+         '@4eba4244d866dce11b7f64dfb013c16755f7d936'
 }
 
 deps = {
@@ -35,6 +37,8 @@ deps = {
         Var('git_url') + '/external/googlemock.git@6b1759c3816d574bddde3e1725c51a811c8870e7',
     'src/testing/gtest':
         Var('git_url') + '/external/googletest.git@a6772271f71672e889776bfe49ec4efd9da036df',
+    'src/third_party/WebKit':
+        Var('webkit_url') + Var('webkit_rev'),
     'src/third_party/accessibility-developer-tools':
         Var('git_url') + '/external/accessibility-developer-tools.git@ad5df9a5341d38778658c90e4aa241c4ebe4e8aa',
     'src/third_party/angle':
@@ -227,10 +231,20 @@ deps_os = {
             Var('git_url') + '/external/google-toolbox-for-mac.git@1f3578bb9c3cfdf1293f106f07e5b0b3e19ae543',
         'src/third_party/WebKit':
             None,
+        'src/third_party/WebKit/LayoutTests':
+            None,
+        'src/third_party/WebKit/Source':
+            None,
         'src/third_party/WebKit/Source/Platform/chromium/public':
             Var('git_url') + '/external/WebKit/Source/Platform/chromium/public.git@43154f7003469696f4e323bdd56536a99eb846fa',
         'src/third_party/WebKit/Source/WebKit/chromium/public':
             Var('git_url') + '/external/WebKit/Source/WebKit/chromium/public.git@da64b3cf0ea5fd4ffe707509f598d27459264bcd',
+        'src/third_party/WebKit/Tools/DumpRenderTree':
+            None,
+        'src/third_party/WebKit/Tools/Scripts':
+            None,
+        'src/third_party/WebKit/Tools/TestWebKitAPI':
+            None,
         'src/third_party/angle':
             None,
         'src/third_party/bidichecker':
