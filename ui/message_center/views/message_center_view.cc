@@ -24,7 +24,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/kennedy_scroll_bar.h"
@@ -105,12 +104,12 @@ void PoorMessageCenterButtonBar::ButtonPressed(views::Button* sender,
 
 // NotificationCenterButton ////////////////////////////////////////////////////
 
-class NotificationCenterButton : public views::TextButton {
+class NotificationCenterButton : public views::LabelButton {
  public:
   NotificationCenterButton(views::ButtonListener* listener,
                            const string16& text);
 
-  // Overridden from views::View:
+  // Overridden from views::LabelButton:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
  protected:
@@ -125,19 +124,16 @@ class NotificationCenterButton : public views::TextButton {
 NotificationCenterButton::NotificationCenterButton(
     views::ButtonListener* listener,
     const string16& text)
-    : views::TextButton(listener, text) {
+    : views::LabelButton(listener, text) {
   set_border(views::Border::CreateEmptyBorder(0, 16, 0, 16));
-  set_min_height(kFooterHeight);
-  SetEnabledColor(kFooterTextColor);
-  SetHoverColor(kButtonTextHoverColor);
+  set_min_size(gfx::Size(0, kFooterHeight));
+  SetTextColor(STATE_NORMAL, kFooterTextColor);
+  SetTextColor(STATE_HOVERED, kButtonTextHoverColor);
 }
 
 gfx::Size NotificationCenterButton::GetPreferredSize() {
-  // Returns an empty size when invisible, to trim its space in the parent's
-  // GridLayout.
-  if (!visible())
-    return gfx::Size();
-  return views::TextButton::GetPreferredSize();
+  // Returns an empty size when invisible, to trim its space in the GridLayout.
+  return visible() ? views::LabelButton::GetPreferredSize() : gfx::Size();
 }
 
 void NotificationCenterButton::OnPaintBorder(gfx::Canvas* canvas) {
