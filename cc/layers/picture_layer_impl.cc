@@ -262,6 +262,9 @@ void PictureLayerImpl::DumpLayerProperties(std::string*, int indent) const {
 }
 
 void PictureLayerImpl::UpdateTilePriorities() {
+  if (!tilings_->num_tilings())
+    return;
+
   UpdateLCDTextStatus();
 
   int current_source_frame_number = layer_tree_impl()->source_frame_number();
