@@ -148,6 +148,10 @@ void BluetoothDeviceChromeOS::Connect(
   // This is safe because Connect() and its callbacks are called in the same
   // thread.
   connecting_calls_++;
+  if (!connecting_) {
+    connecting_ = true;
+    adapter_->NotifyDeviceChanged(this);
+  }
   connecting_ = !!connecting_calls_;
   // Set the decrement to be issued when either callback is called.
   base::Closure wrapped_callback = base::Bind(
@@ -535,18 +539,22 @@ void BluetoothDeviceChromeOS::OnGetServiceRecordsError(
 void BluetoothDeviceChromeOS::OnConnectCallbackCalled(
     const base::Closure& callback) {
   // Update the connecting status.
+  bool prev_connecting = connecting_;
   connecting_calls_--;
   connecting_ = !!connecting_calls_;
   callback.Run();
+  if (prev_connecting != connecting_) adapter_->NotifyDeviceChanged(this);
 }
 
 void BluetoothDeviceChromeOS::OnConnectErrorCallbackCalled(
     const ConnectErrorCallback& error_callback,
     enum ConnectErrorCode error_code) {
   // Update the connecting status.
+  bool prev_connecting = connecting_;
   connecting_calls_--;
   connecting_ = !!connecting_calls_;
   error_callback.Run(error_code);
+  if (prev_connecting != connecting_) adapter_->NotifyDeviceChanged(this);
 }
 
 void BluetoothDeviceChromeOS::ConnectApplications(

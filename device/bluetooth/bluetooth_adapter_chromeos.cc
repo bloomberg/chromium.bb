@@ -234,6 +234,14 @@ void BluetoothAdapterChromeOS::PoweredChanged(bool powered) {
                     AdapterPoweredChanged(this, powered_));
 }
 
+void BluetoothAdapterChromeOS::NotifyDeviceChanged(
+    BluetoothDeviceChromeOS* device) {
+  DCHECK(device->adapter_ == this);
+
+  FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
+                    DeviceChanged(this, device));
+}
+
 void BluetoothAdapterChromeOS::OnStartDiscovery(
     const base::Closure& callback,
     const ErrorCallback& error_callback,
@@ -366,10 +374,9 @@ void BluetoothAdapterChromeOS::UpdateDevice(
   }
   device->Update(properties, true);
 
-  if (update_device) {
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceChanged(this, device));
-  } else {
+  if (update_device)
+    NotifyDeviceChanged(device);
+  else {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device));
   }
@@ -428,8 +435,7 @@ void BluetoothAdapterChromeOS::DeviceRemoved(
       VLOG(1) << "Removed object path from device " << device->GetAddress();
       device->RemoveObjectPath();
 
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceChanged(this, device));
+      NotifyDeviceChanged(device);
     }
   }
 }
@@ -485,10 +491,9 @@ void BluetoothAdapterChromeOS::DeviceFound(
   device->SetDiscovered(true);
   device->Update(&properties, false);
 
-  if (update_device) {
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceChanged(this, device));
-  } else {
+  if (update_device)
+    NotifyDeviceChanged(device);
+  else {
     FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
                       DeviceAdded(this, device));
   }
@@ -524,8 +529,7 @@ void BluetoothAdapterChromeOS::DeviceDisappeared(
             << " is no longer visible to the adapter";
     device->SetDiscovered(false);
 
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceChanged(this, device));
+    NotifyDeviceChanged(device);
   }
 }
 

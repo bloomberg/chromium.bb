@@ -109,6 +109,10 @@ class BluetoothAdapterChromeOS
   // and directly using values obtained from properties.
   void PoweredChanged(bool powered);
 
+  // Notifies observers of a change in the device |device|. Used to signal
+  // changes initiated from the BluetoothDeviceChromeOS itself.
+  void NotifyDeviceChanged(BluetoothDeviceChromeOS* device);
+
   // Called by BluetoothAdapterClient in response to the method call sent
   // by StartDiscovering(), |callback| and |error_callback| are the callbacks
   // provided to that method.
