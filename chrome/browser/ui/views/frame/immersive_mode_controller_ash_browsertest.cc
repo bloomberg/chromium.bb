@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell.h"
 #include "ash/wm/window_properties.h"
+#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
@@ -269,7 +270,33 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, Focus) {
   browser_view->GetTabContentsContainerView()->RequestFocus();
   EXPECT_FALSE(controller->IsRevealed());
 
-  // 5) Test that a dialog opened by the web contents does not initiate a
+  // 5) Test that a loss of focus of the location bar to the web contents
+  // while immersive mode is disabled is properly registered.
+  browser_view->SetFocusToLocationBar(false);
+  EXPECT_TRUE(controller->IsRevealed());
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_FALSE(controller->IsEnabled());
+  EXPECT_FALSE(controller->IsRevealed());
+  browser_view->GetTabContentsContainerView()->RequestFocus();
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(controller->IsEnabled());
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // Repeat test but with a revealed lock acquired when immersive mode is
+  // enabled because the code path is different.
+  browser_view->SetFocusToLocationBar(false);
+  EXPECT_TRUE(controller->IsRevealed());
+  chrome::ToggleFullscreenMode(browser());
+  scoped_ptr<ImmersiveModeController::RevealedLock> lock(
+      controller->GetRevealedLock());
+  EXPECT_FALSE(controller->IsRevealed());
+  browser_view->GetTabContentsContainerView()->RequestFocus();
+  chrome::ToggleFullscreenMode(browser());
+  EXPECT_TRUE(controller->IsRevealed());
+  lock.reset();
+  EXPECT_FALSE(controller->IsRevealed());
+
+  // 6) Test that a dialog opened by the web contents does not initiate a
   // reveal.
   AppModalDialogQueue* queue = AppModalDialogQueue::GetInstance();
   EXPECT_FALSE(queue->HasActiveDialog());
@@ -427,6 +454,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, AnchoredWidgets) {
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  params.parent = browser_view->GetNativeWindow();
   params.bounds = kInitialBounds;
   views::Widget anchored_widget;
   anchored_widget.Init(params);
@@ -503,6 +531,33 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, AnchoredWidgets) {
   EXPECT_GT(bounds3.y(), bounds2.y());
   EXPECT_EQ(kInitialBounds.x(), bounds3.x());
   EXPECT_EQ(kInitialBounds.size(), bounds3.size());
+
+  // 3) Test that the anchored widget is not repositioned when immersive mode
+  // is not enabled.
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_FALSE(controller->IsEnabled());
+  chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
+  EXPECT_EQ(bounds3, anchored_widget.GetWindowBoundsInScreen());
+  EXPECT_NE(browser_view->top_container()->GetBoundsInScreen().bottom() + 10,
+            bounds3.bottom());
+
+  // 4) Test that reenabling immersive fullscreen repositions any anchored
+  // widgets.
+  //
+  // Maximize the window so that a bounds change in the top container is not
+  // reported when entering immersive fullscreen. The top container has the
+  // same bounds when |browser_view| is maximized as when the top container is
+  // revealed when |browser_view_| is in immersive mode.
+  ash::wm::MaximizeWindow(browser_view->GetNativeWindow());
+  chrome::ToggleFullscreenMode(browser());
+  ASSERT_TRUE(controller->IsEnabled());
+
+  gfx::Rect bounds4 = anchored_widget.GetWindowBoundsInScreen();
+  EXPECT_NE(bounds3, bounds4);
+  EXPECT_EQ(bounds4.y(),
+            browser_view->top_container()->GetBoundsInScreen().bottom() + 10);
+  EXPECT_EQ(kInitialBounds.x(), bounds4.x());
+  EXPECT_EQ(kInitialBounds.size(), bounds4.size());
 
   BookmarkBarView::DisableAnimationsForTesting(false);
 }

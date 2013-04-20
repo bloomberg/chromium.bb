@@ -122,9 +122,12 @@ class ImmersiveModeControllerAsh::AnchoredWidgetManager
   // keeping the top-of-window views revealed.
   void RemoveAnchoredWidget(views::Widget* widget);
 
-  // Adjusts the y positions of the anchored widgets for the new top container
-  // bounds.
-  void OnTopContainerBoundsChanged();
+  // Repositions the anchored widgets for the current top container bounds if
+  // immersive mode is enabled.
+  void MaybeRepositionAnchoredWidgets();
+
+  // Called when immersive mode has been enabled.
+  void OnImmersiveModeEnabled();
 
   const std::set<views::Widget*>& visible_anchored_widgets() const {
     return visible_;
@@ -203,13 +206,21 @@ void ImmersiveModeControllerAsh::AnchoredWidgetManager::RemoveAnchoredWidget(
 }
 
 void ImmersiveModeControllerAsh::AnchoredWidgetManager::
-    OnTopContainerBoundsChanged() {
+    MaybeRepositionAnchoredWidgets() {
   for (std::map<views::Widget*, int>::iterator it = widgets_.begin();
        it != widgets_.end(); ++it) {
     UpdateWidgetBounds(it->first, it->second);
   }
 
   UpdateRevealedLock();
+}
+
+void ImmersiveModeControllerAsh::AnchoredWidgetManager::
+    OnImmersiveModeEnabled() {
+  UpdateRevealedLock();
+  // The top container bounds may have changed while immersive mode was
+  // disabled.
+  MaybeRepositionAnchoredWidgets();
 }
 
 void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateRevealedLock() {
@@ -238,7 +249,7 @@ void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateRevealedLock() {
 void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateWidgetBounds(
     views::Widget* widget,
     int y_offset) {
-  if (!widget->IsVisible())
+  if (!controller_->IsEnabled() || !widget->IsVisible())
     return;
 
   gfx::Rect top_container_target_bounds =
@@ -382,22 +393,19 @@ void ImmersiveModeControllerAsh::SetEnabled(bool enabled) {
     MaybeStartReveal(ANIMATE_NO);
 
     // Reset the mouse and the focus revealed locks so that they do not affect
-    // whether the top-of-window views are hidden. Reacquire the locks if ending
-    // the reveal is unsuccessful.
-    bool had_mouse_revealed_lock = (mouse_revealed_lock_.get() != NULL);
-    bool had_focus_revealed_lock = (focus_revealed_lock_.get() != NULL);
+    // whether the top-of-window views are hidden.
     mouse_revealed_lock_.reset();
     focus_revealed_lock_.reset();
 
     // Try doing the animation.
     MaybeEndReveal(ANIMATE_SLOW);
 
-    if (IsRevealed()) {
-      if (had_mouse_revealed_lock)
-        mouse_revealed_lock_.reset(GetRevealedLock());
-      if (had_focus_revealed_lock)
-        focus_revealed_lock_.reset(GetRevealedLock());
+    if (reveal_state_ == REVEALED) {
+      // Reveal was unsuccessful. Reacquire the revealed locks if appropriate.
+      UpdateMouseRevealedLock(true);
+      UpdateFocusRevealedLock();
     }
+    anchored_widget_manager_->OnImmersiveModeEnabled();
   } else {
     // Stop cursor-at-top tracking.
     top_timer_.Stop();
@@ -461,7 +469,7 @@ void ImmersiveModeControllerAsh::UnanchorWidgetFromTopContainer(
 }
 
 void ImmersiveModeControllerAsh::OnTopContainerBoundsChanged() {
-  anchored_widget_manager_->OnTopContainerBoundsChanged();
+  anchored_widget_manager_->MaybeRepositionAnchoredWidgets();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
