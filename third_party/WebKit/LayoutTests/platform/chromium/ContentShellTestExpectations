@@ -81,7 +81,12 @@ crbug.com/231946 virtual/threaded/compositing/webgl/webgl-reflection.html [ Imag
 crbug.com/231948 inspector/debugger/open-close-open.html [ Timeout ]
 crbug.com/231949 fast/events/drag-to-navigate.html [ Timeout ]
 crbug.com/231950 editing/pasteboard/drag-and-drop-objectimage-contenteditable.html [ Timeout ]
-
+crbug.com/233884 animations/3d/transform-origin-vs-functions.html [ Failure ]
+crbug.com/233885 http/tests/inspector/indexeddb/database-names.html [ Failure ]
+crbug.com/233886 http/tests/inspector/indexeddb/resources-panel.html [ Failure ]
+crbug.com/233887 plugins/call-as-function.html [ Failure ]
+crbug.com/233888 virtual/softwarecompositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
+crbug.com/233889 plugins/reentrant-update-widget-positions.html [ Timeout ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
