@@ -1458,7 +1458,12 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // http://crbug.com/105065.
   browser_process_->notification_ui_manager();
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  chrome_variations::VariationsService* variations_service =
+      browser_process_->variations_service();
+  if (variations_service)
+    variations_service->StartRepeatedVariationsSeedFetch();
+#else
   // Most general initialization is behind us, but opening a
   // tab and/or session restore and such is still to be done.
   base::TimeTicks browser_open_start = base::TimeTicks::Now();

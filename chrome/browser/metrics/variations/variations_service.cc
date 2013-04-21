@@ -251,8 +251,7 @@ void VariationsService::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 VariationsService* VariationsService::Create(PrefService* local_state) {
-// This is temporarily disabled for Android. See http://crbug.com/168224
-#if !defined(GOOGLE_CHROME_BUILD) || defined(OS_ANDROID)
+#if !defined(GOOGLE_CHROME_BUILD)
   // Unless the URL was provided, unsupported builds should return NULL to
   // indicate that the service should not be used.
   if (!CommandLine::ForCurrentProcess()->HasSwitch(

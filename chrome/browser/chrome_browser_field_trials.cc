@@ -48,15 +48,19 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
   const base::Time install_time = base::Time::FromTimeT(
       local_state->GetInt64(prefs::kInstallDate));
   DCHECK(!install_time.is_null());
+
   chrome_variations::SetupUniformityFieldTrials(install_time);
   SetUpSimpleCacheFieldTrial();
+
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   SetupDesktopFieldTrials(local_state);
-#endif  // defined(OS_ANDROID)
+#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 #if defined(OS_ANDROID) || defined(OS_IOS)
   SetupMobileFieldTrials();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
+
+  InstantiateDynamicTrials();
 }
 
 
@@ -116,7 +120,6 @@ void ChromeBrowserFieldTrials::SetupDesktopFieldTrials(
 #if defined(ENABLE_ONE_CLICK_SIGNIN)
   OneClickSigninHelper::InitializeFieldTrial();
 #endif
-  InstantiateDynamicTrials();
   SetupAppLauncherFieldTrial(local_state);
 }
 

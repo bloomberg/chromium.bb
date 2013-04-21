@@ -204,6 +204,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   SSLConfigServiceManager::RegisterPrefs(registry);
   UpgradeDetector::RegisterPrefs(registry);
   WebCacheManager::RegisterPrefs(registry);
+  chrome_variations::VariationsService::RegisterPrefs(registry);
 
 #if defined(ENABLE_PLUGINS)
   PluginFinder::RegisterPrefs(registry);
@@ -233,7 +234,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
 
 #if !defined(OS_ANDROID)
   BackgroundModeManager::RegisterPrefs(registry);
-  chrome_variations::VariationsService::RegisterPrefs(registry);
   RegisterBrowserPrefs(registry);
   RegisterDefaultBrowserPromptPrefs(registry);
   ManagedMode::RegisterPrefs(registry);
