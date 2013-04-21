@@ -79,7 +79,7 @@ TextPosition textPositionFromOffset(size_t offset, const Vector<size_t>& lineEnd
     return TextPosition(OrdinalNumber::fromZeroBasedInt(lineIndex), OrdinalNumber::fromZeroBasedInt(column));
 }
 
-static Vector<pair<int, String> > getRegularExpressionMatchesByLines(const RegularExpression& regex, const String& text)
+static Vector<pair<int, String> > getRegularExpressionMatchesByLines(const RegularExpression* regex, const String& text)
 {
     Vector<pair<int, String> > result;
     if (text.isEmpty())
@@ -95,7 +95,7 @@ static Vector<pair<int, String> > getRegularExpressionMatchesByLines(const Regul
             line = line.left(line.length() - 1);
 
         int matchLength;
-        if (regex.match(line, 0, &matchLength) != -1)
+        if (regex->match(line, 0, &matchLength) != -1)
             result.append(pair<int, String>(lineNumber, line));
 
         start = lineEnd + 1;
@@ -129,13 +129,13 @@ static PassRefPtr<TypeBuilder::Page::SearchMatch> buildObjectForSearchMatch(int 
         .release();
 }
 
-RegularExpression createSearchRegex(const String& query, bool caseSensitive, bool isRegex)
+PassOwnPtr<RegularExpression> createSearchRegex(const String& query, bool caseSensitive, bool isRegex)
 {
     String regexSource = isRegex ? query : createSearchRegexSource(query);
-    return RegularExpression(regexSource, caseSensitive ? TextCaseSensitive : TextCaseInsensitive);
+    return adoptPtr(new RegularExpression(regexSource, caseSensitive ? TextCaseSensitive : TextCaseInsensitive));
 }
 
-int countRegularExpressionMatches(const RegularExpression& regex, const String& content)
+int countRegularExpressionMatches(const RegularExpression* regex, const String& content)
 {
     if (content.isEmpty())
         return 0;
@@ -144,7 +144,7 @@ int countRegularExpressionMatches(const RegularExpression& regex, const String& 
     int position;
     unsigned start = 0;
     int matchLength;
-    while ((position = regex.match(content, start, &matchLength)) != -1) {
+    while ((position = regex->match(content, start, &matchLength)) != -1) {
         if (start >= content.length())
             break;
         if (matchLength > 0)
@@ -158,8 +158,8 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > searchInTextByLi
 {
     RefPtr<TypeBuilder::Array<TypeBuilder::Page::SearchMatch> > result = TypeBuilder::Array<TypeBuilder::Page::SearchMatch>::create();
 
-    RegularExpression regex = ContentSearchUtils::createSearchRegex(query, caseSensitive, isRegex);
-    Vector<pair<int, String> > matches = getRegularExpressionMatchesByLines(regex, text);
+    OwnPtr<RegularExpression> regex = ContentSearchUtils::createSearchRegex(query, caseSensitive, isRegex);
+    Vector<pair<int, String> > matches = getRegularExpressionMatchesByLines(regex.get(), text);
 
     for (Vector<pair<int, String> >::const_iterator it = matches.begin(); it != matches.end(); ++it)
         result->addItem(buildObjectForSearchMatch(it->first, it->second));

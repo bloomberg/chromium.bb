@@ -72,7 +72,6 @@
 #include "Page.h"
 #include "PageCache.h"
 #include "PageGroup.h"
-#include "RegularExpression.h"
 #include "RenderLayerCompositor.h"
 #include "RenderPart.h"
 #include "RenderTableCell.h"

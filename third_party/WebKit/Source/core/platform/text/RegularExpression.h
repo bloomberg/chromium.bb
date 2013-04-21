@@ -26,7 +26,11 @@
 #ifndef RegularExpression_h
 #define RegularExpression_h
 
+#include <wtf/BumpPointerAllocator.h>
+#include <wtf/Noncopyable.h>
+#include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
+#include <yarr/Yarr.h>
 
 namespace WebCore {
 
@@ -36,20 +40,18 @@ enum MultilineMode {
 };
 
 class RegularExpression {
-    WTF_MAKE_FAST_ALLOCATED;
+    WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(RegularExpression);
 public:
     RegularExpression(const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled);
-    ~RegularExpression();
-
-    RegularExpression(const RegularExpression&);
-    RegularExpression& operator=(const RegularExpression&);
 
     int match(const String&, int startFrom = 0, int* matchLength = 0) const;
-    int matchedLength() const;
 
 private:
-    class Private;    
-    RefPtr<Private> d;
+    PassOwnPtr<JSC::Yarr::BytecodePattern> compile(const String&, TextCaseSensitivity, MultilineMode);
+
+    unsigned m_numSubpatterns;
+    OwnPtr<JSC::Yarr::BytecodePattern> m_regExpByteCode;
+    BumpPointerAllocator m_regexAllocator;
 };
 
 void replace(String&, const RegularExpression&, const String&);

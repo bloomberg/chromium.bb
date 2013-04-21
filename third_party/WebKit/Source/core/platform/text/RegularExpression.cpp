@@ -34,72 +34,35 @@
 
 namespace WebCore {
 
-class RegularExpression::Private : public RefCounted<RegularExpression::Private> {
-public:
-    static PassRefPtr<Private> create(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
-    {
-        return adoptRef(new Private(pattern, caseSensitivity, multilineMode));
-    }
-
-    int lastMatchLength;
-
-    unsigned m_numSubpatterns;
-    OwnPtr<JSC::Yarr::BytecodePattern> m_regExpByteCode;
-
-private:
-    Private(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
-        : lastMatchLength(-1)
-        , m_regExpByteCode(compile(pattern, caseSensitivity, multilineMode))
-        , m_constructionError(0)
-    {
-    }
-
-    PassOwnPtr<JSC::Yarr::BytecodePattern> compile(const String& patternString, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
-    {
-        JSC::Yarr::YarrPattern pattern(patternString, (caseSensitivity == TextCaseInsensitive), (multilineMode == MultilineEnabled), &m_constructionError);
-        if (m_constructionError) {
-            LOG_ERROR("RegularExpression: YARR compile failed with '%s'", m_constructionError);
-            return nullptr;
-        }
-
-        m_numSubpatterns = pattern.m_numSubpatterns;
-
-        return JSC::Yarr::byteCompile(pattern, &m_regexAllocator);
-    }
-
-    BumpPointerAllocator m_regexAllocator;
-    const char* m_constructionError;
-};
-
 RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
-    : d(Private::create(pattern, caseSensitivity, multilineMode))
+    : m_numSubpatterns(0)
+    , m_regExpByteCode(compile(pattern, caseSensitivity, multilineMode))
 {
 }
 
-RegularExpression::RegularExpression(const RegularExpression& re)
-    : d(re.d)
+PassOwnPtr<JSC::Yarr::BytecodePattern> RegularExpression::compile(const String& patternString, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
 {
-}
+    const char* constructionError = 0;
+    JSC::Yarr::YarrPattern pattern(patternString, (caseSensitivity == TextCaseInsensitive), (multilineMode == MultilineEnabled), &constructionError);
+    if (constructionError) {
+        LOG_ERROR("RegularExpression: YARR compile failed with '%s'", constructionError);
+        return nullptr;
+    }
 
-RegularExpression::~RegularExpression()
-{
-}
+    m_numSubpatterns = pattern.m_numSubpatterns;
 
-RegularExpression& RegularExpression::operator=(const RegularExpression& re)
-{
-    d = re.d;
-    return *this;
+    return JSC::Yarr::byteCompile(pattern, &m_regexAllocator);
 }
 
 int RegularExpression::match(const String& str, int startFrom, int* matchLength) const
 {
-    if (!d->m_regExpByteCode)
+    if (!m_regExpByteCode)
         return -1;
 
     if (str.isNull())
         return -1;
 
-    int offsetVectorSize = (d->m_numSubpatterns + 1) * 2;
+    int offsetVectorSize = (m_numSubpatterns + 1) * 2;
     unsigned* offsetVector;
     Vector<unsigned, 32> nonReturnedOvector;
 
@@ -107,33 +70,25 @@ int RegularExpression::match(const String& str, int startFrom, int* matchLength)
     offsetVector = nonReturnedOvector.data();
 
     ASSERT(offsetVector);
-    for (unsigned j = 0, i = 0; i < d->m_numSubpatterns + 1; j += 2, i++)
+    for (unsigned j = 0, i = 0; i < m_numSubpatterns + 1; j += 2, i++)
         offsetVector[j] = JSC::Yarr::offsetNoMatch;
 
     unsigned result;
     if (str.length() <= INT_MAX)
-        result = JSC::Yarr::interpret(d->m_regExpByteCode.get(), str, startFrom, offsetVector);
+        result = JSC::Yarr::interpret(m_regExpByteCode.get(), str, startFrom, offsetVector);
     else {
         // This code can't handle unsigned offsets. Limit our processing to strings with offsets that 
         // can be represented as ints.
         result = JSC::Yarr::offsetNoMatch;
     }
 
-    if (result == JSC::Yarr::offsetNoMatch) {
-        d->lastMatchLength = -1;
+    if (result == JSC::Yarr::offsetNoMatch)
         return -1;
-    }
 
     // 1 means 1 match; 0 means more than one match. First match is recorded in offsetVector.
-    d->lastMatchLength = offsetVector[1] - offsetVector[0];
     if (matchLength)
-        *matchLength = d->lastMatchLength;
+        *matchLength = offsetVector[1] - offsetVector[0];
     return offsetVector[0];
-}
-
-int RegularExpression::matchedLength() const
-{
-    return d->lastMatchLength;
 }
 
 void replace(String& string, const RegularExpression& target, const String& replacement)

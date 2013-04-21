@@ -38,7 +38,6 @@ class DocumentType;
 class Frame;
 class HTMLDocument;
 class KURL;
-class RegularExpression;
 
 typedef int ExceptionCode;
 
