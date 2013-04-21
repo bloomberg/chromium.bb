@@ -1201,8 +1201,11 @@ EVENT_TYPE(SPDY_SESSION_POOL_REMOVE_SESSION)
 // The begin and end of a SPDY STREAM.
 EVENT_TYPE(SPDY_STREAM)
 
-// Logs that a stream attached to a pushed stream.
+// A stream is attached to a pushed stream.
 EVENT_TYPE(SPDY_STREAM_ADOPTED_PUSH_STREAM)
+
+// A stream is unstalled by flow control.
+EVENT_TYPE(SPDY_STREAM_FLOW_CONTROL_UNSTALLED)
 
 // This event indicates that the send window has been updated for a stream.
 //   {

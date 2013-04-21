@@ -796,6 +796,9 @@ scoped_ptr<SpdyBuffer> SpdySession::CreateDataBuffer(SpdyStreamId stream_id,
   if (flow_control_state_ >= FLOW_CONTROL_STREAM) {
     if (send_stalled_by_stream) {
       stream->set_send_stalled_by_flow_control(true);
+      // Even though we're currently stalled only by the stream, we
+      // might end up being stalled by the session also.
+      QueueSendStalledStream(stream);
       net_log().AddEvent(
           NetLog::TYPE_SPDY_SESSION_STREAM_STALLED_BY_STREAM_SEND_WINDOW,
           NetLog::IntegerCallback("stream_id", stream_id));

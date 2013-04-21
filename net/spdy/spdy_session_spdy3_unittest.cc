@@ -4,6 +4,8 @@
 
 #include "net/spdy/spdy_session.h"
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -44,6 +46,53 @@ base::TimeTicks TheNearFuture() {
 }  // namespace
 
 class SpdySessionSpdy3Test : public PlatformTest {
+ public:
+  // Functions used with RunResumeAfterUnstallTest31().
+
+  void StallSessionOnly(SpdySession* session, SpdyStream* stream) {
+    StallSessionSend(session);
+  }
+
+  void StallStreamOnly(SpdySession* session, SpdyStream* stream) {
+    StallStreamSend(stream);
+  }
+
+  void StallSessionStream(SpdySession* session, SpdyStream* stream) {
+    StallSessionSend(session);
+    StallStreamSend(stream);
+  }
+
+  void StallStreamSession(SpdySession* session, SpdyStream* stream) {
+    StallStreamSend(stream);
+    StallSessionSend(session);
+  }
+
+  void UnstallSessionOnly(SpdySession* session,
+                          SpdyStream* stream,
+                          int32 delta_window_size) {
+    UnstallSessionSend(session, delta_window_size);
+  }
+
+  void UnstallStreamOnly(SpdySession* session,
+                         SpdyStream* stream,
+                         int32 delta_window_size) {
+    UnstallStreamSend(stream, delta_window_size);
+  }
+
+  void UnstallSessionStream(SpdySession* session,
+                            SpdyStream* stream,
+                            int32 delta_window_size) {
+    UnstallSessionSend(session, delta_window_size);
+    UnstallStreamSend(stream, delta_window_size);
+  }
+
+  void UnstallStreamSession(SpdySession* session,
+                            SpdyStream* stream,
+                            int32 delta_window_size) {
+    UnstallStreamSend(stream, delta_window_size);
+    UnstallSessionSend(session, delta_window_size);
+  }
+
  protected:
   SpdySessionSpdy3Test()
       : spdy_session_pool_(NULL),
@@ -113,6 +162,22 @@ class SpdySessionSpdy3Test : public PlatformTest {
   void UnstallSessionSend(SpdySession* session, int32 delta_window_size) {
     session->IncreaseSendWindowSize(delta_window_size);
   }
+
+  void StallStreamSend(SpdyStream* stream) {
+    // Reduce the send window size to 0 to stall.
+    while (stream->send_window_size() > 0) {
+      stream->DecreaseSendWindowSize(
+          std::min(kMaxSpdyFrameChunkSize, stream->send_window_size()));
+    }
+  }
+
+  void UnstallStreamSend(SpdyStream* stream, int32 delta_window_size) {
+    stream->IncreaseSendWindowSize(delta_window_size);
+  }
+
+  void RunResumeAfterUnstallTest31(
+      const base::Callback<void(SpdySession*, SpdyStream*)>& stall_fn,
+      const base::Callback<void(SpdySession*, SpdyStream*, int32)>& unstall_fn);
 
   scoped_refptr<TransportSocketParams> transport_params_;
   SpdySessionDependencies session_deps_;
@@ -2601,9 +2666,11 @@ TEST_F(SpdySessionSpdy3Test, SessionFlowControlEndToEnd31) {
   EXPECT_EQ(msg_data_size, session->session_unacked_recv_window_bytes_);
 }
 
-// Cause a stall by reducing the flow control send window to 0. The
-// stream should resume when that window is then increased.
-TEST_F(SpdySessionSpdy3Test, ResumeAfterSendWindowSizeIncrease31) {
+// Given a stall function and an unstall function, runs a test to make
+// sure that a stream resumes after unstall.
+void SpdySessionSpdy3Test::RunResumeAfterUnstallTest31(
+    const base::Callback<void(SpdySession*, SpdyStream*)>& stall_fn,
+    const base::Callback<void(SpdySession*, SpdyStream*, int32)>& unstall_fn) {
   const char kStreamUrl[] = "http://www.google.com/";
   GURL url(kStreamUrl);
 
@@ -2667,13 +2734,13 @@ TEST_F(SpdySessionSpdy3Test, ResumeAfterSendWindowSizeIncrease31) {
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
-  StallSessionSend(session);
+  stall_fn.Run(session, stream);
 
   EXPECT_EQ(ERR_IO_PENDING, delegate.OnSendBody());
 
   EXPECT_TRUE(stream->send_stalled_by_flow_control());
 
-  UnstallSessionSend(session, kBodyDataSize);
+  unstall_fn.Run(session, stream, kBodyDataSize);
 
   EXPECT_FALSE(stream->send_stalled_by_flow_control());
 
@@ -2686,6 +2753,63 @@ TEST_F(SpdySessionSpdy3Test, ResumeAfterSendWindowSizeIncrease31) {
   EXPECT_EQ("HTTP/1.1", delegate.GetResponseHeaderValue(":version"));
   EXPECT_EQ(kBodyDataStringPiece.as_string(), delegate.TakeReceivedData());
   EXPECT_EQ(static_cast<int>(kBodyDataSize), delegate.body_data_sent());
+}
+
+// Run the resume-after-unstall test with all possible stall and
+// unstall sequences.
+
+TEST_F(SpdySessionSpdy3Test, ResumeAfterUnstallSession31) {
+  RunResumeAfterUnstallTest31(
+      base::Bind(&SpdySessionSpdy3Test::StallSessionOnly,
+                 base::Unretained(this)),
+      base::Bind(&SpdySessionSpdy3Test::UnstallSessionOnly,
+                 base::Unretained(this)));
+}
+
+// Equivalent to
+// SpdyStreamSpdy3Test.ResumeAfterSendWindowSizeIncrease.
+TEST_F(SpdySessionSpdy3Test, ResumeAfterUnstallStream31) {
+  RunResumeAfterUnstallTest31(
+      base::Bind(&SpdySessionSpdy3Test::StallStreamOnly,
+                 base::Unretained(this)),
+      base::Bind(&SpdySessionSpdy3Test::UnstallStreamOnly,
+                 base::Unretained(this)));
+}
+
+TEST_F(SpdySessionSpdy3Test,
+       StallSessionStreamResumeAfterUnstallSessionStream31) {
+  RunResumeAfterUnstallTest31(
+      base::Bind(&SpdySessionSpdy3Test::StallSessionStream,
+                 base::Unretained(this)),
+      base::Bind(&SpdySessionSpdy3Test::UnstallSessionStream,
+                 base::Unretained(this)));
+}
+
+TEST_F(SpdySessionSpdy3Test,
+       StallStreamSessionResumeAfterUnstallSessionStream31) {
+  RunResumeAfterUnstallTest31(
+      base::Bind(&SpdySessionSpdy3Test::StallStreamSession,
+                 base::Unretained(this)),
+      base::Bind(&SpdySessionSpdy3Test::UnstallSessionStream,
+                 base::Unretained(this)));
+}
+
+TEST_F(SpdySessionSpdy3Test,
+       StallStreamSessionResumeAfterUnstallStreamSession31) {
+  RunResumeAfterUnstallTest31(
+      base::Bind(&SpdySessionSpdy3Test::StallStreamSession,
+                 base::Unretained(this)),
+      base::Bind(&SpdySessionSpdy3Test::UnstallStreamSession,
+                 base::Unretained(this)));
+}
+
+TEST_F(SpdySessionSpdy3Test,
+       StallSessionStreamResumeAfterUnstallStreamSession31) {
+  RunResumeAfterUnstallTest31(
+      base::Bind(&SpdySessionSpdy3Test::StallSessionStream,
+                 base::Unretained(this)),
+      base::Bind(&SpdySessionSpdy3Test::UnstallStreamSession,
+                 base::Unretained(this)));
 }
 
 // Cause a stall by reducing the flow control send window to 0. The
