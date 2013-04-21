@@ -51,7 +51,6 @@
 #include "Settings.h"
 #include "StyleSheetContents.h"
 #include "TextDocument.h"
-#include "ThreadGlobalData.h"
 #include "XMLNames.h"
 #include <wtf/StdLibExtras.h>
 
@@ -331,27 +330,65 @@ PassRefPtr<CSSStyleSheet> DOMImplementation::createCSSStyleSheet(const String&, 
     return sheet;
 }
 
-static const char* const validXMLMIMETypeChars = "[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]"; // per RFCs: 3023, 2045
-
-XMLMIMETypeRegExp::XMLMIMETypeRegExp()
-    : m_regex(adoptPtr(new RegularExpression(WTF::makeString("^", validXMLMIMETypeChars, "+/", validXMLMIMETypeChars, "+\\+xml$"), TextCaseSensitive)))
-{
-}
-
-XMLMIMETypeRegExp::~XMLMIMETypeRegExp()
-{
-}
-
-bool XMLMIMETypeRegExp::isXMLMIMEType(const String& mimeType)
-{
-    return m_regex->match(mimeType) > -1;
-}
-
 bool DOMImplementation::isXMLMIMEType(const String& mimeType)
 {
     if (mimeType == "text/xml" || mimeType == "application/xml" || mimeType == "text/xsl")
         return true;
-    return threadGlobalData().xmlTypeRegExp().isXMLMIMEType(mimeType);
+
+    // Per RFCs 3023 and 2045 a mime type is of the form:
+    // ^[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+/[0-9a-zA-Z_\\-+~!$\\^{}|.%'`#&*]+\+xml$
+
+    int length = mimeType.length();
+    if (length < 7)
+        return false;
+
+    if (mimeType[0] == '/' ||
+        mimeType[length - 5] == '/' ||
+        mimeType[length - 4] != '+' ||
+        mimeType[length - 3] != 'x' ||
+        mimeType[length - 2] != 'm' ||
+        mimeType[length - 1] != 'l')
+        return false;
+
+    bool hasSlash = false;
+    for (int i = 0; i < length - 4; ++i) {
+        UChar ch = mimeType[i];
+        if (ch >= '0' && ch <= '9')
+            continue;
+        if (ch >= 'a' && ch <= 'z')
+            continue;
+        if (ch >= 'A' && ch <= 'Z')
+            continue;
+        switch (ch) {
+        case '_':
+        case '-':
+        case '+':
+        case '~':
+        case '!':
+        case '$':
+        case '^':
+        case '{':
+        case '}':
+        case '|':
+        case '.':
+        case '%':
+        case '\'':
+        case '`':
+        case '#':
+        case '&':
+        case '*':
+            continue;
+        case '/':
+            if (hasSlash)
+                return false;
+            hasSlash = true;
+            continue;
+        default:
+            return false;
+        }
+    }
+
+    return true;
 }
 
 bool DOMImplementation::isTextMIMEType(const String& mimeType)
