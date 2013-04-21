@@ -29,23 +29,11 @@
 #include <WebKit2/WKRetainPtr.h>
 #include <string>
 
-#if PLATFORM(MAC)
-#if __OBJC__
-@class NSString;
-#else
-class NSString;
-#endif
-#endif
-
 namespace TestWebKitAPI {
 namespace Util {
 
 // Runs a platform runloop until the 'done' is true. 
 void run(bool* done);
-
-#if PLATFORM(WIN)
-bool shouldTranslateMessage(const MSG&);
-#endif
 
 void sleep(double seconds);
 
@@ -63,9 +51,6 @@ bool isKeyDown(WKNativeEventPtr);
 std::string toSTD(WKStringRef);
 std::string toSTD(WKRetainPtr<WKStringRef>);
 std::string toSTD(const char*);
-#if PLATFORM(MAC)
-std::string toSTD(NSString *);
-#endif
 
 WKRetainPtr<WKStringRef> toWK(const char* utf8String);
 

@@ -23,16 +23,6 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if PLATFORM(MAC)
-#ifdef __OBJC__
-@class WKView;
-@class WebView;
-#else
-class WKView;
-class WebView;
-#endif
-#endif
-
 namespace TestWebKitAPI {
 
 // These macros execute |script| in the page and wait until it has run, then compare its return
@@ -43,10 +33,5 @@ namespace TestWebKitAPI {
 
 ::testing::AssertionResult runJSTest(const char* pageExpr, const char* scriptExpr, const char* expectedResultExpr, WKPageRef, const char* script, const char* expectedResult);
 ::testing::AssertionResult compareJSResult(const char* script, const char* actualResult, const char* expectedResult);
-
-#if PLATFORM(MAC)
-::testing::AssertionResult runJSTest(const char* webViewExpr, const char* scriptExpr, const char* expectedResultExpr, WebView *, const char* script, const char* expectedResult);
-::testing::AssertionResult runJSTest(const char* viewExpr, const char* scriptExpr, const char* expectedResultExpr, WKView *, const char* script, const char* expectedResult);
-#endif
 
 } // namespace TestWebKitAPI

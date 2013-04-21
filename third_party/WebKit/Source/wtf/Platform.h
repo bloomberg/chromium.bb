@@ -31,12 +31,6 @@
 /* Include compiler specific macros */
 #include <wtf/Compiler.h>
 
-/* ==== PLATFORM handles OS, operating environment, graphics API, and
-   CPU. This macro will be phased out in favor of platform adaptation
-   macros, policy decision macros, and top-level port definitions. ==== */
-#define PLATFORM(WTF_FEATURE) (defined WTF_PLATFORM_##WTF_FEATURE  && WTF_PLATFORM_##WTF_FEATURE)
-
-
 /* ==== Platform adaptation macros: these describe properties of the target environment. ==== */
 
 /* CPU() - the target CPU architecture */
@@ -351,19 +345,6 @@
 #define WTF_OS_IOS 1
 #elif OS(DARWIN) && defined(TARGET_OS_MAC) && TARGET_OS_MAC
 #define WTF_OS_MAC_OS_X 1
-
-/* FIXME: These can be removed after sufficient time has passed since the removal of BUILDING_ON / TARGETING macros. */
-
-#define ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MIN_REQUIRED 0 / 0
-#define ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MAX_ALLOWED 0 / 0
-
-#define BUILDING_ON_LEOPARD ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MIN_REQUIRED
-#define BUILDING_ON_SNOW_LEOPARD ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MIN_REQUIRED
-#define BUILDING_ON_LION ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MIN_REQUIRED
-
-#define TARGETING_LEOPARD ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MAX_ALLOWED
-#define TARGETING_SNOW_LEOPARD ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MAX_ALLOWED
-#define TARGETING_LION ERROR_PLEASE_COMPARE_WITH_MAC_OS_X_VERSION_MAX_ALLOWED
 #endif
 
 /* OS(FREEBSD) - FreeBSD */
@@ -428,23 +409,16 @@
 
 /* Operating environments */
 
-/* FIXME: This should go away since we're only building chromium now */
-#define WTF_PLATFORM_CHROMIUM 1
-
 /* Graphics engines */
 
-/* USE(SKIA) for Win/Linux/Mac/Android */
 #if OS(DARWIN)
-#define WTF_USE_SKIA 1
 #define WTF_USE_ICCJPEG 1
 #define WTF_USE_QCMSLIB 1
 #elif OS(ANDROID)
-#define WTF_USE_SKIA 1
 #define WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION 1
 #define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_DITHERING 1
 #define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_FANCY_UPSAMPLING 1
 #else
-#define WTF_USE_SKIA 1
 #define WTF_USE_ICCJPEG 1
 #define WTF_USE_QCMSLIB 1
 #endif

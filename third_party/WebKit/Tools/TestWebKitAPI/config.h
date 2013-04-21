@@ -24,11 +24,7 @@
  */
 
 #if defined(HAVE_CONFIG_H) && HAVE_CONFIG_H
-#ifdef BUILDING_WITH_CMAKE
-#include "cmakeconfig.h"
-#else
 #include "autotoolsconfig.h"
-#endif
 #endif
 
 #include <wtf/Platform.h>
@@ -40,11 +36,7 @@
 #if defined(__APPLE__) && __APPLE__
 
 #ifdef __OBJC__
-#if PLATFORM(IOS)
-#import <Foundation/Foundation.h>
-#else
 #import <Cocoa/Cocoa.h>
-#endif
 #endif
 
 #elif defined(WIN32) || defined(_WIN32)
@@ -56,10 +48,6 @@
 #endif
 
 #include <stdint.h>
-
-#if !PLATFORM(IOS) && ((!PLATFORM(CHROMIUM) && !PLATFORM(WIN)) || (PLATFORM(GTK) && defined(BUILDING_WEBKIT2__)))
-#include <WebKit2/WebKit2_C.h>
-#endif
 
 #ifdef __clang__
 // Work around the less strict coding standards of the gtest framework.
@@ -76,6 +64,3 @@
 #pragma clang diagnostic pop
 #endif
 
-#if PLATFORM(MAC) && defined(__OBJC__)
-#import <WebKit/WebKit.h>
-#endif

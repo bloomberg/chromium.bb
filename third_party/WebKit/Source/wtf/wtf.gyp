@@ -50,9 +50,6 @@
         'defines': [
           # Import features_defines from features.gypi
           '<@(feature_defines)',
-
-          # Turns on #if PLATFORM(CHROMIUM)
-          'BUILDING_CHROMIUM__=1',
         ],
         'conditions': [
           ['OS=="win"', {

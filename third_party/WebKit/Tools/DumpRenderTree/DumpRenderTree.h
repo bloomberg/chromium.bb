@@ -34,20 +34,6 @@
 #include <wtf/Platform.h>
 #endif
 
-#if PLATFORM(MAC)
-#include "DumpRenderTreeMac.h"
-#elif PLATFORM(WIN)
-#include "DumpRenderTreeWin.h"
-#elif PLATFORM(GTK)
-#include "DumpRenderTreeGtk.h"
-#elif PLATFORM(WX)
-#include "DumpRenderTreeWx.h"
-#elif PLATFORM(EFL)
-#include "DumpRenderTreeEfl.h"
-#elif PLATFORM(BLACKBERRY)
-#include "DumpRenderTreeBlackBerry.h"
-#endif
-
 #include <string>
 #include <wtf/RefPtr.h>
 
