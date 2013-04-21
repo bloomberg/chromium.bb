@@ -103,8 +103,6 @@
             'OwnPtr.h',
             'OwnPtrCommon.h',
             'PageAllocation.h',
-            'PageAllocationAligned.cpp',
-            'PageAllocationAligned.h',
             'PageBlock.cpp',
             'PageBlock.h',
             'PageReservation.h',

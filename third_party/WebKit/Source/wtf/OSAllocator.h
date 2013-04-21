@@ -60,12 +60,6 @@ public:
     WTF_EXPORT_PRIVATE static void* reserveAndCommit(size_t, Usage = UnknownUsage, bool writable = true, bool executable = false, bool includesGuardPages = false);
     static void decommitAndRelease(void* base, size_t size);
 
-    // These methods are akin to reserveAndCommit/decommitAndRelease, above - however rather than
-    // committing/decommitting the entire region additional parameters allow a subregion to be
-    // specified.
-    static void* reserveAndCommit(size_t reserveSize, size_t commitSize, Usage = UnknownUsage, bool writable = true, bool executable = false);
-    static void decommitAndRelease(void* releaseBase, size_t releaseSize, void* decommitBase, size_t decommitSize);
-
     // Reallocate an existing, committed allocation.
     // The prior allocation must be fully comitted, and the new size will also be fully committed.
     // This interface is provided since it may be possible to optimize this operation on some platforms.
@@ -73,25 +67,9 @@ public:
     static T* reallocateCommitted(T*, size_t oldSize, size_t newSize, Usage = UnknownUsage, bool writable = true, bool executable = false);
 };
 
-inline void* OSAllocator::reserveAndCommit(size_t reserveSize, size_t commitSize, Usage usage, bool writable, bool executable)
-{
-    void* base = reserveUncommitted(reserveSize, usage, writable, executable);
-    commit(base, commitSize, writable, executable);
-    return base;
-}
-
-inline void OSAllocator::decommitAndRelease(void* releaseBase, size_t releaseSize, void* decommitBase, size_t decommitSize)
-{
-    ASSERT(decommitBase >= releaseBase && (static_cast<char*>(decommitBase) + decommitSize) <= (static_cast<char*>(releaseBase) + releaseSize));
-    UNUSED_PARAM(decommitBase);
-    UNUSED_PARAM(decommitSize);
-
-    releaseDecommitted(releaseBase, releaseSize);
-}
-
 inline void OSAllocator::decommitAndRelease(void* base, size_t size)
 {
-    decommitAndRelease(base, size, base, size);
+    releaseDecommitted(base, size);
 }
 
 template<typename T>
