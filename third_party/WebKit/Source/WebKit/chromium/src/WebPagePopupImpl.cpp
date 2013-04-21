@@ -329,7 +329,7 @@ void WebPagePopupImpl::close()
 void WebPagePopupImpl::closePopup()
 {
     if (m_page) {
-        m_page->setGroupName(String());
+        m_page->clearPageGroup();
         m_page->mainFrame()->loader()->stopAllLoaders();
         m_page->mainFrame()->loader()->stopLoading(UnloadEventPolicyNone);
         DOMWindowPagePopup::uninstall(m_page->mainFrame()->document()->domWindow());

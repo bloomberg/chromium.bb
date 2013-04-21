@@ -38,7 +38,6 @@ namespace WebCore {
 class Frame;
 class KURL;
 class Page;
-class PageGroup;
 class SecurityOrigin;
 class Storage;
 
@@ -61,10 +60,10 @@ public:
     virtual size_t memoryBytesUsedByCache();
 
     static void dispatchLocalStorageEvent(
-            PageGroup*, const String& key, const String& oldValue, const String& newValue,
+            const String& key, const String& oldValue, const String& newValue,
             SecurityOrigin*, const KURL& pageURL, WebKit::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
     static void dispatchSessionStorageEvent(
-            PageGroup*, const String& key, const String& oldValue, const String& newValue,
+            const String& key, const String& oldValue, const String& newValue,
             SecurityOrigin*, const KURL& pageURL, const WebKit::WebStorageNamespace&,
             WebKit::WebStorageArea* sourceAreaInstance, bool originatedInProcess);
 

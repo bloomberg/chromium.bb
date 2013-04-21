@@ -159,11 +159,15 @@ public:
 
     void goToItem(HistoryItem*, FrameLoadType);
 
-    void setGroupName(const String&);
-    const String& groupName() const;
-
-    PageGroup& group();
-    PageGroup* groupPtr() { return m_group; } // can return 0
+    enum PageGroupType { PrivatePageGroup, SharedPageGroup };
+    void setGroupType(PageGroupType);
+    void clearPageGroup();
+    PageGroup& group()
+    {
+        if (!m_group)
+            setGroupType(PrivatePageGroup);
+        return *m_group;
+    }
 
     void incrementSubframeCount() { ++m_subframeCount; }
     void decrementSubframeCount() { ASSERT(m_subframeCount); --m_subframeCount; }
@@ -375,7 +379,6 @@ private:
     UseCounter m_UseCounter;
 
     int m_subframeCount;
-    String m_groupName;
     bool m_openedByDOM;
 
     bool m_tabKeyCyclesThroughElements;
@@ -398,8 +401,7 @@ private:
     mutable bool m_didLoadUserStyleSheet;
     mutable time_t m_userStyleSheetModificationTime;
 
-    OwnPtr<PageGroup> m_singlePageGroup;
-    PageGroup* m_group;
+    RefPtr<PageGroup> m_group;
 
     double m_customHTMLTokenizerTimeDelay;
     int m_customHTMLTokenizerChunkSize;
@@ -438,13 +440,6 @@ private:
     HashSet<String> m_seenPlugins;
     HashSet<String> m_seenMediaEngines;
 };
-
-inline PageGroup& Page::group()
-{
-    if (!m_group)
-        initGroup();
-    return *m_group;
-}
 
 } // namespace WebCore
     

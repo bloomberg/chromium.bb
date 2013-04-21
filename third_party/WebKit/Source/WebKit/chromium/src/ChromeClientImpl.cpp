@@ -424,7 +424,7 @@ bool ChromeClientImpl::runBeforeUnloadConfirmPanel(const String& message, Frame*
 void ChromeClientImpl::closeWindowSoon()
 {
     // Make sure this Page can no longer be found by JS.
-    m_webView->page()->setGroupName(String());
+    m_webView->page()->clearPageGroup();
 
     // Make sure that all loading is stopped.  Ensures that JS stops executing!
     m_webView->mainFrame()->stopLoading();

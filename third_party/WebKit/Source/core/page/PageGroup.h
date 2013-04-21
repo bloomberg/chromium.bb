@@ -26,60 +26,35 @@
 #ifndef PageGroup_h
 #define PageGroup_h
 
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include "LinkHash.h"
 #include "Supplementable.h"
 #include "UserStyleSheet.h"
+#include <wtf/HashSet.h>
+#include <wtf/Noncopyable.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 #include <wtf/text/StringHash.h>
 
 namespace WebCore {
 
-    class CaptionPreferencesChangedListener;
     class CaptionUserPreferences;
     class KURL;
     class GroupSettings;
-    class IDBFactoryBackendInterface;
     class Page;
     class SecurityOrigin;
     class StorageNamespace;
 
-    class PageGroup : public Supplementable<PageGroup> {
+    class PageGroup : public Supplementable<PageGroup>, public RefCounted<PageGroup> {
         WTF_MAKE_NONCOPYABLE(PageGroup); WTF_MAKE_FAST_ALLOCATED;
     public:
-        explicit PageGroup(const String& name);
         ~PageGroup();
 
-        static PassOwnPtr<PageGroup> create(Page*);
-        static PageGroup* pageGroup(const String& groupName);
-
-        static void closeLocalStorage();
-
-        static void clearLocalStorageForAllOrigins();
-        static void clearLocalStorageForOrigin(SecurityOrigin*);
-        static void closeIdleLocalStorageDatabases();
-        // DumpRenderTree helper that triggers a StorageArea sync.
-        static void syncLocalStorage();
-
-        static unsigned numberOfPageGroups();
+        static PassRefPtr<PageGroup> create() { return adoptRef(new PageGroup()); }
+        static PageGroup* sharedGroup();
 
         const HashSet<Page*>& pages() const { return m_pages; }
 
         void addPage(Page*);
         void removePage(Page*);
-
-        bool isLinkVisited(LinkHash);
-
-        void addVisitedLink(const KURL&);
-        void addVisitedLink(const UChar*, size_t);
-        void addVisitedLinkHash(LinkHash);
-        void removeVisitedLinks();
-
-        static void setShouldTrackVisitedLinks(bool);
-        static void removeAllVisitedLinks();
-
-        const String& name() { return m_name; }
-        unsigned identifier() { return m_identifier; }
 
         StorageNamespace* localStorage();
         bool hasLocalStorage() { return m_localStorage; }
@@ -100,25 +75,14 @@ namespace WebCore {
         CaptionUserPreferences* captionPreferences();
 
     private:
-        PageGroup(Page*);
+        PageGroup();
 
-        void addVisitedLink(LinkHash stringHash);
         void invalidatedInjectedStyleSheetCacheInAllFrames();
 
-        String m_name;
-
         HashSet<Page*> m_pages;
-
-        HashSet<LinkHash, LinkHashHash> m_visitedLinkHashes;
-        bool m_visitedLinksPopulated;
-
-        unsigned m_identifier;
         RefPtr<StorageNamespace> m_localStorage;
-
         UserStyleSheetVector m_userStyleSheets;
-
         OwnPtr<GroupSettings> m_groupSettings;
-
         OwnPtr<CaptionUserPreferences> m_captionPreferences;
     };
 

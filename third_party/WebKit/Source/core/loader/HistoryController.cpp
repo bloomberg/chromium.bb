@@ -45,17 +45,11 @@
 #include "Logging.h"
 #include "Page.h"
 #include "PageCache.h"
-#include "PageGroup.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include <wtf/text/CString.h>
 
 namespace WebCore {
-
-static inline void addVisitedLink(Page* page, const KURL& url)
-{
-    page->group().addVisitedLink(url);
-}
 
 HistoryController::HistoryController(Frame* frame)
     : m_frame(frame)
@@ -340,12 +334,11 @@ void HistoryController::updateForReload()
     updateCurrentItem();
 }
 
-// There are 3 things you might think of as "history", all of which are handled by these functions.
+// There are 2 things you might think of as "history", all of which are handled by these functions.
 //
 //     1) Back/forward: The m_currentItem is part of this mechanism.
 //     2) Global history: Handled by the client.
-//     3) Visited links: Handled by the PageGroup.
-
+//
 void HistoryController::updateForStandardLoad(HistoryUpdateType updateType)
 {
     LOG(History, "WebCoreHistory: Updating History for Standard Load in frame %s", m_frame->loader()->documentLoader()->url().string().ascii().data());
@@ -362,11 +355,6 @@ void HistoryController::updateForStandardLoad(HistoryUpdateType updateType)
     } else {
         // The client redirect replaces the current history item.
         updateCurrentItem();
-    }
-
-    if (!historyURL.isEmpty()) {
-        if (Page* page = m_frame->page())
-            addVisitedLink(page, historyURL);
     }
 }
 
@@ -391,11 +379,6 @@ void HistoryController::updateForRedirectWithLockedBackForwardList()
         if (parentFrame && parentFrame->loader()->history()->m_currentItem)
             parentFrame->loader()->history()->m_currentItem->setChildItem(createItem());
     }
-
-    if (!historyURL.isEmpty()) {
-        if (Page* page = m_frame->page())
-            addVisitedLink(page, historyURL);
-    }
 }
 
 void HistoryController::updateForClientRedirect()
@@ -410,13 +393,6 @@ void HistoryController::updateForClientRedirect()
     if (m_currentItem) {
         m_currentItem->clearDocumentState();
         m_currentItem->clearScrollPoint();
-    }
-
-    const KURL& historyURL = m_frame->loader()->documentLoader()->urlForHistory();
-
-    if (!historyURL.isEmpty()) {
-        if (Page* page = m_frame->page())
-            addVisitedLink(page, historyURL);
     }
 }
 
@@ -507,7 +483,6 @@ void HistoryController::updateForSameDocumentNavigation()
     if (!page)
         return;
 
-    addVisitedLink(page, m_frame->document()->url());
     page->mainFrame()->loader()->history()->recursiveUpdateForSameDocumentNavigation();
 
     if (m_currentItem)
@@ -822,8 +797,6 @@ void HistoryController::pushState(PassRefPtr<SerializedScriptValue> stateObject,
     m_currentItem->setURLString(urlString);
 
     page->backForward()->addItem(topItem.release());
-
-    addVisitedLink(page, KURL(ParsedURLString, urlString));
 }
 
 void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObject, const String& title, const String& urlString)
@@ -839,7 +812,6 @@ void HistoryController::replaceState(PassRefPtr<SerializedScriptValue> stateObje
     m_currentItem->setFormContentType(String());
 
     ASSERT(m_frame->page());
-    addVisitedLink(m_frame->page(), KURL(ParsedURLString, urlString));
 }
 
 } // namespace WebCore

@@ -131,7 +131,7 @@ bool WebHelperPluginImpl::initialize(const String& pluginType, const WebDocument
 void WebHelperPluginImpl::closeHelperPlugin()
 {
     if (m_page) {
-        m_page->setGroupName(String());
+        m_page->clearPageGroup();
         m_page->mainFrame()->loader()->stopAllLoaders();
         m_page->mainFrame()->loader()->stopLoading(UnloadEventPolicyNone);
     }

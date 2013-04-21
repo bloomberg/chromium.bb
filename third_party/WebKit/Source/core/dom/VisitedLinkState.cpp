@@ -34,7 +34,7 @@
 #include "HTMLNames.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "PageGroup.h"
+#include "VisitedLinks.h"
 
 namespace WebCore {
 
@@ -122,8 +122,7 @@ EInsideLink VisitedLinkState::determineLinkStateSlowCase(Element* element)
 
     m_linksCheckedForVisitedState.add(hash);
 
-    return page->group().isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
+    return VisitedLinks::isLinkVisited(hash) ? InsideVisitedLink : InsideUnvisitedLink;
 }
-
 
 }

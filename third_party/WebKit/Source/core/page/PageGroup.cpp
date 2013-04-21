@@ -27,48 +27,20 @@
 #include "PageGroup.h"
 
 #include "CaptionUserPreferences.h"
-#include "Chrome.h"
-#include "ChromeClient.h"
-#include "DOMWrapperWorld.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Frame.h"
 #include "GroupSettings.h"
 #include "Page.h"
 #include "PageCache.h"
-#include "SecurityOrigin.h"
 #include "Settings.h"
 #include "StorageNamespace.h"
 
-#include "VisitedLinks.h"
-
 namespace WebCore {
 
-static unsigned getUniqueIdentifier()
+PageGroup::PageGroup()
+    : m_groupSettings(GroupSettings::create())
 {
-    static unsigned currentIdentifier = 0;
-    return ++currentIdentifier;
-}
-
-// --------
-
-static bool shouldTrackVisitedLinks = false;
-
-PageGroup::PageGroup(const String& name)
-    : m_name(name)
-    , m_visitedLinksPopulated(false)
-    , m_identifier(getUniqueIdentifier())
-    , m_groupSettings(GroupSettings::create())
-{
-}
-
-PageGroup::PageGroup(Page* page)
-    : m_visitedLinksPopulated(false)
-    , m_identifier(getUniqueIdentifier())
-    , m_groupSettings(GroupSettings::create())
-{
-    ASSERT(page);
-    addPage(page);
 }
 
 PageGroup::~PageGroup()
@@ -76,99 +48,10 @@ PageGroup::~PageGroup()
     removeAllUserContent();
 }
 
-PassOwnPtr<PageGroup> PageGroup::create(Page* page)
+PageGroup* PageGroup::sharedGroup()
 {
-    return adoptPtr(new PageGroup(page));
-}
-
-typedef HashMap<String, PageGroup*> PageGroupMap;
-static PageGroupMap* pageGroups = 0;
-
-PageGroup* PageGroup::pageGroup(const String& groupName)
-{
-    ASSERT(!groupName.isEmpty());
-    
-    if (!pageGroups)
-        pageGroups = new PageGroupMap;
-
-    PageGroupMap::AddResult result = pageGroups->add(groupName, 0);
-
-    if (result.isNewEntry) {
-        ASSERT(!result.iterator->value);
-        result.iterator->value = new PageGroup(groupName);
-    }
-
-    ASSERT(result.iterator->value);
-    return result.iterator->value;
-}
-
-void PageGroup::closeLocalStorage()
-{
-    if (!pageGroups)
-        return;
-
-    PageGroupMap::iterator end = pageGroups->end();
-
-    for (PageGroupMap::iterator it = pageGroups->begin(); it != end; ++it) {
-        if (it->value->hasLocalStorage())
-            it->value->localStorage()->close();
-    }
-}
-
-void PageGroup::clearLocalStorageForAllOrigins()
-{
-    if (!pageGroups)
-        return;
-
-    PageGroupMap::iterator end = pageGroups->end();
-    for (PageGroupMap::iterator it = pageGroups->begin(); it != end; ++it) {
-        if (it->value->hasLocalStorage())
-            it->value->localStorage()->clearAllOriginsForDeletion();
-    }
-}
-
-void PageGroup::clearLocalStorageForOrigin(SecurityOrigin* origin)
-{
-    if (!pageGroups)
-        return;
-
-    PageGroupMap::iterator end = pageGroups->end();
-    for (PageGroupMap::iterator it = pageGroups->begin(); it != end; ++it) {
-        if (it->value->hasLocalStorage())
-            it->value->localStorage()->clearOriginForDeletion(origin);
-    }
-}
-
-void PageGroup::closeIdleLocalStorageDatabases()
-{
-    if (!pageGroups)
-        return;
-
-    PageGroupMap::iterator end = pageGroups->end();
-    for (PageGroupMap::iterator it = pageGroups->begin(); it != end; ++it) {
-        if (it->value->hasLocalStorage())
-            it->value->localStorage()->closeIdleLocalStorageDatabases();
-    }
-}
-
-void PageGroup::syncLocalStorage()
-{
-    if (!pageGroups)
-        return;
-
-    PageGroupMap::iterator end = pageGroups->end();
-    for (PageGroupMap::iterator it = pageGroups->begin(); it != end; ++it) {
-        if (it->value->hasLocalStorage())
-            it->value->localStorage()->sync();
-    }
-}
-
-unsigned PageGroup::numberOfPageGroups()
-{
-    if (!pageGroups)
-        return 0;
-
-    return pageGroups->size();
+    static PageGroup* staticSharedGroup = create().leakRef();
+    return staticSharedGroup;
 }
 
 void PageGroup::addPage(Page* page)
@@ -183,65 +66,6 @@ void PageGroup::removePage(Page* page)
     ASSERT(page);
     ASSERT(m_pages.contains(page));
     m_pages.remove(page);
-}
-
-bool PageGroup::isLinkVisited(LinkHash visitedLinkHash)
-{
-    // Use Chromium's built-in visited link database.
-    return VisitedLinks::isLinkVisited(visitedLinkHash);
-}
-
-void PageGroup::addVisitedLinkHash(LinkHash hash)
-{
-    if (shouldTrackVisitedLinks)
-        addVisitedLink(hash);
-}
-
-inline void PageGroup::addVisitedLink(LinkHash hash)
-{
-    ASSERT(shouldTrackVisitedLinks);
-    Page::visitedStateChanged(this, hash);
-    pageCache()->markPagesForVistedLinkStyleRecalc();
-}
-
-void PageGroup::addVisitedLink(const KURL& url)
-{
-    if (!shouldTrackVisitedLinks)
-        return;
-    ASSERT(!url.isEmpty());
-    addVisitedLink(visitedLinkHash(url.string()));
-}
-
-void PageGroup::addVisitedLink(const UChar* characters, size_t length)
-{
-    if (!shouldTrackVisitedLinks)
-        return;
-    addVisitedLink(visitedLinkHash(characters, length));
-}
-
-void PageGroup::removeVisitedLinks()
-{
-    m_visitedLinksPopulated = false;
-    if (m_visitedLinkHashes.isEmpty())
-        return;
-    m_visitedLinkHashes.clear();
-    Page::allVisitedStateChanged(this);
-    pageCache()->markPagesForVistedLinkStyleRecalc();
-}
-
-void PageGroup::removeAllVisitedLinks()
-{
-    Page::removeAllVisitedLinks();
-    pageCache()->markPagesForVistedLinkStyleRecalc();
-}
-
-void PageGroup::setShouldTrackVisitedLinks(bool shouldTrack)
-{
-    if (shouldTrackVisitedLinks == shouldTrack)
-        return;
-    shouldTrackVisitedLinks = shouldTrack;
-    if (!shouldTrackVisitedLinks)
-        removeAllVisitedLinks();
 }
 
 StorageNamespace* PageGroup::localStorage()

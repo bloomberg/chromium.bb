@@ -48,7 +48,7 @@ void WebStorageEventDispatcher::dispatchLocalStorageEvent(
 {
     RefPtr<WebCore::SecurityOrigin> securityOrigin = WebCore::SecurityOrigin::create(origin);
     WebCore::StorageAreaProxy::dispatchLocalStorageEvent(
-            WebViewImpl::defaultPageGroup(), key, oldValue, newValue, securityOrigin.get(), pageURL,
+            key, oldValue, newValue, securityOrigin.get(), pageURL,
             sourceAreaInstance, originatedInProcess);
 }
 
@@ -60,7 +60,7 @@ void WebStorageEventDispatcher::dispatchSessionStorageEvent(
 {
     RefPtr<WebCore::SecurityOrigin> securityOrigin = WebCore::SecurityOrigin::create(origin);
     WebCore::StorageAreaProxy::dispatchSessionStorageEvent(
-            WebViewImpl::defaultPageGroup(), key, oldValue, newValue, securityOrigin.get(), pageURL,
+            key, oldValue, newValue, securityOrigin.get(), pageURL,
             sessionNamespace, sourceAreaInstance, originatedInProcess);
 }
 

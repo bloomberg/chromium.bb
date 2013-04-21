@@ -187,7 +187,7 @@ Page::Page(PageClients& pageClients)
 Page::~Page()
 {
     m_mainFrame->setView(0);
-    setGroupName(String());
+    clearPageGroup();
     allPages->remove(this);
     
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext()) {
@@ -399,34 +399,28 @@ int Page::getHistoryLength()
     return backForward()->backCount() + 1 + backForward()->forwardCount();
 }
 
-void Page::setGroupName(const String& name)
+void Page::clearPageGroup()
 {
-    if (m_group && !m_group->name().isEmpty()) {
-        ASSERT(m_group != m_singlePageGroup.get());
-        ASSERT(!m_singlePageGroup);
-        m_group->removePage(this);
-    }
-
-    if (name.isEmpty())
-        m_group = m_singlePageGroup.get();
-    else {
-        m_singlePageGroup.clear();
-        m_group = PageGroup::pageGroup(name);
-        m_group->addPage(this);
-    }
+    if (!m_group)
+        return;
+    m_group->removePage(this);
+    m_group = 0;
 }
 
-const String& Page::groupName() const
+void Page::setGroupType(PageGroupType type)
 {
-    return m_group ? m_group->name() : nullAtom.string();
-}
+    clearPageGroup();
 
-void Page::initGroup()
-{
-    ASSERT(!m_singlePageGroup);
-    ASSERT(!m_group);
-    m_singlePageGroup = PageGroup::create(this);
-    m_group = m_singlePageGroup.get();
+    switch (type) {
+    case PrivatePageGroup:
+        m_group = PageGroup::create();
+        break;
+    case SharedPageGroup:
+        m_group = PageGroup::sharedGroup();
+        break;
+    }
+
+    m_group->addPage(this);
 }
 
 void Page::scheduleForcedStyleRecalcForAllPages()
@@ -822,21 +816,6 @@ const String& Page::userStyleSheet() const
     return m_userStyleSheet;
 }
 
-void Page::removeAllVisitedLinks()
-{
-    if (!allPages)
-        return;
-    HashSet<PageGroup*> groups;
-    HashSet<Page*>::iterator pagesEnd = allPages->end();
-    for (HashSet<Page*>::iterator it = allPages->begin(); it != pagesEnd; ++it) {
-        if (PageGroup* group = (*it)->groupPtr())
-            groups.add(group);
-    }
-    HashSet<PageGroup*>::iterator groupsEnd = groups.end();
-    for (HashSet<PageGroup*>::iterator it = groups.begin(); it != groupsEnd; ++it)
-        (*it)->removeVisitedLinks();
-}
-
 void Page::allVisitedStateChanged(PageGroup* group)
 {
     ASSERT(group);
@@ -1212,10 +1191,8 @@ void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_pluginData, "pluginData");
     info.addMember(m_theme, "theme");
     info.addMember(m_UseCounter, "UseCounter");
-    info.addMember(m_groupName, "groupName");
     info.addMember(m_pagination, "pagination");
     info.addMember(m_userStyleSheet, "userStyleSheet");
-    info.addMember(m_singlePageGroup, "singlePageGroup");
     info.addMember(m_group, "group");
     info.addMember(m_sessionStorage, "sessionStorage");
     info.addMember(m_relevantUnpaintedRenderObjects, "relevantUnpaintedRenderObjects");

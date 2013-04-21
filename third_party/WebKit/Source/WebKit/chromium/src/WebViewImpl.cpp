@@ -220,13 +220,6 @@ const double WebView::maxTextSizeMultiplier = 3.0;
 const float WebView::minPageScaleFactor = 0.25f;
 const float WebView::maxPageScaleFactor = 4.0f;
 
-
-// The group name identifies a namespace of pages. Page group is used on PLATFORM(MAC)
-// for some programs that use HTML views to display things that don't seem like
-// web pages to the user (so shouldn't have visited link coloring).  We only use
-// one page group.
-const char* pageGroupName = "default";
-
 // Used to defer all page activity in cases where the embedder wishes to run
 // a nested event loop. Using a stack enables nesting of message loop invocations.
 static Vector<PageGroupLoadDeferrer*>& pageGroupLoadDeferrerStack()
@@ -287,19 +280,17 @@ void WebView::setUseExternalPopupMenus(bool useExternalPopupMenus)
 
 void WebView::updateVisitedLinkState(unsigned long long linkHash)
 {
-    Page::visitedStateChanged(PageGroup::pageGroup(pageGroupName), linkHash);
+    Page::visitedStateChanged(PageGroup::sharedGroup(), linkHash);
 }
 
 void WebView::resetVisitedLinkState()
 {
-    Page::allVisitedStateChanged(PageGroup::pageGroup(pageGroupName));
+    Page::allVisitedStateChanged(PageGroup::sharedGroup());
 }
 
 void WebView::willEnterModalLoop()
 {
-    PageGroup* pageGroup = PageGroup::pageGroup(pageGroupName);
-    ASSERT(pageGroup);
-
+    PageGroup* pageGroup = PageGroup::sharedGroup();
     if (pageGroup->pages().isEmpty())
         pageGroupLoadDeferrerStack().append(static_cast<PageGroupLoadDeferrer*>(0));
     else {
@@ -496,7 +487,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_batteryClient->setController(BatteryController::from(m_page.get()));
 #endif
 
-    m_page->setGroupName(pageGroupName);
+    m_page->setGroupType(Page::SharedPageGroup);
 
     unsigned layoutMilestones = DidFirstLayout | DidFirstVisuallyNonEmptyLayout;
     m_page->addLayoutMilestones(static_cast<LayoutMilestones>(layoutMilestones));
@@ -1591,11 +1582,6 @@ WebViewImpl* WebViewImpl::fromPage(Page* page)
 
     ChromeClientImpl* chromeClient = static_cast<ChromeClientImpl*>(page->chrome()->client());
     return static_cast<WebViewImpl*>(chromeClient->webView());
-}
-
-PageGroup* WebViewImpl::defaultPageGroup()
-{
-    return PageGroup::pageGroup(pageGroupName);
 }
 
 // WebWidget ------------------------------------------------------------------
@@ -3624,7 +3610,7 @@ void WebView::addUserStyleSheet(const WebString& sourceCode,
     for (size_t i = 0; i < patternsIn.size(); ++i)
         patterns.append(patternsIn[i]);
 
-    PageGroup* pageGroup = PageGroup::pageGroup(pageGroupName);
+    PageGroup* pageGroup = PageGroup::sharedGroup();
 
     // FIXME: Current callers always want the level to be "author". It probably makes sense to let
     // callers specify this though, since in other cases the caller will probably want "user" level.
@@ -3638,8 +3624,7 @@ void WebView::addUserStyleSheet(const WebString& sourceCode,
 
 void WebView::removeAllUserContent()
 {
-    PageGroup* pageGroup = PageGroup::pageGroup(pageGroupName);
-    pageGroup->removeAllUserContent();
+    PageGroup::sharedGroup()->removeAllUserContent();
 }
 
 void WebViewImpl::didCommitLoad(bool* isNewNavigation, bool isNavigationWithinPage)
