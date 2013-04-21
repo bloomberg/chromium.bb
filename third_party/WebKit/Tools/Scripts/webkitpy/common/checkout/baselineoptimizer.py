@@ -33,23 +33,17 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-# Yes, it's a hypergraph.
 # FIXME: Should this function live with the ports somewhere?
 # Perhaps this should move onto PortFactory?
-def _baseline_search_hypergraph(host, port_names):
-    hypergraph = {}
-
-    # FIXME: Should we get this constant from somewhere?
-    fallback_path = ['LayoutTests']
-
-    port_factory = host.port_factory
+def _baseline_search_tree(host, port_names):
+    tree = {}
     for port_name in port_names:
-        port = port_factory.get(port_name)
+        port = host.port_factory.get(port_name)
         webkit_base = port.webkit_base()
         search_path = port.baseline_search_path()
         if search_path:
-            hypergraph[port_name] = [host.filesystem.relpath(path, webkit_base) for path in search_path] + fallback_path
-    return hypergraph
+            tree[port_name] = [host.filesystem.relpath(path, webkit_base) for path in search_path] + ['LayoutTests']
+    return tree
 
 
 # FIXME: Should this function be somewhere more general?
@@ -66,15 +60,14 @@ def _invert_dictionary(dictionary):
 # FIXME: This class is massively more complicated than necessary now that we only need to support Chromium baselines.
 class BaselineOptimizer(object):
     def __init__(self, host, port_names):
-        self._host = host
-        self._filesystem = self._host.filesystem
-        self._scm = self._host.scm()
-        self._hypergraph = _baseline_search_hypergraph(host, port_names)
-        self._directories = reduce(set.union, map(set, self._hypergraph.values()))
+        self._filesystem = host.filesystem
+        self._scm = host.scm()
+        self._tree = _baseline_search_tree(host, port_names)
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
-        for directory in self._directories:
+        directories = reduce(set.union, map(set, self._tree.values()))
+        for directory in directories:
             path = self._filesystem.join(self._scm.checkout_root, directory, baseline_name)
             if self._filesystem.exists(path):
                 results_by_directory[directory] = self._filesystem.sha1(path)
@@ -82,7 +75,7 @@ class BaselineOptimizer(object):
 
     def _results_by_port_name(self, results_by_directory):
         results_by_port_name = {}
-        for port_name, search_path in self._hypergraph.items():
+        for port_name, search_path in self._tree.items():
             for directory in search_path:
                 if directory in results_by_directory:
                     results_by_port_name[port_name] = results_by_directory[directory]
@@ -90,7 +83,7 @@ class BaselineOptimizer(object):
         return results_by_port_name
 
     def _most_specific_common_directory(self, port_names):
-        paths = [self._hypergraph[port_name] for port_name in port_names]
+        paths = [self._tree[port_name] for port_name in port_names]
         common_directories = reduce(set.intersection, map(set, paths))
 
         def score(directory):
@@ -147,8 +140,8 @@ class BaselineOptimizer(object):
             best_so_far = results_by_directory
             while True:
                 new_results_by_directory = copy.copy(best_so_far)
-                for port_name in self._hypergraph.keys():
-                    fallback_path = self._hypergraph[port_name]
+                for port_name in self._tree.keys():
+                    fallback_path = self._tree[port_name]
                     current_index, current_directory = self._find_in_fallbackpath(fallback_path, results_by_port_name[port_name], best_so_far)
                     current_result = results_by_port_name[port_name]
                     for index in range(current_index + 1, len(fallback_path)):
@@ -179,10 +172,6 @@ class BaselineOptimizer(object):
             if directory in results_by_directory and (results_by_directory[directory] == current_result):
                 return index, directory
         assert False, "result %s not found in fallback_path %s, %s" % (current_result, fallback_path, results_by_directory)
-
-    # FIXME: Inline this function into its callers.
-    def _filtered_results_by_port_name(self, results_by_directory):
-        return self._results_by_port_name(results_by_directory)
 
     def _platform(self, filename):
         platform_dir = 'LayoutTests' + self._filesystem.sep + 'platform' + self._filesystem.sep
@@ -227,10 +216,6 @@ class BaselineOptimizer(object):
         else:
             _log.debug("    (Nothing to add)")
 
-    def directories_by_result(self, baseline_name):
-        results_by_directory = self.read_results_by_directory(baseline_name)
-        return _invert_dictionary(results_by_directory)
-
     def write_by_directory(self, results_by_directory, writer, indent):
         for path in sorted(results_by_directory):
             writer("%s%s: %s" % (indent, self._platform(path), results_by_directory[path][0:6]))
@@ -246,7 +231,7 @@ class BaselineOptimizer(object):
             else:
                 _log.debug("  %s: (no baselines found)" % basename)
             return True
-        if self._filtered_results_by_port_name(results_by_directory) != self._filtered_results_by_port_name(new_results_by_directory):
+        if self._results_by_port_name(results_by_directory) != self._results_by_port_name(new_results_by_directory):
             _log.warning("  %s: optimization failed" % basename)
             self.write_by_directory(results_by_directory, _log.warning, "      ")
             return False
