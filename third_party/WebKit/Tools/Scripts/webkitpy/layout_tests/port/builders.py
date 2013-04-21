@@ -61,10 +61,6 @@ _exact_matches = {
 }
 
 
-_fuzzy_matches = {
-}
-
-
 _ports_without_builders = [
     # FIXME: Move to _extact_matches.
     "chromium-android",
@@ -92,12 +88,7 @@ def move_overwritten_baselines_to(builder_name):
 
 
 def port_name_for_builder_name(builder_name):
-    if builder_name in _exact_matches:
-        return _exact_matches[builder_name]["port_name"]
-
-    for regexp, port_name in _fuzzy_matches.items():
-        if re.match(regexp, builder_name):
-            return port_name
+    return _exact_matches[builder_name]["port_name"]
 
 
 def builder_name_for_port_name(target_port_name):
