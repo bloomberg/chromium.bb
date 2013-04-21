@@ -797,7 +797,7 @@ class SVN(object):
       bogus_dir = tempfile.mkdtemp()
       try:
         return SVN._GenerateDiffInternal(filenames, cwd, full_move, revision,
-                                         ["diff", "--config-dir", bogus_dir])
+                                         ["diff", "--config_dir", bogus_dir])
       finally:
         gclient_utils.RemoveDirectory(bogus_dir)
 
