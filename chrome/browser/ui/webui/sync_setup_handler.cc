@@ -23,7 +23,6 @@
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -46,6 +45,12 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/signin/signin_manager_base.h"
+#else
+#include "chrome/browser/signin/signin_manager.h"
+#endif
 
 using content::WebContents;
 using l10n_util::GetStringFUTF16;
@@ -570,10 +575,6 @@ void SyncSetupHandler::RegisterMessages() {
       base::Bind(&SyncSetupHandler::OnDidClosePage,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "SyncSetupSubmitAuth",
-      base::Bind(&SyncSetupHandler::HandleSubmitAuth,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "SyncSetupConfigure",
       base::Bind(&SyncSetupHandler::HandleConfigure,
                  base::Unretained(this)));
@@ -599,10 +600,12 @@ void SyncSetupHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback("SyncSetupStopSyncing",
       base::Bind(&SyncSetupHandler::HandleStopSyncing,
                  base::Unretained(this)));
-}
-
-SigninManager* SyncSetupHandler::GetSignin() const {
-  return SigninManagerFactory::GetForProfile(GetProfile());
+#if !defined(OS_CHROMEOS)
+  web_ui()->RegisterMessageCallback(
+      "SyncSetupSubmitAuth",
+      base::Bind(&SyncSetupHandler::HandleSubmitAuth,
+                 base::Unretained(this)));
+#endif
 }
 
 void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
@@ -687,7 +690,8 @@ void SyncSetupHandler::DisplayGaiaLoginWithErrorMessage(
   } else {
     // Fresh login attempt - lock in the authenticated username if there is
     // one (don't let the user change it).
-    user = GetSignin()->GetAuthenticatedUsername();
+    user = SigninManagerFactory::GetForProfile(GetProfile())->
+        GetAuthenticatedUsername();
     error = 0;
     editable_user = user.empty();
   }
@@ -792,6 +796,7 @@ void SyncSetupHandler::OnDidClosePage(const ListValue* args) {
   CloseSyncSetup();
 }
 
+#if !defined (OS_CHROMEOS)
 void SyncSetupHandler::HandleSubmitAuth(const ListValue* args) {
   std::string json;
   if (!args->GetString(0, &json)) {
@@ -849,7 +854,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   GoogleServiceAuthError current_error = last_signin_error_;
   last_signin_error_ = GoogleServiceAuthError::AuthErrorNone();
 
-  SigninManager* signin = GetSignin();
+  SigninManager* signin = SigninManagerFactory::GetForProfile(GetProfile());
 
   // If we're just being called to provide an ASP, then pass it to the
   // SigninManager and wait for the next step.
@@ -869,6 +874,7 @@ void SyncSetupHandler::TryLogin(const std::string& username,
   signin->StartSignIn(username, password, current_error.captcha().token,
                       solution);
 }
+#endif  // !defined (OS_CHROMEOS)
 
 void SyncSetupHandler::GaiaCredentialsValid() {
   DCHECK(IsActiveLogin());
@@ -1062,7 +1068,7 @@ void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {
   if (GetSyncService())
     ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
 
-  GetSignin()->SignOut();
+  SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
 }
 
 void SyncSetupHandler::HandleCloseTimeout(const ListValue* args) {
@@ -1115,7 +1121,7 @@ void SyncSetupHandler::CloseSyncSetup() {
         // the user checks the "advanced setup" checkbox, then cancels out of
         // the setup box, which is a much more common scenario, so we do the
         // right thing for the one-click case.
-        GetSignin()->SignOut();
+        SigninManagerFactory::GetForProfile(GetProfile())->SignOut();
       }
       sync_service->DisableForUser();
       browser_sync::SyncPrefs sync_prefs(GetProfile()->GetPrefs());
@@ -1155,7 +1161,8 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
   // 7) One-click signin (credentials are already available, so should display
   //    sync configure UI, not login UI).
   // 8) ChromeOS re-enable after disabling sync.
-  SigninManager* signin = GetSignin();
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(GetProfile());
   if (force_login ||
       signin->GetAuthenticatedUsername().empty() ||
 #if !defined(OS_CHROMEOS)
@@ -1292,7 +1299,8 @@ bool SyncSetupHandler::IsLoginAuthDataValid(const std::string& username,
   if (!web_ui())
     return true;
 
-  if (!GetSignin()->IsAllowedUsername(username)) {
+  if (!SigninManagerFactory::GetForProfile(
+          GetProfile())->IsAllowedUsername(username)) {
     *error_message = l10n_util::GetStringUTF16(IDS_SYNC_LOGIN_NAME_PROHIBITED);
     return false;
   }

@@ -3,19 +3,23 @@
 // found in the LICENSE file.
 //
 // The signin manager encapsulates some functionality tracking
-// which user is signed in. When a user is signed in, a ClientLogin
-// request is run on their behalf. Auth tokens are fetched from Google
-// and the results are stored in the TokenService.
+// which user is signed in. See SigninManagerBase for full description of
+// responsibilities. The class defined in this file provides functionality
+// required by all platforms except Chrome OS.
 //
-// **NOTE** on semantics of SigninManager:
-//
-// Once a signin is successful, the username becomes "established" and will not
-// be cleared until a SignOut operation is performed (persists across
-// restarts). Until that happens, the signin manager can still be used to
-// refresh credentials, but changing the username is not permitted.
+// When a user is signed in, a ClientLogin request is run on their behalf.
+// Auth tokens are fetched from Google and the results are stored in the
+// TokenService.
+// TODO(tim): Bug 92948, 226464. ClientLogin is all but gone from use.
 
 #ifndef CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
 #define CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_
+
+#if defined(OS_CHROMEOS)
+// On Chrome OS, SigninManagerBase is all that exists.
+#include "chrome/browser/signin/signin_manager_base.h"
+
+#else
 
 #include <string>
 
@@ -29,6 +33,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/signin/signin_internals_util.h"
+#include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/ubertoken_fetcher.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -46,45 +51,11 @@ namespace policy {
 class CloudPolicyClient;
 }
 
-// Details for the Notification type GOOGLE_SIGNIN_SUCCESSFUL.
-// A listener might use this to make note of a username / password
-// pair for encryption keys.
-struct GoogleServiceSigninSuccessDetails {
-  GoogleServiceSigninSuccessDetails(const std::string& in_username,
-                                    const std::string& in_password)
-      : username(in_username),
-        password(in_password) {}
-  std::string username;
-  std::string password;
-};
-
-// Details for the Notification type NOTIFICATION_GOOGLE_SIGNED_OUT.
-struct GoogleServiceSignoutDetails {
-  explicit GoogleServiceSignoutDetails(const std::string& in_username)
-      : username(in_username) {}
-  std::string username;
-};
-
-class SigninManager : public GaiaAuthConsumer,
+class SigninManager : public SigninManagerBase,
+                      public GaiaAuthConsumer,
                       public UbertokenConsumer,
-                      public content::NotificationObserver,
-                      public ProfileKeyedService {
+                      public content::NotificationObserver {
  public:
-  // Methods to register or remove SigninDiagnosticObservers
-  void AddSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-  void RemoveSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-
-  // Returns true if the cookie policy for the given profile allows cookies
-  // for the Google signin domain.
-  static bool AreSigninCookiesAllowed(Profile* profile);
-  static bool AreSigninCookiesAllowed(CookieSettings* cookie_settings);
-
-  // Returns true if the username is allowed based on the policy string.
-  static bool IsAllowedUsername(const std::string& username,
-                                const std::string& policy);
-
   // Returns true if |url| is a web signin URL and should be hosted in an
   // isolated, privileged signin process.
   static bool IsWebBasedSigninFlowURL(const GURL& url);
@@ -98,33 +69,6 @@ class SigninManager : public GaiaAuthConsumer,
 
   SigninManager();
   virtual ~SigninManager();
-
-  // If user was signed in, load tokens from DB if available.
-  void Initialize(Profile* profile);
-  bool IsInitialized() const;
-
-  // Returns true if the passed username is allowed by policy. Virtual for
-  // mocking in tests.
-  virtual bool IsAllowedUsername(const std::string& username) const;
-
-  // Returns true if a signin to Chrome is allowed (by policy or pref).
-  bool IsSigninAllowed() const;
-
-  // Checks if signin is allowed for the profile that owns |io_data|. This must
-  // be invoked on the IO thread, and can be used to check if signin is enabled
-  // on that thread.
-  static bool IsSigninAllowedOnIOThread(ProfileIOData* io_data);
-
-  // If a user has previously established a username and SignOut has not been
-  // called, this will return the username.
-  // Otherwise, it will return an empty string.
-  const std::string& GetAuthenticatedUsername() const;
-
-  // Sets the user name.  Note: |username| should be already authenticated as
-  // this is a sticky operation (in contrast to StartSignIn).
-  // TODO(tim): Remove this in favor of passing username on construction by
-  // (by platform / depending on StartBehavior). Bug 88109.
-  void SetAuthenticatedUsername(const std::string& username);
 
   // Attempt to sign in this user with ClientLogin. If successful, set a
   // preference indicating the signed in user and send out a notification,
@@ -164,11 +108,10 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
-  virtual void SignOut();
+  virtual void SignOut() OVERRIDE;
 
-  // Returns true if there's a signin in progress. Virtual so it can be
-  // overridden by mocks.
-  virtual bool AuthInProgress() const;
+  // Returns true if there's a signin in progress.
+  virtual bool AuthInProgress() const OVERRIDE;
 
   // If an authentication is in progress, return the username being
   // authenticated. Returns an empty string if no auth is in progress.
@@ -203,16 +146,6 @@ class SigninManager : public GaiaAuthConsumer,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  SigninGlobalError* signin_global_error() {
-    return signin_global_error_.get();
-  }
-
-  const SigninGlobalError* signin_global_error() const {
-    return signin_global_error_.get();
-  }
-
-  // ProfileKeyedService implementation.
-  virtual void Shutdown() OVERRIDE;
 
   // Tells the SigninManager whether to prohibit signout for this profile.
   // If |prohibit_signout| is true, then signout will be prohibited.
@@ -232,14 +165,8 @@ class SigninManager : public GaiaAuthConsumer,
   bool HasSigninProcess() const;
 
  protected:
-  // Weak pointer to parent profile (protected so FakeSigninManager can access
-  // it).
-  Profile* profile_;
-
-  // Used to show auth errors in the wrench menu. The SigninGlobalError is
-  // different than most GlobalErrors in that its lifetime is controlled by
-  // SigninManager (so we can expose a reference for use in the wrench menu).
-  scoped_ptr<SigninGlobalError> signin_global_error_;
+  // If user was signed in, load tokens from DB if available.
+  virtual void InitTokenService() OVERRIDE;
 
   // Flag saying whether signing out is allowed.
   bool prohibit_signout_;
@@ -292,7 +219,7 @@ class SigninManager : public GaiaAuthConsumer,
   // token.
   void RevokeOAuthLoginToken();
 
-#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+#if defined(ENABLE_CONFIGURATION_POLICY)
   // Callback invoked once policy registration is complete. If registration
   // fails, |client| will be null.
   void OnRegisteredForPolicy(scoped_ptr<policy::CloudPolicyClient> client);
@@ -316,7 +243,8 @@ class SigninManager : public GaiaAuthConsumer,
 
   // Cancels the in-progress signin for this profile.
   void CancelSignin();
-#endif  // defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   // Invoked once policy has been loaded to complete user signin.
   void CompleteSigninAfterPolicyLoad();
@@ -327,18 +255,6 @@ class SigninManager : public GaiaAuthConsumer,
   bool had_two_factor_error_;
 
   void CleanupNotificationRegistration();
-
-  void OnGoogleServicesUsernamePatternChanged();
-
-  void OnSigninAllowedPrefChanged();
-
-  // Helper methods to notify all registered diagnostics observers with.
-  void NotifyDiagnosticsObservers(
-      const signin_internals_util::UntimedSigninStatusField& field,
-      const std::string& value);
-  void NotifyDiagnosticsObservers(
-      const signin_internals_util::TimedSigninStatusField& field,
-      const std::string& value);
 
   // Result of the last client login, kept pending the lookup of the
   // canonical email.
@@ -356,16 +272,6 @@ class SigninManager : public GaiaAuthConsumer,
   // OAuth revocation fetcher for sign outs.
   scoped_ptr<GaiaAuthFetcher> revoke_token_fetcher_;
 
-  // Helper object to listen for changes to signin preferences stored in non-
-  // profile-specific local prefs (like kGoogleServicesUsernamePattern).
-  PrefChangeRegistrar local_state_pref_registrar_;
-
-  // Helper object to listen for changes to the signin allowed preference.
-  BooleanPrefMember signin_allowed_;
-
-  // Actual username after successful authentication.
-  std::string authenticated_username_;
-
   // The type of sign being performed.  This value is valid only between a call
   // to one of the StartSigninXXX methods and when the sign in is either
   // successful or not.
@@ -376,17 +282,13 @@ class SigninManager : public GaiaAuthConsumer,
   // not need to mint new ones.
   ClientOAuthResult temp_oauth_login_tokens_;
 
-  // The list of SigninDiagnosticObservers.
-  ObserverList<signin_internals_util::SigninDiagnosticsObserver, true>
-      signin_diagnostics_observers_;
-
   base::WeakPtrFactory<SigninManager> weak_pointer_factory_;
 
   // See SetSigninProcess.  Tracks the currently active signin process
   // by ID, if there is one.
   int signin_process_id_;
 
-#if defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
+#if defined(ENABLE_CONFIGURATION_POLICY)
   // CloudPolicyClient reference we keep while determining whether to create
   // a new profile for an enterprise user or not.
   scoped_ptr<policy::CloudPolicyClient> policy_client_;
@@ -394,5 +296,7 @@ class SigninManager : public GaiaAuthConsumer,
 
   DISALLOW_COPY_AND_ASSIGN(SigninManager);
 };
+
+#endif  // !defined(OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_SIGNIN_SIGNIN_MANAGER_H_

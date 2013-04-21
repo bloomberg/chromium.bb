@@ -181,7 +181,7 @@ bool SigninTracker::AreServicesSignedIn(Profile* profile) {
 SigninTracker::LoginState SigninTracker::GetSigninState(
     Profile* profile,
     GoogleServiceAuthError* error) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
   if (signin->GetAuthenticatedUsername().empty()) {
     // User is signed out, trigger a signin failure.
     if (error)

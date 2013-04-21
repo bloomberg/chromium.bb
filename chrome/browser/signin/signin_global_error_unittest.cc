@@ -21,11 +21,10 @@ class SigninGlobalErrorTest : public testing::Test {
     // Create a signed-in profile.
     profile_.reset(new TestingProfile());
 
-    SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-        profile_.get(), FakeSigninManager::Build);
-    SigninManager* manager =
-        SigninManagerFactory::GetForProfile(profile_.get());
-      manager->SetAuthenticatedUsername("testuser@test.com");
+    SigninManagerBase* manager = static_cast<SigninManagerBase*>(
+        SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
+            profile_.get(), FakeSigninManagerBase::Build));
+    manager->SetAuthenticatedUsername("testuser@test.com");
     global_error_ = manager->signin_global_error();
   }
 

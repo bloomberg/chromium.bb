@@ -130,7 +130,7 @@ bool ShouldShowActionOnUI(
 
 ProfileSyncService::ProfileSyncService(ProfileSyncComponentsFactory* factory,
                                        Profile* profile,
-                                       SigninManager* signin_manager,
+                                       SigninManagerBase* signin_manager,
                                        StartBehavior start_behavior)
     : last_auth_error_(AuthError::AuthErrorNone()),
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
@@ -2052,7 +2052,7 @@ void ProfileSyncService::UpdateInvalidatorRegistrarState() {
 
 void ProfileSyncService::ResetForTest() {
   Profile* profile = profile_;
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
   ProfileSyncService::StartBehavior behavior =
       browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
                                         : ProfileSyncService::MANUAL_START;

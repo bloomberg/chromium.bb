@@ -74,7 +74,7 @@ class FakeProfileSyncService : public TestProfileSyncService {
   FakeProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
-      SigninManager* signin,
+      SigninManagerBase* signin,
       ProfileSyncService::StartBehavior behavior,
       bool synchronous_backend_initialization)
       : TestProfileSyncService(factory,
@@ -261,7 +261,8 @@ class ProfileSyncServiceSessionTest
                         bool will_fail_association) {
     if (sync_service_.get())
       return false;
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile());
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(profile());
     signin->SetAuthenticatedUsername("test_user");
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();

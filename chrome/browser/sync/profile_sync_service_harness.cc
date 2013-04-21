@@ -20,12 +20,19 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_base.h"
+#include "chrome/browser/signin/token_service.h"
+#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/sync/about_sync_util.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
+#include "content/public/browser/notification_service.h"
+#include "google_apis/gaia/gaia_constants.h"
 #include "sync/internal_api/public/base/progress_marker_map.h"
 #include "sync/internal_api/public/sessions/sync_session_snapshot.h"
 #include "sync/internal_api/public/util/sync_string_conversions.h"
@@ -179,8 +186,16 @@ bool ProfileSyncServiceHarness::SetupSync(
   service_->SetSetupInProgress(true);
 
   // Authenticate sync client using GAIA credentials.
-  service_->signin()
-      ->StartSignIn(username_, password_, std::string(), std::string());
+  service_->signin()->SetAuthenticatedUsername(username_);
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername,
+                                  username_);
+  GoogleServiceSigninSuccessDetails details(username_, password_);
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+      content::Source<Profile>(profile_),
+      content::Details<const GoogleServiceSigninSuccessDetails>(&details));
+  TokenServiceFactory::GetForProfile(profile_)->IssueAuthTokenForTest(
+      GaiaConstants::kSyncService, "sync_token");
 
   // Wait for the OnBackendInitialized() callback.
   if (!AwaitBackendInitialized()) {

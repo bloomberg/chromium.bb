@@ -98,7 +98,7 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
   PasswordTestProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
-      SigninManager* signin)
+      SigninManagerBase* signin)
       : TestProfileSyncService(factory,
                                profile,
                                signin,
@@ -129,7 +129,8 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
   }
 
   static ProfileKeyedService* Build(Profile* profile) {
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(profile);
     ProfileSyncComponentsFactoryMock* factory =
         new ProfileSyncComponentsFactoryMock();
     return new PasswordTestProfileSyncService(factory, profile, signin);
@@ -198,7 +199,8 @@ class ProfileSyncServicePasswordTest : public AbstractProfileSyncServiceTest {
   void StartSyncService(const base::Closure& root_callback,
                         const base::Closure& node_callback) {
     if (!sync_service_) {
-      SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
+      SigninManagerBase* signin =
+          SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test_user");
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(

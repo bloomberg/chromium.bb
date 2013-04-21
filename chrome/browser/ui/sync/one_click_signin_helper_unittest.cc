@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/fake_signin_manager.h"
+#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_names_io_thread.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -53,8 +54,8 @@ const char kImplicitURLString[] =
 
 class SigninManagerMock : public FakeSigninManager {
  public:
-  explicit SigninManagerMock(Profile* profile)
-      : FakeSigninManager(profile) {}
+  explicit SigninManagerMock(Profile* profile) : FakeSigninManager(profile) {
+  }
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
 
@@ -267,10 +268,10 @@ void OneClickSigninHelperTest::CreateSigninManager(
           profile_, BuildSigninManagerMock));
   if (signin_manager_)
     signin_manager_->SetSigninProcess(trusted_signin_process_id_);
+
   if (!username.empty()) {
     ASSERT_TRUE(signin_manager_);
-    signin_manager_->StartSignIn(username, std::string(), std::string(),
-                                std::string());
+    signin_manager_->SetAuthenticatedUsername(username);
   }
 }
 

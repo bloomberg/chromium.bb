@@ -9,7 +9,7 @@
 
 class GlobalError;
 class Profile;
-class SigninManager;
+class SigninManagerBase;
 
 // Utility functions to gather status information from the various signed in
 // services and construct messages suitable for showing in UI.
@@ -23,7 +23,7 @@ GlobalError* GetSignedInServiceError(Profile* profile);
 // "Sign in to Chromium", "Signin Error...", etc).
 string16 GetSigninMenuLabel(Profile* profile);
 
-void GetStatusLabelsForAuthError(const SigninManager& signin_manager,
+void GetStatusLabelsForAuthError(const SigninManagerBase& signin_manager,
                                  string16* status_label,
                                  string16* link_label);
 

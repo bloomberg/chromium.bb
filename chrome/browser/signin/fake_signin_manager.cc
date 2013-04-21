@@ -14,22 +14,47 @@
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/notification_service.h"
 
-FakeSigninManager::FakeSigninManager(Profile* profile) {
+FakeSigninManagerBase::FakeSigninManagerBase(Profile* profile) {
   profile_ = profile;
   signin_global_error_.reset(new SigninGlobalError(this, profile));
   GlobalErrorServiceFactory::GetForProfile(profile_)->AddGlobalError(
       signin_global_error_.get());
   signin_allowed_.Init(prefs::kSigninAllowed, profile_->GetPrefs(),
-                       base::Bind(&SigninManager::OnSigninAllowedPrefChanged,
-                                  base::Unretained(this)));
+      base::Bind(&SigninManagerBase::OnSigninAllowedPrefChanged,
+      base::Unretained(this)));
 }
 
-FakeSigninManager::~FakeSigninManager() {
+FakeSigninManagerBase::~FakeSigninManagerBase() {
   if (signin_global_error_.get()) {
     GlobalErrorServiceFactory::GetForProfile(profile_)->RemoveGlobalError(
         signin_global_error_.get());
     signin_global_error_.reset();
   }
+}
+
+void FakeSigninManagerBase::SignOut() {
+  authenticated_username_.clear();
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+      content::Source<Profile>(profile_),
+      content::NotificationService::NoDetails());
+}
+
+// static
+ProfileKeyedService* FakeSigninManagerBase::Build(Profile* profile) {
+  return new FakeSigninManagerBase(profile);
+}
+
+#if !defined (OS_CHROMEOS)
+
+FakeSigninManager::FakeSigninManager(Profile* profile) {
+  Initialize(profile);
+}
+
+FakeSigninManager::~FakeSigninManager() {
+}
+
+void FakeSigninManager::InitTokenService() {
 }
 
 void FakeSigninManager::StartSignIn(const std::string& username,
@@ -61,13 +86,9 @@ void FakeSigninManager::SignOut() {
       content::NotificationService::NoDetails());
 }
 
-void FakeSigninManager::ForceSignOut() {
-  // Allow signing out now.
-  prohibit_signout_ = false;
-  SignOut();
-}
-
 // static
 ProfileKeyedService* FakeSigninManager::Build(Profile* profile) {
   return new FakeSigninManager(profile);
 }
+
+#endif  // !defined (OS_CHROMEOS)

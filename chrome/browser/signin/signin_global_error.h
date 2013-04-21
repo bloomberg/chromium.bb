@@ -12,7 +12,7 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 
 class Profile;
-class SigninManager;
+class SigninManagerBase;
 
 // Shows auth errors on the wrench menu using a bubble view and a
 // menu item. Services that wish to expose auth errors to the user should
@@ -31,7 +31,7 @@ class SigninGlobalError : public GlobalError {
     virtual GoogleServiceAuthError GetAuthStatus() const = 0;
   };
 
-  SigninGlobalError(SigninManager* signin_manager, Profile* profile);
+  SigninGlobalError(SigninManagerBase* signin_manager, Profile* profile);
   virtual ~SigninGlobalError();
 
   // Adds a provider which the SigninGlobalError object will start querying for
@@ -69,7 +69,7 @@ class SigninGlobalError : public GlobalError {
   GoogleServiceAuthError auth_error_;
 
   // The SigninManager that owns this object.
-  SigninManager* signin_manager_;
+  SigninManagerBase* signin_manager_;
 
   // The Profile this object belongs to.
   Profile* profile_;

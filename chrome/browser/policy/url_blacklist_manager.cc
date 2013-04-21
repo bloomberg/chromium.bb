@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/net/url_fixer_upper.h"
-#include "chrome/browser/signin/signin_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -22,6 +21,10 @@
 #include "googleurl/src/gurl.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/signin_manager.h"
+#endif
 
 using content::BrowserThread;
 using extensions::URLMatcher;
@@ -58,6 +61,8 @@ bool IsStandardScheme(const std::string& scheme) {
   return false;
 }
 
+#if !defined(OS_CHROMEOS)
+
 bool IsSigninFlowURL(const GURL& url) {
   // Whitelist all the signin flow URLs flagged by the SigninManager.
   if (SigninManager::IsWebBasedSigninFlowURL(url))
@@ -68,6 +73,8 @@ bool IsSigninFlowURL(const GURL& url) {
     return false;
   return url.path() == kServiceLoginAuth;
 }
+
+#endif  // !defined(OS_CHROMEOS)
 
 // A task that builds the blacklist on the FILE thread.
 scoped_ptr<URLBlacklist> BuildBlacklist(scoped_ptr<base::ListValue> block,
@@ -382,8 +389,12 @@ bool URLBlacklistManager::IsRequestBlocked(
   int filter_flags = net::LOAD_MAIN_FRAME | net::LOAD_SUB_FRAME;
   if ((request.load_flags() & filter_flags) == 0)
     return false;
+
+#if !defined(OS_CHROMEOS)
   if (IsSigninFlowURL(request.url()))
     return false;
+#endif
+
   return IsURLBlocked(request.url());
 }
 

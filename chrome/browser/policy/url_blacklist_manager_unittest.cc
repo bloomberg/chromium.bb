@@ -515,12 +515,20 @@ TEST_F(URLBlacklistManagerTest, DontBlockResources) {
   request.set_load_flags(net::LOAD_MAIN_FRAME);
   EXPECT_TRUE(blacklist_manager_->IsRequestBlocked(request));
 
-  // Sync gets a free pass.
+  // On most platforms, sync gets a free pass due to signin flows.
+  bool block_signin_urls = false;
+#if defined(OS_CHROMEOS)
+  // There are no sync specific signin flows on Chrome OS, so no special
+  // treatment.
+  block_signin_urls = true;
+#endif
+
   GURL sync_url(
       GaiaUrls::GetInstance()->service_login_url() + "?service=chromiumsync");
   net::URLRequest sync_request(sync_url, NULL, &context);
   sync_request.set_load_flags(net::LOAD_MAIN_FRAME);
-  EXPECT_FALSE(blacklist_manager_->IsRequestBlocked(sync_request));
+  EXPECT_EQ(block_signin_urls,
+            blacklist_manager_->IsRequestBlocked(sync_request));
 }
 
 }  // namespace policy

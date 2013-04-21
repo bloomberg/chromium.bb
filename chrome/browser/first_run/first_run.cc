@@ -565,7 +565,7 @@ void FirstRunBubbleLauncher::Observe(
     if (contents->GetURL().host() == chrome::kChromeUINewTabHost) {
       Profile* profile =
           Profile::FromBrowserContext(contents->GetBrowserContext());
-      SigninManager* manager =
+      SigninManagerBase* manager =
           SigninManagerFactory::GetForProfile(profile);
       bool signin_in_progress = manager &&
           (!manager->GetAuthenticatedUsername().empty() &&

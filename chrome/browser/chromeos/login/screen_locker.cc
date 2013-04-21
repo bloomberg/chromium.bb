@@ -200,7 +200,7 @@ void ScreenLocker::OnLoginSuccess(
   if (profile && !user_context.password.empty()) {
     // We have a non-empty password, so notify listeners (such as the sync
     // engine).
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+    SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
     DCHECK(signin);
     GoogleServiceSigninSuccessDetails details(
         signin->GetAuthenticatedUsername(),

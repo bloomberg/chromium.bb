@@ -36,7 +36,11 @@ RenderViewHostTester* ChromeRenderViewHostTestHarness::rvh_tester() {
 }
 
 static ProfileKeyedService* BuildSigninManagerFake(Profile* profile) {
+#if defined (OS_CHROMEOS)
+  return new FakeSigninManagerBase(profile);
+#else
   return new FakeSigninManager(profile);
+#endif
 }
 
 void ChromeRenderViewHostTestHarness::SetUp() {

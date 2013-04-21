@@ -30,7 +30,8 @@ namespace signin_ui_util {
 GlobalError* GetSignedInServiceError(Profile* profile) {
   // Auth errors have the highest priority - after that, individual service
   // errors.
-  SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(profile);
   SigninGlobalError* signin_error = signin_manager->signin_global_error();
   if (signin_error && signin_error->HasMenuItem())
     return signin_error;
@@ -61,7 +62,7 @@ string16 GetSigninMenuLabel(Profile* profile) {
   // label if we're still setting up sync.
   if (!service || !service->FirstSetupInProgress()) {
     std::string username;
-    SigninManager* signin_manager =
+    SigninManagerBase* signin_manager =
         SigninManagerFactory::GetForProfileIfExists(profile);
     if (signin_manager)
       username = signin_manager->GetAuthenticatedUsername();
@@ -79,7 +80,7 @@ string16 GetSigninMenuLabel(Profile* profile) {
 
 // Given an authentication state this helper function returns various labels
 // that can be used to display information about the state.
-void GetStatusLabelsForAuthError(const SigninManager& signin_manager,
+void GetStatusLabelsForAuthError(const SigninManagerBase& signin_manager,
                                  string16* status_label,
                                  string16* link_label) {
   string16 username = UTF8ToUTF16(signin_manager.GetAuthenticatedUsername());

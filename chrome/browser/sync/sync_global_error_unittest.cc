@@ -159,7 +159,8 @@ TEST_F(SyncGlobalErrorTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile.get());
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile.get());
   FakeLoginUIService* login_ui_service = static_cast<FakeLoginUIService*>(
       LoginUIServiceFactory::GetInstance()->SetTestingFactoryAndUse(
           profile.get(), BuildMockLoginUIService));

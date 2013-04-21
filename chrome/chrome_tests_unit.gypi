@@ -1068,6 +1068,7 @@
         'browser/signin/profile_oauth2_token_service_unittest.cc',
         'browser/signin/signin_global_error_unittest.cc',
         'browser/signin/signin_manager_unittest.cc',
+        'browser/signin/signin_manager_base_unittest.cc',
         'browser/signin/signin_names_io_thread_unittest.cc',
         'browser/signin/signin_tracker_unittest.cc',
         'browser/signin/token_service_unittest.cc',
@@ -1953,7 +1954,9 @@
             'browser/policy/cloud/user_cloud_policy_store_unittest.cc',
             'browser/policy/cloud/user_policy_signin_service_unittest.cc',
             'browser/safe_browsing/download_protection_service_unittest.cc',
+            'browser/signin/signin_manager_unittest.cc',
             'browser/storage_monitor/storage_monitor_linux_unittest.cc',
+            'browser/ui/sync/one_click_signin_helper_unittest.cc',
           ],
           'sources': [
             'browser/ui/webui/feedback_ui_unittest.cc',

@@ -192,7 +192,7 @@ void ShowSearchEngineSettings(Browser* browser) {
 
 void ShowBrowserSignin(Browser* browser, SyncPromoUI::Source source) {
   Profile* original_profile = browser->profile()->GetOriginalProfile();
-  SigninManager* manager =
+  SigninManagerBase* manager =
       SigninManagerFactory::GetForProfile(original_profile);
   DCHECK(manager->IsSigninAllowed());
   // If we're signed in, just show settings.

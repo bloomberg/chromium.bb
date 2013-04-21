@@ -328,10 +328,10 @@ bool EPKPChallengeUserKey::IsRemoteAttestationEnabledForUser() const {
 }
 
 std::string EPKPChallengeUserKey::GetUserDomain() const {
-  SigninManager* signin_manager =
+  SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(profile());
   if (!signin_manager)
-    return "";
+    return std::string();
 
   return gaia::ExtractDomainName(
       gaia::CanonicalizeEmail(signin_manager->GetAuthenticatedUsername()));

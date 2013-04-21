@@ -96,7 +96,7 @@ class ProfileSyncServiceTestHarness {
       bool sync_setup_completed,
       syncer::StorageOption storage_option) {
     if (!service.get()) {
-      SigninManager* signin =
+      SigninManagerBase* signin =
           SigninManagerFactory::GetForProfile(profile.get());
       signin->SetAuthenticatedUsername("test");
       ProfileSyncComponentsFactoryMock* factory =
@@ -176,7 +176,7 @@ class ProfileSyncServiceTest : public testing::Test {
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {
-  SigninManager* signin =
+  SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
   harness_.service.reset(new TestProfileSyncService(
       new ProfileSyncComponentsFactoryMock(),
@@ -210,7 +210,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
   harness_.profile->GetTestingPrefService()->SetManagedPref(
       prefs::kSyncManaged,
       Value::CreateBooleanValue(true));
-  SigninManager* signin =
+  SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
   harness_.service.reset(new TestProfileSyncService(
       new ProfileSyncComponentsFactoryMock(),
@@ -223,7 +223,7 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicy) {
 }
 
 TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
-  SigninManager* signin =
+  SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
   signin->SetAuthenticatedUsername("test");
   ProfileSyncComponentsFactoryMock* factory =
@@ -248,7 +248,7 @@ TEST_F(ProfileSyncServiceTest, AbortedByShutdown) {
 }
 
 TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
-  SigninManager* signin =
+  SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
   signin->SetAuthenticatedUsername("test");
   ProfileSyncComponentsFactoryMock* factory =
@@ -283,7 +283,7 @@ TEST_F(ProfileSyncServiceTest, DisableAndEnableSyncTemporarily) {
 }
 
 TEST_F(ProfileSyncServiceTest, EnableSyncAndSignOut) {
-  SigninManager* signin =
+  SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(harness_.profile.get());
   signin->SetAuthenticatedUsername("test@test.com");
   ProfileSyncComponentsFactoryMock* factory =

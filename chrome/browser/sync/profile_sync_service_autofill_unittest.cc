@@ -522,7 +522,8 @@ class ProfileSyncServiceAutofillTest
                         bool will_fail_association,
                         syncer::ModelType type) {
     AbstractAutofillFactory* factory = GetFactory(type);
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test_user");
     sync_service_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(

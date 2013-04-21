@@ -650,9 +650,10 @@ void LoginUtilsImpl::InitRlz(Profile* user_profile, bool disabled) {
 
 void LoginUtilsImpl::StartSignedInServices(Profile* user_profile) {
   // Fetch/Create the SigninManager - this will cause the TokenService to load
-  // tokens for the currently signed-in user if the SigninManager hasn't already
-  // been initialized.
-  SigninManager* signin = SigninManagerFactory::GetForProfile(user_profile);
+  // tokens for the currently signed-in user if the SigninManager hasn't
+  // already been initialized.
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(user_profile);
   DCHECK(signin);
   // Make sure SigninManager is connected to our current user (this should
   // happen automatically because we set kGoogleServicesUsername in

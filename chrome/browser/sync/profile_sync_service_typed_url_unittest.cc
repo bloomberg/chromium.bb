@@ -196,7 +196,8 @@ class ProfileSyncServiceTypedUrlTest : public AbstractProfileSyncServiceTest {
   TypedUrlModelAssociator* StartSyncService(const base::Closure& callback) {
     TypedUrlModelAssociator* model_associator = NULL;
     if (!sync_service_) {
-      SigninManager* signin = SigninManagerFactory::GetForProfile(&profile_);
+      SigninManagerBase* signin =
+          SigninManagerFactory::GetForProfile(&profile_);
       signin->SetAuthenticatedUsername("test");
       token_service_ = static_cast<TokenService*>(
           TokenServiceFactory::GetInstance()->SetTestingFactoryAndUse(

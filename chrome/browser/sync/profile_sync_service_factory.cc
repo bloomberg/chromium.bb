@@ -85,7 +85,7 @@ ProfileKeyedService* ProfileSyncServiceFactory::BuildServiceInstanceFor(
       browser_defaults::kSyncAutoStarts ? ProfileSyncService::AUTO_START
                                         : ProfileSyncService::MANUAL_START;
 
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(profile);
 
   // TODO(atwilson): Change AboutSigninInternalsFactory to load on startup
   // once http://crbug.com/171406 has been fixed.

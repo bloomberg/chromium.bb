@@ -45,7 +45,7 @@ namespace {
 // Utility function to test that GetStatusLabelsForSyncGlobalError returns
 // the correct results for the given states.
 void VerifySyncGlobalErrorResult(NiceMock<ProfileSyncServiceMock>* service,
-                                 const SigninManager& signin,
+                                 const SigninManagerBase& signin,
                                  GoogleServiceAuthError::State error_state,
                                  bool is_signed_in,
                                  bool is_error) {
@@ -74,7 +74,7 @@ TEST(SyncUIUtilTest, PassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  FakeSigninManager signin(profile.get());
+  FakeSigninManagerBase signin(profile.get());
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
@@ -94,7 +94,7 @@ TEST(SyncUIUtilTest, AuthAndPassphraseGlobalError) {
   scoped_ptr<Profile> profile(
       ProfileSyncServiceMock::MakeSignedInTestingProfile());
   NiceMock<ProfileSyncServiceMock> service(profile.get());
-  FakeSigninManager signin(profile.get());
+  FakeSigninManagerBase signin(profile.get());
   browser_sync::SyncBackendHost::Status status;
   EXPECT_CALL(service, QueryDetailedSyncStatus(_))
               .WillRepeatedly(Return(false));
@@ -145,16 +145,46 @@ TEST(SyncUIUtilTest, AuthStateGlobalError) {
     GoogleServiceAuthError::HOSTED_NOT_ALLOWED
   };
 
-  FakeSigninManager signin(profile.get());
+  FakeSigninManagerBase signin(profile.get());
   for (size_t i = 0; i < arraysize(table); ++i) {
     VerifySyncGlobalErrorResult(&service, signin, table[i], true, false);
     VerifySyncGlobalErrorResult(&service, signin, table[i], false, false);
   }
 }
+
+// TODO(tim): This shouldn't be required. r194857 removed the
+// AuthInProgress override from FakeSigninManager, which meant this test started
+// using the "real" SigninManager AuthInProgress logic. Without that override,
+// it's no longer possible to test both chrome os + desktop flows as part of the
+// same test, because AuthInProgress is always false on chrome os. Most of the
+// tests are unaffected, but STATUS_CASE_AUTHENTICATING can't exist in both
+// versions, so it we will require two separate tests, one using SigninManager
+// and one using SigninManagerBase (which require different setup procedures.
+class FakeSigninManagerForSyncUIUtilTest : public FakeSigninManagerBase {
+ public:
+  explicit FakeSigninManagerForSyncUIUtilTest(Profile* profile)
+      : FakeSigninManagerBase(profile), auth_in_progress_(false) {
+  }
+
+  virtual ~FakeSigninManagerForSyncUIUtilTest() {
+  }
+
+  virtual bool AuthInProgress() const OVERRIDE {
+    return auth_in_progress_;
+  }
+
+  void set_auth_in_progress() {
+    auth_in_progress_ = true;
+  }
+
+ private:
+  bool auth_in_progress_;
+};
+
 // Loads a ProfileSyncServiceMock to emulate one of a number of distinct cases
 // in order to perform tests on the generated messages.
 void GetDistinctCase(ProfileSyncServiceMock& service,
-                     FakeSigninManager* signin,
+                     FakeSigninManagerForSyncUIUtilTest* signin,
                      FakeAuthStatusProvider* provider,
                      int caseNumber) {
   // Auth Error object is returned by reference in mock and needs to stay in
@@ -197,7 +227,7 @@ void GetDistinctCase(ProfileSyncServiceMock& service,
                                   Return(false)));
       EXPECT_CALL(service, HasUnrecoverableError())
                   .WillRepeatedly(Return(false));
-      signin->set_auth_in_progress("test_user@test.com");
+      signin->set_auth_in_progress();
       return;
     }
     case STATUS_CASE_AUTH_ERROR: {
@@ -294,7 +324,7 @@ TEST(SyncUIUtilTest, DistinctCasesReportUniqueMessageSets) {
     scoped_ptr<Profile> profile(
         ProfileSyncServiceMock::MakeSignedInTestingProfile());
     ProfileSyncServiceMock service(profile.get());
-    FakeSigninManager signin(profile.get());
+    FakeSigninManagerForSyncUIUtilTest signin(profile.get());
     signin.SetAuthenticatedUsername("test_user@test.com");
     FakeAuthStatusProvider provider(signin.signin_global_error());
     GetDistinctCase(service, &signin, &provider, idx);
@@ -327,7 +357,7 @@ TEST(SyncUIUtilTest, HtmlNotIncludedInStatusIfNotRequested) {
     scoped_ptr<Profile> profile(
         ProfileSyncServiceMock::MakeSignedInTestingProfile());
     ProfileSyncServiceMock service(profile.get());
-    FakeSigninManager signin(profile.get());
+    FakeSigninManagerForSyncUIUtilTest signin(profile.get());
     signin.SetAuthenticatedUsername("test_user@test.com");
     FakeAuthStatusProvider provider(signin.signin_global_error());
     GetDistinctCase(service, &signin, &provider, idx);

@@ -16,7 +16,7 @@
 class LoginUIService;
 class ProfileManager;
 class ProfileSyncService;
-class SigninManager;
+class SigninManagerBase;
 
 namespace content {
 class WebContents;
@@ -70,9 +70,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void CloseSyncSetup();
 
  protected:
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, GaiaErrorInitializingSync);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleCaptcha);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleGaiaAuthFailure);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SelectCustomEncryption);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SuccessfullySetPassphrase);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncEverything);
@@ -80,10 +77,15 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestPassphraseStillRequired);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncIndividualTypes);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TurnOnEncryptAll);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
-                           UnrecoverableErrorInitializingSync);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, UnsuccessfullySetPassphrase);
-  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SubmitAuthWithInvalidUsername);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest,
+                           UnrecoverableErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest,
+                           GaiaErrorInitializingSync);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest, HandleCaptcha);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerNonCrosTest,
+                           SubmitAuthWithInvalidUsername);
 
   bool is_configuring_sync() const { return configuring_sync_; }
   bool have_signin_tracker() const { return signin_tracker_; }
@@ -117,7 +119,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
  private:
   // Callbacks from the page.
   void OnDidClosePage(const base::ListValue* args);
-  void HandleSubmitAuth(const base::ListValue* args);
   void HandleConfigure(const base::ListValue* args);
   void HandlePassphraseEntry(const base::ListValue* args);
   void HandlePassphraseCancel(const base::ListValue* args);
@@ -127,6 +128,15 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
   void HandleCloseTimeout(const base::ListValue* args);
+#if !defined(OS_CHROMEOS)
+  void HandleSubmitAuth(const base::ListValue* args);
+
+  // Initiates a login via the signin manager.
+  void TryLogin(const std::string& username,
+                const std::string& password,
+                const std::string& captcha,
+                const std::string& access_code);
+#endif
 
   // Helper routine that gets the Profile associated with this object (virtual
   // so tests can override).
@@ -169,12 +179,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // Returns true if this object is the active login object.
   bool IsActiveLogin() const;
 
-  // Initiates a login via the signin manager.
-  void TryLogin(const std::string& username,
-                const std::string& password,
-                const std::string& captcha,
-                const std::string& access_code);
-
   // If a wizard already exists, focus it and return true.
   bool FocusExistingWizardIfPresent();
 
@@ -190,9 +194,6 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // localized error message. Note, |error_message| must not be NULL.
   bool IsLoginAuthDataValid(const std::string& username,
                             string16* error_message);
-
-  // Returns the SigninManager for the parent profile.
-  SigninManager* GetSignin() const;
 
   // The SigninTracker object used to determine when the user has fully signed
   // in (this requires waiting for various services to initialize and tracking

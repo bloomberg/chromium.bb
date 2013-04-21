@@ -12,7 +12,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_global_error.h"
-#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -45,7 +45,7 @@ namespace {
 // and can connect to the sync server. If the user hasn't yet authenticated, an
 // empty string is returned.
 string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
-                                   const SigninManager& signin,
+                                   const SigninManagerBase& signin,
                                    StatusLabelStyle style) {
   string16 user_name = UTF8ToUTF16(signin.GetAuthenticatedUsername());
 
@@ -115,7 +115,7 @@ void GetStatusForActionableError(
 
 // status_label and link_label must either be both NULL or both non-NULL.
 MessageType GetStatusInfo(ProfileSyncService* service,
-                          const SigninManager& signin,
+                          const SigninManagerBase& signin,
                           StatusLabelStyle style,
                           string16* status_label,
                           string16* link_label) {
@@ -253,7 +253,7 @@ MessageType GetStatusInfo(ProfileSyncService* service,
 // Returns the status info for use on the new tab page, where we want slightly
 // different information than in the settings panel.
 MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
-                                       const SigninManager& signin,
+                                       const SigninManagerBase& signin,
                                        string16* status_label,
                                        string16* link_label) {
   DCHECK(status_label);
@@ -291,7 +291,7 @@ MessageType GetStatusInfoForNewTabPage(ProfileSyncService* service,
 }  // namespace
 
 MessageType GetStatusLabels(ProfileSyncService* service,
-                            const SigninManager& signin,
+                            const SigninManagerBase& signin,
                             StatusLabelStyle style,
                             string16* status_label,
                             string16* link_label) {
@@ -302,7 +302,7 @@ MessageType GetStatusLabels(ProfileSyncService* service,
 }
 
 MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
-                                         const SigninManager& signin,
+                                         const SigninManagerBase& signin,
                                          string16* status_label,
                                          string16* link_label) {
   DCHECK(status_label);
@@ -312,7 +312,7 @@ MessageType GetStatusLabelsForNewTabPage(ProfileSyncService* service,
 }
 
 void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
-                                       const SigninManager& signin,
+                                       const SigninManagerBase& signin,
                                        string16* menu_label,
                                        string16* bubble_message,
                                        string16* bubble_accept_label) {
@@ -343,7 +343,7 @@ void GetStatusLabelsForSyncGlobalError(ProfileSyncService* service,
 }
 
 MessageType GetStatus(
-    ProfileSyncService* service, const SigninManager& signin) {
+    ProfileSyncService* service, const SigninManagerBase& signin) {
   return sync_ui_util::GetStatusInfo(service, signin, WITH_HTML, NULL, NULL);
 }
 

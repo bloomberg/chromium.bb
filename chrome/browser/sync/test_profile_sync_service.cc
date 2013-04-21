@@ -207,7 +207,7 @@ browser_sync::SyncBackendHostForProfileSyncTest*
 TestProfileSyncService::TestProfileSyncService(
     ProfileSyncComponentsFactory* factory,
     Profile* profile,
-    SigninManager* signin,
+    SigninManagerBase* signin,
     ProfileSyncService::StartBehavior behavior,
     bool synchronous_backend_initialization)
         : ProfileSyncService(factory,
@@ -229,7 +229,8 @@ TestProfileSyncService::~TestProfileSyncService() {
 // static
 ProfileKeyedService* TestProfileSyncService::BuildAutoStartAsyncInit(
     Profile* profile) {
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile);
   ProfileSyncComponentsFactoryMock* factory =
       new ProfileSyncComponentsFactoryMock();
   return new TestProfileSyncService(

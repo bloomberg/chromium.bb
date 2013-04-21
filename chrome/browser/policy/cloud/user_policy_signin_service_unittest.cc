@@ -60,6 +60,25 @@ static const char kHostedDomainResponse[] =
     "  \"hd\": \"test.com\""
     "}";
 
+namespace {
+class SigninManagerFake : public FakeSigninManager {
+ public:
+  explicit SigninManagerFake(Profile* profile)
+      : FakeSigninManager(profile) {
+  }
+
+  void ForceSignOut() {
+    // Allow signing out now.
+    prohibit_signout_ = false;
+    SignOut();
+  }
+
+  static ProfileKeyedService* Build(Profile* profile) {
+    return new SigninManagerFake(profile);
+  }
+};
+}  // namespace
+
 class UserPolicySigninServiceTest : public testing::Test {
  public:
   UserPolicySigninServiceTest()
@@ -113,9 +132,9 @@ class UserPolicySigninServiceTest : public testing::Test {
     EXPECT_CALL(*mock_store_, Load()).Times(AnyNumber());
     manager_.reset(new UserCloudPolicyManager(
         profile_.get(), scoped_ptr<UserCloudPolicyStore>(mock_store_)));
-    signin_manager_ = static_cast<FakeSigninManager*>(
+    signin_manager_ = static_cast<SigninManagerFake*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
-            profile_.get(), FakeSigninManager::Build));
+            profile_.get(), SigninManagerFake::Build));
 
     // Make sure the UserPolicySigninService is created.
     UserPolicySigninServiceFactory::GetForProfile(profile_.get());
@@ -251,7 +270,7 @@ class UserPolicySigninServiceTest : public testing::Test {
 
   net::TestURLFetcherFactory url_factory_;
 
-  FakeSigninManager* signin_manager_;
+  SigninManagerFake* signin_manager_;
 
   // Used in conjunction with OnRegisterCompleted() to test client registration
   // callbacks.

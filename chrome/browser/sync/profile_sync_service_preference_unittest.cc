@@ -149,7 +149,8 @@ class ProfileSyncServicePreferenceTest
     if (sync_service_)
       return false;
 
-    SigninManager* signin = SigninManagerFactory::GetForProfile(profile_.get());
+    SigninManagerBase* signin =
+         SigninManagerFactory::GetForProfile(profile_.get());
     signin->SetAuthenticatedUsername("test");
     sync_service_ = static_cast<TestProfileSyncService*>(
         ProfileSyncServiceFactory::GetInstance()->SetTestingFactoryAndUse(

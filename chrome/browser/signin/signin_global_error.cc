@@ -18,7 +18,8 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-SigninGlobalError::SigninGlobalError(SigninManager* manager, Profile* profile)
+SigninGlobalError::SigninGlobalError(SigninManagerBase* manager,
+                                     Profile* profile)
     : auth_error_(GoogleServiceAuthError::AuthErrorNone()),
       signin_manager_(manager),
       profile_(profile) {

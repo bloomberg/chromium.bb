@@ -11,14 +11,14 @@
 #include "chrome/browser/ui/global_error/global_error.h"
 
 class ProfileSyncService;
-class SigninManager;
+class SigninManagerBase;
 
 // Shows sync errors on the wrench menu using a bubble view and a
 // menu item.
 class SyncGlobalError : public GlobalError,
                         public ProfileSyncServiceObserver {
  public:
-  SyncGlobalError(ProfileSyncService* service, SigninManager* signin);
+  SyncGlobalError(ProfileSyncService* service, SigninManagerBase* signin);
   virtual ~SyncGlobalError();
 
   virtual bool HasMenuItem() OVERRIDE;
@@ -43,7 +43,7 @@ class SyncGlobalError : public GlobalError,
   string16 bubble_message_;
   string16 menu_label_;
   ProfileSyncService* service_;
-  SigninManager* signin_;
+  SigninManagerBase* signin_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncGlobalError);
 };

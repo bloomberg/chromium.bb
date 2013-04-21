@@ -9,6 +9,7 @@
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 
 class SigninManager;
+class SigninManagerBase;
 class PrefRegistrySimple;
 class PrefRegistrySyncable;
 class Profile;
@@ -18,15 +19,23 @@ class Profile;
 // the associated SigninManager.
 class SigninManagerFactory : public ProfileKeyedServiceFactory {
  public:
+
+#if defined(OS_CHROMEOS)
   // Returns the instance of SigninManager associated with this profile
   // (creating one if none exists). Returns NULL if this profile cannot have a
   // SigninManager (for example, if |profile| is incognito).
-  static SigninManager* GetForProfile(Profile* profile);
+  static SigninManagerBase* GetForProfile(Profile* profile);
 
   // Returns the instance of SigninManager associated with this profile. Returns
   // null if no SigninManager instance currently exists (will not create a new
   // instance).
+  static SigninManagerBase* GetForProfileIfExists(Profile* profile);
+#else
+  // On non-ChromeOS platforms, the SigninManager the factory creates will be
+  // an instance of the extended SigninManager class.
+  static SigninManager* GetForProfile(Profile* profile);
   static SigninManager* GetForProfileIfExists(Profile* profile);
+#endif
 
   // Returns an instance of the SigninManagerFactory singleton.
   static SigninManagerFactory* GetInstance();

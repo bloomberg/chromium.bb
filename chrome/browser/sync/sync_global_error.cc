@@ -22,7 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 SyncGlobalError::SyncGlobalError(ProfileSyncService* service,
-                                 SigninManager* signin)
+                                 SigninManagerBase* signin)
     : service_(service),
       signin_(signin) {
   DCHECK(service_);

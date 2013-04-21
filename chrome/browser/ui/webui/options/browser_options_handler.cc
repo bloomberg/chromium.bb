@@ -1171,12 +1171,17 @@ scoped_ptr<DictionaryValue> BrowserOptionsHandler::GetSyncStateDictionary() {
     return sync_status.Pass();
   }
 
+  bool signout_prohibited = false;
+#if !defined(OS_CHROMEOS)
   // Signout is not allowed if the user has policy (crbug.com/172204).
-  SigninManager* signin = SigninManagerFactory::GetForProfile(profile);
-  DCHECK(signin);
-  sync_status->SetBoolean("signoutAllowed", !signin->IsSignoutProhibited());
+  signout_prohibited =
+      SigninManagerFactory::GetForProfile(profile)->IsSignoutProhibited();
+#endif
+
   ProfileSyncService* service(
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile));
+  SigninManagerBase* signin = service->signin();
+  sync_status->SetBoolean("signoutAllowed", !signout_prohibited);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", !!service);
   sync_status->SetBoolean("setupCompleted",

@@ -47,7 +47,7 @@
 
 class Profile;
 class ProfileSyncComponentsFactory;
-class SigninManager;
+class SigninManagerBase;
 class SyncGlobalError;
 
 namespace browser_sync {
@@ -219,7 +219,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Takes ownership of |factory|.
   ProfileSyncService(ProfileSyncComponentsFactory* factory,
                      Profile* profile,
-                     SigninManager* signin,
+                     SigninManagerBase* signin,
                      StartBehavior start_behavior);
   virtual ~ProfileSyncService();
 
@@ -569,7 +569,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   const GURL& sync_service_url() const { return sync_service_url_; }
   bool auto_start_enabled() const { return auto_start_enabled_; }
-  SigninManager* signin() const { return signin_; }
+  SigninManagerBase* signin() const { return signin_; }
   bool setup_in_progress() const { return setup_in_progress_; }
 
   // Stops the sync backend and sets the flag for suppressing sync startup.
@@ -846,7 +846,7 @@ class ProfileSyncService : public ProfileSyncServiceBase,
 
   // Encapsulates user signin - used to set/get the user's authenticated
   // email address.
-  SigninManager* signin_;
+  SigninManagerBase* signin_;
 
   // Information describing an unrecoverable error.
   UnrecoverableErrorReason unrecoverable_error_reason_;

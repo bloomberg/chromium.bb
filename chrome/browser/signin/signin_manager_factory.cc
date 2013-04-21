@@ -21,6 +21,22 @@ SigninManagerFactory::SigninManagerFactory()
 
 SigninManagerFactory::~SigninManagerFactory() {}
 
+#if defined(OS_CHROMEOS)
+// static
+SigninManagerBase* SigninManagerFactory::GetForProfileIfExists(
+    Profile* profile) {
+  return static_cast<SigninManagerBase*>(
+      GetInstance()->GetServiceForProfile(profile, false));
+}
+
+// static
+SigninManagerBase* SigninManagerFactory::GetForProfile(
+    Profile* profile) {
+  return static_cast<SigninManagerBase*>(
+      GetInstance()->GetServiceForProfile(profile, true));
+}
+
+#else
 // static
 SigninManager* SigninManagerFactory::GetForProfile(Profile* profile) {
   return static_cast<SigninManager*>(
@@ -32,6 +48,7 @@ SigninManager* SigninManagerFactory::GetForProfileIfExists(Profile* profile) {
   return static_cast<SigninManager*>(
       GetInstance()->GetServiceForProfile(profile, false));
 }
+#endif
 
 // static
 SigninManagerFactory* SigninManagerFactory::GetInstance() {
@@ -62,7 +79,14 @@ void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
     Profile* profile) const {
-  SigninManager* service = new SigninManager();
+
+  SigninManagerBase* service = NULL;
+#if defined(OS_CHROMEOS)
+  service = new SigninManagerBase();
+#else
+  service = new SigninManager();
+#endif
+
   service->Initialize(profile);
   return service;
 }

@@ -42,7 +42,7 @@ bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
   if (!TokenServiceFactory::GetForProfile(profile)->AreCredentialsValid())
     return false;
 
-  SigninManager* signin_manager =
+  SigninManagerBase* signin_manager =
       SigninManagerFactory::GetInstance()->GetForProfile(profile);
   if (!signin_manager)
     return false;

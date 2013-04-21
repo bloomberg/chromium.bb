@@ -13,6 +13,19 @@
 class Profile;
 class ProfileKeyedService;
 
+class FakeSigninManagerBase : public SigninManagerBase {
+ public:
+  explicit FakeSigninManagerBase(Profile* profile);
+  virtual ~FakeSigninManagerBase();
+
+  virtual void SignOut() OVERRIDE;
+
+  // Helper function to be used with ProfileKeyedService::SetTestingFactory().
+  static ProfileKeyedService* Build(Profile* profile);
+};
+
+#if !defined(OS_CHROMEOS)
+
 // A signin manager that bypasses actual authentication routines with servers
 // and accepts the credentials provided to StartSignIn.
 class FakeSigninManager : public SigninManager {
@@ -20,26 +33,27 @@ class FakeSigninManager : public SigninManager {
   explicit FakeSigninManager(Profile* profile);
   virtual ~FakeSigninManager();
 
+  void set_auth_in_progress(const std::string& username) {
+    possibly_invalid_username_ = username;
+  }
+
+  virtual void SignOut() OVERRIDE;
+  virtual void InitTokenService() OVERRIDE;
   virtual void StartSignIn(const std::string& username,
                            const std::string& password,
                            const std::string& login_token,
                            const std::string& login_captcha) OVERRIDE;
+
   virtual void StartSignInWithCredentials(const std::string& session_index,
                                           const std::string& username,
                                           const std::string& password) OVERRIDE;
   virtual void StartSignInWithOAuth(const std::string& username,
                                     const std::string& password) OVERRIDE;
-  virtual void SignOut() OVERRIDE;
-
-  // Helper function to force a signout.
-  virtual void ForceSignOut();
-
-  void set_auth_in_progress(const std::string& username) {
-    possibly_invalid_username_ = username;
-  }
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
   static ProfileKeyedService* Build(Profile* profile);
 };
+
+#endif  // !defined (OS_CHROMEOS)
 
 #endif  // CHROME_BROWSER_SIGNIN_FAKE_SIGNIN_MANAGER_H_

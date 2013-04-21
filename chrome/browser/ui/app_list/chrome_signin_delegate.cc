@@ -23,7 +23,7 @@
 
 namespace {
 
-SigninManager* GetSigninManager(Profile* profile) {
+SigninManagerBase* GetSigninManager(Profile* profile) {
   return SigninManagerFactory::GetForProfile(profile);
 }
 

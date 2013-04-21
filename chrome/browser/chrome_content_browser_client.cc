@@ -65,8 +65,6 @@
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/search_provider_install_state_message_filter.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_manager_delegate.h"
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #include "chrome/browser/ssl/ssl_add_certificate.h"
@@ -165,6 +163,11 @@
 
 #if defined(USE_NSS)
 #include "chrome/browser/ui/crypto_module_password_dialog.h"
+#endif
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #endif
 
 using base::FileDescriptor;
@@ -457,6 +460,7 @@ GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
   return effective_url;
 }
 
+#if !defined(OS_CHROMEOS)
 GURL GetEffectiveURLForSignin(const GURL& url) {
   CHECK(SigninManager::IsWebBasedSigninFlowURL(url));
 
@@ -469,6 +473,7 @@ GURL GetEffectiveURLForSignin(const GURL& url) {
   effective_url = effective_url.ReplaceComponents(replacements);
   return effective_url;
 }
+#endif
 
 void SetApplicationLocaleOnIOThread(const std::string& locale) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -742,12 +747,14 @@ GURL ChromeContentBrowserClient::GetEffectiveURL(
   if (chrome::ShouldAssignURLToInstantRenderer(url, profile))
     return GetEffectiveURLForInstant(url, profile);
 
+#if !defined(OS_CHROMEOS)
   // If the input |url| should be assigned to the Signin renderer, make its
   // effective URL distinct from other URLs on the signin service's domain.
   // Note that the signin renderer will be allowed to sign the user in to
   // Chrome.
   if (SigninManager::IsWebBasedSigninFlowURL(url))
     return GetEffectiveURLForSignin(url);
+#endif
 
   // If the input |url| is part of an installed app, the effective URL is an
   // extension URL with the ID of that extension as the host. This has the
@@ -786,8 +793,10 @@ bool ChromeContentBrowserClient::ShouldUseProcessPerSite(
   if (chrome::ShouldAssignURLToInstantRenderer(effective_url, profile))
     return true;
 
+#if !defined(OS_CHROMEOS)
   if (SigninManager::IsWebBasedSigninFlowURL(effective_url))
     return true;
+#endif
 
   if (!effective_url.SchemeIs(extensions::kExtensionScheme))
     return false;
@@ -871,9 +880,11 @@ bool ChromeContentBrowserClient::IsSuitableHost(
       return is_instant_process && should_be_in_instant_process;
   }
 
+#if !defined(OS_CHROMEOS)
   SigninManager* signin_manager = SigninManagerFactory::GetForProfile(profile);
   if (signin_manager && signin_manager->IsSigninProcess(process_host->GetID()))
     return SigninManager::IsWebBasedSigninFlowURL(site_url);
+#endif
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -971,6 +982,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
       instant_service->AddInstantProcess(site_instance->GetProcess()->GetID());
   }
 
+#if !defined(OS_CHROMEOS)
   // We only expect there to be one signin process as we use process-per-site
   // for signin URLs. The signin process will be cleared from SigninManager
   // when the renderer is destroyed.
@@ -980,6 +992,7 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     if (signin_manager)
       signin_manager->SetSigninProcess(site_instance->GetProcess()->GetID());
   }
+#endif
 
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
@@ -1174,10 +1187,12 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
           instant_service->IsInstantProcess(process->GetID()))
         command_line->AppendSwitch(switches::kInstantProcess);
 
+#if !defined(OS_CHROMEOS)
       SigninManager* signin_manager =
           SigninManagerFactory::GetForProfile(profile);
       if (signin_manager && signin_manager->IsSigninProcess(process->GetID()))
         command_line->AppendSwitch(switches::kSigninProcess);
+#endif
     }
 
     if (content::IsThreadedCompositingEnabled())

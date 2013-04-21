@@ -113,7 +113,7 @@ class TestProfileSyncService : public ProfileSyncService {
   TestProfileSyncService(
       ProfileSyncComponentsFactory* factory,
       Profile* profile,
-      SigninManager* signin,
+      SigninManagerBase* signin,
       ProfileSyncService::StartBehavior behavior,
       bool synchronous_backend_initialization);
 

@@ -94,7 +94,7 @@ void NewTabPageSyncHandler::HideSyncStatusSection() {
 
 void NewTabPageSyncHandler::BuildAndSendSyncStatus() {
   DCHECK(!waiting_for_initial_page_load_);
-  SigninManager* signin = SigninManagerFactory::GetForProfile(
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(
       Profile::FromWebUI(web_ui()));
 
   // Hide the sync status section if sync is managed or disabled entirely.
