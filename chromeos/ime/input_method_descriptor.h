@@ -27,9 +27,6 @@ class CHROMEOS_EXPORT InputMethodDescriptor {
                         const std::string& options_page_url);
   ~InputMethodDescriptor();
 
-  bool operator==(const InputMethodDescriptor& other) const;
-  bool operator!=(const InputMethodDescriptor& other) const;
-
   const std::string& id() const { return id_; }
   const std::string& name() const { return name_; }
   const std::string& keyboard_layout() const { return keyboard_layout_; }

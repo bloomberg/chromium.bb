@@ -31,15 +31,5 @@ InputMethodDescriptor::InputMethodDescriptor() {
 InputMethodDescriptor::~InputMethodDescriptor() {
 }
 
-bool InputMethodDescriptor::operator==(
-    const InputMethodDescriptor& other) const {
-  return id() == other.id();
-}
-
-bool InputMethodDescriptor::operator!=(
-    const InputMethodDescriptor& other) const {
-  return !(*this == other);
-}
-
 }  // namespace input_method
 }  // namespace chromeos

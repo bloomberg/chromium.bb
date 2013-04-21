@@ -31,6 +31,16 @@ namespace chromeos {
 namespace input_method {
 namespace {
 
+// Returns true if |descriptors| contain |target|.
+bool Contain(const InputMethodDescriptors& descriptors,
+             const InputMethodDescriptor& target) {
+  for (size_t i = 0; i < descriptors.size(); ++i) {
+    if (descriptors[i].id() == target.id())
+      return true;
+  }
+  return false;
+}
+
 class InputMethodManagerImplTest :  public testing::Test {
  public:
   InputMethodManagerImplTest()
@@ -244,22 +254,18 @@ TEST_F(InputMethodManagerImplTest, TestGetSupportedInputMethods) {
   // correct.
   const InputMethodDescriptor* id_to_find =
       manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId("mozc");
-  EXPECT_NE(methods->end(),
-            std::find(methods->begin(), methods->end(), *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
       "mozc-chewing");
+  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
       "xkb:us::eng");
-  EXPECT_NE(methods->end(),
-            std::find(methods->begin(), methods->end(), *id_to_find));
+  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
       "xkb:us:dvorak:eng");
-  EXPECT_NE(methods->end(),
-            std::find(methods->begin(), methods->end(), *id_to_find));
+  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
       "xkb:fr::fra");
-  EXPECT_NE(methods->end(),
-            std::find(methods->begin(), methods->end(), *id_to_find));
+  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
 }
 
 TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
@@ -275,8 +281,7 @@ TEST_F(InputMethodManagerImplTest, TestEnableLayouts) {
     const InputMethodDescriptor* id_to_find =
         manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
             "english-m");  // The "English Mystery" IME.
-    EXPECT_EQ(methods->end(),
-              std::find(methods->begin(), methods->end(), *id_to_find));
+    EXPECT_FALSE(Contain(*methods.get(), *id_to_find));
   }
   // For http://crbug.com/19655#c11 - (2)
   EXPECT_EQ(0, mock_ibus_daemon_controller_->start_count());
@@ -310,12 +315,10 @@ TEST_F(InputMethodManagerImplTest, TestActiveInputMethods) {
   const InputMethodDescriptor* id_to_find =
       manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
           "xkb:us::eng");
-  EXPECT_NE(methods->end(),
-            std::find(methods->begin(), methods->end(), *id_to_find));
+  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
   id_to_find = manager_->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
       "xkb:kr:kr104:kor");
-  EXPECT_NE(methods->end(),
-            std::find(methods->begin(), methods->end(), *id_to_find));
+  EXPECT_TRUE(Contain(*methods.get(), *id_to_find));
 }
 
 TEST_F(InputMethodManagerImplTest, TestSetInputMethodConfig) {
