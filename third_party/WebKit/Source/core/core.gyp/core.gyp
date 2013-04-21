@@ -365,7 +365,7 @@
       'hard_dependency': 1,
       'dependencies': [
         'webcore_prerequisites',
-        'derived_sources.gyp:make_derived_sources',
+        'core_derived_sources.gyp:make_derived_sources',
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'injected_canvas_script_source',
@@ -493,7 +493,7 @@
         'injected_script_source',
         'inspector_overlay_page',
         'inspector_protocol_sources',
-        'derived_sources.gyp:make_derived_sources',
+        'core_derived_sources.gyp:make_derived_sources',
         '../../bindings/derived_sources.gyp:bindings_derived_sources',
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../yarr/yarr.gyp:yarr',
