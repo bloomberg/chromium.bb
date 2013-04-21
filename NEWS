@@ -14,6 +14,8 @@ liblouis NEWS -- history of user-visible changes.  	-*- org -*-
       Poretsky.
     - Updated hyphenation tables for the Norwegian language (nynorsk
       and bokmål) thanks to Lars Bjørndal.
+    - New hyphenation dictionary for Esperanto thanks to Aaron Cannon.
+    - New Esperanto grade 1 table, using the x system for accented letters, thanks to Aaron Cannon.
 
 *** runHarness.py: 
     Accept filename globs on the commandline to run specific harness files.
