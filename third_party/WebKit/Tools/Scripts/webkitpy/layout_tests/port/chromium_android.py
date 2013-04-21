@@ -36,6 +36,7 @@ import threading
 import time
 
 from webkitpy.layout_tests.port import chromium
+from webkitpy.layout_tests.port import chromium_linux
 from webkitpy.layout_tests.port import driver
 from webkitpy.layout_tests.port import factory
 from webkitpy.layout_tests.port import server_process
@@ -195,11 +196,9 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
     # Avoid initializing the adb path [worker count]+1 times by storing it as a static member.
     _adb_path = None
 
-    FALLBACK_PATHS = [
-        'chromium-android',
-        'chromium-linux',
-        'chromium-win',
-    ]
+    SUPPORTED_VERSIONS = ('android')
+
+    FALLBACK_PATHS = { 'android': [ 'chromium-android'] + chromium_linux.ChromiumLinuxPort.latest_platform_fallback_path() }
 
     def __init__(self, host, port_name, **kwargs):
         super(ChromiumAndroidPort, self).__init__(host, port_name, **kwargs)
@@ -245,7 +244,7 @@ class ChromiumAndroidPort(chromium.ChromiumPort):
         return len(self._get_devices())
 
     def default_baseline_search_path(self):
-        return map(self._webkit_baseline_path, self.FALLBACK_PATHS)
+        return map(self._webkit_baseline_path, self.FALLBACK_PATHS['android'])
 
     def check_wdiff(self, logging=True):
         return self._host_port.check_wdiff(logging)

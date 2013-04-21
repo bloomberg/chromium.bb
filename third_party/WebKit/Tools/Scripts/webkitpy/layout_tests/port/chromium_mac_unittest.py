@@ -44,7 +44,7 @@ class ChromiumMacPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertEqual(expected, port.name())
 
     def test_versions(self):
-        self.assertTrue(self.make_port().name() in ('chromium-mac-snowleopard', 'chromium-mac-lion', 'chromium-mac-mountainlion', 'chromium-mac-future'))
+        self.assertTrue(self.make_port().name() in ('chromium-mac-snowleopard', 'chromium-mac-lion', 'chromium-mac-mountainlion'))
 
         self.assert_name(None, 'snowleopard', 'chromium-mac-snowleopard')
         self.assert_name('chromium-mac', 'snowleopard', 'chromium-mac-snowleopard')
@@ -53,13 +53,8 @@ class ChromiumMacPortTest(chromium_port_testcase.ChromiumPortTestCase):
 
         self.assert_name(None, 'lion', 'chromium-mac-lion')
         self.assert_name(None, 'mountainlion', 'chromium-mac-mountainlion')
-        self.assert_name(None, 'future', 'chromium-mac-future')
 
         self.assert_name('chromium-mac', 'lion', 'chromium-mac-lion')
-        self.assert_name('chromium-mac-future', 'snowleopard', 'chromium-mac-future')
-        self.assert_name('chromium-mac-future', 'lion', 'chromium-mac-future')
-        self.assert_name('chromium-mac-future', 'mountainlion', 'chromium-mac-future')
-
         self.assertRaises(AssertionError, self.assert_name, None, 'tiger', 'should-raise-assertion-so-this-value-does-not-matter')
 
     def test_baseline_path(self):
@@ -70,9 +65,6 @@ class ChromiumMacPortTest(chromium_port_testcase.ChromiumPortTestCase):
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac-lion'))
 
         port = self.make_port(port_name='chromium-mac-mountainlion')
-        self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac'))
-
-        port = self.make_port(port_name='chromium-mac-future')
         self.assertEqual(port.baseline_path(), port._webkit_baseline_path('chromium-mac'))
 
     def test_operating_system(self):

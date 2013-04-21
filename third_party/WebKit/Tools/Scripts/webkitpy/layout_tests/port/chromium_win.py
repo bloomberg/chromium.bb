@@ -43,15 +43,8 @@ class ChromiumWinPort(chromium.ChromiumPort):
     # FIXME: Figure out how to unify this with base.TestConfiguration.all_systems()?
     SUPPORTED_VERSIONS = ('xp', 'win7')
 
-    FALLBACK_PATHS = {
-        'xp': [
-            'chromium-win-xp',
-            'chromium-win',
-        ],
-        'win7': [
-            'chromium-win',
-        ],
-    }
+    FALLBACK_PATHS = { 'win7': [ 'chromium-win' ]}
+    FALLBACK_PATHS['xp'] = ['chromium-win-xp'] + FALLBACK_PATHS['win7']
 
     DEFAULT_BUILD_DIRECTORIES = ('build', 'out')
 

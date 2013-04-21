@@ -30,6 +30,7 @@ import logging
 
 from webkitpy.common.webkit_finder import WebKitFinder
 from webkitpy.layout_tests.port import chromium
+from webkitpy.layout_tests.port import chromium_win
 from webkitpy.layout_tests.port import config
 
 
@@ -39,19 +40,10 @@ _log = logging.getLogger(__name__)
 class ChromiumLinuxPort(chromium.ChromiumPort):
     port_name = 'chromium-linux'
 
-    SUPPORTED_ARCHITECTURES = ('x86', 'x86_64')
+    SUPPORTED_VERSIONS = ('x86', 'x86_64')
 
-    FALLBACK_PATHS = {
-        'x86_64': [
-            'chromium-linux',
-            'chromium-win',
-        ],
-        'x86': [
-            'chromium-linux-x86',
-            'chromium-linux',
-            'chromium-win',
-        ],
-    }
+    FALLBACK_PATHS = { 'x86_64': [ 'chromium-linux' ] + chromium_win.ChromiumWinPort.latest_platform_fallback_path() }
+    FALLBACK_PATHS['x86'] = ['chromium-linux-x86'] + FALLBACK_PATHS['x86_64']
 
     DEFAULT_BUILD_DIRECTORIES = ('sconsbuild', 'out')
 
@@ -97,7 +89,7 @@ class ChromiumLinuxPort(chromium.ChromiumPort):
         chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
         (base, arch) = port_name.rsplit('-', 1)
         assert base == 'chromium-linux'
-        assert arch in self.SUPPORTED_ARCHITECTURES
+        assert arch in self.SUPPORTED_VERSIONS
         assert port_name in ('chromium-linux', 'chromium-linux-x86', 'chromium-linux-x86_64')
         self._version = 'lucid'  # We only support lucid right now.
         self._architecture = arch

@@ -38,26 +38,12 @@ _log = logging.getLogger(__name__)
 
 
 class ChromiumMacPort(chromium.ChromiumPort):
-    SUPPORTED_OS_VERSIONS = ('snowleopard', 'lion', 'mountainlion', 'future')
+    SUPPORTED_VERSIONS = ('snowleopard', 'lion', 'mountainlion')
     port_name = 'chromium-mac'
 
-    FALLBACK_PATHS = {
-        'snowleopard': [
-            'chromium-mac-snowleopard',
-            'chromium-mac-lion',
-            'chromium-mac',
-        ],
-        'lion': [
-            'chromium-mac-lion',
-            'chromium-mac',
-        ],
-        'mountainlion': [
-            'chromium-mac',
-        ],
-        'future': [
-            'chromium-mac',
-        ],
-    }
+    FALLBACK_PATHS = { 'mountainlion': [ 'chromium-mac' ]}
+    FALLBACK_PATHS['lion'] = ['chromium-mac-lion'] + FALLBACK_PATHS['mountainlion']
+    FALLBACK_PATHS['snowleopard'] = ['chromium-mac-snowleopard'] + FALLBACK_PATHS['lion']
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 
@@ -70,7 +56,7 @@ class ChromiumMacPort(chromium.ChromiumPort):
     def __init__(self, host, port_name, **kwargs):
         chromium.ChromiumPort.__init__(self, host, port_name, **kwargs)
         self._version = port_name[port_name.index('chromium-mac-') + len('chromium-mac-'):]
-        assert self._version in self.SUPPORTED_OS_VERSIONS
+        assert self._version in self.SUPPORTED_VERSIONS
 
     def _modules_to_search_for_symbols(self):
         return [self._build_path('ffmpegsumo.so')]

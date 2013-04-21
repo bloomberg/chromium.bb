@@ -81,6 +81,10 @@ class ChromiumPort(Port):
     FALLBACK_PATHS = {}
 
     @classmethod
+    def latest_platform_fallback_path(cls):
+        return cls.FALLBACK_PATHS[cls.SUPPORTED_VERSIONS[-1]]
+
+    @classmethod
     def _static_build_path(cls, filesystem, build_directory, chromium_base, webkit_base, configuration, comps):
         if build_directory:
             return filesystem.join(build_directory, configuration, *comps)
