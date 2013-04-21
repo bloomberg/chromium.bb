@@ -31,7 +31,7 @@ namespace WebCore {
 
 class Document;
 
-class RenderQuote : public RenderText {
+class RenderQuote FINAL : public RenderText {
 public:
     RenderQuote(Document*, const QuoteType);
     virtual ~RenderQuote();

@@ -31,7 +31,7 @@
 
 using namespace WebCore;
 
-class RenderFullScreenPlaceholder : public RenderBlock {
+class RenderFullScreenPlaceholder FINAL : public RenderBlock {
 public:
     RenderFullScreenPlaceholder(RenderFullScreen* owner) 
         : RenderBlock(0)

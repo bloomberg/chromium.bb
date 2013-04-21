@@ -36,7 +36,7 @@
 
 namespace WebCore {
 
-class RenderTextTrackContainerElement : public RenderBlock {
+class RenderTextTrackContainerElement FINAL : public RenderBlock {
 public:
     RenderTextTrackContainerElement(Element*);
 

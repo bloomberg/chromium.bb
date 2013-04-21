@@ -35,6 +35,7 @@ static const unsigned maxColumnIndex = 0x1FFFFFFE; // 536,870,910
 
 enum IncludeBorderColorOrNot { DoNotIncludeBorderColor, IncludeBorderColor };
 
+// FIXME: make FINAL once MemoryInstrumentation does not use inheritance.
 class RenderTableCell : public RenderBlock {
 public:
     explicit RenderTableCell(Element*);

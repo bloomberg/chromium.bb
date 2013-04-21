@@ -100,7 +100,7 @@ void toRenderTextControl(const RenderTextControl*);
 // We can't use RenderFlexibleBox directly, because flexboxes have a different
 // baseline definition, and then inputs of different types wouldn't line up
 // anymore.
-class RenderTextControlInnerContainer : public RenderFlexibleBox {
+class RenderTextControlInnerContainer FINAL : public RenderFlexibleBox {
 public:
     explicit RenderTextControlInnerContainer(Element* element)
         : RenderFlexibleBox(element)

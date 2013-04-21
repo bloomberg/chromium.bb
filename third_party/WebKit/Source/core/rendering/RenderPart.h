@@ -33,13 +33,13 @@ public:
     explicit RenderPart(Element*);
     virtual ~RenderPart();
 
-    virtual void setWidget(PassRefPtr<Widget>);
+    virtual void setWidget(PassRefPtr<Widget>) OVERRIDE FINAL;
     virtual void viewCleared();
 
     bool requiresAcceleratedCompositing() const;
 
-    virtual bool needsPreferredWidthsRecalculation() const;
-    virtual RenderBox* embeddedContentBox() const;
+    virtual bool needsPreferredWidthsRecalculation() const OVERRIDE FINAL;
+    virtual RenderBox* embeddedContentBox() const OVERRIDE FINAL;
 
     virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
 
@@ -47,7 +47,7 @@ protected:
     virtual bool requiresLayer() const;
 
 private:
-    virtual bool isRenderPart() const { return true; }
+    virtual bool isRenderPart() const OVERRIDE FINAL { return true; }
     virtual const char* renderName() const { return "RenderPart"; }
 };
 

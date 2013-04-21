@@ -40,7 +40,7 @@ class TableLayout;
 
 enum SkipEmptySectionsValue { DoNotSkipEmptySections, SkipEmptySections };
 
-class RenderTable : public RenderBlock {
+class RenderTable FINAL : public RenderBlock {
 public:
     explicit RenderTable(Element*);
     virtual ~RenderTable();

@@ -53,47 +53,45 @@ public:
 
     void handleUnavailablePluginIndicatorEvent(Event*);
 
-    virtual bool allowsAcceleratedCompositing() const;
+    bool allowsAcceleratedCompositing() const;
 
 protected:
-    virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
-    virtual void paint(PaintInfo&, const LayoutPoint&);
+    virtual void paintReplaced(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
+    virtual void paint(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
-    virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const;
+    virtual CursorDirective getCursor(const LayoutPoint&, Cursor&) const OVERRIDE FINAL;
 
     const RenderObjectChildList* children() const { return &m_children; }
     RenderObjectChildList* children() { return &m_children; }
 
 protected:
-    virtual void layout() OVERRIDE;
+    virtual void layout() OVERRIDE FINAL;
 
 private:
     virtual const char* renderName() const { return "RenderEmbeddedObject"; }
-    virtual bool isEmbeddedObject() const { return true; }
+    virtual bool isEmbeddedObject() const OVERRIDE FINAL { return true; }
 
     void paintSnapshotImage(PaintInfo&, const LayoutPoint&, Image*);
-    virtual void paintContents(PaintInfo&, const LayoutPoint&) OVERRIDE;
+    virtual void paintContents(PaintInfo&, const LayoutPoint&) OVERRIDE FINAL;
 
-    virtual bool requiresLayer() const;
+    virtual bool requiresLayer() const OVERRIDE FINAL;
 
-    virtual void viewCleared();
+    virtual void viewCleared() OVERRIDE FINAL;
 
-    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE;
+    virtual bool nodeAtPoint(const HitTestRequest&, HitTestResult&, const HitTestLocation& locationInContainer, const LayoutPoint& accumulatedOffset, HitTestAction) OVERRIDE FINAL;
 
-    virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier, Node** stopNode);
-    virtual bool logicalScroll(ScrollLogicalDirection, ScrollGranularity, float multiplier, Node** stopNode);
+    virtual bool scroll(ScrollDirection, ScrollGranularity, float multiplier, Node** stopNode) OVERRIDE FINAL;
+    virtual bool logicalScroll(ScrollLogicalDirection, ScrollGranularity, float multiplier, Node** stopNode) OVERRIDE FINAL;
 
     void setUnavailablePluginIndicatorIsPressed(bool);
     bool isInUnavailablePluginIndicator(MouseEvent*) const;
     bool isInUnavailablePluginIndicator(const LayoutPoint&) const;
     bool getReplacementTextGeometry(const LayoutPoint& accumulatedOffset, FloatRect& contentRect, Path&, FloatRect& replacementTextRect, Font&, TextRun&, float& textWidth) const;
 
-    virtual bool canHaveChildren() const;
-    virtual RenderObjectChildList* virtualChildren() { return children(); }
-    virtual const RenderObjectChildList* virtualChildren() const { return children(); }
+    virtual bool canHaveChildren() const OVERRIDE FINAL;
+    virtual RenderObjectChildList* virtualChildren() OVERRIDE FINAL { return children(); }
+    virtual const RenderObjectChildList* virtualChildren() const OVERRIDE FINAL { return children(); }
     
-    virtual bool canHaveWidget() const { return true; }
-
     bool m_hasFallbackContent; // FIXME: This belongs on HTMLObjectElement.
 
     bool m_showsUnavailablePluginIndicator;

@@ -38,17 +38,17 @@ public:
     bool hasReplacedLogicalWidth() const;
     bool hasReplacedLogicalHeight() const;
 
-    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+    virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE FINAL;
 
 protected:
     virtual void willBeDestroyed();
 
     virtual void layout();
 
-    virtual LayoutSize intrinsicSize() const OVERRIDE { return m_intrinsicSize; }
+    virtual LayoutSize intrinsicSize() const OVERRIDE FINAL { return m_intrinsicSize; }
     virtual void computeIntrinsicRatioInformation(FloatSize& intrinsicSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const;
 
-    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
+    virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE FINAL;
 
     virtual LayoutUnit minimumReplacedHeight() const { return LayoutUnit(); }
 
@@ -72,16 +72,16 @@ private:
 
     virtual bool canHaveChildren() const { return false; }
 
-    virtual void computePreferredLogicalWidths();
+    virtual void computePreferredLogicalWidths() OVERRIDE FINAL;
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&) { }
 
     virtual LayoutRect clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const OVERRIDE;
 
-    virtual VisiblePosition positionForPoint(const LayoutPoint&);
+    virtual VisiblePosition positionForPoint(const LayoutPoint&) OVERRIDE FINAL;
     
     virtual bool canBeSelectionLeaf() const { return true; }
 
-    virtual LayoutRect selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool clipToVisibleContent = true) OVERRIDE;
+    virtual LayoutRect selectionRectForRepaint(const RenderLayerModelObject* repaintContainer, bool clipToVisibleContent = true) OVERRIDE FINAL;
     void computeAspectRatioInformationForRenderBox(RenderBox*, FloatSize& constrainedSize, double& intrinsicRatio, bool& isPercentageIntrinsicSize) const;
 
     mutable LayoutSize m_intrinsicSize;

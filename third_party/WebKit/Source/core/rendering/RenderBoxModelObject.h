@@ -288,7 +288,7 @@ public:
 
 private:
     LayoutUnit computedCSSPadding(Length) const;
-    virtual bool isBoxModelObject() const { return true; }
+    virtual bool isBoxModelObject() const OVERRIDE FINAL { return true; }
     
     virtual LayoutRect frameRectForStickyPositioning() const = 0;
 
