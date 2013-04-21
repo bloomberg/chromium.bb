@@ -582,7 +582,7 @@
                         'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'dependencies': [
-                        '../../core/core.gyp/core.gyp:webcore_bindings',
+                        '../../core/core.gyp/core.gyp:webcore_derived',
                         '../../core/core.gyp/core.gyp:webcore_test_support',
                         '<(DEPTH)/base/base.gyp:test_support_base',
                         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',

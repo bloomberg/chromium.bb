@@ -1,6 +1,6 @@
 {
     'variables': {
-        'webcore_bindings_idl_files': [
+        'core_idl_files': [
             'css/CSSCharsetRule.idl',
             'css/CSSFontFaceLoadEvent.idl',
             'css/CSSFontFaceRule.idl',
@@ -15,7 +15,9 @@
             'css/CSSStyleRule.idl',
             'css/CSSStyleSheet.idl',
             'css/CSSSupportsRule.idl',
-            'css/CSSUnknownRule.idl',
+            # We should probably add CSSUnknownRule.idl to this list,
+            # but it currently causes a compile error.
+            # 'css/CSSUnknownRule.idl',
             'css/CSSValue.idl',
             'css/CSSValueList.idl',
             'css/Counter.idl',
@@ -70,7 +72,6 @@
             'dom/ErrorEvent.idl',
             'dom/Event.idl',
             'dom/EventException.idl',
-            'dom/EventListener.idl',
             'dom/EventTarget.idl',
             'dom/FocusEvent.idl',
             'dom/HashChangeEvent.idl',
@@ -265,7 +266,6 @@
             'inspector/ScriptProfile.idl',
             'inspector/ScriptProfileNode.idl',
             'loader/appcache/DOMApplicationCache.idl',
-            'page/AbstractView.idl',
             'page/BarInfo.idl',
             'page/Console.idl',
             'page/Crypto.idl',
@@ -318,8 +318,7 @@
             'xml/XPathResult.idl',
             'xml/XSLTProcessor.idl',
         ],
-        'webcore_svg_bindings_idl_files': [
-            'svg/ElementTimeControl.idl',
+        'svg_idl_files': [
             'svg/SVGAElement.idl',
             'svg/SVGAltGlyphElement.idl',
             'svg/SVGAltGlyphItemElement.idl',
@@ -355,7 +354,6 @@
             'svg/SVGElementInstanceList.idl',
             'svg/SVGEllipseElement.idl',
             'svg/SVGException.idl',
-            'svg/SVGExternalResourcesRequired.idl',
             'svg/SVGFEBlendElement.idl',
             'svg/SVGFEColorMatrixElement.idl',
             'svg/SVGFEComponentTransferElement.idl',
@@ -382,8 +380,6 @@
             'svg/SVGFETileElement.idl',
             'svg/SVGFETurbulenceElement.idl',
             'svg/SVGFilterElement.idl',
-            'svg/SVGFilterPrimitiveStandardAttributes.idl',
-            'svg/SVGFitToViewBox.idl',
             'svg/SVGFontElement.idl',
             'svg/SVGFontFaceElement.idl',
             'svg/SVGFontFaceFormatElement.idl',
@@ -397,12 +393,10 @@
             'svg/SVGGradientElement.idl',
             'svg/SVGHKernElement.idl',
             'svg/SVGImageElement.idl',
-            'svg/SVGLangSpace.idl',
             'svg/SVGLength.idl',
             'svg/SVGLengthList.idl',
             'svg/SVGLineElement.idl',
             'svg/SVGLinearGradientElement.idl',
-            'svg/SVGLocatable.idl',
             'svg/SVGMarkerElement.idl',
             'svg/SVGMaskElement.idl',
             'svg/SVGMatrix.idl',
@@ -455,7 +449,6 @@
             'svg/SVGSymbolElement.idl',
             'svg/SVGTRefElement.idl',
             'svg/SVGTSpanElement.idl',
-            'svg/SVGTests.idl',
             'svg/SVGTextContentElement.idl',
             'svg/SVGTextElement.idl',
             'svg/SVGTextPathElement.idl',
@@ -463,7 +456,6 @@
             'svg/SVGTitleElement.idl',
             'svg/SVGTransform.idl',
             'svg/SVGTransformList.idl',
-            'svg/SVGTransformable.idl',
             'svg/SVGUnitTypes.idl',
             'svg/SVGUseElement.idl',
             'svg/SVGViewElement.idl',
@@ -3721,5 +3713,26 @@
             'platform/chromium/support/WrappedResourceRequest.h',
             'platform/chromium/support/WrappedResourceResponse.h',
         ],
+        'conditions': [
+            ['OS=="win"', {
+                # Using native perl rather than cygwin perl cuts execution time
+                # of idl preprocessing rules by a bit more than 50%.
+                'perl_exe': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
+                'gperf_exe': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
+                'bison_exe': '<(DEPTH)/third_party/bison/bin/bison.exe',
+                # Using cl instead of cygwin gcc cuts the processing time from
+                # 1m58s to 0m52s.
+                'preprocessor': '--preprocessor "cl.exe -nologo -EP -TP"',
+              },{
+                'perl_exe': 'perl',
+                'gperf_exe': 'gperf',
+                'bison_exe': 'bison',
+                # We specify a preprocess so it happens locally and won't get
+                # distributed to goma.
+                # FIXME: /usr/bin/gcc won't exist on OSX forever. We want to
+                # use /usr/bin/clang once we require Xcode 4.x.
+                'preprocessor': '--preprocessor "/usr/bin/gcc -E -P -x c++"'
+              }],
+         ],
     }
 }

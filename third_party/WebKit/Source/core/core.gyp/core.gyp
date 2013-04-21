@@ -31,8 +31,6 @@
 {
   'includes': [
     '../../WebKit/chromium/WinPrecompile.gypi',
-    # FIXME: Sense whether upstream or downstream build, and
-    # include the right features.gypi
     '../../WebKit/chromium/features.gypi',
     '../../modules/modules.gypi',
     '../../bindings/bindings.gypi',
@@ -135,40 +133,7 @@
       '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
     ],
 
-    'bindings_idl_files': [
-      '<@(webcore_bindings_idl_files)',
-      '<@(modules_idl_files)',
-    ],
-
-    'bindings_idl_files!': [
-      # Custom bindings in bindings/v8/custom exist for these.
-      '../dom/EventListener.idl',
-
-      # Bindings with custom Objective-C implementations.
-      '../page/AbstractView.idl',
-
-      # These bindings are excluded, as they're only used through inheritance and don't define constants that would need a constructor.
-      '../svg/ElementTimeControl.idl',
-      '../svg/SVGExternalResourcesRequired.idl',
-      '../svg/SVGFilterPrimitiveStandardAttributes.idl',
-      '../svg/SVGFitToViewBox.idl',
-      '../svg/SVGLangSpace.idl',
-      '../svg/SVGLocatable.idl',
-      '../svg/SVGTests.idl',
-      '../svg/SVGTransformable.idl',
-
-      # FIXME: I don't know why these are excluded, either.
-      # Someone (me?) should figure it out and add appropriate comments.
-      '../css/CSSUnknownRule.idl',
-    ],
-
     'conditions': [
-      # TODO(maruel): Move it in its own project or generate it anyway?
-      ['enable_svg!=0', {
-        'bindings_idl_files': [
-          '<@(webcore_svg_bindings_idl_files)',
-        ],
-      }],
       ['OS=="mac"', {
         'webcore_include_dirs': [
           # FIXME: Eliminate dependency on platform/mac and related
@@ -193,25 +158,6 @@
           '../platform/text/win',
           '../platform/win',
         ],
-        # Using native perl rather than cygwin perl cuts execution time of idl
-        # preprocessing rules by a bit more than 50%.
-        'perl_exe': '<(DEPTH)/third_party/perl/perl/bin/perl.exe',
-        'gperf_exe': '<(DEPTH)/third_party/gperf/bin/gperf.exe',
-        'bison_exe': '<(DEPTH)/third_party/bison/bin/bison.exe',
-        # Using cl instead of cygwin gcc cuts the processing time from
-        # 1m58s to 0m52s.
-        'preprocessor': '--preprocessor "cl.exe -nologo -EP -TP"',
-      },{
-        # enable -Wall and -Werror, just for Mac and Linux builds for now
-        # FIXME: Also enable this for Windows after verifying no warnings
-        'chromium_code': 1,
-        'perl_exe': 'perl',
-        'gperf_exe': 'gperf',
-        'bison_exe': 'bison',
-
-        # We specify a preprocess so it happens locally and won't get distributed to goma.
-        # FIXME: /usr/bin/gcc won't exist on OSX forever. We want to use /usr/bin/clang once we require Xcode 4.x.
-        'preprocessor': '--preprocessor "/usr/bin/gcc -E -P -x c++"'
       }],
       ['OS=="linux" or OS=="android"', {
         'webcore_include_dirs': [
@@ -219,39 +165,11 @@
           '../platform/graphics/harfbuzz/ng',
         ],
       }],
-      ['OS=="win" and buildtype=="Official"', {
-        # On windows official release builds, we try to preserve symbol space.
-        'derived_sources_aggregate_files': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSourcesAll.cpp',
-        ],
-      },{
-        'derived_sources_aggregate_files': [
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources01.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources02.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources03.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources04.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources05.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources06.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources07.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources08.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources09.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources10.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources11.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources12.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources13.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources14.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources15.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources16.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources17.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources18.cpp',
-          '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8DerivedSources19.cpp',
-        ],
+      ['OS=="android" and use_openmax_dl_fft!=0', {
+        'webcore_include_dirs': [
+          '<(DEPTH)/third_party/openmax_dl'
+        ]
       }],
-     ['OS=="android" and use_openmax_dl_fft!=0', {
-       'webcore_include_dirs': [
-         '<(DEPTH)/third_party/openmax_dl'
-       ]
-     }],
     ],
   },  # variables
 
@@ -442,732 +360,12 @@
       'includes': [ 'ConvertFileToHeaderWithCharacterArray.gypi' ],
     },
     {
-      'target_name': 'generate_settings',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'Settings',
-          'inputs': [
-            '../page/make_settings.pl',
-            '../page/Settings.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SettingsMacros.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.idl',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/InternalSettingsGenerated.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-      ]
-    },
-    {
-      'target_name': 'generate_supplemental_dependency',
-      'type': 'none',
-      'actions': [
-        {
-          'action_name': 'generateSupplementalDependency',
-          'variables': {
-            # Write sources into a file, so that the action command line won't
-            # exceed OS limits.
-            'idl_files_list': '<|(idl_files_list.tmp <@(bindings_idl_files))',
-          },
-          'inputs': [
-            '<(bindings_dir)/scripts/preprocess-idls.pl',
-            '<(idl_files_list)',
-            '<!@(cat <(idl_files_list))',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '-w',
-            '-I<(bindings_dir)/scripts',
-            '-I../scripts',
-            '<(bindings_dir)/scripts/preprocess-idls.pl',
-            '--defines',
-            '<(feature_defines)',
-            '--idlFilesList',
-            '<(idl_files_list)',
-            '--supplementalDependencyFile',
-            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-          ],
-          'message': 'Resolving [Supplemental=XXX] dependencies in all IDL files',
-        }
-      ]
-    },
-    {
-      'target_name': 'webcore_bindings_sources',
-      'type': 'none',
-      'hard_dependency': 1,
-      'dependencies': [
-        'generate_supplemental_dependency',
-        'generate_settings',
-      ],
-      'sources': [
-        # bison rule
-        '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.y',
-        '../xml/XPathGrammar.y',
-
-        # gperf rule
-        '../platform/ColorData.gperf',
-
-        # idl rules
-        '<@(bindings_idl_files)',
-        '<@(webcore_test_support_idl_files)',
-      ],
-      'actions': [
-        # Actions to build derived sources.
-        {
-          'action_name': 'generateV8ArrayBufferViewCustomScript',
-          'inputs': [
-            '<(bindings_dir)/v8/custom/V8ArrayBufferViewCustomScript.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8ArrayBufferViewCustomScript.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'V8ArrayBufferViewCustomScript_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-          'message': 'Generating V8ArrayBufferViewCustomScript.h from V8ArrayBufferViewCustomScript.js',
-        },
-        {
-          'action_name': 'generateXMLViewerCSS',
-          'inputs': [
-            '../xml/XMLViewer.css',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLViewerCSS.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'XMLViewer_css',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-        },
-        {
-          'action_name': 'generateXMLViewerJS',
-          'inputs': [
-            '../xml/XMLViewer.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLViewerJS.h',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../inspector/xxd.pl',
-            'XMLViewer_js',
-            '<@(_inputs)',
-            '<@(_outputs)'
-          ],
-        },
-        {
-          'action_name': 'HTMLEntityTable',
-          'inputs': [
-            '../html/parser/create-html-entity-table',
-            '../html/parser/HTMLEntityNames.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp'
-          ],
-          'action': [
-            'python',
-            '../html/parser/create-html-entity-table',
-            '-o',
-            '<@(_outputs)',
-            '<@(_inputs)'
-          ],
-        },
-        {
-          'action_name': 'CSSPropertyNames',
-          'inputs': [
-            '../css/makeprop.pl',
-            '../css/CSSPropertyNames.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_csspropertynames.py',
-            '<@(_outputs)',
-            '--',
-            '--defines', '<(feature_defines)',
-            '--',
-            '<@(_inputs)',
-          ],
-          'conditions': [
-            # TODO(maruel): Move it in its own project or generate it anyway?
-            ['enable_svg!=0', {
-              'inputs': [
-                '../css/SVGCSSPropertyNames.in',
-              ],
-            }],
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'CSSValueKeywords',
-          'inputs': [
-            '../css/makevalues.pl',
-            '../css/CSSValueKeywords.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_cssvaluekeywords.py',
-            '<@(_outputs)',
-            '--',
-            '--defines', '<(feature_defines)',
-            '--',
-            '<@(_inputs)',
-          ],
-          'conditions': [
-            # TODO(maruel): Move it in its own project or generate it anyway?
-            ['enable_svg!=0', {
-              'inputs': [
-                '../css/SVGCSSValueKeywords.in',
-              ],
-            }],
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'HTMLNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../html/HTMLTagNames.in',
-            '../html/HTMLAttributeNames.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8HTMLElementWrapperFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8HTMLElementWrapperFactory.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--factory',
-            '--wrapperFactoryV8',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'WebKitFontFamilyNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../css/WebKitFontFamilyNames.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/WebKitFontFamilyNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/WebKitFontFamilyNames.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--fonts',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'SVGNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../svg/svgtags.in',
-            '../svg/svgattrs.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/SVGElementFactory.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/V8SVGElementWrapperFactory.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--factory',
-            '--wrapperFactoryV8',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'EventFactory',
-          'inputs': [
-            '../scripts/InFilesCompiler.pm',
-            '../scripts/InFilesParser.pm',
-            '../scripts/make_event_factory.pl',
-            '../dom/EventNames.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventHeaders.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventInterfaces.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'EventTargetFactory',
-          'inputs': [
-            '../scripts/InFilesCompiler.pm',
-            '../scripts/InFilesParser.pm',
-            '../scripts/make_event_factory.pl',
-            '../dom/EventTargetFactory.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetHeaders.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/EventTargetInterfaces.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'ExceptionCodeDescription',
-          'inputs': [
-            '../scripts/InFilesCompiler.pm',
-            '../scripts/InFilesParser.pm',
-            '../scripts/make_dom_exceptions.pl',
-            '../dom/DOMExceptions.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionCodeDescription.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionCodeDescription.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionHeaders.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ExceptionInterfaces.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'MathMLNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../mathml/mathtags.in',
-            '../mathml/mathattrs.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLNames.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLElementFactory.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/MathMLElementFactory.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--factory',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'UserAgentStyleSheets',
-          'variables': {
-            'scripts': [
-              '../css/make-css-file-arrays.pl',
-              '../scripts/preprocessor.pm',
-            ],
-            # The .css files are in the same order as ../DerivedSources.make.
-            'stylesheets': [
-              '../css/html.css',
-              '../css/quirks.css',
-              '../css/view-source.css',
-              '../css/themeChromium.css', # Chromium only.
-              '../css/themeChromiumAndroid.css', # Chromium only.
-              '../css/themeChromiumLinux.css', # Chromium only.
-              '../css/themeChromiumSkia.css',  # Chromium only.
-              '../css/themeWin.css',
-              '../css/themeWinQuirks.css',
-              '../css/svg.css',
-              '../css/mathml.css',
-              '../css/mediaControls.css',
-              '../css/mediaControlsChromium.css',
-              '../css/mediaControlsChromiumAndroid.css',
-              '../css/fullscreen.css',
-              # Skip fullscreenQuickTime.
-            ],
-          },
-          'inputs': [
-            '<@(scripts)',
-            '<@(stylesheets)'
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/UserAgentStyleSheets.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/UserAgentStyleSheetsData.cpp',
-          ],
-          'action': [
-            'python',
-            'scripts/action_useragentstylesheets.py',
-            '<@(_outputs)',
-            '<@(stylesheets)',
-            '--',
-            '<@(scripts)',
-            '--',
-            '--defines', '<(feature_defines)',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'PickerCommon',
-          'inputs': [
-            '../Resources/pagepopups/pickerCommon.css',
-            '../Resources/pagepopups/pickerCommon.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
-          ],
-          'action': [
-            'python',
-            '../scripts/make-file-arrays.py',
-            '--condition=ENABLE(CALENDAR_PICKER) OR ENABLE(INPUT_TYPE_COLOR)',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/PickerCommon.cpp',
-            '<@(_inputs)',
-          ],
-        },
-        {
-          'action_name': 'CalendarPicker',
-          'inputs': [
-            '../Resources/pagepopups/calendarPicker.css',
-            '../Resources/pagepopups/calendarPicker.js',
-            '../Resources/pagepopups/chromium/calendarPickerChromium.css',
-            '../Resources/pagepopups/chromium/pickerCommonChromium.css',
-            '../Resources/pagepopups/suggestionPicker.css',
-            '../Resources/pagepopups/suggestionPicker.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
-          ],
-          'action': [
-            'python',
-            '../scripts/make-file-arrays.py',
-            '--condition=ENABLE(CALENDAR_PICKER)',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
-            '<@(_inputs)',
-          ],
-        },
-        {
-          'action_name': 'ColorSuggestionPicker',
-          'inputs': [
-            '../Resources/pagepopups/colorSuggestionPicker.css',
-            '../Resources/pagepopups/colorSuggestionPicker.js',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
-          ],
-          'action': [
-            'python',
-            '../scripts/make-file-arrays.py',
-            '--condition=ENABLE(INPUT_TYPE_COLOR)',
-            '--out-h=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.h',
-            '--out-cpp=<(SHARED_INTERMEDIATE_DIR)/webkit/ColorSuggestionPicker.cpp',
-            '<@(_inputs)',
-          ],
-        },
-        {
-          'action_name': 'XLinkNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../svg/xlinkattrs.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XLinkNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XLinkNames.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'XMLNSNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../xml/xmlnsattrs.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNSNames.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'XMLNames',
-          'inputs': [
-            '../scripts/Hasher.pm',
-            '../scripts/StaticString.pm',
-            '../scripts/make_names.pl',
-            '../xml/xmlattrs.in',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/XMLNames.h',
-          ],
-          'action': [
-            'python',
-            'scripts/action_makenames.py',
-            '<@(_outputs)',
-            '--',
-            '<@(_inputs)',
-            '--',
-            '--extraDefines', '<(feature_defines)'
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'action_name': 'derived_sources_all_in_one',
-          'inputs': [
-            'scripts/action_derivedsourcesallinone.py',
-            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-          ],
-          'outputs': [
-            '<@(derived_sources_aggregate_files)',
-          ],
-          'action': [
-            'python',
-            'scripts/action_derivedsourcesallinone.py',
-            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-            '--',
-            '<@(derived_sources_aggregate_files)',
-          ],
-        },
-        {
-          'action_name': 'preprocess_grammar',
-          'inputs': [
-            '../css/CSSGrammar.y.in',
-            '../css/CSSGrammar.y.includes',
-          ],
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.y',
-          ],
-          'action': [
-            '<(perl_exe)',
-            '-I../scripts',
-            '../css/makegrammar.pl',
-            '--outputDir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/',
-            '--extraDefines',
-            '<(feature_defines)',
-            '--preprocessOnly',
-            '<@(preprocessor)',
-            '<@(_inputs)',
-          ],
-        },
-      ],
-      'rules': [
-        # Rules to build derived sources.
-        {
-          'rule_name': 'bison',
-          'extension': 'y',
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).h'
-          ],
-          'action': [
-            'python',
-            'scripts/rule_bison.py',
-            '<(RULE_INPUT_PATH)',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            '<(bison_exe)',
-          ],
-          'msvs_cygwin_shell': 1,
-        },
-        {
-          'rule_name': 'gperf',
-          'extension': 'gperf',
-          #
-          # gperf outputs are generated by core/scripts/make-hash-tools.pl
-          #
-          'outputs': [
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/<(RULE_INPUT_ROOT).cpp',
-          ],
-          'inputs': [
-            '../scripts/make-hash-tools.pl',
-          ],
-          'msvs_cygwin_shell': 0,
-          'action': [
-            '<(perl_exe)',
-            '../scripts/make-hash-tools.pl',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            '<(RULE_INPUT_PATH)',
-            '<(gperf_exe)',
-          ],
-        },
-        # Rule to build generated JavaScript (V8) bindings from .idl source.
-        {
-          'rule_name': 'binding',
-          'extension': 'idl',
-          'msvs_external_rule': 1,
-          'inputs': [
-            '<(bindings_dir)/scripts/generate-bindings.pl',
-            '<(bindings_dir)/scripts/CodeGenerator.pm',
-            '<(bindings_dir)/scripts/CodeGeneratorV8.pm',
-            '<(bindings_dir)/scripts/IDLParser.pm',
-            '<(bindings_dir)/scripts/IDLAttributes.txt',
-            '../scripts/preprocessor.pm',
-            '<!@pymod_do_main(supplemental_idl_files <@(bindings_idl_files))',
-          ],
-          'outputs': [
-            # FIXME:  The .cpp file should be in webkit/bindings once
-            # we coax GYP into supporting it (see 'action' below).
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings/V8<(RULE_INPUT_ROOT).cpp',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings/V8<(RULE_INPUT_ROOT).h',
-          ],
-          'variables': {
-            'generator_include_dirs': [
-              '--include', '../../modules/filesystem',
-              '--include', '../../modules/indexeddb',
-              '--include', '../../modules/mediasource',
-              '--include', '../../modules/mediastream',
-              '--include', '../../modules/navigatorcontentutils',
-              '--include', '../../modules/notifications',
-              '--include', '../../modules/webaudio',
-              '--include', '../../modules/webdatabase',
-              '--include', '../css',
-              '--include', '../dom',
-              '--include', '../fileapi',
-              '--include', '../html',
-              '--include', '../page',
-              '--include', '../plugins',
-              '--include', '../storage',
-              '--include', '../svg',
-              '--include', '../testing',
-              '--include', '../workers',
-              '--include', '../xml',
-              '--include', '<(SHARED_INTERMEDIATE_DIR)/webkit',
-            ],
-          },
-          'msvs_cygwin_shell': 0,
-          # FIXME:  Note that we put the .cpp files in webcore/bindings
-          # but the .h files in webkit/bindings.  This is to work around
-          # the unfortunate fact that GYP strips duplicate arguments
-          # from lists.  When we have a better GYP way to suppress that
-          # behavior, change the output location.
-          'action': [
-            '<(perl_exe)',
-            '-w',
-            '-I<(bindings_dir)/scripts',
-            '-I../scripts',
-            '<(bindings_dir)/scripts/generate-bindings.pl',
-            '--outputHeadersDir',
-            '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
-            '--outputDir',
-            '<(SHARED_INTERMEDIATE_DIR)/webcore/bindings',
-            '--idlAttributesFile',
-            '<(bindings_dir)/scripts/IDLAttributes.txt',
-            '--defines',
-            '<(feature_defines)',
-            '<@(generator_include_dirs)',
-            '--supplementalDependencyFile',
-            '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
-            '--additionalIdlFiles',
-            '<(webcore_test_support_idl_files)',
-            '<(RULE_INPUT_PATH)',
-            '<@(preprocessor)',
-          ],
-          'message': 'Generating binding from <(RULE_INPUT_PATH)',
-        },
-      ],
-    },
-    {
-      'target_name': 'webcore_bindings',
+      'target_name': 'webcore_derived',
       'type': 'static_library',
       'hard_dependency': 1,
       'dependencies': [
         'webcore_prerequisites',
-        'webcore_bindings_sources',
+        'derived_sources.gyp:make_derived_sources',
         'inspector_overlay_page',
         'inspector_protocol_sources',
         'injected_canvas_script_source',
@@ -1210,7 +408,7 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSPropertyNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSValueKeywords.cpp',
 
-        # Additional .cpp files from webcore_bindings_sources actions.
+        # Additional .cpp files from make_derived_sources actions.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLElementFactory.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLNames.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CalendarPicker.cpp',
@@ -1235,11 +433,11 @@
         # Generated from HTMLEntityNames.in
         '<(SHARED_INTERMEDIATE_DIR)/webkit/HTMLEntityTable.cpp',
 
-        # Additional .cpp files from the webcore_bindings_sources rules.
+        # Additional .cpp files from the make_derived_sources rules.
         '<(SHARED_INTERMEDIATE_DIR)/webkit/CSSGrammar.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/XPathGrammar.cpp',
 
-        # Additional .cpp files from the webcore_inspector_sources list.
+        # Additional .cpp files from the core_inspector_sources list.
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorFrontend.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendDispatcher.cpp',
         '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorTypeBuilder.cpp',
@@ -1295,7 +493,8 @@
         'injected_script_source',
         'inspector_overlay_page',
         'inspector_protocol_sources',
-        'webcore_bindings_sources',
+        'derived_sources.gyp:make_derived_sources',
+        '../../bindings/derived_sources.gyp:bindings_derived_sources',
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
@@ -2011,7 +1210,7 @@
         'webcore_remaining',
         'webcore_rendering',
         # Exported.
-        'webcore_bindings',
+        'webcore_derived',
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
@@ -2023,7 +1222,7 @@
       'export_dependent_settings': [
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
         '../../wtf/wtf.gyp:wtf',
-        'webcore_bindings',
+        'webcore_derived',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
