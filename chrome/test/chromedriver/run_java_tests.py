@@ -77,7 +77,7 @@ def _Run(java_tests_src_dir, test_filter,
   Returns:
     A list of |TestResult|s.
   """
-  test_dir = util.MakeTempDir() + '1'
+  test_dir = util.MakeTempDir()
   keystore_path = ('java', 'client', 'test', 'keystore')
   required_dirs = [keystore_path[:-1],
                    ('javascript',),
