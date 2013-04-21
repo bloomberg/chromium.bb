@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebSocketDeflater.h"
 
-#if USE(ZLIB)
-
 #include "Logging.h"
 #include <wtf/FastMalloc.h>
 #include <wtf/HashMap.h>
@@ -216,4 +214,3 @@ void WebSocketInflater::reset()
 
 } // namespace WebCore
 
-#endif // USE(ZLIB)

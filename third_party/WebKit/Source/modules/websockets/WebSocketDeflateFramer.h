@@ -31,9 +31,7 @@
 #ifndef WebSocketDeflateFramer_h
 #define WebSocketDeflateFramer_h
 
-#if USE(ZLIB)
 #include "WebSocketDeflater.h"
-#endif
 #include "WebSocketExtensionProcessor.h"
 #include "WebSocketFrame.h"
 #include <wtf/OwnPtr.h>
@@ -95,7 +93,6 @@ public:
 
     PassOwnPtr<WebSocketExtensionProcessor> createExtensionProcessor();
 
-    bool canDeflate() const;
     bool enabled() const { return m_enabled; }
 
     PassOwnPtr<DeflateResultHolder> deflate(WebSocketFrame&);
@@ -105,16 +102,12 @@ public:
 
     void didFail();
 
-#if USE(ZLIB)
     void enableDeflate(int windowBits, WebSocketDeflater::ContextTakeOverMode);
-#endif
 
 private:
     bool m_enabled;
-#if USE(ZLIB)
     OwnPtr<WebSocketDeflater> m_deflater;
     OwnPtr<WebSocketInflater> m_inflater;
-#endif
 };
 
 }
