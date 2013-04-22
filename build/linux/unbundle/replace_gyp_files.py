@@ -1,0 +1,42 @@
+#!/usr/bin/env python
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""
+Replaces gyp files in tree with files from here that
+make the build use system libraries.
+"""
+
+
+import os.path
+import shutil
+import sys
+
+
+REPLACEMENTS = {
+  'use_system_harfbuzz': 'third_party/harfbuzz-ng/harfbuzz.gyp',
+}
+
+
+def DoMain(argv):
+  my_dirname = os.path.dirname(__file__)
+  source_tree_root = os.path.abspath(
+    os.path.join(my_dirname, '..', '..', '..'))
+
+  for flag, path in REPLACEMENTS.items():
+    # Accept arguments in gyp command-line syntax, and ignore other
+    # parameters, so that the caller can re-use command-line for this
+    # script and gyp.
+    if '-D%s=1' % flag not in argv:
+      continue
+
+    # Copy the gyp file from directory of this script to target path.
+    shutil.copyfile(os.path.join(my_dirname, os.path.basename(path)),
+                    os.path.join(source_tree_root, path))
+
+  return 0
+
+
+if __name__ == '__main__':
+  sys.exit(DoMain(sys.argv))
