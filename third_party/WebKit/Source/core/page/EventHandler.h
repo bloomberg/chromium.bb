@@ -171,7 +171,6 @@ public:
     void clearGestureScrollNodes();
     bool isScrollbarHandlingGestures() const;
 
-#if ENABLE(TOUCH_ADJUSTMENT)
     bool shouldApplyTouchAdjustment(const PlatformGestureEvent&) const;
 
     bool bestClickableNodeForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntPoint& targetPoint, Node*& targetNode);
@@ -179,7 +178,6 @@ public:
     bool bestZoomableAreaForTouchPoint(const IntPoint& touchCenter, const IntSize& touchRadius, IntRect& targetArea, Node*& targetNode);
 
     bool adjustGesturePosition(const PlatformGestureEvent&, IntPoint& adjustedPoint);
-#endif
 
     bool sendContextMenuEvent(const PlatformMouseEvent&);
     bool sendContextMenuEventForKey();

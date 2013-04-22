@@ -87,6 +87,7 @@
 #include "StyleCachedImage.h"
 #include "TextEvent.h"
 #include "TextIterator.h"
+#include "TouchAdjustment.h"
 #include "TouchEvent.h"
 #include "TouchList.h"
 #include "UserTypingGestureIndicator.h"
@@ -97,10 +98,6 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/TemporaryChange.h>
-
-#if ENABLE(TOUCH_ADJUSTMENT)
-#include "TouchAdjustment.h"
-#endif
 
 #if ENABLE(SVG)
 #include "SVGDocument.h"
@@ -2332,9 +2329,7 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     IntPoint adjustedPoint = gestureEvent.position();
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent;
     if (gestureEvent.type() == PlatformEvent::GestureTapDown) {
-#if ENABLE(TOUCH_ADJUSTMENT)
         adjustGesturePosition(gestureEvent, adjustedPoint);
-#endif
         hitType |= HitTestRequest::Active;
     } else if (gestureEvent.type() == PlatformEvent::GestureTapDownCancel)
         hitType |= HitTestRequest::Release;
@@ -2422,9 +2417,7 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
 {
     // FIXME: Refactor this code to not hit test multiple times. We use the adjusted position to ensure that the correct node is targeted by the later redundant hit tests.
     IntPoint adjustedPoint = gestureEvent.position();
-#if ENABLE(TOUCH_ADJUSTMENT)
     adjustGesturePosition(gestureEvent, adjustedPoint);
-#endif
 
     PlatformMouseEvent fakeMouseMove(adjustedPoint, gestureEvent.globalPosition(),
         NoButton, PlatformEvent::MouseMoved, /* clickCount */ 0,
@@ -2454,9 +2447,7 @@ bool EventHandler::handleGestureTap(const PlatformGestureEvent& gestureEvent)
 bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEvent)
 {
     IntPoint adjustedPoint = gestureEvent.position();
-#if ENABLE(TOUCH_ADJUSTMENT)
     adjustGesturePosition(gestureEvent, adjustedPoint);
-#endif
     RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
     if (subframe && subframe->eventHandler()->handleGestureLongPress(gestureEvent))
         return true;
@@ -2498,9 +2489,7 @@ bool EventHandler::handleGestureLongPress(const PlatformGestureEvent& gestureEve
 bool EventHandler::handleGestureLongTap(const PlatformGestureEvent& gestureEvent)
 {
     IntPoint adjustedPoint = gestureEvent.position();
-#if ENABLE(TOUCH_ADJUSTMENT)
     adjustGesturePosition(gestureEvent, adjustedPoint);
-#endif
     RefPtr<Frame> subframe = getSubFrameForGestureEvent(adjustedPoint, gestureEvent);
     if (subframe && subframe->eventHandler()->handleGestureLongTap(gestureEvent))
         return true;
@@ -2653,7 +2642,6 @@ bool EventHandler::isScrollbarHandlingGestures() const
     return m_scrollbarHandlingScrollGesture.get();
 }
 
-#if ENABLE(TOUCH_ADJUSTMENT)
 bool EventHandler::shouldApplyTouchAdjustment(const PlatformGestureEvent& event) const
 {
     if (m_frame->settings() && !m_frame->settings()->touchAdjustmentEnabled())
@@ -2722,7 +2710,6 @@ bool EventHandler::adjustGesturePosition(const PlatformGestureEvent& gestureEven
     }
     return targetNode;
 }
-#endif
 
 bool EventHandler::sendContextMenuEvent(const PlatformMouseEvent& event)
 {
@@ -2837,9 +2824,7 @@ bool EventHandler::sendContextMenuEventForGesture(const PlatformGestureEvent& ev
 #endif
 
     IntPoint adjustedPoint = event.position();
-#if ENABLE(TOUCH_ADJUSTMENT)
     adjustGesturePosition(event, adjustedPoint);
-#endif
     PlatformMouseEvent mouseEvent(adjustedPoint, event.globalPosition(), RightButton, eventType, 1, false, false, false, false, WTF::currentTime());
     // To simulate right-click behavior, we send a right mouse down and then
     // context menu event.

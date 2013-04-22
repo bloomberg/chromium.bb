@@ -1273,9 +1273,7 @@ Node* WebViewImpl::bestTapNode(const PlatformGestureEvent& tapEvent)
     Node* bestTouchNode = 0;
 
     IntPoint touchEventLocation(tapEvent.position());
-#if ENABLE(TOUCH_ADJUSTMENT)
     m_page->mainFrame()->eventHandler()->adjustGesturePosition(tapEvent, touchEventLocation);
-#endif
 
     IntPoint hitTestPoint = m_page->mainFrame()->view()->windowToContents(touchEventLocation);
     HitTestResult result = m_page->mainFrame()->eventHandler()->hitTestResultAtPoint(hitTestPoint, HitTestRequest::TouchEvent | HitTestRequest::DisallowShadowContent);
