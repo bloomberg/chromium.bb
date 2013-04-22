@@ -32,6 +32,9 @@ FileGrid.decorate = function(self, metadataCache) {
   self.__proto__ = FileGrid.prototype;
   self.metadataCache_ = metadataCache;
 
+  if (util.platform.newUI())
+    ScrollBar.createVertical(self.parentNode, self);
+
   self.itemConstructor = function(entry) {
     var item = self.ownerDocument.createElement('LI');
     FileGrid.Item.decorate(item, entry, self);
@@ -123,11 +126,17 @@ FileGrid.decorateThumbnailBox = function(
     metadataTypes += '|media';
   }
 
+  var useEmbedded = util.platform.newUI() ?
+      ThumbnailLoader.UseEmbedded.NO_EMBEDDED :
+      ThumbnailLoader.UseEmbedded.USE_EMBEDDED;
+
   metadataCache.get(imageUrl, metadataTypes,
       function(metadata) {
         new ThumbnailLoader(imageUrl,
                             ThumbnailLoader.LoaderType.IMAGE,
-                            metadata).
+                            metadata,
+                            undefined,
+                            useEmbedded).
             load(box,
                  fillMode,
                  ThumbnailLoader.OptimizationMode.DISCARD_DETACHED,
