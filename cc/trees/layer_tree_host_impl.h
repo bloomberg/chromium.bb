@@ -14,6 +14,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/animation/animation_registrar.h"
 #include "cc/base/cc_export.h"
+#include "cc/debug/latency_info.h"
 #include "cc/input/input_handler.h"
 #include "cc/input/top_controls_manager_client.h"
 #include "cc/layers/layer_lists.h"
@@ -131,6 +132,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
     LayerImplList will_draw_layers;
     bool contains_incomplete_tile;
     bool has_no_damage;
+    LatencyInfo latency_info;
 
     // RenderPassSink implementation.
     virtual void AppendRenderPass(scoped_ptr<RenderPass> render_pass) OVERRIDE;

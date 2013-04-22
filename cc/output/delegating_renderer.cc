@@ -157,7 +157,7 @@ void DelegatingRenderer::DrawFrame(
   output_surface_->SendFrameToParentCompositor(&out_frame);
 }
 
-bool DelegatingRenderer::SwapBuffers() {
+bool DelegatingRenderer::SwapBuffers(const LatencyInfo& latency_info) {
   return true;
 }
 

@@ -10,6 +10,7 @@
 
 #include "base/hash_tables.h"
 #include "base/values.h"
+#include "cc/debug/latency_info.h"
 #include "cc/layers/layer_impl.h"
 
 #if defined(COMPILER_GCC)
@@ -197,6 +198,10 @@ class CC_EXPORT LayerTreeImpl {
   void DidUpdateScroll();
   void DidEndScroll();
 
+  void SetLatencyInfo(const LatencyInfo& latency_info);
+  const LatencyInfo& GetLatencyInfo();
+  void ClearLatencyInfo();
+
  protected:
   explicit LayerTreeImpl(LayerTreeHostImpl* layer_tree_host_impl);
 
@@ -247,6 +252,8 @@ class CC_EXPORT LayerTreeImpl {
   // In impl-side painting mode, this is true when the tree may contain
   // structural differences relative to the active tree.
   bool needs_full_tree_sync_;
+
+  LatencyInfo latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeImpl);
 };

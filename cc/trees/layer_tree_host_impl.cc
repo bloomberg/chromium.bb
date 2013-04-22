@@ -875,6 +875,8 @@ bool LayerTreeHostImpl::PrepareToDraw(FrameData* frame,
   if (!CalculateRenderPasses(frame))
     return false;
 
+  frame->latency_info = active_tree_->GetLatencyInfo();
+
   // If we return true, then we expect DrawLayers() to be called before this
   // function is called again.
   return true;
@@ -1019,6 +1021,7 @@ CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() const {
     return metadata;
 
   metadata.root_scroll_offset = RootScrollLayer()->TotalScrollOffset();
+  metadata.latency_info = active_tree_->GetLatencyInfo();
 
   return metadata;
 }
@@ -1118,7 +1121,10 @@ const RendererCapabilities& LayerTreeHostImpl::GetRendererCapabilities() const {
 bool LayerTreeHostImpl::SwapBuffers(const LayerTreeHostImpl::FrameData& frame) {
   if (frame.has_no_damage)
     return false;
-  return renderer_->SwapBuffers();
+  bool result = renderer_->SwapBuffers(frame.latency_info);
+  if (result)
+    active_tree_->ClearLatencyInfo();
+  return result;
 }
 
 void LayerTreeHostImpl::EnableVSyncNotification(bool enable) {

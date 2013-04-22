@@ -18,6 +18,7 @@
 #include "cc/animation/animation_events.h"
 #include "cc/base/cc_export.h"
 #include "cc/base/scoped_ptr_vector.h"
+#include "cc/debug/latency_info.h"
 #include "cc/layers/layer_lists.h"
 #include "cc/output/output_surface.h"
 #include "cc/scheduler/rate_limiter.h"
@@ -211,6 +212,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   void ApplyScrollAndScale(const ScrollAndScaleSet& info);
 
   void SetImplTransform(const gfx::Transform& transform);
+  void SetLatencyInfo(const LatencyInfo& latency_info);
 
   void StartRateLimiter(WebKit::WebGraphicsContext3D* context3d);
   void StopRateLimiter(WebKit::WebGraphicsContext3D* context3d);
@@ -338,6 +340,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   scoped_ptr<PendingPageScaleAnimation> pending_page_scale_animation_;
 
   bool in_paint_layer_contents_;
+
+  LatencyInfo latency_info_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerTreeHost);
 };

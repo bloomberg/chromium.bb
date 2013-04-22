@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "cc/base/cc_export.h"
+#include "cc/debug/latency_info.h"
 #include "cc/quads/render_pass.h"
 #include "cc/resources/managed_memory_policy.h"
 #include "cc/trees/layer_tree_host.h"
@@ -63,7 +64,7 @@ class CC_EXPORT Renderer {
   virtual void DoNoOp() {}
 
   // Puts backbuffer onscreen.
-  virtual bool SwapBuffers() = 0;
+  virtual bool SwapBuffers(const LatencyInfo& latency_info) = 0;
 
   virtual void GetFramebufferPixels(void* pixels, gfx::Rect rect) = 0;
 

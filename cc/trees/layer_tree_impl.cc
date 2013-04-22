@@ -98,6 +98,8 @@ scoped_ptr<LayerImpl> LayerTreeImpl::DetachLayerTree() {
 }
 
 void LayerTreeImpl::PushPropertiesTo(LayerTreeImpl* target_tree) {
+  target_tree->SetLatencyInfo(latency_info_);
+  latency_info_.Clear();
   target_tree->SetPageScaleFactorAndLimits(
       page_scale_factor(), min_page_scale_factor(), max_page_scale_factor());
   target_tree->SetPageScaleDelta(
@@ -684,6 +686,18 @@ void LayerTreeImpl::UpdateRootScrollLayerSizeDelta() {
 
   root_scroll->SetFixedContainerSizeDelta(
       scrollable_viewport_size - original_viewport_size);
+}
+
+void LayerTreeImpl::SetLatencyInfo(const LatencyInfo& latency_info) {
+  latency_info_.MergeWith(latency_info);
+}
+
+const LatencyInfo& LayerTreeImpl::GetLatencyInfo() {
+  return latency_info_;
+}
+
+void LayerTreeImpl::ClearLatencyInfo() {
+  latency_info_.Clear();
 }
 
 }  // namespace cc

@@ -1849,7 +1849,7 @@ void GLRenderer::Finish() {
   context_->finish();
 }
 
-bool GLRenderer::SwapBuffers() {
+bool GLRenderer::SwapBuffers(const LatencyInfo& latency_info) {
   DCHECK(visible_);
   DCHECK(!is_backbuffer_discarded_);
 
@@ -1866,9 +1866,9 @@ bool GLRenderer::SwapBuffers() {
                                              flipped_y_pos_of_rect_bottom,
                                              swap_buffer_rect_.width(),
                                              swap_buffer_rect_.height()),
-                                   LatencyInfo());
+                                   latency_info);
   } else {
-    output_surface_->SwapBuffers(LatencyInfo());
+    output_surface_->SwapBuffers(latency_info);
   }
 
   swap_buffer_rect_ = gfx::Rect();

@@ -343,6 +343,8 @@ void LayerTreeHost::FinishCommitOnImplThread(LayerTreeHostImpl* host_impl) {
                                          min_page_scale_factor_,
                                          max_page_scale_factor_);
   sync_tree->SetPageScaleDelta(page_scale_delta / sent_page_scale_delta);
+  sync_tree->SetLatencyInfo(latency_info_);
+  latency_info_.Clear();
 
   host_impl->SetViewportSize(device_viewport_size_);
   host_impl->SetOverdrawBottomHeight(overdraw_bottom_height_);
@@ -678,6 +680,10 @@ void LayerTreeHost::SetVisible(bool visible) {
     return;
   visible_ = visible;
   proxy_->SetVisible(visible);
+}
+
+void LayerTreeHost::SetLatencyInfo(const LatencyInfo& latency_info) {
+  latency_info_.MergeWith(latency_info);
 }
 
 void LayerTreeHost::StartPageScaleAnimation(gfx::Vector2d target_offset,

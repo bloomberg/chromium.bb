@@ -246,7 +246,7 @@ class GLRendererTest : public testing::Test {
 
   virtual void SetUp() { renderer_.Initialize(); }
 
-  void SwapBuffers() { renderer_.SwapBuffers(); }
+  void SwapBuffers() { renderer_.SwapBuffers(LatencyInfo()); }
 
   FrameCountingMemoryAllocationSettingContext* Context() {
     return static_cast<FrameCountingMemoryAllocationSettingContext*>(
@@ -1320,7 +1320,7 @@ class MockOutputSurfaceTest : public testing::Test, public FakeRendererClient {
 
   virtual void SetUp() { EXPECT_TRUE(renderer_.Initialize()); }
 
-  void SwapBuffers() { renderer_.SwapBuffers(); }
+  void SwapBuffers() { renderer_.SwapBuffers(LatencyInfo()); }
 
   void DrawFrame() {
     gfx::Rect viewport_rect(DeviceViewportSize());
@@ -1358,7 +1358,7 @@ TEST_F(MockOutputSurfaceTest, DrawFrameAndSwap) {
   DrawFrame();
 
   EXPECT_CALL(output_surface_, SwapBuffers(_)).Times(1);
-  renderer_.SwapBuffers();
+  renderer_.SwapBuffers(LatencyInfo());
 }
 
 class MockOutputSurfaceTestWithPartialSwap : public MockOutputSurfaceTest {
@@ -1374,7 +1374,7 @@ TEST_F(MockOutputSurfaceTestWithPartialSwap, DrawFrameAndSwap) {
   DrawFrame();
 
   EXPECT_CALL(output_surface_, PostSubBuffer(_, _)).Times(1);
-  renderer_.SwapBuffers();
+  renderer_.SwapBuffers(LatencyInfo());
 }
 
 class MockOutputSurfaceTestWithSendCompositorFrame
