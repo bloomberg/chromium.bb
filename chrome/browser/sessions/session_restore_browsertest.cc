@@ -741,6 +741,47 @@ IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ClosedTabStaysClosed) {
             new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 
+// Ensures active tab properly restored when tabs before it closed.
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtClose) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url3_, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      0,
+      TabStripModel::CLOSE_CREATE_HISTORICAL_TAB);
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 2);
+
+  ASSERT_EQ(url2_,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  ASSERT_EQ(new_browser->tab_strip_model()->active_index(), 0);
+}
+
+// Ensures active tab properly restored when tabs are inserted before it .
+IN_PROC_BROWSER_TEST_F(SessionRestoreTest, ActiveIndexUpdatedAtInsert) {
+  ui_test_utils::NavigateToURL(browser(), url1_);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url2_, NEW_BACKGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  chrome::NavigateParams navigate_params(browser(), url3_,
+                                         content::PAGE_TRANSITION_TYPED);
+  navigate_params.tabstrip_index = 0;
+  navigate_params.disposition = NEW_BACKGROUND_TAB;
+  ui_test_utils::NavigateToURL(&navigate_params);
+
+  Browser* new_browser = QuitBrowserAndRestore(browser(), 3);
+
+  ASSERT_EQ(url1_,
+            new_browser->tab_strip_model()->GetActiveWebContents()->GetURL());
+  ASSERT_EQ(new_browser->tab_strip_model()->active_index(), 1);
+}
+
 // Creates a tabbed browser and popup and makes sure we restore both.
 IN_PROC_BROWSER_TEST_F(SessionRestoreTest, NormalAndPopup) {
   if (!browser_defaults::kRestorePopups)

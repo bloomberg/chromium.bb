@@ -978,8 +978,13 @@ void Browser::TabInsertedAt(WebContents* contents,
 
   SessionService* session_service =
       SessionServiceFactory::GetForProfile(profile_);
-  if (session_service)
+  if (session_service) {
     session_service->TabInserted(contents);
+    int new_active_index = tab_strip_model_->active_index();
+    if (index < new_active_index)
+      session_service->SetSelectedTabInWindow(session_id(),
+                                              new_active_index);
+  }
 }
 
 void Browser::TabClosingAt(TabStripModel* tab_strip_model,
@@ -1000,6 +1005,16 @@ void Browser::TabClosingAt(TabStripModel* tab_strip_model,
 }
 
 void Browser::TabDetachedAt(WebContents* contents, int index) {
+  // TabDetachedAt is called before TabStripModel has updated the
+  // active index.
+  int old_active_index = tab_strip_model_->active_index();
+  if (index < old_active_index && !tab_strip_model_->closing_all()) {
+    SessionService* session_service =
+        SessionServiceFactory::GetForProfileIfExisting(profile_);
+    if (session_service)
+      session_service->SetSelectedTabInWindow(session_id(),
+                                              old_active_index - 1);
+  }
   TabDetachedAtImpl(contents, index, DETACH_TYPE_DETACH);
 }
 
