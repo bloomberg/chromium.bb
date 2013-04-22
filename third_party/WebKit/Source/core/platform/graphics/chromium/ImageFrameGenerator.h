@@ -68,6 +68,8 @@ public:
     // Creates a new SharedBuffer containing the data received so far.
     void copyData(RefPtr<SharedBuffer>*, bool* allDataReceived);
 
+    SkISize getFullSize() const { return m_fullSize; }
+
     void setImageDecoderFactoryForTesting(PassOwnPtr<ImageDecoderFactory> factory) { m_imageDecoderFactory = factory; }
 
     bool hasAlpha();
