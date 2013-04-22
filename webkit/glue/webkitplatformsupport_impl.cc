@@ -499,6 +499,15 @@ namespace {
 
 WebData loadAudioSpatializationResource(WebKitPlatformSupportImpl* platform,
                                         const char* name) {
+#ifdef IDR_AUDIO_SPATIALIZATION_COMPOSITE
+  if (!strcmp(name, "Composite")) {
+    base::StringPiece resource =
+        platform->GetDataResource(IDR_AUDIO_SPATIALIZATION_COMPOSITE,
+                                  ui::SCALE_FACTOR_NONE);
+    return WebData(resource.data(), resource.size());
+  }
+#endif
+
 #ifdef IDR_AUDIO_SPATIALIZATION_T000_P000
   const size_t kExpectedSpatializationNameLength = 31;
   if (strlen(name) != kExpectedSpatializationNameLength) {
@@ -666,7 +675,8 @@ WebData WebKitPlatformSupportImpl::loadResource(const char* name) {
     return WebData();
 
   // Check the name prefix to see if it's an audio resource.
-  if (StartsWithASCII(name, "IRC_Composite", true))
+  if (StartsWithASCII(name, "IRC_Composite", true) ||
+      StartsWithASCII(name, "Composite", true))
     return loadAudioSpatializationResource(this, name);
 
   // TODO(flackr): We should use a better than linear search here, a trie would
