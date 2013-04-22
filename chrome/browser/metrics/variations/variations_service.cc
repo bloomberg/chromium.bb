@@ -32,6 +32,10 @@
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
+
 namespace chrome_variations {
 
 namespace {
@@ -112,6 +116,20 @@ Study_Platform GetCurrentPlatform() {
 // Converts |date_time| in Study date format to base::Time.
 base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
+}
+
+// Gets the restrict parameter from |local_state| or from Chrome OS settings in
+// the case of that platform.
+std::string GetRestrictParameterPref(PrefService* local_state) {
+  std::string parameter;
+#if defined(OS_CHROMEOS)
+  chromeos::CrosSettings::Get()->GetString(
+      chromeos::kVariationsRestrictParameter, &parameter);
+#else
+  if (local_state)
+    parameter = local_state->GetString(prefs::kVariationsRestrictParameter);
+#endif
+  return parameter;
 }
 
 }  // namespace
@@ -211,14 +229,11 @@ GURL VariationsService::GetVariationsServerURL(PrefService* local_state) {
   if (server_url_string.empty())
     server_url_string = kDefaultVariationsServerURL;
   GURL server_url = GURL(server_url_string);
-  if (local_state) {
-    // Append the "restrict" parameter if it is found in prefs.
-    const std::string restrict_param =
-        local_state->GetString(prefs::kVariationsRestrictParameter);
-    if (!restrict_param.empty())
-      server_url = net::AppendOrReplaceQueryParameter(server_url,
-                                                      "restrict",
-                                                      restrict_param);
+  const std::string restrict_param = GetRestrictParameterPref(local_state);
+  if (!restrict_param.empty()) {
+    server_url = net::AppendOrReplaceQueryParameter(server_url,
+                                                    "restrict",
+                                                    restrict_param);
   }
   DCHECK(server_url.is_valid());
   return server_url;

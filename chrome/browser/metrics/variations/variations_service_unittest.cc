@@ -19,6 +19,11 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
+#endif
+
 namespace chrome_variations {
 
 namespace {
@@ -98,7 +103,20 @@ void SimulateServerResponse(int response_code, net::TestURLFetcher* fetcher) {
 
 }  // namespace
 
-TEST(VariationsServiceTest, CheckStudyChannel) {
+class VariationsServiceTest : public testing::Test {
+ protected:
+  VariationsServiceTest() {}
+
+ private:
+#if defined(OS_CHROMEOS)
+  // Not used directly. Initializes CrosSettings for testing.
+  chromeos::ScopedTestCrosSettings scoped_test_cros_settings;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(VariationsServiceTest);
+};
+
+TEST_F(VariationsServiceTest, CheckStudyChannel) {
   const chrome::VersionInfo::Channel channels[] = {
     chrome::VersionInfo::CHANNEL_CANARY,
     chrome::VersionInfo::CHANNEL_DEV,
@@ -151,7 +169,7 @@ TEST(VariationsServiceTest, CheckStudyChannel) {
   }
 }
 
-TEST(VariationsServiceTest, CheckStudyLocale) {
+TEST_F(VariationsServiceTest, CheckStudyLocale) {
   struct {
     const char* filter_locales;
     bool en_us_result;
@@ -182,7 +200,7 @@ TEST(VariationsServiceTest, CheckStudyLocale) {
   }
 }
 
-TEST(VariationsServiceTest, CheckStudyPlatform) {
+TEST_F(VariationsServiceTest, CheckStudyPlatform) {
   const Study_Platform platforms[] = {
     Study_Platform_PLATFORM_WINDOWS,
     Study_Platform_PLATFORM_MAC,
@@ -232,7 +250,7 @@ TEST(VariationsServiceTest, CheckStudyPlatform) {
   }
 }
 
-TEST(VariationsServiceTest, CheckStudyVersion) {
+TEST_F(VariationsServiceTest, CheckStudyVersion) {
   const struct {
     const char* min_version;
     const char* version;
@@ -319,7 +337,7 @@ TEST(VariationsServiceTest, CheckStudyVersion) {
   }
 }
 
-TEST(VariationsServiceTest, CheckStudyStartDate) {
+TEST_F(VariationsServiceTest, CheckStudyStartDate) {
   const base::Time now = base::Time::Now();
   const base::TimeDelta delta = base::TimeDelta::FromHours(1);
   const struct {
@@ -344,7 +362,7 @@ TEST(VariationsServiceTest, CheckStudyStartDate) {
   }
 }
 
-TEST(VariationsServiceTest, IsStudyExpired) {
+TEST_F(VariationsServiceTest, IsStudyExpired) {
   const base::Time now = base::Time::Now();
   const base::TimeDelta delta = base::TimeDelta::FromHours(1);
   const struct {
@@ -369,7 +387,8 @@ TEST(VariationsServiceTest, IsStudyExpired) {
   }
 }
 
-TEST(VariationsServiceTest, VariationsURLIsValid) {
+#if !defined(OS_CHROMEOS)
+TEST_F(VariationsServiceTest, VariationsURLIsValid) {
   TestingPrefServiceSimple prefs;
   VariationsService::RegisterPrefs(prefs.registry());
   const std::string default_variations_url =
@@ -382,8 +401,59 @@ TEST(VariationsServiceTest, VariationsURLIsValid) {
   EXPECT_EQ(default_variations_url + "?restrict=restricted",
             VariationsService::GetVariationsServerURL(&prefs).spec());
 }
+#else
+class VariationsServiceTestChromeOS : public VariationsServiceTest {
+ protected:
+  VariationsServiceTestChromeOS() {}
 
-TEST(VariationsServiceTest, LoadSeed) {
+  virtual void SetUp() OVERRIDE {
+    cros_settings_ = chromeos::CrosSettings::Get();
+    DCHECK(cros_settings_ != NULL);
+    // Remove the real DeviceSettingsProvider and replace it with a stub that
+    // allows modifications in a test.
+    device_settings_provider_ = cros_settings_->GetProvider(
+        chromeos::kReportDeviceVersionInfo);
+    EXPECT_TRUE(device_settings_provider_ != NULL);
+    EXPECT_TRUE(cros_settings_->RemoveSettingsProvider(
+        device_settings_provider_));
+    cros_settings_->AddSettingsProvider(&stub_settings_provider_);
+  }
+
+  virtual void TearDown() OVERRIDE {
+    // Restore the real DeviceSettingsProvider.
+    EXPECT_TRUE(
+        cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
+    cros_settings_->AddSettingsProvider(device_settings_provider_);
+  }
+
+  void SetVariationsRestrictParameterPolicyValue(std::string value) {
+    cros_settings_->SetString(chromeos::kVariationsRestrictParameter, value);
+  }
+
+ private:
+  chromeos::CrosSettings* cros_settings_;
+  chromeos::StubCrosSettingsProvider stub_settings_provider_;
+  chromeos::CrosSettingsProvider* device_settings_provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(VariationsServiceTestChromeOS);
+};
+
+TEST_F(VariationsServiceTestChromeOS, VariationsURLIsValid) {
+  TestingPrefServiceSimple prefs;
+  VariationsService::RegisterPrefs(prefs.registry());
+  const std::string default_variations_url =
+      VariationsService::GetDefaultVariationsServerURLForTesting();
+
+  EXPECT_EQ(default_variations_url,
+            VariationsService::GetVariationsServerURL(&prefs).spec());
+
+  SetVariationsRestrictParameterPolicyValue("restricted");
+  EXPECT_EQ(default_variations_url + "?restrict=restricted",
+            VariationsService::GetVariationsServerURL(&prefs).spec());
+}
+#endif
+
+TEST_F(VariationsServiceTest, LoadSeed) {
   // Store good seed data to test if loading from prefs works.
   const TrialsSeed seed = CreateTestSeed();
   const std::string base64_seed = SerializeSeedBase64(seed);
@@ -415,7 +485,7 @@ TEST(VariationsServiceTest, LoadSeed) {
   EXPECT_FALSE(variations_service.LoadTrialsSeedFromPref(&prefs, &loaded_seed));
 }
 
-TEST(VariationsServiceTest, StoreSeed) {
+TEST_F(VariationsServiceTest, StoreSeed) {
   const base::Time now = base::Time::Now();
   const TrialsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
@@ -443,7 +513,7 @@ TEST(VariationsServiceTest, StoreSeed) {
   EXPECT_TRUE(prefs.FindPreference(prefs::kVariationsSeed)->IsDefaultValue());
 }
 
-TEST(VariationsServiceTest, ValidateStudy) {
+TEST_F(VariationsServiceTest, ValidateStudy) {
   Study study;
   study.set_default_experiment_name("def");
 
@@ -517,7 +587,7 @@ TEST(VariationsServiceTest, ValidateStudy) {
   EXPECT_FALSE(valid);
 }
 
-TEST(VariationsServiceTest, RequestsInitiallyNotAllowed) {
+TEST_F(VariationsServiceTest, RequestsInitiallyNotAllowed) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
@@ -538,7 +608,7 @@ TEST(VariationsServiceTest, RequestsInitiallyNotAllowed) {
   EXPECT_TRUE(test_service.fetch_attempted());
 }
 
-TEST(VariationsServiceTest, RequestsInitiallyAllowed) {
+TEST_F(VariationsServiceTest, RequestsInitiallyAllowed) {
   MessageLoopForUI message_loop;
   content::TestBrowserThread ui_thread(content::BrowserThread::UI,
                                        &message_loop);
@@ -555,7 +625,7 @@ TEST(VariationsServiceTest, RequestsInitiallyAllowed) {
   EXPECT_TRUE(test_service.fetch_attempted());
 }
 
-TEST(VariationsServiceTest, SeedStoredWhenOKStatus) {
+TEST_F(VariationsServiceTest, SeedStoredWhenOKStatus) {
   MessageLoop message_loop;
   content::TestBrowserThread io_thread(content::BrowserThread::IO,
                                        &message_loop);
@@ -578,7 +648,7 @@ TEST(VariationsServiceTest, SeedStoredWhenOKStatus) {
   EXPECT_EQ(SerializeSeedBase64(seed), prefs.GetString(prefs::kVariationsSeed));
 }
 
-TEST(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
+TEST_F(VariationsServiceTest, SeedNotStoredWhenNonOKStatus) {
   const int non_ok_status_codes[] = {
     net::HTTP_NO_CONTENT,
     net::HTTP_NOT_MODIFIED,

@@ -9,14 +9,9 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
-#include "base/files/file_path.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
-#include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/stl_util.h"
-#include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/cros/cros_mock.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -32,8 +27,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
-#include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/chromeos/policy/device_policy_cros_browser_test.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/policy/browser_policy_connector.h"
@@ -43,7 +37,6 @@
 #include "chrome/browser/policy/cloud/mock_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/policy_builder.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -51,13 +44,11 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_session_manager_client.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/mock_notification_observer.h"
-#include "crypto/rsa_private_key.h"
 #include "google_apis/gaia/mock_url_fetcher_factory.h"
 #include "grit/generated_resources.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -143,7 +134,7 @@ class NotificationWatcher : public content::NotificationObserver {
 
 }  // namespace
 
-class ExistingUserControllerTest : public CrosInProcessBrowserTest {
+class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
  protected:
   ExistingUserControllerTest()
       : mock_network_library_(NULL),
@@ -161,27 +152,24 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    MockDBusThreadManager* mock_dbus_thread_manager =
-        new MockDBusThreadManager;
-    EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
+    EXPECT_CALL(*mock_dbus_thread_manager(), GetSystemBus())
         .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
-    EXPECT_CALL(*mock_dbus_thread_manager, GetIBusInputContextClient())
+    EXPECT_CALL(*mock_dbus_thread_manager(), GetIBusInputContextClient())
         .WillRepeatedly(
             Return(reinterpret_cast<IBusInputContextClient*>(NULL)));
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
+    EXPECT_CALL(*mock_dbus_thread_manager()->mock_shill_manager_client(),
                 GetProperties(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
+    EXPECT_CALL(*mock_dbus_thread_manager()->mock_shill_manager_client(),
                 AddPropertyChangedObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_dbus_thread_manager->mock_shill_manager_client(),
+    EXPECT_CALL(*mock_dbus_thread_manager()->mock_shill_manager_client(),
                 RemovePropertyChangedObserver(_))
         .Times(AnyNumber());
 
-    SetUpSessionManager(mock_dbus_thread_manager);
+    SetUpSessionManager();
 
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
-    CrosInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+    DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
 
@@ -205,14 +193,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     SetUpLoginDisplay();
   }
 
-  virtual void SetUpSessionManager(
-      MockDBusThreadManager* mock_dbus_thread_manager) {
-    MockSessionManagerClient* mock_session_manager_client =
-        mock_dbus_thread_manager->mock_session_manager_client();
-    EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())
-        .Times(1);
-    EXPECT_CALL(*mock_session_manager_client, RetrieveDevicePolicy(_))
-        .Times(AnyNumber());
+  virtual void SetUpSessionManager() {
   }
 
   virtual void SetUpLoginDisplay() {
@@ -288,11 +269,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     CrosInProcessBrowserTest::CleanUpOnMainThread();
     testing_profile_.reset(NULL);
     user_manager_enabler_.reset();
-  }
-
-  virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
-    CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
-    DBusThreadManager::Shutdown();
   }
 
   // ExistingUserController private member accessors.
@@ -488,26 +464,11 @@ class ExistingUserControllerPublicSessionTest
     }
   }
 
-  virtual void SetUpSessionManager(
-      MockDBusThreadManager* mock_dbus_thread_manager) OVERRIDE {
-    EXPECT_CALL(*mock_dbus_thread_manager, GetSessionManagerClient())
-        .WillRepeatedly(Return(&session_manager_client_));
-
-    // Install the owner key.
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath owner_key_file = temp_dir_.path().AppendASCII("owner.key");
-    std::vector<uint8> owner_key_bits;
-    ASSERT_TRUE(device_policy_.signing_key()->ExportPublicKey(&owner_key_bits));
-    ASSERT_EQ(
-        file_util::WriteFile(
-            owner_key_file,
-            reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
-            owner_key_bits.size()),
-        static_cast<int>(owner_key_bits.size()));
-    ASSERT_TRUE(PathService::Override(chrome::FILE_OWNER_KEY, owner_key_file));
+  virtual void SetUpSessionManager() OVERRIDE {
+    InstallOwnerKey();
 
     // Setup the device policy.
-    em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
     proto.mutable_device_local_accounts()->add_account()->set_id(
         kAutoLoginUsername);
     RefreshDevicePolicy();
@@ -520,7 +481,7 @@ class ExistingUserControllerPublicSessionTest
     device_local_account_policy.policy_data().set_settings_entity_id(
         kAutoLoginUsername);
     device_local_account_policy.Build();
-    session_manager_client_.set_device_local_account_policy(
+    session_manager_client()->set_device_local_account_policy(
         kAutoLoginUsername,
         device_local_account_policy.GetBlob());
   }
@@ -583,29 +544,13 @@ class ExistingUserControllerPublicSessionTest
     return make_scoped_ptr(loop);
   }
 
-  void RefreshDevicePolicy() {
-    // Reset the key to its original state.
-    device_policy_.set_signing_key(
-        policy::PolicyBuilder::CreateTestSigningKey());
-    device_policy_.Build();
-    // Trick the device into thinking it's enterprise-enrolled by
-    // removing the local private key.  This will allow it to accept
-    // cloud policy for device owner settings.
-    device_policy_.set_signing_key(
-        make_scoped_ptr<crypto::RSAPrivateKey>(NULL));
-    device_policy_.set_new_signing_key(
-        make_scoped_ptr<crypto::RSAPrivateKey>(NULL));
-    session_manager_client_.set_device_policy(device_policy_.GetBlob());
-    session_manager_client_.OnPropertyChangeComplete(true);
-  }
-
   void SetAutoLoginPolicy(const std::string& username, int delay) {
     // Wait until ExistingUserController has finished auto-login
     // configuration by observing the same settings that trigger
     // ConfigurePublicSessionAutoLogin.
     content::MockNotificationObserver observer;
 
-    em::ChromeDeviceSettingsProto& proto(device_policy_.payload());
+    em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
 
     // If both settings have changed we need to wait for both to
     // propagate, so check the new values against the old ones.
@@ -651,15 +596,6 @@ class ExistingUserControllerPublicSessionTest
   void FireAutoLogin() {
     existing_user_controller()->OnPublicSessionAutoLoginTimerFire();
   }
-
-  // Mock out policy loads/stores from/to the device.
-  FakeSessionManagerClient session_manager_client_;
-
-  // Stores the device owner key.
-  base::ScopedTempDir temp_dir_;
-
-  // Carries Chrome OS device policies for tests.
-  policy::DevicePolicyBuilder device_policy_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ExistingUserControllerPublicSessionTest);
