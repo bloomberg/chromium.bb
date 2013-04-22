@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -45,10 +46,7 @@ public:
     float radiusY() const;
     bool setRadiusY(float);
 
-    virtual void platformApplySoftware();
-    virtual bool platformApplySkia();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    virtual void dump();
 
     virtual void determineAbsolutePaintRect();
 
@@ -78,7 +76,10 @@ public:
     inline void platformApplyGeneric(PaintingData*, const int yStart, const int yEnd);
 private:
     FEMorphology(Filter*, MorphologyOperatorType, float radiusX, float radiusY);
-    
+
+    virtual void applySoftware() OVERRIDE;
+    virtual bool applySkia() OVERRIDE;
+
     MorphologyOperatorType m_type;
     float m_radiusX;
     float m_radiusY;

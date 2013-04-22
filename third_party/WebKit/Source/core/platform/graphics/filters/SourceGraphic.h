@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Alex Mathews <possessedpenguinbob@gmail.com>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,10 +33,6 @@ public:
 
     static const AtomicString& effectName();
 
-    virtual void platformApplySoftware();
-
-    virtual void dump();
-
     virtual void determineAbsolutePaintRect();
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeSourceInput; }
@@ -48,6 +45,8 @@ private:
     {
         setOperatingColorSpace(ColorSpaceDeviceRGB);
     }
+
+    virtual void applySoftware() OVERRIDE;
 };
 
 } //namespace WebCore

@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -32,6 +33,9 @@
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>
 #include <wtf/Vector.h>
+
+#include "SkMorphologyImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 using std::min;
 using std::max;
@@ -195,7 +199,7 @@ void FEMorphology::platformApply(PaintingData* paintingData)
 }
 
 
-void FEMorphology::platformApplySoftware()
+void FEMorphology::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -227,8 +231,45 @@ void FEMorphology::platformApplySoftware()
     platformApply(&paintingData);
 }
 
-void FEMorphology::dump()
+bool FEMorphology::applySkia()
 {
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    FilterEffect* in = inputEffect(0);
+
+    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
+
+    setIsAlphaImage(in->isAlphaImage());
+
+    float radiusX = filter()->applyHorizontalScale(m_radiusX);
+    float radiusY = filter()->applyVerticalScale(m_radiusY);
+
+    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+
+    SkPaint paint;
+    GraphicsContext* dstContext = resultImage->context();
+    PlatformContextSkia* platformContext = dstContext->platformContext();
+    if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
+        paint.setImageFilter(new SkDilateImageFilter(radiusX, radiusY))->unref();
+    else if (m_type == FEMORPHOLOGY_OPERATOR_ERODE)
+        paint.setImageFilter(new SkErodeImageFilter(radiusX, radiusY))->unref();
+
+    platformContext->saveLayer(0, &paint);
+    dstContext->drawImage(image.get(), ColorSpaceDeviceRGB, drawingRegion.location(), CompositeCopy);
+    platformContext->restoreLayer();
+    return true;
+}
+
+SkImageFilter* FEMorphology::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    SkScalar radiusX = SkFloatToScalar(m_radiusX);
+    SkScalar radiusY = SkFloatToScalar(m_radiusY);
+    if (m_type == FEMORPHOLOGY_OPERATOR_DILATE)
+        return new SkDilateImageFilter(radiusX, radiusY, input);
+    return new SkErodeImageFilter(radiusX, radiusY, input);
 }
 
 static TextStream& operator<<(TextStream& ts, const MorphologyOperatorType& type)

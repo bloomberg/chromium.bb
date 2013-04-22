@@ -2,6 +2,7 @@
  * Copyright (C) 2008 Alex Mathews <possessedpenguinbob@gmail.com>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -99,10 +100,7 @@ public:
     // Only the arithmetic composite filter ever needs to perform correction.
     virtual void correctFilterResultIfNeeded() { }
 
-    virtual void platformApplySoftware() = 0;
-    virtual bool platformApplySkia() { return false; }
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*) { return 0; }
-    virtual void dump() = 0;
 
     virtual void determineAbsolutePaintRect();
 
@@ -110,7 +108,6 @@ public:
 
     virtual TextStream& externalRepresentation(TextStream&, int indention = 0) const;
 
-public:
     // The following functions are SVG specific and will move to RenderSVGResourceFilterPrimitive.
     // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.
     bool hasX() const { return m_hasX; }
@@ -159,6 +156,11 @@ protected:
     void forceValidPreMultipliedPixels();
 
 private:
+    virtual void applySoftware() = 0;
+    virtual bool applySkia() { return false; }
+
+    inline void copyImageBytes(Uint8ClampedArray* source, Uint8ClampedArray* destination, const IntRect&);
+
     OwnPtr<ImageBuffer> m_imageBufferResult;
     RefPtr<Uint8ClampedArray> m_unmultipliedImageResult;
     RefPtr<Uint8ClampedArray> m_premultipliedImageResult;
@@ -173,9 +175,6 @@ private:
     FloatRect m_maxEffectRect;
     Filter* m_filter;
     
-private:
-    inline void copyImageBytes(Uint8ClampedArray* source, Uint8ClampedArray* destination, const IntRect&);
-
     // The following member variables are SVG specific and will move to RenderSVGResourceFilterPrimitive.
     // See bug https://bugs.webkit.org/show_bug.cgi?id=45614.
 

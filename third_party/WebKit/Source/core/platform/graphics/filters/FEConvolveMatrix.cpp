@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2010 Zoltan Herczeg <zherczeg@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -29,8 +30,12 @@
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 
+#include <wtf/OwnArrayPtr.h>
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>
+
+#include "SkMatrixConvolutionImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 
@@ -415,7 +420,7 @@ void FEConvolveMatrix::setInteriorPixelsWorker(InteriorPixelParameters* param)
     param->filter->setInteriorPixels(*param->paintingData, param->clipRight, param->clipBottom, param->yStart, param->yEnd);
 }
 
-void FEConvolveMatrix::platformApplySoftware()
+void FEConvolveMatrix::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -493,8 +498,39 @@ void FEConvolveMatrix::platformApplySoftware()
     }
 }
 
-void FEConvolveMatrix::dump()
+SkMatrixConvolutionImageFilter::TileMode toSkiaTileMode(WebCore::EdgeModeType edgeMode)
 {
+    switch (edgeMode) {
+    case WebCore::EDGEMODE_DUPLICATE:
+        return SkMatrixConvolutionImageFilter::kClamp_TileMode;
+    case WebCore::EDGEMODE_WRAP:
+        return SkMatrixConvolutionImageFilter::kRepeat_TileMode;
+    case WebCore::EDGEMODE_NONE:
+        return SkMatrixConvolutionImageFilter::kClampToBlack_TileMode;
+    default:
+        return SkMatrixConvolutionImageFilter::kClamp_TileMode;
+    }
+}
+
+}; // unnamed namespace
+
+namespace WebCore {
+
+SkImageFilter* FEConvolveMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+
+    SkISize kernelSize(SkISize::Make(m_kernelSize.width(), m_kernelSize.height()));
+    int numElements = kernelSize.width() * kernelSize.height();
+    SkScalar gain = SkFloatToScalar(1.0f / m_divisor);
+    SkScalar bias = SkFloatToScalar(m_bias);
+    SkIPoint target = SkIPoint::Make(m_targetOffset.x(), m_targetOffset.y());
+    SkMatrixConvolutionImageFilter::TileMode tileMode = toSkiaTileMode(m_edgeMode);
+    bool convolveAlpha = !m_preserveAlpha;
+    OwnArrayPtr<SkScalar> kernel = adoptArrayPtr(new SkScalar[numElements]);
+    for (int i = 0; i < numElements; ++i)
+        kernel[i] = SkFloatToScalar(m_kernelMatrix[numElements - 1 - i]);
+    return new SkMatrixConvolutionImageFilter(kernelSize, kernel.get(), gain, bias, target, tileMode, convolveAlpha, input);
 }
 
 static TextStream& operator<<(TextStream& ts, const EdgeModeType& type)

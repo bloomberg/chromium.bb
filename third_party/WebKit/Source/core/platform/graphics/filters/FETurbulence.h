@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2010 Renata Hodovan <reni@inf.u-szeged.hu>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -59,10 +60,6 @@ public:
 
     static void fillRegionWorker(void*);
 
-    virtual void platformApplySoftware();
-
-    virtual void dump();
-    
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
@@ -117,6 +114,8 @@ private:
     static void fillRegionWorker(FillRegionParameters*);
 
     FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
+
+    virtual void applySoftware() OVERRIDE;
 
     inline void initPaint(PaintingData&);
     float noise2D(int channel, PaintingData&, StitchData&, const FloatPoint&);

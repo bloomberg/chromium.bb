@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -29,6 +30,9 @@
 #include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+
+#include "SkOffsetImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 
@@ -76,7 +80,7 @@ void FEOffset::determineAbsolutePaintRect()
     setAbsolutePaintRect(enclosingIntRect(paintRect));
 }
 
-void FEOffset::platformApplySoftware()
+void FEOffset::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -92,8 +96,10 @@ void FEOffset::platformApplySoftware()
     resultImage->context()->drawImageBuffer(in->asImageBuffer(), ColorSpaceDeviceRGB, drawingRegion);
 }
 
-void FEOffset::dump()
+SkImageFilter* FEOffset::createImageFilter(SkiaImageFilterBuilder* builder)
 {
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    return new SkOffsetImageFilter(SkFloatToScalar(m_dx), SkFloatToScalar(m_dy), input);
 }
 
 TextStream& FEOffset::externalRepresentation(TextStream& ts, int indent) const

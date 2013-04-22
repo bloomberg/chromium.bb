@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2012 Nokia Corporation and/or its subsidiary(-ies)
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,6 +34,11 @@
 #include "TextStream.h"
 
 #include <wtf/Uint8ClampedArray.h>
+
+#include "NativeImageSkia.h"
+#include "SkBitmapSource.h"
+#include "SkBlendImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 typedef unsigned char (*BlendType)(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB);
 
@@ -143,7 +149,7 @@ void FEBlend::platformApplyGeneric(unsigned char* sourcePixelA, unsigned char* s
     }
 }
 
-void FEBlend::platformApplySoftware()
+void FEBlend::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
     FilterEffect* in2 = inputEffect(1);
@@ -182,8 +188,67 @@ void FEBlend::platformApplySoftware()
 #endif
 }
 
-void FEBlend::dump()
+static SkBlendImageFilter::Mode toSkiaMode(BlendModeType mode)
 {
+    switch (mode) {
+    case FEBLEND_MODE_NORMAL:
+        return SkBlendImageFilter::kNormal_Mode;
+    case FEBLEND_MODE_MULTIPLY:
+        return SkBlendImageFilter::kMultiply_Mode;
+    case FEBLEND_MODE_SCREEN:
+        return SkBlendImageFilter::kScreen_Mode;
+    case FEBLEND_MODE_DARKEN:
+        return SkBlendImageFilter::kDarken_Mode;
+    case FEBLEND_MODE_LIGHTEN:
+        return SkBlendImageFilter::kLighten_Mode;
+    default:
+        return SkBlendImageFilter::kNormal_Mode;
+    }
+}
+
+bool FEBlend::applySkia()
+{
+    // For now, only use the skia implementation for accelerated rendering.
+    if (filter()->renderingMode() != Accelerated)
+        return false;
+
+    FilterEffect* in = inputEffect(0);
+    FilterEffect* in2 = inputEffect(1);
+
+    if (!in || !in2)
+        return false;
+
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    RefPtr<Image> foreground = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+    RefPtr<Image> background = in2->asImageBuffer()->copyImage(DontCopyBackingStore);
+
+    RefPtr<NativeImageSkia> foregroundNativeImage = foreground->nativeImageForCurrentFrame();
+    RefPtr<NativeImageSkia> backgroundNativeImage = background->nativeImageForCurrentFrame();
+
+    if (!foregroundNativeImage || !backgroundNativeImage)
+        return false;
+
+    SkBitmap foregroundBitmap = foregroundNativeImage->bitmap();
+    SkBitmap backgroundBitmap = backgroundNativeImage->bitmap();
+
+    SkAutoTUnref<SkImageFilter> backgroundSource(new SkBitmapSource(backgroundBitmap));
+    SkBlendImageFilter::Mode mode = toSkiaMode(m_mode);
+    SkAutoTUnref<SkImageFilter> blend(new SkBlendImageFilter(mode, backgroundSource));
+    SkPaint paint;
+    paint.setImageFilter(blend);
+    resultImage->context()->platformContext()->drawBitmap(foregroundBitmap, 0, 0, &paint);
+    return true;
+}
+
+SkImageFilter* FEBlend::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1)));
+    SkBlendImageFilter::Mode mode = toSkiaMode(m_mode);
+    return new SkBlendImageFilter(mode, background, foreground);
 }
 
 static TextStream& operator<<(TextStream& ts, const BlendModeType& type)

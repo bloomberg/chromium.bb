@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -47,10 +48,7 @@ public:
     const Vector<float>& values() const;
     bool setValues(const Vector<float>&);
 
-    virtual void platformApplySoftware();
-    virtual bool platformApplySkia();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    virtual void dump();
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
 
@@ -59,6 +57,9 @@ public:
 
 private:
     FEColorMatrix(Filter*, ColorMatrixType, const Vector<float>&);
+
+    virtual void applySoftware() OVERRIDE;
+    virtual bool applySkia() OVERRIDE;
 
     ColorMatrixType m_type;
     Vector<float> m_values;

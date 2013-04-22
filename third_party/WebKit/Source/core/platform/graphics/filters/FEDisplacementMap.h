@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -52,9 +53,6 @@ public:
     void setResultColorSpace(ColorSpace) OVERRIDE;
     virtual void transformResultColorSpace(FilterEffect*, const int) OVERRIDE;
 
-    virtual void platformApplySoftware();
-    virtual void dump();
-
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
@@ -62,7 +60,9 @@ public:
 private:
     FEDisplacementMap(Filter*, ChannelSelectorType xChannelSelector, ChannelSelectorType yChannelSelector, float);
 
-    virtual bool platformApplySkia();
+    virtual void applySoftware() OVERRIDE;
+    virtual bool applySkia() OVERRIDE;
+
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
 
     ChannelSelectorType m_xChannelSelector;

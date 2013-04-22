@@ -91,7 +91,7 @@
         },
         "SkiaGraphics": {
             "filename": r"Source/WebCore/platform/graphics/skia/"
-                        r"|Source/WebCore/platform/graphics/filters/skia/",
+                        r"|Source/WebCore/platform/graphics/filters/",
         },
         "V8Bindings": {
             "filename": r"Source/WebCore/bindings/v8/",

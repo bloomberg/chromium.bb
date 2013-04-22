@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -77,16 +78,16 @@ public:
     ComponentTransferFunction alphaFunction() const;
     void setAlphaFunction(const ComponentTransferFunction&);
 
-    virtual void platformApplySoftware();
-    virtual bool platformApplySkia();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    virtual void dump();
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
 
 private:
     FEComponentTransfer(Filter*, const ComponentTransferFunction& redFunc, const ComponentTransferFunction& greenFunc,
                         const ComponentTransferFunction& blueFunc, const ComponentTransferFunction& alphaFunc);
+
+    virtual void applySoftware() OVERRIDE;
+    virtual bool applySkia() OVERRIDE;
 
     void getValues(unsigned char rValues[256], unsigned char gValues[256], unsigned char bValues[256], unsigned char aValues[256]);
 

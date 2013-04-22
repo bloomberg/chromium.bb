@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -43,10 +44,7 @@ public:
     void setOperatingColorSpace(ColorSpace) OVERRIDE { FilterEffect::setResultColorSpace(ColorSpaceDeviceRGB); }
     void setResultColorSpace(ColorSpace) OVERRIDE { FilterEffect::setResultColorSpace(ColorSpaceDeviceRGB); }
 
-    virtual void platformApplySoftware();
-
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    virtual void dump();
 
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 
@@ -54,6 +52,8 @@ public:
 
 private:
     FEFlood(Filter*, const Color&, float);
+
+    virtual void applySoftware() OVERRIDE;
 
     Color m_floodColor;
     float m_floodOpacity;

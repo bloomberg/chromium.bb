@@ -3,6 +3,7 @@
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2010 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -38,10 +39,6 @@ public:
     static PassRefPtr<FEImage> createWithImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);
     static PassRefPtr<FEImage> createWithIRIReference(Filter*, Document*, const String&, const SVGPreserveAspectRatio&);
 
-    virtual void platformApplySoftware();
-
-    virtual void dump();
-
     virtual void determineAbsolutePaintRect();
 
     virtual FilterEffectType filterEffectType() const { return FilterEffectTypeImage; }
@@ -53,6 +50,8 @@ private:
     FEImage(Filter*, PassRefPtr<Image>, const SVGPreserveAspectRatio&);
     FEImage(Filter*, Document*, const String&, const SVGPreserveAspectRatio&);
     RenderObject* referencedRenderer() const;
+
+    virtual void applySoftware() OVERRIDE;
 
     RefPtr<Image> m_image;
 

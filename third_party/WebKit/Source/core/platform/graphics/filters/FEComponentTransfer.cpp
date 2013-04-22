@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,6 +34,11 @@
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Uint8ClampedArray.h>
+
+#include "NativeImageSkia.h"
+#include "SkColorFilterImageFilter.h"
+#include "SkTableColorFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 
@@ -149,7 +155,7 @@ static void gamma(unsigned char* values, const ComponentTransferFunction& transf
     }
 }
 
-void FEComponentTransfer::platformApplySoftware()
+void FEComponentTransfer::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -173,6 +179,41 @@ void FEComponentTransfer::platformApplySoftware()
     }
 }
 
+bool FEComponentTransfer::applySkia()
+{
+    FilterEffect* in = inputEffect(0);
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
+    if (!nativeImage)
+        return false;
+
+    unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
+    getValues(rValues, gValues, bValues, aValues);
+
+    SkPaint paint;
+    paint.setColorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues))->unref();
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    resultImage->context()->platformContext()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
+
+    return true;
+}
+
+SkImageFilter* FEComponentTransfer::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+
+    unsigned char rValues[256], gValues[256], bValues[256], aValues[256];
+    getValues(rValues, gValues, bValues, aValues);
+
+    SkAutoTUnref<SkColorFilter> colorFilter(SkTableColorFilter::CreateARGB(aValues, rValues, gValues, bValues));
+
+    return SkColorFilterImageFilter::Create(colorFilter, input);
+}
+
 void FEComponentTransfer::getValues(unsigned char rValues[256], unsigned char gValues[256], unsigned char bValues[256], unsigned char aValues[256])
 {
     for (unsigned i = 0; i < 256; ++i)
@@ -185,10 +226,6 @@ void FEComponentTransfer::getValues(unsigned char rValues[256], unsigned char gV
         ASSERT_WITH_SECURITY_IMPLICATION(static_cast<size_t>(transferFunction[channel].type) < WTF_ARRAY_LENGTH(callEffect));
         (*callEffect[transferFunction[channel].type])(tables[channel], transferFunction[channel]);
     }
-}
-
-void FEComponentTransfer::dump()
-{
 }
 
 static TextStream& operator<<(TextStream& ts, const ComponentTransferType& type)

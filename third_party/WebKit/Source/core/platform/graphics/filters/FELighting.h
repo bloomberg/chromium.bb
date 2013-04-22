@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 University of Szeged
  * Copyright (C) 2010 Zoltan Herczeg
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,9 +44,7 @@ struct FELightingPaintingDataForNeon;
 
 class FELighting : public FilterEffect {
 public:
-    virtual void platformApplySoftware();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    virtual bool platformApplySkia();
 
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 
@@ -118,6 +117,10 @@ protected:
     float m_specularExponent;
     float m_kernelUnitLengthX;
     float m_kernelUnitLengthY;
+
+private:
+    virtual void applySoftware() OVERRIDE;
+    virtual bool applySkia() OVERRIDE;
 };
 
 } // namespace WebCore

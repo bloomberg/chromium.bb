@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -50,7 +51,7 @@ void SourceAlpha::determineAbsolutePaintRect()
     setAbsolutePaintRect(enclosingIntRect(paintRect));
 }
 
-void SourceAlpha::platformApplySoftware()
+void SourceAlpha::applySoftware()
 {
     ImageBuffer* resultImage = createImageBufferResult();
     Filter* filter = this->filter();
@@ -63,10 +64,6 @@ void SourceAlpha::platformApplySoftware()
     GraphicsContext* filterContext = resultImage->context();
     filterContext->fillRect(imageRect, Color::black, ColorSpaceDeviceRGB);
     filterContext->drawImageBuffer(filter->sourceImage(), ColorSpaceDeviceRGB, IntPoint(), CompositeDestinationIn);
-}
-
-void SourceAlpha::dump()
-{
 }
 
 TextStream& SourceAlpha::externalRepresentation(TextStream& ts, int indent) const

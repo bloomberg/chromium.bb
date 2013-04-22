@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -33,7 +34,60 @@
 
 #include <wtf/Uint8ClampedArray.h>
 
+#include "SkFlattenableBuffers.h"
+#include "SkMorphologyImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
+
 namespace WebCore {
+
+class CompositeImageFilter : public SkImageFilter {
+public:
+    CompositeImageFilter(SkXfermode::Mode mode, SkImageFilter* background, SkImageFilter* foreground) : SkImageFilter(background, foreground), m_mode(mode)
+    {
+    }
+
+    virtual bool onFilterImage(Proxy* proxy, const SkBitmap& src, const SkMatrix& ctm, SkBitmap* dst, SkIPoint* offset)
+    {
+        SkBitmap background = src;
+        SkBitmap foreground = src;
+        SkImageFilter* backgroundInput = getInput(0);
+        SkImageFilter* foregroundInput = getInput(1);
+        SkIPoint backgroundOffset = SkIPoint::Make(0, 0), foregroundOffset = SkIPoint::Make(0, 0);
+        if (backgroundInput && !backgroundInput->filterImage(proxy, src, ctm, &background, &backgroundOffset))
+            return false;
+
+        if (foregroundInput && !foregroundInput->filterImage(proxy, src, ctm, &foreground, &foregroundOffset))
+            return false;
+
+        SkAutoTUnref<SkDevice> device(proxy->createDevice(background.width(), background.height()));
+        SkCanvas canvas(device);
+        SkPaint paint;
+        paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+        canvas.drawBitmap(background, backgroundOffset.fX, backgroundOffset.fY, &paint);
+        paint.setXfermodeMode(m_mode);
+        canvas.drawBitmap(foreground, foregroundOffset.fX, foregroundOffset.fY, &paint);
+        *dst = device->accessBitmap(false);
+        return true;
+    }
+
+    SK_DECLARE_PUBLIC_FLATTENABLE_DESERIALIZATION_PROCS(CompositeImageFilter)
+
+protected:
+    explicit CompositeImageFilter(SkFlattenableReadBuffer& buffer)
+        : SkImageFilter(buffer)
+    {
+        m_mode = (SkXfermode::Mode) buffer.readInt();
+    }
+
+    virtual void flatten(SkFlattenableWriteBuffer& buffer) const
+    {
+        this->SkImageFilter::flatten(buffer);
+        buffer.writeInt((int) m_mode);
+    }
+
+private:
+    SkXfermode::Mode m_mode;
+};
 
 FEComposite::FEComposite(Filter* filter, const CompositeOperationType& type, float k1, float k2, float k3, float k4)
     : FilterEffect(filter)
@@ -248,7 +302,7 @@ void FEComposite::determineAbsolutePaintRect()
     }
 }
 
-void FEComposite::platformApplySoftware()
+void FEComposite::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
     FilterEffect* in2 = inputEffect(1);
@@ -316,8 +370,32 @@ void FEComposite::platformApplySoftware()
     }
 }
 
-void FEComposite::dump()
+SkXfermode::Mode toXfermode(WebCore::CompositeOperationType mode)
 {
+    switch (mode) {
+    case WebCore::FECOMPOSITE_OPERATOR_OVER:
+        return SkXfermode::kSrcOver_Mode;
+    case WebCore::FECOMPOSITE_OPERATOR_IN:
+        return SkXfermode::kSrcIn_Mode;
+    case WebCore::FECOMPOSITE_OPERATOR_OUT:
+        return SkXfermode::kSrcOut_Mode;
+    case WebCore::FECOMPOSITE_OPERATOR_ATOP:
+        return SkXfermode::kSrcATop_Mode;
+    case WebCore::FECOMPOSITE_OPERATOR_XOR:
+        return SkXfermode::kXor_Mode;
+    default:
+        ASSERT_NOT_REACHED();
+        return SkXfermode::kSrcOver_Mode;
+    }
+}
+
+SkImageFilter* FEComposite::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> foreground(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkImageFilter> background(builder->build(inputEffect(1)));
+    if (m_type == FECOMPOSITE_OPERATOR_ARITHMETIC)
+        return 0; // FIXME: Implement arithmetic op
+    return new CompositeImageFilter(toXfermode(m_type), background, foreground);
 }
 
 static TextStream& operator<<(TextStream& ts, const CompositeOperationType& type)

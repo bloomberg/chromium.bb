@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -43,7 +44,7 @@ PassRefPtr<FEMerge> FEMerge::create(Filter* filter)
     return adoptRef(new FEMerge(filter));
 }
 
-void FEMerge::platformApplySoftware()
+void FEMerge::applySoftware()
 {
     unsigned size = numberOfEffectInputs();
     ASSERT(size > 0);
@@ -70,10 +71,6 @@ SkImageFilter* FEMerge::createImageFilter(SkiaImageFilterBuilder* builder)
         inputs[i] = inputRefs[i].get();
     }
     return new SkMergeImageFilter(inputs.get(), size);
-}
-
-void FEMerge::dump()
-{
 }
 
 TextStream& FEMerge::externalRepresentation(TextStream& ts, int indent) const

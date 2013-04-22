@@ -5,6 +5,7 @@
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2010 Igalia, S.L.
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -35,6 +36,9 @@
 #include <wtf/MathExtras.h>
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>
+
+#include "SkBlurImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 using namespace std;
 
@@ -274,7 +278,7 @@ void FEGaussianBlur::determineAbsolutePaintRect()
     setAbsolutePaintRect(enclosingIntRect(absolutePaintRect));
 }
 
-void FEGaussianBlur::platformApplySoftware()
+void FEGaussianBlur::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -301,8 +305,39 @@ void FEGaussianBlur::platformApplySoftware()
     platformApply(srcPixelArray, tmpPixelArray, kernelSizeX, kernelSizeY, paintSize);
 }
 
-void FEGaussianBlur::dump()
+bool FEGaussianBlur::applySkia()
 {
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    FilterEffect* in = inputEffect(0);
+
+    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
+
+    setIsAlphaImage(in->isAlphaImage());
+
+    float stdX = filter()->applyHorizontalScale(m_stdX);
+    float stdY = filter()->applyVerticalScale(m_stdY);
+
+    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+
+    SkPaint paint;
+    GraphicsContext* dstContext = resultImage->context();
+    PlatformContextSkia* platformContext = dstContext->platformContext();
+    paint.setImageFilter(new SkBlurImageFilter(stdX, stdY))->unref();
+
+    platformContext->saveLayer(0, &paint);
+    paint.setColor(0xFFFFFFFF);
+    dstContext->drawImage(image.get(), ColorSpaceDeviceRGB, drawingRegion.location(), CompositeCopy);
+    platformContext->restoreLayer();
+    return true;
+}
+
+SkImageFilter* FEGaussianBlur::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    return new SkBlurImageFilter(SkFloatToScalar(m_stdX), SkFloatToScalar(m_stdY), input);
 }
 
 TextStream& FEGaussianBlur::externalRepresentation(TextStream& ts, int indent) const

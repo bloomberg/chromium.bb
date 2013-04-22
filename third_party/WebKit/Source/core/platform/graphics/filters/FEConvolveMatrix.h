@@ -3,6 +3,7 @@
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2010 Zoltan Herczeg <zherczeg@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -68,9 +69,7 @@ public:
     bool preserveAlpha() const;
     bool setPreserveAlpha(bool);
 
-    virtual void platformApplySoftware();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    virtual void dump();
 
     virtual void determineAbsolutePaintRect() { setAbsolutePaintRect(enclosingIntRect(maxEffectRect())); }
 
@@ -88,6 +87,8 @@ private:
 
     FEConvolveMatrix(Filter*, const IntSize&, float, float,
             const IntPoint&, EdgeModeType, const FloatPoint&, bool, const Vector<float>&);
+
+    virtual void applySoftware() OVERRIDE;
 
     template<bool preserveAlphaValues>
     ALWAYS_INLINE void fastSetInteriorPixels(PaintingData&, int clipRight, int clipBottom, int yStart, int yEnd);

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -77,7 +78,7 @@ void FEDropShadow::determineAbsolutePaintRect()
     setAbsolutePaintRect(enclosingIntRect(absolutePaintRect));
 }
 
-void FEDropShadow::platformApplySoftware()
+void FEDropShadow::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -116,10 +117,6 @@ void FEDropShadow::platformApplySoftware()
     resultContext->setCompositeOperation(CompositeDestinationOver);
 
     resultImage->context()->drawImageBuffer(sourceImage, ColorSpaceDeviceRGB, drawingRegion);
-}
-
-void FEDropShadow::dump()
-{
 }
 
 TextStream& FEDropShadow::externalRepresentation(TextStream& ts, int indent) const

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Adobe Systems Incorporated. All rights reserved.
  * Copyright (C) 2011 Adobe Systems Incorporated. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -118,7 +119,7 @@ void FECustomFilter::deleteMultisampleRenderBuffers()
     }
 }
 
-void FECustomFilter::platformApplySoftware()
+void FECustomFilter::applySoftware()
 {
     if (!applyShader())
         clearShaderResult();
@@ -356,10 +357,6 @@ bool FECustomFilter::resizeContext(const IntSize& newContextSize)
 
     m_contextSize = newContextSize;
     return true;
-}
-
-void FECustomFilter::dump()
-{
 }
 
 TextStream& FECustomFilter::externalRepresentation(TextStream& ts, int indent) const

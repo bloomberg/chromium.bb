@@ -3,6 +3,7 @@
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
  * Copyright (C) 2012 University of Szeged
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -122,10 +123,10 @@ void FilterEffect::apply()
             inputEffect(i)->correctFilterResultIfNeeded();
     }
     
-    // Add platform specific apply functions here and return earlier.
-    if (platformApplySkia())
+    if (applySkia())
         return;
-    platformApplySoftware();
+
+    applySoftware();
 }
 
 void FilterEffect::forceValidPreMultipliedPixels()

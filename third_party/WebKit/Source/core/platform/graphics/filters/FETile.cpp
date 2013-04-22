@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Alex Mathews <possessedpenguinbob@gmail.com>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -42,7 +43,7 @@ PassRefPtr<FETile> FETile::create(Filter* filter)
     return adoptRef(new FETile(filter));
 }
 
-void FETile::platformApplySoftware()
+void FETile::applySoftware()
 {
 // FIXME: See bug 47315. This is a hack to work around a compile failure, but is incorrect behavior otherwise.
 #if ENABLE(SVG)
@@ -82,10 +83,6 @@ void FETile::platformApplySoftware()
     filterContext->setFillPattern(pattern);
     filterContext->fillRect(FloatRect(FloatPoint(), absolutePaintRect().size()));
 #endif
-}
-
-void FETile::dump()
-{
 }
 
 TextStream& FETile::externalRepresentation(TextStream& ts, int indent) const

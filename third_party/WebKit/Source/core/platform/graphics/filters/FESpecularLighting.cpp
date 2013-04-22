@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -134,10 +135,6 @@ const LightSource* FESpecularLighting::lightSource() const
 void FESpecularLighting::setLightSource(PassRefPtr<LightSource> lightSource)
 {
     m_lightSource = lightSource;
-}
-
-void FESpecularLighting::dump()
-{
 }
 
 TextStream& FESpecularLighting::externalRepresentation(TextStream& ts, int indent) const

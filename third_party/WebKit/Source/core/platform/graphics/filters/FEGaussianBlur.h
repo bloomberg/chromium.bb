@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -39,9 +40,6 @@ public:
 
     static float calculateStdDeviation(float);
 
-    virtual void platformApplySoftware();
-    virtual void dump();
-    
     virtual void determineAbsolutePaintRect();
     static void calculateKernelSize(Filter*, unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY);
     static void calculateUnscaledKernelSize(unsigned& kernelSizeX, unsigned& kernelSizeY, float stdX, float stdY);
@@ -68,11 +66,13 @@ private:
 
     FEGaussianBlur(Filter*, float, float);
 
+    virtual void applySoftware() OVERRIDE;
+    virtual bool applySkia() OVERRIDE;
+
     static inline void kernelPosition(int boxBlur, unsigned& std, int& dLeft, int& dRight);
     inline void platformApply(Uint8ClampedArray* srcPixelArray, Uint8ClampedArray* tmpPixelArray, unsigned kernelSizeX, unsigned kernelSizeY, IntSize& paintSize);
 
     inline void platformApplyGeneric(Uint8ClampedArray* srcPixelArray, Uint8ClampedArray* tmpPixelArray, unsigned kernelSizeX, unsigned kernelSizeY, IntSize& paintSize);
-    virtual bool platformApplySkia();
     virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
 
     float m_stdX;

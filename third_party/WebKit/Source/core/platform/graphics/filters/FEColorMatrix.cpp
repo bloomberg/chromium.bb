@@ -3,6 +3,7 @@
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,6 +32,11 @@
 
 #include <wtf/MathExtras.h>
 #include <wtf/Uint8ClampedArray.h>
+
+#include "NativeImageSkia.h"
+#include "SkColorFilterImageFilter.h"
+#include "SkColorMatrixFilter.h"
+#include "SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 
@@ -141,7 +147,7 @@ void effectType(Uint8ClampedArray* pixelArray, const Vector<float>& values)
     }
 }
 
-void FEColorMatrix::platformApplySoftware()
+void FEColorMatrix::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -175,8 +181,111 @@ void FEColorMatrix::platformApplySoftware()
     resultImage->putByteArray(Unmultiplied, pixelArray.get(), imageRect.size(), imageRect, IntPoint());
 }
 
-void FEColorMatrix::dump()
+static void saturateMatrix(float s, SkScalar matrix[20])
 {
+    matrix[0] = 0.213f + 0.787f * s;
+    matrix[1] = 0.715f - 0.715f * s;
+    matrix[2] = 0.072f - 0.072f * s;
+    matrix[3] = matrix[4] = 0;
+    matrix[5] = 0.213f - 0.213f * s;
+    matrix[6] = 0.715f + 0.285f * s;
+    matrix[7] = 0.072f - 0.072f * s;
+    matrix[8] = matrix[9] = 0;
+    matrix[10] = 0.213f - 0.213f * s;
+    matrix[11] = 0.715f - 0.715f * s;
+    matrix[12] = 0.072f + 0.928f * s;
+    matrix[13] = matrix[14] = 0;
+    matrix[15] = matrix[16] = matrix[17] = 0;
+    matrix[18] = 1;
+    matrix[19] = 0;
+}
+
+static void hueRotateMatrix(float hue, SkScalar matrix[20])
+{
+    float cosHue = cosf(hue * piFloat / 180);
+    float sinHue = sinf(hue * piFloat / 180);
+    matrix[0] = 0.213f + cosHue * 0.787f - sinHue * 0.213f;
+    matrix[1] = 0.715f - cosHue * 0.715f - sinHue * 0.715f;
+    matrix[2] = 0.072f - cosHue * 0.072f + sinHue * 0.928f;
+    matrix[3] = matrix[4] = 0;
+    matrix[5] = 0.213f - cosHue * 0.213f + sinHue * 0.143f;
+    matrix[6] = 0.715f + cosHue * 0.285f + sinHue * 0.140f;
+    matrix[7] = 0.072f - cosHue * 0.072f - sinHue * 0.283f;
+    matrix[8] = matrix[9] = 0;
+    matrix[10] = 0.213f - cosHue * 0.213f - sinHue * 0.787f;
+    matrix[11] = 0.715f - cosHue * 0.715f + sinHue * 0.715f;
+    matrix[12] = 0.072f + cosHue * 0.928f + sinHue * 0.072f;
+    matrix[13] = matrix[14] = 0;
+    matrix[15] = matrix[16] = matrix[17] = 0;
+    matrix[18] = 1;
+    matrix[19] = 0;
+}
+
+static void luminanceToAlphaMatrix(SkScalar matrix[20])
+{
+    memset(matrix, 0, 20 * sizeof(SkScalar));
+    matrix[15] = 0.2125f;
+    matrix[16] = 0.7154f;
+    matrix[17] = 0.0721f;
+}
+
+static SkColorFilter* createColorFilter(ColorMatrixType type, const float* values)
+{
+    SkScalar matrix[20];
+    switch (type) {
+    case FECOLORMATRIX_TYPE_UNKNOWN:
+        break;
+    case FECOLORMATRIX_TYPE_MATRIX:
+        for (int i = 0; i < 20; ++i)
+            matrix[i] = values[i];
+
+        matrix[4] *= SkScalar(255);
+        matrix[9] *= SkScalar(255);
+        matrix[14] *= SkScalar(255);
+        matrix[19] *= SkScalar(255);
+        break;
+    case FECOLORMATRIX_TYPE_SATURATE:
+        saturateMatrix(values[0], matrix);
+        break;
+    case FECOLORMATRIX_TYPE_HUEROTATE:
+        hueRotateMatrix(values[0], matrix);
+        break;
+    case FECOLORMATRIX_TYPE_LUMINANCETOALPHA:
+        luminanceToAlphaMatrix(matrix);
+        break;
+    }
+    return new SkColorMatrixFilter(matrix);
+}
+
+bool FEColorMatrix::applySkia()
+{
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    FilterEffect* in = inputEffect(0);
+
+    IntRect imageRect(IntPoint(), absolutePaintRect().size());
+
+    SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
+
+    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
+    if (!nativeImage)
+        return false;
+
+    SkPaint paint;
+    paint.setColorFilter(filter);
+    paint.setXfermodeMode(SkXfermode::kSrc_Mode);
+    resultImage->context()->platformContext()->drawBitmap(nativeImage->bitmap(), 0, 0, &paint);
+    return true;
+}
+
+SkImageFilter* FEColorMatrix::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> input(builder->build(inputEffect(0)));
+    SkAutoTUnref<SkColorFilter> filter(createColorFilter(m_type, m_values.data()));
+    return SkColorFilterImageFilter::Create(filter, input);
 }
 
 static TextStream& operator<<(TextStream& ts, const ColorMatrixType& type)

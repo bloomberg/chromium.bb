@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -49,7 +50,7 @@ void SourceGraphic::determineAbsolutePaintRect()
     setAbsolutePaintRect(enclosingIntRect(paintRect));
 }
 
-void SourceGraphic::platformApplySoftware()
+void SourceGraphic::applySoftware()
 {
     ImageBuffer* resultImage = createImageBufferResult();
     Filter* filter = this->filter();
@@ -57,10 +58,6 @@ void SourceGraphic::platformApplySoftware()
         return;
 
     resultImage->context()->drawImageBuffer(filter->sourceImage(), ColorSpaceDeviceRGB, IntPoint());
-}
-
-void SourceGraphic::dump()
-{
 }
 
 TextStream& SourceGraphic::externalRepresentation(TextStream& ts, int indent) const

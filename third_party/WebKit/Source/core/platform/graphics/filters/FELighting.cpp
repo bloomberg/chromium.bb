@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 University of Szeged
  * Copyright (C) 2010 Zoltan Herczeg
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +31,13 @@
 
 #include "FELightingNEON.h"
 #include <wtf/ParallelJobs.h>
+
+#include "DistantLightSource.h"
+#include "NativeImageSkia.h"
+#include "PointLightSource.h"
+#include "SkLightingImageFilter.h"
+#include "SkiaImageFilterBuilder.h"
+#include "SpotLightSource.h"
 
 namespace WebCore {
 
@@ -384,7 +392,7 @@ bool FELighting::drawLighting(Uint8ClampedArray* pixels, int width, int height)
     return true;
 }
 
-void FELighting::platformApplySoftware()
+void FELighting::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
 
@@ -404,6 +412,79 @@ void FELighting::platformApplySoftware()
 
     IntSize absolutePaintSize = absolutePaintRect().size();
     drawLighting(srcPixelArray, absolutePaintSize.width(), absolutePaintSize.height());
+}
+
+SkImageFilter* FELighting::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkAutoTUnref<SkImageFilter> input(builder ? builder->build(inputEffect(0)) : 0);
+    switch (m_lightSource->type()) {
+    case LS_DISTANT: {
+        DistantLightSource* distantLightSource = static_cast<DistantLightSource*>(m_lightSource.get());
+        float azimuthRad = deg2rad(distantLightSource->azimuth());
+        float elevationRad = deg2rad(distantLightSource->elevation());
+        SkPoint3 direction(cosf(azimuthRad) * cosf(elevationRad),
+                           sinf(azimuthRad) * cosf(elevationRad),
+                           sinf(elevationRad));
+        if (m_specularConstant > 0)
+            return SkLightingImageFilter::CreateDistantLitSpecular(direction, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input);
+        else
+            return SkLightingImageFilter::CreateDistantLitDiffuse(direction, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input);
+    }
+    case LS_POINT: {
+        PointLightSource* pointLightSource = static_cast<PointLightSource*>(m_lightSource.get());
+        FloatPoint3D position = pointLightSource->position();
+        SkPoint3 skPosition(position.x(), position.y(), position.z());
+        if (m_specularConstant > 0)
+            return SkLightingImageFilter::CreatePointLitSpecular(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input);
+        else
+            return SkLightingImageFilter::CreatePointLitDiffuse(skPosition, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input);
+    }
+    case LS_SPOT: {
+        SpotLightSource* spotLightSource = static_cast<SpotLightSource*>(m_lightSource.get());
+        SkPoint3 location(spotLightSource->position().x(), spotLightSource->position().y(), spotLightSource->position().z());
+        SkPoint3 target(spotLightSource->direction().x(), spotLightSource->direction().y(), spotLightSource->direction().z());
+        float specularExponent = spotLightSource->specularExponent();
+        float limitingConeAngle = spotLightSource->limitingConeAngle();
+        if (!limitingConeAngle || limitingConeAngle > 90 || limitingConeAngle < -90)
+            limitingConeAngle = 90;
+        if (m_specularConstant > 0)
+            return SkLightingImageFilter::CreateSpotLitSpecular(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_specularConstant, m_specularExponent, input);
+        else
+            return SkLightingImageFilter::CreateSpotLitDiffuse(location, target, specularExponent, limitingConeAngle, m_lightingColor.rgb(), m_surfaceScale, m_diffuseConstant, input);
+    }
+    default:
+        ASSERT_NOT_REACHED();
+        return 0;
+    }
+}
+
+bool FELighting::applySkia()
+{
+    // For now, only use the skia implementation for accelerated rendering.
+    if (filter()->renderingMode() != Accelerated)
+        return false;
+
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    FilterEffect* in = inputEffect(0);
+
+    IntRect drawingRegion = drawingRegionOfInputImage(in->absolutePaintRect());
+
+    setIsAlphaImage(in->isAlphaImage());
+
+    RefPtr<Image> image = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+    RefPtr<NativeImageSkia> nativeImage = image->nativeImageForCurrentFrame();
+    if (!nativeImage)
+        return false;
+
+    GraphicsContext* dstContext = resultImage->context();
+
+    SkPaint paint;
+    paint.setImageFilter(createImageFilter(0))->unref();
+    dstContext->platformContext()->drawBitmap(nativeImage->bitmap(), drawingRegion.location().x(), drawingRegion.location().y(), &paint);
+    return true;
 }
 
 } // namespace WebCore

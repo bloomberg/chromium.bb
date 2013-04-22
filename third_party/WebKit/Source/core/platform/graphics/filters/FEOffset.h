@@ -2,6 +2,7 @@
  * Copyright (C) 2004, 2005, 2006, 2007 Nikolas Zimmermann <zimmermann@kde.org>
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -37,9 +38,6 @@ public:
     float dy() const;
     void setDy(float);
 
-    virtual void platformApplySoftware();
-    virtual void dump();
-    
     virtual void determineAbsolutePaintRect();
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
@@ -48,6 +46,8 @@ public:
 
 private:
     FEOffset(Filter*, float dx, float dy);
+
+    virtual void applySoftware() OVERRIDE;
 
     float m_dx;
     float m_dy;

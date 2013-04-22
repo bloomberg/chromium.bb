@@ -3,6 +3,7 @@
  * Copyright (C) 2004, 2005 Rob Buis <buis@kde.org>
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2010 Dirk Schulze <krit@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -94,7 +95,7 @@ RenderObject* FEImage::referencedRenderer() const
     return hrefElement->renderer();
 }
 
-void FEImage::platformApplySoftware()
+void FEImage::applySoftware()
 {
     RenderObject* renderer = referencedRenderer();
     if (!m_image && !renderer)
@@ -143,10 +144,6 @@ void FEImage::platformApplySoftware()
     }
 
     resultImage->context()->drawImage(m_image.get(), ColorSpaceDeviceRGB, destRect, srcRect);
-}
-
-void FEImage::dump()
-{
 }
 
 TextStream& FEImage::externalRepresentation(TextStream& ts, int indent) const

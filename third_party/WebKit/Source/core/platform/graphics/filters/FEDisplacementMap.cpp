@@ -4,6 +4,7 @@
  * Copyright (C) 2005 Eric Seidel <eric@webkit.org>
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) Research In Motion Limited 2010. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -31,6 +32,11 @@
 #include "TextStream.h"
 
 #include <wtf/Uint8ClampedArray.h>
+
+#include "NativeImageSkia.h"
+#include "SkBitmapSource.h"
+#include "SkDisplacementMapEffect.h"
+#include "SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 
@@ -103,7 +109,7 @@ void FEDisplacementMap::transformResultColorSpace(FilterEffect* in, const int in
         in->transformResultColorSpace(operatingColorSpace());
 }
 
-void FEDisplacementMap::platformApplySoftware()
+void FEDisplacementMap::applySoftware()
 {
     FilterEffect* in = inputEffect(0);
     FilterEffect* in2 = inputEffect(1);
@@ -150,8 +156,70 @@ void FEDisplacementMap::platformApplySoftware()
     }
 }
 
-void FEDisplacementMap::dump()
+static SkDisplacementMapEffect::ChannelSelectorType toSkiaMode(ChannelSelectorType type)
 {
+    switch (type) {
+    case CHANNEL_R:
+        return SkDisplacementMapEffect::kR_ChannelSelectorType;
+    case CHANNEL_G:
+        return SkDisplacementMapEffect::kG_ChannelSelectorType;
+    case CHANNEL_B:
+        return SkDisplacementMapEffect::kB_ChannelSelectorType;
+    case CHANNEL_A:
+        return SkDisplacementMapEffect::kA_ChannelSelectorType;
+    case CHANNEL_UNKNOWN:
+    default:
+        return SkDisplacementMapEffect::kUnknown_ChannelSelectorType;
+    }
+}
+
+bool FEDisplacementMap::applySkia()
+{
+    // For now, only use the skia implementation for accelerated rendering.
+    if (filter()->renderingMode() != Accelerated)
+        return false;
+
+    FilterEffect* in = inputEffect(0);
+    FilterEffect* in2 = inputEffect(1);
+
+    if (!in || !in2)
+        return false;
+
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    RefPtr<Image> color = in->asImageBuffer()->copyImage(DontCopyBackingStore);
+    RefPtr<Image> displ = in2->asImageBuffer()->copyImage(DontCopyBackingStore);
+
+    RefPtr<NativeImageSkia> colorNativeImage = color->nativeImageForCurrentFrame();
+    RefPtr<NativeImageSkia> displNativeImage = displ->nativeImageForCurrentFrame();
+
+    if (!colorNativeImage || !displNativeImage)
+        return false;
+
+    SkBitmap colorBitmap = colorNativeImage->bitmap();
+    SkBitmap displBitmap = displNativeImage->bitmap();
+
+    SkAutoTUnref<SkImageFilter> colorSource(new SkBitmapSource(colorBitmap));
+    SkAutoTUnref<SkImageFilter> displSource(new SkBitmapSource(displBitmap));
+    SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
+    SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
+    SkAutoTUnref<SkImageFilter> displEffect(new SkDisplacementMapEffect(
+        typeX, typeY, SkFloatToScalar(m_scale), displSource, colorSource));
+    SkPaint paint;
+    paint.setImageFilter(displEffect);
+    resultImage->context()->platformContext()->drawBitmap(colorBitmap, 0, 0, &paint);
+    return true;
+}
+
+SkImageFilter* FEDisplacementMap::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    SkImageFilter* color = builder->build(inputEffect(0));
+    SkImageFilter* displ = builder->build(inputEffect(1));
+    SkDisplacementMapEffect::ChannelSelectorType typeX = toSkiaMode(m_xChannelSelector);
+    SkDisplacementMapEffect::ChannelSelectorType typeY = toSkiaMode(m_yChannelSelector);
+    return new SkDisplacementMapEffect(typeX, typeY, SkFloatToScalar(m_scale), displ, color);
 }
 
 static TextStream& operator<<(TextStream& ts, const ChannelSelectorType& type)

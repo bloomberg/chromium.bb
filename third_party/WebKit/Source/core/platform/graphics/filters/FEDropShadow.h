@@ -1,5 +1,6 @@
 /*
  * Copyright (C) Research In Motion Limited 2011. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -50,9 +51,6 @@ public:
 
     static float calculateStdDeviation(float);
 
-    virtual void platformApplySoftware();
-    virtual void dump();
-
     virtual void determineAbsolutePaintRect();
 
     virtual TextStream& externalRepresentation(TextStream&, int indention) const;
@@ -60,6 +58,8 @@ public:
 private:
     FEDropShadow(Filter*, float, float, float, float, const Color&, float);
     
+    virtual void applySoftware() OVERRIDE;
+
     float m_stdX;
     float m_stdY;
     float m_dx;

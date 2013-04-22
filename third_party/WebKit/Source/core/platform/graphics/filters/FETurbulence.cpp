@@ -5,6 +5,7 @@
  * Copyright (C) 2009 Dirk Schulze <krit@webkit.org>
  * Copyright (C) 2010 Renata Hodovan <reni@inf.u-szeged.hu>
  * Copyright (C) 2011 Gabor Loki <loki@webkit.org>
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -353,7 +354,7 @@ void FETurbulence::fillRegionWorker(FillRegionParameters* parameters)
     parameters->filter->fillRegion(parameters->pixelArray, *parameters->paintingData, parameters->startY, parameters->endY);
 }
 
-void FETurbulence::platformApplySoftware()
+void FETurbulence::applySoftware()
 {
     Uint8ClampedArray* pixelArray = createUnmultipliedImageResult();
     if (!pixelArray)
@@ -399,10 +400,6 @@ void FETurbulence::platformApplySoftware()
 
     // Fallback to single threaded mode if there is no room for a new thread or the paint area is too small.
     fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height());
-}
-
-void FETurbulence::dump()
-{
 }
 
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)
