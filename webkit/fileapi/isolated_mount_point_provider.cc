@@ -26,35 +26,13 @@
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/media/media_path_filter.h"
-#include "webkit/fileapi/media/native_media_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#include "webkit/fileapi/media/device_media_async_file_util.h"
-#endif
 
 namespace fileapi {
 
-const char IsolatedMountPointProvider::kMediaPathFilterKey[] =
-    "MediaPathFilterKey";
-const char IsolatedMountPointProvider::kMTPDeviceDelegateURLKey[] =
-    "MTPDeviceDelegateKey";
-
-IsolatedMountPointProvider::IsolatedMountPointProvider(
-    const base::FilePath& profile_path)
-    : profile_path_(profile_path),
-      media_path_filter_(new MediaPathFilter()),
-      isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
-      dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())),
-      native_media_file_util_(
-          new AsyncFileUtilAdapter(new NativeMediaFileUtil())) {
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  // TODO(kmadhusu): Initialize |device_media_file_util_| in
-  // initialization list.
-  device_media_async_file_util_.reset(
-      DeviceMediaAsyncFileUtil::Create(profile_path_));
-#endif
+IsolatedMountPointProvider::IsolatedMountPointProvider()
+    : isolated_file_util_(new AsyncFileUtilAdapter(new IsolatedFileUtil())),
+      dragged_file_util_(new AsyncFileUtilAdapter(new DraggedFileUtil())) {
 }
 
 IsolatedMountPointProvider::~IsolatedMountPointProvider() {
@@ -64,8 +42,6 @@ bool IsolatedMountPointProvider::CanHandleType(FileSystemType type) const {
   switch (type) {
     case kFileSystemTypeIsolated:
     case kFileSystemTypeDragged:
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
       return true;
 #if !defined(OS_CHROMEOS)
     case kFileSystemTypeNativeLocal:
@@ -103,8 +79,6 @@ FileSystemFileUtil* IsolatedMountPointProvider::GetFileUtil(
       return isolated_file_util_->sync_file_util();
     case kFileSystemTypeDragged:
       return dragged_file_util_->sync_file_util();
-    case kFileSystemTypeNativeMedia:
-      return native_media_file_util_->sync_file_util();
     default:
       NOTREACHED();
   }
@@ -118,12 +92,6 @@ AsyncFileUtil* IsolatedMountPointProvider::GetAsyncFileUtil(
       return isolated_file_util_.get();
     case kFileSystemTypeDragged:
       return dragged_file_util_.get();
-    case kFileSystemTypeNativeMedia:
-      return native_media_file_util_.get();
-    case kFileSystemTypeDeviceMedia:
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-      return device_media_async_file_util_.get();
-#endif
     default:
       NOTREACHED();
   }
@@ -135,39 +103,13 @@ IsolatedMountPointProvider::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
-  switch (type) {
-    case kFileSystemTypeNativeLocal:
-    case kFileSystemTypeDragged:
-      return NULL;
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
-      if (!media_copy_or_move_file_validator_factory_) {
-        *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
-        return NULL;
-      }
-      return media_copy_or_move_file_validator_factory_.get();
-    default:
-      NOTREACHED();
-  }
   return NULL;
 }
 
 void IsolatedMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
     FileSystemType type,
     scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-  switch (type) {
-    case kFileSystemTypeNativeLocal:
-    case kFileSystemTypeDragged:
-      DCHECK(factory == NULL);
-      break;
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
-      if (!media_copy_or_move_file_validator_factory_)
-        media_copy_or_move_file_validator_factory_.reset(factory.release());
-      break;
-    default:
-      NOTREACHED();
-  }
+  DCHECK(!factory);
 }
 
 FilePermissionPolicy IsolatedMountPointProvider::GetPermissionPolicy(
@@ -186,28 +128,8 @@ FileSystemOperation* IsolatedMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
-  if (url.type() != kFileSystemTypeNativeMedia &&
-      url.type() != kFileSystemTypeDeviceMedia) {
-    return new LocalFileSystemOperation(
-        context, make_scoped_ptr(new FileSystemOperationContext(context)));
-  }
-
-  // For media filesystems.
-  scoped_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(
-          context, context->task_runners()->media_task_runner()));
-
-  operation_context->SetUserValue(kMediaPathFilterKey,
-                                  media_path_filter_.get());
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  if (url.type() == kFileSystemTypeDeviceMedia) {
-    operation_context->SetUserValue(kMTPDeviceDelegateURLKey,
-                                    url.filesystem_id());
-  }
-#endif
-
-  return new LocalFileSystemOperation(context, operation_context.Pass());
+  return new LocalFileSystemOperation(
+      context, make_scoped_ptr(new FileSystemOperationContext(context)));
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>

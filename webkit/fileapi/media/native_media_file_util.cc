@@ -5,8 +5,8 @@
 #include "webkit/fileapi/media/native_media_file_util.h"
 
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
+#include "webkit/fileapi/media/media_file_system_mount_point_provider.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/native_file_util.h"
 
@@ -20,7 +20,7 @@ namespace {
 
 MediaPathFilter* GetMediaPathFilter(FileSystemOperationContext* context) {
   return context->GetUserValue<MediaPathFilter*>(
-          IsolatedMountPointProvider::kMediaPathFilterKey);
+          MediaFileSystemMountPointProvider::kMediaPathFilterKey);
 }
 
 }  // namespace

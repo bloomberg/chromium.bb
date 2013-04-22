@@ -72,7 +72,8 @@ TestMountPointProvider::TestMountPointProvider(
     : base_path_(base_path),
       task_runner_(task_runner),
       local_file_util_(new AsyncFileUtilAdapter(new LocalFileUtil())),
-      quota_util_(new QuotaUtil) {
+      quota_util_(new QuotaUtil),
+      require_copy_or_move_validator_(false) {
   UpdateObserverList::Source source;
   source.AddObserver(quota_util_.get(), task_runner_);
   observers_ = UpdateObserverList(source);
@@ -121,12 +122,22 @@ TestMountPointProvider::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
+  if (require_copy_or_move_validator_) {
+    if (!copy_or_move_file_validator_factory_)
+      *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
+    return copy_or_move_file_validator_factory_.get();
+  }
   return NULL;
 }
 
 void TestMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
     FileSystemType type, scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
-  DCHECK(!factory);
+  if (!require_copy_or_move_validator_) {
+    DCHECK(!factory);
+    return;
+  }
+  if (!copy_or_move_file_validator_factory_)
+    copy_or_move_file_validator_factory_ = factory.Pass();
 }
 
 FilePermissionPolicy TestMountPointProvider::GetPermissionPolicy(

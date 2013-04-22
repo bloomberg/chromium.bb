@@ -1,37 +1,31 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
-#define WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
+#ifndef WEBKIT_FILEAPI_MEDIA_MEDIA_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
+#define WEBKIT_FILEAPI_MEDIA_MEDIA_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_
 
-#include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/task_runner_bound_observer_list.h"
-#include "webkit/storage/webkit_storage_export.h"
-
-namespace base {
-class SequencedTaskRunner;
-}
+#include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 namespace fileapi {
 
 class AsyncFileUtilAdapter;
-class FileSystemQuotaUtil;
+class MediaPathFilter;
 
-// This should be only used for testing.
-// This mount point provider uses LocalFileUtil and stores data file
-// under the given directory.
-class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
-    : public FileSystemMountPointProvider {
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+class DeviceMediaAsyncFileUtil;
+#endif
+
+class MediaFileSystemMountPointProvider : public FileSystemMountPointProvider {
  public:
-  TestMountPointProvider(
-      base::SequencedTaskRunner* task_runner,
-      const base::FilePath& base_path);
-  virtual ~TestMountPointProvider();
+  static const char kMediaPathFilterKey[];
+  static const char kMTPDeviceDelegateURLKey[];
+
+  explicit MediaFileSystemMountPointProvider(
+      const base::FilePath& profile_path);
+  virtual ~MediaFileSystemMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;
@@ -74,31 +68,22 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE TestMountPointProvider
       FileSystemContext* context,
       const DeleteFileSystemCallback& callback) OVERRIDE;
 
-  const UpdateObserverList* GetUpdateObservers(FileSystemType type) const;
-
-  // For CopyOrMoveFileValidatorFactory testing. Once it's set to true
-  // GetCopyOrMoveFileValidatorFactory will start returning security
-  // error if validator is not initialized.
-  void set_require_copy_or_move_validator(bool flag) {
-    require_copy_or_move_validator_ = flag;
-  }
-
  private:
-  class QuotaUtil;
+  // Store the profile path. We need this to create temporary snapshot files.
+  const base::FilePath profile_path_;
 
-  base::FilePath base_path_;
-  scoped_refptr<base::SequencedTaskRunner> task_runner_;
-  scoped_ptr<AsyncFileUtilAdapter> local_file_util_;
-  scoped_ptr<QuotaUtil> quota_util_;
-  UpdateObserverList observers_;
-
-  bool require_copy_or_move_validator_;
+  scoped_ptr<MediaPathFilter> media_path_filter_;
   scoped_ptr<CopyOrMoveFileValidatorFactory>
-      copy_or_move_file_validator_factory_;
+      media_copy_or_move_file_validator_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestMountPointProvider);
+  scoped_ptr<AsyncFileUtilAdapter> native_media_file_util_;
+#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
+  scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(MediaFileSystemMountPointProvider);
 };
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_FILEAPI_TEST_MOUNT_POINT_PROVIDER_H_
+#endif  // WEBKIT_FILEAPI_MEDIA_MEDIA_FILE_SYSTEM_MOUNT_POINT_PROVIDER_H_

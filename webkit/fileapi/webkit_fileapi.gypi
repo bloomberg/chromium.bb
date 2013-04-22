@@ -69,6 +69,8 @@
       '../fileapi/local_file_util.h',
       '../fileapi/media/filtering_file_enumerator.cc',
       '../fileapi/media/filtering_file_enumerator.h',
+      '../fileapi/media/media_file_system_mount_point_provider.cc',
+      '../fileapi/media/media_file_system_mount_point_provider.h',
       '../fileapi/media/media_path_filter.cc',
       '../fileapi/media/media_path_filter.h',
       '../fileapi/media/mtp_device_file_system_config.h',

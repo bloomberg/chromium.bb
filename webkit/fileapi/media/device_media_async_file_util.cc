@@ -12,8 +12,8 @@
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/fileapi/isolated_mount_point_provider.h"
 #include "webkit/fileapi/media/filtering_file_enumerator.h"
+#include "webkit/fileapi/media/media_file_system_mount_point_provider.h"
 #include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/media/mtp_device_async_delegate.h"
 #include "webkit/fileapi/media/mtp_device_map_service.h"
@@ -37,7 +37,7 @@ MTPDeviceAsyncDelegate* GetMTPDeviceDelegate(
   DCHECK(IsOnIOThread(context));
   return MTPDeviceMapService::GetInstance()->GetMTPDeviceAsyncDelegate(
       context->GetUserValue<std::string>(
-          IsolatedMountPointProvider::kMTPDeviceDelegateURLKey));
+          MediaFileSystemMountPointProvider::kMTPDeviceDelegateURLKey));
 }
 
 // Called on a blocking pool thread to create a snapshot file to hold the

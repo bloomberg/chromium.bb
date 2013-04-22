@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/platform_file.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class FilePath;
@@ -16,7 +17,7 @@ namespace fileapi {
 
 class FileSystemURL;
 
-class CopyOrMoveFileValidator {
+class WEBKIT_STORAGE_EXPORT CopyOrMoveFileValidator {
  public:
   // Callback that is invoked when validation completes. A result of
   // base::PLATFORM_FILE_OK means the file validated.

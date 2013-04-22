@@ -34,6 +34,10 @@ class RemoteFileSystemProxyInterface;
 
 // An interface to provide mount-point-specific path-related utilities
 // and specialized FileSystemFileUtil instance.
+//
+// NOTE: when you implement a new MountPointProvider for your own
+// FileSystem module, please contact to kinuko@chromium.org.
+//
 class WEBKIT_STORAGE_EXPORT FileSystemMountPointProvider {
  public:
   // Callback for ValidateFileSystemRoot.

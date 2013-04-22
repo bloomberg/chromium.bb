@@ -17,9 +17,15 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/mock_file_system_context.h"
+#include "webkit/fileapi/test_mount_point_provider.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
 namespace fileapi {
+
+namespace {
+
+const FileSystemType kNoValidatorType = kFileSystemTypeTemporary;
+const FileSystemType kWithValidatorType = kFileSystemTypeTest;
 
 class CopyOrMoveFileValidatorTestHelper {
  public:
@@ -39,25 +45,25 @@ class CopyOrMoveFileValidatorTestHelper {
   void SetUp() {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
     base::FilePath base_dir = base_.path();
+
     file_system_context_ = CreateFileSystemContextForTesting(NULL, base_dir);
 
-    // Prepare the origin's root directory.
-    if (src_type_ == kFileSystemTypeNativeMedia) {
-      base::FilePath src_path = base_dir.Append(FILE_PATH_LITERAL("src_media"));
-      file_util::CreateDirectory(src_path);
-      src_fsid_ = IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-          kFileSystemTypeNativeMedia, src_path, NULL);
-    } else {
-      FileSystemMountPointProvider* mount_point_provider =
-          file_system_context_->GetMountPointProvider(src_type_);
-      mount_point_provider->GetFileSystemRootPathOnFileThread(
-          SourceURL(std::string()), true /* create */);
-    }
-    DCHECK_EQ(kFileSystemTypeNativeMedia, dest_type_);
-    base::FilePath dest_path = base_dir.Append(FILE_PATH_LITERAL("dest_media"));
-    file_util::CreateDirectory(dest_path);
-    dest_fsid_ = IsolatedContext::GetInstance()->RegisterFileSystemForPath(
-        kFileSystemTypeNativeMedia, dest_path, NULL);
+    // Set up TestMountPointProvider to require CopyOrMoveFileValidator.
+    FileSystemMountPointProvider* test_mount_point_provider =
+        file_system_context_->GetMountPointProvider(kWithValidatorType);
+    static_cast<TestMountPointProvider*>(test_mount_point_provider)->
+        set_require_copy_or_move_validator(true);
+
+    // Sets up source.
+    FileSystemMountPointProvider* src_mount_point_provider =
+        file_system_context_->GetMountPointProvider(src_type_);
+    src_mount_point_provider->GetFileSystemRootPathOnFileThread(
+        SourceURL(std::string()), true /* create */);
+    ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(SourceURL("")));
+
+    // Sets up dest.
+    DCHECK_EQ(kWithValidatorType, dest_type_);
+    ASSERT_EQ(base::PLATFORM_FILE_OK, CreateDirectory(DestURL("")));
 
     copy_src_ = SourceURL("copy_src.jpg");
     move_src_ = SourceURL("move_src.jpg");
@@ -76,9 +82,9 @@ class CopyOrMoveFileValidatorTestHelper {
   void SetMediaCopyOrMoveFileValidatorFactory(
       scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
     FileSystemMountPointProvider* mount_point_provider =
-        file_system_context_->GetMountPointProvider(kFileSystemTypeNativeMedia);
+        file_system_context_->GetMountPointProvider(kWithValidatorType);
     mount_point_provider->InitializeCopyOrMoveFileValidatorFactory(
-        kFileSystemTypeNativeMedia, factory.Pass());
+        kWithValidatorType, factory.Pass());
   }
 
   void CopyTest(base::PlatformFileError expected) {
@@ -115,19 +121,15 @@ class CopyOrMoveFileValidatorTestHelper {
 
  private:
   FileSystemURL SourceURL(const std::string& path) {
-    if (src_type_ == kFileSystemTypeNativeMedia) {
-      std::string root_fs_url = GetIsolatedFileSystemRootURIString(
-          origin_, src_fsid_, "src_media/");
-      return file_system_context_->CrackURL(GURL(root_fs_url + path));
-    }
     return file_system_context_->CreateCrackedFileSystemURL(
-        origin_, src_type_, base::FilePath::FromUTF8Unsafe(path));
+        origin_, src_type_,
+        base::FilePath().AppendASCII("src").AppendASCII(path));
   }
 
   FileSystemURL DestURL(const std::string& path) {
-    std::string root_fs_url = GetIsolatedFileSystemRootURIString(
-        origin_, dest_fsid_, "dest_media/");
-    return file_system_context_->CrackURL(GURL(root_fs_url + path));
+    return file_system_context_->CreateCrackedFileSystemURL(
+        origin_, dest_type_,
+        base::FilePath().AppendASCII("dest").AppendASCII(path));
   }
 
   base::PlatformFileError CreateFile(const FileSystemURL& url, size_t size) {
@@ -136,6 +138,10 @@ class CopyOrMoveFileValidatorTestHelper {
     if (result != base::PLATFORM_FILE_OK)
       return result;
     return AsyncFileTestHelper::TruncateFile(file_system_context_, url, size);
+  }
+
+  base::PlatformFileError CreateDirectory(const FileSystemURL& url) {
+    return AsyncFileTestHelper::CreateDirectory(file_system_context_, url);
   }
 
   bool FileExists(const FileSystemURL& url, int64 expected_size) {
@@ -202,23 +208,25 @@ class TestCopyOrMoveFileValidatorFactory
   DISALLOW_COPY_AND_ASSIGN(TestCopyOrMoveFileValidatorFactory);
 };
 
+}  // namespace
+
 TEST(CopyOrMoveFileValidatorTest, NoValidatorWithin6ameFSType) {
   // Within a file system type, validation is not expected, so it should
-  // work for kFileSystemTypeNativeMedia without a validator set.
+  // work for kWithValidatorType without a validator set.
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
-                                           kFileSystemTypeNativeMedia,
-                                           kFileSystemTypeNativeMedia);
+                                           kWithValidatorType,
+                                           kWithValidatorType);
   helper.SetUp();
   helper.CopyTest(base::PLATFORM_FILE_OK);
   helper.MoveTest(base::PLATFORM_FILE_OK);
 }
 
 TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
-  // Copying or moving into a kFileSystemTypeNativeMedia requires a file
+  // Copying or moving into a kWithValidatorType requires a file
   // validator.  An error is expect if copy is attempted without a validator.
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
-                                           kFileSystemTypeTemporary,
-                                           kFileSystemTypeNativeMedia);
+                                           kNoValidatorType,
+                                           kWithValidatorType);
   helper.SetUp();
   helper.CopyTest(base::PLATFORM_FILE_ERROR_SECURITY);
   helper.MoveTest(base::PLATFORM_FILE_ERROR_SECURITY);
@@ -226,8 +234,8 @@ TEST(CopyOrMoveFileValidatorTest, MissingValidator) {
 
 TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
-                                           kFileSystemTypeTemporary,
-                                           kFileSystemTypeNativeMedia);
+                                           kNoValidatorType,
+                                           kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
       new TestCopyOrMoveFileValidatorFactory(true /*accept_all*/));
@@ -239,8 +247,8 @@ TEST(CopyOrMoveFileValidatorTest, AcceptAll) {
 
 TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
-                                           kFileSystemTypeTemporary,
-                                           kFileSystemTypeNativeMedia);
+                                           kNoValidatorType,
+                                           kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> factory(
       new TestCopyOrMoveFileValidatorFactory(false /*accept_all*/));
@@ -253,8 +261,8 @@ TEST(CopyOrMoveFileValidatorTest, AcceptNone) {
 TEST(CopyOrMoveFileValidatorTest, OverrideValidator) {
   // Once set, you can not override the validator.
   CopyOrMoveFileValidatorTestHelper helper(GURL("http://foo"),
-                                           kFileSystemTypeTemporary,
-                                           kFileSystemTypeNativeMedia);
+                                           kNoValidatorType,
+                                           kWithValidatorType);
   helper.SetUp();
   scoped_ptr<CopyOrMoveFileValidatorFactory> reject_factory(
       new TestCopyOrMoveFileValidatorFactory(false /*accept_all*/));

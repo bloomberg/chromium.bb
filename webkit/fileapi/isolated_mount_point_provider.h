@@ -7,24 +7,14 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "webkit/fileapi/file_system_mount_point_provider.h"
-#include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 namespace fileapi {
 
 class AsyncFileUtilAdapter;
-class IsolatedContext;
-class MediaPathFilter;
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-class DeviceMediaAsyncFileUtil;
-#endif
 
 class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  public:
-  static const char kMediaPathFilterKey[];
-  static const char kMTPDeviceDelegateURLKey[];
-
-  explicit IsolatedMountPointProvider(const base::FilePath& profile_path);
+  IsolatedMountPointProvider();
   virtual ~IsolatedMountPointProvider();
 
   // FileSystemMountPointProvider implementation.
@@ -69,20 +59,8 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
       const DeleteFileSystemCallback& callback) OVERRIDE;
 
  private:
-  // Store the profile path. We need this to create temporary snapshot files.
-  const base::FilePath profile_path_;
-
-  scoped_ptr<MediaPathFilter> media_path_filter_;
-  scoped_ptr<CopyOrMoveFileValidatorFactory>
-      media_copy_or_move_file_validator_factory_;
-
   scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;
   scoped_ptr<AsyncFileUtilAdapter> dragged_file_util_;
-  scoped_ptr<AsyncFileUtilAdapter> native_media_file_util_;
-
-#if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  scoped_ptr<DeviceMediaAsyncFileUtil> device_media_async_file_util_;
-#endif
 };
 
 }  // namespace fileapi
