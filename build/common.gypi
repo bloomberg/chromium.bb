@@ -2965,6 +2965,13 @@
               '-Xclang', '-add-plugin', '-Xclang', '<(clang_add_plugin)',
             ],
           }],
+          ['clang==1 and target_arch=="ia32"', {
+            'cflags': [
+              # Else building libyuv gives clang's register allocator issues,
+              # see llvm.org/PR15798 / crbug.com/233709
+              '-momit-leaf-frame-pointer',
+            ],
+          }],
           ['clang==1 and "<(GENERATOR)"=="ninja"', {
             'cflags': [
               # See http://crbug.com/110262
@@ -2979,6 +2986,12 @@
                 'cflags': [
                   '-fno-omit-frame-pointer',
                   '-gline-tables-only',
+                ],
+                'ldflags!': [
+                  # Functions interposed by the sanitizers can make ld think
+                  # that some libraries aren't needed when they actually are,
+                  # http://crbug.com/234010. As workaround, disable --as-needed.
+                  '-Wl,--as-needed',
                 ],
               }],
             ],
