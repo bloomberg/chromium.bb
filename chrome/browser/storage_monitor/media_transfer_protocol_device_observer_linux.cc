@@ -114,14 +114,9 @@ void GetStorageInfo(const std::string& storage_name,
   if (!storage_info)
     return;
 
-  if (id)
-    *id = GetDeviceIdFromStorageInfo(*storage_info);
-
-  if (label)
-    *label = GetDeviceLabelFromStorageInfo(*storage_info);
-
-  if (location)
-    *location = GetDeviceLocationFromStorageName(storage_name);
+  *id = GetDeviceIdFromStorageInfo(*storage_info);
+  *label = GetDeviceLabelFromStorageInfo(*storage_info);
+  *location = GetDeviceLocationFromStorageName(storage_name);
 }
 
 }  // namespace

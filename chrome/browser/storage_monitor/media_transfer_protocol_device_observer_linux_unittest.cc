@@ -47,12 +47,9 @@ void GetStorageInfo(const std::string& storage_name,
 
   ASSERT_EQ(kStorageWithValidInfo, storage_name);
 
-  if (id)
-    *id = GetMtpDeviceId(kStorageUniqueId);
-  if (label)
-    *label = ASCIIToUTF16(kStorageLabel);
-  if (location)
-    *location = kStorageLocation;
+  *id = GetMtpDeviceId(kStorageUniqueId);
+  *label = ASCIIToUTF16(kStorageLabel);
+  *location = kStorageLocation;
 }
 
 class TestMediaTransferProtocolDeviceObserverLinux
