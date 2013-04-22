@@ -118,18 +118,21 @@ GetChangelistOperation::GetChangelistOperation(
     const DriveApiUrlGenerator& url_generator,
     bool include_deleted,
     int64 start_changestamp,
+    int max_results,
     const GetDataCallback& callback)
     : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
       include_deleted_(include_deleted),
-      start_changestamp_(start_changestamp) {
+      start_changestamp_(start_changestamp),
+      max_results_(max_results) {
   DCHECK(!callback.is_null());
 }
 
 GetChangelistOperation::~GetChangelistOperation() {}
 
 GURL GetChangelistOperation::GetURL() const {
-  return url_generator_.GetChangelistUrl(include_deleted_, start_changestamp_);
+  return url_generator_.GetChangelistUrl(
+      include_deleted_, start_changestamp_, max_results_);
 }
 
 //============================= GetFilelistOperation ===========================
@@ -139,17 +142,19 @@ GetFilelistOperation::GetFilelistOperation(
     net::URLRequestContextGetter* url_request_context_getter,
     const DriveApiUrlGenerator& url_generator,
     const std::string& search_string,
+    int max_results,
     const GetDataCallback& callback)
     : GetDataOperation(registry, url_request_context_getter, callback),
       url_generator_(url_generator),
-      search_string_(search_string) {
+      search_string_(search_string),
+      max_results_(max_results) {
   DCHECK(!callback.is_null());
 }
 
 GetFilelistOperation::~GetFilelistOperation() {}
 
 GURL GetFilelistOperation::GetURL() const {
-  return url_generator_.GetFilelistUrl(search_string_);
+  return url_generator_.GetFilelistUrl(search_string_, max_results_);
 }
 
 //=============================== GetFileOperation =============================
@@ -208,15 +213,14 @@ CreateDirectoryOperation::CreateDirectoryOperation(
       parent_resource_id_(parent_resource_id),
       directory_name_(directory_name) {
   DCHECK(!callback.is_null());
+  DCHECK(!parent_resource_id_.empty());
+  DCHECK(!directory_name_.empty());
 }
 
 CreateDirectoryOperation::~CreateDirectoryOperation() {}
 
 GURL CreateDirectoryOperation::GetURL() const {
-  if (parent_resource_id_.empty() || directory_name_.empty()) {
-    return GURL();
-  }
-  return url_generator_.GetFilelistUrl(std::string());
+  return url_generator_.GetFilesUrl();
 }
 
 net::URLFetcher::RequestType CreateDirectoryOperation::GetRequestType() const {

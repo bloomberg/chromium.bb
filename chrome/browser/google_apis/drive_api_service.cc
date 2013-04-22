@@ -35,6 +35,13 @@ const char kDriveScope[] = "https://www.googleapis.com/auth/drive";
 const char kDriveAppsReadonlyScope[] =
     "https://www.googleapis.com/auth/drive.apps.readonly";
 
+// Expected max number of files resources in a http request.
+// Be careful not to use something too small because it might overload the
+// server. Be careful not to use something too large because it takes longer
+// time to fetch the result without UI response.
+const int kMaxNumFilesResourcePerRequest = 500;
+const int kMaxNumFilesResourcePerRequestForSearch = 50;
+
 scoped_ptr<ResourceList> ParseChangeListJsonToResourceList(
     scoped_ptr<base::Value> value) {
   scoped_ptr<ChangeList> change_list(ChangeList::CreateFrom(*value));
@@ -295,6 +302,7 @@ void DriveAPIService::GetAllResourceList(
           url_generator_,
           false,  // include deleted
           0,
+          kMaxNumFilesResourcePerRequest,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
@@ -321,6 +329,7 @@ void DriveAPIService::GetResourceListInDirectory(
               "'%s' in parents and trashed = false",
               drive::util::EscapeQueryStringValue(
                   directory_resource_id).c_str()),
+          kMaxNumFilesResourcePerRequest,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
@@ -336,6 +345,7 @@ void DriveAPIService::Search(const std::string& search_query,
           url_request_context_getter_,
           url_generator_,
           drive::util::TranslateQuery(search_query),
+          kMaxNumFilesResourcePerRequestForSearch,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
@@ -358,6 +368,7 @@ void DriveAPIService::SearchInDirectory(
               search_query.c_str(),
               drive::util::EscapeQueryStringValue(
                   directory_resource_id).c_str()),
+          kMaxNumFilesResourcePerRequest,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
@@ -373,6 +384,7 @@ void DriveAPIService::GetChangeList(int64 start_changestamp,
           url_generator_,
           true,  // include deleted
           start_changestamp,
+          kMaxNumFilesResourcePerRequest,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 

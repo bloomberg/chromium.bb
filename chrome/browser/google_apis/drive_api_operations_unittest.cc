@@ -396,6 +396,7 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
       *url_generator_,
       true,  // include deleted
       100,  // start changestamp
+      500,  // max results
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
@@ -405,7 +406,8 @@ TEST_F(DriveApiOperationsTest, GetChangelistOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/drive/v2/changes?startChangeId=100", http_request_.relative_url);
+  EXPECT_EQ("/drive/v2/changes?startChangeId=100&maxResults=500",
+            http_request_.relative_url);
   EXPECT_TRUE(result);
 }
 
@@ -422,6 +424,7 @@ TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
       request_context_getter_.get(),
       *url_generator_,
       "\"abcde\" in parents",
+      50,  // max results
       CreateComposedCallback(
           base::Bind(&test_util::RunAndQuit),
           test_util::CreateCopyResultCallback(&error, &result)));
@@ -431,7 +434,7 @@ TEST_F(DriveApiOperationsTest, GetFilelistOperation) {
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
-  EXPECT_EQ("/drive/v2/files?q=%22abcde%22+in+parents",
+  EXPECT_EQ("/drive/v2/files?maxResults=50&q=%22abcde%22+in+parents",
             http_request_.relative_url);
   EXPECT_TRUE(result);
 }

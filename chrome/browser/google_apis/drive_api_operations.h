@@ -80,12 +80,15 @@ class GetChangelistOperation : public GetDataOperation {
   // for deleted entries or not.
   // |start_changestamp| specifies the starting point of change list or 0 if
   // all changes are necessary.
+  // |max_results| specifies the max of the number of files resource in the
+  // response.
   GetChangelistOperation(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       bool include_deleted,
       int64 start_changestamp,
+      int max_results,
       const GetDataCallback& callback);
   virtual ~GetChangelistOperation();
 
@@ -97,6 +100,7 @@ class GetChangelistOperation : public GetDataOperation {
   const DriveApiUrlGenerator url_generator_;
   const bool include_deleted_;
   const int64 start_changestamp_;
+  const int max_results_;
 
   DISALLOW_COPY_AND_ASSIGN(GetChangelistOperation);
 };
@@ -113,6 +117,7 @@ class GetFilelistOperation : public GetDataOperation {
       net::URLRequestContextGetter* url_request_context_getter,
       const DriveApiUrlGenerator& url_generator,
       const std::string& search_string,
+      int max_results,
       const GetDataCallback& callback);
   virtual ~GetFilelistOperation();
 
@@ -122,7 +127,8 @@ class GetFilelistOperation : public GetDataOperation {
 
  private:
   const DriveApiUrlGenerator url_generator_;
-  std::string search_string_;
+  const std::string search_string_;
+  const int max_results_;
 
   DISALLOW_COPY_AND_ASSIGN(GetFilelistOperation);
 };

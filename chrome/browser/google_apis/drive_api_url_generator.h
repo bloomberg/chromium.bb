@@ -36,11 +36,19 @@ class DriveApiUrlGenerator {
   // start_changestamp:
   //   The starting point of the requesting change list, or 0 if all changes
   //   are necessary.
-  GURL GetChangelistUrl(bool include_deleted, int64 start_changestamp) const;
+  // max_results:
+  //   The max of the number of files resource in the response.
+  GURL GetChangelistUrl(
+      bool include_deleted, int64 start_changestamp, int max_results) const;
+
+  // Returns a URL to edit (especially add) a resource, such as inserting
+  // a file metadata or creating a new directory.
+  GURL GetFilesUrl() const;
 
   // Returns a URL to fetch a list of files with the given |search_string|.
   // search_string: The search query.
-  GURL GetFilelistUrl(const std::string& search_string) const;
+  // max_results: The max of the number of files resource in the response.
+  GURL GetFilelistUrl(const std::string& search_string, int max_results) const;
 
   // Returns a URL to fetch a file content.
   GURL GetFileUrl(const std::string& file_id) const;

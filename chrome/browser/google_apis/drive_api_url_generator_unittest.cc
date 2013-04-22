@@ -39,45 +39,56 @@ TEST_F(DriveApiUrlGeneratorTest, GetApplistUrl) {
 
 TEST_F(DriveApiUrlGeneratorTest, GetChangelistUrl) {
   // Do not add startChangeId parameter if |start_changestamp| is 0.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes",
-            url_generator_.GetChangelistUrl(true, 0).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes",
-            test_url_generator_.GetChangelistUrl(true, 0).spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?maxResults=500",
+            url_generator_.GetChangelistUrl(true, 0, 500).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?maxResults=500",
+            test_url_generator_.GetChangelistUrl(true, 0, 500).spec());
 
   // Set includeDeleted parameter if |include_deleted| is set to false.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?includeDeleted=false",
-            url_generator_.GetChangelistUrl(false, 0).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?includeDeleted=false",
-            test_url_generator_.GetChangelistUrl(false, 0).spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes"
+            "?includeDeleted=false&maxResults=500",
+            url_generator_.GetChangelistUrl(false, 0, 500).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes"
+            "?includeDeleted=false&maxResults=500",
+            test_url_generator_.GetChangelistUrl(false, 0, 500).spec());
 
   // Set startChangeId parameter if |start_changestamp| is given.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes?startChangeId=100",
-            url_generator_.GetChangelistUrl(true, 100).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?startChangeId=100",
-            test_url_generator_.GetChangelistUrl(true, 100).spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/changes"
+            "?startChangeId=100&maxResults=500",
+            url_generator_.GetChangelistUrl(true, 100, 500).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes"
+            "?startChangeId=100&maxResults=500",
+            test_url_generator_.GetChangelistUrl(true, 100, 500).spec());
 
   // includeDeleted and startChangeId parameter can be set at the same time.
   EXPECT_EQ(
       "https://www.googleapis.com/drive/v2/changes"
-      "?includeDeleted=false&startChangeId=100",
-      url_generator_.GetChangelistUrl(false, 100).spec());
+      "?includeDeleted=false&startChangeId=100&maxResults=500",
+      url_generator_.GetChangelistUrl(false, 100, 500).spec());
   EXPECT_EQ("http://127.0.0.1:12345/drive/v2/changes?"
-            "includeDeleted=false&startChangeId=100",
-            test_url_generator_.GetChangelistUrl(false, 100).spec());
+            "includeDeleted=false&startChangeId=100&maxResults=500",
+            test_url_generator_.GetChangelistUrl(false, 100, 500).spec());
+}
+
+TEST_F(DriveApiUrlGeneratorTest, GetFilesUrl) {
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
+            url_generator_.GetFilesUrl().spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files",
+            test_url_generator_.GetFilesUrl().spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFilelistUrl) {
   // Do not add q parameter if |search_string| is empty.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files",
-            url_generator_.GetFilelistUrl(std::string()).spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files",
-            test_url_generator_.GetFilelistUrl(std::string()).spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files?maxResults=50",
+            url_generator_.GetFilelistUrl(std::string(), 50).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files?maxResults=50",
+            test_url_generator_.GetFilelistUrl(std::string(), 50).spec());
 
   // Set q parameter if non-empty |search_string| is given.
-  EXPECT_EQ("https://www.googleapis.com/drive/v2/files?q=query",
-            url_generator_.GetFilelistUrl("query").spec());
-  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files?q=query",
-            test_url_generator_.GetFilelistUrl("query").spec());
+  EXPECT_EQ("https://www.googleapis.com/drive/v2/files?maxResults=50&q=query",
+            url_generator_.GetFilelistUrl("query", 50).spec());
+  EXPECT_EQ("http://127.0.0.1:12345/drive/v2/files?maxResults=50&q=query",
+            test_url_generator_.GetFilelistUrl("query", 50).spec());
 }
 
 TEST_F(DriveApiUrlGeneratorTest, GetFileUrl) {
