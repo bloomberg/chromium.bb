@@ -45,7 +45,6 @@
       'dependencies': [
         '../config.gyp:config',
         '../wtf/wtf.gyp:wtf',
-        '../yarr/yarr.gyp:yarr',
         '../core/core.gyp/core.gyp:webcore',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
