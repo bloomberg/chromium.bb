@@ -31,13 +31,19 @@ std::string GetHeaderDBKey() {
   return key;
 }
 
-// Returns a string to be used as keys for child map.
-std::string GetChildMapKey(const std::string& parent_resource_id,
-                           const std::string& child_name) {
+// Returns a string to be used as a key for child entry.
+std::string GetChildEntryKey(const std::string& parent_resource_id,
+                             const std::string& child_name) {
   std::string key = parent_resource_id;
   key.push_back(kDBKeyDelimeter);
   key.append(child_name);
+  key.push_back(kDBKeyDelimeter);
   return key;
+}
+
+// Returns true if |key| is a key for a child entry.
+bool IsChildEntryKey(const leveldb::Slice& key) {
+  return !key.empty() && key[key.size() - 1] == kDBKeyDelimeter;
 }
 
 }  // namespace
@@ -180,12 +186,14 @@ DriveResourceMetadataStorageDB::~DriveResourceMetadataStorageDB() {
 bool DriveResourceMetadataStorageDB::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
 
+  // Remove unused child map DB.
+  const base::FilePath child_map_path = directory_path_.Append(kChildMapDBName);
+  file_util::Delete(child_map_path, true /* recursive */);
+
   resource_map_.reset();
-  child_map_.reset();
 
   const base::FilePath resource_map_path =
       directory_path_.Append(kResourceMapDBName);
-  const base::FilePath child_map_path = directory_path_.Append(kChildMapDBName);
 
   // Try to open the existing DB.
   leveldb::DB* db = NULL;
@@ -197,30 +205,23 @@ bool DriveResourceMetadataStorageDB::Initialize() {
   if (status.ok())
     resource_map_.reset(db);
 
-  status = leveldb::DB::Open(options, child_map_path.value(), &db);
-  if (status.ok())
-    child_map_.reset(db);
-
   // Check the validity of existing DB.
-  if (resource_map_ && child_map_) {
+  if (resource_map_) {
     if (!CheckValidity()) {
       LOG(ERROR) << "Reject invalid DB.";
       resource_map_.reset();
-      child_map_.reset();
     }
   }
 
   // Failed to open the existing DB, create new DB.
-  if (!resource_map_ || !child_map_) {
+  if (!resource_map_) {
     resource_map_.reset();
-    child_map_.reset();
 
     // Clean up the destination.
     const bool kRecursive = true;
     file_util::Delete(resource_map_path, kRecursive);
-    file_util::Delete(child_map_path, kRecursive);
 
-    // Create DBs.
+    // Create DB.
     options.create_if_missing = true;
 
     status = leveldb::DB::Open(options, resource_map_path.value(), &db);
@@ -230,14 +231,6 @@ bool DriveResourceMetadataStorageDB::Initialize() {
     }
     resource_map_.reset(db);
 
-    status = leveldb::DB::Open(options, child_map_path.value(), &db);
-    if (!status.ok()) {
-      LOG(ERROR) << "Failed to create child map DB: " << status.ToString();
-      resource_map_.reset();
-      return false;
-    }
-    child_map_.reset(db);
-
     // Set up header.
     DriveResourceMetadataHeader header;
     header.set_version(kDBVersion);
@@ -245,7 +238,6 @@ bool DriveResourceMetadataStorageDB::Initialize() {
   }
 
   DCHECK(resource_map_);
-  DCHECK(child_map_);
   return true;
 }
 
@@ -333,7 +325,8 @@ void DriveResourceMetadataStorageDB::Iterate(const IterateCallback& callback) {
 
   DriveEntryProto entry;
   for (; it->Valid(); it->Next()) {
-    if (entry.ParseFromArray(it->value().data(), it->value().size()))
+    if (!IsChildEntryKey(it->key()) &&
+        entry.ParseFromArray(it->value().data(), it->value().size()))
       callback.Run(entry);
   }
 }
@@ -344,9 +337,9 @@ void DriveResourceMetadataStorageDB::PutChild(
     const std::string& child_resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  const leveldb::Status status = child_map_->Put(
+  const leveldb::Status status = resource_map_->Put(
       leveldb::WriteOptions(),
-      leveldb::Slice(GetChildMapKey(parent_resource_id, child_name)),
+      leveldb::Slice(GetChildEntryKey(parent_resource_id, child_name)),
       leveldb::Slice(child_resource_id));
   DCHECK(status.ok());
 }
@@ -357,9 +350,9 @@ std::string DriveResourceMetadataStorageDB::GetChild(
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string child_resource_id;
-  child_map_->Get(
+  resource_map_->Get(
       leveldb::ReadOptions(),
-      leveldb::Slice(GetChildMapKey(parent_resource_id, child_name)),
+      leveldb::Slice(GetChildEntryKey(parent_resource_id, child_name)),
       &child_resource_id);
   return child_resource_id;
 }
@@ -371,11 +364,12 @@ void DriveResourceMetadataStorageDB::GetChildren(
 
   // Iterate over all entries with keys starting with |parent_resource_id|.
   scoped_ptr<leveldb::Iterator> it(
-      child_map_->NewIterator(leveldb::ReadOptions()));
+      resource_map_->NewIterator(leveldb::ReadOptions()));
   for (it->Seek(parent_resource_id);
        it->Valid() && it->key().starts_with(leveldb::Slice(parent_resource_id));
        it->Next()) {
-    children->push_back(it->value().ToString());
+    if (IsChildEntryKey(it->key()))
+      children->push_back(it->value().ToString());
   }
   DCHECK(it->status().ok());
 }
@@ -385,9 +379,9 @@ void DriveResourceMetadataStorageDB::RemoveChild(
     const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
 
-  const leveldb::Status status = child_map_->Delete(
+  const leveldb::Status status = resource_map_->Delete(
       leveldb::WriteOptions(),
-      leveldb::Slice(GetChildMapKey(parent_resource_id, child_name)));
+      leveldb::Slice(GetChildEntryKey(parent_resource_id, child_name)));
   DCHECK(status.ok());
 }
 
@@ -448,11 +442,18 @@ bool DriveResourceMetadataStorageDB::CheckValidity() {
   }
 
   // Check all entires.
-  size_t num_checked_child_map_entries = 0;
+  size_t num_entries_with_parent = 0;
+  size_t num_child_entries = 0;
   DriveEntryProto entry;
   std::string serialized_parent_entry;
   std::string child_resource_id;
   for (it->Next(); it->Valid(); it->Next()) {
+    // Count child entries.
+    if (IsChildEntryKey(it->key())) {
+      ++num_child_entries;
+      continue;
+    }
+
     // Check if stored data is broken.
     if (!entry.ParseFromArray(it->value().data(), it->value().size()) ||
         entry.resource_id() != it->key()) {
@@ -472,37 +473,23 @@ bool DriveResourceMetadataStorageDB::CheckValidity() {
       }
 
       // Check if parent-child relationship is stored correctly.
-      status = child_map_->Get(
+      status = resource_map_->Get(
           options,
-          leveldb::Slice(GetChildMapKey(entry.parent_resource_id(),
-                                        entry.base_name())),
+          leveldb::Slice(GetChildEntryKey(entry.parent_resource_id(),
+                                          entry.base_name())),
           &child_resource_id);
       if (!status.ok() || child_resource_id != entry.resource_id()) {
         DLOG(ERROR) << "Child map is broken. status = " << status.ToString();
         return false;
       }
-      ++num_checked_child_map_entries;
+      ++num_entries_with_parent;
     }
   }
-  if (!it->status().ok()) {
+  if (!it->status().ok() || num_child_entries != num_entries_with_parent) {
     DLOG(ERROR) << "Error during checking resource map. status = "
                 << it->status().ToString();
     return false;
   }
-
-  // Check all child map entries are referenced from |resource_map_|.
-  size_t num_child_map_entries = 0;
-  it.reset(child_map_->NewIterator(options));
-  for (it->SeekToFirst(); it->Valid(); it->Next()) {
-    ++num_child_map_entries;
-  }
-  if (!it->status().ok() ||
-      num_child_map_entries != num_checked_child_map_entries) {
-    DLOG(ERROR) << "Error during checking child map. status = "
-                << it->status().ToString();
-    return false;
-  }
-
   return true;
 }
 

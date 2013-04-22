@@ -128,7 +128,7 @@ class DriveResourceMetadataStorageDB
  public:
   // This should be incremented when incompatibility change is made to DB
   // format.
-  static const int kDBVersion = 2;
+  static const int kDBVersion = 3;
 
   explicit DriveResourceMetadataStorageDB(const base::FilePath& directory_path);
   virtual ~DriveResourceMetadataStorageDB();
@@ -170,9 +170,6 @@ class DriveResourceMetadataStorageDB
 
   // Entries stored in this storage.
   scoped_ptr<leveldb::DB> resource_map_;
-
-  // Parent-child relationship between entries.
-  scoped_ptr<leveldb::DB> child_map_;
 
   DISALLOW_COPY_AND_ASSIGN(DriveResourceMetadataStorageDB);
 };
