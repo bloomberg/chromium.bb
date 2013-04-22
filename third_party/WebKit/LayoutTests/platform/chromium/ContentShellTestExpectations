@@ -60,7 +60,6 @@ crbug.com/231930 http/tests/security/contentSecurityPolicy/report-and-enforce.ht
 crbug.com/231931 http/tests/security/local-user-CSS-from-remote.html  [ Failure ]
 crbug.com/231932 http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure ]
 crbug.com/231933 inspector/extensions/extensions-panel.html [ Failure ]
-crbug.com/231934 inspector/report-protocol-errors.html [ Failure ]
 crbug.com/231935 inspector/storage-panel-dom-storage-update.html [ Failure ]
 crbug.com/231936 inspector/timeline/timeline-decode-resize.html [ Failure ]
 crbug.com/231937 inspector/timeline/timeline-network-resource.html [ Failure ]
