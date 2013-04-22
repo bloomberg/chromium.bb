@@ -139,7 +139,6 @@
 #include "WebPluginContainerImpl.h"
 #include "WebPopupMenuImpl.h"
 #include "WebRange.h"
-#include "WebRuntimeFeatures.h"
 #include "WebSettingsImpl.h"
 #include "WebTextInputInfo.h"
 #include "WebViewClient.h"
@@ -338,6 +337,13 @@ void WebViewImpl::setDevToolsAgentClient(WebDevToolsAgentClient* devToolsClient)
         m_devToolsAgent.clear();
 }
 
+void WebViewImpl::setValidationMessageClient(WebValidationMessageClient* client)
+{
+    ASSERT(client);
+    m_validationMessage = ValidationMessageClientImpl::create(*client);
+    m_page->setValidationMessageClient(m_validationMessage.get());
+}
+
 void WebViewImpl::setPermissionClient(WebPermissionClient* permissionClient)
 {
     m_permissionClient = permissionClient;
@@ -440,7 +446,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
 #endif
     , m_flingModifier(0)
     , m_flingSourceDevice(false)
-    , m_validationMessage(ValidationMessageClientImpl::create(*client))
     , m_showFPSCounter(false)
     , m_showPaintRects(false)
     , m_showDebugBorders(false)
@@ -459,8 +464,6 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
     pageClients.backForwardClient = BackForwardListChromium::create(this);
-    if (WebRuntimeFeatures::isNativeValidationMessageEnabled())
-        pageClients.validationMessageClient = m_validationMessage.get();
 
     m_page = adoptPtr(new Page(pageClients));
 #if ENABLE(MEDIA_STREAM)

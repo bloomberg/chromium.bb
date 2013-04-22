@@ -191,6 +191,7 @@ public:
     virtual void setPermissionClient(WebPermissionClient*);
     virtual void setPrerendererClient(WebPrerendererClient*) OVERRIDE;
     virtual void setSpellCheckClient(WebSpellCheckClient*);
+    virtual void setValidationMessageClient(WebValidationMessageClient*) OVERRIDE;
     virtual void addTextFieldDecoratorClient(WebTextFieldDecoratorClient*) OVERRIDE;
     virtual WebSettings* settings();
     virtual WebString pageEncoding() const;

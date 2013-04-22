@@ -133,7 +133,7 @@ Page::Page(PageClients& pageClients)
     , m_theme(RenderTheme::themeForPage(this))
     , m_editorClient(pageClients.editorClient)
     , m_plugInClient(pageClients.plugInClient)
-    , m_validationMessageClient(pageClients.validationMessageClient)
+    , m_validationMessageClient(0)
     , m_subframeCount(0)
     , m_openedByDOM(false)
     , m_tabKeyCyclesThroughElements(true)
@@ -1222,7 +1222,6 @@ Page::PageClients::PageClients()
     , dragClient(0)
     , inspectorClient(0)
     , plugInClient(0)
-    , validationMessageClient(0)
 {
 }
 

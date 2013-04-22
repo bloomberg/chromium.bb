@@ -120,7 +120,6 @@ public:
         InspectorClient* inspectorClient;
         PlugInClient* plugInClient;
         RefPtr<BackForwardList> backForwardClient;
-        ValidationMessageClient* validationMessageClient;
     };
 
     explicit Page(PageClients&);
@@ -181,6 +180,7 @@ public:
     InspectorController* inspectorController() const { return m_inspectorController.get(); }
     PointerLockController* pointerLockController() const { return m_pointerLockController.get(); }
     ValidationMessageClient* validationMessageClient() const { return m_validationMessageClient; }
+    void setValidationMessageClient(ValidationMessageClient* client) { m_validationMessageClient = client; }
 
     ScrollingCoordinator* scrollingCoordinator();
 

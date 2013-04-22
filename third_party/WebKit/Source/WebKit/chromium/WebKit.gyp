@@ -251,6 +251,7 @@
                 'public/WebUserGestureToken.h',
                 'public/WebUserMediaClient.h',
                 'public/WebUserMediaRequest.h',
+                'public/WebValidationMessageClient.h',
                 'public/WebView.h',
                 'public/WebViewBenchmarkSupport.h',
                 'public/WebViewClient.h',

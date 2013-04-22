@@ -58,6 +58,7 @@ class WebSettings;
 class WebSpellCheckClient;
 class WebString;
 class WebTextFieldDecoratorClient;
+class WebValidationMessageClient;
 class WebViewBenchmarkSupport;
 class WebViewClient;
 struct WebActiveWheelFlingParameters;
@@ -107,6 +108,7 @@ public:
     virtual void setPermissionClient(WebPermissionClient*) = 0;
     virtual void setPrerendererClient(WebPrerendererClient*) = 0;
     virtual void setSpellCheckClient(WebSpellCheckClient*) = 0;
+    virtual void setValidationMessageClient(WebValidationMessageClient*) = 0;
     virtual void addTextFieldDecoratorClient(WebTextFieldDecoratorClient*) = 0;
 
 

@@ -30,20 +30,21 @@
 #include "FrameView.h"
 #include "RenderObject.h"
 #include "WebTextDirection.h"
-#include "WebViewClient.h"
+#include "WebValidationMessageClient.h"
+#include <public/WebString.h>
 
 using namespace WebCore;
 
 namespace WebKit {
 
-ValidationMessageClientImpl::ValidationMessageClientImpl(WebViewClient& client)
+ValidationMessageClientImpl::ValidationMessageClientImpl(WebValidationMessageClient& client)
     : m_client(client)
     , m_currentAnchor(0)
     , m_timer(this, &ValidationMessageClientImpl::hideCurrentValidationMessage)
 {
 }
 
-PassOwnPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebViewClient& client)
+PassOwnPtr<ValidationMessageClientImpl> ValidationMessageClientImpl::create(WebValidationMessageClient& client)
 {
     return adoptPtr(new ValidationMessageClientImpl(client));
 }
