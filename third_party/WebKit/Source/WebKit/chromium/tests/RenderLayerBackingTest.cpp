@@ -114,7 +114,7 @@ protected:
     WebKitTests::WebCompositorInitializer m_compositorInitializer;
 };
 
-TEST_F(RenderLayerBackingTest, GraphicsLayerBackgroundColor)
+TEST_F(RenderLayerBackingTest, DISABLED_GraphicsLayerBackgroundColor)
 {
     registerMockedHttpURLLoad("layer_background_color.html");
     navigateTo(m_baseURL + "layer_background_color.html");

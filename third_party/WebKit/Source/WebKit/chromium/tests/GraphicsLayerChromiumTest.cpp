@@ -146,7 +146,7 @@ TEST_F(GraphicsLayerChromiumTest, applyScrollToScrollableArea)
     EXPECT_EQ(scrollPosition, WebPoint(scrollableArea.scrollPosition()));
 }
 
-TEST_F(GraphicsLayerChromiumTest, setContentsToSolidColor)
+TEST_F(GraphicsLayerChromiumTest, DISABLED_setContentsToSolidColor)
 {
     m_graphicsLayer->setContentsToSolidColor(Color::transparent);
     EXPECT_FALSE(m_graphicsLayer->contentsLayer());
