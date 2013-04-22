@@ -51,10 +51,6 @@ void ResourceFetcher::Cancel() {
 void ResourceFetcher::Start(WebFrame* frame) {
   WebURLRequest request(url_);
   request.setTargetType(target_type_);
-  if (target_type_ == WebURLRequest::TargetIsFavicon) {
-    // Disable cookies to avoid side effects when fetching favicon.
-    request.setAllowCookies(false);
-  }
   request.setFirstPartyForCookies(frame->document().firstPartyForCookies());
   frame->dispatchWillSendRequest(request);
 
