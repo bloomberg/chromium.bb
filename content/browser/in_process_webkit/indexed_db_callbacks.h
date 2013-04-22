@@ -137,11 +137,11 @@ class IndexedDBCallbacks<WebKit::WebIDBKey>
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);
 };
 
-// WebDOMStringList is implemented in WebKit as opposed to being an
+// WebVector is implemented in WebKit as opposed to being an
 // interface Chromium implements.  Thus we pass a const ___& version and thus
 // we need this specialization.
 template <>
-class IndexedDBCallbacks<WebKit::WebDOMStringList>
+class IndexedDBCallbacks<WebKit::WebVector<WebKit::WebString> >
     : public IndexedDBCallbacksBase {
  public:
   IndexedDBCallbacks(
@@ -151,7 +151,7 @@ class IndexedDBCallbacks<WebKit::WebDOMStringList>
       : IndexedDBCallbacksBase(dispatcher_host, ipc_thread_id,
                                ipc_callbacks_id) { }
 
-  virtual void onSuccess(const WebKit::WebDOMStringList& value);
+    virtual void onSuccess(const WebKit::WebVector<WebKit::WebString>& value);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(IndexedDBCallbacks);

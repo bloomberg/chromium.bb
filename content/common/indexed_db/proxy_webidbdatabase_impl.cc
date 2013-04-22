@@ -15,7 +15,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBMetadata.h"
 #include "webkit/glue/worker_task_runner.h"
 
-using WebKit::WebDOMStringList;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;

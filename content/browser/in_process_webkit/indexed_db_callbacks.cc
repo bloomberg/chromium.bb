@@ -172,12 +172,12 @@ void IndexedDBCallbacks<WebKit::WebIDBKey>::onSuccess(
           ipc_thread_id(), ipc_callbacks_id(), IndexedDBKey(value)));
 }
 
-void IndexedDBCallbacks<WebKit::WebDOMStringList>::onSuccess(
-    const WebKit::WebDOMStringList& value) {
+void IndexedDBCallbacks<WebKit::WebVector<WebKit::WebString> >::onSuccess(
+    const WebKit::WebVector<WebKit::WebString>& value) {
 
   std::vector<string16> list;
-  for (unsigned i = 0; i < value.length(); ++i)
-      list.push_back(value.item(i));
+  for (unsigned i = 0; i < value.size(); ++i)
+      list.push_back(value[i]);
 
   dispatcher_host()->Send(
       new IndexedDBMsg_CallbacksSuccessStringList(

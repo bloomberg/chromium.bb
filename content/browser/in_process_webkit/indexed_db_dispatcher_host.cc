@@ -22,8 +22,8 @@
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebVector.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebDOMStringList.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseCallbacks.h"
@@ -36,7 +36,6 @@
 #include "webkit/database/database_util.h"
 
 using webkit_database::DatabaseUtil;
-using WebKit::WebDOMStringList;
 using WebKit::WebData;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBCursor;
@@ -47,6 +46,7 @@ using WebKit::WebIDBKey;
 using WebKit::WebIDBMetadata;
 using WebKit::WebIDBObjectStore;
 using WebKit::WebSecurityOrigin;
+using WebKit::WebString;
 using WebKit::WebVector;
 
 namespace content {
@@ -233,7 +233,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
       WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
 
   Context()->GetIDBFactory()->getDatabaseNames(
-      new IndexedDBCallbacks<WebDOMStringList>(this, params.ipc_thread_id,
+      new IndexedDBCallbacks<WebVector<WebString> >(this, params.ipc_thread_id,
       params.ipc_callbacks_id), origin, NULL,
       webkit_base::FilePathToWebString(indexed_db_path));
 }

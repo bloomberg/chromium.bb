@@ -19,7 +19,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabaseException.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBKeyRange.h"
 
-using WebKit::WebDOMStringList;
 using WebKit::WebData;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
@@ -558,11 +557,7 @@ void IndexedDBDispatcher::OnSuccessStringList(
   WebIDBCallbacks* callbacks = pending_callbacks_.Lookup(ipc_callbacks_id);
   if (!callbacks)
     return;
-  WebDOMStringList string_list;
-  for (std::vector<string16>::const_iterator it = value.begin();
-       it != value.end(); ++it)
-      string_list.append(*it);
-  callbacks->onSuccess(string_list);
+  callbacks->onSuccess(WebVector<WebString>(value));
   pending_callbacks_.Remove(ipc_callbacks_id);
 }
 
