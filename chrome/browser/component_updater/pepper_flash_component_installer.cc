@@ -29,7 +29,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pepper_flash.h"
-#include "chrome/common/pepper_flash.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/common/pepper_plugin_info.h"
@@ -45,7 +44,7 @@ using content::PluginService;
 namespace {
 
 // CRX hash. The extension id is: mimojjlkmoijpicakmndhoigimigcmbb.
-const uint8 sha2_hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
+const uint8 kSha2Hash[] = {0xc8, 0xce, 0x99, 0xba, 0xce, 0x89, 0xf8, 0x20,
                            0xac, 0xd3, 0x7e, 0x86, 0x8c, 0x86, 0x2c, 0x11,
                            0xb9, 0x40, 0xc5, 0x55, 0xaf, 0x08, 0x63, 0x70,
                            0x54, 0xf9, 0x56, 0xd3, 0xe7, 0x88, 0xba, 0x8c};
@@ -340,7 +339,7 @@ void FinishPepperFlashUpdateRegistration(ComponentUpdateService* cus,
   pepflash.name = "pepper_flash";
   pepflash.installer = new PepperFlashComponentInstaller(version);
   pepflash.version = version;
-  pepflash.pk_hash.assign(sha2_hash, &sha2_hash[sizeof(sha2_hash)]);
+  pepflash.pk_hash.assign(kSha2Hash, &kSha2Hash[sizeof(kSha2Hash)]);
   if (cus->RegisterComponent(pepflash) != ComponentUpdateService::kOk) {
     NOTREACHED() << "Pepper Flash component registration failed.";
   }
