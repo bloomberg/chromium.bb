@@ -253,7 +253,7 @@ TEST_F(SystemGestureEventFilterTest, TapOutsideRootWindow) {
   root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
   scoped_ptr<ui::GestureEvent> event(CreateGesture(
-      ui::ET_GESTURE_TAP, 0, 0, 1, 0, kTouchId));
+      ui::ET_GESTURE_TAP, -10, -10, 1, 0, kTouchId));
   bool consumed = root_window->DispatchGestureEvent(event.get());
 
   EXPECT_TRUE(consumed);
@@ -325,213 +325,6 @@ void MoveToDeviceControlBezelStartPosition(
   EXPECT_EQ(expected_value, delegate->handle_percent());
 }
 
-// Ensure that the device control operation gets properly handled.
-TEST_F(SystemGestureEventFilterTest, DeviceControl) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-
-  gfx::Rect screen = Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  int ypos_half = screen.height() / 2;
-
-  ash::AcceleratorController* accelerator =
-       ash::Shell::GetInstance()->accelerator_controller();
-
-  DummyBrightnessControlDelegate* delegateBrightness =
-      new DummyBrightnessControlDelegate();
-  accelerator->SetBrightnessControlDelegate(
-      scoped_ptr<BrightnessControlDelegate>(delegateBrightness).Pass());
-
-  DummyVolumeControlDelegate* delegateVolume =
-      new DummyVolumeControlDelegate();
-  ash::Shell::GetInstance()->system_tray_delegate()->SetVolumeControlDelegate(
-      scoped_ptr<VolumeControlDelegate>(delegateVolume).Pass());
-
-  const int kTouchId = 5;
-
-  for (int pass = 0; pass < 2; pass++) {
-    DelegatePercentTracker* delegate =
-        static_cast<DelegatePercentTracker*>(delegateBrightness);
-    int xpos = screen.x() - 10;
-    int invalid_xpos_direction = 1;
-    int ypos = screen.y();
-    // The expected (middle) value. Note that brightness (first pass) is
-    // slightly higher then 50% since its slider range is 4%..100%.
-    double value = 52.0;
-    if (pass) {
-      // On the second pass the volume will be tested.
-      delegate = static_cast<DelegatePercentTracker*>(delegateVolume);
-      xpos = screen.right() + 10;  // Make sure it is out of the screen.
-      invalid_xpos_direction = -1;
-      value = 50.0;
-    }
-    MoveToDeviceControlBezelStartPosition(
-        root_window, delegate, value, xpos, ypos, ypos_half, kTouchId);
-
-    // A move towards the screen is fine as long as we do not go inside it.
-    scoped_ptr<ui::GestureEvent> event4(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE,
-        xpos + invalid_xpos_direction,
-        ypos + ypos_half,
-        invalid_xpos_direction, 0, kTouchId));
-    bool consumed = root_window->DispatchGestureEvent(event4.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(2, delegate->handle_percent_count());
-
-    // A move into the screen will cancel the gesture.
-    scoped_ptr<ui::GestureEvent> event5(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE,
-        xpos + 20 * invalid_xpos_direction,
-        ypos + ypos_half,
-        20 * invalid_xpos_direction, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event5.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(2, delegate->handle_percent_count());
-
-    // Finishing the gesture should not change anything.
-    scoped_ptr<ui::GestureEvent> event6(CreateGesture(
-        ui::ET_GESTURE_SCROLL_END, xpos, ypos + ypos_half,
-        0, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event6.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(2, delegate->handle_percent_count());
-
-    // Another event after this one should get ignored.
-    scoped_ptr<ui::GestureEvent> event7(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos_half,
-        0, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event7.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(2, delegate->handle_percent_count());
-
-    ui::TouchEvent release(ui::ET_TOUCH_RELEASED,
-                           gfx::Point(2 * xpos, ypos + ypos_half),
-                           kTouchId,
-                           ui::EventTimeForNow());
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
-
-    // Check that huge changes will be interpreted as noise as well.
-    MoveToDeviceControlBezelStartPosition(
-        root_window, delegate, value, xpos, ypos, ypos_half, kTouchId);
-    // Note: The counter is with this call at 3.
-
-    scoped_ptr<ui::GestureEvent> event8(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos / 10,
-        0, ypos / 10 - ypos, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event8.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(3, delegate->handle_percent_count());
-
-    // Release the system.
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
-  }
-}
-
-// Ensure that the application control operations gets properly handled.
-TEST_F(SystemGestureEventFilterTest, ApplicationControl) {
-  aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
-
-  gfx::Rect screen = Shell::GetScreen()->GetPrimaryDisplay().bounds();
-  int ypos_half = screen.height() / 2;
-
-  aura::test::TestWindowDelegate delegate;
-  scoped_ptr<aura::Window> window0(
-      aura::test::CreateTestWindowWithDelegate(
-          &delegate, 9, gfx::Rect(0, 0, 100, 100), root_window));
-  scoped_ptr<aura::Window> window1(
-      aura::test::CreateTestWindowWithDelegate(
-          &delegate, 10, gfx::Rect(0, 0, 100, 100), window0.get()));
-  scoped_ptr<aura::Window> window2(
-      aura::test::CreateTestWindowWithDelegate(
-          &delegate, 11, gfx::Rect(0, 0, 100, 100), window0.get()));
-
-  const int kTouchId = 5;
-
-  for (int pass = 0; pass < 2; pass++) {
-    // Add the launcher items and make sure the first item is the active one.
-    TestLauncherDelegate::instance()->AddLauncherItem(window1.get(),
-                                                      ash::STATUS_ACTIVE);
-    TestLauncherDelegate::instance()->AddLauncherItem(window2.get(),
-                                                      ash::STATUS_RUNNING);
-    ash::wm::ActivateWindow(window1.get());
-
-    int xpos = screen.x() - 10;
-    int delta_x = 100;
-    int ypos = screen.y();
-    if (pass) {
-      xpos = screen.right() + 40;  // Make sure the touch is out of the screen.
-      delta_x = -100;
-    }
-
-    aura::Window* active_window = ash::wm::GetActiveWindow();
-
-    // Get a target for kTouchId
-    ui::TouchEvent press(ui::ET_TOUCH_PRESSED,
-                         gfx::Point(-10, ypos + ypos_half),
-                         kTouchId,
-                         ui::EventTimeForNow());
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
-
-    scoped_ptr<ui::GestureEvent> event1(CreateGesture(
-        ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos,
-        0, 0, kTouchId));
-    bool consumed = root_window->DispatchGestureEvent(event1.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
-
-    // No move at the beginning will produce no events.
-    scoped_ptr<ui::GestureEvent> event2(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE,
-        xpos, ypos, 0, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event2.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
-
-    // A move further to the outside will not trigger an action.
-    scoped_ptr<ui::GestureEvent> event3(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos - delta_x, ypos,
-        -delta_x, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event3.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
-
-    // A move to the proper side will trigger an action.
-    scoped_ptr<ui::GestureEvent> event4(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos + delta_x, ypos,
-        2 * delta_x, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event4.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_NE(ash::wm::GetActiveWindow(), active_window);
-    active_window = ash::wm::GetActiveWindow();
-
-    // A second move to the proper side will not trigger an action.
-    scoped_ptr<ui::GestureEvent>  event5(CreateGesture(
-        ui::ET_GESTURE_SCROLL_UPDATE, xpos + 2 * delta_x, ypos,
-        delta_x, 0, kTouchId));
-    consumed = root_window->DispatchGestureEvent(event5.get());
-
-    EXPECT_TRUE(consumed);
-    EXPECT_EQ(ash::wm::GetActiveWindow(), active_window);
-
-    ui::TouchEvent release(ui::ET_TOUCH_RELEASED,
-                           gfx::Point(2 * xpos, ypos + ypos_half),
-                           kTouchId,
-                           ui::EventTimeForNow());
-    root_window->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
-
-    // Remove the launcher items again.
-    TestLauncherDelegate::instance()->OnWillRemoveWindow(window1.get());
-    TestLauncherDelegate::instance()->OnWillRemoveWindow(window2.get());
-  }
-}
-
 TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
 
@@ -594,16 +387,16 @@ TEST_F(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
 TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
-      new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 100, 100));
+      new ResizableWidgetDelegate, root_window, gfx::Rect(0, 0, 600, 600));
   toplevel->Show();
 
   const int kSteps = 15;
   const int kTouchPoints = 4;
   gfx::Point points[kTouchPoints] = {
-    gfx::Point(10, 30),
-    gfx::Point(30, 20),
-    gfx::Point(50, 30),
-    gfx::Point(80, 50)
+    gfx::Point(250, 250),
+    gfx::Point(250, 350),
+    gfx::Point(350, 250),
+    gfx::Point(350, 350)
   };
 
   aura::test::EventGenerator generator(root_window,
@@ -647,7 +440,7 @@ TEST_F(SystemGestureEventFilterTest, MultiFingerSwipeGestures) {
 }
 
 TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
-  gfx::Rect bounds(0, 0, 100, 100);
+  gfx::Rect bounds(0, 0, 600, 600);
   aura::RootWindow* root_window = Shell::GetPrimaryRootWindow();
   views::Widget* toplevel = views::Widget::CreateWindowWithContextAndBounds(
       new ResizableWidgetDelegate, root_window, bounds);
@@ -656,8 +449,8 @@ TEST_F(SystemGestureEventFilterTest, TwoFingerDrag) {
   const int kSteps = 15;
   const int kTouchPoints = 2;
   gfx::Point points[kTouchPoints] = {
-    gfx::Point(10, 30),
-    gfx::Point(30, 20),
+    gfx::Point(250, 250),
+    gfx::Point(350, 350),
   };
 
   aura::test::EventGenerator generator(root_window,
