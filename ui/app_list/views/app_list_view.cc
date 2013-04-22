@@ -107,6 +107,13 @@ void AppListView::InitAsBubble(gfx::NativeView parent,
   set_background(new AppListBackground(
       GetBubbleFrameView()->bubble_border()->GetBorderCornerRadius(),
       app_list_main_view_->search_box_view()));
+
+  // On non-aura the bubble has two widgets, and it's possible for the border
+  // to be shown independently in odd situations. Explicitly hide the bubble
+  // widget to ensure that any WM_WINDOWPOSCHANGED messages triggered by the
+  // window manager do not have the SWP_SHOWWINDOW flag set which would cause
+  // the border to be shown. See http://crbug.com/231687 .
+  GetWidget()->Hide();
 #endif
 }
 
