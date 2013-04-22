@@ -190,6 +190,8 @@ void WebView::WebContentsFocused(content::WebContents* web_contents) {
 
 gfx::NativeViewAccessible WebView::AccessibleObjectFromChildId(long child_id) {
 #if defined(OS_WIN) && defined(USE_AURA)
+  if (!web_contents_)
+    return NULL;
   content::RenderWidgetHostView* host_view =
       web_contents_->GetRenderWidgetHostView();
   if (host_view)

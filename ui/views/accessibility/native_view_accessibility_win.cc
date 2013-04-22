@@ -376,13 +376,13 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
       int view_storage_id = view_storage_ids_[view_storage_id_index];
       ViewStorage* view_storage = ViewStorage::GetInstance();
       child_view = view_storage->RetrieveView(view_storage_id);
-    }
-
-    *disp_child = AccessibleWebViewRegistry::GetInstance()->
-        GetAccessibleFromWebView(view_, child_id);
-    if (*disp_child) {
-      (*disp_child)->AddRef();
-      return S_OK;
+    } else {
+      *disp_child = AccessibleWebViewRegistry::GetInstance()->
+          GetAccessibleFromWebView(view_, child_id);
+      if (*disp_child) {
+        (*disp_child)->AddRef();
+        return S_OK;
+      }
     }
   }
 

@@ -209,6 +209,7 @@ void OmniboxViewViews::OnGestureEvent(ui::GestureEvent* event) {
 
 void OmniboxViewViews::GetAccessibleState(ui::AccessibleViewState* state) {
   location_bar_view_->GetAccessibleState(state);
+  state->role = ui::AccessibilityTypes::ROLE_TEXT;
 }
 
 void OmniboxViewViews::OnBoundsChanged(const gfx::Rect& previous_bounds) {
