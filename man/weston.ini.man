@@ -109,6 +109,10 @@ The entries that can appear in this section are:
 .BI "background-image=" file
 sets the path for the background image file (string).
 .TP 7
+.BI "background-type=" tile
+determines how the background image is drawn (string). Can be scale or
+tile (default).
+.TP 7
 .BI "background-color=" 0xAARRGGBB
 sets the color of the background (unsigned integer). The hexadecimal
 digit pairs are in order alpha, red, green, and blue.
