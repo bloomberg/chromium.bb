@@ -132,9 +132,9 @@ class DriveFileSyncClient
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceEntry> entry);
 
-  void SearchFilesInDirectory(const std::string& directory_resource_id,
-                              const std::string& search_query,
-                              const ResourceListCallback& callback);
+  void SearchByTitle(const std::string& title,
+                     const std::string& directory_resource_id,
+                     const ResourceListCallback& callback);
 
   void DidGetAboutResource(
       const ChangeStampCallback& callback,
@@ -212,8 +212,6 @@ class DriveFileSyncClient
   UploadKey RegisterUploadCallback(const UploadFileCallback& callback);
   UploadFileCallback GetAndUnregisterUploadCallback(UploadKey key);
   void CancelAllUploads(google_apis::GDataErrorCode error);
-
-  static std::string FormatTitleQuery(const std::string& title);
 
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<google_apis::DriveUploaderInterface> drive_uploader_;

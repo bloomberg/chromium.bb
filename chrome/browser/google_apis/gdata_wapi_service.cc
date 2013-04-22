@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/message_loop_proxy.h"
+#include "base/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
+#include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
@@ -221,13 +223,12 @@ void GDataWapiService::Search(const std::string& search_query,
                                    callback));
 }
 
-void GDataWapiService::SearchInDirectory(
-    const std::string& search_query,
+void GDataWapiService::SearchByTitle(
+    const std::string& title,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!search_query.empty());
-  DCHECK(!directory_resource_id.empty());
+  DCHECK(!title.empty());
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
@@ -237,7 +238,9 @@ void GDataWapiService::SearchInDirectory(
           url_generator_,
           GURL(),  // No override url
           0,  // start changestamp
-          search_query,
+          base::StringPrintf(
+              "title:'%s'",
+              drive::util::EscapeQueryStringValue(title).c_str()),
           directory_resource_id,
           callback));
 }

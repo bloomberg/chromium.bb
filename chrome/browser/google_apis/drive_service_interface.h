@@ -165,16 +165,17 @@ class DriveServiceInterface {
       const std::string& search_query,
       const GetResourceListCallback& callback) = 0;
 
-  // Searches the resources for the |search_query| from the directory with
-  // |directory_resource_id|. |callback| will be called upon completion.
+  // Searches the resources with the |title|.
+  // |directory_resource_id| is an optional prameter. If it is empty,
+  // the search target is all the existing resources. Otherwise, it is
+  // the resources directly under the directory with |directory_resource_id|.
   // If the list is too long, it may be paged. In such a case, a URL to fetch
   // remaining results will be included in the returned result. See also
   // ContinueGetResourceList.
   //
-  // Neither |search_query| nor |directory_resource_id| must be empty.
-  // |callback| must not be null.
-  virtual void SearchInDirectory(
-      const std::string& search_query,
+  // |title| must not be empty, and |callback| must not be null.
+  virtual void SearchByTitle(
+      const std::string& title,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback) = 0;
 

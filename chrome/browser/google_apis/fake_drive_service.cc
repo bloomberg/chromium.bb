@@ -262,17 +262,18 @@ void FakeDriveService::Search(const std::string& search_query,
                           callback);
 }
 
-void FakeDriveService::SearchInDirectory(
-    const std::string& search_query,
+void FakeDriveService::SearchByTitle(
+    const std::string& title,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!search_query.empty());
-  DCHECK(!directory_resource_id.empty());
+  DCHECK(!title.empty());
   DCHECK(!callback.is_null());
 
+  // Note: the search implementation here doesn't support quotation unescape,
+  // so don't escape here.
   GetResourceListInternal(0,  // start changestamp
-                          search_query,
+                          base::StringPrintf("title:'%s'", title.c_str()),
                           directory_resource_id,
                           0,  // start offset
                           default_max_results_,

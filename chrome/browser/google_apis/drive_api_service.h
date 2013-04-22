@@ -73,8 +73,8 @@ class DriveAPIService : public DriveServiceInterface,
   virtual void Search(
       const std::string& search_query,
       const GetResourceListCallback& callback) OVERRIDE;
-  virtual void SearchInDirectory(
-      const std::string& search_query,
+  virtual void SearchByTitle(
+      const std::string& title,
       const std::string& directory_resource_id,
       const GetResourceListCallback& callback) OVERRIDE;
   virtual void GetChangeList(

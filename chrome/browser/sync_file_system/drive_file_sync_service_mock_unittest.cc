@@ -449,10 +449,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   MessageLoop* message_loop() { return &message_loop_; }
   DriveFileSyncService* sync_service() { return sync_service_.get(); }
 
-  std::string FormatTitleQuery(const std::string& title) {
-    return DriveFileSyncClient::FormatTitleQuery(title);
-  }
-
   const DriveFileSyncService::PendingChangeQueue& pending_changes() const {
     return sync_service_->pending_changes_;
   }
@@ -521,16 +517,16 @@ class DriveFileSyncServiceMockTest : public testing::Test {
   }
 
   // Mock setup helpers ------------------------------------------------------
-  void SetUpDriveServiceExpectCallsForSearchInDirectory(
+  void SetUpDriveServiceExpectCallsForSearchByTitle(
       const std::string& result_mock_json_name,
-      const std::string& query,
+      const std::string& title,
       const std::string& search_directory) {
     scoped_ptr<Value> result_value(LoadJSONFile(
         result_mock_json_name));
     scoped_ptr<google_apis::ResourceList> result(
         google_apis::ResourceList::ExtractAndParse(*result_value));
     EXPECT_CALL(*mock_drive_service(),
-                SearchInDirectory(query, search_directory, _))
+                SearchByTitle(title, search_directory, _))
         .WillOnce(InvokeGetResourceListCallback2(
             google_apis::HTTP_SUCCESS,
             base::Passed(&result)))
@@ -570,9 +566,9 @@ class DriveFileSyncServiceMockTest : public testing::Test {
     scoped_ptr<google_apis::ResourceList> result(
         google_apis::ResourceList::ExtractAndParse(*result_value));
     EXPECT_CALL(*mock_drive_service(),
-                Search(FormatTitleQuery(kSyncRootDirectoryName), _))
+                SearchByTitle(kSyncRootDirectoryName, std::string(), _))
         .Times(AtMost(1))
-        .WillOnce(InvokeGetResourceListCallback1(
+        .WillOnce(InvokeGetResourceListCallback2(
             google_apis::HTTP_SUCCESS,
             base::Passed(&result)))
         .RetiresOnSaturation();
@@ -724,13 +720,13 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterNewOrigin) {
   // RegisterOriginForTrackingChanges.
   SetUpDriveServiceExpectCallsForGetSyncRoot();
 
-  SetUpDriveServiceExpectCallsForSearchInDirectory(
+  SetUpDriveServiceExpectCallsForSearchByTitle(
       "chromeos/sync_file_system/origin_directory_found.json",
-      FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin),
       kSyncRootResourceId);
-  SetUpDriveServiceExpectCallsForSearchInDirectory(
+  SetUpDriveServiceExpectCallsForSearchByTitle(
       "chromeos/sync_file_system/origin_directory_not_found.json",
-      FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin),
       kSyncRootResourceId);
 
   // If the directory for the origin is missing, DriveFileSyncService should
@@ -778,9 +774,9 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterExistingOrigin) {
   SetUpDriveServiceExpectCallsForGetSyncRoot();
 
   // We already have a directory for the origin.
-  SetUpDriveServiceExpectCallsForSearchInDirectory(
+  SetUpDriveServiceExpectCallsForSearchByTitle(
       "chromeos/sync_file_system/origin_directory_found.json",
-      FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin),
       kSyncRootResourceId);
 
   SetUpDriveServiceExpectCallsForGetAboutResource();
@@ -1178,9 +1174,9 @@ TEST_F(DriveFileSyncServiceMockTest, RegisterOriginWithSyncDisabled) {
   // RegisterOriginForTrackingChanges.
   SetUpDriveServiceExpectCallsForGetSyncRoot();
 
-  SetUpDriveServiceExpectCallsForSearchInDirectory(
+  SetUpDriveServiceExpectCallsForSearchByTitle(
       "chromeos/sync_file_system/origin_directory_found.json",
-      FormatTitleQuery(DriveFileSyncClient::OriginToDirectoryTitle(kOrigin)),
+      DriveFileSyncClient::OriginToDirectoryTitle(kOrigin),
       kSyncRootResourceId);
 
   // Usually the sync service starts batch sync here, but since we're

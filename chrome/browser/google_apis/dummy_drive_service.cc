@@ -51,8 +51,8 @@ void DummyDriveService::Search(
     const std::string& search_query,
     const GetResourceListCallback& callback) {}
 
-void DummyDriveService::SearchInDirectory(
-    const std::string& search_query,
+void DummyDriveService::SearchByTitle(
+    const std::string& title,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {}
 

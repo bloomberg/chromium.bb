@@ -349,25 +349,30 @@ void DriveAPIService::Search(const std::string& search_query,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }
 
-void DriveAPIService::SearchInDirectory(
-    const std::string& search_query,
+void DriveAPIService::SearchByTitle(
+    const std::string& title,
     const std::string& directory_resource_id,
     const GetResourceListCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!search_query.empty());
-  DCHECK(!directory_resource_id.empty());
+  DCHECK(!title.empty());
   DCHECK(!callback.is_null());
+
+  std::string query;
+  base::StringAppendF(&query, "title contains '%s'",
+                      drive::util::EscapeQueryStringValue(title).c_str());
+  if (!directory_resource_id.empty()) {
+    base::StringAppendF(
+        &query, " and '%s' in parents",
+        drive::util::EscapeQueryStringValue(directory_resource_id).c_str());
+  }
+  query += " and trashed = false";
 
   runner_->StartOperationWithRetry(
       new GetFilelistOperation(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          base::StringPrintf(
-              "%s and '%s' in parents and trashed = false",
-              search_query.c_str(),
-              drive::util::EscapeQueryStringValue(
-                  directory_resource_id).c_str()),
+          query,
           kMaxNumFilesResourcePerRequest,
           base::Bind(&ParseResourceListOnBlockingPoolAndRun, callback)));
 }

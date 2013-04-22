@@ -262,34 +262,14 @@ TEST_F(FakeDriveServiceTest, Search_Offline) {
   EXPECT_FALSE(resource_list);
 }
 
-TEST_F(FakeDriveServiceTest, SearchInDirectory) {
+TEST_F(FakeDriveServiceTest, SearchByTitle) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
-  fake_service_.SearchInDirectory(
-      "File",  // search_query
-      fake_service_.GetRootResourceId(),  // directory_resource_id
-      test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
-  // Do some sanity check. There is entry that contain "File" in their
-  // titles directly under the root directory.
-  EXPECT_EQ(1U, resource_list->entries().size());
-  EXPECT_EQ(1, fake_service_.resource_list_load_count());
-}
-
-TEST_F(FakeDriveServiceTest, SearchInDirectory_WithAttribute) {
-  ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
-      "chromeos/gdata/root_feed.json"));
-
-  GDataErrorCode error = GDATA_OTHER_ERROR;
-  scoped_ptr<ResourceList> resource_list;
-  fake_service_.SearchInDirectory(
-      "title:1.txt",  // search_query
+  fake_service_.SearchByTitle(
+      "1.txt",  // title
       fake_service_.GetRootResourceId(),  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
@@ -302,47 +282,35 @@ TEST_F(FakeDriveServiceTest, SearchInDirectory_WithAttribute) {
   EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
-TEST_F(FakeDriveServiceTest, SearchInDirectory_MultipleQueries) {
+TEST_F(FakeDriveServiceTest, SearchByTitle_EmptyDirectoryResourceId) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
-  fake_service_.SearchInDirectory(
-      "Directory 1",  // search_query
-      fake_service_.GetRootResourceId(),  // directory_resource_id
+  fake_service_.SearchByTitle(
+      "1.txt",  // title
+      "",  // directory resource id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
 
   EXPECT_EQ(HTTP_SUCCESS, error);
   ASSERT_TRUE(resource_list);
-  // There is one entry that contains both "Directory" and "1" in its title
-  // directly under the root directory.
-  EXPECT_EQ(1U, resource_list->entries().size());
-
-  fake_service_.SearchInDirectory(
-      "\"Directory 1\"",  // search_query
-      fake_service_.GetRootResourceId(),  // directory_resource_id
-      test_util::CreateCopyResultCallback(&error, &resource_list));
-  message_loop_.RunUntilIdle();
-
-  EXPECT_EQ(HTTP_SUCCESS, error);
-  ASSERT_TRUE(resource_list);
-  // There is one entry that contains "Directory 1" in its title
-  // directly under the root directory.
-  EXPECT_EQ(1U, resource_list->entries().size());
-  EXPECT_EQ(2, fake_service_.resource_list_load_count());
+  // Do some sanity check. There are 4 entries that contain "1.txt" in their
+  // titles.
+  EXPECT_EQ(4U, resource_list->entries().size());
+  EXPECT_EQ(1, fake_service_.resource_list_load_count());
 }
 
-TEST_F(FakeDriveServiceTest, SearchInDirectory_Offline) {
+TEST_F(FakeDriveServiceTest, SearchByTitle_Offline) {
   ASSERT_TRUE(fake_service_.LoadResourceListForWapi(
       "chromeos/gdata/root_feed.json"));
   fake_service_.set_offline(true);
 
   GDataErrorCode error = GDATA_OTHER_ERROR;
   scoped_ptr<ResourceList> resource_list;
-  fake_service_.SearchInDirectory(
-      "Directory 1",  // search_query
+  fake_service_.SearchByTitle(
+      "Directory 1",  // title
       fake_service_.GetRootResourceId(),  // directory_resource_id
       test_util::CreateCopyResultCallback(&error, &resource_list));
   message_loop_.RunUntilIdle();
