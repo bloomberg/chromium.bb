@@ -125,8 +125,6 @@
 #include "RenderLayer.h"
 #endif
 
-#include "InspectorController.h"
-
 using namespace std;
 
 namespace WebCore {
@@ -658,12 +656,6 @@ bool Node::isContentRichlyEditable()
 {
     document()->updateStyleIfNeeded();
     return rendererIsEditable(RichlyEditable, UserSelectAllIsAlwaysNonEditable);
-}
-
-void Node::inspect()
-{
-    if (document() && document()->page())
-        document()->page()->inspectorController()->inspect(this);
 }
 
 bool Node::rendererIsEditable(EditableLevel editableLevel, UserSelectAllTreatment treatment) const
