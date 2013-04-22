@@ -687,6 +687,13 @@ DialogType.isModal = function(type) {
     CommandUtil.forceDefaultHandler(node, 'copy');
     CommandUtil.forceDefaultHandler(node, 'paste');
     CommandUtil.forceDefaultHandler(node, 'delete');
+    node.addEventListener('keydown', function(e) {
+      if (util.getKeyModifiers(event) + event.keyCode == '191') {
+        // If this key event is propagated, this is handled search command,
+        // which calls 'preventDefault' mehtod.
+        e.stopPropagation();
+      }
+    });
   };
 
   /**
