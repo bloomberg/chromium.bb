@@ -12,7 +12,7 @@ AudioOutputDispatcher::AudioOutputDispatcher(
     AudioManager* audio_manager,
     const AudioParameters& params)
     : audio_manager_(audio_manager),
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       params_(params) {
   // We expect to be instantiated on the audio thread.  Otherwise the
   // message_loop_ member will point to the wrong message loop!
@@ -20,7 +20,7 @@ AudioOutputDispatcher::AudioOutputDispatcher(
 }
 
 AudioOutputDispatcher::~AudioOutputDispatcher() {
-  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), message_loop_);
 }
 
 }  // namespace media

@@ -32,7 +32,7 @@ namespace media {
 
 ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop) {
   if (++*count >= limit) {
-    loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 }
 
@@ -297,7 +297,7 @@ TEST(WinAudioInputTest, WASAPIAudioInputStreamTestPacketSizes) {
     return;
 
   int count = 0;
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
 
   // 10 ms packet size.
 

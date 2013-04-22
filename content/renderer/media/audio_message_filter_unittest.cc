@@ -71,7 +71,7 @@ class MockAudioDelegate : public media::AudioOutputIPCDelegate {
 }  // namespace
 
 TEST(AudioMessageFilterTest, Basic) {
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   scoped_refptr<AudioMessageFilter> filter(new AudioMessageFilter(
       message_loop.message_loop_proxy()));
@@ -117,7 +117,7 @@ TEST(AudioMessageFilterTest, Basic) {
 }
 
 TEST(AudioMessageFilterTest, Delegates) {
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   scoped_refptr<AudioMessageFilter> filter(new AudioMessageFilter(
       message_loop.message_loop_proxy()));

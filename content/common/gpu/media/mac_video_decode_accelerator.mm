@@ -117,7 +117,7 @@ bool MacVideoDecodeAccelerator::Initialize(media::VideoCodecProfile profile) {
   if (!io_surface_support)
     return false;
 
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &MacVideoDecodeAccelerator::NotifyInitializeDone, base::AsWeakPtr(this)));
   return true;
 }
@@ -139,7 +139,7 @@ void MacVideoDecodeAccelerator::Decode(
     H264Parser::Result result = h264_parser_.AdvanceToNextNALU(&nalu);
     if (result == H264Parser::kEOStream) {
       if (bitstream_nalu_count_.count(bitstream_buffer.id()) == 0) {
-        MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+        base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
             &MacVideoDecodeAccelerator::NotifyInputBufferRead,
             base::AsWeakPtr(this), bitstream_buffer.id()));
       }
@@ -202,7 +202,7 @@ void MacVideoDecodeAccelerator::Flush() {
   RETURN_ON_FAILURE(vda_support_,
                     "Call to Flush() during invalid state.", ILLEGAL_STATE,);
   vda_support_->Flush(true);
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &MacVideoDecodeAccelerator::NotifyFlushDone, base::AsWeakPtr(this)));
 }
 
@@ -211,7 +211,7 @@ void MacVideoDecodeAccelerator::Reset() {
   RETURN_ON_FAILURE(vda_support_,
                     "Call to Reset() during invalid state.", ILLEGAL_STATE,);
   vda_support_->Flush(false);
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &MacVideoDecodeAccelerator::NotifyResetDone, base::AsWeakPtr(this)));
 }
 
@@ -260,7 +260,7 @@ void MacVideoDecodeAccelerator::OnFrameReady(
       bitstream_nalu_count_.find(bitstream_buffer_id);
   if (--bitstream_count_it->second == 0) {
     bitstream_nalu_count_.erase(bitstream_count_it);
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &MacVideoDecodeAccelerator::NotifyInputBufferRead,
         base::AsWeakPtr(this), bitstream_buffer_id));
   }
@@ -311,7 +311,7 @@ bool MacVideoDecodeAccelerator::CreateDecoder(
                     "Creating video decoder failed with error: " << status,
                     PLATFORM_FAILURE, false);
 
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &MacVideoDecodeAccelerator::RequestPictures, base::AsWeakPtr(this)));
   return true;
 }

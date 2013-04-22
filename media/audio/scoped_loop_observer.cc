@@ -23,7 +23,7 @@ void ScopedLoopObserver::ObserveLoopDestruction(bool enable,
                                                 base::WaitableEvent* done) {
   // Note: |done| may be NULL.
   if (loop_->BelongsToCurrentThread()) {
-    MessageLoop* loop = MessageLoop::current();
+    base::MessageLoop* loop = base::MessageLoop::current();
     if (enable) {
       loop->AddDestructionObserver(this);
     } else {

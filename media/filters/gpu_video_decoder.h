@@ -167,7 +167,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   // Pointer to the demuxer stream that will feed us compressed buffers.
   scoped_refptr<DemuxerStream> demuxer_stream_;
 
-  // MessageLoop on which to fire callbacks and trampoline calls to this class
+  // Message loop on which to fire callbacks and trampoline calls to this class
   // if they arrive on other loops.
   scoped_refptr<base::MessageLoopProxy> gvd_loop_proxy_;
   base::WeakPtrFactory<GpuVideoDecoder> weak_factory_;

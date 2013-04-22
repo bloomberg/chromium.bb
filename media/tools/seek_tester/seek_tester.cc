@@ -36,13 +36,13 @@ class DemuxerHostImpl : public media::DemuxerHost {
   virtual void OnDemuxerError(media::PipelineStatus error) OVERRIDE {}
 };
 
-void QuitMessageLoop(MessageLoop* loop, media::PipelineStatus status) {
+void QuitMessageLoop(base::MessageLoop* loop, media::PipelineStatus status) {
   CHECK_EQ(status, media::PIPELINE_OK);
-  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void TimestampExtractor(uint64* timestamp_ms,
-                        MessageLoop* loop,
+                        base::MessageLoop* loop,
                         media::DemuxerStream::Status status,
                         const scoped_refptr<media::DecoderBuffer>& buffer) {
   CHECK_EQ(status, media::DemuxerStream::kOk);
@@ -50,7 +50,7 @@ void TimestampExtractor(uint64* timestamp_ms,
     *timestamp_ms = -1;
   else
     *timestamp_ms = buffer->GetTimestamp().InMillisecondsF();
-  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
   CHECK(file_data_source->Initialize(base::FilePath::FromUTF8Unsafe(argv[1])));
 
   DemuxerHostImpl host;
-  MessageLoop loop;
+  base::MessageLoop loop;
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
   scoped_ptr<media::FFmpegDemuxer> demuxer(new media::FFmpegDemuxer(
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
     LOG(INFO) << "  video seeked to: " << video_seeked_to_ms << "ms";
   }
 
-  demuxer->Stop(base::Bind(&MessageLoop::Quit, base::Unretained(&loop)));
+  demuxer->Stop(base::Bind(&base::MessageLoop::Quit, base::Unretained(&loop)));
   loop.Run();
 
   return 0;

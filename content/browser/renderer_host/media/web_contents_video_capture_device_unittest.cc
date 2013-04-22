@@ -52,8 +52,8 @@ void DeadlineExceeded(base::Closure quit_closure) {
 void RunCurrentLoopWithDeadline() {
   base::Timer deadline(false, false);
   deadline.Start(FROM_HERE, TestTimeouts::action_max_timeout(), base::Bind(
-      &DeadlineExceeded, MessageLoop::current()->QuitClosure()));
-  MessageLoop::current()->Run();
+      &DeadlineExceeded, base::MessageLoop::current()->QuitClosure()));
+  base::MessageLoop::current()->Run();
   deadline.Stop();
 }
 
@@ -129,7 +129,7 @@ class CaptureTestSourceController {
   void WaitForNextCopy() {
     {
       base::AutoLock guard(lock_);
-      copy_done_ = MessageLoop::current()->QuitClosure();
+      copy_done_ = base::MessageLoop::current()->QuitClosure();
     }
 
     RunCurrentLoopWithDeadline();
@@ -310,7 +310,7 @@ class StubConsumer : public media::VideoCaptureDevice::EventHandler {
     base::AutoLock guard(lock_);
 
     if (wait_color_yuv_ == color || error_encountered_)
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
   }
 
   void WaitForNextColor(SkColor expected_color) {

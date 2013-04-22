@@ -41,7 +41,7 @@ MATCHER_P(DelayGreaterThan, value, "") {
 // Used to terminate a loop from a different thread than the loop belongs to.
 // |loop| should be a MessageLoopProxy.
 ACTION_P(QuitLoop, loop) {
-  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 class MockUnifiedSourceCallback
@@ -213,7 +213,7 @@ TEST(WASAPIUnifiedStreamTest, StartLoopbackAudio) {
   if (!CanRunUnifiedAudioTests(audio_manager.get()))
     return;
 
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   MockUnifiedSourceCallback source;
   AudioUnifiedStreamWrapper ausw(audio_manager.get());
   WASAPIUnifiedStream* wus = ausw.Create();
@@ -234,7 +234,7 @@ TEST(WASAPIUnifiedStreamTest, StartLoopbackAudio) {
           QuitLoop(loop.message_loop_proxy()),
           Return(ausw.frames_per_buffer())));
   wus->Start(&source);
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
                        TestTimeouts::action_timeout());
   loop.Run();
   wus->Stop();
@@ -249,13 +249,13 @@ TEST(WASAPIUnifiedStreamTest, DISABLED_RealTimePlayThrough) {
   if (!CanRunUnifiedAudioTests(audio_manager.get()))
     return;
 
-  MessageLoopForUI loop;
+  base::MessageLoopForUI loop;
   UnifiedSourceCallback source;
   WASAPIUnifiedStream* wus = CreateDefaultUnifiedStream(audio_manager.get());
 
   EXPECT_TRUE(wus->Open());
   wus->Start(&source);
-  loop.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+  loop.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
                        base::TimeDelta::FromMilliseconds(10000));
   loop.Run();
   wus->Close();

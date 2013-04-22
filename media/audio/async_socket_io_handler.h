@@ -14,9 +14,9 @@ namespace media {
 
 // The message loop callback interface is different based on platforms.
 #if defined(OS_WIN)
-typedef MessageLoopForIO::IOHandler MessageLoopIOHandler;
+typedef base::MessageLoopForIO::IOHandler MessageLoopIOHandler;
 #elif defined(OS_POSIX)
-typedef MessageLoopForIO::Watcher MessageLoopIOHandler;
+typedef base::MessageLoopForIO::Watcher MessageLoopIOHandler;
 #endif
 
 // Extends the CancelableSyncSocket class to allow reading from a socket
@@ -79,11 +79,11 @@ class MEDIA_EXPORT AsyncSocketIoHandler
  private:
 #if defined(OS_WIN)
   // Implementation of IOHandler on Windows.
-  virtual void OnIOCompleted(MessageLoopForIO::IOContext* context,
+  virtual void OnIOCompleted(base::MessageLoopForIO::IOContext* context,
                              DWORD bytes_transfered,
                              DWORD error) OVERRIDE;
 #elif defined(OS_POSIX)
-  // Implementation of MessageLoopForIO::Watcher.
+  // Implementation of base::MessageLoopForIO::Watcher.
   virtual void OnFileCanWriteWithoutBlocking(int socket) OVERRIDE {}
   virtual void OnFileCanReadWithoutBlocking(int socket) OVERRIDE;
 
@@ -92,10 +92,10 @@ class MEDIA_EXPORT AsyncSocketIoHandler
 
   base::SyncSocket::Handle socket_;
 #if defined(OS_WIN)
-  MessageLoopForIO::IOContext* context_;
+  base::MessageLoopForIO::IOContext* context_;
   bool is_pending_;
 #elif defined(OS_POSIX)
-  MessageLoopForIO::FileDescriptorWatcher socket_watcher_;
+  base::MessageLoopForIO::FileDescriptorWatcher socket_watcher_;
   // |pending_buffer_| and |pending_buffer_len_| are valid only between
   // Read() and OnFileCanReadWithoutBlocking().
   char* pending_buffer_;

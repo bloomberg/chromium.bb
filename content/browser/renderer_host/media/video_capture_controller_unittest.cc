@@ -36,21 +36,21 @@ ACTION_P4(StopCapture, controller, controller_id, controller_handler,
   message_loop->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureController::StopCapture,
                  controller, controller_id, controller_handler));
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 ACTION_P3(StopSession, controller, session_id, message_loop) {
   message_loop->PostTask(FROM_HERE,
       base::Bind(&VideoCaptureController::StopSession,
                  controller, session_id));
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 class MockVideoCaptureControllerEventHandler
     : public VideoCaptureControllerEventHandler {
  public:
   MockVideoCaptureControllerEventHandler(VideoCaptureController* controller,
-                                         MessageLoop* message_loop)
+                                         base::MessageLoop* message_loop)
       : controller_(controller),
         message_loop_(message_loop),
         controller_id_(kDeviceId),
@@ -92,7 +92,7 @@ class MockVideoCaptureControllerEventHandler
   }
 
   scoped_refptr<VideoCaptureController> controller_;
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   VideoCaptureControllerID controller_id_;
   base::ProcessHandle process_handle_;
 };
@@ -148,7 +148,7 @@ class VideoCaptureControllerTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     file_thread_.reset(new BrowserThreadImpl(BrowserThread::FILE,
                                              message_loop_.get()));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
@@ -164,7 +164,7 @@ class VideoCaptureControllerTest : public testing::Test {
 
   virtual void TearDown() OVERRIDE {}
 
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> file_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_refptr<MockVideoCaptureManager> vcm_;
@@ -254,8 +254,8 @@ TEST_F(VideoCaptureControllerTest, StopSession) {
   EXPECT_CALL(*controller_handler_,
               DoBufferReady(controller_handler_->controller_id_))
       .Times(0);
-  message_loop_->PostDelayedTask(
-      FROM_HERE, MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
+  message_loop_->PostDelayedTask(FROM_HERE,
+      base::MessageLoop::QuitClosure(), base::TimeDelta::FromSeconds(1));
   message_loop_->Run();
 
   EXPECT_CALL(*vcm_,

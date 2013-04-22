@@ -219,7 +219,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   MOCK_METHOD2(BufferReady, void(DemuxerStream::Status,
                                  const scoped_refptr<DecoderBuffer>&));
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<DecryptingDemuxerStream> demuxer_stream_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
   scoped_refptr<StrictMock<MockDemuxerStream> > input_audio_stream_;

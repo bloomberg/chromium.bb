@@ -67,14 +67,14 @@ class MediaStreamManagerTest : public ::testing::Test {
   void ResponseCallback(const std::string& label,
                         const MediaStreamDevices& devices) {
     Response(label);
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   void WaitForResult() { message_loop_->Run(); }
 
  protected:
   virtual void SetUp() {
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     ui_thread_.reset(new BrowserThreadImpl(BrowserThread::UI,
                                            message_loop_.get()));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
@@ -111,7 +111,7 @@ class MediaStreamManagerTest : public ::testing::Test {
                                                          callback);
   }
 
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;

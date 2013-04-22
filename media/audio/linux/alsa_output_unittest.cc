@@ -100,7 +100,7 @@ class MockAudioManagerLinux : public AudioManagerLinux {
   // We don't mock this method since all tests will do the same thing
   // and use the current message loop.
   virtual scoped_refptr<base::MessageLoopProxy> GetMessageLoop() OVERRIDE {
-    return MessageLoop::current()->message_loop_proxy();
+    return base::MessageLoop::current()->message_loop_proxy();
   }
 };
 
@@ -170,7 +170,7 @@ class AlsaPcmOutputStreamTest : public testing::Test {
 
   StrictMock<MockAlsaWrapper> mock_alsa_wrapper_;
   scoped_ptr<StrictMock<MockAudioManagerLinux> > mock_manager_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<media::DataBuffer> packet_;
 
  private:

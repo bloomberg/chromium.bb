@@ -151,7 +151,7 @@ AlsaPcmOutputStream::AlsaPcmOutputStream(const std::string& device_name,
       stop_stream_(false),
       wrapper_(wrapper),
       manager_(manager),
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       playback_handle_(NULL),
       frames_per_packet_(packet_size_ / bytes_per_frame_),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
@@ -737,7 +737,7 @@ AlsaPcmOutputStream::InternalState AlsaPcmOutputStream::state() {
 }
 
 bool AlsaPcmOutputStream::IsOnAudioThread() const {
-  return message_loop_ && message_loop_ == MessageLoop::current();
+  return message_loop_ && message_loop_ == base::MessageLoop::current();
 }
 
 int AlsaPcmOutputStream::RunDataCallback(AudioBus* audio_bus,

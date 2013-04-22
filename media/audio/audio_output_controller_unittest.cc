@@ -223,8 +223,8 @@ class AudioOutputControllerTest : public testing::Test {
   void Close() {
     EXPECT_CALL(mock_sync_reader_, Close());
 
-    controller_->Close(MessageLoop::QuitClosure());
-    MessageLoop::current()->Run();
+    controller_->Close(base::MessageLoop::QuitClosure());
+    base::MessageLoop::current()->Run();
   }
 
   // These help make test sequences more readable.
@@ -249,7 +249,7 @@ class AudioOutputControllerTest : public testing::Test {
   void WaitForPause() { pause_event_.Wait(); }
 
  private:
-  MessageLoopForIO message_loop_;
+  base::MessageLoopForIO message_loop_;
   scoped_ptr<AudioManager> audio_manager_;
   MockAudioOutputControllerEventHandler mock_event_handler_;
   MockAudioOutputControllerSyncReader mock_sync_reader_;

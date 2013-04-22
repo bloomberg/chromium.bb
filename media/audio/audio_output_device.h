@@ -124,7 +124,7 @@ class MEDIA_EXPORT AudioOutputDevice
   void ShutDownOnIOThread();
   void SetVolumeOnIOThread(double volume);
 
-  // MessageLoop::DestructionObserver implementation for the IO loop.
+  // base::MessageLoop::DestructionObserver implementation for the IO loop.
   // If the IO loop dies before we do, we shut down the audio thread from here.
   virtual void WillDestroyCurrentMessageLoop() OVERRIDE;
 

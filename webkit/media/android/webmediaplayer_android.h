@@ -33,7 +33,7 @@ class WebMediaPlayerManagerAndroid;
 class WebMediaPlayerAndroid
     : public WebKit::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public MessageLoop::DestructionObserver {
+      public base::MessageLoop::DestructionObserver {
  public:
   // Resource loading.
   virtual void load(const WebKit::WebURL& url, CORSMode cors_mode);
@@ -227,7 +227,7 @@ class WebMediaPlayerAndroid
   scoped_refptr<media::VideoFrame> current_frame_;
 
   // Message loop for main renderer thread.
-  MessageLoop* main_loop_;
+  base::MessageLoop* main_loop_;
 
   // URL of the media file to be fetched.
   GURL url_;

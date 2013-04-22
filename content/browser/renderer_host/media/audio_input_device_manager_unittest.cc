@@ -52,7 +52,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     // The test must run on Browser::IO.
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
     audio_manager_.reset(media::AudioManager::Create());
@@ -77,7 +77,7 @@ class AudioInputDeviceManagerTest : public testing::Test {
     io_thread_.reset();
   }
 
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_refptr<AudioInputDeviceManager> manager_;
   scoped_ptr<MockAudioInputDeviceManagerListener> audio_input_listener_;

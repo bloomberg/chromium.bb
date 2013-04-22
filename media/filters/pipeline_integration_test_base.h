@@ -71,7 +71,7 @@ class PipelineIntegrationTestBase {
   std::string GetAudioHash();
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;
   scoped_ptr<Demuxer> demuxer_;

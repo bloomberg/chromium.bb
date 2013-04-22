@@ -121,7 +121,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   StrictMock<MockAudioDecoder>* decoder_1_;
   StrictMock<MockAudioDecoder>* decoder_2_;
   ScopedVector<AudioDecoder> all_decoders_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioDecoderSelectorTest);

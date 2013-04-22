@@ -234,7 +234,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   MOCK_METHOD2(FrameReady, void(VideoDecoder::Status,
                                 const scoped_refptr<VideoFrame>&));
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<DecryptingVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;

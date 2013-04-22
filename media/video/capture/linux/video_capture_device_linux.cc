@@ -227,7 +227,7 @@ void VideoCaptureDeviceLinux::OnAllocate(int width,
                                          int height,
                                          int frame_rate,
                                          EventHandler* observer) {
-  DCHECK_EQ(v4l2_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
   observer_ = observer;
 
@@ -301,7 +301,7 @@ void VideoCaptureDeviceLinux::OnAllocate(int width,
 }
 
 void VideoCaptureDeviceLinux::OnDeAllocate() {
-  DCHECK_EQ(v4l2_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
   // If we are in error state or capturing
   // try to stop the camera.
@@ -320,7 +320,7 @@ void VideoCaptureDeviceLinux::OnDeAllocate() {
 }
 
 void VideoCaptureDeviceLinux::OnStart() {
-  DCHECK_EQ(v4l2_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
   if (state_ != kAllocated) {
     return;
@@ -348,7 +348,7 @@ void VideoCaptureDeviceLinux::OnStart() {
 }
 
 void VideoCaptureDeviceLinux::OnStop() {
-  DCHECK_EQ(v4l2_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
   state_ = kAllocated;
 
@@ -363,7 +363,7 @@ void VideoCaptureDeviceLinux::OnStop() {
 }
 
 void VideoCaptureDeviceLinux::OnCaptureTask() {
-  DCHECK_EQ(v4l2_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(v4l2_thread_.message_loop(), base::MessageLoop::current());
 
   if (state_ != kCapturing) {
     return;

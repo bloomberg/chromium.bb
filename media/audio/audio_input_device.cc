@@ -87,7 +87,7 @@ void AudioInputDevice::Stop() {
 
   {
     base::AutoLock auto_lock(audio_thread_lock_);
-    audio_thread_.Stop(MessageLoop::current());
+    audio_thread_.Stop(base::MessageLoop::current());
     stopping_hack_ = true;
   }
 

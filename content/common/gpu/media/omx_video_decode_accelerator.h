@@ -94,7 +94,7 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   };
   typedef std::map<int32, OutputPicture> OutputPictureById;
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   OMX_HANDLETYPE component_handle_;
 
   // Create the Component for OMX. Handles all OMX initialization.

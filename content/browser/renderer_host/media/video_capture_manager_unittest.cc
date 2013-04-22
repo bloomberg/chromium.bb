@@ -70,7 +70,7 @@ class VideoCaptureManagerTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     listener_.reset(new MockMediaStreamProviderListener());
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
     vcm_ = new VideoCaptureManager();
@@ -83,7 +83,7 @@ class VideoCaptureManagerTest : public testing::Test {
 
   scoped_refptr<VideoCaptureManager> vcm_;
   scoped_ptr<MockMediaStreamProviderListener> listener_;
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<MockFrameObserver> frame_observer_;
 

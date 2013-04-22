@@ -100,14 +100,14 @@ class VideoCaptureDeviceTest : public testing::Test {
   VideoCaptureDeviceTest(): wait_event_(false, false) { }
 
   void PostQuitTask() {
-    loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
     loop_->Run();
   }
 
  protected:
   virtual void SetUp() {
     frame_observer_.reset(new MockFrameObserver(&wait_event_));
-    loop_.reset(new MessageLoopForUI());
+    loop_.reset(new base::MessageLoopForUI());
 #if defined(OS_ANDROID)
     media::VideoCaptureDeviceAndroid::RegisterVideoCaptureDevice(
         base::android::AttachCurrentThread());
@@ -123,7 +123,7 @@ class VideoCaptureDeviceTest : public testing::Test {
   base::WaitableEvent wait_event_;
   scoped_ptr<MockFrameObserver> frame_observer_;
   VideoCaptureDevice::Names names_;
-  scoped_ptr<MessageLoop> loop_;
+  scoped_ptr<base::MessageLoop> loop_;
 };
 
 TEST_F(VideoCaptureDeviceTest, OpenInvalidDevice) {

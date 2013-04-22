@@ -606,13 +606,13 @@ void MediaStreamDependencyFactory::InitializeWorkerThread(
 
 void MediaStreamDependencyFactory::CreateIpcNetworkManagerOnWorkerThread(
     base::WaitableEvent* event) {
-  DCHECK_EQ(MessageLoop::current(), chrome_worker_thread_.message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
   network_manager_ = new IpcNetworkManager(p2p_socket_dispatcher_);
   event->Signal();
 }
 
 void MediaStreamDependencyFactory::DeleteIpcNetworkManager() {
-  DCHECK_EQ(MessageLoop::current(), chrome_worker_thread_.message_loop());
+  DCHECK_EQ(base::MessageLoop::current(), chrome_worker_thread_.message_loop());
   delete network_manager_;
   network_manager_ = NULL;
 }

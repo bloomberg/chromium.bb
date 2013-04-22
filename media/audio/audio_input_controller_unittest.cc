@@ -24,23 +24,23 @@ static const int kBitsPerSample = 16;
 static const ChannelLayout kChannelLayout = CHANNEL_LAYOUT_STEREO;
 static const int kSamplesPerPacket = kSampleRate / 10;
 
-// Posts MessageLoop::QuitClosure() on specified message loop.
+// Posts base::MessageLoop::QuitClosure() on specified message loop.
 ACTION_P(QuitMessageLoop, loop_or_proxy) {
-  loop_or_proxy->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  loop_or_proxy->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
-// Posts MessageLoop::QuitClosure() on specified message loop after a certain
-// number of calls given by |limit|.
+// Posts base::MessageLoop::QuitClosure() on specified message loop after a
+// certain number of calls given by |limit|.
 ACTION_P3(CheckCountAndPostQuitTask, count, limit, loop_or_proxy) {
   if (++*count >= limit) {
-    loop_or_proxy->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    loop_or_proxy->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 }
 
 // Closes AudioOutputController synchronously.
 static void CloseAudioController(AudioInputController* controller) {
-  controller->Close(MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  controller->Close(base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 }
 
 class MockAudioInputControllerEventHandler
@@ -65,7 +65,7 @@ class AudioInputControllerTest : public testing::Test {
   virtual ~AudioInputControllerTest() {}
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AudioInputControllerTest);
@@ -219,11 +219,11 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
 
   controller->Record();
 
-  controller->Close(MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  controller->Close(base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 
-  controller->Close(MessageLoop::QuitClosure());
-  MessageLoop::current()->Run();
+  controller->Close(base::MessageLoop::QuitClosure());
+  base::MessageLoop::current()->Run();
 }
 
 }  // namespace media

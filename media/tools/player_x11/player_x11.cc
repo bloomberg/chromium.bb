@@ -82,9 +82,9 @@ void SetOpaque(bool /*opaque*/) {
 }
 
 typedef base::Callback<void(media::VideoFrame*)> PaintCB;
-void Paint(MessageLoop* message_loop, const PaintCB& paint_cb,
+void Paint(base::MessageLoop* message_loop, const PaintCB& paint_cb,
            const scoped_refptr<media::VideoFrame>& video_frame) {
-  if (message_loop != MessageLoop::current()) {
+  if (message_loop != base::MessageLoop::current()) {
     message_loop->PostTask(FROM_HERE, base::Bind(
         &Paint, message_loop, paint_cb, video_frame));
     return;
@@ -106,7 +106,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
                   scoped_refptr<media::Pipeline>* pipeline,
-                  MessageLoop* paint_message_loop) {
+                  base::MessageLoop* paint_message_loop) {
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
@@ -158,12 +158,12 @@ void TerminateHandler(int signal) {
 
 void PeriodicalUpdate(
     media::Pipeline* pipeline,
-    MessageLoop* message_loop,
+    base::MessageLoop* message_loop,
     bool audio_only) {
   if (!g_running) {
     // interrupt signal was received during last time period.
     // Quit message_loop only when pipeline is fully stopped.
-    pipeline->Stop(MessageLoop::QuitClosure());
+    pipeline->Stop(base::MessageLoop::QuitClosure());
     return;
   }
 
@@ -196,7 +196,7 @@ void PeriodicalUpdate(
           if (key == XK_Escape) {
             g_running = false;
             // Quit message_loop only when pipeline is fully stopped.
-            pipeline->Stop(MessageLoop::QuitClosure());
+            pipeline->Stop(base::MessageLoop::QuitClosure());
             return;
           } else if (key == XK_space) {
             if (pipeline->GetPlaybackRate() < 0.01f)  // paused
@@ -261,7 +261,7 @@ int main(int argc, char** argv) {
     return 1;
 
   // Initialize the pipeline thread and the pipeline.
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   base::Thread media_thread("MediaThread");
   media_thread.Start();
   scoped_refptr<media::Pipeline> pipeline;

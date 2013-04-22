@@ -195,7 +195,7 @@ class BufferedResourceLoaderTest : public testing::Test {
 
     loader_->willSendRequest(url_loader_, newRequest, redirectResponse);
 
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   void StopWhenLoad() {
@@ -299,7 +299,7 @@ class BufferedResourceLoaderTest : public testing::Test {
   MockWebFrameClient client_;
   WebView* view_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   uint8 data_[kDataSize];
 

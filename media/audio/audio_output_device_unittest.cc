@@ -83,7 +83,7 @@ ACTION_P2(SendPendingBytes, socket, pending_bytes) {
 // Used to terminate a loop from a different thread than the loop belongs to.
 // |loop| should be a MessageLoopProxy.
 ACTION_P(QuitLoop, loop) {
-  loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 }  // namespace.
@@ -105,7 +105,7 @@ class AudioOutputDeviceTest
   // Used to clean up TLS pointers that the test(s) will initialize.
   // Must remain the first member of this class.
   base::ShadowingAtExitManager at_exit_manager_;
-  MessageLoopForIO io_loop_;
+  base::MessageLoopForIO io_loop_;
   AudioParameters default_audio_parameters_;
   StrictMock<MockRenderCallback> callback_;
   MockAudioOutputIPC* audio_output_ipc_;  // owned by audio_device_
@@ -231,7 +231,7 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
 
 void AudioOutputDeviceTest::WaitUntilRenderCallback() {
   // Don't hang the test if we never get the Render() callback.
-  io_loop_.PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+  io_loop_.PostDelayedTask(FROM_HERE, base::MessageLoop::QuitClosure(),
                            TestTimeouts::action_timeout());
   io_loop_.Run();
 }

@@ -83,7 +83,7 @@ class RtcVideoCaptureDelegate
   // |state_callback_| is provided to this class in StartCapture and must be
   // valid until StopCapture is called.
   StateChangeCallback state_callback_;
-  // MessageLoop of the caller of StartCapture.
+  // Message loop of the caller of StartCapture.
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
 };
 

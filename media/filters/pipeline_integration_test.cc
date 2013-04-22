@@ -297,7 +297,7 @@ class MockMediaSource {
   }
 
   void DemuxerOpened() {
-    MessageLoop::current()->PostTask(
+    base::MessageLoop::current()->PostTask(
         FROM_HERE, base::Bind(&MockMediaSource::DemuxerOpenedTask,
                               base::Unretained(this)));
   }

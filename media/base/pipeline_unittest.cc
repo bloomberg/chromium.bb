@@ -291,7 +291,7 @@ class PipelineTest : public ::testing::Test {
   // Fixture members.
   StrictMock<CallbackHelper> callbacks_;
   base::SimpleTestClock test_clock_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<Pipeline> pipeline_;
 
   scoped_ptr<FilterCollection> filter_collection_;
@@ -687,7 +687,7 @@ TEST_F(PipelineTest, ErrorDuringSeek) {
 // Invoked function OnError. This asserts that the pipeline does not enqueue
 // non-teardown related tasks while tearing down.
 static void TestNoCallsAfterError(
-    Pipeline* pipeline, MessageLoop* message_loop,
+    Pipeline* pipeline, base::MessageLoop* message_loop,
     PipelineStatus /* status */) {
   CHECK(pipeline);
   CHECK(message_loop);

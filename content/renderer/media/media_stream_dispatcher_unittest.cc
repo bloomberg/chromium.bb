@@ -81,7 +81,7 @@ class MockMediaStreamDispatcherEventHandler
 }  // namespace
 
 TEST(MediaStreamDispatcherTest, BasicStream) {
-  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
@@ -157,7 +157,7 @@ TEST(MediaStreamDispatcherTest, BasicStream) {
 TEST(MediaStreamDispatcherTest, BasicStreamForDevice) {
   static const char kDeviceId[] = "/dev/video0";
 
-  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
@@ -228,7 +228,7 @@ TEST(MediaStreamDispatcherTest, BasicStreamForDevice) {
 }
 
 TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
-  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler1(new MockMediaStreamDispatcherEventHandler);
@@ -315,7 +315,7 @@ TEST(MediaStreamDispatcherTest, BasicVideoDevice) {
 }
 
 TEST(MediaStreamDispatcherTest, TestFailure) {
-  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);
@@ -367,7 +367,7 @@ TEST(MediaStreamDispatcherTest, TestFailure) {
 }
 
 TEST(MediaStreamDispatcherTest, CancelGenerateStream) {
-  scoped_ptr<MessageLoop> message_loop(new MessageLoop());
+  scoped_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
   scoped_ptr<MediaStreamDispatcher> dispatcher(new MediaStreamDispatcher(NULL));
   scoped_ptr<MockMediaStreamDispatcherEventHandler>
       handler(new MockMediaStreamDispatcherEventHandler);

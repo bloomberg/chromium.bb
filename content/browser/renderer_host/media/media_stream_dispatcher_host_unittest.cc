@@ -38,7 +38,7 @@ namespace content {
 class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
                                       public TestContentBrowserClient {
  public:
-  MockMediaStreamDispatcherHost(MessageLoop* message_loop,
+  MockMediaStreamDispatcherHost(base::MessageLoop* message_loop,
                                 MediaStreamManager* manager)
       : MediaStreamDispatcherHost(kProcessId),
         message_loop_(message_loop),
@@ -110,7 +110,7 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
     OnStreamGenerated(msg.routing_id(), request_id, audio_device_list.size(),
         video_device_list.size());
     // Notify that the event have occured.
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
     label_ = label;
     audio_devices_ = audio_device_list;
     video_devices_ = video_device_list;
@@ -118,11 +118,11 @@ class MockMediaStreamDispatcherHost : public MediaStreamDispatcherHost,
 
   void OnStreamGenerationFailed(const IPC::Message& msg, int request_id) {
     OnStreamGenerationFailed(msg.routing_id(), request_id);
-    message_loop_->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
     label_= "";
   }
 
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   MediaStreamManager* manager_;
 };
 
@@ -138,7 +138,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
     // MediaStreamManager must be created and called on IO thread.
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
                                            message_loop_.get()));
 
@@ -173,7 +173,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
   }
 
   scoped_refptr<MockMediaStreamDispatcherHost> host_;
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;
   scoped_ptr<MediaStreamManager> media_stream_manager_;

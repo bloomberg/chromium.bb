@@ -70,7 +70,7 @@ class AudioDeviceListenerMacTest : public testing::Test {
   MOCK_METHOD0(OnDeviceChange, void());
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<AudioDeviceListenerMac> output_device_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioDeviceListenerMacTest);

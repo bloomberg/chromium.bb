@@ -36,8 +36,8 @@ VaapiVideoDecodeAccelerator::InputBuffer::~InputBuffer() {
 }
 
 void VaapiVideoDecodeAccelerator::NotifyError(Error error) {
-  if (message_loop_ != MessageLoop::current()) {
-    DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  if (message_loop_ != base::MessageLoop::current()) {
+    DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
     message_loop_->PostTask(FROM_HERE, base::Bind(
         &VaapiVideoDecodeAccelerator::NotifyError, weak_this_, error));
     return;
@@ -64,7 +64,7 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
       state_(kUninitialized),
       input_ready_(&lock_),
       output_ready_(&lock_),
-      message_loop_(MessageLoop::current()),
+      message_loop_(base::MessageLoop::current()),
       weak_this_(base::AsWeakPtr(this)),
       client_ptr_factory_(client),
       client_(client_ptr_factory_.GetWeakPtr()),
@@ -79,12 +79,12 @@ VaapiVideoDecodeAccelerator::VaapiVideoDecodeAccelerator(
 }
 
 VaapiVideoDecodeAccelerator::~VaapiVideoDecodeAccelerator() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 }
 
 bool VaapiVideoDecodeAccelerator::Initialize(
     media::VideoCodecProfile profile) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kUninitialized);
@@ -114,7 +114,7 @@ void VaapiVideoDecodeAccelerator::SubmitDecode(
     int32 output_id,
     scoped_ptr<std::queue<VABufferID> > va_bufs,
     scoped_ptr<std::queue<VABufferID> > slice_bufs) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   base::AutoLock auto_lock(lock_);
 
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "output_id", output_id);
@@ -131,7 +131,7 @@ void VaapiVideoDecodeAccelerator::SubmitDecode(
 
 void VaapiVideoDecodeAccelerator::NotifyPictureReady(int32 input_id,
                                                      int32 output_id) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   TRACE_EVENT2("Video Decoder", "VAVDA::NotifyPictureReady",
                "input_id", input_id, "output_id", output_id);
 
@@ -161,7 +161,7 @@ void VaapiVideoDecodeAccelerator::NotifyPictureReady(int32 input_id,
 
 void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
     const media::BitstreamBuffer& bitstream_buffer) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   TRACE_EVENT1("Video Decoder", "MapAndQueueNewInputBuffer", "input_id",
       bitstream_buffer.id());
 
@@ -190,7 +190,7 @@ void VaapiVideoDecodeAccelerator::MapAndQueueNewInputBuffer(
 }
 
 void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   base::AutoLock auto_lock(lock_);
 
   // Try to initialize or resume playback after reset.
@@ -251,7 +251,7 @@ void VaapiVideoDecodeAccelerator::InitialDecodeTask() {
 }
 
 bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   lock_.AssertAcquired();
 
   if (curr_input_buffer_.get())
@@ -299,7 +299,7 @@ bool VaapiVideoDecodeAccelerator::GetInputBuffer_Locked() {
 
 void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
   lock_.AssertAcquired();
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK(curr_input_buffer_.get());
 
   int32 id = curr_input_buffer_->id;
@@ -315,7 +315,7 @@ void VaapiVideoDecodeAccelerator::ReturnCurrInputBuffer_Locked() {
 
 bool VaapiVideoDecodeAccelerator::GetOutputBuffers_Locked() {
   lock_.AssertAcquired();
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   while (output_buffers_.empty() &&
          (state_ == kDecoding || state_ == kFlushing || state_ == kIdle)) {
@@ -334,7 +334,7 @@ bool VaapiVideoDecodeAccelerator::GetOutputBuffers_Locked() {
 }
 
 void VaapiVideoDecodeAccelerator::DecodeTask() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "VAVDA::DecodeTask");
   base::AutoLock auto_lock(lock_);
 
@@ -381,7 +381,7 @@ void VaapiVideoDecodeAccelerator::DecodeTask() {
 
 void VaapiVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   TRACE_EVENT1("Video Decoder", "VAVDA::Decode", "Buffer id",
                bitstream_buffer.id());
@@ -425,7 +425,7 @@ void VaapiVideoDecodeAccelerator::Decode(
 
 void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
     const std::vector<media::PictureBuffer>& buffers) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
   DCHECK_EQ(state_, kPicturesRequested);
@@ -447,7 +447,7 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
 }
 
 void VaapiVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   TRACE_EVENT1("Video Decoder", "VAVDA::ReusePictureBuffer", "Picture id",
                picture_buffer_id);
 
@@ -460,7 +460,7 @@ void VaapiVideoDecodeAccelerator::ReusePictureBuffer(int32 picture_buffer_id) {
 }
 
 void VaapiVideoDecodeAccelerator::FlushTask() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DVLOG(1) << "Flush task";
 
   base::AutoLock auto_lock(lock_);
@@ -479,7 +479,7 @@ void VaapiVideoDecodeAccelerator::FlushTask() {
 }
 
 void VaapiVideoDecodeAccelerator::Flush() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   DVLOG(1) << "Got flush request";
 
   base::AutoLock auto_lock(lock_);
@@ -493,7 +493,7 @@ void VaapiVideoDecodeAccelerator::Flush() {
 }
 
 void VaapiVideoDecodeAccelerator::FinishFlush() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
   if (state_ != kFlushing) {
@@ -510,7 +510,7 @@ void VaapiVideoDecodeAccelerator::FinishFlush() {
 }
 
 void VaapiVideoDecodeAccelerator::ResetTask() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
 
@@ -529,7 +529,7 @@ void VaapiVideoDecodeAccelerator::ResetTask() {
 }
 
 void VaapiVideoDecodeAccelerator::Reset() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   DVLOG(1) << "Got reset request";
 
   // This will make any new decode tasks exit early.
@@ -552,7 +552,7 @@ void VaapiVideoDecodeAccelerator::Reset() {
 }
 
 void VaapiVideoDecodeAccelerator::FinishReset() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   base::AutoLock auto_lock(lock_);
   if (state_ != kResetting) {
@@ -580,7 +580,7 @@ void VaapiVideoDecodeAccelerator::FinishReset() {
 }
 
 void VaapiVideoDecodeAccelerator::Cleanup() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   if (state_ == kUninitialized || state_ == kDestroying)
     return;
@@ -608,7 +608,7 @@ void VaapiVideoDecodeAccelerator::Cleanup() {
 }
 
 void VaapiVideoDecodeAccelerator::Destroy() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   Cleanup();
   delete this;
 }

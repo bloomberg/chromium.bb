@@ -42,7 +42,7 @@ class BindToLoopTest : public ::testing::Test {
   BindToLoopTest() : proxy_(loop_.message_loop_proxy()) {}
 
  protected:
-  MessageLoop loop_;
+  base::MessageLoop loop_;
   scoped_refptr<base::MessageLoopProxy> proxy_;
 };
 

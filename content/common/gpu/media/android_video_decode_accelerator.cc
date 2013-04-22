@@ -19,16 +19,16 @@ namespace content {
 
 // Helper macros for dealing with failure.  If |result| evaluates false, emit
 // |log| to ERROR, register |error| with the decoder, and return.
-#define RETURN_ON_FAILURE(result, log, error)                      \
-  do {                                                             \
-    if (!(result)) {                                               \
-      DLOG(ERROR) << log;                                          \
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(      \
-          &AndroidVideoDecodeAccelerator::NotifyError,             \
-          base::AsWeakPtr(this), error));                          \
-      state_ = ERROR;                                              \
-      return;                                                      \
-    }                                                              \
+#define RETURN_ON_FAILURE(result, log, error)                       \
+  do {                                                              \
+    if (!(result)) {                                                \
+      DLOG(ERROR) << log;                                           \
+      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind( \
+          &AndroidVideoDecodeAccelerator::NotifyError,              \
+          base::AsWeakPtr(this), error));                           \
+      state_ = ERROR;                                               \
+      return;                                                       \
+    }                                                               \
   } while (0)
 
 // TODO(dwkang): We only need kMaxVideoFrames to pass media stack's prerolling
@@ -106,7 +106,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(
 
   ConfigureMediaCodec();
 
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &AndroidVideoDecodeAccelerator::NotifyInitializeDone,
       base::AsWeakPtr(this)));
   return true;
@@ -126,7 +126,7 @@ void AndroidVideoDecodeAccelerator::DoIOTask() {
     io_task_is_posted_ = true;
     // TODO(dwkang): PostDelayedTask() does not guarantee the task will awake
     //               at the exact time. Need a better way for polling.
-    MessageLoop::current()->PostDelayedTask(
+    base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
         base::Bind(
             &AndroidVideoDecodeAccelerator::DoIOTask, base::AsWeakPtr(this)),
@@ -187,7 +187,7 @@ void AndroidVideoDecodeAccelerator::QueueInput() {
     // keep getting more bitstreams from the client, and throttle them by using
     // |bitstreams_notified_in_advance_|.
     // TODO(dwkang): check if there is a way to remove this workaround.
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
         base::AsWeakPtr(this), bitstream_buffer.id()));
     bitstreams_notified_in_advance_.push_back(bitstream_buffer.id());
@@ -223,7 +223,7 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
         if (!picturebuffers_requested_) {
           picturebuffers_requested_ = true;
           size_ = gfx::Size(width, height);
-          MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+          base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
               &AndroidVideoDecodeAccelerator::RequestPictureBuffers,
               base::AsWeakPtr(this)));
         } else {
@@ -248,7 +248,7 @@ void AndroidVideoDecodeAccelerator::DequeueOutput() {
   media_codec_->ReleaseOutputBuffer(buf_index, true);
 
   if (eos) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &AndroidVideoDecodeAccelerator::NotifyFlushDone,
         base::AsWeakPtr(this)));
     decoder_met_eos_ = true;
@@ -319,7 +319,7 @@ void AndroidVideoDecodeAccelerator::SendCurrentSurfaceToClient(
                          picture_buffer_texture_id, 0, size_.width(),
                          size_.height(), false, false, false);
 
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &AndroidVideoDecodeAccelerator::NotifyPictureReady,
       base::AsWeakPtr(this), media::Picture(picture_buffer_id, bitstream_id)));
 }
@@ -328,7 +328,7 @@ void AndroidVideoDecodeAccelerator::Decode(
     const media::BitstreamBuffer& bitstream_buffer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (bitstream_buffer.id() != -1 && bitstream_buffer.size() == 0) {
-    MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+    base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
         &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
         base::AsWeakPtr(this), bitstream_buffer.id()));
     return;
@@ -399,7 +399,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
     pending_bitstream_buffers_.pop();
 
     if (bitstream_buffer.id() != -1) {
-      MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+      base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
           &AndroidVideoDecodeAccelerator::NotifyEndOfBitstreamBuffer,
           base::AsWeakPtr(this), bitstream_buffer.id()));
     }
@@ -418,7 +418,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
   num_bytes_used_in_the_pending_buffer_ = 0;
   state_ = NO_ERROR;
 
-  MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
+  base::MessageLoop::current()->PostTask(FROM_HERE, base::Bind(
       &AndroidVideoDecodeAccelerator::NotifyResetDone, base::AsWeakPtr(this)));
 }
 

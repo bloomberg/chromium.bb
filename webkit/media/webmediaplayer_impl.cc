@@ -175,7 +175,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
                  AsWeakPtr()));
 
   // Also we want to be notified of |main_loop_| destruction.
-  MessageLoop::current()->AddDestructionObserver(this);
+  base::MessageLoop::current()->AddDestructionObserver(this);
 
   if (WebKit::WebRuntimeFeatures::isEncryptedMediaEnabled()) {
     decryptor_.reset(new ProxyDecryptor(
@@ -207,8 +207,8 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
 
   // Remove destruction observer if we're being destroyed but the main thread is
   // still running.
-  if (MessageLoop::current())
-    MessageLoop::current()->RemoveDestructionObserver(this);
+  if (base::MessageLoop::current())
+    base::MessageLoop::current()->RemoveDestructionObserver(this);
 }
 
 namespace {

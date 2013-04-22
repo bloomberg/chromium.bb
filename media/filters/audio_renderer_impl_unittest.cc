@@ -334,7 +334,7 @@ class AudioRendererImplTest : public ::testing::Test {
   }
 
   // Fixture members.
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<AudioRendererImpl> renderer_;
 
  private:
@@ -345,7 +345,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
   void ReadDecoder(const AudioDecoder::ReadCB& read_cb) {
     // TODO(scherkus): Make this a DCHECK after threading semantics are fixed.
-    if (MessageLoop::current() != &message_loop_) {
+    if (base::MessageLoop::current() != &message_loop_) {
       message_loop_.PostTask(FROM_HERE, base::Bind(
           &AudioRendererImplTest::ReadDecoder,
           base::Unretained(this), read_cb));

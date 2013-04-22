@@ -671,7 +671,7 @@ class ChunkDemuxerTest : public testing::Test {
     do {
       stream->Read(base::Bind(&ChunkDemuxerTest::StoreStatusAndBuffer,
                               base::Unretained(this), status, &buffer));
-      MessageLoop::current()->RunUntilIdle();
+      base::MessageLoop::current()->RunUntilIdle();
       if (*status == DemuxerStream::kOk && !buffer->IsEndOfStream())
         *last_timestamp = buffer->GetTimestamp();
     } while (*status == DemuxerStream::kOk && !buffer->IsEndOfStream());
@@ -775,7 +775,7 @@ class ChunkDemuxerTest : public testing::Test {
     NeedKeyMock(type, init_data.get(), init_data_size);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   MockDemuxerHost host_;
 
   scoped_ptr<ChunkDemuxer> demuxer_;
@@ -1142,7 +1142,7 @@ class EndOfStreamHelper {
 
     audio->Read(base::Bind(&OnEndOfStreamReadDone, &audio_read_done_));
     video->Read(base::Bind(&OnEndOfStreamReadDone, &video_read_done_));
-    MessageLoop::current()->RunUntilIdle();
+    base::MessageLoop::current()->RunUntilIdle();
   }
 
   // Check to see if |audio_read_done_| and |video_read_done_| variables

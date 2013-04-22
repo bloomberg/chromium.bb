@@ -37,10 +37,10 @@ class DemuxerHostImpl : public media::DemuxerHost {
   DISALLOW_COPY_AND_ASSIGN(DemuxerHostImpl);
 };
 
-void QuitLoopWithStatus(MessageLoop* message_loop,
+void QuitLoopWithStatus(base::MessageLoop* message_loop,
                         media::PipelineStatus status) {
   CHECK_EQ(status, media::PIPELINE_OK);
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
@@ -68,7 +68,7 @@ class StreamReader {
   const std::vector<int>& counts() { return counts_; }
 
  private:
-  void OnReadDone(MessageLoop* message_loop,
+  void OnReadDone(base::MessageLoop* message_loop,
                   bool* end_of_stream,
                   base::TimeDelta* timestamp,
                   media::DemuxerStream::Status status,
@@ -110,9 +110,9 @@ void StreamReader::Read() {
   base::TimeDelta timestamp;
 
   streams_[index]->Read(base::Bind(
-      &StreamReader::OnReadDone, base::Unretained(this), MessageLoop::current(),
-      &end_of_stream, &timestamp));
-  MessageLoop::current()->Run();
+      &StreamReader::OnReadDone, base::Unretained(this),
+      base::MessageLoop::current(), &end_of_stream, &timestamp));
+  base::MessageLoop::current()->Run();
 
   CHECK(timestamp != media::kNoTimestamp());
   end_of_stream_[index] = end_of_stream;
@@ -129,7 +129,7 @@ bool StreamReader::IsDone() {
 }
 
 void StreamReader::OnReadDone(
-    MessageLoop* message_loop,
+    base::MessageLoop* message_loop,
     bool* end_of_stream,
     base::TimeDelta* timestamp,
     media::DemuxerStream::Status status,
@@ -138,7 +138,7 @@ void StreamReader::OnReadDone(
   CHECK(buffer);
   *end_of_stream = buffer->IsEndOfStream();
   *timestamp = buffer->GetTimestamp();
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
 int StreamReader::GetNextStreamIndexToRead() {
@@ -173,7 +173,7 @@ int main(int argc, char** argv) {
     return 1;
   }
 
-  MessageLoop message_loop;
+  base::MessageLoop message_loop;
   DemuxerHostImpl demuxer_host;
   base::FilePath file_path(cmd_line->GetArgs()[0]);
 

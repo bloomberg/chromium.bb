@@ -218,7 +218,8 @@ void RendererGpuVideoDecoderFactories::AsyncReadPixels(
 
 base::SharedMemory* RendererGpuVideoDecoderFactories::CreateSharedMemory(
     size_t size) {
-  DCHECK_NE(MessageLoop::current(), ChildThread::current()->message_loop());
+  DCHECK_NE(base::MessageLoop::current(),
+            ChildThread::current()->message_loop());
   ChildThread::current()->message_loop()->PostTask(FROM_HERE, base::Bind(
       &RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory, this,
       size));
@@ -229,9 +230,9 @@ base::SharedMemory* RendererGpuVideoDecoderFactories::CreateSharedMemory(
   return shared_memory_segment_.release();
 }
 
-void RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory(
-    size_t size) {
-  DCHECK_EQ(MessageLoop::current(), ChildThread::current()->message_loop());
+void RendererGpuVideoDecoderFactories::AsyncCreateSharedMemory(size_t size) {
+  DCHECK_EQ(base::MessageLoop::current(),
+            ChildThread::current()->message_loop());
 
   shared_memory_segment_.reset(
       ChildThread::current()->AllocateSharedMemory(size));

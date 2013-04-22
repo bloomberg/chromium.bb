@@ -105,7 +105,7 @@ class MockVideoCaptureDelegate : public VideoCaptureMessageFilter::Delegate {
 }  // namespace
 
 TEST(VideoCaptureMessageFilterTest, Basic) {
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   scoped_refptr<VideoCaptureMessageFilter> filter(
       new VideoCaptureMessageFilter());
@@ -169,7 +169,7 @@ TEST(VideoCaptureMessageFilterTest, Basic) {
 }
 
 TEST(VideoCaptureMessageFilterTest, Delegates) {
-  MessageLoop message_loop(MessageLoop::TYPE_IO);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_IO);
 
   scoped_refptr<VideoCaptureMessageFilter> filter(
       new VideoCaptureMessageFilter());

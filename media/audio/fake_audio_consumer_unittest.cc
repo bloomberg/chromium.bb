@@ -76,11 +76,11 @@ class FakeAudioConsumerTest : public testing::Test {
     ASSERT_TRUE(message_loop_.message_loop_proxy()->BelongsToCurrentThread());
     fake_consumer_.Stop();
     EXPECT_LE(callbacks, source_.callbacks());
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
  protected:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   AudioParameters params_;
   FakeAudioConsumer fake_consumer_;
   SineWaveAudioSource source_;

@@ -183,7 +183,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
   // Queues a VideoFrame with |next_frame_timestamp_|.
   void QueueNextFrame() {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     DCHECK_LT(next_frame_timestamp_.InMicroseconds(),
               duration_.InMicroseconds());
 
@@ -197,27 +197,27 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void QueueEndOfStream() {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     decode_results_.push_back(std::make_pair(
         VideoDecoder::kOk, VideoFrame::CreateEmptyFrame()));
   }
 
   void QueueDecodeError() {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     scoped_refptr<VideoFrame> null_frame;
     decode_results_.push_back(std::make_pair(
         VideoDecoder::kDecodeError, null_frame));
   }
 
   void QueueAbortedRead() {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     scoped_refptr<VideoFrame> null_frame;
     decode_results_.push_back(std::make_pair(
         VideoDecoder::kOk, null_frame));
   }
 
   void QueuePrerollFrames(int timestamp_ms) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     next_frame_timestamp_ = base::TimeDelta();
     base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(timestamp_ms);
     while (next_frame_timestamp_ < timestamp) {
@@ -287,7 +287,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void AdvanceTimeInMs(int time_ms) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     base::AutoLock l(lock_);
     time_ += base::TimeDelta::FromMilliseconds(time_ms);
     DCHECK_LE(time_.InMicroseconds(), duration_.InMicroseconds());
@@ -316,7 +316,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void FrameRequested(const VideoDecoder::ReadCB& read_cb) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     CHECK(read_cb_.is_null());
     read_cb_ = read_cb;
 
@@ -331,7 +331,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void FlushRequested(const base::Closure& callback) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     decode_results_.clear();
     if (!read_cb_.is_null()) {
       QueueAbortedRead();
@@ -342,7 +342,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   void StopRequested(const base::Closure& callback) {
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     decode_results_.clear();
     if (!read_cb_.is_null()) {
       QueueAbortedRead();
@@ -352,7 +352,7 @@ class VideoRendererBaseTest : public ::testing::Test {
     message_loop_.PostTask(FROM_HERE, callback);
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   VideoDecoderConfig video_config_;
 

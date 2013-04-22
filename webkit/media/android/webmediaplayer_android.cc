@@ -37,7 +37,7 @@ WebMediaPlayerAndroid::WebMediaPlayerAndroid(
     StreamTextureFactory* factory)
     : client_(client),
       buffered_(1u),
-      main_loop_(MessageLoop::current()),
+      main_loop_(base::MessageLoop::current()),
       pending_seek_(0),
       seeking_(false),
       did_loading_progress_(false),

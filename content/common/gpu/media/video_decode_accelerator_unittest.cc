@@ -737,11 +737,11 @@ TEST_P(VideoDecodeAcceleratorTest, TestSimpleDecode) {
   // Initialize the rendering helper.
   base::Thread rendering_thread("GLRenderingVDAClientThread");
   base::Thread::Options options;
-  options.message_loop_type = MessageLoop::TYPE_DEFAULT;
+  options.message_loop_type = base::MessageLoop::TYPE_DEFAULT;
 #if defined(OS_WIN)
   // For windows the decoding thread initializes the media foundation decoder
   // which uses COM. We need the thread to be a UI thread.
-  options.message_loop_type = MessageLoop::TYPE_UI;
+  options.message_loop_type = base::MessageLoop::TYPE_UI;
 #endif  // OS_WIN
 
   rendering_thread.StartWithOptions(options);

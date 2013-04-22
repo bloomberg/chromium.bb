@@ -50,7 +50,7 @@ AudioManagerBase::AudioManagerBase()
   // On Mac, use a UI loop to get native message pump so that CoreAudio property
   // listener callbacks fire.
   CHECK(audio_thread_->StartWithOptions(
-      base::Thread::Options(MessageLoop::TYPE_UI, 0)));
+      base::Thread::Options(base::MessageLoop::TYPE_UI, 0)));
 #else
   CHECK(audio_thread_->Start());
 #endif
@@ -279,7 +279,7 @@ void AudioManagerBase::Shutdown() {
   if (!audio_thread.get())
     return;
 
-  CHECK_NE(MessageLoop::current(), audio_thread->message_loop());
+  CHECK_NE(base::MessageLoop::current(), audio_thread->message_loop());
 
   // We must use base::Unretained since Shutdown might have been called from
   // the destructor and we can't alter the refcount of the object at that point.

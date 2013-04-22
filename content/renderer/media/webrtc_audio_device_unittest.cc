@@ -483,7 +483,7 @@ TEST_F(WebRTCAudioDeviceTest, DISABLED_PlayLocalFile) {
 
   // Play 2 seconds worth of audio and then quit.
   message_loop_.PostDelayedTask(FROM_HERE,
-                                MessageLoop::QuitClosure(),
+                                base::MessageLoop::QuitClosure(),
                                 base::TimeDelta::FromSeconds(6));
   message_loop_.Run();
 
@@ -577,7 +577,7 @@ TEST_F(WebRTCAudioDeviceTest, MAYBE_FullDuplexAudioWithAGC) {
 
   LOG(INFO) << ">> You should now be able to hear yourself in loopback...";
   message_loop_.PostDelayedTask(FROM_HERE,
-                                MessageLoop::QuitClosure(),
+                                base::MessageLoop::QuitClosure(),
                                 base::TimeDelta::FromSeconds(2));
   message_loop_.Run();
 

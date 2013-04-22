@@ -43,7 +43,7 @@ PipelineIntegrationTestBase::~PipelineIntegrationTestBase() {
 void PipelineIntegrationTestBase::OnStatusCallback(
     PipelineStatus status) {
   pipeline_status_ = status;
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 void PipelineIntegrationTestBase::OnStatusCallbackChecked(
@@ -75,7 +75,7 @@ void PipelineIntegrationTestBase::OnEnded() {
   DCHECK(!ended_);
   ended_ = true;
   pipeline_status_ = PIPELINE_OK;
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 bool PipelineIntegrationTestBase::WaitUntilOnEnded() {
@@ -96,7 +96,7 @@ PipelineStatus PipelineIntegrationTestBase::WaitUntilEndedOrError() {
 void PipelineIntegrationTestBase::OnError(PipelineStatus status) {
   DCHECK_NE(status, PIPELINE_OK);
   pipeline_status_ = status;
-  message_loop_.PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 bool PipelineIntegrationTestBase::Start(const base::FilePath& file_path,
@@ -166,7 +166,7 @@ bool PipelineIntegrationTestBase::Seek(base::TimeDelta seek_time) {
 
 void PipelineIntegrationTestBase::Stop() {
   DCHECK(pipeline_->IsRunning());
-  pipeline_->Stop(MessageLoop::QuitClosure());
+  pipeline_->Stop(base::MessageLoop::QuitClosure());
   message_loop_.Run();
 }
 

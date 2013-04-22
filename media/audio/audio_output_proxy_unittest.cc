@@ -446,7 +446,7 @@ class AudioOutputProxyTest : public testing::Test {
     proxy->Close();
   }
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_refptr<AudioOutputDispatcherImpl> dispatcher_impl_;
   base::TimeDelta pause_delay_;
   MockAudioManager manager_;

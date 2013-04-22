@@ -144,7 +144,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   scoped_ptr<VideoDecoder> selected_decoder_;
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoDecoderSelectorTest);

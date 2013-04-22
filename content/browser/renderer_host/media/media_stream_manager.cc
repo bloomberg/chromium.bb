@@ -508,7 +508,7 @@ void MediaStreamManager::StartMonitoring() {
 }
 
 void MediaStreamManager::StopMonitoring() {
-  DCHECK_EQ(MessageLoop::current(), io_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   if (monitoring_started_) {
     base::SystemMonitor::Get()->RemoveDevicesChangedObserver(this);
     monitoring_started_ = false;
@@ -518,7 +518,7 @@ void MediaStreamManager::StopMonitoring() {
 }
 
 void MediaStreamManager::ClearEnumerationCache(EnumerationCache* cache) {
-  DCHECK_EQ(MessageLoop::current(), io_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   cache->valid = false;
 }
 
@@ -633,7 +633,7 @@ void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
 
   // We want to be notified of IO message loop destruction to delete the thread
   // and the device managers.
-  io_loop_ = MessageLoop::current();
+  io_loop_ = base::MessageLoop::current();
   io_loop_->AddDestructionObserver(this);
 }
 
@@ -999,7 +999,7 @@ void MediaStreamManager::UseFakeDevice() {
 }
 
 void MediaStreamManager::WillDestroyCurrentMessageLoop() {
-  DCHECK_EQ(MessageLoop::current(), io_loop_);
+  DCHECK_EQ(base::MessageLoop::current(), io_loop_);
   DCHECK(requests_.empty());
   if (device_thread_) {
     StopMonitoring();

@@ -44,7 +44,7 @@ class TestSocketReader {
     EXPECT_GT(bytes_read, 0);
     ++callbacks_received_;
     if (number_of_reads_before_quit_ == callbacks_received_) {
-      MessageLoop::current()->Quit();
+      base::MessageLoop::current()->Quit();
     } else if (issue_reads_from_callback_) {
       IssueRead();
     }
@@ -71,7 +71,7 @@ void SendData(base::CancelableSyncSocket* socket,
 // Tests doing a pending read from a socket and use an IO handler to get
 // notified of data.
 TEST(AsyncSocketIoHandlerTest, AsynchronousReadWithMessageLoop) {
-  MessageLoopForIO loop;
+  base::MessageLoopForIO loop;
 
   base::CancelableSyncSocket pair[2];
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
@@ -80,7 +80,7 @@ TEST(AsyncSocketIoHandlerTest, AsynchronousReadWithMessageLoop) {
   EXPECT_TRUE(reader.IssueRead());
 
   pair[1].Send(kAsyncSocketIoTestString, kAsyncSocketIoTestStringLength);
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(strcmp(reader.buffer(), kAsyncSocketIoTestString), 0);
   EXPECT_EQ(1, reader.callbacks_received());
 }
@@ -89,7 +89,7 @@ TEST(AsyncSocketIoHandlerTest, AsynchronousReadWithMessageLoop) {
 // socket.  Here we want to make sure that any async 'can read' notifications
 // won't trip us off and that the synchronous case works as well.
 TEST(AsyncSocketIoHandlerTest, SynchronousReadWithMessageLoop) {
-  MessageLoopForIO loop;
+  base::MessageLoopForIO loop;
 
   base::CancelableSyncSocket pair[2];
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
@@ -97,9 +97,10 @@ TEST(AsyncSocketIoHandlerTest, SynchronousReadWithMessageLoop) {
   TestSocketReader reader(&pair[0], -1, false);
 
   pair[1].Send(kAsyncSocketIoTestString, kAsyncSocketIoTestStringLength);
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(100));
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
 
   EXPECT_TRUE(reader.IssueRead());
   EXPECT_EQ(strcmp(reader.buffer(), kAsyncSocketIoTestString), 0);
@@ -109,13 +110,13 @@ TEST(AsyncSocketIoHandlerTest, SynchronousReadWithMessageLoop) {
   // So we call RunUntilIdle() to allow any event notifications or APC's on
   // Windows, to execute before checking the count of how many callbacks we've
   // received.
-  MessageLoop::current()->RunUntilIdle();
+  base::MessageLoop::current()->RunUntilIdle();
   EXPECT_EQ(1, reader.callbacks_received());
 }
 
 // Calls Read() from within a callback to test that simple read "loops" work.
 TEST(AsyncSocketIoHandlerTest, ReadFromCallback) {
-  MessageLoopForIO loop;
+  base::MessageLoopForIO loop;
 
   base::CancelableSyncSocket pair[2];
   ASSERT_TRUE(base::CancelableSyncSocket::CreatePair(&pair[0], &pair[1]));
@@ -127,16 +128,17 @@ TEST(AsyncSocketIoHandlerTest, ReadFromCallback) {
   // Issue sends on an interval to satisfy the Read() requirements.
   int64 milliseconds = 0;
   for (int i = 0; i < kReadOperationCount; ++i) {
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
         base::Bind(&SendData, &pair[1], kAsyncSocketIoTestString,
             kAsyncSocketIoTestStringLength),
         base::TimeDelta::FromMilliseconds(milliseconds));
     milliseconds += 10;
   }
 
-  MessageLoop::current()->PostDelayedTask(FROM_HERE, MessageLoop::QuitClosure(),
+  base::MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(100 + milliseconds));
 
-  MessageLoop::current()->Run();
+  base::MessageLoop::current()->Run();
   EXPECT_EQ(kReadOperationCount, reader.callbacks_received());
 }

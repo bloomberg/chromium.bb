@@ -144,7 +144,7 @@ TEST(AudioInputTest, Record) {
   scoped_ptr<AudioManager> audio_man(AudioManager::Create());
   if (!CanRunAudioTests(audio_man.get()))
     return;
-  MessageLoop message_loop(MessageLoop::TYPE_DEFAULT);
+  base::MessageLoop message_loop(base::MessageLoop::TYPE_DEFAULT);
   AudioInputStream* ais = CreateTestAudioInputStream(audio_man.get());
   EXPECT_TRUE(ais->Open());
 
@@ -154,7 +154,7 @@ TEST(AudioInputTest, Record) {
   // extra time.
   message_loop.PostDelayedTask(
       FROM_HERE,
-      MessageLoop::QuitClosure(),
+      base::MessageLoop::QuitClosure(),
       base::TimeDelta::FromMilliseconds(690));
   message_loop.Run();
   EXPECT_GE(test_callback.callback_count(), 1);

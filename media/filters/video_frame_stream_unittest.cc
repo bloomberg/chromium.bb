@@ -188,7 +188,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   }
 
  private:
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   scoped_refptr<VideoFrameStream> video_frame_stream_;
   VideoDecoderConfig video_config_;

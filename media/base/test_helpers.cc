@@ -46,7 +46,7 @@ PipelineStatusCB NewExpectedStatusCB(PipelineStatus status) {
 }
 
 WaitableMessageLoopEvent::WaitableMessageLoopEvent()
-    : message_loop_(MessageLoop::current()),
+    : message_loop_(base::MessageLoop::current()),
       signaled_(false),
       status_(PIPELINE_OK) {
   DCHECK(message_loop_);
@@ -55,14 +55,14 @@ WaitableMessageLoopEvent::WaitableMessageLoopEvent()
 WaitableMessageLoopEvent::~WaitableMessageLoopEvent() {}
 
 base::Closure WaitableMessageLoopEvent::GetClosure() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   return BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
       &WaitableMessageLoopEvent::OnCallback, base::Unretained(this),
       PIPELINE_OK));
 }
 
 PipelineStatusCB WaitableMessageLoopEvent::GetPipelineStatusCB() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   return BindToLoop(message_loop_->message_loop_proxy(), base::Bind(
       &WaitableMessageLoopEvent::OnCallback, base::Unretained(this)));
 }
@@ -72,7 +72,7 @@ void WaitableMessageLoopEvent::RunAndWait() {
 }
 
 void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   if (signaled_) {
     EXPECT_EQ(expected, status_);
     return;
@@ -88,14 +88,14 @@ void WaitableMessageLoopEvent::RunAndWaitForStatus(PipelineStatus expected) {
 }
 
 void WaitableMessageLoopEvent::OnCallback(PipelineStatus status) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   signaled_ = true;
   status_ = status;
   message_loop_->QuitWhenIdle();
 }
 
 void WaitableMessageLoopEvent::OnTimeout() {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
+  DCHECK_EQ(message_loop_, base::MessageLoop::current());
   ADD_FAILURE() << "Timed out waiting for message loop to quit";
   message_loop_->QuitWhenIdle();
 }

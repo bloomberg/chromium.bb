@@ -22,7 +22,7 @@ namespace media {
 // NOTE: The class that inherits from this class must implement the
 // WillDestroyCurrentMessageLoop virtual method from DestructionObserver.
 class ScopedLoopObserver
-    : public MessageLoop::DestructionObserver {
+    : public base::MessageLoop::DestructionObserver {
  public:
   explicit ScopedLoopObserver(
       const scoped_refptr<base::MessageLoopProxy>& message_loop);

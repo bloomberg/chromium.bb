@@ -72,7 +72,7 @@ class WebMediaPlayerParams;
 class WebMediaPlayerImpl
     : public WebKit::WebMediaPlayer,
       public cc::VideoFrameProvider,
-      public MessageLoop::DestructionObserver,
+      public base::MessageLoop::DestructionObserver,
       public base::SupportsWeakPtr<WebMediaPlayerImpl> {
  public:
   // Constructs a WebMediaPlayer implementation using Chromium's media stack.

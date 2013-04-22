@@ -58,7 +58,7 @@ class VideoCaptureManager;
 // MediaStreamManager::Listener.
 class CONTENT_EXPORT MediaStreamManager
     : public MediaStreamProviderListener,
-      public MessageLoop::DestructionObserver,
+      public base::MessageLoop::DestructionObserver,
       public SettingsRequester,
       public base::SystemMonitor::DevicesChangedObserver {
  public:
@@ -249,7 +249,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Hold a pointer to the IO loop to check we delete the device thread and
   // managers on the right thread.
-  MessageLoop* io_loop_;
+  base::MessageLoop* io_loop_;
 
   bool screen_capture_active_;
 

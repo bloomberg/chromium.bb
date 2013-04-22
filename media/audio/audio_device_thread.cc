@@ -37,7 +37,7 @@ class AudioDeviceThread::Thread
   // a task to join (close) the thread handle later instead of waiting for
   // the thread.  If loop_for_join is NULL, then the function waits
   // synchronously for the thread to terminate.
-  void Stop(MessageLoop* loop_for_join);
+  void Stop(base::MessageLoop* loop_for_join);
 
  private:
   friend class base::RefCountedThreadSafe<AudioDeviceThread::Thread>;
@@ -77,7 +77,7 @@ void AudioDeviceThread::Start(AudioDeviceThread::Callback* callback,
   thread_->Start();
 }
 
-void AudioDeviceThread::Stop(MessageLoop* loop_for_join) {
+void AudioDeviceThread::Stop(base::MessageLoop* loop_for_join) {
   base::AutoLock auto_lock(thread_lock_);
   if (thread_) {
     thread_->Stop(loop_for_join);
@@ -115,7 +115,7 @@ void AudioDeviceThread::Thread::Start() {
   CHECK(thread_ != base::kNullThreadHandle);
 }
 
-void AudioDeviceThread::Thread::Stop(MessageLoop* loop_for_join) {
+void AudioDeviceThread::Thread::Stop(base::MessageLoop* loop_for_join) {
   socket_.Shutdown();
 
   base::PlatformThreadHandle thread = base::kNullThreadHandle;

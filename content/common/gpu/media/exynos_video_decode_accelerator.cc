@@ -598,7 +598,7 @@ bool ExynosVideoDecodeAccelerator::PostSandboxInitialization() {
 void ExynosVideoDecodeAccelerator::DecodeTask(
     scoped_ptr<BitstreamBufferRef> bitstream_record) {
   DVLOG(3) << "DecodeTask(): input_id=" << bitstream_record->input_id;
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT1("Video Decoder", "EVDA::DecodeTask", "input_id",
                bitstream_record->input_id);
@@ -624,7 +624,7 @@ void ExynosVideoDecodeAccelerator::DecodeTask(
 
 void ExynosVideoDecodeAccelerator::DecodeBufferTask() {
   DVLOG(3) << "DecodeBufferTask()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("Video Decoder", "EVDA::DecodeBufferTask");
 
@@ -821,7 +821,7 @@ bool ExynosVideoDecodeAccelerator::AdvanceFrameFragment(
 }
 
 void ExynosVideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   // If we're behind on tasks, schedule another one.
   int buffers_to_decode = decoder_input_queue_.size();
@@ -838,7 +838,7 @@ void ExynosVideoDecodeAccelerator::ScheduleDecodeBufferTaskIfNeeded() {
 bool ExynosVideoDecodeAccelerator::DecodeBufferInitial(
     const void* data, size_t size, size_t* endpos) {
   DVLOG(3) << "DecodeBufferInitial(): data=" << data << ", size=" << size;
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kDecoding);
   DCHECK(!device_poll_thread_.IsRunning());
@@ -913,7 +913,7 @@ bool ExynosVideoDecodeAccelerator::DecodeBufferInitial(
 bool ExynosVideoDecodeAccelerator::DecodeBufferContinue(
     const void* data, size_t size) {
   DVLOG(3) << "DecodeBufferContinue(): data=" << data << ", size=" << size;
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_EQ(decoder_state_, kDecoding);
 
   // Both of these calls will set kError state if they fail.
@@ -925,7 +925,7 @@ bool ExynosVideoDecodeAccelerator::DecodeBufferContinue(
 bool ExynosVideoDecodeAccelerator::AppendToInputFrame(
     const void* data, size_t size) {
   DVLOG(3) << "AppendToInputFrame()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kResetting);
   DCHECK_NE(decoder_state_, kError);
@@ -991,7 +991,7 @@ bool ExynosVideoDecodeAccelerator::AppendToInputFrame(
 
 bool ExynosVideoDecodeAccelerator::FlushInputFrame() {
   DVLOG(3) << "FlushInputFrame()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kResetting);
   DCHECK_NE(decoder_state_, kError);
@@ -1030,7 +1030,7 @@ bool ExynosVideoDecodeAccelerator::FlushInputFrame() {
 void ExynosVideoDecodeAccelerator::AssignPictureBuffersTask(
     scoped_ptr<PictureBufferArrayRef> pic_buffers) {
   DVLOG(3) << "AssignPictureBuffersTask()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("Video Decoder", "EVDA::AssignPictureBuffersTask");
 
@@ -1067,7 +1067,7 @@ void ExynosVideoDecodeAccelerator::AssignPictureBuffersTask(
 
 void ExynosVideoDecodeAccelerator::ServiceDeviceTask() {
   DVLOG(3) << "ServiceDeviceTask()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kInitialized);
   DCHECK_NE(decoder_state_, kAfterReset);
@@ -1136,7 +1136,7 @@ void ExynosVideoDecodeAccelerator::ServiceDeviceTask() {
 
 void ExynosVideoDecodeAccelerator::EnqueueMfc() {
   DVLOG(3) << "EnqueueMfc()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("Video Decoder", "EVDA::EnqueueMfc");
 
@@ -1181,7 +1181,7 @@ void ExynosVideoDecodeAccelerator::EnqueueMfc() {
 
 void ExynosVideoDecodeAccelerator::DequeueMfc() {
   DVLOG(3) << "DequeueMfc()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   TRACE_EVENT0("Video Decoder", "EVDA::DequeueMfc");
 
@@ -1260,7 +1260,7 @@ void ExynosVideoDecodeAccelerator::DequeueMfc() {
 
 void ExynosVideoDecodeAccelerator::EnqueueGsc() {
   DVLOG(3) << "EnqueueGsc()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kInitialized);
   TRACE_EVENT0("Video Decoder", "EVDA::EnqueueGsc");
@@ -1316,7 +1316,7 @@ void ExynosVideoDecodeAccelerator::EnqueueGsc() {
 
 void ExynosVideoDecodeAccelerator::DequeueGsc() {
   DVLOG(3) << "DequeueGsc()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK_NE(decoder_state_, kUninitialized);
   DCHECK_NE(decoder_state_, kInitialized);
   DCHECK_NE(decoder_state_, kAfterReset);
@@ -1523,7 +1523,7 @@ void ExynosVideoDecodeAccelerator::ReusePictureBufferTask(
     int32 picture_buffer_id, scoped_ptr<EGLSyncKHRRef> egl_sync_ref) {
   DVLOG(3) << "ReusePictureBufferTask(): picture_buffer_id="
            << picture_buffer_id;
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "EVDA::ReusePictureBufferTask");
 
   // We run ReusePictureBufferTask even if we're in kResetting.
@@ -1563,7 +1563,7 @@ void ExynosVideoDecodeAccelerator::ReusePictureBufferTask(
 
 void ExynosVideoDecodeAccelerator::FlushTask() {
   DVLOG(3) << "FlushTask()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "EVDA::FlushTask");
 
   // Flush outstanding buffers.
@@ -1625,7 +1625,7 @@ void ExynosVideoDecodeAccelerator::NotifyFlushDoneIfNeeded() {
 
 void ExynosVideoDecodeAccelerator::ResetTask() {
   DVLOG(3) << "ResetTask()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "EVDA::ResetTask");
 
   if (decoder_state_ == kError) {
@@ -1655,7 +1655,7 @@ void ExynosVideoDecodeAccelerator::ResetTask() {
 
 void ExynosVideoDecodeAccelerator::ResetDoneTask() {
   DVLOG(3) << "ResetDoneTask()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "EVDA::ResetDoneTask");
 
   if (decoder_state_ == kError) {
@@ -1703,7 +1703,7 @@ void ExynosVideoDecodeAccelerator::DestroyTask() {
 
 bool ExynosVideoDecodeAccelerator::StartDevicePoll() {
   DVLOG(3) << "StartDevicePoll()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
   DCHECK(!device_poll_thread_.IsRunning());
 
   // Start up the device poll thread and schedule its first DevicePollTask().
@@ -1722,7 +1722,7 @@ bool ExynosVideoDecodeAccelerator::StartDevicePoll() {
 
 bool ExynosVideoDecodeAccelerator::StopDevicePoll() {
   DVLOG(3) << "StopDevicePoll()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   // Signal the DevicePollTask() to stop, and stop the device poll thread.
   if (!SetDevicePollInterrupt())
@@ -1795,7 +1795,7 @@ bool ExynosVideoDecodeAccelerator::StopDevicePoll() {
 
 bool ExynosVideoDecodeAccelerator::SetDevicePollInterrupt() {
   DVLOG(3) << "SetDevicePollInterrupt()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   const uint64 buf = 1;
   if (HANDLE_EINTR(write(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
@@ -1808,7 +1808,7 @@ bool ExynosVideoDecodeAccelerator::SetDevicePollInterrupt() {
 
 bool ExynosVideoDecodeAccelerator::ClearDevicePollInterrupt() {
   DVLOG(3) << "ClearDevicePollInterrupt()";
-  DCHECK_EQ(decoder_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(decoder_thread_.message_loop(), base::MessageLoop::current());
 
   uint64 buf;
   if (HANDLE_EINTR(read(device_poll_interrupt_fd_, &buf, sizeof(buf))) == -1) {
@@ -1826,7 +1826,7 @@ bool ExynosVideoDecodeAccelerator::ClearDevicePollInterrupt() {
 
 void ExynosVideoDecodeAccelerator::DevicePollTask(unsigned int poll_fds) {
   DVLOG(3) << "DevicePollTask()";
-  DCHECK_EQ(device_poll_thread_.message_loop(), MessageLoop::current());
+  DCHECK_EQ(device_poll_thread_.message_loop(), base::MessageLoop::current());
   TRACE_EVENT0("Video Decoder", "EVDA::DevicePollTask");
 
   // This routine just polls the set of device fds, and schedules a
@@ -1891,7 +1891,7 @@ void ExynosVideoDecodeAccelerator::SetDecoderState(State state) {
   // We can touch decoder_state_ only if this is the decoder thread or the
   // decoder thread isn't running.
   if (decoder_thread_.message_loop() != NULL &&
-      decoder_thread_.message_loop() != MessageLoop::current()) {
+      decoder_thread_.message_loop() != base::MessageLoop::current()) {
     decoder_thread_.message_loop()->PostTask(FROM_HERE, base::Bind(
         &ExynosVideoDecodeAccelerator::SetDecoderState,
         base::Unretained(this), state));

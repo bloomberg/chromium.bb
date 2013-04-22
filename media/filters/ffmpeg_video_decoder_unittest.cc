@@ -198,7 +198,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   MOCK_METHOD2(FrameReady, void(VideoDecoder::Status,
                                 const scoped_refptr<VideoFrame>&));
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<FFmpegVideoDecoder> decoder_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;

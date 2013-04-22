@@ -219,7 +219,7 @@ class DecryptingAudioDecoderTest : public testing::Test {
   MOCK_METHOD2(FrameReady, void(AudioDecoder::Status,
                                 const scoped_refptr<DataBuffer>&));
 
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
   scoped_ptr<DecryptingAudioDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;

@@ -103,7 +103,7 @@ class VideoCaptureImplTest : public ::testing::Test {
   };
 
   VideoCaptureImplTest() {
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
     message_loop_proxy_ =
         base::MessageLoopProxy::current().get();
     child_process_.reset(new ChildProcess());
@@ -123,7 +123,7 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
  protected:
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<base::MessageLoopProxy> message_loop_proxy_;
   scoped_ptr<ChildProcess> child_process_;
   scoped_refptr<MockVideoCaptureMessageFilter> message_filter_;

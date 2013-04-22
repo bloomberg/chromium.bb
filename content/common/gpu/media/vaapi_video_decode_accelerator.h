@@ -184,7 +184,7 @@ private:
   base::ConditionVariable output_ready_;
 
   // ChildThread's message loop
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
 
   // WeakPtr<> pointing to |this| for use in posting tasks from the decoder
   // thread back to the ChildThread.  Because the decoder thread is a member of

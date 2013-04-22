@@ -43,8 +43,8 @@ MATCHER(IsEndOfStreamBuffer,
 static void EosOnReadDone(bool* got_eos_buffer,
                           DemuxerStream::Status status,
                           const scoped_refptr<DecoderBuffer>& buffer) {
-  MessageLoop::current()->PostTask(
-      FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+  base::MessageLoop::current()->PostTask(
+      FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 
   EXPECT_EQ(status, DemuxerStream::kOk);
   if (buffer->IsEndOfStream()) {
@@ -66,7 +66,7 @@ class FFmpegDemuxerTest : public testing::Test {
 
   virtual ~FFmpegDemuxerTest() {
     if (demuxer_) {
-      demuxer_->Stop(MessageLoop::QuitWhenIdleClosure());
+      demuxer_->Stop(base::MessageLoop::QuitWhenIdleClosure());
       message_loop_.Run();
     }
   }
@@ -115,8 +115,8 @@ class FFmpegDemuxerTest : public testing::Test {
     EXPECT_EQ(base::TimeDelta::FromMicroseconds(timestampInMicroseconds),
               buffer->GetTimestamp());
 
-    DCHECK_EQ(&message_loop_, MessageLoop::current());
-    message_loop_.PostTask(FROM_HERE, MessageLoop::QuitWhenIdleClosure());
+    DCHECK_EQ(&message_loop_, base::MessageLoop::current());
+    message_loop_.PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
   }
 
   DemuxerStream::ReadCB NewReadCB(const tracked_objects::Location& location,
@@ -152,7 +152,7 @@ class FFmpegDemuxerTest : public testing::Test {
   scoped_refptr<FileDataSource> data_source_;
   scoped_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
   AVFormatContext* format_context() {
     return demuxer_->glue_->format_context();
@@ -489,7 +489,7 @@ TEST_F(FFmpegDemuxerTest, StreamReadAfterStopAndDemuxerDestruction) {
       demuxer_->GetStream(DemuxerStream::AUDIO);
   ASSERT_TRUE(audio);
 
-  demuxer_->Stop(MessageLoop::QuitWhenIdleClosure());
+  demuxer_->Stop(base::MessageLoop::QuitWhenIdleClosure());
   message_loop_.Run();
 
   // Expect all calls in sequence.

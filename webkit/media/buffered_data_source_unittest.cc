@@ -214,7 +214,7 @@ class BufferedDataSourceTest : public testing::Test {
   WebView* view_;
 
   StrictMock<media::MockDataSourceHost> host_;
-  MessageLoop message_loop_;
+  base::MessageLoop message_loop_;
 
  private:
   // Used for calling BufferedDataSource::Read().

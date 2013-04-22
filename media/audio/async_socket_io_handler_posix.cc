@@ -89,8 +89,9 @@ bool AsyncSocketIoHandler::Initialize(base::SyncSocket::Handle socket,
 void AsyncSocketIoHandler::EnsureWatchingSocket() {
   DCHECK(CalledOnValidThread());
   if (!is_watching_ && socket_ != base::SyncSocket::kInvalidHandle) {
-    is_watching_ = MessageLoopForIO::current()->WatchFileDescriptor(
-        socket_, true, MessageLoopForIO::WATCH_READ, &socket_watcher_, this);
+    is_watching_ = base::MessageLoopForIO::current()->WatchFileDescriptor(
+        socket_, true, base::MessageLoopForIO::WATCH_READ,
+        &socket_watcher_, this);
   }
 }
 

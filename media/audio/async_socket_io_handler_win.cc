@@ -27,9 +27,10 @@ AsyncSocketIoHandler::~AsyncSocketIoHandler() {
 }
 
 // Implementation of IOHandler on Windows.
-void AsyncSocketIoHandler::OnIOCompleted(MessageLoopForIO::IOContext* context,
-                                         DWORD bytes_transfered,
-                                         DWORD error) {
+void AsyncSocketIoHandler::OnIOCompleted(
+    base::MessageLoopForIO::IOContext* context,
+    DWORD bytes_transfered,
+    DWORD error) {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(context_, context);
   DCHECK(!read_complete_.is_null());
@@ -64,9 +65,9 @@ bool AsyncSocketIoHandler::Initialize(base::SyncSocket::Handle socket,
   socket_ = socket;
   read_complete_ = callback;
 
-  MessageLoopForIO::current()->RegisterIOHandler(socket, this);
+  base::MessageLoopForIO::current()->RegisterIOHandler(socket, this);
 
-  context_ = new MessageLoopForIO::IOContext();
+  context_ = new base::MessageLoopForIO::IOContext();
   context_->handler = this;
   memset(&context_->overlapped, 0, sizeof(context_->overlapped));
 

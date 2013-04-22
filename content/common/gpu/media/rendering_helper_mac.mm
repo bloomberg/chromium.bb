@@ -100,7 +100,7 @@ class RenderingHelperMac : public RenderingHelper {
   virtual void* GetGLDisplay() OVERRIDE;
 
  private:
-  MessageLoop* message_loop_;
+  base::MessageLoop* message_loop_;
   int width_;
   int height_;
   bool suppress_swap_to_display_;
@@ -154,7 +154,7 @@ void RenderingHelperMac::Initialize(
   width_ = dimensions[0].width();
   height_ = dimensions[0].height();
   suppress_swap_to_display_ = suppress_swap_to_display;
-  message_loop_ = MessageLoop::current();
+  message_loop_ = base::MessageLoop::current();
 
   // Create a window to host the OpenGL contents.
   NSRect rect = NSMakeRect(0, 0, width_, height_);
@@ -177,7 +177,7 @@ void RenderingHelperMac::Initialize(
 }
 
 void RenderingHelperMac::UnInitialize(base::WaitableEvent* done) {
-  CHECK_EQ(MessageLoop::current(), message_loop_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_);
   width_ = 0;
   height_ = 0;
   message_loop_ = NULL;
@@ -191,7 +191,7 @@ void RenderingHelperMac::CreateTexture(int window_id,
                                        uint32 texture_target,
                                        GLuint* texture_id,
                                        base::WaitableEvent* done) {
-  CHECK_EQ(MessageLoop::current(), message_loop_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_);
   CHECK_EQ(static_cast<uint32>(GL_TEXTURE_RECTANGLE_ARB), texture_target);
   CGLContextObj cgl_ctx = GetCGLContext(gl_view_);
   glGenTextures(1, texture_id);
@@ -200,12 +200,12 @@ void RenderingHelperMac::CreateTexture(int window_id,
 }
 
 void RenderingHelperMac::RenderTexture(GLuint texture_id) {
-  CHECK_EQ(MessageLoop::current(), message_loop_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_);
   DrawTexture(gl_view_, texture_id, suppress_swap_to_display_);
 }
 
 void RenderingHelperMac::DeleteTexture(GLuint texture_id) {
-  CHECK_EQ(MessageLoop::current(), message_loop_);
+  CHECK_EQ(base::MessageLoop::current(), message_loop_);
   CGLContextObj cgl_ctx = GetCGLContext(gl_view_);
   glDeleteTextures(1, &texture_id);
   CHECK_EQ(GL_NO_ERROR, static_cast<int>(glGetError()));

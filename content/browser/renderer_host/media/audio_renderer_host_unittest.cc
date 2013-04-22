@@ -152,7 +152,7 @@ class MockAudioRendererHost : public AudioRendererHost {
 };
 
 ACTION_P(QuitMessageLoop, message_loop) {
-  message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
 }
 
 class AudioRendererHostTest : public testing::Test {
@@ -162,7 +162,7 @@ class AudioRendererHostTest : public testing::Test {
  protected:
   virtual void SetUp() {
     // Create a message loop so AudioRendererHost can use it.
-    message_loop_.reset(new MessageLoop(MessageLoop::TYPE_IO));
+    message_loop_.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
 
     // Claim to be on both the UI and IO threads to pass all the DCHECKS.
     io_thread_.reset(new BrowserThreadImpl(BrowserThread::IO,
@@ -282,13 +282,13 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   // Called on the audio thread.
-  static void PostQuitMessageLoop(MessageLoop* message_loop) {
-    message_loop->PostTask(FROM_HERE, MessageLoop::QuitClosure());
+  static void PostQuitMessageLoop(base::MessageLoop* message_loop) {
+    message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
   }
 
   // Called on the main thread.
   static void PostQuitOnAudioThread(media::AudioManager* audio_manager,
-                                    MessageLoop* message_loop) {
+                                    base::MessageLoop* message_loop) {
     audio_manager->GetMessageLoop()->PostTask(FROM_HERE,
         base::Bind(&PostQuitMessageLoop, message_loop));
   }
@@ -311,7 +311,7 @@ class AudioRendererHostTest : public testing::Test {
   scoped_ptr<MockMediaInternals> observer_;
   MockAudioMirroringManager mirroring_manager_;
   scoped_refptr<MockAudioRendererHost> host_;
-  scoped_ptr<MessageLoop> message_loop_;
+  scoped_ptr<base::MessageLoop> message_loop_;
   scoped_ptr<BrowserThreadImpl> io_thread_;
   scoped_ptr<BrowserThreadImpl> ui_thread_;
   scoped_ptr<media::AudioManager> audio_manager_;
