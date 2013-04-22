@@ -58,6 +58,11 @@ void ExecuteCommandLines(chromeos::SystemLogsResponse* response) {
       CommandLine(base::FilePath("/opt/google/touchpad/generate_userfeedback"));
   commands.push_back(std::make_pair("hack-33025-touchpad_activity", command));
 
+  command = CommandLine(
+      base::FilePath("/opt/google/touchscreen/touchscreen_feedback"));
+  commands.push_back(
+      std::make_pair("hack-33025-touchscreen_activity", command));
+
   // Get a list of file sizes for the logged in user (excluding the names of
   // the files in the Downloads directory for privay reasons).
   command = CommandLine(base::FilePath("/bin/sh"));
