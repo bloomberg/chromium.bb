@@ -17,12 +17,23 @@ function loadDataUrl(imageSpec, callbacks) {
   img.onload = function() {
     var canvas = document.createElement('canvas');
 
-    canvas.width = img.width;
+    if (img.width <= 0 || img.height <= 0) {
+      callbacks.onerror({ problem: 'image_size_invalid', path: path});
+      return;
+    }
+
+    var scaleFactor = 1;
     if (imageSpec.width && imageSpec.width < img.width)
-      canvas.width = imageSpec.width;
-    canvas.height = img.height;
-    if (imageSpec.height && imageSpec.height < img.height)
-      canvas.height = imageSpec.height;
+      scaleFactor = imageSpec.width / img.width;
+
+    if (imageSpec.height && imageSpec.height < img.height) {
+      var heightScale = imageSpec.height / img.height;
+      if (heightScale < scaleFactor)
+        scaleFactor = heightScale;
+    }
+
+    canvas.width = img.width * scaleFactor;
+    canvas.height = img.height * scaleFactor;
 
     var canvas_context = canvas.getContext('2d');
     canvas_context.clearRect(0, 0, canvas.width, canvas.height);
