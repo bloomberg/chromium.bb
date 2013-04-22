@@ -777,8 +777,12 @@ size_t RenderGrid::resolveGridPositionFromStyle(const GridPosition& position, Gr
     // FIXME: Handle other values for grid-{row,column} like ranges or line names.
     switch (position.type()) {
     case IntegerPosition: {
-        if (position.isPositive())
+        if (position.isPositive()) {
+            if (side == EndSide || side == AfterSide)
+                return std::max(0, position.integerPosition() - 2);
+
             return position.integerPosition() - 1;
+        }
 
         size_t resolvedPosition = abs(position.integerPosition());
         // FIXME: This returns one less than the expected result for side == StartSide or BeforeSide as we don't properly convert
