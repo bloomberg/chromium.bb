@@ -200,17 +200,15 @@ void MessagePopupCollection::UpdateWidgets() {
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
            popups.rbegin(); iter != popups.rend(); ++iter) {
+    if (toasts_.find((*iter)->id()) != toasts_.end())
+      continue;
+
     MessageView* view =
         NotificationView::Create(*(*iter), message_center_, true);
     int view_height = GetToastSize(view).height();
     if (bottom - view_height - kToastMargin < 0) {
       delete view;
       break;
-    }
-
-    if (toasts_.find((*iter)->id()) != toasts_.end()) {
-      delete view;
-      continue;
     }
 
     ToastContentsView* toast = new ToastContentsView(
