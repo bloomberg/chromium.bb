@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -30,8 +31,14 @@ FakeDriveFileSystem::FakeDriveFileSystem(
 FakeDriveFileSystem::~FakeDriveFileSystem() {
 }
 
+bool FakeDriveFileSystem::InitializeForTesting() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  return cache_dir_.CreateUniqueTempDir();
+}
+
 void FakeDriveFileSystem::Initialize() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  InitializeForTesting();
 }
 
 void FakeDriveFileSystem::AddObserver(DriveFileSystemObserver* observer) {
@@ -143,6 +150,13 @@ void FakeDriveFileSystem::GetFileContentByPath(
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  GetEntryInfoByPath(
+      file_path,
+      base::Bind(&FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 file_path, initialized_callback, get_content_callback,
+                 completion_callback));
 }
 
 void FakeDriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
@@ -330,6 +344,54 @@ void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
   base::FilePath file_path = parent_file_path.Append(
       base::FilePath::FromUTF8Unsafe(entry_proto->base_name()));
   callback.Run(error, file_path, entry_proto.Pass());
+}
+
+// Implementation of GetFileContentByPath.
+void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
+    const base::FilePath& file_path,
+    const GetFileContentInitializedCallback& initialized_callback,
+    const google_apis::GetContentCallback& get_content_callback,
+    const FileOperationCallback& completion_callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  if (error != DRIVE_FILE_OK) {
+    completion_callback.Run(error);
+    return;
+  }
+  DCHECK(entry_proto);
+
+  base::FilePath cache_path =
+      cache_dir_.path().AppendASCII(entry_proto->resource_id());
+  if (file_util::PathExists(cache_path)) {
+    // Cache file is found.
+    initialized_callback.Run(DRIVE_FILE_OK, entry_proto.Pass(), cache_path);
+    completion_callback.Run(DRIVE_FILE_OK);
+    return;
+  }
+
+  // Copy the URL here before passing |entry_proto| to the callback.
+  const GURL download_url(entry_proto->download_url());
+  initialized_callback.Run(
+      DRIVE_FILE_OK, entry_proto.Pass(), base::FilePath());
+  drive_service_->DownloadFile(
+      file_path,
+      cache_path,
+      download_url,
+      base::Bind(&FakeDriveFileSystem::GetFileContentByPathAfterDownloadFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 completion_callback),
+      get_content_callback,
+      google_apis::ProgressCallback());
+}
+
+void FakeDriveFileSystem::GetFileContentByPathAfterDownloadFile(
+    const FileOperationCallback& completion_callback,
+    google_apis::GDataErrorCode gdata_error,
+    const base::FilePath& temp_file) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  completion_callback.Run(util::GDataToDriveFileError(gdata_error));
 }
 
 // Implementation of GetEntryInfoByPath.

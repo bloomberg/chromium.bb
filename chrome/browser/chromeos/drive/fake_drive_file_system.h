@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
@@ -40,6 +41,10 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   explicit FakeDriveFileSystem(
       google_apis::DriveServiceInterface* drive_service);
   virtual ~FakeDriveFileSystem();
+
+  // Initialization for testing. This can be called instead of Initialize
+  // for testing purpose. Returns true for success.
+  bool InitializeForTesting();
 
   // DriveFileSystemInterface Overrides.
   virtual void Initialize() OVERRIDE;
@@ -168,6 +173,24 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
       scoped_ptr<DriveEntryProto> entry_proto,
       const base::FilePath& parent_file_path);
 
+  // Helpers of GetFileContentByPath.
+  // How the method works:
+  // 1) Gets DriveEntryProto of the path.
+  // 2) Look at if there is a cache file or not. If found return it.
+  // 3) Otherwise start DownloadFile.
+  // 4) Runs the |completion_callback| upon the download completion.
+  void GetFileContentByPathAfterGetEntryInfo(
+      const base::FilePath& file_path,
+      const GetFileContentInitializedCallback& initialized_callback,
+      const google_apis::GetContentCallback& get_content_callback,
+      const FileOperationCallback& completion_callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
+  void GetFileContentByPathAfterDownloadFile(
+      const FileOperationCallback& completion_callback,
+      google_apis::GDataErrorCode gdata_error,
+      const base::FilePath& temp_file);
+
   // Helpers of GetEntryInfoByPath.
   // How the method works:
   // 1) If the path is root, gets AboutResrouce from the drive service
@@ -195,6 +218,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
       scoped_ptr<google_apis::ResourceList> resource_list);
 
   google_apis::DriveServiceInterface* drive_service_;  // Not owned.
+  base::ScopedTempDir cache_dir_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
 
+#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
@@ -33,6 +34,7 @@ class FakeDriveFileSystemTest : public ::testing::Test {
     // Create a testee instance.
     fake_drive_file_system_.reset(
         new FakeDriveFileSystem(fake_drive_service_.get()));
+    ASSERT_TRUE(fake_drive_file_system_->InitializeForTesting());
   }
 
   MessageLoopForUI message_loop_;
@@ -93,6 +95,68 @@ TEST_F(FakeDriveFileSystemTest,
   ASSERT_EQ(DRIVE_FILE_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(document_resource_id, entry->resource_id());
+}
+
+TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
+  DriveFileError initialize_error = DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry_proto;
+  base::FilePath cache_file_path;
+  google_apis::test_util::TestGetContentCallback get_content_callback;
+  DriveFileError completion_error = DRIVE_FILE_ERROR_FAILED;
+
+  const base::FilePath kDriveFile =
+      util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
+
+  // For the first time, the file should be downloaded from the service.
+  fake_drive_file_system_->GetFileContentByPath(
+      kDriveFile,
+      google_apis::test_util::CreateCopyResultCallback(
+          &initialize_error, &entry_proto, &cache_file_path),
+      get_content_callback.callback(),
+      google_apis::test_util::CreateCopyResultCallback(&completion_error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(DRIVE_FILE_OK, initialize_error);
+  EXPECT_TRUE(entry_proto);
+
+  // No cache file is available yet.
+  EXPECT_TRUE(cache_file_path.empty());
+
+  // The download should be happened so the |get_content_callback|
+  // should have the actual data.
+  std::string content = get_content_callback.GetConcatenatedData();
+  EXPECT_EQ(10U, content.size());
+  EXPECT_EQ(DRIVE_FILE_OK, completion_error);
+
+  initialize_error = DRIVE_FILE_ERROR_FAILED;
+  entry_proto.reset();
+  get_content_callback.mutable_data()->clear();
+  completion_error = DRIVE_FILE_ERROR_FAILED;
+
+  // For the second time, the cache file should be found.
+  fake_drive_file_system_->GetFileContentByPath(
+      kDriveFile,
+      google_apis::test_util::CreateCopyResultCallback(
+          &initialize_error, &entry_proto, &cache_file_path),
+      get_content_callback.callback(),
+      google_apis::test_util::CreateCopyResultCallback(&completion_error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(DRIVE_FILE_OK, initialize_error);
+  EXPECT_TRUE(entry_proto);
+
+  // Cache file should be available.
+  ASSERT_FALSE(cache_file_path.empty());
+
+  // There should be a cache file so no data should be downloaded.
+  EXPECT_TRUE(get_content_callback.data().empty());
+  EXPECT_EQ(DRIVE_FILE_OK, completion_error);
+
+  // Make sure the cached file's content.
+  std::string cache_file_content;
+  ASSERT_TRUE(
+      file_util::ReadFileToString(cache_file_path, &cache_file_content));
+  EXPECT_EQ(content, cache_file_content);
 }
 
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
