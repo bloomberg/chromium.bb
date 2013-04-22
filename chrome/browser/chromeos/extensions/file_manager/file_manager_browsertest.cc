@@ -72,6 +72,137 @@ struct TestDirectoryInfo {
   { ".warez", "26 Oct 1985 13:39" },
 };
 
+// The base test class. Used by FileManagerBrowserLocalTest and
+// FileManagerBrowserDriveTest.
+// TODO(satorux): Add the latter: crbug.com/224534.
+// The boolean parameter, retrieved by GetParam(), is true if testing in the
+// guest mode. See SetUpCommandLine() below for details.
+class FileManagerBrowserTestBase : public ExtensionApiTest,
+                                   public ::testing::WithParamInterface<bool> {
+ protected:
+  // Adds an incognito and guest-mode flags for tests in the guest mode.
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+
+  // Loads our testing extension and sends it a string identifying the current
+  // test.
+  void StartTest(const std::string& test_name);
+
+  // Creates test files and directories.
+  void CreateTestFilesAndDirectories();
+
+  // Creates a file with the given |name|, |length|, and |modification_time|.
+  virtual void CreateTestFile(const std::string& name,
+                              int64 length,
+                              const std::string& modification_time) = 0;
+
+  // Creates an empty directory with the given |name| and |modification_time|.
+  virtual void CreateTestDirectory(
+      const std::string& name,
+      const std::string& modification_time) = 0;
+
+  // Returns the path of the root directory.
+  virtual base::FilePath GetRootPath() = 0;
+
+  // Returns true if |file_path| exists.
+  virtual bool PathExists(const base::FilePath& file_path) = 0;
+
+  // Waits until a file with the given size is present at |path|. Returns
+  // true on success.
+  virtual bool WaitUntilFilePresentWithSize(const base::FilePath& file_path,
+                                            int64 file_size) = 0;
+
+  // Waits until a file is not present at |path|. Returns true on success.
+  virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path)
+      = 0;
+
+  // Runs the file display test on the passed |volume|, shared by subclasses.
+  void DoTestFileDisplay(const std::string& volume);
+
+  // Runs the keyboard copy test on the passed |volume|, shared by subclasses.
+  void DoTestKeyboardCopy(const std::string& volume);
+
+  // Runs the keyboard delete test on the passed |volume|, shared by subclasses.
+  void DoTestKeyboardDelete(const std::string& volume);
+};
+
+void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
+  bool in_guest_mode = GetParam();
+  if (in_guest_mode) {
+    command_line->AppendSwitch(chromeos::switches::kGuestSession);
+    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
+    command_line->AppendSwitch(switches::kIncognito);
+  }
+  ExtensionApiTest::SetUpCommandLine(command_line);
+}
+
+
+void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
+  base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
+  const extensions::Extension* extension = LoadExtensionAsComponent(path);
+  ASSERT_TRUE(extension);
+
+  bool in_guest_mode = GetParam();
+  ExtensionTestMessageListener listener(
+      in_guest_mode ? "which test guest" : "which test non-guest", true);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+  listener.Reply(test_name);
+}
+
+void FileManagerBrowserTestBase::CreateTestFilesAndDirectories() {
+  for (size_t i = 0; i < arraysize(kTestFiles); ++i) {
+    CreateTestFile(kTestFiles[i].base_name,
+                   kTestFiles[i].file_size,
+                   kTestFiles[i].last_modified_time_as_string);
+  }
+  for (size_t i = 0; i < arraysize(kTestDirectories); ++i) {
+    CreateTestDirectory(kTestDirectories[i].base_name,
+                        kTestDirectories[i].last_modified_time_as_string);
+  }
+}
+
+void FileManagerBrowserTestBase::DoTestFileDisplay(const std::string& volume) {
+  ResultCatcher catcher;
+  StartTest("fileDisplay" + volume);
+
+  ExtensionTestMessageListener listener("initial check done", true);
+  ASSERT_TRUE(listener.WaitUntilSatisfied());
+
+  CreateTestFile("newly added file.mp3", 2000, "4 Sep 1998 00:00:00");
+  listener.Reply("file added");
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+void FileManagerBrowserTestBase::DoTestKeyboardCopy(const std::string& volume) {
+  base::FilePath copy_path =
+      GetRootPath().AppendASCII(kKeyboardTestFileCopyName);
+  ASSERT_FALSE(PathExists(copy_path));
+
+  ResultCatcher catcher;
+  StartTest("keyboardCopy" + volume);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(WaitUntilFilePresentWithSize(copy_path, kKeyboardTestFileSize));
+
+  // Check that it was a copy, not a move.
+  base::FilePath source_path =
+      GetRootPath().AppendASCII(kKeyboardTestFileName);
+  ASSERT_TRUE(PathExists(source_path));
+}
+
+void FileManagerBrowserTestBase::DoTestKeyboardDelete(
+    const std::string& volume) {
+  base::FilePath delete_path =
+      GetRootPath().AppendASCII(kKeyboardTestFileName);
+  ASSERT_TRUE(PathExists(delete_path));
+
+  ResultCatcher catcher;
+  StartTest("keyboardDelete" + volume);
+
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+  ASSERT_TRUE(WaitUntilFileNotPresent(delete_path));
+}
+
 // Monitors changes to a single file until the supplied condition callback
 // returns true. Usage:
 //   TestFilePathWatcher watcher(path_to_file, MyConditionCallback);
@@ -181,510 +312,44 @@ bool FileNotPresent(const base::FilePath& path) {
   return !file_util::PathExists(path);
 };
 
-// The base class of volumes for test.
-// Sub-classes of this class are used by test cases and provide operations such
-// as creating files for each type of test volume.
-class TestVolume {
- public:
-  virtual ~TestVolume() {}
-
-  // Creates a file with the given |name|, |length|, and |modification_time|.
-  // Returns true on success.
-  virtual bool CreateFile(const std::string& name,
-                          int64 length,
-                          const std::string& modification_time) = 0;
-
-  // Creates an empty directory with the given |name| and |modification_time|.
-  // Returns true on success.
-  virtual bool CreateDirectory(const std::string& name,
-                               const std::string& modification_time) = 0;
-
-  // Returns the path of the root directory.
-  virtual base::FilePath GetRootPath() const = 0;
-
-  // Returns true if |file_path| exists.
-  virtual bool PathExists(const base::FilePath& file_path) const = 0;
-
-  // Returns the name of volume such as "Downloads" or "Drive".
-  virtual std::string GetName() const = 0;
-
-  // Waits until a file with the given size is present at |path|. Returns
-  // true on success.
-  virtual bool WaitUntilFilePresentWithSize(const base::FilePath& file_path,
-                                            int64 file_size) = 0;
-
-  // Waits until a file is not present at |path|. Returns true on success.
-  virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path) = 0;
-};
-
-// The local volume class for test.
-// This class provides the operations for a test volume that simulates local
-// drive.
-class LocalTestVolume : public TestVolume {
- public:
-  explicit LocalTestVolume(const std::string& mount_name)
-      : mount_name_(mount_name) {
-  }
-
-  LocalTestVolume(const std::string& mount_name,
-                  const base::FilePath& local_path)
-      : mount_name_(mount_name),
-        local_path_(local_path) {
-  }
-
-  // Adds this volume to the file system as a local volume. Returns true on
-  // success.
-  bool Mount(Profile* profile) {
-    if (local_path_.empty()) {
-      if (!tmp_dir_.CreateUniqueTempDir())
-        return false;
-      local_path_ = tmp_dir_.path().Append(mount_name_);
-    }
-    fileapi::ExternalMountPoints* const mount_points =
-        content::BrowserContext::GetMountPoints(profile);
-    mount_points->RevokeFileSystem(mount_name_);
-    if (!mount_points->RegisterFileSystem(
-            mount_name_,
-            fileapi::kFileSystemTypeNativeLocal,
-            local_path_)) {
-      return false;
-    }
-    if (!file_util::CreateDirectory(local_path_))
-      return false;
-    return true;
-  }
-
-  virtual bool CreateFile(const std::string& name,
-                          int64 length,
-                          const std::string& modification_time) OVERRIDE {
-    if (length < 0)
-      return false;
-    base::FilePath path = local_path_.AppendASCII(name);
-    int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
-    bool created = false;
-    base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
-    base::PlatformFile file = base::CreatePlatformFile(path, flags,
-                                                       &created, &error);
-    if (!created || error)
-      return false;
-    if (!base::TruncatePlatformFile(file, length))
-      return false;
-    if (!base::ClosePlatformFile(file))
-      return false;
-    base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
-    if (!file_util::SetLastModifiedTime(path, time))
-      return false;
-    return true;
-  }
-
-  virtual bool CreateDirectory(const std::string& name,
-                               const std::string& modification_time) OVERRIDE {
-    base::FilePath path = local_path_.AppendASCII(name);
-    if (!file_util::CreateDirectory(path))
-      return false;
-    base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
-    if (!file_util::SetLastModifiedTime(path, time))
-      return false;
-    return true;
-  }
-
-  virtual std::string GetName() const OVERRIDE {
-    return mount_name_;
-  }
-
-  virtual base::FilePath GetRootPath() const OVERRIDE {
-    return local_path_;
-  }
-
-  virtual bool PathExists(const base::FilePath& file_path) const OVERRIDE {
-    return file_util::PathExists(file_path);
-  }
-
-  virtual bool WaitUntilFilePresentWithSize(
-      const base::FilePath& file_path,
-      int64 file_size) OVERRIDE {
-    TestFilePathWatcher watcher(file_path, base::Bind(FilePresentWithSize,
-                                                      file_size));
-    return watcher.RunMessageLoopUntilConditionSatisfied();
-  }
-
-  virtual bool WaitUntilFileNotPresent(
-      const base::FilePath& file_path) OVERRIDE {
-    TestFilePathWatcher watcher(file_path, base::Bind(FileNotPresent));
-    return watcher.RunMessageLoopUntilConditionSatisfied();
-  }
-
- private:
-  std::string mount_name_;
-  base::FilePath local_path_;
-  base::ScopedTempDir tmp_dir_;
-};
-
-// The drive volume class for test.
-// This class provides the operations for a test volume that simulates Google
-// drive.
-class DriveTestVolume : public TestVolume,
-                        public drive::DriveFileSystemObserver {
- public:
-  DriveTestVolume() : fake_drive_service_(NULL),
-                      system_service_(NULL),
-                      waiting_for_directory_change_(false) {
-  }
-
-  // Send request to add this volume to the file system as Google drive.
-  // This method must be calld at SetUp method of FileManagerBrowserTestBase.
-  // Returns true on success.
-  bool SetUp() {
-    if (!test_cache_root_.CreateUniqueTempDir())
-      return false;
-    drive::DriveSystemServiceFactory::SetFactoryForTest(
-        base::Bind(&DriveTestVolume::CreateDriveSystemService,
-                   base::Unretained(this)));
-    return true;
-  }
-
-  // Creates a file with the given |name|, |length|, and |modification_time|.
-  virtual bool CreateFile(const std::string& name,
-                          int64 length,
-                          const std::string& modification_time) OVERRIDE {
-    return CreateFileWithMimeType(name,
-                                  "text/plain",
-                                  length,
-                                  false,  // shared_with_me
-                                  modification_time);
-  }
-
-  // Creates an empty directory with the given |name| and |modification_time|.
-  virtual bool CreateDirectory(const std::string& name,
-                               const std::string& modification_time) OVERRIDE {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
-    fake_drive_service_->AddNewDirectory(
-        fake_drive_service_->GetRootResourceId(),
-        name,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_CREATED)
-      return false;
-    if (!resource_entry)
-      return false;
-
-    base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
-    fake_drive_service_->SetLastModifiedTime(
-        resource_entry->resource_id(),
-        time,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_SUCCESS)
-      return false;
-    if (!resource_entry)
-      return false;
-    CheckForUpdates();
-    return true;
-  }
-
-  virtual std::string GetName() const OVERRIDE {
-    return "Drive";
-  }
-
-  // Creates a test file with the given spec. This is a utility for
-  // CreateTestFile() as well. Returns true on success.
-  bool CreateFileWithMimeType(const std::string& name,
-                              const std::string& mime_type,
-                              int64 length,
-                              bool shared_with_me,
-                              const std::string& modification_time) {
-    google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
-    scoped_ptr<google_apis::ResourceEntry> resource_entry;
-    fake_drive_service_->AddNewFile(
-        mime_type,
-        length,
-        fake_drive_service_->GetRootResourceId(),
-        name,
-        shared_with_me,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_CREATED)
-      return false;
-    if (!resource_entry)
-      return false;
-
-    base::Time time;
-    if (!base::Time::FromString(modification_time.c_str(), &time))
-      return false;
-    fake_drive_service_->SetLastModifiedTime(
-        resource_entry->resource_id(),
-        time,
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &resource_entry));
-    MessageLoop::current()->RunUntilIdle();
-    if (error != google_apis::HTTP_SUCCESS)
-      return false;
-    if (!resource_entry)
-      return false;
-
-    CheckForUpdates();
-    return true;
-  }
-
-  virtual base::FilePath GetRootPath() const OVERRIDE {
-    return base::FilePath(drive::util::kDriveMyDriveRootPath);
-  }
-
-  virtual bool PathExists(const base::FilePath& file_path) const OVERRIDE {
-    DCHECK(system_service_);
-    DCHECK(system_service_->file_system());
-
-    drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
-    scoped_ptr<drive::DriveEntryProto> entry_proto;
-    system_service_->file_system()->GetEntryInfoByPath(
-        file_path,
-        google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
-    google_apis::test_util::RunBlockingPoolTask();
-
-    return error == drive::DRIVE_FILE_OK;
-  }
-
-  virtual bool WaitUntilFilePresentWithSize(
-      const base::FilePath& file_path,
-      int64 file_size) OVERRIDE {
-    while (true) {
-      if (FileIsPresentWithSize(file_path, file_size))
-        return true;
-      WaitUntilDirectoryChanged();
-    }
-    NOTREACHED();
-    return false;
-  }
-
-  virtual bool WaitUntilFileNotPresent(
-      const base::FilePath& file_path) OVERRIDE {
-    while (true) {
-      if (FileIsNotPresent(file_path))
-        return true;
-      WaitUntilDirectoryChanged();
-    }
-    NOTREACHED();
-    return false;
-  }
-
-  virtual void OnDirectoryChanged(
-      const base::FilePath& directory_path) OVERRIDE {
-    if (waiting_for_directory_change_)
-      MessageLoop::current()->Quit();
-  }
-
-  // Notifies DriveFileSystem that the contents in FakeDriveService are
-  // changed, hence the new contents should be fetched.
-  void CheckForUpdates() {
-    if (system_service_ && system_service_->file_system()) {
-      system_service_->file_system()->CheckForUpdates();
-    }
-  }
-
-  // Waits until a notification for a directory change is received.
-  void WaitUntilDirectoryChanged() {
-    waiting_for_directory_change_ = true;
-    MessageLoop::current()->Run();
-    waiting_for_directory_change_ = false;
-  }
-
-  // Returns true if a file of the size |file_size| is present at |file_path|.
-  bool FileIsPresentWithSize(
-      const base::FilePath& file_path,
-      int64 file_size) {
-    DCHECK(system_service_);
-    DCHECK(system_service_->file_system());
-
-    drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
-    scoped_ptr<drive::DriveEntryProto> entry_proto;
-    system_service_->file_system()->GetEntryInfoByPath(
-        file_path,
-        google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
-    google_apis::test_util::RunBlockingPoolTask();
-
-    return (error == drive::DRIVE_FILE_OK &&
-            entry_proto->file_info().size() == file_size);
-  }
-
-  // Returns true if a file is not present at |file_path|.
-  bool FileIsNotPresent(
-      const base::FilePath& file_path) {
-    DCHECK(system_service_);
-    DCHECK(system_service_->file_system());
-
-    drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
-    scoped_ptr<drive::DriveEntryProto> entry_proto;
-    system_service_->file_system()->GetEntryInfoByPath(
-        file_path,
-        google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
-    google_apis::test_util::RunBlockingPoolTask();
-
-    return error == drive::DRIVE_FILE_ERROR_NOT_FOUND;
-  }
-
-  drive::DriveSystemService* CreateDriveSystemService(Profile* profile) {
-    fake_drive_service_ = new google_apis::FakeDriveService;
-    fake_drive_service_->LoadResourceListForWapi(
-        "chromeos/gdata/empty_feed.json");
-    fake_drive_service_->LoadAccountMetadataForWapi(
-        "chromeos/gdata/account_metadata.json");
-    fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
-    system_service_ = new drive::DriveSystemService(profile,
-                                                    fake_drive_service_,
-                                                    test_cache_root_.path(),
-                                                    NULL);
-    system_service_->file_system()->AddObserver(this);
-    return system_service_;
-  }
-
- private:
-  base::ScopedTempDir test_cache_root_;
-  google_apis::FakeDriveService* fake_drive_service_;
-  drive::DriveSystemService* system_service_;
-  bool waiting_for_directory_change_;
-};
-
-// The base test class. Used by FileManagerBrowserLocalTest and
-// FileManagerBrowserDriveTest.
-// The boolean parameter, retrieved by GetParam(), is true if testing in the
-// guest mode. See SetUpCommandLine() below for details.
-class FileManagerBrowserTestBase : public ExtensionApiTest,
-                                   public ::testing::WithParamInterface<bool> {
- protected:
-  // Adds an incognito and guest-mode flags for tests in the guest mode.
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
-
-  // Loads our testing extension and sends it a string identifying the current
-  // test.
-  void StartTest(const std::string& test_name);
-
-  // Creates test files and directories.
-  bool CreateTestFilesAndDirectories(TestVolume* volume);
-
-  // After starting the test, set up volumes.
-  virtual bool PrepareVolume() = 0;
-
-  // Runs the file display test on the passed |volume|, shared by subclasses.
-  void DoTestFileDisplay(TestVolume* volume);
-
-  // Runs the keyboard copy test on the passed |volume|, shared by subclasses.
-  void DoTestKeyboardCopy(TestVolume* volume);
-
-  // Runs the keyboard delete test on the passed |volume|, shared by subclasses.
-  void DoTestKeyboardDelete(TestVolume* volume);
-};
-
-void FileManagerBrowserTestBase::SetUpCommandLine(CommandLine* command_line) {
-  bool in_guest_mode = GetParam();
-  if (in_guest_mode) {
-    command_line->AppendSwitch(chromeos::switches::kGuestSession);
-    command_line->AppendSwitchNative(chromeos::switches::kLoginUser, "");
-    command_line->AppendSwitch(switches::kIncognito);
-  }
-  ExtensionApiTest::SetUpCommandLine(command_line);
-}
-
-void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
-  base::FilePath path = test_data_dir_.AppendASCII("file_manager_browsertest");
-  const extensions::Extension* extension = LoadExtensionAsComponent(path);
-  ASSERT_TRUE(extension);
-
-  bool in_guest_mode = GetParam();
-  ExtensionTestMessageListener listener(
-      in_guest_mode ? "which test guest" : "which test non-guest", true);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-  listener.Reply(test_name);
-}
-
-bool FileManagerBrowserTestBase::CreateTestFilesAndDirectories(
-    TestVolume* volume) {
-  for (size_t i = 0; i < arraysize(kTestFiles); ++i) {
-    if (!volume->CreateFile(kTestFiles[i].base_name,
-                            kTestFiles[i].file_size,
-                            kTestFiles[i].last_modified_time_as_string)) {
-      return false;
-    }
-  }
-  for (size_t i = 0; i < arraysize(kTestDirectories); ++i) {
-    if (!volume->CreateDirectory(
-            kTestDirectories[i].base_name,
-            kTestDirectories[i].last_modified_time_as_string)) {
-      return false;
-    }
-  }
-  return true;
-}
-
-void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
-  ResultCatcher catcher;
-  StartTest("fileDisplay" + volume->GetName());
-
-  ExtensionTestMessageListener listener("initial check done", true);
-  ASSERT_TRUE(listener.WaitUntilSatisfied());
-
-  volume->CreateFile("newly added file.mp3", 2000, "4 Sep 1998 00:00:00");
-  listener.Reply("file added");
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-void FileManagerBrowserTestBase::DoTestKeyboardCopy(TestVolume* volume) {
-  base::FilePath copy_path =
-      volume->GetRootPath().AppendASCII(kKeyboardTestFileCopyName);
-  ASSERT_FALSE(volume->PathExists(copy_path));
-
-  ResultCatcher catcher;
-  StartTest("keyboardCopy" + volume->GetName());
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-  ASSERT_TRUE(volume->WaitUntilFilePresentWithSize(
-      copy_path, kKeyboardTestFileSize));
-
-  // Check that it was a copy, not a move.
-  base::FilePath source_path =
-      volume->GetRootPath().AppendASCII(kKeyboardTestFileName);
-  ASSERT_TRUE(volume->PathExists(source_path));
-}
-
-void FileManagerBrowserTestBase::DoTestKeyboardDelete(TestVolume* volume) {
-  base::FilePath delete_path =
-      volume->GetRootPath().AppendASCII(kKeyboardTestFileName);
-  ASSERT_TRUE(volume->PathExists(delete_path));
-
-  ResultCatcher catcher;
-  StartTest("keyboardDelete" + volume->GetName());
-
-  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
-  ASSERT_TRUE(volume->WaitUntilFileNotPresent(delete_path));
-}
-
 class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
  public:
-  FileManagerBrowserLocalTest() : volume_("Downloads") {}
-
   virtual void SetUp() OVERRIDE {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+
+    ASSERT_TRUE(tmp_dir_.CreateUniqueTempDir());
+    downloads_path_ = tmp_dir_.path().Append("Downloads");
+    ASSERT_TRUE(file_util::CreateDirectory(downloads_path_));
+
+    CreateTestFilesAndDirectories();
+
     ExtensionApiTest::SetUp();
   }
 
  protected:
-  virtual bool PrepareVolume() OVERRIDE {
-    return
-        volume_.Mount(browser()->profile()) &&
-        CreateTestFilesAndDirectories(&volume_);
-  }
+  // FileManagerBrowserTestBase overrides.
+  virtual void CreateTestFile(const std::string& name,
+                              int64 length,
+                              const std::string& modification_time) OVERRIDE;
+  virtual void CreateTestDirectory(
+      const std::string& name,
+      const std::string& modification_time) OVERRIDE;
+  virtual base::FilePath GetRootPath() OVERRIDE;
+  virtual bool PathExists(const base::FilePath& file_path) OVERRIDE;
+  virtual bool WaitUntilFilePresentWithSize(const base::FilePath& file_path,
+                                            int64 file_size) OVERRIDE;
+  virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path)
+      OVERRIDE;
 
-  LocalTestVolume volume_;
+  // Add a mount point to the fake Downloads directory. Should be called
+  // before StartTest().
+  void AddMountPointToFakeDownloads();
+
+  // Path to the fake Downloads directory used in the test.
+  base::FilePath downloads_path_;
+
+ private:
+  base::ScopedTempDir tmp_dir_;
 };
 
 // InGuestMode tests temporarily disabled due to the crbug.com/230724 bug.
@@ -697,11 +362,85 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         FileManagerBrowserLocalTest,
                         ::testing::Values(false));
 
-class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
+void FileManagerBrowserLocalTest::CreateTestFile(
+    const std::string& name,
+    int64 length,
+    const std::string& modification_time) {
+  ASSERT_GE(length, 0);
+  base::FilePath path = downloads_path_.AppendASCII(name);
+  int flags = base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE;
+  bool created = false;
+  base::PlatformFileError error = base::PLATFORM_FILE_ERROR_FAILED;
+  base::PlatformFile file = base::CreatePlatformFile(path, flags,
+                                                     &created, &error);
+  ASSERT_TRUE(created);
+  ASSERT_FALSE(error) << error;
+  ASSERT_TRUE(base::TruncatePlatformFile(file, length));
+  ASSERT_TRUE(base::ClosePlatformFile(file));
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+  ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
+}
+
+void FileManagerBrowserLocalTest::CreateTestDirectory(
+    const std::string& name,
+    const std::string& modification_time) {
+  base::FilePath path = downloads_path_.AppendASCII(name);
+  ASSERT_TRUE(file_util::CreateDirectory(path));
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+  ASSERT_TRUE(file_util::SetLastModifiedTime(path, time));
+}
+
+base::FilePath FileManagerBrowserLocalTest::GetRootPath() {
+  return downloads_path_;
+}
+
+bool FileManagerBrowserLocalTest::PathExists(const base::FilePath& file_path) {
+  return file_util::PathExists(file_path);
+}
+
+bool FileManagerBrowserLocalTest::WaitUntilFilePresentWithSize(
+    const base::FilePath& file_path,
+    int64 file_size) {
+  TestFilePathWatcher watcher(file_path, base::Bind(FilePresentWithSize,
+                                                    file_size));
+  return watcher.RunMessageLoopUntilConditionSatisfied();
+}
+
+bool FileManagerBrowserLocalTest::WaitUntilFileNotPresent(
+    const base::FilePath& file_path) {
+  TestFilePathWatcher watcher(file_path, base::Bind(FileNotPresent));
+  return watcher.RunMessageLoopUntilConditionSatisfied();
+}
+
+void FileManagerBrowserLocalTest::AddMountPointToFakeDownloads() {
+  // Install our fake Downloads mount point first.
+  fileapi::ExternalMountPoints* mount_points =
+      content::BrowserContext::GetMountPoints(profile());
+  ASSERT_TRUE(mount_points->RevokeFileSystem("Downloads"));
+  ASSERT_TRUE(mount_points->RegisterFileSystem(
+      "Downloads", fileapi::kFileSystemTypeNativeLocal, downloads_path_));
+}
+
+class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase,
+                                    public drive::DriveFileSystemObserver {
  public:
+  FileManagerBrowserDriveTest()
+      : fake_drive_service_(NULL),
+        system_service_(NULL),
+        waiting_for_directory_change_(false) {
+  }
+
   virtual void SetUp() OVERRIDE {
     extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
-    ASSERT_TRUE(volume_.SetUp());
+
+    ASSERT_TRUE(test_cache_root_.CreateUniqueTempDir());
+
+    drive::DriveSystemServiceFactory::SetFactoryForTest(
+        base::Bind(&FileManagerBrowserDriveTest::CreateDriveSystemService,
+                   base::Unretained(this)));
+
     ExtensionApiTest::SetUp();
   }
 
@@ -711,32 +450,55 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
   }
 
  protected:
-  virtual bool PrepareVolume() OVERRIDE {
-    if (!CreateTestFilesAndDirectories(&volume_))
-      return false;
-    // For testing Drive, create more entries with Drive specific attributes.
-    // TODO(haruki): Add a case for an entry cached by DriveCache.
-    if (!volume_.CreateFileWithMimeType(
-            "Test Document",
-            "application/vnd.google-apps.document",
-            0,
-            false,  // shared_with_me
-            "10 Apr 2013 16:20:00")) {
-      return false;
-    }
-    if (!volume_.CreateFileWithMimeType(
-            "Test Shared Document",
-            "application/vnd.google-apps.document",
-            0,
-            true,  // shared_with_me
-            "20 Mar 2013 22:40:00")) {
-      return false;
-    }
-    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
-    return true;
-  }
+  // FileManagerBrowserTestBase overrides.
+  virtual void CreateTestFile(const std::string& name,
+                              int64 length,
+                              const std::string& modification_time) OVERRIDE;
+  virtual void CreateTestDirectory(
+      const std::string& name,
+      const std::string& modification_time) OVERRIDE;
+  virtual base::FilePath GetRootPath() OVERRIDE;
+  virtual bool PathExists(const base::FilePath& file_path) OVERRIDE;
+  virtual bool WaitUntilFilePresentWithSize(const base::FilePath& file_path,
+                                            int64 file_size) OVERRIDE;
+  virtual bool WaitUntilFileNotPresent(const base::FilePath& file_path)
+      OVERRIDE;
 
-  DriveTestVolume volume_;
+  // Creates a test file with the given spec. This is a utility for
+  // CreateTestFile() as well.
+  virtual void CreateTestFileWithMimeType(const std::string& name,
+                                          const std::string& mime_type,
+                                          int64 length,
+                                          bool shared_with_me,
+                                          const std::string& modification_time);
+
+  // Waits until a notification for a directory change is received.
+  void WaitUntilDirectoryChanged();
+
+  // Returns true if a file is not present at |file_path|.
+  bool FileIsNotPresent(const base::FilePath& file_path);
+
+  // Returns true if a file of the size |file_size| is present at |file_path|.
+  bool FileIsPresentWithSize(const base::FilePath& file_path,
+                             int64 file_size);
+
+  // Notifies DriveFileSystem that the contents in FakeDriveService are
+  // changed, hence the new contents should be fetched.
+  void CheckForUpdates();
+
+  // DriveSystemService factory function for this test.
+  drive::DriveSystemService* CreateDriveSystemService(Profile* profile);
+
+  // DriveFileSystemObserver override.
+  //
+  // The event is used to unblock WaitUntilDirectoryChanged().
+  virtual void OnDirectoryChanged(
+      const base::FilePath& directory_path) OVERRIDE;
+
+  base::ScopedTempDir test_cache_root_;
+  google_apis::FakeDriveService* fake_drive_service_;
+  drive::DriveSystemService* system_service_;
+  bool waiting_for_directory_change_;
 };
 
 // Don't test Drive in the guest mode as it's not supported.
@@ -744,59 +506,261 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         FileManagerBrowserDriveTest,
                         ::testing::Values(false));
 
+void FileManagerBrowserDriveTest::CreateTestFile(
+    const std::string& name,
+    int64 length,
+    const std::string& modification_time) {
+  CreateTestFileWithMimeType(name,
+                             "text/plain",
+                             length,
+                             false,  // shared_with_me
+                             modification_time);
+}
+
+void FileManagerBrowserDriveTest::CreateTestFileWithMimeType(
+    const std::string& name,
+    const std::string& mime_type,
+    int64 length,
+    bool shared_with_me,
+    const std::string& modification_time) {
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_drive_service_->AddNewFile(
+      mime_type,
+      length,
+      fake_drive_service_->GetRootResourceId(),
+      name,
+      shared_with_me,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+  fake_drive_service_->SetLastModifiedTime(
+      resource_entry->resource_id(),
+      time,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+
+  CheckForUpdates();
+}
+
+void FileManagerBrowserDriveTest::CreateTestDirectory(
+    const std::string& name,
+    const std::string& modification_time) {
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> resource_entry;
+  fake_drive_service_->AddNewDirectory(
+      fake_drive_service_->GetRootResourceId(),
+      name,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_CREATED, error);
+  ASSERT_TRUE(resource_entry);
+
+  base::Time time;
+  ASSERT_TRUE(base::Time::FromString(modification_time.c_str(), &time));
+  fake_drive_service_->SetLastModifiedTime(
+      resource_entry->resource_id(),
+      time,
+      google_apis::test_util::CreateCopyResultCallback(&error,
+                                                       &resource_entry));
+  MessageLoop::current()->RunUntilIdle();
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(resource_entry);
+
+  CheckForUpdates();
+}
+
+base::FilePath FileManagerBrowserDriveTest::GetRootPath() {
+  return base::FilePath(drive::util::kDriveMyDriveRootPath);
+}
+
+bool FileManagerBrowserDriveTest::PathExists(const base::FilePath& file_path) {
+  DCHECK(system_service_);
+  DCHECK(system_service_->file_system());
+
+  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<drive::DriveEntryProto> entry_proto;
+  system_service_->file_system()->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  return error == drive::DRIVE_FILE_OK;
+}
+
+bool FileManagerBrowserDriveTest::WaitUntilFilePresentWithSize(
+    const base::FilePath& file_path,
+    int64 file_size) {
+  while (true) {
+    if (FileIsPresentWithSize(file_path, file_size))
+      return true;
+    WaitUntilDirectoryChanged();
+  }
+  NOTREACHED();
+  return false;
+}
+
+bool FileManagerBrowserDriveTest::WaitUntilFileNotPresent(
+    const base::FilePath& file_path) {
+  while (true) {
+    if (FileIsNotPresent(file_path))
+      return true;
+    WaitUntilDirectoryChanged();
+  }
+  NOTREACHED();
+  return false;
+}
+
+void FileManagerBrowserDriveTest::WaitUntilDirectoryChanged() {
+  waiting_for_directory_change_ = true;
+  MessageLoop::current()->Run();
+  waiting_for_directory_change_ = false;
+}
+
+bool FileManagerBrowserDriveTest::FileIsPresentWithSize(
+    const base::FilePath& file_path,
+    int64 file_size) {
+  DCHECK(system_service_);
+  DCHECK(system_service_->file_system());
+
+  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<drive::DriveEntryProto> entry_proto;
+  system_service_->file_system()->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  return (error == drive::DRIVE_FILE_OK &&
+          entry_proto->file_info().size() == file_size);
+}
+
+bool FileManagerBrowserDriveTest::FileIsNotPresent(
+    const base::FilePath& file_path) {
+  DCHECK(system_service_);
+  DCHECK(system_service_->file_system());
+
+  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  scoped_ptr<drive::DriveEntryProto> entry_proto;
+  system_service_->file_system()->GetEntryInfoByPath(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  return error == drive::DRIVE_FILE_ERROR_NOT_FOUND;
+}
+
+void FileManagerBrowserDriveTest::CheckForUpdates() {
+  if (system_service_ && system_service_->file_system()) {
+    system_service_->file_system()->CheckForUpdates();
+  }
+}
+
+drive::DriveSystemService*
+FileManagerBrowserDriveTest::CreateDriveSystemService(Profile* profile) {
+  fake_drive_service_ = new google_apis::FakeDriveService;
+  fake_drive_service_->LoadResourceListForWapi(
+      "chromeos/gdata/empty_feed.json");
+  fake_drive_service_->LoadAccountMetadataForWapi(
+      "chromeos/gdata/account_metadata.json");
+  fake_drive_service_->LoadAppListForDriveApi("chromeos/drive/applist.json");
+
+  // Create test files and directories inside the fake drive service.
+  CreateTestFilesAndDirectories();
+
+  // For testing Drive, create more entries with Drive specific attributes.
+  // TODO(haruki): Add a case for an entry cached by DriveCache.
+  CreateTestFileWithMimeType("Test Document",
+                             "application/vnd.google-apps.document",
+                             0,
+                             false,  // shared_with_me
+                             "10 Apr 2013 16:20:00");
+  CreateTestFileWithMimeType("Test Shared Document",
+                             "application/vnd.google-apps.document",
+                             0,
+                             true,  // shared_with_me
+                             "20 Mar 2013 22:40:00");
+
+  system_service_ = new drive::DriveSystemService(profile,
+                                                  fake_drive_service_,
+                                                  test_cache_root_.path(),
+                                                  NULL);
+  system_service_->file_system()->AddObserver(this);
+
+  return system_service_;
+}
+
+void FileManagerBrowserDriveTest::OnDirectoryChanged(
+    const base::FilePath& directory_path) {
+  if (waiting_for_directory_change_)
+    MessageLoop::current()->Quit();
+}
+
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
-  ASSERT_TRUE(PrepareVolume());
-  DoTestFileDisplay(&volume_);
+  AddMountPointToFakeDownloads();
+  DoTestFileDisplay(kDownloadsVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardCopy) {
-  ASSERT_TRUE(PrepareVolume());
-  DoTestKeyboardCopy(&volume_);
+  AddMountPointToFakeDownloads();
+  DoTestKeyboardCopy(kDownloadsVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestKeyboardDelete) {
-  ASSERT_TRUE(PrepareVolume());
-  DoTestKeyboardDelete(&volume_);
+  AddMountPointToFakeDownloads();
+  DoTestKeyboardDelete(kDownloadsVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestFileDisplay) {
-  ASSERT_TRUE(PrepareVolume());
-  DoTestFileDisplay(&volume_);
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+  DoTestFileDisplay(kDriveVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
-  ASSERT_TRUE(PrepareVolume());
-  DoTestKeyboardCopy(&volume_);
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+  DoTestKeyboardCopy(kDriveVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
-  ASSERT_TRUE(PrepareVolume());
-  DoTestKeyboardDelete(&volume_);
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+  DoTestKeyboardDelete(kDriveVolume);
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
-  ASSERT_TRUE(PrepareVolume());
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
   ResultCatcher catcher;
   StartTest("openSidebarRecent");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
-  ASSERT_TRUE(PrepareVolume());
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
   ResultCatcher catcher;
   StartTest("openSidebarOffline");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenSharedWithMe) {
-  ASSERT_TRUE(PrepareVolume());
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
   ResultCatcher catcher;
   StartTest("openSidebarSharedWithMe");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
-  ASSERT_TRUE(PrepareVolume());
+  drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+
   ResultCatcher catcher;
   StartTest("autocomplete");
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
