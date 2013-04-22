@@ -113,6 +113,7 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   int64 GetCachedHostUsage(const std::string& host) const;
   int64 GetCachedGlobalUnlimitedUsage();
+  bool GetCachedOriginUsage(const GURL& origin, int64* usage) const;
 
   // SpecialStoragePolicy::Observer overrides
   virtual void OnGranted(const GURL& origin, int change_flags) OVERRIDE;
@@ -129,7 +130,6 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
   int64 global_usage_;
   int64 global_unlimited_usage_;
   bool global_usage_retrieved_;
-  bool global_unlimited_usage_is_valid_;
   HostSet cached_hosts_;
   HostUsageMap cached_usage_;
 
