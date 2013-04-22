@@ -538,7 +538,8 @@ bool HttpResponseHeaders::EnumerateHeaderLines(void** iter,
   return true;
 }
 
-bool HttpResponseHeaders::EnumerateHeader(void** iter, const std::string& name,
+bool HttpResponseHeaders::EnumerateHeader(void** iter,
+                                          const base::StringPiece& name,
                                           std::string* value) const {
   size_t i;
   if (!iter || !*iter) {
@@ -563,8 +564,8 @@ bool HttpResponseHeaders::EnumerateHeader(void** iter, const std::string& name,
   return true;
 }
 
-bool HttpResponseHeaders::HasHeaderValue(const std::string& name,
-                                         const std::string& value) const {
+bool HttpResponseHeaders::HasHeaderValue(const base::StringPiece& name,
+                                         const base::StringPiece& value) const {
   // The value has to be an exact match.  This is important since
   // 'cache-control: no-cache' != 'cache-control: no-cache="foo"'
   void* iter = NULL;
@@ -578,7 +579,7 @@ bool HttpResponseHeaders::HasHeaderValue(const std::string& name,
   return false;
 }
 
-bool HttpResponseHeaders::HasHeader(const std::string& name) const {
+bool HttpResponseHeaders::HasHeader(const base::StringPiece& name) const {
   return FindHeader(0, name) != std::string::npos;
 }
 
@@ -706,7 +707,7 @@ void HttpResponseHeaders::ParseStatusLine(
 }
 
 size_t HttpResponseHeaders::FindHeader(size_t from,
-                                       const std::string& search) const {
+                                       const base::StringPiece& search) const {
   for (size_t i = from; i < parsed_.size(); ++i) {
     if (parsed_[i].is_continuation())
       continue;

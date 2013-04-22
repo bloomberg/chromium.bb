@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
+#include "base/string_piece.h"
 #include "net/base/net_export.h"
 #include "net/base/net_log.h"
 #include "net/http/http_version.h"
@@ -154,16 +155,17 @@ class NET_EXPORT HttpResponseHeaders
   // EnumerateHeader. Note that a header might have an empty value. Call
   // EnumerateHeader repeatedly until it returns false.
   bool EnumerateHeader(void** iter,
-                       const std::string& name,
+                       const base::StringPiece& name,
                        std::string* value) const;
 
   // Returns true if the response contains the specified header-value pair.
   // Both name and value are compared case insensitively.
-  bool HasHeaderValue(const std::string& name, const std::string& value) const;
+  bool HasHeaderValue(const base::StringPiece& name,
+                      const base::StringPiece& value) const;
 
   // Returns true if the response contains the specified header.
   // The name is compared case insensitively.
-  bool HasHeader(const std::string& name) const;
+  bool HasHeader(const base::StringPiece& name) const;
 
   // Get the mime type and charset values in lower case form from the headers.
   // Empty strings are returned if the values are not present.
@@ -303,7 +305,7 @@ class NET_EXPORT HttpResponseHeaders
 
   // Find the header in our list (case-insensitive) starting with parsed_ at
   // index |from|.  Returns string::npos if not found.
-  size_t FindHeader(size_t from, const std::string& name) const;
+  size_t FindHeader(size_t from, const base::StringPiece& name) const;
 
   // Add a header->value pair to our list.  If we already have header in our
   // list, append the value to it.
