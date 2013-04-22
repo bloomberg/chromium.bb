@@ -8,6 +8,7 @@
 
 #include "base/synchronization/lock.h"
 #include "cc/animation/timing_function.h"
+#include "cc/debug/frame_rate_counter.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/io_surface_layer.h"
@@ -2296,14 +2297,50 @@ class LayerTreeHostTestVSyncNotification : public LayerTreeHostTest {
     return true;
   }
 
-  virtual void AfterTest() OVERRIDE {
-  }
+  virtual void AfterTest() OVERRIDE {}
 
  private:
   base::TimeTicks frame_time_;
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestVSyncNotification);
+
+class LayerTreeHostTestInputDrivenRendering : public LayerTreeHostTest {
+ public:
+  virtual void InitializeSettings(LayerTreeSettings* settings) OVERRIDE {
+    settings->render_vsync_notification_enabled = true;
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    frame_time_ = base::TimeTicks::Now();
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    // Post a task to send the final input event for the current vsync; it
+    // should trigger rendering.
+    ImplThread()->PostTask(
+        base::Bind(&LayerTreeHostTestInputDrivenRendering::SendFinalInputEvent,
+                   base::Unretained(this),
+                   base::Unretained(host_impl)));
+  }
+
+  void SendFinalInputEvent(LayerTreeHostImpl* host_impl) {
+    host_impl->DidReceiveLastInputEventForVSync(frame_time_);
+  }
+
+  virtual void DrawLayersOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
+    EXPECT_EQ(frame_time_, **host_impl->fps_counter()->begin());
+    EndTest();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+ private:
+  base::TimeTicks frame_time_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestInputDrivenRendering);
 
 class LayerTreeHostTestUninvertibleTransformDoesNotBlockActivation
     : public LayerTreeHostTest {

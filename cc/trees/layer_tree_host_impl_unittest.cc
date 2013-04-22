@@ -126,6 +126,8 @@ class LayerTreeHostImplTest : public testing::Test,
   virtual void RenewTreePriority() OVERRIDE {}
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
       OVERRIDE {}
+  virtual void DidReceiveLastInputEventForVSync(base::TimeTicks frame_time)
+      OVERRIDE {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

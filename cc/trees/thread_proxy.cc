@@ -1347,4 +1347,12 @@ void ThreadProxy::StartScrollbarAnimationOnImplThread() {
       layer_tree_host_impl_->CurrentFrameTimeTicks());
 }
 
+void ThreadProxy::DidReceiveLastInputEventForVSync(
+    base::TimeTicks frame_time) {
+  if (render_vsync_notification_enabled_) {
+    TRACE_EVENT0("cc", "ThreadProxy::DidReceiveLastInputEventForVSync");
+    DidVSync(frame_time);
+  }
+}
+
 }  // namespace cc

@@ -86,6 +86,13 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
     return client_->HaveTouchEventHandlersAt(point);
   }
 
+  virtual void didReceiveLastInputEventForVSync(double frame_time_sec)
+      OVERRIDE {
+    base::TimeTicks frame_time = base::TimeTicks::FromInternalValue(
+        frame_time_sec * base::Time::kMicrosecondsPerSecond);
+    client_->DidReceiveLastInputEventForVSync(frame_time);
+  }
+
  private:
   cc::InputHandlerClient* client_;
 };

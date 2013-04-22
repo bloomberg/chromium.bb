@@ -75,6 +75,9 @@ class CC_EXPORT InputHandlerClient {
 
   virtual bool HaveTouchEventHandlersAt(gfx::Point viewport_point) = 0;
 
+  virtual void DidReceiveLastInputEventForVSync(
+      base::TimeTicks frame_time) = 0;
+
  protected:
   InputHandlerClient() {}
   virtual ~InputHandlerClient() {}

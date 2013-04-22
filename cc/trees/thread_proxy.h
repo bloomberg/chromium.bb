@@ -86,6 +86,8 @@ class ThreadProxy : public Proxy,
   virtual void RenewTreePriority() OVERRIDE;
   virtual void RequestScrollbarAnimationOnImplThread(base::TimeDelta delay)
       OVERRIDE;
+  virtual void DidReceiveLastInputEventForVSync(
+      base::TimeTicks frame_time) OVERRIDE;
 
   // SchedulerClient implementation
   virtual void ScheduledActionBeginFrame() OVERRIDE;
