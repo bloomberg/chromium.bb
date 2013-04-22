@@ -96,7 +96,6 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   virtual string16 AccountChooserText() const OVERRIDE;
   virtual string16 SignInLinkText() const OVERRIDE;
   virtual string16 EditSuggestionText() const OVERRIDE;
-  virtual string16 UseBillingForShippingText() const OVERRIDE;
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 SaveLocallyText() const OVERRIDE;
@@ -166,8 +165,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
                        const content::NotificationDetails& details) OVERRIDE;
 
   // SuggestionsMenuModelDelegate implementation.
-  virtual void SuggestionItemSelected(const SuggestionsMenuModel& model)
-      OVERRIDE;
+  virtual void SuggestionItemSelected(SuggestionsMenuModel* model,
+                                      size_t index) OVERRIDE;
 
   // wallet::WalletClientDelegate implementation.
   virtual const AutofillMetrics& GetMetricLogger() const OVERRIDE;
@@ -326,6 +325,8 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // part of a section is suggested but part must be manually input (e.g. during
   // a CVC challenge or when using Autofill's CC section [never stores CVC]).
   string16 SuggestionTextForSection(DialogSection section);
+  gfx::Font::FontStyle SuggestionTextStyleForSection(DialogSection section)
+      const;
   string16 RequiredActionTextForSection(DialogSection section) const;
   gfx::Image SuggestionIconForSection(DialogSection section);
   string16 ExtraSuggestionTextForSection(DialogSection section) const;
@@ -371,6 +372,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Whether all of the input fields currently showing in the given |section| of
   // the dialog have valid contents.
   bool SectionIsValid(DialogSection section) const;
+
+  // Returns true if |key| refers to a suggestion, as opposed to some control
+  // menu item.
+  bool IsASuggestionItemKey(const std::string& key);
 
   // Whether the billing section should be used to fill in the shipping details.
   bool ShouldUseBillingForShipping();

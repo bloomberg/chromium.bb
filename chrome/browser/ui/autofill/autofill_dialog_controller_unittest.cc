@@ -55,7 +55,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
 
   virtual string16 GetCvc() OVERRIDE { return string16(); }
-  virtual bool UseBillingForShipping() OVERRIDE { return false; }
   virtual bool SaveDetailsLocally() OVERRIDE { return true; }
   virtual const content::NavigationController* ShowSignIn() OVERRIDE {
     return NULL;
@@ -364,8 +363,8 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
   // Since the PersonalDataManager is empty, this should only have the
-  // "add new" menu item.
-  EXPECT_EQ(1, shipping_model->GetItemCount());
+  // "use billing", "add new" and "manage" menu items.
+  EXPECT_EQ(3, shipping_model->GetItemCount());
 
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
 
@@ -374,18 +373,21 @@ TEST_F(AutofillDialogControllerTest, AutofillProfiles) {
   empty_profile.SetRawInfo(NAME_FULL, ASCIIToUTF16("John Doe"));
   controller()->GetTestingManager()->AddTestingProfile(&empty_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
-  EXPECT_EQ(1, shipping_model->GetItemCount());
+  EXPECT_EQ(3, shipping_model->GetItemCount());
 
   // A full profile should be picked up.
   AutofillProfile full_profile(test::GetFullProfile());
   full_profile.SetRawInfo(ADDRESS_HOME_LINE2, string16());
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   shipping_model = controller()->MenuModelForSection(SECTION_SHIPPING);
-  EXPECT_EQ(2, shipping_model->GetItemCount());
+  EXPECT_EQ(4, shipping_model->GetItemCount());
 }
 
 TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(1);
+  ui::MenuModel* email_model =
+      controller()->MenuModelForSection(SECTION_EMAIL);
+  EXPECT_EQ(2, email_model->GetItemCount());
 
   // Set up some variant data.
   AutofillProfile full_profile(test::GetFullProfile());
@@ -404,10 +406,9 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   controller()->GetTestingManager()->AddTestingProfile(&full_profile);
   ui::MenuModel* shipping_model =
       controller()->MenuModelForSection(SECTION_SHIPPING);
-  EXPECT_EQ(2, shipping_model->GetItemCount());
-  ui::MenuModel* email_model =
-      controller()->MenuModelForSection(SECTION_EMAIL);
-  EXPECT_EQ(3, email_model->GetItemCount());
+  EXPECT_EQ(4, shipping_model->GetItemCount());
+  email_model = controller()->MenuModelForSection(SECTION_EMAIL);
+  EXPECT_EQ(4, email_model->GetItemCount());
 
   email_model->ActivatedAt(0);
   EXPECT_EQ(kEmail1,
@@ -496,7 +497,7 @@ TEST_F(AutofillDialogControllerTest, EditClickedCancelled) {
 
   ui::MenuModel* email_model =
       controller()->MenuModelForSection(SECTION_EMAIL);
-  EXPECT_EQ(2, email_model->GetItemCount());
+  EXPECT_EQ(3, email_model->GetItemCount());
 
   // When unedited, the initial_value should be empty.
   email_model->ActivatedAt(0);

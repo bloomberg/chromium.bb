@@ -80,6 +80,10 @@ const bool kPayWithoutWalletDefault = false;
 const int kCartMax = 1850;
 const char kCartCurrency[] = "USD";
 
+const char kAddNewItemKey[] = "add-new-item";
+const char kManageItemsKey[] = "manage-items";
+const char kSameAsBillingKey[] = "same-as-billing";
+
 // Returns true if |input| should be shown when |field| has been requested.
 bool InputTypeMatchesFieldType(const DetailInput& input,
                                const AutofillField& field) {
@@ -412,11 +416,6 @@ string16 AutofillDialogControllerImpl::EditSuggestionText() const {
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_EDIT);
 }
 
-string16 AutofillDialogControllerImpl::UseBillingForShippingText() const {
-  return l10n_util::GetStringUTF16(
-      IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING);
-}
-
 string16 AutofillDialogControllerImpl::CancelButtonText() const {
   return l10n_util::GetStringUTF16(IDS_CANCEL);
 }
@@ -725,6 +724,7 @@ string16 AutofillDialogControllerImpl::LabelForSection(DialogSection section)
 SuggestionState AutofillDialogControllerImpl::SuggestionStateForSection(
     DialogSection section) {
   return SuggestionState(SuggestionTextForSection(section),
+                         SuggestionTextStyleForSection(section),
                          SuggestionIconForSection(section),
                          ExtraSuggestionTextForSection(section),
                          ExtraSuggestionIconForSection(section),
@@ -744,7 +744,12 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
 
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyForCheckedItem();
-  if (item_key.empty())
+  if (item_key == kSameAsBillingKey) {
+    return l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_USING_BILLING_FOR_SHIPPING);
+  }
+
+  if (!IsASuggestionItemKey(item_key))
     return string16();
 
   if (section == SECTION_EMAIL)
@@ -752,6 +757,16 @@ string16 AutofillDialogControllerImpl::SuggestionTextForSection(
 
   scoped_ptr<DataModelWrapper> wrapper = CreateWrapper(section);
   return wrapper->GetDisplayText();
+}
+
+gfx::Font::FontStyle
+    AutofillDialogControllerImpl::SuggestionTextStyleForSection(
+        DialogSection section) const {
+  const SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
+  if (model->GetItemKeyForCheckedItem() == kSameAsBillingKey)
+    return gfx::Font::ITALIC;
+
+  return gfx::Font::NORMAL;
 }
 
 string16 AutofillDialogControllerImpl::RequiredActionTextForSection(
@@ -796,11 +811,10 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
     }
   }
 
-  if (IsManuallyEditingSection(section))
-    return scoped_ptr<DataModelWrapper>();
-
   SuggestionsMenuModel* model = SuggestionsMenuModelForSection(section);
   std::string item_key = model->GetItemKeyForCheckedItem();
+  if (!IsASuggestionItemKey(item_key) || IsManuallyEditingSection(section))
+    return scoped_ptr<DataModelWrapper>();
 
   if (IsPayingWithWallet()) {
     int index;
@@ -862,7 +876,15 @@ gfx::Image AutofillDialogControllerImpl::ExtraSuggestionIconForSection(
 
 bool AutofillDialogControllerImpl::EditEnabledForSection(
     DialogSection section) const {
-  return section != SECTION_CC_BILLING || !IsSubmitPausedOn(wallet::VERIFY_CVV);
+  if (SuggestionsMenuModelForSection(section)->GetItemKeyForCheckedItem() ==
+      kSameAsBillingKey) {
+    return false;
+  }
+
+  if (section == SECTION_CC_BILLING && IsSubmitPausedOn(wallet::VERIFY_CVV))
+    return false;
+
+  return true;
 }
 
 void AutofillDialogControllerImpl::EditClickedForSection(
@@ -1360,11 +1382,17 @@ void AutofillDialogControllerImpl::Observe(
 // SuggestionsMenuModelDelegate implementation.
 
 void AutofillDialogControllerImpl::SuggestionItemSelected(
-    const SuggestionsMenuModel& model) {
-  const DialogSection section = SectionForSuggestionsMenuModel(model);
-  EditCancelledForSection(section);
+    SuggestionsMenuModel* model,
+    size_t index) {
+  if (model->GetItemKeyAt(index) == kManageItemsKey) {
+    // TODO(estade): show chrome://settings or a wallet URL.
+    return;
+  }
 
-  LogSuggestionItemSelectedMetric(model);
+  model->SetCheckedIndex(index);
+  EditCancelledForSection(SectionForSuggestionsMenuModel(*model));
+
+  LogSuggestionItemSelectedMetric(*model);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1681,6 +1709,10 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
   suggested_shipping_.Reset();
   HidePopup();
 
+  suggested_shipping_.AddKeyedItem(
+      kSameAsBillingKey,
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_USE_BILLING_FOR_SHIPPING));
+
   if (IsPayingWithWallet()) {
     if (!account_chooser_model_.active_wallet_account_name().empty()) {
       suggested_email_.AddKeyedItem(
@@ -1696,6 +1728,7 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
           base::IntToString(i),
           addresses[i]->DisplayName(),
           addresses[i]->DisplayNameDetail());
+
     }
 
     if (!IsSubmitPausedOn(wallet::VERIFY_CVV)) {
@@ -1710,9 +1743,14 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
             instruments[i]->CardIcon());
       }
 
+      // TODO(estade): this should have a URL sublabel.
       suggested_cc_billing_.AddKeyedItem(
-          std::string(),
+          kAddNewItemKey,
           l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_DETAILS));
+      suggested_cc_billing_.AddKeyedItem(
+          kManageItemsKey,
+          l10n_util::GetStringUTF16(
+              IDS_AUTOFILL_DIALOG_MANAGE_BILLING_DETAILS));
     }
   } else {
     PersonalDataManager* manager = GetManager();
@@ -1749,19 +1787,41 @@ void AutofillDialogControllerImpl::SuggestionsUpdated() {
     }
 
     suggested_cc_.AddKeyedItem(
-        std::string(),
+        kAddNewItemKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_CREDIT_CARD));
+    suggested_cc_.AddKeyedItem(
+        kManageItemsKey,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_CREDIT_CARD));
     suggested_billing_.AddKeyedItem(
-        std::string(),
+        kAddNewItemKey,
         l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_BILLING_ADDRESS));
+    suggested_billing_.AddKeyedItem(
+        kManageItemsKey,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_BILLING_ADDRESS));
   }
 
   suggested_email_.AddKeyedItem(
-      std::string(),
+      kAddNewItemKey,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_EMAIL_ADDRESS));
+  if (!IsPayingWithWallet()) {
+    suggested_email_.AddKeyedItem(
+        kManageItemsKey,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_EMAIL_ADDRESS));
+  }
+
   suggested_shipping_.AddKeyedItem(
-      std::string(),
+      kAddNewItemKey,
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_ADD_SHIPPING_ADDRESS));
+  suggested_shipping_.AddKeyedItem(
+      kManageItemsKey,
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_MANAGE_SHIPPING_ADDRESS));
+
+  // Default shipping address is the first suggestion, if one exists. Otherwise
+  // it's the "Use shipping for billing" item.
+  const std::string& first_real_suggestion_item_key =
+      suggested_shipping_.GetItemKeyAt(1);
+  if (IsASuggestionItemKey(first_real_suggestion_item_key))
+      suggested_shipping_.SetCheckedItem(first_real_suggestion_item_key);
 
   if (view_)
     view_->ModelChanged();
@@ -1863,14 +1923,6 @@ void AutofillDialogControllerImpl::SetCvcResult(const string16& cvc) {
 
 SuggestionsMenuModel* AutofillDialogControllerImpl::
     SuggestionsMenuModelForSection(DialogSection section) {
-  const AutofillDialogControllerImpl* const_this =
-      static_cast<const AutofillDialogControllerImpl*>(this);
-  return const_cast<SuggestionsMenuModel*>(
-      const_this->SuggestionsMenuModelForSection(section));
-}
-
-const SuggestionsMenuModel* AutofillDialogControllerImpl::
-    SuggestionsMenuModelForSection(DialogSection section) const {
   switch (section) {
     case SECTION_EMAIL:
       return &suggested_email_;
@@ -1886,6 +1938,12 @@ const SuggestionsMenuModel* AutofillDialogControllerImpl::
 
   NOTREACHED();
   return NULL;
+}
+
+const SuggestionsMenuModel* AutofillDialogControllerImpl::
+    SuggestionsMenuModelForSection(DialogSection section) const {
+  return const_cast<AutofillDialogControllerImpl*>(this)->
+      SuggestionsMenuModelForSection(section);
 }
 
 DialogSection AutofillDialogControllerImpl::SectionForSuggestionsMenuModel(
@@ -1957,7 +2015,15 @@ bool AutofillDialogControllerImpl::IsManuallyEditingSection(
       section_editing_state_.find(section);
   return (it != section_editing_state_.end() && it->second) ||
          SuggestionsMenuModelForSection(section)->
-             GetItemKeyForCheckedItem().empty();
+             GetItemKeyForCheckedItem() == kAddNewItemKey;
+}
+
+bool AutofillDialogControllerImpl::IsASuggestionItemKey(
+    const std::string& key) {
+  return !key.empty() &&
+      key != kAddNewItemKey &&
+      key != kManageItemsKey &&
+      key != kSameAsBillingKey;
 }
 
 bool AutofillDialogControllerImpl::IsManuallyEditingAnySection() const {
@@ -1987,13 +2053,7 @@ bool AutofillDialogControllerImpl::SectionIsValid(
 }
 
 bool AutofillDialogControllerImpl::ShouldUseBillingForShipping() {
-  // If the user is editing or inputting data, ask the view.
-  if (IsManuallyEditingSection(SECTION_SHIPPING))
-    return view_->UseBillingForShipping();
-
-  // Otherwise, the checkbox should be hidden so its state is irrelevant.
-  // Always use the shipping suggestion model.
-  return false;
+  return suggested_shipping_.GetItemKeyForCheckedItem() == kSameAsBillingKey;
 }
 
 bool AutofillDialogControllerImpl::ShouldSaveDetailsLocally() {
@@ -2028,7 +2088,7 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   if (!section_editing_state_[SECTION_CC_BILLING]) {
     SuggestionsMenuModel* billing =
         SuggestionsMenuModelForSection(SECTION_CC_BILLING);
-    if (!billing->GetItemKeyForCheckedItem().empty() &&
+    if (IsASuggestionItemKey(billing->GetItemKeyForCheckedItem()) &&
         billing->checked_item() <
             static_cast<int>(wallet_items_->instruments().size())) {
       const wallet::WalletItems::MaskedInstrument* active_instrument =
@@ -2044,11 +2104,11 @@ void AutofillDialogControllerImpl::SubmitWithWallet() {
   if (!section_editing_state_[SECTION_SHIPPING] && active_address_id_.empty()) {
     SuggestionsMenuModel* shipping =
         SuggestionsMenuModelForSection(SECTION_SHIPPING);
-    if (!shipping->GetItemKeyForCheckedItem().empty() &&
-        shipping->checked_item() <
+    if (IsASuggestionItemKey(shipping->GetItemKeyForCheckedItem()) &&
+        shipping->checked_item() - 1 <
             static_cast<int>(wallet_items_->addresses().size())) {
       active_address_id_ =
-          wallet_items_->addresses()[shipping->checked_item()]->object_id();
+          wallet_items_->addresses()[shipping->checked_item() - 1]->object_id();
     }
   }
 
@@ -2205,13 +2265,17 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
   DialogSection section = SectionForSuggestionsMenuModel(model);
 
   AutofillMetrics::DialogUiEvent dialog_ui_event;
-  if (model.GetItemKeyForCheckedItem().empty()) {
+  if (model.GetItemKeyForCheckedItem() == kAddNewItemKey) {
     // Selected to add a new item.
     dialog_ui_event = DialogSectionToUiItemAddedEvent(section);
-  } else {
+  } else if (IsASuggestionItemKey(model.GetItemKeyForCheckedItem())) {
     // Selected an existing item.
     DCHECK(!section_editing_state_[section]);
     dialog_ui_event = DialogSectionToUiSelectionChangedEvent(section);
+  } else {
+    // TODO(estade): add logging for "Manage items" or "Use billing for
+    // shipping"?
+    return;
   }
 
   GetMetricLogger().LogDialogUiEvent(dialog_type_, dialog_ui_event);
@@ -2220,11 +2284,11 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
 AutofillMetrics::DialogInitialUserStateMetric
     AutofillDialogControllerImpl::GetInitialUserState() const {
   // Consider a user to be an Autofill user if the user has any credit cards
-  // or addresses saved. Check that the item count is greater than 1 because
-  // an "empty" menu still has the "add new" menu item.
+  // or addresses saved. Check that the item count is greater than 2 because
+  // an "empty" menu still has the "add new" menu item and "manage" menu item.
   const bool has_autofill_profiles =
-      suggested_cc_.GetItemCount() > 1 ||
-      suggested_billing_.GetItemCount() > 1;
+      suggested_cc_.GetItemCount() > 2 ||
+      suggested_billing_.GetItemCount() > 2;
 
   if (SignedInState() != SIGNED_IN) {
     // Not signed in.
