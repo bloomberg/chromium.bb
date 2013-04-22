@@ -28,9 +28,6 @@
 
 #import "WebSystemInterface.h"
 
-// Needed for builds not using PCH to expose BUILDING_ macros, see bug 32753.
-#include <wtf/Platform.h>
-
 #import <WebCoreSystemInterface.h>
 #import <WebKitSystemInterface.h>
 
@@ -43,120 +40,16 @@ void InitWebCoreSystemInterface(void)
         return;
 
     INIT(AdvanceDefaultButtonPulseAnimation);
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    INIT(CALayerEnumerateRectsBeingDrawnWithBlock);
-#endif
-    INIT(CGContextGetShouldSmoothFonts);
-    INIT(CGPatternCreateWithImageAndTransform);
-    INIT(CGContextResetClip);
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1080
-    INIT(CGContextDrawsWithCorrectShadowOffsets);
-#endif
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-    INIT(CTFontTransformGlyphs);
-#endif
-    INIT(CopyCFLocalizationPreferredName);
-    INIT(CopyCONNECTProxyResponse);
-    INIT(CopyNSURLResponseStatusLine);
-    INIT(CreateCustomCFReadStream);
+    INIT(DrawBezeledTextFieldCell);
     INIT(DrawCapsLockIndicator);
     INIT(DrawBezeledTextArea);
-    INIT(DrawBezeledTextFieldCell);
-    INIT(DrawFocusRing);
-    INIT(DrawTextFieldCellFocusRing);
-    INIT(GetExtensionsForMIMEType);
-    INIT(GetFontInLanguageForCharacter);
     INIT(GetFontInLanguageForRange);
+    INIT(GetFontInLanguageForCharacter);
     INIT(GetGlyphTransformedAdvances);
-    INIT(GetHTTPPipeliningPriority);
-    INIT(GetMIMETypeForExtension);
-    INIT(GetNSURLResponseLastModifiedDate);
-    INIT(SignedPublicKeyAndChallengeString);
-    INIT(GetPreferredExtensionForMIMEType);
-    INIT(GetWheelEventDeltas);
-    INIT(InitializeMaximumHTTPConnectionCountPerHost);
-    INIT(WindowSetAlpha);
-    INIT(WindowSetScaledFrame);
-    INIT(PopupMenu);
-    INIT(SetBaseCTM);
-    INIT(SetCGFontRenderingMode);
-    INIT(SetCONNECTProxyAuthorizationForStream);
-    INIT(SetCONNECTProxyForStream);
-    INIT(SetDragImage);
-    INIT(SetHTTPPipeliningMaximumPriority);
-    INIT(SetHTTPPipeliningPriority);
-    INIT(SetHTTPPipeliningMinimumFastLanePriority);
-    INIT(SetNSURLConnectionDefersCallbacks);
-    INIT(SetNSURLRequestShouldContentSniff);
-    INIT(SetPatternPhaseInUserSpace);
-    INIT(GetUserToBaseCTM);
     INIT(SetUpFontCache);
-    INIT(SignalCFReadStreamEnd);
-    INIT(SignalCFReadStreamError);
-    INIT(SignalCFReadStreamHasBytes);
-    INIT(QTIncludeOnlyModernMediaFileTypes);
-    INIT(QTMovieDataRate);
-    INIT(QTMovieDisableComponent);
-    INIT(QTMovieMaxTimeLoaded);
-    INIT(QTMovieMaxTimeLoadedChangeNotification);
-    INIT(QTMovieMaxTimeSeekable);
-    INIT(QTMovieGetType);
-    INIT(QTMovieHasClosedCaptions);
-    INIT(QTMovieResolvedURL);
-    INIT(QTMovieSetShowClosedCaptions);
-    INIT(QTMovieSelectPreferredAlternates);
-    INIT(QTMovieViewSetDrawSynchronously);
-    INIT(QTGetSitesInMediaDownloadCache);
-    INIT(QTClearMediaDownloadCacheForSite);
-    INIT(QTClearMediaDownloadCache);
-
     INIT(GetGlyphsForCharacters);
     INIT(GetVerticalGlyphsForCharacters);
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED <= 1060
-    INIT(GetHyphenationLocationBeforeIndex);
-    INIT(GetNSEventMomentumPhase);
-#endif
-
     INIT(CreateCTLineWithUniCharProvider);
-
-#if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
-    INIT(IOSurfaceContextCreate);
-    INIT(IOSurfaceContextCreateImage);
-    INIT(CreateCTTypesetterWithUniCharProviderAndOptions);
-    INIT(RecommendedScrollerStyle);
-    INIT(ExecutableWasLinkedOnOrBeforeSnowLeopard);
-    INIT(SetCrashReportApplicationSpecificInformation);
-    INIT(CopyDefaultSearchProviderDisplayName);
-    INIT(AVAssetResolvedURL);
-    INIT(Cursor);
-#endif
-
-    INIT(GetAXTextMarkerTypeID);
-    INIT(GetAXTextMarkerRangeTypeID);
-    INIT(CreateAXTextMarker);
-    INIT(GetBytesFromAXTextMarker);
-    INIT(CreateAXTextMarkerRange);
-    INIT(CopyAXTextMarkerRangeStart);
-    INIT(CopyAXTextMarkerRangeEnd);
-    INIT(AccessibilityHandleFocusChanged);
-    INIT(CreateAXUIElementRef);
-    INIT(UnregisterUniqueIdForElement);
-    INIT(CreatePrivateStorageSession);
-    INIT(CopyRequestWithStorageSession);
-    INIT(CopyHTTPCookieStorage);
-    INIT(GetHTTPCookieAcceptPolicy);
-    INIT(HTTPCookiesForURL);
-    INIT(SetHTTPCookiesForURL);
-    INIT(DeleteHTTPCookie);
-
-    INIT(GetCFURLResponseMIMEType);
-    INIT(GetCFURLResponseURL);
-    INIT(GetCFURLResponseHTTPResponse);
-    INIT(CopyCFURLResponseSuggestedFilename);
-    INIT(SetCFURLResponseMIMEType);
-
-    INIT(SetMetadataURL);
 
     didInit = true;
 }
