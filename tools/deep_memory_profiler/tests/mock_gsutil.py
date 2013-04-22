@@ -32,16 +32,16 @@ def main():
   assert set(zip_file.namelist()) == expected_nameset
 
   heap_1 = zip_file.getinfo('heap.01234.0001.heap')
-  assert heap_1.CRC == 3189090643
-  assert heap_1.file_size == 1159
+  assert heap_1.CRC == 763099253
+  assert heap_1.file_size == 1107
 
   buckets_1 = zip_file.getinfo('heap.01234.0001.buckets')
   assert buckets_1.CRC == 2632528901
   assert buckets_1.file_size == 2146
 
   nm_chrome = zip_file.getinfo('heap.01234.symmap/chrome.abcdef.nm')
-  assert nm_chrome.CRC == 1135384293
-  assert nm_chrome.file_size == 25
+  assert nm_chrome.CRC == 2717882373
+  assert nm_chrome.file_size == 131049
 
   zip_file.close()
   return 0

@@ -188,6 +188,21 @@ class PolicyTest(unittest.TestCase):
     self.assertEqual('malloc-catch-all', policy.find(bucket3))
 
 
+class BucketsCommandTest(unittest.TestCase):
+  def test(self):
+    with open(os.path.join(ROOT_DIR, 'tests', 'output', 'buckets')) as output_f:
+      expected = output_f.read()
+
+    out = cStringIO.StringIO()
+
+    command = dmprof.BucketsCommand()
+    returncode = command.do([
+        'buckets',
+        os.path.join(ROOT_DIR, 'tests', 'data', 'heap.01234.0001.heap')], out)
+    self.assertEqual(0, returncode)
+    self.assertEqual(expected, out.getvalue())
+
+
 class UploadCommandTest(unittest.TestCase):
   def test(self):
     command = dmprof.UploadCommand()

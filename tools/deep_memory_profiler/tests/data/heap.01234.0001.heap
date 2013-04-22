@@ -16,7 +16,6 @@ GLOBAL_STATS:
         nonprofiled-other         4096         4096
             profiled-mmap    607928869     17727500
           profiled-malloc      1935377      1873937
-           unhooked-arena        64128        64128
 STACKTRACES:
    virtual  committed
      65536      65536      1      0 @ 4

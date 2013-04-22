@@ -6,8 +6,8 @@ import re
 
 
 _MAPS_PATTERN = re.compile(
-    '^([a-f0-9]+)-([a-f0-9]+)\s+(.)(.)(.)(.)\s+([a-f0-9]+)\s+(\S+):(\S+)\s+'
-    '(\d+)\s*(.*)$', re.IGNORECASE)
+    r'^([a-f0-9]+)-([a-f0-9]+)\s+(.)(.)(.)(.)\s+([a-f0-9]+)\s+(\S+):(\S+)\s+'
+    r'(\d+)\s*(.*)$', re.IGNORECASE)
 
 
 class ProcMapsEntry(object):
@@ -71,23 +71,33 @@ class ProcMaps(object):
   def load(f):
     table = ProcMaps()
     for line in f:
-      matched = _MAPS_PATTERN.match(line)
-      if matched:
-        table._append(ProcMapsEntry(  # pylint: disable=W0212
-            int(matched.group(1), 16),  # begin
-            int(matched.group(2), 16),  # end
-            matched.group(3),           # readable
-            matched.group(4),           # writable
-            matched.group(5),           # executable
-            matched.group(6),           # private
-            int(matched.group(7), 16),  # offset
-            matched.group(8),           # major
-            matched.group(9),           # minor
-            int(matched.group(10), 10), # inode
-            matched.group(11)           # name
-            ))
-
+      table.append_line(line)
     return table
+
+  def append_line(self, line):
+    entry = self.parse_line(line)
+    if entry:
+      self._append_entry(entry)
+
+  @staticmethod
+  def parse_line(line):
+    matched = _MAPS_PATTERN.match(line)
+    if matched:
+      return ProcMapsEntry(  # pylint: disable=W0212
+          int(matched.group(1), 16),  # begin
+          int(matched.group(2), 16),  # end
+          matched.group(3),           # readable
+          matched.group(4),           # writable
+          matched.group(5),           # executable
+          matched.group(6),           # private
+          int(matched.group(7), 16),  # offset
+          matched.group(8),           # major
+          matched.group(9),           # minor
+          int(matched.group(10), 10), # inode
+          matched.group(11)           # name
+          )
+    else:
+      return None
 
   @staticmethod
   def constants(entry):
@@ -108,7 +118,7 @@ class ProcMaps(object):
         '\S+(\.(so|dll|dylib|bundle)|chrome)((\.\d+)+\w*(\.\d+){0,3})?',
         entry.name))
 
-  def _append(self, entry):
+  def _append_entry(self, entry):
     if self._sorted_indexes and self._sorted_indexes[-1] > entry.begin:
       self._sorted = False
     self._sorted_indexes.append(entry.begin)
