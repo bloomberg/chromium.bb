@@ -6,7 +6,6 @@
 
 #include "base/bind.h"
 #include "base/file_util.h"
-#include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_service.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
+#include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/pref_names.h"
@@ -36,8 +36,6 @@
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_source.h"
-#include "grit/generated_resources.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "webkit/fileapi/file_system_types.h"
 #include "webkit/fileapi/file_system_util.h"
 
@@ -114,15 +112,6 @@ const char* MountErrorToString(chromeos::MountError error) {
   }
   NOTREACHED();
   return "";
-}
-
-void RelayFileWatcherCallbackToUIThread(
-    const base::FilePathWatcher::Callback& callback,
-    const base::FilePath& local_path,
-    bool got_error) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, local_path, got_error));
 }
 
 // Observes PowerManager and updates its state when the system suspends and
@@ -249,22 +238,15 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
 
 FileManagerEventRouter::FileManagerEventRouter(
     Profile* profile)
-    : weak_factory_(this),
-      notifications_(new FileManagerNotifications(profile)),
+    : notifications_(new FileManagerNotifications(profile)),
       pref_change_registrar_(new PrefChangeRegistrar),
       profile_(profile),
-      shift_pressed_(false) {
+      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_watcher_callback_ =
       base::Bind(&FileManagerEventRouter::HandleFileWatchNotification,
                  weak_factory_.GetWeakPtr());
-
-  // Listen for the Shift modifier's state changes.
-  chromeos::SystemKeyEventListener* key_event_listener =
-      chromeos::SystemKeyEventListener::GetInstance();
-  if (key_event_listener)
-    key_event_listener->AddModifiersObserver(this);
 }
 
 FileManagerEventRouter::~FileManagerEventRouter() {
@@ -280,11 +262,6 @@ void FileManagerEventRouter::Shutdown() {
     NOTREACHED();
     return;
   }
-
-  chromeos::SystemKeyEventListener* key_event_listener =
-      chromeos::SystemKeyEventListener::GetInstance();
-  if (key_event_listener)
-    key_event_listener->RemoveModifiersObserver(this);
 
   DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
   if (disk_mount_manager)
@@ -595,10 +572,6 @@ void FileManagerEventRouter::OnFileSystemMounted() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   MountDrive(base::Bind(&base::DoNothing));  // Callback does nothing.
-}
-
-void FileManagerEventRouter::OnModifiersChange(int pressed_modifiers) {
-  shift_pressed_ = (pressed_modifiers & SHIFT_PRESSED);
 }
 
 void FileManagerEventRouter::OnFileSystemBeingUnmounted() {
@@ -949,14 +922,6 @@ FileManagerEventRouter::FileWatcherExtensions::GetVirtualPath() const {
   return virtual_path_;
 }
 
-drive::DriveFileSystemInterface*
-FileManagerEventRouter::GetRemoteFileSystem() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DriveSystemService* system_service =
-      DriveSystemServiceFactory::GetForProfile(profile_);
-  return (system_service ? system_service->file_system() : NULL);
-}
-
 void FileManagerEventRouter::FileWatcherExtensions::Watch(
     const base::FilePath& local_path,
     const base::FilePathWatcher::Callback& file_watcher_callback,
@@ -978,8 +943,7 @@ void FileManagerEventRouter::FileWatcherExtensions::Watch(
       FROM_HERE,
       base::Bind(&CreateAndStartFilePathWatcher,
                  local_path,
-                 base::Bind(&RelayFileWatcherCallbackToUIThread,
-                            file_watcher_callback)),
+                 google_apis::CreateRelayCallback(file_watcher_callback)),
       base::Bind(
           &FileManagerEventRouter::FileWatcherExtensions::OnWatcherStarted,
           weak_ptr_factory_.GetWeakPtr(),

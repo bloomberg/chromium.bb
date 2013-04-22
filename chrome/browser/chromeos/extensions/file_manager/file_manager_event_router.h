@@ -6,38 +6,25 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_MANAGER_EVENT_ROUTER_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/files/file_path_watcher.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/string16.h"
-#include "base/synchronization/lock.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
-#include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
-#include "chrome/browser/chromeos/system_key_event_listener.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/operation_registry.h"
 #include "chromeos/disks/disk_mount_manager.h"
 
 class FileManagerNotifications;
 class PrefChangeRegistrar;
 class Profile;
 
-namespace drive {
-class DriveEntryProto;
-class DriveFileSystemInterface;
-}
-
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
 class FileManagerEventRouter
     : public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
-      public chromeos::SystemKeyEventListener::ModifiersObserver,
       public drive::DriveSystemServiceObserver,
       public drive::DriveFileSystemObserver,
       public google_apis::DriveServiceObserver {
@@ -118,9 +105,6 @@ class FileManagerEventRouter
   // drive::DriveSystemServiceObserver overrides.
   virtual void OnFileSystemMounted() OVERRIDE;
   virtual void OnFileSystemBeingUnmounted() OVERRIDE;
-
-  // chromeos::SystemKeyEventListener::ModifiersObserver overrides.
-  virtual void OnModifiersChange(int pressed_modifiers) OVERRIDE;
 
  private:
   typedef std::map<std::string, int> ExtensionUsageRegistry;
@@ -210,10 +194,6 @@ class FileManagerEventRouter
       const chromeos::disks::DiskMountManager::Disk& disk,
       const base::FilePath& mount_path);
 
-  // Returns the DriveFileSystem for the current profile.
-  drive::DriveFileSystemInterface* GetRemoteFileSystem() const;
-
-  base::WeakPtrFactory<FileManagerEventRouter> weak_factory_;
   base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;
   scoped_ptr<FileManagerNotifications> notifications_;
@@ -221,10 +201,9 @@ class FileManagerEventRouter
   scoped_ptr<SuspendStateDelegate> suspend_state_delegate_;
   Profile* profile_;
 
-  // Event router behavior depends on shift modifier status. This is designed
-  // for power users.
-  bool shift_pressed_;
-
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate the weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<FileManagerEventRouter> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(FileManagerEventRouter);
 };
 
