@@ -53,6 +53,7 @@ public:
     virtual void attach();
     
     virtual bool canContainRangeEndPoint() const { return true; }
+    virtual NodeType nodeType() const;
 
 protected:
     Text(Document* document, const String& data, ConstructionType type)
@@ -63,7 +64,6 @@ protected:
 
 private:
     virtual String nodeName() const;
-    virtual NodeType nodeType() const;
     virtual PassRefPtr<Node> cloneNode(bool deep);
     virtual bool childTypeAllowed(NodeType) const;
 
