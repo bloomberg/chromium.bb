@@ -128,6 +128,7 @@ ffmpegsumo.dll!vp8_decode_mb_row_no_filter
 WARNING
 name=http://crbug.com/233500 - prefetches in v8::internal::OS::MemCopy
 instruction=prefetch*
+...
 v8.dll!v8::internal::OS::MemCopy
 
 ############################
