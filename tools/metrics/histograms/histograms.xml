@@ -4975,6 +4975,7 @@ other types of suffix sets.
   <int value="436" label="SYNCFILESYSTEM_GETFILESYNCSTATUSES"/>
   <int value="437" label="MEDIAGALLERIESPRIVATE_GETHANDLERS"/>
   <int value="438" label="WALLPAPERPRIVATE_RESETWALLPAPER"/>
+  <int value="439" label="EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN"/>
 </enum>
 
 <enum name="FallbackSSLVersion" type="int">

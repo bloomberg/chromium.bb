@@ -90,7 +90,8 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   virtual void StartMintToken(IdentityMintRequestQueue::MintType type) OVERRIDE;
 
   // OAuth2MintTokenFlow::Delegate implementation:
-  virtual void OnMintTokenSuccess(const std::string& access_token) OVERRIDE;
+  virtual void OnMintTokenSuccess(const std::string& access_token,
+                                  int time_to_live) OVERRIDE;
   virtual void OnMintTokenFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnIssueAdviceSuccess(
@@ -130,6 +131,19 @@ class IdentityGetAuthTokenFunction : public AsyncExtensionFunction,
   scoped_ptr<IdentitySigninFlow> signin_flow_;
 };
 
+class IdentityRemoveCachedAuthTokenFunction : public SyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("experimental.identity.removeCachedAuthToken",
+                             EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN)
+  IdentityRemoveCachedAuthTokenFunction();
+
+ protected:
+  virtual ~IdentityRemoveCachedAuthTokenFunction();
+
+  // SyncExtensionFunction implementation:
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
                                           public WebAuthFlow::Delegate {
  public:
@@ -160,6 +174,35 @@ class IdentityLaunchWebAuthFlowFunction : public AsyncExtensionFunction,
   std::vector<GURL> final_prefixes_;
 };
 
+class IdentityTokenCacheValue {
+ public:
+  IdentityTokenCacheValue();
+  explicit IdentityTokenCacheValue(const IssueAdviceInfo& issue_advice);
+  IdentityTokenCacheValue(const std::string& token,
+                          base::TimeDelta time_to_live);
+  ~IdentityTokenCacheValue();
+
+  // Order of these entries is used to determine whether or not new
+  // entries supercede older ones in SetCachedToken.
+  enum CacheValueStatus {
+    CACHE_STATUS_NOTFOUND,
+    CACHE_STATUS_ADVICE,
+    CACHE_STATUS_TOKEN
+  };
+
+  CacheValueStatus status() const;
+  const IssueAdviceInfo& issue_advice() const;
+  const std::string& token() const;
+
+ private:
+  bool is_expired() const;
+
+  CacheValueStatus status_;
+  IssueAdviceInfo issue_advice_;
+  std::string token_;
+  base::Time expiration_time_;
+};
+
 class IdentityAPI : public ProfileKeyedAPI,
                     public SigninGlobalError::AuthStatusProvider,
                     public content::NotificationObserver {
@@ -170,6 +213,16 @@ class IdentityAPI : public ProfileKeyedAPI,
 
   // Request serialization queue for getAuthToken.
   IdentityMintRequestQueue* mint_queue();
+
+  // Token cache
+  void SetCachedToken(const std::string& extension_id,
+                      const std::vector<std::string> scopes,
+                      const IdentityTokenCacheValue& token_data);
+  void EraseCachedToken(const std::string& extension_id,
+                        const std::string& token);
+  void EraseAllCachedTokens();
+  const IdentityTokenCacheValue& GetCachedToken(
+      const std::string& extension_id, const std::vector<std::string> scopes);
 
   void ReportAuthError(const GoogleServiceAuthError& error);
 
@@ -188,6 +241,15 @@ class IdentityAPI : public ProfileKeyedAPI,
  private:
   friend class ProfileKeyedAPIFactory<IdentityAPI>;
 
+  struct TokenCacheKey {
+    TokenCacheKey(const std::string& extension_id,
+                  const std::set<std::string> scopes);
+    ~TokenCacheKey();
+    bool operator<(const TokenCacheKey& rhs) const;
+    std::string extension_id;
+    std::set<std::string> scopes;
+  };
+
   // ProfileKeyedAPI implementation.
   static const char* service_name() {
     return "IdentityAPI";
@@ -200,6 +262,7 @@ class IdentityAPI : public ProfileKeyedAPI,
   // Used to listen to notifications from the TokenService.
   content::NotificationRegistrar registrar_;
   IdentityMintRequestQueue mint_queue_;
+  std::map<TokenCacheKey, IdentityTokenCacheValue> token_cache_;
 };
 
 template <>

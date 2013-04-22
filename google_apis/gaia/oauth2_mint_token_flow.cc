@@ -14,6 +14,7 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -45,6 +46,7 @@ static const char kIssueAdviceValueAuto[] = "auto";
 static const char kIssueAdviceValueConsent[] = "consent";
 static const char kAccessTokenKey[] = "token";
 static const char kConsentKey[] = "consent";
+static const char kExpiresInKey[] = "expiresIn";
 static const char kScopesKey[] = "scopes";
 static const char kDescriptionKey[] = "description";
 static const char kDetailKey[] = "detail";
@@ -102,9 +104,10 @@ OAuth2MintTokenFlow::OAuth2MintTokenFlow(URLRequestContextGetter* context,
 
 OAuth2MintTokenFlow::~OAuth2MintTokenFlow() { }
 
-void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token) {
+void OAuth2MintTokenFlow::ReportSuccess(const std::string& access_token,
+                                        int time_to_live) {
   if (delegate_)
-    delegate_->OnMintTokenSuccess(access_token);
+    delegate_->OnMintTokenSuccess(access_token, time_to_live);
 
   // |this| may already be deleted.
 }
@@ -174,8 +177,9 @@ void OAuth2MintTokenFlow::ProcessApiCallSuccess(
       ReportFailure(GoogleServiceAuthError::FromConnectionError(101));
   } else {
     std::string access_token;
-    if (ParseMintTokenResponse(dict, &access_token))
-      ReportSuccess(access_token);
+    int time_to_live;
+    if (ParseMintTokenResponse(dict, &access_token, &time_to_live))
+      ReportSuccess(access_token, time_to_live);
     else
       ReportFailure(GoogleServiceAuthError::FromConnectionError(101));
   }
@@ -200,10 +204,15 @@ void OAuth2MintTokenFlow::ProcessMintAccessTokenFailure(
 
 // static
 bool OAuth2MintTokenFlow::ParseMintTokenResponse(
-    const base::DictionaryValue* dict, std::string* access_token) {
+    const base::DictionaryValue* dict, std::string* access_token,
+    int* time_to_live) {
   CHECK(dict);
   CHECK(access_token);
-  return dict->GetString(kAccessTokenKey, access_token);
+  CHECK(time_to_live);
+  std::string ttl_string;
+  return dict->GetString(kExpiresInKey, &ttl_string) &&
+      base::StringToInt(ttl_string, time_to_live) &&
+      dict->GetString(kAccessTokenKey, access_token);
 }
 
 // static

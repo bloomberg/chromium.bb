@@ -29,7 +29,8 @@ namespace {
 static const char kValidTokenResponse[] =
     "{"
     "  \"token\": \"at1\","
-    "  \"issueAdvice\": \"Auto\""
+    "  \"issueAdvice\": \"Auto\","
+    "  \"expiresIn\": \"3600\""
     "}";
 static const char kTokenResponseNoAccessToken[] =
     "{"
@@ -126,7 +127,8 @@ class MockDelegate : public OAuth2MintTokenFlow::Delegate {
   MockDelegate() {}
   ~MockDelegate() {}
 
-  MOCK_METHOD1(OnMintTokenSuccess, void(const std::string& access_token));
+  MOCK_METHOD2(OnMintTokenSuccess, void(const std::string& access_token,
+                                        int time_to_live));
   MOCK_METHOD1(OnIssueAdviceSuccess,
                void (const IssueAdviceInfo& issue_advice));
   MOCK_METHOD1(OnMintTokenFailure,
@@ -230,14 +232,19 @@ TEST_F(OAuth2MintTokenFlowTest, ParseMintTokenResponse) {
     scoped_ptr<base::DictionaryValue> json(
         ParseJson(kTokenResponseNoAccessToken));
     std::string at;
-    EXPECT_FALSE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at));
+    int ttl;
+    EXPECT_FALSE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at,
+                                                             &ttl));
     EXPECT_TRUE(at.empty());
   }
   {  // All good.
     scoped_ptr<base::DictionaryValue> json(ParseJson(kValidTokenResponse));
     std::string at;
-    EXPECT_TRUE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at));
+    int ttl;
+    EXPECT_TRUE(OAuth2MintTokenFlow::ParseMintTokenResponse(json.get(), &at,
+                                                            &ttl));
     EXPECT_EQ("at1", at);
+    EXPECT_EQ(3600, ttl);
   }
 }
 
@@ -295,7 +302,7 @@ TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess) {
     TestURLFetcher url_fetcher(1, GURL("http://www.google.com"), NULL);
     url_fetcher.SetResponseString(kValidTokenResponse);
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
-    EXPECT_CALL(delegate_, OnMintTokenSuccess("at1"));
+    EXPECT_CALL(delegate_, OnMintTokenSuccess("at1", 3600));
     flow_->ProcessApiCallSuccess(&url_fetcher);
   }
   {  // Valid json: no description.

@@ -48,6 +48,8 @@ const char kUserRejected[] = "The user did not approve access.";
 const char kUserNotSignedIn[] = "The user is not signed in.";
 const char kInteractionRequired[] = "User interaction required.";
 const char kInvalidRedirect[] = "Did not redirect to the right URL.";
+
+const int kCachedIssueAdviceTTLSeconds = 1;
 }  // namespace identity_constants
 
 namespace {
@@ -58,6 +60,8 @@ static const char kChromiumDomainRedirectUrlPattern[] =
 }  // namespace
 
 namespace GetAuthToken = api::experimental_identity::GetAuthToken;
+namespace RemoveCachedAuthToken =
+    api::experimental_identity::RemoveCachedAuthToken;
 namespace LaunchWebAuthFlow = api::experimental_identity::LaunchWebAuthFlow;
 namespace identity = api::experimental_identity;
 
@@ -125,6 +129,10 @@ void IdentityGetAuthTokenFunction::CompleteFunctionWithError(
 }
 
 void IdentityGetAuthTokenFunction::StartSigninFlow() {
+  // All cached tokens are invalid because the user is not signed in.
+  IdentityAPI* id_api =
+      extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(profile_);
+  id_api->EraseAllCachedTokens();
   // Display a login prompt. If the subsequent mint fails, don't display the
   // login prompt again.
   should_prompt_for_signin_ = false;
@@ -143,14 +151,21 @@ void IdentityGetAuthTokenFunction::StartMintTokenFlow(
   IdentityAPI* id_api =
       extensions::IdentityAPI::GetFactoryInstance()->GetForProfile(profile_);
 
-  // If there is an interactive flow in progress, non-interactive
-  // requests should complete immediately since a consent UI is
-  // known to be required.
-  if (!should_prompt_for_scopes_ && !id_api->mint_queue()->empty(
-          IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE,
-          GetExtension()->id(), scopes)) {
-    CompleteFunctionWithError(identity_constants::kNoGrant);
-    return;
+  if (!should_prompt_for_scopes_) {
+    // Caller requested no interaction.
+
+    if (type == IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE) {
+      // GAIA told us to do a consent UI.
+      CompleteFunctionWithError(identity_constants::kNoGrant);
+      return;
+    }
+    if (!id_api->mint_queue()->empty(
+            IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE,
+            GetExtension()->id(), scopes)) {
+      // Another call is going through a consent UI.
+      CompleteFunctionWithError(identity_constants::kNoGrant);
+      return;
+    }
   }
   id_api->mint_queue()->RequestStart(type,
                                      GetExtension()->id(),
@@ -174,24 +189,53 @@ void IdentityGetAuthTokenFunction::CompleteMintTokenFlow() {
 
 void IdentityGetAuthTokenFunction::StartMintToken(
     IdentityMintRequestQueue::MintType type) {
-  switch (type) {
-    case IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE:
-      StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
-      break;
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  IdentityAPI* id_api = IdentityAPI::GetFactoryInstance()->GetForProfile(
+      profile());
+  IdentityTokenCacheValue cache_entry = id_api->GetCachedToken(
+      GetExtension()->id(), oauth2_info.scopes);
+  IdentityTokenCacheValue::CacheValueStatus cache_status =
+      cache_entry.status();
 
-    case IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE:
+  if (type == IdentityMintRequestQueue::MINT_TYPE_NONINTERACTIVE) {
+    switch (cache_status) {
+      case IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND:
+        StartGaiaRequest(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);
+        break;
+
+      case IdentityTokenCacheValue::CACHE_STATUS_TOKEN:
+        CompleteMintTokenFlow();
+        CompleteFunctionWithResult(cache_entry.token());
+        break;
+
+      case IdentityTokenCacheValue::CACHE_STATUS_ADVICE:
+        CompleteMintTokenFlow();
+        should_prompt_for_signin_ = false;
+        issue_advice_ = cache_entry.issue_advice();
+        StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
+        break;
+    }
+  } else {
+    DCHECK(type == IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
+
+    if (cache_status == IdentityTokenCacheValue::CACHE_STATUS_TOKEN) {
+      CompleteMintTokenFlow();
+      CompleteFunctionWithResult(cache_entry.token());
+    } else {
       install_ui_.reset(new ExtensionInstallPrompt(GetAssociatedWebContents()));
       ShowOAuthApprovalDialog(issue_advice_);
-      break;
-
-    default:
-      NOTREACHED() << "Unexepected mint type in StartMintToken: " << type;
-      break;
-  };
+    }
+  }
 }
 
 void IdentityGetAuthTokenFunction::OnMintTokenSuccess(
-    const std::string& access_token) {
+    const std::string& access_token, int time_to_live) {
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  IdentityTokenCacheValue token(access_token,
+                                base::TimeDelta::FromSeconds(time_to_live));
+  IdentityAPI::GetFactoryInstance()->GetForProfile(profile())->SetCachedToken(
+      GetExtension()->id(), oauth2_info.scopes, token);
+
   CompleteMintTokenFlow();
   CompleteFunctionWithResult(access_token);
 }
@@ -223,17 +267,17 @@ void IdentityGetAuthTokenFunction::OnMintTokenFailure(
 
 void IdentityGetAuthTokenFunction::OnIssueAdviceSuccess(
     const IssueAdviceInfo& issue_advice) {
+  const OAuth2Info& oauth2_info = OAuth2Info::GetOAuth2Info(GetExtension());
+  IdentityAPI::GetFactoryInstance()->GetForProfile(profile())->SetCachedToken(
+      GetExtension()->id(), oauth2_info.scopes,
+      IdentityTokenCacheValue(issue_advice));
   CompleteMintTokenFlow();
 
   should_prompt_for_signin_ = false;
   // Existing grant was revoked and we used NO_FORCE, so we got info back
-  // instead.
-  if (should_prompt_for_scopes_) {
-    issue_advice_ = issue_advice;
-    StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
-  } else {
-    CompleteFunctionWithError(identity_constants::kNoGrant);
-  }
+  // instead. Start a consent UI if we can.
+  issue_advice_ = issue_advice;
+  StartMintTokenFlow(IdentityMintRequestQueue::MINT_TYPE_INTERACTIVE);
 }
 
 void IdentityGetAuthTokenFunction::SigninSuccess(const std::string& token) {
@@ -303,6 +347,23 @@ OAuth2MintTokenFlow* IdentityGetAuthTokenFunction::CreateMintTokenFlow(
 bool IdentityGetAuthTokenFunction::HasLoginToken() const {
   TokenService* token_service = TokenServiceFactory::GetForProfile(profile());
   return token_service->HasOAuthLoginToken();
+}
+
+IdentityRemoveCachedAuthTokenFunction::IdentityRemoveCachedAuthTokenFunction() {
+}
+
+IdentityRemoveCachedAuthTokenFunction::
+    ~IdentityRemoveCachedAuthTokenFunction() {
+}
+
+bool IdentityRemoveCachedAuthTokenFunction::RunImpl() {
+  scoped_ptr<RemoveCachedAuthToken::Params> params(
+      RemoveCachedAuthToken::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params.get());
+  const identity::InvalidTokenDetails& details = params->details;
+  IdentityAPI::GetFactoryInstance()->GetForProfile(profile())->EraseCachedToken(
+      GetExtension()->id(), details.token);
+  return true;
 }
 
 IdentityLaunchWebAuthFlowFunction::IdentityLaunchWebAuthFlowFunction() {}
@@ -397,6 +458,52 @@ void IdentityLaunchWebAuthFlowFunction::OnAuthFlowURLChange(
   }
 }
 
+IdentityTokenCacheValue::IdentityTokenCacheValue()
+    : status_(CACHE_STATUS_NOTFOUND) {
+}
+
+IdentityTokenCacheValue::IdentityTokenCacheValue(
+    const IssueAdviceInfo& issue_advice) : status_(CACHE_STATUS_ADVICE),
+                                           issue_advice_(issue_advice) {
+  expiration_time_ = base::Time::Now() + base::TimeDelta::FromSeconds(
+      identity_constants::kCachedIssueAdviceTTLSeconds);
+}
+
+IdentityTokenCacheValue::IdentityTokenCacheValue(
+    const std::string& token, base::TimeDelta time_to_live)
+    : status_(CACHE_STATUS_TOKEN),
+      token_(token) {
+  base::TimeDelta zero_delta;
+  if (time_to_live < zero_delta)
+    time_to_live = zero_delta;
+
+  expiration_time_ = base::Time::Now() + time_to_live;
+}
+
+IdentityTokenCacheValue::~IdentityTokenCacheValue() {
+}
+
+IdentityTokenCacheValue::CacheValueStatus
+    IdentityTokenCacheValue::status() const {
+  if (is_expired())
+    return IdentityTokenCacheValue::CACHE_STATUS_NOTFOUND;
+  else
+    return status_;
+}
+
+const IssueAdviceInfo& IdentityTokenCacheValue::issue_advice() const {
+  return issue_advice_;
+}
+
+const std::string& IdentityTokenCacheValue::token() const {
+  return token_;
+}
+
+bool IdentityTokenCacheValue::is_expired() const {
+  return status_ == CACHE_STATUS_NOTFOUND ||
+      expiration_time_ < base::Time::Now();
+}
+
 IdentityAPI::IdentityAPI(Profile* profile)
     : profile_(profile),
       signin_manager_(NULL),
@@ -419,6 +526,44 @@ void IdentityAPI::Initialize() {
 
 IdentityMintRequestQueue* IdentityAPI::mint_queue() {
     return &mint_queue_;
+}
+
+void IdentityAPI::SetCachedToken(const std::string& extension_id,
+                                 const std::vector<std::string> scopes,
+                                 const IdentityTokenCacheValue& token_data) {
+  std::set<std::string> scopeset(scopes.begin(), scopes.end());
+  TokenCacheKey key(extension_id, scopeset);
+
+  std::map<TokenCacheKey, IdentityTokenCacheValue>::iterator it =
+      token_cache_.find(key);
+  if (it != token_cache_.end() && it->second.status() <= token_data.status())
+    token_cache_.erase(it);
+
+  token_cache_.insert(std::make_pair(key, token_data));
+}
+
+void IdentityAPI::EraseCachedToken(const std::string& extension_id,
+                                   const std::string& token) {
+  std::map<TokenCacheKey, IdentityTokenCacheValue>::iterator it;
+  for (it = token_cache_.begin(); it != token_cache_.end(); ++it) {
+    if (it->first.extension_id == extension_id &&
+        it->second.status() == IdentityTokenCacheValue::CACHE_STATUS_TOKEN &&
+        it->second.token() == token) {
+      token_cache_.erase(it);
+      break;
+    }
+  }
+}
+
+void IdentityAPI::EraseAllCachedTokens() {
+  token_cache_.clear();
+}
+
+const IdentityTokenCacheValue& IdentityAPI::GetCachedToken(
+    const std::string& extension_id, const std::vector<std::string> scopes) {
+  std::set<std::string> scopeset(scopes.begin(), scopes.end());
+  TokenCacheKey key(extension_id, scopeset);
+  return token_cache_[key];
 }
 
 void IdentityAPI::ReportAuthError(const GoogleServiceAuthError& error) {
@@ -464,6 +609,25 @@ void ProfileKeyedAPIFactory<IdentityAPI>::DeclareFactoryDependencies() {
   DependsOn(ExtensionSystemFactory::GetInstance());
   DependsOn(TokenServiceFactory::GetInstance());
   DependsOn(SigninManagerFactory::GetInstance());
+}
+
+IdentityAPI::TokenCacheKey::TokenCacheKey(const std::string& extension_id,
+                                          const std::set<std::string> scopes)
+    : extension_id(extension_id),
+      scopes(scopes) {
+}
+
+IdentityAPI::TokenCacheKey::~TokenCacheKey() {
+}
+
+bool IdentityAPI::TokenCacheKey::operator<(
+    const IdentityAPI::TokenCacheKey& rhs) const {
+  if (extension_id < rhs.extension_id)
+    return true;
+  else if (rhs.extension_id < extension_id)
+    return false;
+
+  return scopes < rhs.scopes;
 }
 
 }  // namespace extensions
