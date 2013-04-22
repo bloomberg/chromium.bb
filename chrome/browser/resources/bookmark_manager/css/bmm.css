@@ -210,7 +210,8 @@ list > .folder > .label,
 }
 
 #tree-container {
-  -webkit-padding-start: 15px;
+  -webkit-padding-end: 5px;
+  -webkit-padding-start: 10px;
   box-sizing: border-box;
   /* min-width and max-width are used by the split pane. */
   max-width: 50%;
@@ -247,9 +248,9 @@ list > .folder > .label,
 }
 
 .splitter {
+  -webkit-border-end: 15px solid white;
+  -webkit-border-start: 0;
   background-color: rgb(235, 239, 249);
-  border-left: 15px solid white;
-  border-right: 15px solid white;
   cursor: e-resize;
   width: 5px;
 <if expr="is_macosx">
