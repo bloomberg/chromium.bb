@@ -129,7 +129,7 @@ class UserManagerImpl
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 
  private:
-  friend class UserManagerImplWrapper;
+  friend class UserManager;
   friend class WallpaperManager;
   friend class UserManagerTest;
 

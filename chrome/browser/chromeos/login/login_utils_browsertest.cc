@@ -296,6 +296,7 @@ class LoginUtilsTest : public testing::Test,
     EXPECT_CALL(*cryptohome_client_, IsMounted(_));
 
     test_cros_settings_.reset(new ScopedTestCrosSettings);
+    test_user_manager_.reset(new ScopedTestUserManager);
 
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
@@ -321,7 +322,7 @@ class LoginUtilsTest : public testing::Test,
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_async_method_caller_ = NULL;
 
-    UserManager::Get()->Shutdown();
+    test_user_manager_.reset();
 
     InvokeOnIO(
         base::Bind(&LoginUtilsTest::TearDownOnIO, base::Unretained(this)));
@@ -546,6 +547,7 @@ class LoginUtilsTest : public testing::Test,
 
   // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.
   scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
+  scoped_ptr<ScopedTestUserManager> test_user_manager_;
 
   Profile* prepared_profile_;
 

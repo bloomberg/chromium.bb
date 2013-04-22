@@ -10,12 +10,14 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 class PrefRegistrySimple;
 
 namespace chromeos {
 
 class RemoveUserDelegate;
+class ScopedCrosSettings;
 class UserImageManager;
 
 // Base class for UserManagerImpl - provides a mechanism for discovering users
@@ -56,36 +58,31 @@ class UserManager {
   // Domain that is used for kiosk app robot.
   static const char kKioskAppUserDomain[];
 
-  // Returns a shared instance of a UserManager. Not thread-safe, should only be
+  // Creates the singleton instance. This method is not thread-safe and must be
   // called from the main UI thread.
-  static UserManager* Get();
+  static void Initialize();
 
-  // Set UserManager singleton object for test purpose only! Returns the
-  // previous singleton object and releases it from the singleton memory
-  // management. It is the responsibility of the test writer to restore the
-  // original object or delete it if needed.
-  //
-  // The intended usage is meant to be something like this:
-  //   virtual void SetUp() {
-  //     mock_user_manager_.reset(new MockUserManager());
-  //     old_user_manager_ = UserManager::Set(mock_user_manager_.get());
-  //     EXPECT_CALL...
-  //     ...
-  //   }
-  //   virtual void TearDown() {
-  //     ...
-  //     UserManager::Set(old_user_manager_);
-  //   }
-  //   scoped_ptr<MockUserManager> mock_user_manager_;
-  //   UserManager* old_user_manager_;
-  static UserManager* Set(UserManager* mock);
+  // Checks whether the singleton instance has been created already. This method
+  // is not thread-safe and must be called from the main UI thread.
+  static bool IsInitialized();
+
+  // Shuts down the UserManager. After this method has been called, the
+  // singleton has unregistered itself as an observer but remains available so
+  // that other classes can access it during their shutdown. This method is not
+  // thread-safe and must be called from the main UI thread.
+  virtual void Shutdown() = 0;
+
+  // Destroys the singleton instance. Always call Shutdown() first. This method
+  // is not thread-safe and must be called from the main UI thread.
+  static void Destroy();
+
+  // Returns the singleton instance or |NULL| if the singleton has either not
+  // been created yet or is already destroyed. This method is not thread-safe
+  // and must be called from the main UI thread.
+  static UserManager* Get();
 
   // Registers user manager preferences.
   static void RegisterPrefs(PrefRegistrySimple* registry);
-
-  // Indicates imminent shutdown, allowing the UserManager to remove any
-  // observers it has registered.
-  virtual void Shutdown() = 0;
 
   virtual ~UserManager();
 
@@ -293,6 +290,45 @@ class UserManager {
   virtual void RemoveObserver(Observer* obs) = 0;
 
   virtual void NotifyLocalStateChanged() = 0;
+
+ private:
+  friend class ScopedUserManagerEnabler;
+
+  // Sets the singleton to the given |user_manager|, taking ownership. Returns
+  // the previous value of the singleton, passing ownership.
+  static UserManager* SetForTesting(UserManager* user_manager);
+};
+
+// Helper class for tests. Initializes the UserManager singleton to the given
+// |user_manager| and tears it down again on destruction. If the singleton had
+// already been initialized, its previous value is restored after tearing down
+// |user_manager|.
+class ScopedUserManagerEnabler {
+ public:
+  // Takes ownership of |user_manager|.
+  explicit ScopedUserManagerEnabler(UserManager* user_manager);
+  ~ScopedUserManagerEnabler();
+
+ private:
+  UserManager* previous_user_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedUserManagerEnabler);
+};
+
+// Helper class for unit tests. Ensures that the UserManager singleton and the
+// CrosSettings and DeviceSettingsService singletons it depends on are
+// initialized. Any singletons initialized on construction are torn down again
+// on destruction. Singletons that were initialized already are not modified.
+class ScopedTestUserManager {
+ public:
+  ScopedTestUserManager();
+  ~ScopedTestUserManager();
+
+ private:
+  ScopedTestCrosSettings test_cros_settings_;
+  bool initialized_user_manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTestUserManager);
 };
 
 }  // namespace chromeos

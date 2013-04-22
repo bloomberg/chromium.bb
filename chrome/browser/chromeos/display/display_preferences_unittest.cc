@@ -29,11 +29,15 @@ const char kOffsetKey[] = "offset";
 
 class DisplayPreferencesTest : public ash::test::AshTestBase {
  protected:
-  DisplayPreferencesTest() : ash::test::AshTestBase() {}
+  DisplayPreferencesTest() : ash::test::AshTestBase(),
+                             mock_user_manager_(new MockUserManager),
+                             user_manager_enabler_(mock_user_manager_) {
+  }
+
   virtual ~DisplayPreferencesTest() {}
 
   virtual void SetUp() OVERRIDE {
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsUserLoggedIn())
+    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(false));
     ash::test::AshTestBase::SetUp();
     RegisterDisplayLocalStatePrefs(local_state_.registry());
@@ -48,24 +52,24 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   }
 
   void LoggedInAsUser() {
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsUserLoggedIn())
+    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsDemoUser())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsDemoUser())
         .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsGuest())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
         .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsStub())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsStub())
         .WillRepeatedly(testing::Return(false));
   }
 
   void LoggedInAsGuest() {
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsUserLoggedIn())
+    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsDemoUser())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsDemoUser())
         .WillRepeatedly(testing::Return(false));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsGuest())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
         .WillRepeatedly(testing::Return(true));
-    EXPECT_CALL(*mock_user_manager_.user_manager(), IsLoggedInAsStub())
+    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsStub())
         .WillRepeatedly(testing::Return(false));
   }
 
@@ -142,7 +146,8 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
   const PrefService* local_state() const { return &local_state_; }
 
  private:
-  ScopedMockUserManagerEnabler mock_user_manager_;
+  MockUserManager* mock_user_manager_;  // Not owned.
+  ScopedUserManagerEnabler user_manager_enabler_;
   TestingPrefServiceSimple local_state_;
   scoped_ptr<DisplayConfigurationObserver> observer_;
 

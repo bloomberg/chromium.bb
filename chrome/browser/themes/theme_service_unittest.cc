@@ -36,6 +36,7 @@ class ThemeServiceTest : public ExtensionServiceTestBase {
   }
 
   virtual void SetUp() {
+    ExtensionServiceTestBase::SetUp();
     InitializeEmptyExtensionService();
   }
 };

@@ -7,6 +7,10 @@
 
 #include "chrome/browser/extensions/extension_system.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#endif
+
 class CommandLine;
 
 namespace base {
@@ -17,7 +21,7 @@ class Time;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {
-class ScopedTestCrosSettings;
+class ScopedTestUserManager;
 }
 #endif
 
@@ -80,6 +84,13 @@ class TestExtensionSystem : public ExtensionSystem {
   Profile* profile_;
 
  private:
+#if defined(OS_CHROMEOS)
+  // Required to instantiate TestExtensionSystem itself.
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  // Required to instantiate an ExtensionService.
+  scoped_ptr<chromeos::ScopedTestUserManager> test_user_manager_;
+#endif
+
   // The Extension Preferences. Only created if CreateExtensionService is
   // invoked.
   scoped_ptr<ExtensionPrefs> extension_prefs_;
@@ -95,10 +106,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_refptr<LocationManager> location_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
-#if defined OS_CHROMEOS
-  // ExtensionService depends on UserManager which depends on CrosSettings.
-  scoped_ptr<chromeos::ScopedTestCrosSettings> test_cros_settings_;
-#endif
 };
 
 }  // namespace extensions

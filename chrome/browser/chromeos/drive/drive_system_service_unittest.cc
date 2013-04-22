@@ -7,7 +7,6 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"
@@ -45,8 +44,6 @@ class DriveSystemServiceTest : public testing::Test {
   // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
-
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
 
   MockDriveFileSystem* file_system_;
   DriveSystemService* system_service_;
