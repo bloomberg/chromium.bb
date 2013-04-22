@@ -35,11 +35,11 @@
 
 class ExtensionAction;
 class SkBitmap;
-class Version;
 
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Version;
 }
 
 namespace gfx {
@@ -393,7 +393,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   const GURL& url() const { return extension_url_; }
   Manifest::Location location() const;
   const std::string& id() const;
-  const Version* version() const { return version_.get(); }
+  const base::Version* version() const { return version_.get(); }
   const std::string VersionString() const;
   const std::string& name() const { return name_; }
   const std::string& non_localized_name() const { return non_localized_name_; }
@@ -611,7 +611,7 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
   GURL extension_url_;
 
   // The extension's version.
-  scoped_ptr<Version> version_;
+  scoped_ptr<base::Version> version_;
 
   // An optional longer description of the extension.
   std::string description_;

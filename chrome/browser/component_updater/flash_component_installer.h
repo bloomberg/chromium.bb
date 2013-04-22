@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_
 
 class ComponentUpdateService;
-class Version;
 
 namespace base {
 class DictionaryValue;
+class Version;
 }
 
 // Our job is to 1) find what Pepper flash is installed (if any) and 2) register
@@ -20,6 +20,6 @@ void RegisterPepperFlashComponent(ComponentUpdateService* cus);
 // Returns true if this browser is compatible with the given Pepper Flash
 // manifest, with the version specified in the manifest in |version_out|.
 bool CheckPepperFlashManifest(base::DictionaryValue* manifest,
-                              Version* version_out);
+                              base::Version* version_out);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_FLASH_COMPONENT_INSTALLER_H_

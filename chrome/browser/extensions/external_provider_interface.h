@@ -11,10 +11,10 @@
 #include "chrome/common/extensions/manifest.h"
 
 class GURL;
-class Version;
 
 namespace base {
 class FilePath;
+class Version;
 }
 
 namespace extensions {
@@ -35,7 +35,7 @@ class ExternalProviderInterface {
     // location.
     virtual bool OnExternalExtensionFileFound(
         const std::string& id,
-        const Version* version,
+        const base::Version* version,
         const base::FilePath& path,
         Manifest::Location location,
         int creation_flags,
@@ -78,9 +78,10 @@ class ExternalProviderInterface {
   // if they are not NULL.  If an output parameter is not specified by the
   // provider type, it will not be changed.
   // This function is no longer used outside unit tests.
-  virtual bool GetExtensionDetails(const std::string& id,
-                                   Manifest::Location* location,
-                                   scoped_ptr<Version>* version) const = 0;
+  virtual bool GetExtensionDetails(
+      const std::string& id,
+      Manifest::Location* location,
+      scoped_ptr<base::Version>* version) const = 0;
 
   // Determines if this provider had loaded the list of external extensions
   // from its source.

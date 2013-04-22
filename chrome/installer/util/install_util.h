@@ -20,8 +20,11 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/util_constants.h"
 
-class Version;
 class WorkItemList;
+
+namespace base {
+class Version;
+}
 
 // This is a utility class that provides common installation related
 // utility methods that can be used by installer and also unit tested
@@ -53,7 +56,7 @@ class InstallUtil {
   //                 otherwise looks under the HKCU.
   static void GetChromeVersion(BrowserDistribution* dist,
                                bool system_install,
-                               Version* version);
+                               base::Version* version);
 
   // Find the last critical update (version) of Chrome. Fills |version| with the
   // version or a default-constructed Version if no version is found. A critical
@@ -63,7 +66,7 @@ class InstallUtil {
   //                 otherwise looks under the HKCU.
   static void GetCriticalUpdateVersion(BrowserDistribution* dist,
                                        bool system_install,
-                                       Version* version);
+                                       base::Version* version);
 
   // This function checks if the current OS is supported for Chromium.
   static bool IsOSSupported();

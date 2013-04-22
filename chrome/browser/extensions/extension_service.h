@@ -48,10 +48,10 @@ class ExtensionSyncData;
 class ExtensionToolbarModel;
 class GURL;
 class Profile;
-class Version;
 
 namespace base {
 class SequencedTaskRunner;
+class Version;
 }
 
 namespace extensions {
@@ -573,7 +573,7 @@ class ExtensionService
   // ExternalProvider::Visitor implementation.
   virtual bool OnExternalExtensionFileFound(
       const std::string& id,
-      const Version* version,
+      const base::Version* version,
       const base::FilePath& path,
       extensions::Manifest::Location location,
       int creation_flags,

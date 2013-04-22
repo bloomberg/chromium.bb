@@ -14,10 +14,10 @@
 #include "chrome/common/extensions/manifest.h"
 
 class Profile;
-class Version;
 
 namespace base {
 class DictionaryValue;
+class Version;
 }
 
 namespace extensions {
@@ -58,9 +58,10 @@ class ExternalProviderImpl : public ExternalProviderInterface {
   virtual void ServiceShutdown() OVERRIDE;
   virtual void VisitRegisteredExtension() OVERRIDE;
   virtual bool HasExtension(const std::string& id) const OVERRIDE;
-  virtual bool GetExtensionDetails(const std::string& id,
-                                   Manifest::Location* location,
-                                   scoped_ptr<Version>* version) const OVERRIDE;
+  virtual bool GetExtensionDetails(
+      const std::string& id,
+      Manifest::Location* location,
+      scoped_ptr<base::Version>* version) const OVERRIDE;
 
   virtual bool IsReady() const OVERRIDE;
 

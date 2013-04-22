@@ -16,10 +16,10 @@
 #include "chrome/installer/util/util_constants.h"
 
 class CommandLine;
-class Version;
 
 namespace base {
 class FilePath;
+class Version;
 }
 
 namespace installer {
@@ -57,7 +57,7 @@ bool DeleteFileFromTempProcess(const base::FilePath& path,
 // (|installer_version|).
 bool GetExistingHigherInstaller(const InstallationState& original_state,
                                 bool system_install,
-                                const Version& installer_version,
+                                const base::Version& installer_version,
                                 base::FilePath* setup_exe);
 
 // Invokes the pre-existing |setup_exe| to handle the current operation (as

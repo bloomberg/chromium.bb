@@ -24,7 +24,6 @@
 #endif
 
 class CommandLine;
-class Version;
 
 namespace installer {
 
@@ -155,15 +154,17 @@ class InstallerState {
 
   // Returns the currently installed version in |target_path|, or NULL if no
   // products are installed.  Ownership is passed to the caller.
-  Version* GetCurrentVersion(const InstallationState& machine_state) const;
+  base::Version* GetCurrentVersion(
+      const InstallationState& machine_state) const;
 
   // Returns the critical update version if all of the following are true:
   // * --critical-update-version=CUV was specified on the command-line.
   // * current_version == NULL or current_version < CUV.
   // * new_version >= CUV.
   // Otherwise, returns an invalid version.
-  Version DetermineCriticalVersion(const Version* current_version,
-                                   const Version& new_version) const;
+  base::Version DetermineCriticalVersion(
+      const base::Version* current_version,
+      const base::Version& new_version) const;
 
   // Returns whether or not there is currently a Chrome Frame instance running.
   // Note that there isn't a mechanism to lock Chrome Frame in place, so Chrome
@@ -172,13 +173,13 @@ class InstallerState {
 
   // Returns the path to the installer under Chrome version folder
   // (for example <target_path>\Google\Chrome\Application\<Version>\Installer)
-  base::FilePath GetInstallerDirectory(const Version& version) const;
+  base::FilePath GetInstallerDirectory(const base::Version& version) const;
 
   // Try to delete all directories under |temp_path| whose versions are less
   // than |new_version| and not equal to |existing_version|. |existing_version|
   // may be NULL.
-  void RemoveOldVersionDirectories(const Version& new_version,
-                                   Version* existing_version,
+  void RemoveOldVersionDirectories(const base::Version& new_version,
+                                   base::Version* existing_version,
                                    const base::FilePath& temp_path) const;
 
   // Adds to |com_dll_list| the list of COM DLLs that are to be registered
@@ -243,7 +244,7 @@ class InstallerState {
   BrowserDistribution::Type state_type_;
   ScopedVector<Product> products_;
   BrowserDistribution* multi_package_distribution_;
-  Version critical_update_version_;
+  base::Version critical_update_version_;
   Level level_;
   PackageType package_type_;
 #if defined(OS_WIN)

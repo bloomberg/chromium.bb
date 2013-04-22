@@ -11,6 +11,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 
+namespace base {
+
 namespace {
 
 // Parses the |numbers| vector representing the different numbers
@@ -21,14 +23,14 @@ namespace {
 bool ParseVersionNumbers(const std::string& version_str,
                          std::vector<uint16>* parsed) {
   std::vector<std::string> numbers;
-  base::SplitString(version_str, '.', &numbers);
+  SplitString(version_str, '.', &numbers);
   if (numbers.empty())
     return false;
 
   for (std::vector<std::string>::const_iterator it = numbers.begin();
        it != numbers.end(); ++it) {
     int num;
-    if (!base::StringToInt(*it, &num))
+    if (!StringToInt(*it, &num))
       return false;
 
     if (num < 0)
@@ -39,7 +41,7 @@ bool ParseVersionNumbers(const std::string& version_str,
       return false;
 
     // This throws out things like +3, or 032.
-    if (base::IntToString(num) != *it)
+    if (IntToString(num) != *it)
       return false;
 
     parsed->push_back(static_cast<uint16>(num));
@@ -164,9 +166,11 @@ const std::string Version::GetString() const {
   std::string version_str;
   size_t count = components_.size();
   for (size_t i = 0; i < count - 1; ++i) {
-    version_str.append(base::IntToString(components_[i]));
+    version_str.append(IntToString(components_[i]));
     version_str.append(".");
   }
-  version_str.append(base::IntToString(components_[count - 1]));
+  version_str.append(IntToString(components_[count - 1]));
   return version_str;
 }
+
+}  // namespace base

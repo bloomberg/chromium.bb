@@ -15,9 +15,8 @@
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/channel_info.h"
 
-class Version;
-
 namespace base {
+class Version;
 namespace win {
 class RegKey;
 }
@@ -49,12 +48,12 @@ class ProductState {
 
   // Returns the product's version.  This method may only be called on an
   // instance that has been initialized for an installed product.
-  const Version& version() const;
+  const base::Version& version() const;
 
   // Returns the current version of the product if a new version is awaiting
   // update; may be NULL.  Ownership of a returned value is not passed to the
   // caller.
-  const Version* old_version() const { return old_version_.get(); }
+  const base::Version* old_version() const { return old_version_.get(); }
 
   // Returns the brand code the product is currently installed with.
   const std::wstring& brand() const { return brand_; }

@@ -9,10 +9,9 @@
 
 #include <string>
 
-class Version;
-
 namespace base {
 class FilePath;
+class Version;
 }
 
 namespace upgrade_test {
@@ -48,7 +47,7 @@ bool GenerateAlternatePEFileVersion(const base::FilePath& original_file,
 // Note that |target_file| may still be mutated on failure.
 bool GenerateSpecificPEFileVersion(const base::FilePath& original_file,
                                    const base::FilePath& target_file,
-                                   const Version& version);
+                                   const base::Version& version);
 
 }  // namespace upgrade_test
 

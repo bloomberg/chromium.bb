@@ -7,11 +7,11 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/version.h"
 #include "chrome/browser/component_updater/component_updater_service.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_profile_observer.h"
 
 class CommandLine;
-class Version;
 
 namespace base {
 class DictionaryValue;
@@ -47,9 +47,9 @@ class PnaclComponentInstaller : public ComponentInstaller {
   // Determine the base directory for storing each version of PNaCl.
   base::FilePath GetPnaclBaseDirectory();
 
-  Version current_version() const { return current_version_; }
+  base::Version current_version() const { return current_version_; }
 
-  void set_current_version(const Version& v) { current_version_ = v; }
+  void set_current_version(const base::Version& v) { current_version_ = v; }
 
   ComponentUpdateService* cus() const { return cus_; }
 
@@ -57,7 +57,7 @@ class PnaclComponentInstaller : public ComponentInstaller {
   bool per_user_;
   scoped_ptr<PnaclProfileObserver> profile_observer_;
   base::FilePath current_profile_path_;
-  Version current_version_;
+  base::Version current_version_;
   ComponentUpdateService* cus_;
   DISALLOW_COPY_AND_ASSIGN(PnaclComponentInstaller);
 };
@@ -65,6 +65,6 @@ class PnaclComponentInstaller : public ComponentInstaller {
 // Returns true if this browser is compatible with the given Pnacl component
 // manifest, with the version specified in the manifest in |version_out|.
 bool CheckPnaclComponentManifest(base::DictionaryValue* manifest,
-                                 Version* version_out);
+                                 base::Version* version_out);
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_PNACL_PNACL_COMPONENT_INSTALLER_H_

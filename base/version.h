@@ -11,6 +11,8 @@
 #include "base/base_export.h"
 #include "base/basictypes.h"
 
+namespace base {
+
 // Version represents a dotted version number, like "1.2.3.4", supporting
 // parsing and comparison.
 class BASE_EXPORT Version {
@@ -60,5 +62,11 @@ class BASE_EXPORT Version {
  private:
   std::vector<uint16> components_;
 };
+
+}  // namespace base
+
+// TODO(xhwang) remove this when all users are updated to explicitly use the
+// namespace
+using base::Version;
 
 #endif  // BASE_VERSION_H_

@@ -26,8 +26,6 @@
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class Version;
-
 namespace net {
 class URLFetcher;
 class URLRequestContextGetter;
@@ -37,11 +35,11 @@ class URLRequestStatus;
 namespace extensions {
 
 struct UpdateDetails {
-  UpdateDetails(const std::string& id, const Version& version);
+  UpdateDetails(const std::string& id, const base::Version& version);
   ~UpdateDetails();
 
   std::string id;
-  Version version;
+  base::Version version;
 };
 
 class ExtensionUpdaterTest;
@@ -134,7 +132,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
 
   // Helper for AddExtension() and AddPendingExtension().
   bool AddExtensionData(const std::string& id,
-                        const Version& version,
+                        const base::Version& version,
                         Manifest::Type extension_type,
                         const GURL& extension_update_url,
                         const std::string& update_url_data,
