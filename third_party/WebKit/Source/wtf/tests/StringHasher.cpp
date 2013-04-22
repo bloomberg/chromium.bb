@@ -25,9 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/StringHasher.h>
+#include "wtf/StringHasher.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 static const LChar nullLChars[2] = { 0, 0 };
 static const UChar nullUChars[2] = { 0, 0 };
@@ -441,4 +442,4 @@ TEST(WTF, StringHasher_hashMemory)
     ASSERT_EQ(testBHash5 & 0xFFFFFF, StringHasher::hashMemory<10>(testBUChars));
 }
 
-} // namespace TestWebKitAPI
+} // namespace

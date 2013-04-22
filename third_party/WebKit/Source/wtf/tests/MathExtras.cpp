@@ -25,9 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF, Lrint)
 {
@@ -174,4 +175,4 @@ TEST(WTF, clampToUnsignedLongLong)
     EXPECT_EQ(clampTo<unsigned>(-1), 0u);
 }
 
-} // namespace TestWebKitAPI
+} // namespace

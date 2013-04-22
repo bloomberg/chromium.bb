@@ -25,9 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/ListHashSet.h>
+#include "wtf/ListHashSet.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF, ListHashSetRemoveFirst)
 {
@@ -170,4 +171,4 @@ TEST(WTF, ListHashSetPrependOrMoveToLastWithDuplicates)
     ++iterator;
 }
 
-} // namespace TestWebKitAPI
+} // namespace

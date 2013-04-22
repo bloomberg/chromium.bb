@@ -29,9 +29,10 @@
 
 static int wtfStringCopyCount;
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 #define EXPECT_N_WTF_STRING_COPIES(count, expr) \
     do { \
@@ -41,7 +42,7 @@ namespace TestWebKitAPI {
         EXPECT_EQ(count, wtfStringCopyCount) << #expr; \
     } while (false)
 
-TEST(WTF, StringOperators)
+TEST(WTF, DISABLED_StringOperators)
 {
     String string("String");
     AtomicString atomicString("AtomicString");
@@ -184,4 +185,4 @@ TEST(WTF, StringOperators)
 #endif
 }
 
-} // namespace TestWebKitAPI
+} // namespace

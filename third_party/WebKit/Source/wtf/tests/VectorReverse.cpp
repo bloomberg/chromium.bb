@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -25,23 +25,33 @@
 
 #include "config.h"
 
-#include <wtf/TemporaryChange.h>
+#include "wtf/Vector.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
-TEST(WTF, TemporaryChangeNested)
+TEST(WTF, VectorReverse)
 {
-    bool originallyFalse = false;
-    {
-        TemporaryChange<bool> change1OriginallyFalse(originallyFalse, true);
-        EXPECT_TRUE(originallyFalse);
-        {
-            TemporaryChange<bool> change2OriginallyFalse(originallyFalse, false);
-            EXPECT_FALSE(originallyFalse);
-        }
-        EXPECT_TRUE(originallyFalse);
-    }
-    EXPECT_FALSE(originallyFalse);
+    Vector<int> intVector;
+    intVector.append(10);
+    intVector.append(11);
+    intVector.append(12);
+    intVector.append(13);
+    intVector.reverse();
+
+    EXPECT_EQ(13, intVector[0]);
+    EXPECT_EQ(12, intVector[1]);
+    EXPECT_EQ(11, intVector[2]);
+    EXPECT_EQ(10, intVector[3]);
+
+    intVector.append(9);
+    intVector.reverse();
+
+    EXPECT_EQ(9, intVector[0]);
+    EXPECT_EQ(10, intVector[1]);
+    EXPECT_EQ(11, intVector[2]);
+    EXPECT_EQ(12, intVector[3]);
+    EXPECT_EQ(13, intVector[4]);
 }
 
-} // namespace TestWebKitAPI
+} // namespace

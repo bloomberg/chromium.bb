@@ -30,30 +30,29 @@
 
 #include "config.h"
 
+#include "wtf/ArrayBuffer.h"
+#include "wtf/HashCountedSet.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/MemoryInstrumentation.h"
+#include "wtf/MemoryInstrumentationArrayBufferView.h"
+#include "wtf/MemoryInstrumentationHashCountedSet.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationListHashSet.h"
+#include "wtf/MemoryInstrumentationString.h"
+#include "wtf/MemoryInstrumentationVector.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/StringImpl.h"
+#include "wtf/text/WTFString.h"
 #include <gtest/gtest.h>
-
-#include <wtf/ArrayBuffer.h>
-#include <wtf/HashCountedSet.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/MemoryInstrumentation.h>
-#include <wtf/MemoryInstrumentationArrayBufferView.h>
-#include <wtf/MemoryInstrumentationHashCountedSet.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationListHashSet.h>
-#include <wtf/MemoryInstrumentationString.h>
-#include <wtf/MemoryInstrumentationVector.h>
-#include <wtf/MemoryObjectInfo.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/StringImpl.h>
-#include <wtf/text/WTFString.h>
 
 namespace {
 enum TestEnum { ONE = 1, TWO, THREE, MY_ENUM_MAX };
@@ -651,7 +650,7 @@ class InstrumentedRefCounted : public RefCounted<InstrumentedRefCounted> {
 public:
     InstrumentedRefCounted() : m_notInstrumented(new NotInstrumented) { }
     ~InstrumentedRefCounted() { delete m_notInstrumented; }
-    
+
     void reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     {
         MemoryClassInfo info(memoryObjectInfo, this, TestType);
@@ -930,4 +929,3 @@ TEST(MemoryInstrumentationTest, detectBaseClassInstrumentation)
 }
 
 } // namespace
-

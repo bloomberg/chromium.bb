@@ -25,9 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/text/AtomicString.h>
+#include "wtf/text/AtomicString.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF, AtomicStringCreationFromLiteral)
 {
@@ -56,4 +57,4 @@ TEST(WTF, AtomicStringCreationFromLiteralUniqueness)
     ASSERT_EQ(string1.impl(), string3.impl());
 }
 
-} // namespace TestWebKitAPI
+} // namespace

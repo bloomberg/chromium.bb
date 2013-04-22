@@ -25,7 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/text/CString.h>
+#include "wtf/text/CString.h"
+#include <gtest/gtest.h>
+
+namespace {
 
 TEST(WTF, CStringNullStringConstructor)
 {
@@ -194,3 +197,5 @@ TEST(WTF, CStringComparison)
     ASSERT_FALSE(c == d);
     ASSERT_TRUE(c != d);
 }
+
+} // namespace

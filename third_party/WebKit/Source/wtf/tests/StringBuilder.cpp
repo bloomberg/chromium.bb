@@ -30,9 +30,23 @@
  */
 
 #include "config.h"
-#include "WTFStringUtilities.h"
 
-namespace TestWebKitAPI {
+#include "wtf/Assertions.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
+#include <gtest/gtest.h>
+
+namespace WTF {
+
+inline std::ostream& operator<<(std::ostream& os, const String& string)
+{
+    return os << string.utf8().data();
+}
+
+}
+
+namespace {
 
 static void expectBuilderContent(const String& expected, const StringBuilder& builder)
 {

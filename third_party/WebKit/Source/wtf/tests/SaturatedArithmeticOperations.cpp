@@ -29,10 +29,12 @@
  */
 
 #include "config.h"
-#include "limits.h"
-#include <wtf/SaturatedArithmetic.h>
 
-namespace TestWebKitAPI {
+#include "wtf/SaturatedArithmetic.h"
+#include <gtest/gtest.h>
+#include <limits.h>
+
+namespace {
 
 TEST(WTF, SaturatedArithmeticAddition)
 {
@@ -76,7 +78,7 @@ TEST(WTF, SaturatedArithmeticSubtraction)
     ASSERT_EQ(saturatedSubtraction(0, 1), -1);
     ASSERT_EQ(saturatedSubtraction(0, 100), -100);
     ASSERT_EQ(saturatedSubtraction(100, 50), 50);
-    
+
     ASSERT_EQ(saturatedSubtraction(0, -1), 1);
     ASSERT_EQ(saturatedSubtraction(1, -1), 2);
     ASSERT_EQ(saturatedSubtraction(100, -50), 150);
@@ -102,4 +104,4 @@ TEST(WTF, SaturatedArithmeticSubtraction)
     ASSERT_EQ(saturatedSubtraction(INT_MAX, INT_MIN), INT_MAX);
 }
 
-} // namespace TestWebKitAPI
+} // namespace

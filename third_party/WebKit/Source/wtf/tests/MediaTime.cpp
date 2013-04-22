@@ -29,7 +29,8 @@
 #define _USE_MATH_DEFINES 1
 #include "config.h"
 
-#include <wtf/MediaTime.h>
+#include "wtf/MediaTime.h"
+#include <gtest/gtest.h>
 
 using namespace std;
 
@@ -62,7 +63,7 @@ std::ostream& operator<<(std::ostream& out, const MediaTime& val)
 
 }
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF, MediaTime)
 {
@@ -174,5 +175,4 @@ TEST(WTF, MediaTime)
     EXPECT_EQ(MediaTime(numeric_limits<int64_t>::max(), 1) - MediaTime(numeric_limits<int64_t>::min(), 1), MediaTime::positiveInfiniteTime());
 }
 
-}
-
+} // namespace

@@ -25,10 +25,11 @@
 
 #include "config.h"
 
-#include <wtf/text/StringImpl.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/StringImpl.h"
+#include "wtf/text/WTFString.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF, StringImplCreationFromLiteral)
 {
@@ -113,4 +114,4 @@ TEST(WTF, StringImplReplaceWithLiteral)
     ASSERT_TRUE(equal(testStringImpl.get(), "r555sum555"));
 }
 
-} // namespace TestWebKitAPI
+} // namespace

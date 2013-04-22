@@ -24,10 +24,12 @@
  */
 
 #include "config.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Functional.h>
 
-namespace TestWebKitAPI {
+#include "wtf/RefCounted.h"
+#include "wtf/Functional.h"
+#include <gtest/gtest.h>
+
+namespace {
 
 static int returnFortyTwo()
 {
@@ -196,23 +198,24 @@ TEST(FunctionalTest, RefCountedStorage)
 }
 
 namespace RefAndDerefTests {
-    
-    template<typename T> struct RefCounted {
-        void ref();
-        void deref();
-    };
-    struct Connection : RefCounted<Connection> { };
-    COMPILE_ASSERT(WTF::HasRefAndDeref<Connection>::value, class_has_ref_and_deref);
-    
-    struct NoRefOrDeref { };
-    COMPILE_ASSERT(!WTF::HasRefAndDeref<NoRefOrDeref>::value, class_has_no_ref_or_deref);
-    
-    struct RefOnly { void ref(); };
-    COMPILE_ASSERT(!WTF::HasRefAndDeref<RefOnly>::value, class_has_ref_only);
-    
-    struct DerefOnly { void deref(); };
-    COMPILE_ASSERT(!WTF::HasRefAndDeref<DerefOnly>::value, class_has_deref_only);
+
+template<typename T> struct RefCounted {
+    void ref();
+    void deref();
+};
+
+struct Connection : RefCounted<Connection> { };
+COMPILE_ASSERT(WTF::HasRefAndDeref<Connection>::value, class_has_ref_and_deref);
+
+struct NoRefOrDeref { };
+COMPILE_ASSERT(!WTF::HasRefAndDeref<NoRefOrDeref>::value, class_has_no_ref_or_deref);
+
+struct RefOnly { void ref(); };
+COMPILE_ASSERT(!WTF::HasRefAndDeref<RefOnly>::value, class_has_ref_only);
+
+struct DerefOnly { void deref(); };
+COMPILE_ASSERT(!WTF::HasRefAndDeref<DerefOnly>::value, class_has_deref_only);
 
 }
 
-} // namespace TestWebKitAPI
+} // namespace

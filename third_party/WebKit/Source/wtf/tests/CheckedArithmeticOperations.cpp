@@ -24,9 +24,11 @@
  */
 
 #include "config.h"
-#include <wtf/CheckedArithmetic.h>
 
-namespace TestWebKitAPI {
+#include "wtf/CheckedArithmetic.h"
+#include <gtest/gtest.h>
+
+namespace {
 
 #define CheckedArithmeticTest(type, coerceLiteral, MixedSignednessTest) \
     TEST(WTF, Checked_##type) \
@@ -146,4 +148,4 @@ CheckedArithmeticTest(uint32_t, CoerceLiteralToUnsigned, AllowMixedSignednessTes
 CheckedArithmeticTest(int64_t, CoerceLiteralNop, IgnoreMixedSignednessTest)
 CheckedArithmeticTest(uint64_t, CoerceLiteralToUnsigned, IgnoreMixedSignednessTest)
 
-} // namespace TestWebKitAPI
+} // namespace

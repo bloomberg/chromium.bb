@@ -25,9 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/HashSet.h>
+#include "wtf/HashSet.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 template<int initialCapacity>
     struct InitialCapacityTestHashTraits : public WTF::UnsignedWithZeroKeyHashTraits<int> {
@@ -76,4 +77,4 @@ TEST(WTF, HashSetInitialCapacity)
     generateTestCapacityUpToSize<128>();
 }
 
-} // namespace TestWebKitAPI
+} // namespace

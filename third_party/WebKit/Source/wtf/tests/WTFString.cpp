@@ -25,12 +25,13 @@
 
 #include "config.h"
 
+#include "wtf/MathExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
+#include <gtest/gtest.h>
 #include <limits>
-#include <wtf/MathExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF, StringCreationFromLiteral)
 {
@@ -155,5 +156,4 @@ TEST(WTF, StringReplaceWithLiteral)
     ASSERT_STREQ("résumé", testString.utf8().data());
 }
 
-
-} // namespace TestWebKitAPI
+} // namespace

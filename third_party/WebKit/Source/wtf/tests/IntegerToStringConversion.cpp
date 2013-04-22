@@ -25,10 +25,13 @@
 
 #include "config.h"
 
+#include "wtf/StringExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/WTFString.h"
+#include <gtest/gtest.h>
 #include <limits>
-#include <wtf/StringExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
+
+namespace {
 
 template<typename IntegerType> struct PrintfFormatTrait { static const char format[]; };
 
@@ -130,3 +133,5 @@ TEST(WTF, IntegerToStringConversionUnsignedIntegerRegularNumbers)
     testNumbers<unsigned long>();
     testNumbers<unsigned long long>();
 }
+
+} // namespace

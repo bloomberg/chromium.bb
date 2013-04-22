@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Apple Inc. All rights reserved.
+ * Copyright (C) 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -24,32 +24,18 @@
  */
 
 #include "config.h"
-#include <wtf/Vector.h>
 
-namespace TestWebKitAPI {
+#include "wtf/Vector.h"
+#include <gtest/gtest.h>
 
-TEST(WTF, VectorReverse)
+namespace {
+
+TEST(WTF, VectorBasic)
 {
     Vector<int> intVector;
-    intVector.append(10);
-    intVector.append(11);
-    intVector.append(12);
-    intVector.append(13);
-    intVector.reverse();
-
-    EXPECT_EQ(13, intVector[0]);
-    EXPECT_EQ(12, intVector[1]);
-    EXPECT_EQ(11, intVector[2]);
-    EXPECT_EQ(10, intVector[3]);
-
-    intVector.append(9);
-    intVector.reverse();
-
-    EXPECT_EQ(9, intVector[0]);
-    EXPECT_EQ(10, intVector[1]);
-    EXPECT_EQ(11, intVector[2]);
-    EXPECT_EQ(12, intVector[3]);
-    EXPECT_EQ(13, intVector[4]);
+    EXPECT_TRUE(intVector.isEmpty());
+    EXPECT_EQ(0ul, intVector.size());
+    EXPECT_EQ(0ul, intVector.capacity());
 }
 
-} // namespace TestWebKitAPI
+} // namespace

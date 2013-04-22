@@ -25,9 +25,10 @@
 
 #include "config.h"
 
-#include <wtf/HashMap.h>
+#include "wtf/HashMap.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 typedef WTF::HashMap<int, int> IntHashMap;
 
@@ -81,4 +82,4 @@ TEST(WTF, DoubleHashCollisions)
     ASSERT_EQ(map.get(negativeZeroKey), 3);
 }
 
-} // namespace TestWebKitAPI
+} // namespace

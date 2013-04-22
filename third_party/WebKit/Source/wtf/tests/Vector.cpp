@@ -24,6 +24,7 @@
  */
 
 #include "config.h"
+
 #include "wtf/Vector.h"
 #include <gtest/gtest.h>
 
