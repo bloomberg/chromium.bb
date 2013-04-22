@@ -26,8 +26,8 @@ void RunOnCompleteCallback(const base::Closure& on_complete_callback,
                            DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!on_complete_callback.is_null());
-  DCHECK_EQ(DRIVE_FILE_OK, error);
-
+  DLOG_IF(ERROR, error != DRIVE_FILE_OK) << "SetLargestChangeStamp failed: "
+                                         << DriveFileErrorToString(error);
   on_complete_callback.Run();
 }
 
