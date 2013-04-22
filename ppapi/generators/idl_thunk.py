@@ -98,6 +98,8 @@ def _AddApiHeader(filenode, meta):
     api_basename = api_basename[:-len('_dev')]
   if api_basename.endswith('_trusted'):
     api_basename = api_basename[:-len('_trusted')]
+  if api_basename.endswith('_private'):
+    api_basename = api_basename[:-len('_private')]
   meta.AddApi(api_basename + '_api')
 
 
@@ -109,6 +111,8 @@ def _MakeEnterLine(filenode, interface, member, arg, handle_errors, callback,
     api_name = api_name[:-len('Trusted')]
   if api_name.endswith('_Dev'):
     api_name = api_name[:-len('_Dev')]
+  if api_name.endswith('_Private'):
+    api_name = api_name[:-len('_Private')]
   api_name += '_API'
   if member.GetProperty('api'):  # Override API name.
     manually_provided_api = True

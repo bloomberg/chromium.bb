@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PPAPI_THUNK_PPB_NETWORK_LIST_PRIVATE_API_H_
-#define PPAPI_THUNK_PPB_NETWORK_LIST_PRIVATE_API_H_
+#ifndef PPAPI_THUNK_PPB_NETWORK_LIST_API_H_
+#define PPAPI_THUNK_PPB_NETWORK_LIST_API_H_
 
 #include <vector>
 
@@ -17,14 +17,15 @@ typedef std::vector<NetworkInfo> NetworkList;
 
 namespace thunk {
 
-class PPAPI_THUNK_EXPORT PPB_NetworkList_Private_API {
+class PPAPI_THUNK_EXPORT PPB_NetworkList_API {
  public:
-  virtual ~PPB_NetworkList_Private_API() {}
+  virtual ~PPB_NetworkList_API() {}
 
   // This function is not exposed through the C API, but returns the
   // internal data for easy proxying.
   virtual const NetworkList& GetNetworkListData() const = 0;
 
+  // Private API
   virtual uint32_t GetCount() = 0;
   virtual PP_Var GetName(uint32_t index) = 0;
   virtual PP_NetworkListType_Private GetType(uint32_t index) = 0;
@@ -39,4 +40,4 @@ class PPAPI_THUNK_EXPORT PPB_NetworkList_Private_API {
 }  // namespace thunk
 }  // namespace ppapi
 
-#endif  // PPAPI_THUNK_PPB_NETWORK_LIST_PRIVATE_API_H_
+#endif  // PPAPI_THUNK_PPB_NETWORK_LIST_API_H_

@@ -48,8 +48,8 @@ PP_Resource PPB_NetworkList_Private_Shared::Create(
   return object->GetReference();
 }
 
-::ppapi::thunk::PPB_NetworkList_Private_API*
-PPB_NetworkList_Private_Shared::AsPPB_NetworkList_Private_API() {
+::ppapi::thunk::PPB_NetworkList_API*
+PPB_NetworkList_Private_Shared::AsPPB_NetworkList_API() {
   return this;
 }
 

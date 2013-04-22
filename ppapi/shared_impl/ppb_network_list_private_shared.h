@@ -11,7 +11,7 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "ppapi/shared_impl/resource.h"
-#include "ppapi/thunk/ppb_network_list_private_api.h"
+#include "ppapi/thunk/ppb_network_list_api.h"
 
 namespace ppapi {
 
@@ -49,7 +49,7 @@ class PPAPI_SHARED_EXPORT NetworkListStorage
 
 class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
     : public ::ppapi::Resource,
-      public ::ppapi::thunk::PPB_NetworkList_Private_API {
+      public ::ppapi::thunk::PPB_NetworkList_API {
  public:
   static PP_Resource Create(ResourceObjectType type,
                             PP_Instance instance,
@@ -58,10 +58,10 @@ class PPAPI_SHARED_EXPORT PPB_NetworkList_Private_Shared
   virtual ~PPB_NetworkList_Private_Shared();
 
   // Resource override.
-  virtual ::ppapi::thunk::PPB_NetworkList_Private_API*
-      AsPPB_NetworkList_Private_API() OVERRIDE;
+  virtual ::ppapi::thunk::PPB_NetworkList_API*
+      AsPPB_NetworkList_API() OVERRIDE;
 
-  // PPB_NetworkList_Private_API implementation.
+  // PPB_NetworkList_API implementation.
   virtual const NetworkList& GetNetworkListData() const OVERRIDE;
   virtual uint32_t GetCount() OVERRIDE;
   virtual PP_Var GetName(uint32_t index) OVERRIDE;

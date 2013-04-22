@@ -211,7 +211,7 @@
           'thunk/ppb_messaging_thunk.cc',
           'thunk/ppb_mouse_cursor_thunk.cc',
           'thunk/ppb_mouse_lock_thunk.cc',
-          'thunk/ppb_network_list_private_api.h',
+          'thunk/ppb_network_list_api.h',
           'thunk/ppb_network_list_private_thunk.cc',
           'thunk/ppb_network_monitor_private_api.h',
           'thunk/ppb_network_monitor_private_thunk.cc',
