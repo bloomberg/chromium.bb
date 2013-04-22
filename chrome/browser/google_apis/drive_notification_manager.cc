@@ -15,14 +15,13 @@ namespace google_apis {
 // The sync invalidation object ID for Google Drive.
 const char kDriveInvalidationObjectId[] = "CHANGELOG";
 
+// TODO(calvinlo): Constants for polling to go here.
+
 DriveNotificationManager::DriveNotificationManager(Profile* profile)
     : profile_(profile),
       push_notification_registered_(false),
       push_notification_enabled_(false) {
-  ProfileSyncService* profile_sync_service_ =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  CHECK(profile_sync_service_);
-
+  // TODO(calvinlo): Initialize member variables for polling here.
   RegisterDriveNotifications();
 }
 
@@ -43,12 +42,7 @@ void DriveNotificationManager::Shutdown() {
 
 void DriveNotificationManager::OnInvalidatorStateChange(
     syncer::InvalidatorState state) {
-  push_notification_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
-  if (push_notification_enabled_) {
-    DVLOG(1) << "XMPP Notifications enabled";
-  } else {
-    DVLOG(1) << "XMPP Notifications disabled (state=" << state << ")";
-  }
+  SetPushNotificationEnabled(state);
 }
 
 void DriveNotificationManager::OnIncomingInvalidation(
@@ -62,7 +56,10 @@ void DriveNotificationManager::OnIncomingInvalidation(
 
   // TODO(dcheng): Only acknowledge the invalidation once the fetch has
   // completed. http://crbug.com/156843
-  profile_sync_service_->AcknowledgeInvalidation(
+  ProfileSyncService* profile_sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile_);
+  CHECK(profile_sync_service);
+  profile_sync_service->AcknowledgeInvalidation(
       invalidation_map.begin()->first,
       invalidation_map.begin()->second.ack_handle);
 
@@ -79,20 +76,15 @@ void DriveNotificationManager::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
-bool DriveNotificationManager::IsPushNotificationEnabled() {
-  return push_notification_enabled_;
-}
-
 void DriveNotificationManager::NotifyObserversToUpdate() {
-  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_,
-                    OnNotificationReceived());
+  FOR_EACH_OBSERVER(DriveNotificationObserver, observers_, CheckForUpdates());
 }
 
 // Register for Google Drive invalidation notifications through XMPP.
 void DriveNotificationManager::RegisterDriveNotifications() {
   // Push notification registration might have already occurred if called from
   // a different extension.
-  if (push_notification_registered_)
+  if (!IsDriveNotificationSupported() || push_notification_registered_)
     return;
 
   ProfileSyncService* profile_sync_service =
@@ -107,7 +99,33 @@ void DriveNotificationManager::RegisterDriveNotifications() {
       kDriveInvalidationObjectId));
   profile_sync_service->UpdateRegisteredInvalidationIds(this, ids);
   push_notification_registered_ = true;
-  OnInvalidatorStateChange(profile_sync_service->GetInvalidatorState());
+  SetPushNotificationEnabled(profile_sync_service->GetInvalidatorState());
+}
+
+// TODO(calvinlo): Remove when all patches for http://crbug.com/173339 done.
+bool DriveNotificationManager::IsDriveNotificationSupported() {
+  // TODO(calvinlo): A invalidation ID can only be registered to one handler.
+  // Therefore ChromeOS and SyncFS cannot both use XMPP notifications until
+  // (http://crbug.com/173339) is completed.
+  // For now, disable XMPP notifications for SyncFC on ChromeOS to guarantee
+  // that ChromeOS's file manager can register itself to the invalidationID.
+
+#if defined(OS_CHROMEOS)
+  return false;
+#else
+  return true;
+#endif
+}
+
+void DriveNotificationManager::SetPushNotificationEnabled(
+    syncer::InvalidatorState state) {
+  DVLOG(1) << "SetPushNotificationEnabled() with state=" << state;
+  push_notification_enabled_ = (state == syncer::INVALIDATIONS_ENABLED);
+  if (!push_notification_enabled_)
+    return;
+
+  // Push notifications are enabled so reset polling timer.
+  //UpdatePollingDelay(kPollingDelaySecondsWithNotification);
 }
 
 }  // namespace google_apis

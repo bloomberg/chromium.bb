@@ -11,8 +11,8 @@ namespace google_apis {
 // updates.
 class DriveNotificationObserver {
  public:
-  // Called when a notification from Google Drive is received.
-  virtual void OnNotificationReceived() = 0;
+  // Called when an observer should check Google Drive for updates.
+  virtual void CheckForUpdates() = 0;
 
  protected:
   virtual ~DriveNotificationObserver() {}
