@@ -357,9 +357,10 @@ const GURL& InterstitialPageImpl::GetURL() const {
   return url_;
 }
 
-void InterstitialPageImpl::RenderViewGone(RenderViewHost* render_view_host,
-                                          base::TerminationStatus status,
-                                          int error_code) {
+void InterstitialPageImpl::RenderViewTerminated(
+    RenderViewHost* render_view_host,
+    base::TerminationStatus status,
+    int error_code) {
   // Our renderer died. This should not happen in normal cases.
   // If we haven't already started shutdown, just dismiss the interstitial.
   // We cannot check for enabled() here, because we may have called Disable

@@ -136,9 +136,9 @@ class CONTENT_EXPORT RenderViewHostDelegate {
   virtual void RenderViewReady(RenderViewHost* render_view_host) {}
 
   // The RenderView died somehow (crashed or was killed by the user).
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code) {}
+  virtual void RenderViewTerminated(RenderViewHost* render_view_host,
+                                    base::TerminationStatus status,
+                                    int error_code) {}
 
   // The RenderView is going to be deleted. This is called when each
   // RenderView is going to be destroyed

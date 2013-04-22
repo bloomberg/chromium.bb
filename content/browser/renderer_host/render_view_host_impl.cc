@@ -1120,9 +1120,9 @@ void RenderViewHostImpl::OnRenderViewGone(int status, int exit_code) {
   // Our base class RenderWidgetHost needs to reset some stuff.
   RendererExited(render_view_termination_status_, exit_code);
 
-  delegate_->RenderViewGone(this,
-                            static_cast<base::TerminationStatus>(status),
-                            exit_code);
+  delegate_->RenderViewTerminated(this,
+                                  static_cast<base::TerminationStatus>(status),
+                                  exit_code);
 }
 
 void RenderViewHostImpl::OnDidStartProvisionalLoadForFrame(

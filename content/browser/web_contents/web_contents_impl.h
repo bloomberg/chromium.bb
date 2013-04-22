@@ -287,9 +287,9 @@ class CONTENT_EXPORT WebContentsImpl
   virtual gfx::Rect GetRootWindowResizerRect() const OVERRIDE;
   virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void RenderViewReady(RenderViewHost* render_view_host) OVERRIDE;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code) OVERRIDE;
+  virtual void RenderViewTerminated(RenderViewHost* render_view_host,
+                                    base::TerminationStatus status,
+                                    int error_code) OVERRIDE;
   virtual void RenderViewDeleted(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStartProvisionalLoadForFrame(
       RenderViewHost* render_view_host,

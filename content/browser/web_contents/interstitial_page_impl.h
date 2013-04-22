@@ -92,9 +92,9 @@ class CONTENT_EXPORT InterstitialPageImpl
   // RenderViewHostDelegate implementation:
   virtual RenderViewHostDelegateView* GetDelegateView() OVERRIDE;
   virtual const GURL& GetURL() const OVERRIDE;
-  virtual void RenderViewGone(RenderViewHost* render_view_host,
-                              base::TerminationStatus status,
-                              int error_code) OVERRIDE;
+  virtual void RenderViewTerminated(RenderViewHost* render_view_host,
+                                    base::TerminationStatus status,
+                                    int error_code) OVERRIDE;
   virtual void DidNavigate(
       RenderViewHost* render_view_host,
       const ViewHostMsg_FrameNavigate_Params& params) OVERRIDE;

@@ -156,8 +156,9 @@ class TestInterstitialPage : public InterstitialPageImpl {
     DidNavigate(GetRenderViewHostForTesting(), params);
   }
 
-  void TestRenderViewGone(base::TerminationStatus status, int error_code) {
-    RenderViewGone(GetRenderViewHostForTesting(), status, error_code);
+  void TestRenderViewTerminated(base::TerminationStatus status,
+                                int error_code) {
+    RenderViewTerminated(GetRenderViewHostForTesting(), status, error_code);
   }
 
   bool is_showing() const {
@@ -1806,7 +1807,7 @@ TEST_F(WebContentsImplTest, InterstitialCrasher) {
   TestInterstitialPageStateGuard state_guard(interstitial);
   interstitial->Show();
   // Simulate a renderer crash before the interstitial is shown.
-  interstitial->TestRenderViewGone(
+  interstitial->TestRenderViewTerminated(
       base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   // The interstitial should have been dismissed.
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);
@@ -1819,7 +1820,7 @@ TEST_F(WebContentsImplTest, InterstitialCrasher) {
   interstitial->Show();
   interstitial->TestDidNavigate(1, url);
   // Simulate a renderer crash.
-  interstitial->TestRenderViewGone(
+  interstitial->TestRenderViewTerminated(
       base::TERMINATION_STATUS_PROCESS_CRASHED, -1);
   // The interstitial should have been dismissed.
   EXPECT_EQ(TestInterstitialPage::CANCELED, state);

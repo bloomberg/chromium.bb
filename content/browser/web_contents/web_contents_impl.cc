@@ -2641,9 +2641,9 @@ void WebContentsImpl::RenderViewReady(RenderViewHost* rvh) {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_, RenderViewReady());
 }
 
-void WebContentsImpl::RenderViewGone(RenderViewHost* rvh,
-                                     base::TerminationStatus status,
-                                     int error_code) {
+void WebContentsImpl::RenderViewTerminated(RenderViewHost* rvh,
+                                           base::TerminationStatus status,
+                                           int error_code) {
   if (rvh != GetRenderViewHost()) {
     // The pending page's RenderViewHost is gone.
     return;
@@ -3240,7 +3240,7 @@ void WebContentsImpl::BeforeUnloadFiredFromRenderManager(
 void WebContentsImpl::RenderViewGoneFromRenderManager(
     RenderViewHost* render_view_host) {
   DCHECK(crashed_status_ != base::TERMINATION_STATUS_STILL_RUNNING);
-  RenderViewGone(render_view_host, crashed_status_, crashed_error_code_);
+  RenderViewTerminated(render_view_host, crashed_status_, crashed_error_code_);
 }
 
 void WebContentsImpl::UpdateRenderViewSizeForRenderManager() {
