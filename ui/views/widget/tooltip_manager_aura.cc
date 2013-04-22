@@ -58,14 +58,7 @@ void TooltipManagerAura::UpdateTooltip() {
     gfx::Point view_point = root_window->GetLastMouseLocationInRoot();
     aura::Window::ConvertPointToTarget(root_window, window_, &view_point);
     View* view = GetViewUnderPoint(view_point);
-    if (view) {
-      View::ConvertPointFromWidget(view, &view_point);
-      if (!view->GetTooltipText(view_point, &tooltip_text_))
-        tooltip_text_.clear();
-    } else {
-      tooltip_text_.clear();
-    }
-    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
+    UpdateTooltipForTarget(view, view_point, root_window);
   }
 }
 
@@ -77,14 +70,7 @@ void TooltipManagerAura::TooltipTextChanged(View* view)  {
     View* target = GetViewUnderPoint(view_point);
     if (target != view)
       return;
-    if (target) {
-      View::ConvertPointFromWidget(view, &view_point);
-      if (!view->GetTooltipText(view_point, &tooltip_text_))
-        tooltip_text_.clear();
-    } else {
-      tooltip_text_.clear();
-    }
-    aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
+    UpdateTooltipForTarget(view, view_point, root_window);
   }
 }
 
@@ -101,6 +87,23 @@ View* TooltipManagerAura::GetViewUnderPoint(const gfx::Point& point) {
   if (root_view)
     return root_view->GetEventHandlerForPoint(point);
   return NULL;
+}
+
+void TooltipManagerAura::UpdateTooltipForTarget(View* target,
+                                                const gfx::Point& point,
+                                                aura::RootWindow* root_window) {
+  if (target) {
+    gfx::Point view_point = point;
+    View::ConvertPointFromWidget(target, &view_point);
+    string16 new_tooltip_text;
+    if (!target->GetTooltipText(view_point, &new_tooltip_text))
+      tooltip_text_.clear();
+    else
+      tooltip_text_ = new_tooltip_text;
+  } else {
+    tooltip_text_.clear();
+  }
+  aura::client::GetTooltipClient(root_window)->UpdateTooltip(window_);
 }
 
 }  // namespace views.

@@ -11,6 +11,7 @@
 #include "ui/views/widget/tooltip_manager.h"
 
 namespace aura {
+class RootWindow;
 class Window;
 }
 
@@ -32,6 +33,9 @@ class TooltipManagerAura : public TooltipManager {
 
  private:
   View* GetViewUnderPoint(const gfx::Point& point);
+  void UpdateTooltipForTarget(View* target,
+                              const gfx::Point& point,
+                              aura::RootWindow* root_window);
 
   aura::Window* window_;
   Widget* widget_;
