@@ -42,13 +42,9 @@ public:
     WebIDBCursorImpl(WTF::PassRefPtr<WebCore::IDBCursorBackendInterface>);
     virtual ~WebIDBCursorImpl();
 
-    virtual void advance(unsigned long count, WebIDBCallbacks* callbacks, WebExceptionCode&) { return advance(count, callbacks); }
     virtual void advance(unsigned long, WebIDBCallbacks*);
-    virtual void continueFunction(const WebIDBKey& key, WebIDBCallbacks* callbacks, WebExceptionCode&) { return continueFunction(key, callbacks); } ;
     virtual void continueFunction(const WebIDBKey&, WebIDBCallbacks*);
-    virtual void deleteFunction(WebIDBCallbacks* callbacks, WebExceptionCode&) { return deleteFunction(callbacks); }
     virtual void deleteFunction(WebIDBCallbacks* callbacks);
-    virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks* callbacks, WebExceptionCode&) { return prefetchContinue(numberToFetch, callbacks); }
     virtual void prefetchContinue(int numberToFetch, WebIDBCallbacks*);
     virtual void prefetchReset(int usedPrefetches, int unusedPrefetches);
 
