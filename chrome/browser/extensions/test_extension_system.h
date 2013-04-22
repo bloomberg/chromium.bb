@@ -55,6 +55,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual UserScriptMaster* user_script_master() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
+  virtual LocationManager* location_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
   virtual ExtensionPrefs* extension_prefs() OVERRIDE;
@@ -91,6 +92,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
+  scoped_refptr<LocationManager> location_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
 #if defined OS_CHROMEOS

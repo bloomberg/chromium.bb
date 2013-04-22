@@ -682,6 +682,9 @@ TEST_F(PermissionsTest, PermissionMessages) {
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);
 
+  // TODO(vadimt) Consider adding a string for this permission.
+  skip.insert(APIPermission::kLocation);
+
   skip.insert(APIPermission::kClipboardWrite);
 
   // The cookie permission does nothing unless you have associated host

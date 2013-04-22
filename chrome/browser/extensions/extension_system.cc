@@ -14,6 +14,7 @@
 #include "chrome/browser/content_settings/cookie_settings.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
+#include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/component_loader.h"
@@ -343,6 +344,7 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
   alarm_manager_.reset(new AlarmManager(profile_, shared_->clock()));
+  location_manager_ = new LocationManager(profile_);
 
   serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
       BrowserThread::FILE));
@@ -385,6 +387,10 @@ ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
 
 AlarmManager* ExtensionSystemImpl::alarm_manager() {
   return alarm_manager_.get();
+}
+
+LocationManager* ExtensionSystemImpl::location_manager() {
+  return location_manager_.get();
 }
 
 StateStore* ExtensionSystemImpl::state_store() {

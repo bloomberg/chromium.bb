@@ -34,6 +34,7 @@ class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class ExtensionWarningService;
 class LazyBackgroundTaskQueue;
+class LocationManager;
 class ManagementPolicy;
 class MessageService;
 class NavigationObserver;
@@ -83,6 +84,9 @@ class ExtensionSystem : public ProfileKeyedService {
 
   // The AlarmManager is created at startup.
   virtual AlarmManager* alarm_manager() = 0;
+
+  // The LocationManager is created at startup.
+  virtual LocationManager* location_manager() = 0;
 
   // The StateStore is created at startup.
   virtual StateStore* state_store() = 0;
@@ -166,6 +170,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual AlarmManager* alarm_manager() OVERRIDE;
+  virtual LocationManager* location_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
   virtual StateStore* rules_store() OVERRIDE;  // shared
   virtual ExtensionPrefs* extension_prefs() OVERRIDE;  // shared
@@ -269,6 +274,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   // access to the ResourceContext owned by |io_data_|.
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_ptr<AlarmManager> alarm_manager_;
+  scoped_refptr<LocationManager> location_manager_;
   scoped_ptr<ApiResourceManager<SerialConnection> > serial_connection_manager_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;
   scoped_ptr<ApiResourceManager<

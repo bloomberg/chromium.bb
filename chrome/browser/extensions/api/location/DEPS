@@ -1,0 +1,4 @@
+include_rules = [
+  "+content/browser/geolocation/geolocation_provider.h",
+  "+content/browser/geolocation/geolocation_observer.h",
+]

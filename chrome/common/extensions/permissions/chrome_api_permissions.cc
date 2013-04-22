@@ -86,6 +86,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kInput, "input", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_INPUT,
       PermissionMessage::kInput },
+    { APIPermission::kLocation, "location" },
     { APIPermission::kManagement, "management", APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_MANAGEMENT,
       PermissionMessage::kManagement },

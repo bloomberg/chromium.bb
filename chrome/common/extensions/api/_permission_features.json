@@ -234,6 +234,21 @@
       "okddffdblfhhnmhodogpojmfkjmhinfp"   // HTerm dev
     ]
   },
+  "location": [
+    {
+      "channel": "dev",
+      "extension_types": [
+        "extension", "packaged_app", "hosted_app", "platform_app"
+      ]
+    },
+    {
+      "channel": "stable",
+      "extension_types": [
+        "extension", "packaged_app", "hosted_app", "platform_app"
+      ],
+      "location": "component"
+    }
+  ],
   "managedModePrivate": {
     "channel": "dev",
     "extension_types": ["extension", "packaged_app"],

@@ -48,6 +48,7 @@
           'experimental_identity.idl',
           'experimental_idltest.idl',
           'experimental_infobars.json',
+          'location.idl',
           'experimental_media_galleries.idl',
           'experimental_record.json',
           'experimental_system_info_cpu.idl',

@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
+#include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -131,6 +132,10 @@ ExtensionProcessManager* TestExtensionSystem::process_manager() {
 
 AlarmManager* TestExtensionSystem::alarm_manager() {
   return alarm_manager_.get();
+}
+
+LocationManager* TestExtensionSystem::location_manager() {
+  return location_manager_.get();
 }
 
 StateStore* TestExtensionSystem::state_store() {
