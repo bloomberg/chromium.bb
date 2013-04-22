@@ -489,3 +489,150 @@ div.watch-single-video-icon {
     url('../images/media/watch.png') 1x,
     url('../images/media/2x/watch.png') 2x);
 }
+
+/* Pop-up dialogs. */
+
+body[new-ui] .cr-dialog-container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  -webkit-transition: opacity 250ms linear;
+  -webkit-user-select: none;
+  display: -webkit-box;
+  height: 100%;
+  left: 0;
+  overflow: hidden;
+  position: absolute;
+  top: 0;
+  width: 100%;
+  z-index: 9999;
+}
+
+body[new-ui] .cr-dialog-frame {
+  -webkit-box-orient: vertical;
+  -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgb(255, 255, 255);
+  color: rgb(34, 34, 34);
+  cursor: default;
+  display: -webkit-box;
+  padding: 20px;
+  position: relative;
+  width: 460px;
+}
+
+body[new-ui] .cr-dialog-frame:focus {
+  outline: none;
+}
+
+@-webkit-keyframes pulse {
+ 0% {
+   -webkit-transform: scale(1);
+ }
+ 40% {
+   -webkit-transform: scale(1.02);
+  }
+ 60% {
+   -webkit-transform: scale(1.02);
+  }
+ 100% {
+   -webkit-transform: scale(1);
+ }
+}
+
+body[new-ui] .cr-dialog-frame.pulse {
+  -webkit-animation-duration: 180ms;
+  -webkit-animation-iteration-count: 1;
+  -webkit-animation-name: pulse;
+  -webkit-animation-timing-function: ease-in-out;
+}
+
+body[new-ui] .shown > .cr-dialog-frame {
+  -webkit-transform: perspective(500px) scale(1)
+                     translateY(0) rotateX(0);
+  opacity: 1;
+}
+
+body[new-ui] .cr-dialog-frame {
+  -webkit-transform: perspective(500px) scale(0.99)
+                     translateY(-20px) rotateX(5deg);
+  -webkit-transition: all 180ms;
+  -webkit-transition-duration: 250ms;
+  opacity: 0;
+}
+
+body[new-ui] .cr-dialog-shield {
+  -webkit-transition: opacity 500ms;
+  background-color: white;
+  bottom: 0;
+  display: block;
+  left: 0;
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+body[new-ui] .shown > .cr-dialog-shield {
+  -webkit-transition: opacity 500ms;
+  opacity: 0.5;
+}
+
+body[new-ui] [hidden] {
+  display: none;
+}
+
+body[new-ui] .cr-dialog-title {
+  -webkit-margin-after: 10px;
+  -webkit-margin-end: 20px;
+  display: block;
+  font-size: 120%;
+  font-weight: bold;
+  white-space: nowrap;
+  word-wrap: normal;
+}
+
+body[new-ui] .cr-dialog-text {
+  margin: 13px 0;
+}
+
+body[new-ui] .cr-dialog-text,
+body[new-ui] .cr-dialog-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body[new-ui] .cr-dialog-frame input {
+  -webkit-box-sizing: border-box;
+  width: 100%;
+}
+
+body[new-ui] .cr-dialog-buttons {
+  -webkit-box-orient: horizontal;
+  -webkit-box-pack: end;
+  display: -webkit-box;
+  padding-top: 10px;
+}
+
+body[new-ui] .cr-dialog-buttons button {
+  line-height: 1.8;
+}
+
+body[new-ui] .cr-dialog-close {
+  background: url('chrome://theme/IDR_CLOSE_DIALOG') center no-repeat;
+  display: inline-block;
+  height: 44px;
+  opacity: 0.7;
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 44px;
+}
+
+body[new-ui] .cr-dialog-close:hover {
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_H');
+}
+
+body[new-ui] .cr-dialog-close:active {
+  background-image: url('chrome://theme/IDR_CLOSE_DIALOG_P');
+}
