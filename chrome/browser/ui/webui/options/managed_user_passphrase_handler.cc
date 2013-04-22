@@ -63,7 +63,7 @@ void ManagedUserPassphraseHandler::PassphraseDialogCallback(bool success) {
   ManagedModeNavigationObserver::FromWebContents(
       web_ui()->GetWebContents())->set_elevated(success);
   base::FundamentalValue unlock_success(success);
-  web_ui()->CallJavascriptFunction("ManagedUserSettings.isAuthenticated",
+  web_ui()->CallJavascriptFunction("ManagedUserSettings.setAuthenticated",
                                    unlock_success);
 }
 

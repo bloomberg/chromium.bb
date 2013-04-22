@@ -26,11 +26,6 @@ ManagedUserSettingsTest.prototype = {
   /** @override */
   runAccessibilityChecks: false,
 
-  /** @inheritDoc */
-  preLoad: function() {
-    this.makeAndRegisterMockHandler(['setElevated']);
-  },
-
 };
 
 // Verify that the settings page is locked and can be unlocked.
@@ -42,9 +37,7 @@ TEST_F('ManagedUserSettingsTest', 'PageLocked',
       var unlockButton =
           options.ManagedUserSettingsForTesting.getUnlockButton();
       expectFalse(unlockButton.disabled);
-      this.mockHandler.expects(once()).setElevated([true]);
       unlockButton.click();
       // When closing the page, we expect the elevation to be reset.
-      this.mockHandler.expects(once()).setElevated([false]);
       OptionsPage.closeOverlay();
     });
