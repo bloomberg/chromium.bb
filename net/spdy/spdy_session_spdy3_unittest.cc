@@ -1009,6 +1009,55 @@ TEST_F(SpdySessionSpdy3Test, ClearSettingsStorageOnIPAddressChanged) {
       test_host_port_pair_).size());
 }
 
+TEST_F(SpdySessionSpdy3Test, Initialize) {
+  CapturingBoundNetLog log;
+  session_deps_.net_log = log.bound().net_log();
+  session_deps_.host_resolver->set_synchronous_mode(true);
+
+  MockConnect connect_data(SYNCHRONOUS, OK);
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+
+  StaticSocketDataProvider data(reads, arraysize(reads), NULL, 0);
+  data.set_connect_data(connect_data);
+  session_deps_.socket_factory->AddSocketDataProvider(&data);
+
+  SSLSocketDataProvider ssl(SYNCHRONOUS, OK);
+  session_deps_.socket_factory->AddSSLSocketDataProvider(&ssl);
+
+  CreateNetworkSession();
+
+  scoped_refptr<SpdySession> session =
+      spdy_session_pool_->Get(pair_, log.bound());
+  EXPECT_TRUE(spdy_session_pool_->HasSession(pair_));
+
+  EXPECT_EQ(OK,
+            InitializeSession(
+                http_session_.get(), session.get(), test_host_port_pair_));
+
+  // Flush the SpdySession::OnReadComplete() task.
+  MessageLoop::current()->RunUntilIdle();
+
+  net::CapturingNetLog::CapturedEntryList entries;
+  log.GetEntries(&entries);
+  EXPECT_LT(0u, entries.size());
+
+  // Check that we logged TYPE_SPDY_SESSION_INITIALIZED correctly.
+  int pos = net::ExpectLogContainsSomewhere(
+      entries, 0,
+      net::NetLog::TYPE_SPDY_SESSION_INITIALIZED,
+      net::NetLog::PHASE_NONE);
+  EXPECT_LT(0, pos);
+
+  CapturingNetLog::CapturedEntry entry = entries[pos];
+  NetLog::Source socket_source;
+  EXPECT_TRUE(NetLog::Source::FromEventParameters(entry.params.get(),
+                                                  &socket_source));
+  EXPECT_TRUE(socket_source.IsValid());
+  EXPECT_NE(log.bound().source().id, socket_source.id);
+}
+
 TEST_F(SpdySessionSpdy3Test, CloseSessionOnError) {
   session_deps_.host_resolver->set_synchronous_mode(true);
 

@@ -975,6 +975,12 @@ EVENT_TYPE(HTTP_TRANSACTION_RESTART_AFTER_ERROR)
 //   }
 EVENT_TYPE(SPDY_SESSION)
 
+// The SpdySession has been initilized with a socket.
+//   {
+//     "source_dependency":  <Source identifier for the underlying socket>,
+//   }
+EVENT_TYPE(SPDY_SESSION_INITIALIZED)
+
 // This event is sent for a SPDY SYN_STREAM.
 // The following parameters are attached:
 //   {

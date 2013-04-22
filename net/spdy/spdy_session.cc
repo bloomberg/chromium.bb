@@ -452,6 +452,10 @@ Error SpdySession::InitializeWithSocket(
         kDefaultInitialRecvWindowSize - session_recv_window_size_);
   }
 
+  net_log_.AddEvent(
+      NetLog::TYPE_SPDY_SESSION_INITIALIZED,
+      connection_->socket()->NetLog().source().ToEventParametersCallback());
+
   // Write out any data that we might have to send, such as the settings frame.
   WriteSocketLater();
   int error = DoLoop(OK);
