@@ -11,7 +11,7 @@
 
 namespace chromeos {
 
-class EnterpriseEnrollmentScreenActor;
+class EnrollmentScreenActor;
 class ErrorScreenActor;
 class EulaScreenActor;
 class NetworkScreenActor;
@@ -60,8 +60,7 @@ class OobeDisplay {
   virtual UpdateScreenActor* GetUpdateScreenActor() = 0;
   virtual NetworkScreenActor* GetNetworkScreenActor() = 0;
   virtual EulaScreenActor* GetEulaScreenActor() = 0;
-  virtual EnterpriseEnrollmentScreenActor*
-      GetEnterpriseEnrollmentScreenActor() = 0;
+  virtual EnrollmentScreenActor* GetEnrollmentScreenActor() = 0;
   virtual ResetScreenActor* GetResetScreenActor() = 0;
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;

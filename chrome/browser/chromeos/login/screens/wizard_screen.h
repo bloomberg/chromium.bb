@@ -36,7 +36,7 @@ class WizardScreen {
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
   friend class NetworkScreenTest;
   friend class UpdateScreenTest;
 

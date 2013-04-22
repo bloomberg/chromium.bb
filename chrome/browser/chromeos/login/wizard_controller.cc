@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
@@ -115,7 +115,7 @@ const char WizardController::kLoginScreenName[] = "login";
 const char WizardController::kUpdateScreenName[] = "update";
 const char WizardController::kUserImageScreenName[] = "image";
 const char WizardController::kEulaScreenName[] = "eula";
-const char WizardController::kEnterpriseEnrollmentScreenName[] = "enroll";
+const char WizardController::kEnrollmentScreenName[] = "enroll";
 const char WizardController::kResetScreenName[] = "reset";
 const char WizardController::kErrorScreenName[] = "error-message";
 const char WizardController::kTermsOfServiceScreenName[] = "tos";
@@ -223,14 +223,14 @@ chromeos::EulaScreen* WizardController::GetEulaScreen() {
   return eula_screen_.get();
 }
 
-chromeos::EnterpriseEnrollmentScreen*
-    WizardController::GetEnterpriseEnrollmentScreen() {
-  if (!enterprise_enrollment_screen_.get()) {
-    enterprise_enrollment_screen_.reset(
-        new chromeos::EnterpriseEnrollmentScreen(
-            this, oobe_display_->GetEnterpriseEnrollmentScreenActor()));
+chromeos::EnrollmentScreen*
+    WizardController::GetEnrollmentScreen() {
+  if (!enrollment_screen_.get()) {
+    enrollment_screen_.reset(
+        new chromeos::EnrollmentScreen(
+            this, oobe_display_->GetEnrollmentScreenActor()));
   }
-  return enterprise_enrollment_screen_.get();
+  return enrollment_screen_.get();
 }
 
 chromeos::ResetScreen* WizardController::GetResetScreen() {
@@ -340,7 +340,7 @@ void WizardController::ShowEulaScreen() {
   SetCurrentScreen(GetEulaScreen());
 }
 
-void WizardController::ShowEnterpriseEnrollmentScreen() {
+void WizardController::ShowEnrollmentScreen() {
   SetStatusAreaVisible(true);
 
   bool is_auto_enrollment = false;
@@ -350,7 +350,7 @@ void WizardController::ShowEnterpriseEnrollmentScreen() {
     screen_parameters_->GetString("user", &user);
   }
 
-  EnterpriseEnrollmentScreen* screen = GetEnterpriseEnrollmentScreen();
+  EnrollmentScreen* screen = GetEnrollmentScreen();
   screen->SetParameters(is_auto_enrollment, user);
   SetCurrentScreen(screen);
 }
@@ -474,7 +474,7 @@ void WizardController::OnEulaAccepted() {
   if (skip_update_enroll_after_eula_) {
     PerformPostEulaActions();
     PerformPostUpdateActions();
-    ShowEnterpriseEnrollmentScreen();
+    ShowEnrollmentScreen();
   } else {
     InitiateOOBEUpdate();
   }
@@ -526,7 +526,7 @@ void WizardController::OnUserImageSkipped() {
   OnUserImageSelected();
 }
 
-void WizardController::OnEnterpriseEnrollmentDone() {
+void WizardController::OnEnrollmentDone() {
   ShowLoginScreen();
 }
 
@@ -544,7 +544,7 @@ void WizardController::OnWrongHWIDWarningSkipped() {
     ShowLoginScreen();
 }
 
-void WizardController::OnEnterpriseAutoEnrollmentDone() {
+void WizardController::OnAutoEnrollmentDone() {
   VLOG(1) << "Automagic enrollment done, resuming previous signin";
   ResumeLoginScreen();
 }
@@ -654,8 +654,8 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     ShowEulaScreen();
   } else if (screen_name == kResetScreenName) {
     ShowResetScreen();
-  } else if (screen_name == kEnterpriseEnrollmentScreenName) {
-    ShowEnterpriseEnrollmentScreen();
+  } else if (screen_name == kEnrollmentScreenName) {
+    ShowEnrollmentScreen();
   } else if (screen_name == kTermsOfServiceScreenName) {
     ShowTermsOfServiceScreen();
   } else if (screen_name == kWrongHWIDScreenName) {
@@ -702,13 +702,13 @@ void WizardController::OnExit(ExitCodes exit_code) {
       ShowNetworkScreen();
       break;
     case ENTERPRISE_ENROLLMENT_COMPLETED:
-      OnEnterpriseEnrollmentDone();
+      OnEnrollmentDone();
       break;
     case RESET_CANCELED:
       OnResetCanceled();
       break;
     case ENTERPRISE_AUTO_MAGIC_ENROLLMENT_COMPLETED:
-      OnEnterpriseAutoEnrollmentDone();
+      OnAutoEnrollmentDone();
       break;
     case TERMS_OF_SERVICE_DECLINED:
       OnTermsOfServiceDeclined();

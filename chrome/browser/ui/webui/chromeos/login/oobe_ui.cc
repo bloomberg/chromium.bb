@@ -13,7 +13,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -21,7 +21,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/about_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/eula_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/kiosk_app_menu_handler.h"
@@ -179,12 +179,10 @@ OobeUI::OobeUI(content::WebUI* web_ui)
   wrong_hwid_screen_actor_ = wrong_hwid_screen_handler;
   AddScreenHandler(wrong_hwid_screen_handler);
 
-  EnterpriseOAuthEnrollmentScreenHandler*
-      enterprise_oauth_enrollment_screen_handler =
-          new EnterpriseOAuthEnrollmentScreenHandler;
-  enterprise_enrollment_screen_actor_ =
-      enterprise_oauth_enrollment_screen_handler;
-  AddScreenHandler(enterprise_oauth_enrollment_screen_handler);
+  EnrollmentScreenHandler* enrollment_screen_handler =
+      new EnrollmentScreenHandler();
+  enrollment_screen_actor_ = enrollment_screen_handler;
+  AddScreenHandler(enrollment_screen_handler);
 
   TermsOfServiceScreenHandler* terms_of_service_screen_handler =
       new TermsOfServiceScreenHandler;
@@ -256,9 +254,8 @@ EulaScreenActor* OobeUI::GetEulaScreenActor() {
   return eula_screen_actor_;
 }
 
-EnterpriseEnrollmentScreenActor* OobeUI::
-    GetEnterpriseEnrollmentScreenActor() {
-  return enterprise_enrollment_screen_actor_;
+EnrollmentScreenActor* OobeUI::GetEnrollmentScreenActor() {
+  return enrollment_screen_actor_;
 }
 
 ResetScreenActor* OobeUI::GetResetScreenActor() {

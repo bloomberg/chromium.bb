@@ -26,7 +26,7 @@ class DictionaryValue;
 
 namespace chromeos {
 
-class EnterpriseEnrollmentScreen;
+class EnrollmentScreen;
 class ErrorScreen;
 class EulaScreen;
 class LoginDisplayHost;
@@ -113,7 +113,7 @@ class WizardController : public ScreenObserver {
   UpdateScreen* GetUpdateScreen();
   UserImageScreen* GetUserImageScreen();
   EulaScreen* GetEulaScreen();
-  EnterpriseEnrollmentScreen* GetEnterpriseEnrollmentScreen();
+  EnrollmentScreen* GetEnrollmentScreen();
   ResetScreen* GetResetScreen();
   TermsOfServiceScreen* GetTermsOfServiceScreen();
   WrongHWIDScreen* GetWrongHWIDScreen();
@@ -133,7 +133,7 @@ class WizardController : public ScreenObserver {
   static const char kOutOfBoxScreenName[];
   static const char kTestNoScreenName[];
   static const char kEulaScreenName[];
-  static const char kEnterpriseEnrollmentScreenName[];
+  static const char kEnrollmentScreenName[];
   static const char kResetScreenName[];
   static const char kErrorScreenName[];
   static const char kTermsOfServiceScreenName[];
@@ -146,7 +146,7 @@ class WizardController : public ScreenObserver {
   void ShowUpdateScreen();
   void ShowUserImageScreen();
   void ShowEulaScreen();
-  void ShowEnterpriseEnrollmentScreen();
+  void ShowEnrollmentScreen();
   void ShowResetScreen();
   void ShowTermsOfServiceScreen();
   void ShowWrongHWIDScreen();
@@ -168,8 +168,8 @@ class WizardController : public ScreenObserver {
   void OnUpdateErrorUpdating();
   void OnUserImageSelected();
   void OnUserImageSkipped();
-  void OnEnterpriseEnrollmentDone();
-  void OnEnterpriseAutoEnrollmentDone();
+  void OnEnrollmentDone();
+  void OnAutoEnrollmentDone();
   void OnResetCanceled();
   void OnWrongHWIDWarningSkipped();
   void OnOOBECompleted();
@@ -228,8 +228,7 @@ class WizardController : public ScreenObserver {
   scoped_ptr<UserImageScreen> user_image_screen_;
   scoped_ptr<EulaScreen> eula_screen_;
   scoped_ptr<ResetScreen> reset_screen_;
-  scoped_ptr<EnterpriseEnrollmentScreen>
-      enterprise_enrollment_screen_;
+  scoped_ptr<EnrollmentScreen> enrollment_screen_;
   scoped_ptr<ErrorScreen> error_screen_;
   scoped_ptr<TermsOfServiceScreen> terms_of_service_screen_;
   scoped_ptr<WrongHWIDScreen> wrong_hwid_screen_;
@@ -287,7 +286,7 @@ class WizardController : public ScreenObserver {
   // a previous screen instead of proceeding with usual flow.
   bool user_image_screen_return_to_previous_hack_;
 
-  FRIEND_TEST_ALL_PREFIXES(EnterpriseEnrollmentScreenTest, TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
   FRIEND_TEST_ALL_PREFIXES(WizardControllerFlowTest, Accelerators);
   friend class WizardControllerFlowTest;
   friend class WizardInProcessBrowserTest;

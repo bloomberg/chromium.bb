@@ -66,8 +66,7 @@ class OobeUI : public OobeDisplay,
   virtual UpdateScreenActor* GetUpdateScreenActor() OVERRIDE;
   virtual NetworkScreenActor* GetNetworkScreenActor() OVERRIDE;
   virtual EulaScreenActor* GetEulaScreenActor() OVERRIDE;
-  virtual EnterpriseEnrollmentScreenActor* GetEnterpriseEnrollmentScreenActor()
-      OVERRIDE;
+  virtual EnrollmentScreenActor* GetEnrollmentScreenActor() OVERRIDE;
   virtual ResetScreenActor* GetResetScreenActor() OVERRIDE;
   virtual TermsOfServiceScreenActor*
       GetTermsOfServiceScreenActor() OVERRIDE;
@@ -123,7 +122,7 @@ class OobeUI : public OobeDisplay,
   UpdateScreenHandler* update_screen_handler_;
   NetworkScreenActor* network_screen_actor_;
   EulaScreenActor* eula_screen_actor_;
-  EnterpriseEnrollmentScreenActor* enterprise_enrollment_screen_actor_;
+  EnrollmentScreenActor* enrollment_screen_actor_;
   ResetScreenActor* reset_screen_actor_;
   WrongHWIDScreenActor* wrong_hwid_screen_actor_;
   LocallyManagedUserCreationScreenHandler*

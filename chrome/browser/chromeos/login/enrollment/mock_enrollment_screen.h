@@ -2,28 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENTERPRISE_ENROLLMENT_SCREEN_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENTERPRISE_ENROLLMENT_SCREEN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENROLLMENT_SCREEN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENROLLMENT_SCREEN_H_
 
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace chromeos {
 
-class MockEnterpriseEnrollmentScreen : public EnterpriseEnrollmentScreen {
+class MockEnrollmentScreen : public EnrollmentScreen {
  public:
-  MockEnterpriseEnrollmentScreen(ScreenObserver* screen_observer,
-                                 EnterpriseEnrollmentScreenActor* actor);
-  virtual ~MockEnterpriseEnrollmentScreen();
+  MockEnrollmentScreen(ScreenObserver* screen_observer,
+                       EnrollmentScreenActor* actor);
+  virtual ~MockEnrollmentScreen();
 };
 
-class MockEnterpriseEnrollmentScreenActor
-    : public EnterpriseEnrollmentScreenActor {
+class MockEnrollmentScreenActor
+    : public EnrollmentScreenActor {
  public:
-  MockEnterpriseEnrollmentScreenActor();
-  virtual ~MockEnterpriseEnrollmentScreenActor();
+  MockEnrollmentScreenActor();
+  virtual ~MockEnrollmentScreenActor();
 
   MOCK_METHOD3(SetParameters, void(Controller*, bool, const std::string&));
   MOCK_METHOD0(PrepareToShow, void());
@@ -43,4 +43,4 @@ class MockEnterpriseEnrollmentScreenActor
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENTERPRISE_ENROLLMENT_SCREEN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_MOCK_ENROLLMENT_SCREEN_H_

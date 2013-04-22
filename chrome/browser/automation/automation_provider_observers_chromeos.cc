@@ -8,7 +8,7 @@
 #include "chrome/browser/automation/automation_provider.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
@@ -424,7 +424,7 @@ chromeos::VirtualNetwork* VirtualConnectObserver::GetVirtualNetwork(
 
 EnrollmentObserver::EnrollmentObserver(AutomationProvider* automation,
     IPC::Message* reply_message,
-    chromeos::EnterpriseEnrollmentScreen* enrollment_screen)
+    chromeos::EnrollmentScreen* enrollment_screen)
     : automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       enrollment_screen_(enrollment_screen) {

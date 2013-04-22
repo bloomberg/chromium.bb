@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/login/enterprise_oauth_enrollment_screen_handler.h"
+#include "chrome/browser/ui/webui/chromeos/login/enrollment_screen_handler.h"
 
 #include <algorithm>
 
@@ -40,16 +40,16 @@ const char kEnrollmentStepSuccess[] = "success";
 
 namespace chromeos {
 
-// EnterpriseOAuthEnrollmentScreenHandler::TokenRevoker ------------------------
+// EnrollmentScreenHandler::TokenRevoker ------------------------
 
 // A helper class that takes care of asynchronously revoking a given token.
-class EnterpriseOAuthEnrollmentScreenHandler::TokenRevoker
+class EnrollmentScreenHandler::TokenRevoker
     : public GaiaOAuthConsumer {
  public:
   TokenRevoker(const std::string& token,
                const std::string& secret,
                Profile* profile,
-               EnterpriseOAuthEnrollmentScreenHandler* owner)
+               EnrollmentScreenHandler* owner)
       : oauth_fetcher_(this, profile->GetRequestContext(),
                        GaiaConstants::kDeviceManagementServiceOAuth),
         owner_(owner) {
@@ -74,41 +74,41 @@ class EnterpriseOAuthEnrollmentScreenHandler::TokenRevoker
 
  private:
   GaiaOAuthFetcher oauth_fetcher_;
-  EnterpriseOAuthEnrollmentScreenHandler* owner_;
+  EnrollmentScreenHandler* owner_;
 
   DISALLOW_COPY_AND_ASSIGN(TokenRevoker);
 };
 
-// EnterpriseOAuthEnrollmentScreenHandler, public ------------------------------
+// EnrollmentScreenHandler, public ------------------------------
 
-EnterpriseOAuthEnrollmentScreenHandler::EnterpriseOAuthEnrollmentScreenHandler()
+EnrollmentScreenHandler::EnrollmentScreenHandler()
     : controller_(NULL),
       show_on_init_(false),
       is_auto_enrollment_(false),
       browsing_data_remover_(NULL) {
 }
 
-EnterpriseOAuthEnrollmentScreenHandler::
-    ~EnterpriseOAuthEnrollmentScreenHandler() {
+EnrollmentScreenHandler::
+    ~EnrollmentScreenHandler() {
   if (browsing_data_remover_)
     browsing_data_remover_->RemoveObserver(this);
 }
 
-// EnterpriseOAuthEnrollmentScreenHandler, WebUIMessageHandler implementation --
+// EnrollmentScreenHandler, WebUIMessageHandler implementation --
 
-void EnterpriseOAuthEnrollmentScreenHandler::RegisterMessages() {
+void EnrollmentScreenHandler::RegisterMessages() {
   AddCallback("oauthEnrollClose",
-              &EnterpriseOAuthEnrollmentScreenHandler::HandleClose);
+              &EnrollmentScreenHandler::HandleClose);
   AddCallback("oauthEnrollCompleteLogin",
-              &EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin);
+              &EnrollmentScreenHandler::HandleCompleteLogin);
   AddCallback("oauthEnrollRetry",
-              &EnterpriseOAuthEnrollmentScreenHandler::HandleRetry);
+              &EnrollmentScreenHandler::HandleRetry);
 }
 
-// EnterpriseOAuthEnrollmentScreenHandler
-//      EnterpriseEnrollmentScreenActor implementation -------------------------
+// EnrollmentScreenHandler
+//      EnrollmentScreenActor implementation -----------------------------------
 
-void EnterpriseOAuthEnrollmentScreenHandler::SetParameters(
+void EnrollmentScreenHandler::SetParameters(
     Controller* controller,
     bool is_auto_enrollment,
     const std::string& user) {
@@ -118,20 +118,20 @@ void EnterpriseOAuthEnrollmentScreenHandler::SetParameters(
     user_ = user;
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::PrepareToShow() {
+void EnrollmentScreenHandler::PrepareToShow() {
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::Show() {
+void EnrollmentScreenHandler::Show() {
   if (!page_is_ready())
     show_on_init_ = true;
   else
     DoShow();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::Hide() {
+void EnrollmentScreenHandler::Hide() {
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::FetchOAuthToken() {
+void EnrollmentScreenHandler::FetchOAuthToken() {
   Profile* profile = Profile::FromWebUI(web_ui());
   oauth_fetcher_.reset(
       new GaiaOAuthFetcher(this,
@@ -142,7 +142,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::FetchOAuthToken() {
   oauth_fetcher_->StartGetOAuthTokenRequest();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth(
+void EnrollmentScreenHandler::ResetAuth(
     const base::Closure& callback) {
   oauth_fetcher_.reset();
 
@@ -159,19 +159,19 @@ void EnterpriseOAuthEnrollmentScreenHandler::ResetAuth(
                                  BrowsingDataHelper::UNPROTECTED_WEB);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowSigninScreen() {
+void EnrollmentScreenHandler::ShowSigninScreen() {
   ShowStep(kEnrollmentStepSignin);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
+void EnrollmentScreenHandler::ShowEnrollmentSpinnerScreen() {
   ShowWorking(IDS_ENTERPRISE_ENROLLMENT_WORKING);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowLoginSpinnerScreen() {
+void EnrollmentScreenHandler::ShowLoginSpinnerScreen() {
   ShowWorking(IDS_ENTERPRISE_ENROLLMENT_RESUMING_LOGIN);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
+void EnrollmentScreenHandler::ShowAuthError(
     const GoogleServiceAuthError& error) {
   switch (error.state()) {
     case GoogleServiceAuthError::NONE:
@@ -197,7 +197,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowAuthError(
   NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowUIError(UIError error) {
+void EnrollmentScreenHandler::ShowUIError(UIError error) {
   switch (error) {
     case UI_ERROR_DOMAIN_MISMATCH:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_LOCK_WRONG_USER, true);
@@ -212,7 +212,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowUIError(UIError error) {
   NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentStatus(
+void EnrollmentScreenHandler::ShowEnrollmentStatus(
     policy::EnrollmentStatus status) {
   switch (status.status()) {
     case policy::EnrollmentStatus::STATUS_SUCCESS:
@@ -273,7 +273,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::ShowEnrollmentStatus(
   NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::SubmitTestCredentials(
+void EnrollmentScreenHandler::SubmitTestCredentials(
     const std::string& email,
     const std::string& password) {
   test_email_ = email;
@@ -281,16 +281,16 @@ void EnterpriseOAuthEnrollmentScreenHandler::SubmitTestCredentials(
   DoShow();
 }
 
-// EnterpriseOAuthEnrollmentScreenHandler BaseScreenHandler implementation -----
+// EnrollmentScreenHandler BaseScreenHandler implementation -----
 
-void EnterpriseOAuthEnrollmentScreenHandler::Initialize() {
+void EnrollmentScreenHandler::Initialize() {
   if (show_on_init_) {
     Show();
     show_on_init_ = false;
   }
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::DeclareLocalizedValues(
+void EnrollmentScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
   builder->Add("oauthEnrollScreenTitle",
                IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE);
@@ -311,26 +311,26 @@ void EnterpriseOAuthEnrollmentScreenHandler::DeclareLocalizedValues(
                IDS_ENTERPRISE_ENROLLMENT_CANCEL_AUTO_GO_BACK);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnGetOAuthTokenFailure(
+void EnrollmentScreenHandler::OnGetOAuthTokenFailure(
     const GoogleServiceAuthError& error) {
   if (controller_)
     controller_->OnAuthError(error);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthGetAccessTokenSuccess(
+void EnrollmentScreenHandler::OnOAuthGetAccessTokenSuccess(
     const std::string& token,
     const std::string& secret) {
   access_token_ = token;
   access_token_secret_ = secret;
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthGetAccessTokenFailure(
+void EnrollmentScreenHandler::OnOAuthGetAccessTokenFailure(
     const GoogleServiceAuthError& error) {
   if (controller_)
     controller_->OnAuthError(error);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
+void EnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
     const std::string& service_scope,
     const std::string& token,
     const std::string& expires_in) {
@@ -346,24 +346,24 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeSuccess(
   controller_->OnOAuthTokenAvailable(token);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnOAuthWrapBridgeFailure(
+void EnrollmentScreenHandler::OnOAuthWrapBridgeFailure(
     const std::string& service_scope,
     const GoogleServiceAuthError& error) {
   if (controller_)
     controller_->OnAuthError(error);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnUserInfoSuccess(
+void EnrollmentScreenHandler::OnUserInfoSuccess(
     const std::string& email) {
   NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnUserInfoFailure(
+void EnrollmentScreenHandler::OnUserInfoFailure(
     const GoogleServiceAuthError& error) {
   NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
+void EnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
   browsing_data_remover_->RemoveObserver(this);
   browsing_data_remover_ = NULL;
 
@@ -375,9 +375,9 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnBrowsingDataRemoverDone() {
   }
 }
 
-// EnterpriseOAuthEnrollmentScreenHandler, private -----------------------------
+// EnrollmentScreenHandler, private -----------------------------
 
-void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
+void EnrollmentScreenHandler::HandleClose(
     const std::string& reason) {
   if (!controller_) {
     NOTREACHED();
@@ -394,7 +394,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleClose(
   RevokeTokens();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
+void EnrollmentScreenHandler::HandleCompleteLogin(
     const std::string& user) {
   if (!controller_) {
     NOTREACHED();
@@ -403,7 +403,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleCompleteLogin(
   controller_->OnLoginDone(gaia::SanitizeEmail(user));
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry() {
+void EnrollmentScreenHandler::HandleRetry() {
   if (!controller_) {
     NOTREACHED();
     return;
@@ -411,28 +411,28 @@ void EnterpriseOAuthEnrollmentScreenHandler::HandleRetry() {
   controller_->OnRetry();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowStep(const char* step) {
+void EnrollmentScreenHandler::ShowStep(const char* step) {
   CallJS("oobe.OAuthEnrollmentScreen.showStep", std::string(step));
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowError(int message_id,
+void EnrollmentScreenHandler::ShowError(int message_id,
                                                        bool retry) {
   ShowErrorMessage(l10n_util::GetStringUTF8(message_id), retry);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowErrorMessage(
+void EnrollmentScreenHandler::ShowErrorMessage(
     const std::string& message,
     bool retry) {
   RevokeTokens();
   CallJS("oobe.OAuthEnrollmentScreen.showError", message, retry);
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::ShowWorking(int message_id) {
+void EnrollmentScreenHandler::ShowWorking(int message_id) {
   CallJS("oobe.OAuthEnrollmentScreen.showWorking",
          l10n_util::GetStringUTF16(message_id));
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {
+void EnrollmentScreenHandler::RevokeTokens() {
   Profile* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
 
@@ -448,7 +448,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::RevokeTokens() {
   }
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::OnTokenRevokerDone(
+void EnrollmentScreenHandler::OnTokenRevokerDone(
     TokenRevoker* revoker) {
   ScopedVector<TokenRevoker>::iterator it =
       std::find(token_revokers_.begin(), token_revokers_.end(), revoker);
@@ -458,7 +458,7 @@ void EnterpriseOAuthEnrollmentScreenHandler::OnTokenRevokerDone(
     NOTREACHED();
 }
 
-void EnterpriseOAuthEnrollmentScreenHandler::DoShow() {
+void EnrollmentScreenHandler::DoShow() {
   DictionaryValue screen_data;
   screen_data.SetString("signin_url", kGaiaExtStartPage);
   screen_data.SetString("gaiaOrigin",

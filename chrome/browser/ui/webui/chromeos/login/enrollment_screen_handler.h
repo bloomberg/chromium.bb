@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENTERPRISE_OAUTH_ENROLLMENT_SCREEN_HANDLER_H_
-#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENTERPRISE_OAUTH_ENROLLMENT_SCREEN_HANDLER_H_
+#ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENROLLMENT_SCREEN_HANDLER_H_
+#define CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENROLLMENT_SCREEN_HANDLER_H_
 
 #include <string>
 #include <vector>
@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/browsing_data/browsing_data_remover.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/net/gaia/gaia_oauth_consumer.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 
@@ -23,19 +23,19 @@ namespace chromeos {
 
 // WebUIMessageHandler implementation which handles events occurring on the
 // page, such as the user pressing the signin button.
-class EnterpriseOAuthEnrollmentScreenHandler
+class EnrollmentScreenHandler
     : public BaseScreenHandler,
-      public EnterpriseEnrollmentScreenActor,
+      public EnrollmentScreenActor,
       public GaiaOAuthConsumer,
       public BrowsingDataRemover::Observer {
  public:
-  EnterpriseOAuthEnrollmentScreenHandler();
-  virtual ~EnterpriseOAuthEnrollmentScreenHandler();
+  EnrollmentScreenHandler();
+  virtual ~EnrollmentScreenHandler();
 
   // Implements WebUIMessageHandler:
   virtual void RegisterMessages() OVERRIDE;
 
-  // Implements EnterpriseEnrollmentScreenActor:
+  // Implements EnrollmentScreenActor:
   virtual void SetParameters(Controller* controller,
                              bool is_auto_enrollment,
                              const std::string& user) OVERRIDE;
@@ -141,9 +141,9 @@ class EnterpriseOAuthEnrollmentScreenHandler
   // Helpers that revoke the tokens used.
   ScopedVector<TokenRevoker> token_revokers_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseOAuthEnrollmentScreenHandler);
+  DISALLOW_COPY_AND_ASSIGN(EnrollmentScreenHandler);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENTERPRISE_OAUTH_ENROLLMENT_SCREEN_HANDLER_H_
+#endif  // CHROME_BROWSER_UI_WEBUI_CHROMEOS_LOGIN_ENROLLMENT_SCREEN_HANDLER_H_

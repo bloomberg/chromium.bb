@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -39,9 +39,9 @@ void EmptyVoidDBusMethodCallback(DBusMethodCallStatus result) {}
 
 }  // namespace
 
-EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
+EnrollmentScreen::EnrollmentScreen(
     ScreenObserver* observer,
-    EnterpriseEnrollmentScreenActor* actor)
+    EnrollmentScreenActor* actor)
     : WizardScreen(observer),
       actor_(actor),
       is_auto_enrollment_(false),
@@ -54,41 +54,41 @@ EnterpriseEnrollmentScreen::EnterpriseEnrollmentScreen(
       base::Bind(&EmptyVoidDBusMethodCallback));
 }
 
-EnterpriseEnrollmentScreen::~EnterpriseEnrollmentScreen() {}
+EnrollmentScreen::~EnrollmentScreen() {}
 
-void EnterpriseEnrollmentScreen::SetParameters(bool is_auto_enrollment,
+void EnrollmentScreen::SetParameters(bool is_auto_enrollment,
                                                const std::string& user) {
   is_auto_enrollment_ = is_auto_enrollment;
   user_ = user.empty() ? user : gaia::CanonicalizeEmail(user);
   actor_->SetParameters(this, is_auto_enrollment_, user_);
 }
 
-void EnterpriseEnrollmentScreen::PrepareToShow() {
+void EnrollmentScreen::PrepareToShow() {
   actor_->PrepareToShow();
 }
 
-void EnterpriseEnrollmentScreen::Show() {
+void EnrollmentScreen::Show() {
   if (is_auto_enrollment_ && !enrollment_failed_once_) {
     actor_->Show();
     UMA(policy::kMetricEnrollmentAutoStarted);
     actor_->ShowEnrollmentSpinnerScreen();
     actor_->FetchOAuthToken();
   } else {
-    actor_->ResetAuth(base::Bind(&EnterpriseEnrollmentScreen::ShowSigninScreen,
+    actor_->ResetAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
                                  weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
-void EnterpriseEnrollmentScreen::Hide() {
+void EnrollmentScreen::Hide() {
   actor_->Hide();
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-std::string EnterpriseEnrollmentScreen::GetName() const {
-  return WizardController::kEnterpriseEnrollmentScreenName;
+std::string EnrollmentScreen::GetName() const {
+  return WizardController::kEnrollmentScreenName;
 }
 
-void EnterpriseEnrollmentScreen::OnLoginDone(const std::string& user) {
+void EnrollmentScreen::OnLoginDone(const std::string& user) {
   user_ = gaia::CanonicalizeEmail(user);
 
   UMA(is_auto_enrollment_ ? policy::kMetricEnrollmentAutoRetried
@@ -98,7 +98,7 @@ void EnterpriseEnrollmentScreen::OnLoginDone(const std::string& user) {
   actor_->FetchOAuthToken();
 }
 
-void EnterpriseEnrollmentScreen::OnAuthError(
+void EnrollmentScreen::OnAuthError(
     const GoogleServiceAuthError& error) {
   enrollment_failed_once_ = true;
   actor_->ShowAuthError(error);
@@ -133,17 +133,17 @@ void EnterpriseEnrollmentScreen::OnAuthError(
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
 }
 
-void EnterpriseEnrollmentScreen::OnOAuthTokenAvailable(
+void EnrollmentScreen::OnOAuthTokenAvailable(
     const std::string& token) {
   RegisterForDevicePolicy(token);
 }
 
-void EnterpriseEnrollmentScreen::OnRetry() {
-  actor_->ResetAuth(base::Bind(&EnterpriseEnrollmentScreen::ShowSigninScreen,
+void EnrollmentScreen::OnRetry() {
+  actor_->ResetAuth(base::Bind(&EnrollmentScreen::ShowSigninScreen,
                                weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnterpriseEnrollmentScreen::OnCancel() {
+void EnrollmentScreen::OnCancel() {
   if (is_auto_enrollment_)
     policy::AutoEnrollmentClient::CancelAutoEnrollment();
   UMA(is_auto_enrollment_ ? policy::kMetricEnrollmentAutoCancelled
@@ -155,7 +155,7 @@ void EnterpriseEnrollmentScreen::OnCancel() {
   NotifyTestingObservers(false);
 }
 
-void EnterpriseEnrollmentScreen::OnConfirmationClosed() {
+void EnrollmentScreen::OnConfirmationClosed() {
   // If the machine has been put in KIOSK mode we have to restart the session
   // here to go in the proper KIOSK mode login screen.
   if (g_browser_process->browser_policy_connector()->GetDeviceMode() ==
@@ -179,16 +179,16 @@ void EnterpriseEnrollmentScreen::OnConfirmationClosed() {
   }
 }
 
-void EnterpriseEnrollmentScreen::AddTestingObserver(TestingObserver* observer) {
+void EnrollmentScreen::AddTestingObserver(TestingObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void EnterpriseEnrollmentScreen::RemoveTestingObserver(
+void EnrollmentScreen::RemoveTestingObserver(
     TestingObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
+void EnrollmentScreen::RegisterForDevicePolicy(
     const std::string& token) {
   policy::BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
@@ -198,7 +198,7 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
                << connector->GetEnterpriseDomain();
     UMAFailure(policy::kMetricEnrollmentWrongUserError);
     actor_->ShowUIError(
-        EnterpriseEnrollmentScreenActor::UI_ERROR_DOMAIN_MISMATCH);
+        EnrollmentScreenActor::UI_ERROR_DOMAIN_MISMATCH);
     NotifyTestingObservers(false);
     return;
   }
@@ -209,11 +209,11 @@ void EnterpriseEnrollmentScreen::RegisterForDevicePolicy(
   connector->ScheduleServiceInitialization(0);
   connector->GetDeviceCloudPolicyManager()->StartEnrollment(
       token, is_auto_enrollment_, modes,
-      base::Bind(&EnterpriseEnrollmentScreen::ReportEnrollmentStatus,
+      base::Bind(&EnrollmentScreen::ReportEnrollmentStatus,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EnterpriseEnrollmentScreen::ReportEnrollmentStatus(
+void EnrollmentScreen::ReportEnrollmentStatus(
     policy::EnrollmentStatus status) {
   bool success = status.status() == policy::EnrollmentStatus::STATUS_SUCCESS;
   enrollment_failed_once_ |= !success;
@@ -275,18 +275,18 @@ void EnterpriseEnrollmentScreen::ReportEnrollmentStatus(
   UMAFailure(policy::kMetricEnrollmentOtherFailed);
 }
 
-void EnterpriseEnrollmentScreen::UMAFailure(int sample) {
+void EnrollmentScreen::UMAFailure(int sample) {
   if (is_auto_enrollment_)
     sample = policy::kMetricEnrollmentAutoFailed;
   UMA(sample);
 }
 
-void EnterpriseEnrollmentScreen::ShowSigninScreen() {
+void EnrollmentScreen::ShowSigninScreen() {
   actor_->Show();
   actor_->ShowSigninScreen();
 }
 
-void EnterpriseEnrollmentScreen::NotifyTestingObservers(bool succeeded) {
+void EnrollmentScreen::NotifyTestingObservers(bool succeeded) {
   FOR_EACH_OBSERVER(TestingObserver, observers_,
                     OnEnrollmentComplete(succeeded));
 }

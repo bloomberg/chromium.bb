@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_SCREEN_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_SCREEN_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_H_
 
 #include <string>
 
@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen_actor.h"
+#include "chrome/browser/chromeos/login/enrollment/enrollment_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 
@@ -21,9 +21,9 @@ class ScreenObserver;
 
 // The screen implementation that links the enterprise enrollment UI into the
 // OOBE wizard.
-class EnterpriseEnrollmentScreen
+class EnrollmentScreen
     : public WizardScreen,
-      public EnterpriseEnrollmentScreenActor::Controller {
+      public EnrollmentScreenActor::Controller {
  public:
   // Used in PyAuto testing.
   class TestingObserver {
@@ -34,9 +34,9 @@ class EnterpriseEnrollmentScreen
     virtual void OnEnrollmentComplete(bool succeeded) = 0;
   };
 
-  EnterpriseEnrollmentScreen(ScreenObserver* observer,
-                             EnterpriseEnrollmentScreenActor* actor);
-  virtual ~EnterpriseEnrollmentScreen();
+  EnrollmentScreen(ScreenObserver* observer,
+                   EnrollmentScreenActor* actor);
+  virtual ~EnrollmentScreen();
 
   void SetParameters(bool is_auto_enrollment,
                      const std::string& enrollment_user);
@@ -47,7 +47,7 @@ class EnterpriseEnrollmentScreen
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // EnterpriseEnrollmentScreenActor::Controller implementation:
+  // EnrollmentScreenActor::Controller implementation:
   virtual void OnLoginDone(const std::string& user) OVERRIDE;
   virtual void OnAuthError(const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnOAuthTokenAvailable(const std::string& oauth_token) OVERRIDE;
@@ -56,7 +56,7 @@ class EnterpriseEnrollmentScreen
   virtual void OnConfirmationClosed() OVERRIDE;
 
   // Used for testing.
-  EnterpriseEnrollmentScreenActor* GetActor() {
+  EnrollmentScreenActor* GetActor() {
     return actor_;
   }
 
@@ -86,19 +86,19 @@ class EnterpriseEnrollmentScreen
   // Notifies testing observers about the result of the enrollment.
   void NotifyTestingObservers(bool succeeded);
 
-  EnterpriseEnrollmentScreenActor* actor_;
+  EnrollmentScreenActor* actor_;
   bool is_auto_enrollment_;
   bool enrollment_failed_once_;
   std::string user_;
   int lockbox_init_duration_;
-  base::WeakPtrFactory<EnterpriseEnrollmentScreen> weak_ptr_factory_;
+  base::WeakPtrFactory<EnrollmentScreen> weak_ptr_factory_;
 
   // Observers.
   ObserverList<TestingObserver, true> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(EnterpriseEnrollmentScreen);
+  DISALLOW_COPY_AND_ASSIGN(EnrollmentScreen);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_SCREEN_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_H_

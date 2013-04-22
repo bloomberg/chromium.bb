@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_ACTOR_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_ACTOR_H_
 
 #include <string>
 
@@ -16,7 +16,7 @@ class GoogleServiceAuthError;
 namespace chromeos {
 
 // Interface class for the enterprise enrollment screen actor.
-class EnterpriseEnrollmentScreenActor {
+class EnrollmentScreenActor {
  public:
   // Enumeration of the possible errors that can occur during enrollment which
   // are not covered by GoogleServiceAuthError or EnrollmentStatus.
@@ -43,7 +43,7 @@ class EnterpriseEnrollmentScreenActor {
     virtual void OnConfirmationClosed() = 0;
   };
 
-  virtual ~EnterpriseEnrollmentScreenActor() {}
+  virtual ~EnrollmentScreenActor() {}
 
   // Initializes the actor with parameters.
   virtual void SetParameters(Controller* controller,
@@ -91,4 +91,4 @@ class EnterpriseEnrollmentScreenActor {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENTERPRISE_ENROLLMENT_SCREEN_ACTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ENROLLMENT_ENROLLMENT_SCREEN_ACTOR_H_

@@ -646,7 +646,7 @@ void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
     params->SetBoolean("is_auto_enrollment", true);
     params->SetString("user", user);
   }
-  host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
+  host_->StartWizard(WizardController::kEnrollmentScreenName,
                      params.Pass());
   login_display_->OnFadeOut();
 }

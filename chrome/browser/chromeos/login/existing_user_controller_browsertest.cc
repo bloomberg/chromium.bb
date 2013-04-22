@@ -351,7 +351,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
 
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizardPtr(WizardController::kEnterpriseEnrollmentScreenName,
+              StartWizardPtr(WizardController::kEnrollmentScreenName,
                              _))
       .Times(1);
   EXPECT_CALL(*mock_login_display_, OnFadeOut())
@@ -379,7 +379,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
 IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
                        NewUserDontAutoEnrollAfterSignIn) {
   EXPECT_CALL(*mock_login_display_host_,
-              StartWizardPtr(WizardController::kEnterpriseEnrollmentScreenName,
+              StartWizardPtr(WizardController::kEnrollmentScreenName,
                              _))
       .Times(0);
   EXPECT_CALL(*mock_login_display_host_,
