@@ -447,6 +447,8 @@ void WalletClient::SendAutocheckoutStatus(
     AutocheckoutStatus status,
     const GURL& source_url,
     const std::string& google_transaction_id) {
+  DVLOG(1) << "Sending Autocheckout Status: " << status
+           << " for: " << source_url;
   if (HasRequestInProgress()) {
     pending_requests_.push(base::Bind(&WalletClient::SendAutocheckoutStatus,
                                       base::Unretained(this),

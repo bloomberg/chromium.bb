@@ -111,8 +111,9 @@ bool AutofillDownloadManager::StartQueryRequest(
 
   std::string query_data;
   if (CheckCacheForQueryRequest(request_data.form_signatures, &query_data)) {
-    DVLOG(1) << "AutofillDownloadManager: query request has been retrieved from"
-             << "the cache";
+    DVLOG(1) << "AutofillDownloadManager: query request has been retrieved "
+             << "from the cache, form signatures: "
+             << GetCombinedSignature(request_data.form_signatures);
     observer_->OnLoadedServerPredictions(query_data);
     return true;
   }

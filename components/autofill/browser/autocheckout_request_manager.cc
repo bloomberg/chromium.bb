@@ -118,7 +118,7 @@ void AutocheckoutRequestManager::OnMalformedResponse() {
 }
 
 void AutocheckoutRequestManager::OnNetworkError(int response_code) {
-  // Nothin to be done. |response_code| is logged by |metric_logger_|.
+  // Nothing to be done. |response_code| is logged by |metric_logger_|.
 }
 
 AutocheckoutRequestManager::AutocheckoutRequestManager(
