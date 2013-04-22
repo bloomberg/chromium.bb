@@ -63,6 +63,7 @@ const char kOnTabCaptureStatusChanged[] = "tabCapture.onStatusChanged";
 
 const char kBluetoothOnAdapterStateChanged[] =
     "bluetooth.onAdapterStateChanged";
+const char kBluetoothOnConnection[] = "bluetooth.onConnection";
 const char kBluetoothOnDeviceDiscovered[] = "bluetooth.onDeviceDiscovered";
 const char kBluetoothOnDeviceSearchFinished[] =
     "bluetooth.onDeviceSearchFinished";

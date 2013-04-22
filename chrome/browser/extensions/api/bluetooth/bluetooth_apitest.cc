@@ -141,6 +141,18 @@ static void CallConnectToServiceCallback(
 
 }  // namespace
 
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, AddProfile) {
+  // TODO(youngki): Implement it to test BluetoothAddProfileFunction.
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, RemoveProfile) {
+  // TODO(youngki): Implement it to test BluetoothRemoveProfileFunction.
+}
+
+IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetProfiles) {
+  // TODO(youngki): Implement it to test BluetoothGetProfilesFunction.
+}
+
 IN_PROC_BROWSER_TEST_F(BluetoothApiTest, OnAdapterStateChanged) {
   EXPECT_CALL(*mock_adapter_, GetAddress())
       .WillOnce(testing::Return(kAdapterAddress));

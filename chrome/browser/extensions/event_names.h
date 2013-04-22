@@ -75,6 +75,7 @@ extern const char kOnTabCaptureStatusChanged[];
 
 // Bluetooth.
 extern const char kBluetoothOnAdapterStateChanged[];
+extern const char kBluetoothOnConnection[];
 extern const char kBluetoothOnDeviceDiscovered[];
 extern const char kBluetoothOnDeviceSearchFinished[];
 extern const char kBluetoothOnDeviceSearchResult[];

@@ -36,6 +36,40 @@ namespace bluetooth {
     boolean connected;
   };
 
+  dictionary Profile {
+    // Unique profile identifier, e.g. 00001401-0000-1000-8000-00805F9B23FB
+    DOMString uuid;
+
+    // Human-readable name of the Profile, e.g. "Health Device"
+    DOMString? name;
+
+    // The RFCOMM channel id, used when the profile is to be exported to remote
+    // devices.
+    long? channel;
+
+    // The LS2CAP PSM number, used when the profile is to be exported to remote
+    // deviecs.
+    long? psm;
+
+    // Specifies whether pairing (and encryption) is required to be able to
+    // connect.
+    boolean? requireAuthentication;
+
+    // Specifies whether user authorization is required to be able to connect.
+    boolean? requireAuthorization;
+
+    // Specifies whether this profile will be automatically connected if any
+    // other profile of device also exporting this profile connects to the host.
+    boolean? autoConnect;
+
+    // Specifies the implemented version of the profile.
+    long? version;
+
+    // Specifies the profile-specific bit field of features the implementation
+    // supports.
+    long? features;
+  };
+
   dictionary ServiceRecord {
     // The name of the service.
     DOMString name;
@@ -96,6 +130,12 @@ namespace bluetooth {
     DeviceCallback deviceCallback;
   };
 
+  // Options for the getProfiles function.
+  dictionary GetProfilesOptions {
+    // The remote Bluetooth device to retrieve the exported profiles list from.
+    Device device;
+  };
+
   // Options for the getServices function.
   dictionary GetServicesOptions {
     // The address of the device to inquire about. |deviceAddress| should be
@@ -153,6 +193,20 @@ namespace bluetooth {
 
   // These functions all report failures via chrome.runtime.lastError.
   interface Functions {
+    // Registers the JavaScript application as an implementation for the given
+    // Profile; if a channel or PSM is specified, the profile will be exported
+    // in the host's SDP and GATT tables and advertised to other devices.
+    static void addProfile(Profile profile, ResultCallback callback);
+
+    // Unregisters the JavaScript application as an implementation for the given
+    // Profile; only the uuid field of the Profile object is used.
+    static void removeProfile(Profile profile, ResultCallback callback);
+
+    // Returns the set of exported profiles for the device specified in options.
+    // This function will not initiate a connection to the remote device.
+    static void getProfiles(GetProfilesOptions options,
+                            ResultCallback callback);
+
     // Get information about the Bluetooth adapter.
     // |callback| : Called with an AdapterState object describing the adapter
     //              state.
@@ -229,5 +283,9 @@ namespace bluetooth {
     // Fired when the state of the Bluetooth adapter changes.
     // |state| : The new state of the adapter.
     static void onAdapterStateChanged(AdapterState state);
+
+    // Fired when a connection has been made for a registered profile.
+    // |socket| : The socket for the connection.
+    static void onConnection(Socket socket);
   };
 };

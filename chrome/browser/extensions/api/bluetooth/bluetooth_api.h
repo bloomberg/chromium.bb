@@ -56,6 +56,37 @@ class BluetoothAPI : public ProfileKeyedService,
 
 namespace api {
 
+class BluetoothAddProfileFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetooth.addProfile", BLUETOOTH_ADDPROFILE)
+
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~BluetoothAddProfileFunction() {}
+};
+
+class BluetoothRemoveProfileFunction : public AsyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetooth.removeProfile",
+                             BLUETOOTH_REMOVEPROFILE)
+  virtual bool RunImpl() OVERRIDE;
+
+ protected:
+  virtual ~BluetoothRemoveProfileFunction() {}
+};
+
+class BluetoothGetProfilesFunction : public BluetoothExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("bluetooth.getProfiles", BLUETOOTH_GETPROFILES)
+
+ protected:
+  virtual ~BluetoothGetProfilesFunction() {}
+
+  // BluetoothExtensionFunction:
+  virtual bool DoWork(scoped_refptr<device::BluetoothAdapter> adapter) OVERRIDE;
+};
+
 class BluetoothGetAdapterStateFunction : public BluetoothExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("bluetooth.getAdapterState",

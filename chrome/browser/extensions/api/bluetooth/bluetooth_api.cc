@@ -57,11 +57,13 @@ const char kStopDiscoveryFailed[] = "Failed to stop discovery";
 
 }  // namespace
 
+namespace AddProfile = extensions::api::bluetooth::AddProfile;
 namespace Connect = extensions::api::bluetooth::Connect;
 namespace Disconnect = extensions::api::bluetooth::Disconnect;
 namespace GetDevices = extensions::api::bluetooth::GetDevices;
 namespace GetServices = extensions::api::bluetooth::GetServices;
 namespace Read = extensions::api::bluetooth::Read;
+namespace RemoveProfile = extensions::api::bluetooth::RemoveProfile;
 namespace SetOutOfBandPairingData =
     extensions::api::bluetooth::SetOutOfBandPairingData;
 namespace Write = extensions::api::bluetooth::Write;
@@ -103,6 +105,21 @@ void BluetoothAPI::OnListenerRemoved(const EventListenerInfo& details) {
 }
 
 namespace api {
+
+// TOOD(youngki): Implement.
+bool BluetoothAddProfileFunction::RunImpl() {
+  return false;
+}
+
+// TODO(youngki): Implement.
+bool BluetoothRemoveProfileFunction::RunImpl() {
+  return false;
+}
+
+bool BluetoothGetProfilesFunction::DoWork(
+    scoped_refptr<device::BluetoothAdapter> adapter) {
+  return false;
+}
 
 bool BluetoothGetAdapterStateFunction::DoWork(
     scoped_refptr<BluetoothAdapter> adapter) {
