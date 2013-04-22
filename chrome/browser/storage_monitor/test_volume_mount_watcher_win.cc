@@ -119,6 +119,13 @@ void TestVolumeMountWatcherWin::ReleaseDeviceCheck() {
   device_check_complete_event_->Signal();
 }
 
+bool TestVolumeMountWatcherWin::GetDeviceRemovable(
+    const base::FilePath& device_path,
+    bool* removable) const {
+  return GetMassStorageDeviceDetails(
+      device_path, NULL, NULL, NULL, removable, NULL);
+}
+
 VolumeMountWatcherWin::GetDeviceDetailsCallbackType
   TestVolumeMountWatcherWin::GetDeviceDetailsCallback() const {
   return base::Bind(&GetMassStorageDeviceDetails);

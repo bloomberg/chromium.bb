@@ -319,11 +319,8 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
 
   // If the requested device hasn't been scanned yet,
   // synchronously get the device info.
-  if (iter == device_metadata_.end()) {
-    return GetDeviceDetailsCallback().Run(device_path, device_location,
-                                          unique_id, name, removable,
-                                          total_size_in_bytes);
-  }
+  if (iter == device_metadata_.end())
+    return false;
 
   if (device_location)
     *device_location = iter->second.location;

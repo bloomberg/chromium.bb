@@ -48,6 +48,9 @@ class TestVolumeMountWatcherWin : public VolumeMountWatcherWin {
 
   void ReleaseDeviceCheck();
 
+  bool GetDeviceRemovable(const base::FilePath& device_path,
+      bool* removable) const;
+
   // VolumeMountWatcherWin:
 
   virtual GetAttachedDevicesCallbackType

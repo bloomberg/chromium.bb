@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/message_loop.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
@@ -721,11 +722,20 @@ void MediaFileSystemRegistryTest::SetUp() {
 #if defined(OS_WIN)
   test::TestPortableDeviceWatcherWin* portable_device_watcher =
       new test::TestPortableDeviceWatcherWin;
+  test::TestVolumeMountWatcherWin* mount_watcher =
+      new test::TestVolumeMountWatcherWin;
+  mount_watcher->SetAttachedDevicesFake();
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
-  monitor_.reset(
-      new test::TestStorageMonitorWin(new test::TestVolumeMountWatcherWin,
-                                      portable_device_watcher));
+  monitor_.reset(new test::TestStorageMonitorWin(
+      mount_watcher, portable_device_watcher));
   monitor_->Init();
+  // TODO(gbillock): Replace this with the correct event notification
+  // on the storage monitor finishing the startup scan when that exists.
+  base::RunLoop().RunUntilIdle();
+  mount_watcher->FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
+  mount_watcher->FlushWorkerPoolForTesting();
+  base::RunLoop().RunUntilIdle();
 #endif
 
   ChromeRenderViewHostTestHarness::SetUp();
