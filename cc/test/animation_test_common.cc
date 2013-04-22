@@ -4,6 +4,7 @@
 
 #include "cc/test/animation_test_common.h"
 
+#include "cc/animation/animation_id_provider.h"
 #include "cc/animation/keyframed_animation_curve.h"
 #include "cc/animation/layer_animation_controller.h"
 #include "cc/animation/transform_operations.h"
@@ -20,8 +21,6 @@ using cc::TimingFunction;
 using cc::TransformKeyframe;
 
 namespace cc {
-
-static int s_next_animation_id = 0;
 
 template <class Target>
 int AddOpacityTransition(Target* target,
@@ -41,12 +40,12 @@ int AddOpacityTransition(Target* target,
                                            end_opacity,
                                            scoped_ptr<cc::TimingFunction>()));
 
-  int id = s_next_animation_id++;
+  int id = AnimationIdProvider::NextAnimationId();
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(),
       id,
-      0,
+      AnimationIdProvider::NextGroupId(),
       Animation::Opacity));
   animation->set_needs_synchronized_start_time(true);
 
@@ -78,11 +77,13 @@ int AddAnimatedTransform(Target* target,
       operations,
       scoped_ptr<cc::TimingFunction>()));
 
-  int id = s_next_animation_id++;
+  int id = AnimationIdProvider::NextAnimationId();
 
   scoped_ptr<Animation> animation(Animation::Create(
       curve.PassAs<AnimationCurve>(),
-      id, 0, Animation::Transform));
+      id,
+      AnimationIdProvider::NextGroupId(),
+      Animation::Transform));
   animation->set_needs_synchronized_start_time(true);
 
   target->AddAnimation(animation.Pass());

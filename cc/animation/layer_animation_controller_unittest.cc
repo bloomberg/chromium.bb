@@ -36,15 +36,17 @@ TEST(LayerAnimationControllerTest, SyncNewAnimation) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
-  EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
   AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
-  EXPECT_TRUE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
 }
 
 // If an animation is started on the impl thread before it is ticked on the main
@@ -59,15 +61,17 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
-  EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
   AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
-  EXPECT_TRUE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
 
   AnimationEventsVector events;
   controller_impl->Animate(1.0);
@@ -76,14 +80,18 @@ TEST(LayerAnimationControllerTest, DoNotClobberStartTimes) {
   // Synchronize the start times.
   EXPECT_EQ(1u, events.size());
   controller->NotifyAnimationStarted(events[0], 0.0);
-  EXPECT_EQ(controller->GetAnimation(0, Animation::Opacity)->start_time(),
-            controller_impl->GetAnimation(0, Animation::Opacity)->start_time());
+  EXPECT_EQ(controller->GetAnimation(group_id,
+                                     Animation::Opacity)->start_time(),
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->start_time());
 
   // Start the animation on the main thread. Should not affect the start time.
   controller->Animate(1.5);
   controller->UpdateState(true, NULL);
-  EXPECT_EQ(controller->GetAnimation(0, Animation::Opacity)->start_time(),
-            controller_impl->GetAnimation(0, Animation::Opacity)->start_time());
+  EXPECT_EQ(controller->GetAnimation(group_id,
+                                     Animation::Opacity)->start_time(),
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->start_time());
 }
 
 TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
@@ -96,15 +104,17 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
-  EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
   AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
-  EXPECT_TRUE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
 
   // Start the animations on each controller.
   AnimationEventsVector events;
@@ -113,29 +123,35 @@ TEST(LayerAnimationControllerTest, SyncPauseAndResume) {
   controller->Animate(0.0);
   controller->UpdateState(true, NULL);
   EXPECT_EQ(Animation::Running,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
   EXPECT_EQ(Animation::Running,
-            controller->GetAnimation(0, Animation::Opacity)->run_state());
+            controller->GetAnimation(group_id,
+                                     Animation::Opacity)->run_state());
 
   // Pause the main-thread animation.
   controller->SuspendAnimations(1.0);
   EXPECT_EQ(Animation::Paused,
-            controller->GetAnimation(0, Animation::Opacity)->run_state());
+            controller->GetAnimation(group_id,
+                                     Animation::Opacity)->run_state());
 
   // The pause run state change should make it to the impl thread controller.
   controller->PushAnimationUpdatesTo(controller_impl.get());
   EXPECT_EQ(Animation::Paused,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
 
   // Resume the main-thread animation.
   controller->ResumeAnimations(2.0);
   EXPECT_EQ(Animation::Running,
-            controller->GetAnimation(0, Animation::Opacity)->run_state());
+            controller->GetAnimation(group_id,
+                                     Animation::Opacity)->run_state());
 
   // The pause run state change should make it to the impl thread controller.
   controller->PushAnimationUpdatesTo(controller_impl.get());
   EXPECT_EQ(Animation::Running,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
 }
 
 TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
@@ -148,32 +164,34 @@ TEST(LayerAnimationControllerTest, DoNotSyncFinishedAnimation) {
       LayerAnimationController::Create(0));
   controller->AddValueObserver(&dummy);
 
-  EXPECT_FALSE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_FALSE(controller_impl->GetAnimation(Animation::Opacity));
 
   int animation_id =
       AddOpacityTransitionToController(controller, 1, 0, 1, false);
+  int group_id = controller->GetAnimation(Animation::Opacity)->group();
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
-  EXPECT_TRUE(controller_impl->GetAnimation(0, Animation::Opacity));
+  EXPECT_TRUE(controller_impl->GetAnimation(group_id, Animation::Opacity));
   EXPECT_EQ(Animation::WaitingForTargetAvailability,
-            controller_impl->GetAnimation(0, Animation::Opacity)->run_state());
+            controller_impl->GetAnimation(group_id,
+                                          Animation::Opacity)->run_state());
 
   // Notify main thread controller that the animation has started.
   AnimationEvent animation_started_event(
-      AnimationEvent::Started, 0, 0, Animation::Opacity, 0);
+      AnimationEvent::Started, 0, group_id, Animation::Opacity, 0);
   controller->NotifyAnimationStarted(animation_started_event, 0.0);
 
   // Force animation to complete on impl thread.
   controller_impl->RemoveAnimation(animation_id);
 
-  EXPECT_FALSE(controller_impl->GetAnimation(animation_id, Animation::Opacity));
+  EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 
   controller->PushAnimationUpdatesTo(controller_impl.get());
 
   // Even though the main thread has a 'new' animation, it should not be pushed
   // because the animation has already completed on the impl thread.
-  EXPECT_FALSE(controller_impl->GetAnimation(animation_id, Animation::Opacity));
+  EXPECT_FALSE(controller_impl->GetAnimation(group_id, Animation::Opacity));
 }
 
 // Ensure that a finished animation is eventually deleted by both the

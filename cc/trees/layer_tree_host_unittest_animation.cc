@@ -140,7 +140,7 @@ class LayerTreeHostAnimationTestAddAnimation
       LayerAnimationController* controller_impl =
           host_impl->active_tree()->root_layer()->layer_animation_controller();
       Animation* animation_impl =
-          controller_impl->GetAnimation(0, Animation::Opacity);
+          controller_impl->GetAnimation(Animation::Opacity);
       if (animation_impl)
         controller_impl->RemoveAnimation(animation_impl->id());
 
@@ -157,7 +157,7 @@ class LayerTreeHostAnimationTestAddAnimation
       LayerAnimationController* controller =
           layer_tree_host()->root_layer()->layer_animation_controller();
       Animation* animation =
-          controller->GetAnimation(0, Animation::Opacity);
+          controller->GetAnimation(Animation::Opacity);
       if (animation)
         controller->RemoveAnimation(animation->id());
 
@@ -276,7 +276,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
         layer_tree_host()->root_layer()->children()[0]->
         layer_animation_controller();
     Animation* animation =
-        controller->GetAnimation(0, Animation::Opacity);
+        controller->GetAnimation(Animation::Opacity);
     if (!animation)
       return;
 
@@ -296,7 +296,7 @@ class LayerTreeHostAnimationTestAddAnimationWithTimingFunction
         host_impl->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
     Animation* animation_impl =
-        controller_impl->GetAnimation(0, Animation::Opacity);
+        controller_impl->GetAnimation(Animation::Opacity);
 
     controller->RemoveAnimation(animation->id());
     controller_impl->RemoveAnimation(animation_impl->id());
@@ -338,7 +338,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
         layer_tree_host()->root_layer()->children()[0]->
         layer_animation_controller();
     Animation* animation =
-        controller->GetAnimation(0, Animation::Opacity);
+        controller->GetAnimation(Animation::Opacity);
     main_start_time_ = animation->start_time();
     controller->RemoveAnimation(animation->id());
 
@@ -353,7 +353,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
         impl_host->active_tree()->root_layer()->children()[0]->
         layer_animation_controller();
     Animation* animation =
-        controller->GetAnimation(0, Animation::Opacity);
+        controller->GetAnimation(Animation::Opacity);
     if (!animation)
       return;
 
@@ -392,7 +392,7 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
     LayerAnimationController* controller =
         layer_tree_host()->root_layer()->layer_animation_controller();
     Animation* animation =
-        controller->GetAnimation(0, Animation::Opacity);
+        controller->GetAnimation(Animation::Opacity);
     if (animation)
       controller->RemoveAnimation(animation->id());
     EndTest();
@@ -427,7 +427,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
     LayerAnimationController* controller_impl =
         host_impl->active_tree()->root_layer()->layer_animation_controller();
     Animation* animation_impl =
-        controller_impl->GetAnimation(0, Animation::Opacity);
+        controller_impl->GetAnimation(Animation::Opacity);
     controller_impl->RemoveAnimation(animation_impl->id());
     EndTest();
   }
@@ -606,8 +606,6 @@ class LayerTreeHostAnimationTestRunAnimationWhenNotCanDraw
 
   virtual void notifyAnimationStarted(double wall_clock_time) OVERRIDE {
     started_times_++;
-    // TODO(ajuma): Remove this EndTest() so we test animation finishing.
-    EndTest();
   }
 
   virtual void notifyAnimationFinished(double wall_clock_time) OVERRIDE {
@@ -730,7 +728,6 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
         added_animations_++;
         break;
       case 3:
-        EndTest();
         break;
     }
   }
@@ -744,6 +741,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     // first animation.
     EXPECT_EQ(2, added_animations_);
     finished_times_++;
+    EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {
@@ -751,8 +749,7 @@ class LayerTreeHostAnimationTestCheckerboardDoesntStartAnimations
     // of checkerboard.
     EXPECT_EQ(1, started_times_);
     // The first animation should still be finished.
-    // TODO(ajuma): The first animation is not being finished, but it should be.
-    //EXPECT_EQ(1, finished_times_);
+    EXPECT_EQ(1, finished_times_);
   }
 
   int added_animations_;
