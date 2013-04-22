@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_COCOA_H_
 #define CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DIALOG_COCOA_H_
 
+#include "base/memory/scoped_nsobject.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 
@@ -14,6 +14,11 @@ namespace content {
   class NavigationController;
 }
 
+namespace autofill {
+  class AutofillDialogController;
+}
+
+@class AutofillAccountChooser;
 @class AutofillDialogWindowController;
 @class GTMWidthBasedTweaker;
 
@@ -49,6 +54,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
 
+  AutofillDialogController* controller() { return controller_; }
   void PerformClose();
 
  private:
@@ -69,6 +75,7 @@ class AutofillDialogCocoa : public AutofillDialogView,
   autofill::AutofillDialogCocoa* autofillDialog_;  // weak.
 
   scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
+  scoped_nsobject<AutofillAccountChooser> accountChooser_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.

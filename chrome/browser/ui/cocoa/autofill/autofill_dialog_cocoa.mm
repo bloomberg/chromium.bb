@@ -9,6 +9,8 @@
 #include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
 #include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
+#include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
@@ -16,12 +18,6 @@
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #include "ui/base/cocoa/window_size_constants.h"
 #include "ui/base/l10n/l10n_util.h"
-
-namespace {
-
-const CGFloat kButtonGap = 6;
-
-}  // namespace
 
 namespace autofill {
 
@@ -128,10 +124,30 @@ void AutofillDialogCocoa::PerformClose() {
     webContents_ = webContents;
     autofillDialog_ = autofillDialog;
 
+    NSRect clientFrame = NSInsetRect(
+        frame, chrome_style::kHorizontalPadding, 0);
+    clientFrame.size.height -= chrome_style::kTitleTopPadding +
+                               chrome_style::kClientBottomPadding;
+    clientFrame.origin.y = chrome_style::kClientBottomPadding;
+
+    const CGFloat kAccountChooserHeight = 20.0;
+    NSRect accountChooserFrame = NSMakeRect(
+        clientFrame.origin.x, NSMaxY(clientFrame) - kAccountChooserHeight,
+        clientFrame.size.width, kAccountChooserHeight);
+    accountChooser_.reset([[AutofillAccountChooser alloc]
+                               initWithFrame:accountChooserFrame
+                                  controller:autofillDialog->controller()]);
+
+    [[[self window] contentView] addSubview:accountChooser_];
+
     [self buildWindowButtons];
     [self layoutButtons];
   }
   return self;
+}
+
+- (void)updateAccountChooser {
+  [accountChooser_ update];
 }
 
 - (IBAction)closeSheet:(id)sender {

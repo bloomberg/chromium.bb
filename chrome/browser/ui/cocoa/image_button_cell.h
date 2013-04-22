@@ -46,6 +46,11 @@ enum ButtonState {
 
 @property(assign, nonatomic) BOOL isMouseInside;
 
+// Gets the image for the given button state. Will load from a resource pak if
+// the image was originally set using an image ID.
+- (NSImage*)imageForState:(image_button_cell::ButtonState)state
+                     view:(NSView*)controlView;
+
 // Sets the image for the given button state using an image ID.
 // The image will be lazy loaded from a resource pak -- important because
 // this is in the hot path for startup.
