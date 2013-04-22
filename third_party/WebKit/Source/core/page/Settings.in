@@ -120,7 +120,6 @@ threadedHTMLParser initial=false
 useThreadedHTMLParserForDataURLs initial=false
 
 applyPageScaleFactorInCompositor initial=false
-frameFlatteningEnabled initial=false
 
 allowCustomScrollbarInMainFrame initial=true
 webSecurityEnabled initial=true

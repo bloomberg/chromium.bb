@@ -316,11 +316,6 @@ void WebSettingsImpl::setEditableLinkBehaviorNeverLive()
     m_settings->setEditableLinkBehavior(WebCore::EditableLinkNeverLive);
 }
 
-void WebSettingsImpl::setFrameFlatteningEnabled(bool enabled)
-{
-    m_settings->setFrameFlatteningEnabled(enabled);
-}
-
 void WebSettingsImpl::setFontRenderingModeNormal()
 {
     // FIXME: If you ever need more behaviors than this, then we should probably
