@@ -2265,7 +2265,7 @@ webkit.org/b/87653 [ Linux Win ] compositing/geometry/composited-in-columns.html
 webkit.org/b/87653 [ Linux Win ] virtual/softwarecompositing/geometry/composited-in-columns.html [ Failure ]
 
 # Fails with a mismatch in $("menulist").selectedIndex
-webkit.org/b/87748 [ Mac ] fast/forms/select/optgroup-clicking.html [ Failure ]
+crbug.com/234018 [ Mac ] fast/forms/select/optgroup-clicking.html [ Failure ]
 
 webkit.org/b/87772 [ Release ] svg/dom/viewspec-parser-1.html [ Slow ]
 webkit.org/b/87772 [ Debug ] svg/dom/viewspec-parser-1.html [ Timeout Pass ]
@@ -2624,7 +2624,7 @@ webkit.org/b/99604 [ Mac Win ] http/tests/workers/text-encoding.html [ Pass Cras
 webkit.org/b/98257 fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass ]
 webkit.org/b/98257 virtual/gpu/fast/canvas/webgl/oes-element-index-uint.html [ Failure Pass ]
 
-webkit.org/b/99802 [ MountainLion ] fast/forms/text-control-intrinsic-widths.html [ Failure ]
+crbug.com/234021 [ MountainLion ] fast/forms/text-control-intrinsic-widths.html [ Failure ]
 
 # Failures introduced by page scale coordinate space change.
 crbug.com/172972 compositing/geometry/fixed-position-composited-page-scale-down.html [ ImageOnlyFailure ]
