@@ -718,7 +718,7 @@ sub GenerateHeaderNamedAndIndexedPropertyAccessors
     my $interface = shift;
     my $interfaceName = $interface->name;
     my $hasIndexedGetter = $interface->extendedAttributes->{"IndexedGetter"} || $interface->extendedAttributes->{"CustomIndexedGetter"};
-    my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"} && !$interface->extendedAttributes->{"NumericIndexedGetter"};
+    my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
     my $hasCustomNamedGetter = $interface->extendedAttributes->{"NamedGetter"} || $interface->extendedAttributes->{"CustomNamedGetter"} || $interface->extendedAttributes->{"CustomGetOwnPropertySlot"};
     my $hasCustomNamedSetter = $interface->extendedAttributes->{"CustomNamedSetter"};
     my $hasCustomDeleters = $interface->extendedAttributes->{"CustomDeleteProperty"};
@@ -2790,7 +2790,6 @@ sub GenerateImplementationIndexedProperty
     my $interfaceName = $interface->name;
     my $v8InterfaceName = "V8$interfaceName";
 
-    # FIXME: Figure out what NumericIndexedGetter is really supposed to do. Right now, it's only set on WebGL-related files.
     my $hasCustomIndexedSetter = $interface->extendedAttributes->{"CustomIndexedSetter"};
     my $hasIndexedGetter = $interface->extendedAttributes->{"IndexedGetter"} || $interface->extendedAttributes->{"CustomIndexedGetter"};
 

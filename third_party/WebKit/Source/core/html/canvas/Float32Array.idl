@@ -26,8 +26,6 @@
 
 [
     ConstructorTemplate=TypedArray,
-    NumericIndexedGetter,
-    CustomIndexedSetter,
     CustomToJSObject,
     DoNotCheckConstants,
     TypedArray=float,
