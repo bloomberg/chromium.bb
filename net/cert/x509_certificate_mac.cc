@@ -7,7 +7,8 @@
 #include <CommonCrypto/CommonDigest.h>
 #include <CoreServices/CoreServices.h>
 #include <Security/Security.h>
-#include <time.h>
+
+#include <cert.h>
 
 #include <vector>
 
@@ -26,7 +27,6 @@
 #include "crypto/nss_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util_mac.h"
-#include "third_party/nss/mozilla/security/nss/lib/certdb/cert.h"
 
 using base::mac::ScopedCFTypeRef;
 using base::Time;

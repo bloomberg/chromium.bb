@@ -6,7 +6,6 @@
 
 #include <CommonCrypto/CommonDigest.h>
 #include <Security/Security.h>
-#include <vector>
 
 #include <cert.h>
 #include <cryptohi.h>
@@ -19,6 +18,8 @@
 #include <secder.h>
 #include <secerr.h>
 #include <sslerr.h>
+
+#include <vector>
 
 #include "base/logging.h"
 #include "base/mac/scoped_cftyperef.h"
