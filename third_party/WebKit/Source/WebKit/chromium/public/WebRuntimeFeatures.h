@@ -170,6 +170,9 @@ public:
     WEBKIT_EXPORT static void enableExperimentalWebSocket(bool);
     WEBKIT_EXPORT static bool isExperimentalWebSocketEnabled();
 
+    WEBKIT_EXPORT static void enableWebMIDI(bool);
+    WEBKIT_EXPORT static bool isWebMIDIEnabled();
+
 private:
     WebRuntimeFeatures();
 };

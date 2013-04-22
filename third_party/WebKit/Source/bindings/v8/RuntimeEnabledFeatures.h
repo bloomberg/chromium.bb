@@ -132,6 +132,9 @@ public:
     static bool webkitOfflineAudioContextEnabled() { return isWebAudioEnabled; }
 #endif
 
+    static void setWebMIDIEnabled(bool isEnabled) { isWebMIDIEnabled = isEnabled; }
+    static bool webMIDIEnabled() { return isWebMIDIEnabled; }
+
     static bool touchEnabled() { return isTouchEnabled; }
     static void setTouchEnabled(bool isEnabled) { isTouchEnabled = isEnabled; }
 
@@ -259,6 +262,7 @@ private:
     static bool isGeolocationEnabled;
     static bool isIndexedDBEnabled;
     static bool isWebAudioEnabled;
+    static bool isWebMIDIEnabled;
     static bool isTouchEnabled;
     static bool isDeviceMotionEnabled;
     static bool isDeviceOrientationEnabled;

@@ -46,6 +46,7 @@ bool RuntimeEnabledFeatures::isApplicationCacheEnabled = true;
 bool RuntimeEnabledFeatures::isGeolocationEnabled = true;
 bool RuntimeEnabledFeatures::isIndexedDBEnabled = false;
 bool RuntimeEnabledFeatures::isWebAudioEnabled = false;
+bool RuntimeEnabledFeatures::isWebMIDIEnabled = false;
 bool RuntimeEnabledFeatures::isTouchEnabled = true;
 bool RuntimeEnabledFeatures::isDeviceMotionEnabled = true;
 bool RuntimeEnabledFeatures::isDeviceOrientationEnabled = true;

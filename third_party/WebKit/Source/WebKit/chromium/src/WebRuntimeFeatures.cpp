@@ -556,4 +556,14 @@ bool WebRuntimeFeatures::isExperimentalWebSocketEnabled()
     return RuntimeEnabledFeatures::experimentalWebSocketEnabled();
 }
 
+void WebRuntimeFeatures::enableWebMIDI(bool enable)
+{
+    return RuntimeEnabledFeatures::setWebMIDIEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isWebMIDIEnabled()
+{
+    return RuntimeEnabledFeatures::webMIDIEnabled();
+}
+
 } // namespace WebKit
