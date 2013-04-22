@@ -64,9 +64,9 @@ public:
     PerformanceTiming* timing() const;
     double now() const;
 
-    Vector<RefPtr<PerformanceEntry> > webkitGetEntries() const;
-    Vector<RefPtr<PerformanceEntry> > webkitGetEntriesByType(const String& entryType);
-    Vector<RefPtr<PerformanceEntry> > webkitGetEntriesByName(const String& name, const String& entryType);
+    Vector<RefPtr<PerformanceEntry> > getEntries() const;
+    Vector<RefPtr<PerformanceEntry> > getEntriesByType(const String& entryType);
+    Vector<RefPtr<PerformanceEntry> > getEntriesByName(const String& name, const String& entryType);
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned int);
@@ -78,11 +78,11 @@ public:
     using RefCounted<Performance>::ref;
     using RefCounted<Performance>::deref;
 
-    void webkitMark(const String& markName, ExceptionCode&);
-    void webkitClearMarks(const String& markName);
+    void mark(const String& markName, ExceptionCode&);
+    void clearMarks(const String& markName);
 
-    void webkitMeasure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode&);
-    void webkitClearMeasures(const String& measureName);
+    void measure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode&);
+    void clearMeasures(const String& measureName);
 
 private:
     explicit Performance(Frame*);

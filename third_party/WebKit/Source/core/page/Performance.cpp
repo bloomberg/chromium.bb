@@ -94,7 +94,7 @@ PerformanceTiming* Performance::timing() const
     return m_timing.get();
 }
 
-Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntries() const
+Vector<RefPtr<PerformanceEntry> > Performance::getEntries() const
 {
     Vector<RefPtr<PerformanceEntry> > entries;
 
@@ -109,7 +109,7 @@ Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntries() const
     return entries;
 }
 
-Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntriesByType(const String& entryType)
+Vector<RefPtr<PerformanceEntry> > Performance::getEntriesByType(const String& entryType)
 {
     Vector<RefPtr<PerformanceEntry> > entries;
 
@@ -128,7 +128,7 @@ Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntriesByType(const Stri
     return entries;
 }
 
-Vector<RefPtr<PerformanceEntry> > Performance::webkitGetEntriesByName(const String& name, const String& entryType)
+Vector<RefPtr<PerformanceEntry> > Performance::getEntriesByName(const String& name, const String& entryType)
 {
     Vector<RefPtr<PerformanceEntry> > entries;
 
@@ -188,7 +188,7 @@ EventTargetData* Performance::ensureEventTargetData()
     return &m_eventTargetData;
 }
 
-void Performance::webkitMark(const String& markName, ExceptionCode& ec)
+void Performance::mark(const String& markName, ExceptionCode& ec)
 {
     ec = 0;
     if (!m_userTiming)
@@ -196,14 +196,14 @@ void Performance::webkitMark(const String& markName, ExceptionCode& ec)
     m_userTiming->mark(markName, ec);
 }
 
-void Performance::webkitClearMarks(const String& markName)
+void Performance::clearMarks(const String& markName)
 {
     if (!m_userTiming)
         m_userTiming = UserTiming::create(this);
     m_userTiming->clearMarks(markName);
 }
 
-void Performance::webkitMeasure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode& ec)
+void Performance::measure(const String& measureName, const String& startMark, const String& endMark, ExceptionCode& ec)
 {
     ec = 0;
     if (!m_userTiming)
@@ -211,7 +211,7 @@ void Performance::webkitMeasure(const String& measureName, const String& startMa
     m_userTiming->measure(measureName, startMark, endMark, ec);
 }
 
-void Performance::webkitClearMeasures(const String& measureName)
+void Performance::clearMeasures(const String& measureName)
 {
     if (!m_userTiming)
         m_userTiming = UserTiming::create(this);

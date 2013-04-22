@@ -37,9 +37,12 @@
     readonly attribute PerformanceTiming timing;
     readonly attribute MemoryInfo memory;
 
-    sequence<PerformanceEntry> webkitGetEntries();
-    sequence<PerformanceEntry> webkitGetEntriesByType(DOMString entryType);
-    sequence<PerformanceEntry> webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
+    [MeasureAs=UnprefixedPerformanceTimeline] sequence<PerformanceEntry> getEntries();
+    [MeasureAs=UnprefixedPerformanceTimeline] sequence<PerformanceEntry> getEntriesByType(DOMString entryType);
+    [MeasureAs=UnprefixedPerformanceTimeline] sequence<PerformanceEntry> getEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
+    [MeasureAs=PrefixedPerformanceTimeline,ImplementedAs=getEntries] sequence<PerformanceEntry> webkitGetEntries();
+    [MeasureAs=PrefixedPerformanceTimeline,ImplementedAs=getEntriesByType] sequence<PerformanceEntry> webkitGetEntriesByType(DOMString entryType);
+    [MeasureAs=PrefixedPerformanceTimeline,ImplementedAs=getEntriesByName] sequence<PerformanceEntry> webkitGetEntriesByName(DOMString name, [Default=NullString] optional DOMString entryType);
 
     void webkitClearResourceTimings();
     void webkitSetResourceTimingBufferSize(unsigned long maxSize);
@@ -47,11 +50,17 @@
     attribute EventListener onwebkitresourcetimingbufferfull;
 
     // See http://www.w3.org/TR/2012/CR-user-timing-20120726/
-    [RaisesException] void webkitMark(DOMString markName);
-    void webkitClearMarks([Default=NullString] optional  DOMString markName);
+    [RaisesException,MeasureAs=UnprefixedUserTiming] void mark(DOMString markName);
+    [MeasureAs=UnprefixedUserTiming] void clearMarks([Default=NullString] optional  DOMString markName);
 
-    [RaisesException] void webkitMeasure(DOMString measureName, [Default=NullString] optional DOMString startMark, [Default=NullString] optional DOMString endMark);
-    void webkitClearMeasures([Default=NullString] optional DOMString measureName);
+    [RaisesException,MeasureAs=UnprefixedUserTiming] void measure(DOMString measureName, [Default=NullString] optional DOMString startMark, [Default=NullString] optional DOMString endMark);
+    [MeasureAs=UnprefixedUserTiming] void clearMeasures([Default=NullString] optional DOMString measureName);
+
+    [RaisesException,MeasureAs=PrefixedUserTiming,ImplementedAs=mark] void webkitMark(DOMString markName);
+    [MeasureAs=PrefixedUserTiming,ImplementedAs=clearMarks] void webkitClearMarks([Default=NullString] optional  DOMString markName);
+
+    [RaisesException,MeasureAs=PrefixedUserTiming,ImplementedAs=measure] void webkitMeasure(DOMString measureName, [Default=NullString] optional DOMString startMark, [Default=NullString] optional DOMString endMark);
+    [MeasureAs=PrefixedUserTiming,ImplementedAs=clearMeasures] void webkitClearMeasures([Default=NullString] optional DOMString measureName);
 
     // See http://www.w3.org/TR/hr-time/ for details.
     double now();
