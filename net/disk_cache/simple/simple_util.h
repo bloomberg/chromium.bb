@@ -44,18 +44,19 @@ std::string GetFilenameFromHexStringAndIndex(const std::string& hex_key,
 
 // Given the size of a file holding a stream in the simple backend and the key
 // to an entry, returns the number of bytes in the stream.
-int32 GetDataSizeFromKeyAndFileSize(const std::string& key,
-                                    int64 file_size);
+NET_EXPORT_PRIVATE int32 GetDataSizeFromKeyAndFileSize(const std::string& key,
+                                                       int64 file_size);
 
 // Given the size of a stream in the simple backend and the key to an entry,
 // returns the number of bytes in the file.
-int64 GetFileSizeFromKeyAndDataSize(const std::string& key,
-                                    int32 data_size);
+NET_EXPORT_PRIVATE int64 GetFileSizeFromKeyAndDataSize(const std::string& key,
+                                                       int32 data_size);
 
 // Given the key to an entry, and an offset into a stream on that entry, returns
 // the file offset corresponding to |data_offset|.
-int64 GetFileOffsetFromKeyAndDataOffset(const std::string& key,
-                                        int data_offset);
+NET_EXPORT_PRIVATE int64 GetFileOffsetFromKeyAndDataOffset(
+    const std::string& key,
+    int data_offset);
 
 }  // namespace simple_backend
 

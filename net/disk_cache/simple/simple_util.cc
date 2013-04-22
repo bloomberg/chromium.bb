@@ -62,14 +62,15 @@ std::string GetFilenameFromKeyAndIndex(const std::string& key, int index) {
 }
 
 int32 GetDataSizeFromKeyAndFileSize(const std::string& key, int64 file_size) {
-  int64 data_size = file_size - key.size() -
-                    sizeof(disk_cache::SimpleFileHeader);
+  int64 data_size = file_size - key.size() - sizeof(SimpleFileHeader) -
+                    sizeof(SimpleFileEOF);
   DCHECK_GE(implicit_cast<int64>(std::numeric_limits<int32>::max()), data_size);
   return data_size;
 }
 
 int64 GetFileSizeFromKeyAndDataSize(const std::string& key, int32 data_size) {
-  return data_size + key.size() + sizeof(disk_cache::SimpleFileHeader);
+  return data_size + key.size() + sizeof(SimpleFileHeader) +
+      sizeof(SimpleFileEOF);
 }
 
 int64 GetFileOffsetFromKeyAndDataOffset(const std::string& key,

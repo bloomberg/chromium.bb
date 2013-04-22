@@ -21,6 +21,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_util.h"
+#include "third_party/zlib/zlib.h"
 
 using base::ClosePlatformFile;
 using base::FilePath;
@@ -47,6 +48,19 @@ using simple_util::GetFilenameFromKeyAndIndex;
 using simple_util::GetDataSizeFromKeyAndFileSize;
 using simple_util::GetFileSizeFromKeyAndDataSize;
 using simple_util::GetFileOffsetFromKeyAndDataOffset;
+
+SimpleSynchronousEntry::CRCRecord::CRCRecord() : index(-1),
+                                                 has_crc32(false),
+                                                 data_crc32(0) {
+}
+
+SimpleSynchronousEntry::CRCRecord::CRCRecord(int index_p,
+                                             bool has_crc32_p,
+                                             uint32 data_crc32_p)
+  : index(index_p),
+    has_crc32(has_crc32_p),
+    data_crc32(data_crc32_p) {
+}
 
 // static
 void SimpleSynchronousEntry::OpenEntry(
@@ -128,31 +142,25 @@ void SimpleSynchronousEntry::DoomEntrySet(
     callback_runner->PostTask(FROM_HERE, base::Bind(callback, result));
 }
 
-void SimpleSynchronousEntry::Close() {
-  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
-    bool ALLOW_UNUSED result = ClosePlatformFile(files_[i]);
-    DLOG_IF(INFO, !result) << "Could not Close() file.";
-  }
-  delete this;
-}
-
 void SimpleSynchronousEntry::ReadData(
     int index,
     int offset,
     net::IOBuffer* buf,
     int buf_len,
-    const SynchronousOperationCallback& callback) {
+    const SynchronousReadCallback& callback) {
   DCHECK(initialized_);
-
   int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   int bytes_read = ReadPlatformFile(files_[index], file_offset,
                                     buf->data(), buf_len);
-  if (bytes_read > 0)
+  uint32 crc = crc32(0L, Z_NULL, 0);
+  if (bytes_read > 0) {
     last_used_ = Time::Now();
+    crc = crc32(crc, reinterpret_cast<const Bytef*>(buf->data()), bytes_read);
+  }
   int result = (bytes_read >= 0) ? bytes_read : net::ERR_FAILED;
   if (result == net::ERR_FAILED)
     Doom();
-  callback_runner_->PostTask(FROM_HERE, base::Bind(callback, result));
+  callback_runner_->PostTask(FROM_HERE, base::Bind(callback, result, crc));
 }
 
 void SimpleSynchronousEntry::WriteData(
@@ -164,7 +172,19 @@ void SimpleSynchronousEntry::WriteData(
     bool truncate) {
   DCHECK(initialized_);
 
-  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
+  bool extending_by_write = offset + buf_len > data_size_[index];
+  if (extending_by_write) {
+    // We are extending the file, and need to insure the EOF record is zeroed.
+    const int64 file_eof_offset =
+        GetFileOffsetFromKeyAndDataOffset(key_, data_size_[index]);
+    if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
+      Doom();
+      callback_runner_->PostTask(FROM_HERE,
+                                 base::Bind(callback, net::ERR_FAILED));
+      return;
+    }
+  }
+  const int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   if (buf_len > 0) {
     if (WritePlatformFile(files_[index], file_offset, buf->data(), buf_len) !=
         buf_len) {
@@ -173,19 +193,88 @@ void SimpleSynchronousEntry::WriteData(
                                  base::Bind(callback, net::ERR_FAILED));
       return;
     }
-    data_size_[index] = std::max(data_size_[index], offset + buf_len);
   }
-  if (truncate) {
-    data_size_[index] = offset + buf_len;
+  if (!truncate && (buf_len > 0 || !extending_by_write)) {
+    data_size_[index] = std::max(data_size_[index], offset + buf_len);
+  } else {
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
       Doom();
       callback_runner_->PostTask(FROM_HERE,
                                  base::Bind(callback, net::ERR_FAILED));
       return;
     }
+    data_size_[index] = offset + buf_len;
   }
+
   last_modified_ = Time::Now();
   callback_runner_->PostTask(FROM_HERE, base::Bind(callback, buf_len));
+}
+
+void SimpleSynchronousEntry::CheckEOFRecord(
+    int index,
+    uint32 expected_crc32,
+    const SynchronousOperationCallback& callback) {
+  DCHECK(initialized_);
+
+  SimpleFileEOF eof_record;
+  int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_,
+                                                        data_size_[index]);
+  if (ReadPlatformFile(files_[index], file_offset,
+                       reinterpret_cast<char*>(&eof_record),
+                       sizeof(eof_record)) != sizeof(eof_record)) {
+    Doom();
+    callback_runner_->PostTask(FROM_HERE,
+                               base::Bind(callback, net::ERR_FAILED));
+    return;
+  }
+
+  if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
+    DLOG(INFO) << "eof record had bad magic number.";
+    Doom();
+    callback_runner_->PostTask(FROM_HERE,
+                               base::Bind(callback, net::ERR_FAILED));
+    return;
+  }
+
+  if ((eof_record.flags & SimpleFileEOF::FLAG_HAS_CRC32) &&
+      eof_record.data_crc32 != expected_crc32) {
+    DLOG(INFO) << "eof record had bad crc.";
+    Doom();
+    callback_runner_->PostTask(FROM_HERE,
+                               base::Bind(callback, net::ERR_FAILED));
+    return;
+  }
+
+  callback_runner_->PostTask(FROM_HERE, base::Bind(callback, net::OK));
+}
+
+void SimpleSynchronousEntry::Close(
+    scoped_ptr<std::vector<CRCRecord> > crc32s_to_write) {
+  for (std::vector<CRCRecord>::const_iterator it = crc32s_to_write->begin();
+       it != crc32s_to_write->end(); ++it) {
+    SimpleFileEOF eof_record;
+    eof_record.final_magic_number = kSimpleFinalMagicNumber;
+    eof_record.flags = 0;
+    if (it->has_crc32)
+      eof_record.flags |= SimpleFileEOF::FLAG_HAS_CRC32;
+    eof_record.data_crc32 = it->data_crc32;
+    int64 file_offset =
+        GetFileOffsetFromKeyAndDataOffset(key_, data_size_[it->index]);
+    if (WritePlatformFile(files_[it->index], file_offset,
+                          reinterpret_cast<const char*>(&eof_record),
+                          sizeof(eof_record)) != sizeof(eof_record)) {
+      DLOG(INFO) << "Could not write eof record.";
+      Doom();
+      break;
+    }
+  }
+
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    bool did_close_file = ClosePlatformFile(files_[i]);
+    CHECK(did_close_file);
+  }
+
+  delete this;
 }
 
 SimpleSynchronousEntry::SimpleSynchronousEntry(
@@ -233,7 +322,8 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
     }
     last_used_ = std::max(last_used_, file_info.last_accessed);
     last_modified_ = std::max(last_modified_, file_info.last_modified);
-    data_size_[i] = GetDataSizeFromKeyAndFileSize(key_, file_info.size);
+    data_size_[i] = create ? 0 : GetDataSizeFromKeyAndFileSize(key_,
+                                                               file_info.size);
   }
 
   return true;

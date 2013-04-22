@@ -30,24 +30,23 @@ class SimpleSynchronousEntry;
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
-
 class SimpleEntryImpl : public Entry,
                         public base::RefCountedThreadSafe<SimpleEntryImpl> {
   friend class base::RefCountedThreadSafe<SimpleEntryImpl>;
  public:
-  static int OpenEntry(SimpleIndex* index,
+  static int OpenEntry(SimpleIndex* entry_index,
                        const base::FilePath& path,
                        const std::string& key,
                        Entry** entry,
                        const CompletionCallback& callback);
 
-  static int CreateEntry(SimpleIndex* index,
+  static int CreateEntry(SimpleIndex* entry_index,
                          const base::FilePath& path,
                          const std::string& key,
                          Entry** entry,
                          const CompletionCallback& callback);
 
-  static int DoomEntry(SimpleIndex* index,
+  static int DoomEntry(SimpleIndex* entry_index,
                        const base::FilePath& path,
                        const std::string& key,
                        const CompletionCallback& callback);
@@ -59,12 +58,12 @@ class SimpleEntryImpl : public Entry,
   virtual base::Time GetLastUsed() const OVERRIDE;
   virtual base::Time GetLastModified() const OVERRIDE;
   virtual int32 GetDataSize(int index) const OVERRIDE;
-  virtual int ReadData(int index,
+  virtual int ReadData(int stream_index,
                        int offset,
                        net::IOBuffer* buf,
                        int buf_len,
                        const CompletionCallback& callback) OVERRIDE;
-  virtual int WriteData(int index,
+  virtual int WriteData(int stream_index,
                         int offset,
                         net::IOBuffer* buf,
                         int buf_len,
@@ -87,7 +86,7 @@ class SimpleEntryImpl : public Entry,
   virtual int ReadyForSparseIO(const CompletionCallback& callback) OVERRIDE;
 
  private:
-  SimpleEntryImpl(SimpleIndex* index,
+  SimpleEntryImpl(SimpleIndex* entry_index,
                   const base::FilePath& path,
                   const std::string& key);
 
@@ -101,13 +100,13 @@ class SimpleEntryImpl : public Entry,
 
   void ReadDataInternal(int index,
                         int offset,
-                        scoped_refptr<net::IOBuffer> buf,
+                        net::IOBuffer* buf,
                         int buf_len,
                         const CompletionCallback& callback);
 
   void WriteDataInternal(int index,
                          int offset,
-                         scoped_refptr<net::IOBuffer> buf,
+                         net::IOBuffer* buf,
                          int buf_len,
                          const CompletionCallback& callback,
                          bool truncate);
@@ -125,6 +124,24 @@ class SimpleEntryImpl : public Entry,
   // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
   void EntryOperationComplete(
       const CompletionCallback& completion_callback,
+      int stream_index,
+      int result);
+
+  // Called after an asynchronous read. Updates |crc32s_| if possible.
+  void ReadOperationComplete(
+      int stream_index,
+      int offset,
+      const CompletionCallback& completion_callback,
+      int result,
+      uint32 read_data_crc);
+
+  // Called after validating the checksums on an entry. Passes through the
+  // original result if successful, propogates the error if the checksum does
+  // not validate.
+  void ChecksumOperationComplete(
+      int stream_index,
+      int orig_result,
+      const CompletionCallback& completion_callback,
       int result);
 
   // Called on initialization and also after the completion of asynchronous IO
@@ -137,7 +154,7 @@ class SimpleEntryImpl : public Entry,
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
 
-  const base::WeakPtr<SimpleIndex> index_;
+  base::WeakPtr<SimpleIndex> entry_index_;
   const base::FilePath path_;
   const std::string key_;
 
@@ -146,6 +163,16 @@ class SimpleEntryImpl : public Entry,
   base::Time last_used_;
   base::Time last_modified_;
   int32 data_size_[kSimpleEntryFileCount];
+
+  // When possible, we compute a crc32, for the data in each entry as we read or
+  // write. For each stream, |crc32s_[index]| is the crc32 of that stream from
+  // [0 .. |crc32s_end_offset_|). If |crc32s_end_offset_[index] == 0| then the
+  // value of |crc32s_[index]| is undefined.
+  int32 crc32s_end_offset_[kSimpleEntryFileCount];
+  uint32 crc32s_[kSimpleEntryFileCount];
+
+  // If |have_written_[index]| is true, we have written to the stream |index|.
+  bool have_written_[kSimpleEntryFileCount];
 
   // The |synchronous_entry_| is the worker thread object that performs IO on
   // entries. It's owned by this SimpleEntryImpl whenever |operation_running_|

@@ -18,6 +18,7 @@
 #include "net/disk_cache/disk_cache_test_util.h"
 #include "net/disk_cache/entry_impl.h"
 #include "net/disk_cache/mem_entry_impl.h"
+#include "net/disk_cache/simple/simple_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -539,20 +540,45 @@ void DiskCacheEntryTest::StreamAccess() {
   ASSERT_TRUE(NULL != entry);
 
   const int kBufferSize = 1024;
-  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kBufferSize));
-  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kBufferSize));
-
   const int kNumStreams = 3;
+  scoped_refptr<net::IOBuffer> reference_buffers[kNumStreams];
   for (int i = 0; i < kNumStreams; i++) {
-    CacheTestFillBuffer(buffer1->data(), kBufferSize, false);
-    EXPECT_EQ(kBufferSize, WriteData(entry, i, 0, buffer1, kBufferSize, false));
-    memset(buffer2->data(), 0, kBufferSize);
-    EXPECT_EQ(kBufferSize, ReadData(entry, i, 0, buffer2, kBufferSize));
-    EXPECT_EQ(0, memcmp(buffer1->data(), buffer2->data(), kBufferSize));
+    reference_buffers[i] = new net::IOBuffer(kBufferSize);
+    CacheTestFillBuffer(reference_buffers[i]->data(), kBufferSize, false);
   }
-
+  scoped_refptr<net::IOBuffer> buffer1(new net::IOBuffer(kBufferSize));
+  for (int i = 0; i < kNumStreams; i++) {
+    EXPECT_EQ(kBufferSize, WriteData(entry, i, 0, reference_buffers[i],
+                                     kBufferSize, false));
+    memset(buffer1->data(), 0, kBufferSize);
+    EXPECT_EQ(kBufferSize, ReadData(entry, i, 0, buffer1, kBufferSize));
+    EXPECT_EQ(0, memcmp(reference_buffers[i]->data(), buffer1->data(),
+                        kBufferSize));
+  }
   EXPECT_EQ(net::ERR_INVALID_ARGUMENT,
             ReadData(entry, kNumStreams, 0, buffer1, kBufferSize));
+  entry->Close();
+
+  // Open the entry and read it in chunks, including a read past the end.
+  ASSERT_EQ(net::OK, OpenEntry("the first key", &entry));
+  ASSERT_TRUE(NULL != entry);
+  const int kReadBufferSize = 600;
+  const int kFinalReadSize = kBufferSize - kReadBufferSize;
+  COMPILE_ASSERT(kFinalReadSize < kReadBufferSize, should_be_exactly_two_reads);
+  scoped_refptr<net::IOBuffer> buffer2(new net::IOBuffer(kReadBufferSize));
+  for (int i = 0; i < kNumStreams; i++) {
+    memset(buffer2->data(), 0, kReadBufferSize);
+    EXPECT_EQ(kReadBufferSize, ReadData(entry, i, 0, buffer2, kReadBufferSize));
+    EXPECT_EQ(0, memcmp(reference_buffers[i]->data(), buffer2->data(),
+                        kReadBufferSize));
+
+    memset(buffer2->data(), 0, kReadBufferSize);
+    EXPECT_EQ(kFinalReadSize, ReadData(entry, i, kReadBufferSize,
+                                       buffer2, kReadBufferSize));
+    EXPECT_EQ(0, memcmp(reference_buffers[i]->data() + kReadBufferSize,
+                        buffer2->data(), kFinalReadSize));
+  }
+
   entry->Close();
 }
 
@@ -1057,6 +1083,11 @@ void DiskCacheEntryTest::SizeChanges() {
   entry->Close();
   ASSERT_EQ(net::OK, OpenEntry(key, &entry));
   EXPECT_EQ(19000 + kSize, entry->GetDataSize(1));
+
+  // Extend the newly opened file with a zero length write, expect zero fill.
+  EXPECT_EQ(0, WriteData(entry, 1, 20000 + kSize, buffer1, 0, false));
+  EXPECT_EQ(kSize, ReadData(entry, 1, 19000 + kSize, buffer1, kSize));
+  EXPECT_EQ(0, memcmp(buffer1->data(), zeros, kSize));
 
   entry->Close();
 }
@@ -2161,7 +2192,7 @@ TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheGetTimes) {
   GetTimes();
 }
 
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheGrowData) {
+TEST_F(DiskCacheEntryTest, SimpleCacheGrowData) {
   SetSimpleCacheMode();
   InitCache();
   GrowData();
@@ -2173,7 +2204,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheTruncateData) {
   TruncateData();
 }
 
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheZeroLengthIO) {
+TEST_F(DiskCacheEntryTest, SimpleCacheZeroLengthIO) {
   SetSimpleCacheMode();
   InitCache();
   ZeroLengthIO();
@@ -2193,6 +2224,12 @@ TEST_F(DiskCacheEntryTest, SimpleCacheReuseInternalEntry) {
   ReuseEntry(10 * 1024);
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheSizeChanges) {
+  SetSimpleCacheMode();
+  InitCache();
+  SizeChanges();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheInvalidData) {
   SetSimpleCacheMode();
   InitCache();
@@ -2209,6 +2246,55 @@ TEST_F(DiskCacheEntryTest, SimpleCacheDoomedEntry) {
   SetSimpleCacheMode();
   InitCache();
   DoomedEntry();
+}
+
+// Tests that the simple cache can detect entries that have bad data.
+TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
+  SetSimpleCacheMode();
+  InitCache();
+
+  const char key[] = "the first key";
+  disk_cache::Entry* entry = NULL;
+
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+  disk_cache::Entry* null = NULL;
+  EXPECT_NE(null, entry);
+
+  const std::string data = "this is very good data";
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(data.size()));
+  std::copy(data.begin(), data.end(), buffer->data());
+
+  ASSERT_EQ(implicit_cast<int>(data.size()),
+            WriteData(entry, 0, 0, buffer, data.size(), false));
+  entry->Close();
+  entry = NULL;
+
+  // Corrupt the data.
+  base::FilePath entry_file0_path = cache_path_.AppendASCII(
+      disk_cache::simple_util::GetFilenameFromKeyAndIndex(key, 0));
+  int flags = base::PLATFORM_FILE_WRITE | base::PLATFORM_FILE_OPEN;
+  base::PlatformFile entry_file0 =
+      base::CreatePlatformFile(entry_file0_path, flags, NULL, NULL);
+  ASSERT_NE(base::kInvalidPlatformFileValue, entry_file0);
+
+  const std::string bad_data = "HAHAHA";
+  DCHECK_LE(bad_data.size(), data.size());
+  int64 file_offset =
+      disk_cache::simple_util::GetFileOffsetFromKeyAndDataOffset(key, 0);
+  ASSERT_EQ(implicit_cast<int>(bad_data.size()),
+            base::WritePlatformFile(entry_file0, file_offset,
+                                    bad_data.data(), bad_data.size()));
+  EXPECT_TRUE(base::ClosePlatformFile(entry_file0));
+
+  // Open the entry.
+  EXPECT_EQ(net::OK, OpenEntry(key, &entry));
+
+  const size_t kReadBufferSize = 200;
+  EXPECT_LE(data.size(), kReadBufferSize);
+  scoped_refptr<net::IOBuffer> read_buffer(new net::IOBuffer(kReadBufferSize));
+  EXPECT_EQ(net::ERR_FAILED,
+            ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
+  entry->Close();
 }
 
 #endif  // !defined(OS_WIN)

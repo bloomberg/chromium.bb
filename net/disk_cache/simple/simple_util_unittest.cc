@@ -11,6 +11,8 @@ using disk_cache::simple_util::ConvertEntryHashKeyToHexString;
 using disk_cache::simple_util::GetEntryHashKeyAsHexString;
 using disk_cache::simple_util::GetEntryHashKeyFromHexString;
 using disk_cache::simple_util::GetEntryHashKey;
+using disk_cache::simple_util::GetFileSizeFromKeyAndDataSize;
+using disk_cache::simple_util::GetDataSizeFromKeyAndFileSize;
 
 class SimpleUtilTest : public testing::Test {};
 
@@ -63,4 +65,11 @@ TEST_F(SimpleUtilTest, GetEntryHashKeyFromHexString) {
   EXPECT_FALSE(GetEntryHashKeyFromHexString("FFFFFFFFFFFFFFFFF", &hash_key));
 
   EXPECT_FALSE(GetEntryHashKeyFromHexString("iwr8wglhg8*(&1231((", &hash_key));
+}
+
+TEST_F(SimpleUtilTest, SizesAndOffsets) {
+  const char key[] = "This is an example key";
+  const int data_size = 1000;
+  const int file_size = GetFileSizeFromKeyAndDataSize(key, data_size);
+  EXPECT_EQ(data_size, GetDataSizeFromKeyAndFileSize(key, file_size));
 }

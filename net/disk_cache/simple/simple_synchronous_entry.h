@@ -5,7 +5,9 @@
 #ifndef NET_DISK_CACHE_SIMPLE_SIMPLE_SYNCHRONOUS_ENTRY_H_
 #define NET_DISK_CACHE_SIMPLE_SIMPLE_SYNCHRONOUS_ENTRY_H_
 
+#include <algorithm>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -40,9 +42,24 @@ class SimpleSynchronousEntry {
   typedef base::Callback<void(SimpleSynchronousEntry* new_entry)>
       SynchronousCreationCallback;
 
+  // Callback type for the completion of a read from an entry.
+  // |result| is the number of bytes read, or the net::Error if an error. |crc|
+  // is the crc32 of the data that was read on success, undefined otherwise.
+  typedef base::Callback<void(int result, uint32 read_data_crc)>
+      SynchronousReadCallback;
+
   // Callback type for IO operations on an entry not requiring special callback
   // arguments (e.g. Write). |result| is a net::Error result code.
   typedef base::Callback<void(int result)> SynchronousOperationCallback;
+
+  struct CRCRecord {
+    CRCRecord();
+    CRCRecord(int index_p, bool has_crc32_p, uint32 data_crc32_p);
+
+    int index;
+    bool has_crc32;
+    uint32 data_crc32;
+  };
 
   static void OpenEntry(
       const base::FilePath& path,
@@ -72,19 +89,25 @@ class SimpleSynchronousEntry {
                            base::SingleThreadTaskRunner* callback_runner,
                            const net::CompletionCallback& callback);
 
-  // N.B. Close(), ReadData() and WriteData() may block on IO.
-  void Close();
+  // N.B. ReadData(), WriteData(), CheckEOFRecord() and Close() may block on IO.
   void ReadData(int index,
                 int offset,
                 net::IOBuffer* buf,
                 int buf_len,
-                const SynchronousOperationCallback& callback);
+                const SynchronousReadCallback& callback);
   void WriteData(int index,
                  int offset,
                  net::IOBuffer* buf,
                  int buf_len,
                  const SynchronousOperationCallback& callback,
                  bool truncate);
+  void CheckEOFRecord(int index,
+                      uint32 expected_crc32,
+                      const SynchronousOperationCallback& callback);
+
+  // Close all streams, and add write EOF records to streams indicated by the
+  // CRCRecord entries in |crc32s_to_write|.
+  void Close(scoped_ptr<std::vector<CRCRecord> > crc32s_to_write);
 
   const base::FilePath& path() const { return path_; }
   std::string key() const { return key_; }

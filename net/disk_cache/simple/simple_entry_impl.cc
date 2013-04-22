@@ -4,6 +4,10 @@
 
 #include "net/disk_cache/simple/simple_entry_impl.h"
 
+#include <algorithm>
+#include <cstring>
+#include <vector>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
@@ -15,12 +19,15 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
+#include "third_party/zlib/zlib.h"
 
 namespace {
 
 typedef disk_cache::Entry::CompletionCallback CompletionCallback;
 typedef disk_cache::SimpleSynchronousEntry::SynchronousCreationCallback
     SynchronousCreationCallback;
+typedef disk_cache::SimpleSynchronousEntry::SynchronousReadCallback
+    SynchronousReadCallback;
 typedef disk_cache::SimpleSynchronousEntry::SynchronousOperationCallback
     SynchronousOperationCallback;
 
@@ -34,18 +41,17 @@ using base::Time;
 using base::WorkerPool;
 
 // static
-int SimpleEntryImpl::OpenEntry(SimpleIndex* index,
+int SimpleEntryImpl::OpenEntry(SimpleIndex* entry_index,
                                const FilePath& path,
                                const std::string& key,
                                Entry** entry,
                                const CompletionCallback& callback) {
   // If entry is not known to the index, initiate fast failover to the network.
-  if (index && !index->Has(key))
+  if (entry_index && !entry_index->Has(key))
     return net::ERR_FAILED;
 
-  // Go down to the disk to find the entry.
   scoped_refptr<SimpleEntryImpl> new_entry =
-      new SimpleEntryImpl(index, path, key);
+      new SimpleEntryImpl(entry_index, path, key);
   SynchronousCreationCallback sync_creation_callback =
       base::Bind(&SimpleEntryImpl::CreationOperationComplete,
                  new_entry, entry, callback);
@@ -58,7 +64,7 @@ int SimpleEntryImpl::OpenEntry(SimpleIndex* index,
 }
 
 // static
-int SimpleEntryImpl::CreateEntry(SimpleIndex* index,
+int SimpleEntryImpl::CreateEntry(SimpleIndex* entry_index,
                                  const FilePath& path,
                                  const std::string& key,
                                  Entry** entry,
@@ -68,10 +74,10 @@ int SimpleEntryImpl::CreateEntry(SimpleIndex* index,
   // have the entry in the index but we don't have the created files yet, this
   // way we never leak files. CreationOperationComplete will remove the entry
   // from the index if the creation fails.
-  if (index)
-    index->Insert(key);
+  if (entry_index)
+    entry_index->Insert(key);
   scoped_refptr<SimpleEntryImpl> new_entry =
-      new SimpleEntryImpl(index, path, key);
+      new SimpleEntryImpl(entry_index, path, key);
   SynchronousCreationCallback sync_creation_callback =
       base::Bind(&SimpleEntryImpl::CreationOperationComplete,
                  new_entry, entry, callback);
@@ -84,11 +90,11 @@ int SimpleEntryImpl::CreateEntry(SimpleIndex* index,
 }
 
 // static
-int SimpleEntryImpl::DoomEntry(SimpleIndex* index,
+int SimpleEntryImpl::DoomEntry(SimpleIndex* entry_index,
                                const FilePath& path,
                                const std::string& key,
                                const CompletionCallback& callback) {
-  index->Remove(key);
+  entry_index->Remove(key);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::DoomEntry, path, key,
                                   MessageLoopProxy::current(), callback),
@@ -104,7 +110,7 @@ void SimpleEntryImpl::Doom() {
   // underlying files. On POSIX, this is fine; the files are still open on the
   // SimpleSynchronousEntry, and operations can even happen on them. The files
   // will be removed from the filesystem when they are closed.
-  DoomEntry(index_, path_, key_, CompletionCallback());
+  DoomEntry(entry_index_, path_, key_, CompletionCallback());
 #else
   NOTIMPLEMENTED();
 #endif
@@ -134,27 +140,28 @@ Time SimpleEntryImpl::GetLastModified() const {
   return last_modified_;
 }
 
-int32 SimpleEntryImpl::GetDataSize(int index) const {
+int32 SimpleEntryImpl::GetDataSize(int stream_index) const {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  return data_size_[index];
+  return data_size_[stream_index];
 }
 
-int SimpleEntryImpl::ReadData(int index,
+int SimpleEntryImpl::ReadData(int stream_index,
                               int offset,
                               net::IOBuffer* buf,
                               int buf_len,
                               const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (index < 0 || index >= kSimpleEntryFileCount || buf_len < 0)
+  if (stream_index < 0 || stream_index >= kSimpleEntryFileCount || buf_len < 0)
     return net::ERR_INVALID_ARGUMENT;
-  if (offset >= data_size_[index] || offset < 0 || !buf_len)
+  if (offset >= data_size_[stream_index] || offset < 0 || !buf_len)
     return 0;
+  buf_len = std::min(buf_len, data_size_[stream_index] - offset);
   // TODO(felipeg): Optimization: Add support for truly parallel read
   // operations.
   pending_operations_.push(
       base::Bind(&SimpleEntryImpl::ReadDataInternal,
                  this,
-                 index,
+                 stream_index,
                  offset,
                  make_scoped_refptr(buf),
                  buf_len,
@@ -163,19 +170,21 @@ int SimpleEntryImpl::ReadData(int index,
   return net::ERR_IO_PENDING;
 }
 
-int SimpleEntryImpl::WriteData(int index,
+int SimpleEntryImpl::WriteData(int stream_index,
                                int offset,
                                net::IOBuffer* buf,
                                int buf_len,
                                const CompletionCallback& callback,
                                bool truncate) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  if (index < 0 || index >= kSimpleEntryFileCount || offset < 0 || buf_len < 0)
+  if (stream_index < 0 || stream_index >= kSimpleEntryFileCount || offset < 0 ||
+      buf_len < 0) {
     return net::ERR_INVALID_ARGUMENT;
+  }
   pending_operations_.push(
       base::Bind(&SimpleEntryImpl::WriteDataInternal,
                  this,
-                 index,
+                 stream_index,
                  offset,
                  make_scoped_refptr(buf),
                  buf_len,
@@ -236,14 +245,24 @@ int SimpleEntryImpl::ReadyForSparseIO(const CompletionCallback& callback) {
   return net::ERR_FAILED;
 }
 
-SimpleEntryImpl::SimpleEntryImpl(SimpleIndex* index,
+SimpleEntryImpl::SimpleEntryImpl(SimpleIndex* entry_index,
                                  const FilePath& path,
                                  const std::string& key)
-    :  index_(index->AsWeakPtr()),
+    :  entry_index_(entry_index->AsWeakPtr()),
        path_(path),
        key_(key),
        synchronous_entry_(NULL),
        operation_running_(false) {
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_end_offset_),
+                 arrays_should_be_same_size);
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(crc32s_),
+                 arrays_should_be_same_size2);
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(have_written_),
+                 arrays_should_be_same_size3);
+
+  std::memset(crc32s_end_offset_, 0, sizeof(crc32s_end_offset_));
+  std::memset(crc32s_, 0, sizeof(crc32s_));
+  std::memset(have_written_, 0, sizeof(have_written_));
 }
 
 SimpleEntryImpl::~SimpleEntryImpl() {
@@ -263,60 +282,89 @@ bool SimpleEntryImpl::RunNextOperationIfNeeded() {
 
 void SimpleEntryImpl::CloseInternal() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-  DCHECK(pending_operations_.size() == 0);
+  DCHECK_EQ(0U, pending_operations_.size());
   DCHECK(!operation_running_);
   DCHECK(synchronous_entry_);
+
+  typedef SimpleSynchronousEntry::CRCRecord CRCRecord;
+
+  scoped_ptr<std::vector<CRCRecord> >
+      crc32s_to_write(new std::vector<CRCRecord>());
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    if (have_written_[i]) {
+      if (data_size_[i] == crc32s_end_offset_[i])
+        crc32s_to_write->push_back(CRCRecord(i, true, crc32s_[i]));
+      else
+        crc32s_to_write->push_back(CRCRecord(i, false, 0));
+    }
+  }
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::Close,
-                                  base::Unretained(synchronous_entry_)),
+                                  base::Unretained(synchronous_entry_),
+                                  base::Passed(&crc32s_to_write)),
                        true);
   // Entry::Close() is expected to delete this entry. See disk_cache.h for
   // details.
-  Release();  // Balanced in CreationOperationCompleted().
+  Release();  // Balanced in CreationOperationComplete().
 }
 
-void SimpleEntryImpl::ReadDataInternal(int index,
+void SimpleEntryImpl::ReadDataInternal(int stream_index,
                                        int offset,
-                                       scoped_refptr<net::IOBuffer> buf,
+                                       net::IOBuffer* buf,
                                        int buf_len,
                                        const CompletionCallback& callback) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(!operation_running_);
   operation_running_ = true;
-  if (index_)
-    index_->UseIfExists(key_);
-  SynchronousOperationCallback sync_operation_callback =
-      base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 this, callback);
+  if (entry_index_)
+      entry_index_->UseIfExists(key_);
+  SynchronousReadCallback sync_read_callback =
+      base::Bind(&SimpleEntryImpl::ReadOperationComplete,
+                 this, stream_index, offset, callback);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::ReadData,
                                   base::Unretained(synchronous_entry_),
-                                  index, offset, buf,
-                                  buf_len, sync_operation_callback),
+                                  stream_index, offset, make_scoped_refptr(buf),
+                                  buf_len, sync_read_callback),
                        true);
 }
 
-void SimpleEntryImpl::WriteDataInternal(int index,
+void SimpleEntryImpl::WriteDataInternal(int stream_index,
                                        int offset,
-                                       scoped_refptr<net::IOBuffer> buf,
+                                       net::IOBuffer* buf,
                                        int buf_len,
                                        const CompletionCallback& callback,
                                        bool truncate) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(!operation_running_);
   operation_running_ = true;
-  if (index_)
-    index_->UseIfExists(key_);
+  if (entry_index_)
+    entry_index_->UseIfExists(key_);
+  // It is easy to incrementally compute the CRC from [0 .. |offset + buf_len|)
+  // if |offset == 0| or we have already computed the CRC for [0 .. offset).
+  // We rely on most write operations being sequential, start to end to compute
+  // the crc of the data. When we write to an entry and close without having
+  // done a sequential write, we don't check the CRC on read.
+  if (offset == 0 || crc32s_end_offset_[stream_index] == offset) {
+    uint32 initial_crc = (offset != 0) ? crc32s_[stream_index]
+                                       : crc32(0, Z_NULL, 0);
+    if (buf_len > 0) {
+      crc32s_[stream_index] = crc32(initial_crc,
+                                    reinterpret_cast<const Bytef*>(buf->data()),
+                                    buf_len);
+    }
+    crc32s_end_offset_[stream_index] = offset + buf_len;
+  }
 
-  // TODO(felipeg): When adding support for optimistic writes we need to set
-  // data_size_[index] = buf_len here.
+  have_written_[stream_index] = true;
+
   SynchronousOperationCallback sync_operation_callback =
       base::Bind(&SimpleEntryImpl::EntryOperationComplete,
-                 this, callback);
+                 this, callback, stream_index);
   WorkerPool::PostTask(FROM_HERE,
                        base::Bind(&SimpleSynchronousEntry::WriteData,
                                   base::Unretained(synchronous_entry_),
-                                  index, offset, buf,
+                                  stream_index, offset, make_scoped_refptr(buf),
                                   buf_len, sync_operation_callback, truncate),
                        true);
 }
@@ -329,8 +377,8 @@ void SimpleEntryImpl::CreationOperationComplete(
   if (!sync_entry) {
     completion_callback.Run(net::ERR_FAILED);
     // If OpenEntry failed, we must remove it from our index.
-    if (index_)
-      index_->Remove(key_);
+    if (entry_index_)
+      entry_index_->Remove(key_);
     // The reference held by the Callback calling us will go out of scope and
     // delete |this| on leaving this scope.
     return;
@@ -347,23 +395,79 @@ void SimpleEntryImpl::CreationOperationComplete(
 
 void SimpleEntryImpl::EntryOperationComplete(
     const CompletionCallback& completion_callback,
+    int stream_index,
     int result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(synchronous_entry_);
   DCHECK(operation_running_);
 
   operation_running_ = false;
-  SetSynchronousData();
-  if (index_) {
-    if (result >= 0) {
-      index_->UpdateEntrySize(synchronous_entry_->key(),
-                              synchronous_entry_->GetFileSize());
-    } else {
-      index_->Remove(synchronous_entry_->key());
-    }
+
+  if (result < 0) {
+    if (entry_index_)
+      entry_index_->Remove(key_);
+    entry_index_.reset();
+    crc32s_end_offset_[stream_index] = 0;
   }
+  SetSynchronousData();
   completion_callback.Run(result);
   RunNextOperationIfNeeded();
+}
+
+void SimpleEntryImpl::ReadOperationComplete(
+    int stream_index,
+    int offset,
+    const CompletionCallback& completion_callback,
+    int result,
+    uint32 crc) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
+  DCHECK(operation_running_);
+
+  if (result > 0 && crc32s_end_offset_[stream_index] == offset) {
+    uint32 current_crc = offset == 0 ? crc32(0, Z_NULL, 0)
+                                     : crc32s_[stream_index];
+    crc32s_[stream_index] = crc32_combine(current_crc, crc, result);
+    crc32s_end_offset_[stream_index] += result;
+    if (!have_written_[stream_index]) {
+      if (data_size_[stream_index] == crc32s_end_offset_[stream_index]) {
+        // We have just read a file from start to finish, and so we have
+        // computed a crc of the entire file. We can check it now. If a cache
+        // entry has a single reader, the normal pattern is to read from start
+        // to finish.
+
+        // Other cases are possible. In the case of two readers on the same
+        // entry, one reader can be behind the other. In this case we compute
+        // the crc as the most advanced reader progresses, and check it for
+        // both readers as they read the last byte.
+
+        SynchronousOperationCallback sync_operation_callback =
+            base::Bind(&SimpleEntryImpl::ChecksumOperationComplete,
+                       this, result, stream_index, completion_callback);
+        WorkerPool::PostTask(FROM_HERE,
+                             base::Bind(&SimpleSynchronousEntry::CheckEOFRecord,
+                                        base::Unretained(synchronous_entry_),
+                                        stream_index, crc32s_[stream_index],
+                                        sync_operation_callback),
+                             true);
+        return;
+      }
+    }
+  }
+  EntryOperationComplete(completion_callback, stream_index, result);
+}
+
+void SimpleEntryImpl::ChecksumOperationComplete(
+    int orig_result,
+    int stream_index,
+    const CompletionCallback& completion_callback,
+    int result) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(synchronous_entry_);
+  DCHECK(operation_running_);
+  if (result == net::OK)
+    result = orig_result;
+  EntryOperationComplete(completion_callback, stream_index, result);
 }
 
 void SimpleEntryImpl::SetSynchronousData() {
@@ -377,6 +481,8 @@ void SimpleEntryImpl::SetSynchronousData() {
   last_modified_ = synchronous_entry_->last_modified();
   for (int i = 0; i < kSimpleEntryFileCount; ++i)
     data_size_[i] = synchronous_entry_->data_size(i);
+  if (entry_index_)
+    entry_index_->UpdateEntrySize(key_, synchronous_entry_->GetFileSize());
 }
 
 }  // namespace disk_cache
