@@ -22,6 +22,8 @@ namespace chromeos {
 
 namespace {
 
+const char kSharedProfilePath[] = "/profile/default";
+
 void PassEmptyDictionary(
     const ShillProfileClient::DictionaryValueCallbackWithoutStatus& callback) {
   base::DictionaryValue dictionary;
@@ -52,6 +54,7 @@ base::DictionaryValue* GetOrCreateDictionary(const std::string& key,
 }  // namespace
 
 ShillProfileClientStub::ShillProfileClientStub() {
+  AddProfile(kSharedProfilePath);
 }
 
 ShillProfileClientStub::~ShillProfileClientStub() {

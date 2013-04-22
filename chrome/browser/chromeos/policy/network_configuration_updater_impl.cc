@@ -32,6 +32,8 @@ NetworkConfigurationUpdaterImpl::NetworkConfigurationUpdaterImpl(
       base::Bind(&NetworkConfigurationUpdaterImpl::OnPolicyChanged,
                  base::Unretained(this),
                  chromeos::onc::ONC_SOURCE_USER_POLICY));
+
+  ApplyNetworkConfiguration(chromeos::onc::ONC_SOURCE_DEVICE_POLICY);
 }
 
 NetworkConfigurationUpdaterImpl::~NetworkConfigurationUpdaterImpl() {
@@ -74,15 +76,12 @@ void NetworkConfigurationUpdaterImpl::ApplyNetworkConfiguration(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
   const base::Value* policy_value = policies.GetValue(policy_key);
 
-  if (!policy_value) {
-    VLOG(1) << "The policy value is NULL. Aborting.";
-    return;
-  }
-
   std::string onc_blob;
-  if (!policy_value->GetAsString(&onc_blob)) {
-    LOG(ERROR) << "ONC policy " << policy_key << " is not a string value.";
-    return;
+  if (policy_value) {
+    if (!policy_value->GetAsString(&onc_blob))
+      LOG(ERROR) << "ONC policy " << policy_key << " is not a string value.";
+  } else {
+    VLOG(2) << "The policy is not set.";
   }
   VLOG(2) << "The policy contains this ONC: " << onc_blob;
 

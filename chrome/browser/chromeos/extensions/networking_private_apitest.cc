@@ -2,34 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdio.h>
-
-#include "base/stl_util.h"
+#include "base/command_line.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/policy/browser_policy_connector.h"
+#include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/policy_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill_device_client.h"
 #include "chromeos/dbus/shill_profile_client.h"
 #include "chromeos/dbus/shill_service_client.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
+#include "policy/policy_constants.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+
+using testing::AnyNumber;
+using testing::Return;
+using testing::_;
 
 namespace chromeos {
 
-const char kSharedProfilePath[] = "/profile/default";
 const char kUserProfilePath[] = "/profile/chronos/shill";
 
 class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
  public:
-  // Whitelist the extension ID of the test extension.
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(
-        switches::kWhitelistedExtensionID, "epcifkihnkjgphfkloaaleeakhpmgdmn");
- }
+    // Whitelist the extension ID of the test extension.
+    command_line->AppendSwitchASCII(::switches::kWhitelistedExtensionID,
+                                    "epcifkihnkjgphfkloaaleeakhpmgdmn");
+    command_line->AppendSwitch(switches::kUseNewNetworkConfigurationHandlers);
+  }
 
   bool RunNetworkingSubtest(const std::string& subtest) {
     return RunExtensionSubtest(
@@ -37,10 +46,25 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
         kFlagEnableFileAccess | kFlagLoadAsComponent);
   }
 
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    EXPECT_CALL(provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(provider_, RegisterPolicyDomain(_, _)).Times(AnyNumber());
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+  }
+
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
     content::RunAllPendingInMessageLoop();
 
+    ShillProfileClient::TestInterface* profile_test =
+        DBusThreadManager::Get()->GetShillProfileClient()->GetTestInterface();
+    profile_test->AddProfile(kUserProfilePath);
+
+    g_browser_process->browser_policy_connector()->
+        GetNetworkConfigurationUpdater()->OnUserPolicyInitialized();
     ShillDeviceClient::TestInterface* device_test =
         DBusThreadManager::Get()->GetShillDeviceClient()->GetTestInterface();
     device_test->ClearDevices();
@@ -98,6 +122,9 @@ class ExtensionNetworkingPrivateApiTest : public ExtensionApiTest {
                              flimflam::kStateOnline,
                              add_to_watchlist);
   }
+
+ protected:
+  policy::MockConfigurationPolicyProvider provider_;
 };
 
 // Place each subtest into a separate browser test so that the stub networking
@@ -152,14 +179,6 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, GetState) {
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest, SetProperties) {
-  scoped_ptr<base::DictionaryValue> empty_policy =
-      onc::ReadDictionaryFromJson(onc::kEmptyUnencryptedConfiguration);
-  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
-      onc::ONC_SOURCE_USER_POLICY, *empty_policy);
-  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
-      onc::ONC_SOURCE_DEVICE_POLICY, *empty_policy);
-  content::RunAllPendingInMessageLoop();
-
   EXPECT_TRUE(RunNetworkingSubtest("setProperties")) << message_;
 }
 
@@ -170,8 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
   const std::string uidata_blob =
       "{ \"user_settings\": {"
       "      \"WiFi\": {"
-      "        \"Passphrase\": \"top secret\","
-      "      }"
+      "        \"Passphrase\": \"top secret\" }"
       "    }"
       "}";
   service_test->SetServiceProperty("stub_wifi2",
@@ -203,22 +221,19 @@ IN_PROC_BROWSER_TEST_F(ExtensionNetworkingPrivateApiTest,
       "        \"Passphrase\": \"passphrase\","
       "        \"Recommended\": [ \"AutoConnect\", \"Passphrase\" ],"
       "        \"SSID\": \"stub_wifi2\","
-      "        \"Security\": \"WPA-PSK\""
-      "      }"
+      "        \"Security\": \"WPA-PSK\" }"
       "    }"
       "  ],"
       "  \"Certificates\": [],"
       "  \"Type\": \"UnencryptedConfiguration\""
       "}";
-  scoped_ptr<base::DictionaryValue> user_policy =
-      onc::ReadDictionaryFromJson(user_policy_blob);
-  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
-      onc::ONC_SOURCE_USER_POLICY, *user_policy);
 
-  scoped_ptr<base::DictionaryValue> device_policy =
-      onc::ReadDictionaryFromJson(onc::kEmptyUnencryptedConfiguration);
-  ManagedNetworkConfigurationHandler::Get()->SetPolicy(
-      onc::ONC_SOURCE_DEVICE_POLICY, *device_policy);
+  policy::PolicyMap policy;
+  policy.Set(policy::key::kOpenNetworkConfiguration,
+             policy::POLICY_LEVEL_MANDATORY,
+             policy::POLICY_SCOPE_USER,
+             Value::CreateStringValue(user_policy_blob));
+  provider_.UpdateChromePolicy(policy);
 
   content::RunAllPendingInMessageLoop();
 
