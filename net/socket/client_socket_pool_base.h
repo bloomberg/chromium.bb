@@ -537,6 +537,10 @@ class NET_EXPORT_PRIVATE ClientSocketPoolBaseHelper
   // in |pending_callback_map_|.
   void InvokeUserCallback(ClientSocketHandle* handle);
 
+  // Tries to close idle sockets in a higher level socket pool as long as this
+  // this pool is stalled.
+  void TryToCloseSocketsInLayeredPools();
+
   GroupMap group_map_;
 
   // Map of the ClientSocketHandles for which we have a pending Task to invoke a

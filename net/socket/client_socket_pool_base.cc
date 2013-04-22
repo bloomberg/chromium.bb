@@ -244,6 +244,17 @@ int ClientSocketPoolBaseHelper::RequestSocket(
     delete request;
   } else {
     InsertRequestIntoQueue(request, group->mutable_pending_requests());
+    // Have to do this asynchronously, as closing sockets in higher level pools
+    // call back in to |this|, which will cause all sorts of fun and exciting
+    // re-entrancy issues if the socket pool is doing something else at the
+    // time.
+    if (group->IsStalledOnPoolMaxSockets(max_sockets_per_group_)) {
+      MessageLoop::current()->PostTask(
+          FROM_HERE,
+          base::Bind(
+              &ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools,
+              weak_factory_.GetWeakPtr()));
+    }
   }
   return rv;
 }
@@ -1101,6 +1112,15 @@ void ClientSocketPoolBaseHelper::InvokeUserCallback(
   int result = it->second.result;
   pending_callback_map_.erase(it);
   callback.Run(result);
+}
+
+void ClientSocketPoolBaseHelper::TryToCloseSocketsInLayeredPools() {
+  while (IsStalled()) {
+    // Closing a socket will result in calling back into |this| to use the freed
+    // socket slot, so nothing else is needed.
+    if (!CloseOneIdleConnectionInLayeredPool())
+      return;
+  }
 }
 
 ClientSocketPoolBaseHelper::Group::Group()
