@@ -17,7 +17,7 @@ PrefNotifierImpl::PrefNotifierImpl(PrefService* service)
 }
 
 PrefNotifierImpl::~PrefNotifierImpl() {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Verify that there are no pref observers when we shut down.
   for (PrefObserverMap::iterator it = pref_observers_.begin();
@@ -58,7 +58,7 @@ void PrefNotifierImpl::AddPrefObserver(const char* path,
 
 void PrefNotifierImpl::RemovePrefObserver(const char* path,
                                           PrefObserver* obs) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   const PrefObserverMap::iterator observer_iterator =
       pref_observers_.find(path);
@@ -79,7 +79,7 @@ void PrefNotifierImpl::OnPreferenceChanged(const std::string& path) {
 }
 
 void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // We must make a copy of init_observers_ and clear it before we run
   // observers, or we can end up in this method re-entrantly before
@@ -95,7 +95,7 @@ void PrefNotifierImpl::OnInitializationCompleted(bool succeeded) {
 }
 
 void PrefNotifierImpl::FireObservers(const std::string& path) {
-  DCHECK(CalledOnValidThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Only send notifications for registered preferences.
   if (!pref_service_->FindPreference(path.c_str()))

@@ -15,14 +15,13 @@
 #include "base/prefs/base_prefs_export.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_observer.h"
-#include "base/threading/non_thread_safe.h"
+#include "base/threading/thread_checker.h"
 
 class PrefService;
 
 // The PrefNotifier implementation used by the PrefService.
 class BASE_PREFS_EXPORT PrefNotifierImpl
-    : public NON_EXPORTED_BASE(PrefNotifier),
-      public base::NonThreadSafe {
+    : public NON_EXPORTED_BASE(PrefNotifier) {
  public:
   PrefNotifierImpl();
   explicit PrefNotifierImpl(PrefService* pref_service);
@@ -65,6 +64,8 @@ class BASE_PREFS_EXPORT PrefNotifierImpl
 
   PrefObserverMap pref_observers_;
   PrefInitObserverList init_observers_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefNotifierImpl);
 };
