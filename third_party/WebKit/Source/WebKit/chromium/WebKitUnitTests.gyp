@@ -32,6 +32,7 @@
     'includes': [
         'features.gypi',
         'WebKit.gypi',
+        '../../wtf/wtf.gypi',
     ],
     'targets': [
         {
@@ -77,6 +78,7 @@
                         'WEBKIT_IMPLEMENTATION=1',
                     ],
                     'sources': [
+                        '<@(wtf_unittest_files)',
                         '<@(webkit_unittest_files)',
                     ],
                     'conditions': [

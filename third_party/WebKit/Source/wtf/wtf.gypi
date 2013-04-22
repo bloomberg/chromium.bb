@@ -228,5 +228,8 @@
             'unicode/icu/CollatorICU.cpp',
             'unicode/icu/UnicodeIcu.h',
         ],
-    }
+        'wtf_unittest_files': [
+            'tests/Vector.cpp',
+        ],
+    },
 }

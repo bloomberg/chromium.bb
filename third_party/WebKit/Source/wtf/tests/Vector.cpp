@@ -24,9 +24,10 @@
  */
 
 #include "config.h"
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
+#include <gtest/gtest.h>
 
-namespace TestWebKitAPI {
+namespace {
 
 TEST(WTF_Vector, Iterator)
 {
@@ -76,4 +77,4 @@ TEST(WTF_Vector, ReverseIterator)
     EXPECT_TRUE(end == it);
 }
 
-} // namespace TestWebKitAPI
+} // namespace
