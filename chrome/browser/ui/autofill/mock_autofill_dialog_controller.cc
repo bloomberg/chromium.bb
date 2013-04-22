@@ -25,10 +25,6 @@ string16 MockAutofillDialogController::EditSuggestionText() const {
   return string16();
 }
 
-string16 MockAutofillDialogController::UseBillingForShippingText() const {
-   return string16();
-}
-
 string16 MockAutofillDialogController::CancelButtonText() const {
   return string16();
 }
@@ -112,8 +108,12 @@ string16 MockAutofillDialogController::LabelForSection(
 
 SuggestionState MockAutofillDialogController::SuggestionStateForSection(
     DialogSection section) {
-  return SuggestionState(
-      string16(), gfx::Image(), string16(), gfx::Image(), false);
+  return SuggestionState(string16(),
+                         gfx::Font::NORMAL,
+                         gfx::Image(),
+                         string16(),
+                         gfx::Image(),
+                         false);
 }
 
 void MockAutofillDialogController::EditClickedForSection(

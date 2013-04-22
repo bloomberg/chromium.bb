@@ -90,12 +90,6 @@
     <Space
           android:layout_gravity="fill"
           android:layout_columnSpan="2"/>
-    <CheckBox
-        android:id="@+id/use_billing_checkbox"
-        android:padding="@dimen/autofill_steady_margin"
-        android:textSize="@dimen/autofill_notification_text_size"
-        android:layout_gravity="fill_horizontal"
-        android:layout_columnSpan="4"/>
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/address_spinner"

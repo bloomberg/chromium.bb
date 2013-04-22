@@ -69,11 +69,13 @@ bool DialogNotification::HasCheckbox() const {
 }
 
 SuggestionState::SuggestionState(const string16& text,
+                                 gfx::Font::FontStyle text_style,
                                  const gfx::Image& icon,
                                  const string16& extra_text,
                                  const gfx::Image& extra_icon,
                                  bool editable)
     : text(text),
+      text_style(text_style),
       icon(icon),
       extra_text(extra_text),
       extra_icon(extra_icon),

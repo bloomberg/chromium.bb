@@ -19,7 +19,6 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual string16 AccountChooserText() const OVERRIDE;
   virtual string16 SignInLinkText() const OVERRIDE;
   virtual string16 EditSuggestionText() const OVERRIDE;
-  virtual string16 UseBillingForShippingText() const OVERRIDE;
   virtual string16 CancelButtonText() const OVERRIDE;
   virtual string16 ConfirmButtonText() const OVERRIDE;
   virtual string16 CancelSignInText() const OVERRIDE;

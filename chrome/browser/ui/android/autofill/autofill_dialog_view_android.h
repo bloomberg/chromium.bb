@@ -32,7 +32,6 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;
-  virtual bool UseBillingForShipping() OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;

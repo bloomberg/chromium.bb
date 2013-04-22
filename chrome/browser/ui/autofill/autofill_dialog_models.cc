@@ -75,6 +75,22 @@ std::string SuggestionsMenuModel::GetItemKeyForCheckedItem() const {
   return items_[checked_item_].first;
 }
 
+void SuggestionsMenuModel::SetCheckedItem(const std::string& item_key) {
+  for (size_t i = 0; i < items_.size(); ++i) {
+    if (items_[i].first == item_key) {
+      checked_item_ = i;
+      return;
+    }
+  }
+
+  NOTREACHED();
+}
+
+void SuggestionsMenuModel::SetCheckedIndex(size_t index) {
+  DCHECK_LE(index, items_.size());
+  checked_item_ = index;
+}
+
 bool SuggestionsMenuModel::IsCommandIdChecked(
     int command_id) const {
   return checked_item_ == command_id;
@@ -92,8 +108,7 @@ bool SuggestionsMenuModel::GetAcceleratorForCommandId(
 }
 
 void SuggestionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
-  checked_item_ = command_id;
-  delegate_->SuggestionItemSelected(*this);
+  delegate_->SuggestionItemSelected(this, command_id);
 }
 
 // MonthComboboxModel ----------------------------------------------------------
