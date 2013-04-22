@@ -56,6 +56,9 @@ class VIEWS_EXPORT TreeViewSelector : public ui::TextInputClient {
   // Returns true if the text of the node at |row| starts with |lower_text|.
   bool TextAtRowMatchesText(int row, const string16& lower_text);
 
+  // Clears |current_text_| and resets |time_of_last_key_|.
+  void ClearText();
+
   TreeView* tree_;
 
   // Time OnTextInput() was last invoked.

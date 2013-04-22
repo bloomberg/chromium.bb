@@ -25,8 +25,7 @@ TreeViewSelector::~TreeViewSelector() {
 }
 
 void TreeViewSelector::OnTreeViewBlur() {
-  current_text_.clear();
-  time_of_last_key_ = base::TimeTicks();
+  ClearText();
 }
 
 void TreeViewSelector::SetCompositionText(
@@ -52,7 +51,7 @@ ui::TextInputType TreeViewSelector::GetTextInputType() const {
 }
 
 bool TreeViewSelector::CanComposeInline() const {
-  return true;
+  return false;
 }
 
 gfx::Rect TreeViewSelector::GetCaretBounds() {
@@ -98,6 +97,7 @@ bool TreeViewSelector::GetTextFromRange(const ui::Range& range,
 }
 
 void TreeViewSelector::OnInputMethodChanged() {
+  ClearText();
 }
 
 bool TreeViewSelector::ChangeTextDirectionAndLayoutAlignment(
@@ -147,6 +147,11 @@ bool TreeViewSelector::TextAtRowMatchesText(int row,
   const string16 model_text(base::i18n::ToLower(node->GetTitle()));
   return (model_text.size() >= lower_text.size()) &&
       (model_text.compare(0, lower_text.size(), lower_text) == 0);
+}
+
+void TreeViewSelector::ClearText() {
+  current_text_.clear();
+  time_of_last_key_ = base::TimeTicks();
 }
 
 }  // namespace views
