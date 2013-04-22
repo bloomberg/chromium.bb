@@ -3063,6 +3063,13 @@ crbug.com/233260 [ Win ] fast/preloader/script.html [ Failure ]
 crbug.com/233585 media/media-document-audio-repaint.html [ ImageOnlyFailure ]
 crbug.com/233700 [ Win Debug ] inspector/debugger/debugger-script-preprocessor.html [ Timeout ]
 
+# These failing spatial navigation tests need closer inspection.
+crbug.com/233995 fast/spatial-navigation/snav-container-white-space.html [ Failure ]
+crbug.com/233995 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Failure ]
+crbug.com/233995 fast/spatial-navigation/snav-imagemap-overlapped-areas.html [ Failure ]
+crbug.com/233995 fast/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html [ Failure ]
+crbug.com/233995 fast/spatial-navigation/snav-multiple-select-focusring.html [ Failure ]
+
 crbug.com/234061 [ MountainLion ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ ImageOnlyFailure ]
 crbug.com/234066 fast/dom/everything-to-string.html [ Pass Failure ]
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Pass Failure ]

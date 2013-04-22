@@ -13,7 +13,7 @@
 
     if (window.testRunner) {
       testRunner.dumpAsText();
-      testRunner.setSpatialNavigationEnabled(true);
+      window.internals.settings.setSpatialNavigationEnabled(true);
       testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
       testRunner.waitUntilDone();
     }
