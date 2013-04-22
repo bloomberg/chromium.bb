@@ -121,32 +121,22 @@ PluginProcessHost::~PluginProcessHost() {
   std::set<HWND>::iterator window_index;
   for (window_index = plugin_parent_windows_set_.begin();
        window_index != plugin_parent_windows_set_.end();
-       window_index++) {
+       ++window_index) {
     PostMessage(*window_index, WM_CLOSE, 0, 0);
   }
 #elif defined(OS_MACOSX)
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   // If the plugin process crashed but had fullscreen windows open at the time,
   // make sure that the menu bar is visible.
-  std::set<uint32>::iterator window_index;
-  for (window_index = plugin_fullscreen_windows_set_.begin();
-       window_index != plugin_fullscreen_windows_set_.end();
-       window_index++) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::mac::ReleaseFullScreen(base::mac::kFullScreenModeHideAll);
-    } else {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(base::mac::ReleaseFullScreen,
-                                         base::mac::kFullScreenModeHideAll));
-    }
+  for (size_t i = 0; i < plugin_fullscreen_windows_set_.size(); ++i) {
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(base::mac::ReleaseFullScreen,
+                                       base::mac::kFullScreenModeHideAll));
   }
   // If the plugin hid the cursor, reset that.
   if (!plugin_cursor_visible_) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-      base::mac::SetCursorVisibility(true);
-    } else {
-      BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                              base::Bind(base::mac::SetCursorVisibility, true));
-    }
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                            base::Bind(base::mac::SetCursorVisibility, true));
   }
 #endif
   // Cancel all pending and sent requests.
