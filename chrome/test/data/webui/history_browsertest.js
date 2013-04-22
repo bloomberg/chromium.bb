@@ -417,8 +417,10 @@ TEST_F('HistoryWebUITest', 'deletion', function() {
   var checkboxes = document.querySelectorAll(
       '#results-display input[type=checkbox]');
 
-  // Confirm all the things!!!
-  window.confirm = function() { return true; };
+  // Immediately confirm the history deletion.
+  confirmDeletion = function(okCallback, cancelCallback) {
+    okCallback();
+  };
 
   // The "remote" button should be initially selected.
   var removeButton = $('remove-selected');

@@ -1441,6 +1441,9 @@ function load() {
   var offset = parseInt(hashData.offset, 10) || historyView.getOffset();
   historyView.setPageState(hashData.q, page, grouped, range, offset);
 
+  if ($('overlay'))
+    cr.ui.overlay.setupOverlay($('overlay'));
+
   var doSearch = function(e) {
     // Disable the group by domain control when a search is active.
     $('group-by-domain').disabled = (searchField.value != '');
@@ -1574,13 +1577,49 @@ function updateHostStatus(statusElement, newStatus) {
   }
 }
 
-
 /**
  * Click handler for the 'Clear browsing data' dialog.
  * @param {Event} e The click event.
  */
 function openClearBrowsingData(e) {
   chrome.send('clearBrowsingData');
+}
+
+/**
+ * Shows the dialog for the user to confirm removal of selected history entries.
+ */
+function showConfirmationOverlay() {
+  $('alertOverlay').classList.add('showing');
+  $('overlay').hidden = false;
+  uber.invokeMethodOnParent('beginInterceptingEvents');
+}
+
+/**
+ * Hides the confirmation overlay used to confirm selected history entries.
+ */
+function hideConfirmationOverlay() {
+  $('alertOverlay').classList.remove('showing');
+  $('overlay').hidden = true;
+  uber.invokeMethodOnParent('stopInterceptingEvents');
+}
+
+/**
+ * Shows the confirmation alert for history deletions and permits browser tests
+ * to override the dialog.
+ * @param {function=} okCallback A function to be called when the user presses
+ *     the ok button.
+ * @param {function=} cancelCallback A function to be called when the user
+ *     presses the cancel button.
+ */
+function confirmDeletion(okCallback, cancelCallback) {
+  alertOverlay.setValues(
+      loadTimeData.getString('removeSelected'),
+      loadTimeData.getString('deleteWarning'),
+      loadTimeData.getString('cancel'),
+      loadTimeData.getString('deleteConfirm'),
+      cancelCallback,
+      okCallback);
+  showConfirmationOverlay();
 }
 
 /**
@@ -1606,20 +1645,29 @@ function removeItems() {
     disabledItems.push(checkbox);
   }
 
-  if (checked.length && confirm(loadTimeData.getString('deleteWarning'))) {
-    historyModel.removeVisitsFromHistory(toBeRemoved, function() {
-      historyView.reload();
-    });
-    return;
+  function onConfirmRemove() {
+    historyModel.removeVisitsFromHistory(toBeRemoved,
+        historyView.reload.bind(historyView));
+    $('overlay').removeEventListener('cancelOverlay', onCancelRemove);
+    hideConfirmationOverlay();
   }
 
-  // Return everything to its previous state.
-  for (var i = 0; i < disabledItems.length; i++) {
-    var checkbox = disabledItems[i];
-    checkbox.disabled = false;
+  function onCancelRemove() {
+    // Return everything to its previous state.
+    for (var i = 0; i < disabledItems.length; i++) {
+      var checkbox = disabledItems[i];
+      checkbox.disabled = false;
 
-    var link = findAncestorByClass(checkbox, 'entry-box').querySelector('a');
-    link.classList.remove('to-be-removed');
+      var entryBox = findAncestorByClass(checkbox, 'entry-box');
+      entryBox.querySelector('a').classList.remove('to-be-removed');
+    }
+    $('overlay').removeEventListener('cancelOverlay', onCancelRemove);
+    hideConfirmationOverlay();
+  }
+
+  if (checked.length) {
+    confirmDeletion(onConfirmRemove, onCancelRemove);
+    $('overlay').addEventListener('cancelOverlay', onCancelRemove);
   }
 }
 
