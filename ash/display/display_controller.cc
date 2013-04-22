@@ -26,12 +26,16 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "third_party/skia/include/utils/SkMatrix44.h"
+#include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/dip_util.h"
 #include "ui/gfx/display.h"
@@ -227,6 +231,73 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
 
 }  // namespace
 
+namespace internal {
+
+// A utility class to store/restore focused/active window
+// when the display configuration has changed.
+class FocusActivationStore {
+ public:
+  FocusActivationStore()
+      : activation_client_(NULL),
+        capture_client_(NULL),
+        focus_client_(NULL),
+        focused_(NULL),
+        active_(NULL) {
+  }
+
+  void Store() {
+    if (!activation_client_) {
+      aura::RootWindow* root = Shell::GetPrimaryRootWindow();
+      activation_client_ = aura::client::GetActivationClient(root);
+      capture_client_ = aura::client::GetCaptureClient(root);
+      focus_client_ = aura::client::GetFocusClient(root);
+    }
+    focused_ = focus_client_->GetFocusedWindow();
+    if (focused_)
+      tracker_.Add(focused_);
+    active_ = activation_client_->GetActiveWindow();
+    if (active_ && focused_ != active_)
+      tracker_.Add(active_);
+
+    // Deactivate the window to close menu / bubble windows.
+    activation_client_->DeactivateWindow(active_);
+    // Release capture if any.
+    capture_client_->SetCapture(NULL);
+    // Clear the focused window if any. This is necessary because a
+    // window may be deleted when losing focus (fullscreen flash for
+    // example).  If the focused window is still alive after move, it'll
+    // be re-focused below.
+    focus_client_->FocusWindow(NULL);
+  }
+
+  void Restore() {
+    // Restore focused or active window if it's still alive.
+    if (focused_ && tracker_.Contains(focused_)) {
+      focus_client_->FocusWindow(focused_);
+    } else if (active_ && tracker_.Contains(active_)) {
+      activation_client_->ActivateWindow(active_);
+    }
+    if (focused_)
+      tracker_.Remove(focused_);
+    if (active_)
+      tracker_.Remove(active_);
+    focused_ = NULL;
+    active_ = NULL;
+  }
+
+ private:
+  aura::client::ActivationClient* activation_client_;
+  aura::client::CaptureClient* capture_client_;
+  aura::client::FocusClient* focus_client_;
+  aura::WindowTracker tracker_;
+  aura::Window* focused_;
+  aura::Window* active_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusActivationStore);
+};
+
+}  // namespace internal
+
 ////////////////////////////////////////////////////////////////////////////////
 // DisplayLayout
 
@@ -341,7 +412,8 @@ bool DisplayController::DisplayChangeLimiter::IsThrottled() const {
 
 DisplayController::DisplayController()
     : primary_root_window_for_replace_(NULL),
-      in_bootstrap_(true) {
+      in_bootstrap_(true),
+      focus_activation_store_(new internal::FocusActivationStore()) {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
 #if defined(OS_CHROMEOS)
   if (!command_line->HasSwitch(switches::kAshDisableDisplayChangeLimiter) &&
@@ -980,11 +1052,13 @@ void DisplayController::NotifyDisplayConfigurationChanging() {
   if (in_bootstrap())
     return;
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
+  focus_activation_store_->Store();
 }
 
 void DisplayController::NotifyDisplayConfigurationChanged() {
   if (in_bootstrap())
     return;
+  focus_activation_store_->Restore();
 
   internal::DisplayManager* display_manager = GetDisplayManager();
   if (display_manager->num_connected_displays() > 1) {

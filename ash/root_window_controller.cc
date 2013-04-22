@@ -38,15 +38,11 @@
 #include "ash/wm/workspace_controller.h"
 #include "base/command_line.h"
 #include "base/time.h"
-#include "ui/aura/client/activation_client.h"
 #include "ui/aura/client/aura_constants.h"
-#include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/tooltip_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/screen.h"
@@ -406,38 +402,10 @@ void RootWindowController::CloseChildWindows() {
 }
 
 void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
-  aura::Window* focused = aura::client::GetFocusClient(dst)->GetFocusedWindow();
-  aura::WindowTracker tracker;
-  if (focused)
-    tracker.Add(focused);
-  aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(dst);
-  aura::Window* active = activation_client->GetActiveWindow();
-  if (active && focused != active)
-    tracker.Add(active);
-  // Deactivate the window to close menu / bubble windows.
-  activation_client->DeactivateWindow(active);
-  // Release capture if any.
-  aura::client::GetCaptureClient(root_window_.get())->
-      SetCapture(NULL);
-  // Clear the focused window if any. This is necessary because a
-  // window may be deleted when losing focus (fullscreen flash for
-  // example).  If the focused window is still alive after move, it'll
-  // be re-focused below.
-  aura::client::GetFocusClient(dst)->FocusWindow(NULL);
-
   // Forget the shelf early so that shelf don't update itself using wrong
   // display info.
   workspace_controller_->SetShelf(NULL);
-
   ReparentAllWindows(root_window_.get(), dst);
-
-  // Restore focused or active window if it's still alive.
-  if (focused && tracker.Contains(focused) && dst->Contains(focused)) {
-    aura::client::GetFocusClient(dst)->FocusWindow(focused);
-  } else if (active && tracker.Contains(active) && dst->Contains(active)) {
-    activation_client->ActivateWindow(active);
-  }
 }
 
 void RootWindowController::SetTouchObserverHUD(TouchObserverHUD* hud) {
