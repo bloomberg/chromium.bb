@@ -191,6 +191,7 @@ void AppendMouseEvent(const WebInputEvent& event,
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = mouse_event.modifiers;
   if (mouse_event.type == WebInputEvent::MouseDown ||
+      mouse_event.type == WebInputEvent::MouseMove ||
       mouse_event.type == WebInputEvent::MouseUp) {
     result.mouse_button =
         static_cast<PP_InputEvent_MouseButton>(mouse_event.button);
