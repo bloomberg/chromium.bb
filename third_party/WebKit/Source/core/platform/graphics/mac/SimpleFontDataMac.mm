@@ -393,7 +393,7 @@ float SimpleFontData::platformWidthForGlyph(Glyph glyph) const
         else {
             float pointSize = platformData().m_size;
             CGAffineTransform m = CGAffineTransformMakeScale(pointSize, pointSize);
-            if (!wkGetGlyphTransformedAdvances(platformData().cgFont(), font, &m, &glyph, &advance)) {
+            if (!WKGetGlyphTransformedAdvances(platformData().cgFont(), font, &m, &glyph, &advance)) {
                 LOG_ERROR("Unable to cache glyph widths for %@ %f", [font displayName], pointSize);
                 advance.width = 0;
             }
@@ -435,7 +435,7 @@ bool SimpleFontData::canRenderCombiningCharacterSequence(const UChar* characters
     RetainPtr<CGFontRef> cgFont(AdoptCF, CTFontCopyGraphicsFont(platformData().ctFont(), 0));
 
     ProviderInfo info = { characters, length, getCFStringAttributes(0, platformData().orientation()) };
-    RetainPtr<CTLineRef> line(AdoptCF, wkCreateCTLineWithUniCharProvider(&provideStringAndAttributes, 0, &info));
+    RetainPtr<CTLineRef> line(AdoptCF, WKCreateCTLineWithUniCharProvider(&provideStringAndAttributes, 0, &info));
 
     CFArrayRef runArray = CTLineGetGlyphRuns(line.get());
     CFIndex runCount = CFArrayGetCount(runArray);

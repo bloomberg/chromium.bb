@@ -57,7 +57,7 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
 
     Vector<CGGlyph, 512> glyphs(bufferLength);
     if (!shouldUseCoreText(buffer, bufferLength, fontData)) {
-        wkGetGlyphsForCharacters(fontData->platformData().cgFont(), buffer, glyphs.data(), bufferLength);
+        WKGetGlyphsForCharacters(fontData->platformData().cgFont(), buffer, glyphs.data(), bufferLength);
         for (unsigned i = 0; i < length; ++i) {
             if (!glyphs[i])
                 setGlyphDataForIndex(offset + i, 0, 0);
@@ -66,9 +66,9 @@ bool GlyphPage::fill(unsigned offset, unsigned length, UChar* buffer, unsigned b
                 haveGlyphs = true;
             }
         }
-    } else if (!fontData->platformData().isCompositeFontReference() && ((fontData->platformData().widthVariant() == RegularWidth) ? wkGetVerticalGlyphsForCharacters(fontData->platformData().ctFont(), buffer, glyphs.data(), bufferLength)
+    } else if (!fontData->platformData().isCompositeFontReference() && ((fontData->platformData().widthVariant() == RegularWidth) ? WKGetVerticalGlyphsForCharacters(fontData->platformData().ctFont(), buffer, glyphs.data(), bufferLength)
                : CTFontGetGlyphsForCharacters(fontData->platformData().ctFont(), buffer, glyphs.data(), bufferLength))) {
-        // When buffer consists of surrogate pairs, wkGetVerticalGlyphsForCharacters and CTFontGetGlyphsForCharacters
+        // When buffer consists of surrogate pairs, WKGetVerticalGlyphsForCharacters and CTFontGetGlyphsForCharacters
         // place the glyphs at indices corresponding to the first character of each pair.
         unsigned glyphStep = bufferLength / length;
         for (unsigned i = 0; i < length; ++i) {

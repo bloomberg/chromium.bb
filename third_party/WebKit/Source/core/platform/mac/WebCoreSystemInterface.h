@@ -56,19 +56,17 @@ OBJC_CLASS NSString;
 
 extern "C" {
 
-// In alphabetical order.
-
-extern void (*wkAdvanceDefaultButtonPulseAnimation)(NSButtonCell *);
-extern void (*wkDrawBezeledTextFieldCell)(NSRect, BOOL enabled);
-extern void (*wkDrawCapsLockIndicator)(CGContextRef, CGRect);
-extern void (*wkDrawBezeledTextArea)(NSRect, BOOL enabled);
-extern NSFont* (*wkGetFontInLanguageForRange)(NSFont*, NSString*, NSRange);
-extern NSFont* (*wkGetFontInLanguageForCharacter)(NSFont*, UniChar);
-extern BOOL (*wkGetGlyphTransformedAdvances)(CGFontRef, NSFont*, CGAffineTransform*, ATSGlyphRef*, CGSize* advance);
-extern void (*wkSetUpFontCache)();
-extern void (*wkGetGlyphsForCharacters)(CGFontRef, const UniChar[], CGGlyph[], size_t);
-extern bool (*wkGetVerticalGlyphsForCharacters)(CTFontRef, const UniChar[], CGGlyph[], size_t);
-extern CTLineRef (*wkCreateCTLineWithUniCharProvider)(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*);
+extern void WKAdvanceDefaultButtonPulseAnimation(NSButtonCell*);
+extern void WKDrawBezeledTextFieldCell(NSRect, BOOL enabled);
+extern void WKDrawCapsLockIndicator(CGContextRef, CGRect);
+extern void WKDrawBezeledTextArea(NSRect, BOOL enabled);
+extern NSFont* WKGetFontInLanguageForRange(NSFont*, NSString*, NSRange);
+extern NSFont* WKGetFontInLanguageForCharacter(NSFont*, UniChar);
+extern BOOL WKGetGlyphTransformedAdvances(CGFontRef, NSFont*, CGAffineTransform*, ATSGlyphRef*, CGSize* advance);
+extern void WKSetUpFontCache();
+extern void WKGetGlyphsForCharacters(CGFontRef, const UniChar[], CGGlyph[], size_t);
+extern bool WKGetVerticalGlyphsForCharacters(CTFontRef, const UniChar[], CGGlyph[], size_t);
+extern CTLineRef WKCreateCTLineWithUniCharProvider(const UniChar* (*provide)(CFIndex stringIndex, CFIndex* charCount, CFDictionaryRef* attributes, void*), void (*dispose)(const UniChar* chars, void*), void*);
 
 }  // extern "C"
 

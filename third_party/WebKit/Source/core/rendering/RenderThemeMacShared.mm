@@ -723,7 +723,7 @@ bool RenderThemeMacShared::paintTextField(RenderObject* o, const PaintInfo& pain
     // of painting its own background. We need WebCore to paint styled backgrounds, so we'll use
     // this WebCoreSystemInterface function instead.
     if (!useNSTextFieldCell) {
-        wkDrawBezeledTextFieldCell(r, isEnabled(o) && !isReadOnlyControl(o));
+        WKDrawBezeledTextFieldCell(r, isEnabled(o) && !isReadOnlyControl(o));
         return false;
     }
 #endif
@@ -750,7 +750,7 @@ bool RenderThemeMacShared::paintCapsLockIndicator(RenderObject*, const PaintInfo
         return true;
 
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    wkDrawCapsLockIndicator(localContext.cgContext(), r);
+    WKDrawCapsLockIndicator(localContext.cgContext(), r);
 
     return false;
 }
@@ -758,7 +758,7 @@ bool RenderThemeMacShared::paintCapsLockIndicator(RenderObject*, const PaintInfo
 bool RenderThemeMacShared::paintTextArea(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
 {
     LocalCurrentGraphicsContext localContext(paintInfo.context);
-    wkDrawBezeledTextArea(r, isEnabled(o) && !isReadOnlyControl(o));
+    WKDrawBezeledTextArea(r, isEnabled(o) && !isReadOnlyControl(o));
     return false;
 }
 

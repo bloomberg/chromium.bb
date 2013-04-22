@@ -888,9 +888,8 @@
             ['include', 'platform/mac/ScrollElasticityController\\.mm$'],
             ['include', 'platform/mac/ThemeMac\\.h$'],
             ['include', 'platform/mac/ThemeMac\\.mm$'],
-            ['include', 'platform/mac/WebCoreSystemInterface\\.mm$'],
+            ['include', 'platform/mac/WebCoreSystemInterface\\.h$'],
             ['include', 'platform/mac/WebCoreTextRenderer\\.mm$'],
-            ['include', 'platform/mac/WebSystemInterface\\.mm$'],
             ['include', 'platform/text/mac/ShapeArabic\\.c$'],
             ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
             # Use USE_NEW_THEME on Mac.

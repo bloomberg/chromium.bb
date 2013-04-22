@@ -491,7 +491,7 @@ static void paintButton(ControlPart part, ControlStates states, GraphicsContext*
 
     if (states & DefaultState) {
         [window setDefaultButtonCell:buttonCell];
-        wkAdvanceDefaultButtonPulseAnimation(buttonCell);
+        WKAdvanceDefaultButtonPulseAnimation(buttonCell);
     } else if ([previousDefaultButtonCell isEqual:buttonCell])
         [window setDefaultButtonCell:nil];
 

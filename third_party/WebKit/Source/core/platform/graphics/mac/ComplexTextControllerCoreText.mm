@@ -219,7 +219,7 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
         ProviderInfo info = { cp, length, stringAttributes.get() };
-        RetainPtr<CTTypesetterRef> typesetter(AdoptCF, wkCreateCTTypesetterWithUniCharProviderAndOptions(&provideStringAndAttributes, 0, &info, m_run.ltr() ? ltrTypesetterOptions : rtlTypesetterOptions));
+        RetainPtr<CTTypesetterRef> typesetter(AdoptCF, WKCreateCTTypesetterWithUniCharProviderAndOptions(&provideStringAndAttributes, 0, &info, m_run.ltr() ? ltrTypesetterOptions : rtlTypesetterOptions));
 #else
         RetainPtr<CFStringRef> string(AdoptCF, CFStringCreateWithCharactersNoCopy(kCFAllocatorDefault, cp, length, kCFAllocatorNull));
         RetainPtr<CFAttributedStringRef> attributedString(AdoptCF, CFAttributedStringCreate(kCFAllocatorDefault, string.get(), stringAttributes.get()));
@@ -230,7 +230,7 @@ void ComplexTextController::collectComplexTextRunsForCharacters(const UChar* cp,
     } else {
         ProviderInfo info = { cp, length, stringAttributes.get() };
 
-        line.adoptCF(wkCreateCTLineWithUniCharProvider(&provideStringAndAttributes, 0, &info));
+        line.adoptCF(WKCreateCTLineWithUniCharProvider(&provideStringAndAttributes, 0, &info));
     }
 
     m_coreTextLines.append(line.get());

@@ -61,7 +61,7 @@ static void fontCacheRegisteredFontsChangedNotificationCallback(CFNotificationCe
 
 void FontCache::platformInit()
 {
-    wkSetUpFontCache();
+    WKSetUpFontCache();
     CFNotificationCenterAddObserver(CFNotificationCenterGetLocalCenter(), this, fontCacheRegisteredFontsChangedNotificationCallback, kCTFontManagerRegisteredFontsChangedNotification, 0, CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 
@@ -94,11 +94,11 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacters(const Font& font,
     NSFont *nsFont = platformData.font();
 
     NSString *string = [[NSString alloc] initWithCharactersNoCopy:const_cast<UChar*>(characters) length:length freeWhenDone:NO];
-    NSFont *substituteFont = wkGetFontInLanguageForRange(nsFont, string, NSMakeRange(0, length));
+    NSFont *substituteFont = WKGetFontInLanguageForRange(nsFont, string, NSMakeRange(0, length));
     [string release];
 
     if (!substituteFont && length == 1)
-        substituteFont = wkGetFontInLanguageForCharacter(nsFont, characters[0]);
+        substituteFont = WKGetFontInLanguageForCharacter(nsFont, characters[0]);
     if (!substituteFont)
         return 0;
 

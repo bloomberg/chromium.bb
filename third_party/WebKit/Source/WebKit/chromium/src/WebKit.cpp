@@ -64,10 +64,6 @@
 #include "WebWorkerClientImpl.h"
 #include "WorkerContextProxyChromium.h"
 
-#if OS(DARWIN)
-#include "WebSystemInterface.h"
-#endif
-
 namespace WebKit {
 
 namespace {
@@ -133,10 +129,6 @@ void initializeWithoutV8(Platform* webKitPlatformSupport)
 {
     ASSERT(!s_webKitInitialized);
     s_webKitInitialized = true;
-
-#if OS(DARWIN)
-    InitWebCoreSystemInterface();
-#endif
 
     ASSERT(webKitPlatformSupport);
     ASSERT(!s_webKitPlatformSupport);
