@@ -58,6 +58,20 @@ PathUtil.isSpecialSearchRoot = function(path) {
 };
 
 /**
+ * Checks |path| and return true if it is under Google Drive or a sepecial
+ * search root which represents a special search from Google Drive.
+ * @param {string} path Path to check.
+ * @return {boolean} True if the given path represents a Drive based path.
+ */
+PathUtil.isDriveBasedPath = function(path) {
+  var rootType = PathUtil.getRootType(path);
+  return rootType === RootType.DRIVE ||
+      rootType === RootType.DRIVE_SHARED_WITH_ME ||
+      rootType === RootType.DRIVE_RECENT ||
+      rootType === RootType.DRIVE_OFFLINE;
+};
+
+/**
  * @param {string} path Path starting with '/'.
  * @return {string} Top directory (starting with '/').
  */

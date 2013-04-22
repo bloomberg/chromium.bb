@@ -1288,11 +1288,6 @@ DirectoryModel.isMountableRoot = function(path) {
 DirectoryModel.prototype.search = function(query,
                                            onSearchRescan,
                                            onClearSearch) {
-  if (PathUtil.isSpecialSearchRoot(this.getCurrentDirPath())) {
-    this.specialSearch(this.getCurrentDirPath(), query);
-    return;
-  }
-
   query = query.trimLeft();
 
   this.clearSearch_();
@@ -1314,8 +1309,11 @@ DirectoryModel.prototype.search = function(query,
   this.addEventListener('scan-completed', this.onSearchCompleted_);
 
   // If we are offline, let's fallback to file name search inside dir.
-  if (this.getCurrentRootType() === RootType.DRIVE && !this.isDriveOffline()) {
-    // Drive search is performed over the whole drive, so pass drive root as
+  // A search initiated from directories in Drive or special search results
+  // should trigger Drive search.
+  if (!this.isDriveOffline() &&
+      PathUtil.isDriveBasedPath(this.getCurrentDirPath())) {
+    // Drive search is performed over the whole drive, so pass  drive root as
     // |directoryEntry|.
     newDirContents = new DirectoryContentsDriveSearch(
         this.currentFileListContext_,
