@@ -29,7 +29,7 @@ vars = {
   "ffmpeg_hash": "b377d75784d29f35d84abb51f54f06ef6ccc7903",
 
   "sfntly_revision": "134",
-  "skia_revision": "8756",
+  "skia_revision": "8793",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and V8 without interference from each other.
