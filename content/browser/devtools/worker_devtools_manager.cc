@@ -10,6 +10,8 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "content/browser/devtools/devtools_manager_impl.h"
+#include "content/browser/devtools/devtools_protocol.h"
+#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/ipc_devtools_agent_host.h"
 #include "content/browser/devtools/worker_devtools_message_filter.h"
 #include "content/browser/worker_host/worker_service_impl.h"
@@ -171,9 +173,9 @@ class WorkerDevToolsManager::DetachedClientHosts {
     }
 
     // Client host is debugging this worker agent host.
-    devtools_manager->DispatchOnInspectorFrontend(
-        agent,
-        WebDevToolsAgent::workerDisconnectedFromWorkerEvent().utf8());
+    std::string notification = DevToolsProtocol::CreateNotification(
+        devtools::Worker::disconnectedFromWorker::kName, NULL)->Serialize();
+    devtools_manager->DispatchOnInspectorFrontend(agent, notification);
     g_orphan_map.Get()[id] = agent;
     agent->ResetWorkerId();
   }

@@ -20,6 +20,8 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/browser/devtools/devtools_browser_target.h"
+#include "content/browser/devtools/devtools_protocol.h"
+#include "content/browser/devtools/devtools_protocol_constants.h"
 #include "content/browser/devtools/devtools_tracing_handler.h"
 #include "content/browser/devtools/tethering_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -110,9 +112,8 @@ class DevToolsClientHostImpl : public DevToolsClientHost {
       return;
     is_closed_ = true;
 
-    std::string response =
-        WebKit::WebDevToolsAgent::inspectorDetachedEvent(
-            WebKit::WebString::fromUTF8(detach_reason_)).utf8();
+    std::string response = DevToolsProtocol::CreateNotification(
+        devtools::Inspector::detached::kName, NULL)->Serialize();
     message_loop_->PostTask(
         FROM_HERE,
         base::Bind(&net::HttpServer::SendOverWebSocket,
