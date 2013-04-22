@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
@@ -74,21 +75,23 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   TestAutofillDialogController(content::WebContents* contents,
                                const FormData& form_data,
                                const AutofillMetrics& metric_logger,
+                               scoped_refptr<content::MessageLoopRunner> runner,
                                const DialogType dialog_type)
       : AutofillDialogControllerImpl(contents,
                                      form_data,
                                      GURL(),
                                      dialog_type,
                                      base::Bind(&MockCallback)),
-        metric_logger_(metric_logger) {
+        metric_logger_(metric_logger),
+        message_loop_runner_(runner) {
     DisableWallet();
   }
 
   virtual ~TestAutofillDialogController() {}
 
   virtual void ViewClosed() OVERRIDE {
+    message_loop_runner_->Quit();
     AutofillDialogControllerImpl::ViewClosed();
-    MessageLoop::current()->Quit();
   }
 
   virtual bool InputIsValid(AutofillFieldType type,
@@ -112,6 +115,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   const AutofillMetrics& metric_logger_;
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
 };
@@ -127,7 +131,22 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  TestAutofillDialogController* CreateController(
+      const FormData& form,
+      const AutofillMetrics& metric_logger,
+      const DialogType dialog_type) {
+    message_loop_runner_ = new content::MessageLoopRunner;
+    return new TestAutofillDialogController(
+        GetActiveWebContents(), form, metric_logger, message_loop_runner_,
+        dialog_type);
+  }
+
+  void RunMessageLoop() {
+    message_loop_runner_->Run();
+  }
+
  private:
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
@@ -156,14 +175,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Submit the form data.
   {
     MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller =
-        new TestAutofillDialogController(
-            GetActiveWebContents(), form, metric_logger,
-            DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+    TestAutofillDialogController* dialog_controller = CreateController(
+        form, metric_logger, DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
     dialog_controller->Show();
     dialog_controller->view()->SubmitForTesting();
 
-    content::RunMessageLoop();
+    RunMessageLoop();
 
     EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
               metric_logger.dialog_dismissal_action());
@@ -173,14 +190,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Cancel out of the dialog.
   {
     MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller =
-        new TestAutofillDialogController(
-            GetActiveWebContents(), form, metric_logger,
-            DIALOG_TYPE_AUTOCHECKOUT);
+    TestAutofillDialogController* dialog_controller = CreateController(
+        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
     dialog_controller->Show();
     dialog_controller->view()->CancelForTesting();
 
-    content::RunMessageLoop();
+    RunMessageLoop();
 
     EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
               metric_logger.dialog_dismissal_action());
@@ -190,14 +205,12 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Take some other action that dismisses the dialog.
   {
     MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller =
-        new TestAutofillDialogController(
-            GetActiveWebContents(), form, metric_logger,
-            DIALOG_TYPE_AUTOCHECKOUT);
+    TestAutofillDialogController* dialog_controller = CreateController(
+        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
     dialog_controller->Show();
     dialog_controller->Hide();
 
-    content::RunMessageLoop();
+    RunMessageLoop();
 
     EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
               metric_logger.dialog_dismissal_action());
@@ -207,10 +220,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Test Autocheckout success metrics.
   {
     MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller =
-        new TestAutofillDialogController(
-            GetActiveWebContents(), form, metric_logger,
-            DIALOG_TYPE_AUTOCHECKOUT);
+    TestAutofillDialogController* dialog_controller = CreateController(
+        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
     dialog_controller->Show();
     dialog_controller->view()->SubmitForTesting();
 
@@ -220,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
     dialog_controller->Hide();
 
-    content::RunMessageLoop();
+    RunMessageLoop();
 
     EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
               metric_logger.autocheckout_status());
@@ -229,10 +240,8 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   // Test Autocheckout failure metric.
   {
     MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller =
-        new TestAutofillDialogController(
-            GetActiveWebContents(), form, metric_logger,
-            DIALOG_TYPE_AUTOCHECKOUT);
+    TestAutofillDialogController* dialog_controller = CreateController(
+        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
     dialog_controller->Show();
     dialog_controller->view()->SubmitForTesting();
 
@@ -243,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
     dialog_controller->OnAutocheckoutError();
     dialog_controller->view()->CancelForTesting();
 
-    content::RunMessageLoop();
+    RunMessageLoop();
 
     EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
               metric_logger.autocheckout_status());
