@@ -581,8 +581,13 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.fixed_position_creates_stacking_context = !command_line.HasSwitch(
       switches::kDisableFixedPositionCreatesStackingContext);
 
+#if defined(OS_CHROMEOS)
+  prefs.gesture_tap_highlight_enabled = !command_line.HasSwitch(
+      switches::kDisableGestureTapHighlight);
+#else
   prefs.gesture_tap_highlight_enabled = command_line.HasSwitch(
       switches::kEnableGestureTapHighlight);
+#endif
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
