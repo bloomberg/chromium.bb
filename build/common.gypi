@@ -3595,7 +3595,10 @@
                 '$(inherited)', '-std=gnu++11',
               ],
             }],
-            ['clang==1 and clang_use_chrome_plugins==1', {
+            # TODO(thakis): Reenable plugins with once
+            # tools/clang/scripts/update.sh no longer pins clang to an ancient
+            # version for asan (http://crbug.com/170629)
+            ['clang==1 and clang_use_chrome_plugins==1 and asan!=1', {
               'OTHER_CFLAGS': [
                 '<@(clang_chrome_plugins_flags)',
               ],
