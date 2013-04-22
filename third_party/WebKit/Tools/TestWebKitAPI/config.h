@@ -23,15 +23,8 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(HAVE_CONFIG_H) && HAVE_CONFIG_H
-#include "autotoolsconfig.h"
-#endif
-
 #include <wtf/Platform.h>
 #include <wtf/ExportMacros.h>
-#if USE(JSC)
-#include <runtime/JSExportMacros.h>
-#endif
 
 #if defined(__APPLE__) && __APPLE__
 
