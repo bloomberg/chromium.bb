@@ -202,6 +202,18 @@ class DriveFileSyncService
     LOCAL_SYNC_OPERATION_FAIL,
   };
 
+  enum RemoteSyncOperationType {
+    REMOTE_SYNC_OPERATION_ADD_FILE,
+    REMOTE_SYNC_OPERATION_UPDATE_FILE,
+    REMOTE_SYNC_OPERATION_DELETE_FILE,
+    REMOTE_SYNC_OPERATION_NONE,
+    REMOTE_SYNC_OPERATION_CONFLICT,
+    REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL,
+    REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE,
+    REMOTE_SYNC_OPERATION_DELETE_METADATA,
+    REMOTE_SYNC_OPERATION_FAIL,
+  };
+
   typedef base::Callback<void(const base::Time& time,
                               SyncStatusCode status)> UpdatedTimeCallback;
   typedef base::Callback<
@@ -330,6 +342,11 @@ class DriveFileSyncService
       SyncStatusCode status,
       const SyncFileMetadata& metadata,
       const FileChangeList& changes);
+  RemoteSyncOperationType ResolveRemoteSyncOperationType(
+      const FileChange& remote_file_change,
+      ProcessRemoteChangeParam* param,
+      const FileChangeList& local_changes,
+      bool missing_local_file);
   void DidResolveConflictToLocalChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       SyncStatusCode status);

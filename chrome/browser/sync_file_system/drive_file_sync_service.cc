@@ -1488,111 +1488,110 @@ void DriveFileSyncService::DidPrepareForProcessRemoteChange(
   }
   bool missing_local_file = (metadata.file_type == SYNC_FILE_TYPE_UNKNOWN);
 
-  if (param->drive_metadata.conflicted()) {
-    if (missing_local_file) {
-      if (remote_file_change.IsAddOrUpdate()) {
-        // Resolve conflict to remote change automatically.
-        DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
-                 << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
-                 << (missing_local_file ? " (missing local file)" : " ")
-                 << " remote_change: " << remote_file_change.DebugString()
-                 << " ==> operation: ResolveConflictToRemoteChange";
+  RemoteSyncOperationType operation =
+      ResolveRemoteSyncOperationType(remote_file_change, param.get(),
+                                     local_changes, missing_local_file);
 
-        const FileSystemURL& url = param->remote_change.url;
-        param->drive_metadata.set_conflicted(false);
-        param->drive_metadata.set_to_be_fetched(true);
-        metadata_store_->UpdateEntry(
-            url, drive_metadata, base::Bind(&EmptyStatusCallback));
+  DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
+           << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
+           << (missing_local_file ? " (missing local file)" : " ")
+           << " remote_change: " << remote_file_change.DebugString()
+           << " ==> operation: " << operation;
 
-        param->sync_action = SYNC_ACTION_ADDED;
-        DownloadForRemoteSync(param.Pass());
-        return;
-      }
-
-      DCHECK(remote_file_change.IsDelete());
-      param->sync_action = SYNC_ACTION_NONE;
-      DeleteMetadataForRemoteSync(param.Pass());
+  switch (operation) {
+    case REMOTE_SYNC_OPERATION_ADD_FILE:
+      param->sync_action = SYNC_ACTION_ADDED;
+      DownloadForRemoteSync(param.Pass());
       return;
-    }
-
-    DCHECK(!missing_local_file);
-    if (remote_file_change.IsAddOrUpdate()) {
-      HandleConflictForRemoteSync(param.Pass(), base::Time(), SYNC_STATUS_OK);
-      return;
-    }
-
-    DCHECK(remote_file_change.IsDelete());
-    DVLOG(1) << "ProcessRemoteChange for " << url.DebugString()
-             << (param->drive_metadata.conflicted() ? " (conflicted)" : " ")
-             << (missing_local_file ? " (missing local file)" : " ")
-             << " remote_change: " << remote_file_change.DebugString()
-             << " ==> operation: ResolveConflictToLocalChange";
-
-    ResolveConflictToLocalForRemoteSync(param.Pass());
-    return;
-  }
-
-  DCHECK(!param->drive_metadata.conflicted());
-  if (remote_file_change.IsAddOrUpdate()) {
-    if (local_changes.empty()) {
-      if (missing_local_file) {
-        param->sync_action = SYNC_ACTION_ADDED;
-        DownloadForRemoteSync(param.Pass());
-        return;
-      }
-
-      DCHECK(!missing_local_file);
+    case REMOTE_SYNC_OPERATION_UPDATE_FILE:
       param->sync_action = SYNC_ACTION_UPDATED;
       DownloadForRemoteSync(param.Pass());
       return;
-    }
-
-    DCHECK(!local_changes.empty());
-    if (local_changes.list().back().IsAddOrUpdate()) {
-      HandleConflictForRemoteSync(param.Pass(), base::Time(), SYNC_STATUS_OK);
+    case REMOTE_SYNC_OPERATION_DELETE_FILE: {
+      param->sync_action = SYNC_ACTION_DELETED;
+      const FileChange& file_change = remote_file_change;
+      remote_change_processor_->ApplyRemoteChange(
+          file_change, base::FilePath(), url,
+          base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
+                     base::Passed(&param)));
       return;
     }
-
-    DCHECK(local_changes.list().back().IsDelete());
-    param->sync_action = SYNC_ACTION_ADDED;
-    DownloadForRemoteSync(param.Pass());
-    return;
-  }
-
-  DCHECK(remote_file_change.IsDelete());
-  if (local_changes.empty()) {
-    if (missing_local_file) {
+    case REMOTE_SYNC_OPERATION_NONE:
+      param->sync_action = SYNC_ACTION_NONE;
+      CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
+      return;
+    case REMOTE_SYNC_OPERATION_CONFLICT:
+      HandleConflictForRemoteSync(param.Pass(), base::Time(), SYNC_STATUS_OK);
+      return;
+    case REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL:
+      ResolveConflictToLocalForRemoteSync(param.Pass());
+      return;
+    case REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE: {
+      const FileSystemURL& url = param->remote_change.url;
+      param->drive_metadata.set_conflicted(false);
+      param->drive_metadata.set_to_be_fetched(true);
+      metadata_store_->UpdateEntry(
+          url, drive_metadata, base::Bind(&EmptyStatusCallback));
+      param->sync_action = SYNC_ACTION_ADDED;
+      DownloadForRemoteSync(param.Pass());
+      return;
+    }
+    case REMOTE_SYNC_OPERATION_DELETE_METADATA:
       param->sync_action = SYNC_ACTION_NONE;
       if (missing_db_entry)
         CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
       else
         DeleteMetadataForRemoteSync(param.Pass());
       return;
+    case REMOTE_SYNC_OPERATION_FAIL:
+      AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
+      return;
+  }
+  NOTREACHED();
+  AbortRemoteSync(param.Pass(), SYNC_STATUS_FAILED);
+}
+
+DriveFileSyncService::RemoteSyncOperationType
+DriveFileSyncService::ResolveRemoteSyncOperationType(
+    const FileChange& remote_file_change,
+    ProcessRemoteChangeParam* param,
+    const FileChangeList& local_changes,
+    bool missing_local_file) {
+  if (param->drive_metadata.conflicted()) {
+    switch (remote_file_change.change()) {
+      case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
+        return missing_local_file ? REMOTE_SYNC_OPERATION_RESOLVE_TO_REMOTE
+                                  : REMOTE_SYNC_OPERATION_CONFLICT;
+      case FileChange::FILE_CHANGE_DELETE:
+        return missing_local_file ? REMOTE_SYNC_OPERATION_DELETE_METADATA
+                                  : REMOTE_SYNC_OPERATION_RESOLVE_TO_LOCAL;
     }
-    DCHECK(!missing_local_file);
-    param->sync_action = SYNC_ACTION_DELETED;
-
-    const FileChange& file_change = remote_file_change;
-    remote_change_processor_->ApplyRemoteChange(
-        file_change, base::FilePath(), url,
-        base::Bind(&DriveFileSyncService::DidApplyRemoteChange, AsWeakPtr(),
-                   base::Passed(&param)));
-    return;
   }
 
-  DCHECK(!local_changes.empty());
-  if (local_changes.list().back().IsAddOrUpdate()) {
-    param->sync_action = SYNC_ACTION_NONE;
-    CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
-    return;
+  if (remote_file_change.IsAddOrUpdate()) {
+    if (local_changes.empty())
+      return missing_local_file ? REMOTE_SYNC_OPERATION_ADD_FILE
+                                : REMOTE_SYNC_OPERATION_UPDATE_FILE;
+    switch (local_changes.list().back().change()) {
+      case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
+        return REMOTE_SYNC_OPERATION_CONFLICT;
+      case FileChange::FILE_CHANGE_DELETE:
+        return REMOTE_SYNC_OPERATION_ADD_FILE;
+    }
   }
 
-  DCHECK(local_changes.list().back().IsDelete());
-  param->sync_action = SYNC_ACTION_NONE;
-  if (missing_db_entry)
-    CompleteRemoteSync(param.Pass(), SYNC_STATUS_OK);
-  else
-    DeleteMetadataForRemoteSync(param.Pass());
+  DCHECK(remote_file_change.IsDelete());
+  if (local_changes.empty())
+    return missing_local_file ? REMOTE_SYNC_OPERATION_DELETE_METADATA
+                              : REMOTE_SYNC_OPERATION_DELETE_FILE;
+  switch (local_changes.list().back().change()) {
+    case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
+      return REMOTE_SYNC_OPERATION_NONE;
+    case FileChange::FILE_CHANGE_DELETE:
+      return REMOTE_SYNC_OPERATION_DELETE_METADATA;
+  }
+  NOTREACHED();
+  return REMOTE_SYNC_OPERATION_FAIL;
 }
 
 void DriveFileSyncService::DidResolveConflictToLocalChange(
