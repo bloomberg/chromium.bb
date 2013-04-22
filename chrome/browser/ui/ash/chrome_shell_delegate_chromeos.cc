@@ -22,8 +22,8 @@
 #include "chrome/browser/chromeos/extensions/media_player_event_router.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/system/ash_system_tray_delegate.h"
 #include "chrome/browser/extensions/api/terminal/terminal_extension_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -134,8 +134,8 @@ void ChromeShellDelegate::ToggleSpokenFeedback(
     ash::AccessibilityNotificationVisibility notify) {
   content::WebUI* web_ui = NULL;
 
-  chromeos::WebUILoginDisplayHost* host =
-      static_cast<chromeos::WebUILoginDisplayHost*>(
+  chromeos::LoginDisplayHostImpl* host =
+      static_cast<chromeos::LoginDisplayHostImpl*>(
           chromeos::LoginDisplayHostImpl::default_host());
   if (host && host->GetOobeUI())
     web_ui = host->GetOobeUI()->web_ui();

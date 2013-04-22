@@ -47,9 +47,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
-#include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #endif
 
@@ -187,10 +186,10 @@ Profile* GetCurrentProfileOnChromeOS(std::string* error_message) {
       *error_message = "Cannot get controller though user is not logged in.";
       return NULL;
     }
-    chromeos::WebUILoginDisplayHost* webui_login_display_host =
-        static_cast<chromeos::WebUILoginDisplayHost*>(
+    chromeos::LoginDisplayHostImpl* webui_host =
+        static_cast<chromeos::LoginDisplayHostImpl*>(
             controller->login_display_host());
-    content::WebUI* web_ui = webui_login_display_host->GetOobeUI()->web_ui();
+    content::WebUI* web_ui = webui_host->GetOobeUI()->web_ui();
     if (!web_ui) {
       *error_message = "Unable to get webui from login display host.";
       return NULL;

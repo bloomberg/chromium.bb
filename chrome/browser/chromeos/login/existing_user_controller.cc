@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
@@ -606,7 +607,8 @@ void ExistingUserController::SetDisplayEmail(const std::string& email) {
 }
 
 void ExistingUserController::ShowWrongHWIDScreen() {
-  host_->StartWizard(WizardController::kWrongHWIDScreenName, NULL);
+  scoped_ptr<DictionaryValue> params;
+  host_->StartWizard(WizardController::kWrongHWIDScreenName, params.Pass());
   login_display_->OnFadeOut();
 }
 
@@ -638,18 +640,20 @@ void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
 
 void ExistingUserController::ShowEnrollmentScreen(bool is_auto_enrollment,
                                                   const std::string& user) {
-  DictionaryValue* params = NULL;
+  scoped_ptr<DictionaryValue> params;
   if (is_auto_enrollment) {
-    params = new DictionaryValue;
+    params.reset(new DictionaryValue());
     params->SetBoolean("is_auto_enrollment", true);
     params->SetString("user", user);
   }
-  host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName, params);
+  host_->StartWizard(WizardController::kEnterpriseEnrollmentScreenName,
+                     params.Pass());
   login_display_->OnFadeOut();
 }
 
 void ExistingUserController::ShowResetScreen() {
-  host_->StartWizard(WizardController::kResetScreenName, NULL);
+  scoped_ptr<DictionaryValue> params;
+  host_->StartWizard(WizardController::kResetScreenName, params.Pass());
   login_display_->OnFadeOut();
 }
 
@@ -895,7 +899,8 @@ void ExistingUserController::OnOnlineChecked(const std::string& username,
 // ExistingUserController, private:
 
 void ExistingUserController::ActivateWizard(const std::string& screen_name) {
-  host_->StartWizard(screen_name, NULL);
+  scoped_ptr<DictionaryValue> params;
+  host_->StartWizard(screen_name, params.Pass());
 }
 
 void ExistingUserController::ConfigurePublicSessionAutoLogin() {

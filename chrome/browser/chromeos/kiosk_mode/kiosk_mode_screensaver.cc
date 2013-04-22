@@ -14,7 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/policy/app_pack_updater.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -235,10 +235,10 @@ void KioskModeScreensaver::OnUserActivity() {
   ash::Shell::GetInstance()->user_activity_detector()->RemoveObserver(this);
 
   // Find the retail mode login page.
-  if (WebUILoginDisplayHost::default_host()) {
-    WebUILoginDisplayHost* webui_host =
-        static_cast<WebUILoginDisplayHost*>(
-            WebUILoginDisplayHost::default_host());
+  if (LoginDisplayHostImpl::default_host()) {
+    LoginDisplayHostImpl* webui_host =
+        static_cast<LoginDisplayHostImpl*>(
+            LoginDisplayHostImpl::default_host());
     OobeUI* oobe_ui = webui_host->GetOobeUI();
 
     // Show the login spinner.

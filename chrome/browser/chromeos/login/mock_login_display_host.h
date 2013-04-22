@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MOCK_LOGIN_DISPLAY_HOST_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -18,6 +19,7 @@ class MockLoginDisplayHost : public LoginDisplayHost {
 
   MOCK_METHOD1(CreateLoginDisplay, LoginDisplay*(LoginDisplay::Delegate*));
   MOCK_CONST_METHOD0(GetNativeWindow, gfx::NativeWindow(void));
+  MOCK_CONST_METHOD0(GetWebUILoginView, WebUILoginView*(void));
   MOCK_CONST_METHOD0(GetWidget, views::Widget*(void));
   MOCK_METHOD0(BeforeSessionStart, void(void));
   MOCK_METHOD0(OnSessionStart, void(void));
@@ -28,7 +30,12 @@ class MockLoginDisplayHost : public LoginDisplayHost {
   MOCK_METHOD1(SetStatusAreaVisible, void(bool));
   MOCK_METHOD0(ShowBackground, void(void));
   MOCK_METHOD0(CheckForAutoEnrollment, void(void));
-  MOCK_METHOD2(StartWizard, void(const std::string&, DictionaryValue*));
+  // GMock currently doesn't support move-only arguments, so we have
+  // to use this hack here.
+  MOCK_METHOD2(StartWizardPtr, void(const std::string&,
+                                    base::DictionaryValue*));
+  virtual void StartWizard(const std::string& name,
+                           scoped_ptr<base::DictionaryValue> value) OVERRIDE;
   MOCK_METHOD0(GetWizardController, WizardController*(void));
   MOCK_METHOD0(StartSignInScreen, void(void));
   MOCK_METHOD0(ResumeSignInScreen, void(void));

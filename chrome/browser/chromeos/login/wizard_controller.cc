@@ -170,11 +170,12 @@ WizardController::~WizardController() {
   }
 }
 
-void WizardController::Init(const std::string& first_screen_name,
-                            base::DictionaryValue* screen_parameters) {
+void WizardController::Init(
+    const std::string& first_screen_name,
+    scoped_ptr<base::DictionaryValue> screen_parameters) {
   VLOG(1) << "Starting OOBE wizard with screen: " << first_screen_name;
   first_screen_name_ = first_screen_name;
-  screen_parameters_.reset(screen_parameters);
+  screen_parameters_ = screen_parameters.Pass();
 
   bool oobe_complete = StartupUtils::IsOobeCompleted();
   if (!oobe_complete || first_screen_name == kOutOfBoxScreenName) {

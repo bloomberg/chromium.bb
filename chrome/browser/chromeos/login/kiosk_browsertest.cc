@@ -13,8 +13,8 @@
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -88,8 +88,8 @@ class TestBrowserMainExtraParts
       LOG(INFO) << "NOTIFICATION_LOGIN_WEBUI_VISIBLE";
     } else if (type == chrome::NOTIFICATION_KIOSK_APPS_LOADED) {
       LOG(INFO) << "chrome::NOTIFICATION_KIOSK_APPS_LOADED";
-      content::WebUI* web_ui = static_cast<chromeos::WebUILoginDisplayHost*>(
-          chromeos::WebUILoginDisplayHost::default_host())->
+      content::WebUI* web_ui = static_cast<chromeos::LoginDisplayHostImpl*>(
+          chromeos::LoginDisplayHostImpl::default_host())->
               GetOobeUI()->web_ui();
       web_ui->CallJavascriptFunction("login.AppsMenuButton.runAppForTesting",
                                      base::StringValue(kTestKioskApp));

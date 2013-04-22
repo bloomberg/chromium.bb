@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"
@@ -1081,9 +1082,10 @@ void SigninScreenHandler::HandleShowLocallyManagedUserCreationScreen() {
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(::switches::kEnableManagedUsers))
     return;
+  scoped_ptr<DictionaryValue> params(new DictionaryValue());
   LoginDisplayHostImpl::default_host()->
       StartWizard(WizardController::kLocallyManagedUserCreationScreenName,
-      NULL);
+      params.Pass());
 }
 
 void SigninScreenHandler::HandleLaunchPublicAccount(

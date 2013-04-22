@@ -515,8 +515,6 @@
         'browser/chromeos/login/wallpaper_manager.h',
         'browser/chromeos/login/webui_login_display.cc',
         'browser/chromeos/login/webui_login_display.h',
-        'browser/chromeos/login/webui_login_display_host.cc',
-        'browser/chromeos/login/webui_login_display_host.h',
         'browser/chromeos/login/webui_login_view.cc',
         'browser/chromeos/login/webui_login_view.h',
         'browser/chromeos/login/webui_screen_locker.cc',

@@ -8,9 +8,9 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/webui_login_view.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -110,11 +110,10 @@ void WebUILoginDisplay::SetUIEnabled(bool is_enabled) {
     webui_handler_->ClearAndEnablePassword();
   }
 
-  if (chromeos::WebUILoginDisplayHost::default_host()) {
-    chromeos::WebUILoginDisplayHost* webui_host =
-        static_cast<chromeos::WebUILoginDisplayHost*>(
-            chromeos::WebUILoginDisplayHost::default_host());
-    chromeos::WebUILoginView* login_view = webui_host->login_view();
+  if (chromeos::LoginDisplayHostImpl::default_host()) {
+    chromeos::LoginDisplayHost* host =
+        chromeos::LoginDisplayHostImpl::default_host();
+    chromeos::WebUILoginView* login_view = host->GetWebUILoginView();
     if (login_view)
       login_view->SetUIEnabled(is_enabled);
   }

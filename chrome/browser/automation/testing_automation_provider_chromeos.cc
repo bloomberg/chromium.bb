@@ -25,7 +25,7 @@
 #include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
 #include "chrome/browser/chromeos/login/login_display.h"
-#include "chrome/browser/chromeos/login/login_display_host.h"
+#include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/screen_locker.h"
 #include "chrome/browser/chromeos/login/screens/eula_screen.h"
 #include "chrome/browser/chromeos/login/screens/network_screen.h"
@@ -33,7 +33,6 @@
 #include "chrome/browser/chromeos/login/screens/user_image_screen.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/webui_login_display.h"
-#include "chrome/browser/chromeos/login/webui_login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/proxy_config_service_impl.h"
 #include "chrome/browser/chromeos/proxy_cros_settings_parser.h"
@@ -1161,11 +1160,11 @@ void TestingAutomationProvider::ExecuteJavascriptInOOBEWebUI(
         "Unable to access ExistingUserController");
     return;
   }
-  chromeos::WebUILoginDisplayHost* webui_login_display_host =
-      static_cast<chromeos::WebUILoginDisplayHost*>(
+  chromeos::LoginDisplayHostImpl* webui_host =
+      static_cast<chromeos::LoginDisplayHostImpl*>(
           controller->login_display_host());
   content::WebContents* web_contents =
-      webui_login_display_host->GetOobeUI()->web_ui()->GetWebContents();
+      webui_host->GetOobeUI()->web_ui()->GetWebContents();
 
   new DomOperationMessageSender(this, reply_message, true);
   ExecuteJavascriptInRenderViewFrame(ASCIIToUTF16(frame_xpath),
@@ -1195,12 +1194,12 @@ void TestingAutomationProvider::EnableSpokenFeedback(
   } else {
     ExistingUserController* controller =
         ExistingUserController::current_controller();
-    chromeos::WebUILoginDisplayHost* webui_login_display_host =
-        static_cast<chromeos::WebUILoginDisplayHost*>(
+    chromeos::LoginDisplayHostImpl* webui_host =
+        static_cast<chromeos::LoginDisplayHostImpl*>(
             controller->login_display_host());
     chromeos::accessibility::EnableSpokenFeedback(
         enabled,
-        webui_login_display_host->GetOobeUI()->web_ui(),
+        webui_host->GetOobeUI()->web_ui(),
         ash::A11Y_NOTIFICATION_NONE);
   }
 
