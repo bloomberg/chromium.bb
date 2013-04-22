@@ -41,6 +41,7 @@ namespace syncer {
 class SYNC_EXPORT_PRIVATE UniquePosition {
  public:
   static const size_t kSuffixLength;
+  static const size_t kCompressBytesThreshold;
 
   static bool IsValidSuffix(const std::string& suffix);
   static bool IsValidBytes(const std::string& bytes);
@@ -49,6 +50,7 @@ class SYNC_EXPORT_PRIVATE UniquePosition {
   static UniquePosition CreateInvalid();
 
   // Converts from a 'sync_pb::UniquePosition' protobuf to a UniquePosition.
+  // This may return an invalid position if the parsing fails.
   static UniquePosition FromProto(const sync_pb::UniquePosition& proto);
 
   // Creates a position with the given suffix.  Ordering among positions created

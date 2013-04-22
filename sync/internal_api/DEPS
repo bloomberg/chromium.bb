@@ -10,4 +10,5 @@ include_rules = [
   "+sync/syncable",
   "+sync/test",
   "+sync/util",
+  "+third_party/zlib",  # For UniquePosition compression
 ]

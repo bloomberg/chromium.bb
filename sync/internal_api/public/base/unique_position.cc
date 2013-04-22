@@ -5,12 +5,15 @@
 #include "sync/internal_api/public/base/unique_position.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/string_number_conversions.h"
 #include "sync/protocol/unique_position.pb.h"
+#include "third_party/zlib/zlib.h"
 
 namespace syncer {
 
 const size_t UniquePosition::kSuffixLength = 28;
+const size_t UniquePosition::kCompressBytesThreshold = 128;
 
 // static.
 bool UniquePosition::IsValidSuffix(const std::string& suffix) {
@@ -40,8 +43,32 @@ UniquePosition UniquePosition::CreateInvalid() {
 
 // static.
 UniquePosition UniquePosition::FromProto(const sync_pb::UniquePosition& proto) {
-  UniquePosition result(proto.value());
-  return result;
+  if (proto.has_value()) {
+    return UniquePosition(proto.value());
+  } else if (proto.has_compressed_value() && proto.has_uncompressed_length()) {
+    uLongf uncompressed_len = proto.uncompressed_length();
+    std::string uncompressed;
+
+    uncompressed.resize(uncompressed_len);
+    int result = uncompress(
+        reinterpret_cast<Bytef*>(string_as_array(&uncompressed)),
+        &uncompressed_len,
+        reinterpret_cast<const Bytef*>(proto.compressed_value().data()),
+        proto.compressed_value().size());
+    if (result != Z_OK) {
+      DLOG(ERROR) << "Unzip failed " << result;
+      return UniquePosition::CreateInvalid();
+    }
+    if (uncompressed_len != proto.uncompressed_length()) {
+      DLOG(ERROR)
+          << "Uncompressed length " << uncompressed_len
+          << " did not match specified length " << proto.uncompressed_length();
+      return UniquePosition::CreateInvalid();
+    }
+    return UniquePosition(uncompressed);
+  } else {
+    return UniquePosition::CreateInvalid();
+  }
 }
 
 // static.
@@ -114,7 +141,35 @@ bool UniquePosition::Equals(const UniquePosition& other) const {
 }
 
 void UniquePosition::ToProto(sync_pb::UniquePosition* proto) const {
-  proto->set_value(bytes_);
+  proto->Clear();
+  if (bytes_.size() < kCompressBytesThreshold) {
+    // If it's small, then just write it.  This is the common case.
+    proto->set_value(bytes_);
+  } else {
+    // We've got a large one.  Compress it.
+    proto->set_uncompressed_length(bytes_.size());
+    std::string* compressed = proto->mutable_compressed_value();
+
+    uLongf compressed_len = compressBound(bytes_.size());
+    compressed->resize(compressed_len);
+    int result = compress(reinterpret_cast<Bytef*>(string_as_array(compressed)),
+             &compressed_len,
+             reinterpret_cast<const Bytef*>(bytes_.data()),
+             bytes_.size());
+    if (result != Z_OK) {
+      NOTREACHED() << "Failed to compress position: " << result;
+      // Maybe we can write an uncompressed version?
+      proto->Clear();
+      proto->set_value(bytes_);
+    } else if (compressed_len >= bytes_.size()) {
+      // Oops, we made it bigger.  Just write the uncompressed version instead.
+      proto->Clear();
+      proto->set_value(bytes_);
+    } else {
+      // Success!  Don't forget to adjust the string's length.
+      compressed->resize(compressed_len);
+    }
+  }
 }
 
 void UniquePosition::SerializeToString(std::string* blob) const {

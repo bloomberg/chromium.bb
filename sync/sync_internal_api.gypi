@@ -13,6 +13,7 @@
     '../base/base.gyp:base',
     '../build/temp_gyp/googleurl.gyp:googleurl',
     '../net/net.gyp:net',
+    '../third_party/zlib/zlib.gyp:zlib',
   ],
   'sources': [
     'internal_api/base_node.cc',

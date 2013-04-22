@@ -24,5 +24,15 @@ package sync_pb;
 // Items under the same parent are positioned relative to each other by a
 // lexicographic comparison of their UniquePosition values.
 message UniquePosition {
+  // The uncompressed string of bytes representing the position.
   optional bytes value = 1;
+
+  // The client may choose to write a compressed position to this field instead
+  // of populating the 'value' above.  If it chooses to use compression, the
+  // 'value' field above must be empty.  The position value will be compressed
+  // with gzip and stored in the compressed_value field.  The position's
+  // uncompressed length must be specified and written to the
+  // uncompressed_length field.
+  optional bytes compressed_value = 2;
+  optional uint64 uncompressed_length = 3;
 }
