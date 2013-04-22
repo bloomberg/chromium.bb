@@ -74,23 +74,12 @@ GURL GDataWapiUrlGenerator::AddInitiateUploadUrlParams(const GURL& url) {
 // static
 GURL GDataWapiUrlGenerator::AddFeedUrlParams(
     const GURL& url,
-    int num_items_to_fetch,
-    int64 changestamp,
-    const std::string& search_string) {
+    int num_items_to_fetch) {
   GURL result = AddStandardUrlParams(url);
   result = net::AppendOrReplaceQueryParameter(result, "showfolders", "true");
   result = net::AppendOrReplaceQueryParameter(result, "include-shared", "true");
   result = net::AppendOrReplaceQueryParameter(
       result, "max-results", base::IntToString(num_items_to_fetch));
-
-  if (changestamp) {
-    result = net::AppendQueryParameter(
-        result, "start-index", base::Int64ToString(changestamp));
-  }
-
-  if (!search_string.empty()) {
-    result = net::AppendOrReplaceQueryParameter(result, "q", search_string);
-  }
   return result;
 }
 
@@ -129,7 +118,33 @@ GURL GDataWapiUrlGenerator::GenerateResourceListUrl(
   } else {
     url = base_url_.Resolve(kResourceListRootURL);
   }
-  return AddFeedUrlParams(url, max_docs, start_changestamp, search_string);
+
+  url = AddFeedUrlParams(url, max_docs);
+
+  if (start_changestamp) {
+    url = net::AppendOrReplaceQueryParameter(
+        url, "start-index", base::Int64ToString(start_changestamp));
+  }
+  if (!search_string.empty()) {
+    url = net::AppendOrReplaceQueryParameter(url, "q", search_string);
+  }
+
+  return url;
+}
+
+GURL GDataWapiUrlGenerator::GenerateSearchByTitleUrl(
+    const std::string& title,
+    const std::string& directory_resource_id) const {
+  DCHECK(!title.empty());
+
+  GURL url = directory_resource_id.empty() ?
+      base_url_.Resolve(kResourceListRootURL) :
+      base_url_.Resolve(base::StringPrintf(
+          kContentURLFormat, net::EscapePath(directory_resource_id).c_str()));
+  url = AddFeedUrlParams(url, kMaxDocumentsPerFeed);
+  url = net::AppendOrReplaceQueryParameter(url, "title", title);
+  url = net::AppendOrReplaceQueryParameter(url, "title-exact", "true");
+  return url;
 }
 
 GURL GDataWapiUrlGenerator::GenerateEditUrl(

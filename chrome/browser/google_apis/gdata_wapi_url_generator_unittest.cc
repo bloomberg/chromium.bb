@@ -38,33 +38,8 @@ TEST_F(GDataWapiUrlGeneratorTest, AddFeedUrlParams) {
       "&include-shared=true"
       "&max-results=100",
       GDataWapiUrlGenerator::AddFeedUrlParams(GURL("http://www.example.com"),
-                                              100,  // num_items_to_fetch
-                                              0,    // changestamp
-                                              std::string()  // search_string
+                                              100  // num_items_to_fetch
                                               ).spec());
-  EXPECT_EQ(
-      "http://www.example.com/?v=3&alt=json&showroot=true&"
-      "showfolders=true"
-      "&include-shared=true"
-      "&max-results=100"
-      "&start-index=123",
-      GDataWapiUrlGenerator::AddFeedUrlParams(GURL("http://www.example.com"),
-                                              100,  // num_items_to_fetch
-                                              123,  // changestamp
-                                              std::string()  // search_string
-                                              ).spec());
-  EXPECT_EQ("http://www.example.com/?v=3&alt=json&showroot=true&"
-            "showfolders=true"
-            "&include-shared=true"
-            "&max-results=100"
-            "&start-index=123"
-            "&q=%22foo+bar%22",
-            GDataWapiUrlGenerator::AddFeedUrlParams(
-                GURL("http://www.example.com"),
-                100,  // num_items_to_fetch
-                123,  // changestamp
-                "\"foo bar\""  // search_string
-                                                 ).spec());
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
@@ -139,6 +114,22 @@ TEST_F(GDataWapiUrlGeneratorTest, GenerateResourceListUrl) {
                 std::string(),  // search_string,
                 "XXX"           // directory resource ID
                 ).spec());
+}
+
+TEST_F(GDataWapiUrlGeneratorTest, GenerateSearchByTitleUrl) {
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full"
+      "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
+      "&max-results=500&title=search-title&title-exact=true",
+      url_generator_.GenerateSearchByTitleUrl(
+          "search-title", std::string()).spec());
+
+  EXPECT_EQ(
+      "https://docs.google.com/feeds/default/private/full/XXX/contents"
+      "?v=3&alt=json&showroot=true&showfolders=true&include-shared=true"
+      "&max-results=500&title=search-title&title-exact=true",
+      url_generator_.GenerateSearchByTitleUrl(
+          "search-title", "XXX").spec());
 }
 
 TEST_F(GDataWapiUrlGeneratorTest, GenerateEditUrl) {

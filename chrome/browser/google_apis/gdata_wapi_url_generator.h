@@ -33,12 +33,8 @@ class GDataWapiUrlGenerator {
 
   // Adds additional parameters for API version, output content type and to
   // show folders in the feed are added to document feed URLs.
-  // Optionally, adds start-index=... parameter if |changestamp| is non-zero,
-  // and adds q=... parameter if |search_string| is non-empty.
   static GURL AddFeedUrlParams(const GURL& url,
-                               int num_items_to_fetch,
-                               int64 changestamp,
-                               const std::string& search_string);
+                               int num_items_to_fetch);
 
   // Generates a URL for getting the resource list feed.
   //
@@ -71,6 +67,14 @@ class GDataWapiUrlGenerator {
       const GURL& override_url,
       int64 start_changestamp,
       const std::string& search_string,
+      const std::string& directory_resource_id) const;
+
+  // Generates a URL for searching resources by title (exact-match).
+  // |directory_resource_id| is optional parameter. When it is empty
+  // all the existing resources are target of the search. Otherwise,
+  // the search target is just under the directory with it.
+  GURL GenerateSearchByTitleUrl(
+      const std::string& title,
       const std::string& directory_resource_id) const;
 
   // Generates a URL for getting or editing the resource entry of
