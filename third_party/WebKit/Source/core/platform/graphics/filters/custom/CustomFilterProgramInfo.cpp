@@ -45,9 +45,9 @@ CustomFilterProgramInfo::CustomFilterProgramInfo()
 {
 }
 
-bool CustomFilterProgramInfo::isEmptyValue() const 
-{ 
-    return m_vertexShaderString.isNull() 
+bool CustomFilterProgramInfo::isEmptyValue() const
+{
+    return m_vertexShaderString.isNull()
         && m_fragmentShaderString.isNull();
 }
 
@@ -59,7 +59,7 @@ CustomFilterProgramInfo::CustomFilterProgramInfo(WTF::HashTableDeletedValueType)
 
 bool CustomFilterProgramInfo::isHashTableDeletedValue() const
 {
-    return m_vertexShaderString.isHashTableDeletedValue() 
+    return m_vertexShaderString.isHashTableDeletedValue()
         && m_fragmentShaderString.isHashTableDeletedValue();
 }
 
@@ -91,7 +91,7 @@ unsigned CustomFilterProgramInfo::hash() const
     return StringHasher::hashMemory<sizeof(hashCodes)>(&hashCodes);
 }
 
-bool CustomFilterProgramInfo::operator==(const CustomFilterProgramInfo& o) const 
+bool CustomFilterProgramInfo::operator==(const CustomFilterProgramInfo& o) const
 {
     ASSERT(!isHashTableDeletedValue());
     ASSERT(!o.isHashTableDeletedValue());

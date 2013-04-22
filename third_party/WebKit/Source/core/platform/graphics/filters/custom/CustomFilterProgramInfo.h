@@ -45,18 +45,18 @@ struct CustomFilterProgramMixSettings {
         , compositeOperator(CompositeSourceAtop)
     {
     }
-    
+
     bool operator==(const CustomFilterProgramMixSettings& o) const
     {
         return blendMode == o.blendMode && compositeOperator == o.compositeOperator;
     }
-    
+
     BlendMode blendMode;
     CompositeOperator compositeOperator;
 };
 
 // CustomFilterProgramInfo is the key used to link CustomFilterProgram with CustomFilterCompiledProgram.
-// It can be used as a key in a HashMap, with the note that at least one of Strings needs to be non-null. 
+// It can be used as a key in a HashMap, with the note that at least one of Strings needs to be non-null.
 // Null strings are placeholders for the default shader.
 class CustomFilterProgramInfo {
 public:
@@ -67,7 +67,7 @@ public:
 
     CustomFilterProgramInfo(WTF::HashTableDeletedValueType);
     bool isHashTableDeletedValue() const;
-    
+
     unsigned hash() const;
     bool operator==(const CustomFilterProgramInfo&) const;
 
@@ -100,8 +100,8 @@ struct CustomFilterProgramInfoHashTraits : WTF::SimpleClassHashTraits<CustomFilt
 namespace WTF {
 
 template<> struct HashTraits<WebCore::CustomFilterProgramInfo> : WebCore::CustomFilterProgramInfoHashTraits { };
-template<> struct DefaultHash<WebCore::CustomFilterProgramInfo> { 
-    typedef WebCore::CustomFilterProgramInfoHash Hash; 
+template<> struct DefaultHash<WebCore::CustomFilterProgramInfo> {
+    typedef WebCore::CustomFilterProgramInfoHash Hash;
 };
 
 }

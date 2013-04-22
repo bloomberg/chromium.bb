@@ -42,12 +42,12 @@ public:
     {
         return adoptRef(new CustomFilterNumberParameter(name));
     }
-    
+
     unsigned size() const { return m_data.size(); }
     double valueAt(unsigned index) const { return m_data.at(index); }
 
     void addValue(double value) { m_data.append(value); }
-    
+
     virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter* from, double progress, const LayoutSize&)
     {
         if (!from || !isSameType(*from))
@@ -60,7 +60,7 @@ public:
             result->addValue(WebCore::blend(fromNumber->valueAt(i), valueAt(i), progress));
         return result.release();
     }
-    
+
     virtual bool operator==(const CustomFilterParameter& o) const
     {
         if (!isSameType(o))
@@ -68,13 +68,13 @@ public:
         const CustomFilterNumberParameter* other = static_cast<const CustomFilterNumberParameter*>(&o);
         return m_data == other->m_data;
     }
-    
+
 private:
     CustomFilterNumberParameter(const String& name)
         : CustomFilterParameter(NUMBER, name)
     {
     }
-    
+
     Vector<double, 4> m_data;
 };
 

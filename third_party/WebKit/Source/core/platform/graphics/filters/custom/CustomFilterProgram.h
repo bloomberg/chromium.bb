@@ -52,7 +52,7 @@ public:
 
     void addClient(CustomFilterProgramClient*);
     void removeClient(CustomFilterProgramClient*);
-    
+
     CustomFilterProgramInfo programInfo() const;
 
     virtual String vertexShaderString() const = 0;
@@ -73,7 +73,7 @@ protected:
     CustomFilterProgram(CustomFilterProgramType, const CustomFilterProgramMixSettings&, CustomFilterMeshType);
 
 private:
-    // CustomFilterPrograms are unique combinations of shaders and can be 
+    // CustomFilterPrograms are unique combinations of shaders and can be
     // compared using just the pointer value instead.
     // These will catch anyone doing a value equal comparison.
     bool operator==(const CustomFilterProgram&) const;

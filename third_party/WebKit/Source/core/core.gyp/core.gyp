@@ -89,6 +89,7 @@
       '../platform/graphics/cpu/arm',
       '../platform/graphics/cpu/arm/filters',
       '../platform/graphics/filters',
+      '../platform/graphics/filters/custom',
       '../platform/graphics/gpu',
       '../platform/graphics/opentype',
       '../platform/graphics/skia',

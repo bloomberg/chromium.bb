@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-#define SHADER(Src) (#Src) 
+#define SHADER(Src) (#Src)
 
 typedef HashMap<String, ShDataType> SymbolNameToTypeMap;
 
@@ -51,7 +51,7 @@ static SymbolNameToTypeMap* builtInAttributeNameToTypeMap()
 {
     static SymbolNameToTypeMap* nameToTypeMap = 0;
     if (!nameToTypeMap) {
-        nameToTypeMap = new SymbolNameToTypeMap;        
+        nameToTypeMap = new SymbolNameToTypeMap;
         nameToTypeMap->set("a_meshCoord", SH_FLOAT_VEC2);
         nameToTypeMap->set("a_position", SH_FLOAT_VEC4);
         nameToTypeMap->set("a_texCoord", SH_FLOAT_VEC2);
@@ -587,11 +587,11 @@ String CustomFilterValidatedProgram::compositeFunctionString(CompositeOperator c
         {
             mediump float Fa = %s;
             mediump float Fb = %s;
-            return vec4(as * Fa * Cs + ab * Fb * Cb, as * Fa + ab * Fb); 
+            return vec4(as * Fa * Cs + ab * Fb * Cb, as * Fa + ab * Fb);
         }
     ), Fa, Fb);
 }
-    
+
 CustomFilterValidatedProgram::~CustomFilterValidatedProgram()
 {
     platformDestroy();

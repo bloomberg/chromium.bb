@@ -13,7 +13,7 @@
  *    disclaimer in the documentation and/or other materials
  *    provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER "AS IS" AND ANY
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDER “AS IS” AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
  * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER BE
@@ -27,41 +27,23 @@
  * SUCH DAMAGE.
  */
 
-#include "config.h"
-
-#include "ValidatedCustomFilterOperation.h"
-
-#include "CustomFilterParameter.h"
-#include "CustomFilterValidatedProgram.h"
-#include "LayoutSize.h"
-#include <wtf/UnusedParam.h>
+#ifndef CustomFilterProgramClient_h
+#define CustomFilterProgramClient_h
 
 namespace WebCore {
 
-ValidatedCustomFilterOperation::ValidatedCustomFilterOperation(PassRefPtr<CustomFilterValidatedProgram> validatedProgram, 
-    const CustomFilterParameterList& sortedParameters, unsigned meshRows, unsigned meshColumns, CustomFilterMeshType meshType)
-    : FilterOperation(VALIDATED_CUSTOM)
-    , m_validatedProgram(validatedProgram)
-    , m_parameters(sortedParameters)
-    , m_meshRows(meshRows)
-    , m_meshColumns(meshColumns)
-    , m_meshType(meshType)
-{
+class CustomFilterProgram;
+
+class CustomFilterProgramClient {
+public:
+    virtual ~CustomFilterProgramClient()
+    {
+    }
+
+    virtual void notifyCustomFilterProgramLoaded(CustomFilterProgram*) = 0;
+};
+
 }
 
-ValidatedCustomFilterOperation::~ValidatedCustomFilterOperation()
-{
-}
 
-PassRefPtr<FilterOperation> ValidatedCustomFilterOperation::blend(const FilterOperation*, double progress, const LayoutSize& size, bool blendToPassthrough)
-{
-    UNUSED_PARAM(progress);
-    UNUSED_PARAM(size);
-    UNUSED_PARAM(blendToPassthrough);
-
-    ASSERT_NOT_REACHED();
-    return this;
-}
-
-} // namespace WebCore
-
+#endif // CustomFilterProgramClient_h

@@ -48,7 +48,7 @@ class CustomFilterGlobalContext {
 public:
     CustomFilterGlobalContext();
     ~CustomFilterGlobalContext();
-    
+
     GraphicsContext3D* context() const { return m_context.get(); }
 
     // CSS shaders not referenced from the CSS mix function should be validated just like regular WebGL shaders.
@@ -64,7 +64,7 @@ public:
     // - In the translated source that ANGLE returns, ANGLE renames the author's "main" function to "css_main".
     // The complete details are documented in ANGLE/ShaderLang.h.
     ANGLEWebKitBridge* mixShaderValidator();
-    
+
     void prepareContextIfNeeded(HostWindow*);
 
     PassRefPtr<CustomFilterValidatedProgram> getValidatedProgram(const CustomFilterProgramInfo&);

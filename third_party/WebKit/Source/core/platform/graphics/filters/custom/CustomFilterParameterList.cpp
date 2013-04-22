@@ -41,7 +41,7 @@ CustomFilterParameterList::CustomFilterParameterList()
 }
 
 CustomFilterParameterList::CustomFilterParameterList(size_t size)
-    : CustomFilterParameterListBase(size) 
+    : CustomFilterParameterListBase(size)
 {
 }
 
@@ -50,7 +50,7 @@ bool CustomFilterParameterList::operator==(const CustomFilterParameterList& othe
     if (size() != other.size())
         return false;
     for (size_t i = 0; i < size(); ++i) {
-        if (at(i).get() != other.at(i).get() 
+        if (at(i).get() != other.at(i).get()
             && *at(i).get() != *other.at(i).get())
             return false;
     }
@@ -67,7 +67,7 @@ bool CustomFilterParameterList::checkAlphabeticalOrder() const
     return true;
 }
 
-void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList, 
+void CustomFilterParameterList::blend(const CustomFilterParameterList& fromList,
     double progress, const LayoutSize& frameSize, CustomFilterParameterList& resultList) const
 {
     // This method expects both lists to be sorted by parameter name and the result list is also sorted.

@@ -27,54 +27,46 @@
  * SUCH DAMAGE.
  */
 
-#ifndef CustomFilterMesh_h
-#define CustomFilterMesh_h
+#include "config.h"
 
 #if USE(3D_GRAPHICS)
-
-#include "CustomFilterOperation.h"
-#include "FloatRect.h"
-#include "GraphicsTypes3D.h"
-#include <wtf/RefCounted.h>
+#include "CustomFilterMesh.h"
+#include "CustomFilterMeshGenerator.h"
+#include "GraphicsContext3D.h"
 
 namespace WebCore {
 
-class GraphicsContext3D;
+CustomFilterMesh::CustomFilterMesh(GraphicsContext3D* context, unsigned columns, unsigned rows,
+    const FloatRect& meshBox, CustomFilterMeshType meshType)
+    : m_context(context)
+    , m_verticesBufferObject(0)
+    , m_elementsBufferObject(0)
+    , m_meshBox(meshBox)
+    , m_meshType(meshType)
+{
+    CustomFilterMeshGenerator generator(columns, rows, meshBox, meshType);
+    m_indicesCount = generator.indicesCount();
+    m_bytesPerVertex = generator.floatsPerVertex() * sizeof(float);
 
-class CustomFilterMesh : public RefCounted<CustomFilterMesh> {
-public:
-    static PassRefPtr<CustomFilterMesh> create(GraphicsContext3D* context, unsigned cols, unsigned rows, const FloatRect& meshBox, CustomFilterMeshType meshType)
-    {
-        return adoptRef(new CustomFilterMesh(context, cols, rows, meshBox, meshType));
-    }
-    ~CustomFilterMesh();
+    m_context->makeContextCurrent();
 
-    Platform3DObject verticesBufferObject() const { return m_verticesBufferObject; }
-    unsigned bytesPerVertex() const { return m_bytesPerVertex; }
-    
-    Platform3DObject elementsBufferObject() const { return m_elementsBufferObject; }
-    unsigned indicesCount() const { return m_indicesCount; }
-    
-    const FloatRect& meshBox() const { return m_meshBox; }
-    CustomFilterMeshType meshType() const { return m_meshType; }
+    m_verticesBufferObject = m_context->createBuffer();
+    m_context->bindBuffer(GraphicsContext3D::ARRAY_BUFFER, m_verticesBufferObject);
+    m_context->bufferData(GraphicsContext3D::ARRAY_BUFFER, generator.vertices().size() * sizeof(float), generator.vertices().data(), GraphicsContext3D::STATIC_DRAW);
 
-private:
-    CustomFilterMesh(GraphicsContext3D*, unsigned cols, unsigned rows, const FloatRect& meshBox, CustomFilterMeshType);
-    
-    GraphicsContext3D* m_context;
-    
-    Platform3DObject m_verticesBufferObject;
-    unsigned m_bytesPerVertex;
-    
-    Platform3DObject m_elementsBufferObject;
-    unsigned m_indicesCount;
-    
-    FloatRect m_meshBox;
-    CustomFilterMeshType m_meshType;
-};
+    m_elementsBufferObject = m_context->createBuffer();
+    m_context->bindBuffer(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, m_elementsBufferObject);
+    m_context->bufferData(GraphicsContext3D::ELEMENT_ARRAY_BUFFER, generator.indices().size() * sizeof(uint16_t), generator.indices().data(), GraphicsContext3D::STATIC_DRAW);
+}
+
+CustomFilterMesh::~CustomFilterMesh()
+{
+    m_context->makeContextCurrent();
+    m_context->deleteBuffer(m_verticesBufferObject);
+    m_context->deleteBuffer(m_elementsBufferObject);
+}
 
 } // namespace WebCore
 
 #endif // USE(3D_GRAPHICS)
 
-#endif // CustomFilterMesh_h

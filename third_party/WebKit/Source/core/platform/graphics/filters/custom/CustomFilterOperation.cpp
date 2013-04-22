@@ -48,7 +48,7 @@ CustomFilterOperation::CustomFilterOperation(PassRefPtr<CustomFilterProgram> pro
     // Make sure that the parameters are alwyas sorted by name. We use that to merge two CustomFilterOperations in animations.
     ASSERT(m_parameters.checkAlphabeticalOrder());
 }
-    
+
 CustomFilterOperation::~CustomFilterOperation()
 {
 }
@@ -60,14 +60,14 @@ PassRefPtr<FilterOperation> CustomFilterOperation::blend(const FilterOperation* 
     // https://www.w3.org/Bugs/Public/show_bug.cgi?id=16861
     if (blendToPassthrough || !from || !from->isSameType(*this))
         return this;
-    
+
     const CustomFilterOperation* fromOp = static_cast<const CustomFilterOperation*>(from);
     if (m_program.get() != fromOp->m_program.get()
         || m_meshRows != fromOp->m_meshRows
         || m_meshColumns != fromOp->m_meshColumns
         || m_meshType != fromOp->m_meshType)
         return this;
-    
+
     CustomFilterParameterList animatedParameters;
     m_parameters.blend(fromOp->m_parameters, progress, size, animatedParameters);
     return CustomFilterOperation::create(m_program, animatedParameters, m_meshRows, m_meshColumns, m_meshType);

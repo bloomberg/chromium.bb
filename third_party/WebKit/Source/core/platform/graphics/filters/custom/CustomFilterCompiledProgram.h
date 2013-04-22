@@ -47,9 +47,9 @@ public:
     {
         return adoptRef(new CustomFilterCompiledProgram(context, validatedVertexShader, validatedFragmentShader, programType));
     }
-    
+
     ~CustomFilterCompiledProgram();
-    
+
     int positionAttribLocation() const { return m_positionAttribLocation; }
     int texAttribLocation() const { return m_texAttribLocation; }
     int meshAttribLocation() const { return m_meshAttribLocation; }
@@ -63,20 +63,20 @@ public:
     int samplerSizeLocation() const { return m_samplerSizeLocation; }
 
     int uniformLocationByName(const String&);
-    
+
     bool isInitialized() const { return m_isInitialized; }
-    
+
     Platform3DObject program() const { return m_program; }
 private:
     CustomFilterCompiledProgram(PassRefPtr<GraphicsContext3D>, const String& validatedVertexShader, const String& validatedFragmentShader, CustomFilterProgramType);
-    
+
     Platform3DObject compileShader(GC3Denum shaderType, const String& shaderString);
     Platform3DObject linkProgram(Platform3DObject vertexShader, Platform3DObject fragmentShader);
     void initializeParameterLocations(CustomFilterProgramType);
-    
+
     RefPtr<GraphicsContext3D> m_context;
     Platform3DObject m_program;
-    
+
     int m_positionAttribLocation;
     int m_texAttribLocation;
     int m_meshAttribLocation;
@@ -88,7 +88,7 @@ private:
     int m_samplerLocation;
     int m_samplerSizeLocation;
     int m_contentSamplerLocation;
-    
+
     bool m_isInitialized;
 };
 

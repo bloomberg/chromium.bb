@@ -31,7 +31,7 @@
 
 #if USE(3D_GRAPHICS)
 #include "CustomFilterCompiledProgram.h"
- 
+
 #include "CustomFilterGlobalContext.h"
 
 namespace WebCore {
@@ -57,23 +57,23 @@ CustomFilterCompiledProgram::CustomFilterCompiledProgram(PassRefPtr<GraphicsCont
     Platform3DObject vertexShader = compileShader(GraphicsContext3D::VERTEX_SHADER, validatedVertexShader);
     if (!vertexShader)
         return;
-    
+
     Platform3DObject fragmentShader = compileShader(GraphicsContext3D::FRAGMENT_SHADER, validatedFragmentShader);
     if (!fragmentShader) {
         m_context->deleteShader(vertexShader);
         return;
     }
-    
+
     m_program = linkProgram(vertexShader, fragmentShader);
-    
+
     m_context->deleteShader(vertexShader);
     m_context->deleteShader(fragmentShader);
-    
+
     if (!m_program)
         return;
-    
+
     initializeParameterLocations(programType);
-    
+
     m_isInitialized = true;
 }
 
@@ -84,7 +84,7 @@ Platform3DObject CustomFilterCompiledProgram::compileShader(GC3Denum shaderType,
     Platform3DObject shader = m_context->createShader(shaderType);
     m_context->shaderSource(shader, shaderString);
     m_context->compileShader(shader);
-    
+
     int compiled = 0;
     m_context->getShaderiv(shader, GraphicsContext3D::COMPILE_STATUS, &compiled);
     if (!compiled) {
@@ -93,7 +93,7 @@ Platform3DObject CustomFilterCompiledProgram::compileShader(GC3Denum shaderType,
         m_context->deleteShader(shader);
         return 0;
     }
-    
+
     return shader;
 }
 
@@ -103,7 +103,7 @@ Platform3DObject CustomFilterCompiledProgram::linkProgram(Platform3DObject verte
     m_context->attachShader(program, vertexShader);
     m_context->attachShader(program, fragmentShader);
     m_context->linkProgram(program);
-    
+
     int linked = 0;
     m_context->getProgramiv(program, GraphicsContext3D::LINK_STATUS, &linked);
     if (!linked) {
@@ -112,7 +112,7 @@ Platform3DObject CustomFilterCompiledProgram::linkProgram(Platform3DObject verte
         m_context->deleteProgram(program);
         return 0;
     }
-    
+
     return program;
 }
 
@@ -141,7 +141,7 @@ int CustomFilterCompiledProgram::uniformLocationByName(const String& name)
     // FIXME: Improve this by caching the uniform locations.
     return m_context->getUniformLocation(m_program, name);
 }
-    
+
 CustomFilterCompiledProgram::~CustomFilterCompiledProgram()
 {
     if (m_program) {

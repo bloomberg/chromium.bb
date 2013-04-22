@@ -48,14 +48,14 @@ public:
         NUMBER,
         TRANSFORM
     };
-    
+
     virtual ~CustomFilterParameter() { }
-    
+
     ParameterType parameterType() const { return m_type; }
     const String& name() const { return m_name; }
-    
+
     bool isSameType(const CustomFilterParameter& other) const { return parameterType() == other.parameterType(); }
-    
+
     virtual PassRefPtr<CustomFilterParameter> blend(const CustomFilterParameter*, double progress, const LayoutSize&) = 0;
     virtual bool operator==(const CustomFilterParameter&) const = 0;
     bool operator!=(const CustomFilterParameter& o) const { return !(*this == o); }

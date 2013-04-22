@@ -56,7 +56,7 @@ public:
         const TransformOperations& to = operations();
         if (from == to)
             return this;
-       
+
         RefPtr<CustomFilterTransformParameter> result = CustomFilterTransformParameter::create(name());
         if (from.size() && to.size())
             result->setOperations(to.blend(from, progress, size));
@@ -81,7 +81,7 @@ public:
 
     const TransformOperations& operations() const { return m_operations; }
     void setOperations(const TransformOperations& value) { m_operations = value; }
-    
+
 private:
     CustomFilterTransformParameter(const String& name)
         : CustomFilterParameter(TRANSFORM, name)
@@ -90,7 +90,7 @@ private:
     virtual ~CustomFilterTransformParameter()
     {
     }
-    
+
     TransformOperations m_operations;
 };
 

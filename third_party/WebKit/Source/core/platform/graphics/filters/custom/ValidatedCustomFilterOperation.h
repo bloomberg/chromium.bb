@@ -41,7 +41,7 @@ class CustomFilterValidatedProgram;
 
 class ValidatedCustomFilterOperation : public FilterOperation {
 public:
-    static PassRefPtr<ValidatedCustomFilterOperation> create(PassRefPtr<CustomFilterValidatedProgram> validatedProgram, 
+    static PassRefPtr<ValidatedCustomFilterOperation> create(PassRefPtr<CustomFilterValidatedProgram> validatedProgram,
         const CustomFilterParameterList& sortedParameters, unsigned meshRows, unsigned meshColumns, CustomFilterMeshType meshType)
     {
         return adoptRef(new ValidatedCustomFilterOperation(validatedProgram, sortedParameters, meshRows, meshColumns, meshType));

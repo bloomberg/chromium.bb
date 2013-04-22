@@ -74,19 +74,19 @@ public:
 
     const CustomFilterProgramInfo& programInfo() const { return m_programInfo; }
     CustomFilterProgramInfo validatedProgramInfo() const;
-    
+
     PassRefPtr<CustomFilterCompiledProgram> compiledProgram();
 
-    const String& validatedVertexShader() const 
+    const String& validatedVertexShader() const
     {
-        ASSERT(m_isInitialized); 
-        return m_validatedVertexShader; 
+        ASSERT(m_isInitialized);
+        return m_validatedVertexShader;
     }
 
-    const String& validatedFragmentShader() const 
-    { 
-        ASSERT(m_isInitialized); 
-        return m_validatedFragmentShader; 
+    const String& validatedFragmentShader() const
+    {
+        ASSERT(m_isInitialized);
+        return m_validatedFragmentShader;
     }
 
 #if USE(TEXTURE_MAPPER)
@@ -95,7 +95,7 @@ public:
 
     bool isInitialized() const { return m_isInitialized; }
 
-    // 'detachFromGlobalContext' is called when the CustomFilterGlobalContext is deleted, and there's no need for the callback anymore. 
+    // 'detachFromGlobalContext' is called when the CustomFilterGlobalContext is deleted, and there's no need for the callback anymore.
     // Note that CustomFilterGlobalContext does not keep a strong reference to the CustomFilterValidatedProgram.
     void detachFromGlobalContext() { m_globalContext = 0; }
 private:
