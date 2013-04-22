@@ -1892,13 +1892,3 @@
    fun:content::NavigationControllerImpl::GetSessionStorageNamespace
    fun:content::RenderViewHostManager::Init
 }
-{
-   bug_233541
-   Heapcheck:Leak
-   ...
-   fun:DiskCacheTestWithCache::CreateBackend
-   ...
-   fun:DiskCacheTestWithCache::InitCache
-   fun:DiskCacheBackendTest_SimpleDoom*
-}
-
