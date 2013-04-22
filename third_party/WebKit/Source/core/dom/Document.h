@@ -166,9 +166,7 @@ class SVGDocumentExtensions;
 
 struct AnnotatedRegionValue;
 
-#if ENABLE(FONT_LOAD_EVENTS)
 class FontLoader;
-#endif
 
 typedef int ExceptionCode;
 
@@ -1134,9 +1132,7 @@ public:
 
     virtual const SecurityOrigin* topOrigin() const OVERRIDE;
 
-#if ENABLE(FONT_LOAD_EVENTS)
     PassRefPtr<FontLoader> fontloader();
-#endif
 
 protected:
     Document(Frame*, const KURL&, bool isXHTML, bool isHTML);
@@ -1480,9 +1476,7 @@ private:
     RefPtr<Document> m_templateDocument;
     Document* m_templateDocumentHost; // Manually managed weakref (backpointer from m_templateDocument).
 
-#if ENABLE(FONT_LOAD_EVENTS)
     RefPtr<FontLoader> m_fontloader;
-#endif
 
     Timer<Document> m_didAssociateFormControlsTimer;
     HashSet<RefPtr<Element> > m_associatedFormControls;

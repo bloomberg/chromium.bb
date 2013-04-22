@@ -31,8 +31,6 @@
 #include "config.h"
 #include "CSSFontFaceLoadEvent.h"
 
-#if ENABLE(FONT_LOAD_EVENTS)
-
 namespace WebCore {
 
 CSSFontFaceLoadEvent::CSSFontFaceLoadEvent()
@@ -66,5 +64,3 @@ const AtomicString& CSSFontFaceLoadEvent::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FONT_LOAD_EVENTS)

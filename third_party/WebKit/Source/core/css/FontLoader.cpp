@@ -26,8 +26,6 @@
 #include "config.h"
 #include "FontLoader.h"
 
-#if ENABLE(FONT_LOAD_EVENTS)
-
 #include "CSSFontFaceLoadEvent.h"
 #include "CSSFontFaceSource.h"
 #include "CSSFontSelector.h"
@@ -274,7 +272,7 @@ void FontLoader::loadFont(const Dictionary& params)
     if (!resolveFontStyle(fontString, font))
         return;
     RefPtr<LoadFontCallback> callback = LoadFontCallback::createFromParams(params, font.family());
-    
+
     for (const FontFamily* f = &font.family(); f; f = f->next()) {
         CSSSegmentedFontFace* face = m_document->styleResolver()->fontSelector()->getFontFace(font.fontDescription(), f->family());
         if (!face) {
@@ -312,7 +310,7 @@ bool FontLoader::resolveFontStyle(const String& fontString, Font& font)
     CSSParser::parseValue(parsedStyle.get(), CSSPropertyFont, fontString, true, CSSStrictMode, 0);
     if (parsedStyle->isEmpty())
         return false;
-    
+
     String fontValue = parsedStyle->getPropertyValue(CSSPropertyFont);
     if (fontValue == "inherit" || fontValue == "initial")
         return false;
@@ -352,5 +350,3 @@ bool FontLoader::resolveFontStyle(const String& fontString, Font& font)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(FONT_LOAD_EVENTS)

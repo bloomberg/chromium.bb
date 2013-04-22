@@ -74,7 +74,6 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
 {
     pruneTable();
 
-#if ENABLE(FONT_LOAD_EVENTS)
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && !isLoading()) {
         Vector<RefPtr<LoadFontCallback> > callbacks;
         m_callbacks.swap(callbacks);
@@ -85,7 +84,6 @@ void CSSSegmentedFontFace::fontLoaded(CSSFontFace*)
                 callbacks[index]->notifyError(this);
         }
     }
-#endif
 }
 
 void CSSSegmentedFontFace::appendFontFace(PassRefPtr<CSSFontFace> fontFace)
@@ -149,7 +147,6 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     return 0;
 }
 
-#if ENABLE(FONT_LOAD_EVENTS)
 bool CSSSegmentedFontFace::isLoading() const
 {
     unsigned size = m_fontFaces.size();
@@ -183,6 +180,5 @@ void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, Pass
             callback->notifyError(this);
     }
 }
-#endif
 
 }

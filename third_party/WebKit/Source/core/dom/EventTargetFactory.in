@@ -8,7 +8,7 @@ DOMWindow
 EventSource
 FileReader
 FileWriter
-FontLoader conditional=FONT_LOAD_EVENTS
+FontLoader
 IDBDatabase
 IDBOpenDBRequest
 IDBRequest

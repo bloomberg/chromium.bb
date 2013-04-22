@@ -86,20 +86,16 @@ public:
     bool hasSVGFontFaceSource() const;
 #endif
 
-#if ENABLE(FONT_LOAD_EVENTS)
     enum LoadState { NotLoaded, Loading, Loaded, Error };
     LoadState loadState() const { return m_loadState; }
-#endif
 
 private:
     CSSFontFace(FontTraitsMask traitsMask, PassRefPtr<CSSFontFaceRule> rule, bool isLocalFallback)
         : m_traitsMask(traitsMask)
         , m_activeSource(0)
         , m_isLocalFallback(isLocalFallback)
-#if ENABLE(FONT_LOAD_EVENTS)
         , m_loadState(isLocalFallback ? Loaded : NotLoaded)
         , m_rule(rule)
-#endif
     {
         UNUSED_PARAM(rule);
     }
@@ -110,11 +106,9 @@ private:
     Vector<OwnPtr<CSSFontFaceSource> > m_sources;
     CSSFontFaceSource* m_activeSource;
     bool m_isLocalFallback;
-#if ENABLE(FONT_LOAD_EVENTS)
     LoadState m_loadState;
     RefPtr<CSSFontFaceRule> m_rule;
     void notifyFontLoader(LoadState);
-#endif
 };
 
 }

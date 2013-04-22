@@ -2289,15 +2289,13 @@ void FrameView::performPostLayoutTasks()
     }
 
     m_frame->loader()->didLayout(milestonesAchieved);
-#if ENABLE(FONT_LOAD_EVENTS)
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
         m_frame->document()->fontloader()->didLayout();
-#endif
 
     RenderView* renderView = this->renderView();
     if (renderView)
         renderView->updateWidgetPositions();
-    
+
     for (unsigned i = 0; i < maxUpdateWidgetsIterations; i++) {
         if (updateWidgets())
             break;

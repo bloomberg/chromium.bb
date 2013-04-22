@@ -23,8 +23,6 @@
  * DAMAGE.
  */
 
-#if ENABLE(FONT_LOAD_EVENTS)
-
 #ifndef FontLoader_h
 #define FontLoader_h
 
@@ -112,4 +110,3 @@ private:
 } // namespace WebCore
 
 #endif // FontLoader_h
-#endif // ENABLE(FONT_LOAD_EVENTS)

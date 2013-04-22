@@ -89,14 +89,12 @@ void CSSFontFace::fontLoaded(CSSFontFaceSource* source)
     CSSFontSelector* fontSelector = (*m_segmentedFontFaces.begin())->fontSelector();
     fontSelector->fontLoaded();
 
-#if ENABLE(FONT_LOAD_EVENTS)
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading) {
         if (source->ensureFontData())
             notifyFontLoader(Loaded);
         else if (!isValid())
             notifyFontLoader(Error);
     }
-#endif
 
     HashSet<CSSSegmentedFontFace*>::iterator end = m_segmentedFontFaces.end();
     for (HashSet<CSSSegmentedFontFace*>::iterator it = m_segmentedFontFaces.begin(); it != end; ++it)
@@ -112,31 +110,24 @@ PassRefPtr<SimpleFontData> CSSFontFace::getFontData(const FontDescription& fontD
     ASSERT(!m_segmentedFontFaces.isEmpty());
     CSSFontSelector* fontSelector = (*m_segmentedFontFaces.begin())->fontSelector();
 
-#if ENABLE(FONT_LOAD_EVENTS)
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == NotLoaded)
         notifyFontLoader(Loading);
-#endif
 
     size_t size = m_sources.size();
     for (size_t i = 0; i < size; ++i) {
         if (RefPtr<SimpleFontData> result = m_sources[i]->getFontData(fontDescription, syntheticBold, syntheticItalic, fontSelector)) {
             m_activeSource = m_sources[i].get();
-#if ENABLE(FONT_LOAD_EVENTS)
             if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading && m_sources[i]->isLoaded())
                 notifyFontLoader(Loaded);
-#endif
             return result.release();
         }
     }
 
-#if ENABLE(FONT_LOAD_EVENTS)
     if (RuntimeEnabledFeatures::fontLoadEventsEnabled() && m_loadState == Loading)
         notifyFontLoader(Error);
-#endif
     return 0;
 }
 
-#if ENABLE(FONT_LOAD_EVENTS)
 void CSSFontFace::notifyFontLoader(LoadState newState)
 {
     m_loadState = newState;
@@ -159,7 +150,6 @@ void CSSFontFace::notifyFontLoader(LoadState newState)
         break;
     }
 }
-#endif
 
 #if ENABLE(SVG_FONTS)
 bool CSSFontFace::hasSVGFontFaceSource() const

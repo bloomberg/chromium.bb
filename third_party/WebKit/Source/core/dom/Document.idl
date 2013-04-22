@@ -186,7 +186,7 @@
 
     [Conditional=CSS_REGIONS, EnabledAtRuntime=cssRegions] DOMNamedFlowCollection webkitGetNamedFlows();
 
-    [Conditional=FONT_LOAD_EVENTS, EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
+    [EnabledAtRuntime=fontLoadEvents] readonly attribute FontLoader fontloader;
 
     // Event handler DOM attributes
     [NotEnumerable] attribute EventListener onabort;

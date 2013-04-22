@@ -85,13 +85,8 @@ public:
     static bool cssCompositingEnabled() { return false; }
 #endif
 
-#if ENABLE(FONT_LOAD_EVENTS)
     static void setFontLoadEventsEnabled(bool isEnabled) { isFontLoadEventsEnabled = isEnabled; }
     static bool fontLoadEventsEnabled() { return isFontLoadEventsEnabled; }
-#else
-    static void setFontLoadEventsEnabled(bool) { }
-    static bool fontLoadEventsEnabled() { return false; }
-#endif
 
     // Mozilla version
     static bool webkitFullScreenAPIEnabled() { return isFullScreenAPIEnabled; }
@@ -328,9 +323,7 @@ private:
 
     static bool areSeamlessIFramesEnabled;
 
-#if ENABLE(FONT_LOAD_EVENTS)
     static bool isFontLoadEventsEnabled;
-#endif
 
     static bool isWebPInAcceptHeaderEnabled;
 

@@ -53,7 +53,6 @@ public:
 
     PassRefPtr<FontData> getFontData(const FontDescription&);
 
-#if ENABLE(FONT_LOAD_EVENTS)
     class LoadFontCallback : public RefCounted<LoadFontCallback> {
     public:
         virtual ~LoadFontCallback() { }
@@ -63,23 +62,18 @@ public:
 
     bool checkFont() const;
     void loadFont(const FontDescription&, PassRefPtr<LoadFontCallback> loadCallback);
-#endif
 
 private:
     CSSSegmentedFontFace(CSSFontSelector*);
 
     void pruneTable();
     bool isValid() const;
-#if ENABLE(FONT_LOAD_EVENTS)
     bool isLoading() const;
-#endif
 
     CSSFontSelector* m_fontSelector;
     HashMap<unsigned, RefPtr<SegmentedFontData> > m_fontDataTable;
     Vector<RefPtr<CSSFontFace>, 1> m_fontFaces;
-#if ENABLE(FONT_LOAD_EVENTS)
     Vector<RefPtr<LoadFontCallback> > m_callbacks;
-#endif
 };
 
 } // namespace WebCore

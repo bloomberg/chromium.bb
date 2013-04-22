@@ -70,10 +70,8 @@ public:
     void setHasExternalSVGFont(bool value) { m_hasExternalSVGFont = value; }
 #endif
 
-#if ENABLE(FONT_LOAD_EVENTS)
     bool isDecodeError() const;
     bool ensureFontData();
-#endif
 
 private:
     void startLoadingTimerFired(Timer<CSSFontFaceSource>*);

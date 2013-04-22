@@ -33,6 +33,8 @@
 #include "SpeechRecognitionResult.h"
 #include "SpeechRecognitionResultList.h"
 #include "V8Binding.h"
+#include "V8CSSFontFaceRule.h"
+#include "V8DOMError.h"
 #include "V8DOMWindow.h"
 #include "V8EventTarget.h"
 #include "V8IDBKeyRange.h"
@@ -42,6 +44,7 @@
 #include "V8Storage.h"
 #include "V8Uint8Array.h"
 #include "V8Utilities.h"
+#include "V8VoidCallback.h"
 #include <wtf/MathExtras.h>
 
 #if ENABLE(ENCRYPTED_MEDIA)
@@ -54,12 +57,6 @@
 #if ENABLE(MEDIA_STREAM)
 #include "MediaStream.h"
 #include "V8MediaStream.h"
-#endif
-
-#if ENABLE(FONT_LOAD_EVENTS)
-#include "V8CSSFontFaceRule.h"
-#include "V8DOMError.h"
-#include "V8VoidCallback.h"
 #endif
 
 namespace WebCore {
@@ -491,7 +488,6 @@ bool Dictionary::get(const String& key, ArrayValue& value) const
     return true;
 }
 
-#if ENABLE(FONT_LOAD_EVENTS)
 bool Dictionary::get(const String& key, RefPtr<CSSFontFaceRule>& value) const
 {
     v8::Local<v8::Value> v8Value;
@@ -538,7 +534,6 @@ bool Dictionary::get(const String& key, RefPtr<VoidCallback>& value) const
     value = V8VoidCallback::create(v8Value, getScriptExecutionContext());
     return true;
 }
-#endif
 
 bool Dictionary::getOwnPropertiesAsStringHashMap(HashMap<String, String>& hashMap) const
 {

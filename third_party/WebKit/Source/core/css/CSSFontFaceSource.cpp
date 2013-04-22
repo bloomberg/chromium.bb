@@ -205,7 +205,6 @@ bool CSSFontFaceSource::isSVGFontFaceSource() const
 }
 #endif
 
-#if ENABLE(FONT_LOAD_EVENTS)
 bool CSSFontFaceSource::isDecodeError() const
 {
     if (m_font)
@@ -223,6 +222,5 @@ bool CSSFontFaceSource::ensureFontData()
 #endif
     return m_font->ensureCustomFontData();
 }
-#endif
 
 }

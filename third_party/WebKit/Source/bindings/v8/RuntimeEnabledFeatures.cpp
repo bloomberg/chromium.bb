@@ -186,9 +186,7 @@ bool RuntimeEnabledFeatures::areExperimentalContentSecurityPolicyFeaturesEnabled
 
 bool RuntimeEnabledFeatures::areSeamlessIFramesEnabled = false;
 
-#if ENABLE(FONT_LOAD_EVENTS)
 bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
-#endif
 
 bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
 

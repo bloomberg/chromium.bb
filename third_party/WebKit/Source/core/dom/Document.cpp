@@ -450,9 +450,7 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_didDispatchViewportPropertiesChanged(false)
 #endif
     , m_templateDocumentHost(0)
-#if ENABLE(FONT_LOAD_EVENTS)
     , m_fontloader(0)
-#endif
     , m_didAssociateFormControlsTimer(this, &Document::didAssociateFormControlsTimerFired)
 {
     ScriptWrappable::init(this);
@@ -5869,14 +5867,12 @@ Document* Document::ensureTemplateDocument()
     return m_templateDocument.get();
 }
 
-#if ENABLE(FONT_LOAD_EVENTS)
 PassRefPtr<FontLoader> Document::fontloader()
 {
     if (!m_fontloader)
         m_fontloader = FontLoader::create(this);
     return m_fontloader;
 }
-#endif
 
 void Document::didAssociateFormControl(Element* element)
 {

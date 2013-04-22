@@ -228,11 +228,9 @@ void CSSFontSelector::addFontFaceRule(const StyleRuleFontFace* fontFaceRule)
 
         if (!fontFace) {
             RefPtr<CSSFontFaceRule> rule;
-#if ENABLE(FONT_LOAD_EVENTS)
             // FIXME: https://bugs.webkit.org/show_bug.cgi?id=112116 - This CSSFontFaceRule has no parent.
             if (RuntimeEnabledFeatures::fontLoadEventsEnabled())
                 rule = static_pointer_cast<CSSFontFaceRule>(fontFaceRule->createCSSOMWrapper());
-#endif
             fontFace = CSSFontFace::create(static_cast<FontTraitsMask>(traitsMask), rule);
         }
 

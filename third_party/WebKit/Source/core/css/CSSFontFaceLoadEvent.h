@@ -28,8 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if ENABLE(FONT_LOAD_EVENTS)
-
 #ifndef CSSFontFaceLoadEvent_h
 #define CSSFontFaceLoadEvent_h
 
@@ -89,4 +87,3 @@ private:
 } // namespace WebCore
 
 #endif // CSSFontFaceLoadEvent_h
-#endif // ENABLE(FONT_LOAD_EVENTS)
