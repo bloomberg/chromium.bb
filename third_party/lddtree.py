@@ -1,9 +1,9 @@
 #!/usr/bin/python
-# Copyright 2012 Gentoo Foundation
-# Copyright 2012 Mike Frysinger <vapier@gentoo.org>
+# Copyright 2012-2013 Gentoo Foundation
+# Copyright 2012-2013 Mike Frysinger <vapier@gentoo.org>
 # Use of this source code is governed by a BSD-style license (BSD-3)
 # pylint: disable=C0301
-# $Header: /var/cvsroot/gentoo-projects/pax-utils/lddtree.py,v 1.36 2013/04/03 04:51:22 vapier Exp $
+# $Header: /var/cvsroot/gentoo-projects/pax-utils/lddtree.py,v 1.41 2013/04/22 22:02:43 vapier Exp $
 
 # TODO: Handle symlinks.
 
@@ -131,9 +131,11 @@ def ParseLdPaths(str_ldpaths, root='', path=None):
     if ldpath == '':
       # The ldso treats "" paths as $PWD.
       ldpath = os.getcwd()
-    else:
+    elif '$ORIGIN' in ldpath:
       ldpath = ldpath.replace('$ORIGIN', os.path.dirname(path))
-    ldpaths.append(normpath(root + ldpath))
+    else:
+      ldpath = root + ldpath
+    ldpaths.append(normpath(ldpath))
   return dedupe(ldpaths)
 
 
@@ -226,7 +228,7 @@ def CompatibleELFs(elf1, elf2):
   """
   osabis = frozenset([e.header['e_ident']['EI_OSABI'] for e in (elf1, elf2)])
   compat_sets = (
-    frozenset(['ELFOSABI_NONE', 'ELFOSABI_SYSV', 'ELFOSABI_LINUX']),
+    frozenset('ELFOSABI_%s' % x for x in ('NONE', 'SYSV', 'GNU', 'LINUX',)),
   )
   return ((len(osabis) == 1 or any(osabis.issubset(x) for x in compat_sets)) and
     elf1.elfclass == elf2.elfclass and
@@ -374,7 +376,7 @@ def _NormalizePath(option, _opt, value, parser):
 
 
 def _ShowVersion(_option, _opt, _value, _parser):
-  d = '$Id: lddtree.py,v 1.36 2013/04/03 04:51:22 vapier Exp $'.split()
+  d = '$Id: lddtree.py,v 1.41 2013/04/22 22:02:43 vapier Exp $'.split()
   print('%s-%s %s %s' % (d[1].split('.')[0], d[2], d[3], d[4]))
   sys.exit(0)
 
@@ -553,6 +555,9 @@ they need will be placed into /foo/lib/ only.""")
   parser.add_option('-v', '--verbose',
     action='store_true', default=False,
     help='Be verbose')
+  parser.add_option('--skip-non-elfs',
+    action='store_true', default=False,
+    help='Skip plain (non-ELF) files instead of warning')
   parser.add_option('-V', '--version',
     action='callback', callback=_ShowVersion,
     help='Show version information')
@@ -588,6 +593,9 @@ they need will be placed into /foo/lib/ only.""")
   if options.libdir and options.libdir[0] != '/':
     parser.error('--libdir accepts absolute paths only')
 
+  if options.skip_non_elfs and options.copy_non_elfs:
+    parser.error('pick one handler for non-ELFs: skip or copy')
+
   if options.debug:
     print('root =', options.root)
     if options.dest:
@@ -603,7 +611,10 @@ they need will be placed into /foo/lib/ only.""")
   # Process all the files specified.
   ret = 0
   for path in paths:
-    if options.auto_root:
+    # Only auto-prefix the path if the ELF is absolute.
+    # If it's a relative path, the user most likely wants
+    # the local path.
+    if options.auto_root and path.startswith('/'):
       path = options.root + path.lstrip('/')
 
     matched = False
@@ -611,7 +622,9 @@ they need will be placed into /foo/lib/ only.""")
       matched = True
       try:
         elf = ParseELF(p, options.root, ldpaths)
-      except (exceptions.ELFError, IOError) as e:
+      except exceptions.ELFError as e:
+        if options.skip_non_elfs:
+          continue
         # XXX: Ugly.  Should unify with _Action* somehow.
         if options.dest is not None and options.copy_non_elfs:
           if os.path.exists(p):
@@ -624,6 +637,10 @@ they need will be placed into /foo/lib/ only.""")
             }
             _ActionCopy(options, elf)
             continue
+        ret = 1
+        warn('%s: %s' % (p, e))
+        continue
+      except IOError as e:
         ret = 1
         warn('%s: %s' % (p, e))
         continue
