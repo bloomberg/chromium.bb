@@ -42,6 +42,10 @@ class InitializingRulesRegistry : public RulesRegistry {
   virtual void OnExtensionUnloaded(const std::string& extension_id) OVERRIDE;
   virtual content::BrowserThread::ID GetOwnerThread() const OVERRIDE;
 
+  // Returns the number of entries in used_rule_identifiers_ for leak detection.
+  // Every ExtensionId counts as one entry, even if it contains no rules.
+  size_t GetNumberOfUsedRuleIdentifiersForTesting() const;
+
  private:
   virtual ~InitializingRulesRegistry();
 
@@ -74,7 +78,9 @@ class InitializingRulesRegistry : public RulesRegistry {
 
   scoped_refptr<RulesRegistry> delegate_;
 
-  typedef std::map<std::string, std::set<std::string> > RuleIdentifiersMap;
+  typedef std::string ExtensionId;
+  typedef std::string RuleIdentifier;
+  typedef std::map<ExtensionId, std::set<RuleIdentifier> > RuleIdentifiersMap;
   RuleIdentifiersMap used_rule_identifiers_;
   int last_generated_rule_identifier_id_;
 

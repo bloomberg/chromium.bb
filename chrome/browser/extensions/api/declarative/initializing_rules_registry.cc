@@ -67,10 +67,25 @@ std::string InitializingRulesRegistry::GetAllRules(
 void InitializingRulesRegistry::OnExtensionUnloaded(
     const std::string& extension_id) {
   delegate_->OnExtensionUnloaded(extension_id);
+  used_rule_identifiers_.erase(extension_id);
 }
 
 content::BrowserThread::ID InitializingRulesRegistry::GetOwnerThread() const {
   return delegate_->GetOwnerThread();
+}
+
+size_t
+InitializingRulesRegistry::GetNumberOfUsedRuleIdentifiersForTesting() const {
+  size_t entry_count = 0u;
+  for (RuleIdentifiersMap::const_iterator extension =
+           used_rule_identifiers_.begin();
+       extension != used_rule_identifiers_.end();
+       ++extension) {
+    // Each extension is counted as 1 just for being there. Otherwise we miss
+    // keys with empty values.
+    entry_count += 1u + extension->second.size();
+  }
+  return entry_count;
 }
 
 InitializingRulesRegistry::~InitializingRulesRegistry() {}
