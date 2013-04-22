@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Todas as conexões</translation>
 <translation id="2208514473086078157">As definições da política não permitem compartilhar este computador como um host da Área de trabalho remota do Google Chrome. Entre em contato com o administrador do sistema para obter ajuda.</translation>
 <translation id="2801119484858626560">Uma versão incompatível da Área de trabalho remota do Google Chrome foi detectada. Certifique-se de que você possui a versão mais recente do Google Chrome e da Área de trabalho remota do Google Chrome em ambos os computadores e tente novamente.</translation>
-<translation id="2805036638902441020">O servidor falhou ao responder à solicitação da rede.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="3258789396564295715">Você pode acessar este computador com segurança, usando a Área de trabalho remota do Google Chrome.</translation>
 <translation id="4808503597364150972">Digite seu PIN para <ph name="HOSTNAME"/>.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Alguns componentes necessários à Área de trabalho remota do Google Chrome estão faltando. Certifique-se de que esteja executando a última versão e tente novamente.</translation>
 <translation id="174018511426417793">Você não tem computadores cadastrados. Para ativar conexões remotas a um computador, instale a Área de trabalho remota do Google Chrome no computador desejado e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="8525306231823319788">Tela cheia</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (desatualizado)</translation>
 <translation id="5702987232842159181">Conectado:</translation>
 <translation id="4736223761657662401">Histórico de conexões</translation>
 <translation id="4430915108080446161">Gerando código de acesso...</translation>
+<translation id="7022800415798056893">Participar da pesquisa</translation>
 <translation id="8228265668171617545">Foi detectada uma versão incompatível do Chromoting. Certifique-se de que você tenha a versão mais recente do Google Chrome e do Chromoting em ambos os computadores e tente novamente.</translation>
 <translation id="6985691951107243942">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME"/>? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>
 <translation id="9149992051684092333">Para começar a compartilhar seu computador, forneça o código de acesso abaixo à pessoa que ajudará você.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Ver e controlar um computador compartilhado.</translation>
 <translation id="1520828917794284345">Redimensionar área de trabalho para ajustar</translation>
 <translation id="701976023053394610">Assistência remota</translation>
+<translation id="2747641796667576127">As atualizações de software geralmente ocorrem automaticamente, mas podem falhar em casos raros. Essa atualização não deve demorar mais do que alguns minutos e pode ser feita enquanto você estiver conectado ao computador remotamente.</translation>
+<translation id="3933246213702324812">O Chromoting em <ph name="HOSTNAME"/> está desatualizado e precisa ser atualizado.</translation>
 <translation id="6193698048504518729">Conectar a <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
+<translation id="785147662223870933">Quer ajudar a melhorar a Área de trabalho remota do Google Chrome?</translation>
 <translation id="579702532610384533">Reconectar</translation>
 <translation id="4211066471404647515">Alguns componentes necessários ao Chromoting estão faltando. Certifique-se de que esteja executando a última versão do Google Chrome e tente novamente.</translation>
 <translation id="5265129178187621741">Este recurso ainda não está disponível para Chromebooks... fique ligado</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Não é possível acessar o host. Isso se deve, provavelmente, à configuração da rede que você está usando.</translation>
 <translation id="3776024066357219166">Sua sessão na Área de trabalho remota do Google Chrome foi encerrada.</translation>
 <translation id="5625493749705183369">Acesse outros computadores ou permita que outro usuário acesse seu computador de forma segura pela Internet.</translation>
+<translation id="2512228156274966424">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar a Área de trabalho remota do Google Chrome para &quot;Abrir como janela&quot;.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Para ativar conexões remotas a um computador diferente, instale o Chromoting no computador desejado e clique em &quot;<ph name="BUTTON_NAME"/>&quot;.</translation>
 <translation id="809687642899217504">Meus computadores</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="3581045510967524389">Não foi possível conectar à rede. Verifique se seu dispositivo está on-line.</translation>
 <translation id="4517233780764084060">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar o Chromoting para &quot;Abrir como janela&quot;.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="7144878232160441200">Tentar novamente</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">O PIN para este computador está sendo atualizado...</translation>
 <translation id="5308380583665731573">Conectar</translation>
 <translation id="7319983568955948908">Parar compartilhamento</translation>
+<translation id="2229673624483529540">Quer ajudar a melhorar o Chromoting?</translation>
 <translation id="6668065415969892472">O PIN foi atualizado.</translation>
 <translation id="4277736576214464567">Código de acesso inválido. Tente novamente.</translation>
+<translation id="979100198331752041">A Área de trabalho remota do Google Chrome em <ph name="HOSTNAME"/> está desatualizada e precisa ser atualizada.</translation>
 <translation id="7729639150174291243">Você não está conectado à Área de trabalho remota do Google Chrome. Faça login e tente novamente.</translation>
 <translation id="2841013758207633010">Tempo</translation>
 <translation id="6011539954251327702">O Chromoting permite compartilhar seu computador pela Web de forma segura. Ambos os usuários devem estar executando o aplicativo Chromoting, disponível em <ph name="URL"/>.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Informe este problema aos desenvolvedores.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">As definições da política não permitem compartilhar este computador como um host do Chromoting. Entre em contato com o administrador do sistema para obter ajuda.</translation>
+<translation id="9016232822027372900">Conectar assim mesmo</translation>
 <translation id="4394049700291259645">Desativar</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, selecione um PIN de <ph name="BOLD_START"/>pelo menos seis dígitos<ph name="BOLD_END"/>. Este PIN será necessário para estabelecer conexão a partir de outro local.</translation>
 </translationbundle>

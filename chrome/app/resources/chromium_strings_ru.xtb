@@ -11,8 +11,11 @@
 <translation id="6613594504749178791">Изменения вступят в силу при следующем входе в Chromium.</translation>
 <translation id="3748537968684000502">Вы находитесь на защищенной странице Chromium.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="6705571474735842144">Чтобы использовать панель запуска приложений, включите режим рабочего стола в Chromium.</translation>
+<translation id="2077129598763517140">Использовать аппаратное ускорение (при наличии)</translation>
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
 <translation id="4222661289444749267">Обновление Chromium Frame.</translation>
+<translation id="4423735387467980091">Настройка и управление Chromium</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">Chromium Frame уже установлен и доступен для всех пользователей. Если вы хотите установить Chromium Frame на уровне пользователя, необходимо сначала отменить установку на системном уровне, выполненную администратором.</translation>
 <translation id="731644333568559921">Обновить &amp;Chromium OS</translation>
@@ -31,7 +34,6 @@
 <translation id="3103660991484857065">Установка прервана на этапе распаковки архива. Загрузите Chromium еще раз.</translation>
 <translation id="872034308864968620">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="5109068449432240255">Да, закрыть Chromium</translation>
-<translation id="4320129595801648679">Дизайн страницы быстрого доступа Chromium изменился. Используйте эти ярлыки для переключения между разделами. Chromium запомнит ваши предпочтения для использования в будущем.</translation>
 <translation id="1480489203462860648">Запустить Chrome (уже установлен)</translation>
 <translation id="3032787606318309379">Добавление в Chromium...</translation>
 <translation id="4831257561365056138">Удалить Панель запуска Chromium</translation>
@@ -57,6 +59,7 @@
           и снимите флажок &quot;Использовать прокси-сервер для локальных подключений&quot;.</translation>
 <translation id="4330585738697551178">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="3190315855212034486">Произошел сбой Chromium. Перезапустить?</translation>
+<translation id="6034408899846040667">Чтобы использовать Google Apps, включите режим рабочего стола в Chromium.</translation>
 <translation id="6714487516757221107">Не обнаружено версий Chromium или Chromium Frame для обновления.</translation>
 <translation id="3197823471738295152">Операционная система обновлена.</translation>
 <translation id="8551886023433311834">Обновление почти завершено. Перезагрузите устройство.</translation>
@@ -94,8 +97,8 @@
 <translation id="2881203820889150661">Google Chrome не удается создать ярлык приложения, поскольку невозможно определить текущую среду рабочего стола.</translation>
 <translation id="4886158514168859177">На этом компьютере установлена актуальная версия Chromium Frame. Если программа не работает, удалите Chromium Frame и повторите попытку.</translation>
 <translation id="911206726377975832">Также удалить данные о работе в браузере?</translation>
-<translation id="8474264489072517623">Приложения можно открыть с помощью панели запуска Chromium.</translation>
 <translation id="95514773681268843">До начала работы с устройством необходимо ознакомиться с Условиями использования на веб-сайте <ph name="DOMAIN"/> и принять их. Эти условия не дополняют, не заменяют и не ограничивают Условий использования Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Закройте все окна Chromium (включая открытые в режиме Windows 8) и повторите попытку.</translation>
 <translation id="6734080038664603509">Обновить &amp;Chromium</translation>
 <translation id="8862326446509486874">У вас нет прав, необходимых для установки на системном уровне. Запустите программу установки еще раз в качестве администратора.</translation>
@@ -134,7 +137,6 @@
 <translation id="6717134281241384636">Ваш профиль не может использоваться, поскольку он от более новой версии Chromium.
 
 Некоторые возможности могут быть недоступны. Укажите другой каталог профиля либо используйте более новую версию Chromium.</translation>
-<translation id="2712549016134575851">Обнаружен конфликт с другим установленным приложением.</translation>
 <translation id="4881709374218686648">Так как ранее был выполнен вход под другим аккаунтом, вход под этим аккаунтом сейчас приведет к объединению данных. Рекомендуем создать для работы с Chromium новый аккаунт пользователя на <ph name="BEGIN_LINK"/>странице настроек<ph name="END_LINK"/>.</translation>
 <translation id="5285406370705656673">Разрешить вход в Chromium</translation>
 <translation id="9013087743919948559">Добавить в Chromium</translation>
@@ -144,12 +146,12 @@
 <translation id="1691304614444223855">Обновление Chromium Frame завершено. Перезапустите браузер. Ваша версия Chromium: <ph name="TODO_0001"/>, версия Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Изменения вступят в силу после перезагрузки устройства.</translation>
 <translation id="1105130903706696483">Chromium завершил работу неправильно. Чтобы вернуться к открытым страницам, нажмите &quot;Восстановить&quot;.</translation>
+<translation id="1531452407274881270">Для входа в Chromium используется аккаунт <ph name="USER_EMAIL_ADDRESS"/>. Ваши закладки, история и другие настройки будут доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="1929939181775079593">Chromium не отвечает. Перезапустить сейчас?</translation>
 <translation id="1414495520565016063">Добро пожаловать в Chromium!</translation>
 <translation id="6089587093203430357">Живой поиск</translation>
 <translation id="8520216698644798023">Обнаружена ошибка Windows</translation>
 <translation id="2966088006374919794">Chromium требуется запустить внешнее приложение для обработки ссылок <ph name="SCHEME"/>. Запрашиваемая ссылка: <ph name="PROTOLINK"/>.</translation>
-<translation id="8046283042877435986">На этом сайте рекомендуется использовать Chromium Frame (уже установлен).</translation>
 <translation id="6287463253129672858">Нельзя установить уже работающую в системе версию Chromium Frame. Закройте Chromium Frame и повторите попытку.</translation>
 <translation id="2558235863893655150">Сохранить пароль в Chromium?</translation>
 <translation id="3398522627033804247">Выберите
@@ -177,6 +179,7 @@
 <translation id="6601972021154586963">Для работы с приложениями необходимо выполнить вход в Chromium. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
 <translation id="2910007522516064972">О &amp;Chromium</translation>
 <translation id="8453117565092476964">Установочный архив поврежден. Загрузите Chromium еще раз.</translation>
+<translation id="950712238285296105">Необходимо <ph name="BEGIN_BUTTON"/>перезапустить<ph name="END_BUTTON"/> Chromium.</translation>
 <translation id="2162026298602630383">Выберите
           <ph name="BEGIN_BOLD"/>
           меню Chromium &gt;
@@ -196,7 +199,6 @@
 <translation id="2119636228670142020">О &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Доступна новая, еще более быстрая версия Chromium.</translation>
 <translation id="1539981464052805551">© The Chromium Authors, 2013. Все права защищены.</translation>
-<translation id="8616882682724010661">Ознакомьтесь с <ph name="BEGIN_LINK"/>дополнительными преимуществами<ph name="END_LINK"/> входа в Chromium</translation>
 <translation id="378917192836375108">В Chromium вы можете нажать на любой номер телефона и позвонить на него через Skype.</translation>
 <translation id="8724049448828509830">Идет загрузка. Отменить ее и закрыть Chromium?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
@@ -207,16 +209,17 @@
 Если войти в систему сейчас, закладки, история и прочие данные Chromium будут синхронизированы с новым аккаунтом: <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Идет загрузка. Отменить ее и закрыть Chromium?</translation>
 <translation id="9013262824292842194">Для установки Chromium требуется ОС Windows Vista или Windows XP SP2 или более поздней версии.</translation>
+<translation id="7673212349590566645">Использовать аккаунт <ph name="USER_EMAIL_ADDRESS"/> для входа в Chromium?</translation>
 <translation id="1967743265616885482">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="4224199872375172890">Вы используете актуальную версию Chromium.</translation>
 <translation id="374481098568514319">На компьютере уже есть более новые компоненты Chromium. Используйте более новую версию установщика.</translation>
 <translation id="6240281849816458190">Вы пытаетесь войти в &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, однако сервер предоставил сертификат, который ещё не действителен. Получить информацию о безопасности этого сертификата невозможно. Chromium не может гарантировать, что вы будете обмениваться данными именно с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не с сайтом злоумышленников. На вашем компьютере установлены следующие дата и время: <ph name="CURRENT_TIME"/>. Если эти данные неверны, укажите правильные и обновите страницу.</translation>
-<translation id="5498103559159810756">Chromium использует вашу поисковую систему по умолчанию, сейчас это <ph name="PAGE_TITLE"/>. Продолжить использование этой системы?</translation>
 <translation id="5862307444128926510">Добро пожаловать в Chromium</translation>
 <translation id="1622565934590470080">На этом компьютере установлены актуальные версии Chromium и Chromium Frame. Если программы не работают, удалите их и повторите попытку.</translation>
 <translation id="7318036098707714271">Файл настроек поврежден или недействителен. Chromium не может восстановить ваши параметры.</translation>
 <translation id="6403826409255603130">Chromium – веб-браузер, который открывает веб-страницы и приложения за секунды. Он быстр, стабилен в работе и прост в использовании. Встроенная в Chromium защита от мошенничества и вредоносного ПО обеспечивает максимально безопасную работу в Интернете.</translation>
 <translation id="2927042866129133279">Недопустимые аргументы. Chromium Frame нельзя установить в готовом виде без Chromium.</translation>
+<translation id="4019464536895378627">Вы попытались перейти на сайт &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но сервер предоставил сертификат, выданный организацией, которую Chromium не считает надежной. Это может означать, что сервер создал свой собственный сертификат, которому Chromium не может доверять, или что вмешался злоумышленник.</translation>
 <translation id="2572494885440352020">Помощник по Chromium</translation>
 <translation id="442817494342774222">Chromium будет автоматически запускаться при включении компьютера.</translation>
 <translation id="8974095189086268230">Chromium OS обязана своим появлением дополнительному <ph name="BEGIN_LINK_CROS_OSS"/>программному обеспечению с открытым исходным кодом<ph name="END_LINK_CROS_OSS"/>.</translation>

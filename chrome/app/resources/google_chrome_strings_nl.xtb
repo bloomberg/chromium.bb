@@ -13,6 +13,7 @@
 <translation id="2704356438731803243">Als u uw huidige Chrome-gegevens gescheiden wilt houden, kunt u een nieuwe Chrome-gebruiker maken voor <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">Sluit alle Google Chrome-vensters en probeer het opnieuw.</translation>
 <translation id="2770231113462710648">Standaardbrowser wijzigen in:</translation>
+<translation id="2077129598763517140">Hardwareversnelling gebruiken indien beschikbaar</translation>
 <translation id="1065672644894730302">Uw voorkeuren kunnen niet worden gelezen.
 
 Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
@@ -64,11 +65,10 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>Servicevoorwaarden<ph name="END_TERMS_OF_SERVICE_LINK"/> van Google Chrome</translation>
 <translation id="1393853151966637042">Hulp bij het gebruik van Chrome</translation>
 <translation id="7398801000654795464">U bent ingelogd bij Chrome als <ph name="USER_EMAIL_ADDRESS"/>. Gebruik hetzelfde account om opnieuw in te loggen.</translation>
-<translation id="3487814320513494737">De pagina 'Nieuw tabblad' van Chrome heeft een nieuw ontwerp. Schakel tussen secties door op deze labels te klikken. Chrome onthoudt uw voorkeur voor de volgende keer.</translation>
 <translation id="1697213158865901863">Google Chrome Frame</translation>
+<translation id="4053720452172726777">Google Chrome aanpassen en beheren</translation>
 <translation id="6423071462708908582">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een verlopen certificaat gepresenteerd. Er is geen informatie beschikbaar om te bepalen of er inbreuk is gemaakt op dit certificaat sinds het is verlopen. Dit betekent dat Google Chrome niet kan garanderen dat u communiceert met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; en niet met een aanvaller. De klok van uw computer staat momenteel ingesteld op <ph name="CURRENT_TIME"/>. Is dit de correcte tijd? Als dit niet zo is, moet u de fout herstellen en deze pagina vernieuwen.</translation>
 <translation id="3197823471738295152">Het apparaat is bijgewerkt.</translation>
-<translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="2336460313445286758">Ga naar
           <ph name="BEGIN_BOLD"/>
           het menu 'Chrome' &gt;
@@ -88,7 +88,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
           Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's
           <ph name="END_BOLD"/>
           en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
-<translation id="3282568296779691940">Inloggen op Chrome</translation>
+<translation id="3282568296779691940">Inloggen bij Chrome</translation>
 <translation id="3089968997497233615">Er is een nieuwere, veiligere versie van Google Chrome beschikbaar.</translation>
 <translation id="5037239767309817516">Sluit alle Google Chrome-vensters en start Google Chrome opnieuw om deze wijziging door te voeren.</translation>
 <translation id="345168553362876363">Google Chrome App Launcher is een zelfstandig platform voor Chrome-apps.</translation>
@@ -98,12 +98,10 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4585888816441913908">Deze computer beschikt al over een nieuwere versie van Google Chrome en Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome en Google Chrome Frame en probeert u het opnieuw.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Stel synchronisatie in om uw persoonlijke browserfuncties online op te slaan en toegang te krijgen tot deze functies via Google Chrome, vanaf elke computer.</translation>
-<translation id="3215326788962391210">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het certificaat dat de server retourneerde, is uitgegeven door een instantie die niet wordt vertrouwd door het besturingssysteem op uw computer. Dit kan betekenen dat de server zelf beveiligingsgegevens heeft gegenereerd waarop Google Chrome niet kan vertrouwen voor veiligheidsinformatie, of dat een hacker probeert uw communicatie te onderscheppen.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Bijwerken</translation>
 <translation id="1195935957447623558">Google Chrome is niet correct afgesloten. Klik op Herstellen om de pagina's te openen die actief waren.</translation>
 <translation id="2576431527583832481">Chrome is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
-<translation id="2783467918276328046">Bekijk <ph name="BEGIN_LINK"/>meer voordelen<ph name="END_LINK"/> van inloggen op Chrome.</translation>
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
 <translation id="1457721931618994305">Google Chrome bijwerken...</translation>
 <translation id="4351362253593301573">Ga naar
@@ -119,6 +117,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
           <ph name="END_BOLD"/>
           en verwijder het vinkje uit het selectievakje bij 'Een proxyserver voor het LAN-netwerk gebruiken'.</translation>
 <translation id="7747138024166251722">Het installatieprogramma kan geen tijdelijke directory maken. Controleer of u nog schijfruimte heeft en of u toestemming heeft om software te installeren.</translation>
+<translation id="6557998774620459028">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het certificaat dat de server retourneerde, is uitgegeven door een instantie die niet wordt vertrouwd door het besturingssysteem van uw computer. Dit kan betekenen dat de server zelf beveiligingsgegevens heeft gegenereerd waarop Chrome niet kan vertrouwen voor veiligheidsinformatie, of dat een hacker probeert uw communicatie te onderscheppen.</translation>
 <translation id="5170938038195470297">Uw profiel kan niet worden gebruikt omdat dit afkomstig is van een nieuwere versie van Google Chrome.
 
 Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirectory op of gebruik een nieuwere versie van Chrome.</translation>
@@ -127,6 +126,7 @@ Sommige functies zijn wellicht niet beschikbaar. Geef een andere profieldirector
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
 <translation id="2748463065602559597">U bekijkt een veilige Google Chrome-pagina.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/> is toegevoegd aan Chrome.</translation>
+<translation id="1786477462680638703">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar het certificaat dat de server retourneerde, is uitgegeven door een instantie die niet wordt vertrouwd door Google Chrome. Dit kan betekenen dat de server zelf beveiligingsgegevens heeft gegenereerd waarop Chrome niet kan vertrouwen voor veiligheidsinformatie, of dat een hacker probeert uw communicatie te onderscheppen.</translation>
 <translation id="9073088951656332330">Geen installatie van Google Chrome of Google Chrome Frame gevonden om bij te werken.</translation>
 <translation id="2346876346033403680">Iemand is eerder ingelogd bij Chrome als <ph name="ACCOUNT_EMAIL_LAST"/>. Als dit niet uw account is, maakt u een nieuwe Chrome-gebruiker om uw gegevens gescheiden te houden.
 
@@ -138,12 +138,13 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
 <translation id="3872765354315765470">App-opstartprogramma van Chrome weergeven.</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
+<translation id="742982227155662553">(Chrome moet <ph name="BEGIN_BUTTON"/>opnieuw worden gestart<ph name="END_BUTTON"/>)</translation>
 <translation id="8862326446509486874">U heeft geen rechten om op systeemniveau te installeren. Meld u aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
-<translation id="595871952790078940">Chrome</translation>
 <translation id="2874156562296220396">Google Chrome wordt mogelijk gemaakt door het open-source project <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> en andere <ph name="BEGIN_LINK_OSS"/>open-source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om uw internetervaring te verbeteren.</translation>
 <translation id="7436949144778751379">Voor Google Chrome is Windows XP of hoger vereist. Het is mogelijk dat sommige functies niet werken.</translation>
 <translation id="103396972844768118">Belangrijke informatie over uw Chrome-gegevens</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="2290095356545025170">Weet u zeker dat u Google Chrome wilt verwijderen?</translation>
 <translation id="7062966102157262887">Er wordt momenteel een download uitgevoerd. Wilt u Google Chrome afsluiten en de download annuleren?</translation>
@@ -175,14 +176,14 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
           is ingesteld op 'Direct'.</translation>
 <translation id="5788838254726722945">Google Chrome App Launcher verwijderen</translation>
 <translation id="3612333635265770873">Van een module met dezelfde naam is bekend dat deze conflicteert met Google Chrome.</translation>
+<translation id="8333216950301932607">Inloggen bij Chrome met <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="61852838583753520">&amp;Chrome OS bijwerken</translation>
-<translation id="6650142020817594541">Deze site raadt Google Chrome Frame aan (al geïnstalleerd).</translation>
-<translation id="2712549016134575851"/>
 <translation id="5577648424992741236">Deze computer beschikt al over een nieuwere versie van Google Chrome Frame. Als de software niet werkt, verwijdert u Google Chrome Frame en probeert u het opnieuw.</translation>
-<translation id="7018032895891496381">Google Chrome gebruikt uw standaardzoekmachine. Deze is momenteel ingesteld op <ph name="PAGE_TITLE"/>. Wilt u uw standaardzoekmachine behouden?</translation>
 <translation id="6326175484149238433">Verwijderen uit Chrome</translation>
 <translation id="2871893339301912279">U bent ingelogd bij Chrome.</translation>
 <translation id="7161904924553537242">Welkom bij Google Chrome</translation>
+<translation id="1686446242839005801">U logt in bij Chrome met uw account <ph name="USER_EMAIL_ADDRESS"/>. U kunt toegang krijgen tot uw bladwijzers, geschiedenis en andere instellingen op al uw ingelogde apparaten.</translation>
+<translation id="4846114739649431522">U moet Chrome overschakelen naar de bureaubladmodus om apps te gebruiken.</translation>
 <translation id="8669527147644353129">Google Chrome Helper</translation>
 <translation id="870251953148363156">&amp;Google Chrome bijwerken</translation>
 <translation id="130631256467250065">Uw wijzigingen worden doorgevoerd wanneer u het apparaat opnieuw opstart.</translation>
@@ -207,9 +208,9 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
 <translation id="7253415505590551024">Er worden momenteel downloads uitgevoerd. Wilt u Google Chrome afsluiten en de downloads annuleren?</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
-<translation id="3135343025848309798">Het app-opstartprogramma van Chrome gebruiken voor het starten van uw apps.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
-<translation id="1061257178446858647">U bent nu aangemeld bij Chrome! Uw bladwijzers, geschiedenis en andere instellingen worden gesynchroniseerd met uw Google-account.</translation>
+<translation id="5747377399547108410">U moet Chrome overschakelen naar de bureaubladmodus om het app-opstartprogramma te gebruiken.</translation>
+<translation id="1061257178446858647">U bent nu ingelogd bij Chrome! Uw bladwijzers, geschiedenis en andere instellingen worden gesynchroniseerd met uw Google-account.</translation>
 <translation id="3335672657969596251">Google Chrome ondersteunt <ph name="OS_NAME"/> niet.</translation>
 <translation id="4458285410772214805">Log uit en log weer in om deze wijziging door te voeren.</translation>
 <translation id="7311208098963907218">Een snelkoppeling voor het app-opstartprogramma van Chrome weergeven in de Windows-taakbalk.</translation>
@@ -236,7 +237,6 @@ Als u inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere i
 <translation id="3836351788193713666">Bijwerken bijna voltooid. Start Google Chrome opnieuw om de update te voltooien.</translation>
 <translation id="7106741999175697885">Taakbeheer - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome importeert de volgende onderdelen van <ph name="BROWSER_COMPONENT"/>:</translation>
-<translation id="852884188147941900">Chrome Worker</translation>
 <translation id="3396977131400919238">Er is tijdens de installatie een probleem opgetreden met het besturingssysteem. Download Google Chrome opnieuw.</translation>
 <translation id="5495581687705680288">Modules die in Google Chrome zijn geladen</translation>
 <translation id="8129812357326543296">Over &amp;Google Chrome</translation>

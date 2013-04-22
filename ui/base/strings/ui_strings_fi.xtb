@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
+<translation id="1190609913194133056">Ilmoituskeskus</translation>
 <translation id="5613020302032141669">Nuoli vas.</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/>-tiedosto (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">Hiljainen tila päivän ajan</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">Peruuta</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> t</translation>
-<translation id="3660179305079774227">Nuoli yl.</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> Mt/s</translation>
 <translation id="3990502903496589789">Oikea reuna</translation>
 <translation id="5182671122927417841">Laajennuksen poistaminen käytöstä</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">&amp;Liitä</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> Tt</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">Nuoli al.</translation>
 <translation id="3087734570205094154">Alaosa</translation>
 <translation id="6364916375976753737">Vieritä vasemmalle</translation>
-<translation id="6354639579297445993">Poistu hiljaisesta tilasta</translation>
 <translation id="6945221475159498467">Valitse</translation>
 <translation id="6620110761915583480">Tallenna tiedosto</translation>
 <translation id="7394346403752882908">Hiljainen tila tunnin ajan</translation>
 <translation id="8210608804940886430">Sivu alas</translation>
 <translation id="5329858601952122676">&amp;Poista</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kt</translation>
+<translation id="6489863328574614542">Aseta sovellusten ja laajennusten ilmoitusluvat</translation>
 <translation id="6659594942844771486">Välilehti</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> Mt</translation>
 <translation id="8428213095426709021">Asetukset</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">Vieritä alas</translation>
 <translation id="3157931365184549694">Palauta</translation>
 <translation id="8179976553408161302">Sisään</translation>
+<translation id="945522503751344254">Lähetä palautetta</translation>
 <translation id="9170848237812810038">K&amp;umoa</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> Pt</translation>
 <translation id="2983818520079887040">Asetukset...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> t/s</translation>
 <translation id="477782898153505579">Ei ilmoituksia. Ei hätää!</translation>
 <translation id="7457942297256758195">Tyhjennä kaikki</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> – ilmoitukset</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> Pt/s</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> – ilmoitukset (lukematta: <ph name="QUANTITY"/>)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Pienennä</translation>
 <translation id="4469842253116033348">Poista sivuston <ph name="SITE"/> ilmoitukset käytöstä</translation>

@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Alla anslutningar</translation>
 <translation id="2208514473086078157">Enligt policyinställningarna får du inte dela den här datorn som en Chrome Remote Desktop-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
 <translation id="2801119484858626560">Du använder en inkompatibel version av Chrome Remote Desktop. Se till att den senaste versionen av Chrome och Chrome Remote Desktop har installerats på båda datorerna och försök igen.</translation>
-<translation id="2805036638902441020">Servern kunde inte svara på nätverkets begäran.</translation>
 <translation id="6998989275928107238">Till</translation>
 <translation id="3258789396564295715">Du kan få säker åtkomst till den här datorn med Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Ange din PIN-kod för <ph name="HOSTNAME"/>.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Vissa komponenter som krävs för Chrome Remote Desktop saknas. Kontrollera att du använder den senaste versionen av Chrome och försök igen.</translation>
 <translation id="174018511426417793">Du har inte registrerat några datorer. Om du vill aktivera fjärranslutningar till en dator installerar du Chrome Remote Desktop på datorn och klickar på <ph name="BUTTON_NAME"/>.</translation>
 <translation id="8525306231823319788">Helskärm</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (inaktuellt)</translation>
 <translation id="5702987232842159181">Ansluten:</translation>
 <translation id="4736223761657662401">Anslutningshistorik</translation>
 <translation id="4430915108080446161">Åtkomstkod genereras ...</translation>
+<translation id="7022800415798056893">Fyll i enkäten</translation>
 <translation id="8228265668171617545">En inkompatibel version av Chromoting upptäcktes. Kontrollera att du har den senaste versionen av Chrome och Chromoting på båda datorerna och försök igen.</translation>
 <translation id="6985691951107243942">Är du säker på att du vill inaktivera fjärranslutningar till <ph name="HOSTNAME"/>? Om du ångrar dig måste du besöka datorn för att kunna aktivera anslutningar igen.</translation>
 <translation id="9149992051684092333">Om du vill dela ditt skrivbord ger du åtkomstkoden nedan till den som ska hjälpa dig.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Visa och styra en delad dator.</translation>
 <translation id="1520828917794284345">Anpassa skrivbordets storlek</translation>
 <translation id="701976023053394610">Fjärrhjälp</translation>
+<translation id="2747641796667576127">Programuppdateringar sker oftast automatiskt, men kan ibland misslyckas. Uppdateringen av programvaran bör inte ta mer än några minuter och du kan göra den när du är fjärransluten till datorn.</translation>
+<translation id="3933246213702324812">Chromoting på <ph name="HOSTNAME"/> är inaktuellt och måste uppdateras.</translation>
 <translation id="6193698048504518729">Anslut till <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Det gick inte att uppdatera PIN-koden. Försök igen senare.</translation>
+<translation id="785147662223870933">Vill du hjälpa till att förbättra Chrome Remote Desktop?</translation>
 <translation id="579702532610384533">Återanslut</translation>
 <translation id="4211066471404647515">Vissa komponenter som krävs för Chromoting saknas. Kontrollera att du kör den senaste versionen av Chrome och försök igen.</translation>
 <translation id="5265129178187621741">(funktionen är ännu inte tillgängligt för Chromebook ... håll utkik)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Det går inte att nå värden. Detta beror troligen på konfigurationen av nätverket som du använder.</translation>
 <translation id="3776024066357219166">Chrome Remote Desktop-sessionen har avslutats.</translation>
 <translation id="5625493749705183369">Få åtkomst till andra datorer eller ge andra åtkomst till din dator över internet på ett säkert sätt.</translation>
+<translation id="2512228156274966424">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chrome Remote Desktop på Öppna som fönster.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Om du vill aktivera fjärranslutningar till en annan dator installerar du Chromoting på datorn och klickar på <ph name="BUTTON_NAME"/>.</translation>
 <translation id="809687642899217504">Mina datorer</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Hjälp oss att förbättra Chromoting genom att tillåta att vi samlar in användningsstatistik och felrapporter.</translation>
 <translation id="6040143037577758943">Stäng</translation>
 <translation id="7649070708921625228">Hjälp</translation>
+<translation id="3581045510967524389">Det gick inte att ansluta till nätverket. Kontrollera att enheten är online.</translation>
 <translation id="4517233780764084060">Obs! Om du vill vara säker på att alla kortkommandon är tillgängliga kan du ställa in Chromoting på att Öppna som fönster.</translation>
 <translation id="4176825807642096119">Åtkomstkod</translation>
 <translation id="7144878232160441200">Försök igen</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">PIN-koden för den här datorn uppdateras …</translation>
 <translation id="5308380583665731573">Anslut</translation>
 <translation id="7319983568955948908">Sluta dela</translation>
+<translation id="2229673624483529540">Vill du hjälpa till att förbättra Chromoting?</translation>
 <translation id="6668065415969892472">PIN-koden har uppdaterats.</translation>
 <translation id="4277736576214464567">Koden är ogiltig. Försök igen.</translation>
+<translation id="979100198331752041">Chrome Remote Desktop på <ph name="HOSTNAME"/> är inaktuellt och måste uppdateras.</translation>
 <translation id="7729639150174291243">Du är inte inloggad på Chrome Remote Desktop. Logga in och försök igen.</translation>
 <translation id="2841013758207633010">Tid</translation>
 <translation id="6011539954251327702">Med Chromoting kan du säkert dela din dator över internet. Båda användarna måste köra appen Chromoting, som finns här: <ph name="URL"/>.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Ett oväntat fel uppstod. Rapportera problemet till utvecklarna.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">Enligt policyinställningarna får du inte dela den här datorn som en Chromoting-värd. Kontakta systemadministratören om du behöver hjälp.</translation>
+<translation id="9016232822027372900">Anslut ändå</translation>
 <translation id="4394049700291259645">Inaktivera</translation>
 <translation id="4156740505453712750">Om du vill skydda åtkomsten till den här datorn väljer du en PIN-kod som består av <ph name="BOLD_START"/>minst sex siffror<ph name="BOLD_END"/>. PIN-koden krävs när du ansluter från en annan plats.</translation>
 </translationbundle>

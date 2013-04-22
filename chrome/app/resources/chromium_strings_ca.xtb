@@ -11,8 +11,11 @@
 <translation id="6613594504749178791">Els canvis s'aplicaran la propera vegada que reinicieu Chromium.</translation>
 <translation id="3748537968684000502">Esteu visualitzant una pàgina segura de Chromium.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="6705571474735842144">Per utilitzar el menú d'aplicacions, heu de canviar Chromium al mode d'escriptori.</translation>
+<translation id="2077129598763517140">Utilitza l'acceleració de maquinari quan estigui disponible</translation>
 <translation id="1065672644894730302">No es poden llegir les vostres preferències. És possible que algunes funcions no estiguin disponibles i que els canvis a les preferències no es desin.</translation>
 <translation id="4222661289444749267">Actualització de Chromium Frame.</translation>
+<translation id="4423735387467980091">Personalitza i controla Chromium</translation>
 <translation id="2843244238218937196">Renderitzador de Chromium</translation>
 <translation id="7128196614940529818">Chromium Frame ja està instal·lat i disponible per a tots els usuaris d'aquest equip. Si voleu instal·lar Chromium Frame a nivell d'usuari, primer cal desinstal·lar la versió de nivell de sistema que un administrador ha instal·lat.</translation>
 <translation id="731644333568559921">Actualitza &amp;Chromium OS</translation>
@@ -31,7 +34,6 @@
 <translation id="3103660991484857065">L'instal·lador no ha pogut descomprimir l'arxiu. Torneu a baixar Chromium.</translation>
 <translation id="872034308864968620">Permet que Chromium s'executi en segon pla</translation>
 <translation id="5109068449432240255">Sí, surt de Chromium</translation>
-<translation id="4320129595801648679">S'ha remodelat la pestanya nova de Chromium. Feu clic en aquestes etiquetes per canviar d'una secció a una altra. Chromium recordarà la vostra selecció per a la propera vegada.</translation>
 <translation id="1480489203462860648">Prova'l, ja està instal·lat</translation>
 <translation id="3032787606318309379">S'està afegint a Chromium...</translation>
 <translation id="4831257561365056138">Desinstal·la el menú d'aplicacions de Chromium</translation>
@@ -57,6 +59,7 @@
           i desmarqueu la casella de selecció &quot;Utilitza un servidor intermediari per a la LAN&quot;.</translation>
 <translation id="4330585738697551178">Se sap que aquest mòdul entra en conflicte amb Chromium.</translation>
 <translation id="3190315855212034486">Chromium s'ha bloquejat. Voleu tornar-lo a iniciar?</translation>
+<translation id="6034408899846040667">Per utilitzar aplicacions, heu de canviar Chromium al mode d'escriptori.</translation>
 <translation id="6714487516757221107">No s'ha trobat cap instal·lació de Chromium o de Chromium Frame pendent d'actualització.</translation>
 <translation id="3197823471738295152">El dispositiu està actualitzat.</translation>
 <translation id="8551886023433311834">L'actualització està a punt d'acabar. Reinicieu el dispositiu per completar-la.</translation>
@@ -96,8 +99,8 @@
 <translation id="2881203820889150661">Chromium no pot crear una drecera a l'aplicació perquè no pot determinar l'entorn actual de l'escriptori.</translation>
 <translation id="4886158514168859177">Aquest equip ja té una versió més recent de Chromium Frame. Si el programari no funciona, desinstal·leu Chromium Frame i torneu-ho a provar.</translation>
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
-<translation id="8474264489072517623">Feu servir el menú d'aplicacions de Chromium per iniciar les aplicacions.</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> exigeix que llegiu i accepteu les Condicions del servei següents abans no utilitzeu el dispositiu. Aquestes condicions no amplien, modifiquen ni restringeixen les condicions de Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Tanqueu totes les finestres de Chromium (incloses les del mode Windows 8) i torneu-ho a provar.</translation>
 <translation id="6734080038664603509">Actualitza &amp;Chromium</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
@@ -137,7 +140,6 @@
 <translation id="6717134281241384636">El vostre perfil no es pot utilitzar perquè es va crear amb una versió més recent de Chromium.
 
 És possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o utilitzeu una versió més nova de Chromium.</translation>
-<translation id="2712549016134575851">S'ha detectat un conflicte amb una altra aplicació instal·lada.</translation>
 <translation id="4881709374218686648">Anteriorment heu iniciat la sessió amb un compte diferent; si inicieu la sessió, les dades es barrejaran. Podeu crear un usuari de Chromium nou a la <ph name="BEGIN_LINK"/>pàgina de configuració<ph name="END_LINK"/> de les coses de Chromium.</translation>
 <translation id="5285406370705656673">Permet iniciar la sessió a Chromium</translation>
 <translation id="9013087743919948559">Addició a Chromium</translation>
@@ -147,12 +149,12 @@
 <translation id="1691304614444223855">S'ha actualitzat Chromium Frame. Torneu a iniciar el navegador. Versió de Chromium: <ph name="TODO_0001"/>; versió de Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Els canvis es faran efectius la propera vegada que reinicieu el dispositiu.</translation>
 <translation id="1105130903706696483">Chromium no s'ha tancat correctament. Per tornar a obrir les pàgines que teníeu obertes, feu clic a Restaura.</translation>
+<translation id="1531452407274881270">Inicieu la sessió a Chromium amb el compte <ph name="USER_EMAIL_ADDRESS"/>. Podreu accedir a les adreces d'interès, a l'historial i a altres configuracions que tingueu en tots els dispositius on inicieu la sessió.</translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="1414495520565016063">Teniu la sessió iniciada a Chromium.</translation>
 <translation id="6089587093203430357">Instant</translation>
 <translation id="8520216698644798023">Error de Windows detectat</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
-<translation id="8046283042877435986">Aquest lloc recomana Chromium Frame (ja instal·lat).</translation>
 <translation id="6287463253129672858">No es pot instal·lar la mateixa versió de Chromium Frame que s'està executant actualment. Tanqueu Chromium Frame i torneu-ho a provar.</translation>
 <translation id="2558235863893655150">Voleu que Chromium desi la vostra contrasenya?</translation>
 <translation id="3398522627033804247">Aneu al
@@ -181,6 +183,7 @@
 <translation id="6601972021154586963">Cal que tingueu la sessió iniciada a Chromium per poder utilitzar aplicacions. Això permet que Chromium sincronitzi les aplicacions, les adreces d'interès, l'historial, les contrasenyes i altres configuracions que tingueu entre diversos dispositius.</translation>
 <translation id="2910007522516064972">Quant a &amp;Chromium</translation>
 <translation id="8453117565092476964">L'arxiu d'instal·lació està malmès o no és vàlid. Torneu a baixar Chromium.</translation>
+<translation id="950712238285296105">(requereix <ph name="BEGIN_BUTTON"/>reiniciar<ph name="END_BUTTON"/> Chromium)</translation>
 <translation id="2162026298602630383">Aneu al
           <ph name="BEGIN_BOLD"/>
           menú de Chromium &gt;
@@ -200,7 +203,6 @@
 <translation id="2119636228670142020">Quant a &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="1539981464052805551">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
-<translation id="8616882682724010661">Vegeu <ph name="BEGIN_LINK"/>més avantatges<ph name="END_LINK"/> d'iniciar la sessió a Chromium.</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
 <translation id="8724049448828509830">En aquests moments hi ha una baixada en curs. Voleu sortir de Chromium i cancel·lar la baixada?</translation>
 <translation id="3360567213983886831">Binaris Chromium</translation>
@@ -211,11 +213,11 @@
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW"/> la informació de Chromium com ara adreces d'interès, historial i altres configuracions.</translation>
 <translation id="2739631515503418643">En aquests moments hi ha baixades en curs. Voleu sortir de Chromium i cancel·lar les baixades?</translation>
 <translation id="9013262824292842194">Chromium requereix Windows Vista o Windows XP amb SP2 o superior.</translation>
+<translation id="7673212349590566645">Voleu iniciar la sessió a Chromium amb <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Se sap que un mòdul amb el mateix nom entra en conflicte amb Chromium.</translation>
 <translation id="4224199872375172890">Chromium està actualitzat.</translation>
 <translation id="374481098568514319">Aquest equip ja disposa d'una versió més recent dels components de Chromium. Feu servir un instal·lador més recent.</translation>
 <translation id="6240281849816458190">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que encara no és vàlid. No hi ha cap informació disponible que indiqui si el certificat és de confiança. Chromium no pot garantir amb seguretat que us estigueu comunicant amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. Actualment, el rellotge del vostre equip està definit a <ph name="CURRENT_TIME"/>. És l'hora correcta? Si no, hauríeu de corregir l'error i actualitzar aquesta pàgina.</translation>
-<translation id="5498103559159810756">Chromium utilitza el vostre motor de cerca predeterminat, que actualment és <ph name="PAGE_TITLE"/>. Voleu mantenir-lo?</translation>
 <translation id="5862307444128926510">Us donem la benvinguda a Chromium</translation>
 <translation id="1622565934590470080">Aquest equip ja té una versió més recent de Chromium i Chromium Frame. Si el programari no funciona, desinstal·leu-los i torneu-ho a provar.</translation>
 <translation id="7318036098707714271">El fitxer de preferències està malmès o no és vàlid.
@@ -223,6 +225,7 @@ En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name=
 Chromium no pot recuperar la configuració.</translation>
 <translation id="6403826409255603130">Chromium és un navegador web que executa les pàgines web i les aplicacions a gran velocitat. És ràpid, estable i fàcil d'utilitzar. Navegueu per Internet amb més seguretat amb protecció inserida a Chromium contra el programari maliciós i contra la pesca (suplantació d'identitat).</translation>
 <translation id="2927042866129133279">Arguments no vàlids. Chromium Frame no es pot instal·lar en mode preparat sense instal·lar també Chromium.</translation>
+<translation id="4019464536895378627">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat emès per una entitat en què Chromium no confia. Això pot significar que el servidor ha generat les seves pròpies credencials de seguretat, en les quals Chromium no pot confiar per a la informació d'identitat, o bé que un atacant està provant d'interceptar les vostres comunicacions.</translation>
 <translation id="2572494885440352020">Aplicació auxiliar de Chromium</translation>
 <translation id="442817494342774222">Chromium està configurat per iniciar-se automàticament cada vegada que inicieu l'equip.</translation>
 <translation id="8974095189086268230">Chromium OS és possible gràcies a <ph name="BEGIN_LINK_CROS_OSS"/>programari addicional de codi obert<ph name="END_LINK_CROS_OSS"/>.</translation>

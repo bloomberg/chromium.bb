@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Alle verbindingen</translation>
 <translation id="2208514473086078157">De beleidsinstellingen staan het delen van deze computer als host voor Chrome Remote Desktop niet toe. Neem contact op met uw systeembeheerder voor hulp.</translation>
 <translation id="2801119484858626560">Er is een incompatibele versie van Chrome Remote Desktop gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Chrome en Chrome Remote Desktop en probeer het opnieuw.</translation>
-<translation id="2805036638902441020">De server heeft niet gereageerd op het netwerkverzoek.</translation>
 <translation id="6998989275928107238">Aan</translation>
 <translation id="3258789396564295715">U kunt veilig toegang krijgen tot deze computer via Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Geef uw pincode voor <ph name="HOSTNAME"/> op.</translation>
@@ -27,7 +26,7 @@
 <translation id="4804818685124855865">Verbinding verbreken</translation>
 <translation id="5708869785009007625">Uw bureaublad wordt momenteel gedeeld met <ph name="USER"/>.</translation>
 <translation id="5601503069213153581">Pincode</translation>
-<translation id="5222676887888702881">Afmelden</translation>
+<translation id="5222676887888702881">Uitloggen</translation>
 <translation id="5064360042339518108"><ph name="HOSTNAME"/> (offline)</translation>
 <translation id="4472575034687746823">Aan de slag</translation>
 <translation id="2813770873348017932">Verbindingen met de externe computer zijn tijdelijk geblokkeerd omdat iemand heeft geprobeerd met een ongeldige pincode verbinding te maken met de computer. Probeer het later opnieuw.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Er ontbreken enkele componenten die vereist zijn voor Chrome Remote Desktop. Controleer of u de nieuwste versie van Chrome gebruikt en probeer het opnieuw.</translation>
 <translation id="174018511426417793">U heeft geen geregistreerde computers. Als u externe verbindingen met een computer mogelijk wilt maken, installeert u Chrome Remote Desktop op die computer en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="8525306231823319788">Volledig scherm</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (verouderd)</translation>
 <translation id="5702987232842159181">Verbonden:</translation>
 <translation id="4736223761657662401">Verbindingsgeschiedenis</translation>
 <translation id="4430915108080446161">Toegangscode genereren…</translation>
+<translation id="7022800415798056893">De enquête invullen</translation>
 <translation id="8228265668171617545">Er is een incompatibele versie van Chromoting gedetecteerd. Controleer of beide computers beschikken over de nieuwste versie van Chrome en Chromoting en probeer het opnieuw.</translation>
 <translation id="6985691951107243942">Weet u zeker dat u externe verbindingen met <ph name="HOSTNAME"/> wilt uitschakelen? Als u van gedachten verandert, moet u naar die computer gaan om de verbindingen weer in te schakelen.</translation>
 <translation id="9149992051684092333">Om uw bureaublad te delen, geeft u de onderstaande toegangscode aan de persoon die u gaat helpen.</translation>
@@ -58,7 +59,7 @@
 <translation id="1291443878853470558">U moet externe verbindingen inschakelen als u Chromoting wilt gebruiken voor toegang tot deze computer.</translation>
 <translation id="6091564239975589852">Toetsen verzenden</translation>
 <translation id="4572065712096155137">Verbinding maken</translation>
-<translation id="5908809458024685848">U bent niet ingelogd op Chromoting. Log in en probeer het opnieuw.</translation>
+<translation id="5908809458024685848">U bent niet ingelogd bij Chromoting. Log in en probeer het opnieuw.</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="3362124771485993931">Pincode nogmaals opgeven</translation>
 <translation id="154040539590487450">Kan de service voor externe toegang niet starten.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Een gedeelde computer bekijken en beheren.</translation>
 <translation id="1520828917794284345">Formaat van bureaublad aanpassen</translation>
 <translation id="701976023053394610">Externe ondersteuning</translation>
+<translation id="2747641796667576127">Software-updates worden gewoonlijk automatisch uitgevoerd, maar kunnen in zeldzame gevallen mislukken. Het bijwerken van de software duurt slechts een paar minuten en kan worden gedaan terwijl u extern bent verbonden met uw computer.</translation>
+<translation id="3933246213702324812">Chromoting op <ph name="HOSTNAME"/> is verouderd en moet worden bijgewerkt.</translation>
 <translation id="6193698048504518729">Verbinding maken met <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Kan pincode niet bijwerken. Probeer het later opnieuw.</translation>
+<translation id="785147662223870933">Wilt u helpen bij het verbeteren van Chrome Remote Desktop?</translation>
 <translation id="579702532610384533">Opnieuw verbinding maken</translation>
 <translation id="4211066471404647515">Er ontbreken enkele componenten die vereist zijn voor Chromoting. Controleer of u de nieuwste versie van Chrome gebruikt en probeer het opnieuw.</translation>
 <translation id="5265129178187621741">(deze functie is nog niet beschikbaar voor Chromebooks… nog even geduld)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat u gebruikt.</translation>
 <translation id="3776024066357219166">Uw Chrome Remote Desktop-sessie is beëindigd.</translation>
 <translation id="5625493749705183369">Toegang krijgen tot andere computers of een andere gebruiker toestemming geven veilig toegang te krijgen tot uw computer via internet.</translation>
+<translation id="2512228156274966424">Opmerking: als u er zeker van wilt zijn dat alle sneltoetsen beschikbaar zijn, kunt u Chrome Remote Desktop configureren om de modus 'Openen als venster' te gebruiken.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Als u externe verbindingen met een andere computer mogelijk wilt maken, installeert u Chromoting en klikt u op '<ph name="BUTTON_NAME"/>'.</translation>
 <translation id="809687642899217504">Mijn computers</translation>
@@ -97,11 +102,12 @@
 <translation id="6527303717912515753">Delen</translation>
 <translation id="2926340305933667314">Kan externe toegang tot deze computer niet uitschakelen. Probeer het later opnieuw.</translation>
 <translation id="2089514346391228378">Externe verbindingen voor deze computer zijn ingeschakeld.</translation>
-<translation id="8246880134154544773">Authenticatie mislukt. Log opnieuw in op Chromoting.</translation>
+<translation id="8246880134154544773">Authenticatie mislukt. Log opnieuw in bij Chromoting.</translation>
 <translation id="1654128982815600832">Externe verbindingen voor deze computer inschakelen…</translation>
 <translation id="7038683108611689168">Help ons Chromoting te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
 <translation id="6040143037577758943">Sluiten</translation>
 <translation id="7649070708921625228">Help</translation>
+<translation id="3581045510967524389">Kan geen verbinding maken met het netwerk. Controleer of uw apparaat online is.</translation>
 <translation id="4517233780764084060">OPMERKING: als u ervoor wilt zorgen dat alle sneltoetsen beschikbaar zijn, kunt u Chromoting instellen op 'Openen als venster'.</translation>
 <translation id="4176825807642096119">Toegangscode</translation>
 <translation id="7144878232160441200">Opnieuw proberen</translation>
@@ -111,9 +117,11 @@
 <translation id="652218476070540101">De pincode voor deze computer wordt bijgewerkt…</translation>
 <translation id="5308380583665731573">Verbinding maken</translation>
 <translation id="7319983568955948908">Delen stoppen</translation>
+<translation id="2229673624483529540">Wilt u helpen bij het verbeteren van Chromoting?</translation>
 <translation id="6668065415969892472">Uw pincode is bijgewerkt.</translation>
 <translation id="4277736576214464567">De toegangscode is ongeldig. Probeer het opnieuw.</translation>
-<translation id="7729639150174291243">U bent niet ingelogd op Chrome Remote Desktop. Log in en probeer het opnieuw.</translation>
+<translation id="979100198331752041">Chrome Remote Desktop op <ph name="HOSTNAME"/> is verouderd en moet worden bijgewerkt.</translation>
+<translation id="7729639150174291243">U bent niet ingelogd bij Chrome Remote Desktop. Log in en probeer het opnieuw.</translation>
 <translation id="2841013758207633010">Tijd</translation>
 <translation id="6011539954251327702">Met Chromoting kunt u uw computer veilig delen via internet. Beide gebruikers moeten de app Chromoting uitvoeren, die beschikbaar is op <ph name="URL"/>.</translation>
 <translation id="2919669478609886916">U deelt deze computer momenteel met een andere gebruiker. Wilt u doorgaan met delen?</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Er is een onverwachte fout opgetreden. Meld dit probleem aan de ontwikkelaars.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">De beleidsinstellingen staan het delen van deze computer als host voor Chromoting niet toe. Neem contact op met uw systeembeheerder voor hulp.</translation>
+<translation id="9016232822027372900">Toch verbinding maken</translation>
 <translation id="4394049700291259645">Uitschakelen</translation>
 <translation id="4156740505453712750">Om de toegang tot deze computer te beschermen, kiest u een pincode van <ph name="BOLD_START"/>ten minste zes cijfers<ph name="BOLD_END"/>. U moet deze pincode opgeven wanneer u verbinding maakt vanaf een andere locatie.</translation>
 </translationbundle>

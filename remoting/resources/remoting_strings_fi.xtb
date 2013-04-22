@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Kaikki yhteydet</translation>
 <translation id="2208514473086078157">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chrome-etäkäyttöisäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
 <translation id="2801119484858626560">Havaittiin yhteensopimaton Chrome-etäkäyttöversio. Varmista, että molemmissa tietokoneissa on uusimmat Chrome- ja Chrome-etäkäyttöversiot, ja yritä uudelleen.</translation>
-<translation id="2805036638902441020">Palvelin ei pystynyt vastaamaan verkkopyyntöön.</translation>
 <translation id="6998989275928107238">Kohde</translation>
 <translation id="3258789396564295715">Tähän tietokoneeseen voi muodostaa suojatun yhteyden Chrome-etäkäytön avulla.</translation>
 <translation id="4808503597364150972">Anna kohteen <ph name="HOSTNAME"/> PIN-koodi.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Jotkin Chrome-etäkäyttöön vaadittavat komponentit puuttuvat. Varmista, että käytät uusinta Chrome-versiota, ja yritä uudelleen.</translation>
 <translation id="174018511426417793">Käyttöösi ei ole rekisteröity tietokoneita. Ota käyttöön etäyhteys asentamalla toiselle tietokoneelle Chrome-etäkäyttö ja klikkaamalla painiketta <ph name="BUTTON_NAME"/>.</translation>
 <translation id="8525306231823319788">Koko näyttö</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (vanhentunut)</translation>
 <translation id="5702987232842159181">Yhdistetty:</translation>
 <translation id="4736223761657662401">Yhteyshistoria</translation>
 <translation id="4430915108080446161">Luodaan käyttökoodia...</translation>
+<translation id="7022800415798056893">Vastaa kyselyyn</translation>
 <translation id="8228265668171617545">Havaittiin yhteensopimaton Chromoting-versio. Varmista, että molemmissa tietokoneissa on uusimmat Chrome- ja Chromoting-versiot, ja yritä uudelleen.</translation>
 <translation id="6985691951107243942">Haluatko varmasti poistaa käytöstä etäyhteydet kohteeseen <ph name="HOSTNAME"/>? Jos muutat mieltäsi, yhteydet täytyy palauttaa käyttöön kyseisellä tietokoneella.</translation>
 <translation id="9149992051684092333">Aloita työpöydän jakaminen antamalla käyttökoodi sinua avustavalle henkilölle.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Tarkastele ja hallinnoi jaettua tietokonetta.</translation>
 <translation id="1520828917794284345">Sovita työpöydän koko</translation>
 <translation id="701976023053394610">Etätuki</translation>
+<translation id="2747641796667576127">Ohjelmistopäivitykset tapahtuvat yleensä automaattisesti, mutta voivat epäonnistua joissakin harvinaisissa tapauksissa. Ohjelmiston päivittäminen kestää yleensä vain muutaman minuutin, ja se voidaan suorittaa etäyhteyden välityksellä.</translation>
+<translation id="3933246213702324812">Chromoting kohteessa <ph name="HOSTNAME"/> on vanhentunut ja vaatii päivityksen.</translation>
 <translation id="6193698048504518729">Yhdistä kohteeseen <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">PIN-koodin päivitys epäonnistui. Yritä myöhemmin uudelleen.</translation>
+<translation id="785147662223870933">Haluatko auttaa kehittämään Chrome-etäkäyttöä?</translation>
 <translation id="579702532610384533">Yhdistä uudelleen</translation>
 <translation id="4211066471404647515">Jotkin Chromotingin käyttöön vaadittavat komponentit puuttuvat. Varmista, että käytät uusinta Chrome-versiota ja yritä uudelleen.</translation>
 <translation id="5265129178187621741">(Tämä ominaisuus ei ole vielä saatavilla Chromebookeille... Pysy kuulolla)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Isäntään ei saatu yhteyttä. Tämä johtuu luultavasti käyttämäsi verkon määrityksistä.</translation>
 <translation id="3776024066357219166">Chrome-etäkäyttökerta on päättynyt.</translation>
 <translation id="5625493749705183369">Käytä muita tietokoneita tai salli toisen käyttäjän käyttää tietokonettasi suojatun internetyhteyden kautta.</translation>
+<translation id="2512228156274966424">Huomaa: voit varmistaa kaikkien pikanäppäinten käytettävyyden, kun määrität Chrome-etäkäytön avautumaan ikkunassa.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Ota etäyhteys käyttöön asentamalla toiselle tietokoneelle Chromoting ja valitsemalla <ph name="BUTTON_NAME"/>.</translation>
 <translation id="809687642899217504">Omat tietokoneet</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Auta meitä parantamaan Chromotingia antamalla meidän kerätä käyttötilastoja ja virheraportteja.</translation>
 <translation id="6040143037577758943">Sulje</translation>
 <translation id="7649070708921625228">Ohje</translation>
+<translation id="3581045510967524389">Verkkoon yhdistäminen ei onnistu. Varmista, että laitteesi on online-tilassa.</translation>
 <translation id="4517233780764084060">Huomautus: voit varmistaa, että kaikki pikanäppäimet ovat käytettävissä, kun määrität Chromotingin avautumaan ikkunana.</translation>
 <translation id="4176825807642096119">Käyttökoodi</translation>
 <translation id="7144878232160441200">Yritä uudelleen</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">Tietokoneen PIN-koodia päivitetään…</translation>
 <translation id="5308380583665731573">Yhdistä</translation>
 <translation id="7319983568955948908">Lopeta jakaminen</translation>
+<translation id="2229673624483529540">Haluatko auttaa kehittämään Chromoting-toimintoa?</translation>
 <translation id="6668065415969892472">PIN-koodi on päivitetty.</translation>
 <translation id="4277736576214464567">Käyttökoodi on virheellinen. Yritä uudelleen.</translation>
+<translation id="979100198331752041">Chrome-etäkäyttö kohteessa <ph name="HOSTNAME"/> on vanhentunut ja vaatii päivityksen.</translation>
 <translation id="7729639150174291243">Et ole kirjautunut Chrome-etäkäyttöön. Kirjaudu sisään ja yritä uudelleen.</translation>
 <translation id="2841013758207633010">Aika</translation>
 <translation id="6011539954251327702">Chromotingin avulla voit jakaa tietokoneesi suojatun verkkoyhteyden kautta. Molempien käyttäjien täytyy käyttää osoitteesta <ph name="URL"/> löytyvää Chromoting-sovellusta.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Odottamaton virhe. Ilmoita tästä ongelmasta kehittäjille.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">Käytäntöasetukset eivät salli tämän tietokoneen jakamista Chromoting-isäntänä. Ota yhteyttä järjestelmänvalvojaan.</translation>
+<translation id="9016232822027372900">Yhdistä silti</translation>
 <translation id="4394049700291259645">Poista käytöstä</translation>
 <translation id="4156740505453712750">Suojaa tämän tietokoneen käyttöä valitsemalla <ph name="BOLD_START"/>vähintään kuusinumeroinen<ph name="BOLD_END"/> PIN-koodi. Tarvitset PIN-koodin muodostaessasi yhteyden toiselta koneelta.</translation>
 </translationbundle>

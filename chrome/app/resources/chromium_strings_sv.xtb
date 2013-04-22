@@ -11,10 +11,13 @@
 <translation id="6613594504749178791">Ändringarna tillämpas nästa gång du startar om Chromium.</translation>
 <translation id="3748537968684000502">Du tittar på en säker Chromium-sida.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="6705571474735842144">Du måste byta till skrivbordsläge i Chromium om du vill använda startprogrammet för appar.</translation>
+<translation id="2077129598763517140">Använd maskinvaruacceleration när det är tillgängligt</translation>
 <translation id="1065672644894730302">Det går inte att läsa inställningarna.
 
 Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna sparas inte.</translation>
 <translation id="4222661289444749267">Uppdatering av Chromium Frame.</translation>
+<translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
 <translation id="2843244238218937196">Renderaren för Chromium</translation>
 <translation id="7128196614940529818">Chromium Frame är redan installerat och tillgängligt för alla användare på den här datorn. Om du vill installera Chromium Frame på användarnivå måste du först avinstallera versionen på systemnivå som installerats av en administratör.</translation>
 <translation id="731644333568559921">Uppdatera &amp;Chromium OS</translation>
@@ -33,7 +36,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="3103660991484857065">Det gick inte att packa upp arkivet med installationsfilen. Hämta Chromium igen.</translation>
 <translation id="872034308864968620">Låt Chromium köras i bakgrunden</translation>
 <translation id="5109068449432240255">Ja, avsluta Chromium</translation>
-<translation id="4320129595801648679">Sidan Ny flik i Chromium har fått ett nytt utseende. Du kan hoppa mellan olika delar genom att klicka på etiketterna. Chromium kommer ihåg dina inställningar till nästa gång.</translation>
 <translation id="1480489203462860648">Testa, webbläsaren är redan installerad</translation>
 <translation id="3032787606318309379">Lägger till i Chromium ...</translation>
 <translation id="4831257561365056138">Avinstallera Chromium App Launcher</translation>
@@ -59,6 +61,7 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
           och avmarkera kryssrutan Använd en proxyserver för nätverket.</translation>
 <translation id="4330585738697551178">Den här modulen har tidigare varit i konflikt med Chromium.</translation>
 <translation id="3190315855212034486">Hoppsan! Chromium har kraschat. Vill du starta om nu?</translation>
+<translation id="6034408899846040667">Du måste byta till skrivbordsläge i Chromium om du vill använda appar.</translation>
 <translation id="6714487516757221107">Det finns ingen installation av Chromium eller Chromium Frame att uppdatera.</translation>
 <translation id="3197823471738295152">Enheten är uppdaterad.</translation>
 <translation id="8551886023433311834">Uppdateringen är nästan klar! Slutför den genom att starta om enheten.</translation>
@@ -98,8 +101,8 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="2881203820889150661">Det går inte att skapa en genväg till programmet i Chromium eftersom den aktuella skrivbordsmiljön inte kan fastställas.</translation>
 <translation id="4886158514168859177">Det finns redan en nyare version av Chromium Frame på den här datorn. Avinstallera Chromium Frame och försök igen om programvaran inte fungerar.</translation>
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
-<translation id="8474264489072517623">Använd startprogrammet för appar i Chromium.</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> kräver att du läser och godkänner följande användarvillkor innan du använder enheten. Villkoren varken utökar, ändrar eller begränsar villkoren för Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Stäng alla Chromium-fönster (inklusive i Windows 8-läge) och försök igen.</translation>
 <translation id="6734080038664603509">Uppdatera &amp;Chromium</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
@@ -138,7 +141,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="6717134281241384636">Din profil kan inte användas eftersom den kommer från en nyare version av Chromium.
 
 Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog eller använd en nyare version av Chromium.</translation>
-<translation id="2712549016134575851">En konflikt med ett annat installerat program har upptäckts.</translation>
 <translation id="4881709374218686648">Du var tidigare inloggad med ett annat konto. Om du loggar in slås dina data ihop. Du kan välja att skapa en ny Chromium-användare på <ph name="BEGIN_LINK"/>sidan Inställningar<ph name="END_LINK"/> för Chromium.</translation>
 <translation id="5285406370705656673">Tillåt inloggning i Chromium.</translation>
 <translation id="9013087743919948559">Lägg till i Chromium</translation>
@@ -148,12 +150,12 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="1691304614444223855">Chromium Frame har uppdaterats. Starta om webbläsaren. Version av Chromium: <ph name="TODO_0001"/>, version av Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Dina ändringar börjar gälla nästa gång du startar om enheten.</translation>
 <translation id="1105130903706696483">Chromium stängdes inte av korrekt. Om du vill öppna sidorna som var öppna igen klickar du på Återställ.</translation>
+<translation id="1531452407274881270">Du loggar in i Chromium med ditt <ph name="USER_EMAIL_ADDRESS"/>-konto. Du kommer att kunna komma åt dina bokmärken, historik och andra inställningar på alla enheter där du är inloggad.</translation>
 <translation id="1929939181775079593">Chromium svarar inte. Vill du starta om?</translation>
 <translation id="1414495520565016063">Du är inloggad i Chromium.</translation>
 <translation id="6089587093203430357">Instant</translation>
 <translation id="8520216698644798023">Ett Windows-fel har upptäckts</translation>
 <translation id="2966088006374919794">Chromium måste starta ett externt program för att kunna hantera <ph name="SCHEME"/>-länkar. Den länk som efterfrågas är <ph name="PROTOLINK"/>.</translation>
-<translation id="8046283042877435986">Webbplatsen rekommenderar Google Chrome Frame (redan installerat).</translation>
 <translation id="6287463253129672858">Det går inte att installera samma version av Chromium Frame som den som redan körs. Stäng Chromium Frame och försök igen.</translation>
 <translation id="2558235863893655150">Vill du att Chromium ska spara ditt lösenord?</translation>
 <translation id="3398522627033804247">Öppna
@@ -182,6 +184,7 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="6601972021154586963">Du måste vara inloggad i Chromium för att kunna använda appar. När du är inloggad kan du synkronisera appar, bokmärken, historik, lösenord och andra inställningar mellan dina enheter.</translation>
 <translation id="2910007522516064972">Om &amp;Chromium</translation>
 <translation id="8453117565092476964">Arkivet för installationsfilen är skadat eller ogiltigt. Hämta Chromium igen.</translation>
+<translation id="950712238285296105">(Chromium måste <ph name="BEGIN_BUTTON"/>startas om<ph name="END_BUTTON"/>)</translation>
 <translation id="2162026298602630383">Öppna
           <ph name="BEGIN_BOLD"/>
           Chromium-menyn &gt;
@@ -201,7 +204,6 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 <translation id="2119636228670142020">Om &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Det finns en ny, ännu säkrare version av Chromium.</translation>
 <translation id="1539981464052805551">Upphovsrätt 2013 The Chromium Authors. Med ensamrätt.</translation>
-<translation id="8616882682724010661">Visa <ph name="BEGIN_LINK"/>fler fördelar<ph name="END_LINK"/> med att logga in i Chromium.</translation>
 <translation id="378917192836375108">I Chromium kan du klicka på ett telefonnummer på nätet och ringa det med Skype!</translation>
 <translation id="8724049448828509830">En hämtning pågår. Vill du avsluta Chromium och avbryta hämtningen?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
@@ -212,11 +214,11 @@ Vissa funktioner är kanske inte tillgängliga. Ange en annan profilkatalog elle
 Om du loggar in ändå kommer information som bokmärken, historik och andra inställningar i Chromium att synkroniseras med <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Hämtningar pågår. Vill du avsluta Chromium och avbryta hämtningarna?</translation>
 <translation id="9013262824292842194">För Chromium krävs Windows Vista eller Windows XP med SP2 eller senare.</translation>
+<translation id="7673212349590566645">Vill du logga in i Chromium med <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">En modul med samma namn har tidigare varit i konflikt med Chromium.</translation>
 <translation id="4224199872375172890">Chromium är uppdaterat.</translation>
 <translation id="374481098568514319">Datorn har redan en nyare version av Chromium-komponenterna. Använd ett nyare installationsprogram.</translation>
 <translation id="6240281849816458190">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som inte är giltigt ännu. Det finns ingen information som anger om certifikatet är tillförlitligt. Chromium kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Datorns klocka är inställd på <ph name="CURRENT_TIME"/>. Ser det rätt ut? Om det inte gör det bör du korrigera klockan och uppdatera sidan.</translation>
-<translation id="5498103559159810756">Chromium använder din standardsökmotor, som för närvarande är <ph name="PAGE_TITLE"/>. Vill du behålla din standardsökmotor?</translation>
 <translation id="5862307444128926510">Välkommen till Chromium</translation>
 <translation id="1622565934590470080">Det finns redan en senare version av Chromium och Chromium Frame på den här datorn. Avinstallera både Chromium och Chromium Frame och försök igen om programvaran inte fungerar.</translation>
 <translation id="7318036098707714271">Inställningsfilen är skadad eller ogiltig.
@@ -224,6 +226,7 @@ Om du loggar in ändå kommer information som bokmärken, historik och andra ins
 Chromium kan inte återställa dina inställningar.</translation>
 <translation id="6403826409255603130">Chromium är en webbläsare som kör webbsidor och appar blixtsnabbt. Den är snabb, stabil och lätt att använda. Surfa säkrare med Chromiums skydd mot skadliga program och lösenordsfiske.</translation>
 <translation id="2927042866129133279">Ogiltiga argument. Chromium Frame kan inte installeras i klart läge utan att Chromium också installeras.</translation>
+<translation id="4019464536895378627">Du försökte öppna &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men servern visade ett certifikat som utfärdats av en enhet som inte är tillförlitlig enligt Chromium. Det kan betyda att servern har skapat egna säkerhetsuppgifter som Chromium inte kan förlita sig på för identitetsinformation eller att en angripare försöker ta över din kommunikation.</translation>
 <translation id="2572494885440352020">Hjälp för Chromium</translation>
 <translation id="442817494342774222">Chromium är konfigurerad för att starta automatiskt när du startar datorn.</translation>
 <translation id="8974095189086268230">Chromium OS fungerar tack vare <ph name="BEGIN_LINK_CROS_OSS"/>program med öppen källkod<ph name="END_LINK_CROS_OSS"/>.</translation>

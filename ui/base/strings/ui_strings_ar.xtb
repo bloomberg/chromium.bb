@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">مفتاح Ins</translation>
 <translation id="6135826906199951471">مفتاح Del (حذف)</translation>
 <translation id="528468243742722775">مفتاح End</translation>
+<translation id="1190609913194133056">مركز الإشعارات</translation>
 <translation id="5613020302032141669">مفتاح سهم إلى اليسار</translation>
 <translation id="8602707065186045623">ملف <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">تشغيل الوضع صامت لمدة يوم</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> بايت</translation>
-<translation id="3660179305079774227">مفتاح سهم إلى أعلى</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> ميغابايات/ثانية</translation>
 <translation id="3990502903496589789">الحافة اليسرى</translation>
 <translation id="5182671122927417841">تعطيل الإضافة</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">ل&amp;صق</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> تيرابايت</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">مفتاح سهم  إلى أسفل</translation>
 <translation id="3087734570205094154">أسفل</translation>
 <translation id="6364916375976753737">التمرير إلى اليمين</translation>
-<translation id="6354639579297445993">الخروج من الوضع صامت</translation>
 <translation id="6945221475159498467">تحديد</translation>
 <translation id="6620110761915583480">حفظ الملف</translation>
 <translation id="7394346403752882908">تشغيل الوضع صامت لمدة ساعة</translation>
 <translation id="8210608804940886430">صفحة  إلى أسفل</translation>
 <translation id="5329858601952122676">&amp;حذف</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> كيلوبايت</translation>
+<translation id="6489863328574614542">تعيين أذونات الإشعارات للتطبيقات والإضافات</translation>
 <translation id="6659594942844771486">علامة تبويب</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> ميغابايت</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">التمرير إلى أسفل</translation>
 <translation id="3157931365184549694">استعادة</translation>
 <translation id="8179976553408161302">تفضل</translation>
+<translation id="945522503751344254">إرسال تعليقات</translation>
 <translation id="9170848237812810038">&amp;إلغاء</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> بيتابايت</translation>
 <translation id="2983818520079887040">الإعدادات...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> بايت/ثانية</translation>
 <translation id="477782898153505579">ليس لديك أية إشعارات. استرح!</translation>
 <translation id="7457942297256758195">محو الكل</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> - الإشعارات</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> بيتابايت/ثانية</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> - الإشعارات (<ph name="QUANTITY"/> من الإشعارات غير المقروءة)</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="5941711191222866238">تصغير</translation>
 <translation id="4469842253116033348">تعطيل التنبيهات من الموقع <ph name="SITE"/></translation>

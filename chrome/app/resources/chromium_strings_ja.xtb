@@ -11,8 +11,11 @@
 <translation id="6613594504749178791">変更内容は次に Chromium を再起動したときに有効になります。</translation>
 <translation id="3748537968684000502">Chromium の安全なページを表示しています。</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="6705571474735842144">アプリ ランチャーを使用するには、Chromium をデスクトップ モードに切り替える必要があります。</translation>
+<translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="4222661289444749267">Chromium Frame が更新されました。</translation>
+<translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="7128196614940529818">このパソコンには既に Chromium Frame がインストールされており、パソコンのすべてのユーザーが使用できます。ユーザー レベルで Chromium Frame をインストールする場合は、管理者がインストールしたシステム レベルの Chromium Frame を最初にアンインストールする必要があります。</translation>
 <translation id="731644333568559921">Chromium OS を更新(&amp;C)</translation>
@@ -31,7 +34,6 @@
 <translation id="3103660991484857065">インストーラ アーカイブを解凍できませんでした。Chromium をダウンロードし直してください。</translation>
 <translation id="872034308864968620">Chromium をバックグラウンドで実行する</translation>
 <translation id="5109068449432240255">はい、Chromium を終了します</translation>
-<translation id="4320129595801648679">Chromium の新しいタブ ページが改良されました。これらのラベルをクリックしてセクションを切り替えることができます。設定は次回使用時にも引き継がれます。</translation>
 <translation id="1480489203462860648">使ってみる（既にインストール済み）</translation>
 <translation id="3032787606318309379">Chromium に追加...</translation>
 <translation id="4831257561365056138">Chromium アプリ ランチャーをアンインストール</translation>
@@ -56,6 +58,7 @@
           を順にクリックして、[LAN にプロキシ サーバーを使用する] チェックボックスをオフにします。</translation>
 <translation id="4330585738697551178">このモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="3190315855212034486">エラー: Chromium で問題が発生しました。今すぐ再起動しますか？</translation>
+<translation id="6034408899846040667">アプリを使用するには、Chromium をデスクトップ モードに切り替える必要があります。</translation>
 <translation id="6714487516757221107">現在、インストールできる Chromium と Chromium Frame のアップデートはありません。</translation>
 <translation id="3197823471738295152">お使いの端末は最新の状態です。</translation>
 <translation id="8551886023433311834">更新を完了するには、端末を再起動してください。</translation>
@@ -95,8 +98,8 @@
 <translation id="2881203820889150661">Chromium では、現在のデスクトップ環境を特定できないため、アプリケーション ショートカットを作成できません。</translation>
 <translation id="4886158514168859177">新しいバージョンの Chromium Frame が既にインストールされています。ソフトウェアが動作しない場合は、Chromium Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
-<translation id="8474264489072517623">アプリを起動するには Chromium アプリ ランチャーをお使いください。</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> では、このデバイスを使用する前に下記の利用規約を確認しこれに同意していただく必要があります。これらの規約は Chromium OS 利用規約を拡張、変更、制限するものではありません。</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Chromium のウィンドウ（Windows 8 モードのウィンドウを含む）をすべて閉じてからもう一度お試しください。</translation>
 <translation id="6734080038664603509">Chromium を更新(&amp;C)</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
@@ -135,7 +138,6 @@
 <translation id="6717134281241384636">バージョンが新しい Chromium のプロフィールは使用できません。
 
 一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chromium をご使用ください。</translation>
-<translation id="2712549016134575851">インストールされている別のアプリケーションとの競合が検出されました。</translation>
 <translation id="4881709374218686648">前回、別のアカウントでログインしていたため、今回ログインするとデータが統合されます。Chromium データの<ph name="BEGIN_LINK"/>設定ページ<ph name="END_LINK"/>で新しい Chromium ユーザーを作成することをおすすめします。</translation>
 <translation id="5285406370705656673">Chromium へのログインを許可する。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
@@ -145,12 +147,12 @@
 <translation id="1691304614444223855">Chromium Frame が更新されました。ブラウザを再起動してください。Chromium バージョン: <ph name="TODO_0001"/>、Chromium Frame バージョン: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">変更内容は、次回の端末の起動時に反映されます。</translation>
 <translation id="1105130903706696483">Chromium は正しく終了しませんでした。前回アクセスしたページをもう一度開くには、[復元] をクリックします。</translation>
+<translation id="1531452407274881270"><ph name="USER_EMAIL_ADDRESS"/> アカウントを使用して Chromium にログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
 <translation id="6089587093203430357">インスタント検索</translation>
 <translation id="8520216698644798023">Windows のエラーが検出されました</translation>
 <translation id="2966088006374919794">Chromium では、<ph name="SCHEME"/> リンクを処理する際に外部アプリケーションの起動が必要になります。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
-<translation id="8046283042877435986">このサイトでは Chromium Frame（インストール済み）が推奨されています。</translation>
 <translation id="6287463253129672858">実行中の Chromium Frame と同じバージョンをインストールすることはできません。Chromium Frame を閉じてからもう一度お試しください。</translation>
 <translation id="2558235863893655150">Chromium でパスワードを保存しますか？</translation>
 <translation id="3398522627033804247"><ph name="BEGIN_BOLD"/>
@@ -178,6 +180,7 @@
 <translation id="6601972021154586963">アプリを使用するには Chromium にログインする必要があります。ログインすると、Chromium ではアプリ、ブックマーク、履歴、パスワード、その他の設定をデバイス間で同期できます。</translation>
 <translation id="2910007522516064972">Chromium について(&amp;C)</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
+<translation id="950712238285296105">（Chromium を<ph name="BEGIN_BUTTON"/>再起動<ph name="END_BUTTON"/>する必要があります）</translation>
 <translation id="2162026298602630383"><ph name="BEGIN_BOLD"/>
           Chromium メニュー &gt;
           [<ph name="SETTINGS_TITLE"/>] 
@@ -196,7 +199,6 @@
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
-<translation id="8616882682724010661">Chromium にログインするとその他にも<ph name="BEGIN_LINK"/>さまざまなメリット<ph name="END_LINK"/>があります。</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
 <translation id="8724049448828509830">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
@@ -207,11 +209,11 @@
 このままログインすると、ブックマーク、履歴、その他の設定などの Chromium データが <ph name="ACCOUNT_EMAIL_NEW"/> と統合されます。</translation>
 <translation id="2739631515503418643">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
 <translation id="9013262824292842194">Chromium のご利用には Windows Vista または Windows XP SP2 以降が必要です。</translation>
+<translation id="7673212349590566645"><ph name="USER_EMAIL_ADDRESS"/> で Chromium にログインしますか？</translation>
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="4224199872375172890">Chromium は最新版です。</translation>
 <translation id="374481098568514319">新しいバージョンの Chromium コンポーネントが既にインストールされています。最新のインストーラを使用してください。</translation>
 <translation id="6240281849816458190">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書はまだ有効になっていません。この証明書が信頼できるかどうかについて確認できる情報はありません。Chromium では、悪意のあるユーザーでなく &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; と確かに通信していることを保証することはできません。お使いのパソコンの時刻は現在、<ph name="CURRENT_TIME"/> に設定されています。時刻が正しくない場合は、システムの時刻を修正してからこのページを更新してください。</translation>
-<translation id="5498103559159810756">Chromium は既定の検索エンジンを使用します。現在は <ph name="PAGE_TITLE"/> に設定されています。この検索エンジンを使用しますか？</translation>
 <translation id="5862307444128926510">Chromium へようこそ</translation>
 <translation id="1622565934590470080">新しいバージョンの Chromium と Chromium Frame が既にインストールされています。ソフトウェアが動作しない場合は、Chromium と Chromium Frame をアンインストールしてからもう一度お試しください。</translation>
 <translation id="7318036098707714271">ユーザー設定ファイルが壊れているか無効です。
@@ -219,6 +221,7 @@
 設定を復元できません。</translation>
 <translation id="6403826409255603130">Chromium は、ウェブページやアプリケーションを高速に実行できるスピードと、高い安定性を兼ね備えた非常に使いやすいウェブブラウザです。不正なソフトウェアやフィッシングに対する保護機能が組み込まれており、ウェブを安全にブラウジングできます。</translation>
 <translation id="2927042866129133279">引数が無効です。Chromium Frame を準備完了モードでインストールするには、一緒に Chromium をインストールする必要があります。</translation>
+<translation id="4019464536895378627">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、Chromium で信頼されていない発行元です。サーバーで独自に生成されたセキュリティ認証情報が、Chromium で認証情報として使用できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
 <translation id="2572494885440352020">Chromium Helper</translation>
 <translation id="442817494342774222">Chromium は、パソコン起動時に自動的に起動されるよう設定されています。</translation>
 <translation id="8974095189086268230">Chromium OS は、追加の<ph name="BEGIN_LINK_CROS_OSS"/>オープンソース ソフトウェア<ph name="END_LINK_CROS_OSS"/>によって実現しました。</translation>

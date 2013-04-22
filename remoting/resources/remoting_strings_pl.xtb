@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Wszystkie połączenia</translation>
 <translation id="2208514473086078157">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Pulpitu zdalnego Chrome. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
 <translation id="2801119484858626560">Wykryto niezgodną wersję Pulpitu zdalnego Chrome. Upewnij się, że masz najnowszą wersję Chrome oraz Pulpitu zdalnego Chrome na obu komputerach i spróbuj ponownie.</translation>
-<translation id="2805036638902441020">Serwer nie odpowiada na żądanie sieciowe.</translation>
 <translation id="6998989275928107238">Do</translation>
 <translation id="3258789396564295715">Możesz bezpiecznie korzystać z tego komputera przez Pulpit zdalny Chrome.</translation>
 <translation id="4808503597364150972">Wpisz PIN dla: <ph name="HOSTNAME"/>.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Brak niektórych elementów wymaganych przez Pulpit zdalny Chrome. Upewnij się, że korzystasz z najnowszej wersji Chrome i spróbuj ponownie.</translation>
 <translation id="174018511426417793">Nie masz zarejestrowanych komputerów. Aby umożliwić zdalne połączenia z komputerem, zainstaluj na nim Pulpit zdalny Chrome i kliknij „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Pełny ekran</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (nieaktualne)</translation>
 <translation id="5702987232842159181">Połączono:</translation>
 <translation id="4736223761657662401">Historia połączeń</translation>
 <translation id="4430915108080446161">Generuję kod dostępu…</translation>
+<translation id="7022800415798056893">Wypełnij ankietę</translation>
 <translation id="8228265668171617545">Wykryto niezgodną wersję Chromoting. Upewnij się, że masz najnowszą wersję Chrome oraz Chromoting na obu komputerach i spróbuj ponownie.</translation>
 <translation id="6985691951107243942">Na pewno chcesz wyłączyć połączenia zdalne z: <ph name="HOSTNAME"/>? Jeśli zmienisz zdanie, połączenia będzie trzeba włączyć na tamtym komputerze.</translation>
 <translation id="9149992051684092333">Aby udostępnić pulpit, podaj poniższy kod dostępu osobie, która będzie Ci pomagać.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Zobacz i kontroluj udostępniony komputer.</translation>
 <translation id="1520828917794284345">Dopasuj pulpit</translation>
 <translation id="701976023053394610">Pomoc zdalna</translation>
+<translation id="2747641796667576127">Aktualizacje oprogramowania są zwykle instalowane automatycznie, ale w niektórych rzadkich przypadkach kończą się niepowodzeniem. Aktualizacja oprogramowania nie powinna trwać dłużej niż kilka minut i można ją wykonać przy zdalnym połączeniu z komputerem.</translation>
+<translation id="3933246213702324812">Funkcja Chromoting na komputerze <ph name="HOSTNAME"/> jest nieaktualna i wymaga aktualizacji.</translation>
 <translation id="6193698048504518729">Połącz z: <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Nie udało się zaktualizować PIN-u. Spróbuj ponownie później.</translation>
+<translation id="785147662223870933">Chcesz pomóc w ulepszeniu Pulpitu zdalnego Chrome?</translation>
 <translation id="579702532610384533">Połącz ponownie</translation>
 <translation id="4211066471404647515">Brak niektórych elementów wymaganych przez Chromoting. Upewnij się, że korzystasz z najnowszej wersji Chrome i spróbuj ponownie.</translation>
 <translation id="5265129178187621741">(Ta funkcja nie jest jeszcze dostępna dla Chromebooków – prosimy o cierpliwość)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Nie można połączyć się z hostem. Problem prawdopodobnie wynika z konfiguracji Twojej sieci.</translation>
 <translation id="3776024066357219166">Sesja Pulpitu zdalnego Chrome została zakończona.</translation>
 <translation id="5625493749705183369">Uzyskuj dostęp do innych komputerów lub zezwalaj innym użytkownikom na dostęp do swojego komputera przez internet w bezpieczny sposób.</translation>
+<translation id="2512228156274966424">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Pulpit zdalny Chrome na „Otwórz jako okno”.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Aby umożliwić zdalne połączenia z innym komputerem, zainstaluj na nim Chromoting i kliknij „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="809687642899217504">Moje komputery</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Pomóż nam udoskonalić Chromoting, zezwalając na gromadzenie przez nas statystyk użytkowania i raportów o awariach.</translation>
 <translation id="6040143037577758943">Zamknij</translation>
 <translation id="7649070708921625228">Pomoc</translation>
+<translation id="3581045510967524389">Nie można połączyć się z siecią. Sprawdź, czy urządzenie jest online.</translation>
 <translation id="4517233780764084060">UWAGA: aby wszystkie skróty klawiszowe były dostępne, ustaw Chromoting na „Otwórz jako okno”.</translation>
 <translation id="4176825807642096119">Kod dostępu</translation>
 <translation id="7144878232160441200">Ponów próbę</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">Aktualizuję PIN tego komputera…</translation>
 <translation id="5308380583665731573">Połącz się</translation>
 <translation id="7319983568955948908">Zatrzymaj udostępnianie</translation>
+<translation id="2229673624483529540">Chcesz pomóc w ulepszeniu funkcji Chromoting?</translation>
 <translation id="6668065415969892472">PIN został zaktualizowany.</translation>
 <translation id="4277736576214464567">Kod dostępu jest nieprawidłowy. Spróbuj ponownie.</translation>
+<translation id="979100198331752041">Pulpit zdalny Chrome na komputerze <ph name="HOSTNAME"/> jest nieaktualny i wymaga aktualizacji.</translation>
 <translation id="7729639150174291243">Nie jesteś zalogowany do Pulpitu zdalnego Chrome. Zaloguj się i spróbuj ponownie.</translation>
 <translation id="2841013758207633010">Godzina</translation>
 <translation id="6011539954251327702">Chromoting pozwala na bezpieczne udostępnianie komputera przez internet. Obaj użytkownicy muszą mieć uruchomioną aplikację Chromoting, którą można znaleźć na <ph name="URL"/>.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Wystąpił nieoczekiwany błąd. Zgłoś ten problem programistom.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">Ustawienia zasad nie zezwalają na udostępnianie tego komputera jako hosta Chromoting. Aby uzyskać pomoc, skontaktuj się z administratorem systemu.</translation>
+<translation id="9016232822027372900">Połącz mimo to</translation>
 <translation id="4394049700291259645">Wyłącz</translation>
 <translation id="4156740505453712750">Aby zabezpieczyć dostęp do tego komputera, wybierz PIN złożony z <ph name="BOLD_START"/>co najmniej sześciu cyfr<ph name="BOLD_END"/>. Będzie on wymagany przy łączeniu się z innej lokalizacji.</translation>
 </translationbundle>

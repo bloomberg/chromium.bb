@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
+<translation id="1190609913194133056">அறிவிப்பு மையம்</translation>
 <translation id="5613020302032141669">இடது அம்பு</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/>கோப்பு(.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">ஒரு நாளிற்கு நிசப்த பயன்முறை</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">ரத்துசெய்</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> பை</translation>
-<translation id="3660179305079774227">மேல்நோக்கிய அம்பு</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> மெ.பை/வி</translation>
 <translation id="3990502903496589789">வலது விளிம்பு</translation>
 <translation id="5182671122927417841">நீட்டிப்பை முடக்கு</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">&amp;ஒட்டு</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> டெ.பை</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">கீழ்நோக்கிய அம்பு</translation>
 <translation id="3087734570205094154">கீழே</translation>
 <translation id="6364916375976753737">இடப்புறம் உருட்டு</translation>
-<translation id="6354639579297445993">நிசப்தப் பயன்முறையிலிருந்து வெளியேறு</translation>
 <translation id="6945221475159498467">தேர்ந்தெடு</translation>
 <translation id="6620110761915583480">கோப்பைச் சேமி</translation>
 <translation id="7394346403752882908">ஒரு மணிநேரத்திற்கு நிசப்த பயன்முறை</translation>
 <translation id="8210608804940886430">பக்கத்தின் கீழே</translation>
 <translation id="5329858601952122676">&amp;நீக்கு</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> கி.பை.</translation>
+<translation id="6489863328574614542">பயன்பாடுகள் மற்றும் நீட்டிப்புகளுக்கான அறிவிப்பு அனுமதிகளை அமைக்கவும்</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> மெ.பை</translation>
 <translation id="8428213095426709021">அமைப்புகள்</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">கீழே உருட்டு</translation>
 <translation id="3157931365184549694">மீட்டமை</translation>
 <translation id="8179976553408161302">உள்ளிடு</translation>
+<translation id="945522503751344254">பின்னூட்டம் அனுப்புக</translation>
 <translation id="9170848237812810038">&amp;செயல்தவிர்</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> பெ.பை</translation>
 <translation id="2983818520079887040">அமைப்புகள்...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> பை/வி</translation>
 <translation id="477782898153505579">உங்களுக்கு அறிவிப்புகள் எதுவுமில்லை. ஓய்வெடுக்கலாம்!</translation>
 <translation id="7457942297256758195">அனைத்தையும் அழி</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> - அறிவிப்புகள்</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> பெ.பை/வி</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> - அறிவிப்புகள் (<ph name="QUANTITY"/> படிக்காதவை)</translation>
 <translation id="6965382102122355670">சரி</translation>
 <translation id="5941711191222866238">சிறிதாக்கு</translation>
 <translation id="4469842253116033348"><ph name="SITE"/> இலிருந்து வரும் அறிவிப்புகளை முடக்கு</translation>

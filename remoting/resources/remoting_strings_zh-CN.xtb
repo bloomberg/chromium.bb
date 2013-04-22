@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">所有连接</translation>
 <translation id="2208514473086078157">策略设置不允许以 Chrome 远程桌面主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
 <translation id="2801119484858626560">系统检测到不兼容的 Chrome 远程桌面版本。请确保两台计算机上使用的 Chrome 和 Chrome 远程桌面都是最新版本，然后重试。</translation>
-<translation id="2805036638902441020">服务器无法响应网络请求。</translation>
 <translation id="6998989275928107238">指向</translation>
 <translation id="3258789396564295715">您可使用 Chrome 远程桌面安全地访问此计算机。</translation>
 <translation id="4808503597364150972">请输入您用于“<ph name="HOSTNAME"/>”的 PIN。</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">缺少 Chrome 远程桌面所需的某些组件。请确保您所运行的是 Chrome 的最新版本，然后重试。</translation>
 <translation id="174018511426417793">您未注册任何计算机。要启用到某台计算机的远程连接，请在该计算机上安装 Chrome 远程桌面并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="8525306231823319788">全屏</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/>（已过期）</translation>
 <translation id="5702987232842159181">已连接：</translation>
 <translation id="4736223761657662401">连接历史记录</translation>
 <translation id="4430915108080446161">正在生成访问代码…</translation>
+<translation id="7022800415798056893">参与调查</translation>
 <translation id="8228265668171617545">系统检测到不兼容的 Chrome 远程访问版本。请确保两台计算机上使用的 Chrome 和 Chrome 远程访问都是最新版本，然后重试。</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME"/>”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>
 <translation id="9149992051684092333">要开始共享您的桌面，请将下面的访问代码提供给协助您的人员。</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">查看和控制共享的计算机。</translation>
 <translation id="1520828917794284345">将桌面调整为合适大小</translation>
 <translation id="701976023053394610">远程协助</translation>
+<translation id="2747641796667576127">系统通常会自动执行软件更新，但在极少数情况下，更新可能会失败。更新软件应该只需要几分钟，而且可在远程连接到计算机时执行。</translation>
+<translation id="3933246213702324812"><ph name="HOSTNAME"/>上的 Chrome 远程访问软件已过期，需要更新。</translation>
 <translation id="6193698048504518729">连接到“<ph name="HOSTNAME"/>”</translation>
 <translation id="3020807351229499221">无法更新 PIN。请稍后重试。</translation>
+<translation id="785147662223870933">愿意帮助改进 Chrome 远程桌面吗？</translation>
 <translation id="579702532610384533">重新连接</translation>
 <translation id="4211066471404647515">缺少 Chrome 远程访问所需的某些组件。请确保您所运行的是 Chrome 的最新版本，然后重试。</translation>
 <translation id="5265129178187621741">（Chromebook 尚不支持此功能…敬请期待）</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
 <translation id="3776024066357219166">您的 Chrome 远程桌面会话已结束。</translation>
 <translation id="5625493749705183369">访问其他计算机或允许其他用户通过互联网安全地访问您的计算机。</translation>
+<translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2699970397166997657">Chrome 远程访问</translation>
 <translation id="897805526397249209">要启用到另一台计算机的远程连接，请在该计算机上安装 Chrome 远程访问并点击“<ph name="BUTTON_NAME"/>”。</translation>
 <translation id="809687642899217504">我的计算机</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程访问。</translation>
 <translation id="6040143037577758943">关闭</translation>
 <translation id="7649070708921625228">帮助</translation>
+<translation id="3581045510967524389">无法连接到网络。请检查您的设备是否已连接到网络。</translation>
 <translation id="4517233780764084060">注意：为确保所有键盘快捷键都可使用，您可以将 Chrome 远程访问配置为“在窗口中打开”。</translation>
 <translation id="4176825807642096119">访问代码</translation>
 <translation id="7144878232160441200">重试</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">正在更新此计算机的 PIN…</translation>
 <translation id="5308380583665731573">连接</translation>
 <translation id="7319983568955948908">停止共享</translation>
+<translation id="2229673624483529540">愿意帮助改进 Chrome 远程访问功能吗？</translation>
 <translation id="6668065415969892472">您的 PIN 已更新。</translation>
 <translation id="4277736576214464567">访问代码无效，请重试。</translation>
+<translation id="979100198331752041"><ph name="HOSTNAME"/>上的 Chrome 远程桌面已过期，需要更新。</translation>
 <translation id="7729639150174291243">您目前并未登录到 Chrome 远程桌面。请登录，然后重试。</translation>
 <translation id="2841013758207633010">时间</translation>
 <translation id="6011539954251327702">Chrome 远程访问可让您通过网络安全地共享自己的计算机。双方用户必须同时运行 Chrome 远程访问应用（下载地址为 <ph name="URL"/>）。</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">发生意外错误。请将此问题报告给开发者。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="3403830762023901068">策略设置不允许以 Chrome 远程访问主机的形式共享此计算机。请与您的系统管理员联系寻求帮助。</translation>
+<translation id="9016232822027372900">仍然连接</translation>
 <translation id="4394049700291259645">停用</translation>
 <translation id="4156740505453712750">为防止他人擅自访问此计算机，请选用一个<ph name="BOLD_START"/>至少 6 位数<ph name="BOLD_END"/>的 PIN。当从其他位置连接时，将需要输入此 PIN。</translation>
 </translationbundle>

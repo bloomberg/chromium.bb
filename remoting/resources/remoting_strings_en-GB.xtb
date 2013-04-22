@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">All connections</translation>
 <translation id="2208514473086078157">Policy settings do not permit sharing this computer as a Chrome Remote Desktop host. Contact your system administrator for assistance.</translation>
 <translation id="2801119484858626560">An incompatible version of Chrome Remote Desktop was detected. Please make sure that you have the latest version of Chrome and Chrome Remote Desktop on both computers and try again.</translation>
-<translation id="2805036638902441020">The server failed to respond to the network request.</translation>
 <translation id="6998989275928107238">To</translation>
 <translation id="3258789396564295715">You may securely access this computer using Chrome Remote Desktop.</translation>
 <translation id="4808503597364150972">Please enter your PIN for <ph name="HOSTNAME"/>.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Some components required for Chrome Remote Desktop are missing. Please make sure you're running the latest version of Chrome and try again.</translation>
 <translation id="174018511426417793">You have no computers registered. To enable remote connections to a computer, install Chrome Remote Desktop there and click “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Full screen</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (out-of-date)</translation>
 <translation id="5702987232842159181">Connected:</translation>
 <translation id="4736223761657662401">Connection History</translation>
 <translation id="4430915108080446161">Generating access code…</translation>
+<translation id="7022800415798056893">Take the survey</translation>
 <translation id="8228265668171617545">An incompatible version of Chromoting was detected. Please make sure that you have the latest version of Chrome and Chromoting on both computers and try again.</translation>
 <translation id="6985691951107243942">Are you sure you want to disable remote connections to <ph name="HOSTNAME"/>? If you change your mind, you'll need to visit that computer to re-enable connections.</translation>
 <translation id="9149992051684092333">To begin sharing your desktop, give the access code below to the person who will be assisting you.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">See and control a shared computer.</translation>
 <translation id="1520828917794284345">Resize desktop to fit</translation>
 <translation id="701976023053394610">Remote Assistance</translation>
+<translation id="2747641796667576127">Software updates usually happen automatically, but can fail in some rare cases. Updating the software should take no more than a few minutes and can be done while connected to your computer remotely.</translation>
+<translation id="3933246213702324812">Chromoting on <ph name="HOSTNAME"/> is out-of-date and needs to be updated.</translation>
 <translation id="6193698048504518729">Connect to <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Failed to update the PIN. Please try again later.</translation>
+<translation id="785147662223870933">Want to help improve Chrome Remote Desktop?</translation>
 <translation id="579702532610384533">Reconnect</translation>
 <translation id="4211066471404647515">Some components required for Chromoting are missing. Please make sure you're running the latest version of Chrome and try again.</translation>
 <translation id="5265129178187621741">(this feature is not yet available for Chromebooks… stay tuned)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Unable to reach the host. This is probably due to the configuration of the network you are using.</translation>
 <translation id="3776024066357219166">Your Chrome Remote Desktop session has ended.</translation>
 <translation id="5625493749705183369">Access other computers or allow another user to access your computer securely over the Internet.</translation>
+<translation id="2512228156274966424">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chrome Remote Desktop to ‘Open as window’.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">To enable remote connections to a different computer, install Chromoting there and click “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="809687642899217504">My Computers</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Help us improve Chromoting by allowing us to collect usage statistics and crash reports.</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="7649070708921625228">Help</translation>
+<translation id="3581045510967524389">Could not connect to the network. Please check that your device is on-line.</translation>
 <translation id="4517233780764084060">NOTE: To ensure that all keyboard shortcuts are available, you can configure Chromoting to ‘Open as window’.</translation>
 <translation id="4176825807642096119">Access code</translation>
 <translation id="7144878232160441200">Retry</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">The PIN for this computer is being updated…</translation>
 <translation id="5308380583665731573">Connect</translation>
 <translation id="7319983568955948908">Stop Sharing</translation>
+<translation id="2229673624483529540">Want to help improve Chromoting?</translation>
 <translation id="6668065415969892472">Your PIN has been updated.</translation>
 <translation id="4277736576214464567">The access code is invalid. Please try again.</translation>
+<translation id="979100198331752041">Chrome Remote Desktop on <ph name="HOSTNAME"/> is out-of-date and needs to be updated.</translation>
 <translation id="7729639150174291243">You are not signed in to Chrome Remote Desktop. Please sign in and try again.</translation>
 <translation id="2841013758207633010">Time</translation>
 <translation id="6011539954251327702">Chromoting allows you to securely share your computer over the Web. Both users must be running the Chromoting app, which can be found at <ph name="URL"/>.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">An unexpected error occurred. Please report this problem to the developers.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">Policy settings do not permit sharing this computer as a Chromoting host. Contact your system administrator for assistance.</translation>
+<translation id="9016232822027372900">Connect anyway</translation>
 <translation id="4394049700291259645">Disable</translation>
 <translation id="4156740505453712750">To protect access to this computer, please choose a PIN of <ph name="BOLD_START"/>at least six digits<ph name="BOLD_END"/>. This PIN will be required when connecting from another location.</translation>
 </translationbundle>

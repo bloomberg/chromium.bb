@@ -11,8 +11,11 @@
 <translation id="6613594504749178791">As alterações entrarão em vigor na próxima vez que você reiniciar o Chromium.</translation>
 <translation id="3748537968684000502">Você está vendo uma página segura do Chromium.</translation>
 <translation id="8971920611044657379">Chromium Frame</translation>
+<translation id="6705571474735842144">Para usar o Iniciador de aplicativos, você precisa alternar o Chromium para o modo desktop.</translation>
+<translation id="2077129598763517140">Usar aceleração de hardware quando disponível</translation>
 <translation id="1065672644894730302">Não foi possível ler suas preferências. Alguns recursos podem não estar disponíveis e as alterações nas preferências não serão salvas.</translation>
 <translation id="4222661289444749267">Atualização do Chromium Frame.</translation>
+<translation id="4423735387467980091">Personalizar e controlar o Chromium</translation>
 <translation id="2843244238218937196">Renderizador do Chromium</translation>
 <translation id="7128196614940529818">O Chromium Frame já está instalado e disponível para todos os usuários deste computador. Se você deseja instalar o Chromium Frame no nível de usuário, deve primeiro desinstalar a versão do sistema instalada por um administrador.</translation>
 <translation id="731644333568559921">Atualizar o &amp;Chromium OS</translation>
@@ -31,7 +34,6 @@
 <translation id="3103660991484857065">Ocorreu uma falha no instalador ao descompactar o arquivo. Faça o download do Chromium novamente.</translation>
 <translation id="872034308864968620">Permitir que o Chromium seja executado em segundo plano</translation>
 <translation id="5109068449432240255">Sim, sair do Chromium</translation>
-<translation id="4320129595801648679">A página Nova guia do Chromium foi remodelada. Alterne entre as seções clicando nesses marcadores. O Chromium lembrará da sua preferência na próxima vez.</translation>
 <translation id="1480489203462860648">Experimente, já está instalado</translation>
 <translation id="3032787606318309379">Adicionando ao Chromium...</translation>
 <translation id="4831257561365056138">Desinstalar Iniciador de aplicativos Chromium</translation>
@@ -57,6 +59,7 @@ Configurações da LAN
 e desmarque a caixa de seleção &quot;Usar um servidor proxy para a rede local&quot;.</translation>
 <translation id="4330585738697551178">Este módulo é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="3190315855212034486">O Chromium travou. Reiniciar agora?</translation>
+<translation id="6034408899846040667">Para usar os Aplicativos, você precisa alternar o Chromium para o modo desktop.</translation>
 <translation id="6714487516757221107">Nenhuma instalação do Chromium ou Chromium Frame encontrada para atualizar.</translation>
 <translation id="3197823471738295152">O dispositivo está atualizado.</translation>
 <translation id="8551886023433311834">Atualização quase concluída! Reinicie seu dispositivo para concluir a atualização.</translation>
@@ -94,8 +97,8 @@ e desmarque a caixa de seleção &quot;Usar um servidor proxy para a rede local&
 <translation id="2881203820889150661">O Chromium não pode criar um atalho do aplicativo, porque não consegue determinar o ambiente de área de trabalho atual.</translation>
 <translation id="4886158514168859177">Este computador já tem uma versão mais recente do Chromium Frame. Se o software não estiver funcionando, desinstale o Chromium Frame e tente novamente.</translation>
 <translation id="911206726377975832">Excluir também dados de navegação?</translation>
-<translation id="8474264489072517623">Use o Iniciador de aplicativos do Chromium para iniciar seus aplicativos.</translation>
 <translation id="95514773681268843"><ph name="DOMAIN"/> requer que você leia e aceite os Termos de Serviço a seguir antes de utilizar o serviço. Esses termos não ampliam, modificam nem limitam os Termos do Chromium OS.</translation>
+<translation id="5603085937604338780">chromium</translation>
 <translation id="1699664235656412242">Feche todas as janelas do Chromium, (incluindo as que estejam no modo Windows 8) e tente novamente.</translation>
 <translation id="6734080038664603509">Atualizar o &amp;Chromium</translation>
 <translation id="8862326446509486874">Você não tem os direitos adequados para instalação no nível do sistema. Tente executar o instalador novamente como administrador.</translation>
@@ -132,7 +135,6 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="8678787945719392857">Usar esta Conta do Google para sincronizar todos os seus dados do Chromium?</translation>
 <translation id="8621669128220841554">Falha na instalação devido a um erro não especificado. Faça o download do Chromium novamente.</translation>
 <translation id="6717134281241384636">Seu perfil não pode ser usado porque é de uma versão mais recente do Chromium. Alguns recursos podem não estar disponíveis. Especifique outro diretório de perfil ou use uma versão mais recente do Chromium.</translation>
-<translation id="2712549016134575851">Foi detectado um conflito com outro aplicativo instalado.</translation>
 <translation id="4881709374218686648">Anteriormente, você fez login em uma conta diferente. O login mesclará seus dados. Você pode criar um novo usuário do Chromium na <ph name="BEGIN_LINK"/>página de configurações<ph name="END_LINK"/> para suas coisas do Chromium.</translation>
 <translation id="5285406370705656673">Permitir login no Chromium.</translation>
 <translation id="9013087743919948559">Adicionar ao Chromium</translation>
@@ -142,12 +144,12 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="1691304614444223855">O Chromium Frame foi atualizado. Reinicie seu navegador. Versão do Chromium: <ph name="TODO_0001"/>, versão do Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">As alterações entrarão em vigor na próxima vez que você reiniciar o dispositivo.</translation>
 <translation id="1105130903706696483">O Chromium não foi encerrado corretamente. Para reabrir as páginas que você tinha aberto, clique em Restaurar.</translation>
+<translation id="1531452407274881270">Você está fazendo login no Chromium usando sua conta <ph name="USER_EMAIL_ADDRESS"/>. Assim, poderá acessar seus favoritos, histórico e outras configurações em todos os dispositivos conectados.</translation>
 <translation id="1929939181775079593">O Chromium não está respondendo. Reiniciar agora?</translation>
 <translation id="1414495520565016063">Você está conectado ao Chromium.</translation>
 <translation id="6089587093203430357">Instant</translation>
 <translation id="8520216698644798023">Foram detectados erros do Windows</translation>
 <translation id="2966088006374919794">O Chromium precisa iniciar um aplicativo externo para lidar com os links <ph name="SCHEME"/>. O link solicitado é <ph name="PROTOLINK"/>.</translation>
-<translation id="8046283042877435986">Este site recomenda o Chromium Frame (já instalado).</translation>
 <translation id="6287463253129672858">Não é possível instalar a mesma versão do Chromium Frame que está sendo executada. Feche o Chromium Frame e tente novamente.</translation>
 <translation id="2558235863893655150">Você deseja que o Chromium salve sua senha?</translation>
 <translation id="3398522627033804247">Vá para
@@ -176,6 +178,7 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="6601972021154586963">Para usar os aplicativos, é necessário estar conectado ao Chromium. Isso permite que o Chromium sincronize seus aplicativos, favoritos, histórico, senhas e outras configurações entre diferentes dispositivos.</translation>
 <translation id="2910007522516064972">Sobre o &amp;Chromium</translation>
 <translation id="8453117565092476964">O arquivo de instalação está corrompido ou não é válido. Faça o download do Chromium novamente.</translation>
+<translation id="950712238285296105">(requer <ph name="BEGIN_BUTTON"/>reinicialização<ph name="END_BUTTON"/> do Chromium)</translation>
 <translation id="2162026298602630383">Vá para
           <ph name="BEGIN_BOLD"/>
          o menu do Chromium &gt;
@@ -195,7 +198,6 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 <translation id="2119636228670142020">Sobre o &amp;Chromium OS</translation>
 <translation id="1708666629004767631">Há uma nova versão mais segura do Chromium disponível.</translation>
 <translation id="1539981464052805551">Copyright 2013 Autores do Chromium. Todos os direitos reservados.</translation>
-<translation id="8616882682724010661">Veja <ph name="BEGIN_LINK"/>mais benefícios<ph name="END_LINK"/> de fazer login no Chromium.</translation>
 <translation id="378917192836375108">O Chromium permite que você clique em um número de telefone na web e ligue para ele com o Skype!</translation>
 <translation id="8724049448828509830">Há um download em andamento. Deseja sair do Chromium e cancelar o download?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
@@ -206,16 +208,17 @@ Se isso não resolver o problema, recomendamos selecionar essa opção novamente
 Se você decidir fazer login assim mesmo, as informações do Chromium, como favoritos, histórico e outras configurações serão mescladas com as informações de <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>
 <translation id="2739631515503418643">Há downloads em andamento. Deseja sair do Chromium e cancelar os downloads?</translation>
 <translation id="9013262824292842194">O Chromium requer o Windows Vista ou Windows XP com SP2 ou superior.</translation>
+<translation id="7673212349590566645">Fazer login no Chromium com <ph name="USER_EMAIL_ADDRESS"/>?</translation>
 <translation id="1967743265616885482">Um módulo com o mesmo nome é conhecido por entrar em conflito com o Chromium.</translation>
 <translation id="4224199872375172890">O Chromium está atualizado.</translation>
 <translation id="374481098568514319">Este computador já possui uma versão mais recente dos componentes do Chromium. Use um instalador mais recente.</translation>
 <translation id="6240281849816458190">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado que ainda não é válido. Nenhuma informação está disponível para indicar se o certificado é confiável. O Chromium não pode garantir que você esteja se comunicando com &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, e não com um invasor. O relógio do computador está definido como <ph name="CURRENT_TIME"/> no momento. Isso está correto? Se não estiver, corrija o erro e atualize esta página.</translation>
-<translation id="5498103559159810756">O Chromium usa seu mecanismo de pesquisa padrão, que no momento está definido como <ph name="PAGE_TITLE"/>. Deseja manter seu mecanismo de pesquisa padrão?</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="1622565934590470080">Este computador já tem uma versão mais recente do Chromium e do Chromium Frame. Se o software não estiver funcionando, desinstale o Chromium e o Chromium Frame e tente novamente.</translation>
 <translation id="7318036098707714271">Seu arquivo de preferências foi corrompido ou não é válido. O Chromium não conseguiu recuperar suas configurações.</translation>
 <translation id="6403826409255603130">O Chromium é um navegador que executa páginas e aplicativos da web com alta velocidade. É rápido, estável e fácil de usar. Navegue na web com mais segurança com a proteção contra malware e phishing incorporada ao Chromium.</translation>
 <translation id="2927042866129133279">Argumentos inválidos. Não é possível instalar o Chromium Frame no modo pronto sem também instalar o Chromium.</translation>
+<translation id="4019464536895378627">Você tentou acessar &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, mas o servidor apresentou um certificado emitido por uma entidade na qual o Chromium não confia. Isso pode significar que o servidor gerou suas próprias credenciais de segurança, nas quais o Chromium não pode confiar quanto às informações de identificação, ou que um invasor pode estar tentando interceptar suas comunicações.</translation>
 <translation id="2572494885440352020">Assistente do Chromium</translation>
 <translation id="442817494342774222">O Chromium está configurado para iniciar automaticamente quando você inicia o computador.</translation>
 <translation id="8974095189086268230">O Chromium OS tornou-se possível graças a um <ph name="BEGIN_LINK_CROS_OSS"/>software de código aberto<ph name="END_LINK_CROS_OSS"/> adicional.</translation>

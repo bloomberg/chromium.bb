@@ -20,6 +20,13 @@
       Če je ta nastavitev onemogočena, uporabniki ne morejo odpreti spletnih strani v načinu brez beleženja zgodovine.
 
       Če ta pravilnik ni nastavljen, bo to omogočeno in uporabnik bi lahko uporabljal način brez beleženja zgodovine.</translation>
+<translation id="5304269353650269372">Določa trajanje uporabnikove nedejavnosti, po preteku katere se pokaže pogovorno okno z opozorilom, če se napaja iz akumulatorja.
+
+          Če je pravilnik nastavljen, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME"/> prikaže pogovorno okno z opozorilom, da bo izveden ukrep zaradi nedejavnosti.
+
+          Če pravilnik ni nastavljen, pogovorno okno z opozorilom ni prikazano.
+
+          Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="7614663184588396421">Seznam onemogočenih protokolnih shem</translation>
 <translation id="2309390639296060546">Privzeta nastavitev geolokacije</translation>
 <translation id="7261507082507286116">Onemogoča storitev Google Drive prek mobilnih povezav</translation>
@@ -125,6 +132,7 @@
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
 <translation id="7567380065339179813">Dovoli vtičnike na teh mestih</translation>
+<translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
 <translation id="3153348162326497318">Omogoča nastavitev, katerih razširitev uporabniki NE morejo namestiti. Že nameščene razširitve bodo odstranjene, če so na seznamu blokiranih.
 
@@ -185,6 +193,9 @@
       Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je stran z novim zavihkom domača stran oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran stran z novim zavihkom.</translation>
 <translation id="2231817271680715693">Uvoz zgodovine brskanja privzetega brskalnika ob prvem zagonu</translation>
 <translation id="1353966721814789986">Začetne strani</translation>
+<translation id="1841130111523795147">Dovoljuje uporabniku prijavo v <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Če nastavite ta pravilnik, lahko določite, ali je uporabniku dovoljena prijava v <ph name="PRODUCT_NAME"/> ali ne.</translation>
 <translation id="5564962323737505851">Nastavi upravitelja gesel. Če je omogočen, lahko izberete, ali želite omogočiti ali onemogočiti, ali lahko uporabnik prikaže gesla z vidnim besedilom.</translation>
 <translation id="4668325077104657568">Nastavitev privzetih slik</translation>
 <translation id="7978961945071764766">Ko je nastavljen na »True«, onemogoča sinhronizacijo s storitvijo Google Drive pri uporabi mobilne povezave. V tem primeru se podatki sinhronizirajo s storitvijo Google Drive samo pri povezavi prek omrežja Wi-Fi ali etherneta.
@@ -195,6 +206,7 @@
 <translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
 <translation id="382476126209906314">Nastavitev predpone »TalkGadget« za gostitelje oddaljenega dostopa</translation>
+<translation id="6561396069801924653">Prikaz možnosti funkcij za ljudi s posebnimi potrebami v meniju sistemske vrstice</translation>
 <translation id="8104962233214241919">Samodejno izberi potrdila odjemalcev za ta spletna mesta</translation>
 <translation id="2906874737073861391">Seznam razširitev AppPack</translation>
 <translation id="3758249152301468420">Onemogoči Orodja za razvijalce</translation>
@@ -222,7 +234,23 @@
 <translation id="4899708173828500852">Omogoči varno brskanje</translation>
 <translation id="4442582539341804154">Omogoči zaklepanje, ko je naprava nedejavna ali preide v stanje pripravljenosti</translation>
 <translation id="7719251660743813569">Nadzira, ali so podatki o uporabi poslani Googlu. Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME"/> pošlje podatke o uporabi. Če ni nastavljen ali je onemogočen, podatkov ne pošilja.</translation>
+<translation id="2372547058085956601">Zamik samodejne prijave v javno sejo.
+
+      Če pravilnik |DeviceLocalAccountAutoLoginId| ni nastavljen, se ne uporablja. V nasprotnem primeru:
+
+      Če je pravilnik nastavljen, določa trajanje uporabnikove nedejavnosti pred samodejno prijavo v javno sejo, ki jo določa pravilnik |DeviceLocalAccountAutoLoginId|.
+
+      Če pravilnik ni nastavljen, se za časovno omejitev uporabi 0 milisekund.
+
+      Ta pravilnik je določen v milisekundah.</translation>
 <translation id="3570008976476035109">Blokiraj vtičnike na teh mestih</translation>
+<translation id="8749370016497832113">Omogoči brisanje zgodovine brskalnika in zgodovine prenosov v izdelku <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje te nastavitve.
+
+      Tudi če je pravilnik onemogočen, zgodovina brskanja in zgodovina prenosov morda ne bosta ohranjeni: uporabniki lahko neposredno urejajo ali brišejo podatkovne zbirke zgodovine, brskalnik pa lahko poteče ali kadar koli arhivira katere koli elemente zgodovine.
+
+      Če ta nastavitev ni omogočena ali nastavljena, je zgodovino brskanja in zgodovino prenosov mogoče izbrisati
+
+      Če je ta nastavitev onemogočena, zgodovine brskanja in zgodovine prenosov ni mogoče izbrisati.</translation>
 <translation id="2884728160143956392">Na teh mestih dovoli samo sejne piškotke</translation>
 <translation id="4655130238810647237">Omogoči ali onemogoči urejanje zaznamkov v brskalniku <ph name="PRODUCT_NAME"/>.
 
@@ -239,6 +267,7 @@
       Če to nastavitev omogočite ali onemogočite, je uporabniki v programu <ph name="PRODUCT_NAME"/> ne morejo spremeniti ali preglasiti.
 
       Če ta pravilnik ni nastavljen, bo veljala nastavitev, ki jo uporabnik izbere ob namestitvi ali ob prvem zagonu.</translation>
+<translation id="6256787297633808491">Sistemske zastavice, ki se uporabijo ob zagonu Chroma</translation>
 <translation id="2516600974234263142">Omogoča tiskanje v brskalniku <ph name="PRODUCT_NAME"/> in uporabnikom prepreči spreminjanje te nastavitve.
 
       Če je ta nastavitev omogočena ali ni nastavljena, lahko uporabniki tiskajo.
@@ -276,9 +305,6 @@
           Če to nastavitev omogočite, bo iskanje CNAME preskočeno in uporabljeno bo vneseno ime strežnika.
 
           Če to nastavitev onemogočite ali jo ne nastavite, bo kanonično ime strežnika določeno z iskanjem CNAME.</translation>
-<translation id="5711323964690760562">Določa URL za spletno trgovino podjetja. Ko je ta nastavitev omogočena, bo aplikacija prikazana na strani novega zavihka, in če ga bo uporabnik kliknil, se bo odprl navedeni URL. Če želite dejansko omogočiti namestitev razširitve s konfiguriranega spletnega mesta, mora biti pravilnik »ExtensionInstallSources« konfiguriran tako, da omogoča namestitev z URL-jev za prenos ustrezne razširitve. Če je ta pravilnik nastavljen, mora biti nastavljena tudi nastavitev »EnterpriseWebStoreName«.
-
-      Če je ta nastavitev onemogočena, na novem zavihku s povezavami ne bodo prikazane aplikacije iz spletne trgovine podjetja.</translation>
 <translation id="4377599627073874279">Dovoli vsem mestom, da pokažejo vse slike</translation>
 <translation id="7195064223823777550">Navedite dejanje, ki naj se izvede, ko uporabnik zapre pokrov.
 
@@ -295,6 +321,11 @@
 
       Vrednost pravilnika mora biti v milisekundah.</translation>
 <translation id="7683777542468165012">Dinamična osvežitev pravilnika</translation>
+<translation id="3217480257513989987">Določa URL spletne trgovine podjetja. Če je ta nastavitev omogočena, se na strani »Nov zavihek« pojavi aplikacija, ki ob kliku odpre določen URL. Če želite dovoliti namestitev razširitev s konfiguriranega spletnega mesta, mora biti pravilnik ExtensionInstallSources konfiguriran tako, da dovoljuje namestitev z ustreznih URL-jev za prenos razširitev. Če je ta pravilnik nastavljen, naj bi bila nastavljena tudi nastavitev EnterpriseWebStoreName.
+
+      Če je ta nastavitev onemogočena, na strani »Nov zavihek« ni prikazana nobena aplikacija iz spletne trgovine podjetja.
+
+      Ta nastavitev je z različico 27 zastarala in bo v prihodnjih različicah odstranjena. Priporočamo, da zbirke razširitev/aplikacij, ki gostujejo v organizaciji, nastavite tako, da v ExtensionInstallSources vključite spletno mesto, na katerem gostujejo paketi CRX, in neposredne povezave na prenos vključite v pakete na spletni strani. Zaganjalnik za to spletno stran je mogoče ustvariti s pravilnikom ExtensionInstallForcelist.</translation>
 <translation id="1160939557934457296">Onemogoči nadaljevanje z opozorilne strani varnega brskanja</translation>
 <translation id="8987262643142408725">Onemogoči delitev zapisa SSL</translation>
 <translation id="4529945827292143461">Prilagodi seznam vzorcev URL-jev, ki naj jih vedno upodobi gostiteljski brskalnik.
@@ -364,6 +395,7 @@
 <translation id="4039085364173654945">Določa, ali lahko podvsebina drugega ponudnika na strani odpre pojavno pogovorno okno HTTP Basic Auth.
 
           Običajno je to onemogočeno kot zaščita pred lažnim predstavljanjem. Če ta pravilnik ni nastavljen, je to onemogočeno in podvsebina drugega ponudnika ne bo mogla odpreti pojavnega pogovornega okna HTTP Basic Auth.</translation>
+<translation id="4946368175977216944">Določa zastavice, ki naj se uporabijo za Chrome, ko se zažene. Določeno število zastavic se pred zagonom Chroma uporabi tudi za zaslon za prijavo.</translation>
 <translation id="7447786363267535722">Omogoča shranjevanje gesel in uporabo shranjenih gesel v brskalniku <ph name="PRODUCT_NAME"/>.
 
           Če to nastavitev omogočite, si lahko <ph name="PRODUCT_NAME"/> zapomni gesla in jih samodejno ponudi uporabnikom, ko se naslednjič prijavijo v spletno mesto.
@@ -380,6 +412,13 @@
       Vrednost pravilnika mora biti v milisekundah.</translation>
 <translation id="6368011194414932347">Konfiguracija URL-ja domače strani</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
+<translation id="9120299024216374976">Določi časovni pas za napravo. Uporabniki lahko določeni časovni pas za trenutno sejo preglasijo. Pri odjavi je spet nastavljen določeni časovni pas. Če je vnesena neveljavna vrednost, je pravilnik kljub temu aktiviran s časovnim pasom »GMT«. Če je vnesen prazen niz, je pravilnik prezrt.
+
+      Če ta pravilnik ni uporabljen, se uporablja trenutno aktivni časovni pas. Če uporabniki spremenijo časovni pas, je sprememba vidna povsod. Sprememba časovnega pasu zato vpliva na zaslon za prijavo in na vse druge uporabnike.
+
+      Nove naprave imajo na začetku nastavljen časovni pas »ameriški/tihomorski«.
+
+      Oblika vrednosti je v skladu z imeni časovnih pasov v zbirki podatkov o časovnih pasovih IANA (glejte »http://en.wikipedia.org/wiki/List_of_tz_database_time«). Veliko časovnih pasov je mogoče navesti kot »celina/vele_mesto« ali »ocean/vele_mesto«.</translation>
 <translation id="3528000905991875314">Omogoči nadomestne strani za napake</translation>
 <translation id="1283072268083088623">Določa, katere sheme preverjanja pristnosti HTTP podpira <ph name="PRODUCT_NAME"/>.
 
@@ -436,9 +475,11 @@
           Če to nastavitev onemogočite ali je ne nastavite, ustvarjeni SPN za Kerberos v nobenem primeru ne bo vključeval vrat.</translation>
 <translation id="3236046242843493070">Vzorci URL-jev, ki omogočajo namestitev razširitev, aplikacij in uporabniških skriptov iz</translation>
 <translation id="2498238926436517902">Vedno samodejno skrij polico</translation>
+<translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="152657506688053119">Seznam nadomestnih URL-jev za privzetega ponudnika iskanja</translation>
 <translation id="8992176907758534924">Nobenemu spletnemu mestu ne dovoli prikaza slik</translation>
 <translation id="262740370354162807">Omogoča pošiljanje dokumentov v storitev <ph name="CLOUD_PRINT_NAME"/></translation>
+<translation id="7717938661004793600">Konfiguriranje funkcij za ljudi s posebnimi potrebami za <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="5182055907976889880">Konfigurira Google Drive v brskalniku <ph name="PRODUCT_OS_NAME"/>.</translation>
 <translation id="8704831857353097849">Seznam onemogočenih vtičnikov</translation>
 <translation id="8391419598427733574">Pošiljanje podatkov o različicah operacijskega sistema in vdelane programske opreme včlanjenih naprav.
@@ -528,12 +569,21 @@
       Če je pravilnik nastavljen, je seznam aplikacij fiksen in ga uporabnik ne more spreminjati.
 
       Če pravilnik ni nastavljen, lahko uporabnik spremeni seznam pripetih aplikacij v zaganjalniku.</translation>
+<translation id="1679420586049708690">Javna seja za samodejno prijavo</translation>
 <translation id="7625444193696794922">Določa kanal za izdajo, na katerega naj bo zaklenjena ta naprava.</translation>
+<translation id="1172056905334713854">Načrtovanje samodejnega vnovičnega zagona, ko se uporabi posodobitev sistema <ph name="PRODUCT_OS_NAME"/>.
+
+      Če je ta pravilnik nastavljen na »True«, je samodejni vnovični zagon načrtovan, ko se uporabi posodobitev sistema <ph name="PRODUCT_OS_NAME"/> in je za dokončanje postopka posodobitve potreben vnovični zagon. Vnovični zagon je načrtovan takoj, vendar pa je v napravi lahko izveden šele čez 24 ur, če na primer uporabnik trenutno uporablja napravo ali pa je aplikacija/razširitev zahtevala začasno onemogočanje vnovičnih zagonov.
+
+      Če je pravilnik nastavljen na »False«, po uporabi posodobitve sistema <ph name="PRODUCT_OS_NAME"/> samodejni vnovični zagoni niso načrtovani. Postopek posodobitve je končan, ko uporabnik naslednjič vnovično zažene napravo.
+
+      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.</translation>
 <translation id="2552966063069741410">Časovni pas</translation>
 <translation id="2240879329269430151">Omogoča nastavitev, ali je spletnim mestom dovoljeno prikazovati pojavna okna. Prikazovanje pojavnih oken je mogoče dovoliti ali zavrniti za vsa spletna mesta.
 
          Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »BlockPopups« in uporabnik ga bo lahko spremenil.</translation>
 <translation id="2529700525201305165">Določa, kateri uporabniki se lahko prijavijo v storitev <ph name="PRODUCT_NAME"/>.</translation>
+<translation id="8971221018777092728">Merilnik časa za samodejno prijavo v javno sejo</translation>
 <translation id="3864818549971490907">Privzete nastavitve vtičnikov</translation>
 <translation id="1910566775788829857">Odjavi uporabnika</translation>
 <translation id="7151201297958662315">Določi, ali se proces brskalnik <ph name="PRODUCT_NAME"/> zažene ob prijavi v operacijski sistem in se izvaja tudi po zaprtju zadnjega okna brskalnika, pri čemer so aplikacije v ozadju še vedno aktivne. Ikona procesa v ozadju je prikazana v sistemski vrstici, pri čemer lahko to ozadje tam kadar koli zaprete.
@@ -553,6 +603,13 @@
 <translation id="3309789488678647282">Onemogoča Google Drive</translation>
 <translation id="5770738360657678870">Različica za razvijalce (lahko je nestabilna)</translation>
 <translation id="2959898425599642200">Pravila, kdaj se obide proxy</translation>
+<translation id="228659285074633994">Določa trajanje uporabnikove nedejavnosti, po preteku katere se pokaže pogovorno okno z opozorilom, če se napaja iz električnega omrežja.
+
+          Če je pravilnik nastavljen, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME"/> prikaže pogovorno okno z opozorilom, da bo izveden ukrep zaradi nedejavnosti.
+
+          Če pravilnik ni nastavljen, pogovorno okno z opozorilom ni prikazano.
+
+          Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="1098794473340446990">Pošiljanje podatkov o času dejavnosti v napravi.
 
       Če je nastavitev nastavljena na »True«, včlanjene naprave pošiljajo podatke o času, ko je uporabnik aktiven v napravi. Če nastavitev ni nastavljena ali je nastavljena na »False«, se čas dejavnosti v napravi ne beleži in se ne pošiljajo podatki o času dejavnosti.</translation>
@@ -636,6 +693,7 @@
 
        Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="4541530620466526913">Lokalni računi za napravo</translation>
+<translation id="5815129011704381141">Samodejni vnovični zagon po posodobitvi</translation>
 <translation id="1757688868319862958">Omogoča brskalniku <ph name="PRODUCT_NAME"/> izvajanje vtičnikov, ki zahtevajo dovoljenje. Če omogočite to nastavitev, se vtičniki, ki niso zastareli, vedno izvedejo. Če je ta nastavitev onemogočena, bodo uporabniki morali dati dovoljenje za izvajanje takih vtičnikov. To so vtičniki, ki lahko ogrozijo varnost.</translation>
 <translation id="6392973646875039351">Omogoči funkcijo za samodejno izpolnjevanje v brskalniku <ph name="PRODUCT_NAME"/> in uporabnikom omogoča samodejno izpolnjevanje spletnih obrazcev s shranjenimi podatki, kot so naslov ali podrobnosti kreditne kartice.
 
@@ -644,9 +702,26 @@
       Če to nastavitev omogočite ali ne nastavite vrednosti zanjo, ostane samodejno izpolnjevanje pod nadzorom uporabnikov. Nastavili bodo lahko profile za samodejno izpolnjevanje in ga poljubno vklapljali ali izklapljali.</translation>
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="7788511847830146438">Za profil</translation>
+<translation id="2516525961735516234">Določa, ali videodejavnost vpliva na upravljanje napajanja.
+
+          Če je pravilnik nastavljen na »True« ali če pravilnik ni nastavljen, uporabnik ne velja za nedejavnega, če se predvaja videoposnetek. S tem se prepreči doseganje časovnega zamika ob nedejavnosti ter časovnega zamika zatemnitve, izklopa zaslona in zaklepa zaslona, s tem pa se preprečijo tudi ustrezna dejanja.
+
+          Če je pravilnik nastavljen na »False«, uporabnik kljub videodejavnosti velja za nedejavnega.</translation>
 <translation id="3965339130942650562">Časovna omejitev za odjavo nedejavnega uporabnika</translation>
 <translation id="9084985621503260744">Navedite, ali videodejavnost vpliva na upravljanje napajanja</translation>
 <translation id="7091198954851103976">Vedno izvedi vtičnike, ki zahtevajo dovoljenje</translation>
+<translation id="2704032342102549239">Omejitev časa dejavnosti naprave z načrtovanjem samodejnih vnovičnih zagonov.
+
+      Če je pravilnik nastavljen, določa trajanje dejavnosti naprave, po preteku katere je načrtovan samodejni vnovični zagon.
+
+      Če pravilnik ni nastavljen, trajanje dejavnosti naprave ni omejeno.
+
+      Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+      Samodejni vnovični zagon je načrtovan ob izbrani uri, vendar pa je v napravi lahko izveden šele čez 24 ur, če na primer uporabnik trenutno uporablja napravo ali pa je aplikacija/razširitev zahtevala začasno onemogočanje vnovičnih zagonov.
+
+      Vrednost pravilnika naj bo navedena v sekundah. Vrednosti morajo biti vsaj 3600 (ena ura).</translation>
+<translation id="1708496595873025510">Nastavitev omejitve prenosa semen različic</translation>
 <translation id="8870318296973696995">Domača stran</translation>
 <translation id="1240643596769627465">Določi URL iskalnika, ki se uporablja za rezultate dinamičnega iskanja. URL mora vsebovati niz <ph name="SEARCH_TERM_MARKER"/>, ki ga bo ob času poizvedbe nadomestilo besedilo uporabnika, ki ga je do takrat vnesel.
 
@@ -684,13 +759,6 @@
           Če je ta nastavitev onemogočena in izhodne povezave UDP filtrira požarni zid, bo ta računalnik dovolil samo povezave iz odjemalskih računalnikov znotraj lokalnega omrežja.
 
           Če ta pravilnik ni nastavljen, bo nastavitev omogočena.</translation>
-<translation id="6523554768023503406">Določa odstotek prilagoditve časovnega zamika nedejavnosti, ko je naprava v načinu predstavitve.
-
-          Če je pravilnik nastavljen, določa odstotek prilagoditve časovnega zamika nedejavnosti, ko je naprava v načinu predstavitve. Ko je časovni zamik nedejavnosti prilagojen, se časovni zamiki za zatemnitev zaslona, izklop zaslona in zaklep zaslona prilagodijo, da se ohranijo prvotno konfigurirane oddaljenosti od časovnega zamika nedejavnosti.
-
-          Če pravilnik ni nastavljen, se uporabi privzeti faktor prilagoditve.
-
-          Faktor prilagoditve mora biti najmanj 100 %. Vrednosti, ki bi povzročile, da je časovni zamik nedejavnosti v načinu predstavitve krajši od običajnega časovnega zamika nedejavnosti, niso dovoljene.</translation>
 <translation id="5365946944967967336">V orodni vrstici pokaži gumb »Domov«</translation>
 <translation id="3709266154059827597">Nastavi seznam razširitev, katerih namestitev je prepovedana</translation>
 <translation id="8451988835943702790">Uporabi stran za nov zavihek kot domačo stran</translation>
@@ -775,6 +843,15 @@
 <translation id="5761030451068906335">Določi nastavitve proxyja za <ph name="PRODUCT_NAME"/>.
 
       Ta pravilnik še ni primeren za uporabo, zato ga ne uporabljajte.</translation>
+<translation id="3006443857675504368">Prikaz možnosti funkcij za ljudi s posebnimi potrebami sistema <ph name="PRODUCT_OS_NAME"/> v sistemskem meniju.
+
+          Če je pravilnik nastavljen na »True«, so možnosti funkcij za ljudi s posebnimi potrebami vedno prikazane v meniju sistemske vrstice.
+
+          Če je pravilnik nastavljen na »False«, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice.
+
+          Če nastavite ta pravilnik, ga uporabniki ne morejo spremeniti ali preglasiti.
+
+          Če ta pravilnik ni nastavljen, možnosti funkcij za ljudi s posebnimi potrebami niso prikazane v meniju sistemske vrstice, vendar pa lahko uporabniki nastavijo, da so možnosti funkcij za ljudi s posebnimi potrebami prikazane prek strani z nastavitvami.</translation>
 <translation id="8344454543174932833">Uvoz zaznamkov privzetega brskalnika ob prvem zagonu</translation>
 <translation id="1019101089073227242">Nastavitev imenika za uporabniške podatke</translation>
 <translation id="5826047473100157858">Določa, ali lahko uporabnik v brskalniku <ph name="PRODUCT_NAME"/> odpre strani v načinu brez beleženja zgodovine.
@@ -784,17 +861,17 @@
       Če je izbrano »Onemogočeno«, strani ni mogoče odpirati v načinu brez beleženja zgodovine.
 
       Če je izbrano »Vsiljeno«, je mogoče strani odpirati SAMO v načinu brez beleženja zgodovine.</translation>
+<translation id="2988031052053447965">Skrivanje aplikacije v Spletni trgovini Chrome in povezave v nogi na strani »Nov zavihek« in v zaganjalniku aplikacij v sistemu Chrome OS.
+
+      Če je ta pravilnik nastavljen na »True«, so ikone skrite.
+
+      Če je ta pravilnik nastavljen na »False« ali ni konfiguriran, so ikone vidne.</translation>
 <translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME"/>. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL"/></translation>
 <translation id="6699880231565102694">Omogočanje preverjanja pristnosti v dveh korakih za gostitelje oddaljenega dostopa</translation>
 <translation id="2030905906517501646">Privzeta ključna beseda iskalnika</translation>
 <translation id="3072045631333522102">Ohranjevalnik zaslona na zaslonu za prijavo v maloprodajnem načinu</translation>
-<translation id="8079569179819932120">Določa, kateri strežniki so na seznamu dovoljenih za vgrajeno preverjanje pristnosti. Vgrajeno preverjanje pristnosti je omogočeno samo, ko <ph name="PRODUCT_NAME"/> prejme poziv za preverjanje pristnosti od strežnika proxy ali strežnika, ki je na tem seznamu dovoljenih.
-
-          Več imen strežnikov ločite z vejicami. Nadomestni znaki (*) so dovoljeni.
-
-          Če tega pravilnika ne nastavite, bo vsak strežnik sprejet za vgrajeno preverjanje pristnosti.</translation>
 <translation id="7712109699186360774">Vprašaj vsakič, ko želi spletno mesto dostop do kamere in/ali mikrofona</translation>
 <translation id="350797926066071931">Omogoči Google Prevajalnik</translation>
 <translation id="3711895659073496551">Prekinitev</translation>
@@ -822,6 +899,11 @@
 
           Če se izvede prekinitev, lahko <ph name="PRODUCT_OS_NAME"/> posebej konfigurirate tako, da zaklene zaslon pred prekinitvijo ali ne.</translation>
 <translation id="5475361623548884387">Omogoči tiskanje</translation>
+<translation id="7287359148642300270">Določa, kateri strežniki naj bodo dodani na seznam dovoljenih za vgrajeno preverjanje pristnosti. Vgrajeno preverjanje pristnosti je omogočeno samo, kadar <ph name="PRODUCT_NAME"/> prejme poziv za preverjanje pristnosti iz strežnika proxy ali strežnika, ki je na seznamu dovoljenih.
+
+          Imena strežnikov ločite z vejicami. Nadomestni znaki (*) so dovoljeni.
+
+          Če tega pravilnika ne nastavite, Chrome poskuša zaznati, ali je strežnik v intranetu in se šele potem odzove na zahteve za preverjanje pristnosti. Če je strežnik zaznan kot internet, Chrome prezre zahteve za preverjanje pristnosti, poslane iz tega strežnika.</translation>
 <translation id="3653237928288822292">Privzeta ikona iskalnika</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="4445684791305970001">Onemogoči orodja za razvijalce in konzolo JavaScript.
@@ -934,13 +1016,9 @@
 <translation id="5774856474228476867">Privzeti URL iskalnika za iskanje</translation>
 <translation id="4650759511838826572">Onemogoči protokolne sheme URL-ja</translation>
 <translation id="8099880303030573137">Časovni zamik ob napajanju iz akumulatorja</translation>
+<translation id="2761483219396643566">Časovni zamik opozorila o nedejavnosti ob napajanju iz akumulatorja</translation>
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
-<translation id="9142321226029580122">Določa, ali videodejavnost vpliva na upravljanje napajanja.
-
-          Če je vrednost pravilnika nastavljena na »True« ali če pravilnik ni nastavljen, uporabnik ne velja za nedejavnega, če se predvaja videoposnetek. S tem se prepreči doseganje časovnega zamika ob nedejavnosti ter časovnega zamika zatemnitve, izklopa zaslona in zaklepa zaslona, s tem pa se preprečijo tudi ustrezna dejanja.
-
-          Če je vrednost pravilnika nastavljena na »False«, uporabnik kljub videodejavnosti velja za nedejavnega.</translation>
 <translation id="6559057113164934677">Ne dovoli nobenemu spletnemu mestu dostopa do kamere in mikrofona</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
@@ -976,6 +1054,7 @@
 <translation id="5469484020713359236">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko nastavljajo piškotke.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultCookiesSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
+<translation id="1881299719020653447">Skrivanje spletne trgovine na strani »Nov zavihek« in v zaganjalniku aplikacij</translation>
 <translation id="930930237275114205">Nastavi imenik uporabniških podatkov za <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="5208240613060747912">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati obvestil.
 
@@ -987,6 +1066,11 @@
       Če je vrednost tega pravilnika 0, bo privzeta velikost predpomnilnika uporabljena, vendar jo uporabnik ne bo mogel spreminjati.
 
       Če tega pravilnika ne nastavite, bo uporabljena privzeta velikost predpomnilnika in jo bo lahko uporabnik preglasil z zastavico »--disk-cache-size«.</translation>
+<translation id="1527937796509599149">Ime spletne trgovine podjetja, ki je prikazano pod ikono aplikacije na strani »Nov zavihek«. Če pravilnik EnterpriseWebStoreURL ni nastavljen, se ta nastavitev ne uporablja.
+
+      Če je ta nastavitev onemogočena, je aplikacija v spletni trgovini podjetja (če obstaja) označena z njenim URL-jem.
+
+      Ta nastavitev je z različico 27 zastarala in bo v prihodnjih različicah odstranjena. Priporočamo, da zbirke razširitev/aplikacij, ki gostujejo v organizaciji, nastavite tako, da v ExtensionInstallSources vključite spletno mesto, na katerem gostujejo paketi CRX, in neposredne povezave na prenos vključite v pakete na spletni strani. Zaganjalnik za to spletno stran je mogoče ustvariti s pravilnikom ExtensionInstallForcelist.</translation>
 <translation id="5887414688706570295">Nastavi predpono »TalkGadget«, ki jo bodo uporabljali gostitelji oddaljenega dostopa, in prepreči uporabnikom njeno spreminjanje.
 
           Če je ta predpona določena, je dodana pred osnovno ime »TalkGadget«, tako da ustvari polno ime domene za »TalkGadget«. Osnovno ime domene »TalkGadget« je ».talkgadget.google.com«.
@@ -1022,6 +1106,11 @@
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
 <translation id="7258823566580374486">Omogočanje zakrivanja gostiteljev za oddaljeni dostop</translation>
+<translation id="5560039246134246593">Dodajanje parametra prejemanju semen različic v izdelku <ph name="PRODUCT_NAME"/>.
+
+      Če je pravilnik določen, se URL-ju za prenos semen različic doda parameter poizvedbe »restrict«. Vrednost parametra je vrednost, določena v tem pravilniku.
+
+      Če pravilnik ni določen, se URL semen različic ne spremeni.</translation>
 <translation id="944817693306670849">Nastavitev velikosti predpomnilnika</translation>
 <translation id="8544375438507658205">Privzeti upodabljalnik HTML-ja za <ph name="PRODUCT_FRAME_NAME"/></translation>
 <translation id="2371309782685318247">Določa obdobje (v milisekundah), v katerem se izvaja poizvedba v storitvi upravljanja naprave za podatke pravilnika za napravo.
@@ -1034,11 +1123,6 @@
 <translation id="8908294717014659003">Omogoča nastavitev, ali je spletnim mestom dovoljen dostop do naprav za snemanje predstavnosti. Dostop do naprav za snemanje predstavnosti je lahko privzeto dovoljen ali pa uporabnik dobi poziv, kadar koli spletno mesto želi dostop do naprav za snemanje predstavnosti.
 
            Če ta pravilnik ni nastavljen, bo uporabljena nastavitev »PromptOnAccess« in uporabnik jo bo lahko spremenil.</translation>
-<translation id="8889026535261486875">Strežniki, ki jih lahko <ph name="PRODUCT_NAME"/> pooblasti.
-
-          Več imen strežnikov ločite z vejico. Nadomestni znaki (*) so dovoljeni.
-
-          Če tega pravilnika ne nastavite, bo za integrirano preverjanje pristnosti sprejet kateri koli strežnik.</translation>
 <translation id="2299220924812062390">Določi seznam omogočenih vtičnikov</translation>
 <translation id="4325690621216251241">Dodajanje gumb za odjavo v sistemsko vrstico</translation>
 <translation id="924557436754151212">Uvoz shranjenih gesel privzetega brskalnika pri prvem zagonu</translation>
@@ -1056,6 +1140,13 @@
 
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
+<translation id="2057466537682332544">Določa odstotek prilagoditve časovnega zamika nedejavnosti, ko je naprava v načinu predstavitve.
+
+          Če je pravilnik nastavljen, določa odstotek prilagoditve časovnega zamika nedejavnosti, ko je naprava v načinu predstavitve. Ko je časovni zamik nedejavnosti prilagojen, se časovni zamiki za zatemnitev zaslona, izklop zaslona in zaklep zaslona prilagodijo, da se ohranijo prvotno konfigurirane oddaljenosti od časovnega zamika nedejavnosti.
+
+          Če pravilnik ni nastavljen, se uporabi privzeti faktor prilagoditve.
+
+          Faktor prilagoditve mora biti najmanj 100 %. Vrednosti, ki bi povzročile, da je časovni zamik nedejavnosti v načinu predstavitve krajši od običajnega časovnega zamika nedejavnosti, niso dovoljene.</translation>
 <translation id="922540222991413931">Konfiguriranje virov za namestitev razširitev, aplikacij in uporabniških skriptov</translation>
 <translation id="7323896582714668701">Dodatni parametri ukazne vrstice za <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Onemogoči sinhroniziranje podatkov z Googlom</translation>
@@ -1117,8 +1208,14 @@
 <translation id="8499172469244085141">Privzete nastavitve (uporabniki jih lahko preglasijo)</translation>
 <translation id="8693243869659262736">Uporaba vgrajenega odjemalca DNS</translation>
 <translation id="3072847235228302527">Nastavitev pogojev storitve za lokalni račun v napravi.</translation>
+<translation id="5523812257194833591">Samodejna prijava javne seje po časovnem zamiku.
+
+      Če je ta pravilnik nastavljen, bo po preteku določenega časa nedejavnosti uporabnika na zaslonu za prijavo določena seja prijavljena samodejno. Javna seja mora biti pred tem konfigurirana (glejte |DeviceLocalAccounts|).
+
+      Če ta pravilnik ni nastavljen, ni samodejne prijave.</translation>
 <translation id="3866530186104388232">Če je pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME"/> prikaže obstoječe uporabnike na zaslonu za prijavo, ki jih je mogoče izbrati. Če je pravilnik onemogočen, <ph name="PRODUCT_OS_NAME"/> za prijavo uporabi polje za vnos uporabniškega imena/gesla.</translation>
 <translation id="2098658257603918882">Omogoči poročanje o uporabi in podatkih, povezanih z zrušitvami</translation>
+<translation id="2324547593752594014">Dovoljuje prijavo v Chrome</translation>
 <translation id="172374442286684480">Vsem spletnim mestom je omogočeno nastavljanje lokalnih podatkov</translation>
 <translation id="6922569848241326941">Omogočite ali onemogočite snemanje videoposnetkov.
 
@@ -1140,6 +1237,11 @@
 <translation id="8631434304112909927">do različice <ph name="UNTIL_VERSION"/></translation>
 <translation id="7469554574977894907">Omogoči predloge za iskanje</translation>
 <translation id="4906194810004762807">Osveži oceno za pravilnik za naprave</translation>
+<translation id="8922668182412426494">Strežniki, v katerih lahko izdelek <ph name="PRODUCT_NAME"/> pooblašča.
+
+          Imena strežnikov ločite z vejicami. Nadomestni znaki (*) so dovoljeni.
+
+          Če tega pravilnika ne nastavite, Chrome ne bo pooblastil uporabniških poverilnic, tudi če je strežnik zaznan kot intranet.</translation>
 <translation id="1398889361882383850">Omogoča nastavitev, ali je spletnim mestom dovoljeno samodejno izvajati vtičnike. Samodejno izvajanje vtičnikov je mogoče dovoliti za vsa spletna mesta ali zavrniti za vsa spletna mesta.
 
           Klik za predvajanje omogoča izvajanje vtičnikov, vendar jih mora uporabnik klikniti, da se začnejo izvajati.
@@ -1164,6 +1266,7 @@
           Vsak element na tem seznamu je vzorec ujemanja v slogu razširitve (glejte http://code.google.com/chrome/extensions/match_patterns.html).Uporabniki lahko preprosto namestijo elemente s poljubnega URL-ja, ki se ujema z elementom na tem seznamu. Mesto datoteke *.crx in strani, kjer se prenos začne (tj. napotitelj), morajo dovoljevati vzorci s tega seznama.
 
           Seznam ExtensionInstallBlacklist ima prednost pred tem pravilnikom. To pomeni, da razširitve s tega seznama ni mogoče namestiti, čeprav je za namestitev uporabljeno spletno mesto na tem seznamu.</translation>
+<translation id="2113068765175018713">Omejitev časa dejavnosti naprave samodejnim vnovičnim zagonom</translation>
 <translation id="7848840259379156480">Omogoča nastavitev privzetega upodabljalnika HTML-ja, ko je nameščen <ph name="PRODUCT_FRAME_NAME"/>. Privzeta nastavitev je, da upodabljanje izvaja gostiteljski brskalnik, vendar lahko to preglasite in določite, da <ph name="PRODUCT_FRAME_NAME"/> privzeto upodablja strani HTML.</translation>
 <translation id="4121350739760194865">Onemogoči prikaz oglasov za programe na strani »Nov zavihek«.</translation>
 <translation id="2127599828444728326">Dovoli obvestila na teh mestih</translation>
@@ -1180,9 +1283,6 @@
           Če je vrednost pravilnika nastavljena na »False«, uporabnik kljub zvočni dejavnosti velja za nedejavnega.</translation>
 <translation id="7842869978353666042">Konfigurira možnosti storitve Google Drive</translation>
 <translation id="718956142899066210">Dovoljene vrste povezav za posodobitve</translation>
-<translation id="6985168562472482191">Ime spletne trgovine podjetja, ki bo prikazano pod ikono programa na strani novega zavihka. Ta nastavitev nima učinka, če ni nastavljen pravilnik »EnterpriseWebStoreURL«.
-
-      Če je ta nastavitev onemogočena, bo program spletne trgovine podjetja (če obstaja) označen s tem URL-jem.</translation>
 <translation id="1734716591049455502">Nastavitev možnosti za oddaljen dostop</translation>
 <translation id="7336878834592315572">Ohrani piškotke za obdobje trajanja seje</translation>
 <translation id="8777120694819070607">Dovoli, da <ph name="PRODUCT_NAME"/> izvaja zastarele vtičnike.
@@ -1283,6 +1383,7 @@
           Če želite podrobnejše primere, obiščite:
           <ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">Določa število sekund, do katerega lahko naprava naključno odloži prenos posodobitve od trenutka, ko je bila posodobitev prvič na voljo v strežniku. Naprava lahko del tega časa čaka v smislu dejansko pretečenega časa, preostali del pa v smislu števila preverjanj za posodobitve. Razpršitev je v vsakem primeru omejena navzgor na nespremenljiv čas, tako da se ne more zgoditi, da bi naprava neomejen čas čakala na prenos posodobitve.</translation>
+<translation id="523505283826916779">Nastavitve funkcij za ljudi s posebnimi potrebami</translation>
 <translation id="1948757837129151165">Pravilniki za preverjanje pristnosti HTTP</translation>
 <translation id="5946082169633555022">Preskusna različica</translation>
 <translation id="8303314579975657113">Določa, katera knjižnica GSSAPI bo uporabljena za preverjanje pristnosti HTTP. Nastavite lahko samo ime knjižnice ali celotno pot.

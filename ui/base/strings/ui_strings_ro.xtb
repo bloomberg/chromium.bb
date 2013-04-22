@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Ins (Inserați)</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End (La sfârșit)</translation>
+<translation id="1190609913194133056">Centrul pentru notificări</translation>
 <translation id="5613020302032141669">Săgeata spre stânga</translation>
 <translation id="8602707065186045623">Fișier <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">Modul silențios pentru o zi</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">Anulați</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> O</translation>
-<translation id="3660179305079774227">Săgeata în sus</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MO/s</translation>
 <translation id="3990502903496589789">Marginea dreaptă</translation>
 <translation id="5182671122927417841">Dezactivați extensiile</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">&amp;Inserați</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TO</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">Săgeata în jos</translation>
 <translation id="3087734570205094154">Jos</translation>
 <translation id="6364916375976753737">Derulați spre stânga</translation>
-<translation id="6354639579297445993">Ieșiți din modul silențios</translation>
 <translation id="6945221475159498467">Selectați</translation>
 <translation id="6620110761915583480">Salvați fișierul</translation>
 <translation id="7394346403752882908">Modul silențios pentru o oră</translation>
 <translation id="8210608804940886430">Page Down (o pagină mai jos)</translation>
 <translation id="5329858601952122676">Ș&amp;tergeți</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KO</translation>
+<translation id="6489863328574614542">Setați permisiunile privind notificările pentru aplicații și extensii</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MO</translation>
 <translation id="8428213095426709021">Setări</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">Derulați în jos</translation>
 <translation id="3157931365184549694">Restabiliți</translation>
 <translation id="8179976553408161302">Intrați</translation>
+<translation id="945522503751344254">Trimiteți feedback</translation>
 <translation id="9170848237812810038">&amp;Anulați</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PO</translation>
 <translation id="2983818520079887040">Setări...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> O/s</translation>
 <translation id="477782898153505579">Nu aveți notificări. Relaxați-vă!</translation>
 <translation id="7457942297256758195">Ștergeți-le pe toate</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> – Notificări</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PO/s</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> – Notificări (<ph name="QUANTITY"/> necitite)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Minimizați</translation>
 <translation id="4469842253116033348">Dezactivați notificările de la <ph name="SITE"/></translation>

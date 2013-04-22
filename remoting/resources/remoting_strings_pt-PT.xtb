@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Todas as ligações</translation>
 <translation id="2208514473086078157">As definições da política não permitem a partilha deste computador como um anfitrião do Ambiente de Trabalho Remoto do Chrome. Contacte o administrador do sistema para obter assistência.</translation>
 <translation id="2801119484858626560">Foi detetada uma versão não compatível do Ambiente de Trabalho Remoto do Chrome. Certifique-se de que tem a versão mais recente do Chrome e do Ambiente de Trabalho Remoto do Chrome em ambos os computadores e tente novamente.</translation>
-<translation id="2805036638902441020">O servidor não conseguiu responder ao pedido de rede.</translation>
 <translation id="6998989275928107238">Para</translation>
 <translation id="3258789396564295715">Pode aceder com segurança ao computador utilizando o Ambiente de Trabalho Remoto do Chrome.</translation>
 <translation id="4808503597364150972">Introduza o PIN para <ph name="HOSTNAME"/>.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Faltam alguns componentes necessários ao Ambiente de Trabalho Remoto do Chrome. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
 <translation id="174018511426417793">Não existem computadores registados. Para ativar as ligações remotas a um computador, instale o Ambiente de Trabalho Remoto do Chrome aí e clique em “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Ecrã inteiro</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (desatualizado)</translation>
 <translation id="5702987232842159181">Ligado:</translation>
 <translation id="4736223761657662401">Histórico de Ligações</translation>
 <translation id="4430915108080446161">A gerar código de acesso...</translation>
+<translation id="7022800415798056893">Participar no inquérito</translation>
 <translation id="8228265668171617545">Foi detetada uma versão incompatível do Chromoting. Certifique-se de que tem a versão mais recente do Chrome e do Chromoting em ambos os computadores e tente novamente.</translation>
 <translation id="6985691951107243942">Tem a certeza de que pretende desativar as ligações remotas a <ph name="HOSTNAME"/>? Se mudar de ideias, será necessário aceder a esse computador e voltar a ativar as ligações.</translation>
 <translation id="9149992051684092333">Para começar a partilhar o seu ambiente de trabalho, forneça o código de acesso abaixo à pessoa que o irá ajudar.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Ver e controlar um computador partilhado.</translation>
 <translation id="1520828917794284345">Redimensionar o ambiente de trabalho para ajustar ao tamanho</translation>
 <translation id="701976023053394610">Assistência Remota</translation>
+<translation id="2747641796667576127">As atualizações de software normalmente ocorrem automaticamente, embora possam falhar nalguns casos raros. A atualização de software não deve demorar mais do que alguns minutos e pode ser feita através do acesso remoto ao seu computador.</translation>
+<translation id="3933246213702324812">O Chromoting em <ph name="HOSTNAME"/> está desatualizado e necessita de ser atualizado.</translation>
 <translation id="6193698048504518729">Ligar a <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">Falha ao atualizar o PIN. Tente novamente mais tarde.</translation>
+<translation id="785147662223870933">Quer ajudar a melhorar o Ambiente de Trabalho Remoto do Chrome?</translation>
 <translation id="579702532610384533">Restabelecer ligação</translation>
 <translation id="4211066471404647515">Faltam alguns componentes necessários para o Chromoting. Certifique-se de que está a executar a versão mais recente do Chrome e tente novamente.</translation>
 <translation id="5265129178187621741">(esta funcionalidade ainda não está disponível para Chromebooks... fique atento)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Não é possível contactar o anfitrião. Provavelmente, isso deve-se à configuração da rede que está a utilizar.</translation>
 <translation id="3776024066357219166">A sessão do Ambiente de Trabalho Remoto do Chrome terminou.</translation>
 <translation id="5625493749705183369">Aceder a outros computadores ou permitir que outro utilizador aceda ao seu computador de forma segura através da Internet.</translation>
+<translation id="2512228156274966424">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Ambiente de Trabalho Remoto do Chrome para &quot;Abrir como janela&quot;.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Para ativar as ligações remotas a outro computador, instale o Chromoting aí e clique em “<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="809687642899217504">Os Meus Computadores</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Ajude-nos a melhorar o Chromoting, permitindo-nos recolher estatísticas de utilização e relatórios de falhas.</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="7649070708921625228">Ajuda</translation>
+<translation id="3581045510967524389">Não foi possível estabelecer ligação à rede. Verifique se o dispositivo está online.</translation>
 <translation id="4517233780764084060">NOTA: Para garantir que todos os atalhos de teclado estão disponíveis, pode configurar o Chromoting para &quot;Abrir como janela&quot;.</translation>
 <translation id="4176825807642096119">Código de acesso</translation>
 <translation id="7144878232160441200">Repetir</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">O PIN para este computador está a ser atualizado...</translation>
 <translation id="5308380583665731573">Ligar</translation>
 <translation id="7319983568955948908">Terminar Partilha</translation>
+<translation id="2229673624483529540">Quer ajudar a melhorar o Chromoting?</translation>
 <translation id="6668065415969892472">O seu PIN foi atualizado.</translation>
 <translation id="4277736576214464567">O código de acesso é inválido. Tente novamente.</translation>
+<translation id="979100198331752041">O Ambiente de Trabalho Remoto em <ph name="HOSTNAME"/> está desatualizado e necessita de atualização.</translation>
 <translation id="7729639150174291243">Não tem sessão iniciada no Ambiente de Trabalho Remoto do Chrome. Inicie sessão e tente de novo.</translation>
 <translation id="2841013758207633010">Tempo</translation>
 <translation id="6011539954251327702">O Chromoting permite partilhar o computador de forma segura através da Web. Ambos os utilizadores devem ter em execução a aplicação Chromoting, que pode ser encontrada em <ph name="URL"/>.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Ocorreu um erro inesperado. Comunique este problema aos programadores.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">As definições da política não permitem a partilha deste computador como um anfitrião do Chromoting. Contacte o administrador do sistema para obter assistência.</translation>
+<translation id="9016232822027372900">Estabelecer ligação mesmo assim</translation>
 <translation id="4394049700291259645">Desactivar</translation>
 <translation id="4156740505453712750">Para proteger o acesso a este computador, escolha um PIN de <ph name="BOLD_START"/>pelo menos seis dígitos<ph name="BOLD_END"/>. Este PIN será necessário quando ligar a partir de outra localização.</translation>
 </translationbundle>

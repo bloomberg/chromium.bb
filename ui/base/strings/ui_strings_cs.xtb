@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Klávesa Ins</translation>
 <translation id="6135826906199951471">Klávesa Del</translation>
 <translation id="528468243742722775">Klávesa End</translation>
+<translation id="1190609913194133056">Centrum oznámení</translation>
 <translation id="5613020302032141669">Klávesa šipka vlevo</translation>
 <translation id="8602707065186045623">Soubor <ph name="SAVEAS_EXTENSION_TYPE"/> (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">Tichý režim po dobu jednoho dne</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
-<translation id="3660179305079774227">Klávesa šipka nahoru</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
 <translation id="5182671122927417841">Deaktivovat rozšíření</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">Vložit</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">Klávesa šipka dolů</translation>
 <translation id="3087734570205094154">Až dolů</translation>
 <translation id="6364916375976753737">Posuv doleva</translation>
-<translation id="6354639579297445993">Ukončit tichý režim</translation>
 <translation id="6945221475159498467">Vybrat</translation>
 <translation id="6620110761915583480">Uložit soubor</translation>
 <translation id="7394346403752882908">Tichý režim po dobu jedné hodiny</translation>
 <translation id="8210608804940886430">Klávesa PageDown</translation>
 <translation id="5329858601952122676">&amp;Smazat</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> kB</translation>
+<translation id="6489863328574614542">Nastavit povolení oznámení pro aplikace a rozšíření</translation>
 <translation id="6659594942844771486">Karta</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Nastavení</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">Posuv dolů</translation>
 <translation id="3157931365184549694">Obnovit</translation>
 <translation id="8179976553408161302">Začít</translation>
+<translation id="945522503751344254">Odeslat zpětnou vazbu</translation>
 <translation id="9170848237812810038">Z&amp;pět</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Nastavení...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="477782898153505579">Můžete být klidní, nemáte žádná oznámení.</translation>
 <translation id="7457942297256758195">Vymazat vše</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> – oznámení</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> – oznámení (nepřečteno: <ph name="QUANTITY"/>)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Minimalizovat</translation>
 <translation id="4469842253116033348">Deaktivovat oznámení z webu <ph name="SITE"/></translation>

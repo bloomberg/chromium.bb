@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">ಅಂತ್ಯ</translation>
+<translation id="1190609913194133056">ಅಧಿಸೂಚನೆಯ ಕೇಂದ್ರ</translation>
 <translation id="5613020302032141669">ಎಡ ಬಾಣದ ಗುರುತು</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> ಫೈಲ್ (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">ಒಂದು ದಿನಕ್ಕಾಗಿ ನಿಶ್ಯಬ್ದ ಮೋಡ್‌</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">ರದ್ದುಮಾಡು</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
-<translation id="3660179305079774227">ಮೇಲಿನ ಬಾಣದ ಗುರುತು</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/s</translation>
 <translation id="3990502903496589789">ಬಲ ತುದಿ</translation>
 <translation id="5182671122927417841">ವಿಸ್ತರಣೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">&amp;ಅಂಟಿಸಿ</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">ಕೆಳಗಿನ ಬಾಣದ ಗುರುತು</translation>
 <translation id="3087734570205094154">ಕೆಳಗೆ</translation>
 <translation id="6364916375976753737">ಎಡಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿ</translation>
-<translation id="6354639579297445993">ನಿಶ್ಯಬ್ದವಾದ ಮೋಡ್‌ನಿಂದ ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="6945221475159498467">ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="6620110761915583480">ಫೈಲ್ ಉಳಿಸು</translation>
 <translation id="7394346403752882908">ಒಂದು ಗಂಟೆಯವರೆಗೆ ನಿಶ್ಯಬ್ದ ಮೋಡ್‌</translation>
 <translation id="8210608804940886430">ಪುಟ ಕೆಳಗೆ</translation>
 <translation id="5329858601952122676">&amp;ಅಳಿಸು</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
+<translation id="6489863328574614542">ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಹಾಗೂ ವಿಸ್ತರಣೆಗಳಿಗಾಗಿ ಅಧಿಸೂಚನೆಯ ಅನುಮತಿಗಳನ್ನು ಹೊಂದಿಸಿ</translation>
 <translation id="6659594942844771486">ಟ್ಯಾಬ್</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">ಕೆಳಗೆ ಸ್ಕ್ರೋಲ್ ಮಾಡು</translation>
 <translation id="3157931365184549694">ಪುನಃಸ್ಥಾಪನೆ</translation>
 <translation id="8179976553408161302">ನಮೂದಿಸಿ</translation>
+<translation id="945522503751344254">ಪ್ರತಿಕ್ರಿಯೆಯನ್ನು ಕಳುಹಿಸಿ</translation>
 <translation id="9170848237812810038">&amp;ರದ್ದುಮಾಡು</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">ಸೆಟ್ಟಿಂಗ್‌ಗಳು...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/s</translation>
 <translation id="477782898153505579">ನೀವು ಯಾವುದೇ ಅಧಿಸೂಚನೆಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ವಿರಮಿಸಿ!</translation>
 <translation id="7457942297256758195">ಎಲ್ಲವನ್ನೂ ತೆರವುಗೊಳಿಸಿ</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> - ಅಧಿಸೂಚನೆಗಳು</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/s</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> - ಅಧಿಸೂಚನೆಗಳು (<ph name="QUANTITY"/> ಓದದಿರುವುದು)</translation>
 <translation id="6965382102122355670">ಸರಿ</translation>
 <translation id="5941711191222866238">ಕುಗ್ಗಿಸು</translation>
 <translation id="4469842253116033348"><ph name="SITE"/> ನಿಂದ ಪ್ರಕಟಣೆ‌ಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>

@@ -8,7 +8,6 @@
 <translation id="4068946408131579958">Kõik ühendused</translation>
 <translation id="2208514473086078157">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga</translation>
 <translation id="2801119484858626560">Tuvastati Chrome Remote Desktopi ühildumatu verisoon. Veenduge, et mõlemasse arvutisse on installitud Google Chrome'i ja Chrome Remote Desktopi uusim versioon, ning proovige uuesti.</translation>
-<translation id="2805036638902441020">Server ei vastanud võrgupäringule.</translation>
 <translation id="6998989275928107238">Host</translation>
 <translation id="3258789396564295715">Pääsete turvaliselt arvuti juurde Chrome Remote Desktopi abil.</translation>
 <translation id="4808503597364150972">Sisestage hosti <ph name="HOSTNAME"/> PIN-kood.</translation>
@@ -42,9 +41,11 @@
 <translation id="1409991159633941777">Mõned Chrome Remote Desktopi jaoks vajalikud komponendid on puudu. Veenduge, et arvutis on Google Chrome'i uusim versioon, ja proovige uuesti.</translation>
 <translation id="174018511426417793">Ühtki arvutit ei ole registreeritud. Arvutis kaugühenduste lubamiseks installige Chrome Remote Desktop ja klõpsake nupul „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="8525306231823319788">Täisekraan</translation>
+<translation id="6204583485351780592"><ph name="HOSTNAME"/> (aegunud)</translation>
 <translation id="5702987232842159181">Ühendatud:</translation>
 <translation id="4736223761657662401">Ühenduse ajalugu</translation>
 <translation id="4430915108080446161">Pääsukoodi loomine ...</translation>
+<translation id="7022800415798056893">Täitke küsitlus</translation>
 <translation id="8228265668171617545">Leiti rakenduse Chromoting ühildumatu versioon. Veenduge, et mõlemas arvutis on Chrome'i ja rakenduse Chromoting uusim versioon, ja proovige uuesti.</translation>
 <translation id="6985691951107243942">Kas olete kindel, et soovite keelata kaugühenduse hostiga <ph name="HOSTNAME"/>? Kui mõtlete ümber, peate selles arvutis ühendused uuesti lubama.</translation>
 <translation id="9149992051684092333">Arvuti jagamise alustamiseks andke allolev pääsukood inimesele, kes teid aitama hakkab.</translation>
@@ -71,8 +72,11 @@
 <translation id="1342297293546459414">Vaadake ja juhtige jagatud arvutit.</translation>
 <translation id="1520828917794284345">Muuda suurust töölaua sobitamiseks</translation>
 <translation id="701976023053394610">Kaugabi</translation>
+<translation id="2747641796667576127">Tarkvaravärskendused toimuvad tavaliselt automaatselt, kuid mõnel üksikul juhul võivad need ebaõnnestuda. Tarkvara värskendamine ei tohiks võtta üle paari minuti ja saate seda teha, kui olete oma arvutiga ühendatud kaugühenduse abil.</translation>
+<translation id="3933246213702324812">Chromootimine hostis <ph name="HOSTNAME"/> on aegunud ja seda tuleb värskendada.</translation>
 <translation id="6193698048504518729">Loob ühenduse hostiga <ph name="HOSTNAME"/></translation>
 <translation id="3020807351229499221">PIN-koodi värskendamine ebaõnnestus. Proovige hiljem uuesti.</translation>
+<translation id="785147662223870933">Kas soovite aidata rakendust Chrome Remote Desktop täiustada?</translation>
 <translation id="579702532610384533">Ühenda uuesti</translation>
 <translation id="4211066471404647515">Mõned rakenduse Chromoting jaoks vajalikud komponendid on puudu. Veenduge, et käitate Chrome'i uusimat versiooni ja proovige uuesti.</translation>
 <translation id="5265129178187621741">(See funktsioon ei ole veel Chromebooksis saadaval ... jääge ootele.)</translation>
@@ -84,6 +88,7 @@
 <translation id="2366718077645204424">Hostiga ei saa ühendust. Seda põhjustab ilmselt kasutatava võrgu konfiguratsioon.</translation>
 <translation id="3776024066357219166">Teie Chrome Remote Desktopi seanss on lõppenud.</translation>
 <translation id="5625493749705183369">Kasutage teisi arvuteid turvaliselt Interneti kaudu või lubage teistel kasutajatel oma arvutit kasutada.</translation>
+<translation id="2512228156274966424">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chrome Remote Desktop seadistada valikule „Ava aknana”.</translation>
 <translation id="2699970397166997657">Chromoting</translation>
 <translation id="897805526397249209">Muu arvutiga kaugühenduste lubamiseks installige sellesse rakendus Chromoting ja klõpsake nupul „<ph name="BUTTON_NAME"/>”.</translation>
 <translation id="809687642899217504">Minu arvutid</translation>
@@ -102,6 +107,7 @@
 <translation id="7038683108611689168">Aidake meil rakendust Chromoting täiustada, lubades kasutusstatistika ja krahhiaruannete kogumise.</translation>
 <translation id="6040143037577758943">Sule</translation>
 <translation id="7649070708921625228">Abi</translation>
+<translation id="3581045510967524389">Ei saanud võrguga ühendada. Veenduge, et teie seade on võrguga ühendatud.</translation>
 <translation id="4517233780764084060">MÄRKUS: kõigi klaviatuuri otseteede saadavuse tagamiseks saate rakenduse Chromootimine seadistada valikule „Ava aknana”.</translation>
 <translation id="4176825807642096119">Pääsukood</translation>
 <translation id="7144878232160441200">Proovi uuesti</translation>
@@ -111,8 +117,10 @@
 <translation id="652218476070540101">Selle arvuti PIN-koodi värskendatakse ...</translation>
 <translation id="5308380583665731573">Ühenda</translation>
 <translation id="7319983568955948908">Lõpeta jagamine</translation>
+<translation id="2229673624483529540">Kas soovite aidata Chromootimist parandada?</translation>
 <translation id="6668065415969892472">Teie PIN-kood on värskendatud.</translation>
 <translation id="4277736576214464567">Pääsukood on kehtetu. Proovige uuesti.</translation>
+<translation id="979100198331752041">Chrome Remote Desktop hostis <ph name="HOSTNAME"/> on aegunud ja seda tuleb värskendada.</translation>
 <translation id="7729639150174291243">Te pole Chrome Remote Desktopi sisse logitud. Logige sisse ja proovige uuesti.</translation>
 <translation id="2841013758207633010">Aeg</translation>
 <translation id="6011539954251327702">Rakendus Chromoting võimaldab teil arvutit turvaliselt veebi kaudu jagada. Mõlemad kasutajad peavad käitama rakendust Chromoting, mille leiate aadressilt <ph name="URL"/>.</translation>
@@ -123,6 +131,7 @@
 <translation id="1546934824884762070">Ilmnes ootamatu viga. Teatage sellest probleemist arendajatele.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="3403830762023901068">Reegli seaded ei luba jagada seda arvutit Chrome Remote Desktopi hostina. Abi saamiseks võtke ühendust süsteemiülemaga.</translation>
+<translation id="9016232822027372900">Ühenda siiski</translation>
 <translation id="4394049700291259645">Keela</translation>
 <translation id="4156740505453712750">Arvuti kaitsmiseks valige PIN-kood, mis koosneb <ph name="BOLD_START"/>vähemalt kuuest numbrist<ph name="BOLD_END"/>. PIN-kood tuleb sisestada muust asukohast ühenduse loomisel.</translation>
 </translationbundle>

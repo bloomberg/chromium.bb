@@ -13,6 +13,7 @@
 <translation id="2704356438731803243">إذا كنت تفضل الإبقاء على بيانات Chrome الحالية بشكل منفصل، فيمكنك إنشاء حساب مستخدم Chrome جديد للمستخدم <ph name="USER_NAME"/>.</translation>
 <translation id="386202838227397562">الرجاء إغلاق كل نوافذ Google Chrome وإعادة المحاولة.</translation>
 <translation id="2770231113462710648">تغيير المتصفح الافتراضي إلى:</translation>
+<translation id="2077129598763517140">استخدام تسريع الأجهزة عند توفره</translation>
 <translation id="1065672644894730302">لا يمكن قراءة تفضيلاتك. قد تكون بعض الميزات غير متاحة، ولن يتم حفظ التغييرات في التفضيلات.</translation>
 <translation id="7781002470561365167">يتوفر إصدار جديد من متصفح Google Chrome.</translation>
 <translation id="7101265395643981223">بدء تشغيل Google Chrome</translation>
@@ -52,11 +53,10 @@
 <translation id="5204098752394657250"><ph name="TERMS_OF_SERVICE_LINK"/>بنود خدمة<ph name="END_TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
 <translation id="1393853151966637042">الحصول على مساعدة بشأن استخدام Chrome</translation>
 <translation id="7398801000654795464">تم تسجيل دخولك إلى Chrome باعتبارك <ph name="USER_EMAIL_ADDRESS"/>. الرجاء استخدام الحساب نفسه لتسجيل الدخول مرة أخرى.</translation>
-<translation id="3487814320513494737">لقد تمت إعادة هيكلة صفحة علامة تبويب جديدة في Chrome. يمكنك التبديل بين الأقسام من خلال النقر على هذه التصنيفات. سيتذكر Chrome تفضيلك للمرة التالية.</translation>
 <translation id="1697213158865901863">إطار Google Chrome</translation>
+<translation id="4053720452172726777">تخصيص Google Chrome والتحكم فيه</translation>
 <translation id="6423071462708908582">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; ولكن الخادم قدم شهادة منتهية الصلاحية. ليست هناك أية معلومات متاحة لتحديد ما إذا كانت هذه الشهادة تم اختراقها منذ انتهاء صلاحيتها. يعني هذا أن Google Chrome لا يمكنه ضمان اتصالك بـ &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; وليس أحد المخترقين. تم ضبط ساعة الكمبيوتر حاليًا على <ph name="CURRENT_TIME"/>. هل يبدو ذلك صحيحًا؟ إذا لم يكن كذلك، يجب عليك تصحيح الخطأ وتحديث هذه الصفحة.</translation>
 <translation id="3197823471738295152">جهازك محدّث.</translation>
-<translation id="2653935705142821164">عارض Chrome</translation>
 <translation id="2336460313445286758">انتقل إلى <ph name="BEGIN_BOLD"/> قائمة Chrome &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> <ph name="END_BOLD"/> مع التأكد من تعيين التهيئة على &quot;بلا خادم وكيل&quot; أو &quot;مباشر&quot;.</translation>
 <translation id="3889417619312448367">إزالة Google Chrome</translation>
 <translation id="8551886023433311834">محدّث تقريبًا! أعد تشغيل الجهاز لإنهاء التحديث.</translation>
@@ -73,16 +73,15 @@
 <translation id="4585888816441913908">يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من Google Chrome وإطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة كل من Google Chrome وإطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="6368958679917195344">أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
 <translation id="7459554271817304652">يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Google Chrome على أي كمبيوتر.</translation>
-<translation id="3215326788962391210">لقد حاولت الوصول إلى &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;، ولكن الخادم قدّم شهادة تم إصدارها من قِبل جهة غير موثوق فيها من قِبل نظام تشغيل الكمبيوتر. قد يعني هذا أن الخادم قد قام بإنشاء بيانات اعتماد الأمان الخاصة به التي يتعذر على Google Chrome الاعتماد عليها للحصول على معلومات الهوية، أو ربما يحاول أحد المهاجمين اعتراض اتصالاتك.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="1195935957447623558">لم يتمّ إغلاق Google Chrome بطريقة صحيحة. لإعادة فتح الصفحات التي سبق فتحها، انقر على زرّ إعادة.</translation>
 <translation id="2576431527583832481">لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
-<translation id="2783467918276328046">اطلع على <ph name="BEGIN_LINK"/>المزيد من فوائد<ph name="END_LINK"/> تسجيل الدخول إلى Chrome.</translation>
 <translation id="2580411288591421699">لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="1457721931618994305">جارٍ تحديث Google Chrome...</translation>
 <translation id="4351362253593301573">انتقل إلى <ph name="BEGIN_BOLD"/> قائمة Chrome &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="ADVANCED_TITLE"/> &gt; <ph name="PROXIES_TITLE"/> &gt; إعدادات الشبكة المحلية <ph name="END_BOLD"/> ثم ألغ تحديد مربع الاختيار &quot;استخدام خادم وكيل لشبكة الاتصال المحلية&quot;.</translation>
 <translation id="7747138024166251722">تعذر على أداة المثبِّت إنشاء دليل مؤقت. يُرجى التحقق من وجود مساحة خالية على القرص وتوفر الإذن اللازم لتثبيت البرنامج.</translation>
+<translation id="6557998774620459028">لقد حاولت الوصول إلى <ph name="DOMAIN"/>، لكن الخادم قدّم شهادة تم إصدارها من قِبل جهة غير موثوق فيها من قِبل نظام تشغيل الكمبيوتر. قد يعني هذا أن الخادم قد أنشأ بيانات اعتماد الأمان الخاصة به التي يتعذر على Chrome الاعتماد عليها للحصول على معلومات الهوية، أو ربما يحاول أحد المهاجمين اعتراض اتصالاتك.</translation>
 <translation id="5170938038195470297">لا يمكن استخدام ملفك الشخصي نظرًا لأنه من إصدار أحدث من Google Chrome.
 
 قد تكون بعض الميزات غير متاحة. الرجاء تحديد دليل ملف شخصي مختلف أو استخدام إصدار أحدث من Chrome.</translation>
@@ -91,6 +90,7 @@
 <translation id="2485422356828889247">إزالة التثبيت</translation>
 <translation id="2748463065602559597">أنت تعرض صفحة Google Chrome آمنة.</translation>
 <translation id="7185038942300673794">تمت إضافة <ph name="EXTENSION_NAME"/> إلى Chrome.</translation>
+<translation id="1786477462680638703">لقد حاولت الوصول إلى <ph name="DOMAIN"/>، لكن الخادم قدّم شهادة تم إصدارها من قِبل جهة غير موثوق فيها من قِبل Google Chrome. قد يعني هذا أن الخادم قد أنشأ بيانات اعتماد الأمان الخاصة به التي يتعذر على Chrome الاعتماد عليها للحصول على معلومات الهوية، أو ربما يحاول أحد المهاجمين اعتراض اتصالاتك.</translation>
 <translation id="9073088951656332330">لم يتم العثور على Google Chrome أو إطار Google Chrome للتحديث.</translation>
 <translation id="2346876346033403680">سجّل شخص ما الدخول من قبل إلى Chrome على هذا الكمبيوتر باعتباره <ph name="ACCOUNT_EMAIL_LAST"/>. فإذا لم يكن هذا هو حسابك، فأنشئ حساب مستخدم Chrome جديدًا للإبقاء على معلوماتك بشكل منفصل.
 
@@ -102,12 +102,13 @@
 <translation id="3872765354315765470">عرض مشغل تطبيقات Chrome.</translation>
 <translation id="2044287590254833138">شريط أدوات Google Chrome</translation>
 <translation id="5074344184765391290">مضيف المكون الإضافي لمتصفح Chrome</translation>
+<translation id="742982227155662553">(<ph name="BEGIN_BUTTON"/>إعادة تشغيل<ph name="END_BUTTON"/> Chrome مطلوبة)</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
-<translation id="595871952790078940">أداة Chrome</translation>
 <translation id="2874156562296220396">نوفر لكم Google Chrome بفضل المشروع المفتوح المصدر <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> و<ph name="BEGIN_LINK_OSS"/>برامج أخرى مفتوحة المصدر<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح لديك.</translation>
 <translation id="7436949144778751379">يتطلب Google Chrome نظام التشغيل Windows XP أو الأحدث. قد لا تعمل بعض الميزات.</translation>
 <translation id="103396972844768118">معلومات مهمة بخصوص بياناتك في Chrome</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">عدم المطالبة مرة أخرى</translation>
 <translation id="2290095356545025170">هل تريد بالتأكيد إزالة Google Chrome؟</translation>
 <translation id="7062966102157262887">هناك تنزيل قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيل؟</translation>
@@ -122,14 +123,14 @@
 <translation id="4270804660370715583">انتقل إلى <ph name="BEGIN_BOLD"/> قائمة Chrome &gt; <ph name="SETTINGS_TITLE"/> &gt; <ph name="INTERNET_TITLE"/> &gt; &quot;<ph name="OPTIONS_BUTTON"/>&quot; <ph name="END_BOLD"/> (للشبكة المستخدمة حاليًا). وفي حالة وجود الزر <ph name="BEGIN_BOLD"/> &quot;<ph name="PROXY_BUTTON"/>&quot; <ph name="END_BOLD"/>(في علامة التبويب <ph name="BEGIN_BOLD"/> <ph name="NETWORK_TAB"/> <ph name="END_BOLD"/>)، انقر عليه مع التأكد من تعيين التهيئة على &quot;مباشر&quot;.</translation>
 <translation id="5788838254726722945">إلغاء تثبيت مشغل تطبيقات Google Chrome</translation>
 <translation id="3612333635265770873">هناك وحدة تحمل الاسم نفسه ومعروف أنها تتعارض مع Google Chrome.</translation>
+<translation id="8333216950301932607">هل تريد تسجيل الدخول إلى Chrome باستخدام <ph name="USER_EMAIL_ADDRESS"/>؟</translation>
 <translation id="61852838583753520">تحديث ن&amp;ظام التشغيل Google Chrome</translation>
-<translation id="6650142020817594541">يوصي هذا الموقع باستخدام إطار Google Chrome (المثبت من قبل).</translation>
-<translation id="2712549016134575851">تم اكتشاف تعارض مع تطبيق آخر مثبَّت.</translation>
 <translation id="5577648424992741236">يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من إطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة إطار Google Chrome وإعادة المحاولة.</translation>
-<translation id="7018032895891496381">يستخدم Google Chrome محرك البحث الافتراضي، والذي يتم تعيينه حاليًا على <ph name="PAGE_TITLE"/>، فهل تريد بالتأكيد الإبقاء على محرك البحث الافتراضي؟</translation>
 <translation id="6326175484149238433">إزالة من Chrome</translation>
 <translation id="2871893339301912279">تم تسجيل دخولك إلى Chrome!</translation>
 <translation id="7161904924553537242">مرحبًا بك في Google Chrome</translation>
+<translation id="1686446242839005801">أنت تسجّل الدخول إلى Chrome باستخدام الحساب <ph name="USER_EMAIL_ADDRESS"/>. سيكون بمقدورك الدخول إلى إشاراتك المرجعية وسجلك والإعدادات الأخرى على كل الأجهزة التي سجلت الدخول عليها.</translation>
+<translation id="4846114739649431522">يلزم تبديل Chrome إلى وضع سطح المكتب لاستخدام التطبيقات.</translation>
 <translation id="8669527147644353129">مساعد Google Chrome</translation>
 <translation id="870251953148363156">&amp;تحديث Google Chrome</translation>
 <translation id="130631256467250065">تسري التغييرات في المرة التالية التي تعيد فيها تشغيل الجهاز.</translation>
@@ -154,8 +155,8 @@
 <translation id="7253415505590551024">هناك تنزيلات قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيلات؟</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="2769762047821873045">ليس Google Chrome متصفحك الافتراضي.</translation>
-<translation id="3135343025848309798">يمكنك استخدام مشغل تطبيقات Chrome لتشغيل تطبيقاتك.</translation>
 <translation id="7825851276765848807">فشل التثبيت نظرًا لحدوث خطأ غير محدد. الرجاء تنزيل Google Chrome مرة أخرى.</translation>
+<translation id="5747377399547108410">يلزم تبديل Chrome إلى وضع سطح المكتب لاستخدام مشغل التطبيقات.</translation>
 <translation id="1061257178446858647">أنت الآن مسجل الدخول إلى Chrome! ستتم مزامنة الإشارات المرجعية والسجل والإعدادات الأخرى مع حسابك في Google.</translation>
 <translation id="3335672657969596251">لا يعمل Google Chrome بموجب نظام التشغيل <ph name="OS_NAME"/>.</translation>
 <translation id="4458285410772214805">الرجاء الخروج ثم تسجيل الدخول حتى يسري هذا التغيير.</translation>
@@ -183,7 +184,6 @@
 <translation id="3836351788193713666">أوشك الانتهاء من التحديث! إعادة تشغيل Google Chrome لإنهاء التحديث.</translation>
 <translation id="7106741999175697885">مدير المهام - Google Chrome</translation>
 <translation id="8449380764213232436">Google Chrome في صدد استيراد العناصر التالية من <ph name="BROWSER_COMPONENT"/>:</translation>
-<translation id="852884188147941900">عامل Chrome</translation>
 <translation id="3396977131400919238">حدث خطأ في نظام التشغيل أثناء عملية التثبيت. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="5495581687705680288">الوحدات المحملة في Google Chrome</translation>
 <translation id="8129812357326543296">&amp;حول Google Chrome</translation>

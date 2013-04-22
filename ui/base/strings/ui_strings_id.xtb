@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">Berakhir</translation>
+<translation id="1190609913194133056">Pusat Pemberitahuan</translation>
 <translation id="5613020302032141669">Panah Kiri</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> File (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">Mode hening selama satu hari</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">Batal</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> B</translation>
-<translation id="3660179305079774227">Panah Atas</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> MB/dtk</translation>
 <translation id="3990502903496589789">Tepi Kanan</translation>
 <translation id="5182671122927417841">Nonaktifkan ekstensi</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">Tem&amp;pel</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> TB</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">Panah Bawah</translation>
 <translation id="3087734570205094154">Bawah</translation>
 <translation id="6364916375976753737">Gulir ke Kiri</translation>
-<translation id="6354639579297445993">Keluar dari mode hening</translation>
 <translation id="6945221475159498467">Pilih</translation>
 <translation id="6620110761915583480">Simpan File</translation>
 <translation id="7394346403752882908">Mode hening selama satu jam</translation>
 <translation id="8210608804940886430">Page Down</translation>
 <translation id="5329858601952122676">&amp;Hapus</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KB</translation>
+<translation id="6489863328574614542">Setel izin pemberitahuan untuk aplikasi dan ekstensi</translation>
 <translation id="6659594942844771486">Tab</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> MB</translation>
 <translation id="8428213095426709021">Setelan</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">Gulir ke Bawah</translation>
 <translation id="3157931365184549694">Kembalikan</translation>
 <translation id="8179976553408161302">Masuk</translation>
+<translation id="945522503751344254">Kirim masukan</translation>
 <translation id="9170848237812810038">&amp;Urung</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> PB</translation>
 <translation id="2983818520079887040">Setelan...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> B/dtk</translation>
 <translation id="477782898153505579">Tidak ada pemberitahuan. Santai saja!</translation>
 <translation id="7457942297256758195">Hapus Semua</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> - Pemberitahuan</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> PB/dtk</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> - Pemberitahuan (<ph name="QUANTITY"/> belum dibaca)</translation>
 <translation id="6965382102122355670">Oke</translation>
 <translation id="5941711191222866238">Perkecil</translation>
 <translation id="4469842253116033348">Nonaktifkan pemberitahuan dari <ph name="SITE"/></translation>

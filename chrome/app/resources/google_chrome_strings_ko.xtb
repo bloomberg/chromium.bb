@@ -15,6 +15,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2704356438731803243">기존 Chrome 데이터를 별도로 보관하려는 경우 <ph name="USER_NAME"/>의 새 Chrome 사용자를 만들 수 있습니다.</translation>
 <translation id="386202838227397562">Chrome 창을 모두 닫고 다시 시도해 보세요.</translation>
 <translation id="2770231113462710648">다음으로 기본 브라우저 변경:</translation>
+<translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="1065672644894730302">환경설정을 읽을 수 없습니다.
 
 일부 기능을 사용할 수 없으며 환경설정의 변경사항이 저장되지 않습니다.</translation>
@@ -65,11 +66,10 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="5204098752394657250">Chrome <ph name="TERMS_OF_SERVICE_LINK"/>서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK"/></translation>
 <translation id="1393853151966637042">Chrome 사용에 대한 도움말</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS"/>(으)로 Chrome에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
-<translation id="3487814320513494737">Chrome의 새 탭 페이지가 리모델링되었습니다. 이 라벨을 클릭하여 섹션 사이를 전환할 수 있습니다. Chrome에서 다음 번에 사용자의 환경설정을 기억합니다.</translation>
 <translation id="1697213158865901863">Chrome 프레임</translation>
+<translation id="4053720452172726777">Chrome 맞춤설정 및 제어</translation>
 <translation id="6423071462708908582">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접근하려 했지만 서버에서 만료된 인증서를 제출했습니다. 증서가 만료된 이후 손상되었는지 여부를 나타내는 정보가 없습니다. 다시 말해 Chrome은 사용자가 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;와(과) 통신하고 있으며 침입자가 아니라는 것을 확인할 수 없습니다. 컴퓨터 시계가 현재 <ph name="CURRENT_TIME"/>(으)로 설정되어 있습니다. 시간이 정확하지 않으면 오류를 수정한 뒤 이 페이지를 새로고침하세요.</translation>
 <translation id="3197823471738295152">기기가 최신 버전입니다.</translation>
-<translation id="2653935705142821164">Chrome 렌더러</translation>
 <translation id="2336460313445286758"><ph name="BEGIN_BOLD"/>
           Chrome 메뉴 &gt;
           <ph name="SETTINGS_TITLE"/>
@@ -98,12 +98,10 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="4585888816441913908">이 컴퓨터에 이미 최신 버전의 Chrome 및 Chrome 프레임이 있습니다. 실행되지 않는 경우 모두 제거한 후 다시 시도하세요.</translation>
 <translation id="6368958679917195344">Chrome OS는 추가 <ph name="BEGIN_LINK_CROS_OSS"/>오픈소스 소프트웨어<ph name="END_LINK_CROS_OSS"/>를 사용했습니다.</translation>
 <translation id="7459554271817304652">맞춤설정한 브라우저 기능을 웹에 저장하고 모든 컴퓨터의 Chrome에서 액세스할 수 있도록 동기화를 설정합니다.</translation>
-<translation id="3215326788962391210">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려 했으나 서버가 컴퓨터의 운영체제에서 신뢰하지 않는 법인에서 발행한 인증서를 전달했습니다. 즉, 서버가 자체 보안 자격증명을 생성하여 Chrome에서 그 정보를 신뢰할 수 없거나, 공격자가 통신을 가로채려고 한 것일 수 있습니다.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">업데이트</translation>
 <translation id="1195935957447623558">Chrome이 제대로 종료되지 않았습니다. 사용 중이던 페이지를 다시 열려면 '복구'를 클릭하세요.</translation>
 <translation id="2576431527583832481">한층 개선된 Chrome의 최신 버전이 출시되었습니다.</translation>
-<translation id="2783467918276328046">Chrome에 로그인하여 누릴 수 있는 <ph name="BEGIN_LINK"/>더 많은 혜택<ph name="END_LINK"/>을 확인하세요.</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="1457721931618994305">Chrome 업데이트 중...</translation>
 <translation id="4351362253593301573"><ph name="BEGIN_BOLD"/>
@@ -118,6 +116,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
           <ph name="END_BOLD"/>(으)로 이동하여
           '사용자 LAN에 프록시 서버 사용'을 선택 취소합니다.</translation>
 <translation id="7747138024166251722">설치 프로그램이 임시 디렉토리를 만들지 못했습니다. 디스크 공간 및 설치 권한을 확인해 보세요.</translation>
+<translation id="6557998774620459028">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려 했으나 서버가 컴퓨터의 운영체제에서 신뢰하지 않는 기관에서 발행한 인증서를 제공했습니다. 즉, 서버가 자체 보안 자격증명을 생성하여 Chrome에서 그 정보를 신뢰할 수 없거나, 공격자가 통신을 가로채려고 한 것일 수 있습니다.</translation>
 <translation id="5170938038195470297">최신 버전의 Chrome에서 가져온 사용자 프로필이기 때문에 사용할 수 없습니다.
 
 일부 기능은 사용하지 못할 수 있습니다. 다른 프로필 디렉토리를 지정하거나 최신 버전의 Chrome을 사용하세요.</translation>
@@ -126,6 +125,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2748463065602559597">지금 안전한 Chrome 페이지를 보고 계십니다.</translation>
 <translation id="7185038942300673794"><ph name="EXTENSION_NAME"/>이(가) Chrome에 추가되었습니다.</translation>
+<translation id="1786477462680638703">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;에 접속하려 했으나 서버가 컴퓨터의 운영체제에서 신뢰하지 않는 기관에서 발행한 인증서를 제공했습니다. 즉, 서버가 자체 보안 자격증명을 생성하여 Chrome에서 그 정보를 신뢰할 수 없거나, 공격자가 통신을 가로채려고 한 것일 수 있습니다.</translation>
 <translation id="9073088951656332330">업데이트할 Chrome 또는 Chrome 프레임이 없습니다.</translation>
 <translation id="2346876346033403680">다른 사용자가 이전에 이 컴퓨터에서 <ph name="ACCOUNT_EMAIL_LAST"/>(으)로 Chrome에 로그인했습니다. 본인의 계정이 아닌 경우 새 Chrome 사용자를 만들어 개인 정보를 분리하세요.
 
@@ -137,12 +137,13 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3872765354315765470">Chrome 앱 실행기를 표시합니다.</translation>
 <translation id="2044287590254833138">Chrome 툴바</translation>
 <translation id="5074344184765391290">Chrome 플러그인 호스트</translation>
+<translation id="742982227155662553">(Chrome을 <ph name="BEGIN_BUTTON"/>다시 시작<ph name="END_BUTTON"/>해야 함)</translation>
 <translation id="8862326446509486874">시스템 수준의 설치 권한이 없습니다. 관리자 권한으로 설치 프로그램을 다시 실행해 보세요.</translation>
-<translation id="595871952790078940">Chrome 유틸리티</translation>
 <translation id="2874156562296220396">Chrome은 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 오픈소스 프로젝트를 비롯한 여러 <ph name="BEGIN_LINK_OSS"/>오픈소스 소프트웨어<ph name="END_LINK_OSS"/>에 기초해 만들어진 브라우저입니다.</translation>
 <translation id="3847841918622877581">Chrome은 사용자의 탐색 환경을 개선하기 위해 웹 서비스를 사용할 수 있습니다.</translation>
 <translation id="7436949144778751379">Chrome에는 Windows XP 이상이 필요합니다. 일부 기능이 작동하지 않을 수 있습니다.</translation>
 <translation id="103396972844768118">Chrome 데이터 관련 중요 정보</translation>
+<translation id="6145223986912084844">chrome</translation>
 <translation id="6757767188268205357">더 이상 묻지 않음</translation>
 <translation id="2290095356545025170">Chrome을 제거하시겠습니까?</translation>
 <translation id="7062966102157262887">현재 한 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
@@ -172,14 +173,14 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
           확인합니다.</translation>
 <translation id="5788838254726722945">Chrome 앱 실행기 제거</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
+<translation id="8333216950301932607"><ph name="USER_EMAIL_ADDRESS"/>(으)로 Chrome에 로그인하시겠습니까?</translation>
 <translation id="61852838583753520">Chrome OS 업데이트(&amp;C)</translation>
-<translation id="6650142020817594541">이 사이트는 Chrome 프레임을 권장함(이미 설치됨)</translation>
-<translation id="2712549016134575851">설치된 다른 애플리케이션과의 충돌이 감지되었습니다.</translation>
 <translation id="5577648424992741236">컴퓨터에 Chrome 프레임 최신 버전이 설치되어 있습니다. 실행되지 않는 경우 제거한 후 다시 시도하세요.</translation>
-<translation id="7018032895891496381">Chrome은 현재 <ph name="PAGE_TITLE"/>(으)로 설정되어 있는 기본 검색엔진을 사용합니다. 기본 검색엔진을 계속 유지하시겠습니까?</translation>
 <translation id="6326175484149238433">Chrome에서 삭제</translation>
 <translation id="2871893339301912279">Chrome에 로그인되어 있습니다.</translation>
 <translation id="7161904924553537242">신개념 브라우저 - Chrome</translation>
+<translation id="1686446242839005801"><ph name="USER_EMAIL_ADDRESS"/> 계정으로 Chrome에 로그인 중입니다. 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
+<translation id="4846114739649431522">앱을 사용하려면 Chrome을 데스크톱 모드로 전환해야 합니다.</translation>
 <translation id="8669527147644353129">Chrome 도우미</translation>
 <translation id="870251953148363156">Chrome 업데이트(&amp;G)</translation>
 <translation id="130631256467250065">기기를 다시 시작할 때 변경사항이 적용됩니다.</translation>
@@ -204,8 +205,8 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7253415505590551024">현재 여러 개의 다운로드가 진행 중입니다. Chrome을 종료하고 다운로드를 취소하시겠습니까?</translation>
 <translation id="7196020411877309443">이 메시지가 표시되는 이유</translation>
 <translation id="2769762047821873045">Chrome이 기본 브라우저로 설정되어 있지 않습니다.</translation>
-<translation id="3135343025848309798">Chrome 앱 실행기를 사용하여 앱을 실행합니다.</translation>
 <translation id="7825851276765848807">알 수 없는 오류로 인해 설치에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
+<translation id="5747377399547108410">앱 실행기를 사용하려면 Chrome을 데스크톱 모드로 전환해야 합니다.</translation>
 <translation id="1061257178446858647">Chrome에 로그인되었습니다. 사용자의 북마크, 인터넷 사용기록, 기타 설정이 Google 계정에 동기화됩니다.</translation>
 <translation id="3335672657969596251">Chrome에서는 <ph name="OS_NAME"/>을(를) 지원하지 않습니다.</translation>
 <translation id="4458285410772214805">변경사항을 적용하려면 로그아웃했다가 다시 로그인하세요.</translation>
@@ -233,7 +234,6 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="3836351788193713666">설치가 거의 완료되었습니다. 업데이트를 완료하려면 Chrome을 다시 시작하세요.</translation>
 <translation id="7106741999175697885">작업 관리자 - Chrome</translation>
 <translation id="8449380764213232436">Chrome이 <ph name="BROWSER_COMPONENT"/>에서 다음 항목을 가져오는 중입니다.</translation>
-<translation id="852884188147941900">Chrome 작업자</translation>
 <translation id="3396977131400919238">설치 중 운영체제 오류가 발생했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="5495581687705680288">Chrome에 로드된 모듈</translation>
 <translation id="8129812357326543296">Chrome 정보(&amp;G)</translation>

@@ -9,6 +9,13 @@
 <translation id="1213523811751486361">指定提供搜尋建議的搜尋引擎網址。網址應包含「<ph name="SEARCH_TERM_MARKER"/>」字串，使用者查詢時輸入的文字會取代這個字串。這項政策是選擇性的，如果未設定，系統不會使用任何建議的網址。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="6106630674659980926">啟用密碼管理員</translation>
 <translation id="9150416707757015439">這項政策已被取代，請改用 IncognitoModeAvailability。在「<ph name="PRODUCT_NAME"/>」中啟用無痕模式。如果這項設定已啟用或尚未設定，使用者皆可在無痕模式中開啟網頁。如果這項設定已停用，使用者就無法在無痕模式中開啟網頁。如果未設定這項政策，系統會啟用這項設定，且使用者可以使用無痕模式。</translation>
+<translation id="5304269353650269372">指定裝置處於電池供電環境時，要在於使用者停止輸入多少時間長度後顯示警告對話方塊。
+
+          如果設定這項政策，使用者必須在指定的時間長度內保持閒置，<ph name="PRODUCT_OS_NAME"/> 才會顯示警告對話方塊，將系統即將採取的閒置動作告知使用者。
+
+          如果未設定這項政策，系統不會顯示警告對話方塊。
+
+          指定政策值時需以毫秒為單位。值必須小於或等於閒置延遲時間。</translation>
 <translation id="7614663184588396421">停用的通訊協定機制清單</translation>
 <translation id="2309390639296060546">預設地理位置設定</translation>
 <translation id="7261507082507286116">透過行動網路連線時，停用 Google 雲端硬碟</translation>
@@ -94,6 +101,7 @@
 <translation id="6036523166753287175">允許遠端存取主機穿越防火牆</translation>
 <translation id="1096105751829466145">預設搜尋引擎</translation>
 <translation id="7567380065339179813">允許這些網站的外掛程式</translation>
+<translation id="1617235075406854669">啟用刪除瀏覽器和下載紀錄</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
 <translation id="3153348162326497318">允許您指定使用者不得安裝的擴充功能。如果已安裝的擴充功能在黑名單中，就會遭到移除。星號「*」代表排除所有的擴充功能，除非您特別將部分擴充功能列入許可清單。如果未設定這項政策，使用者即可在「<ph name="PRODUCT_NAME"/>」中安裝任何擴充功能。</translation>
 <translation id="5809728392451418079">設定裝置本機帳戶的顯示名稱</translation>
@@ -123,6 +131,9 @@
 <translation id="8828766846428537606">設定 <ph name="PRODUCT_NAME"/> 中的預設首頁並禁止使用者變更這項設定。如果您選取使用者的首頁作為新分頁，或是將使用者的首頁設為網址並指定為首頁網址，系統會完全鎖定使用者的首頁設定。如果您沒有指定首頁網址，那麼使用者只需將網址設為「chrome://newtab」，就能以新分頁做為首頁。</translation>
 <translation id="2231817271680715693">第一次執行時從預設瀏覽器匯入瀏覽記錄</translation>
 <translation id="1353966721814789986">起始網頁</translation>
+<translation id="1841130111523795147">允許使用者登入 <ph name="PRODUCT_NAME"/>，並防止使用者變更這項設定。
+
+      如果設定這項政策，您可以設定是否允許使用者登入 <ph name="PRODUCT_NAME"/>。</translation>
 <translation id="5564962323737505851">設定密碼管理員。如果已啟用密碼管理員，那麼您就能選擇是否要允許使用者以純文字顯示儲存密碼。</translation>
 <translation id="4668325077104657568">預設圖片設定</translation>
 <translation id="7978961945071764766">如果您設為「Ture」，就會在使用行動網路連線時停用 Google 雲端硬碟同步功能。這種情形下，系統只有在連上 WiFi 或乙太網路連線時才會將資料同步處理至 Google 雲端硬碟。
@@ -133,6 +144,7 @@
 <translation id="6074963268421707432">不允許任何網站顯示桌面通知</translation>
 <translation id="8614804915612153606">停用自動更新</translation>
 <translation id="382476126209906314">為遠端存取主機設定 TalkGadget 前置詞</translation>
+<translation id="6561396069801924653">在系統匣選單中顯示協助工具選項</translation>
 <translation id="8104962233214241919">自動為這些網站選取用戶端憑證</translation>
 <translation id="2906874737073861391">AppPack 擴充功能清單</translation>
 <translation id="3758249152301468420">停用開發人員工具</translation>
@@ -160,11 +172,28 @@
 <translation id="4899708173828500852">啟用安全瀏覽</translation>
 <translation id="4442582539341804154">裝置閒置或暫停時啟用鎖定</translation>
 <translation id="7719251660743813569">控制是否要將使用計量回報給 Google。如果設為 True，<ph name="PRODUCT_OS_NAME"/> 會回報使用計量。如未設定或設為 False，計量回報就會遭到停用。</translation>
+<translation id="2372547058085956601">公開工作階段自動登入延遲時間。
+
+      如果未設定 |DeviceLocalAccountAutoLoginId| 政策，這項政策不會生效。否則：
+
+      如果設定這項政策，政策會指定系統在使用者活動持續停止後多少時間，才會將使用者自動登出公開工作階段，如 |DeviceLocalAccountAutoLoginId| 政策中所指定。
+
+      如果未設定這項政策，系統會以 0 毫秒當做逾時時間。
+
+      指定這項政策時需以毫秒為單位。</translation>
 <translation id="3570008976476035109">封鎖這些網站的外掛程式</translation>
+<translation id="8749370016497832113">在 <ph name="PRODUCT_NAME"/> 中啟用刪除瀏覽器紀錄和下載紀錄，並防止使用者變更這項設定。
+
+      請注意，即使您停用這項政策，仍無法確保可保留瀏覽和下載紀錄。使用者可能可以直接編輯或刪除紀錄資料庫，且瀏覽器本身也隨時可能過期或封存任何或所有紀錄項目。
+
+      如果啟用或未設定這項政策，使用者可刪除瀏覽和下載紀錄項目。
+
+      如果停用這項政策，則使用者無法刪除瀏覽和下載紀錄項目。</translation>
 <translation id="2884728160143956392">只有本次工作階段允許這些網站的 Cookie</translation>
 <translation id="4655130238810647237">啟用或停用「<ph name="PRODUCT_NAME"/>」中的編輯書籤功能。如果啟用這項設定，您就能新增、移除或修改書籤。就算未設定這項政策，這還是預設設定。如果停用這項設定，您就無法新增、移除或修改書籤，但仍可使用現有書籤。</translation>
 <translation id="3496296378755072552">密碼管理員</translation>
 <translation id="2565967352111237512">啟用向 Google 匿名回報「<ph name="PRODUCT_NAME"/>」使用狀況和相關當機資料的功能，並禁止使用者變更這項設定。如果您啟用這項設定，系統會以匿名方式傳送使用狀況和相關當機資料給 Google。如果您停用這項設定，系統永遠都不會將這些報告傳送給 Google。不論您啟用或停用這項設定，使用者都無法在 「<ph name="PRODUCT_NAME"/>」變更或覆寫這項設定。如果未設定這項政策，系統會執行使用者在安裝/初次執行時選擇的設定。</translation>
+<translation id="6256787297633808491">要在 Chrome 啟動時套用的全系統設定</translation>
 <translation id="2516600974234263142">啟用 <ph name="PRODUCT_NAME"/> 的列印功能，並且禁止使用者變更這項設定。
 
       不論這項政策處於啟用或未設定的狀態，使用者都可以進行列印。
@@ -198,9 +227,6 @@
       如果您並未設置這項設定，則使用者可自行選擇是否要使用拼字檢查服務。</translation>
 <translation id="254524874071906077">將 Chrome 設為預設瀏覽器</translation>
 <translation id="8764119899999036911">指定是否要根據標準 DNS 名稱或輸入的原始名稱來產生 Kerberos SPN。如果啟用這項設定，系統會略過 CNAME 查詢，並且使用先前輸入的伺服器名稱。如果您停用或未調整這項設定，伺服器的標準名稱會透過 CNAME 查詢決定。</translation>
-<translation id="5711323964690760562">指定企業線上應用程式商店的網址。啟用這項設定後，應用程式會顯示在新分頁上，使用者只要按一下應用程式，就會前往指定的網址。如果確實要允許系統從指定的網站安裝擴充功能，您必須將 ExtensionInstallSources 政策設為允許從適當的擴充功能下載網址執行安裝。如要設定這項政策，請一併設定 EnterpriseWebStoreName。
-
-      如果停用這項設定，新分頁上就不會顯示任何企業線上應用程式商店應用程式。</translation>
 <translation id="4377599627073874279">允許所有網站顯示所有圖片</translation>
 <translation id="7195064223823777550">指定系統在使用者蓋上螢幕時所採取的動作。
 
@@ -217,6 +243,11 @@
 
       該政策的指定值單位為毫秒。</translation>
 <translation id="7683777542468165012">動態政策更新</translation>
+<translation id="3217480257513989987">指定企業線上應用程式商店網址。如果您啟用這項設定，新分頁上將顯示應用程式，可在點擊後將使用者導向至指定網址。如要確實允許從設定的網站安裝擴充功能，請設定 ExtensionInstallSources 政策，以允許從適當的擴充功能下載網址進行安裝。如果指定這項政策，您也必須修改 EnterpriseWebStoreName 設定。
+
+      如果停用這項設定，新分頁上不會顯示企業線上應用程式商店網址。
+
+      這項設定自 27 版起失效，將在日後版本移除。如要設定機構代管的擴充功能/應用程式集合，建議您在 ExtensionInstallSources 中加入網站代管的 CRX 封裝檔，並將直接下載連結加入網頁上的封裝檔中。您可以透過 ExtensionInstallForcelist 政策建立該網頁的啟動器。</translation>
 <translation id="1160939557934457296">停用略過安全瀏覽警告網頁繼續進行</translation>
 <translation id="8987262643142408725">停用 SSL 記錄分割</translation>
 <translation id="4529945827292143461">自訂網址模式清單，其中的網址模式應一律由主機瀏覽器轉譯。如果未設定這項政策，所有網站都會使用「ChromeFrameRendererSettings」政策指定的預設轉譯器。如需模式範例，請參閱 http://www.chromium.org/developers/how-tos/chrome-frame-getting-started。</translation>
@@ -261,6 +292,7 @@
 <translation id="3627678165642179114">啟用或停用拼字檢查網路服務</translation>
 <translation id="6520802717075138474">第一次執行時從預設瀏覽器匯入搜尋引擎</translation>
 <translation id="4039085364173654945">控制是否允許網頁上的第三方附屬內容彈出「HTTP 基本驗證」對話方塊。為了防止網路釣魚，這項功能通常會停用。如果未設定這項政策，系統會停用這項功能，並且不允許第三方附屬內容彈出「HTTP 基本驗證」對話方塊。</translation>
+<translation id="4946368175977216944">指定要在 Chrome 啟動時套用的設定。系統會在 Chrome 尚未開始登入畫面之前就套用指定的設定。</translation>
 <translation id="7447786363267535722">啟用「<ph name="PRODUCT_NAME"/>」的儲存密碼和使用儲存的密碼這兩項功能。如果您啟用這項設定，「<ph name="PRODUCT_NAME"/>」就會記憶密碼並在使用者下次登入網站時自動提供密碼。如果您停用這項設定，使用者就無法儲存密碼或使用已儲存的密碼。不論您啟用或停用這項設定，使用者都無法在「<ph name="PRODUCT_NAME"/>」中變更或覆寫這項設定。如果未設定這項政策，系統會啟用這項功能，不過使用者可以變更設定。</translation>
 <translation id="1138294736309071213">這項政策只會在零售模式下啟用。
 
@@ -269,6 +301,13 @@
       應以毫秒數指定政策值。</translation>
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
+<translation id="9120299024216374976">指定裝置上所使用的時區。使用者可以為目前工作階段覆寫指定時區；不過登出後，系統將會恢復原本指定的時區。如果提供無效值，系統仍會啟用這項政策，自動套用「GMT」時區設定。若提供空值，則系統會忽視這項政策。
+
+      如果不啟用這項政策，系統雖仍會套用目前作用中的時區，但這時使用者不僅可變更時區，且變更將永久有效；這也意味著某個使用者所做的變更將會影響登入畫面與其他使用者。
+
+      新裝置的出廠預設時區為「美國/太平洋」。
+
+      時區值格式是採用「IANA 時區資料庫」中訂定的時區名稱 (請參閱：http://en.wikipedia.org/wiki/List_of_tz_database_time)。基本上，大部分時區均是依照「洲/大城市」或「洋/大城市」的格式定名。</translation>
 <translation id="3528000905991875314">啟用替代的錯誤網頁</translation>
 <translation id="1283072268083088623">指定「<ph name="PRODUCT_NAME"/>」要支援的 HTTP 驗證機制。可用值為「basic」、「digest」、「ntlm」和「negotiate」。請以逗號分隔數個值。如果未設定這項政策，系統會使用這四個機制。</translation>
 <translation id="6114416803310251055">淘汰的</translation>
@@ -305,9 +344,11 @@
 <translation id="6258193603492867656">指定產生的 Kerberos SPN 是否應該包含非標準的通訊埠。如果您啟用這項設定並輸入非標準通訊埠 (例如 80 或 443 之外的通訊埠)，那麼產生的 Kerberos SPN 就會包含該通訊埠。如果您停用或未調整這項設定，那麼不論在任何情況下，產生的 Kerberos SPN 都不會包含通訊埠。</translation>
 <translation id="3236046242843493070">允許安裝擴充功能、應用程式和使用者指令碼的來源網址模式清單</translation>
 <translation id="2498238926436517902">一律自動隱藏檔案櫃</translation>
+<translation id="253135976343875019">在 AC 供電環境下執行時的閒置警告延遲時間</translation>
 <translation id="152657506688053119">預設搜尋的替代網址清單</translation>
 <translation id="8992176907758534924">不允許任何網站顯示圖片</translation>
 <translation id="262740370354162807">啟用「<ph name="CLOUD_PRINT_NAME"/>」文件提交功能</translation>
+<translation id="7717938661004793600">設定 <ph name="PRODUCT_OS_NAME"/> 協助工具功能。</translation>
 <translation id="5182055907976889880">設定在 <ph name="PRODUCT_OS_NAME"/> 中使用 Google 雲端硬碟。</translation>
 <translation id="8704831857353097849">停用的外掛程式清單</translation>
 <translation id="8391419598427733574">回報註冊裝置的作業系統和韌體版本。
@@ -385,10 +426,19 @@
       如果設定這項政策，應用程式集將會固定，無法讓使用者變更。
 
       如果未設定這項政策，使用者就可以變更啟動器中的固定應用程式清單。</translation>
+<translation id="1679420586049708690">自動登入的公開工作階段</translation>
 <translation id="7625444193696794922">指定裝置的固定發佈頻道。</translation>
+<translation id="1172056905334713854">在系統套用 <ph name="PRODUCT_OS_NAME"/> 更新後排定自動啟動。
+
+      如果將這項政策設為 True，系統會在套用 <ph name="PRODUCT_OS_NAME"/> 更新後且必須重新啟動以完成更新程序時，排定自動重新啟動。系統會立即排定重新啟動，但使用者可在裝置上延遲最多 24 小時 (例如使用者目前正在使用裝置，或是暫時禁止應用程式/擴充功能所要求的重新啟動)。
+
+      如果將這項政策設為 False，系統在套用 <ph name="PRODUCT_OS_NAME"/> 更新後不會安排重新啟動。使用者自行重新啟動裝置後，更新程序才會完成。
+
+      如果您設定這項政策，使用者即無法變更或覆寫設定。</translation>
 <translation id="2552966063069741410">時區</translation>
 <translation id="2240879329269430151">允許您設定是否要讓網站顯示彈出式視窗。您可以允許或禁止所有網站顯示彈出式視窗。如果未設定這項政策，系統會使用「BlockPopups」，不過使用者可以變更設定。</translation>
 <translation id="2529700525201305165">限制可登入 <ph name="PRODUCT_NAME"/> 的使用者</translation>
+<translation id="8971221018777092728">公開工作階段自動登入計時器</translation>
 <translation id="3864818549971490907">預設外掛程式設定</translation>
 <translation id="1910566775788829857">登出使用者</translation>
 <translation id="7151201297958662315">決定是否在上次瀏覽器視窗關閉時，要在 OS 登入期間啟用 <ph name="PRODUCT_NAME"/> 處理程序，允許背景應用程式持續啟用。背景處理程序會在系統匣顯示圖示，並起一律從系統匣關閉。
@@ -406,6 +456,13 @@
 <translation id="3309789488678647282">停用雲端硬碟</translation>
 <translation id="5770738360657678870">開發頻道 (可能不穩定)</translation>
 <translation id="2959898425599642200">Proxy 略過規則</translation>
+<translation id="228659285074633994">指定裝置處於 AC 供電環境時，要在於使用者停止輸入多少時間長度後顯示警告對話方塊。
+
+          如果設定這項政策，使用者必須在指定的時間長度內保持閒置，<ph name="PRODUCT_OS_NAME"/> 才會顯示警告對話方塊，將系統即將採取的閒置動作告知使用者。
+
+          如果未設定這項政策，系統不會顯示警告對話方塊。
+
+          指定政策值時需以毫秒為單位。值必須小於或等於閒置延遲時間。</translation>
 <translation id="1098794473340446990">回報裝置活動時間
 
       如果這個項目設定為 True，則註冊的裝置會回報使用者在裝置上活動的時段。如果這個項目設定為 False，系統就不會記錄或回報裝置活動時間。</translation>
@@ -478,13 +535,31 @@
 
       如未設定這項政策，系統會啟用這項功能，不過使用者可自行變更此一設定。</translation>
 <translation id="4541530620466526913">裝置本機帳戶</translation>
+<translation id="5815129011704381141">更新完成後自動重新啟動</translation>
 <translation id="1757688868319862958">允許 <ph name="PRODUCT_NAME"/> 執行需要驗證的外掛程式。如果您啟用這項設定，系統會繼續執行版本過舊的外掛程式。如果停用或略過這項設定，使用者則必須具備相關權限，才能執行需要驗證的外掛程式。這些外掛程式可能造成系統出現安全性漏洞。</translation>
 <translation id="6392973646875039351">啟用「<ph name="PRODUCT_NAME"/>」的「自動填入」功能，並允許使用者使用先前儲存的地址或信用卡資料等資訊自動填寫網路表單。如果您停用這項設定，使用者就無法使用「自動填入」功能。如果您啟用這項設定或未設定任何值，使用者就能掌控「自動填入」功能。這允許使用者設定「自動填入」設定檔，並可自行決定是否要開啟「自動填入」功能。</translation>
 <translation id="6157537876488211233">以逗號間隔的 Proxy 略過規則清單</translation>
 <translation id="7788511847830146438">根據設定檔</translation>
+<translation id="2516525961735516234">指定會影響電源管理的視訊活動。
+
+          如果您將這項政策設為 True 或未設定這項政策，則系統不會在播放視訊時將使用者視為閒置，藉此防止超過閒置逾時時間並防止採取相應的閒置動作。
+
+          如果您將這項政策設為 False，則視訊活動不會防止系統將使用者設為閒置。</translation>
 <translation id="3965339130942650562">逾時直到閒置使用者登出</translation>
 <translation id="9084985621503260744">指定會影響電源管理的視訊活動</translation>
 <translation id="7091198954851103976">一律執行需要驗證的外掛程式</translation>
+<translation id="2704032342102549239">排定自動重新啟動，限制裝置的正常運作時間。
+
+      如果設定這項政策，會指定在排定自動重新啟動後，裝置要維持運作的時間長度。
+
+      如果未設定這項政策，裝置正常運作時間並不受限制。
+
+      如果設定這項政策，使用者即無法變更或覆寫政策。
+
+      系統會在選取的時間內排定自動重新啟動，但使用者可在裝置上延遲最多 24 小時 使用者 (例如使用者目前正在使用裝置，或是暫時禁止應用程式/擴充功能所要求的重新啟動)。
+
+      指定政策值時必須以毫秒為單位。值必須至少為 3600 (即 1 小時)。</translation>
+<translation id="1708496595873025510">設定變異版本種子的擷取限制</translation>
 <translation id="8870318296973696995">首頁</translation>
 <translation id="1240643596769627465">指定用來提供即時搜尋結果的搜尋引擎網址。網址應包含 <ph name="SEARCH_TERM_MARKER"/> 字串，使用者輸入的查詢文字會取代這個字串。這項政策是選擇性的，如果未設定，系統就不會提供即時搜尋結果。只有在啟用「DefaultSearchProviderEnabled」政策時，系統才會遵循這項政策。</translation>
 <translation id="6693751878507293182">如果您將這項設定調整為啟用，則系統會停用「<ph name="PRODUCT_NAME"/>」中的自動搜尋功能，且缺漏的外掛程式也不會自動安裝。如果將這個選項設為停用，或未調整這項設定，即可啟動外掛程式尋找工具。</translation>
@@ -498,13 +573,6 @@
 <translation id="5586942249556966598">不要處理</translation>
 <translation id="131353325527891113">在登入畫面中顯示使用者名稱</translation>
 <translation id="5317965872570843334">在遠端用戶試圖與這台電腦建立連結時，啟用 STUN 使用量和轉送伺服器。如果這項設定已啟用，那麼即使遠端用戶被防火牆隔開，也能發現這台電腦並建立連結。如果這項設定已停用，並且外傳 UDP 連結遭到防火牆篩選，則這台電腦只會自動允許來自當地網路的用戶端電腦的連接。如果未設定這項政策，系統會啟用設定。</translation>
-<translation id="6523554768023503406">指定裝置處於簡報模式時的閒置延遲時間延長百分比。
-
-          如果您設定這項政策，表示裝置會在簡報模式中根據指定的百分比延長閒置延遲時間。如果延遲時間延長，將螢幕調暗、關閉螢幕和鎖定螢幕的延遲時間也會隨之調整，以維持原本所設定的相同時間比例。
-
-          如果您未設定這項政策，系統會使用預設的比例因數。
-
-          比例因數必須為 100% 以上的值。如果該值會使簡報模式中的閒置延遲時間比一般閒置延遲時間更短，就無法予以採用。</translation>
 <translation id="5365946944967967336">在工具列上顯示 [首頁] 按鈕</translation>
 <translation id="3709266154059827597">設定擴充功能安裝黑名單</translation>
 <translation id="8451988835943702790">將新分頁設為首頁</translation>
@@ -569,16 +637,29 @@
 <translation id="5761030451068906335">調整 <ph name="PRODUCT_NAME"/> 的 Proxy 設定。
 
       這項政策尚未準備完成，請勿使用。</translation>
+<translation id="3006443857675504368">在系統選單中顯示 <ph name="PRODUCT_OS_NAME"/> 協助工具選項。
+
+          如果將這項政策設為 True，則系統匣選單會固定顯示 [協助工具] 選項。
+
+          如果將這項政策設為 False，則系統匣選單永遠不會顯示 [協助工具] 選項。
+
+          如果設定這項政策，使用者即無法變更或覆寫政策。
+
+          如果未設定這項政策，系統匣選單雖然不會顯示 [協助工具] 選項，但使用者仍可以透過 [設定] 網頁顯示 [協助工具] 選項。</translation>
 <translation id="8344454543174932833">第一次執行時從預設瀏覽器匯入書籤</translation>
 <translation id="1019101089073227242">設定使用者資料目錄</translation>
 <translation id="5826047473100157858">指定使用者是否可以在「<ph name="PRODUCT_NAME"/>」中以無痕模式開啟網頁。如果選取的是 [啟用] 或未設定政策，網頁能以無痕模式開啟。如果選取的是 [停用]，則網頁可能無法以無痕模式開啟。如果選取的是 [強制]，系統只會以無痕模式開啟網頁。</translation>
+<translation id="2988031052053447965">在新分頁和 Chrome 作業系統應用程式啟動器中隱藏 Chrome 線上應用程式商店和底端連結。
+
+      如果將這項政策設為 True，系統會隱藏圖示。
+
+      如果將這項政策設為 False 或未設定，則系統會顯示圖示。</translation>
 <translation id="5085647276663819155">停用列印預覽</translation>
 <translation id="8672321184841719703">指定目標的自動更新版本</translation>
 <translation id="1689963000958717134">允許將網路設定按照使用者套用至已安裝 <ph name="PRODUCT_OS_NAME"/> 的裝置。該網路設定是由「開放網路設定」格式 (請參閱：<ph name="ONC_SPEC_URL"/>) 所定義的 JSON 格式字串。</translation>
 <translation id="6699880231565102694">為遠端存取主機啟用雙重驗證機制</translation>
 <translation id="2030905906517501646">預設搜尋引擎關鍵字</translation>
 <translation id="3072045631333522102">在零售模式下登入畫面所使用的螢幕保護程式</translation>
-<translation id="8079569179819932120">指定要列入整合驗證許可清單的伺服器。只有當 Proxy 或許可清單上的伺服器傳送驗證要求給「<ph name="PRODUCT_NAME"/>」時，才會啟用整合驗證。請以逗號間隔數個伺服器名稱，並且允許使用萬用字元 (*)。如果您未設定這項政策，任何伺服器都能參與整合驗證。</translation>
 <translation id="7712109699186360774">每當有任何網站要使用攝影機和/或麥克風時詢問我</translation>
 <translation id="350797926066071931">啟用翻譯</translation>
 <translation id="3711895659073496551">暫停</translation>
@@ -597,6 +678,11 @@
 
           如果您將動作設為暫停，您可另行設定 <ph name="PRODUCT_OS_NAME"/> 是否要在暫停前鎖定螢幕。</translation>
 <translation id="5475361623548884387">啟用列印功能</translation>
+<translation id="7287359148642300270">指定要將哪些伺服器加入整合驗證許可清單。只有在 <ph name="PRODUCT_NAME"/> 收到允許清單中的 Proxy 或伺服器傳來的驗證要求時，系統才會啟用整合驗證。
+
+          請以逗號分隔多個伺服器名稱。可使用萬用字元 (*)。
+
+          如果未設定這項政策，Chrome 會嘗試偵測伺服器是否位於內部網路，然後回應伺服器傳來的 IWA 要求。如果伺服器位於網際網路，Chrome 就會忽略伺服器傳來的 IWA 要求。</translation>
 <translation id="3653237928288822292">預設搜尋引擎圖示</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="4445684791305970001">停用「開發人員工具」和 JavaScript 控制台。如果您啟用這項設定，系統就無法存取「開發人員工具」且無法查看網站元素。此外，也會停用任何用來開啟「開發人員工具」和 JavaScript 控制台的鍵盤快速鍵、選單或內容選單項目。如果您停用或未設定這個選項，使用者即可使用「開發人員工具」和 JavaScript 控制台。</translation>
@@ -674,13 +760,9 @@
 <translation id="5774856474228476867">預設搜尋引擎搜尋網址</translation>
 <translation id="4650759511838826572">停用網址通訊協定機制</translation>
 <translation id="8099880303030573137">在電池供電環境下執行時的閒置延遲時間</translation>
+<translation id="2761483219396643566">在電池供電環境下執行時的閒置警告延遲時間</translation>
 <translation id="602728333950205286">預設搜尋引擎互動智慧搜尋網址</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
-<translation id="9142321226029580122">指定會影響電源管理的視訊活動。
-
-          如果您將這項政策設為 True 或未設定這項政策，則系統不會在播放視訊時將使用者視為閒置，藉此防止超過閒置逾時時間並防止採取相應的閒置動作。
-
-          如果您將這項政策設為 False，則視訊活動不會防止系統將使用者設為閒置。</translation>
 <translation id="6559057113164934677">不允許任何網站使用攝影機和麥克風</translation>
 <translation id="1675002386741412210">支援對象：</translation>
 <translation id="3547954654003013442">Proxy 設定</translation>
@@ -698,9 +780,15 @@
 
       如果您沒有設定這項政策，或將政策設定為 False，則 Chrome 不會在 Chrome 19 和更新版本中執行線上撤銷檢查。</translation>
 <translation id="5469484020713359236">允許您設定網址模式清單，指定可以設定 Cookie 的網站。如果未設定這項政策，系統會從「DefaultCookiesSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
+<translation id="1881299719020653447">在新分頁和應用程式啟動器中隱藏應用程式商店</translation>
 <translation id="930930237275114205">設定 <ph name="PRODUCT_FRAME_NAME"/> 使用者資料目錄</translation>
 <translation id="5208240613060747912">允許您設定網址模式清單，指定不可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="8592105098257899882">設定「<ph name="PRODUCT_NAME"/>」用來在磁碟上儲存快取檔案的快取大小。如果您設定這項政策，則不論使用者是否指定「--disk-cache-size」參數，「<ph name="PRODUCT_NAME"/>」都會使用提供的快取大小。如果這項政策的值是 0，系統會使用預設快取大小，不過使用者無法加以變更。如果未設定這項政策，系統會使用預設大小，且使用者可以用 --disk-cache-size 參數覆寫預設大小。</translation>
+<translation id="1527937796509599149">企業線上應用程式商店的名稱，會顯示在新分頁的應用程式圖示下方。如果未設定 EnterpriseWebStoreURL，則這項設定不會生效。
+
+      如果停用這項設定，企業應用程式商店應用程式 (如果有的話) 會以其網址做為標籤。
+
+      這項設定自 27 版起失效，將在日後版本移除。如要設定機構代管的擴充功能/應用程式集合，建議您在 ExtensionInstallSources 中加入網站代管的 CRX 封裝檔，並將直接下載連結加入網頁上的封裝檔中。您可以透過 ExtensionInstallForcelist 政策建立該網頁的啟動器。</translation>
 <translation id="5887414688706570295">設定遠端存取主機所要使用的 TalkGadget 前置詞，並且防止使用者變更這項設定。
 
           如果您已指定前置詞，則該前置詞將加在 TalkGadget 基礎名稱前方，以建立 TalkGadget 的完整網域名稱。TalkGadget 的基礎網域名稱為「.talkgadget.google.com」。
@@ -726,6 +814,11 @@
       應以毫秒數指定政策值。</translation>
 <translation id="237494535617297575">允許您設定網址模式清單，指定可以展示通知的網站。如果未設定這項政策，系統會從「DefaultNotificationsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7258823566580374486">啟用遠端存取主機遮幕</translation>
+<translation id="5560039246134246593">在 <ph name="PRODUCT_NAME"/> 中擷取變異版本種子時新增參數。
+
+      如果指定這項政策，系統在連結變異版本種子的擷取網址時，會加入「restrict」這個查詢參數。參數值即為這項政策中指定的值。
+
+      如果未指定這項政策，則系統不會修改變異版本種子網址。</translation>
 <translation id="944817693306670849">設定磁碟快取大小</translation>
 <translation id="8544375438507658205">預設 <ph name="PRODUCT_FRAME_NAME"/> 的 HTML 轉譯器</translation>
 <translation id="2371309782685318247">以毫秒數指定對裝置管理服務詢問使用者政策資訊的時間。
@@ -738,7 +831,6 @@
 <translation id="8908294717014659003">讓您設定網站是否允許網站存取媒體擷取裝置。根據預設，系統允許網站存取媒體擷取裝置，您也可設為每當網站要存取媒體擷取裝置時詢問使用者。
 
           如果您未設定這項政策，系統就會使用「PromptOnAccess」，使用者可自行變更。</translation>
-<translation id="8889026535261486875">「<ph name="PRODUCT_NAME"/>」要委任的伺服器。用逗號隔開多個伺服器的名稱，並且可以使用萬用字元 (*)。如果未設定這項政策，任何伺服器都無法參與整合驗證。</translation>
 <translation id="2299220924812062390">指定停用的外掛程式清單</translation>
 <translation id="4325690621216251241">在系統列顯示登出按鈕</translation>
 <translation id="924557436754151212">第一次執行時從預設瀏覽器匯入已儲存的密碼</translation>
@@ -756,6 +848,13 @@
 
           指定政策值時需以毫秒為單位。該值需小於或等於閒置延遲時間。</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
+<translation id="2057466537682332544">指定裝置處於簡報模式時的閒置延遲時間延長百分比。
+
+          如果您設定這項政策，表示裝置會在簡報模式中根據指定的百分比延長閒置延遲時間。如果延遲時間延長，將螢幕調暗、關閉螢幕和鎖定螢幕的延遲時間也會隨之調整，以維持原本所設定的相同時間比例。
+
+          如果您未設定這項政策，系統會使用預設的比例因數。
+
+          比例因數必須為 100% 以上的值。如果該值會使簡報模式中的閒置延遲時間比一般閒置延遲時間更短，就無法予以採用。</translation>
 <translation id="922540222991413931">設定擴充功能、應用程式和使用者指令碼安裝來源</translation>
 <translation id="7323896582714668701"><ph name="PRODUCT_NAME"/> 額外命令列參數</translation>
 <translation id="6931242315485576290">停用 Google 資料同步處理功能</translation>
@@ -795,8 +894,14 @@
 <translation id="8499172469244085141">預設設定 (使用者可覆寫)</translation>
 <translation id="8693243869659262736">使用內建的 DNS 用戶端</translation>
 <translation id="3072847235228302527">為裝置本機帳戶設定《服務條款》</translation>
+<translation id="5523812257194833591">要在延遲時間過後自動登入的公開工作階段。
+
+      如果設定這項政策，系統會在使用者於登入畫面停止互動後的一段時間過後，自動登入指定的工作階段。您必須已設定公開工作階段 (請參閱 |DeviceLocalAccounts|)。
+
+      如果未設定這項政策，系統不會進行自動登入。</translation>
 <translation id="3866530186104388232">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME"/> 會在登入畫面上顯示現有使用者，並且開放使用者自行挑選。如果這項政策設為 False，<ph name="PRODUCT_OS_NAME"/> 會使用使用者名稱/密碼登入提示。</translation>
 <translation id="2098658257603918882">啟用使用量和當機相關資料的報告功能</translation>
+<translation id="2324547593752594014">允許登入 Chrome</translation>
 <translation id="172374442286684480">允許所有網站設定本機資料</translation>
 <translation id="6922569848241326941">允許或拒絕擷取視訊。
 
@@ -818,6 +923,13 @@
 <translation id="8631434304112909927">到第 <ph name="UNTIL_VERSION"/> 版為止</translation>
 <translation id="7469554574977894907">啟用搜尋建議</translation>
 <translation id="4906194810004762807">裝置政策的重新整理頻率</translation>
+<translation id="8922668182412426494"><ph name="PRODUCT_NAME"/> 要委派的目標伺服器。
+
+          請以逗號分隔多個伺服器名稱。可使用萬用字元 (*)。
+
+
+
+          如果您未設定這項政策，則即使 Chrome 已偵測到位於內部網路的伺服器，也不會委派使用者憑證。</translation>
 <translation id="1398889361882383850">讓您設定是否要允許網站自動執行外掛程式。您可以允許或禁止所有網站自動執行外掛程式。
 
           啟用 [點選播放] 選項時，使用者必須手動點選外掛程式，程式才會開始執行。
@@ -837,6 +949,7 @@
       本清單中的每個項目皆應使用擴充功能式的比對模式 (請參閱 http://code.google.com/chrome/extensions/match_patterns.html)。任何網址只要符合本清單的任何項目，使用者即可輕鬆安裝該網址中的項目。
 
       ExtensionInstallBlacklist 的設定優先於本政策。也就是說，即使本清單允許安裝某網站的擴充功能，但如果該擴充功能亦列於黑名單上，則您仍然無法使用較簡便的方式安裝該擴充功能。</translation>
+<translation id="2113068765175018713">透過自動重新啟動的方式限制裝置的正常運作時間</translation>
 <translation id="7848840259379156480">允許您在安裝 <ph name="PRODUCT_FRAME_NAME"/> 之後設定預設的 HTML 轉譯器。預設的設定允許主機瀏覽器進行轉譯，但是您可以覆寫這項預設，改由 <ph name="PRODUCT_FRAME_NAME"/> 轉譯 HTML 網頁。</translation>
 <translation id="4121350739760194865">阻止應用程式宣傳資訊在新分頁上顯示</translation>
 <translation id="2127599828444728326">允許這些網站的通知</translation>
@@ -849,7 +962,6 @@
           如果您將這項政策設為 False，則音訊活動不會防止系統將使用者設為閒置。</translation>
 <translation id="7842869978353666042">設定 Google 雲端硬碟選項</translation>
 <translation id="718956142899066210">允許進行更新的連線類型</translation>
-<translation id="6985168562472482191">企業線上應用程式商店的名稱會顯示在新分頁中的應用程式圖示下方。只有在設定 EnterpriseWebStoreURL 時，這項設定才會生效。如果停用這項設定，企業線上應用程式商店應用程式 (如果有的話) 會標上自己的網址。</translation>
 <translation id="1734716591049455502">設定遠端存取選項</translation>
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
 <translation id="8777120694819070607">允許 <ph name="PRODUCT_NAME"/> 執行舊版的外掛程式。如果您啟用這項設定，系統就會像執行一般外掛程式一樣執行舊版外掛程式。如果您停用這項設定，系統就不會使用舊版外掛程式，且不會向使用者要求權限執行這些外掛程式。如過這項設定尚未設定好，系統會向使用者要求權限以執行舊版外掛程式。</translation>
@@ -895,6 +1007,7 @@
 <translation id="5512418063782665071">首頁網址</translation>
 <translation id="2948381198510798695">「<ph name="PRODUCT_NAME"/>」會略過這裡提供的主機清單中的任何 Proxy。只有當您在「選擇如何指定 Proxy 伺服器設定」選取手動 Proxy 設定時，這項政策才會生效。如果您已選取任何其他模式來設定 Proxy 政策，則不需設定這項政策。如需詳例，請造訪：<ph name="PROXY_HELP_URL"/></translation>
 <translation id="6658245400435704251">指定裝置可以任意延遲下載某項更新的秒數上限 (以該項更新初次被推送到伺服器的時間為準)。您可以將這項裝置等待時間的其中一部分設定為等待的時間長度，剩下的部分則設定為檢查更新的次數。不論採取哪種方式，分散時間皆不得超過固定時間長度，這樣就可以避免裝置由於持續等待下載某項更新而停止回應。</translation>
+<translation id="523505283826916779">協助工具設定</translation>
 <translation id="1948757837129151165">HTTP 驗證政策</translation>
 <translation id="5946082169633555022">測試頻道</translation>
 <translation id="8303314579975657113">指定 HTTP 驗證要用的 GSSAPI 資料庫。您可以設定資料庫名稱或完整路徑。如果沒有提供任何設定，「<ph name="PRODUCT_NAME"/>」會回復為預設資料庫名稱。</translation>

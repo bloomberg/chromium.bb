@@ -17,7 +17,7 @@
 <translation id="2572483411312390101">播放</translation>
 <translation id="8785498733064193001">开始播放</translation>
 <translation id="7057186640035488495">电影时间</translation>
-<translation id="8199524924445686405">yyyy</translation>
+<translation id="8199524924445686405"> 年 </translation>
 <translation id="795667975304826397">未选择文件</translation>
 <translation id="1320012872283894746">快速回退</translation>
 <translation id="7789962463072032349">暂停</translation>
@@ -86,7 +86,7 @@
 <translation id="1639239467298939599">正在加载</translation>
 <translation id="2908441821576996758">请输入用逗号分隔的电子邮件地址的列表。</translation>
 <translation id="5939518447894949180">重置</translation>
-<translation id="1921819250265091946">dd</translation>
+<translation id="1921819250265091946">日</translation>
 <translation id="835897206747267392">值无效。</translation>
 <translation id="1842960171412779397">选中</translation>
 <translation id="7673697353781729403">小时</translation>
@@ -108,6 +108,6 @@
 <translation id="6843725295806269523">静音</translation>
 <translation id="2615751259741237794">恢复为实时</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="3732799496749320381">mm</translation>
+<translation id="3732799496749320381">月</translation>
 <translation id="4484359737905287537">快退</translation>
 </translationbundle>

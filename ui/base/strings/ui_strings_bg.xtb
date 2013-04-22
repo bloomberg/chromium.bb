@@ -6,6 +6,7 @@
 <translation id="1871244248791675517">Ins</translation>
 <translation id="6135826906199951471">Del</translation>
 <translation id="528468243742722775">End</translation>
+<translation id="1190609913194133056">Център за известия</translation>
 <translation id="5613020302032141669">Стрелка наляво</translation>
 <translation id="8602707065186045623"><ph name="SAVEAS_EXTENSION_TYPE"/> файл (.<ph name="SAVEAS_EXTENSION_NAME"/>)</translation>
 <translation id="4519844444318892125">Тих режим за един ден</translation>
@@ -13,7 +14,6 @@
 <translation id="7658239707568436148">Отказ</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="1761785978543082658"><ph name="QUANTITY"/> Б</translation>
-<translation id="3660179305079774227">Стрелка нагоре</translation>
 <translation id="1809410197924942083"><ph name="QUANTITY"/> МБ/сек</translation>
 <translation id="3990502903496589789">Десн край</translation>
 <translation id="5182671122927417841">Деактивиране на разширението</translation>
@@ -23,16 +23,15 @@
 <translation id="5076340679995252485">&amp;Поставяне</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY"/> ТБ</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
-<translation id="3234408098842461169">Стрелка надолу</translation>
 <translation id="3087734570205094154">Най-долу</translation>
 <translation id="6364916375976753737">Превъртане наляво</translation>
-<translation id="6354639579297445993">Изход от тихия режим</translation>
 <translation id="6945221475159498467">Изберете</translation>
 <translation id="6620110761915583480">Запазване на файл</translation>
 <translation id="7394346403752882908">Тих режим за един час</translation>
 <translation id="8210608804940886430">Страница надолу</translation>
 <translation id="5329858601952122676">&amp;Изтриване</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY"/> KБ</translation>
+<translation id="6489863328574614542">Задаване на разрешенията за известия за приложения и разширения</translation>
 <translation id="6659594942844771486">Раздел</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY"/> МБ</translation>
 <translation id="8428213095426709021">Настройки</translation>
@@ -58,6 +57,7 @@
 <translation id="815598010540052116">Превъртане надолу</translation>
 <translation id="3157931365184549694">Възстановяване</translation>
 <translation id="8179976553408161302">Влизане</translation>
+<translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="9170848237812810038">&amp;Отмяна</translation>
 <translation id="520299402983819650"><ph name="QUANTITY"/> ПБ</translation>
 <translation id="2983818520079887040">Настройки...</translation>
@@ -70,8 +70,10 @@
 <translation id="6142413573757616983"><ph name="QUANTITY"/> Б/сек</translation>
 <translation id="477782898153505579">Нямате известия. Отпуснете се!</translation>
 <translation id="7457942297256758195">Изчистване на всички</translation>
+<translation id="7509316384504965641"><ph name="PRODUCT"/> – Известия</translation>
 <translation id="8400147561352026160">Shift+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="6907759265145635167"><ph name="QUANTITY"/> ПБ/сек</translation>
+<translation id="4481522213790366002"><ph name="PRODUCT"/> – Известия (<ph name="QUANTITY"/> непрочетени)</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="5941711191222866238">Намаляване</translation>
 <translation id="4469842253116033348">Деактивиране на известията от <ph name="SITE"/></translation>
