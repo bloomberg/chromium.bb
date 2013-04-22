@@ -118,6 +118,7 @@ public:
         DeprecatedFlexboxWebContent,
         DeprecatedFlexboxChrome,
         DeprecatedFlexboxChromeExtension,
+        SVGTRefElement,
         // Add new features above this line. Don't change assigned numbers of each items.
         NumberOfFeatures, // This enum value must be last.
     };

@@ -39,6 +39,7 @@
 #include "SVGNames.h"
 #include "StyleInheritedData.h"
 #include "Text.h"
+#include "UseCounter.h"
 #include "XLinkNames.h"
 
 namespace WebCore {
@@ -138,6 +139,8 @@ inline SVGTRefElement::SVGTRefElement(const QualifiedName& tagName, Document* do
     ASSERT(hasTagName(SVGNames::trefTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTRefElement();
+
+    UseCounter::observe(document, UseCounter::SVGTRefElement);
 }
 
 SVGTRefElement::~SVGTRefElement()
