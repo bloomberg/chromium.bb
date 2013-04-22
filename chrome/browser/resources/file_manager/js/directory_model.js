@@ -784,7 +784,8 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
 };
 
 /**
- * Resolves absolute directory path. Handles Drive stub.
+ * Resolves absolute directory path. Handles Drive stub. If the drive is
+ * mounting, callbacks will be called after the mount is completed.
  * @param {string} path Path to the directory.
  * @param {function(DirectoryEntry} successCallback Success callback.
  * @param {function(FileError} errorCallback Error callback.
@@ -792,7 +793,9 @@ DirectoryModel.prototype.changeDirectory = function(path, opt_errorCallback) {
 DirectoryModel.prototype.resolveDirectory = function(path, successCallback,
                                                      errorCallback) {
   if (PathUtil.getRootType(path) == RootType.DRIVE) {
-    if (!this.isDriveMounted()) {
+    var driveStatus = this.volumeManager_.getDriveStatus();
+    if (!this.isDriveMounted() &&
+        driveStatus != VolumeManager.DriveStatus.MOUNTING) {
       if (path == DirectoryModel.fakeDriveEntry_.fullPath)
         successCallback(DirectoryModel.fakeDriveEntry_);
       else  // Subdirectory.
@@ -1059,19 +1062,26 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
     drive: null,
     driveSpecialSearchRoots: null
   };
+  if (util.platform.newUI()) {
+    groups = {
+      downloads: null,
+      archives: null,
+      removables: null,
+      drive: null
+    };
+  }
   var self = this;
 
   metrics.startInterval('Load.Roots');
   var done = function() {
-    for (var i in groups)
+    var roots = [];
+    for (var i in groups) {
       if (!groups[i])
         return;
+      roots = roots.concat(groups[i]);
+    }
 
-    callback(groups.downloads.
-             concat(groups.drive).
-             concat(groups.driveSpecialSearchRoots).
-             concat(groups.archives).
-             concat(groups.removables));
+    callback(roots);
     metrics.recordInterval('Load.Roots');
   };
 
@@ -1105,17 +1115,16 @@ DirectoryModel.prototype.resolveRoots_ = function(callback) {
                      append.bind(this, 'removables'));
 
   if (this.driveEnabled_) {
-    groups.driveSpecialSearchRoots = this.showSpecialSearchRoots_ ?
-        DirectoryModel.fakeDriveSpecialSearchEntries_ : [];
-    var fake = [DirectoryModel.fakeDriveEntry_];
-    if (this.isDriveMounted()) {
-      readSingle(DirectoryModel.fakeDriveEntry_.fullPath, 'drive', fake);
-    } else {
-      groups.drive = fake;
-      done();
+    if (!util.platform.newUI()) {
+      groups.driveSpecialSearchRoots = this.showSpecialSearchRoots_ ?
+          DirectoryModel.fakeDriveSpecialSearchEntries_ : [];
     }
+    // Use a fake instead to return a list as fast as possible.
+    groups.drive = [DirectoryModel.fakeDriveEntry_];
+    done();
   } else {
-    groups.driveSpecialSearchRoots = [];
+    if (!util.platform.newUI())
+      groups.driveSpecialSearchRoots = [];
     groups.drive = [];
     done();
   }
@@ -1142,8 +1151,8 @@ DirectoryModel.prototype.updateRoots_ = function(opt_callback) {
  * @return {boolean} True if DRIVE is fully mounted.
  */
 DirectoryModel.prototype.isDriveMounted = function() {
-  return this.volumeManager_.getDriveStatus() ==
-      VolumeManager.DriveStatus.MOUNTED;
+  var driveStatus = this.volumeManager_.getDriveStatus();
+  return driveStatus == VolumeManager.DriveStatus.MOUNTED;
 };
 
 /**

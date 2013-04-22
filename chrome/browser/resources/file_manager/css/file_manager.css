@@ -284,7 +284,7 @@ body[new-ui] .dialog-sidebar-footer {
 
 /* A vertical splitter between the roots list and the file list. It is actually
   a transparent area centered on the roots list right border.*/
-div.sidebar-splitter {
+div.splitter {
   -webkit-box-flex: 0;
   cursor: col-resize;
   margin-left: -3px;
@@ -294,6 +294,66 @@ div.sidebar-splitter {
   z-index: 100;
 }
 
+body[new-ui] #volume-list {
+  -webkit-box-flex: 1;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+}
+
+body[new-ui] #volume-list > * {
+  background-color: rgb(240, 240, 240);
+  background-image: none;
+  border: none;
+  height: 40px;
+  margin: 0;
+  padding: 0 5px;
+}
+
+body[new-ui] #volume-list > :hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+body[new-ui] #volume-list > .accepts,
+body[new-ui] #volume-list > [lead][selected],
+body[new-ui] #volume-list > [lead],
+body[new-ui] #volume-list > [selected],
+body[new-ui] #volume-list > [anchor] {
+  background-color: rgb(225, 225, 225);
+}
+
+body[new-ui] #volume-list:focus > .accepts,
+body[new-ui] #volume-list:focus > [lead][selected],
+body[new-ui] #volume-list:focus > [lead],
+body[new-ui] #volume-list:focus > [selected],
+body[new-ui] #volume-list:focus > [anchor] {
+  background-color: rgb(77, 144, 254);
+  color: white;
+}
+
+body[new-ui] #volume-list li.root-item {
+  -webkit-box-align: center;
+  display: -webkit-box;
+  line-height: 22px;  /* To accomodate for icons. */
+  padding-left: 11px;
+}
+
+body[new-ui] #volume-list li.root-item > .root-label {
+  -webkit-box-flex: 1;
+  margin: 0 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body[new-ui] #volume-list .volume-icon {
+  background-position: center 2px;
+  background-repeat: no-repeat;
+  height: 24px;
+  width: 24px;
+}
+
+
 #directory-tree {
   bottom: 0;
   left: 0;
@@ -302,6 +362,10 @@ div.sidebar-splitter {
   position: absolute;
   right: 0;
   top: 0;
+}
+
+body[new-ui] #directory-tree {
+  border-right: 1px solid rgb(212, 212, 212);
 }
 
 #directory-tree .tree-row {
@@ -316,11 +380,16 @@ div.sidebar-splitter {
 
 body[new-ui] #directory-tree .tree-row {
   cursor: pointer;
+  line-height: 29px;
 }
 
 /* For rows of subitems (non-top items) */
 #directory-tree .tree-children .tree-row {
   line-height: 31px;
+}
+
+body[new-ui] #directory-tree .tree-children .tree-row {
+  line-height: 29px;
 }
 
 #directory-tree .tree-row > .expand-icon {
@@ -350,10 +419,6 @@ body[new-ui] #directory-tree .tree-row {
 
 #directory-tree .tree-row:hover {
   background-color: rgba(0, 0, 0, 0.05);
-}
-
-body[new-ui] #directory-tree .tree-row:hover {
-  background-color: transparent;
 }
 
 #directory-tree .tree-item.accepts > .tree-row,
@@ -500,6 +565,19 @@ body[maximized][type='full-page'] .dialog-header {
   display: -webkit-box;
   overflow: hidden;
   position: relative;
+}
+
+.main-panel {
+  -webkit-box-flex: 1;
+  display: -webkit-box;
+}
+
+body[new-ui] .dialog-middlebar-contents {
+  display: -webkit-box;
+  max-width: 50%;
+  min-width: 45px;
+  position: relative;
+  width: 180px;
 }
 
 /* Container for the ok/cancel buttons. */

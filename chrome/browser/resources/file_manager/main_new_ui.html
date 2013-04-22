@@ -103,6 +103,7 @@
       <script src="js/scrollbar.js"></script>
       <script src="js/sidebar.js"></script>
       <script src="js/volume_manager.js"></script>
+      <script src="js/volume_list.js"></script>
       <script src="js/media/media_util.js"></script>
       <script src="js/metadata/metadata_cache.js"></script>
       <script src="js/default_action_dialog.js"></script>
@@ -236,7 +237,7 @@
           <span id="app-name"></span>
         </div>
         <div class=dialog-sidebar-contents>
-          <tree id="directory-tree" tabindex="8"></tree>
+          <list id="volume-list" tabindex="8"></list>
         </div>
         <div class=dialog-sidebar-footer>
           <div id="butter-bar-container">
@@ -252,7 +253,7 @@
           </div>
         </div>
       </div>
-      <div class=sidebar-splitter></div>
+      <div class="splitter" id="sidebar-splitter"></div>
       <div class=dialog-main>
         <div class=dialog-header>
           <input id="search-box" type="search" tabindex="9"
@@ -266,27 +267,32 @@
             <button id="close-button" visibleif="full-page" tabindex="-1">
             </button>
           </div>
-
-        </div>
-        <div class="drive-welcome header"></div>
-        <div class="volume-warning" id="volume-space-warning" hidden></div>
-        <div class="volume-warning" id="drive-auth-failed-warning" hidden>
-          <div class="drive-icon"></div>
-          <div class="drive-text" id="drive-auth-failed-warning-text"></div>
         </div>
         <div class=dialog-body>
-          <div class=filelist-panel>
-            <div id="list-container">
-              <div class=detail-table id="detail-table" tabindex=1 autofocus>
-              </div>
-              <grid class=thumbnail-grid tabindex=1></grid>
-              <div id="spinner-container">
-                <div id="spinner-with-text"></div>
-              </div>
-              <div class="drive-welcome page"></div>
-              <div id="no-search-results"></div>
+          <div class="main-panel">
+            <div class="dialog-middlebar-contents">
+              <tree id="directory-tree" tabindex="8"></tree>
             </div>
-            <div class=downloads-warning hidden></div>
+            <div class="splitter" id="middlebar-splitter"></div>
+            <div class=filelist-panel>
+              <div class="drive-welcome header"></div>
+              <div class="volume-warning" id="volume-space-warning" hidden></div>
+              <div class="volume-warning" id="drive-auth-failed-warning" hidden>
+                <div class="drive-icon"></div>
+                <div class="drive-text" id="drive-auth-failed-warning-text"></div>
+              </div>
+              <div id="list-container">
+                <div class=detail-table id="detail-table" tabindex=1 autofocus>
+                </div>
+                <grid class=thumbnail-grid tabindex=1></grid>
+                <div id="spinner-container">
+                  <div id="spinner-with-text"></div>
+                </div>
+                <div class="drive-welcome page"></div>
+                <div id="no-search-results"></div>
+              </div>
+              <div class=downloads-warning hidden></div>
+            </div>
           </div>
           <div class="preview-panel" visibility="hidden">
             <div>

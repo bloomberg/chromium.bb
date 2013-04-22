@@ -342,7 +342,7 @@ DialogType.isModal = function(type) {
 
     metrics.startInterval('Load.FileSystem');
 
-    var downcount = 3;
+    var downcount = 4;
     var viewOptions = {};
     var done = function() {
       if (--downcount == 0)
@@ -378,6 +378,7 @@ DialogType.isModal = function(type) {
     this.getPreferences_(function() {
       if (this.isDriveEnabled())
         this.volumeManager_.mountDrive(function() {}, function() {});
+      done();
     }.bind(this));
   };
 
@@ -543,7 +544,10 @@ DialogType.isModal = function(type) {
         this.dialogDom_.querySelector('#roots-context-menu');
     cr.ui.Menu.decorate(this.rootsContextMenu_);
 
-    this.directoryTree_.setContextMenu(this.rootsContextMenu_);
+    if (util.platform.newUI())
+      this.volumeList_.setContextMenu(this.rootsContextMenu_);
+    else
+      this.directoryTree_.setContextMenu(this.rootsContextMenu_);
 
     this.textContextMenu_ =
         this.dialogDom_.querySelector('#text-context-menu');
@@ -611,15 +615,23 @@ DialogType.isModal = function(type) {
     CommandUtil.registerCommand(doc, 'change-default-app',
         Commands.changeDefaultAppCommand, this);
 
-    CommandUtil.registerCommand(this.directoryTree_, 'unmount',
-        Commands.unmountCommand, this.directoryTree_, this);
+    if (!util.platform.newUI()) {
+      CommandUtil.registerCommand(this.directoryTree_, 'unmount',
+          Commands.unmountCommand, this.directoryTree_, this);
+
+      CommandUtil.registerCommand(this.directoryTree_, 'import-photos',
+          Commands.importCommand, this.directoryTree_);
+    } else {
+      CommandUtil.registerCommand(this.volumeList_, 'unmount',
+          Commands.unmountCommand, this.volumeList_, this);
+
+      CommandUtil.registerCommand(this.volumeList_, 'import-photos',
+          Commands.importCommand, this.volumeList_);
+    }
 
     CommandUtil.registerCommand(doc, 'format',
         Commands.formatCommand, this.directoryTree_, this,
         this.directoryModel_);
-
-    CommandUtil.registerCommand(this.directoryTree_, 'import-photos',
-        Commands.importCommand, this.directoryTree_);
 
     CommandUtil.registerCommand(doc, 'delete',
         Commands.deleteFileCommand, this);
@@ -786,8 +798,15 @@ DialogType.isModal = function(type) {
     this.onCancelBound_ = this.onCancel_.bind(this);
     this.cancelButton_.addEventListener('click', this.onCancelBound_);
 
-    this.decorateSplitter(
-        this.dialogDom_.querySelector('div.sidebar-splitter'));
+    if (util.platform.newUI()) {
+      this.decorateSplitter(
+          this.dialogDom_.querySelector('div#sidebar-splitter'));
+      this.decorateSplitter(
+          this.dialogDom_.querySelector('div#middlebar-splitter'));
+    } else {
+      this.decorateSplitter(
+          this.dialogDom_.querySelector('div.sidebar-splitter'));
+    }
 
     this.dialogContainer_ = this.dialogDom_.querySelector('.dialog-container');
 
@@ -1029,6 +1048,10 @@ DialogType.isModal = function(type) {
   FileManager.prototype.initSidebar_ = function() {
     this.directoryTree_ = this.dialogDom_.querySelector('#directory-tree');
     DirectoryTree.decorate(this.directoryTree_, this.directoryModel_);
+    if (util.platform.newUI()) {
+      this.volumeList_ = this.dialogDom_.querySelector('#volume-list');
+      VolumeList.decorate(this.volumeList_, this.directoryModel_);
+    }
   };
 
   /**
@@ -1839,7 +1862,8 @@ DialogType.isModal = function(type) {
 
   FileManager.prototype.onDriveConnectionChanged_ = function() {
     var connection = this.volumeManager_.getDriveConnectionState();
-    this.dialogContainer_.setAttribute('connection', connection.type);
+    if (this.dialogContainer_)
+      this.dialogContainer_.setAttribute('connection', connection.type);
   };
 
   /**
@@ -2204,7 +2228,6 @@ DialogType.isModal = function(type) {
       this.closeOnUnmount_ = false;
     }
 
-    this.directoryTree_.selectPath(this.getCurrentDirectory());
     this.updateUnformattedDriveStatus_();
     this.updateTitle_();
     this.updateGearMenu_();

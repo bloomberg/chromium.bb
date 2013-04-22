@@ -375,6 +375,7 @@ VolumeManager.prototype.mountDrive = function(successCallback, errorCallback) {
   if (this.getDriveStatus() == VolumeManager.DriveStatus.ERROR) {
     this.setDriveStatus_(VolumeManager.DriveStatus.UNMOUNTED);
   }
+  this.setDriveStatus_(VolumeManager.DriveStatus.MOUNTING);
   var self = this;
   this.mount_('', 'drive', function(mountPath) {
     this.waitDriveLoaded_(mountPath, function(success, error) {

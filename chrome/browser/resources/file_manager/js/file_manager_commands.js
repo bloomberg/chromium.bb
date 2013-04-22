@@ -10,16 +10,24 @@ var CommandUtil = {};
  * Extracts root on which command event was dispatched.
  *
  * @param {Event} event Command event for which to retrieve root to operate on.
- * @param {DirectoryTree} directoryTree Directory tree to extract root node.
+ * @param {DirectoryTree|VolumeList} list Directory tree or volume list to
+ *     extract root node.
  * @return {DirectoryEntry} Found root.
  */
-CommandUtil.getCommandRoot = function(event, directoryTree) {
-  var entry = directoryTree.selectedItem;
+CommandUtil.getCommandRoot = function(event, list) {
+  if (util.platform.newUI() && list instanceof VolumeList) {
+    var result = list.dataModel.item(
+                     list.getIndexOfListItem(event.target)) ||
+                 list.selectedItem;
+    return result;
+  } else {
+    var entry = list.selectedItem;
 
-  if (entry && PathUtil.isRootPath(entry.fullPath))
-    return entry;
-  else
-    return null;
+    if (entry && PathUtil.isRootPath(entry.fullPath))
+      return entry;
+    else
+      return null;
+  }
 };
 
 /**
@@ -29,7 +37,6 @@ CommandUtil.getCommandRoot = function(event, directoryTree) {
  */
 CommandUtil.getCommandRootType = function(event, directoryTree) {
   var root = CommandUtil.getCommandRoot(event, directoryTree);
-
   return root && PathUtil.getRootType(root.fullPath);
 };
 

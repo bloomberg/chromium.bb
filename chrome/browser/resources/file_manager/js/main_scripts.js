@@ -89,6 +89,7 @@
 //<include src="file_type.js"/>
 //<include src="scrollbar.js"/>
 //<include src="sidebar.js"/>
+//<include src="volume_list.js"/>
 //<include src="volume_manager.js"/>
 //<include src="media/media_util.js"/>
 //<include src="metadata/metadata_cache.js"/>

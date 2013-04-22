@@ -113,7 +113,9 @@ test.util.waitForFileListChange = function(
     var notReadyRows = files.filter(function(row) {
       return row.filter(function(cell) { return cell == '...'; }).length;
     });
-    if (notReadyRows.length === 0 && files.length !== lengthBefore)
+    if (notReadyRows.length === 0 &&
+        files.length !== lengthBefore &&
+        files.length !== 0)
       callback(files);
     else
       window.setTimeout(helper, 50);
