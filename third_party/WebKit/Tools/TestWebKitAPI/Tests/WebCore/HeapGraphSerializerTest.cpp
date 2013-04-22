@@ -29,15 +29,27 @@
  */
 
 #include "config.h"
-#include "WTFStringUtilities.h"
-#include <gtest/gtest.h>
 
 #include "HeapGraphSerializer.h"
 #include "MemoryInstrumentationImpl.h"
-#include <wtf/MemoryInstrumentation.h>
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationString.h>
-#include <wtf/MemoryObjectInfo.h>
+#include "wtf/Assertions.h"
+#include "wtf/MemoryInstrumentation.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationString.h"
+#include "wtf/MemoryObjectInfo.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
+#include <gtest/gtest.h>
+
+namespace WTF {
+
+inline std::ostream& operator<<(std::ostream& os, const String& string)
+{
+    return os << string.utf8().data();
+}
+
+}
 
 namespace TestWebKitAPI {
 
