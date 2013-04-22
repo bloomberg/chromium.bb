@@ -23,14 +23,14 @@
 #ifndef RenderFrame_h
 #define RenderFrame_h
 
+#include "RenderFrameBase.h"
 #include "RenderFrameSet.h"
-#include "RenderPart.h"
 
 namespace WebCore {
 
 class HTMLFrameElement;
 
-class RenderFrame FINAL : public RenderPart {
+class RenderFrame FINAL : public RenderFrameBase {
 public:
     explicit RenderFrame(HTMLFrameElement*);
 

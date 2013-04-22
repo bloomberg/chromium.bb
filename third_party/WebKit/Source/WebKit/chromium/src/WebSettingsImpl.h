@@ -99,6 +99,7 @@ public:
     virtual void setFixedPositionCreatesStackingContext(bool);
     virtual void setFontRenderingModeNormal();
     virtual void setForceCompositingMode(bool);
+    virtual void setFrameFlatteningEnabled(bool);
     virtual void setFullScreenEnabled(bool);
     virtual void setGestureTapHighlightEnabled(bool);
     virtual void setHyperlinkAuditingEnabled(bool);

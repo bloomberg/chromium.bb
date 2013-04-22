@@ -23,58 +23,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#ifndef RenderIFrame_h
-#define RenderIFrame_h
+#ifndef RenderFrameBase_h
+#define RenderFrameBase_h
 
-#include "RenderFrameBase.h"
+#include "RenderPart.h"
 
 namespace WebCore {
 
-class RenderView;
+// Base class for RenderFrame and RenderIFrame
+class RenderFrameBase : public RenderPart {
+protected:
+    explicit RenderFrameBase(Element*);
 
-class RenderIFrame FINAL : public RenderFrameBase {
 public:
-    explicit RenderIFrame(Element*);
-
-    bool flattenFrame() const;
-    bool isSeamless() const;
-
-private:
-    virtual LayoutUnit minPreferredLogicalWidth() const OVERRIDE;
-    virtual LayoutUnit maxPreferredLogicalWidth() const OVERRIDE;
-
-    virtual bool shouldComputeSizeAsReplaced() const OVERRIDE;
-    virtual bool isInlineBlockOrInlineTable() const OVERRIDE;
-
-    virtual void layout() OVERRIDE;
-
-    virtual bool isRenderIFrame() const OVERRIDE { return true; }
-
-    virtual const char* renderName() const OVERRIDE { return "RenderPartObject"; } // Lying for now to avoid breaking tests
-
-    virtual bool requiresLayer() const OVERRIDE;
-
-    void layoutSeamlessly();
-
-    RenderView* contentRootRenderer() const;
+    void layoutWithFlattening(bool fixedWidth, bool fixedHeight);
 };
-
-inline RenderIFrame* toRenderIFrame(RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderIFrame());
-    return static_cast<RenderIFrame*>(object);
-}
-
-inline const RenderIFrame* toRenderIFrame(const RenderObject* object)
-{
-    ASSERT_WITH_SECURITY_IMPLICATION(!object || object->isRenderIFrame());
-    return static_cast<const RenderIFrame*>(object);
-}
-
-// This will catch anyone doing an unnecessary cast.
-void toRenderIFrame(const RenderIFrame*);
-
 
 } // namespace WebCore
 
-#endif // RenderIFrame_h
+#endif // RenderFrameBase_h

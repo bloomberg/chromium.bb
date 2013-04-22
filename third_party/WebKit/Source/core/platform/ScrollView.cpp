@@ -65,7 +65,7 @@ ScrollView::~ScrollView()
     platformDestroy();
 }
 
-void ScrollView::addChild(PassRefPtr<Widget> prpChild)
+void ScrollView::addChild(PassRefPtr<Widget> prpChild) 
 {
     Widget* child = prpChild.get();
     ASSERT(child != this && !child->parent());
@@ -82,6 +82,7 @@ void ScrollView::removeChild(Widget* child)
 
 void ScrollView::setHasHorizontalScrollbar(bool hasBar)
 {
+    ASSERT(!hasBar || !avoidScrollbarCreation());
     if (hasBar && !m_horizontalScrollbar) {
         m_horizontalScrollbar = createScrollbar(HorizontalScrollbar);
         addChild(m_horizontalScrollbar.get());
@@ -92,13 +93,14 @@ void ScrollView::setHasHorizontalScrollbar(bool hasBar)
         removeChild(m_horizontalScrollbar.get());
         m_horizontalScrollbar = 0;
     }
-
+    
     if (AXObjectCache* cache = axObjectCache())
         cache->handleScrollbarUpdate(this);
 }
 
 void ScrollView::setHasVerticalScrollbar(bool hasBar)
 {
+    ASSERT(!hasBar || !avoidScrollbarCreation());
     if (hasBar && !m_verticalScrollbar) {
         m_verticalScrollbar = createScrollbar(VerticalScrollbar);
         addChild(m_verticalScrollbar.get());
@@ -109,7 +111,7 @@ void ScrollView::setHasVerticalScrollbar(bool hasBar)
         removeChild(m_verticalScrollbar.get());
         m_verticalScrollbar = 0;
     }
-
+    
     if (AXObjectCache* cache = axObjectCache())
         cache->handleScrollbarUpdate(this);
 }
@@ -423,9 +425,9 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
         newHasVerticalScrollbar = (vScroll == ScrollbarAlwaysOn);
 
     if (m_scrollbarsSuppressed || (hScroll != ScrollbarAuto && vScroll != ScrollbarAuto)) {
-        if (hasHorizontalScrollbar != newHasHorizontalScrollbar)
+        if (hasHorizontalScrollbar != newHasHorizontalScrollbar && (hasHorizontalScrollbar || !avoidScrollbarCreation()))
             setHasHorizontalScrollbar(newHasHorizontalScrollbar);
-        if (hasVerticalScrollbar != newHasVerticalScrollbar)
+        if (hasVerticalScrollbar != newHasVerticalScrollbar && (hasVerticalScrollbar || !avoidScrollbarCreation()))
             setHasVerticalScrollbar(newHasVerticalScrollbar);
     } else {
         bool sendContentResizedNotification = false;
@@ -454,7 +456,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
                 newHasHorizontalScrollbar = false;
         }
 
-        if (hasHorizontalScrollbar != newHasHorizontalScrollbar) {
+        if (hasHorizontalScrollbar != newHasHorizontalScrollbar && (hasHorizontalScrollbar || !avoidScrollbarCreation())) {
             if (!scrollbarIsOverlay)
                 sendContentResizedNotification = true;
             if (scrollOrigin().y() && !newHasHorizontalScrollbar && !scrollbarIsOverlay)
@@ -464,7 +466,7 @@ void ScrollView::updateScrollbars(const IntSize& desiredOffset)
             setHasHorizontalScrollbar(newHasHorizontalScrollbar);
         }
 
-        if (hasVerticalScrollbar != newHasVerticalScrollbar) {
+        if (hasVerticalScrollbar != newHasVerticalScrollbar && (hasVerticalScrollbar || !avoidScrollbarCreation())) {
             if (!scrollbarIsOverlay)
                 sendContentResizedNotification = true;
             if (scrollOrigin().x() && !newHasVerticalScrollbar && !scrollbarIsOverlay)
