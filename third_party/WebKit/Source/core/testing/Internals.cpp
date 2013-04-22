@@ -70,8 +70,8 @@
 #include "InspectorInstrumentation.h"
 #include "InspectorOverlay.h"
 #include "InstrumentingAgents.h"
-#include "InternalSettings.h"
 #include "IntRect.h"
+#include "InternalSettings.h"
 #include "Language.h"
 #include "MallocStatistics.h"
 #include "MemoryCache.h"
@@ -98,6 +98,7 @@
 #include "TypeConversions.h"
 #include "ViewportArguments.h"
 #include "WorkerThread.h"
+#include <wtf/dtoa.h>
 #include <wtf/text/StringBuffer.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
@@ -110,10 +111,6 @@
 
 #if ENABLE(PAGE_POPUP)
 #include "PagePopupController.h"
-#endif
-
-#if ENABLE(MOUSE_CURSOR_SCALE)
-#include <wtf/dtoa.h>
 #endif
 
 #include "FilterOperation.h"
@@ -1863,13 +1860,12 @@ String Internals::getCurrentCursorInfo(Document* document, ExceptionCode& ec)
         result.append("x");
         result.appendNumber(size.height());
     }
-#if ENABLE(MOUSE_CURSOR_SCALE)
     if (cursor.imageScaleFactor() != 1) {
         result.append(" scale=");
         NumberToStringBuffer buffer;
         result.append(numberToFixedPrecisionString(cursor.imageScaleFactor(), 8, buffer, true));
     }
-#endif
+
     return result.toString();
 }
 

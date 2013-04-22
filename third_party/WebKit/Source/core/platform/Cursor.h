@@ -96,10 +96,8 @@ namespace WebCore {
         Cursor(Image*, const IntPoint& hotSpot);
         Cursor(const Cursor&);
 
-#if ENABLE(MOUSE_CURSOR_SCALE)
         // Hot spot is in image pixels.
         Cursor(Image*, const IntPoint& hotSpot, float imageScaleFactor);
-#endif
 
         ~Cursor();
         Cursor& operator=(const Cursor&);
@@ -112,22 +110,18 @@ namespace WebCore {
         }
         Image* image() const { return m_image.get(); }
         const IntPoint& hotSpot() const { return m_hotSpot; }
-#if ENABLE(MOUSE_CURSOR_SCALE)
         // Image scale in image pixels per logical (UI) pixel.
         float imageScaleFactor() const { return m_imageScaleFactor; }
-#endif
 
      private:
         Type m_type;
         RefPtr<Image> m_image;
         IntPoint m_hotSpot;
-#if ENABLE(MOUSE_CURSOR_SCALE)
         float m_imageScaleFactor;
-#endif
     };
 
     IntPoint determineHotSpot(Image*, const IntPoint& specifiedHotSpot);
-    
+
     const Cursor& pointerCursor();
     const Cursor& crossCursor();
     const Cursor& handCursor();

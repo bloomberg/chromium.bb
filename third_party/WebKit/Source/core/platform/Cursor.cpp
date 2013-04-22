@@ -149,13 +149,10 @@ Cursor::Cursor(Image* image, const IntPoint& hotSpot)
     : m_type(Custom)
     , m_image(image)
     , m_hotSpot(determineHotSpot(image, hotSpot))
-#if ENABLE(MOUSE_CURSOR_SCALE)
     , m_imageScaleFactor(1)
-#endif
 {
 }
 
-#if ENABLE(MOUSE_CURSOR_SCALE)
 Cursor::Cursor(Image* image, const IntPoint& hotSpot, float scale)
     : m_type(Custom)
     , m_image(image)
@@ -163,13 +160,10 @@ Cursor::Cursor(Image* image, const IntPoint& hotSpot, float scale)
     , m_imageScaleFactor(scale)
 {
 }
-#endif
 
 Cursor::Cursor(Type type)
     : m_type(type)
-#if ENABLE(MOUSE_CURSOR_SCALE)
     , m_imageScaleFactor(1)
-#endif
 {
 }
 

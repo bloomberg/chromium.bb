@@ -137,12 +137,11 @@ const double fakeMouseMoveShortInterval = 0.1;
 const double fakeMouseMoveLongInterval = 0.250;
 
 const int maximumCursorSize = 128;
-#if ENABLE(MOUSE_CURSOR_SCALE)
+
 // It's pretty unlikely that a scale of less than one would ever be used. But all we really
 // need to ensure here is that the scale isn't so small that integer overflow can occur when
 // dividing cursor sizes (limited above) by the scale.
 const double minimumCursorScale = 0.001;
-#endif
 
 #if OS(DARWIN)
 const double EventHandler::TextDragDelay = 0.15;
@@ -1211,15 +1210,10 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
                 continue;
 
             Image* image = cachedImage->imageForRenderer(renderer);
-#if ENABLE(MOUSE_CURSOR_SCALE)
             // Ensure no overflow possible in calculations above.
             if (scale < minimumCursorScale)
                 continue;
             return Cursor(image, hotSpot, scale);
-#else
-            ASSERT(scale == 1);
-            return Cursor(image, hotSpot);
-#endif // ENABLE(MOUSE_CURSOR_SCALE)
         }
     }
 
