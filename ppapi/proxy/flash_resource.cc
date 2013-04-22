@@ -7,6 +7,7 @@
 #include <cmath>
 
 #include "base/containers/mru_cache.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/time.h"
 #include "ppapi/c/pp_errors.h"
@@ -83,12 +84,16 @@ void FlashResource::UpdateActivity(PP_Instance instance) {
 PP_Bool FlashResource::SetCrashData(PP_Instance instance,
                                     PP_FlashCrashKey key,
                                     PP_Var value) {
+  StringVar* url_string_var(StringVar::FromPPVar(value));
+  if (!url_string_var)
+    return PP_FALSE;
   switch (key) {
     case PP_FLASHCRASHKEY_URL: {
-      StringVar* url_string_var(StringVar::FromPPVar(value));
-      if (!url_string_var)
-        return PP_FALSE;
       PluginGlobals::Get()->SetActiveURL(url_string_var->value());
+      return PP_TRUE;
+    }
+    case PP_FLASHCRASHKEY_RESOURCE_URL: {
+      base::debug::SetCrashKeyValue("subresource_url", url_string_var->value());
       return PP_TRUE;
     }
   }

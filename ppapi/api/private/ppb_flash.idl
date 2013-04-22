@@ -103,7 +103,12 @@ enum PP_FlashCrashKey {
   /**
    * Specifies the document URL which contains the flash instance.
    */
-  PP_FLASHCRASHKEY_URL = 1
+  PP_FLASHCRASHKEY_URL = 1,
+
+  /**
+   * Specifies the URL of the current swf.
+   */
+  PP_FLASHCRASHKEY_RESOURCE_URL = 2
 };
 
 /**
