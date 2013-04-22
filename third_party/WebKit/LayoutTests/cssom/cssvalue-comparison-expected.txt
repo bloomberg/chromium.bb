@@ -13,6 +13,7 @@ PASS Two CSSValues "10pc" for property "width" are equal.
 PASS Two CSSValues "6vw" for property "width" are equal. 
 PASS Two CSSValues "6vh" for property "width" are equal. 
 PASS Two CSSValues "4vmin" for property "width" are equal. 
+PASS Two CSSValues "10vmax" for property "width" are equal. 
 PASS Two CSSValues "-webkit-calc(-100px + 100%)" for property "width" are equal. 
 PASS Two CSSValues "20%" and "2em" for property "width" are not equal. 
 PASS Two CSSValues "rotate(15deg)" for property "-webkit-transform" are equal. 

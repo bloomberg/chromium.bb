@@ -1235,6 +1235,7 @@ bool CSSPrimitiveValue::equals(const CSSPrimitiveValue& other) const
     case CSS_VW:
     case CSS_VH:
     case CSS_VMIN:
+    case CSS_VMAX:
     case CSS_DIMENSION:
         return m_value.num == other.m_value.num;
     case CSS_IDENT:
