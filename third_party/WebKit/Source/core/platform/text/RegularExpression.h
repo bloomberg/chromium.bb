@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2003, 2008, 2009 Apple Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,11 +27,10 @@
 #ifndef RegularExpression_h
 #define RegularExpression_h
 
-#include <wtf/BumpPointerAllocator.h>
+#include "ScopedPersistent.h"
 #include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
-#include <yarr/Yarr.h>
+#include <v8.h>
 
 namespace WebCore {
 
@@ -46,12 +46,10 @@ public:
 
     int match(const String&, int startFrom = 0, int* matchLength = 0) const;
 
-private:
-    PassOwnPtr<JSC::Yarr::BytecodePattern> compile(const String&, TextCaseSensitivity, MultilineMode);
+    bool isValid() const { return !m_regex.isEmpty(); }
 
-    unsigned m_numSubpatterns;
-    OwnPtr<JSC::Yarr::BytecodePattern> m_regExpByteCode;
-    BumpPointerAllocator m_regexAllocator;
+private:
+    ScopedPersistent<v8::RegExp> m_regex;
 };
 
 void replace(String&, const RegularExpression&, const String&);
