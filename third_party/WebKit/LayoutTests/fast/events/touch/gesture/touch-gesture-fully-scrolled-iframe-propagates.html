@@ -37,7 +37,7 @@ td {
 <div id="outerdiv">
   <table border="0" cellspacing="0px" >
     <tr><td>
-        <iframe frameBorder="0" style="display: block;" id="touchtargetiframe" src="resources/scroll-inside-editable-iframe.html"></iframe>
+        <iframe style="display: block;" frameBorder="0" id="touchtargetiframe" src="resources/scroll-inside-editable-iframe.html"></iframe>
     </td></tr>
     <tr><td>
       <div id="bluebox"></div>
@@ -56,7 +56,7 @@ var iframeBody;
 var expectedGesturesTotal = 1;
 var gesturesOccurred = 0;
 var scrollAmountX = ['0'];
-var scrollAmountY = ['0'];
+var scrollAmountY = ['50'];
 var wheelEventsOccurred = 0;
 var expectedWheelEventsOccurred = ['0'];
 var scrollEventsOccurred = 0;
@@ -68,17 +68,23 @@ function firstGestureScroll()
 {
     iframe = touchtarget;
     iframeBody = iframe.contentDocument.body;
+    
+    var amountToScroll = iframeBody.scrollHeight - iframe.clientHeight;
 
-    debug("first gesture");
+    touchtarget.contentDocument.body.scrollTop = amountToScroll;
+
+    // Sanity - make sure the iframe is actually fully scrolled scrolled
+    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
+
     eventSender.gestureScrollBegin(10, 72);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -700);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -100);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -70);
+    eventSender.gestureScrollUpdateWithoutPropagation(0, -20);
+    eventSender.gestureScrollUpdateWithoutPropagation(0, -18);
+    eventSender.gestureScrollUpdateWithoutPropagation(0, -15);
     eventSender.gestureScrollUpdateWithoutPropagation(0, -10);
     eventSender.gestureScrollEnd(0, 0);
 
-    // Make sure the actual iframe got fully scrolled
-    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
+    amountToScroll = movedbox.scrollHeight - movedbox.clientHeight;
+    scrollAmountY[0] = amountToScroll.toString();
 
     // Wait for layout.
     checkScrollOffset();
@@ -91,13 +97,14 @@ function runTest()
 {
     movedbox = document.getElementById("outerdiv");
     touchtarget = document.getElementById("touchtargetiframe");
+
     touchtarget.contentDocument.addEventListener("scroll", recordScroll);
     touchtarget.contentDocument.body.addEventListener("mousewheel", recordWheel);
 
     if (window.eventSender) {
-        description('This tests that a gesture scroll is not propagated from an ' +
-                'iframe to an outer div when the iframe has no remaining ' +
-                'scroll offset when the gesture type GestureScrollUpdateWithoutPropagation is used.');
+        description('This tests that a fling gesture sent to an iframe with no remaining scroll offset ' +
+                    'is correctly targeting the parent container.');
+        
         if (checkTestDependencies() && window.eventSender.gestureScrollUpdateWithoutPropagation)
             firstGestureScroll();
         else
