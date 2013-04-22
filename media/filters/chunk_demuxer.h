@@ -45,6 +45,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   //   console.
   ChunkDemuxer(const base::Closure& open_cb, const NeedKeyCB& need_key_cb,
                const LogCB& log_cb);
+  virtual ~ChunkDemuxer();
 
   // Demuxer implementation.
   virtual void Initialize(DemuxerHost* host,
@@ -103,9 +104,6 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // the current position and the end of the buffered data.
   bool EndOfStream(PipelineStatus status);
   void Shutdown();
-
- protected:
-  virtual ~ChunkDemuxer();
 
  private:
   enum State {

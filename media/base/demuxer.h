@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_DEMUXER_H_
 #define MEDIA_BASE_DEMUXER_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "media/base/data_source.h"
 #include "media/base/demuxer_stream.h"
@@ -28,9 +27,10 @@ class MEDIA_EXPORT DemuxerHost : public DataSourceHost {
   virtual ~DemuxerHost();
 };
 
-class MEDIA_EXPORT Demuxer : public base::RefCountedThreadSafe<Demuxer> {
+class MEDIA_EXPORT Demuxer {
  public:
   Demuxer();
+  virtual ~Demuxer();
 
   // Completes initialization of the demuxer.
   //
@@ -63,10 +63,6 @@ class MEDIA_EXPORT Demuxer : public base::RefCountedThreadSafe<Demuxer> {
 
   // Returns the starting time for the media file.
   virtual base::TimeDelta GetStartTime() const = 0;
-
- protected:
-  friend class base::RefCountedThreadSafe<Demuxer>;
-  virtual ~Demuxer();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Demuxer);

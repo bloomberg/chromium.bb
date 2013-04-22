@@ -4,22 +4,21 @@
 
 #include "media/base/filter_collection.h"
 
-#include "base/logging.h"
 #include "media/base/audio_renderer.h"
 #include "media/base/demuxer.h"
 #include "media/base/video_renderer.h"
 
 namespace media {
 
-FilterCollection::FilterCollection() {}
+FilterCollection::FilterCollection() : demuxer_(NULL) {}
 
 FilterCollection::~FilterCollection() {}
 
-void FilterCollection::SetDemuxer(const scoped_refptr<Demuxer>& demuxer) {
+void FilterCollection::SetDemuxer(Demuxer* demuxer) {
   demuxer_ = demuxer;
 }
 
-const scoped_refptr<Demuxer>& FilterCollection::GetDemuxer() {
+Demuxer* FilterCollection::GetDemuxer() {
   return demuxer_;
 }
 

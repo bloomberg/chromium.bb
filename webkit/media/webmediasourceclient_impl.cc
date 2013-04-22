@@ -25,8 +25,7 @@ COMPILE_ASSERT_MATCHING_STATUS_ENUM(AddStatusReachedIdLimit, kReachedIdLimit);
 #undef COMPILE_ASSERT_MATCHING_STATUS_ENUM
 
 WebMediaSourceClientImpl::WebMediaSourceClientImpl(
-    const scoped_refptr<media::ChunkDemuxer>& demuxer,
-    media::LogCB log_cb)
+    media::ChunkDemuxer* demuxer, media::LogCB log_cb)
     : demuxer_(demuxer),
       log_cb_(log_cb) {
   DCHECK(demuxer_);

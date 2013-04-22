@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/ref_counted.h"
 #include "media/base/media_log.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebMediaSourceClient.h"
 
@@ -20,9 +19,7 @@ namespace webkit_media {
 
 class WebMediaSourceClientImpl : public WebKit::WebMediaSourceClient {
  public:
-  explicit WebMediaSourceClientImpl(
-      const scoped_refptr<media::ChunkDemuxer>& demuxer,
-      media::LogCB log_cb);
+  WebMediaSourceClientImpl(media::ChunkDemuxer* demuxer, media::LogCB log_cb);
   virtual ~WebMediaSourceClientImpl();
 
   // WebKit::WebMediaSourceClient implementation.
@@ -35,7 +32,7 @@ class WebMediaSourceClientImpl : public WebKit::WebMediaSourceClient {
   virtual void endOfStream(EndOfStreamStatus status) OVERRIDE;
 
  private:
-  scoped_refptr<media::ChunkDemuxer> demuxer_;
+  media::ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.
   media::LogCB log_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaSourceClientImpl);

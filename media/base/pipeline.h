@@ -442,8 +442,6 @@ class MEDIA_EXPORT Pipeline
   // Set to true in DisableAudioRendererTask().
   bool audio_disabled_;
 
-  scoped_ptr<FilterCollection> filter_collection_;
-
   // Temporary callback used for Start() and Seek().
   PipelineStatusCB seek_cb_;
 
@@ -456,13 +454,16 @@ class MEDIA_EXPORT Pipeline
   BufferingStateCB buffering_state_cb_;
   base::Closure duration_change_cb_;
 
-  // Renderer references used for setting the volume, playback rate, and
-  // determining when playback has finished.
+  // Contains the demuxer and renderers to use when initializing.
+  scoped_ptr<FilterCollection> filter_collection_;
+
+  // Holds the initialized demuxer. Used for seeking. Owned by client.
+  Demuxer* demuxer_;
+
+  // Holds the initialized renderers. Used for setting the volume,
+  // playback rate, and determining when playback has finished.
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;
-
-  // Demuxer reference used for setting the preload value.
-  scoped_refptr<Demuxer> demuxer_;
 
   PipelineStatistics statistics_;
 

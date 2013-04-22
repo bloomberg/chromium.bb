@@ -7,7 +7,8 @@
 
 #include <string>
 
-#include "base/memory/ref_counted.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebSourceBuffer.h"
 
 namespace media {
@@ -18,8 +19,7 @@ namespace webkit_media {
 
 class WebSourceBufferImpl : public WebKit::WebSourceBuffer {
  public:
-  WebSourceBufferImpl(const std::string& id,
-                      scoped_refptr<media::ChunkDemuxer> demuxer);
+  WebSourceBufferImpl(const std::string& id, media::ChunkDemuxer* demuxer);
   virtual ~WebSourceBufferImpl();
 
   // WebKit::WebSourceBuffer implementation.
@@ -31,7 +31,7 @@ class WebSourceBufferImpl : public WebKit::WebSourceBuffer {
 
  private:
   std::string id_;
-  scoped_refptr<media::ChunkDemuxer> demuxer_;
+  media::ChunkDemuxer* demuxer_;  // Owned by WebMediaPlayerImpl.
 
   DISALLOW_COPY_AND_ASSIGN(WebSourceBufferImpl);
 };

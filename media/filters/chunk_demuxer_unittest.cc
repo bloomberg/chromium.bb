@@ -152,7 +152,7 @@ class ChunkDemuxerTest : public testing::Test {
         base::Bind(&ChunkDemuxerTest::DemuxerOpened, base::Unretained(this));
     ChunkDemuxer::NeedKeyCB need_key_cb =
         base::Bind(&ChunkDemuxerTest::DemuxerNeedKey, base::Unretained(this));
-    demuxer_ = new ChunkDemuxer(open_cb, need_key_cb, LogCB());
+    demuxer_.reset(new ChunkDemuxer(open_cb, need_key_cb, LogCB()));
   }
 
   virtual ~ChunkDemuxerTest() {
@@ -562,8 +562,7 @@ class ChunkDemuxerTest : public testing::Test {
   }
 
   void Read(DemuxerStream::Type type, const DemuxerStream::ReadCB& read_cb) {
-    scoped_refptr<DemuxerStream> stream = demuxer_->GetStream(type);
-    stream->Read(read_cb);
+    demuxer_->GetStream(type)->Read(read_cb);
     message_loop_.RunUntilIdle();
   }
 
@@ -679,27 +678,24 @@ class ChunkDemuxerTest : public testing::Test {
   }
 
   void ExpectEndOfStream(DemuxerStream::Type type) {
-    scoped_refptr<DemuxerStream> stream = demuxer_->GetStream(type);
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kOk, IsEndOfStream()));
-    stream->Read(base::Bind(&ChunkDemuxerTest::ReadDone,
-                            base::Unretained(this)));
+    demuxer_->GetStream(type)->Read(base::Bind(
+        &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
   void ExpectRead(DemuxerStream::Type type, int64 timestamp_in_ms) {
-    scoped_refptr<DemuxerStream> stream = demuxer_->GetStream(type);
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kOk,
                                 HasTimestamp(timestamp_in_ms)));
-    stream->Read(base::Bind(&ChunkDemuxerTest::ReadDone,
-                            base::Unretained(this)));
+    demuxer_->GetStream(type)->Read(base::Bind(
+        &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
   void ExpectConfigChanged(DemuxerStream::Type type) {
-    scoped_refptr<DemuxerStream> stream = demuxer_->GetStream(type);
     EXPECT_CALL(*this, ReadDone(DemuxerStream::kConfigChanged, _));
-    stream->Read(base::Bind(&ChunkDemuxerTest::ReadDone,
-                            base::Unretained(this)));
+    demuxer_->GetStream(type)->Read(base::Bind(
+        &ChunkDemuxerTest::ReadDone, base::Unretained(this)));
     message_loop_.RunUntilIdle();
   }
 
@@ -782,7 +778,7 @@ class ChunkDemuxerTest : public testing::Test {
   MessageLoop message_loop_;
   MockDemuxerHost host_;
 
-  scoped_refptr<ChunkDemuxer> demuxer_;
+  scoped_ptr<ChunkDemuxer> demuxer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChunkDemuxerTest);
@@ -846,7 +842,7 @@ TEST_F(ChunkDemuxerTest, TestInit) {
     }
 
     ShutdownDemuxer();
-    demuxer_ = NULL;
+    demuxer_.reset();
   }
 }
 
@@ -1090,7 +1086,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWithNoAppend) {
   ShutdownDemuxer();
   CheckExpectedRanges("{ }");
   demuxer_->RemoveId(kSourceId);
-  demuxer_ = NULL;
+  demuxer_.reset();
 }
 
 TEST_F(ChunkDemuxerTest, TestEndOfStreamWithNoMediaAppend) {
@@ -1128,7 +1124,7 @@ TEST_F(ChunkDemuxerTest, TestNetworkErrorEndOfStream) {
 // Read() behavior.
 class EndOfStreamHelper {
  public:
-  explicit EndOfStreamHelper(const scoped_refptr<Demuxer> demuxer)
+  explicit EndOfStreamHelper(Demuxer* demuxer)
       : demuxer_(demuxer),
         audio_read_done_(false),
         video_read_done_(false) {
@@ -1166,7 +1162,7 @@ class EndOfStreamHelper {
     *called = true;
   }
 
-  scoped_refptr<Demuxer> demuxer_;
+  Demuxer* demuxer_;
   bool audio_read_done_;
   bool video_read_done_;
 
@@ -1183,8 +1179,8 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamWithPendingReads) {
 
   bool audio_read_done_1 = false;
   bool video_read_done_1 = false;
-  EndOfStreamHelper end_of_stream_helper_1(demuxer_);
-  EndOfStreamHelper end_of_stream_helper_2(demuxer_);
+  EndOfStreamHelper end_of_stream_helper_1(demuxer_.get());
+  EndOfStreamHelper end_of_stream_helper_2(demuxer_.get());
 
   ReadAudio(base::Bind(&OnReadDone,
                        base::TimeDelta::FromMilliseconds(0),
@@ -1219,9 +1215,9 @@ TEST_F(ChunkDemuxerTest, TestReadsAfterEndOfStream) {
 
   bool audio_read_done_1 = false;
   bool video_read_done_1 = false;
-  EndOfStreamHelper end_of_stream_helper_1(demuxer_);
-  EndOfStreamHelper end_of_stream_helper_2(demuxer_);
-  EndOfStreamHelper end_of_stream_helper_3(demuxer_);
+  EndOfStreamHelper end_of_stream_helper_1(demuxer_.get());
+  EndOfStreamHelper end_of_stream_helper_2(demuxer_.get());
+  EndOfStreamHelper end_of_stream_helper_3(demuxer_.get());
 
   ReadAudio(base::Bind(&OnReadDone,
                        base::TimeDelta::FromMilliseconds(0),
@@ -2124,7 +2120,7 @@ TEST_F(ChunkDemuxerTest, TestEndOfStreamDuringSeek) {
   GenerateExpectedReads(0, 4);
   GenerateExpectedReads(46, 66, 5);
 
-  EndOfStreamHelper end_of_stream_helper(demuxer_);
+  EndOfStreamHelper end_of_stream_helper(demuxer_.get());
   end_of_stream_helper.RequestReads();
   end_of_stream_helper.CheckIfReadDonesWereCalled(true);
 }
@@ -2185,7 +2181,7 @@ TEST_F(ChunkDemuxerTest, TestConfigChange_Audio) {
   DemuxerStream::Status status;
   base::TimeDelta last_timestamp;
 
-    scoped_refptr<DemuxerStream> audio =
+  scoped_refptr<DemuxerStream> audio =
       demuxer_->GetStream(DemuxerStream::AUDIO);
 
   // Fetch initial audio config and verify it matches what we expect.

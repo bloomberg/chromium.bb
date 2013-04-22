@@ -53,6 +53,7 @@ class MessageLoopProxy;
 
 namespace media {
 class ChunkDemuxer;
+class FFmpegDemuxer;
 class MediaLog;
 }
 
@@ -230,7 +231,9 @@ class WebMediaPlayerImpl
   void NotifyDownloading(bool is_downloading);
 
   // Finishes starting the pipeline due to a call to load().
-  void StartPipeline();
+  //
+  // A non-null |media_source| will construct a Media Source pipeline.
+  void StartPipeline(WebKit::WebMediaSource* media_source);
 
   // Helpers that set the network/ready state and notifies the client if
   // they've changed.
@@ -271,10 +274,6 @@ class WebMediaPlayerImpl
   // Called by VideoRendererBase on its internal thread with the new frame to be
   // painted.
   void FrameReady(const scoped_refptr<media::VideoFrame>& frame);
-
-  // Builds a FilterCollection based on the current configuration of
-  // WebMediaPlayerImpl.
-  scoped_ptr<media::FilterCollection> BuildFilterCollection();
 
   WebKit::WebFrame* frame_;
 
@@ -349,8 +348,12 @@ class WebMediaPlayerImpl
   // These two are mutually exclusive:
   //   |data_source_| is used for regular resource loads.
   //   |chunk_demuxer_| is used for Media Source resource loads.
+  //
+  // |demuxer_| will contain the appropriate demuxer based on which resource
+  // load strategy we're using.
   scoped_refptr<BufferedDataSource> data_source_;
-  scoped_refptr<media::ChunkDemuxer> chunk_demuxer_;
+  scoped_ptr<media::Demuxer> demuxer_;
+  media::ChunkDemuxer* chunk_demuxer_;
 
   // Temporary for EME v0.1. In the future the init data type should be passed
   // through GenerateKeyRequest() directly from WebKit.

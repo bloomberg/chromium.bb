@@ -27,6 +27,7 @@ namespace media {
 class MockDemuxer : public Demuxer {
  public:
   MockDemuxer();
+  virtual ~MockDemuxer();
 
   // Demuxer implementation.
   MOCK_METHOD2(Initialize, void(DemuxerHost* host, const PipelineStatusCB& cb));
@@ -36,9 +37,6 @@ class MockDemuxer : public Demuxer {
   MOCK_METHOD0(OnAudioRendererDisabled, void());
   MOCK_METHOD1(GetStream, scoped_refptr<DemuxerStream>(DemuxerStream::Type));
   MOCK_CONST_METHOD0(GetStartTime, base::TimeDelta());
-
- protected:
-  virtual ~MockDemuxer();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockDemuxer);

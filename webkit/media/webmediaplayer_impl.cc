@@ -153,6 +153,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       is_local_source_(false),
       supports_save_(true),
       starting_(false),
+      chunk_demuxer_(NULL),
       pending_repaint_(false),
       video_frame_provider_client_(NULL) {
   media_log_->AddEvent(
@@ -266,18 +267,11 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 void WebMediaPlayerImpl::load(const WebKit::WebURL& url,
                               WebKit::WebMediaSource* media_source,
                               CORSMode cors_mode) {
-  scoped_ptr<WebKit::WebMediaSource> ms(media_source);
   LoadSetup(url);
 
   // Media source pipelines can start immediately.
-  chunk_demuxer_ = new media::ChunkDemuxer(
-      BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnDemuxerOpened,
-                            base::Passed(&ms)),
-      BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
-      base::Bind(&LogMediaSourceError, media_log_));
-
   supports_save_ = false;
-  StartPipeline();
+  StartPipeline(media_source);
 }
 
 void WebMediaPlayerImpl::LoadSetup(const WebKit::WebURL& url) {
@@ -1122,7 +1116,7 @@ void WebMediaPlayerImpl::DataSourceInitialized(const GURL& gurl, bool success) {
     return;
   }
 
-  StartPipeline();
+  StartPipeline(NULL);
 }
 
 void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
@@ -1136,141 +1130,38 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
           "is_downloading_data", is_downloading));
 }
 
-void WebMediaPlayerImpl::StartPipeline() {
-  starting_ = true;
-  pipeline_->Start(
-      BuildFilterCollection(),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingState),
-      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChange));
-}
-
-void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "SetNetworkState: " << state;
-  network_state_ = state;
-  // Always notify to ensure client has the latest value.
-  GetClient()->networkStateChanged();
-}
-
-void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  DVLOG(1) << "SetReadyState: " << state;
-
-  if (state == WebMediaPlayer::ReadyStateHaveEnoughData &&
-      is_local_source_ &&
-      network_state_ == WebMediaPlayer::NetworkStateLoading)
-    SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
-
-  ready_state_ = state;
-  // Always notify to ensure client has the latest value.
-  GetClient()->readyStateChanged();
-}
-
-void WebMediaPlayerImpl::Destroy() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // Abort any pending IO so stopping the pipeline doesn't get blocked.
-  if (data_source_)
-    data_source_->Abort();
-  if (chunk_demuxer_)
-    chunk_demuxer_->Shutdown();
-
-  if (gpu_factories_) {
-    gpu_factories_->Abort();
-    gpu_factories_ = NULL;
-  }
-
-  // Make sure to kill the pipeline so there's no more media threads running.
-  // Note: stopping the pipeline might block for a long time.
-  base::WaitableEvent waiter(false, false);
-  pipeline_->Stop(base::Bind(
-      &base::WaitableEvent::Signal, base::Unretained(&waiter)));
-  waiter.Wait();
-
-  // Let V8 know we are not using extra resources anymore.
-  if (incremented_externally_allocated_memory_) {
-    v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
-    incremented_externally_allocated_memory_ = false;
-  }
-
-  media_thread_.Stop();
-
-  // Release any final references now that everything has stopped.
-  data_source_ = NULL;
-  chunk_demuxer_ = NULL;
-}
-
-WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  DCHECK(client_);
-  return client_;
-}
-
-WebKit::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
-  return audio_source_provider_;
-}
-
-void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-  incremented_externally_allocated_memory_ = true;
-  v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
-}
-
-double WebMediaPlayerImpl::GetPipelineDuration() const {
-  base::TimeDelta duration = pipeline_->GetMediaDuration();
-
-  // Return positive infinity if the resource is unbounded.
-  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
-  if (duration == media::kInfiniteDuration())
-    return std::numeric_limits<double>::infinity();
-
-  return duration.InSecondsF();
-}
-
-void WebMediaPlayerImpl::OnDurationChange() {
-  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
-    return;
-
-  GetClient()->durationChanged();
-}
-
-void WebMediaPlayerImpl::FrameReady(
-    const scoped_refptr<media::VideoFrame>& frame) {
-  base::AutoLock auto_lock(lock_);
-  current_frame_ = frame;
-
-  if (pending_repaint_)
-    return;
-
-  pending_repaint_ = true;
-  main_loop_->PostTask(FROM_HERE, base::Bind(
-      &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
-}
-
-scoped_ptr<media::FilterCollection>
-WebMediaPlayerImpl::BuildFilterCollection() {
+void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  scoped_ptr<media::FilterCollection> filter_collection(
-      new media::FilterCollection());
 
   // Figure out which demuxer to use.
-  if (data_source_) {
+  if (!media_source) {
     DCHECK(!chunk_demuxer_);
-    filter_collection->SetDemuxer(new media::FFmpegDemuxer(
+    DCHECK(data_source_);
+
+    demuxer_.reset(new media::FFmpegDemuxer(
         media_thread_.message_loop_proxy(), data_source_,
         BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", "")));
   } else {
-    DCHECK(chunk_demuxer_);
-    filter_collection->SetDemuxer(chunk_demuxer_);
+    DCHECK(!chunk_demuxer_);
+    DCHECK(!data_source_);
+
+    scoped_ptr<WebKit::WebMediaSource> ms(media_source);
+    chunk_demuxer_ = new media::ChunkDemuxer(
+        BIND_TO_RENDER_LOOP_1(&WebMediaPlayerImpl::OnDemuxerOpened,
+                              base::Passed(&ms)),
+        BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", ""),
+        base::Bind(&LogMediaSourceError, media_log_));
+    demuxer_.reset(chunk_demuxer_);
 
     // Disable GpuVideoDecoder creation until it supports codec config changes.
     // TODO(acolwell): Remove this once http://crbug.com/151045 is fixed.
     gpu_factories_ = NULL;
   }
+
+  scoped_ptr<media::FilterCollection> filter_collection(
+      new media::FilterCollection());
+  filter_collection->SetDemuxer(demuxer_.get());
 
   // Figure out if EME is enabled.
   media::SetDecryptorReadyCB set_decryptor_ready_cb;
@@ -1326,7 +1217,120 @@ WebMediaPlayerImpl::BuildFilterCollection() {
           true));
   filter_collection->SetVideoRenderer(video_renderer.Pass());
 
-  return filter_collection.Pass();
+  // ... and we're ready to go!
+  starting_ = true;
+  pipeline_->Start(
+      filter_collection.Pass(),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineEnded),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineError),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineBufferingState),
+      BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnDurationChange));
+}
+
+void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DVLOG(1) << "SetNetworkState: " << state;
+  network_state_ = state;
+  // Always notify to ensure client has the latest value.
+  GetClient()->networkStateChanged();
+}
+
+void WebMediaPlayerImpl::SetReadyState(WebMediaPlayer::ReadyState state) {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DVLOG(1) << "SetReadyState: " << state;
+
+  if (state == WebMediaPlayer::ReadyStateHaveEnoughData &&
+      is_local_source_ &&
+      network_state_ == WebMediaPlayer::NetworkStateLoading)
+    SetNetworkState(WebMediaPlayer::NetworkStateLoaded);
+
+  ready_state_ = state;
+  // Always notify to ensure client has the latest value.
+  GetClient()->readyStateChanged();
+}
+
+void WebMediaPlayerImpl::Destroy() {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+
+  // Abort any pending IO so stopping the pipeline doesn't get blocked.
+  if (data_source_)
+    data_source_->Abort();
+  if (chunk_demuxer_) {
+    chunk_demuxer_->Shutdown();
+    chunk_demuxer_ = NULL;
+  }
+
+  if (gpu_factories_) {
+    gpu_factories_->Abort();
+    gpu_factories_ = NULL;
+  }
+
+  // Make sure to kill the pipeline so there's no more media threads running.
+  // Note: stopping the pipeline might block for a long time.
+  base::WaitableEvent waiter(false, false);
+  pipeline_->Stop(base::Bind(
+      &base::WaitableEvent::Signal, base::Unretained(&waiter)));
+  waiter.Wait();
+
+  // Let V8 know we are not using extra resources anymore.
+  if (incremented_externally_allocated_memory_) {
+    v8::V8::AdjustAmountOfExternalAllocatedMemory(-kPlayerExtraMemory);
+    incremented_externally_allocated_memory_ = false;
+  }
+
+  media_thread_.Stop();
+
+  // Release any final references now that everything has stopped.
+  data_source_ = NULL;
+  demuxer_.reset();
+}
+
+WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  DCHECK(client_);
+  return client_;
+}
+
+WebKit::WebAudioSourceProvider* WebMediaPlayerImpl::audioSourceProvider() {
+  return audio_source_provider_;
+}
+
+void WebMediaPlayerImpl::IncrementExternallyAllocatedMemory() {
+  DCHECK(main_loop_->BelongsToCurrentThread());
+  incremented_externally_allocated_memory_ = true;
+  v8::V8::AdjustAmountOfExternalAllocatedMemory(kPlayerExtraMemory);
+}
+
+double WebMediaPlayerImpl::GetPipelineDuration() const {
+  base::TimeDelta duration = pipeline_->GetMediaDuration();
+
+  // Return positive infinity if the resource is unbounded.
+  // http://www.whatwg.org/specs/web-apps/current-work/multipage/video.html#dom-media-duration
+  if (duration == media::kInfiniteDuration())
+    return std::numeric_limits<double>::infinity();
+
+  return duration.InSecondsF();
+}
+
+void WebMediaPlayerImpl::OnDurationChange() {
+  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
+    return;
+
+  GetClient()->durationChanged();
+}
+
+void WebMediaPlayerImpl::FrameReady(
+    const scoped_refptr<media::VideoFrame>& frame) {
+  base::AutoLock auto_lock(lock_);
+  current_frame_ = frame;
+
+  if (pending_repaint_)
+    return;
+
+  pending_repaint_ = true;
+  main_loop_->PostTask(FROM_HERE, base::Bind(
+      &WebMediaPlayerImpl::Repaint, AsWeakPtr()));
 }
 
 }  // namespace webkit_media

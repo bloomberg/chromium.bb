@@ -102,7 +102,7 @@ static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
 
 // TODO(vrk): Re-enabled audio. (crbug.com/112159)
 bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                  const scoped_refptr<media::DataSource>& data_source,
+                  media::Demuxer* demuxer,
                   const PaintCB& paint_cb,
                   bool /* enable_audio */,
                   scoped_refptr<media::Pipeline>* pipeline,
@@ -110,10 +110,7 @@ bool InitPipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
   // Create our filter factories.
   scoped_ptr<media::FilterCollection> collection(
       new media::FilterCollection());
-  media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
-  collection->SetDemuxer(new media::FFmpegDemuxer(message_loop, data_source,
-                                                  need_key_cb));
-
+  collection->SetDemuxer(demuxer);
 
   ScopedVector<media::VideoDecoder> video_decoders;
   video_decoders.push_back(new media::FFmpegVideoDecoder(message_loop));
@@ -281,8 +278,10 @@ int main(int argc, char** argv) {
   scoped_refptr<media::DataSource> data_source(
       new DataSourceLogger(CreateFileDataSource(filename),
                            command_line->HasSwitch("streaming")));
+  scoped_ptr<media::Demuxer> demuxer(new media::FFmpegDemuxer(
+      media_thread.message_loop_proxy(), data_source, base::Bind(&NeedKey)));
 
-  if (InitPipeline(media_thread.message_loop_proxy(), data_source,
+  if (InitPipeline(media_thread.message_loop_proxy(), demuxer.get(),
                    paint_cb, command_line->HasSwitch("audio"),
                    &pipeline, &message_loop)) {
     // Main loop of the application.

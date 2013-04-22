@@ -119,7 +119,6 @@ class FFmpegDemuxerStream : public DemuxerStream {
   VideoDecoderConfig video_config_;
   Type type_;
   base::TimeDelta duration_;
-  bool stopped_;
   bool end_of_stream_;
   base::TimeDelta last_packet_timestamp_;
   Ranges<base::TimeDelta> buffered_ranges_;
@@ -140,6 +139,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   FFmpegDemuxer(const scoped_refptr<base::MessageLoopProxy>& message_loop,
                 const scoped_refptr<DataSource>& data_source,
                 const FFmpegNeedKeyCB& need_key_cb);
+  virtual ~FFmpegDemuxer();
 
   // Demuxer implementation.
   virtual void Initialize(DemuxerHost* host,
@@ -164,8 +164,6 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
  private:
   // To allow tests access to privates.
   friend class FFmpegDemuxerTest;
-
-  virtual ~FFmpegDemuxer();
 
   // FFmpeg callbacks during initialization.
   void OnOpenContextDone(const PipelineStatusCB& status_cb, bool result);
@@ -199,6 +197,8 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   DemuxerHost* host_;
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<FFmpegDemuxer> weak_factory_;
+  base::WeakPtr<FFmpegDemuxer> weak_this_;
 
   // Thread on which all blocking FFmpeg operations are executed.
   base::Thread blocking_thread_;

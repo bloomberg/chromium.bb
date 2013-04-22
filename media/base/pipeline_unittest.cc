@@ -83,9 +83,9 @@ class PipelineTest : public ::testing::Test {
   PipelineTest()
       : pipeline_(new Pipeline(message_loop_.message_loop_proxy(),
                                new MediaLog())),
-        filter_collection_(new FilterCollection()) {
-    demuxer_ = new MockDemuxer();
-    filter_collection_->SetDemuxer(demuxer_);
+        filter_collection_(new FilterCollection()),
+        demuxer_(new MockDemuxer()) {
+    filter_collection_->SetDemuxer(demuxer_.get());
 
     video_renderer_ = new MockVideoRenderer();
     scoped_ptr<VideoRenderer> video_renderer(video_renderer_);
@@ -295,7 +295,7 @@ class PipelineTest : public ::testing::Test {
   scoped_refptr<Pipeline> pipeline_;
 
   scoped_ptr<FilterCollection> filter_collection_;
-  scoped_refptr<MockDemuxer> demuxer_;
+  scoped_ptr<MockDemuxer> demuxer_;
   MockVideoRenderer* video_renderer_;
   MockAudioRenderer* audio_renderer_;
   scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;

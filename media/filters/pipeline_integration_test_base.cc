@@ -210,19 +210,19 @@ PipelineIntegrationTestBase::CreateFilterCollection(
   media::FFmpegNeedKeyCB need_key_cb =
       base::Bind(&PipelineIntegrationTestBase::DemuxerNeedKeyCB,
                  base::Unretained(this));
-  return CreateFilterCollection(
-      new FFmpegDemuxer(message_loop_.message_loop_proxy(),
-                        data_source,
-                        need_key_cb),
-      decryptor);
+  scoped_ptr<Demuxer> demuxer(new FFmpegDemuxer(
+      message_loop_.message_loop_proxy(), data_source, need_key_cb));
+  return CreateFilterCollection(demuxer.Pass(), decryptor);
 }
 
 scoped_ptr<FilterCollection>
 PipelineIntegrationTestBase::CreateFilterCollection(
-    const scoped_refptr<Demuxer>& demuxer,
+    scoped_ptr<Demuxer> demuxer,
     Decryptor* decryptor) {
+  demuxer_ = demuxer.Pass();
+
   scoped_ptr<FilterCollection> collection(new FilterCollection());
-  collection->SetDemuxer(demuxer);
+  collection->SetDemuxer(demuxer_.get());
 
   ScopedVector<VideoDecoder> video_decoders;
   video_decoders.push_back(

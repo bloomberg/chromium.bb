@@ -54,7 +54,7 @@ typedef std::vector<scoped_refptr<media::DemuxerStream> > Streams;
 // present in |demuxer| in as-close-to-monotonically-increasing timestamp order.
 class StreamReader {
  public:
-  explicit StreamReader(const scoped_refptr<media::Demuxer>& demuxer);
+  explicit StreamReader(media::Demuxer* demuxer);
   ~StreamReader();
 
   // Performs a single step read.
@@ -83,7 +83,7 @@ class StreamReader {
   DISALLOW_COPY_AND_ASSIGN(StreamReader);
 };
 
-StreamReader::StreamReader(const scoped_refptr<media::Demuxer> &demuxer) {
+StreamReader::StreamReader(media::Demuxer* demuxer) {
   scoped_refptr<media::DemuxerStream> stream;
   stream = demuxer->GetStream(media::DemuxerStream::AUDIO);
   if (stream) {
@@ -183,15 +183,14 @@ int main(int argc, char** argv) {
   CHECK(data_source->Initialize(file_path));
 
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
-  scoped_refptr<media::FFmpegDemuxer> demuxer =
-      new media::FFmpegDemuxer(message_loop.message_loop_proxy(), data_source,
-                               need_key_cb);
+  scoped_ptr<media::FFmpegDemuxer> demuxer(new media::FFmpegDemuxer(
+      message_loop.message_loop_proxy(), data_source, need_key_cb));
 
   demuxer->Initialize(&demuxer_host, base::Bind(
       &QuitLoopWithStatus, &message_loop));
   message_loop.Run();
 
-  StreamReader stream_reader(demuxer);
+  StreamReader stream_reader(demuxer.get());
 
   // Benchmark.
   base::TimeTicks start = base::TimeTicks::HighResNow();

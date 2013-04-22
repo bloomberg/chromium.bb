@@ -73,9 +73,8 @@ int main(int argc, char** argv) {
   MessageLoop loop;
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
-  scoped_refptr<media::FFmpegDemuxer> demuxer(
-      new media::FFmpegDemuxer(loop.message_loop_proxy(), file_data_source,
-                               need_key_cb));
+  scoped_ptr<media::FFmpegDemuxer> demuxer(new media::FFmpegDemuxer(
+      loop.message_loop_proxy(), file_data_source, need_key_cb));
   demuxer->Initialize(&host, quitter);
   loop.Run();
 

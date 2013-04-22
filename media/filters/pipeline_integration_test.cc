@@ -11,6 +11,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/test_data_util.h"
 #include "media/crypto/aes_decryptor.h"
+#include "media/filters/chunk_demuxer.h"
 
 using testing::AtMost;
 
@@ -230,11 +231,14 @@ class MockMediaSource {
       : file_path_(GetTestDataFilePath(filename)),
         current_position_(0),
         initial_append_size_(initial_append_size),
-        mimetype_(mimetype) {
-    chunk_demuxer_ = new ChunkDemuxer(
-        base::Bind(&MockMediaSource::DemuxerOpened, base::Unretained(this)),
-        base::Bind(&MockMediaSource::DemuxerNeedKey, base::Unretained(this)),
-        LogCB());
+        mimetype_(mimetype),
+        chunk_demuxer_(new ChunkDemuxer(
+            base::Bind(&MockMediaSource::DemuxerOpened,
+                       base::Unretained(this)),
+            base::Bind(&MockMediaSource::DemuxerNeedKey,
+                       base::Unretained(this)),
+            LogCB())),
+        owned_chunk_demuxer_(chunk_demuxer_) {
 
     file_data_ = ReadTestDataFile(filename);
 
@@ -247,7 +251,7 @@ class MockMediaSource {
 
   virtual ~MockMediaSource() {}
 
-  const scoped_refptr<ChunkDemuxer>& demuxer() const { return chunk_demuxer_; }
+  scoped_ptr<Demuxer> GetDemuxer() { return owned_chunk_demuxer_.Pass(); }
 
   void set_need_key_cb(const NeedKeyCB& need_key_cb) {
     need_key_cb_ = need_key_cb;
@@ -266,7 +270,7 @@ class MockMediaSource {
   }
 
   void AppendData(int size) {
-    DCHECK(chunk_demuxer_.get());
+    DCHECK(chunk_demuxer_);
     DCHECK_LT(current_position_, file_data_->GetDataSize());
     DCHECK_LE(current_position_ + size, file_data_->GetDataSize());
     chunk_demuxer_->AppendData(
@@ -286,7 +290,7 @@ class MockMediaSource {
   }
 
   void Abort() {
-    if (!chunk_demuxer_.get())
+    if (!chunk_demuxer_)
       return;
     chunk_demuxer_->Shutdown();
     chunk_demuxer_ = NULL;
@@ -326,7 +330,8 @@ class MockMediaSource {
   int current_position_;
   int initial_append_size_;
   std::string mimetype_;
-  scoped_refptr<ChunkDemuxer> chunk_demuxer_;
+  ChunkDemuxer* chunk_demuxer_;
+  scoped_ptr<Demuxer> owned_chunk_demuxer_;
   NeedKeyCB need_key_cb_;
 };
 
@@ -340,7 +345,7 @@ class PipelineIntegrationTest
     EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
         .Times(AtMost(1));
     pipeline_->Start(
-        CreateFilterCollection(source->demuxer(), NULL),
+        CreateFilterCollection(source->GetDemuxer(), NULL),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),
@@ -359,7 +364,8 @@ class PipelineIntegrationTest
     EXPECT_CALL(*this, OnBufferingState(Pipeline::kPrerollCompleted))
         .Times(AtMost(1));
     pipeline_->Start(
-        CreateFilterCollection(source->demuxer(), encrypted_media->decryptor()),
+        CreateFilterCollection(source->GetDemuxer(),
+                               encrypted_media->decryptor()),
         base::Bind(&PipelineIntegrationTest::OnEnded, base::Unretained(this)),
         base::Bind(&PipelineIntegrationTest::OnError, base::Unretained(this)),
         QuitOnStatusCB(PIPELINE_OK),

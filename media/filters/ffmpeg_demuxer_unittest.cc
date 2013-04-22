@@ -69,8 +69,6 @@ class FFmpegDemuxerTest : public testing::Test {
       demuxer_->Stop(MessageLoop::QuitWhenIdleClosure());
       message_loop_.Run();
     }
-
-    demuxer_ = NULL;
   }
 
   void CreateDemuxer(const std::string& name) {
@@ -84,9 +82,8 @@ class FFmpegDemuxerTest : public testing::Test {
 
     media::FFmpegNeedKeyCB need_key_cb =
         base::Bind(&FFmpegDemuxerTest::NeedKeyCB, base::Unretained(this));
-    demuxer_ = new FFmpegDemuxer(message_loop_.message_loop_proxy(),
-                                 data_source_,
-                                 need_key_cb);
+    demuxer_.reset(new FFmpegDemuxer(
+        message_loop_.message_loop_proxy(), data_source_, need_key_cb));
   }
 
   MOCK_METHOD1(CheckPoint, void(int v));
@@ -148,12 +145,12 @@ class FFmpegDemuxerTest : public testing::Test {
   bool IsStreamStopped(DemuxerStream::Type type) {
     DemuxerStream* stream = demuxer_->GetStream(type);
     CHECK(stream);
-    return static_cast<FFmpegDemuxerStream*>(stream)->stopped_;
+    return !static_cast<FFmpegDemuxerStream*>(stream)->demuxer_;
   }
 
   // Fixture members.
   scoped_refptr<FileDataSource> data_source_;
-  scoped_refptr<FFmpegDemuxer> demuxer_;
+  scoped_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
   MessageLoop message_loop_;
 
@@ -508,9 +505,8 @@ TEST_F(FFmpegDemuxerTest, StreamReadAfterStopAndDemuxerDestruction) {
   EXPECT_CALL(*callback, OnDelete());
   EXPECT_CALL(*this, CheckPoint(1));
 
-  // Release the reference to the demuxer. This should also destroy it.
-  demuxer_ = NULL;
-  // |audio| now has a demuxer_ pointer to invalid memory.
+  // Destroy the demuxer. |audio| now has a demuxer_ pointer to invalid memory.
+  demuxer_.reset();
 
   // Attempt the read...
   audio->Read(base::Bind(&MockReadCB::Run, callback));

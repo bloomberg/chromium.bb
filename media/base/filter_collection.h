@@ -5,7 +5,6 @@
 #ifndef MEDIA_BASE_FILTER_COLLECTION_H_
 #define MEDIA_BASE_FILTER_COLLECTION_H_
 
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "media/base/media_export.h"
 
@@ -25,8 +24,8 @@ class MEDIA_EXPORT FilterCollection {
   FilterCollection();
   ~FilterCollection();
 
-  void SetDemuxer(const scoped_refptr<Demuxer>& demuxer);
-  const scoped_refptr<Demuxer>& GetDemuxer();
+  void SetDemuxer(Demuxer* demuxer);
+  Demuxer* GetDemuxer();
 
   void SetAudioRenderer(scoped_ptr<AudioRenderer> audio_renderer);
   scoped_ptr<AudioRenderer> GetAudioRenderer();
@@ -35,7 +34,7 @@ class MEDIA_EXPORT FilterCollection {
   scoped_ptr<VideoRenderer> GetVideoRenderer();
 
  private:
-  scoped_refptr<Demuxer> demuxer_;
+  Demuxer* demuxer_;
   scoped_ptr<AudioRenderer> audio_renderer_;
   scoped_ptr<VideoRenderer> video_renderer_;
 

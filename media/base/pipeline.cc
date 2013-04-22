@@ -81,6 +81,7 @@ Pipeline::Pipeline(const scoped_refptr<base::MessageLoopProxy>& message_loop,
       audio_ended_(false),
       video_ended_(false),
       audio_disabled_(false),
+      demuxer_(NULL),
       creation_time_(base::Time::Now()) {
   media_log_->AddEvent(media_log_->CreatePipelineStateChangedEvent(kCreated));
   media_log_->AddEvent(
@@ -584,7 +585,7 @@ void Pipeline::DoSeek(
 
   // Seek demuxer.
   bound_fns.Push(base::Bind(
-      &Demuxer::Seek, demuxer_, seek_timestamp));
+      &Demuxer::Seek, base::Unretained(demuxer_), seek_timestamp));
 
   // Preroll renderers.
   if (audio_renderer_) {
@@ -628,8 +629,10 @@ void Pipeline::DoStop(const PipelineStatusCB& done_cb) {
   DCHECK(!pending_callbacks_.get());
   SerialRunner::Queue bound_fns;
 
-  if (demuxer_)
-    bound_fns.Push(base::Bind(&Demuxer::Stop, demuxer_));
+  if (demuxer_) {
+    bound_fns.Push(base::Bind(
+        &Demuxer::Stop, base::Unretained(demuxer_)));
+  }
 
   if (audio_renderer_) {
     bound_fns.Push(base::Bind(
@@ -913,13 +916,9 @@ void Pipeline::InitializeDemuxer(const PipelineStatusCB& done_cb) {
 void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  scoped_refptr<DemuxerStream> stream =
-      demuxer_->GetStream(DemuxerStream::AUDIO);
-  DCHECK(stream);
-
   audio_renderer_ = filter_collection_->GetAudioRenderer();
   audio_renderer_->Initialize(
-      stream,
+      demuxer_->GetStream(DemuxerStream::AUDIO),
       done_cb,
       base::Bind(&Pipeline::OnUpdateStatistics, this),
       base::Bind(&Pipeline::OnAudioUnderflow, this),
@@ -934,7 +933,6 @@ void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
 
   scoped_refptr<DemuxerStream> stream =
       demuxer_->GetStream(DemuxerStream::VIDEO);
-  DCHECK(stream);
 
   {
     // Get an initial natural size so we have something when we signal

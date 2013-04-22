@@ -43,7 +43,6 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       message_loop_(base::MessageLoopProxy::current()),
       stream_(stream),
       type_(UNKNOWN),
-      stopped_(false),
       end_of_stream_(false),
       last_packet_timestamp_(kNoTimestamp()),
       bitstream_converter_enabled_(false) {
@@ -98,7 +97,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
 void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  if (stopped_ || end_of_stream_) {
+  if (!demuxer_ || end_of_stream_) {
     NOTREACHED() << "Attempted to enqueue packet on a stopped stream";
     return;
   }
@@ -178,7 +177,8 @@ void FFmpegDemuxerStream::Stop() {
     base::ResetAndReturn(&read_cb_).Run(
         DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer());
   }
-  stopped_ = true;
+  demuxer_ = NULL;
+  stream_ = NULL;
   end_of_stream_ = true;
 }
 
@@ -200,7 +200,7 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
   // The |demuxer_| may have been destroyed in the pipeline thread.
   //
   // TODO(scherkus): it would be cleaner to reply with an error message.
-  if (stopped_) {
+  if (!demuxer_) {
     base::ResetAndReturn(&read_cb_).Run(
         DemuxerStream::kOk, DecoderBuffer::CreateEOSBuffer());
     return;
@@ -228,7 +228,7 @@ const VideoDecoderConfig& FFmpegDemuxerStream::video_decoder_config() {
 }
 
 FFmpegDemuxerStream::~FFmpegDemuxerStream() {
-  DCHECK(stopped_);
+  DCHECK(!demuxer_);
   DCHECK(read_cb_.is_null());
   DCHECK(buffer_queue_.IsEmpty());
 }
@@ -288,6 +288,7 @@ FFmpegDemuxer::FFmpegDemuxer(
     const FFmpegNeedKeyCB& need_key_cb)
     : host_(NULL),
       message_loop_(message_loop),
+      weak_factory_(this),
       blocking_thread_("FFmpegDemuxer"),
       pending_read_(false),
       pending_seek_(false),
@@ -309,7 +310,8 @@ void FFmpegDemuxer::Stop(const base::Closure& callback) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   url_protocol_.Abort();
   data_source_->Stop(BindToCurrentLoop(base::Bind(
-      &FFmpegDemuxer::OnDataSourceStopped, this, BindToCurrentLoop(callback))));
+      &FFmpegDemuxer::OnDataSourceStopped, weak_this_,
+      BindToCurrentLoop(callback))));
 }
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
@@ -331,7 +333,7 @@ void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {
       blocking_thread_.message_loop_proxy(), FROM_HERE,
       base::Bind(&av_seek_frame, glue_->format_context(), -1,
                  time.InMicroseconds(), flags),
-      base::Bind(&FFmpegDemuxer::OnSeekFrameDone, this, cb));
+      base::Bind(&FFmpegDemuxer::OnSeekFrameDone, weak_this_, cb));
 }
 
 void FFmpegDemuxer::SetPlaybackRate(float playback_rate) {
@@ -354,6 +356,7 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
                                const PipelineStatusCB& status_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   host_ = host;
+  weak_this_ = weak_factory_.GetWeakPtr();
 
   // TODO(scherkus): DataSource should have a host by this point,
   // see http://crbug.com/122071
@@ -372,7 +375,7 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
   base::PostTaskAndReplyWithResult(
       blocking_thread_.message_loop_proxy(), FROM_HERE,
       base::Bind(&FFmpegGlue::OpenContext, base::Unretained(glue_.get())),
-      base::Bind(&FFmpegDemuxer::OnOpenContextDone, this, status_cb));
+      base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_this_, status_cb));
 }
 
 scoped_refptr<DemuxerStream> FFmpegDemuxer::GetStream(
@@ -451,7 +454,7 @@ void FFmpegDemuxer::OnOpenContextDone(const PipelineStatusCB& status_cb,
       blocking_thread_.message_loop_proxy(), FROM_HERE,
       base::Bind(&avformat_find_stream_info, glue_->format_context(),
                  static_cast<AVDictionary**>(NULL)),
-      base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone, this, status_cb));
+      base::Bind(&FFmpegDemuxer::OnFindStreamInfoDone, weak_this_, status_cb));
 }
 
 void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
@@ -608,7 +611,8 @@ void FFmpegDemuxer::ReadFrameIfNeeded() {
   base::PostTaskAndReplyWithResult(
       blocking_thread_.message_loop_proxy(), FROM_HERE,
       base::Bind(&av_read_frame, glue_->format_context(), packet_ptr),
-      base::Bind(&FFmpegDemuxer::OnReadFrameDone, this, base::Passed(&packet)));
+      base::Bind(&FFmpegDemuxer::OnReadFrameDone, weak_this_,
+                 base::Passed(&packet)));
 }
 
 void FFmpegDemuxer::OnReadFrameDone(ScopedAVPacket packet, int result) {

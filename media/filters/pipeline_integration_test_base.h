@@ -10,7 +10,6 @@
 #include "media/audio/null_audio_sink.h"
 #include "media/base/filter_collection.h"
 #include "media/base/pipeline.h"
-#include "media/filters/chunk_demuxer.h"
 #include "media/filters/video_renderer_base.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -21,6 +20,7 @@ class FilePath;
 namespace media {
 
 class Decryptor;
+class Demuxer;
 
 // Empty MD5 hash string.  Used to verify empty audio or video tracks.
 extern const char kNullHash[];
@@ -74,6 +74,7 @@ class PipelineIntegrationTestBase {
   MessageLoop message_loop_;
   base::MD5Context md5_context_;
   bool hashing_enabled_;
+  scoped_ptr<Demuxer> demuxer_;
   scoped_refptr<Pipeline> pipeline_;
   scoped_refptr<NullAudioSink> audio_sink_;
   bool ended_;
@@ -94,7 +95,7 @@ class PipelineIntegrationTestBase {
   void OnError(PipelineStatus status);
   void QuitAfterCurrentTimeTask(const base::TimeDelta& quit_time);
   scoped_ptr<FilterCollection> CreateFilterCollection(
-      const scoped_refptr<Demuxer>& demuxer, Decryptor* decryptor);
+      scoped_ptr<Demuxer> demuxer, Decryptor* decryptor);
   void SetDecryptor(Decryptor* decryptor,
                     const DecryptorReadyCB& decryptor_ready_cb);
   void OnVideoRendererPaint(const scoped_refptr<VideoFrame>& frame);

@@ -9,7 +9,7 @@
 namespace webkit_media {
 
 WebSourceBufferImpl::WebSourceBufferImpl(
-    const std::string& id, scoped_refptr<media::ChunkDemuxer> demuxer)
+    const std::string& id, media::ChunkDemuxer* demuxer)
     : id_(id),
       demuxer_(demuxer) {
   DCHECK(demuxer_);
