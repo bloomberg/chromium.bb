@@ -1900,6 +1900,8 @@ DialogType.isModal = function(type) {
     this.dialogDom_.appendChild(this.filePopup_);
     this.filePopup_.focus();
     this.document_.body.setAttribute('overlay-visible', '');
+    if (util.platform.newUI())
+      this.document_.querySelector('#iframe-drag-area').hidden = false;
   };
 
   /**
@@ -1908,6 +1910,8 @@ DialogType.isModal = function(type) {
   FileManager.prototype.closeFilePopup_ = function() {
     if (this.filePopup_) {
       this.document_.body.removeAttribute('overlay-visible');
+      if (util.platform.newUI())
+        this.document_.querySelector('#iframe-drag-area').hidden = true;
       // The window resize would not be processed properly while the relevant
       // divs had 'display:none', force resize after the layout fired.
       setTimeout(this.onResize_.bind(this), 0);

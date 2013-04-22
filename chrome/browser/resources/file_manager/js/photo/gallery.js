@@ -249,6 +249,7 @@ Gallery.prototype.initDom_ = function() {
   util.createChild(closeButton);
   closeButton.addEventListener('click', this.onClose_.bind(this));
 
+  this.header_ = util.createChild(this.container_, 'header tool dimmable');
   this.toolbar_ = util.createChild(this.container_, 'toolbar tool dimmable');
 
   this.filenameSpacer_ = util.createChild(this.toolbar_, 'filename-spacer');
@@ -310,6 +311,9 @@ Gallery.prototype.initDom_ = function() {
   this.selectionModel_.addEventListener('change', this.onSelection_.bind(this));
 
   this.slideMode_.addEventListener('useraction', this.onUserAction_.bind(this));
+
+  if (util.platform.newUI())
+    document.body.setAttribute('new-ui', '');
 };
 
 /**

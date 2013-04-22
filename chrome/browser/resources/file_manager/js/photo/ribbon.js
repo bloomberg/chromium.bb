@@ -300,8 +300,12 @@ Ribbon.prototype.renderThumbnail_ = function(index) {
   var url = item.getUrl();
 
   var cached = this.renderCache_[url];
-  if (cached)
+  if (cached) {
+    var img = cached.querySelector('img');
+    if (img)
+      img.classList.add('cached');
     return cached;
+  }
 
   var thumbnail = this.ownerDocument.createElement('div');
   thumbnail.className = 'ribbon-image';

@@ -1229,7 +1229,6 @@ body[new-ui] .preview-thumbnails {
   padding-left: 25px;
 }
 
-
 .preview-thumbnails > .thumbnail {
   -webkit-box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
   background-color: #f2f2f2;
@@ -1266,6 +1265,20 @@ body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
   border: 1px solid white;
   height: 35px;
   width: 35px;
+}
+
+body[new-ui] .preview-thumbnails > .thumbnail > .img-container >
+    img.not(.cached) {
+  -webkit-animation: fadeIn 500ms ease-in;
+}
+
+@-webkit-keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .preview-thumbnails > .popup {
@@ -2048,4 +2061,14 @@ body[new-ui] menuitem#thumbnail-view {
   background-image: -webkit-image-set(
     url('../images/files/ui/new-ui/button_mosaic_view.png') 1x,
     url('../images/files/ui/new-ui/2x/button_mosaic_view.png') 2x);
+}
+
+body[new-ui] #iframe-drag-area {
+  -webkit-app-region: drag;
+  height: 45px;
+  left: 64px;
+  position: absolute;
+  right: 0;
+  top: 0;
+  z-index: 101;
 }
