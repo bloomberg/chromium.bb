@@ -331,7 +331,7 @@ class BluetoothDetailedView : public TrayDetailsView,
       if (FoundDevice(device_id, connecting_devices_, NULL))
         return;
       UpdateClickedDevice(device_id, sender);
-      delegate->ToggleBluetoothConnection(device_id);
+      delegate->ConnectToBluetoothDevice(device_id);
     }
   }
 

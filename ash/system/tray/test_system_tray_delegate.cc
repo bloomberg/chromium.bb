@@ -198,7 +198,7 @@ void TestSystemTrayDelegate::BluetoothStartDiscovering() {
 void TestSystemTrayDelegate::BluetoothStopDiscovering() {
 }
 
-void TestSystemTrayDelegate::ToggleBluetoothConnection(
+void TestSystemTrayDelegate::ConnectToBluetoothDevice(
     const std::string& address) {
 }
 

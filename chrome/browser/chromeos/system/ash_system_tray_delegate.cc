@@ -184,10 +184,6 @@ void BluetoothDiscoveryFailure() {
   // TODO(sad): Show an error bubble?
 }
 
-void BluetoothDeviceDisconnectError() {
-  // TODO(sad): Do something?
-}
-
 void BluetoothSetDiscoveringError() {
   LOG(ERROR) << "BluetoothSetDiscovering failed.";
 }
@@ -623,15 +619,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         base::Bind(&BluetoothSetDiscoveringError));
   }
 
-  virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE {
+  virtual void ConnectToBluetoothDevice(const std::string& address) OVERRIDE {
     device::BluetoothDevice* device = bluetooth_adapter_->GetDevice(address);
-    if (!device || device->IsConnecting())
+    if (!device || device->IsConnecting() || device->IsConnected())
       return;
-    if (device->IsConnected()) {
-      device->Disconnect(
-          base::Bind(&base::DoNothing),
-          base::Bind(&BluetoothDeviceDisconnectError));
-    } else if (device->IsPaired() || !device->IsPairable()) {
+    if (device->IsPaired() && !device->IsConnectable())
+      return;
+    if (device->IsPaired() || !device->IsPairable()) {
       device->Connect(
           NULL,
           base::Bind(&base::DoNothing),

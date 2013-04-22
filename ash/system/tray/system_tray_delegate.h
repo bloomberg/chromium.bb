@@ -217,8 +217,8 @@ class SystemTrayDelegate {
   // Requests bluetooth stop discovering devices.
   virtual void BluetoothStopDiscovering() = 0;
 
-  // Toggles connection to a specific bluetooth device.
-  virtual void ToggleBluetoothConnection(const std::string& address) = 0;
+  // Connect to a specific bluetooth device.
+  virtual void ConnectToBluetoothDevice(const std::string& address) = 0;
 
   // Returns true if bluetooth adapter is discovering bluetooth devices.
   virtual bool IsBluetoothDiscovering() = 0;

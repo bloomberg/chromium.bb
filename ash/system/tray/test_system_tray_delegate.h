@@ -59,7 +59,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void GetAvailableBluetoothDevices(BluetoothDeviceList* list) OVERRIDE;
   virtual void BluetoothStartDiscovering() OVERRIDE;
   virtual void BluetoothStopDiscovering() OVERRIDE;
-  virtual void ToggleBluetoothConnection(const std::string& address) OVERRIDE;
+  virtual void ConnectToBluetoothDevice(const std::string& address) OVERRIDE;
   virtual void GetCurrentIME(IMEInfo* info) OVERRIDE;
   virtual void GetAvailableIMEList(IMEInfoList* list) OVERRIDE;
   virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list) OVERRIDE;
