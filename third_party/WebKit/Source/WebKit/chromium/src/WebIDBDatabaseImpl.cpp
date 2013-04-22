@@ -26,7 +26,6 @@
 #include "config.h"
 #include "WebIDBDatabaseImpl.h"
 
-#include "DOMStringList.h"
 #include "IDBCallbacksProxy.h"
 #include "IDBCursor.h"
 #include "IDBDatabaseBackendInterface.h"

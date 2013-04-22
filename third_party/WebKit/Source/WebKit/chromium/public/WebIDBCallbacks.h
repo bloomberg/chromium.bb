@@ -26,7 +26,6 @@
 #ifndef WebIDBCallbacks_h
 #define WebIDBCallbacks_h
 
-#include "WebDOMStringList.h"
 #include "../../../Platform/chromium/public/WebCommon.h"
 #include "../../../Platform/chromium/public/WebVector.h"
 
@@ -49,14 +48,7 @@ public:
     // For classes that follow the PImpl pattern, pass a const reference.
     // For the rest, pass ownership to the callee via a pointer.
     virtual void onError(const WebIDBDatabaseError&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebDOMStringList&) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void onSuccess(const WebVector<WebString>& stringList)
-    {
-        WebDOMStringList domStringList;
-        for (size_t i = 0; i < stringList.size(); ++i)
-            domStringList.append(stringList[i]);
-        onSuccess(domStringList);
-    }
+    virtual void onSuccess(const WebVector<WebString>&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(WebIDBCursor*, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData&) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(WebIDBDatabase*) { WEBKIT_ASSERT_NOT_REACHED(); }
     virtual void onSuccess(WebIDBDatabase*, const WebIDBMetadata&) { WEBKIT_ASSERT_NOT_REACHED(); }

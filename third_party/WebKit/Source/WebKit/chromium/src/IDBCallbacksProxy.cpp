@@ -29,7 +29,6 @@
 #include "config.h"
 #include "IDBCallbacksProxy.h"
 
-#include "DOMStringList.h"
 #include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendInterface.h"
 #include "IDBDatabaseBackendProxy.h"
@@ -98,10 +97,7 @@ void IDBCallbacksProxy::onSuccess(PassRefPtr<IDBKey> idbKey)
 void IDBCallbacksProxy::onSuccess(const Vector<String>& stringList)
 {
     m_didComplete = true;
-    WebDOMStringList domStringList;
-    for (size_t i = 0; i < stringList.size(); ++i)
-        domStringList.append(stringList[i]);
-    m_callbacks->onSuccess(WebVector<WebString>(stringList));
+    m_callbacks->onSuccess(stringList);
 }
 
 void IDBCallbacksProxy::onSuccess(PassRefPtr<SharedBuffer> value)

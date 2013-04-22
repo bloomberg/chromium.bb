@@ -29,7 +29,6 @@
 #ifndef IDBCallbacksProxy_h
 #define IDBCallbacksProxy_h
 
-#include "DOMStringList.h"
 #include "IDBCallbacks.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

@@ -26,12 +26,10 @@
 #include "config.h"
 #include "IDBDatabaseBackendProxy.h"
 
-#include "DOMStringList.h"
 #include "IDBCallbacks.h"
 #include "IDBDatabaseCallbacks.h"
 #include "IDBKeyRange.h"
 #include "IDBMetadata.h"
-#include "WebDOMStringList.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
 #include "WebIDBCursor.h"

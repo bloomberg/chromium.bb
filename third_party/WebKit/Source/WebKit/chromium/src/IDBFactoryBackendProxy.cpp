@@ -30,7 +30,6 @@
 #include "IDBFactoryBackendProxy.h"
 
 #include "CrossThreadTask.h"
-#include "DOMStringList.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "IDBDatabaseCallbacks.h"
 #include "IDBDatabaseError.h"

@@ -29,7 +29,6 @@
 #ifndef WebIDBFactoryImpl_h
 #define WebIDBFactoryImpl_h
 
-#include "WebDOMStringList.h"
 #include "WebIDBFactory.h"
 #include <wtf/RefPtr.h>
 

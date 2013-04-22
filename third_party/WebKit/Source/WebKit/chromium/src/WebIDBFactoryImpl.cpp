@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebIDBFactoryImpl.h"
 
-#include "DOMStringList.h"
 #include "IDBCallbacksProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
 #include "IDBFactoryBackendImpl.h"
