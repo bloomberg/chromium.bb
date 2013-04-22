@@ -187,7 +187,7 @@ void ResourceLoader::start()
     }
 
     if (!m_reachedTerminalState)
-        m_handle = ResourceHandle::create(m_frame->loader()->networkingContext(), m_request, this, m_defersLoading, m_options.sniffContent == SniffContent);
+        m_handle = ResourceHandle::create(m_frame->loader()->networkingContext(), m_request, this, m_defersLoading, m_options.sniffContent == SniffContent, m_options.allowCredentials);
 }
 
 void ResourceLoader::setDefersLoading(bool defers)
@@ -519,15 +519,6 @@ void ResourceLoader::didFail(ResourceHandle*, const ResourceError& error)
     }
 
     releaseResources();
-}
-
-bool ResourceLoader::shouldUseCredentialStorage(ResourceHandle*)
-{
-    if (m_options.allowCredentials == DoNotAllowStoredCredentials)
-        return false;
-    
-    RefPtr<ResourceLoader> protector(this);
-    return frameLoader()->client()->shouldUseCredentialStorage(documentLoader(), identifier());
 }
 
 void ResourceLoader::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

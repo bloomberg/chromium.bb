@@ -83,7 +83,6 @@ public:
     virtual void didReceiveCachedMetadata(ResourceHandle*, const char* data, int length) OVERRIDE;
     virtual void didFinishLoading(ResourceHandle*, double finishTime) OVERRIDE;
     virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE;
-    virtual bool shouldUseCredentialStorage(ResourceHandle*) OVERRIDE;
     virtual void didDownloadData(ResourceHandle*, int) OVERRIDE;
 
     const KURL& url() const { return m_request.url(); } 

@@ -208,7 +208,6 @@ public:
     virtual void detachedFromParent() { }
 
     virtual void assignIdentifierToInitialRequest(unsigned long, DocumentLoader*, const ResourceRequest&) { }
-    virtual bool shouldUseCredentialStorage(DocumentLoader*, unsigned long) { return false; }
     virtual void dispatchWillSendRequest(DocumentLoader*, unsigned long, ResourceRequest&, const ResourceResponse&) { }
     virtual void dispatchDidReceiveResponse(DocumentLoader*, unsigned long, const ResourceResponse&) { }
     virtual void dispatchDidFinishLoading(DocumentLoader*, unsigned long) { }

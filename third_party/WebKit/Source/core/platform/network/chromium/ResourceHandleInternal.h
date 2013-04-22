@@ -49,10 +49,9 @@ public:
 
     virtual ~ResourceHandleInternal() { }
 
-    void start();
+    void start(StoredCredentials);
     void cancel();
     void setDefersLoading(bool);
-    bool allowStoredCredentials() const;
     void didChangePriority(WebKit::WebURLRequest::Priority);
 
     // WebURLLoaderClient methods:

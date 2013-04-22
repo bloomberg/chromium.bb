@@ -355,22 +355,6 @@ void FrameLoaderClientImpl::dispatchWillSendRequest(
     }
 }
 
-bool FrameLoaderClientImpl::shouldUseCredentialStorage(
-    DocumentLoader*, unsigned long identifier)
-{
-    // FIXME
-    // Intended to pass through to a method on the resource load delegate.
-    // If implemented, that method controls whether the browser should ask the
-    // networking layer for a stored default credential for the page (say from
-    // the Mac OS keychain). If the method returns false, the user should be
-    // presented with an authentication challenge whether or not the networking
-    // layer has a credential stored.
-    // This returns true for backward compatibility: the ability to override the
-    // system credential store is new. (Actually, not yet fully implemented in
-    // WebKit, as of this writing.)
-    return true;
-}
-
 void FrameLoaderClientImpl::dispatchDidReceiveResponse(DocumentLoader* loader,
                                                        unsigned long identifier,
                                                        const ResourceResponse& response)

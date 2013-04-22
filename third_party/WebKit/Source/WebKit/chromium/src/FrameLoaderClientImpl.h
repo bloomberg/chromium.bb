@@ -76,7 +76,6 @@ public:
     virtual void detachedFromParent();
     virtual void assignIdentifierToInitialRequest(unsigned long identifier, WebCore::DocumentLoader*, const WebCore::ResourceRequest&);
     virtual void dispatchWillSendRequest(WebCore::DocumentLoader*, unsigned long identifier, WebCore::ResourceRequest&, const WebCore::ResourceResponse& redirectResponse);
-    virtual bool shouldUseCredentialStorage(WebCore::DocumentLoader*, unsigned long identifier);
     virtual void dispatchDidReceiveResponse(WebCore::DocumentLoader*, unsigned long identifier, const WebCore::ResourceResponse&);
     virtual void dispatchDidChangeResourcePriority(unsigned long identifier, WebCore::ResourceLoadPriority);
     virtual void dispatchDidFinishLoading(WebCore::DocumentLoader*, unsigned long identifier);

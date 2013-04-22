@@ -30,12 +30,10 @@
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {
-    class AuthenticationChallenge;
     class ResourceHandle;
     class ResourceError;
     class ResourceRequest;
     class ResourceResponse;
-    class SharedBuffer;
 
     enum CacheStoragePolicy {
         StorageAllowed,
@@ -59,8 +57,6 @@ namespace WebCore {
         virtual void didReceiveCachedMetadata(ResourceHandle*, const char*, int) { }
         virtual void didFinishLoading(ResourceHandle*, double /*finishTime*/) { }
         virtual void didFail(ResourceHandle*, const ResourceError&) { }
-
-        virtual bool shouldUseCredentialStorage(ResourceHandle*) { return false; }
 
         virtual void didDownloadData(ResourceHandle*, int /*dataLength*/) { }
     };

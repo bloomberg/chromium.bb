@@ -67,12 +67,10 @@ private:
     virtual void didReceiveData(ResourceHandle*, const char*, int, int) OVERRIDE { delete this; }
     virtual void didFinishLoading(ResourceHandle*, double) OVERRIDE { delete this; }
     virtual void didFail(ResourceHandle*, const ResourceError&) OVERRIDE { delete this; }
-    virtual bool shouldUseCredentialStorage(ResourceHandle*)  OVERRIDE { return m_shouldUseCredentialStorage; }
     void timeout(Timer<PingLoader>*) { delete this; }
 
     RefPtr<ResourceHandle> m_handle;
     Timer<PingLoader> m_timeout;
-    bool m_shouldUseCredentialStorage;
 };
 
 }

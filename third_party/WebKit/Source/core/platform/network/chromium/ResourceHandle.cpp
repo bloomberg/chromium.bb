@@ -61,7 +61,7 @@ ResourceHandleInternal::ResourceHandleInternal(NetworkingContext* context, const
 {
 }
 
-void ResourceHandleInternal::start()
+void ResourceHandleInternal::start(StoredCredentials storedCredentials)
 {
     if (m_state != ConnectionStateNew)
         CRASH();
@@ -71,7 +71,7 @@ void ResourceHandleInternal::start()
     ASSERT(m_loader);
 
     WrappedResourceRequest wrappedRequest(m_request);
-    wrappedRequest.setAllowStoredCredentials(allowStoredCredentials());
+    wrappedRequest.setAllowStoredCredentials(storedCredentials == AllowStoredCredentials);
     m_loader->loadAsynchronously(wrappedRequest, this);
 }
 
@@ -92,11 +92,6 @@ void ResourceHandleInternal::setDefersLoading(bool value)
 void ResourceHandleInternal::didChangePriority(WebURLRequest::Priority newPriority)
 {
     m_loader->didChangePriority(newPriority);
-}
-
-bool ResourceHandleInternal::allowStoredCredentials() const
-{
-    return m_client && m_client->shouldUseCredentialStorage(m_owner);
 }
 
 void ResourceHandleInternal::willSendRequest(
@@ -191,12 +186,13 @@ PassRefPtr<ResourceHandle> ResourceHandle::create(NetworkingContext* context,
                                                   const ResourceRequest& request,
                                                   ResourceHandleClient* client,
                                                   bool defersLoading,
-                                                  bool shouldContentSniff)
+                                                  bool shouldContentSniff,
+                                                  StoredCredentials storedCredentials)
 {
     RefPtr<ResourceHandle> newHandle = adoptRef(new ResourceHandle(
         context, request, client, defersLoading, shouldContentSniff));
 
-    if (newHandle->start())
+    if (newHandle->start(storedCredentials))
         return newHandle.release();
 
     return 0;
@@ -227,12 +223,12 @@ void ResourceHandle::setDefersLoading(bool value)
     d->setDefersLoading(value);
 }
 
-bool ResourceHandle::start()
+bool ResourceHandle::start(StoredCredentials storedCredentials)
 {
     if (!d->context())
         return false;
 
-    d->start();
+    d->start(storedCredentials);
     return true;
 }
 

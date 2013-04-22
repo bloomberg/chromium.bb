@@ -46,7 +46,7 @@ template <typename T> class Timer;
 
 class ResourceHandle : public RefCounted<ResourceHandle> {
 public:
-    static PassRefPtr<ResourceHandle> create(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
+    static PassRefPtr<ResourceHandle> create(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff, StoredCredentials);
     static void loadResourceSynchronously(NetworkingContext*, const ResourceRequest&, StoredCredentials, ResourceError&, ResourceResponse&, Vector<char>& data);
 
     static void cacheMetadata(const ResourceResponse&, const Vector<char>&);
@@ -77,7 +77,7 @@ protected:
     ResourceHandle(NetworkingContext*, const ResourceRequest&, ResourceHandleClient*, bool defersLoading, bool shouldContentSniff);
 
 private:
-    bool start();
+    bool start(StoredCredentials);
     friend class ResourceHandleInternal;
     OwnPtr<ResourceHandleInternal> d;
 };
