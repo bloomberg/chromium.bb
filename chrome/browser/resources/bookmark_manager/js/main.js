@@ -369,6 +369,9 @@ function updateOpenCommands(e, command) {
     // contain any non-folders, we need to disable the command.
     var p = bmm.loadSubtree(selectedItems[0].id);
     p.addListener(function(node) {
+      var selectedItems = getBookmarkNodesForOpenCommands(e.target);
+      if (node.id != selectedItems[0].id)
+        return;
       command.disabled = !node || !hasBookmarks(node);
     });
   }
