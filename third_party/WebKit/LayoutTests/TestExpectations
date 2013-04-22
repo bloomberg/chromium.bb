@@ -2192,8 +2192,6 @@ webkit.org/b/88964 [ Mac ] http/tests/misc/embedCrasher.html [ Missing Pass ]
 
 webkit.org/b/86674 [ Debug ] fast/dom/HTMLObjectElement/beforeload-set-text-crash.xhtml [ Pass Timeout ]
 
-webkit.org/b/86683 [ Debug ] inspector/profiler/heap-snapshot-summary-show-ranges.html [ Failure Slow ]
-webkit.org/b/86683 [ Release ] inspector/profiler/heap-snapshot-summary-show-ranges.html [ Failure Pass Slow ]
 webkit.org/b/102781 [ DEBUG ] inspector/profiler/cpu-profiler-profiling-without-inspector.html [ Crash Pass ]
 
 webkit.org/b/86908 [ Win ] http/tests/security/cross-frame-access-put.html [ Failure Pass ]
@@ -2451,8 +2449,6 @@ webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom.html [ Imag
 webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-rotated.html [ ImageOnlyFailure ]
 
 # Following test needs rebaseline
-webkit.org/b/110362 [ Linux Win ] css3/filters/filter-change-repaint-composited.html [ ImageOnlyFailure ]
-
 webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ ImageOnlyFailure Pass ]
 
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
@@ -3031,7 +3027,6 @@ crbug.com/224428 webkit.org/b/113169 [ Linux ] fast/text/international/danda-spa
 
 crbug.com/225778 [ MountainLion ] ietestcenter/css3/grid/grid-column-002.htm [ ImageOnlyFailure ]
 crbug.com/227354 [ Win ] fast/forms/select/popup-closes-on-blur.html [ Failure ]
-crbug.com/227357 svg/canvas/canvas-pattern-svg.html [ Missing ]
 crbug.com/225880 [ MountainLion ] fast/exclusions/shape-outside-floats/shape-outside-floats-overflow-hidden.html [ ImageOnlyFailure ]
 crbug.com/225883 [ Win Mac ] inspector/profiler/memory-instrumentation-external-array.html [ Failure ]
 
