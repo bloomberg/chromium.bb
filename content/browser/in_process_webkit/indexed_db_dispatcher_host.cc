@@ -38,7 +38,6 @@
 using webkit_database::DatabaseUtil;
 using WebKit::WebDOMStringList;
 using WebKit::WebData;
-using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBCursor;
 using WebKit::WebIDBDatabase;
@@ -770,14 +769,11 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnAdvance(
   if (!idb_cursor)
     return;
 
-  WebKit::WebExceptionCode ec = 0;
   idb_cursor->advance(count,
                       new IndexedDBCallbacks<WebIDBCursor>(parent_,
                                                            ipc_thread_id,
                                                            ipc_callbacks_id,
-                                                           ipc_cursor_id),
-                      ec);
-  DCHECK(!ec);
+                                                           ipc_cursor_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
@@ -791,12 +787,10 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnContinue(
   if (!idb_cursor)
     return;
 
-  WebKit::WebExceptionCode ec = 0;
   idb_cursor->continueFunction(
       key, new IndexedDBCallbacks<WebIDBCursor>(parent_, ipc_thread_id,
                                                 ipc_callbacks_id,
-                                                ipc_cursor_id), ec);
-  DCHECK(!ec);
+                                                ipc_cursor_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
@@ -810,12 +804,10 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetch(
   if (!idb_cursor)
     return;
 
-  WebKit::WebExceptionCode ec = 0;
   idb_cursor->prefetchContinue(
       n, new IndexedDBCallbacks<WebIDBCursor>(parent_, ipc_thread_id,
                                               ipc_callbacks_id,
-                                              ipc_cursor_id), ec);
-  DCHECK(!ec);
+                                              ipc_cursor_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnPrefetchReset(
@@ -839,11 +831,9 @@ void IndexedDBDispatcherHost::CursorDispatcherHost::OnDelete(
   if (!idb_cursor)
     return;
 
-  WebKit::WebExceptionCode ec = 0;
   idb_cursor->deleteFunction(
       new IndexedDBCallbacks<WebData>(parent_, ipc_thread_id,
-                                      ipc_callbacks_id), ec);
-  DCHECK(!ec);
+                                      ipc_callbacks_id));
 }
 
 void IndexedDBDispatcherHost::CursorDispatcherHost::OnDestroyed(

@@ -27,13 +27,10 @@ class CONTENT_EXPORT RendererWebIDBCursorImpl
   virtual ~RendererWebIDBCursorImpl();
 
   virtual void advance(unsigned long count,
-                       WebKit::WebIDBCallbacks* callback,
-                       WebKit::WebExceptionCode& ec);
+                       WebKit::WebIDBCallbacks* callback);
   virtual void continueFunction(const WebKit::WebIDBKey& key,
-                                WebKit::WebIDBCallbacks* callback,
-                                WebKit::WebExceptionCode& ec);
-  virtual void deleteFunction(WebKit::WebIDBCallbacks* callback,
-                              WebKit::WebExceptionCode& ec);
+                                WebKit::WebIDBCallbacks* callback);
+  virtual void deleteFunction(WebKit::WebIDBCallbacks* callback);
   virtual void postSuccessHandlerCallback();
 
   void SetPrefetchData(

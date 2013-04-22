@@ -21,7 +21,6 @@
 
 using WebKit::WebDOMStringList;
 using WebKit::WebData;
-using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
@@ -186,8 +185,7 @@ bool IndexedDBDispatcher::Send(IPC::Message* msg) {
 void IndexedDBDispatcher::RequestIDBCursorAdvance(
     unsigned long count,
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id,
-    WebExceptionCode* ec) {
+    int32 ipc_cursor_id) {
   // Reset all cursor prefetch caches except for this cursor.
   ResetCursorPrefetchCaches(ipc_cursor_id);
 
@@ -201,8 +199,7 @@ void IndexedDBDispatcher::RequestIDBCursorAdvance(
 void IndexedDBDispatcher::RequestIDBCursorContinue(
     const IndexedDBKey& key,
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id,
-    WebExceptionCode* ec) {
+    int32 ipc_cursor_id) {
   // Reset all cursor prefetch caches except for this cursor.
   ResetCursorPrefetchCaches(ipc_cursor_id);
 
@@ -217,8 +214,7 @@ void IndexedDBDispatcher::RequestIDBCursorContinue(
 void IndexedDBDispatcher::RequestIDBCursorPrefetch(
     int n,
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id,
-    WebExceptionCode* ec) {
+    int32 ipc_cursor_id) {
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   int32 ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
@@ -235,8 +231,7 @@ void IndexedDBDispatcher::RequestIDBCursorPrefetchReset(
 
 void IndexedDBDispatcher::RequestIDBCursorDelete(
     WebIDBCallbacks* callbacks_ptr,
-    int32 ipc_cursor_id,
-    WebExceptionCode* ec) {
+    int32 ipc_cursor_id) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 

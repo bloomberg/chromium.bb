@@ -11,7 +11,6 @@
 #include "base/basictypes.h"
 #include "base/id_map.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 
 class GURL;
 struct IndexedDBDatabaseMetadata;

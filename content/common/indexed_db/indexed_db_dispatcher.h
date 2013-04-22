@@ -13,7 +13,6 @@
 #include "base/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCursor.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
@@ -93,28 +92,24 @@ class CONTENT_EXPORT IndexedDBDispatcher
   void RequestIDBCursorAdvance(
       unsigned long count,
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id,
-      WebKit::WebExceptionCode* ec);
+      int32 ipc_cursor_id);
 
   virtual void RequestIDBCursorContinue(
       const IndexedDBKey& key,
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id,
-      WebKit::WebExceptionCode* ec);
+      int32 ipc_cursor_id);
 
   virtual void RequestIDBCursorPrefetch(
       int n,
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id,
-      WebKit::WebExceptionCode* ec);
+      int32 ipc_cursor_id);
 
   void RequestIDBCursorPrefetchReset(int used_prefetches, int unused_prefetches,
                                      int32 ipc_cursor_id);
 
   void RequestIDBCursorDelete(
       WebKit::WebIDBCallbacks* callbacks_ptr,
-      int32 ipc_cursor_id,
-      WebKit::WebExceptionCode* ec);
+      int32 ipc_cursor_id);
 
   void RequestIDBDatabaseClose(
       int32 ipc_database_id,

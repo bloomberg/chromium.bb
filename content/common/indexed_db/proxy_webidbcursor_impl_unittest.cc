@@ -9,11 +9,9 @@
 #include "content/common/indexed_db/proxy_webidbcursor_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebData.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebExceptionCode.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBCallbacks.h"
 
 using WebKit::WebData;
-using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseError;
@@ -35,8 +33,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   virtual void RequestIDBCursorPrefetch(
       int n,
       WebIDBCallbacks* callbacks,
-      int32 ipc_cursor_id,
-      WebExceptionCode*) OVERRIDE {
+      int32 ipc_cursor_id) OVERRIDE {
     ++prefetch_calls_;
     last_prefetch_count_ = n;
     callbacks_.reset(callbacks);
@@ -45,8 +42,7 @@ class MockDispatcher : public IndexedDBDispatcher {
   virtual void RequestIDBCursorContinue(
       const IndexedDBKey&,
       WebIDBCallbacks* callbacks,
-      int32 ipc_cursor_id,
-      WebExceptionCode*) OVERRIDE {
+      int32 ipc_cursor_id) OVERRIDE {
     ++continue_calls_;
     callbacks_.reset(callbacks);
   }
@@ -91,7 +87,6 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
 
   WebIDBKey null_key;
   null_key.assignNull();
-  WebExceptionCode ec = 0;
 
   MockDispatcher dispatcher;
 
@@ -103,8 +98,7 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
     EXPECT_EQ(dispatcher.continue_calls(), 0);
     for (int i = 0; i < RendererWebIDBCursorImpl::kPrefetchContinueThreshold;
          ++i) {
-      cursor.continueFunction(null_key, new MockContinueCallbacks(), ec);
-      EXPECT_EQ(ec, 0);
+      cursor.continueFunction(null_key, new MockContinueCallbacks());
       EXPECT_EQ(dispatcher.continue_calls(), ++continue_calls);
       EXPECT_EQ(dispatcher.prefetch_calls(), 0);
     }
@@ -119,8 +113,7 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
          ++repetitions) {
 
       // Initiate the prefetch
-      cursor.continueFunction(null_key, new MockContinueCallbacks(), ec);
-      EXPECT_EQ(ec, 0);
+      cursor.continueFunction(null_key, new MockContinueCallbacks());
       EXPECT_EQ(dispatcher.continue_calls(), continue_calls);
       EXPECT_EQ(dispatcher.prefetch_calls(), repetitions + 1);
 
@@ -145,8 +138,7 @@ TEST(RendererWebIDBCursorImplTest, PrefetchTest) {
       // Verify that the cache is used for subsequent continue() calls.
       for (int i = 0; i < prefetch_count; ++i) {
         IndexedDBKey key;
-        cursor.continueFunction(null_key, new MockContinueCallbacks(&key), ec);
-        EXPECT_EQ(ec, 0);
+        cursor.continueFunction(null_key, new MockContinueCallbacks(&key));
         EXPECT_EQ(dispatcher.continue_calls(), continue_calls);
         EXPECT_EQ(dispatcher.prefetch_calls(), repetitions + 1);
 

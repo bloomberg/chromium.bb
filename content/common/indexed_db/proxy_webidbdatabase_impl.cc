@@ -16,7 +16,6 @@
 #include "webkit/glue/worker_task_runner.h"
 
 using WebKit::WebDOMStringList;
-using WebKit::WebExceptionCode;
 using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabaseCallbacks;

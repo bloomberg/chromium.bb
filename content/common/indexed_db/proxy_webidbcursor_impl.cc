@@ -11,7 +11,6 @@
 #include "content/common/indexed_db/indexed_db_dispatcher.h"
 
 using WebKit::WebData;
-using WebKit::WebExceptionCode;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBKey;
 
@@ -42,19 +41,18 @@ RendererWebIDBCursorImpl::~RendererWebIDBCursorImpl() {
 }
 
 void RendererWebIDBCursorImpl::advance(unsigned long count,
-                                       WebIDBCallbacks* callbacks_ptr,
-                                       WebExceptionCode& ec) {
+                                       WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   ResetPrefetchCache();
   dispatcher->RequestIDBCursorAdvance(count, callbacks.release(),
-                                      ipc_cursor_id_, &ec);
+                                      ipc_cursor_id_);
 }
 
-void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
-                                                WebIDBCallbacks* callbacks_ptr,
-                                                WebExceptionCode& ec) {
+void RendererWebIDBCursorImpl::continueFunction(
+    const WebIDBKey& key,
+    WebIDBCallbacks* callbacks_ptr) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
@@ -74,7 +72,7 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
       ++pending_onsuccess_callbacks_;
       dispatcher->RequestIDBCursorPrefetch(prefetch_amount_,
                                            callbacks.release(),
-                                           ipc_cursor_id_, &ec);
+                                           ipc_cursor_id_);
 
       // Increase prefetch_amount_ exponentially.
       prefetch_amount_ *= 2;
@@ -90,14 +88,13 @@ void RendererWebIDBCursorImpl::continueFunction(const WebIDBKey& key,
 
   dispatcher->RequestIDBCursorContinue(IndexedDBKey(key),
                                        callbacks.release(),
-                                       ipc_cursor_id_, &ec);
+                                       ipc_cursor_id_);
 }
 
-void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks,
-                                              WebExceptionCode& ec) {
+void RendererWebIDBCursorImpl::deleteFunction(WebIDBCallbacks* callbacks) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
-  dispatcher->RequestIDBCursorDelete(callbacks, ipc_cursor_id_, &ec);
+  dispatcher->RequestIDBCursorDelete(callbacks, ipc_cursor_id_);
 }
 
 void RendererWebIDBCursorImpl::postSuccessHandlerCallback() {
