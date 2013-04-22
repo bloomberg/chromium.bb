@@ -1,4 +1,5 @@
 {
+  'DISABLE': True,
   'TOOLS': ['newlib', 'glibc', 'linux', 'win'],
   'SEARCH': [
     '../../../../third_party/libjpeg',

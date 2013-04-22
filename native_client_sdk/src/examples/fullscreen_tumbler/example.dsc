@@ -1,4 +1,5 @@
 {
+  'DISABLE': True,
   'TOOLS': ['newlib', 'glibc', 'pnacl'],
   'TARGETS': [
     {

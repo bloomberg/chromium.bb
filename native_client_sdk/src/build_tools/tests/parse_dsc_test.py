@@ -16,6 +16,7 @@ BUILD_TOOLS_DIR = os.path.dirname(SCRIPT_DIR)
 
 sys.path.append(BUILD_TOOLS_DIR)
 import generate_make
+import parse_dsc
 
 BASIC_DESC = {
   'TOOLS': ['newlib', 'glibc'],
@@ -35,9 +36,9 @@ class TestValidateFormat(unittest.TestCase):
     return self.result
 
   def _validate(self, src, msg):
-    format = generate_make.DSC_FORMAT
+    format = parse_dsc.DSC_FORMAT
     self.result = ''
-    result = generate_make.ValidateFormat(src, format,
+    result = parse_dsc.ValidateFormat(src, format,
         lambda msg: self._append_result(msg))
     if msg:
       self.assertEqual(self.result, msg)

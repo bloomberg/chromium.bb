@@ -10,12 +10,9 @@ import os
 import subprocess
 import sys
 
-SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SDK_SRC_DIR = os.path.dirname(SCRIPT_DIR)
-SDK_DIR = os.path.dirname(SDK_SRC_DIR)
-SRC_DIR = os.path.dirname(SDK_DIR)
-sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
+from build_paths import SDK_SRC_DIR, NACL_DIR
 
+sys.path.append(os.path.join(SDK_SRC_DIR, 'tools'))
 import oshelpers
 
 def IsSDKBuilder():
@@ -46,6 +43,48 @@ def ErrorExit(msg):
   sys.exit(1)
 
 
+def GetWindowsEnvironment():
+  sys.path.append(os.path.join(NACL_DIR, 'buildbot'))
+  import buildbot_standard
+
+  # buildbot_standard.SetupWindowsEnvironment expects a "context" object. We'll
+  # fake enough of that here to work.
+  class FakeContext(object):
+    def __init__(self):
+      self.env = os.environ
+
+    def GetEnv(self, key):
+      return self.env[key]
+
+    def __getitem__(self, key):
+      return self.env[key]
+
+    def SetEnv(self, key, value):
+      self.env[key] = value
+
+    def __setitem__(self, key, value):
+      self.env[key] = value
+
+  context = FakeContext()
+  buildbot_standard.SetupWindowsEnvironment(context)
+
+  # buildbot_standard.SetupWindowsEnvironment adds the directory which contains
+  # vcvarsall.bat to the path, but not the directory which contains cl.exe,
+  # link.exe, etc.
+  # Running vcvarsall.bat adds the correct directories to the path, which we
+  # extract below.
+  process = subprocess.Popen('vcvarsall.bat x86 > NUL && set',
+      stdout=subprocess.PIPE, env=context.env, shell=True)
+  stdout, _ = process.communicate()
+
+  # Parse environment from "set" command above.
+  # It looks like this:
+  # KEY1=VALUE1\r\n
+  # KEY2=VALUE2\r\n
+  # ...
+  return dict(line.split('=') for line in stdout.split('\r\n')[:-1])
+
+
 def BuildStep(name):
   """Annotate a buildbot build step."""
   sys.stdout.flush()
@@ -60,6 +99,14 @@ def Run(args, cwd=None, env=None, shell=False):
   shell is not False, the process is launched via the shell to provide shell
   interpretation of the arguments.  Shell behavior can differ between platforms
   so this should be avoided when not using platform dependent shell scripts."""
+
+  # We need to modify the environment to build host on Windows.
+  if not env:
+    if sys.platform.startswith('cygwin') or sys.platform.startswith('win'):
+      env = GetWindowsEnvironment()
+    else:
+      env = os.environ
+
   print 'Running: ' + ' '.join(args)
   sys.stdout.flush()
   sys.stderr.flush()

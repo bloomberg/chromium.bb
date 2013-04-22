@@ -27,7 +27,7 @@ VALID_TOOLCHAINS:={{' '.join(tools)}}
 # If NACL_SDK_ROOT is not set, then assume it can be found relative to
 # to this Makefile.
 #
-NACL_SDK_ROOT?=$(abspath $(CURDIR)/../..)
+NACL_SDK_ROOT?=$(abspath $(CURDIR)/{{rel_sdk}})
 include $(NACL_SDK_ROOT)/tools/common.mk
 
 

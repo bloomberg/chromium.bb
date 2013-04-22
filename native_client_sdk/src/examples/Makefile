@@ -12,6 +12,8 @@ PROJECTS:= \
   {{project}} \
 [[]]
 
+HTTPD:={{rel_sdk}}/tools/httpd.py
+
 # Define the default target
 all:
 
@@ -54,4 +56,4 @@ clean: $(CLEAN_LIST)
 .PHONY: RUN
 RUN: all
 	@echo Starting up python webserver.
-	python ../tools/httpd.py
+	python $(HTTPD)

@@ -12,8 +12,8 @@ class LandingPage(object):
     self.section_map = collections.defaultdict(list)
 
   def GeneratePage(self, template_path):
-    with open(template_path) as src:
-      template = src.read()
+    with open(template_path) as template_file:
+      template = template_file.read()
     template_dict = { 'section_map': self.section_map }
     return easy_template.RunTemplateString(template, template_dict)
 

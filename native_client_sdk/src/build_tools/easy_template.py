@@ -6,6 +6,7 @@
 import copy
 import cStringIO
 import optparse
+import os
 import re
 import sys
 
@@ -49,27 +50,42 @@ def TemplateToPython(template, statement_re, expr_re):
   return output.getvalue()
 
 
-def RunTemplate(src, dst, template_dict, statement_re=None, expr_re=None):
+def RunTemplate(srcfile, dstfile, template_dict, statement_re=None,
+                expr_re=None):
   statement_re = statement_re or re.compile(STATEMENT_RE)
   expr_re = expr_re or re.compile(EXPR_RE)
-  script = TemplateToPython(src.read(), statement_re, expr_re)
+  script = TemplateToPython(srcfile.read(), statement_re, expr_re)
   template_dict = copy.copy(template_dict)
-  template_dict['__outfile__'] = dst
+  template_dict['__outfile__'] = dstfile
   exec script in template_dict
 
 
-def RunTemplateFile(srcfile, dstfile, template_dict, statement_re=None,
+def RunTemplateFile(srcpath, dstpath, template_dict, statement_re=None,
                     expr_re=None):
-  with open(srcfile) as src:
-    with open(dstfile, 'w') as dst:
-      RunTemplate(src, dst, template_dict, statement_re, expr_re)
+  with open(srcpath) as srcfile:
+    with open(dstpath, 'w') as dstfile:
+      RunTemplate(srcfile, dstfile, template_dict, statement_re, expr_re)
+
+
+def RunTemplateFileIfChanged(srcpath, dstpath, replace):
+  dststr = cStringIO.StringIO()
+  with open(srcpath) as srcfile:
+    RunTemplate(srcfile, dststr, replace)
+
+  if os.path.exists(dstpath):
+    with open(dstpath) as dstfile:
+      if dstfile.read() == dststr.getvalue():
+        return
+
+  with open(dstpath, 'w') as dstfile:
+    dstfile.write(dststr.getvalue())
 
 
 def RunTemplateString(src, template_dict, statement_re=None, expr_re=None):
-  srcf = cStringIO.StringIO(src)
-  dstf = cStringIO.StringIO()
-  RunTemplate(srcf, dstf, template_dict, statement_re, expr_re)
-  return dstf.getvalue()
+  srcstr = cStringIO.StringIO(src)
+  dststr = cStringIO.StringIO()
+  RunTemplate(srcstr, dststr, template_dict, statement_re, expr_re)
+  return dststr.getvalue()
 
 
 def main(args):

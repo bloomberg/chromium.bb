@@ -21,7 +21,7 @@ TEST_MODULES = [
     'sdktools_test',
     'sdktools_commands_test',
     'update_nacl_manifest_test',
-    'generate_make_test'
+    'parse_dsc_test'
 ]
 
 def main():
