@@ -113,6 +113,8 @@ bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
   if (!ppapi)
     return false;
 
+  pthread_cond_init(&filesystem_open_cond_, NULL);
+
   // Parse mount args.
   PP_FileSystemType filesystem_type = PP_FILESYSTEMTYPE_LOCALPERSISTENT;
   int64_t expected_size = 0;
@@ -162,6 +164,7 @@ bool MountHtml5Fs::Init(int dev, StringMap_t& args, PepperInterface* ppapi) {
 
 void MountHtml5Fs::Destroy() {
   ppapi_->ReleaseResource(filesystem_resource_);
+  pthread_cond_destroy(&filesystem_open_cond_);
 }
 
 int32_t MountHtml5Fs::BlockUntilFilesystemOpen() {
