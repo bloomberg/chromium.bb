@@ -64,29 +64,10 @@ public:
     }
 
 private:
-    enum TagId {
-        // These tags are scanned by the StartTagScanner.
-        ImgTagId,
-        InputTagId,
-        LinkTagId,
-        ScriptTagId,
-
-        // These tags are not scanned by the StartTagScanner.
-        UnknownTagId,
-        StyleTagId,
-        BaseTagId,
-        TemplateTagId,
-    };
-
     class StartTagScanner;
 
     template<typename Token>
     inline void scanCommon(const Token&, PreloadRequestStream& requests);
-
-    static TagId tagIdFor(const HTMLToken::DataVector&);
-    static TagId tagIdFor(const HTMLIdentifier&);
-
-    static String initiatorFor(TagId);
 
     template<typename Token>
     void updatePredictedBaseURL(const Token&);

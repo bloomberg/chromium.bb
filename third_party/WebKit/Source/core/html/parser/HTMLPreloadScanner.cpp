@@ -41,80 +41,72 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-TokenPreloadScanner::TagId TokenPreloadScanner::tagIdFor(const HTMLToken::DataVector& data)
+static bool match(const StringImpl* impl, const QualifiedName& qName)
+{
+    return impl == qName.localName().impl();
+}
+
+static bool match(const HTMLIdentifier& name, const QualifiedName& qName)
+{
+    return match(name.asStringImpl(), qName);
+}
+
+static bool match(const AtomicString& name, const QualifiedName& qName)
+{
+    ASSERT(isMainThread());
+    return qName.localName() == name;
+}
+
+static const StringImpl* tagImplFor(const HTMLToken::DataVector& data)
 {
     AtomicString tagName(data);
-    if (tagName == imgTag)
-        return ImgTagId;
-    if (tagName == inputTag)
-        return InputTagId;
-    if (tagName == linkTag)
-        return LinkTagId;
-    if (tagName == scriptTag)
-        return ScriptTagId;
-    if (tagName == styleTag)
-        return StyleTagId;
-    if (tagName == baseTag)
-        return BaseTagId;
-    if (tagName == templateTag)
-        return TemplateTagId;
-    return UnknownTagId;
+    const StringImpl* result = tagName.impl();
+    if (result->isStatic())
+        return result;
+    return 0;
 }
 
-TokenPreloadScanner::TagId TokenPreloadScanner::tagIdFor(const HTMLIdentifier& tagName)
+static const StringImpl* tagImplFor(const HTMLIdentifier& tagName)
 {
-    if (threadSafeHTMLNamesMatch(tagName, imgTag))
-        return ImgTagId;
-    if (threadSafeHTMLNamesMatch(tagName, inputTag))
-        return InputTagId;
-    if (threadSafeHTMLNamesMatch(tagName, linkTag))
-        return LinkTagId;
-    if (threadSafeHTMLNamesMatch(tagName, scriptTag))
-        return ScriptTagId;
-    if (threadSafeHTMLNamesMatch(tagName, styleTag))
-        return StyleTagId;
-    if (threadSafeHTMLNamesMatch(tagName, baseTag))
-        return BaseTagId;
-    if (threadSafeHTMLNamesMatch(tagName, templateTag))
-        return TemplateTagId;
-    return UnknownTagId;
+    const StringImpl* result = tagName.asStringImpl();
+    if (result->isStatic())
+        return result;
+    return 0;
 }
 
-String TokenPreloadScanner::initiatorFor(TagId tagId)
+static String initiatorFor(const StringImpl* tagImpl)
 {
-    switch (tagId) {
-    case ImgTagId:
-        return "img";
-    case InputTagId:
-        return "input";
-    case LinkTagId:
-        return "link";
-    case ScriptTagId:
-        return "script";
-    case UnknownTagId:
-    case StyleTagId:
-    case BaseTagId:
-    case TemplateTagId:
-        ASSERT_NOT_REACHED();
-        return "unknown";
-    }
+    ASSERT(tagImpl);
+    if (match(tagImpl, imgTag))
+        return imgTag.localName();
+    if (match(tagImpl, inputTag))
+        return inputTag.localName();
+    if (match(tagImpl, linkTag))
+        return linkTag.localName();
+    if (match(tagImpl, scriptTag))
+        return scriptTag.localName();
     ASSERT_NOT_REACHED();
     return "unknown";
 }
 
 class TokenPreloadScanner::StartTagScanner {
 public:
-    explicit StartTagScanner(TagId tagId)
-        : m_tagId(tagId)
+    explicit StartTagScanner(const StringImpl* tagImpl)
+        : m_tagImpl(tagImpl)
         , m_linkIsStyleSheet(false)
         , m_inputIsImage(false)
     {
+        if (!match(m_tagImpl, imgTag)
+            && !match(m_tagImpl, inputTag)
+            && !match(m_tagImpl, linkTag)
+            && !match(m_tagImpl, scriptTag))
+            m_tagImpl = 0;
     }
 
     void processAttributes(const HTMLToken::AttributeList& attributes)
     {
         ASSERT(isMainThread());
-        if (m_tagId >= UnknownTagId)
+        if (!m_tagImpl)
             return;
         for (HTMLToken::AttributeList::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter) {
             AtomicString attributeName(iter->name);
@@ -125,7 +117,7 @@ public:
 
     void processAttributes(const Vector<CompactHTMLToken::Attribute>& attributes)
     {
-        if (m_tagId >= UnknownTagId)
+        if (!m_tagImpl)
             return;
         for (Vector<CompactHTMLToken::Attribute>::const_iterator iter = attributes.begin(); iter != attributes.end(); ++iter)
             processAttribute(iter->name, iter->value);
@@ -136,22 +128,11 @@ public:
         if (!shouldPreload())
             return nullptr;
 
-        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagId), m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
+        OwnPtr<PreloadRequest> request = PreloadRequest::create(initiatorFor(m_tagImpl), m_urlToLoad, predictedBaseURL, resourceType(), m_mediaAttribute);
         request->setCrossOriginModeAllowsCookies(crossOriginModeAllowsCookies());
         request->setCharset(charset());
         return request.release();
     }
-
-static bool match(const AtomicString& name, const QualifiedName& qName)
-{
-    ASSERT(isMainThread());
-    return qName.localName() == name;
-}
-
-static bool match(const HTMLIdentifier& name, const QualifiedName& qName)
-{
-    return threadSafeHTMLNamesMatch(name, qName);
-}
 
 private:
     template<typename NameType>
@@ -160,19 +141,19 @@ private:
         if (match(attributeName, charsetAttr))
             m_charset = attributeValue;
 
-        if (m_tagId == ScriptTagId || m_tagId == ImgTagId) {
+        if (match(m_tagImpl, scriptTag) || match(m_tagImpl, imgTag)) {
             if (match(attributeName, srcAttr))
                 setUrlToLoad(attributeValue);
             else if (match(attributeName, crossoriginAttr) && !attributeValue.isNull())
                 m_crossOriginMode = stripLeadingAndTrailingHTMLSpaces(attributeValue);
-        } else if (m_tagId == LinkTagId) {
+        } else if (match(m_tagImpl, linkTag)) {
             if (match(attributeName, hrefAttr))
                 setUrlToLoad(attributeValue);
             else if (match(attributeName, relAttr))
                 m_linkIsStyleSheet = relAttributeIsStyleSheet(attributeValue);
             else if (match(attributeName, mediaAttr))
                 m_mediaAttribute = attributeValue;
-        } else if (m_tagId == InputTagId) {
+        } else if (match(m_tagImpl, inputTag)) {
             if (match(attributeName, srcAttr))
                 setUrlToLoad(attributeValue);
             else if (match(attributeName, typeAttr))
@@ -198,18 +179,18 @@ private:
     const String& charset() const
     {
         // FIXME: Its not clear that this if is needed, the loader probably ignores charset for image requests anyway.
-        if (m_tagId == ImgTagId)
+        if (match(m_tagImpl, imgTag))
             return emptyString();
         return m_charset;
     }
 
     CachedResource::Type resourceType() const
     {
-        if (m_tagId == ScriptTagId)
+        if (match(m_tagImpl, scriptTag))
             return CachedResource::Script;
-        if (m_tagId == ImgTagId || (m_tagId == InputTagId && m_inputIsImage))
+        if (match(m_tagImpl, imgTag) || (match(m_tagImpl, inputTag) && m_inputIsImage))
             return CachedResource::ImageResource;
-        if (m_tagId == LinkTagId && m_linkIsStyleSheet)
+        if (match(m_tagImpl, linkTag) && m_linkIsStyleSheet)
             return CachedResource::CSSStyleSheet;
         ASSERT_NOT_REACHED();
         return CachedResource::RawResource;
@@ -219,13 +200,10 @@ private:
     {
         if (m_urlToLoad.isEmpty())
             return false;
-
-        if (m_tagId == LinkTagId && !m_linkIsStyleSheet)
+        if (match(m_tagImpl, linkTag) && !m_linkIsStyleSheet)
             return false;
-
-        if (m_tagId == InputTagId && !m_inputIsImage)
+        if (match(m_tagImpl, inputTag) && !m_inputIsImage)
             return false;
-
         return true;
     }
 
@@ -234,7 +212,7 @@ private:
         return m_crossOriginMode.isNull() || equalIgnoringCase(m_crossOriginMode, "use-credentials");
     }
 
-    TagId m_tagId;
+    const StringImpl* m_tagImpl;
     String m_urlToLoad;
     String m_charset;
     String m_crossOriginMode;
@@ -293,13 +271,13 @@ void TokenPreloadScanner::scanCommon(const Token& token, Vector<OwnPtr<PreloadRe
         return;
     }
     case HTMLToken::EndTag: {
-        TagId tagId = tagIdFor(token.data());
-        if (tagId == TemplateTagId) {
+        const StringImpl* tagImpl = tagImplFor(token.data());
+        if (match(tagImpl, templateTag)) {
             if (m_templateCount)
                 --m_templateCount;
             return;
         }
-        if (tagId == StyleTagId) {
+        if (match(tagImpl, styleTag)) {
             if (m_inStyle)
                 m_cssScanner.reset();
             m_inStyle = false;
@@ -309,16 +287,16 @@ void TokenPreloadScanner::scanCommon(const Token& token, Vector<OwnPtr<PreloadRe
     case HTMLToken::StartTag: {
         if (m_templateCount)
             return;
-        TagId tagId = tagIdFor(token.data());
-        if (tagId == TemplateTagId) {
+        const StringImpl* tagImpl = tagImplFor(token.data());
+        if (match(tagImpl, templateTag)) {
             ++m_templateCount;
             return;
         }
-        if (tagId == StyleTagId) {
+        if (match(tagImpl, styleTag)) {
             m_inStyle = true;
             return;
         }
-        if (tagId == BaseTagId) {
+        if (match(tagImpl, baseTag)) {
             // The first <base> element is the one that wins.
             if (!m_predictedBaseElementURL.isEmpty())
                 return;
@@ -326,7 +304,7 @@ void TokenPreloadScanner::scanCommon(const Token& token, Vector<OwnPtr<PreloadRe
             return;
         }
 
-        StartTagScanner scanner(tagId);
+        StartTagScanner scanner(tagImpl);
         scanner.processAttributes(token.attributes());
         OwnPtr<PreloadRequest> request = scanner.createPreloadRequest(m_predictedBaseElementURL);
         if (request)
