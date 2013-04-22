@@ -3274,6 +3274,26 @@
           },
           'includes': [ '../build/java_apk.gypi' ],
         },
+        {
+          'target_name': 'chromium_testshell_uiautomator_tests_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': 'android/uiautomator_tests',
+          },
+          'dependencies': [
+            '../base/base.gyp:base_java_test_support',
+            '../third_party/android_tools/android_tools.gyp:uiautomator_jar',
+          ],
+          'includes': [ '../build/java.gypi' ],
+        },
+        {
+          'target_name': 'chromium_testshell_uiautomator_tests',
+          'type': 'none',
+          'dependencies': [
+            'chromium_testshell_uiautomator_tests_java',
+          ],
+          'includes': [ '../build/uiautomator_test.gypi' ],
+        },
       ],
     }],
     ['test_isolation_mode != "noop"', {
