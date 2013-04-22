@@ -32,8 +32,8 @@ class GeometryBinding;
 class ScopedEnsureFramebufferAllocation;
 
 // Class that handles drawing of composited render layers using GL.
-class CC_EXPORT GLRenderer :
-    public DirectRenderer,
+class CC_EXPORT GLRenderer
+  : public DirectRenderer,
     public NON_EXPORTED_BASE(
         WebKit::WebGraphicsContext3D::
             WebGraphicsMemoryAllocationChangedCallbackCHROMIUM) {

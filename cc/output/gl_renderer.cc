@@ -148,7 +148,7 @@ bool GLRenderer::Initialize() {
       extensions.count("GL_CHROMIUM_set_visibility") > 0;
 
   if (extensions.count("GL_CHROMIUM_iosurface") > 0)
-    DCHECK(extensions.count("GL_ARB_texture_rectangle") > 0);
+    DCHECK_GT(extensions.count("GL_ARB_texture_rectangle"), 0u);
 
   capabilities_.using_gpu_memory_manager =
       extensions.count("GL_CHROMIUM_gpu_memory_manager") > 0 &&
