@@ -24,11 +24,6 @@ class Decryptor;
 // encrypted video buffers and return decrypted and decompressed video frames.
 // All public APIs and callbacks are trampolined to the |message_loop_| so
 // that no locks are required for thread safety.
-//
-// TODO(xhwang): For now, DecryptingVideoDecoder relies on the decryptor to do
-// both decryption and video decoding. Add the path to use the decryptor for
-// decryption only and use other VideoDecoder implementations within
-// DecryptingVideoDecoder for video decoding.
 class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
  public:
   DecryptingVideoDecoder(
