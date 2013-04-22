@@ -11,3 +11,13 @@ ivankr@chromium.org
 
 # Display options.
 mukai@chromium.org
+
+# Network configuration.
+per-file internet_detail*=pneubeck@chromium.org
+per-file internet_detail*=gspencer@chromium.org
+per-file network_list*=pneubeck@chromium.org
+per-file network_list*=gspencer@chromium.org
+per-file preferred_networks*=pneubeck@chromium.org
+per-file preferred_networks*=gspencer@chromium.org
+per-file proxy_rules_list*=pneubeck@chromium.org
+per-file proxy_rules_list*=gspencer@chromium.org
