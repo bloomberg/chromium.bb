@@ -101,7 +101,9 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogCocoaBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, DisplayUI) {
+// Disabled, since this can pop up a "browser_tests would like access to your
+// Contacts" dialog. http://crbug.com/234008 .
+IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, DISABLED_DisplayUI) {
   controller()->Show();
   controller()->view()->CancelForTesting();
 
