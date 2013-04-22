@@ -56,7 +56,7 @@ void GetFontsInFamily_SlowBlocking(
     ppapi::proxy::SerializedTrueTypeFontDesc desc;
     desc.family = family;
     NSInteger font_weight = [[font_info objectAtIndex:2] intValue];
-    font_weight = std::max(0, font_weight);
+    font_weight = std::max(static_cast<NSInteger>(0), font_weight);
     font_weight = std::min(kPepperFontWeightsLength - 1, font_weight);
     desc.weight = kPepperFontWeights[font_weight];
 
