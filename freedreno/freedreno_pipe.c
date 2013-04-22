@@ -142,6 +142,9 @@ int fd_pipe_get_param(struct fd_pipe *pipe, enum fd_param_id param,
 	case FD_DEVICE_ID:
 		*value = pipe->devinfo.device_id;
 		return 0;
+	case FD_GPU_ID:
+		*value = pipe->devinfo.gpu_id;
+		return 0;
 	case FD_GMEM_SIZE:
 		*value = pipe->devinfo.gmem_sizebytes;
 		return 0;

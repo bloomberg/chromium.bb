@@ -48,6 +48,7 @@ enum fd_pipe_id {
 enum fd_param_id {
 	FD_DEVICE_ID,
 	FD_GMEM_SIZE,
+	FD_GPU_ID,
 };
 
 /* bo flags: */
