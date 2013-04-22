@@ -1716,6 +1716,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
     init.originalPolicy = header;
     init.sourceFile = String();
     init.lineNumber = 0;
+    init.columnNumber = 0;
 
     RefPtr<ScriptCallStack> stack = createScriptCallStack(2, false);
     if (!stack)
@@ -1727,6 +1728,7 @@ static void gatherSecurityPolicyViolationEventData(SecurityPolicyViolationEventI
         KURL source = KURL(ParsedURLString, callFrame.sourceURL());
         init.sourceFile = stripURLForUseInReport(document, source);
         init.lineNumber = callFrame.lineNumber();
+        init.columnNumber = callFrame.columnNumber();
     }
 }
 
@@ -1773,6 +1775,7 @@ void ContentSecurityPolicy::reportViolation(const String& directiveText, const S
     if (!violationData.sourceFile.isEmpty() && violationData.lineNumber) {
         cspReport->setString("source-file", violationData.sourceFile);
         cspReport->setNumber("line-number", violationData.lineNumber);
+        cspReport->setNumber("column-number", violationData.columnNumber);
     }
 
     RefPtr<InspectorObject> reportObject = InspectorObject::create();

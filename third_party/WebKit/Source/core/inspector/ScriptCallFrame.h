@@ -48,6 +48,7 @@ public:
     const String& functionName() const { return m_functionName; }
     const String& sourceURL() const { return m_scriptName; }
     unsigned lineNumber() const { return m_lineNumber; }
+    unsigned columnNumber() const { return m_column; }
 
     bool isEqual(const ScriptCallFrame&) const;
 

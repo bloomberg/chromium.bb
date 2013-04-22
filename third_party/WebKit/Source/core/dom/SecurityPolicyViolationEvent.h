@@ -43,6 +43,7 @@ struct SecurityPolicyViolationEventInit : public EventInit {
     String originalPolicy;
     String sourceFile;
     int lineNumber;
+    int columnNumber;
 };
 
 class SecurityPolicyViolationEvent : public Event {
@@ -65,6 +66,7 @@ public:
     const String& originalPolicy() const { return m_originalPolicy; }
     const String& sourceFile() const { return m_sourceFile; }
     int lineNumber() const { return m_lineNumber; }
+    int columnNumber() const { return m_columnNumber; }
 
     virtual const AtomicString& interfaceName() const { return eventNames().interfaceForSecurityPolicyViolationEvent; }
 
@@ -84,6 +86,7 @@ private:
         , m_originalPolicy(initializer.originalPolicy)
         , m_sourceFile(initializer.sourceFile)
         , m_lineNumber(initializer.lineNumber)
+        , m_columnNumber(initializer.columnNumber)
     {
         ScriptWrappable::init(this);
     }
@@ -96,6 +99,7 @@ private:
     String m_originalPolicy;
     String m_sourceFile;
     int m_lineNumber;
+    int m_columnNumber;
 };
 
 } // namespace WebCore
