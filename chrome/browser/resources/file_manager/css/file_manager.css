@@ -675,7 +675,13 @@ body[new-ui] .dialog-header button:not(:hover):not(focus) {
 }
 
 body[new-ui] #search-box {
+  background: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_icon_active.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
+  background-position: center left;
+  background-repeat: no-repeat;
   border-color: white;
+  padding: 0 0 0 30px;
 }
 
 #search-box:hover {
@@ -1999,12 +2005,25 @@ button:focus {
   display: none;
 }
 
-list.autocomplete-suggestions {
+body:not([new-ui]) list.autocomplete-suggestions {
   -webkit-border-radius: 2px;
   background-color: white;
   border: 1px solid #aaa;
   box-sizing: border-box;  /* To match the width with the search box's. */
   min-height: 0;
+  position: fixed;
+  z-index: 3;
+}
+
+body[new-ui] list.autocomplete-suggestions {
+  -webkit-box-shadow: 0 1px 4px 0 rgba(0, 0, 0, .5);
+  background-color: rgb(250, 250, 250);
+  border: 1px solid rgb(255, 255, 255);
+  border-radius: 3px;
+  box-sizing: border-box;  /* To match the width with the search box's. */
+  color: rgb(34, 34, 34);
+  overflow: hidden;
+  padding: 5px 0;
   position: fixed;
   z-index: 3;
 }
@@ -2017,9 +2036,15 @@ list.autocomplete-suggestions > li {
   padding: 3px 0;
 }
 
-list.autocomplete-suggestions > li:hover {
+body:not([new-ui]) list.autocomplete-suggestions > li:hover {
   background-color: white;
   border: 1px solid white;
+}
+
+body[new-ui] list.autocomplete-suggestions > li,
+body[new-ui] list.autocomplete-suggestions > li:hover {
+  background-color: transparent;
+  border: none;
 }
 
 list.autocomplete-suggestions > li > div.detail-text {
@@ -2028,7 +2053,15 @@ list.autocomplete-suggestions > li > div.detail-text {
   text-overflow: ellipsis;
 }
 
-list.autocomplete-suggestions > li > div[search-icon] {
+list.autocomplete-suggestions > li > div.detail-text em {
+  font-style: normal;
+}
+
+body[new-ui] list.autocomplete-suggestions > li > div.detail-text em {
+  color: rgb(150, 150, 150);
+}
+
+body:not([new-ui]) list.autocomplete-suggestions > li > div[search-icon] {
   background: -webkit-image-set(
     url('../images/files/ui/icon_search.png') 1x,
     url('../images/files/ui/2x/icon_search.png') 2x);
@@ -2036,13 +2069,32 @@ list.autocomplete-suggestions > li > div[search-icon] {
   background-repeat: no-repeat;
 }
 
-list.autocomplete-suggestions[hasElementFocus] > [selected],
-list.autocomplete-suggestions[hasElementFocus] > [lead],
-list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
-list.autocomplete-suggestions:not([hasElementFocus]) > [lead] {
+body[new-ui] list.autocomplete-suggestions > li > div[search-icon] {
+  background: -webkit-image-set(
+    url('../images/files/ui/new-ui/search_icon_active.png') 1x,
+    url('../images/files/ui/new-ui/2x/search_icon_active.png') 2x);
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+body:not([new-ui]) list.autocomplete-suggestions[hasElementFocus] > [selected],
+body:not([new-ui]) list.autocomplete-suggestions[hasElementFocus] > [lead],
+body:not([new-ui]) list.autocomplete-suggestions:not([hasElementFocus]) >
+    [selected],
+body:not([new-ui]) list.autocomplete-suggestions:not([hasElementFocus]) >
+    [lead] {
   background-color: rgb(238, 238, 238);
   background-image: none;
   border: 1px solid white;
+}
+
+body[new-ui] list.autocomplete-suggestions[hasElementFocus] > [selected],
+body[new-ui] list.autocomplete-suggestions[hasElementFocus] > [lead],
+body[new-ui] list.autocomplete-suggestions:not([hasElementFocus]) > [selected],
+body[new-ui] list.autocomplete-suggestions:not([hasElementFocus]) > [lead] {
+  background-color: rgb(235, 235, 235);
+  background-image: none;
+  border: none;
 }
 
 body[new-ui] #gear-menu > menuitem:not(.menuitem-button) {
