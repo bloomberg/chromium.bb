@@ -83,6 +83,9 @@ class TranslateHelperBrowserTest : public ChromeRenderViewTest {
   }
 
   TestTranslateHelper* translate_helper_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TranslateHelperBrowserTest);
 };
 
 // Tests that the browser gets notified of the translation failure if the
