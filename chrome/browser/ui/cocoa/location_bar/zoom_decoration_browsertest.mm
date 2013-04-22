@@ -9,10 +9,10 @@
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/browser/zoom_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
-#include "chrome/browser/ui/cocoa/location_bar/mock_toolbar_model.h"
 #import "chrome/browser/ui/cocoa/location_bar/zoom_decoration.h"
 #include "chrome/browser/ui/cocoa/run_loop_testing.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/test_toolbar_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/test/test_utils.h"
@@ -32,7 +32,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
         browser()->profile())->AddZoomLevelChangedCallback(zoom_callback_);
 
     old_toolbar_model_ = GetLocationBar()->toolbar_model_;
-    GetLocationBar()->toolbar_model_ = &mock_toolbar_model_;
+    GetLocationBar()->toolbar_model_ = &test_toolbar_model_;
   }
 
   virtual void CleanUpOnMainThread() OVERRIDE {
@@ -79,7 +79,7 @@ class ZoomDecorationTest : public InProcessBrowserTest {
     }
   }
 
-  chrome::testing::MockToolbarModel mock_toolbar_model_;
+  TestToolbarModel test_toolbar_model_;
 
  private:
   ToolbarModel* old_toolbar_model_;
@@ -118,7 +118,7 @@ IN_PROC_BROWSER_TEST_F(ZoomDecorationTest, HideOnInputProgress) {
   Zoom(content::PAGE_ZOOM_IN);
   EXPECT_TRUE(zoom_decoration->IsVisible());
 
-  mock_toolbar_model_.SetInputInProgress(true);
+  test_toolbar_model_.SetInputInProgress(true);
   GetLocationBar()->ZoomChangedForActiveTab(false);
   EXPECT_FALSE(zoom_decoration->IsVisible());
 }
