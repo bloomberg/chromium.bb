@@ -873,9 +873,9 @@ ThreadProxy::ScheduledActionDrawAndSwapInternal(bool forced_draw) {
   if (!layer_tree_host_impl_->renderer())
     return result;
 
-  // FIXME: compute the frame display time more intelligently
-  base::TimeTicks monotonic_time = base::TimeTicks::Now();
-  base::Time wall_clock_time = base::Time::Now();
+  base::TimeTicks monotonic_time =
+      layer_tree_host_impl_->CurrentFrameTimeTicks();
+  base::Time wall_clock_time = layer_tree_host_impl_->CurrentFrameTime();
 
   if (input_handler_on_impl_thread_)
     input_handler_on_impl_thread_->Animate(monotonic_time);
@@ -1343,7 +1343,8 @@ void ThreadProxy::RequestScrollbarAnimationOnImplThread(base::TimeDelta delay) {
 }
 
 void ThreadProxy::StartScrollbarAnimationOnImplThread() {
-  layer_tree_host_impl_->StartScrollbarAnimation(base::TimeTicks::Now());
+  layer_tree_host_impl_->StartScrollbarAnimation(
+      layer_tree_host_impl_->CurrentFrameTimeTicks());
 }
 
 }  // namespace cc

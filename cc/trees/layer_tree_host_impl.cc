@@ -111,7 +111,9 @@ class LayerTreeHostImplTimeSourceAdapter : public TimeSourceClient {
     }
 
     layer_tree_host_impl_->ActivatePendingTreeIfNeeded();
-    layer_tree_host_impl_->Animate(base::TimeTicks::Now(), base::Time::Now());
+    layer_tree_host_impl_->Animate(
+        layer_tree_host_impl_->CurrentFrameTimeTicks(),
+        layer_tree_host_impl_->CurrentFrameTime());
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(true);
     bool start_ready_animations = true;
     layer_tree_host_impl_->UpdateAnimationState(start_ready_animations);
@@ -1742,7 +1744,7 @@ void LayerTreeHostImpl::ScrollEnd() {
     top_controls_manager_->ScrollEnd();
   ClearCurrentlyScrollingLayer();
   active_tree()->DidEndScroll();
-  StartScrollbarAnimation(base::TimeTicks::Now());
+  StartScrollbarAnimation(CurrentFrameTimeTicks());
 }
 
 void LayerTreeHostImpl::PinchGestureBegin() {
@@ -2038,12 +2040,25 @@ void LayerTreeHostImpl::SetTreePriority(TreePriority priority) {
 }
 
 void LayerTreeHostImpl::BeginNextFrame() {
-  current_frame_time_ = base::TimeTicks();
+  current_frame_timeticks_ = base::TimeTicks();
+  current_frame_time_ = base::Time();
 }
 
-base::TimeTicks LayerTreeHostImpl::CurrentFrameTime() {
-  if (current_frame_time_.is_null())
-    current_frame_time_ = base::TimeTicks::Now();
+static void UpdateCurrentFrameTime(base::TimeTicks* ticks, base::Time* now) {
+  if (ticks->is_null()) {
+    DCHECK(now->is_null());
+    *ticks = base::TimeTicks::Now();
+    *now = base::Time::Now();
+  }
+}
+
+base::TimeTicks LayerTreeHostImpl::CurrentFrameTimeTicks() {
+  UpdateCurrentFrameTime(&current_frame_timeticks_, &current_frame_time_);
+  return current_frame_timeticks_;
+}
+
+base::Time LayerTreeHostImpl::CurrentFrameTime() {
+  UpdateCurrentFrameTime(&current_frame_timeticks_, &current_frame_time_);
   return current_frame_time_;
 }
 

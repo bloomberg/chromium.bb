@@ -185,7 +185,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudContents() {
   const LayerTreeDebugState& debug_state = layer_tree_impl()->debug_state();
 
   // Don't update numbers every frame so text is readable.
-  base::TimeTicks now = layer_tree_impl()->CurrentFrameTime();
+  base::TimeTicks now = layer_tree_impl()->CurrentFrameTimeTicks();
   if (base::TimeDelta(now - time_of_last_graph_update_).InSecondsF() > 0.25f) {
     time_of_last_graph_update_ = now;
 

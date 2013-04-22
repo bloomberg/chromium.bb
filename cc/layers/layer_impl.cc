@@ -826,7 +826,7 @@ void LayerImpl::UpdateScrollbarPositions() {
   if (scrollbar_animation_controller_ &&
       !scrollbar_animation_controller_->IsScrollGestureInProgress()) {
     scrollbar_animation_controller_->DidProgrammaticallyUpdateScroll(
-        base::TimeTicks::Now());
+        layer_tree_impl()->CurrentFrameTimeTicks());
   }
 
   // Get the current_offset_.y() value for a sanity-check on scrolling

@@ -432,7 +432,9 @@ bool SingleThreadProxy::DoComposite(
       return false;
     }
 
-    layer_tree_host_impl_->Animate(base::TimeTicks::Now(), base::Time::Now());
+    layer_tree_host_impl_->Animate(
+        layer_tree_host_impl_->CurrentFrameTimeTicks(),
+        layer_tree_host_impl_->CurrentFrameTime());
     layer_tree_host_impl_->UpdateBackgroundAnimateTicking(false);
 
     layer_tree_host_impl_->PrepareToDraw(frame, device_viewport_damage_rect);

@@ -268,8 +268,8 @@ void PictureLayerImpl::UpdateTilePriorities() {
   UpdateLCDTextStatus();
 
   int current_source_frame_number = layer_tree_impl()->source_frame_number();
-  double current_frame_time =
-      (layer_tree_impl()->CurrentFrameTime() - base::TimeTicks()).InSecondsF();
+  double current_frame_time = (layer_tree_impl()->CurrentFrameTimeTicks() -
+                               base::TimeTicks()).InSecondsF();
 
   gfx::Transform current_screen_space_transform = screen_space_transform();
 

@@ -252,11 +252,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
 
   scoped_ptr<ScrollAndScaleSet> ProcessScrollDeltas();
 
-  void StartPageScaleAnimation(gfx::Vector2d target_offset,
-                               bool use_anchor,
-                               float scale,
-                               base::TimeDelta duration);
-
   bool needs_animate_layers() const {
     return !animation_registrar_->active_animation_controllers().empty();
   }
@@ -342,7 +337,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
   void SetTreePriority(TreePriority priority);
 
   void BeginNextFrame();
-  base::TimeTicks CurrentFrameTime();
+  base::TimeTicks CurrentFrameTimeTicks();
+  base::Time CurrentFrameTime();
 
   scoped_ptr<base::Value> AsValue() const;
   scoped_ptr<base::Value> ActivationStateAsValue() const;
@@ -466,7 +462,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
 
   gfx::Rect viewport_damage_rect_;
 
-  base::TimeTicks current_frame_time_;
+  base::TimeTicks current_frame_timeticks_;
+  base::Time current_frame_time_;
 
   scoped_ptr<AnimationRegistrar> animation_registrar_;
 
