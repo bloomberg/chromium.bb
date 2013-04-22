@@ -966,6 +966,10 @@ void ExtensionService::DisableExtension(
   if (!extension)
     return;
 
+  // Reset the background_page_ready flag
+  if (extensions::BackgroundInfo::HasBackgroundPage(extension))
+    extension_runtime_data_[extension->id()].background_page_ready = false;
+
   // Move it over to the disabled list. Don't send a second unload notification
   // for terminated extensions being disabled.
   disabled_extensions_.Insert(make_scoped_refptr(extension));
