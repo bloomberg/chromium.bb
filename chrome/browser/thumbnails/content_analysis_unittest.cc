@@ -115,7 +115,14 @@ TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnImpulse) {
   EXPECT_EQ(data_sum, all_sum);
 }
 
-TEST_F(ThumbnailContentAnalysisTest, ApplyGradientMagnitudeOnFrame) {
+// http://crbug.com/234336
+#if defined(OS_MACOSX)
+#define MAYBE_ApplyGradientMagnitudeOnFrame \
+    DISABLED_ApplyGradientMagnitudeOnFrame
+#else
+#define MAYBE_ApplyGradientMagnitudeOnFrame ApplyGradientMagnitudeOnFrame
+#endif
+TEST_F(ThumbnailContentAnalysisTest, MAYBE_ApplyGradientMagnitudeOnFrame) {
   gfx::Canvas canvas(gfx::Size(800, 600), ui::SCALE_FACTOR_100P, true);
 
   // The image consists of a single white block in the centre.
@@ -217,8 +224,16 @@ TEST_F(ThumbnailContentAnalysisTest, ExtractImageProfileInformation) {
             std::accumulate(column_profile.begin(), column_profile.end(), 0));
 }
 
+// http://crbug.com/234336
+#if defined(OS_MACOSX)
+#define MAYBE_ExtractImageProfileInformationWithClosing \
+    DISABLED_ExtractImageProfileInformationWithClosing
+#else
+#define MAYBE_ExtractImageProfileInformationWithClosing \
+    ExtractImageProfileInformationWithClosing
+#endif
 TEST_F(ThumbnailContentAnalysisTest,
-       ExtractImageProfileInformationWithClosing) {
+       MAYBE_ExtractImageProfileInformationWithClosing) {
   gfx::Canvas canvas(gfx::Size(800, 600), ui::SCALE_FACTOR_100P, true);
 
   // The image consists of a two white frames drawn side by side, with a
