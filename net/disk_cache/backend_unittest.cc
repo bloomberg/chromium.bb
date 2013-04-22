@@ -2843,7 +2843,7 @@ TEST_F(DiskCacheBackendTest,
   DisableIntegrityCheck();
 }
 
-TEST_F(DiskCacheBackendTest, SimpleOpenMissingFile) {
+TEST_F(DiskCacheBackendTest, SimpleCacheOpenMissingFile) {
   SetSimpleCacheMode();
   InitCache();
 
@@ -2873,7 +2873,7 @@ TEST_F(DiskCacheBackendTest, SimpleOpenMissingFile) {
   }
 }
 
-TEST_F(DiskCacheBackendTest, SimpleOpenBadFile) {
+TEST_F(DiskCacheBackendTest, SimpleCacheOpenBadFile) {
   SetSimpleCacheMode();
   InitCache();
 
