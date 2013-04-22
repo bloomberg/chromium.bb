@@ -6,6 +6,7 @@
 # downloadable pieces.
 
 
+import ctypes
 from optparse import OptionParser
 import os
 import shutil
@@ -16,6 +17,15 @@ import urllib2
 
 
 g_temp_dirs = []
+
+
+def GetLongPathName(path):
+  """Converts any 8dot3 names in the path to the full name."""
+  buf = ctypes.create_unicode_buffer(260)
+  size = ctypes.windll.kernel32.GetLongPathNameW(unicode(path), buf, 260)
+  if (size > 260):
+    raise SystemExit('Long form of path longer than 260 chars: %s' % path)
+  return buf.value
 
 
 def RunOrDie(command):
@@ -35,8 +45,6 @@ def TempDir():
 
 def DeleteAllTempDirs():
   """Remove all temporary directories created by |TempDir()|."""
-  if len(sys.argv) >= 3 and sys.argv[2] == 'noclean':
-    return
   global g_temp_dirs
   if g_temp_dirs:
     sys.stdout.write('Cleaning up temporaries...\n')
@@ -124,7 +132,8 @@ def DownloadSDK8():
   elevation for no obvious reason even when only downloading, so this function
   will trigger a UAC elevation if the script is not run from an elevated
   prompt."""
-  sdk_temp_dir = TempDir()
+  # Use the long path name here because because 8dot3 names don't seem to work.
+  sdk_temp_dir = GetLongPathName(TempDir())
   target_path = os.path.join(sdk_temp_dir, 'sdksetup.exe')
   standalone_path = os.path.join(sdk_temp_dir, 'Standalone')
   Download(
@@ -176,15 +185,15 @@ class SourceImages2010(object):
     self.dxsdk_path = dxsdk_path
 
 
-def GetSourceImages2010():
+def GetSourceImages2010(local_dir):
   """Download all distribution archives for the components we need."""
-  if len(sys.argv) >= 2 and sys.argv[1] == 'local':
+  if local_dir:
     return SourceImages2010(
-        sdk8_path=r'C:\Users\Scott\Desktop\wee\Standalone',
-        wdk_iso=r'c:\users\scott\desktop\wee\GRMWDK_EN_7600_1.ISO',
-        sdk7_update=r'c:\users\scott\desktop\wee\VC-Compiler-KB2519277.exe',
-        sdk7_path=r'C:\Users\Scott\Desktop\wee\GRMSDKX_EN_DVD.ISO',
-        dxsdk_path=r'C:\Users\Scott\Desktop\wee\DXSDK_Jun10.exe')
+        sdk8_path=os.path.join(local_dir, 'Standalone'),
+        wdk_iso=os.path.join(local_dir, 'GRMWDK_EN_7600_1.ISO'),
+        sdk7_update=os.path.join(local_dir, 'VC-Compiler-KB2519277.exe'),
+        sdk7_path=os.path.join(local_dir, 'GRMSDKX_EN_DVD.ISO'),
+        dxsdk_path=os.path.join(local_dir, 'DXSDK_Jun10.exe'))
   else:
     # Note that we do the Win8 SDK first so that its silly UAC prompt
     # happens before the user wanders off to get coffee.
@@ -204,16 +213,17 @@ class SourceImages2012():
     self.wdk_iso = wdk_iso
 
 
-def GetSourceImages2012():
+def GetSourceImages2012(local_dir):
   """Download all distribution archives for the components we need."""
-  if len(sys.argv) >= 2 and sys.argv[1] == 'local':
+  if local_dir:
     return SourceImages2012(
-        ex_path='C:\Users\Scott\Desktop\wee\VS2012_WDX_ENU.iso',
-        update_path='C:\Users\Scott\Desktop\wee\update1_standalone',
-        wdk_iso=r'c:\users\scott\desktop\wee\GRMWDK_EN_7600_1.ISO')
+        ex_path=os.path.join(local_dir, 'VS2012_WDX_ENU.iso'),
+        update_path=os.path.join(local_dir, 'update1_standalone'),
+        wdk_iso=os.path.join(local_dir, 'GRMWDK_EN_7600_1.ISO'))
   else:
-    ex_path = DownloadVS2012ExIso()
+    # Do the update first in case it fails or needs elevation.
     update_path = DownloadVS2012Update1()
+    ex_path = DownloadVS2012ExIso()
     wdk_iso = DownloadWDKIso()
     return SourceImages2012(
         ex_path=ex_path,
@@ -655,14 +665,19 @@ def GenerateTopLevelEnv(target_dir, vsversion):
 
 
 def main():
+  parser = OptionParser()
+  parser.add_option('--targetdir', metavar='DIR',
+                    help='put toolchain into DIR',
+                    default=os.path.abspath('win_toolchain'))
+  parser.add_option('--vsversion', metavar='VSVERSION',
+                    help='select VS version: 2010 or 2012', default='2010')
+  parser.add_option('--noclean', action='store_false', dest='clean',
+                    help='do not remove temp files',
+                    default=True)
+  parser.add_option('--local', metavar='DIR',
+                    help='use downloaded files from DIR')
+  options, args = parser.parse_args()
   try:
-    parser = OptionParser()
-    parser.add_option('--targetdir', metavar='DIR',
-                      help='put toolchain into DIR',
-                      default=os.path.abspath('win_toolchain'))
-    parser.add_option('--vsversion', metavar='VSVERSION',
-                      help='select VS version: 2010 or 2012', default='2010')
-    options, args = parser.parse_args()
     target_dir = os.path.abspath(options.targetdir)
     if os.path.exists(target_dir):
       sys.stderr.write('%s already exists. Please [re]move it or use '
@@ -675,11 +690,11 @@ def main():
     os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '7z'))
     assert options.vsversion in ('2010', '2012')
     if options.vsversion == '2012':
-      images = GetSourceImages2012()
+      images = GetSourceImages2012(options.local)
       extracted = ExtractComponents2012(images)
       CopyToFinalLocation2012(extracted, target_dir)
     else:
-      images = GetSourceImages2010()
+      images = GetSourceImages2010(options.local)
       extracted = ExtractComponents2010(images)
       CopyToFinalLocation2010(extracted, target_dir)
       PatchAsyncInfo(target_dir)
@@ -687,7 +702,8 @@ def main():
     GenerateSetEnvCmd(target_dir, options.vsversion)
     GenerateTopLevelEnv(target_dir, options.vsversion)
   finally:
-    DeleteAllTempDirs()
+    if options.clean:
+      DeleteAllTempDirs()
 
   sys.stdout.write(
       '\nIn a (clean) cmd shell, you can now run\n\n'
