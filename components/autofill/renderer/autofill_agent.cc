@@ -151,7 +151,7 @@ AutofillAgent::AutofillAgent(content::RenderView* render_view,
       has_shown_autofill_popup_for_current_edit_(false),
       did_set_node_text_(false),
       autocheckout_click_in_progress_(false),
-      is_whitelisted_for_autocheckout_(false),
+      try_to_show_autocheckout_bubble_(false),
       ignore_text_changes_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   render_view->GetWebView()->setAutofillClient(this);
@@ -189,8 +189,8 @@ bool AutofillAgent::OnMessageReceived(const IPC::Message& message) {
                         OnRequestAutocompleteResult)
     IPC_MESSAGE_HANDLER(AutofillMsg_FillFormsAndClick,
                         OnFillFormsAndClick)
-    IPC_MESSAGE_HANDLER(AutofillMsg_WhitelistedForAutocheckout,
-                        OnWhitelistedForAutocheckout)
+    IPC_MESSAGE_HANDLER(AutofillMsg_AutocheckoutSupported,
+                        OnAutocheckoutSupported)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -210,7 +210,6 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
     form_elements_.clear();
     has_more_forms = form_cache_.ExtractFormsAndFormElements(
         *frame, kRequiredAutofillFields, &forms, &form_elements_);
-    is_whitelisted_for_autocheckout_ = false;
   } else {
     form_cache_.ExtractForms(*frame, &forms);
   }
@@ -225,6 +224,7 @@ void AutofillAgent::DidFinishDocumentLoad(WebFrame* frame) {
 
 void AutofillAgent::DidStartProvisionalLoad(WebFrame* frame) {
   if (!frame->parent()) {
+    try_to_show_autocheckout_bubble_ = false;
     topmost_frame_ = NULL;
     if (click_timer_.IsRunning()) {
       click_timer_.Stop();
@@ -280,9 +280,6 @@ void AutofillAgent::ZoomLevelChanged() {
 }
 
 void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
-  if (!is_whitelisted_for_autocheckout_)
-    return;
-
   if (node.isNull() || !node.isElementNode())
     return;
 
@@ -297,22 +294,33 @@ void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
       !element->isTextField() || element->isPasswordField())
     return;
 
+  element_ = *element;
+
+  MaybeShowAutocheckoutBubble();
+}
+
+void AutofillAgent::MaybeShowAutocheckoutBubble() {
+  if (!try_to_show_autocheckout_bubble_ || element_.isNull() ||
+      !element_.focused())
+    return;
+
   FormData form;
   FormFieldData field;
   // This must be called to short circuit this method if it fails.
-  if (!FindFormAndFieldForInputElement(*element, &form, &field, REQUIRE_NONE))
+  if (!FindFormAndFieldForInputElement(element_, &form, &field, REQUIRE_NONE))
     return;
 
   content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(
-      element->document().frame());
-
-  element_ = *element;
+      element_.document().frame());
 
   Send(new AutofillHostMsg_MaybeShowAutocheckoutBubble(
       routing_id(),
       form.origin,
       ssl_status,
       GetScaledBoundingBox(web_view_->pageScaleFactor(), &element_)));
+
+  // We should only try once.
+  try_to_show_autocheckout_bubble_ = false;
 }
 
 void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
@@ -774,8 +782,9 @@ void AutofillAgent::OnFillFormsAndClick(
   }
 }
 
-void AutofillAgent::OnWhitelistedForAutocheckout() {
-  is_whitelisted_for_autocheckout_ = true;
+void AutofillAgent::OnAutocheckoutSupported() {
+  try_to_show_autocheckout_bubble_ = true;
+  MaybeShowAutocheckoutBubble();
 }
 
 void AutofillAgent::ClickFailed() {

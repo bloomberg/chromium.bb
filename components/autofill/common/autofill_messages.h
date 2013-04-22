@@ -166,8 +166,10 @@ IPC_MESSAGE_ROUTED2(AutofillMsg_FillFormsAndClick,
                     std::vector<autofill::FormData> /* form_data */,
                     autofill::WebElementDescriptor /* element_descriptor */)
 
-// Sent when the current page is whitelisted for Autocheckout.
-IPC_MESSAGE_ROUTED0(AutofillMsg_WhitelistedForAutocheckout)
+// Sent when Autocheckout is supported for the current page. The page has to
+// be whitelisted and the Autofill server must have returned Autocheckout page
+// metadata.
+IPC_MESSAGE_ROUTED0(AutofillMsg_AutocheckoutSupported)
 
 // Autofill messages sent from the renderer to the browser.
 

@@ -139,8 +139,8 @@ class AutofillAgent : public content::RenderViewObserver,
   void OnFillFormsAndClick(const std::vector<FormData>& form_data,
                            const WebElementDescriptor& element_descriptor);
 
-  // Called when |topmost_frame_| is whitelisted for Autocheckout.
-  void OnWhitelistedForAutocheckout();
+  // Called when |topmost_frame_| is supported for Autocheckout.
+  void OnAutocheckoutSupported();
 
   // Called when clicking an Autocheckout proceed element fails to do anything.
   void ClickFailed();
@@ -206,6 +206,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // Hides any currently showing Autofill UI in the browser only.
   void HideHostAutofillUi();
 
+  // Send |AutofillHostMsg_MaybeShowAutocheckoutBubble| to browser if needed.
+  void MaybeShowAutocheckoutBubble();
+
   FormCache form_cache_;
 
   PasswordAutofillAgent* password_autofill_agent_;  // WEAK reference.
@@ -253,8 +256,9 @@ class AutofillAgent : public content::RenderViewObserver,
   // Autocheckout flow.
   bool autocheckout_click_in_progress_;
 
-  // Whether or not |topmost_frame_| is whitelisted for Autocheckout.
-  bool is_whitelisted_for_autocheckout_;
+  // Whether or not we should try to offer the user Autocheckout functionality
+  // by sending |AutofillHostMsg_MaybeShowAutocheckoutBubble| to the browser.
+  bool try_to_show_autocheckout_bubble_;
 
   // Whether or not to ignore text changes.  Useful for when we're committing
   // a composition when we are defocusing the WebView and we don't want to

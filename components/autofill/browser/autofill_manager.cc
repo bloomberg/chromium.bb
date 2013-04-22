@@ -462,8 +462,6 @@ void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
     return;
 
   if (!GetAutocheckoutURLPrefix().empty()) {
-    host->Send(
-        new AutofillMsg_WhitelistedForAutocheckout(host->GetRoutingID()));
     // If whitelisted URL, fetch all the forms.
     if (has_more_forms) {
       host->Send(new AutofillMsg_GetAllForms(host->GetRoutingID()));
@@ -879,6 +877,12 @@ void AutofillManager::OnLoadedServerPredictions(
                                     form_structures_.get(),
                                     page_meta_data.get(),
                                     *metric_logger_);
+
+  if (page_meta_data->IsInAutofillableFlow()) {
+    RenderViewHost* host = web_contents()->GetRenderViewHost();
+    if (host)
+      host->Send(new AutofillMsg_AutocheckoutSupported(host->GetRoutingID()));
+  }
 
   // TODO(ahutter): Remove this once Autocheckout is implemented on other
   // platforms. See http://crbug.com/173416.
