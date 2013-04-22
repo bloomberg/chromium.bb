@@ -22,6 +22,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebViewBenchmarkSupport.h"
+#include "ui/gfx/codec/png_codec.h"
 #include "v8/include/v8.h"
 #include "webkit/compositor_bindings/web_rendering_stats_impl.h"
 
@@ -34,6 +35,15 @@ using WebKit::WebView;
 using WebKit::WebViewBenchmarkSupport;
 
 const char kGpuBenchmarkingExtensionName[] = "v8/GpuBenchmarking";
+
+static bool PNGEncodeBitmapToStream(SkWStream* stream, const SkBitmap& bm) {
+    std::vector<unsigned char> vector;
+    if (gfx::PNGCodec::EncodeBGRASkBitmap(bm, true, &vector)) {
+        if (stream->write(&vector.front() , vector.size()))
+            return true;
+    }
+    return false;
+}
 
 namespace {
 
@@ -73,7 +83,7 @@ class SkPictureRecorder : public WebViewBenchmarkSupport::PaintClient {
     DCHECK(!filepath.empty());
     SkFILEWStream file(filepath.c_str());
     DCHECK(file.isValid());
-    picture_.serialize(&file);
+    picture_.serialize(&file, &PNGEncodeBitmapToStream);
   }
 
  private:
