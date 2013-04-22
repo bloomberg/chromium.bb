@@ -745,7 +745,9 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenRecent) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestOpenOffline) {
+// FileManagerBrowserDriveTest.TestOpenOffline browser test times out on Linux
+// ChromiumOS Tests (dbg)(2) http://crbug.com/234367
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestOpenOffline) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
 
   ResultCatcher catcher;
