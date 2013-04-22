@@ -108,6 +108,8 @@ std::string DOMAction::VerbAsString() const {
       return "INSERTED";
     case XHR:
       return "XHR";
+    case WEBREQUEST:
+      return "WEBREQUEST";
     default:
       NOTREACHED();
       return NULL;
@@ -124,6 +126,8 @@ DOMAction::DOMActionType DOMAction::StringAsDOMActionType(
     return INSERTED;
   } else if (str == "XHR") {
     return XHR;
+  } else if (str == "WEBREQUEST") {
+    return WEBREQUEST;
   } else {
     NOTREACHED();
     return MODIFIED;  // this should never happen!

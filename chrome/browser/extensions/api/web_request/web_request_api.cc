@@ -17,6 +17,8 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/browser/extensions/activity_log.h"
+#include "chrome/browser/extensions/activity_log_web_request_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_rules_registry.h"
@@ -77,6 +79,7 @@ namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
 namespace web_request = extensions::api::web_request;
 namespace declarative_keys = extensions::declarative_webrequest_constants;
+namespace activitylog = activity_log_web_request_constants;
 
 namespace {
 
@@ -1401,6 +1404,157 @@ helpers::EventResponseDelta* CalculateDelta(
   return NULL;
 }
 
+Value* SerializeResponseHeaders(const helpers::ResponseHeaders& headers) {
+  scoped_ptr<ListValue> serialized_headers(new ListValue());
+  for (helpers::ResponseHeaders::const_iterator i = headers.begin();
+       i != headers.end(); ++i) {
+    serialized_headers->Append(ToHeaderDictionary(i->first, i->second));
+  }
+  return serialized_headers.release();
+}
+
+// Convert a RequestCookieModifications/ResponseCookieModifications object to a
+// ListValue which summarizes the changes made.  This is templated since the
+// two types (request/response) are different but contain essentially the same
+// fields.
+template<typename CookieType>
+ListValue* SummarizeCookieModifications(
+    const std::vector<linked_ptr<CookieType> >& modifications) {
+  scoped_ptr<ListValue> cookie_modifications(new ListValue());
+  for (typename std::vector<linked_ptr<CookieType> >::const_iterator i =
+           modifications.begin();
+       i != modifications.end(); ++i) {
+    scoped_ptr<DictionaryValue> summary(new DictionaryValue());
+    const CookieType& mod = *i->get();
+    switch (mod.type) {
+      case helpers::ADD:
+        summary->SetString(activitylog::kCookieModificationTypeKey,
+                           activitylog::kCookieModificationAdd);
+        break;
+      case helpers::EDIT:
+        summary->SetString(activitylog::kCookieModificationTypeKey,
+                           activitylog::kCookieModificationEdit);
+        break;
+      case helpers::REMOVE:
+        summary->SetString(activitylog::kCookieModificationTypeKey,
+                           activitylog::kCookieModificationRemove);
+        break;
+    }
+    if (mod.filter) {
+      if (mod.filter->name)
+        summary->SetString(activitylog::kCookieFilterNameKey,
+                           *mod.modification->name);
+      if (mod.filter->domain)
+        summary->SetString(activitylog::kCookieFilterDomainKey,
+                           *mod.modification->name);
+    }
+    if (mod.modification) {
+      if (mod.modification->name)
+        summary->SetString(activitylog::kCookieModDomainKey,
+                           *mod.modification->name);
+      if (mod.modification->domain)
+        summary->SetString(activitylog::kCookieModDomainKey,
+                           *mod.modification->name);
+    }
+    cookie_modifications->Append(summary.release());
+  }
+  return cookie_modifications.release();
+}
+
+// Converts an EventResponseDelta object to a dictionary value suitable for the
+// activity log.  The caller takes ownership of the returned DictionaryValue
+// object.
+DictionaryValue* SummarizeResponseDelta(
+    const std::string& event_name,
+    const helpers::EventResponseDelta& delta) {
+  scoped_ptr<DictionaryValue> details(new DictionaryValue());
+  if (delta.cancel) {
+    details->SetBoolean(activitylog::kCancelKey, true);
+  }
+  if (!delta.new_url.is_empty()) {
+      details->SetString(activitylog::kNewUrlKey, delta.new_url.spec());
+  }
+
+  scoped_ptr<ListValue> modified_headers(new ListValue());
+  net::HttpRequestHeaders::Iterator iter(delta.modified_request_headers);
+  while (iter.GetNext()) {
+    modified_headers->Append(ToHeaderDictionary(iter.name(), iter.value()));
+  }
+  if (!modified_headers->empty()) {
+    details->Set(activitylog::kModifiedRequestHeadersKey,
+                 modified_headers.release());
+  }
+
+  scoped_ptr<ListValue> deleted_headers(new ListValue());
+  deleted_headers->AppendStrings(delta.deleted_request_headers);
+  if (!deleted_headers->empty()) {
+    details->Set(activitylog::kDeletedRequestHeadersKey,
+                 deleted_headers.release());
+  }
+
+  if (!delta.added_response_headers.empty()) {
+    details->Set(activitylog::kAddedRequestHeadersKey,
+                 SerializeResponseHeaders(delta.added_response_headers));
+  }
+  if (!delta.deleted_response_headers.empty()) {
+    details->Set(activitylog::kDeletedResponseHeadersKey,
+                 SerializeResponseHeaders(delta.deleted_response_headers));
+  }
+  if (delta.auth_credentials) {
+    details->SetString(activitylog::kAuthCredentialsKey,
+                       UTF16ToUTF8(delta.auth_credentials->username()) + ":*");
+  }
+
+  if (!delta.response_cookie_modifications.empty()) {
+    details->Set(
+        activitylog::kResponseCookieModificationsKey,
+        SummarizeCookieModifications(delta.response_cookie_modifications));
+  }
+
+  return details.release();
+}
+
+void LogExtensionActivity(Profile* profile,
+                          const std::string& extension_id,
+                          const GURL& url,
+                          const std::string& api_call,
+                          DictionaryValue* details_raw) {
+  scoped_ptr<DictionaryValue> details(details_raw);
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(BrowserThread::UI,
+                            FROM_HERE,
+                            base::Bind(&LogExtensionActivity,
+                                       profile,
+                                       extension_id,
+                                       url,
+                                       api_call,
+                                       details.release()));
+  } else {
+    // An ExtensionService might not be running during unit tests, or an
+    // extension might have been unloadd by the time we get to logging it.  In
+    // those cases log a warning.
+    ExtensionService* extension_service =
+        extensions::ExtensionSystem::Get(profile)->extension_service();
+    if (!extension_service) {
+      LOG(WARNING) << "ExtensionService does not seem to be available "
+                   << "(this may be normal for unit tests)";
+    } else {
+      const Extension* extension =
+          extension_service->extensions()->GetByID(extension_id);
+      if (!extension) {
+        LOG(WARNING) << "Extension " << extension_id << " not found!";
+      } else {
+        extensions::ActivityLog::GetInstance(profile)->LogWebRequestAction(
+            extension,
+            url,
+            api_call,
+            details.Pass(),
+            "");
+      }
+    }
+  }
+}
+
 }  // namespace
 
 void ExtensionWebRequestEventRouter::DecrementBlockCount(
@@ -1421,9 +1575,19 @@ void ExtensionWebRequestEventRouter::DecrementBlockCount(
   CHECK_GE(num_handlers_blocking, 0);
 
   if (response) {
+    helpers::EventResponseDelta* delta =
+        CalculateDelta(&blocked_request, response);
+
+    if (extensions::ActivityLog::IsLogEnabled()) {
+      LogExtensionActivity(static_cast<Profile*>(profile),
+                           extension_id,
+                           blocked_request.request->url(),
+                           event_name,
+                           SummarizeResponseDelta(event_name, *delta));
+    }
+
     blocked_request.response_deltas.push_back(
-        linked_ptr<helpers::EventResponseDelta>(
-            CalculateDelta(&blocked_request, response)));
+        linked_ptr<helpers::EventResponseDelta>(delta));
   }
 
   base::TimeDelta block_time =
