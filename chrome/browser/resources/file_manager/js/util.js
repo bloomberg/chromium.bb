@@ -807,10 +807,11 @@ util.platform = {
    * @return {boolean} True for the new ui.
    */
   newUI: function() {
-    if (!util.platform.v2())
-      return false;
-    var manifest = chrome.runtime.getManifest();
-    return manifest.version >= 3.0;
+    if (util.platform.newUICached_ === undefined) {
+      var manifest = chrome.runtime.getManifest();
+      util.platform.newUICached_ = manifest.version >= 3.0;
+    }
+    return util.platform.newUICached_;
   },
 
   /**
