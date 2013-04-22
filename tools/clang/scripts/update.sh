@@ -8,7 +8,7 @@
 # Do NOT CHANGE this if you don't know what you're doing -- see
 # https://code.google.com/p/chromium/wiki/UpdatingClang
 # Reverting problematic clang rolls is safe, though.
-CLANG_REVISION=179138
+CLANG_REVISION=176256
 # ASan Mac builders are pinned to this revision, see http://crbug.com/170629.
 CLANG_ASAN_MAC_REVISION=170392
 
