@@ -192,8 +192,6 @@ class COMPOSITOR_EXPORT LayerAnimationElement {
 
   base::TimeDelta duration() const { return duration_; }
 
-  base::TimeDelta duration() { return duration_; }
-
   // Actually start the animation, dispatching to another thread if needed.
   virtual void RequestEffectiveStart(LayerAnimationDelegate* delegate);
 
