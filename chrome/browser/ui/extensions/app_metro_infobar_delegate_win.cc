@@ -10,6 +10,7 @@
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/app_list_service_win.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -20,7 +21,6 @@
 #include "content/public/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
-#include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "win8/util/win8_util.h"
@@ -71,7 +71,8 @@ AppMetroInfoBarDelegateWin::AppMetroInfoBarDelegateWin(
 AppMetroInfoBarDelegateWin::~AppMetroInfoBarDelegateWin() {}
 
 gfx::Image* AppMetroInfoBarDelegateWin::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(IDR_APP_LIST);
+  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+      chrome::GetAppListIconResourceId());
 }
 
 string16 AppMetroInfoBarDelegateWin::GetMessageText() const {

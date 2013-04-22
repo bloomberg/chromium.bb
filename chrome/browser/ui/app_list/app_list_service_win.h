@@ -11,6 +11,10 @@ namespace chrome {
 
 AppListService* GetAppListServiceWin();
 
+// Returns the resource id of the app list PNG icon used for the taskbar,
+// infobars and window decorations.
+int GetAppListIconResourceId();
+
 }  // namespace chrome
 
 #endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_WIN_H_

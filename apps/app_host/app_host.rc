@@ -30,7 +30,11 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_APP_HOST_MAIN  ICON  "..\\..\\chrome\\app\\theme\\app_list.ico"
+#if defined(GOOGLE_CHROME_BUILD)
+IDI_APP_HOST_MAIN ICON "..\\..\\chrome\\app\\theme\\google_chrome\\app_list.ico"
+#else
+IDI_APP_HOST_MAIN ICON "..\\..\\chrome\\app\\theme\\chromium\\app_list.ico"
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 //

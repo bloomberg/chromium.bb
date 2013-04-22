@@ -114,6 +114,7 @@
         'browser/ui/app_list/app_list_service_disabled.h',
         'browser/ui/app_list/app_list_service_mac.h',
         'browser/ui/app_list/app_list_service_selector.cc',
+        'browser/ui/app_list/app_list_service_win.cc',
         'browser/ui/app_list/app_list_service_win.h',
         'browser/ui/app_list/app_list_view_delegate.cc',
         'browser/ui/app_list/app_list_view_delegate.h',

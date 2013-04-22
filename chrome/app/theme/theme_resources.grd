@@ -40,8 +40,12 @@
       <structure type="chrome_scaled_image" name="IDR_ALLOWED_JAVASCRIPT" file="allowed_script.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DEFAULT_ICON" file="app_default_icon.png" />
       <structure type="chrome_scaled_image" name="IDR_APP_DROPARROW" file="app_droparrow.png" />
-      <if expr="pp_ifdef('enable_app_list') and is_win">
-        <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="win/app_list.png" />
+      <if expr="pp_ifdef('enable_app_list') and is_win and not pp_ifdef('_google_chrome')">
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="chromium/app_list_48.png" />
+      </if>
+      <if expr="pp_ifdef('enable_app_list') and is_win and pp_ifdef('_google_chrome')">
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="google_chrome/app_list_48.png" />
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_SXS" file="google_chrome/app_list_sxs_48.png" />
       </if>
       <if expr="pp_ifdef('enable_app_list') and not pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="win/app_list_v1_overlay.png" />

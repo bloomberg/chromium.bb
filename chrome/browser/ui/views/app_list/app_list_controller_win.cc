@@ -48,7 +48,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
-#include "grit/theme_resources.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -60,6 +59,10 @@
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/widget/widget.h"
 #include "win8/util/win8_util.h"
+
+#if defined(GOOGLE_CHROME_BUILD)
+#include "chrome/installer/util/install_util.h"
+#endif
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
@@ -76,16 +79,24 @@ static const int kAnchorOffset = 25;
 static const wchar_t kTrayClassName[] = L"Shell_TrayWnd";
 
 // Icons are added to the resources of the DLL using icon names. The icon index
-// for the app list icon is named IDR_X_APP_LIST. Creating shortcuts needs to
-// specify a resource index, which are different to icon names.  They are 0
-// based and contiguous. As Google Chrome builds have extra icons the icon for
-// Google Chrome builds need to be higher. Unfortunately these indexes are not
-// in any generated header file.
+// for the app list icon is named IDR_X_APP_LIST or (for official builds)
+// IDR_X_APP_LIST_SXS for Chrome Canary. Creating shortcuts needs to specify a
+// resource index, which are different to icon names.  They are 0 based and
+// contiguous. As Google Chrome builds have extra icons the icon for Google
+// Chrome builds need to be higher. Unfortunately these indexes are not in any
+// generated header file.
+int GetAppListIconIndex() {
+  const int kAppListIconIndex = 5;
+  const int kAppListIconIndexSxS = 6;
+  const int kAppListIconIndexChromium = 1;
 #if defined(GOOGLE_CHROME_BUILD)
-const int kAppListIconIndex = 5;
+  if (InstallUtil::IsChromeSxSProcess())
+    return kAppListIconIndexSxS;
+  return kAppListIconIndex;
 #else
-const int kAppListIconIndex = 1;
+  return kAppListIconIndexChromium;
 #endif
+}
 
 CommandLine GetAppListCommandLine() {
   const char* const kSwitchesToCopy[] = { switches::kUserDataDir };
@@ -172,7 +183,7 @@ void CreateAppListShortcuts(
   shortcut_properties.set_arguments(wide_switches);
   shortcut_properties.set_description(
       l10n_util::GetStringUTF16(IDS_APP_LIST_SHORTCUT_NAME));
-  shortcut_properties.set_icon(chrome_exe, kAppListIconIndex);
+  shortcut_properties.set_icon(chrome_exe, GetAppListIconIndex());
   shortcut_properties.set_app_id(app_model_id);
 
   const string16 file_name =
@@ -408,7 +419,7 @@ gfx::NativeWindow AppListControllerDelegateWin::GetAppListWindow() {
 
 gfx::ImageSkia AppListControllerDelegateWin::GetWindowIcon() {
   gfx::ImageSkia* resource = ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_APP_LIST);
+      GetImageSkiaNamed(chrome::GetAppListIconResourceId());
   return *resource;
 }
 
@@ -801,7 +812,7 @@ string16 AppListController::GetAppListIconPath() {
   }
 
   std::stringstream ss;
-  ss << "," << kAppListIconIndex;
+  ss << "," << GetAppListIconIndex();
   string16 result = icon_path.value();
   result.append(UTF8ToUTF16(ss.str()));
   return result;
