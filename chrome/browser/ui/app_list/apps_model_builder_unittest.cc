@@ -66,6 +66,8 @@ class AppsModelBuilderTest : public ExtensionServiceTestBase {
   virtual ~AppsModelBuilderTest() {}
 
   virtual void SetUp() OVERRIDE {
+    ExtensionServiceTestBase::SetUp();
+
     // Load "app_list" extensions test profile.
     // The test profile has 4 extensions:
     // 1 dummy extension, 2 packaged extension apps and 1 hosted extension app.

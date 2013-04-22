@@ -10,7 +10,6 @@
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/device_settings_provider.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/kiosk_app_local_settings.h"
@@ -330,19 +329,21 @@ void CrosSettings::FireObservers(const std::string& path) {
 }
 
 ScopedTestCrosSettings::ScopedTestCrosSettings()
-    : initialized_device_settings_service_(false) {
+    : initialized_device_settings_service_(false),
+      initialized_cros_settings_(false) {
   if (!DeviceSettingsService::IsInitialized()) {
     DeviceSettingsService::Initialize();
     initialized_device_settings_service_ = true;
   }
-  CrosSettings::Initialize();
+  if (!CrosSettings::IsInitialized()) {
+    CrosSettings::Initialize();
+    initialized_cros_settings_ = true;
+  }
 }
 
 ScopedTestCrosSettings::~ScopedTestCrosSettings() {
-  // UserManager holds a CrosSettings*, so ensure that it is destroyed.
-  UserManager* old_manager = UserManager::Set(NULL);
-  delete old_manager;
-  CrosSettings::Shutdown();
+  if (initialized_cros_settings_)
+    CrosSettings::Shutdown();
   if (initialized_device_settings_service_)
     DeviceSettingsService::Shutdown();
 }

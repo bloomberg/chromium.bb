@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/test_attempt_state.h"
 #include "chrome/browser/chromeos/login/user.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -62,7 +63,8 @@ class ParallelAuthenticatorTest : public testing::Test {
         file_thread_(BrowserThread::FILE, &message_loop_),
         io_thread_(BrowserThread::IO),
         username_("me@nowhere.org"),
-        password_("fakepass") {
+        password_("fakepass"),
+        user_manager_enabler_(new MockUserManager) {
     hash_ascii_.assign("0a010000000000a0");
     hash_ascii_.append(std::string(16, '0'));
   }
@@ -225,7 +227,8 @@ class ParallelAuthenticatorTest : public testing::Test {
   // Mocks, destroyed by CrosLibrary class.
   MockCertLibrary* mock_cert_library_;
   MockCryptohomeLibrary* mock_cryptohome_library_;
-  ScopedMockUserManagerEnabler mock_user_manager_;
+
+  ScopedUserManagerEnabler user_manager_enabler_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
 

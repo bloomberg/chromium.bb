@@ -26,7 +26,6 @@
 #include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "chrome/browser/chromeos/net/mock_connectivity_state_helper.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/mock_owner_key_util.h"
@@ -295,7 +294,7 @@ class LoginUtilsTest : public testing::Test,
     cryptohome_client_ = mock_dbus_thread_manager_.mock_cryptohome_client();
     EXPECT_CALL(*cryptohome_client_, IsMounted(_));
 
-    test_cros_settings_.reset(new ScopedTestCrosSettings);
+    test_user_manager_.reset(new ScopedTestUserManager);
 
     browser_process_->SetProfileManager(
         new ProfileManagerWithoutInit(scoped_temp_dir_.path()));
@@ -545,7 +544,7 @@ class LoginUtilsTest : public testing::Test,
   MockCryptohomeClient* cryptohome_client_;
 
   // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.
-  scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
+  scoped_ptr<ScopedTestUserManager> test_user_manager_;
 
   Profile* prepared_profile_;
 

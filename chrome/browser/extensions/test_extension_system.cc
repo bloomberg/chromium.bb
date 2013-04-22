@@ -28,7 +28,7 @@
 #include "content/public/browser/browser_thread.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -38,13 +38,6 @@ namespace extensions {
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       info_map_(new ExtensionInfoMap()) {
-#if defined OS_CHROMEOS
-  // TestExtensionSystem may or may not be created within
-  // TestExtensionEnvironment, so only create a ScopedTestCrosSettings instance
-  // if none has been created.
-  if (!chromeos::CrosSettings::IsInitialized())
-    test_cros_settings_.reset(new chromeos::ScopedTestCrosSettings);
-#endif
 }
 
 TestExtensionSystem::~TestExtensionSystem() {
@@ -99,7 +92,11 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProvider(
       standard_management_policy_provider_.get());
-  extension_service_.reset(new ExtensionService(profile_,
+#if defined(OS_CHROMEOS)
+  if (!test_user_manager_)
+    test_user_manager_.reset(new chromeos::ScopedTestUserManager);
+#endif
+    extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
                                                 install_directory,
                                                 extension_prefs_.get(),

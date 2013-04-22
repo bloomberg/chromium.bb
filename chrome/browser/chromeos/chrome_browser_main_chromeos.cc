@@ -499,6 +499,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // -- This used to be in ChromeBrowserMainParts::PreMainMessageLoopRun()
   // -- just before CreateProfile().
 
+  UserManager::Initialize();
+
   // Initialize the screen locker now so that it can receive
   // LOGIN_USER_CHANGED notification from UserManager.
   if (KioskModeSettings::Get()->IsKioskModeEnabled()) {
@@ -723,8 +725,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 
 // Shut down services before the browser process, etc are destroyed.
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
-  BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded",
-                                                        true);
+  BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
   g_browser_process->oom_priority_manager()->Stop();
 
@@ -808,6 +809,9 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   KioskAppManager::Shutdown();
 
   ChromeBrowserMainPartsLinux::PostMainMessageLoopRun();
+
+  // Destroy the UserManager after ash has been destroyed.
+  UserManager::Destroy();
 }
 
 void ChromeBrowserMainPartsChromeos::PostDestroyThreads() {
