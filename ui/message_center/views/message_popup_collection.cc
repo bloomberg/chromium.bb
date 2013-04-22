@@ -22,6 +22,16 @@
 #include "ui/views/widget/widget_delegate.h"
 
 namespace message_center {
+namespace {
+
+const int kToastMargin = kMarginBetweenItems;
+
+gfx::Size GetToastSize(views::View* view) {
+  int width = kNotificationWidth + view->GetInsets().width();
+  return gfx::Size(width, view->GetHeightForWidth(width));
+}
+
+}
 
 class ToastContentsView : public views::WidgetDelegateView {
  public:
@@ -68,8 +78,7 @@ class ToastContentsView : public views::WidgetDelegateView {
     views::Widget* widget = GetWidget();
     if (widget) {
       gfx::Rect bounds = widget->GetWindowBoundsInScreen();
-      bounds.set_width(kNotificationWidth);
-      bounds.set_height(view->GetHeightForWidth(kNotificationWidth));
+      bounds.set_size(GetToastSize(view));
       widget->SetBounds(bounds);
     }
     Layout();
@@ -144,11 +153,7 @@ class ToastContentsView : public views::WidgetDelegateView {
   }
 
   virtual gfx::Size GetPreferredSize() OVERRIDE {
-    if (child_count() == 0)
-      return gfx::Size();
-
-    return gfx::Size(kNotificationWidth,
-                     child_at(0)->GetHeightForWidth(kNotificationWidth));
+    return child_count() ? GetToastSize(child_at(0)) : gfx::Size();
   }
 
  private:
@@ -190,16 +195,15 @@ void MessagePopupCollection::UpdateWidgets() {
   gfx::Point base_position = GetWorkAreaBottomRight();
   int bottom = widgets_.empty() ?
       base_position.y() : widgets_.back()->GetWindowBoundsInScreen().y();
-  bottom -= kMarginBetweenItems;
-  int left = base_position.x() - kNotificationWidth - kMarginBetweenItems;
+  bottom -= kToastMargin;
   // Iterate in the reverse order to keep the oldest toasts on screen. Newer
   // items may be ignored if there are no room to place them.
   for (NotificationList::PopupNotifications::const_reverse_iterator iter =
            popups.rbegin(); iter != popups.rend(); ++iter) {
     MessageView* view =
         NotificationView::Create(*(*iter), message_center_, true);
-    int view_height = view->GetHeightForWidth(kNotificationWidth);
-    if (bottom - view_height - kMarginBetweenItems < 0) {
+    int view_height = GetToastSize(view).height();
+    if (bottom - view_height - kToastMargin < 0) {
       delete view;
       break;
     }
@@ -224,10 +228,12 @@ void MessagePopupCollection::UpdateWidgets() {
     // class. The policy should be specified from preference on Windows, or
     // the launcher alignment on ChromeOS.
     gfx::Rect bounds(widget->GetWindowBoundsInScreen());
-    bounds.set_origin(gfx::Point(left, bottom - bounds.height()));
+    bounds.set_origin(gfx::Point(
+        base_position.x() - bounds.width() - kToastMargin,
+        bottom - bounds.height()));
     widget->SetBounds(bounds);
     widget->Show();
-    bottom -= view_height + kMarginBetweenItems;
+    bottom -= view_height + kToastMargin;
   }
 }
 
@@ -301,13 +307,13 @@ gfx::Point MessagePopupCollection::GetWorkAreaBottomRight() {
 }
 
 void MessagePopupCollection::RepositionWidgets() {
-  int bottom = GetWorkAreaBottomRight().y() - kMarginBetweenItems;
+  int bottom = GetWorkAreaBottomRight().y() - kToastMargin;
   for (std::list<views::Widget*>::iterator iter = widgets_.begin();
        iter != widgets_.end(); ++iter) {
     gfx::Rect bounds((*iter)->GetWindowBoundsInScreen());
     bounds.set_y(bottom - bounds.height());
     (*iter)->SetBounds(bounds);
-    bottom -= bounds.height() + kMarginBetweenItems;
+    bottom -= bounds.height() + kToastMargin;
   }
 }
 
