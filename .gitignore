@@ -85,4 +85,5 @@ tests/modetest/modetest
 tests/kmstest/kmstest
 tests/vbltest/vbltest
 tests/radeon/radeon_ttm
+tests/exynos/exynos_fimg2d_test
 man/*.3
