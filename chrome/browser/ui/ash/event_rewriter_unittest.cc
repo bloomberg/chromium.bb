@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/preferences.h"
 #include "chromeos/ime/mock_xkeyboard.h"
 #include "ui/base/x/x11_util.h"
@@ -161,15 +160,13 @@ class EventRewriterTest : public testing::Test {
         keycode_equal_(XKeysymToKeycode(display_, XK_equal)),
         keycode_period_(XKeysymToKeycode(display_, XK_period)),
         keycode_insert_(XKeysymToKeycode(display_, XK_Insert)),
-        mock_user_manager_(new chromeos::MockUserManager),
-        user_manager_enabler_(mock_user_manager_),
         input_method_manager_mock_(NULL) {
   }
   virtual ~EventRewriterTest() {}
 
   virtual void SetUp() {
     // Mocking user manager because the real one needs to be called on UI thread
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
+    EXPECT_CALL(*user_manager_mock_.user_manager(), IsLoggedInAsGuest())
         .WillRepeatedly(testing::Return(false));
     input_method_manager_mock_ =
         new chromeos::input_method::MockInputMethodManager;
@@ -270,8 +267,7 @@ class EventRewriterTest : public testing::Test {
   const KeyCode keycode_equal_;
   const KeyCode keycode_period_;
   const KeyCode keycode_insert_;
-  chromeos::MockUserManager* mock_user_manager_;  // Not owned.
-  chromeos::ScopedUserManagerEnabler user_manager_enabler_;
+  chromeos::ScopedMockUserManagerEnabler user_manager_mock_;
   chromeos::input_method::MockInputMethodManager* input_method_manager_mock_;
 };
 

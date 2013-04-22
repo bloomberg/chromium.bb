@@ -67,6 +67,7 @@ class UserManagerTest : public testing::Test {
     UserImageManager::RegisterPrefs(local_state_->registry());
     WallpaperManager::RegisterPrefs(local_state_->registry());
 
+    old_user_manager_ = UserManager::Get();
     ResetUserManager();
   }
 
@@ -80,8 +81,15 @@ class UserManagerTest : public testing::Test {
       cros_settings_->RemoveSettingsProvider(&stub_settings_provider_));
     cros_settings_->AddSettingsProvider(device_settings_provider_);
 
+    UserManager::Set(old_user_manager_);
+
     // Shut down the DeviceSettingsService.
     DeviceSettingsService::Get()->UnsetSessionManager();
+
+    // Shut down the remaining UserManager instances.
+    if (user_manager_impl)
+      user_manager_impl->Shutdown();
+    UserManager::Get()->Shutdown();
 
     base::RunLoop().RunUntilIdle();
   }
@@ -107,11 +115,10 @@ class UserManagerTest : public testing::Test {
   }
 
   void ResetUserManager() {
-    // Reset the UserManager singleton.
-    user_manager_enabler_.reset();
-    // Initialize the UserManager singleton to a fresh UserManagerImpl instance.
-    user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(new UserManagerImpl));
+    if (user_manager_impl)
+      user_manager_impl->Shutdown();
+    user_manager_impl.reset(new UserManagerImpl());
+    UserManager::Set(user_manager_impl.get());
   }
 
   void SetDeviceSettings(bool ephemeral_users_enabled,
@@ -142,7 +149,8 @@ class UserManagerTest : public testing::Test {
   ScopedStubCrosEnabler stub_cros_enabler_;
   ScopedTestCrosSettings test_cros_settings_;
 
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
+  scoped_ptr<UserManagerImpl> user_manager_impl;
+  UserManager* old_user_manager_;
 };
 
 TEST_F(UserManagerTest, RetrieveTrustedDevicePolicies) {

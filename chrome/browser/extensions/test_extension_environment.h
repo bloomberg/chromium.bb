@@ -9,12 +9,12 @@
 #include "base/message_loop.h"
 #include "content/public/test/test_browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #endif
 
 class ExtensionService;
@@ -65,7 +65,8 @@ class TestExtensionEnvironment {
   // expected to be freed by a DeleteSoon() call.
 
 #if defined(OS_CHROMEOS)
-  chromeos::ScopedTestUserManager test_user_manager_;
+  // ExtensionService depends on UserManager which depends on CrosSettings.
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
 #endif
 
 #if defined(OS_WIN)

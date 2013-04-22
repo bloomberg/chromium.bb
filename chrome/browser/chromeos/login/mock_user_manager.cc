@@ -51,4 +51,17 @@ User* MockUserManager::CreatePublicAccountUser(const std::string& email) {
   return User::CreatePublicAccountUser(email);
 }
 
+ScopedMockUserManagerEnabler::ScopedMockUserManagerEnabler() {
+  user_manager_.reset(new MockUserManager());
+  old_user_manager_ = UserManager::Set(user_manager_.get());
+}
+
+ScopedMockUserManagerEnabler::~ScopedMockUserManagerEnabler() {
+  UserManager::Set(old_user_manager_);
+}
+
+MockUserManager* ScopedMockUserManagerEnabler::user_manager() {
+  return user_manager_.get();
+}
+
 }  // namespace chromeos

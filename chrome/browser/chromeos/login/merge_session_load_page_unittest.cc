@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/merge_session_load_page.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_controller.h"
@@ -76,7 +76,7 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread io_thread_;
 
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
-  chromeos::ScopedTestUserManager test_user_manager_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionLoadPageTest);
 };

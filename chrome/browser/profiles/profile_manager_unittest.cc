@@ -41,8 +41,6 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -142,10 +140,6 @@ class ProfileManagerTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   // IOThread is necessary for the creation of some services below.
   IOThread io_thread_;
-
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {

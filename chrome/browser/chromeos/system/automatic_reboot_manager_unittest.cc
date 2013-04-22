@@ -27,7 +27,6 @@
 #include "base/time/tick_clock.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -182,8 +181,7 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
   MockUpdateEngineClient* update_engine_client_;  // Not owned.
 
   TestingPrefServiceSimple local_state_;
-  MockUserManager* mock_user_manager_;  // Not owned.
-  ScopedUserManagerEnabler user_manager_enabler_;
+  ScopedMockUserManagerEnabler scoped_mock_user_manager_enabler_;
 };
 
 // This class runs each test case twice, once with and once without a logged-in
@@ -323,9 +321,7 @@ AutomaticRebootManagerBasicTest::AutomaticRebootManagerBasicTest()
       reboot_after_update_(false),
       ui_thread_task_runner_handle_(task_runner_),
       power_manager_client_(NULL),
-      update_engine_client_(NULL),
-      mock_user_manager_(new MockUserManager),
-      user_manager_enabler_(mock_user_manager_) {
+      update_engine_client_(NULL) {
 }
 
 AutomaticRebootManagerBasicTest::~AutomaticRebootManagerBasicTest() {
@@ -352,7 +348,8 @@ void AutomaticRebootManagerBasicTest::SetUp() {
   power_manager_client_ = dbus_manager->mock_power_manager_client();
   update_engine_client_ = dbus_manager->mock_update_engine_client();
 
-  EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
+  EXPECT_CALL(*scoped_mock_user_manager_enabler_.user_manager(),
+              IsUserLoggedIn())
      .WillRepeatedly(ReturnPointee(&is_user_logged_in_));
   EXPECT_CALL(*update_engine_client_, GetLastStatus())
       .WillRepeatedly(ReturnPointee(&update_engine_client_status_));

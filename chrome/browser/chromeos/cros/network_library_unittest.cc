@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/cros/network_library_impl_stub.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/google_apis/test_util.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
@@ -167,11 +166,9 @@ class NetworkLibraryStubTest : public ::testing::Test {
                                 std::string shill_json,
                                 onc::ONCSource source,
                                 bool expect_successful_import) {
-    MockUserManager* mock_user_manager = new MockUserManager;
-    // Takes ownership of |mock_user_manager|.
-    ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
-    mock_user_manager->SetActiveUser("madmax@my.domain.com");
-    EXPECT_CALL(*mock_user_manager, IsUserLoggedIn())
+    ScopedMockUserManagerEnabler mock_user_manager;
+    mock_user_manager.user_manager()->SetActiveUser("madmax@my.domain.com");
+    EXPECT_CALL(*mock_user_manager.user_manager(), IsUserLoggedIn())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
 

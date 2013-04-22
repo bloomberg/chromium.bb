@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login/user_manager.h"
 
-#include "base/logging.h"
 #include "chrome/browser/chromeos/login/user_manager_impl.h"
 
 namespace chromeos {
@@ -19,64 +18,58 @@ const char UserManager::kLocallyManagedUserDomain[] =
 // static
 const char UserManager::kKioskAppUserDomain[] = "kiosk-apps.localhost";
 
-static UserManager* g_user_manager = NULL;
+// Class that is holds pointer to UserManager instance.
+// One could set UserManager mock instance through it (see UserManager::Set).
+class UserManagerImplWrapper {
+ public:
+  static UserManagerImplWrapper* GetInstance() {
+    return Singleton<UserManagerImplWrapper>::get();
+  }
 
-// static
-void UserManager::Initialize() {
-  CHECK(!g_user_manager);
-  g_user_manager = new UserManagerImpl();
-}
+ protected:
+  ~UserManagerImplWrapper() {
+  }
 
-// static
-bool UserManager::IsInitialized() {
-  return g_user_manager;
-}
+  UserManager* get() {
+    if (!ptr_.get())
+      reset(new UserManagerImpl);
+    return ptr_.get();
+  }
 
-void UserManager::Destroy() {
-  DCHECK(g_user_manager);
-  delete g_user_manager;
-  g_user_manager = NULL;
-}
+  void reset(UserManager* ptr) {
+    ptr_.reset(ptr);
+  }
+
+  UserManager* release() {
+    return ptr_.release();
+  }
+
+ private:
+  friend struct DefaultSingletonTraits<UserManagerImplWrapper>;
+
+  friend class UserManager;
+
+  UserManagerImplWrapper() {
+  }
+
+  scoped_ptr<UserManager> ptr_;
+
+  DISALLOW_COPY_AND_ASSIGN(UserManagerImplWrapper);
+};
 
 // static
 UserManager* UserManager::Get() {
-  CHECK(g_user_manager);
-  return g_user_manager;
-}
-
-UserManager::~UserManager() {
+  return UserManagerImplWrapper::GetInstance()->get();
 }
 
 // static
-UserManager* UserManager::SetForTesting(UserManager* user_manager) {
-  UserManager* previous_user_manager = g_user_manager;
-  g_user_manager = user_manager;
-  return previous_user_manager;
+UserManager* UserManager::Set(UserManager* mock) {
+  UserManager* old_manager = UserManagerImplWrapper::GetInstance()->release();
+  UserManagerImplWrapper::GetInstance()->reset(mock);
+  return old_manager;
 }
 
-ScopedUserManagerEnabler::ScopedUserManagerEnabler(UserManager* user_manager)
-    : previous_user_manager_(UserManager::SetForTesting(user_manager)) {
-}
-
-ScopedUserManagerEnabler::~ScopedUserManagerEnabler() {
-  UserManager::Get()->Shutdown();
-  UserManager::Destroy();
-  UserManager::SetForTesting(previous_user_manager_);
-}
-
-ScopedTestUserManager::ScopedTestUserManager()
-    : initialized_user_manager_(false) {
-  if (!UserManager::IsInitialized()) {
-    UserManager::Initialize();
-    initialized_user_manager_ = true;
-  }
-}
-
-ScopedTestUserManager::~ScopedTestUserManager() {
-  if (initialized_user_manager_) {
-    UserManager::Get()->Shutdown();
-    UserManager::Destroy();
-  }
+UserManager::~UserManager() {
 }
 
 }  // namespace chromeos

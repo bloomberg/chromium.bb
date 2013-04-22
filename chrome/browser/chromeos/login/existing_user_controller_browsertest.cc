@@ -148,7 +148,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   ExistingUserControllerTest()
       : mock_network_library_(NULL),
         mock_login_display_(NULL),
-        mock_user_manager_(NULL),
+        mock_login_display_host_(NULL),
         testing_profile_(NULL) {
   }
 
@@ -207,6 +207,35 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
 
   virtual void SetUpSessionManager(
       MockDBusThreadManager* mock_dbus_thread_manager) {
+    mock_user_manager_.reset(new ScopedMockUserManagerEnabler);
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsKnownUser(kUsername))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsKnownUser(kNewUsername))
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsUserLoggedIn())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsLoggedInAsGuest())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsLoggedInAsDemoUser())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(),
+                IsLoggedInAsPublicAccount())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsSessionStarted())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), IsCurrentUserNew())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_user_manager_->user_manager(), Shutdown())
+        .Times(1);
+
     MockSessionManagerClient* mock_session_manager_client =
         mock_dbus_thread_manager->mock_session_manager_client();
     EXPECT_CALL(*mock_session_manager_client, EmitLoginPromptReady())
@@ -232,41 +261,7 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     command_line->AppendSwitch(switches::kLoginManager);
   }
 
-  virtual void SetUpUserManager() {
-    // Replace the UserManager singleton with a mock.
-    mock_user_manager_ = new MockUserManager;
-    user_manager_enabler_.reset(
-        new ScopedUserManagerEnabler(mock_user_manager_));
-    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kUsername))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(true));
-    EXPECT_CALL(*mock_user_manager_, IsKnownUser(kNewUsername))
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsUserLoggedIn())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsGuest())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsDemoUser())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsLoggedInAsPublicAccount())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsSessionStarted())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
-        .Times(AnyNumber())
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*mock_user_manager_, Shutdown())
-        .Times(1);
-  }
-
   virtual void SetUpOnMainThread() OVERRIDE {
-    SetUpUserManager();
     testing_profile_.reset(new TestingProfile());
     existing_user_controller_.reset(
         new ExistingUserController(mock_login_display_host_.get()));
@@ -287,7 +282,6 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
     existing_user_controller_.reset();
     CrosInProcessBrowserTest::CleanUpOnMainThread();
     testing_profile_.reset(NULL);
-    user_manager_enabler_.reset();
   }
 
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
@@ -322,11 +316,10 @@ class ExistingUserControllerTest : public CrosInProcessBrowserTest {
   MockLoginDisplay* mock_login_display_;
   scoped_ptr<MockLoginDisplayHost> mock_login_display_host_;
 
+  scoped_ptr<ScopedMockUserManagerEnabler> mock_user_manager_;
+
   // Owned by LoginUtilsWrapper.
   MockLoginUtils* mock_login_utils_;
-
-  MockUserManager* mock_user_manager_;  // Not owned.
-  scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;
 
   scoped_ptr<TestingProfile> testing_profile_;
 
@@ -366,7 +359,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, ExistingUserLogin) {
   EXPECT_CALL(*mock_login_display_host_,
               StartWizardPtr(WizardController::kTermsOfServiceScreenName, NULL))
       .Times(0);
-  EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
+  EXPECT_CALL(*mock_user_manager_->user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   existing_user_controller()->Login(UserContext(kUsername, kPassword, ""));
@@ -382,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest, AutoEnrollAfterSignIn) {
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
-  EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
+  EXPECT_CALL(*mock_user_manager_->user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(false));
   // The order of these expected calls matters: the UI if first disabled
@@ -428,7 +421,7 @@ IN_PROC_BROWSER_TEST_F(ExistingUserControllerTest,
       .Times(1);
   EXPECT_CALL(*mock_login_display_host_.get(), OnCompleteLogin())
       .Times(1);
-  EXPECT_CALL(*mock_user_manager_, IsCurrentUserNew())
+  EXPECT_CALL(*mock_user_manager_->user_manager(), IsCurrentUserNew())
       .Times(AnyNumber())
       .WillRepeatedly(Return(true));
 
@@ -536,9 +529,6 @@ class ExistingUserControllerPublicSessionTest
       .Times(AnyNumber());
     EXPECT_CALL(*mock_login_display_, Init(_, _, _, _))
       .Times(AnyNumber());
-  }
-
-  virtual void SetUpUserManager() OVERRIDE {
   }
 
   void ExpectSuccessfulLogin(const std::string& username,

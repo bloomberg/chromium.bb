@@ -15,10 +15,6 @@
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
@@ -134,10 +130,6 @@ class BrowserWithTestWindowTest : public testing::Test {
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_user_blocking_thread_;
-
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<BrowserWindow> window_;  // Usually a TestBrowserWindow.
