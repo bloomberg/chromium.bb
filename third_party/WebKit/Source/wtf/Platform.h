@@ -459,7 +459,6 @@
 #define HAVE_STRINGS_H 1
 #define HAVE_SYS_PARAM_H 1
 #define HAVE_SYS_TIME_H 1 
-#define WTF_USE_OS_RANDOMNESS 1
 #define WTF_USE_PTHREADS 1
 #endif /* OS(UNIX) */
 
@@ -509,7 +508,6 @@
 #define HAVE_ALIGNED_MALLOC 1
 #define HAVE_ISDEBUGGERPRESENT 1
 #define HAVE_VIRTUALALLOC 1
-#define WTF_USE_OS_RANDOMNESS 1
 #endif
 
 /* FIXME: When all platforms' compositors can compute their own filter outsets, we should remove this define. 
