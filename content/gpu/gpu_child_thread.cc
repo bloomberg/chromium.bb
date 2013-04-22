@@ -82,6 +82,9 @@ GpuChildThread::GpuChildThread(const std::string& channel_id)
 }
 
 GpuChildThread::~GpuChildThread() {
+}
+
+void GpuChildThread::Shutdown() {
   logging::SetLogMessageHandler(NULL);
 }
 

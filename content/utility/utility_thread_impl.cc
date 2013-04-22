@@ -45,6 +45,9 @@ UtilityThreadImpl::UtilityThreadImpl()
 }
 
 UtilityThreadImpl::~UtilityThreadImpl() {
+}
+
+void UtilityThreadImpl::Shutdown() {
   WebKit::shutdown();
 }
 

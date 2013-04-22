@@ -25,6 +25,7 @@ class PluginThread : public ChildThread {
  public:
   PluginThread();
   virtual ~PluginThread();
+  virtual void Shutdown() OVERRIDE;
 
   // Returns the one plugin thread.
   static PluginThread* current();

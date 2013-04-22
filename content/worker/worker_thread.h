@@ -23,6 +23,7 @@ class WorkerThread : public ChildThread {
  public:
   WorkerThread();
   virtual ~WorkerThread();
+  virtual void Shutdown() OVERRIDE;
 
   // Returns the one worker thread.
   static WorkerThread* current();

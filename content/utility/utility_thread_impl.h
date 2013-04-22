@@ -27,6 +27,7 @@ class UtilityThreadImpl : public UtilityThread,
  public:
   UtilityThreadImpl();
   virtual ~UtilityThreadImpl();
+  virtual void Shutdown() OVERRIDE;
 
   virtual bool Send(IPC::Message* msg) OVERRIDE;
   virtual void ReleaseProcessIfNeeded() OVERRIDE;

@@ -108,6 +108,7 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   // Constructor that's used when running in single process mode.
   explicit RenderThreadImpl(const std::string& channel_name);
   virtual ~RenderThreadImpl();
+  virtual void Shutdown() OVERRIDE;
 
   // When initializing WebKit, ensure that any schemes needed for the content
   // module are registered properly.  Static to allow sharing with tests.

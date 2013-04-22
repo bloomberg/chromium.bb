@@ -113,6 +113,9 @@ PpapiThread::PpapiThread(const CommandLine& command_line, bool is_broker)
 }
 
 PpapiThread::~PpapiThread() {
+}
+
+void PpapiThread::Shutdown() {
   ppapi::proxy::PluginGlobals::Get()->set_plugin_proxy_delegate(NULL);
   if (plugin_entry_points_.shutdown_module)
     plugin_entry_points_.shutdown_module();

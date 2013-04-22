@@ -43,6 +43,8 @@ class GpuChildThread : public ChildThread {
 
   virtual ~GpuChildThread();
 
+  virtual void Shutdown() OVERRIDE;
+
   void Init(const base::Time& process_start_time);
   void StopWatchdog();
 

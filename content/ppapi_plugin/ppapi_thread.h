@@ -47,6 +47,7 @@ class PpapiThread : public ChildThread,
  public:
   PpapiThread(const CommandLine& command_line, bool is_broker);
   virtual ~PpapiThread();
+  virtual void Shutdown() OVERRIDE;
 
  private:
   // Make sure the enum list in tools/histogram/histograms.xml is updated with

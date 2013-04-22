@@ -71,7 +71,10 @@ ChildProcess::~ChildProcess() {
 
   // Kill the main thread object before nulling child_process_, since
   // destruction code might depend on it.
-  main_thread_.reset();
+  if (main_thread_) {  // null in unittests.
+    main_thread_->Shutdown();
+    main_thread_.reset();
+  }
 
   child_process_ = NULL;
 }

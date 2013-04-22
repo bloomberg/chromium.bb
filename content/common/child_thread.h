@@ -43,7 +43,13 @@ class CONTENT_EXPORT ChildThread : public IPC::Listener, public IPC::Sender {
   ChildThread();
   // Used for single-process mode.
   explicit ChildThread(const std::string& channel_name);
+  // ChildProcess::main_thread() is reset after Shutdown(), and before the
+  // destructor, so any subsystem that relies on ChildProcess::main_thread()
+  // must be terminated before Shutdown returns. In particular, if a subsystem
+  // has a thread that post tasks to ChildProcess::main_thread(), that thread
+  // should be joined in Shutdown().
   virtual ~ChildThread();
+  virtual void Shutdown() = 0;
 
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
