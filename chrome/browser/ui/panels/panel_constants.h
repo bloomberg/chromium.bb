@@ -32,7 +32,7 @@ static const int kPanelAppIconSize = 32;
 static const int kPanelButtonSize = 24;
 
 // The padding in pixeles between the icon and the left border.
-const int kTitlebarLeftPadding = 10;
+const int kTitlebarLeftPadding = 0;
 
 // The padding in pixeles between the close button and the right border.
 const int kTitlebarRightPadding = 6;

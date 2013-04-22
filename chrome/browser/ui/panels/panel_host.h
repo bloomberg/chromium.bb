@@ -11,8 +11,8 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_zoom.h"
+#include "ui/gfx/image/image.h"
 
-class FaviconTabHelper;
 class GURL;
 class Panel;
 class PrefsTabHelper;
@@ -81,6 +81,9 @@ class PanelHost : public content::WebContentsDelegate,
   virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
   virtual void WebContentsDestroyed(
       content::WebContents* web_contents) OVERRIDE;
+  virtual void DidUpdateFaviconURL(
+      int32 page_id,
+      const std::vector<content::FaviconURL>& candidates) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate overrides.
@@ -101,6 +104,11 @@ class PanelHost : public content::WebContentsDelegate,
   // Message handlers.
   void OnRequest(const ExtensionHostMsg_Request_Params& params);
 
+  void DidDownloadFavicon(int id,
+                          const GURL& image_url,
+                          int requested_size,
+                          const std::vector<SkBitmap>& bitmaps);
+
   Panel* panel_;  // Weak, owns us.
   Profile* profile_;
   ExtensionFunctionDispatcher extension_function_dispatcher_;
@@ -109,6 +117,11 @@ class PanelHost : public content::WebContentsDelegate,
   base::WeakPtrFactory<PanelHost> weak_factory_;
 
   scoped_ptr<content::WebContents> web_contents_;
+
+  // For loading favicon.
+  gfx::Image favicon_image_;
+  GURL favicon_image_url_;
+  base::WeakPtrFactory<PanelHost> favicon_loading_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelHost);
 };

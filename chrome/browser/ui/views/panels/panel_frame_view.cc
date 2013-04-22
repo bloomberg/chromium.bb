@@ -41,7 +41,7 @@ namespace {
 const int kNonAeroBorderThickness = 1;
 
 // The height and width in pixels of the icon.
-const int kIconSize = 16;
+const int kIconSize = panel::kTitlebarHeight;
 
 // The font to use to draw the title.
 const char* kTitleFontName = "Arial Bold";

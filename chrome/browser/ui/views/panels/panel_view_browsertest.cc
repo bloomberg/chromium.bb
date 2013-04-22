@@ -120,7 +120,7 @@ IN_PROC_BROWSER_TEST_F(PanelViewTest, PanelLayout) {
   int titlebar_height = panel::kTitlebarHeight;
   EXPECT_GT(title_icon->width(), 0);
   EXPECT_GT(title_icon->height(), 0);
-  EXPECT_LT(title_icon->height(), titlebar_height);
+  EXPECT_EQ(title_icon->height(), titlebar_height);
   EXPECT_GT(title_text->width(), 0);
   EXPECT_GT(title_text->height(), 0);
   EXPECT_LT(title_text->height(), titlebar_height);
