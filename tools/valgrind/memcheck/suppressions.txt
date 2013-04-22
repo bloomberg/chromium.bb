@@ -6370,7 +6370,7 @@
    fun:_ZN7WebCore14DocumentLoader15finishedLoadingEv
 }
 {
-   bug_170623
+   bug_170623_a
    Memcheck:Unaddressable
    fun:_ZN12_GLOBAL__N_114chromiumDeleteEP11sqlite3_vfsPKci
    fun:sqlite3OsDelete
@@ -6389,6 +6389,29 @@
    fun:_ZN7WebCore14SQLTransaction19postflightAndCommitEv
    fun:_ZN7WebCore14SQLTransaction13runStatementsEv
 }
+{
+   bug_170623_b
+   Memcheck:Unaddressable
+   fun:_ZN12_GLOBAL__N_112chromiumOpenEP11sqlite3_vfsPKcP12sqlite3_fileiPi
+   fun:sqlite3OsOpen
+   fun:pager_open_journal
+   fun:pager_write
+   fun:sqlite3PagerWrite
+   fun:sqlite3BtreeDelete
+   fun:sqlite3VdbeExec
+   fun:sqlite3Step
+   fun:sqlite3_step
+   fun:_ZN7WebCore15SQLiteStatement4stepEv
+   fun:_ZN7WebCoreL22setTextValueInDatabaseERNS_14SQLiteDatabaseERKN3WTF6StringES5_
+   fun:_ZN7WebCore19DatabaseBackendBase20setVersionInDatabaseERKN3WTF6StringEb
+   fun:_ZN7WebCore20ChangeVersionWrapper17performPostflightEPNS_21SQLTransactionBackendE
+   fun:_ZN7WebCore21SQLTransactionBackend19postflightAndCommitEv
+   fun:_ZN7WebCore26SQLTransactionStateMachineINS_21SQLTransactionBackendEE15runStateMachineEv
+   fun:_ZN7WebCore21SQLTransactionBackend15performNextStepEv
+   fun:_ZN7WebCore15DatabaseBackend23DatabaseTransactionTask13doPerformTaskEv
+   fun:_ZN7WebCore12DatabaseTask11performTaskEv
+}
+
 {
    bug_171722
    Memcheck:Leak
@@ -7088,4 +7111,14 @@
    fun:_ZN2cc13LayerTreeHost18PaintLayerContentsERKSt6vectorI13scoped_refptrINS_5LayerEESaIS4_EEPNS_19ResourceUpdateQueueE
    fun:_ZN2cc13LayerTreeHost12UpdateLayersEPNS_5LayerEPNS_19ResourceUpdateQueueE
 }
-
+{
+   bug_233961
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN7content26ResourceDispatcherHostImpl12BeginRequestEiRK23ResourceHostMsg_RequestPN3IPC7MessageEi
+   fun:_ZN7content26ResourceDispatcherHostImpl17OnRequestResourceERKN3IPC7MessageEiRK23ResourceHostMsg_Request
+   fun:_ZN31ResourceHostMsg_RequestResource8DispatchIN7content26ResourceDispatcherHostImplES2_iRK23ResourceHostMsg_RequestEEbPKN3IPC7MessageEPT_PT0_MSA_FvRS8_T1_T2_E
+   fun:_ZN7content26ResourceDispatcherHostImpl17OnMessageReceivedERKN3IPC7MessageEPNS_21ResourceMessageFilterEPb
+   ...
+   fun:_ZN7content*ResourceDispatcherHostTest_*_Test8TestBodyEv
+}

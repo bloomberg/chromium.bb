@@ -1892,3 +1892,22 @@
    fun:content::NavigationControllerImpl::GetSessionStorageNamespace
    fun:content::RenderViewHostManager::Init
 }
+{
+   bug_233541
+   Heapcheck:Leak
+   ...
+   fun:DiskCacheTestWithCache::CreateBackend
+   ...
+   fun:DiskCacheTestWithCache::InitCache
+   fun:DiskCacheBackendTest_SimpleDoom*
+}
+{
+   bug_233961
+   Heapcheck:Leak
+   fun:content::ResourceDispatcherHostImpl::BeginRequest
+   fun:content::ResourceDispatcherHostImpl::OnRequestResource
+   fun:ResourceHostMsg_RequestResource::Dispatch
+   fun:content::ResourceDispatcherHostImpl::OnMessageReceived
+   ...
+   fun:content::ResourceDispatcherHostTest_*_Test::TestBody
+}
