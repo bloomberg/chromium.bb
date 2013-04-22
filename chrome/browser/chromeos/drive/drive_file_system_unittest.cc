@@ -2122,4 +2122,62 @@ TEST_F(DriveFileSystemTest, WebAppsRegistryIsLoaded) {
   EXPECT_EQ(1U, apps.size());
 }
 
+TEST_F(DriveFileSystemTest, MarkCacheFileAsMountedAndUnmounted) {
+  fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
+  ASSERT_TRUE(LoadRootFeedDocument());
+
+  base::FilePath file_in_root(FILE_PATH_LITERAL("drive/root/File 1.txt"));
+  scoped_ptr<DriveEntryProto> entry(GetEntryInfoByPathSync(file_in_root));
+  ASSERT_TRUE(entry);
+
+  // Write to cache.
+  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  cache_->Store(entry->resource_id(),
+                entry->file_specific_info().file_md5(),
+                google_apis::test_util::GetTestFilePath(
+                    "chromeos/gdata/root_feed.json"),
+                DriveCache::FILE_OPERATION_COPY,
+                google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+  ASSERT_EQ(DRIVE_FILE_OK, error);
+
+  // Test for mounting.
+  base::FilePath file_path;
+  file_system_->MarkCacheFileAsMounted(
+      file_in_root,
+      google_apis::test_util::CreateCopyResultCallback(&error, &file_path));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+
+  bool success = false;
+  DriveCacheEntry cache_entry;
+  cache_->GetCacheEntry(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_TRUE(success);
+  EXPECT_TRUE(cache_entry.is_mounted());
+
+  // Test for unmounting.
+  error = DRIVE_FILE_ERROR_FAILED;
+  file_system_->MarkCacheFileAsUnmounted(
+      file_path,
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(DRIVE_FILE_OK, error);
+
+  success = false;
+  cache_->GetCacheEntry(
+      entry->resource_id(),
+      entry->file_specific_info().file_md5(),
+      google_apis::test_util::CreateCopyResultCallback(&success, &cache_entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_TRUE(success);
+  EXPECT_FALSE(cache_entry.is_mounted());
+}
+
 }   // namespace drive

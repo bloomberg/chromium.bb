@@ -136,6 +136,11 @@ class DriveFileSystem : public DriveFileSystemInterface,
                                const FileOperationCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
+  virtual void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
+                                    const OpenFileCallback& callback) OVERRIDE;
+  virtual void MarkCacheFileAsUnmounted(
+      const base::FilePath& cache_file_path,
+      const FileOperationCallback& callback) OVERRIDE;
   virtual void Reload() OVERRIDE;
 
   // file_system::OperationObserver overrides.
@@ -443,6 +448,13 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetEntryInfoCallback& callback,
       base::PlatformFileInfo* file_info,
       bool get_file_info_result);
+
+  // Part of MarkCacheFileAsMounted. Called after GetEntryInfoByPath is
+  // completed. |callback| must not be null.
+  void MarkCacheFileAsMountedAfterGetEntryInfo(
+      const OpenFileCallback& callback,
+      DriveFileError error,
+      scoped_ptr<DriveEntryProto> entry_proto);
 
   // The profile hosts the DriveFileSystem via DriveSystemService.
   Profile* profile_;

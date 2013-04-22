@@ -108,6 +108,12 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   }
   MOCK_METHOD1(GetMetadata,
                void(const GetFilesystemMetadataCallback& callback));
+  MOCK_METHOD2(MarkCacheFileAsMounted,
+               void(const base::FilePath& drive_file_path,
+                    const OpenFileCallback& callback));
+  MOCK_METHOD2(MarkCacheFileAsUnmounted,
+               void(const base::FilePath& cache_file_path,
+                    const FileOperationCallback& callback));
   MOCK_METHOD0(Reload, void());
 };
 

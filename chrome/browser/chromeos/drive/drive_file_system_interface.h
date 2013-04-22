@@ -432,6 +432,20 @@ class DriveFileSystemInterface {
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) = 0;
 
+  // Marks the cached file as mounted, and runs |callback| upon completion.
+  // If succeeded, the cached file path will be passed to the |callback|.
+  // |callback| must not be null.
+  virtual void MarkCacheFileAsMounted(const base::FilePath& drive_file_path,
+                                    const OpenFileCallback& callback) = 0;
+
+  // Marks the cached file as unmounted, and runs |callback| upon completion.
+  // Note that this method expects that the |cached_file_path| is the path
+  // returned by MarkCacheFileAsMounted().
+  // |callback| must not be null.
+  virtual void MarkCacheFileAsUnmounted(
+      const base::FilePath& cache_file_path,
+      const FileOperationCallback& callback) = 0;
+
   // Reloads the file system feeds from the server.
   virtual void Reload() = 0;
 };

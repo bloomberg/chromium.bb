@@ -1413,6 +1413,49 @@ void DriveFileSystem::GetMetadata(
       base::Bind(&OnGetLargestChangestamp, metadata, callback));
 }
 
+void DriveFileSystem::MarkCacheFileAsMounted(
+    const base::FilePath& drive_file_path,
+    const OpenFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  GetEntryInfoByPath(
+      drive_file_path,
+      base::Bind(&DriveFileSystem::MarkCacheFileAsMountedAfterGetEntryInfo,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void DriveFileSystem::MarkCacheFileAsMountedAfterGetEntryInfo(
+    const OpenFileCallback& callback,
+    DriveFileError error,
+    scoped_ptr<DriveEntryProto> entry_proto) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (error != DRIVE_FILE_OK) {
+    callback.Run(error, base::FilePath());
+    return;
+  }
+
+  DCHECK(entry_proto);
+  cache_->MarkAsMounted(entry_proto->resource_id(),
+                        entry_proto->file_specific_info().file_md5(),
+                        callback);
+}
+
+void DriveFileSystem::MarkCacheFileAsUnmounted(
+    const base::FilePath& cache_file_path,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (!cache_->IsUnderDriveCacheDirectory(cache_file_path)) {
+    callback.Run(DRIVE_FILE_ERROR_FAILED);
+    return;
+  }
+  cache_->MarkAsUnmounted(cache_file_path, callback);
+}
+
 void DriveFileSystem::OnDisableDriveHostedFilesChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile_->GetPrefs();

@@ -126,6 +126,12 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
                                const FileOperationCallback& callback) OVERRIDE;
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE;
+  virtual void MarkCacheFileAsMounted(
+      const base::FilePath& drive_file_path,
+      const OpenFileCallback& callback) OVERRIDE;
+  virtual void MarkCacheFileAsUnmounted(
+      const base::FilePath& cache_file_path,
+      const FileOperationCallback& callback) OVERRIDE;
   virtual void Reload() OVERRIDE;
 
  private:

@@ -237,6 +237,18 @@ void FakeDriveFileSystem::GetMetadata(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeDriveFileSystem::MarkCacheFileAsMounted(
+    const base::FilePath& drive_file_path,
+    const OpenFileCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
+void FakeDriveFileSystem::MarkCacheFileAsUnmounted(
+    const base::FilePath& cache_file_path,
+    const FileOperationCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeDriveFileSystem::Reload() {
 }
 
