@@ -113,7 +113,12 @@ class ClientUsageTracker : public SpecialStoragePolicy::Observer,
 
   int64 GetCachedHostUsage(const std::string& host) const;
   int64 GetCachedGlobalUnlimitedUsage();
-  virtual void OnSpecialStoragePolicyChanged() OVERRIDE;
+
+  // SpecialStoragePolicy::Observer overrides
+  virtual void OnGranted(const GURL& origin, int change_flags) OVERRIDE;
+  virtual void OnRevoked(const GURL& origin, int change_flags) OVERRIDE;
+  virtual void OnCleared() OVERRIDE;
+
   void NoopHostUsageCallback(int64 usage);
   bool IsStorageUnlimited(const GURL& origin) const;
 

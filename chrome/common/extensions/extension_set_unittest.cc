@@ -67,18 +67,18 @@ TEST(ExtensionSetTest, ExtensionSet) {
   ExtensionSet extensions;
 
   // Add an extension.
-  extensions.Insert(ext1);
+  EXPECT_TRUE(extensions.Insert(ext1));
   EXPECT_EQ(1u, extensions.size());
   EXPECT_EQ(ext1, extensions.GetByID(ext1->id()));
 
   // Since extension2 has same ID, it should overwrite extension1.
-  extensions.Insert(ext2);
+  EXPECT_FALSE(extensions.Insert(ext2));
   EXPECT_EQ(1u, extensions.size());
   EXPECT_EQ(ext2, extensions.GetByID(ext1->id()));
 
   // Add the other extensions.
-  extensions.Insert(ext3);
-  extensions.Insert(ext4);
+  EXPECT_TRUE(extensions.Insert(ext3));
+  EXPECT_TRUE(extensions.Insert(ext4));
   EXPECT_EQ(3u, extensions.size());
 
   // Get extension by its chrome-extension:// URL
@@ -114,7 +114,7 @@ TEST(ExtensionSetTest, ExtensionSet) {
       GURL("http://blog.chromium.org/")));
 
   // Remove one of the extensions.
-  extensions.Remove(ext2->id());
+  EXPECT_TRUE(extensions.Remove(ext2->id()));
   EXPECT_EQ(2u, extensions.size());
   EXPECT_FALSE(extensions.GetByID(ext2->id()));
 
@@ -126,9 +126,10 @@ TEST(ExtensionSetTest, ExtensionSet) {
   ASSERT_TRUE(ext5 && ext6);
 
   scoped_ptr<ExtensionSet> to_add(new ExtensionSet());
-  to_add->Insert(ext3);  // Already in |extensions|, should not affect size.
-  to_add->Insert(ext5);
-  to_add->Insert(ext6);
+  // |ext3| is already in |extensions|, should not affect size.
+  EXPECT_TRUE(to_add->Insert(ext3));
+  EXPECT_TRUE(to_add->Insert(ext5));
+  EXPECT_TRUE(to_add->Insert(ext6));
 
   ASSERT_TRUE(extensions.Contains(ext3->id()));
   ASSERT_TRUE(extensions.InsertAll(*to_add));

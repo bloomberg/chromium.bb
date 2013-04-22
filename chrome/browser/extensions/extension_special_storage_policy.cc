@@ -20,6 +20,8 @@
 
 using content::BrowserThread;
 using extensions::APIPermission;
+using extensions::Extension;
+using quota::SpecialStoragePolicy;
 
 ExtensionSpecialStoragePolicy::ExtensionSpecialStoragePolicy(
     CookieSettings* cookie_settings)
@@ -93,19 +95,28 @@ void ExtensionSpecialStoragePolicy::GrantRightsForExtension(
         extension->is_app())) {
     return;
   }
+
+  int change_flags = 0;
   {
     base::AutoLock locker(lock_);
-    if (NeedsProtection(extension))
-      protected_apps_.Add(extension);
+    if (NeedsProtection(extension) && protected_apps_.Add(extension))
+      change_flags |= SpecialStoragePolicy::STORAGE_PROTECTED;
     // FIXME: Does GrantRightsForExtension imply |extension| is installed?
     if (extension->is_app())
       installed_apps_.Add(extension);
-    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage))
-      unlimited_extensions_.Add(extension);
+
+    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage) &&
+        unlimited_extensions_.Add(extension))
+      change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
+
     if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Add(extension);
   }
-  NotifyChanged();
+
+  if (change_flags) {
+    NotifyGranted(Extension::GetBaseURLFromExtensionId(extension->id()),
+                  change_flags);
+  }
 }
 
 void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
@@ -117,18 +128,27 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForExtension(
         extension->is_app())) {
     return;
   }
+  int change_flags = 0;
   {
     base::AutoLock locker(lock_);
-    if (NeedsProtection(extension))
-      protected_apps_.Remove(extension);
+    if (NeedsProtection(extension) && protected_apps_.Remove(extension))
+      change_flags |= SpecialStoragePolicy::STORAGE_PROTECTED;
+
     if (extension->is_app())
       installed_apps_.Remove(extension);
-    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage))
-      unlimited_extensions_.Remove(extension);
+
+    if (extension->HasAPIPermission(APIPermission::kUnlimitedStorage) &&
+        unlimited_extensions_.Remove(extension))
+      change_flags |= SpecialStoragePolicy::STORAGE_UNLIMITED;
+
     if (extension->HasAPIPermission(APIPermission::kFileBrowserHandler))
       file_handler_extensions_.Remove(extension);
   }
-  NotifyChanged();
+
+  if (change_flags) {
+    NotifyRevoked(Extension::GetBaseURLFromExtensionId(extension->id()),
+                  change_flags);
+  }
 }
 
 void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
@@ -139,16 +159,44 @@ void ExtensionSpecialStoragePolicy::RevokeRightsForAllExtensions() {
     unlimited_extensions_.Clear();
     file_handler_extensions_.Clear();
   }
-  NotifyChanged();
+
+  NotifyCleared();
 }
 
-void ExtensionSpecialStoragePolicy::NotifyChanged() {
+void ExtensionSpecialStoragePolicy::NotifyGranted(
+    const GURL& origin,
+    int change_flags) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionSpecialStoragePolicy::NotifyChanged, this));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ExtensionSpecialStoragePolicy::NotifyGranted, this,
+                   origin, change_flags));
     return;
   }
-  SpecialStoragePolicy::NotifyObservers();
+  SpecialStoragePolicy::NotifyGranted(origin, change_flags);
+}
+
+void ExtensionSpecialStoragePolicy::NotifyRevoked(
+    const GURL& origin,
+    int change_flags) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ExtensionSpecialStoragePolicy::NotifyRevoked, this,
+                   origin, change_flags));
+    return;
+  }
+  SpecialStoragePolicy::NotifyRevoked(origin, change_flags);
+}
+
+void ExtensionSpecialStoragePolicy::NotifyCleared() {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ExtensionSpecialStoragePolicy::NotifyCleared, this));
+    return;
+  }
+  SpecialStoragePolicy::NotifyCleared();
 }
 
 //-----------------------------------------------------------------------------
@@ -188,16 +236,16 @@ bool ExtensionSpecialStoragePolicy::SpecialCollection::ContainsExtension(
   return extensions_.Contains(extension_id);
 }
 
-void ExtensionSpecialStoragePolicy::SpecialCollection::Add(
+bool ExtensionSpecialStoragePolicy::SpecialCollection::Add(
     const extensions::Extension* extension) {
   ClearCache();
-  extensions_.Insert(extension);
+  return extensions_.Insert(extension);
 }
 
-void ExtensionSpecialStoragePolicy::SpecialCollection::Remove(
+bool ExtensionSpecialStoragePolicy::SpecialCollection::Remove(
     const extensions::Extension* extension) {
   ClearCache();
-  extensions_.Remove(extension->id());
+  return extensions_.Remove(extension->id());
 }
 
 void ExtensionSpecialStoragePolicy::SpecialCollection::Clear() {

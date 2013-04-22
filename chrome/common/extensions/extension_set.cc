@@ -5,6 +5,7 @@
 #include "chrome/common/extensions/extension_set.h"
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/manifest_handlers/sandboxed_page_info.h"
 #include "chrome/common/url_constants.h"
@@ -51,8 +52,10 @@ bool ExtensionSet::Contains(const std::string& extension_id) const {
   return extensions_.find(extension_id) != extensions_.end();
 }
 
-void ExtensionSet::Insert(const scoped_refptr<const Extension>& extension) {
+bool ExtensionSet::Insert(const scoped_refptr<const Extension>& extension) {
+  bool was_present = ContainsKey(extensions_, extension->id());
   extensions_[extension->id()] = extension;
+  return !was_present;
 }
 
 bool ExtensionSet::InsertAll(const ExtensionSet& extensions) {

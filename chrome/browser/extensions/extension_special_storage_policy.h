@@ -59,8 +59,8 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     bool Contains(const GURL& origin);
     const ExtensionSet* ExtensionsContaining(const GURL& origin);
     bool ContainsExtension(const std::string& extension_id);
-    void Add(const extensions::Extension* extension);
-    void Remove(const extensions::Extension* extension);
+    bool Add(const extensions::Extension* extension);
+    bool Remove(const extensions::Extension* extension);
     void Clear();
 
    private:
@@ -72,7 +72,9 @@ class ExtensionSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     CachedResults cached_results_;
   };
 
-  void NotifyChanged();
+  void NotifyGranted(const GURL& origin, int change_flags);
+  void NotifyRevoked(const GURL& origin, int change_flags);
+  void NotifyCleared();
 
   base::Lock lock_;  // Synchronize all access to the collections.
   SpecialCollection protected_apps_;

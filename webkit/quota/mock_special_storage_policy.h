@@ -57,8 +57,8 @@ class MockSpecialStoragePolicy : public quota::SpecialStoragePolicy {
     all_unlimited_ = false;
   }
 
-  void NotifyChanged() {
-    SpecialStoragePolicy::NotifyObservers();
+  void NotifyCleared() {
+    SpecialStoragePolicy::NotifyCleared();
   }
 
  protected:

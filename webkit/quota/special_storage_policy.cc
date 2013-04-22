@@ -20,9 +20,19 @@ void SpecialStoragePolicy::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void SpecialStoragePolicy::NotifyObservers() {
+void SpecialStoragePolicy::NotifyGranted(const GURL& origin, int change_flags) {
   scoped_refptr<SpecialStoragePolicy> protect(this);
-  FOR_EACH_OBSERVER(Observer, observers_, OnSpecialStoragePolicyChanged());
+  FOR_EACH_OBSERVER(Observer, observers_, OnGranted(origin, change_flags));
+}
+
+void SpecialStoragePolicy::NotifyRevoked(const GURL& origin, int change_flags) {
+  scoped_refptr<SpecialStoragePolicy> protect(this);
+  FOR_EACH_OBSERVER(Observer, observers_, OnRevoked(origin, change_flags));
+}
+
+void SpecialStoragePolicy::NotifyCleared() {
+  scoped_refptr<SpecialStoragePolicy> protect(this);
+  FOR_EACH_OBSERVER(Observer, observers_, OnCleared());
 }
 
 }  // namespace quota

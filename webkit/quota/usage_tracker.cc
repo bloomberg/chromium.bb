@@ -511,7 +511,19 @@ int64 ClientUsageTracker::GetCachedGlobalUnlimitedUsage() {
   return global_unlimited_usage_;
 }
 
-void ClientUsageTracker::OnSpecialStoragePolicyChanged() {
+void ClientUsageTracker::OnGranted(const GURL& origin,
+                                   int change_flags) {
+  DCHECK(CalledOnValidThread());
+  global_unlimited_usage_is_valid_ = false;
+}
+
+void ClientUsageTracker::OnRevoked(const GURL& origin,
+                                   int change_flags) {
+  DCHECK(CalledOnValidThread());
+  global_unlimited_usage_is_valid_ = false;
+}
+
+void ClientUsageTracker::OnCleared() {
   DCHECK(CalledOnValidThread());
   global_unlimited_usage_is_valid_ = false;
 }

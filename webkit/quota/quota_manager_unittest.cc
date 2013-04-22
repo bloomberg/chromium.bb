@@ -906,7 +906,7 @@ TEST_F(QuotaManagerTest, GetTemporaryUsageAndQuota_Unlimited) {
 
   // Revoke the unlimited rights and make sure the change is noticed.
   mock_special_storage_policy()->Reset();
-  mock_special_storage_policy()->NotifyChanged();
+  mock_special_storage_policy()->NotifyCleared();
 
   GetGlobalUsage(kTemp);
   MessageLoop::current()->RunUntilIdle();

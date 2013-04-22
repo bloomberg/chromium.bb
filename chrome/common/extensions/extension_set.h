@@ -83,7 +83,8 @@ class ExtensionSet {
 
   // Adds the specified extension to the set. The set becomes an owner. Any
   // previous extension with the same ID is removed.
-  void Insert(const scoped_refptr<const extensions::Extension>& extension);
+  // Returns true if there is no previous extension.
+  bool Insert(const scoped_refptr<const extensions::Extension>& extension);
 
   // Copies different items from |extensions| to the current set and returns
   // whether anything changed.
