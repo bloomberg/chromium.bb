@@ -1602,8 +1602,8 @@ const char kEnterpriseEnrollmentModulusLimit[] =
 // This flag is obsolete. Remove it, once Files.app v2 is stable.
 const char kFileManagerLegacy[]             = "file-manager-legacy";
 
-// Loads the File Manager with the new UI.
-const char kFileManagerNewUI[]              = "file-manager-new-ui";
+// Loads the File Manager with the legacy UI.
+const char kFileManagerLegacyUI[]           = "file-manager-legacy-ui";
 
 #ifndef NDEBUG
 // Skips all other OOBE pages after user login.

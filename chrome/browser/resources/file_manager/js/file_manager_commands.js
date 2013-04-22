@@ -250,7 +250,7 @@ Commands.newWindowCommand = {
     chrome.fileBrowserPrivate.openNewWindow(document.location.href);
   },
   canExecute: function(event, fileManager) {
-    event.canExecute = true;
+    event.canExecute = (fileManager.dialogType == DialogType.FULL_PAGE);
   }
 };
 

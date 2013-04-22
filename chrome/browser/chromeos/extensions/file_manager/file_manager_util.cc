@@ -90,6 +90,7 @@ namespace {
 // out this file manager for an aftermarket part, but not yet.
 const char kFileBrowserExtensionUrl[] = FILEBROWSER_URL("");
 const char kBaseFileBrowserUrl[] = FILEBROWSER_URL("main.html");
+const char kBaseFileBrowserNewUIUrl[] = FILEBROWSER_URL("main_new_ui.html");
 const char kMediaPlayerUrl[] = FILEBROWSER_URL("mediaplayer.html");
 const char kVideoPlayerUrl[] = FILEBROWSER_URL("video_player.html");
 const char kActionChoiceUrl[] = FILEBROWSER_URL("action_choice.html");
@@ -337,6 +338,11 @@ bool IsFileManagerPackaged() {
   return !command_line->HasSwitch(switches::kFileManagerLegacy);
 }
 
+bool IsFileManagerNewUI() {
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kFileManagerLegacyUI);
+}
+
 // Grants file system access to the file browser.
 bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
   // File browser always runs in the site for its extension id, so that is the
@@ -348,8 +354,7 @@ bool GrantFileSystemAccessToFileBrowser(Profile* profile) {
           GetFileSystemContext()->external_provider();
   if (!external_provider)
     return false;
-  GURL url(kBaseFileBrowserUrl);
-  external_provider->GrantFullAccessToExtension(url.host());
+  external_provider->GrantFullAccessToExtension(GetFileBrowserUrl().host());
   return true;
 }
 
@@ -370,7 +375,7 @@ void ExecuteHandler(Profile* profile,
           GetFileSystemContext();
 
   // We are executing the task on behalf of File Browser extension.
-  const GURL source_url(kBaseFileBrowserUrl);
+  const GURL source_url = GetFileBrowserUrl();
   std::vector<FileSystemURL> urls;
   urls.push_back(file_system_context->CrackURL(url));
   scoped_refptr<FileTaskExecutor> executor = FileTaskExecutor::Create(profile,
@@ -586,7 +591,8 @@ GURL GetFileBrowserExtensionUrl() {
 }
 
 GURL GetFileBrowserUrl() {
-  return GURL(kBaseFileBrowserUrl);
+  return GURL(IsFileManagerNewUI() ? kBaseFileBrowserNewUIUrl :
+                                     kBaseFileBrowserUrl);
 }
 
 GURL GetMediaPlayerUrl() {

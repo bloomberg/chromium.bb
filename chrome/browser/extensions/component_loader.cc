@@ -246,10 +246,10 @@ void ComponentLoader::AddFileManagerExtension() {
   int manifest_id;
   if (command_line->HasSwitch(switches::kFileManagerLegacy))
     manifest_id = IDR_FILEMANAGER_MANIFEST_V1;
-  else if (command_line->HasSwitch(switches::kFileManagerNewUI))
-    manifest_id = IDR_FILEMANAGER_MANIFEST_NEW_UI;
-  else
+  else if (command_line->HasSwitch(switches::kFileManagerLegacyUI))
     manifest_id = IDR_FILEMANAGER_MANIFEST;
+  else
+    manifest_id = IDR_FILEMANAGER_MANIFEST_NEW_UI;
 #ifndef NDEBUG
   if (command_line->HasSwitch(switches::kFileManagerExtensionPath)) {
     base::FilePath filemgr_extension_path(
