@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "base/string16.h"
 
 namespace content {
@@ -128,12 +129,13 @@ class AutofillManagerDelegate {
   // Shows an Autofill popup with the given |values|, |labels|, |icons|, and
   // |identifiers| for the element at |element_bounds|. |delegate| will be
   // notified of popup events.
-  virtual void ShowAutofillPopup(const gfx::RectF& element_bounds,
-                                 const std::vector<base::string16>& values,
-                                 const std::vector<base::string16>& labels,
-                                 const std::vector<base::string16>& icons,
-                                 const std::vector<int>& identifiers,
-                                 AutofillPopupDelegate* delegate) = 0;
+  virtual void ShowAutofillPopup(
+      const gfx::RectF& element_bounds,
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels,
+      const std::vector<base::string16>& icons,
+      const std::vector<int>& identifiers,
+      base::WeakPtr<AutofillPopupDelegate> delegate) = 0;
 
   // Hide the Autofill popup if one is currently showing.
   virtual void HideAutofillPopup() = 0;

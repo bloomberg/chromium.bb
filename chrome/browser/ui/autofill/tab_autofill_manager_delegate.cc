@@ -187,7 +187,7 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
     const std::vector<string16>& labels,
     const std::vector<string16>& icons,
     const std::vector<int>& identifiers,
-    AutofillPopupDelegate* delegate) {
+    base::WeakPtr<AutofillPopupDelegate> delegate) {
   // Convert element_bounds to be in screen space.
   gfx::Rect client_area;
   web_contents_->GetView()->GetContainerBounds(&client_area);

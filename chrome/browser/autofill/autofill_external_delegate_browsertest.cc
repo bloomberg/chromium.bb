@@ -45,7 +45,7 @@ class MockAutofillManagerDelegate
                     const std::vector<string16>& labels,
                     const std::vector<string16>& icons,
                     const std::vector<int>& identifiers,
-                    AutofillPopupDelegate* delegate));
+                    base::WeakPtr<AutofillPopupDelegate> delegate));
 
   MOCK_METHOD0(HideAutofillPopup, void());
 

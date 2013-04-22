@@ -113,6 +113,8 @@ class AutofillExternalDelegate
 
   content::WebContents* web_contents() { return web_contents_; }
 
+  base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
+
  private:
   // Fills the form with the Autofill data corresponding to |unique_id|.
   // If |is_preview| is true then this is just a preview to show the user what
@@ -186,6 +188,8 @@ class AutofillExternalDelegate
   std::vector<base::string16> data_list_labels_;
   std::vector<base::string16> data_list_icons_;
   std::vector<int> data_list_unique_ids_;
+
+  base::WeakPtrFactory<AutofillExternalDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillExternalDelegate);
 };

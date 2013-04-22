@@ -50,7 +50,8 @@ AutofillExternalDelegate::AutofillExternalDelegate(
       display_warning_if_disabled_(false),
       has_autofill_suggestion_(false),
       has_shown_autofill_popup_for_current_edit_(false),
-      registered_keyboard_listener_with_(NULL) {
+      registered_keyboard_listener_with_(NULL),
+      weak_ptr_factory_(this) {
   DCHECK(autofill_manager);
 
   registrar_.Add(this,
@@ -134,7 +135,7 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // Send to display.
   if (autofill_query_field_.is_focusable) {
     autofill_manager_->delegate()->ShowAutofillPopup(
-        element_bounds_, values, labels, icons, ids, this);
+        element_bounds_, values, labels, icons, ids, GetWeakPtr());
   }
 }
 
@@ -154,7 +155,7 @@ void AutofillExternalDelegate::OnShowPasswordSuggestions(
   std::vector<int> password_ids(suggestions.size(),
                                 WebAutofillClient::MenuItemIDPasswordEntry);
   autofill_manager_->delegate()->ShowAutofillPopup(
-      element_bounds_, suggestions, empty, empty, password_ids, this);
+      element_bounds_, suggestions, empty, empty, password_ids, GetWeakPtr());
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
@@ -256,6 +257,10 @@ void AutofillExternalDelegate::AddPasswordFormMapping(
       const FormFieldData& form,
       const PasswordFormFillData& fill_data) {
   password_autofill_manager_.AddPasswordFormMapping(form, fill_data);
+}
+
+base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
 }
 
 void AutofillExternalDelegate::FillAutofillFormData(int unique_id,

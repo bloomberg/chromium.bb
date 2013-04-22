@@ -47,12 +47,13 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
       DialogType dialog_type,
       const base::Callback<void(const FormStructure*,
                                 const std::string&)>& callback) OVERRIDE;
-  virtual void ShowAutofillPopup(const gfx::RectF& element_bounds,
-                                 const std::vector<base::string16>& values,
-                                 const std::vector<base::string16>& labels,
-                                 const std::vector<base::string16>& icons,
-                                 const std::vector<int>& identifiers,
-                                 AutofillPopupDelegate* delegate) OVERRIDE;
+  virtual void ShowAutofillPopup(
+      const gfx::RectF& element_bounds,
+      const std::vector<base::string16>& values,
+      const std::vector<base::string16>& labels,
+      const std::vector<base::string16>& icons,
+      const std::vector<int>& identifiers,
+      base::WeakPtr<AutofillPopupDelegate> delegate) OVERRIDE;
   virtual void HideAutofillPopup() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
 

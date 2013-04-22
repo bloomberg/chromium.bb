@@ -68,7 +68,7 @@ void TestAutofillManagerDelegate::ShowAutofillPopup(
     const std::vector<base::string16>& labels,
     const std::vector<base::string16>& icons,
     const std::vector<int>& identifiers,
-    AutofillPopupDelegate* delegate) {}
+    base::WeakPtr<AutofillPopupDelegate> delegate) {}
 
 void TestAutofillManagerDelegate::HideAutofillPopup() {}
 

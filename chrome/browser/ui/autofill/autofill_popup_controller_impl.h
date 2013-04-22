@@ -38,7 +38,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   // this call.
   static base::WeakPtr<AutofillPopupControllerImpl> GetOrCreate(
       base::WeakPtr<AutofillPopupControllerImpl> previous,
-      AutofillPopupDelegate* delegate,
+      base::WeakPtr<AutofillPopupDelegate> delegate,
       gfx::NativeView container_view,
       const gfx::RectF& element_bounds);
 
@@ -63,7 +63,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateBrowserTest,
                            CloseWidgetAndNoLeaking);
 
-  AutofillPopupControllerImpl(AutofillPopupDelegate* delegate,
+  AutofillPopupControllerImpl(base::WeakPtr<AutofillPopupDelegate> delegate,
                               gfx::NativeView container_view,
                               const gfx::RectF& element_bounds);
   virtual ~AutofillPopupControllerImpl();
@@ -168,7 +168,7 @@ class AutofillPopupControllerImpl : public AutofillPopupController,
       int popup_required_height) const;
 
   AutofillPopupView* view_;  // Weak reference.
-  AutofillPopupDelegate* delegate_;  // Weak reference.
+  base::WeakPtr<AutofillPopupDelegate> delegate_;
   gfx::NativeView container_view_;  // Weak reference.
 
   // The bounds of the text element that is the focus of the Autofill.

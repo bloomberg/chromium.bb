@@ -4,7 +4,6 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -113,5 +112,17 @@ IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
   EXPECT_TRUE(autofill_external_delegate_->popup_hidden());
 }
 #endif // !defined(OS_MACOSX)
+
+// This test checks that the browser doesn't crash if the delegate is deleted
+// before the popup is hidden.
+IN_PROC_BROWSER_TEST_F(AutofillPopupControllerBrowserTest,
+                       DeleteDelegateBeforePopupHidden){
+  GenerateTestAutofillPopup(autofill_external_delegate_.get());
+
+  // Delete the external delegate here so that is gets deleted before popup is
+  // hidden. This can happen if the web_contents are destroyed before the popup
+  // is hidden. See http://crbug.com/232475
+  autofill_external_delegate_.reset();
+}
 
 }  // namespace autofill

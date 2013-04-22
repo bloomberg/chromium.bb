@@ -1077,7 +1077,10 @@ void AutofillDialogControllerImpl::UserEditedOrActivatedInput(
   }
 
   popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
-      popup_controller_, this, parent_view, content_bounds);
+      popup_controller_,
+      weak_ptr_factory_.GetWeakPtr(),
+      parent_view,
+      content_bounds);
   popup_controller_->Show(popup_values,
                           popup_labels,
                           popup_icons,

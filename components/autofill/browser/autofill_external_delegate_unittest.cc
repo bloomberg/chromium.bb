@@ -58,7 +58,7 @@ class MockAutofillManagerDelegate
                     const std::vector<base::string16>& labels,
                     const std::vector<base::string16>& icons,
                     const std::vector<int>& identifiers,
-                    AutofillPopupDelegate* delegate));
+                    base::WeakPtr<AutofillPopupDelegate> delegate));
 
   MOCK_METHOD0(HideAutofillPopup, void());
 
@@ -151,7 +151,7 @@ TEST_F(AutofillExternalDelegateUnitTest, TestExternalDelegateVirtualCalls) {
                       static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
                       static_cast<int>(
                           WebAutofillClient::MenuItemIDAutofillOptions)),
-                  external_delegate_.get()));
+                  _));
 
   // This should call ShowAutofillPopup.
   std::vector<base::string16> autofill_item;
@@ -200,7 +200,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
                       static_cast<int>(WebAutofillClient::MenuItemIDSeparator),
                       static_cast<int>(
                           WebAutofillClient::MenuItemIDAutofillOptions)),
-                      external_delegate_.get()));
+                  _));
 
   // This should call ShowAutofillPopup.
   std::vector<base::string16> autofill_item;
@@ -222,7 +222,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateDataList) {
                   testing::ElementsAre(
                       static_cast<int>(
                           WebAutofillClient::MenuItemIDDataListEntry)),
-                  external_delegate_.get()));
+                  _));
 
   autofill_item = std::vector<base::string16>();
   autofill_ids = std::vector<int>();
@@ -291,7 +291,7 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
                   testing::ElementsAre(
                       static_cast<int>(
                            WebAutofillClient::MenuItemIDPasswordEntry)),
-                  external_delegate_.get()));
+                  _));
 
   external_delegate_->OnShowPasswordSuggestions(suggestions,
                                                 field,

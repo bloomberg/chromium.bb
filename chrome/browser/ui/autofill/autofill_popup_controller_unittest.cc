@@ -40,6 +40,10 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE
       {}
   virtual void ClearPreviewedForm() OVERRIDE {}
+
+  base::WeakPtr<AutofillExternalDelegate> GetWeakPtr() {
+    return AutofillExternalDelegate::GetWeakPtr();
+  }
 };
 
 class MockAutofillManagerDelegate
@@ -59,7 +63,7 @@ class MockAutofillManagerDelegate
 class TestAutofillPopupController : public AutofillPopupControllerImpl {
  public:
   explicit TestAutofillPopupController(
-      AutofillExternalDelegate* external_delegate,
+      base::WeakPtr<AutofillExternalDelegate> external_delegate,
       const gfx::RectF& element_bounds)
       : AutofillPopupControllerImpl(external_delegate, NULL, element_bounds) {}
   virtual ~TestAutofillPopupController() {}
@@ -155,7 +159,7 @@ class AutofillPopupControllerUnitTest : public ChromeRenderViewHostTestHarness {
 
     autofill_popup_controller_ =
         new testing::NiceMock<TestAutofillPopupController>(
-            external_delegate_.get(), gfx::Rect());
+            external_delegate_->GetWeakPtr(), gfx::Rect());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -328,23 +332,27 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
 
   WeakPtr<AutofillPopupControllerImpl> controller =
       AutofillPopupControllerImpl::GetOrCreate(
-          WeakPtr<AutofillPopupControllerImpl>(), &delegate, NULL, gfx::Rect());
+          WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
+          gfx::Rect());
   EXPECT_TRUE(controller);
 
   controller->Hide();
 
   controller = AutofillPopupControllerImpl::GetOrCreate(
-      WeakPtr<AutofillPopupControllerImpl>(), &delegate, NULL, gfx::Rect());
+      WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
+      gfx::Rect());
   EXPECT_TRUE(controller);
 
   WeakPtr<AutofillPopupControllerImpl> controller2 =
-      AutofillPopupControllerImpl::GetOrCreate(controller, &delegate, NULL,
+      AutofillPopupControllerImpl::GetOrCreate(controller,
+                                               delegate.GetWeakPtr(),
+                                               NULL,
                                                gfx::Rect());
   EXPECT_EQ(controller.get(), controller2.get());
   controller->Hide();
 
   testing::NiceMock<TestAutofillPopupController>* test_controller =
-      new testing::NiceMock<TestAutofillPopupController>(&delegate,
+      new testing::NiceMock<TestAutofillPopupController>(delegate.GetWeakPtr(),
                                                          gfx::Rect());
   EXPECT_CALL(*test_controller, Hide());
 
@@ -352,7 +360,7 @@ TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
   AutofillPopupControllerImpl* controller3 =
       AutofillPopupControllerImpl::GetOrCreate(
           test_controller->GetWeakPtr(),
-          &delegate,
+          delegate.GetWeakPtr(),
           NULL,
           bounds);
   EXPECT_EQ(
@@ -458,7 +466,8 @@ TEST_F(AutofillPopupControllerUnitTest, GrowPopupInSpace) {
     NiceMock<MockAutofillExternalDelegate> external_delegate(
         web_contents(), AutofillManager::FromWebContents(web_contents()));
     TestAutofillPopupController* autofill_popup_controller =
-        new TestAutofillPopupController(&external_delegate, element_bounds[i]);
+        new TestAutofillPopupController(external_delegate.GetWeakPtr(),
+                                        element_bounds[i]);
 
     autofill_popup_controller->set_display(display);
     autofill_popup_controller->Show(names, names, names, autofill_ids);
