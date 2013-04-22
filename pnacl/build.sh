@@ -1332,6 +1332,35 @@ llvm-configure() {
   spopd
 }
 
+#+ llvm-configure-ninja - Configure with cmake for ninja build
+# Not used by default. Call manually.
+llvm-configure-ninja() {
+  StepBanner "LLVM" "Configure (Cmake-ninja)"
+
+  local srcdir="${TC_SRC_LLVM}"
+  local objdir="${TC_BUILD_LLVM}"
+
+  mkdir -p "${objdir}"
+  spushd "${objdir}"
+
+  llvm-link-clang
+  local binutils_include="${TC_SRC_BINUTILS}/include"
+  RunWithLog "llvm.configure.cmake" \
+    env \
+      cmake -G Ninja \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX="${LLVM_INSTALL_DIR}" \
+      -DCMAKE_INSTALL_RPATH='$ORIGIN/../lib' \
+      -DBUILD_SHARED_LIBS=ON \
+      -DLLVM_TARGETS_TO_BUILD="X86;ARM;Mips" \
+      -DLLVM_ENABLE_ASSERTIONS=ON \
+      -DLLVM_BUILD_TESTS=ON \
+      -DLLVM_APPEND_VC_REV=ON \
+      -DLLVM_BINUTILS_INCDIR="${binutils_include}" \
+      ${srcdir}
+  spopd
+}
+
 #+ llvm-configure-dbg        - Run LLVM configure
 #  Not used by default. Call manually.
 llvm-configure-dbg() {
@@ -1344,7 +1373,8 @@ llvm-configure-dbg() {
 
 
 llvm-needs-configure() {
-  [ ! -f "${TC_BUILD_LLVM}/config.status" ]
+  [ ! -f "${TC_BUILD_LLVM}/config.status" \
+    -a ! -f "${TC_BUILD_LLVM}/build.ninja" ]
   return $?
 }
 
@@ -1367,14 +1397,23 @@ llvm-make() {
 
   ts-touch-open "${objdir}"
 
-  RunWithLog llvm.make \
-    env -i PATH="${PATH}" \
-           MAKE_OPTS="${MAKE_OPTS_HOST}" \
-           NACL_SANDBOX=0 \
-           NACL_SB_JIT=0 \
-           CC="${CC}" \
-           CXX="${CXX}" \
-           make ${MAKE_OPTS_HOST} all
+  if [ -f "${TC_BUILD_LLVM}/build.ninja" ]; then
+    if [ -f "${TC_BUILD_LLVM}/config.status" ]; then
+      echo "ERROR: Found multiple build system files in ${TC_BUILD_LLVM}"
+      exit 1
+    fi
+    echo "Using ninja"
+    ninja
+  else
+    RunWithLog llvm.make \
+      env -i PATH="${PATH}" \
+      MAKE_OPTS="${MAKE_OPTS_HOST}" \
+      NACL_SANDBOX=0 \
+      NACL_SB_JIT=0 \
+      CC="${CC}" \
+      CXX="${CXX}" \
+      make ${MAKE_OPTS_HOST} all
+  fi
 
   ts-touch-commit  "${objdir}"
 
@@ -1387,14 +1426,19 @@ llvm-install() {
 
   spushd "${TC_BUILD_LLVM}"
   llvm-link-clang
-  RunWithLog llvm.install \
-    env -i PATH=/usr/bin/:/bin \
-           MAKE_OPTS="${MAKE_OPTS}" \
-           NACL_SANDBOX=0 \
-           NACL_SB_JIT=0 \
-           CC="${CC}" \
-           CXX="${CXX}" \
-           make ${MAKE_OPTS} install
+  if [ -f "${TC_BUILD_LLVM}/build.ninja" ]; then
+    echo "Using ninja"
+    RunWithLog llvm.install ninja install
+  else
+    RunWithLog llvm.install \
+      env -i PATH=/usr/bin/:/bin \
+      MAKE_OPTS="${MAKE_OPTS}" \
+      NACL_SANDBOX=0 \
+      NACL_SB_JIT=0 \
+      CC="${CC}" \
+      CXX="${CXX}" \
+      make ${MAKE_OPTS} install
+  fi
   spopd
 
   llvm-install-links
