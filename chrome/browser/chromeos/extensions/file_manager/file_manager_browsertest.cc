@@ -724,12 +724,15 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestFileDisplay) {
   DoTestFileDisplay(kDriveVolume);
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardCopy) {
+// File is not selected on new UI Files.app. http://crbug.com/234230
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, DISABLED_TestKeyboardCopy) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   DoTestKeyboardCopy(kDriveVolume);
 }
 
-IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestKeyboardDelete) {
+// File is not selected on new UI Files.app. http://crbug.com/234230
+IN_PROC_BROWSER_TEST_P(
+    FileManagerBrowserDriveTest, DISABLED_TestKeyboardDelete) {
   drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
   DoTestKeyboardDelete(kDriveVolume);
 }
