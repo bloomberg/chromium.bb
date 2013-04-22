@@ -21,7 +21,7 @@ function startTestWithCredentials(paramClientId, paramClientSecret,
       function(details) {
         // We need to allow time for the invalidation service to ACK before we
         // shutdown.
-        window.setTimeout(callbackPassFunc(details), 2000);
+        window.setTimeout(callbackPassFunc(details), 20000);
       });
 
   clientId = paramClientId;
