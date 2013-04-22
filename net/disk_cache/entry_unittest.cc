@@ -45,6 +45,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void SizeChanges();
   void ReuseEntry(int size);
   void InvalidData();
+  void ReadWriteDestroyBuffer();
   void DoomNormalEntry();
   void DoomEntryNextToOpenEntry();
   void DoomedEntry();
@@ -1238,8 +1239,7 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyInvalidData) {
 }
 
 // Tests that the cache preserves the buffer of an IO operation.
-TEST_F(DiskCacheEntryTest, ReadWriteDestroyBuffer) {
-  InitCache();
+void DiskCacheEntryTest::ReadWriteDestroyBuffer() {
   std::string key("the first key");
   disk_cache::Entry* entry;
   ASSERT_EQ(net::OK, CreateEntry(key, &entry));
@@ -1266,6 +1266,11 @@ TEST_F(DiskCacheEntryTest, ReadWriteDestroyBuffer) {
   EXPECT_EQ(kSize, cb.WaitForResult());
 
   entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, ReadWriteDestroyBuffer) {
+  InitCache();
+  ReadWriteDestroyBuffer();
 }
 
 void DiskCacheEntryTest::DoomNormalEntry() {
@@ -1304,8 +1309,6 @@ TEST_F(DiskCacheEntryTest, MemoryOnlyDoomEntry) {
 
 // Tests dooming an entry that's linked to an open entry.
 void DiskCacheEntryTest::DoomEntryNextToOpenEntry() {
-  InitCache();
-
   disk_cache::Entry* entry1;
   disk_cache::Entry* entry2;
   ASSERT_EQ(net::OK, CreateEntry("fixed", &entry1));
@@ -1330,16 +1333,19 @@ void DiskCacheEntryTest::DoomEntryNextToOpenEntry() {
 }
 
 TEST_F(DiskCacheEntryTest, DoomEntryNextToOpenEntry) {
+  InitCache();
   DoomEntryNextToOpenEntry();
 }
 
 TEST_F(DiskCacheEntryTest, NewEvictionDoomEntryNextToOpenEntry) {
   SetNewEviction();
+  InitCache();
   DoomEntryNextToOpenEntry();
 }
 
 TEST_F(DiskCacheEntryTest, AppCacheDoomEntryNextToOpenEntry) {
   SetCacheType(net::APP_CACHE);
+  InitCache();
   DoomEntryNextToOpenEntry();
 }
 
@@ -2210,6 +2216,12 @@ TEST_F(DiskCacheEntryTest, SimpleCacheZeroLengthIO) {
   ZeroLengthIO();
 }
 
+TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheBuffering) {
+  SetSimpleCacheMode();
+  InitCache();
+  Buffering();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheReuseExternalEntry) {
   SetSimpleCacheMode();
   SetMaxSize(200 * 1024);
@@ -2236,10 +2248,22 @@ TEST_F(DiskCacheEntryTest, SimpleCacheInvalidData) {
   InvalidData();
 }
 
+TEST_F(DiskCacheEntryTest, SimpleCacheReadWriteDestroyBuffer) {
+  SetSimpleCacheMode();
+  InitCache();
+  ReadWriteDestroyBuffer();
+}
+
 TEST_F(DiskCacheEntryTest, SimpleCacheDoomEntry) {
   SetSimpleCacheMode();
   InitCache();
   DoomNormalEntry();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheDoomEntryNextToOpenEntry) {
+  SetSimpleCacheMode();
+  InitCache();
+  DoomEntryNextToOpenEntry();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheDoomedEntry) {
