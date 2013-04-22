@@ -279,10 +279,7 @@ void WebKitTestController::SetTempPath(const base::FilePath& temp_path) {
 
 void WebKitTestController::RendererUnresponsive() {
   DCHECK(CalledOnValidThread());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kNoTimeout))
-    return;
-  printer_->AddErrorMessage("#PROCESS UNRESPONSIVE - renderer");
-  DiscardMainWindow();
+  LOG(WARNING) << "renderer unresponsive";
 }
 
 void WebKitTestController::OverrideWebkitPrefs(
