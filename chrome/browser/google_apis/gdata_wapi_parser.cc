@@ -705,6 +705,10 @@ scoped_ptr<ResourceEntry> ResourceEntry::CreateFromFileResource(
   entry->title_ = file.title();
   entry->published_time_ = file.created_date();
   // TODO(kochi): entry->labels_
+  if (!file.shared_with_me_date().is_null()) {
+    entry->labels_.push_back("shared-with-me");
+  }
+
   // This should be the url to download the file.
   entry->content_.url_ = file.download_url();
   entry->content_.mime_type_ = file.mime_type();

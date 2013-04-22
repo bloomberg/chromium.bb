@@ -503,6 +503,11 @@ class FileResource {
     return last_viewed_by_me_date_;
   }
 
+  // Returns time when the file was shared with the user.
+  const base::Time& shared_with_me_date() const {
+    return shared_with_me_date_;
+  }
+
   // Returns the short-lived download URL for the file.  This field exists
   // only when the file content is stored in Drive.
   const GURL& download_url() const { return download_url_; }
@@ -606,6 +611,7 @@ class FileResource {
   base::Time created_date_;
   base::Time modified_by_me_date_;
   base::Time last_viewed_by_me_date_;
+  base::Time shared_with_me_date_;
   GURL download_url_;
   std::string file_extension_;
   std::string md5_checksum_;
