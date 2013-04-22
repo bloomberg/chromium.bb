@@ -177,6 +177,45 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         void onPinchGestureEnd();
     }
 
+    private VSyncManager.Provider mVSyncProvider;
+    private VSyncManager.Listener mVSyncListener;
+    private int mVSyncSubscriberCount;
+
+    public VSyncManager.Listener getVSyncListener(VSyncManager.Provider vsyncProvider) {
+        mVSyncProvider = vsyncProvider;
+        mVSyncListener = new VSyncManager.Listener() {
+            @Override
+            public void updateVSync(long tickTimeMicros, long intervalMicros) {
+                if (mNativeContentViewCore != 0) {
+                    nativeUpdateVSyncParameters(mNativeContentViewCore, tickTimeMicros,
+                            intervalMicros);
+                }
+            }
+
+            @Override
+            public void onVSync(long frameTimeMicros) {
+                if (mNativeContentViewCore != 0) {
+                    nativeOnVSync(mNativeContentViewCore, frameTimeMicros);
+                }
+            }
+        };
+        return mVSyncListener;
+    }
+
+    @CalledByNative
+    void setVSyncNotificationEnabled(boolean enabled) {
+        mVSyncSubscriberCount += enabled ? 1 : -1;
+        assert mVSyncSubscriberCount >= 0;
+        if (mVSyncProvider != null) {
+            mVSyncProvider.setVSyncNotificationEnabled(mVSyncListener, mVSyncSubscriberCount > 0);
+        }
+    }
+
+    @CalledByNative
+    private void resetVSyncNotification() {
+        while (mVSyncSubscriberCount > 0) setVSyncNotificationEnabled(false);
+    }
+
     private final Context mContext;
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
@@ -649,6 +688,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
+        resetVSyncNotification();
         mNativeContentViewCore = 0;
         mContentSettings = null;
         mJavaScriptInterfaces.clear();
@@ -2611,17 +2651,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
-     * Update of the latest vsync parameters.
-     * @param tickTimeMicros The latest vsync tick time in microseconds.
-     * @param intervalMicros The vsync interval in microseconds.
-     */
-    public void updateVSync(long tickTimeMicros, long intervalMicros) {
-        if (mNativeContentViewCore != 0) {
-            nativeUpdateVSyncParameters(mNativeContentViewCore, tickTimeMicros, intervalMicros);
-        }
-    }
-
-    /**
      * @return The cached copy of render positions and scales.
      */
     public RenderCoordinates getRenderCoordinates() {
@@ -2813,6 +2842,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     private native void nativeUpdateVSyncParameters(int nativeContentViewCoreImpl,
             long timebaseMicros, long intervalMicros);
+
+    private native void nativeOnVSync(int nativeContentViewCoreImpl, long frameTimeMicros);
 
     private native boolean nativePopulateBitmapFromCompositor(int nativeContentViewCoreImpl,
             Bitmap bitmap);

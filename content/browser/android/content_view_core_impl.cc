@@ -357,6 +357,12 @@ void ContentViewCoreImpl::Hide() {
 }
 
 void ContentViewCoreImpl::OnTabCrashed() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_resetVSyncNotification(env, obj.obj());
+
   // if tab_crashed_ is already true, just return. e.g. if two tabs share the
   // render process, this will be called for each tab when the render process
   // crashed. If user reload one tab, a new render process is created. It can be
@@ -367,10 +373,6 @@ void ContentViewCoreImpl::OnTabCrashed() {
   if (tab_crashed_)
     return;
   tab_crashed_ = true;
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
   Java_ContentViewCore_onTabCrash(env, obj.obj());
 }
 
@@ -697,6 +699,15 @@ void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   GetWebContents()->GetController().LoadURLWithParams(params);
   tab_crashed_ = false;
+}
+
+void ContentViewCoreImpl::SetVSyncNotificationEnabled(bool enabled) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ContentViewCore_setVSyncNotificationEnabled(
+      env, obj.obj(), static_cast<jboolean>(enabled));
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
@@ -1202,6 +1213,15 @@ void ContentViewCoreImpl::UpdateVSyncParameters(JNIEnv* env, jobject /* obj */,
   host->UpdateVSyncParameters(
       base::TimeTicks::FromInternalValue(timebase_micros),
       base::TimeDelta::FromMicroseconds(interval_micros));
+}
+
+void ContentViewCoreImpl::OnVSync(JNIEnv* env, jobject /* obj */,
+                                  jlong frame_time_micros) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  if (!view)
+    return;
+
+  view->SendVSync(base::TimeTicks::FromInternalValue(frame_time_micros));
 }
 
 jboolean ContentViewCoreImpl::PopulateBitmapFromCompositor(JNIEnv* env,

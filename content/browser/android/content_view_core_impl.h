@@ -195,6 +195,7 @@ class ContentViewCoreImpl : public ContentViewCore,
                                     jint max_entries);
   void UpdateVSyncParameters(JNIEnv* env, jobject obj, jlong timebase_micros,
                              jlong interval_micros);
+  void OnVSync(JNIEnv* env, jobject /* obj */, jlong frame_time_micros);
   jboolean PopulateBitmapFromCompositor(JNIEnv* env,
                                         jobject obj,
                                         jobject jbitmap);
@@ -284,6 +285,7 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void AttachLayer(scoped_refptr<cc::Layer> layer);
   void RemoveLayer(scoped_refptr<cc::Layer> layer);
+  void SetVSyncNotificationEnabled(bool enabled);
 
  private:
   class ContentViewUserData;

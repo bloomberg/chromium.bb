@@ -399,7 +399,8 @@ void RenderWidgetHostViewAndroid::SendVSync(base::TimeTicks frame_time) {
 }
 
 void RenderWidgetHostViewAndroid::OnSetVSyncNotificationEnabled(bool enabled) {
-  // TODO(skyostil): Toggle the Java-side vsync monitor.
+  if (content_view_core_)
+    content_view_core_->SetVSyncNotificationEnabled(enabled);
 }
 
 void RenderWidgetHostViewAndroid::OnStartContentIntent(
