@@ -22,7 +22,7 @@ const char ExperimentalBluetoothProfileManagerClient::kNoResponseError[] =
 ExperimentalBluetoothProfileManagerClient::Options::Options()
     : role(SYMMETRIC),
       require_authentication(false),
-      require_authorization(true),
+      require_authorization(false),
       auto_connect(true) {
 }
 
