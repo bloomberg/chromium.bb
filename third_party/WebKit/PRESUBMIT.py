@@ -42,7 +42,7 @@ def _CommonChecks(input_api, output_api):
   results = []
   results.extend(input_api.canned_checks.PanProjectChecks(
       input_api, output_api, excluded_paths=_EXCLUDED_PATHS,
-      maxlen=250, license_header=license_header))
+      maxlen=800, license_header=license_header))
   results.extend(_CheckForVersionControlConflicts(input_api, output_api))
   results.extend(_CheckPatchFiles(input_api, output_api))
   results.extend(_CheckTestExpectations(input_api, output_api))
