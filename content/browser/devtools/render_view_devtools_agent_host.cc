@@ -184,17 +184,16 @@ void RenderViewDevToolsAgentHost::DispatchOnInspectorBackend(
   std::string error_message;
   scoped_ptr<DevToolsProtocol::Command> command(
       DevToolsProtocol::ParseCommand(message, &error_message));
-  if (!command) {
-    OnDispatchOnInspectorFrontend(error_message);
-    return;
+  if (command) {
+    scoped_ptr<DevToolsProtocol::Response> overridden_response(
+        overrides_handler_->HandleCommand(command.get()));
+    if (overridden_response) {
+      OnDispatchOnInspectorFrontend(overridden_response->Serialize());
+      return;
+    }
   }
 
-  scoped_ptr<DevToolsProtocol::Response> overridden_response(
-      overrides_handler_->HandleCommand(command.get()));
-  if (overridden_response)
-    OnDispatchOnInspectorFrontend(overridden_response->Serialize());
-  else
-    IPCDevToolsAgentHost::DispatchOnInspectorBackend(message);
+  IPCDevToolsAgentHost::DispatchOnInspectorBackend(message);
 }
 
 void RenderViewDevToolsAgentHost::SendMessageToAgent(IPC::Message* msg) {
