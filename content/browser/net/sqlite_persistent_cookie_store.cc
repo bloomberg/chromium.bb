@@ -371,9 +371,10 @@ bool InitTable(sql::Connection* db) {
                      "httponly INTEGER NOT NULL,"
                      "last_access_utc INTEGER NOT NULL, "
                      "has_expires INTEGER NOT NULL DEFAULT 1, "
-                     "persistent INTEGER NOT NULL DEFAULT 1)"))
+                     "persistent INTEGER NOT NULL DEFAULT 1)")) {
       // TODO(rogerm): Add priority.
       return false;
+    }
   }
 
   // Older code created an index on creation_utc, which is already
