@@ -72,10 +72,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Repositions all of the widgets based on the current work area.
   void RepositionWidgets();
 
-  // Repositions widgets. |target_rrect| denotes the region of the notification
-  // recently removed, and this attempts to slide widgets so that the user can
-  // click close-button without mouse moves. See crbug.com/224089
-  void RepositionWidgetsWithTarget(const gfx::Rect& target_rect);
+  // Repositions widgets. |reposition_target_| denotes the region of the
+  // notification recently removed, and this attempts to slide widgets so that
+  // the user can click close-button without mouse moves. See crbug.com/224089
+  void RepositionWidgetsWithTarget();
 
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
@@ -95,6 +95,10 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   ToastContainer toasts_;
   std::list<views::Widget*> widgets_;
   gfx::Rect work_area_;
+
+  // The rectangle to align the position of the toasts. Empty if it's not in the
+  // mode of repositioning to the target.
+  gfx::Rect reposition_target_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePopupCollection);
 };

@@ -93,8 +93,13 @@ class MessagePopupCollectionWidgetsTest : public views::ViewsTestBase {
     collection_->RepositionWidgets();
   }
 
+  void SetRepositionTarget(const gfx::Rect& target_rect) {
+    collection_->reposition_target_ = target_rect;
+  }
+
   void RepositionWidgetsWithTarget(const gfx::Rect& target_rect) {
-    collection_->RepositionWidgetsWithTarget(target_rect);
+    SetRepositionTarget(target_rect);
+    collection_->RepositionWidgetsWithTarget();
   }
 
   gfx::Rect GetWidgetRectAt(size_t index) {
@@ -189,6 +194,34 @@ TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetUp) {
   EXPECT_EQ("0,130 10x10", GetWidgetRectAt(0).ToString());
   EXPECT_EQ("0,100 10x20", GetWidgetRectAt(1).ToString());
   EXPECT_EQ("0,60 10x30", GetWidgetRectAt(2).ToString());
+}
+
+TEST_F(MessagePopupCollectionWidgetsTest, RepositionAfterSettingTarget) {
+  std::vector<gfx::Rect> rects;
+  std::list<views::Widget*> widgets;
+  rects.push_back(gfx::Rect(0, 180, 10, 10));
+  rects.push_back(gfx::Rect(0, 150, 10, 20));
+  rects.push_back(gfx::Rect(0, 60, 10, 40));
+  CreateWidgets(rects);
+  SetRepositionTarget(gfx::Rect(0, 110, 10, 30));
+
+  RepositionWidgets();
+  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
+  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
+  EXPECT_EQ("0,110 10x40", GetWidgetRectAt(2).ToString());
+
+  RepositionWidgets();
+  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
+  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
+  EXPECT_EQ("0,110 10x40", GetWidgetRectAt(2).ToString());
+
+  // Clear the target.
+  SetRepositionTarget(gfx::Rect());
+  RepositionWidgets();
+  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
+  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
+  EXPECT_EQ("0,100 10x40", GetWidgetRectAt(2).ToString());
+
 }
 
 }  // namespace test

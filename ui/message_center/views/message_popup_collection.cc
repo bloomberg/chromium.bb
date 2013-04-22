@@ -249,6 +249,7 @@ void MessagePopupCollection::OnMouseExited() {
        iter != toasts_.end(); ++iter) {
     iter->second->RestartTimer();
   }
+  reposition_target_ = gfx::Rect();
   RepositionWidgets();
   // Reposition could create extra space which allows additional widgets.
   UpdateWidgets();
@@ -307,6 +308,11 @@ gfx::Point MessagePopupCollection::GetWorkAreaBottomRight() {
 }
 
 void MessagePopupCollection::RepositionWidgets() {
+  if (!reposition_target_.IsEmpty()) {
+    RepositionWidgetsWithTarget();
+    return;
+  }
+
   int bottom = GetWorkAreaBottomRight().y() - kToastMargin;
   for (std::list<views::Widget*>::iterator iter = widgets_.begin();
        iter != widgets_.end(); ++iter) {
@@ -317,15 +323,14 @@ void MessagePopupCollection::RepositionWidgets() {
   }
 }
 
-void MessagePopupCollection::RepositionWidgetsWithTarget(
-    const gfx::Rect& target_bounds) {
+void MessagePopupCollection::RepositionWidgetsWithTarget() {
   if (widgets_.empty())
     return;
 
-  if (widgets_.back()->GetWindowBoundsInScreen().y() > target_bounds.y()) {
+  if (widgets_.back()->GetWindowBoundsInScreen().y() > reposition_target_.y()) {
     // No widgets are above, thus slides up the widgets.
     int slide_length =
-        widgets_.back()->GetWindowBoundsInScreen().y() - target_bounds.y();
+        widgets_.back()->GetWindowBoundsInScreen().y() - reposition_target_.y();
     for (std::list<views::Widget*>::iterator iter = widgets_.begin();
          iter != widgets_.end(); ++iter) {
       gfx::Rect bounds((*iter)->GetWindowBoundsInScreen());
@@ -335,12 +340,12 @@ void MessagePopupCollection::RepositionWidgetsWithTarget(
   } else {
     std::list<views::Widget*>::reverse_iterator iter = widgets_.rbegin();
     for (; iter != widgets_.rend(); ++iter) {
-      if ((*iter)->GetWindowBoundsInScreen().y() > target_bounds.y())
+      if ((*iter)->GetWindowBoundsInScreen().y() > reposition_target_.y())
         break;
     }
     --iter;
     int slide_length =
-        target_bounds.y() - (*iter)->GetWindowBoundsInScreen().y();
+        reposition_target_.y() - (*iter)->GetWindowBoundsInScreen().y();
     for (; ; --iter) {
       gfx::Rect bounds((*iter)->GetWindowBoundsInScreen());
       bounds.set_y(bounds.y() + slide_length);
@@ -365,16 +370,14 @@ void MessagePopupCollection::OnNotificationRemoved(
     return;
 
   views::Widget* widget = iter->second->GetWidget();
-  gfx::Rect removed_bounds = widget->GetWindowBoundsInScreen();
+  if (by_user)
+    reposition_target_ = widget->GetWindowBoundsInScreen();
   widget->RemoveObserver(this);
   widget->Close();
   widgets_.erase(std::find(widgets_.begin(), widgets_.end(), widget));
   toasts_.erase(iter);
   bool widgets_went_empty = widgets_.empty();
-  if (by_user)
-    RepositionWidgetsWithTarget(removed_bounds);
-  else
-    RepositionWidgets();
+  RepositionWidgets();
 
   // A notification removal may create extra space which allows appearing
   // other notifications.
@@ -384,7 +387,7 @@ void MessagePopupCollection::OnNotificationRemoved(
   // other notifications appearing, the newly created widgets also have to be
   // repositioned.
   if (by_user && widgets_went_empty)
-    RepositionWidgetsWithTarget(removed_bounds);
+    RepositionWidgets();
 }
 
 void MessagePopupCollection::OnNotificationUpdated(
