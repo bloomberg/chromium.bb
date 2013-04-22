@@ -13,6 +13,7 @@ BluetoothProfile::Options::Options()
       psm(0),
       require_authentication(false),
       require_authorization(false),
+      auto_connect(false),
       version(0),
       features(0) {
 }

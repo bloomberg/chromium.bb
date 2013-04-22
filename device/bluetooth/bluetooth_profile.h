@@ -53,6 +53,11 @@ class BluetoothProfile {
     // Defaults to false.
     bool require_authorization;
 
+    // Specifies whether this profile will be automatically connected if any
+    // other profile of a device conects to the host.
+    // Defaults to false.
+    bool auto_connect;
+
     // Implemented version of the profile.
     // Exported in the adapter's SDP or GATT tables where relevant.
     uint16 version;
