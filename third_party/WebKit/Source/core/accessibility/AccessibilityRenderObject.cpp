@@ -2981,7 +2981,7 @@ void AccessibilityRenderObject::setAccessibleName(const AtomicString& name)
         toElement(domNode)->setAttribute(aria_labelAttr, name);
 }
     
-static bool isLinkable(const AccessibilityRenderObject& object)
+static bool isLinkable(const AccessibilityObject& object)
 {
     if (!object.renderer())
         return false;

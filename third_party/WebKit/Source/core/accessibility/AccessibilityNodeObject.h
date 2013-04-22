@@ -34,7 +34,7 @@
 #include <wtf/Forward.h>
 
 namespace WebCore {
-    
+
 class AXObjectCache;
 class Element;
 class Frame;
@@ -54,20 +54,54 @@ class RenderTextControl;
 class RenderView;
 class VisibleSelection;
 class Widget;
-    
+
 class AccessibilityNodeObject : public AccessibilityObject {
 protected:
     explicit AccessibilityNodeObject(Node*);
+
 public:
     static PassRefPtr<AccessibilityNodeObject> create(Node*);
     virtual ~AccessibilityNodeObject();
 
+protected:
+    // Protected data.
+    AccessibilityRole m_ariaRole;
+    bool m_childrenDirty;
+#ifndef NDEBUG
+    bool m_initialized;
+#endif
+
+    String accessibilityDescriptionForElements(Vector<Element*> &elements) const;
+    void alterSliderValue(bool increase);
+    String ariaAccessibilityDescription() const;
+    void ariaLabeledByElements(Vector<Element*>& elements) const;
+    void changeValueByStep(bool increase);
+    virtual bool computeAccessibilityIsIgnored() const;
+    virtual AccessibilityRole determineAccessibilityRole();
+    AccessibilityRole determineAriaRoleAttribute() const;
+    void elementsFromAttribute(Vector<Element*>& elements, const QualifiedName&) const;
+    bool hasContentEditableAttributeSet() const;
+    bool isARIARange() const;
+    bool isDescendantOfBarrenParent() const;
+    // This returns true if it's focusable but it's not content editable and it's not a control or ARIA control.
+    bool isGenericFocusableElement() const;
+    HTMLLabelElement* labelForElement(Element*) const;
+    AccessibilityObject* menuButtonForMenu() const;
+    Element* menuElementForMenuButton() const;
+    Element* menuItemElementForMenu() const;
+    Element* mouseButtonListener() const;
+    AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
+
+    //
+    // Overridden from AccessibilityObject.
+    //
+
     virtual void init();
-    
+    virtual void detach();
+    virtual bool isDetached() const { return !m_node; }
     virtual bool isAccessibilityNodeObject() const { return true; }
 
-    virtual bool canvasHasFallbackContent() const;
-
+    // Check object role or purpose.
     virtual bool isAnchor() const;
     virtual bool isControl() const;
     virtual bool isFieldset() const;
@@ -92,6 +126,7 @@ public:
     virtual bool isSearchField() const;
     virtual bool isSlider() const;
 
+    // Check object state.
     virtual bool isChecked() const;
     virtual bool isEnabled() const;
     virtual bool isIndeterminate() const;
@@ -99,103 +134,84 @@ public:
     virtual bool isReadOnly() const;
     virtual bool isRequired() const;
 
-    void setNode(Node*);
-    virtual Node* node() const { return m_node; }
-    virtual Document* document() const;
-
+    // Check whether certain properties can be modified.
     virtual bool canSetFocusAttribute() const;
-    virtual int headingLevel() const;
 
+    // Properties of static elements.
+    virtual bool canvasHasFallbackContent() const;
+    virtual int headingLevel() const;
+    virtual unsigned hierarchicalLevel() const;
+    virtual String text() const;
+
+    // Properties of interactive elements.
+    virtual AccessibilityButtonState checkboxOrRadioValue() const;
+    virtual void colorValue(int& r, int& g, int& b) const;
     virtual String valueDescription() const;
     virtual float valueForRange() const;
     virtual float maxValueForRange() const;
     virtual float minValueForRange() const;
-    virtual float stepValueForRange() const;
-
     virtual AccessibilityObject* selectedRadioButton();
     virtual AccessibilityObject* selectedTabItem();
-    virtual AccessibilityButtonState checkboxOrRadioValue() const;
-
-    virtual unsigned hierarchicalLevel() const;
-    virtual String textUnderElement() const;
-    virtual String accessibilityDescription() const;
-    virtual String helpText() const;
-    virtual String title() const;
-    virtual String text() const;
+    virtual float stepValueForRange() const;
     virtual String stringValue() const;
-    virtual void colorValue(int& r, int& g, int& b) const;
-    virtual String ariaLabeledByAttribute() const;
 
-    virtual Element* actionElement() const;
-    Element* mouseButtonListener() const;
-    virtual Element* anchorElement() const;
-   
-    virtual void changeValueByPercent(float percentChange);
- 
+    // ARIA attributes.
+    String ariaDescribedByAttribute() const;
+    virtual String ariaLabeledByAttribute() const;
+    AccessibilityRole ariaRoleAttribute() const;
+
+    // Accessibility Text.
+    virtual void accessibilityText(Vector<AccessibilityText>&);
+    virtual String textUnderElement() const;
+
+    // Accessibility Text - (To be deprecated).
+    virtual String accessibilityDescription() const;
+    virtual String title() const;
+    virtual String helpText() const;
+
+    // Position and size.
+    virtual LayoutRect boundingBoxRect() const;
+    virtual LayoutRect elementRect() const;
+
+    // High-level accessibility tree access.
+    virtual AccessibilityObject* parentObject() const;
+    virtual AccessibilityObject* parentObjectIfExists() const;
+
+    // Low-level accessibility tree exploration.
     virtual AccessibilityObject* firstChild() const;
     virtual AccessibilityObject* lastChild() const;
     virtual AccessibilityObject* previousSibling() const;
     virtual AccessibilityObject* nextSibling() const;
-    virtual AccessibilityObject* parentObject() const;
-    virtual AccessibilityObject* parentObjectIfExists() const;
-
-    virtual void detach();
-    virtual void childrenChanged();
-    virtual void updateAccessibilityRole();
-
-    virtual void increment();
-    virtual void decrement();
-
-    virtual LayoutRect elementRect() const;
-
-protected:
-    AccessibilityRole m_ariaRole;
-    bool m_childrenDirty;
-#ifndef NDEBUG
-    bool m_initialized;
-#endif
-
-    virtual bool isDetached() const { return !m_node; }
-
-    virtual AccessibilityRole determineAccessibilityRole();
     virtual void addChildren();
     virtual void addChild(AccessibilityObject*);
     virtual void insertChild(AccessibilityObject*, unsigned index);
-
     virtual bool canHaveChildren() const;
-    AccessibilityRole ariaRoleAttribute() const;
-    AccessibilityRole determineAriaRoleAttribute() const;
-    AccessibilityRole remapAriaRoleDueToParent(AccessibilityRole) const;
-    bool hasContentEditableAttributeSet() const;
-    bool isDescendantOfBarrenParent() const;
-    void alterSliderValue(bool increase);
-    void changeValueByStep(bool increase);
-    bool isARIARange() const;
-    // This returns true if it's focusable but it's not content editable and it's not a control or ARIA control.
-    bool isGenericFocusableElement() const;
-    HTMLLabelElement* labelForElement(Element*) const;
-    String ariaAccessibilityDescription() const;
-    void ariaLabeledByElements(Vector<Element*>& elements) const;
-    String accessibilityDescriptionForElements(Vector<Element*> &elements) const;
-    void elementsFromAttribute(Vector<Element*>& elements, const QualifiedName&) const;
-    virtual LayoutRect boundingBoxRect() const;
-    String ariaDescribedByAttribute() const;
-    
-    Element* menuElementForMenuButton() const;
-    Element* menuItemElementForMenu() const;
-    AccessibilityObject* menuButtonForMenu() const;
+
+    // DOM and Render tree access.
+    virtual Element* actionElement() const;
+    virtual Element* anchorElement() const;
+    virtual Document* document() const;
+    virtual Node* node() const { return m_node; }
+    void setNode(Node*);
+
+    // Modify or take an action on an object.
+    virtual void increment();
+    virtual void decrement();
+
+    // Notifications that this object may have changed.
+    virtual void childrenChanged();
+    virtual void updateAccessibilityRole();
 
 private:
     Node* m_node;
 
-    virtual void accessibilityText(Vector<AccessibilityText>&);
-    void titleElementText(Vector<AccessibilityText>&);
-    void alternativeText(Vector<AccessibilityText>&) const;
-    void visibleText(Vector<AccessibilityText>&) const;
-    void helpText(Vector<AccessibilityText>&) const;
     String alternativeTextForWebArea() const;
+    void alternativeText(Vector<AccessibilityText>&) const;
     void ariaLabeledByText(Vector<AccessibilityText>&) const;
-    virtual bool computeAccessibilityIsIgnored() const;
+    void changeValueByPercent(float percentChange);
+    void helpText(Vector<AccessibilityText>&) const;
+    void titleElementText(Vector<AccessibilityText>&);
+    void visibleText(Vector<AccessibilityText>&) const;
 };
 
 inline AccessibilityNodeObject* toAccessibilityNodeObject(AccessibilityObject* object)
