@@ -1034,10 +1034,6 @@
     'android_app_version_name%': 'Developer Build',
     'android_app_version_code%': 0,
 
-    # Temporarily set android_build_type until all uses of it have been renamed.
-    # http://crbug.com/184431
-    'android_build_type%': '<(android_webview_build)',
-
     'sas_dll_exists': '<!(python <(DEPTH)/build/dir_exists.py <(sas_dll_path))',
     'wix_exists': '<!(python <(DEPTH)/build/dir_exists.py <(wix_path))',
 
