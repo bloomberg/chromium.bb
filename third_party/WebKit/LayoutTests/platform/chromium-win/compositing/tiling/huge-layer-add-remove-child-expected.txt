@@ -40,6 +40,8 @@ Second (child added):
               (position 51.00 401.00)
               (bounds 200.00 200.00)
               (contentsOpaque 1)
+              (drawsContent 1)
+              (backgroundColor #FF0000)
             )
           )
         )

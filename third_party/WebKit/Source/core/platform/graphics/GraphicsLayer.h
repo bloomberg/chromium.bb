@@ -403,7 +403,7 @@ public:
 
     static bool supportsBackgroundColorContent()
     {
-        return true;
+        return false;
     }
 
     void updateDebugIndicators();

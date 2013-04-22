@@ -512,36 +512,6 @@ void GraphicsLayerChromium::setContentsToImage(Image* image)
 
 void GraphicsLayerChromium::setContentsToSolidColor(const Color& color)
 {
-    if (color == m_contentsSolidColor)
-        return;
-
-    bool childrenChanged = false;
-
-    m_contentsSolidColor = color;
-
-    if (color.isValid() && color.alpha()) {
-        if (!m_contentsSolidColorLayer) {
-            m_contentsSolidColorLayer = adoptPtr(Platform::current()->compositorSupport()->createSolidColorLayer());
-            registerContentsLayer(m_contentsSolidColorLayer->layer());
-
-            setupContentsLayer(m_contentsSolidColorLayer->layer());
-            childrenChanged = true;
-        }
-
-        m_contentsSolidColorLayer->setBackgroundColor(color.rgb());
-        updateContentsRect();
-    } else {
-        if (m_contentsSolidColorLayer) {
-            childrenChanged = true;
-            unregisterContentsLayer(m_contentsSolidColorLayer->layer());
-            m_contentsSolidColorLayer.clear();
-        }
-        m_contentsLayer = 0;
-    }
-
-    if (childrenChanged)
-        updateChildList();
-
 }
 
 static HashSet<int>* s_registeredLayerSet;
