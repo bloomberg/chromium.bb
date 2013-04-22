@@ -86,8 +86,6 @@ public:
     virtual void didReceiveSocketStreamData(SocketStreamHandle*, const char*, int) OVERRIDE;
     virtual void didUpdateBufferedAmount(SocketStreamHandle*, size_t bufferedAmount) OVERRIDE;
     virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) OVERRIDE;
-    virtual void didReceiveAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&) OVERRIDE;
-    virtual void didCancelAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&) OVERRIDE;
 
     // FileReaderLoaderClient functions.
     virtual void didStartLoading();

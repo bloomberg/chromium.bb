@@ -337,14 +337,6 @@ void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle,
     handle->disconnect();
 }
 
-void MainThreadWebSocketChannel::didReceiveAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&)
-{
-}
-
-void MainThreadWebSocketChannel::didCancelAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&)
-{
-}
-
 void MainThreadWebSocketChannel::didStartLoading()
 {
     LOG(Network, "MainThreadWebSocketChannel %p didStartLoading()", this);

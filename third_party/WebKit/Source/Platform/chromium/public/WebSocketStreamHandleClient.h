@@ -57,8 +57,6 @@ public:
 
     // Called when Socket Stream has an error.
     virtual void didFail(WebSocketStreamHandle*, const WebSocketStreamError&) = 0;
-
-    // FIXME: auth challenge for proxy
 };
 
 } // namespace WebKit

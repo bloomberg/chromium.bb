@@ -39,8 +39,6 @@
 
 namespace WebCore {
 
-    class AuthenticationChallenge;
-    class Credential;
     class SocketStreamHandleClient;
     class SocketStreamHandleInternal;
 
@@ -57,12 +55,6 @@ namespace WebCore {
 
     private:
         SocketStreamHandle(const KURL&, SocketStreamHandleClient*);
-
-        // No authentication for streams per se, but proxy may ask for credentials.
-        void didReceiveAuthenticationChallenge(const AuthenticationChallenge&);
-        void receivedCredential(const AuthenticationChallenge&, const Credential&);
-        void receivedRequestToContinueWithoutCredential(const AuthenticationChallenge&);
-        void receivedCancellation(const AuthenticationChallenge&);
 
         friend class SocketStreamHandleInternal;
         OwnPtr<SocketStreamHandleInternal> m_internal;

@@ -34,7 +34,6 @@
 
 namespace WebCore {
 
-    class AuthenticationChallenge;
     class KURL;
     class SocketStreamError;
     class SocketStreamHandle;
@@ -50,10 +49,6 @@ namespace WebCore {
         virtual void didUpdateBufferedAmount(SocketStreamHandle*, size_t /*bufferedAmount*/) { }
 
         virtual void didFailSocketStream(SocketStreamHandle*, const SocketStreamError&) { }
-
-        // No authentication for streams per se, but proxy may ask for credentials.
-        virtual void didReceiveAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&) { }
-        virtual void didCancelAuthenticationChallenge(SocketStreamHandle*, const AuthenticationChallenge&) { }
     };
 
 }  // namespace WebCore

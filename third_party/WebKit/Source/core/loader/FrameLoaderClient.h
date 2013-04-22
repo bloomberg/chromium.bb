@@ -46,7 +46,6 @@ template<class T> class Handle;
 
 namespace WebCore {
 
-    class AuthenticationChallenge;
     class CachedResourceRequest;
     class Color;
     class DOMWindowExtension;
@@ -67,7 +66,6 @@ namespace WebCore {
     class MessageEvent;
     class NavigationAction;
     class Page;
-    class ProtectionSpace;
     class PluginView;
     class ResourceError;
     class ResourceHandle;

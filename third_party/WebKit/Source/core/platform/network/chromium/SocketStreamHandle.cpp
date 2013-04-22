@@ -191,20 +191,4 @@ void SocketStreamHandle::platformClose()
         m_internal->close();
 }
 
-void SocketStreamHandle::didReceiveAuthenticationChallenge(const AuthenticationChallenge& challenge)
-{
-    if (m_client)
-        m_client->didReceiveAuthenticationChallenge(this, challenge);
-}
-
-void SocketStreamHandle::receivedCredential(const AuthenticationChallenge& challenge, const Credential& credential)
-{
-    notImplemented();
-}
-
-void SocketStreamHandle::receivedRequestToContinueWithoutCredential(const AuthenticationChallenge& challenge)
-{
-    notImplemented();
-}
-
 }  // namespace WebCore
