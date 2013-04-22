@@ -172,12 +172,6 @@ class NetworkPortalDetectorImpl
   // Connection state of the active network.
   ConnectionState active_connection_state_;
 
-  // Service path to the latest reported Network.
-  std::string last_reported_network_service_path_;
-
-  // Latest reported captive portal state.
-  CaptivePortalState last_reported_state_;
-
   State state_;
   CaptivePortalStateMap portal_state_map_;
   ObserverList<Observer> observers_;

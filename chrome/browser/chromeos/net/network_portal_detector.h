@@ -38,7 +38,12 @@ class NetworkPortalDetector {
 
   class Observer {
    public:
-    // Called when portal detection is completed for |network|.
+    // Called when portal detection is completed for |network|, or
+    // when observers add themselves via AddAndFireObserver(). In the
+    // second case, |network| is the active network and |state| is a
+    // current portal state for the active network, which can be
+    // currently in the unknown state, for instance, if portal
+    // detection is in process for the active network.
     virtual void OnPortalDetectionCompleted(
         const Network* network,
         const CaptivePortalState& state) = 0;
@@ -50,8 +55,22 @@ class NetworkPortalDetector {
   virtual void Init() = 0;
   virtual void Shutdown() = 0;
 
+  // Adds |observer| to the observers list.
   virtual void AddObserver(Observer* observer) = 0;
+
+  // Adds |observer| to the observers list and immediately calls
+  // OnPortalDetectionCompleted() with the active network (which may
+  // be NULL) and captive portal state for the active network (which
+  // may be unknown, if, for instance, portal detection is in process
+  // for the active network).
+  //
+  // WARNING: don't call this method from the Observer's ctors or
+  // dtors, as it implicitly calls OnPortalDetectionCompleted(), which
+  // is virtual.
+  // TODO (ygorshenin@): find a way to avoid this restriction.
   virtual void AddAndFireObserver(Observer* observer) = 0;
+
+  // Removes |observer| from the observers list.
   virtual void RemoveObserver(Observer* observer) = 0;
 
   // Returns Captive Portal state for a given |network|.

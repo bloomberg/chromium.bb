@@ -241,6 +241,11 @@ void UpdateScreen::UpdateStatusChanged(
 void UpdateScreen::OnPortalDetectionCompleted(
     const Network* network,
     const NetworkPortalDetector::CaptivePortalState& state) {
+  // Wait for the sane portal detection results.
+  if (!network ||
+      state.status == NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN) {
+    return;
+  }
   VLOG(1) << "UpdateScreen::OnPortalDetectionCompleted(): "
           << "network=" << network->service_path() << ", "
           << "state.status=" << state.status << ", "

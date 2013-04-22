@@ -146,12 +146,12 @@ void NetworkPortalDetectorImpl::AddObserver(Observer* observer) {
 }
 
 void NetworkPortalDetectorImpl::AddAndFireObserver(Observer* observer) {
+  DCHECK(CalledOnValidThread());
+  if (!observer)
+    return;
   AddObserver(observer);
-  if (observer) {
-    observer->OnPortalDetectionCompleted(
-        FindNetworkByPath(last_reported_network_service_path_),
-        last_reported_state_);
-  }
+  const Network* network = GetActiveNetwork();
+  observer->OnPortalDetectionCompleted(network, GetCaptivePortalState(network));
 }
 
 void NetworkPortalDetectorImpl::RemoveObserver(Observer* observer) {
@@ -468,11 +468,6 @@ void NetworkPortalDetectorImpl::SetCaptivePortalState(
 void NetworkPortalDetectorImpl::NotifyPortalDetectionCompleted(
     const Network* network,
     const CaptivePortalState& state) {
-  if (network)
-    last_reported_network_service_path_ = network->service_path();
-  else
-    last_reported_network_service_path_ = std::string();
-  last_reported_state_ = state;
   FOR_EACH_OBSERVER(Observer, observers_,
                     OnPortalDetectionCompleted(network, state));
 }
