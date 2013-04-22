@@ -20,6 +20,7 @@ void RemoveExternalInstallError(ExtensionService* service);
 
 // Used for testing.
 bool HasExternalInstallError(ExtensionService* service);
+bool HasExternalInstallBubble(ExtensionService* service);
 
 }  // namespace extensions
 

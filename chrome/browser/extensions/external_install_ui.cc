@@ -398,4 +398,12 @@ bool HasExternalInstallError(ExtensionService* service) {
   return !!error;
 }
 
+bool HasExternalInstallBubble(ExtensionService* service) {
+  GlobalErrorService* error_service =
+      GlobalErrorServiceFactory::GetForProfile(service->profile());
+  GlobalError* error = error_service->GetGlobalErrorByMenuItemCommandID(
+      kMenuCommandId);
+  return error && error->HasBubbleView();
+}
+
 }  // namespace extensions
