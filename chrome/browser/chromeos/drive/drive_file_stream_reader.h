@@ -8,12 +8,11 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "chrome/browser/chromeos/drive/drive_file_error.h"
-#include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "net/base/completion_callback.h"
+#include "webkit/blob/file_stream_reader.h"
 
 namespace net {
 class FileStream;
@@ -93,81 +92,22 @@ class NetworkReaderProxy : public ReaderProxy {
 
 }  // namespace internal
 
-class DriveFileSystemInterface;
-class DriveEntryProto;
-
-// The stream reader for a file in DriveFileSystem. Instances of this class
-// should live on IO thread.
-class DriveFileStreamReader {
+// TODO(hidehiko): Simplify the interface by getting rid of
+// webkit_blob::FileStreamReader inheritance.
+class DriveFileStreamReader : public webkit_blob::FileStreamReader {
  public:
-  // Callback to return the DriveFileSystemInterface instance. This is an
-  // injecting point for testing.
-  // Note that the callback will be copied between threads (IO and UI), and
-  // will be called on UI thread.
-  typedef base::Callback<DriveFileSystemInterface*()> DriveFileSystemGetter;
+  DriveFileStreamReader();
+  virtual ~DriveFileStreamReader();
 
-  // Callback to return the result of Initialize().
-  typedef base::Callback<void(DriveFileError error,
-                              scoped_ptr<DriveEntryProto> entry)>
-      InitializeCompletionCallback;
-
-  explicit DriveFileStreamReader(
-      const DriveFileSystemGetter& drive_file_system_getter);
-  ~DriveFileStreamReader();
-
-  // Initializes the stream for the |drive_file_path|.
-  // |callback| must not be null.
-  // TODO(hidehiko): Support reading range (crbug.com/168258).
-  void Initialize(const base::FilePath& drive_file_path,
-                  const InitializeCompletionCallback& callback);
-
-  // Reads the data into |buffer| at most |buffer_length|, and returns
-  // the number of bytes. If an error happened, returns an error code.
-  // If no data is available yet, returns net::ERR_IO_PENDING immediately,
-  // and when the data is available the actual Read operation is done
-  // and |callback| will be run with the result.
-  // The Read() method must not be called before the Initialize() is completed
-  // successfully, or if there is pending read operation.
-  // Neither |buffer| nor |callback| must be null.
-  int Read(net::IOBuffer* buffer, int buffer_length,
-           const net::CompletionCallback& callback);
+  // webkit_blob::FileStreamReader overrides.
+  virtual int Read(net::IOBuffer* buf, int buf_len,
+                   const net::CompletionCallback& callback) OVERRIDE;
+  virtual int64 GetLength(
+      const net::Int64CompletionCallback& callback) OVERRIDE;
 
  private:
-  // Part of Initialize. Called after GetFileContentByPath's initialization
-  // is done.
-  void InitializeAfterGetFileContentByPathInitialized(
-      const InitializeCompletionCallback& callback,
-      DriveFileError error,
-      scoped_ptr<DriveEntryProto> entry,
-      const base::FilePath& drive_file_path);
-
-  // Part of Initialize. Called when the local file open process is done.
-  void InitializeAfterLocalFileOpen(
-      const InitializeCompletionCallback& callback,
-      scoped_ptr<DriveEntryProto> entry,
-      scoped_ptr<net::FileStream> file_stream,
-      int open_result);
-
-  // Called when the data is received from the server.
-  void OnGetContent(google_apis::GDataErrorCode error_code,
-                    scoped_ptr<std::string> data);
-
-  // Called when GetFileContentByPath is completed.
-  void OnGetFileContentByPathCompletion(
-      const InitializeCompletionCallback& callback,
-      DriveFileError error);
-
-  const DriveFileSystemGetter drive_file_system_getter_;
-  scoped_ptr<internal::ReaderProxy> reader_proxy_;
-
-  // This should remain the last member so it'll be destroyed first and
-  // invalidate its weak pointers before other members are destroyed.
-  base::WeakPtrFactory<DriveFileStreamReader> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(DriveFileStreamReader);
 };
-
-// TODO(hidehiko): Add thin wrapper class inheriting
-// webkit_blob::FileStreamReader for the DriveFileStreamReader.
 
 }  // namespace drive
 

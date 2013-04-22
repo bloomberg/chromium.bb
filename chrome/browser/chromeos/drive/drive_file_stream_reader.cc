@@ -9,9 +9,6 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/google_apis/task_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -169,178 +166,25 @@ void NetworkReaderProxy::OnError(DriveFileError error) {
 
 }  // namespace internal
 
-namespace {
 
-// Calls DriveFileSystemInterface::GetFileContentByPath if the file system
-// is available. If not, the |completion_callback| is invoked with
-// DRIVE_FILE_ERROR_FAILED.
-void GetFileContentByPathOnUIThread(
-    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
-    const base::FilePath& drive_file_path,
-    const GetFileContentInitializedCallback& initialized_callback,
-    const google_apis::GetContentCallback& get_content_callback,
-    const FileOperationCallback& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  DriveFileSystemInterface* file_system = file_system_getter.Run();
-  if (!file_system) {
-    completion_callback.Run(DRIVE_FILE_ERROR_FAILED);
-    return;
-  }
-
-  file_system->GetFileContentByPath(drive_file_path,
-                                    initialized_callback,
-                                    get_content_callback,
-                                    completion_callback);
-}
-
-// Helper to run DriveFileSystemInterface::GetFileContentByPath on UI thread.
-void GetFileContentByPath(
-    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
-    const base::FilePath& drive_file_path,
-    const GetFileContentInitializedCallback& initialized_callback,
-    const google_apis::GetContentCallback& get_content_callback,
-    const FileOperationCallback& completion_callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  BrowserThread::PostTask(
-      BrowserThread::UI,
-      FROM_HERE,
-      base::Bind(&GetFileContentByPathOnUIThread,
-                 file_system_getter,
-                 drive_file_path,
-                 google_apis::CreateRelayCallback(initialized_callback),
-                 google_apis::CreateRelayCallback(get_content_callback),
-                 google_apis::CreateRelayCallback(completion_callback)));
-}
-
-}  // namespace
-
-DriveFileStreamReader::DriveFileStreamReader(
-    const DriveFileSystemGetter& drive_file_system_getter)
-    : drive_file_system_getter_(drive_file_system_getter),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+DriveFileStreamReader::DriveFileStreamReader() {
 }
 
 DriveFileStreamReader::~DriveFileStreamReader() {
 }
 
-void DriveFileStreamReader::Initialize(
-    const base::FilePath& drive_file_path,
-    const InitializeCompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!callback.is_null());
-
-  GetFileContentByPath(
-      drive_file_system_getter_,
-      drive_file_path,
-      base::Bind(&DriveFileStreamReader
-                     ::InitializeAfterGetFileContentByPathInitialized,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback),
-      base::Bind(&DriveFileStreamReader::OnGetContent,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&DriveFileStreamReader::OnGetFileContentByPathCompletion,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 callback));
-}
-
-int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
+int DriveFileStreamReader::Read(net::IOBuffer* buf, int buf_len,
                                 const net::CompletionCallback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(reader_proxy_);
-  DCHECK(buffer);
-  DCHECK(!callback.is_null());
-  return reader_proxy_->Read(buffer, buffer_length, callback);
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+  return 0;
 }
 
-void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
-    const InitializeCompletionCallback& callback,
-    DriveFileError error,
-    scoped_ptr<DriveEntryProto> entry,
-    const base::FilePath& drive_file_path) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (error != DRIVE_FILE_OK) {
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
-    return;
-  }
-  DCHECK(entry);
-
-  if (drive_file_path.empty()) {
-    // The file is not cached, and being downloaded.
-    reader_proxy_.reset(
-        new internal::NetworkReaderProxy(entry->file_info().size()));
-    callback.Run(DRIVE_FILE_OK, entry.Pass());
-    return;
-  }
-
-  // Otherwise, open the stream for file.
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
-  net::FileStream* file_stream_ptr = file_stream.get();
-  net::CompletionCallback open_completion_callback = base::Bind(
-      &DriveFileStreamReader::InitializeAfterLocalFileOpen,
-      weak_ptr_factory_.GetWeakPtr(),
-      callback,
-      base::Passed(&entry),
-      base::Passed(&file_stream));
-  int result = file_stream_ptr->Open(
-      drive_file_path,
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC,
-      open_completion_callback);
-
-  if (result == net::ERR_IO_PENDING) {
-    // If the result ERR_IO_PENDING, the callback will be invoked later.
-    // Do nothing here.
-    return;
-  }
-
-  open_completion_callback.Run(result);
-}
-
-void DriveFileStreamReader::InitializeAfterLocalFileOpen(
-    const InitializeCompletionCallback& callback,
-    scoped_ptr<DriveEntryProto> entry,
-    scoped_ptr<net::FileStream> file_stream,
-    int open_result) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (open_result != net::OK) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
-    return;
-  }
-
-  reader_proxy_.reset(new internal::LocalReaderProxy(file_stream.Pass()));
-  callback.Run(DRIVE_FILE_OK, entry.Pass());
-}
-
-void DriveFileStreamReader::OnGetContent(google_apis::GDataErrorCode error_code,
-                                         scoped_ptr<std::string> data) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(reader_proxy_);
-  reader_proxy_->OnGetContent(data.Pass());
-}
-
-void DriveFileStreamReader::OnGetFileContentByPathCompletion(
-    const InitializeCompletionCallback& callback,
-    DriveFileError error) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-  if (error == DRIVE_FILE_OK) {
-    // We are interested in only errors.
-    return;
-  }
-
-  if (reader_proxy_) {
-    // If the proxy object available, send the error to it.
-    reader_proxy_->OnError(error);
-  } else {
-    // Here, this callback is invoked in the initialization process.
-    // So let the client know via initialization callback.
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
-  }
+int64 DriveFileStreamReader::GetLength(
+    const net::Int64CompletionCallback& callback) {
+  // TODO(hidehiko): Implement this.
+  NOTIMPLEMENTED();
+  return 0;
 }
 
 }  // namespace drive
