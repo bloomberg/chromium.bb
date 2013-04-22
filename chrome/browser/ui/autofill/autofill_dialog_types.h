@@ -13,7 +13,6 @@
 #include "components/autofill/browser/autofill_metrics.h"
 #include "components/autofill/browser/field_types.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/font.h"
 #include "ui/gfx/image/image.h"
 
 namespace autofill {
@@ -133,14 +132,12 @@ enum DialogSignedInState {
 
 struct SuggestionState {
   SuggestionState(const string16& text,
-                  gfx::Font::FontStyle text_style,
                   const gfx::Image& icon,
                   const string16& extra_text,
                   const gfx::Image& extra_icon,
                   bool editable);
   ~SuggestionState();
   string16 text;
-  gfx::Font::FontStyle text_style;
   gfx::Image icon;
   string16 extra_text;
   gfx::Image extra_icon;

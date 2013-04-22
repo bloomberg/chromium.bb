@@ -78,6 +78,7 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;
+  virtual bool UseBillingForShipping() OVERRIDE;
   virtual bool SaveDetailsLocally() OVERRIDE;
   virtual const content::NavigationController* ShowSignIn() OVERRIDE;
   virtual void HideSignIn() OVERRIDE;
@@ -299,7 +300,7 @@ class AutofillDialogViews : public AutofillDialogView,
     void SetEditable(bool editable);
 
     // Sets the display text of the suggestion.
-    void SetSuggestionText(const string16& text, gfx::Font::FontStyle style);
+    void SetSuggestionText(const string16& text);
 
     // Sets the icon which should be displayed ahead of the text.
     void SetSuggestionIcon(const gfx::Image& image);
@@ -439,6 +440,10 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Somewhere to show notification messages about errors, warnings, or promos.
   NotificationArea* notification_area_;
+
+  // The checkbox that controls whether to use the billing details for shipping
+  // as well.
+  views::Checkbox* use_billing_for_shipping_;
 
   // Runs the suggestion menu (triggered by each section's |suggested_button|.
   scoped_ptr<views::MenuRunner> menu_runner_;

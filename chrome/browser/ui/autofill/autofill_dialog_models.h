@@ -23,8 +23,7 @@ class SuggestionsMenuModelDelegate {
   virtual ~SuggestionsMenuModelDelegate();
 
   // Called when a menu item has been activated.
-  virtual void SuggestionItemSelected(SuggestionsMenuModel* model,
-                                      size_t index) = 0;
+  virtual void SuggestionItemSelected(const SuggestionsMenuModel& model) = 0;
 };
 
 // A model for the dropdowns that allow the user to select from different
@@ -68,10 +67,6 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
   // there are no items.
   std::string GetItemKeyForCheckedItem() const;
 
-  // Sets which item is checked.
-  void SetCheckedItem(const std::string& item_key);
-  void SetCheckedIndex(size_t index);
-
   int checked_item() { return checked_item_; }
 
   // ui::SimpleMenuModel::Delegate implementation.
@@ -90,8 +85,7 @@ class SuggestionsMenuModel : public ui::SimpleMenuModel,
 
   SuggestionsMenuModelDelegate* delegate_;
 
-  // The command id (and index) of the item which is currently checked. Only one
-  // item is checked at a time.
+  // The command id (and index) of the item which is currently checked.
   int checked_item_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionsMenuModel);

@@ -69,6 +69,10 @@ string16 AutofillDialogCocoa::GetCvc() {
   return string16();
 }
 
+bool AutofillDialogCocoa::UseBillingForShipping() {
+  return false;
+}
+
 bool AutofillDialogCocoa::SaveDetailsLocally() {
   return false;
 }
