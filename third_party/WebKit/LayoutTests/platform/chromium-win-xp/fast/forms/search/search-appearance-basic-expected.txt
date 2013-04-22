@@ -88,11 +88,11 @@ layer at (0,0) size 800x315
         RenderText {#text} at (577,127) size 4x19
           text run at (577,127) width 4: " "
         RenderBR {BR} at (581,127) size 0x19
-        RenderTextControl {INPUT} at (4,167) size 140x21 [bgcolor=#FFFFFF] [border: (1px solid #BDC7D8)]
-          RenderFlexibleBox {DIV} at (18,4) size 118x13
+        RenderTextControl {INPUT} at (4,167) size 138x21 [bgcolor=#FFFFFF] [border: (1px solid #BDC7D8)]
+          RenderFlexibleBox {DIV} at (18,4) size 116x13
             RenderBlock {DIV} at (2,1) size 15x11
-            RenderBlock {DIV} at (20,0) size 87x13
-            RenderBlock {DIV} at (107,2) size 8x9
+            RenderBlock {DIV} at (20,0) size 85x13
+            RenderBlock {DIV} at (105,2) size 8x9
         RenderText {#text} at (0,0) size 0x0
 layer at (16,15) size 136x16
   RenderBlock {DIV} at (0,0) size 136x16
@@ -138,9 +138,9 @@ layer at (272,231) size 274x33
   RenderBlock {DIV} at (0,0) size 274x33
     RenderText {#text} at (0,0) size 37x32
       text run at (0,0) width 37: "foo"
-layer at (50,286) size 87x13
-  RenderBlock {DIV} at (38,4) size 87x13 [color=#A9A9A9]
+layer at (50,286) size 85x13 scrollWidth 86
+  RenderBlock {DIV} at (38,4) size 85x13 [color=#A9A9A9]
     RenderText {#text} at (0,0) size 86x13
       text run at (0,0) width 86: "Search for Events"
-layer at (50,286) size 87x13
-  RenderBlock {DIV} at (0,0) size 87x13
+layer at (50,286) size 85x13
+  RenderBlock {DIV} at (0,0) size 85x13
