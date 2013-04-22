@@ -379,13 +379,6 @@ const char kOmniboxLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_omnibox";
 #endif
 
-const char kInstantLearnMoreURL[] =
-#if defined(OS_CHROMEOS)
-    "https://support.google.com/chromeos/?p=settings_instant_policy";
-#else
-    "https://support.google.com/chrome/?p=settings_instant_policy";
-#endif
-
 const char kPageInfoHelpCenterURL[] =
 #if defined(OS_CHROMEOS)
     "https://support.google.com/chromeos/?p=ui_security_indicator";

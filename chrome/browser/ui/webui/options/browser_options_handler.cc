@@ -237,7 +237,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
     { "homePageShowHomeButton", IDS_OPTIONS_TOOLBAR_SHOW_HOME_BUTTON },
     { "homePageUseNewTab", IDS_OPTIONS_HOMEPAGE_USE_NEWTAB },
     { "homePageUseURL", IDS_OPTIONS_HOMEPAGE_USE_URL },
-    { "instantConfirmMessage", IDS_INSTANT_OPT_IN_MESSAGE },
     { "importData", IDS_OPTIONS_IMPORT_DATA_BUTTON },
     { "improveBrowsingExperience", IDS_OPTIONS_IMPROVE_BROWSING_EXPERIENCE },
     { "languageAndSpellCheckSettingsButton",
@@ -411,7 +410,6 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
 #endif
 
   RegisterStrings(values, resources, arraysize(resources));
-  RegisterTitle(values, "instantConfirmOverlay", IDS_INSTANT_OPT_IN_TITLE);
   RegisterTitle(values, "doNotTrackConfirmOverlay",
                 IDS_OPTIONS_ENABLE_DO_NOT_TRACK_BUBBLE_TITLE);
   RegisterTitle(values, "spellingConfirmOverlay",
@@ -427,12 +425,10 @@ void BrowserOptionsHandler::GetLocalizedValues(DictionaryValue* values) {
   std::string instant_pref_name = chrome::GetInstantPrefName();
   int instant_message_id = instant_pref_name == prefs::kInstantEnabled ?
       IDS_INSTANT_PREF_WITH_WARNING : IDS_INSTANT_EXTENDED_PREF_WITH_WARNING;
-  string16 instant_learn_more_url = ASCIIToUTF16(chrome::kInstantLearnMoreURL);
   values->SetString("instant_enabled", instant_pref_name);
   values->SetString(
       "instantPrefAndWarning",
-      l10n_util::GetStringFUTF16(instant_message_id, instant_learn_more_url));
-  values->SetString("instantLearnMoreLink", instant_learn_more_url);
+      l10n_util::GetStringUTF16(instant_message_id));
 
 #if defined(OS_CHROMEOS)
   const chromeos::User* user = chromeos::UserManager::Get()->GetLoggedInUser();

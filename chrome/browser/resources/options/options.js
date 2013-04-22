@@ -86,17 +86,6 @@ function load() {
           $('do-not-track-enabled').pref,
           $('do-not-track-enabled').metric),
       BrowserOptions.getInstance());
-  OptionsPage.registerOverlay(
-      new ConfirmDialog(
-          'instantConfirm',
-          loadTimeData.getString('instantConfirmOverlayTabTitle'),
-          'instantConfirmOverlay',
-          $('instantConfirmOk'),
-          $('instantConfirmCancel'),
-          $('instant-enabled-control').pref,
-          $('instant-enabled-control').metric,
-          'instant.confirm_dialog_shown'),
-      BrowserOptions.getInstance());
   // 'spelling-enabled-control' element is only present on Chrome branded
   // builds.
   if ($('spelling-enabled-control')) {

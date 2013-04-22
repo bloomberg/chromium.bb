@@ -483,9 +483,6 @@ const char kUrlBlacklist[] = "policy.url_blacklist";
 // Allows access to the listed host patterns, as exceptions to the blacklist.
 const char kUrlWhitelist[] = "policy.url_whitelist";
 
-// Boolean pref indicating whether the instant confirm dialog has been shown.
-const char kInstantConfirmDialogShown[] = "instant.confirm_dialog_shown";
-
 // Boolean pref indicating if instant is enabled.
 const char kInstantEnabled[] = "instant.enabled";
 

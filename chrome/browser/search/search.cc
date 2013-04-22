@@ -348,8 +348,6 @@ bool ShouldAssignURLToInstantRenderer(const GURL& url, Profile* profile) {
 }
 
 void RegisterInstantUserPrefs(PrefRegistrySyncable* registry) {
-  registry->RegisterBooleanPref(prefs::kInstantConfirmDialogShown, false,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kInstantEnabled, false,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
   // This default is overridden by SetInstantExtendedPrefDefault().

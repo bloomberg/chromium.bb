@@ -165,14 +165,11 @@ IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kShowBookmarkBar) {
 
 IN_PROC_BROWSER_TEST_F(TwoClientPreferencesSyncTest, kEnableInstant) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantConfirmDialogShown));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantEnabled));
 
-  ChangeBooleanPref(0, prefs::kInstantConfirmDialogShown);
   ChangeBooleanPref(0, prefs::kInstantEnabled);
 
   ASSERT_TRUE(GetClient(0)->AwaitMutualSyncCycleCompletion(GetClient(1)));
-  ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantConfirmDialogShown));
   ASSERT_TRUE(BooleanPrefMatches(prefs::kInstantEnabled));
 }
 
