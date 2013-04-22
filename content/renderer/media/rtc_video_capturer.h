@@ -51,7 +51,6 @@ class RtcVideoCapturer
   scoped_refptr<RtcVideoCaptureDelegate> delegate_;
   VideoCaptureState state_;
   base::Time start_time_;
-  base::Time ntp_epoch_;
 
   DISALLOW_COPY_AND_ASSIGN(RtcVideoCapturer);
 };

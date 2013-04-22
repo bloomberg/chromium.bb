@@ -73,13 +73,16 @@ void RTCVideoRenderer::SetSize(int width, int height) {
 }
 
 void RTCVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
+  base::TimeDelta timestamp = base::TimeDelta::FromMilliseconds(
+      frame->GetTimeStamp() / talk_base::kNumNanosecsPerMillisec);
+
   TRACE_EVENT_INSTANT2("rtc_video_renderer",
                        "RenderFrame",
                        TRACE_EVENT_SCOPE_THREAD,
                        "elapsed time",
                        frame->GetElapsedTime(),
-                       "timestamp",
-                       frame->GetTimeStamp());
+                       "timestamp_ms",
+                       timestamp.InMilliseconds());
 
   gfx::Size size(frame->GetWidth(), frame->GetHeight());
   scoped_refptr<media::VideoFrame> video_frame =
@@ -87,8 +90,7 @@ void RTCVideoRenderer::RenderFrame(const cricket::VideoFrame* frame) {
                                      size,
                                      gfx::Rect(size),
                                      size,
-                                     base::TimeDelta::FromMilliseconds(
-                                         frame->GetTimeStamp()));
+                                     timestamp);
 
   // Aspect ratio unsupported; DCHECK when there are non-square pixels.
   DCHECK_EQ(frame->GetPixelWidth(), 1u);

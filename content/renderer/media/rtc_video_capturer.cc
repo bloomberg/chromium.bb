@@ -16,17 +16,6 @@ RtcVideoCapturer::RtcVideoCapturer(
     : is_screencast_(is_screencast),
       delegate_(new RtcVideoCaptureDelegate(id, vc_manager)),
       state_(VIDEO_CAPTURE_STATE_STOPPED) {
-  base::Time::Exploded exploded = {};
-  exploded.year = 1900;
-  exploded.month = 1;
-  exploded.day_of_week = 0;
-  exploded.day_of_month = 1;
-  exploded.hour = 0;
-  exploded.minute = 0;
-  exploded.second = 0;
-  exploded.millisecond = 0;
-  DCHECK(exploded.HasValidValues());
-  ntp_epoch_ = base::Time::FromUTCExploded(exploded);
 }
 
 RtcVideoCapturer::~RtcVideoCapturer() {
@@ -112,8 +101,9 @@ void RtcVideoCapturer::OnFrameCaptured(
   // cricket::CapturedFrame time is in nanoseconds.
   frame.elapsed_time = (buf.timestamp - start_time_).InMicroseconds() *
       base::Time::kNanosecondsPerMicrosecond;
-  // Timestamp in NTP time (seconds since 0:00 UTC 1 January 1900) in ms.
-  frame.time_stamp = (buf.timestamp - ntp_epoch_).InMilliseconds();
+  frame.time_stamp =
+      (buf.timestamp - base::Time::UnixEpoch()).InMicroseconds() *
+      base::Time::kNanosecondsPerMicrosecond;
   frame.data = buf.memory_pointer;
   frame.pixel_height = 1;
   frame.pixel_width = 1;
@@ -123,8 +113,8 @@ void RtcVideoCapturer::OnFrameCaptured(
                        TRACE_EVENT_SCOPE_THREAD,
                        "elapsed time",
                        frame.elapsed_time,
-                       "timestamp",
-                       frame.time_stamp);
+                       "timestamp_ms",
+                       frame.time_stamp / talk_base::kNumNanosecsPerMillisec);
 
   // This signals to libJingle that a new VideoFrame is available.
   // libJingle have no assumptions on what thread this signal come from.
