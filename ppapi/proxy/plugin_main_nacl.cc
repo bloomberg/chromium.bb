@@ -11,6 +11,7 @@
 // IPC_MESSAGE_MACROS_LOG_ENABLED so ppapi_messages.h will generate the
 // ViewMsgLog et al. functions.
 
+#include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
@@ -83,8 +84,7 @@ class PpapiDispatcher : public ProxyChannel,
 
  private:
   void OnMsgCreateNaClChannel(int renderer_id,
-                              const ppapi::PpapiPermissions& permissions,
-                              bool incognito,
+                              const ppapi::PpapiNaClChannelArgs& args,
                               SerializedHandle handle);
   void OnMsgResourceReply(
       const ppapi::proxy::ResourceMessageReplyParams& reply_params,
@@ -181,16 +181,32 @@ bool PpapiDispatcher::OnMessageReceived(const IPC::Message& msg) {
 
 void PpapiDispatcher::OnMsgCreateNaClChannel(
     int renderer_id,
-    const ppapi::PpapiPermissions& permissions,
-    bool incognito,
+    const ppapi::PpapiNaClChannelArgs& args,
     SerializedHandle handle) {
+  static bool command_line_and_logging_initialized = false;
+  if (!command_line_and_logging_initialized) {
+    CommandLine::Init(0, NULL);
+    for (size_t i = 0; i < args.switch_names.size(); ++i) {
+      DCHECK(i < args.switch_values.size());
+      CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+          args.switch_names[i], args.switch_values[i]);
+    }
+    logging::InitLogging(
+        NULL,
+        logging::LOG_ONLY_TO_SYSTEM_DEBUG_LOG,
+        logging::DONT_LOCK_LOG_FILE,
+        logging::DELETE_OLD_LOG_FILE,
+        logging::DISABLE_DCHECK_FOR_NON_OFFICIAL_RELEASE_BUILDS);
+    command_line_and_logging_initialized = true;
+  }
   // Tell the process-global GetInterface which interfaces it can return to the
   // plugin.
   ppapi::proxy::InterfaceList::SetProcessGlobalPermissions(
-      permissions);
+      args.permissions);
 
   PluginDispatcher* dispatcher =
-      new PluginDispatcher(::PPP_GetInterface, permissions, incognito);
+      new PluginDispatcher(::PPP_GetInterface, args.permissions,
+                           args.off_the_record);
   // The channel handle's true name is not revealed here.
   IPC::ChannelHandle channel_handle("nacl", handle.descriptor());
   if (!dispatcher->InitPluginWithChannel(this, base::kNullProcessId,

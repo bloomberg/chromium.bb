@@ -620,7 +620,6 @@
                'allocator/type_profiler_control.cc',
                'allocator/type_profiler_control.h',
                'base_paths.cc',
-               'command_line.cc',
                'cpu.cc',
                'debug/stack_trace_posix.cc',
                'file_util.cc',

@@ -44,6 +44,8 @@
           'shared_impl/platform_file.h',
           'shared_impl/ppapi_globals.cc',
           'shared_impl/ppapi_globals.h',
+          'shared_impl/ppapi_nacl_channel_args.cc',
+          'shared_impl/ppapi_nacl_channel_args.h',
           'shared_impl/ppapi_permissions.cc',
           'shared_impl/ppapi_permissions.h',
           'shared_impl/ppapi_preferences.cc',

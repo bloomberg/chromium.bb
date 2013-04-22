@@ -23,6 +23,8 @@
             'build_glibc': 1,
             'build_newlib': 1,
             'sources': [
+              'base_switches.cc',
+              'base_switches.h',
               'string16.cc',
               'sync_socket_nacl.cc',
               'time_posix.cc',

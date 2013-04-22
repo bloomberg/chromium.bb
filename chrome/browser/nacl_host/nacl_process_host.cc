@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "base/base_switches.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
@@ -48,6 +49,7 @@
 #include "net/base/net_util.h"
 #include "net/socket/tcp_listen_socket.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>
@@ -833,13 +835,26 @@ void NaClProcessHost::OnPpapiChannelCreated(
         chrome_render_message_filter_->render_process_id(),
         render_view_id_));
 
+    ppapi::PpapiNaClChannelArgs args;
+    args.off_the_record = chrome_render_message_filter_->off_the_record();
+    args.permissions = permissions_;
+    CommandLine* cmdline = CommandLine::ForCurrentProcess();
+    DCHECK(cmdline);
+    std::string flag_whitelist[] = {switches::kV, switches::kVModule};
+    for (size_t i = 0; i < arraysize(flag_whitelist); ++i) {
+      std::string value = cmdline->GetSwitchValueASCII(flag_whitelist[i]);
+      if (!value.empty()) {
+        args.switch_names.push_back(flag_whitelist[i]);
+        args.switch_values.push_back(value);
+      }
+    }
+
     // Send a message to create the NaCl-Renderer channel. The handle is just
     // a place holder.
     ipc_proxy_channel_->Send(
         new PpapiMsg_CreateNaClChannel(
             chrome_render_message_filter_->render_process_id(),
-            permissions_,
-            chrome_render_message_filter_->off_the_record(),
+            args,
             SerializedHandle(SerializedHandle::CHANNEL_HANDLE,
                              IPC::InvalidPlatformFileForTransit())));
   } else if (reply_msg_) {

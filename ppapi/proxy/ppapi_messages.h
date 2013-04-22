@@ -55,6 +55,7 @@
 #include "ppapi/proxy/serialized_var.h"
 #include "ppapi/shared_impl/dir_contents.h"
 #include "ppapi/shared_impl/file_path.h"
+#include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
 #include "ppapi/shared_impl/ppb_input_event_shared.h"
@@ -296,6 +297,16 @@ IPC_STRUCT_TRAITS_BEGIN(ppapi::NetworkInfo)
   IPC_STRUCT_TRAITS_MEMBER(mtu)
 IPC_STRUCT_TRAITS_END()
 
+// Only whitelisted switches passed through NaClChannelArgs.
+// The list of switches can be found in:
+//   chrome/browser/nacl_host/nacl_process_host.cc
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PpapiNaClChannelArgs)
+  IPC_STRUCT_TRAITS_MEMBER(off_the_record)
+  IPC_STRUCT_TRAITS_MEMBER(permissions)
+  IPC_STRUCT_TRAITS_MEMBER(switch_names)
+  IPC_STRUCT_TRAITS_MEMBER(switch_values)
+IPC_STRUCT_TRAITS_END()
+
 #if !defined(OS_NACL) && !defined(NACL_WIN64)
 
 IPC_STRUCT_TRAITS_BEGIN(ppapi::proxy::PPPDecryptor_Buffer)
@@ -322,10 +333,9 @@ IPC_MESSAGE_CONTROL3(PpapiMsg_CreateChannel,
 // Creates a channel to talk to a renderer. This message is only used by the
 // NaCl IPC proxy. It is intercepted by NaClIPCAdapter, which creates the
 // actual channel and rewrites the message for the untrusted side.
-IPC_MESSAGE_CONTROL4(PpapiMsg_CreateNaClChannel,
+IPC_MESSAGE_CONTROL3(PpapiMsg_CreateNaClChannel,
                      int /* renderer_id */,
-                     ppapi::PpapiPermissions /* permissions */,
-                     bool /* incognito */,
+                     ppapi::PpapiNaClChannelArgs /* args */,
                      ppapi::proxy::SerializedHandle /* channel_handle */)
 
 // Instructs the plugin process to crash.
