@@ -83,7 +83,7 @@ class PiGenerator : public pp::Instance {
 
  private:
   // Create and initialize the 2D context used for drawing.
-  void CreateContext(const pp::Size& size);
+  void CreateContext(const pp::Size& size, float device_scale);
   // Destroy the 2D drawing context.
   void DestroyContext();
   // Push the pixels to the browser, then attempt to flush the 2D context.  If
@@ -103,6 +103,7 @@ class PiGenerator : public pp::Instance {
   pthread_t compute_pi_thread_;
   int thread_create_result_;
   double pi_;
+  float device_scale_;
 
   // ComputePi() estimates Pi using Monte Carlo method and it is executed by a
   // separate thread created in SetWindow(). ComputePi() puts kMaxPointCount

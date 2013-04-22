@@ -81,7 +81,8 @@ PiGenerator::PiGenerator(PP_Instance instance)
       flush_pending_(false),
       quit_(false),
       thread_create_result_(0),
-      pi_(0.0) {
+      pi_(0.0),
+      device_scale_(1.0) {
   pthread_mutex_init(&pixel_buffer_mutex_, NULL);
 }
 
@@ -98,13 +99,18 @@ PiGenerator::~PiGenerator() {
 }
 
 void PiGenerator::DidChangeView(const pp::View& view) {
-  pp::Rect position = view.GetRect();
-  if (pixel_buffer_ && position.size() == pixel_buffer_->size())
-    return;  // Size didn't change, no need to update anything.
+  pp::Size size = view.GetRect().size();
+  float device_scale = view.GetDeviceScale();
+  size.set_width(static_cast<int>(size.width() * device_scale));
+  size.set_height(static_cast<int>(size.height() * device_scale));
+  if (pixel_buffer_ && size == pixel_buffer_->size() &&
+      device_scale == device_scale_)
+    return;  // Size and scale didn't change, no need to update anything.
 
-  // Create a new device context with the new size.
+  // Create a new device context with the new size and scale.
   DestroyContext();
-  CreateContext(position.size());
+  device_scale_ = device_scale;
+  CreateContext(size, device_scale_);
   // Delete the old pixel buffer and create a new one.
   ScopedMutexLock scoped_mutex(&pixel_buffer_mutex_);
   delete pixel_buffer_;
@@ -164,7 +170,7 @@ void PiGenerator::Paint() {
   PostMessage(pi_estimate);
 }
 
-void PiGenerator::CreateContext(const pp::Size& size) {
+void PiGenerator::CreateContext(const pp::Size& size, float device_scale) {
   ScopedMutexLock scoped_mutex(&pixel_buffer_mutex_);
   if (!scoped_mutex.is_valid()) {
     return;
@@ -172,6 +178,11 @@ void PiGenerator::CreateContext(const pp::Size& size) {
   if (IsContextValid())
     return;
   graphics_2d_context_ = new pp::Graphics2D(this, size, false);
+  // Scale the contents of the graphics context down by the inverse of the
+  // device scale. This makes each pixel in the context represent a single
+  // physical pixel on the device when running on high-DPI displays.
+  // See pp::Graphics2D::SetScale for more details.
+  graphics_2d_context_->SetScale(1.0 / device_scale);
   if (!BindGraphics(*graphics_2d_context_)) {
     printf("Couldn't bind the device context\n");
   }
