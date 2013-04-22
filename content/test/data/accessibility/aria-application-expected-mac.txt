@@ -1,2 +1,2 @@
 AXWebArea
-    AXGroup subrole=AXLandmarkApplication roleDescription='application'
+    AXGroup AXSubrole=AXLandmarkApplication AXRoleDescription='application'

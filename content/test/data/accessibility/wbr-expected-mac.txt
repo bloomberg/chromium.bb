@@ -2,6 +2,6 @@
 # wrong, so we assume this is correct.
 AXWebArea
     AXGroup
-        AXStaticText value='Supercali'
-        AXStaticText value='fragilistic'
-        AXStaticText value='expialidocious'
+        AXStaticText AXValue='Supercali'
+        AXStaticText AXValue='fragilistic'
+        AXStaticText AXValue='expialidocious'

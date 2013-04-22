@@ -1,4 +1,4 @@
 AXWebArea
     AXGroup
-        AXStaticText value='Text line 1 '
-        AXStaticText value='Text line 2'
+        AXStaticText AXValue='Text line 1 '
+        AXStaticText AXValue='Text line 2'

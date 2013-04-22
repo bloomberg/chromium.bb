@@ -1,2 +1,2 @@
-AXWebArea roleDescription='HTML content'
-    AXSlider roleDescription='stepper' value='5'
+AXWebArea AXRoleDescription='HTML content'
+    AXSlider AXRoleDescription='stepper' AXValue='5'

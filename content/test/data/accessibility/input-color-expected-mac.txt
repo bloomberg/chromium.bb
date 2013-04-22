@@ -1,3 +1,3 @@
 AXWebArea
     AXGroup
-        AXColorWell value='rgb 1.00000 0.60000 0.00000 1'
+        AXColorWell AXValue='rgb 1.00000 0.60000 0.00000 1'

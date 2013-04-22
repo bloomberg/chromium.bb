@@ -1,8 +1,8 @@
 AXWebArea
-    AXList subrole=AXDescriptionList
-        AXGroup subrole=AXTerm
-            AXStaticText value='Term'
-        AXGroup subrole=AXDescription
-            AXStaticText value='Description'
-    AXGroup subrole=AXDefinition
-        AXStaticText value='Definition'
+    AXList AXSubrole=AXDescriptionList
+        AXGroup AXSubrole=AXTerm
+            AXStaticText AXValue='Term'
+        AXGroup AXSubrole=AXDescription
+            AXStaticText AXValue='Description'
+    AXGroup AXSubrole=AXDefinition
+        AXStaticText AXValue='Definition'
