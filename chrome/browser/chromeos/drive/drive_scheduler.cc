@@ -366,6 +366,7 @@ void DriveScheduler::StartNewJob(scoped_ptr<QueueEntry> job, JobType type) {
   job_info->file_path = job->drive_file_path;
 
   QueueJob(job.Pass());
+  NotifyJobAdded(*job_info);
   StartJobLoop(GetJobQueueType(type));
 }
 
@@ -411,6 +412,7 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
   JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
   DCHECK(job_info);
   job_info->state = STATE_RUNNING;
+  NotifyJobUpdated(*job_info);
 
   // The some arguments are evaluated after bind, so we copy the pointer to the
   // QueueEntry
@@ -694,6 +696,7 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
   // Retry, depending on the error.
   if (error == DRIVE_FILE_ERROR_THROTTLED) {
     job_info->state = STATE_RETRY;
+    NotifyJobUpdated(*job_info);
 
     // Requeue the job.
     QueueJob(queue_entry.Pass());
@@ -702,6 +705,7 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
 
     return scoped_ptr<DriveScheduler::QueueEntry>();
   } else {
+    NotifyJobDone(*job_info, error);
     // The job has finished, no retry will happen in the scheduler. Now we can
     // remove the job info from the map. This is the only place of the removal.
     job_map_.Remove(queue_entry->job_id);
@@ -863,6 +867,7 @@ void DriveScheduler::UpdateProgress(JobID job_id, int64 progress, int64 total) {
 
   job_info->num_completed_bytes = progress;
   job_info->num_total_bytes = total;
+  NotifyJobUpdated(*job_info);
 }
 
 void DriveScheduler::OnConnectionTypeChanged(

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/prefs/pref_service.h"
+#include "base/stl_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -44,6 +45,56 @@ void CopyResourceIdFromGetResourceEntryCallback(
     scoped_ptr<google_apis::ResourceEntry> resource_entry_in) {
   id_list_out->push_back(requested_id);
 }
+
+class JobListLogger : public JobListObserver {
+ public:
+  enum EventType {
+    ADDED,
+    UPDATED,
+    DONE,
+  };
+
+  struct EventLog {
+    EventType type;
+    JobInfo info;
+
+    EventLog(EventType type, const JobInfo& info) : type(type), info(info) {
+    }
+  };
+
+  // Checks whether the specified type of event has occurred.
+  bool Has(EventType type, JobType job_type) {
+    for (size_t i = 0; i < events.size(); ++i) {
+      if (events[i].type == type && events[i].info.job_type == job_type)
+        return true;
+    }
+    return false;
+  }
+
+  // Gets the progress event information of the specified type.
+  void GetProgressInfo(JobType job_type, std::vector<int64>* progress) {
+    for (size_t i = 0; i < events.size(); ++i) {
+      if (events[i].type == UPDATED && events[i].info.job_type == job_type)
+        progress->push_back(events[i].info.num_completed_bytes);
+    }
+  }
+
+  // JobListObserver overrides.
+  virtual void OnJobAdded(const JobInfo& info) OVERRIDE {
+    events.push_back(EventLog(ADDED, info));
+  }
+
+  virtual void OnJobUpdated(const JobInfo& info) OVERRIDE {
+    events.push_back(EventLog(UPDATED, info));
+  }
+
+  virtual void OnJobDone(const JobInfo& info, DriveFileError error) OVERRIDE {
+    events.push_back(EventLog(DONE, info));
+  }
+
+ private:
+  std::vector<EventLog> events;
+};
 
 }  // namespace
 
@@ -647,6 +698,9 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
 }
 
 TEST_F(DriveSchedulerTest, JobInfo) {
+  JobListLogger logger;
+  scheduler_->AddObserver(&logger);
+
   // Disable background upload/download.
   ConnectToWimax();
   profile_->GetPrefs()->SetBoolean(prefs::kDisableDriveOverCellular, true);
@@ -687,6 +741,14 @@ TEST_F(DriveSchedulerTest, JobInfo) {
 
   // The number of jobs queued so far.
   EXPECT_EQ(4U, scheduler_->GetJobInfoList().size());
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_ADD_NEW_DIRECTORY));
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_RENAME_RESOURCE));
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_DOWNLOAD_FILE));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_ADD_NEW_DIRECTORY));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_RENAME_RESOURCE));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));
 
   // Add more jobs.
   expected_types.insert(TYPE_ADD_RESOURCE_TO_DIRECTORY);
@@ -704,17 +766,41 @@ TEST_F(DriveSchedulerTest, JobInfo) {
   std::vector<JobInfo> jobs = scheduler_->GetJobInfoList();
   EXPECT_EQ(6U, jobs.size());
   std::set<JobType> actual_types;
-  for (size_t i = 0; i < jobs.size(); ++i)
+  std::set<JobID> job_ids;
+  for (size_t i = 0; i < jobs.size(); ++i) {
     actual_types.insert(jobs[i].job_type);
+    job_ids.insert(jobs[i].job_id);
+  }
   EXPECT_EQ(expected_types, actual_types);
+  EXPECT_EQ(6U, job_ids.size()) << "All job IDs must be unique";
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_ADD_RESOURCE_TO_DIRECTORY));
+  EXPECT_TRUE(logger.Has(JobListLogger::ADDED, TYPE_COPY_HOSTED_DOCUMENT));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_ADD_RESOURCE_TO_DIRECTORY));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_COPY_HOSTED_DOCUMENT));
 
   // Run the jobs.
   google_apis::test_util::RunBlockingPoolTask();
 
-  // All jobs except the BACKGROUND job should have finished.
+  // All jobs except the BACKGROUND job should have started running (UPDATED)
+  // and then finished (DONE).
   jobs = scheduler_->GetJobInfoList();
   ASSERT_EQ(1U, jobs.size());
   EXPECT_EQ(TYPE_DOWNLOAD_FILE, jobs[0].job_type);
+
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_ADD_NEW_DIRECTORY));
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_RENAME_RESOURCE));
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED,
+                         TYPE_ADD_RESOURCE_TO_DIRECTORY));
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_COPY_HOSTED_DOCUMENT));
+  EXPECT_FALSE(logger.Has(JobListLogger::UPDATED, TYPE_DOWNLOAD_FILE));
+
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_ADD_NEW_DIRECTORY));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_GET_ACCOUNT_METADATA));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_RENAME_RESOURCE));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_ADD_RESOURCE_TO_DIRECTORY));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_COPY_HOSTED_DOCUMENT));
+  EXPECT_FALSE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));
 
   // Run the background downloading job as well.
   ConnectToWifi();
@@ -722,6 +808,64 @@ TEST_F(DriveSchedulerTest, JobInfo) {
 
   // All jobs should have finished.
   EXPECT_EQ(0U, scheduler_->GetJobInfoList().size());
+  EXPECT_TRUE(logger.Has(JobListLogger::UPDATED, TYPE_DOWNLOAD_FILE));
+  EXPECT_TRUE(logger.Has(JobListLogger::DONE, TYPE_DOWNLOAD_FILE));
+}
+
+
+TEST_F(DriveSchedulerTest, JobInfoProgress) {
+  JobListLogger logger;
+  scheduler_->AddObserver(&logger);
+
+  ConnectToWifi();
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  base::FilePath path;
+
+  // Download job.
+  scheduler_->DownloadFile(
+      base::FilePath::FromUTF8Unsafe("drive/whatever.txt"),  // virtual path
+      temp_dir.path().AppendASCII("whatever.txt"),
+      GURL("https://file_content_url/"),
+      DriveClientContext(BACKGROUND),
+      google_apis::test_util::CreateCopyResultCallback(&error, &path),
+      google_apis::GetContentCallback());
+  google_apis::test_util::RunBlockingPoolTask();
+
+  std::vector<int64> download_progress;
+  logger.GetProgressInfo(TYPE_DOWNLOAD_FILE, &download_progress);
+  ASSERT_TRUE(!download_progress.empty());
+  EXPECT_TRUE(base::STLIsSorted(download_progress));
+  EXPECT_GE(download_progress.front(), 0);
+  EXPECT_LE(download_progress.back(), 10);
+
+  // Upload job.
+  path = temp_dir.path().AppendASCII("new_file.txt");
+  file_util::WriteFile(path, "Hello", 5);
+  google_apis::DriveUploadError upload_error =
+      google_apis::DRIVE_UPLOAD_ERROR_ABORT;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+
+  scheduler_->UploadNewFile(
+      fake_drive_service_->GetRootResourceId(),
+      base::FilePath::FromUTF8Unsafe("drive/new_file.txt"),
+      path,
+      "dummy title",
+      "plain/plain",
+      DriveClientContext(BACKGROUND),
+      google_apis::test_util::CreateCopyResultCallback(
+          &upload_error, &path, &path, &entry));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  std::vector<int64> upload_progress;
+  logger.GetProgressInfo(TYPE_UPLOAD_NEW_FILE, &upload_progress);
+  ASSERT_TRUE(!upload_progress.empty());
+  EXPECT_TRUE(base::STLIsSorted(upload_progress));
+  EXPECT_GE(upload_progress.front(), 0);
+  EXPECT_LE(upload_progress.back(), 5);
 }
 
 }  // namespace drive
