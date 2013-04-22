@@ -124,6 +124,7 @@ scoped_ptr<content::NativeWebKeyboardEvent> CreateKeyboardEvent(
 const MSG& MessageFromKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
 #if defined(USE_AURA)
+  DCHECK(event.os_event);
   return event.os_event->native_event();
 #else
   return event.os_event;
@@ -784,6 +785,16 @@ bool ExternalTabContainerWin::PreHandleKeyboardEvent(
 void ExternalTabContainerWin::HandleKeyboardEvent(
     content::WebContents* source,
     const NativeWebKeyboardEvent& event) {
+
+#if defined(USE_AURA)
+  // Character events created and inserted by the IME code on Aura will not
+  // contain a native os_event, so don't attempt to pluck one out. These events
+  // also do not correspond to accelerator key presses so do not need to be
+  // forwarded to the host.
+  if (!event.os_event)
+    return;
+#endif
+
   const MSG& message = MessageFromKeyboardEvent(event);
   ProcessUnhandledKeyStroke(message.hwnd, message.message,
                             message.wParam, message.lParam);
