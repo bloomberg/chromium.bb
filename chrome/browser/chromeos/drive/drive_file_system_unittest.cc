@@ -213,26 +213,7 @@ class DriveFileSystemTest : public testing::Test {
     return true;
   }
 
-  void AddDirectoryFromFile(const base::FilePath& directory_path,
-                            const std::string& filename) {
-    scoped_ptr<Value> atom = google_apis::test_util::LoadJSONFile(filename);
-    ASSERT_TRUE(atom);
-    ASSERT_TRUE(atom->GetType() == Value::TYPE_DICTIONARY);
-
-    DictionaryValue* dict_value = NULL;
-    Value* entry_value = NULL;
-    ASSERT_TRUE(atom->GetAsDictionary(&dict_value));
-    ASSERT_TRUE(dict_value->Get("entry", &entry_value));
-
-    DictionaryValue* entry_dict = NULL;
-    ASSERT_TRUE(entry_value->GetAsDictionary(&entry_dict));
-
-    // Tweak entry title to match the last segment of the directory path
-    // (new directory name).
-    std::vector<base::FilePath::StringType> dir_parts;
-    directory_path.GetComponents(&dir_parts);
-    entry_dict->SetString("title.$t", dir_parts[dir_parts.size() - 1]);
-
+  DriveFileError AddDirectory(const base::FilePath& directory_path) {
     DriveFileError error = DRIVE_FILE_ERROR_FAILED;
     file_system_->CreateDirectory(
         directory_path,
@@ -240,7 +221,7 @@ class DriveFileSystemTest : public testing::Test {
         false,  // is_recursive
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    return error;
   }
 
   bool RemoveEntry(const base::FilePath& file_path) {
@@ -975,15 +956,6 @@ TEST_F(DriveFileSystemTest, TransferFileFromLocalToRemote_HostedDocument) {
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root/Directory 1")))))
       .Times(1);
 
-  // We'll copy a hosted document using CopyHostedDocument.
-  // ".gdoc" suffix should be stripped when copying.
-  scoped_ptr<base::Value> value =
-      google_apis::test_util::LoadJSONFile(
-          "chromeos/gdata/uploaded_document.json");
-  scoped_ptr<google_apis::ResourceEntry> resource_entry =
-      google_apis::ResourceEntry::ExtractAndParse(*value);
-
-
   // Transfer the local file to Drive.
   DriveFileError error = DRIVE_FILE_ERROR_FAILED;
   file_system_->TransferFileFromLocalToRemote(
@@ -1298,8 +1270,7 @@ TEST_F(DriveFileSystemTest, MoveFileBetweenSubDirectories) {
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
       Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
 
-  AddDirectoryFromFile(dest_parent_path,
-                       "chromeos/gdata/directory_entry_atom.json");
+  EXPECT_EQ(DRIVE_FILE_OK, AddDirectory(dest_parent_path));
 
   ASSERT_TRUE(EntryExists(src_file_path));
   scoped_ptr<DriveEntryProto> src_entry_proto = GetEntryInfoByPathSync(
@@ -1499,7 +1470,7 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
   // Create directory in root.
   base::FilePath dir_path(FILE_PATH_LITERAL("drive/root/New Folder 1"));
   EXPECT_FALSE(EntryExists(dir_path));
-  AddDirectoryFromFile(dir_path, "chromeos/gdata/directory_entry_atom.json");
+  EXPECT_EQ(DRIVE_FILE_OK, AddDirectory(dir_path));
   EXPECT_TRUE(EntryExists(dir_path));
 
   EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
@@ -1510,26 +1481,8 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
   base::FilePath subdir_path(
       FILE_PATH_LITERAL("drive/root/New Folder 1/New Folder 2"));
   EXPECT_FALSE(EntryExists(subdir_path));
-  AddDirectoryFromFile(subdir_path,
-                       "chromeos/gdata/directory_entry_atom2.json");
+  EXPECT_EQ(DRIVE_FILE_OK, AddDirectory(subdir_path));
   EXPECT_TRUE(EntryExists(subdir_path));
-}
-
-// Create a directory through the document service
-TEST_F(DriveFileSystemTest, CreateDirectoryWithService) {
-  ASSERT_TRUE(LoadRootFeedDocument());
-  EXPECT_CALL(*mock_directory_observer_, OnDirectoryChanged(
-      Eq(base::FilePath(FILE_PATH_LITERAL("drive/root"))))).Times(1);
-
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
-  file_system_->CreateDirectory(
-      base::FilePath(FILE_PATH_LITERAL("drive/root/Sample Directory Title")),
-      false,  // is_exclusive
-      true,  // is_recursive
-      google_apis::test_util::CreateCopyResultCallback(&error));
-  google_apis::test_util::RunBlockingPoolTask();
-
-  EXPECT_EQ(DRIVE_FILE_OK, error);
 }
 
 TEST_F(DriveFileSystemTest, PinAndUnpin) {

@@ -45,10 +45,10 @@ struct TestCacheResource {
     false, false },
   // Cache resource in tmp dir, i.e. not pinned or dirty, with resource_id
   // containing non-alphanumeric characters.
-  { "gdata/subdir_feed.json", "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
+  { "gdata/empty_feed.json", "tmp:`~!@#$%^&*()-_=+[{|]}\\;',<.>/?",
     "md5_tmp_non_alphanumeric", false, false },
   // Cache resource that is pinned and persistent.
-  { "gdata/directory_entry_atom.json", "pinned:existing", "md5_pinned_existing",
+  { "gdata/directory_entry.json", "pinned:existing", "md5_pinned_existing",
     true, false },
   // Cache resource with a non-existent source file that is pinned.
   { "", "pinned:non-existent", "md5_pinned_non_existent", true, false },
@@ -685,7 +685,7 @@ TEST_F(DriveCacheTest, StoreToCacheSimple) {
   TestStoreToCache(
       resource_id, md5,
       google_apis::test_util::GetTestFilePath(
-          "chromeos/gdata/subdir_feed.json"),
+          "chromeos/gdata/empty_feed.json"),
       DRIVE_FILE_OK, test_util::TEST_CACHE_STATE_PRESENT,
       DriveCache::CACHE_TYPE_TMP);
 
@@ -1165,7 +1165,7 @@ TEST_F(DriveCacheTest, DirtyCacheInvalid) {
   TestStoreToCache(
       resource_id, md5,
       google_apis::test_util::GetTestFilePath(
-          "chromeos/gdata/subdir_feed.json"),
+          "chromeos/gdata/empty_feed.json"),
       DRIVE_FILE_ERROR_IN_USE,
       test_util::TEST_CACHE_STATE_PRESENT |
       test_util::TEST_CACHE_STATE_DIRTY |
