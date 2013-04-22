@@ -9,6 +9,8 @@
           (position 250.00 250.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #0000FF)
         )
       )
     )
@@ -25,6 +27,8 @@
           (position 250.00 250.00)
           (bounds 100.00 100.00)
           (contentsOpaque 1)
+          (drawsContent 1)
+          (backgroundColor #0000FF)
         )
         (GraphicsLayer
           (position 100.00 100.00)
