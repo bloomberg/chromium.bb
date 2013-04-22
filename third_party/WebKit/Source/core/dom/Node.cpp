@@ -1717,6 +1717,11 @@ bool Node::offsetInCharacters() const
 
 unsigned short Node::compareDocumentPosition(Node* otherNode)
 {
+    return compareDocumentPositionInternal(otherNode, TreatShadowTreesAsDisconnected);
+}
+
+unsigned short Node::compareDocumentPositionInternal(Node* otherNode, ShadowTreesTreatment treatment)
+{
     // It is not clear what should be done if |otherNode| is 0.
     if (!otherNode)
         return DOCUMENT_POSITION_DISCONNECTED;
@@ -1767,15 +1772,16 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
     // If one node is in the document and the other is not, we must be disconnected.
     // If the nodes have different owning documents, they must be disconnected.  Note that we avoid
     // comparing Attr nodes here, since they return false from inDocument() all the time (which seems like a bug).
-    if (start1->inDocument() != start2->inDocument() ||
-        start1->treeScope() != start2->treeScope())
+    if (start1->inDocument() != start2->inDocument())
+        return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
+    if (treatment == TreatShadowTreesAsDisconnected && start1->treeScope() != start2->treeScope())
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC;
 
     // We need to find a common ancestor container, and then compare the indices of the two immediate children.
     Node* current;
-    for (current = start1; current; current = current->parentNode())
+    for (current = start1; current; current = current->parentOrShadowHostNode())
         chain1.append(current);
-    for (current = start2; current; current = current->parentNode())
+    for (current = start2; current; current = current->parentOrShadowHostNode())
         chain2.append(current);
 
     unsigned index1 = chain1.size();
@@ -1787,6 +1793,8 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
         return DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC | direction;
     }
 
+    unsigned connection = start1->treeScope() != start2->treeScope() ? DOCUMENT_POSITION_DISCONNECTED | DOCUMENT_POSITION_IMPLEMENTATION_SPECIFIC : 0;
+
     // Walk the two chains backwards and look for the first difference.
     for (unsigned i = min(index1, index2); i; --i) {
         Node* child1 = chain1[--index1];
@@ -1794,29 +1802,43 @@ unsigned short Node::compareDocumentPosition(Node* otherNode)
         if (child1 != child2) {
             // If one of the children is an attribute, it wins.
             if (child1->nodeType() == ATTRIBUTE_NODE)
-                return DOCUMENT_POSITION_FOLLOWING;
+                return DOCUMENT_POSITION_FOLLOWING | connection;
             if (child2->nodeType() == ATTRIBUTE_NODE)
-                return DOCUMENT_POSITION_PRECEDING;
-            
+                return DOCUMENT_POSITION_PRECEDING | connection;
+
+            // If one of the children is a shadow root,
+            if (child1->isShadowRoot() || child2->isShadowRoot()) {
+                if (!child2->isShadowRoot())
+                    return Node::DOCUMENT_POSITION_FOLLOWING | connection;
+                if (!child1->isShadowRoot())
+                    return Node::DOCUMENT_POSITION_PRECEDING | connection;
+
+                for (ShadowRoot* child = toShadowRoot(child2)->olderShadowRoot(); child; child = child->olderShadowRoot())
+                    if (child == child1)
+                        return Node::DOCUMENT_POSITION_FOLLOWING | connection;
+
+                return Node::DOCUMENT_POSITION_PRECEDING | connection;
+            }
+
             if (!child2->nextSibling())
-                return DOCUMENT_POSITION_FOLLOWING;
+                return DOCUMENT_POSITION_FOLLOWING | connection;
             if (!child1->nextSibling())
-                return DOCUMENT_POSITION_PRECEDING;
+                return DOCUMENT_POSITION_PRECEDING | connection;
 
             // Otherwise we need to see which node occurs first.  Crawl backwards from child2 looking for child1.
             for (Node* child = child2->previousSibling(); child; child = child->previousSibling()) {
                 if (child == child1)
-                    return DOCUMENT_POSITION_FOLLOWING;
+                    return DOCUMENT_POSITION_FOLLOWING | connection;
             }
-            return DOCUMENT_POSITION_PRECEDING;
+            return DOCUMENT_POSITION_PRECEDING | connection;
         }
     }
     
     // There was no difference between the two parent chains, i.e., one was a subset of the other.  The shorter
     // chain is the ancestor.
     return index1 < index2 ? 
-               DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY :
-               DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS;
+               DOCUMENT_POSITION_FOLLOWING | DOCUMENT_POSITION_CONTAINED_BY | connection :
+               DOCUMENT_POSITION_PRECEDING | DOCUMENT_POSITION_CONTAINS | connection;
 }
 
 FloatPoint Node::convertToPage(const FloatPoint& p) const

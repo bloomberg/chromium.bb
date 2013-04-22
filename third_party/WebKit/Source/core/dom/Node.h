@@ -594,6 +594,13 @@ public:
 
     unsigned short compareDocumentPosition(Node*);
 
+    enum ShadowTreesTreatment {
+        TreatShadowTreesAsDisconnected,
+        TreatShadowTreesAsComposed
+    };
+
+    unsigned short compareDocumentPositionInternal(Node*, ShadowTreesTreatment);
+
     virtual Node* toNode();
     virtual HTMLInputElement* toInputElement();
 
