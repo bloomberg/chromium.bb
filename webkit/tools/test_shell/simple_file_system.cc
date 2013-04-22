@@ -19,7 +19,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemCallbacks.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFileSystemEntry.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/blob/blob_storage_controller.h"
 #include "webkit/fileapi/file_permission_policy.h"
@@ -38,7 +37,6 @@ using WebKit::WebFileSystemEntry;
 using WebKit::WebFileWriter;
 using WebKit::WebFileWriterClient;
 using WebKit::WebFrame;
-using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 using WebKit::WebURL;
 using WebKit::WebVector;

@@ -43,7 +43,6 @@
 #include "extensions/common/constants.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/plugins/npapi/plugin_list.h"
 
 #if defined(USE_TCMALLOC)
@@ -53,7 +52,6 @@
 using content::BrowserThread;
 using extensions::APIPermission;
 using WebKit::WebCache;
-using WebKit::WebSecurityOrigin;
 
 namespace {
 

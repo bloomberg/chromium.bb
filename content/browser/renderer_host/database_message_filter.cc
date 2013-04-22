@@ -15,7 +15,6 @@
 #include "content/public/browser/user_metrics.h"
 #include "content/public/common/result_codes.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
@@ -28,7 +27,6 @@
 using quota::QuotaManager;
 using quota::QuotaManagerProxy;
 using quota::QuotaStatusCode;
-using WebKit::WebSecurityOrigin;
 using webkit_database::DatabaseTracker;
 using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;

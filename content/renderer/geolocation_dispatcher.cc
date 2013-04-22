@@ -12,7 +12,6 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationClient.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationPosition.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebGeolocationError.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 
 using WebKit::WebGeolocationController;
 using WebKit::WebGeolocationError;

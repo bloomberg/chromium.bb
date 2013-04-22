@@ -21,7 +21,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBDatabase.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebIDBFactory.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/base/file_path_string_conversions.h"
 #include "webkit/database/database_util.h"
 #include "webkit/quota/quota_manager.h"
@@ -30,7 +29,6 @@
 using webkit_database::DatabaseUtil;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBFactory;
-using WebKit::WebSecurityOrigin;
 
 namespace content {
 const base::FilePath::CharType IndexedDBContextImpl::kIndexedDBDirectory[] =

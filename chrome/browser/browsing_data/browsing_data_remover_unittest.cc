@@ -43,7 +43,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebCString.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
-#include "third_party/WebKit/Source/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/dom_storage/dom_storage_types.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/quota/mock_quota_manager.h"
