@@ -161,9 +161,11 @@ void HistoryContentsProvider::Stop(bool clear_cached_results) {
   request_consumer_.CancelAllRequests();
 
   // Clear the results. We swap in an empty one as the easy way to clear it.
-  history::QueryResults empty_results;
-  results_.Swap(&empty_results);
-  have_results_ = false;
+  if (clear_cached_results) {
+    history::QueryResults empty_results;
+    results_.Swap(&empty_results);
+    have_results_ = false;
+  }
 }
 
 HistoryContentsProvider::~HistoryContentsProvider() {
