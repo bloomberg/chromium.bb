@@ -67,11 +67,9 @@ void InspectorCSSOMWrappers::collect(ListType* listType)
         case CSSRule::MEDIA_RULE:
             collect(static_cast<CSSMediaRule*>(cssRule));
             break;
-#if ENABLE(CSS3_CONDITIONAL_RULES)
         case CSSRule::SUPPORTS_RULE:
             collect(static_cast<CSSSupportsRule*>(cssRule));
             break;
-#endif
 #if ENABLE(CSS_REGIONS)
         case CSSRule::WEBKIT_REGION_RULE:
             collect(static_cast<WebKitCSSRegionRule*>(cssRule));

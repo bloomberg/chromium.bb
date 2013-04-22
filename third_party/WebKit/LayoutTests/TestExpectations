@@ -2594,11 +2594,6 @@ webkit.org/b/98687 fast/css-generated-content/table-row-group-to-inline.html [ F
 # This is spilling caused by LANCZOS3 scaling algorithm that samples outside the source rect.
 webkit.org/b/95121 [ Win Mac Linux ] fast/images/pixel-crack-image-background-webkit-transform-scale.html [ ImageOnlyFailure ]
 
-# css3-conditionals support is not yet enabled.
-webkit.org/b/86146 css3/supports.html
-webkit.org/b/104822 css3/supports-cssom.html
-webkit.org/b/100324 css3/supports-dom-api.html
-
 # CSS Device Adaptation is not enabled.
 webkit.org/b/95959 css3/device-adapt [ Skip ]
 

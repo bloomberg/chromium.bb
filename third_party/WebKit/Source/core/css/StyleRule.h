@@ -46,9 +46,7 @@ public:
         Page,
         Keyframes,
         Keyframe, // Not used. These are internally non-rule StyleKeyframe objects.
-#if ENABLE(CSS3_CONDITIONAL_RULES)
         Supports = 12,
-#endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
         Viewport = 15,
 #endif
@@ -66,9 +64,7 @@ public:
     bool isPageRule() const { return type() == Page; }
     bool isStyleRule() const { return type() == Style; }
     bool isRegionRule() const { return type() == Region; }
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     bool isSupportsRule() const { return type() == Supports; }
-#endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     bool isViewportRule() const { return type() == Viewport; }
 #endif
@@ -220,7 +216,6 @@ private:
     RefPtr<MediaQuerySet> m_mediaQueries;
 };
 
-#if ENABLE(CSS3_CONDITIONAL_RULES)
 class StyleRuleSupports : public StyleRuleGroup {
 public:
     static PassRefPtr<StyleRuleSupports> create(const String& conditionText, bool conditionIsSupported, Vector<RefPtr<StyleRuleBase> >& adoptRules)
@@ -239,7 +234,6 @@ private:
     String m_conditionText;
     bool m_conditionIsSupported;
 };
-#endif
 
 class StyleRuleRegion : public StyleRuleGroup {
 public:
@@ -305,13 +299,11 @@ inline const StyleRuleMedia* toStyleRuleMedia(const StyleRuleGroup* rule)
     return static_cast<const StyleRuleMedia*>(rule);
 }
 
-#if ENABLE(CSS3_CONDITIONAL_RULES)
 inline const StyleRuleSupports* toStyleRuleSupports(const StyleRuleGroup* rule)
 {
     ASSERT_WITH_SECURITY_IMPLICATION(!rule || rule->isSupportsRule());
     return static_cast<const StyleRuleSupports*>(rule);
 }
-#endif
 
 inline const StyleRuleRegion* toStyleRuleRegion(const StyleRuleGroup* rule)
 {

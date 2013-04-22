@@ -263,9 +263,7 @@ namespace WebCore {
         int webkitRequestAnimationFrame(PassRefPtr<RequestAnimationFrameCallback>);
         void cancelAnimationFrame(int id);
 
-#if ENABLE(CSS3_CONDITIONAL_RULES)
         DOMWindowCSS* css();
-#endif
 
         // Events
         // EventTarget API
@@ -448,9 +446,7 @@ namespace WebCore {
 
         mutable RefPtr<Performance> m_performance;
 
-#if ENABLE(CSS3_CONDITIONAL_RULES)
         mutable RefPtr<DOMWindowCSS> m_css;
-#endif
     };
 
     inline String DOMWindow::status() const

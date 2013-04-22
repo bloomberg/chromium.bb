@@ -38,9 +38,7 @@
 #include "V8CSSMediaRule.h"
 #include "V8CSSPageRule.h"
 #include "V8CSSStyleRule.h"
-#if ENABLE(CSS3_CONDITIONAL_RULES)
 #include "V8CSSSupportsRule.h"
-#endif
 #include "V8WebKitCSSFilterRule.h"
 #include "V8WebKitCSSKeyframeRule.h"
 #include "V8WebKitCSSKeyframesRule.h"
@@ -77,10 +75,8 @@ v8::Handle<v8::Object> wrap(CSSRule* impl, v8::Handle<v8::Object> creationContex
         return wrap(static_cast<WebKitCSSKeyframeRule*>(impl), creationContext, isolate);
     case CSSRule::WEBKIT_KEYFRAMES_RULE:
         return wrap(static_cast<WebKitCSSKeyframesRule*>(impl), creationContext, isolate);
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     case CSSRule::SUPPORTS_RULE:
         return wrap(static_cast<CSSSupportsRule*>(impl), creationContext, isolate);
-#endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
     case CSSRule::WEBKIT_VIEWPORT_RULE:
         return wrap(static_cast<WebKitCSSViewportRule*>(impl), creationContext, isolate);

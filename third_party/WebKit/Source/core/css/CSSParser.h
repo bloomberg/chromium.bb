@@ -85,9 +85,7 @@ public:
     void parseSheet(StyleSheetContents*, const String&, int startLineNumber = 0, SourceDataHandler* = 0, bool = false);
     PassRefPtr<StyleRuleBase> parseRule(StyleSheetContents*, const String&);
     PassRefPtr<StyleKeyframe> parseKeyframeRule(StyleSheetContents*, const String&);
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     bool parseSupportsCondition(const String&);
-#endif
     static bool parseValue(StylePropertySet*, CSSPropertyID, const String&, bool important, CSSParserMode, StyleSheetContents*);
     static bool parseColor(RGBA32& color, const String&, bool strict = false);
     static bool parseSystemColor(RGBA32& color, const String&, Document*);
@@ -303,12 +301,10 @@ public:
     StyleRuleBase* createPageRule(PassOwnPtr<CSSParserSelector> pageSelector);
     StyleRuleBase* createRegionRule(Vector<OwnPtr<CSSParserSelector> >* regionSelector, RuleList* rules);
     StyleRuleBase* createMarginAtRule(CSSSelector::MarginBoxType);
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     StyleRuleBase* createSupportsRule(bool conditionIsSupported, RuleList*);
     void markSupportsRuleHeaderStart();
     void markSupportsRuleHeaderEnd();
     PassRefPtr<CSSRuleSourceData> popSupportsRuleData();
-#endif
     StyleRuleBase* createHostRule(RuleList* rules);
     StyleRuleBase* createFilterRule(const CSSParserString&);
 
@@ -357,9 +353,7 @@ public:
     RefPtr<StyleKeyframe> m_keyframe;
     OwnPtr<MediaQuery> m_mediaQuery;
     OwnPtr<CSSParserValueList> m_valueList;
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     bool m_supportsCondition;
-#endif
 
     typedef Vector<CSSProperty, 256> ParsedPropertyVector;
     ParsedPropertyVector m_parsedProperties;
@@ -476,10 +470,8 @@ private:
     inline void detectDashToken(int);
     template <typename CharacterType>
     inline void detectAtToken(int, bool);
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     template <typename CharacterType>
     inline void detectSupportsToken(int);
-#endif
 
     void setStyleSheet(StyleSheetContents* styleSheet) { m_styleSheet = styleSheet; }
 
@@ -528,9 +520,7 @@ private:
     enum ParsingMode {
         NormalMode,
         MediaQueryMode,
-#if ENABLE(CSS3_CONDITIONAL_RULES)
         SupportsMode,
-#endif
         NthChildMode
     };
 
@@ -583,9 +573,7 @@ private:
 
     RefPtr<CSSCalcValue> m_parsedCalculation;
 
-#if ENABLE(CSS3_CONDITIONAL_RULES)
     OwnPtr<RuleSourceDataList> m_supportsRuleDataStack;
-#endif
 
     // defines units allowed for a certain property, used in parseUnit
     enum Units {

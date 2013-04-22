@@ -452,9 +452,7 @@ static bool childRulesHaveFailedOrCanceledSubresources(const Vector<RefPtr<Style
         case StyleRuleBase::Unknown:
         case StyleRuleBase::Charset:
         case StyleRuleBase::Keyframe:
-#if ENABLE(CSS3_CONDITIONAL_RULES)
         case StyleRuleBase::Supports:
-#endif
 #if ENABLE(CSS_DEVICE_ADAPTATION)
         case StyleRuleBase::Viewport:
 #endif

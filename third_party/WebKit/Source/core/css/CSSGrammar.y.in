@@ -118,9 +118,7 @@ static inline bool isCSSTokenAString(int yytype)
 %token IMPORT_SYM
 %token PAGE_SYM
 %token MEDIA_SYM
-#if ENABLE_CSS3_CONDITIONAL_RULES
 %token SUPPORTS_SYM
-#endif
 %token FONT_FACE_SYM
 %token HOST_SYM
 %token CHARSET_SYM
@@ -135,9 +133,7 @@ static inline bool isCSSTokenAString(int yytype)
 %token WEBKIT_MEDIAQUERY_SYM
 %token WEBKIT_REGION_RULE_SYM
 %token WEBKIT_VIEWPORT_RULE_SYM
-#if ENABLE_CSS3_CONDITIONAL_RULES
 %token WEBKIT_SUPPORTS_CONDITION_SYM
-#endif
 %token WEBKIT_FILTER_RULE_SYM
 %token <marginBox> TOPLEFTCORNER_SYM
 %token <marginBox> TOPLEFT_SYM
@@ -162,11 +158,10 @@ static inline bool isCSSTokenAString(int yytype)
 %token MEDIA_ONLY
 %token MEDIA_NOT
 %token MEDIA_AND
-#if ENABLE_CSS3_CONDITIONAL_RULES
+
 %token SUPPORTS_NOT
 %token SUPPORTS_AND
 %token SUPPORTS_OR
-#endif
 
 %token <number> REMS
 %token <number> CHS
@@ -236,9 +231,7 @@ static inline bool isCSSTokenAString(int yytype)
 %type <rule> block_rule
 %type <rule> block_valid_rule
 %type <rule> region
-#if ENABLE_CSS3_CONDITIONAL_RULES
 %type <rule> supports
-#endif
 #if ENABLE_CSS_DEVICE_ADAPTATION
 %type <rule> viewport
 #endif
@@ -263,7 +256,6 @@ static inline bool isCSSTokenAString(int yytype)
 %type <mediaQueryExpList> media_query_exp_list
 %type <mediaQueryExpList> maybe_and_media_query_exp_list
 
-#if ENABLE_CSS3_CONDITIONAL_RULES
 %type <boolean> supports_condition
 %type <boolean> supports_condition_in_parens
 %type <boolean> supports_negation
@@ -271,7 +263,6 @@ static inline bool isCSSTokenAString(int yytype)
 %type <boolean> supports_disjunction
 %type <boolean> supports_declaration_condition
 %type <boolean> supports_error
-#endif
 
 %type <string> keyframe_name
 %type <keyframe> keyframe_rule
@@ -336,9 +327,7 @@ stylesheet:
   | internal_value maybe_space
   | webkit_mediaquery maybe_space
   | webkit_keyframe_rule maybe_space
-#if ENABLE_CSS3_CONDITIONAL_RULES
   | webkit_supports_condition maybe_space
-#endif
   ;
 
 internal_rule:
@@ -386,13 +375,11 @@ internal_selector:
     }
 ;
 
-#if ENABLE_CSS3_CONDITIONAL_RULES
 webkit_supports_condition:
     WEBKIT_SUPPORTS_CONDITION_SYM '{' maybe_space supports_condition '}' {
         parser->m_supportsCondition = $4;
     }
 ;
-#endif
 
 maybe_space:
     /* empty */ %prec UNIMPORTANT_TOK
@@ -456,9 +443,7 @@ valid_rule:
   | namespace
   | import
   | region
-#if ENABLE_CSS3_CONDITIONAL_RULES
   | supports
-#endif
   | host
 #if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
@@ -505,9 +490,7 @@ block_valid_rule:
   | font_face
   | media
   | keyframes
-#if ENABLE_CSS3_CONDITIONAL_RULES
   | supports
-#endif
 #if ENABLE_CSS_DEVICE_ADAPTATION
   | viewport
 #endif
@@ -716,7 +699,6 @@ medium:
   }
   ;
 
-#if ENABLE_CSS3_CONDITIONAL_RULES
 supports:
     before_supports_rule SUPPORTS_SYM maybe_space supports_condition at_supports_rule_header_end '{' at_rule_body_start maybe_space block_rule_list save_block {
         $$ = parser->createSupportsRule($4, $9);
@@ -728,8 +710,11 @@ supports:
     ;
 
 supports_error:
-    error ';'
-    | error invalid_block
+    error ';' {
+    }
+    | error invalid_block {
+    }
+    ;
 
 before_supports_rule:
     /* empty */ {
@@ -781,7 +766,9 @@ supports_condition_in_parens:
         $$ = $3;
     }
     | supports_declaration_condition
-    | '(' error ')'
+    | '(' error ')' {
+        $$ = false;
+    }
     ;
 
 supports_declaration_condition:
@@ -800,7 +787,6 @@ supports_declaration_condition:
         p->endProperty($7, false);
     }
     ;
-#endif
 
 before_keyframes_rule:
     /* empty */ {

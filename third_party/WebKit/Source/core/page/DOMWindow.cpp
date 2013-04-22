@@ -1553,14 +1553,12 @@ void DOMWindow::cancelAnimationFrame(int id)
         d->cancelAnimationFrame(id);
 }
 
-#if ENABLE(CSS3_CONDITIONAL_RULES)
 DOMWindowCSS* DOMWindow::css()
 {
     if (!m_css)
         m_css = DOMWindowCSS::create();
     return m_css.get();
 }
-#endif
 
 static void didAddStorageEventListener(DOMWindow* window)
 {
