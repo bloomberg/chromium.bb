@@ -77,8 +77,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       content_view_core_(NULL),
       ime_adapter_android_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       cached_background_color_(SK_ColorWHITE),
-      texture_id_in_layer_(0),
-      consumed_current_texture_(true) {
+      texture_id_in_layer_(0) {
   if (CompositorImpl::UsesDirectGL()) {
     surface_texture_transport_.reset(new SurfaceTextureTransportClient());
     layer_ = surface_texture_transport_->Initialize();
@@ -634,12 +633,10 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   texture_size_in_layer_ = texture_size;
   current_mailbox_ = mailbox;
 
-  if (consumed_current_texture_ || host_->is_hidden())
+  if (host_->is_hidden())
     ack_callback.Run();
   else
     ack_callbacks_.push(ack_callback);
-
-  consumed_current_texture_ = false;
 }
 
 void RenderWidgetHostViewAndroid::AcceleratedSurfacePostSubBuffer(
@@ -808,7 +805,6 @@ void RenderWidgetHostViewAndroid::HasTouchEventHandlers(
 unsigned RenderWidgetHostViewAndroid::PrepareTexture(
     cc::ResourceUpdateQueue* queue) {
   RunAckCallbacks();
-  consumed_current_texture_ = true;
   return texture_id_in_layer_;
 }
 

@@ -232,8 +232,6 @@ class RenderWidgetHostViewAndroid : public RenderWidgetHostViewBase,
   // The mailbox of the frame we last returned.
   gpu::Mailbox last_mailbox_;
 
-  bool consumed_current_texture_;
-
   std::queue<base::Closure> ack_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
