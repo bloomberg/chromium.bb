@@ -95,6 +95,7 @@ std::string FilePathToString(const base::FilePath& file_path) {
 
 bool sync_parent(const std::string& fname) {
 #if !defined(OS_WIN)
+  TRACE_EVENT0("leveldb", "sync_parent");
   base::FilePath parent_dir = CreateFilePath(fname).DirName();
   int parent_fd =
       HANDLE_EINTR(open(FilePathToString(parent_dir).c_str(), O_RDONLY));
@@ -349,6 +350,7 @@ class ChromiumWritableFile : public WritableFile {
   }
 
   virtual Status Sync() {
+    TRACE_EVENT0("leveldb", "ChromiumEnv::Sync");
     Status result;
     int error = 0;
 
