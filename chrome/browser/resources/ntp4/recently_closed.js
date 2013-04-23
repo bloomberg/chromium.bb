@@ -93,9 +93,12 @@ cr.define('ntp', function() {
                      ntp.APP_LAUNCH.NTP_RECENTLY_CLOSED]);
         var index = Array.prototype.indexOf.call(a.parentNode.children, a);
         var orig = e.originalEvent;
+        var button = 0;
+        if (orig instanceof MouseEvent)
+          button = orig.button;
         var params = [data.sessionId,
                       index,
-                      orig.type == 'click' ? orig.button : 0,
+                      button,
                       orig.altKey,
                       orig.ctrlKey,
                       orig.metaKey,

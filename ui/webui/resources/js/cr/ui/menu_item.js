@@ -181,6 +181,10 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleMouseUp_: function(e) {
+      // Only dispatch an activate event for left or middle click.
+      if (e.button > 1)
+        return;
+
       if (!this.disabled && !this.isSeparator() && this.selected) {
         // Store |contextElement| since it'll be removed by {Menu} on handling
         // 'activate' event.
