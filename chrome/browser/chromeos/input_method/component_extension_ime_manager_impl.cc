@@ -16,6 +16,7 @@
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_manifest_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
@@ -92,6 +93,7 @@ bool ComponentExtensionIMEManagerImpl::Unload(const std::string& extension_id,
 
 scoped_ptr<DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
     const base::FilePath& file_path) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   std::string error;
   scoped_ptr<DictionaryValue> manifest(
       extension_file_util::LoadManifest(file_path, &error));
@@ -109,6 +111,15 @@ void ComponentExtensionIMEManagerImpl::Initialize(
     const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
     const base::Closure& callback) {
   DCHECK(!is_initialized_);
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  // We have to call extension_l10n_util::LocalizeExtension to localize each
+  // extension on FILE thread. However it calls non-thread safe function
+  // l10n_util::GetAvailableLocales internally. Thus, to avoid race condition,
+  // call GetAvailableLocales here to initialize internal state of its function.
+  // TODO(nona): Remove this once crbug.com/233241 is fixed.
+  l10n_util::GetAvailableLocales();
+
   std::vector<ComponentExtensionIME>* component_extension_ime_list
       = new std::vector<ComponentExtensionIME>;
   file_task_runner->PostTaskAndReply(

@@ -81,6 +81,7 @@ class ComponentExtensionIMEManagerImpl
   // The list of already loaded extension ids.
   std::set<std::string> loaded_extension_id_;
 
+  // For checking the function should be called on UI thread.
   base::ThreadChecker thread_checker_;
   base::WeakPtrFactory<ComponentExtensionIMEManagerImpl> weak_ptr_factory_;
 
