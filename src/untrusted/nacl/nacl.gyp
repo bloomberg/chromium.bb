@@ -122,6 +122,7 @@
         'nso_target': 'libnacl_dyncode.so',
         'build_glibc': 1,
         'build_newlib': 1,
+        'build_pnacl_newlib': 1,
       },
       'sources': ['dyncode.c'],
       'dependencies': [
