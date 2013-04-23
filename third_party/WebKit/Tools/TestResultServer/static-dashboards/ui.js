@@ -153,44 +153,34 @@ ui.html._dashboardLink = function(html, fileName)
     return ui.html._topLink(html, onClick, isSelected);
 }
 
-ui.html._revisionLink = function(currentRevision, previousRevision, singleUrl, rangeUrl)
+ui.html._revisionLink = function(resultsKey, results, index)
 {
+    var currentRevision = parseInt(results[resultsKey][index], 10);
+    var previousRevision = parseInt(results[resultsKey][index + 1], 10);
+
+    var isChrome = resultsKey == CHROME_REVISIONS_KEY;
+    var singleUrl = 'http://src.chromium.org/viewvc/' + (isChrome ? 'chrome' : 'blink') + '?view=rev&revision=' + currentRevision;
+
     if (currentRevision == previousRevision)
         return 'At <a href="' + singleUrl + '">r' + currentRevision    + '</a>';
-    else if (currentRevision - previousRevision == 1)
+
+    if (currentRevision - previousRevision == 1)
         return '<a href="' + singleUrl + '">r' + currentRevision    + '</a>';
-    else
-        return '<a href="' + rangeUrl + '">r' + (previousRevision + 1) + ' to r' + currentRevision + '</a>';
+
+    var rangeUrl = 'http://build.chromium.org/f/chromium/perf/dashboard/ui/changelog' +
+        (isChrome ? '' : '_blink') + '.html?url=/trunk' + (isChrome ? '/src' : '') +
+        '&range=' + previousRevision + ':' + currentRevision + '&mode=html';
+    return '<a href="' + rangeUrl + '">r' + (previousRevision + 1) + ' to r' + currentRevision + '</a>';
 }
 
 ui.html.chromiumRevisionLink = function(results, index)
 {
-    var currentRevision = parseInt(results[CHROME_REVISIONS_KEY][index], 10);
-    var previousRevision = parseInt(results[CHROME_REVISIONS_KEY][index + 1], 10);
-
-    return ui.html._revisionLink(
-        currentRevision,
-        previousRevision,
-        'http://src.chromium.org/viewvc/chrome?view=rev&revision=' + currentRevision,
-        'http://build.chromium.org/f/chromium/perf/dashboard/ui/changelog.html?url=/trunk/src&range=' + previousRevision + ':' + currentRevision + '&mode=html');
+    return ui.html._revisionLink(CHROME_REVISIONS_KEY, results, index);
 }
 
 ui.html.blinkRevisionLink = function(results, index)
 {
-    var currentRevision = parseInt(results[WEBKIT_REVISIONS_KEY][index], 10);
-    var previousRevision = parseInt(results[WEBKIT_REVISIONS_KEY][index + 1], 10);
-
-    // FIXME: OMG hacktastic. Get a proper way of showing blink revision ranges and use that.
-    var content = '<style>iframe { width: 100%; height: 400px; }</style>';
-    for (var i = previousRevision + 1; i <= currentRevision; i++)
-        content += '<iframe src=http://src.chromium.org/viewvc/blink?view=rev&revision=' + i + '></iframe>';
-    var rangeUrl = 'javascript:var win=window.open(); win.document.write(\'' + content + '\');';
-
-    return ui.html._revisionLink(
-        currentRevision,
-        previousRevision,
-        'http://src.chromium.org/viewvc/blink?view=rev&revision=' + currentRevision,
-        rangeUrl);
+    return ui.html._revisionLink(WEBKIT_REVISIONS_KEY, results, index);
 }
 
 
