@@ -267,9 +267,13 @@ string16 FormatBookmarkURLForDisplay(const GURL& url,
 }
 
 bool IsAppsShortcutEnabled(const Profile* profile) {
-  return chrome::IsInstantExtendedAPIEnabled() &&
-      !apps::WasAppLauncherEnabled() &&
-      !profile->IsOffTheRecord();
+#if defined(USE_ASH)
+  // Don't show the apps shortcut in ash when the app launcher is enabled.
+  if (apps::WasAppLauncherEnabled())
+    return false;
+#endif
+
+  return chrome::IsInstantExtendedAPIEnabled() && !profile->IsOffTheRecord();
 }
 
 bool ShouldShowAppsShortcutInBookmarkBar(Profile* profile) {
