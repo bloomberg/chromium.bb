@@ -9,8 +9,9 @@ import sys
 import tarfile
 
 import buildbot_common
+from build_paths import SCRIPT_DIR
 
-SDK_BUILD_DIR = buildbot_common.SCRIPT_DIR
+SDK_BUILD_DIR = SCRIPT_DIR
 MONO_BUILD_DIR = os.path.join(SDK_BUILD_DIR, 'mono_build')
 MONO_DIR = os.path.join(MONO_BUILD_DIR, 'nacl-mono')
 

@@ -10,6 +10,7 @@ import sys
 
 import buildbot_common
 import build_utils
+from build_paths import SCRIPT_DIR
 
 GS_MANIFEST_PATH = 'gs://nativeclient-mirror/nacl/nacl_sdk/'
 SDK_MANIFEST = 'naclsdk_manifest2.json'
@@ -163,7 +164,7 @@ def main(args):
   buildbot_revision = os.environ.get('BUILDBOT_REVISION', '')
   buildername = os.environ.get('BUILDBOT_BUILDERNAME', '')
 
-  os.chdir(buildbot_common.SCRIPT_DIR)
+  os.chdir(SCRIPT_DIR)
 
   if buildername == 'linux-sdk-mono32':
     assert buildbot_revision
