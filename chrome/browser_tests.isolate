@@ -148,7 +148,6 @@
           '../third_party/npapi/npspy/extern/plugin/',
           '../third_party/psyco_win32/psyco/',
           '../third_party/python_26/',
-          '<(PRODUCT_DIR)/gen/sdk/toolchain/win_x86_pnacl/newlib/bin/pydir/',
         ],
       },
     }],

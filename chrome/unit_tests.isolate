@@ -87,7 +87,6 @@
       'variables': {
         'isolate_dependency_tracked': [
           '<(PRODUCT_DIR)/ffmpegsumo.dll',
-          '<(PRODUCT_DIR)/gyp-win-tool',
           '<(PRODUCT_DIR)/icudt.dll',
         ],
         'isolate_dependency_untracked': [
