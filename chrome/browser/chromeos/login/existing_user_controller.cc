@@ -474,6 +474,9 @@ void ExistingUserController::LoginAsRetailModeUser() {
 }
 
 void ExistingUserController::LoginAsGuest() {
+  if (is_login_in_progress_ || UserManager::Get()->IsUserLoggedIn())
+    return;
+
   // Stop the auto-login timer when attempting login.
   StopPublicSessionAutoLoginTimer();
 
@@ -531,6 +534,9 @@ void ExistingUserController::MigrateUserData(const std::string& old_password) {
 
 void ExistingUserController::LoginAsPublicAccount(
     const std::string& username) {
+  if (is_login_in_progress_ || UserManager::Get()->IsUserLoggedIn())
+    return;
+
   // Stop the auto-login timer when attempting login.
   StopPublicSessionAutoLoginTimer();
 

@@ -667,6 +667,7 @@ cr.define('login', function() {
       learnMore.addEventListener('keydown', this.handleLearnMoreEvent);
 
       this.enterButtonElement.addEventListener('click', (function(e) {
+        this.enterButtonElement.disabled = true;
         chrome.send('launchPublicAccount', [this.user.username]);
       }).bind(this));
     },
@@ -695,6 +696,7 @@ cr.define('login', function() {
     reset: function(takeFocus) {
       if (!takeFocus)
         this.expanded = false;
+      this.enterButtonElement.disabled = false;
       UserPod.prototype.reset.call(this, takeFocus);
     },
 
