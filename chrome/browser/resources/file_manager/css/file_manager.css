@@ -1034,6 +1034,10 @@ body[new-ui][type='full-page'] list .filename-label > :hover {
   position: absolute;
 }
 
+body[new-ui] .img-container > img:not(.cached) {
+  -webkit-animation: fadeIn 500ms ease-in;
+}
+
 .thumbnail-bottom {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
@@ -1362,11 +1366,6 @@ body[new-ui] .preview-thumbnails > .thumbnail > .img-container {
   border: 1px solid white;
   height: 35px;
   width: 35px;
-}
-
-body[new-ui] .preview-thumbnails > .thumbnail > .img-container >
-    img.not(.cached) {
-  -webkit-animation: fadeIn 500ms ease-in;
 }
 
 @-webkit-keyframes fadeIn {
