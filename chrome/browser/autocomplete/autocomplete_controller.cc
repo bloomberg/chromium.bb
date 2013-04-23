@@ -27,6 +27,7 @@
 #include "chrome/browser/autocomplete/zero_suggest_provider.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
@@ -118,12 +119,6 @@ void AppendAvailableAutocompletion(size_t type,
     base::StringAppendF(autocompletions, "l%d", count);
 }
 
-// Amount of time (in ms) between when the user stops typing and when we remove
-// any copied entries. We do this from the time the user stopped typing as some
-// providers (such as SearchProvider) wait for the user to stop typing before
-// they initiate a query.
-const int kExpireTimeMS = 500;
-
 }  // namespace
 
 const int AutocompleteController::kNoItemSelected = -1;
@@ -137,6 +132,8 @@ AutocompleteController::AutocompleteController(
       keyword_provider_(NULL),
       search_provider_(NULL),
       zero_suggest_provider_(NULL),
+      in_stop_timer_field_trial_(
+          OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup()),
       done_(true),
       in_start_(false),
       in_zero_suggest_(false),
@@ -236,6 +233,7 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
       (input_.matches_requested() == old_matches_requested);
 
   expire_timer_.Stop();
+  stop_timer_.Stop();
 
   // Start the new query.
   in_zero_suggest_ = false;
@@ -273,8 +271,10 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
   // need the edit model to update the display.
   UpdateResult(false, true);
 
-  if (!done_)
+  if (!done_) {
     StartExpireTimer();
+    StartStopTimer();
+  }
 }
 
 void AutocompleteController::Stop(bool clear_result) {
@@ -284,6 +284,7 @@ void AutocompleteController::Stop(bool clear_result) {
   }
 
   expire_timer_.Stop();
+  stop_timer_.Stop();
   done_ = true;
   if (clear_result && !result_.empty()) {
     result_.Reset();
@@ -588,8 +589,40 @@ void AutocompleteController::CheckIfDone() {
 }
 
 void AutocompleteController::StartExpireTimer() {
+  // Amount of time (in ms) between when the user stops typing and
+  // when we remove any copied entries. We do this from the time the
+  // user stopped typing as some providers (such as SearchProvider)
+  // wait for the user to stop typing before they initiate a query.
+  const int kExpireTimeMS = 500;
+
   if (result_.HasCopiedMatches())
     expire_timer_.Start(FROM_HERE,
                         base::TimeDelta::FromMilliseconds(kExpireTimeMS),
                         this, &AutocompleteController::ExpireCopiedEntries);
+}
+
+void AutocompleteController::StartStopTimer() {
+  if (!in_stop_timer_field_trial_)
+    return;
+
+  // Amount of time (in ms) between when the user stops typing and
+  // when we send Stop() to every provider.  This is intended to avoid
+  // the disruptive effect of belated omnibox updates, updates that
+  // come after the user has had to time to read the whole dropdown
+  // and doesn't expect it to change.
+  const int kStopTimeMS = 1500;
+
+  // Only use the timer if Instant/InstantExtended is disabled.
+  // InstantExtended has its own logic for when to stop updating the
+  // dropdown.  Furthermore, both Instant and InstantExtended expect
+  // all results they inject (regardless of how long they took) to make
+  // it to the edit model / dropdown display code.
+  if (!chrome::IsInstantExtendedAPIEnabled() &&
+      !chrome::IsInstantEnabled(profile_)) {
+    stop_timer_.Start(FROM_HERE,
+                      base::TimeDelta::FromMilliseconds(kStopTimeMS),
+                      base::Bind(&AutocompleteController::Stop,
+                                 base::Unretained(this),
+                                 false));
+  }
 }

@@ -179,8 +179,11 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Updates |done_| to be accurate with respect to current providers' statuses.
   void CheckIfDone();
 
-  // Starts the expire timer.
+  // Starts |expire_timer_|.
   void StartExpireTimer();
+
+  // Starts |stop_timer_|.
+  void StartStopTimer();
 
   AutocompleteControllerDelegate* delegate_;
 
@@ -216,6 +219,13 @@ class AutocompleteController : public AutocompleteProviderListener {
   // Timer used to remove any matches copied from the last result. When run
   // invokes |ExpireCopiedEntries|.
   base::OneShotTimer<AutocompleteController> expire_timer_;
+
+  // Timer used to tell the providers to Stop() searching for matches.
+  base::OneShotTimer<AutocompleteController> stop_timer_;
+
+  // True if the user is in the "stop timer" field trial.  If so, the
+  // controller uses the |stop_timer_|.
+  const bool in_stop_timer_field_trial_;
 
   // True if a query is not currently running.
   bool done_;

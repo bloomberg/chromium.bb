@@ -24,6 +24,7 @@ const char kHUPCreateShorterMatchFieldTrialName[] =
     "OmniboxHUPCreateShorterMatch";
 const char kHQPReplaceHUPScoringFieldTrialName[] =
     "OmniboxHQPReplaceHUPProhibitTrumpingInlineableResult";
+const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -73,6 +74,9 @@ const base::FieldTrial::Probability
 const base::FieldTrial::Probability
     kHQPReplaceHUPScoringFieldTrialExperimentFraction = 0;
 
+// Experiment group names.
+
+const char kStopTimerExperimentGroupName[] = "UseStopTimer";
 
 // Field trial IDs.
 // Though they are not literally "const", they are set only once, in
@@ -287,4 +291,9 @@ bool OmniboxFieldTrial::InHQPReplaceHUPScoringFieldTrialExperimentGroup() {
   const int group = base::FieldTrialList::FindValue(
       kHQPReplaceHUPScoringFieldTrialName);
   return group == hqp_replace_hup_scoring_experiment_group;
+}
+
+bool OmniboxFieldTrial::InStopTimerFieldTrialExperimentGroup() {
+  return (base::FieldTrialList::FindFullName(kStopTimerFieldTrialName) ==
+          kStopTimerExperimentGroupName);
 }

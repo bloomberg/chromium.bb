@@ -108,6 +108,18 @@ class OmniboxFieldTrial {
   // is larger.
   static bool InHQPReplaceHUPScoringFieldTrialExperimentGroup();
 
+  // ---------------------------------------------------------
+  // For the AutocompleteController "stop timer" field trial.
+
+  // Returns whether the user should get the experimental setup or the
+  // default setup for this field trial.  The experiment group uses
+  // a timer in AutocompleteController to tell the providers to stop
+  // looking for matches after too much time has passed.  In other words,
+  // it tries to tell the providers to stop updating the list of suggested
+  // matches if updating the matches would probably be disruptive because
+  // they're arriving so late.
+  static bool InStopTimerFieldTrialExperimentGroup();
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(OmniboxFieldTrial);
 };
