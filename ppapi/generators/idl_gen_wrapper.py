@@ -57,9 +57,6 @@ class WrapperGen(Generator):
   GetInterface functions).
 
   Subclasses must implement GenerateWrapperForPPBMethod (and PPP).
-  Optionally, subclasses can implement InterfaceNeedsWrapper to
-  filter out interfaces that do not actually need wrappers (those
-  interfaces can jump directly to the original interface functions).
   """
 
   def __init__(self, wrapper_prefix, s1, s2, s3):
@@ -204,12 +201,6 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
 
 
   ############################################################
-
-  def InterfaceNeedsWrapper(self, iface, releases):
-    """Return true if the interface has ANY methods that need wrapping.
-    """
-    return True
-
 
   def OwnHeaderFile(self):
     """Return the header file that specifies the API of this wrapper.

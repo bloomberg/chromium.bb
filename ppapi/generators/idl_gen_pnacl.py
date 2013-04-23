@@ -58,17 +58,6 @@ class PnaclGen(WrapperGen):
   def GetGuardEnd(self):
     return '\n#endif\n'
 
-  def InterfaceNeedsWrapper(self, iface, releases):
-    """Return true if the interface has ANY methods that need wrapping.
-    """
-    if self._skip_opt:
-      return True
-    for release in iface.GetUniqueReleases(releases):
-      version = iface.GetVersion(release)
-      if self.InterfaceVersionNeedsWrapping(iface, version):
-        return True
-    return False
-
 
   def InterfaceVersionNeedsWrapping(self, iface, version):
     """Return true if the interface+version has ANY methods that
