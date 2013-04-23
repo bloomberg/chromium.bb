@@ -228,7 +228,7 @@ class CompositingIOSurfaceMac {
   // If this IOSurface has moved to a different window, use that window's
   // GL context (if multiple visible windows are using the same GL context
   // then call to setView call can stall and prevent reaching 60fps).
-  void SwitchToContextOnNewWindow(int window_number);
+  void SwitchToContextOnNewWindow(NSView* view, int window_number);
 
   bool IsVendorIntel();
 

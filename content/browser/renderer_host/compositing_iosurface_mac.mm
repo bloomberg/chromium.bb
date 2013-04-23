@@ -292,7 +292,8 @@ CompositingIOSurfaceMac::CompositingIOSurfaceMac(
   StopDisplayLink();
 }
 
-void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(int window_number) {
+void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(
+    NSView* view, int window_number) {
   if (window_number == context_->window_number())
     return;
 
@@ -312,6 +313,13 @@ void CompositingIOSurfaceMac::SwitchToContextOnNewWindow(int window_number) {
                                        context_->surface_order());
   if (!new_context)
     return;
+
+  // Having two NSOpenGLContexts bound to an NSView concurrently will cause
+  // artifacts and crashes. If |context_| is bound to |view|, then unbind
+  // |context_| before |new_context| gets bound to |view|.
+  // http://crbug.com/230883
+  if ([context_->nsgl_context() view] == view)
+    [context_->nsgl_context() clearDrawable];
 
   context_ = new_context;
 }
@@ -361,7 +369,7 @@ void CompositingIOSurfaceMac::DrawIOSurface(
     float scale_factor,
     int window_number,
     RenderWidgetHostViewFrameSubscriber* frame_subscriber) {
-  SwitchToContextOnNewWindow(window_number);
+  SwitchToContextOnNewWindow(view, window_number);
 
   CGLSetCurrentContext(context_->cgl_context());
 
