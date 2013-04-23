@@ -459,6 +459,7 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
                                     !key_event.IsShiftDown(),
                                     false);  // Not case sensitive.
     }
+    return true;
   }
 
   return false;
