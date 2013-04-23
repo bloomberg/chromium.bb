@@ -730,7 +730,6 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
     ShellIntegration::SetAsDefaultBrowser();
   }
 
-#if !defined(USE_AURA)
   base::FilePath local_state_path;
   PathService::Get(chrome::FILE_LOCAL_STATE, &local_state_path);
   bool local_state_file_exists = file_util::PathExists(local_state_path);
@@ -748,7 +747,6 @@ void DoPostImportTasks(Profile* profile, bool make_chrome_default) {
     FirstRunBubbleLauncher::ShowFirstRunBubbleSoon();
   SetShouldShowWelcomePage();
   SetShouldDoPersonalDataManagerFirstRun();
-#endif  // !defined(USE_AURA)
 
   internal::DoPostImportPlatformSpecificTasks();
 }
