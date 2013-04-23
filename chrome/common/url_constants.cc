@@ -415,7 +415,7 @@ const char kDoNotTrackLearnMoreURL[] =
     "https://support.google.com/chrome/?p=settings_do_not_track";
 #endif
 
-const char kChromiumProjectURL[] = "http://code.google.com/chromium/";
+const char kChromiumProjectURL[] = "http://www.chromium.org/";
 
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
