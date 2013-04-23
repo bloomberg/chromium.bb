@@ -47,17 +47,19 @@
     <pre id=proxy-view-socks-hints-flag></pre>
   </div>
 
-  <h4>
-    Recently failed proxies, marked as bad
-    <input type=button value="Clear bad proxies" id=proxy-view-clear-bad-proxies class="hide-when-not-capturing">
-  </h4>
-  <table class="styled-table">
-    <thead>
-      <tr>
-        <th>Bad proxy server</th>
-        <th>Time for next retry</th>
-      </tr>
-    </thead>
-    <tbody id=proxy-view-bad-proxies-tbody></tbody>
-  </table>
+  <div id=proxy-view-bad-proxies-div style='display: none'>
+    <h4>
+      Recently failed proxies, marked as bad
+      <input type=button value="Clear bad proxies" id=proxy-view-clear-bad-proxies class="hide-when-not-capturing">
+    </h4>
+    <table class="styled-table">
+      <thead>
+        <tr>
+          <th>Bad proxy server</th>
+          <th>Time for next retry</th>
+        </tr>
+      </thead>
+      <tbody id=proxy-view-bad-proxies-tbody></tbody>
+    </table>
+  </div>
 </div>

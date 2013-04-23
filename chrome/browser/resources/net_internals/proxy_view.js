@@ -44,6 +44,7 @@ var ProxyView = (function() {
   ProxyView.ORIGINAL_SETTINGS_DIV_ID = 'proxy-view-original-settings';
   ProxyView.EFFECTIVE_SETTINGS_DIV_ID = 'proxy-view-effective-settings';
   ProxyView.RELOAD_SETTINGS_BUTTON_ID = 'proxy-view-reload-settings';
+  ProxyView.BAD_PROXIES_DIV_ID = 'proxy-view-bad-proxies-div';
   ProxyView.BAD_PROXIES_TBODY_ID = 'proxy-view-bad-proxies-tbody';
   ProxyView.CLEAR_BAD_PROXIES_BUTTON_ID = 'proxy-view-clear-bad-proxies';
   ProxyView.SOCKS_HINTS_DIV_ID = 'proxy-view-socks-hints';
@@ -85,6 +86,8 @@ var ProxyView = (function() {
 
     onBadProxiesChanged: function(badProxies) {
       $(ProxyView.BAD_PROXIES_TBODY_ID).innerHTML = '';
+      setNodeDisplay($(ProxyView.BAD_PROXIES_DIV_ID),
+                     badProxies && badProxies.length > 0);
 
       if (!badProxies)
         return false;
