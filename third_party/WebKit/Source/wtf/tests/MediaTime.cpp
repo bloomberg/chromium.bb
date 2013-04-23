@@ -47,7 +47,7 @@ using namespace std;
 
 namespace WTF {
 
-std::ostream& operator<<(std::ostream& out, const MediaTime& val)
+static std::ostream& operator<<(std::ostream& out, const MediaTime& val)
 {
     out << "{ ";
     if (val.isInvalid())

@@ -38,11 +38,13 @@
 #include "KURL.h"
 
 namespace WTF {
+
 // Output stream operator so gTest's macros work with WebCore strings.
-std::ostream& operator<<(std::ostream& out, const String& str)
+static std::ostream& operator<<(std::ostream& out, const String& str)
 {
     return str.isEmpty() ? out : out << str.utf8().data();
 }
+
 } // namespace WTF
 
 namespace {
