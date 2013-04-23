@@ -1406,23 +1406,6 @@ void LayerTreeHostImpl::SetViewportSize(gfx::Size device_viewport_size) {
   SetFullRootLayerDamage();
 }
 
-static void AdjustScrollsForPageScaleChange(LayerImpl* layer_impl,
-                                            float page_scale_change) {
-  if (!layer_impl)
-    return;
-
-  if (layer_impl->scrollable()) {
-    // We need to convert impl-side scroll deltas to page_scale space.
-    gfx::Vector2dF scroll_delta = layer_impl->scroll_delta();
-    scroll_delta.Scale(page_scale_change);
-    layer_impl->SetScrollDelta(scroll_delta);
-  }
-
-  for (size_t i = 0; i < layer_impl->children().size(); ++i)
-    AdjustScrollsForPageScaleChange(layer_impl->children()[i],
-                                    page_scale_change);
-}
-
 void LayerTreeHostImpl::SetOverdrawBottomHeight(float overdraw_bottom_height) {
   if (overdraw_bottom_height == overdraw_bottom_height_)
     return;
