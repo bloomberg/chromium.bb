@@ -173,5 +173,10 @@ public class AwTestContainerView extends FrameLayout {
         public void setMeasuredDimension(int measuredWidth, int measuredHeight) {
             AwTestContainerView.super.setMeasuredDimension(measuredWidth, measuredHeight);
         }
+
+        @Override
+        public boolean requestDrawGL(Canvas canvas) {
+            return false;
+        }
     }
 }

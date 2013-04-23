@@ -91,6 +91,17 @@ public class AwContents {
          * @see View#setMeasuredDimension(int, int)
          */
         void setMeasuredDimension(int measuredWidth, int measuredHeight);
+
+        /**
+         * Requests a callback on the native DrawGL method (see getAwDrawGLFunction)
+         * if called from within onDraw, |canvas| will be non-null and hardware accelerated.
+         * otherwise, |canvas| will be null, and the container view itself will be hardware
+         * accelerated.
+         *
+         * @return false indicates the GL draw request was not accepted, and the caller
+         *         should fallback to the SW path.
+         */
+        boolean requestDrawGL(Canvas canvas);
     }
 
     private int mNativeAwContents;
@@ -390,6 +401,7 @@ public class AwContents {
         return nativeGetAwDrawGLViewContext(mNativeAwContents);
     }
 
+    // TODO(michaelbai) : Remove this method once it is not called.
     public boolean onPrepareDrawGL(Canvas canvas) {
         if (mNativeAwContents == 0) return false;
         nativeSetScrollForHWFrame(mNativeAwContents,
@@ -401,6 +413,10 @@ public class AwContents {
 
     public void onDraw(Canvas canvas) {
         if (mNativeAwContents == 0) return;
+        if (canvas.isHardwareAccelerated() && onPrepareDrawGL(canvas) &&
+                mInternalAccessAdapter.requestDrawGL(canvas)) {
+            return;
+        }
         Rect clip = canvas.getClipBounds();
         if (!nativeDrawSW(mNativeAwContents, canvas, clip.left, clip.top,
                 clip.right - clip.left, clip.bottom - clip.top)) {
