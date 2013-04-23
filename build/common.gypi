@@ -641,7 +641,7 @@
         }, {
           'test_isolation_mode%': 'noop',
         }],
-        # Whether Android ARM build uses OpenMAX DL FFT.  
+        # Whether Android ARM build uses OpenMAX DL FFT.
         ['OS=="android" and target_arch=="arm" and android_webview_build==0', {
           # Currently only supported on Android ARM, without webview.
           # When enabled, this will also enable WebAudio on Android
@@ -1043,6 +1043,9 @@
     # Whether we are using the rlz library or not.  Platforms like Android send
     # rlz codes for searches but do not use the library.
     'enable_rlz%': 0,
+
+    # MDNS is disabled by default.
+    'enable_mdns%' : 0,
 
     'conditions': [
       ['OS=="win" and "<!(python <(DEPTH)/build/dir_exists.py <(windows_sdk_default_path))"=="True"', {
@@ -2104,6 +2107,9 @@
       ['spdy_proxy_auth_property != ""', {
         'defines': ['SPDY_PROXY_AUTH_PROPERTY="<(spdy_proxy_auth_property)"'],
       }],
+      ['enable_mdns==1', {
+        'defines': ['ENABLE_MDNS=1'],
+      }]
     ],  # conditions for 'target_defaults'
     'target_conditions': [
       ['enable_wexit_time_destructors==1', {
