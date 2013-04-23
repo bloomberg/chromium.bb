@@ -184,6 +184,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
                                  int render_view_id,
                                  uint32 permission_bits,
                                  bool uses_irt,
+                                 bool enable_dyncode_syscalls,
                                  bool off_the_record)
     : manifest_url_(manifest_url),
       permissions_(GetNaClPermissions(permission_bits)),
@@ -201,6 +202,7 @@ NaClProcessHost::NaClProcessHost(const GURL& manifest_url,
       enable_exception_handling_(true),
       enable_debug_stub_(false),
       uses_irt_(uses_irt),
+      enable_dyncode_syscalls_(enable_dyncode_syscalls),
       off_the_record_(off_the_record),
       ALLOW_THIS_IN_INITIALIZER_LIST(ipc_plugin_listener_(this)),
       render_view_id_(render_view_id) {
@@ -743,6 +745,7 @@ bool NaClProcessHost::StartNaClExecution() {
   // Enable PPAPI proxy channel creation only for renderer processes.
   params.enable_ipc_proxy = enable_ppapi_proxy();
   params.uses_irt = uses_irt_;
+  params.enable_dyncode_syscalls = enable_dyncode_syscalls_;
 
   const ChildProcessData& data = process_->GetData();
   if (!ShareHandleToSelLdr(data.handle,

@@ -257,6 +257,7 @@ void ChromeRenderMessageFilter::OnLaunchNaCl(
       launch_params.render_view_id,
       launch_params.permission_bits,
       launch_params.uses_irt,
+      launch_params.enable_dyncode_syscalls,
       off_the_record_);
   host->Launch(this, reply_msg, extension_info_map_);
 }

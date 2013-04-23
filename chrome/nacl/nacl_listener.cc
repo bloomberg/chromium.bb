@@ -267,6 +267,7 @@ void NaClListener::OnStart(const nacl::NaClStartParams& params) {
   args->imc_bootstrap_handle = nacl::ToNativeHandle(handles[0]);
   args->enable_exception_handling = params.enable_exception_handling;
   args->enable_debug_stub = params.enable_debug_stub;
+  args->enable_dyncode_syscalls = params.enable_dyncode_syscalls;
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   args->debug_stub_server_bound_socket_fd = nacl::ToNativeHandle(
       params.debug_stub_server_bound_socket);

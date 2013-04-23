@@ -714,6 +714,7 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                            bool uses_irt,
                            bool uses_ppapi,
                            bool enable_ppapi_dev,
+                           bool enable_dyncode_syscalls,
                            pp::CompletionCallback crash_cb) {
   NaClLog(4, "ServiceRuntime::Start (nacl_desc=%p)\n",
           reinterpret_cast<void*>(nacl_desc));
@@ -730,7 +731,8 @@ bool ServiceRuntime::Start(nacl::DescWrapper* nacl_desc,
                                        url.c_str(),
                                        uses_irt,
                                        uses_ppapi,
-                                       enable_ppapi_dev);
+                                       enable_ppapi_dev,
+                                       enable_dyncode_syscalls);
   if (!started) {
     NaClLog(LOG_ERROR, "ServiceRuntime::Start (start failed)\n");
     error_info->SetReport(ERROR_SEL_LDR_LAUNCH,

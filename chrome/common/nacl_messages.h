@@ -22,6 +22,7 @@ IPC_STRUCT_TRAITS_BEGIN(nacl::NaClStartParams)
   IPC_STRUCT_TRAITS_MEMBER(enable_debug_stub)
   IPC_STRUCT_TRAITS_MEMBER(enable_ipc_proxy)
   IPC_STRUCT_TRAITS_MEMBER(uses_irt)
+  IPC_STRUCT_TRAITS_MEMBER(enable_dyncode_syscalls)
 IPC_STRUCT_TRAITS_END()
 
 //-----------------------------------------------------------------------------

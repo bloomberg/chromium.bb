@@ -44,12 +44,15 @@ interface PPB_NaCl_Private {
    * does not need PPAPI, then it can run off the main thread.
    * The |uses_irt| flag indicates whether the IRT should be loaded in this
    * NaCl process.  This is true for ABI stable nexes.
+   * The |enable_dyncode_syscalls| flag indicates whether or not the nexe
+   * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
    */
   PP_NaClResult LaunchSelLdr([in] PP_Instance instance,
                              [in] str_t alleged_url,
                              [in] PP_Bool uses_irt,
                              [in] PP_Bool uses_ppapi,
                              [in] PP_Bool enable_ppapi_dev,
+                             [in] PP_Bool enable_dyncode_syscalls,
                              [out] mem_t imc_handle);
 
   /* This function starts the IPC proxy so the nexe can communicate with the

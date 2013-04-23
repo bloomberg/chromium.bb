@@ -102,6 +102,7 @@ class Plugin : public pp::InstancePrivate {
   //
   // Updates nacl_module_origin() and nacl_module_url().
   bool LoadNaClModule(nacl::DescWrapper* wrapper, ErrorInfo* error_info,
+                      bool enable_dyncode_syscalls,
                       pp::CompletionCallback init_done_cb,
                       pp::CompletionCallback crash_cb);
 
@@ -325,6 +326,7 @@ class Plugin : public pp::InstancePrivate {
                             bool should_report_uma,
                             bool uses_irt,
                             bool uses_ppapi,
+                            bool enable_dyncode_syscalls,
                             ErrorInfo* error_info,
                             pp::CompletionCallback init_done_cb,
                             pp::CompletionCallback crash_cb);

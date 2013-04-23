@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Thu Jan 10 15:59:03 2013. */
+/* From private/ppb_nacl_private.idl modified Fri Apr 19 16:37:41 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -69,12 +69,15 @@ struct PPB_NaCl_Private_1_0 {
    * does not need PPAPI, then it can run off the main thread.
    * The |uses_irt| flag indicates whether the IRT should be loaded in this
    * NaCl process.  This is true for ABI stable nexes.
+   * The |enable_dyncode_syscalls| flag indicates whether or not the nexe
+   * will be able to use dynamic code system calls (e.g., mmap with PROT_EXEC).
    */
   PP_NaClResult (*LaunchSelLdr)(PP_Instance instance,
                                 const char* alleged_url,
                                 PP_Bool uses_irt,
                                 PP_Bool uses_ppapi,
                                 PP_Bool enable_ppapi_dev,
+                                PP_Bool enable_dyncode_syscalls,
                                 void* imc_handle);
   /* This function starts the IPC proxy so the nexe can communicate with the
    * browser. Returns PP_NACL_OK on success, otherwise a result code indicating

@@ -21,6 +21,7 @@ typedef PP_NaClResult (*LaunchNaClProcessFunc)(PP_Instance instance,
                                                PP_Bool uses_irt,
                                                PP_Bool uses_ppapi,
                                                PP_Bool enable_ppapi_dev,
+                                               PP_Bool enable_dyncode_syscalls,
                                                NaClHandle* result_socket);
 
 
