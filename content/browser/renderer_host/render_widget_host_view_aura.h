@@ -93,8 +93,45 @@ class RenderWidgetHostViewAura
     virtual void OnViewDestroyed() = 0;
   };
 
+  // Displays and controls touch editing elements such as selection handles.
+  class TouchEditingClient {
+   public:
+    TouchEditingClient() {}
+
+    // Tells the client to start showing touch editing handles.
+    virtual void StartTouchEditing() = 0;
+
+    // Notifies the client that touch editing is no longer needed.
+    virtual void EndTouchEditing() = 0;
+
+    // Notifies the client that the selection bounds need to be updated.
+    virtual void OnSelectionOrCursorChanged(const gfx::Rect& anchor,
+                                            const gfx::Rect& focus) = 0;
+
+    // Notifies the client that the current text input type as changed.
+    virtual void OnTextInputTypeChanged(ui::TextInputType type) = 0;
+
+    // Notifies the client that an input event is about to be sent to the
+    // renderer. Returns true if the client wants to stop event propagation.
+    virtual bool HandleInputEvent(const ui::Event* event) = 0;
+
+    // Notifies the client that a gesture event ack was received.
+    virtual void GestureEventAck(int gesture_event_type) = 0;
+
+    // This is called when the view is destroyed, so that the client can
+    // perform any necessary clean-up.
+    virtual void OnViewDestroyed() = 0;
+
+   protected:
+    virtual ~TouchEditingClient() {}
+  };
+
   void set_paint_observer(PaintObserver* observer) {
     paint_observer_ = observer;
+  }
+
+  void set_touch_editing_client(TouchEditingClient* client) {
+    touch_editing_client_ = client;
   }
 
   // RenderWidgetHostView implementation.
@@ -179,6 +216,7 @@ class RenderWidgetHostViewAura
   virtual bool HasAcceleratedSurface(const gfx::Size& desired_size) OVERRIDE;
   virtual void GetScreenInfo(WebKit::WebScreenInfo* results) OVERRIDE;
   virtual gfx::Rect GetBoundsInRootWindow() OVERRIDE;
+  virtual void GestureEventAck(int gesture_event_type) OVERRIDE;
   virtual void ProcessAckedTouchEvent(
       const WebKit::WebTouchEvent& touch,
       InputEventAckState ack_result) OVERRIDE;
@@ -589,6 +627,8 @@ class RenderWidgetHostViewAura
 
   // Subscriber that listens to frame presentation events.
   scoped_ptr<RenderWidgetHostViewFrameSubscriber> frame_subscriber_;
+
+  TouchEditingClient* touch_editing_client_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAura);
 };

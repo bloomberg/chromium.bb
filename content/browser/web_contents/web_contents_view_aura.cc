@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/web_contents/interstitial_page_impl.h"
 #include "content/browser/web_contents/navigation_entry_impl.h"
+#include "content/browser/web_contents/touch_editable_impl_aura.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -742,6 +743,8 @@ class WebContentsViewAura::WindowObserver
                                      const gfx::Rect& old_bounds,
                                      const gfx::Rect& new_bounds) OVERRIDE {
     SendScreenRects();
+    if (view_->touch_editable_)
+      view_->touch_editable_->UpdateEditingController();
   }
 
   virtual void OnWindowAddedToRootWindow(aura::Window* window) OVERRIDE {
@@ -876,7 +879,8 @@ WebContentsViewAura::WebContentsViewAura(
       content_container_(NULL),
       overscroll_change_brightness_(false),
       current_overscroll_gesture_(OVERSCROLL_NONE),
-      completed_overscroll_gesture_(OVERSCROLL_NONE) {
+      completed_overscroll_gesture_(OVERSCROLL_NONE),
+      touch_editable_(TouchEditableImplAura::Create()) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -898,6 +902,12 @@ WebContentsViewAura::~WebContentsViewAura() {
 void WebContentsViewAura::SetupOverlayWindowForTesting() {
   if (navigation_overlay_)
     navigation_overlay_->SetupForTesting();
+}
+
+void WebContentsViewAura::SetTouchEditableForTest(
+    TouchEditableImplAura* touch_editable) {
+  touch_editable_.reset(touch_editable);
+  AttachTouchEditableToRenderView();
 }
 
 void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
@@ -1114,6 +1124,14 @@ void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
   window->layer()->SetLayerBrightness(brightness);
 }
 
+void WebContentsViewAura::AttachTouchEditableToRenderView() {
+  if (!touch_editable_)
+    return;
+  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+      web_contents_->GetRenderWidgetHostView());
+  touch_editable_->AttachToView(rwhva);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WebContentsViewAura, WebContentsView implementation:
 
@@ -1274,6 +1292,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
       navigation_overlay_.reset(new OverscrollNavigationOverlay());
   }
 
+  AttachTouchEditableToRenderView();
   return view;
 }
 
@@ -1294,6 +1313,7 @@ void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
     navigation_overlay_->StartObservingView(static_cast<
         RenderWidgetHostViewAura*>(host->GetView()));
   }
+  AttachTouchEditableToRenderView();
 }
 
 void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
@@ -1314,6 +1334,9 @@ void WebContentsViewAura::ShowContextMenu(
     ContextMenuSourceType type) {
   if (delegate_)
     delegate_->ShowContextMenu(params, type);
+  if (touch_editable_)
+    touch_editable_->EndTouchEditing();
+
 }
 
 void WebContentsViewAura::ShowPopupMenu(const gfx::Rect& bounds,
@@ -1338,6 +1361,9 @@ void WebContentsViewAura::StartDragging(
     web_contents_->SystemDragEnded();
     return;
   }
+
+  if (touch_editable_)
+    touch_editable_->EndTouchEditing();
 
   ui::OSExchangeData::Provider* provider = ui::OSExchangeData::CreateProvider();
   PrepareDragData(drop_data, provider);

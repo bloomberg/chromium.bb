@@ -1,0 +1,35 @@
+<html>
+<div id='textDiv'>Some text we can select</div>
+<input id='textfield' type="text" value="Text in a textfield">
+<script>
+
+function select_all_text() {
+  var div = document.getElementById("textDiv");
+  var range = document.createRange();
+  range.selectNodeContents(div);
+  var sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function get_selection() {
+  return (window.getSelection() + "");
+}
+
+function focus_textfield() {
+  document.getElementById("textfield").focus();
+}
+
+function get_cursor_position() {
+  var div = document.getElementById("textfield");
+  var start = div.selectionStart;
+  var end = div.selectionEnd;
+  if (start == end)
+    return start;
+  else
+    return -1;
+}
+
+</script>
+
+</html>

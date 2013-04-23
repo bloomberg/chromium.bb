@@ -28,6 +28,7 @@ class DropTargetEvent;
 namespace content {
 class OverscrollNavigationOverlay;
 class ShadowWindow;
+class TouchEditableImplAura;
 class WebContentsViewDelegate;
 class WebContentsImpl;
 class WebDragDestDelegate;
@@ -44,6 +45,8 @@ class CONTENT_EXPORT WebContentsViewAura
                       WebContentsViewDelegate* delegate);
 
   void SetupOverlayWindowForTesting();
+
+  void SetTouchEditableForTest(TouchEditableImplAura* touch_editable);
 
  private:
   class WindowObserver;
@@ -91,6 +94,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // Changes the brightness of the layer depending on the amount of horizontal
   // overscroll (|delta_x|, in pixels).
   void UpdateOverscrollWindowBrightness(float delta_x);
+
+  void AttachTouchEditableToRenderView();
 
   // Overridden from WebContentsView:
   virtual gfx::NativeView GetNativeView() const OVERRIDE;
@@ -223,6 +228,8 @@ class CONTENT_EXPORT WebContentsViewAura
   // This manages the overlay window that shows the screenshot during a history
   // navigation triggered by the overscroll gesture.
   scoped_ptr<OverscrollNavigationOverlay> navigation_overlay_;
+
+  scoped_ptr<TouchEditableImplAura> touch_editable_;
 
   DISALLOW_COPY_AND_ASSIGN(WebContentsViewAura);
 };

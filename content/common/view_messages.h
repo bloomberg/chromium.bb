@@ -912,6 +912,9 @@ IPC_MESSAGE_ROUTED2(ViewMsg_CustomContextMenuAction,
 IPC_MESSAGE_ROUTED1(ViewMsg_ContextMenuClosed,
                     content::CustomContextMenuContext /* custom_context */)
 
+// Sent to inform the renderer to invoke a context menu.
+IPC_MESSAGE_ROUTED0(ViewMsg_ShowContextMenu)
+
 // Tells the renderer to perform the specified navigation, interrupting any
 // existing navigation.
 IPC_MESSAGE_ROUTED1(ViewMsg_Navigate, ViewMsg_Navigate_Params)
