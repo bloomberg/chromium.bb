@@ -57,7 +57,7 @@ int64 ConvertToTimeBase(const AVRational& time_base,
   return av_rescale_q(timestamp.InMicroseconds(), kMicrosBase, time_base);
 }
 
-AudioCodec CodecIDToAudioCodec(CodecID codec_id) {
+AudioCodec CodecIDToAudioCodec(AVCodecID codec_id) {
   switch (codec_id) {
     case AV_CODEC_ID_AAC:
       return kCodecAAC;
@@ -94,8 +94,8 @@ AudioCodec CodecIDToAudioCodec(CodecID codec_id) {
   return kUnknownAudioCodec;
 }
 
-static CodecID AudioCodecToCodecID(AudioCodec audio_codec,
-                                   SampleFormat sample_format) {
+static AVCodecID AudioCodecToCodecID(AudioCodec audio_codec,
+                                     SampleFormat sample_format) {
   switch (audio_codec) {
     case kCodecAAC:
       return AV_CODEC_ID_AAC;
@@ -141,7 +141,7 @@ static CodecID AudioCodecToCodecID(AudioCodec audio_codec,
   return AV_CODEC_ID_NONE;
 }
 
-VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
+VideoCodec CodecIDToVideoCodec(AVCodecID codec_id) {
   switch (codec_id) {
     case AV_CODEC_ID_H264:
       return kCodecH264;
@@ -161,7 +161,7 @@ VideoCodec CodecIDToVideoCodec(CodecID codec_id) {
   return kUnknownVideoCodec;
 }
 
-static CodecID VideoCodecToCodecID(VideoCodec video_codec) {
+static AVCodecID VideoCodecToCodecID(VideoCodec video_codec) {
   switch (video_codec) {
     case kCodecH264:
       return AV_CODEC_ID_H264;
