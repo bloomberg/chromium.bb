@@ -14,6 +14,15 @@
 
 using content::BrowserThread;
 
+namespace {
+
+bool CompareLocation(const SpellCheckResult& r1,
+                     const SpellCheckResult& r2) {
+  return r1.location < r2.location;
+}
+
+}  // namespace
+
 class SpellingRequest {
  public:
   SpellingRequest(SpellingServiceClient* client,
@@ -118,9 +127,14 @@ void SpellingRequest::OnCheckCompleted() {
   if (local_pending_ || remote_pending_)
     return;
 
-  const std::vector<SpellCheckResult>* check_results = &remote_results_;
-  if (!remote_success_)
-    check_results = &local_results_;
+  const std::vector<SpellCheckResult>* check_results = &local_results_;
+  if (remote_success_) {
+    std::sort(remote_results_.begin(), remote_results_.end(), CompareLocation);
+    std::sort(local_results_.begin(), local_results_.end(), CompareLocation);
+    SpellCheckMessageFilterMac::CombineResults(&remote_results_,
+                                               local_results_);
+    check_results = &remote_results_;
+  }
 
   destination_->Send(
       new SpellCheckMsg_RespondTextCheck(
@@ -184,6 +198,33 @@ bool SpellCheckMessageFilterMac::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
+}
+
+// static
+void SpellCheckMessageFilterMac::CombineResults(
+    std::vector<SpellCheckResult>* remote_results,
+    const std::vector<SpellCheckResult>& local_results) {
+  std::vector<SpellCheckResult>::const_iterator local_iter(
+      local_results.begin());
+  std::vector<SpellCheckResult>::iterator remote_iter;
+
+  for (remote_iter = remote_results->begin();
+       remote_iter != remote_results->end();
+       ++remote_iter) {
+    // Discard all local results occurring before remote result.
+    while (local_iter != local_results.end() &&
+           local_iter->location < remote_iter->location) {
+      local_iter++;
+    }
+
+    // Unless local and remote result coincide, result is GRAMMAR.
+    remote_iter->type = SpellCheckResult::GRAMMAR;
+    if (local_iter != local_results.end() &&
+        local_iter->location == remote_iter->location &&
+        local_iter->length == remote_iter->length) {
+      remote_iter->type = SpellCheckResult::SPELLING;
+    }
+  }
 }
 
 SpellCheckMessageFilterMac::~SpellCheckMessageFilterMac() {}

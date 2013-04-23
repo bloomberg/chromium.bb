@@ -1081,6 +1081,7 @@
         'browser/speech/tts_controller_unittest.cc',
         'browser/spellchecker/spellcheck_custom_dictionary_unittest.cc',
         'browser/spellchecker/spellcheck_host_metrics_unittest.cc',
+        'browser/spellchecker/spellcheck_message_filter_mac_unittest.cc',
         'browser/spellchecker/spellcheck_platform_mac_unittest.cc',
         'browser/spellchecker/spellcheck_service_unittest.cc',
         'browser/spellchecker/spelling_service_client_unittest.cc',

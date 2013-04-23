@@ -7,7 +7,8 @@
 
 #include <map>
 
-#include "chrome/browser/spellchecker/spelling_service_client.h"
+#include "chrome/browser/spellchecker/spellcheck_message_filter.h"
+#include "chrome/common/spellcheck_result.h"
 #include "content/public/browser/browser_message_filter.h"
 
 // A message filter implementation that receives
@@ -23,8 +24,16 @@ class SpellCheckMessageFilterMac : public content::BrowserMessageFilter {
   virtual bool OnMessageReceived(const IPC::Message& message,
                                  bool* message_was_ok) OVERRIDE;
 
+  // Adjusts remote_results by examining local_results. Any result that's both
+  // local and remote stays type SPELLING, all others are flagged GRAMMAR.
+  // (This is needed to force gray underline for remote-only results.)
+  static void CombineResults(
+      std::vector<SpellCheckResult>* remote_results,
+      const std::vector<SpellCheckResult>& local_results);
+
  private:
   friend class TestingSpellCheckMessageFilter;
+  friend class SpellcheckMessageFilterMacTest;
 
   virtual ~SpellCheckMessageFilterMac();
 
