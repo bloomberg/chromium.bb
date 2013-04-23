@@ -98,7 +98,6 @@
 #include "PopupContainer.h"
 #include "PopupMenuClient.h"
 #include "PrerendererClientImpl.h"
-#include "ProgressTracker.h"
 #include "RenderLayerCompositor.h"
 #include "RenderView.h"
 #include "RenderWidget.h"
@@ -143,6 +142,7 @@
 #include "WebTextInputInfo.h"
 #include "WebViewClient.h"
 #include "WheelEvent.h"
+#include "core/loader/UniqueIdentifier.h"
 #include "painting/ContinuousPainter.h"
 #include "painting/GraphicsContextBuilder.h"
 #include "src/WebActiveGestureAnimation.h"
@@ -3400,9 +3400,7 @@ void WebViewImpl::configureAutoResizeMode()
 
 unsigned long WebViewImpl::createUniqueIdentifierForRequest()
 {
-    if (m_page)
-        return m_page->progress()->createUniqueIdentifier();
-    return 0;
+    return createUniqueIdentifier();
 }
 
 void WebViewImpl::inspectElementAt(const WebPoint& point)

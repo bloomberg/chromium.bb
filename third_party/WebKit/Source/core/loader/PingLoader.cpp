@@ -39,12 +39,12 @@
 #include "FrameLoaderClient.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
-#include "ProgressTracker.h"
 #include "ResourceHandle.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
+#include "core/loader/UniqueIdentifier.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
@@ -124,7 +124,7 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
 PingLoader::PingLoader(Frame* frame, ResourceRequest& request)
     : m_timeout(this, &PingLoader::timeout)
 {
-    unsigned long identifier = frame->page()->progress()->createUniqueIdentifier();
+    unsigned long identifier = createUniqueIdentifier();
     m_handle = ResourceHandle::create(frame->loader()->networkingContext(), request, this, false, false, AllowStoredCredentials);
 
     InspectorInstrumentation::continueAfterPingLoader(frame, identifier, frame->loader()->activeDocumentLoader(), request, ResourceResponse());

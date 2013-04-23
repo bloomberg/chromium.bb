@@ -52,13 +52,13 @@
 #include "MHTMLArchive.h"
 #include "MemoryCache.h"
 #include "Page.h"
-#include "ProgressTracker.h"
 #include "ResourceLoader.h"
 #include "SchemeRegistry.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/UniqueIdentifier.h"
 #include <wtf/Assertions.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
@@ -1103,7 +1103,7 @@ void DocumentLoader::startLoadingMainResource()
     m_applicationCacheHost->maybeLoadMainResource(m_request, m_substituteData);
 
     if (m_substituteData.isValid()) {
-        m_identifierForLoadWithoutResourceLoader = m_frame->page()->progress()->createUniqueIdentifier();
+        m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();
         frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifierForLoadWithoutResourceLoader, this, m_request);
         frameLoader()->notifier()->dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, m_request, ResourceResponse());
         handleSubstituteDataLoadSoon();
@@ -1126,7 +1126,7 @@ void DocumentLoader::startLoadingMainResource()
     }
 
     if (!mainResourceLoader()) {
-        m_identifierForLoadWithoutResourceLoader = m_frame->page()->progress()->createUniqueIdentifier();
+        m_identifierForLoadWithoutResourceLoader = createUniqueIdentifier();
         frameLoader()->notifier()->assignIdentifierToInitialRequest(m_identifierForLoadWithoutResourceLoader, this, request);
         frameLoader()->notifier()->dispatchWillSendRequest(this, m_identifierForLoadWithoutResourceLoader, request, ResourceResponse());
     }

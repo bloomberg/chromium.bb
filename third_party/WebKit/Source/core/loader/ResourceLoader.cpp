@@ -40,10 +40,10 @@
 #include "Logging.h"
 #include "MemoryCache.h"
 #include "Page.h"
-#include "ProgressTracker.h"
 #include "ResourceError.h"
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
+#include "core/loader/UniqueIdentifier.h"
 
 namespace WebCore {
 
@@ -340,7 +340,7 @@ void ResourceLoader::willSendRequest(ResourceHandle*, ResourceRequest& request, 
     // We need a resource identifier for all requests, even if FrameLoader is never going to see it (such as with CORS preflight requests).
     bool createdResourceIdentifier = false;
     if (!m_identifier) {
-        m_identifier = m_frame->page()->progress()->createUniqueIdentifier();
+        m_identifier = createUniqueIdentifier();
         createdResourceIdentifier = true;
     }
 

@@ -62,8 +62,6 @@ public:
     long long estimatedLength;
 };
 
-unsigned long ProgressTracker::s_uniqueIdentifier = 0;
-
 ProgressTracker::ProgressTracker()
     : m_totalPageAndResourceBytesToLoad(0)
     , m_totalBytesReceived(0)
@@ -241,11 +239,5 @@ void ProgressTracker::completeProgress(unsigned long identifier)
 
     m_progressItems.remove(identifier);
 }
-
-unsigned long ProgressTracker::createUniqueIdentifier()
-{
-    return ++s_uniqueIdentifier;
-}
-
 
 }

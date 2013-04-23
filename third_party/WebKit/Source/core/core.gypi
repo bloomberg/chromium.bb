@@ -1049,6 +1049,8 @@
             'loader/ThreadableLoader.cpp',
             'loader/ThreadableLoaderClient.h',
             'loader/ThreadableLoaderClientWrapper.h',
+            'loader/UniqueIdentifier.cpp',
+            'loader/UniqueIdentifier.h',
             'loader/WorkerThreadableLoader.cpp',
             'loader/WorkerThreadableLoader.h',
             'loader/appcache/ApplicationCacheHost.h',

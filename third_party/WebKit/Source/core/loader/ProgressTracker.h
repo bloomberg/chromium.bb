@@ -64,8 +64,6 @@ private:
     void reset();
     void finalProgressComplete();
     
-    static unsigned long s_uniqueIdentifier;
-    
     long long m_totalPageAndResourceBytesToLoad;
     long long m_totalBytesReceived;
     double m_lastNotifiedProgressValue;

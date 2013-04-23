@@ -51,7 +51,6 @@
 #include "MemoryCache.h"
 #include "NetworkResourcesData.h"
 #include "Page.h"
-#include "ProgressTracker.h"
 #include "ResourceError.h"
 #include "ResourceLoader.h"
 #include "ResourceRequest.h"
@@ -63,7 +62,7 @@
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
 #include "XMLHttpRequest.h"
-
+#include "core/loader/UniqueIdentifier.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HexNumber.h>
 #include <wtf/ListHashSet.h>
@@ -328,7 +327,7 @@ void InspectorResourceAgent::didLoadResourceFromMemoryCache(DocumentLoader* load
 {
     String loaderId = m_pageAgent->loaderId(loader);
     String frameId = m_pageAgent->frameId(loader->frame());
-    unsigned long identifier = loader->frame()->page()->progress()->createUniqueIdentifier();
+    unsigned long identifier = createUniqueIdentifier();
     String requestId = IdentifiersFactory::requestId(identifier);
     m_resourcesData->resourceCreated(requestId, loaderId);
     m_resourcesData->addCachedResource(requestId, resource);

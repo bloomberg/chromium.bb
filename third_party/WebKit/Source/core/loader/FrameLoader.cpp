@@ -103,6 +103,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "WindowFeatures.h"
 #include "XMLDocumentParser.h"
+#include "core/loader/UniqueIdentifier.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>
@@ -2715,7 +2716,7 @@ void FrameLoader::requestFromDelegate(ResourceRequest& request, unsigned long& i
 
     identifier = 0;
     if (Page* page = m_frame->page()) {
-        identifier = page->progress()->createUniqueIdentifier();
+        identifier = createUniqueIdentifier();
         notifier()->assignIdentifierToInitialRequest(identifier, m_documentLoader.get(), request);
     }
 

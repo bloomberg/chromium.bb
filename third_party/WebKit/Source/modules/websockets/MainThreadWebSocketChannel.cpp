@@ -44,7 +44,6 @@
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
 #include "Page.h"
-#include "ProgressTracker.h"
 #include "ScriptCallStack.h"
 #include "ScriptExecutionContext.h"
 #include "Settings.h"
@@ -53,6 +52,7 @@
 #include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WebSocketHandshake.h"
+#include "core/loader/UniqueIdentifier.h"
 
 #include <wtf/ArrayBuffer.h>
 #include <wtf/Deque.h>
@@ -89,7 +89,7 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_blobLoaderStatus(BlobLoaderNotStarted)
 {
     if (Page* page = m_document->page())
-        m_identifier = page->progress()->createUniqueIdentifier();
+        m_identifier = createUniqueIdentifier();
 }
 
 MainThreadWebSocketChannel::~MainThreadWebSocketChannel()
