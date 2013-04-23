@@ -545,7 +545,6 @@ bool Program::Link(ShaderManager* manager,
     set_log_info("glBindAttribLocation() conflicts");
     return false;
   }
-  ExecuteBindAttribLocationCalls();
 
   TimeTicks before_time = TimeTicks::HighResNow();
   bool link = true;
@@ -589,6 +588,7 @@ bool Program::Link(ShaderManager* manager,
   }
 
   if (link) {
+    ExecuteBindAttribLocationCalls();
     before_time = TimeTicks::HighResNow();
     if (cache && gfx::g_driver_gl.ext.b_GL_ARB_get_program_binary) {
       glProgramParameteri(service_id(),
