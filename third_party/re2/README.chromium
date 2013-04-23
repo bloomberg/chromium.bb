@@ -21,3 +21,5 @@ Local Modifications (to be applied in this order):
 - Rename POSIX configuration (patches/rename-posix-option.patch)
 - Support libcxx (patches/re2-libcxx.patch)
   https://code.google.com/p/re2/issues/detail?id=76
+- Memory optimization for filtered trees
+  (patches/re2-memory-optimization.patch)
