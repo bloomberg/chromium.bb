@@ -65,8 +65,7 @@ String DragData::asURL(Frame*, FilenameConversionPolicy filenamePolicy, String* 
     if (m_platformDragData->types().contains(mimeTypeTextURIList))
         m_platformDragData->urlAndTitle(url, title);
     else if (filenamePolicy == ConvertFilenames && containsFiles()) {
-        String path = String(WebKit::Platform::current()->fileUtilities()->getAbsolutePath(m_platformDragData->filenames()[0]));
-        url = KURL(WebKit::Platform::current()->fileUtilities()->filePathToURL(path));
+        url = KURL(WebKit::Platform::current()->fileUtilities()->filePathToURL(m_platformDragData->filenames()[0]));
     }
     return url;
 }
