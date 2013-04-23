@@ -40,7 +40,7 @@
     # Allow overriding the selection of which FFmpeg binaries to copy via an
     # environment variable.  Affects the ffmpeg_binaries target.
     'conditions': [
-      ['armv7 == 1 and arm_neon == 1', {
+      ['target_arch == "arm" and armv7 == 1 and arm_neon == 1', {
         # Need a separate config for arm+neon vs arm
         'ffmpeg_config%': 'arm-neon',
       }, {
