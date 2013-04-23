@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_STACK_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_PANELS_PANEL_STACK_VIEW_H_
 
+#include <list>
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/ui/panels/native_panel_stack_window.h"
@@ -22,20 +23,23 @@ class PanelStackView : public NativePanelStackWindow,
                        public views::WidgetDelegateView,
                        public views::WidgetFocusChangeListener {
  public:
-  explicit PanelStackView(
-      scoped_ptr<StackedPanelCollection> stacked_collection);
+  PanelStackView();
   virtual ~PanelStackView();
 
  protected:
   // Overridden from NativePanelStackWindow:
   virtual void Close() OVERRIDE;
-  virtual void OnPanelAddedOrRemoved(Panel* panel) OVERRIDE;
+  virtual void AddPanel(Panel* panel) OVERRIDE;
+  virtual void RemovePanel(Panel* panel) OVERRIDE;
+  virtual bool IsEmpty() const OVERRIDE;
   virtual void SetBounds(const gfx::Rect& bounds) OVERRIDE;
   virtual void Minimize() OVERRIDE;
   virtual bool IsMinimized() const OVERRIDE;
   virtual void DrawSystemAttention(bool draw_attention) OVERRIDE;
 
  private:
+  typedef std::list<Panel*> Panels;
+
   // Overridden from views::WidgetDelegate:
   virtual string16 GetWindowTitle() const OVERRIDE;
   virtual gfx::ImageSkia GetWindowAppIcon() OVERRIDE;
@@ -53,26 +57,25 @@ class PanelStackView : public NativePanelStackWindow,
   virtual void OnNativeFocusChange(gfx::NativeView focused_before,
                                    gfx::NativeView focused_now) OVERRIDE;
 
-  void EnsureInitialized();
-
   // Updates the owner of the underlying window such that multiple panels
   // stacked together could appear as a single window on the taskbar or
   // launcher.
   void UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel);
 
+  void EnsureWindowCreated();
+
   // Capture the thumbnail of the whole stack and provide it to live preview
   // (available since Windows 7).
   void CaptureThumbnailForLivePreview();
-
-  scoped_ptr<StackedPanelCollection> stacked_collection_;
-
-  bool delay_initialized_;
 
   // Is the taskbar icon of the underlying window being flashed in order to
   // draw the user's attention?
   bool is_drawing_attention_;
 
   views::Widget* window_;
+
+  // Tracks all panels that are enclosed by this window.
+  Panels panels_;
 
 #if defined(OS_WIN)
   // Used to provide custom taskbar thumbnail for Windows 7 and later.

@@ -24,68 +24,33 @@
 #endif
 
 // static
-NativePanelStackWindow* NativePanelStackWindow::Create(
-    scoped_ptr<StackedPanelCollection> stacked_collection) {
+NativePanelStackWindow* NativePanelStackWindow::Create() {
 #if defined(OS_WIN)
-  return new PanelStackView(stacked_collection.Pass());
+  return new PanelStackView();
 #else
   NOTIMPLEMENTED();
   return NULL;
 #endif
 }
 
-PanelStackView::PanelStackView(
-    scoped_ptr<StackedPanelCollection> stacked_collection)
-    : stacked_collection_(stacked_collection.Pass()),
-      delay_initialized_(false),
-      is_drawing_attention_(false),
+PanelStackView::PanelStackView()
+    : is_drawing_attention_(false),
       window_(NULL) {
-  window_ = new views::Widget;
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
-  params.delegate = this;
-  params.remove_standard_frame = true;
-  params.transparent = true;
-  // Empty size is not allowed so a temporary small size is passed. SetBounds
-  // will be called later to update the bounds.
-  params.bounds = gfx::Rect(0, 0, 1, 1);
-  window_->Init(params);
-  window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-  window_->set_focus_on_creation(false);
-  window_->SetOpacity(0x00);
-  window_->AddObserver(this);
-  window_->ShowInactive();
 }
 
 PanelStackView::~PanelStackView() {
 }
 
-void PanelStackView::EnsureInitialized() {
-  // The stack view cannot be fully initialized until the first panel has been
-  // added to the stack because we need the information from that panel.
-  if (delay_initialized_)
-    return;
-  Panel* panel = stacked_collection_->top_panel();
-  if (!panel)
-    return;
-  delay_initialized_ = true;
-
-#if defined(OS_WIN)
-  ui::win::SetAppIdForWindow(
-      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
-                                                panel->profile()->GetPath()),
-      views::HWNDForWidget(window_));
-#endif
-
-  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
-}
-
 void PanelStackView::Close() {
-  window_->Close();
+  if (window_)
+    window_->Close();
   views::WidgetFocusManager::GetInstance()->RemoveFocusChangeListener(this);
 }
 
-void PanelStackView::OnPanelAddedOrRemoved(Panel* panel) {
-  EnsureInitialized();
+void PanelStackView::AddPanel(Panel* panel) {
+  panels_.push_back(panel);
+
+  EnsureWindowCreated();
 
   UpdateWindowOwnerForTaskbarIconAppearance(panel);
 
@@ -93,8 +58,19 @@ void PanelStackView::OnPanelAddedOrRemoved(Panel* panel) {
   window_->UpdateWindowIcon();
 }
 
+void PanelStackView::RemovePanel(Panel* panel) {
+  panels_.remove(panel);
+
+  UpdateWindowOwnerForTaskbarIconAppearance(panel);
+}
+
+bool PanelStackView::IsEmpty() const {
+  return panels_.empty();
+}
+
 void PanelStackView::SetBounds(const gfx::Rect& bounds) {
-  window_->SetBounds(bounds);
+  if (window_)
+    window_->SetBounds(bounds);
 }
 
 void PanelStackView::Minimize() {
@@ -107,7 +83,7 @@ void PanelStackView::Minimize() {
 }
 
 bool PanelStackView::IsMinimized() const {
-  return window_->IsMinimized();
+  return window_ ? window_->IsMinimized() : false;
 }
 
 void PanelStackView::DrawSystemAttention(bool draw_attention) {
@@ -121,22 +97,24 @@ void PanelStackView::DrawSystemAttention(bool draw_attention) {
 }
 
 string16 PanelStackView::GetWindowTitle() const {
-  Panel* panel = stacked_collection_->top_panel();
-  if (!panel)
+  if (panels_.empty())
     return string16();
 
+  Panel* panel = panels_.front();
   const extensions::Extension* extension = panel->GetExtension();
   return UTF8ToUTF16(extension && !extension->name().empty() ?
       extension->name() : panel->app_name());
 }
 
 gfx::ImageSkia PanelStackView::GetWindowAppIcon() {
-  Panel* panel = stacked_collection_->top_panel();
-  if (panel) {
-    gfx::Image app_icon = panel->app_icon();
-    if (!app_icon.IsEmpty())
-      return *app_icon.ToImageSkia();
-  }
+  if (panels_.empty())
+    return gfx::ImageSkia();
+
+  Panel* panel = panels_.front();
+  gfx::Image app_icon = panel->app_icon();
+  if (!app_icon.IsEmpty())
+    return *app_icon.ToImageSkia();
+
   return gfx::ImageSkia();
 }
 
@@ -175,8 +153,9 @@ void PanelStackView::OnNativeFocusChange(gfx::NativeView focused_before,
   // WM_SETFOCUS message. To deal with this, we listen to the focus change event
   // and activate the most recently active panel.
 #if defined(OS_WIN)
-  if (focused_now == window_->GetNativeView()) {
-    Panel* panel_to_focus = stacked_collection_->most_recently_active_panel();
+  if (!panels_.empty() && focused_now == window_->GetNativeView()) {
+    Panel* panel_to_focus =
+        panels_.front()->stack()->most_recently_active_panel();
     if (panel_to_focus)
       panel_to_focus->Activate();
   }
@@ -213,6 +192,37 @@ void PanelStackView::UpdateWindowOwnerForTaskbarIconAppearance(Panel* panel) {
 #endif
 }
 
+void PanelStackView::EnsureWindowCreated() {
+  if (window_)
+    return;
+
+  window_ = new views::Widget;
+  views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
+  params.delegate = this;
+  params.remove_standard_frame = true;
+  params.transparent = true;
+  // Empty size is not allowed so a temporary small size is passed. SetBounds
+  // will be called later to update the bounds.
+  params.bounds = gfx::Rect(0, 0, 1, 1);
+  window_->Init(params);
+  window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
+  window_->set_focus_on_creation(false);
+  window_->SetOpacity(0x00);
+  window_->AddObserver(this);
+  window_->ShowInactive();
+
+#if defined(OS_WIN)
+  DCHECK(!panels_.empty());
+  Panel* panel = panels_.front();
+  ui::win::SetAppIdForWindow(
+      ShellIntegration::GetAppModelIdForProfile(UTF8ToWide(panel->app_name()),
+                                                panel->profile()->GetPath()),
+      views::HWNDForWidget(window_));
+#endif
+
+  views::WidgetFocusManager::GetInstance()->AddFocusChangeListener(this);
+}
+
 void PanelStackView::CaptureThumbnailForLivePreview() {
 #if defined(OS_WIN)
   // Live preview is only available since Windows 7.
@@ -228,9 +238,8 @@ void PanelStackView::CaptureThumbnailForLivePreview() {
   }
 
   std::vector<HWND> native_panel_windows;
-  for (StackedPanelCollection::Panels::const_iterator iter =
-            stacked_collection_->panels().begin();
-        iter != stacked_collection_->panels().end(); ++iter) {
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
     native_panel_windows.push_back(
         views::HWNDForWidget(

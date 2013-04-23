@@ -19,7 +19,6 @@ StackedPanelCollection::StackedPanelCollection(PanelManager* panel_manager)
       panel_manager_(panel_manager),
       native_stack_(NULL),
       minimizing_all_(false) {
-  native_stack_ = NativePanelStackWindow::Create(make_scoped_ptr(this).Pass());
 }
 
 StackedPanelCollection::~StackedPanelCollection() {
@@ -72,7 +71,7 @@ void StackedPanelCollection::OnDisplayChanged() {
 }
 
 void StackedPanelCollection::RefreshLayout() {
-  if (panels_.empty())
+  if (panels_.size() <= 1)
     return;
 
   Panels::const_iterator iter = panels_.begin();
@@ -170,7 +169,9 @@ void StackedPanelCollection::AddPanel(Panel* panel,
   if ((positioning_mask & NO_LAYOUT_REFRESH) == 0)
     RefreshLayout();
 
-  native_stack_->OnPanelAddedOrRemoved(panel);
+  if (!native_stack_)
+    native_stack_ = NativePanelStackWindow::Create();
+  native_stack_->AddPanel(panel);
 }
 
 void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
@@ -222,7 +223,7 @@ void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
 
   RefreshLayout();
 
-  native_stack_->OnPanelAddedOrRemoved(panel);
+  native_stack_->RemovePanel(panel);
 }
 
 void StackedPanelCollection::CloseAll() {
@@ -233,7 +234,10 @@ void StackedPanelCollection::CloseAll() {
        iter != panels_copy.end(); ++iter)
     (*iter)->Close();
 
-  native_stack_->Close();
+  if (native_stack_) {
+    native_stack_->Close();
+    native_stack_ = NULL;
+  }
 }
 
 void StackedPanelCollection::OnPanelAttentionStateChanged(Panel* panel) {

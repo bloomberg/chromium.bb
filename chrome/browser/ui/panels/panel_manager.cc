@@ -429,6 +429,7 @@ void PanelManager::RemoveStack(StackedPanelCollection* stack) {
   DCHECK_EQ(0, stack->num_panels());
   stacks_.remove(stack);
   stack->CloseAll();
+  delete stack;
 }
 
 void PanelManager::StartDragging(Panel* panel,

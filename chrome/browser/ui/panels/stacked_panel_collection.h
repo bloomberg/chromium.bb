@@ -131,7 +131,10 @@ class StackedPanelCollection : public PanelCollection {
 
   PanelManager* panel_manager_;
 
-  NativePanelStackWindow* native_stack_;  // Weak, owns us.
+  // Weak pointer, self owned. Once it is created, it will only be destructed
+  // by calling Close when it is not longed needed as in RemovePanel and
+  // CloseAll.
+  NativePanelStackWindow* native_stack_;
 
   Panels panels_;  // The top panel is in the front of the list.
 

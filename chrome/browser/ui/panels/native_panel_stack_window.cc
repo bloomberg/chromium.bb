@@ -8,8 +8,7 @@
 
 // static
 #if !defined(TOOLKIT_VIEWS)
-NativePanelStackWindow* NativePanelStackWindow::Create(
-    scoped_ptr<StackedPanelCollection> stack) {
+NativePanelStackWindow* NativePanelStackWindow::Create() {
   NOTIMPLEMENTED();
   return NULL;
 }

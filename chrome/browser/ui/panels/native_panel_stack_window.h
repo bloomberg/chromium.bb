@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 
 class Panel;
-class StackedPanelCollection;
 namespace gfx {
 class Rect;
 }
@@ -19,12 +18,9 @@ class Rect;
 // of the class that implements this interface is managed by itself.
 class NativePanelStackWindow {
  public:
-  // Creates and returns a NativePanelStackWindow instance whose lifetime is
-  // managed by itself and it will be valid until Close is called.
-  // NativePanelStackWindow also owns the StackedPanelCollection instance being
-  // passed here.
-  static NativePanelStackWindow* Create(
-      scoped_ptr<StackedPanelCollection> stack);
+  // Creates and returns a NativePanelStackWindow instance. Calling Close() will
+  // destruct the instance.
+  static NativePanelStackWindow* Create();
 
   virtual ~NativePanelStackWindow() {}
 
@@ -33,13 +29,22 @@ class NativePanelStackWindow {
  protected:
   friend class StackedPanelCollection;
 
-  // Called when the stack is to be closed. This will destruct the
-  // NativePanelStackWindow instance which causes the StackedPanelCollection
-  // instance to be also destructed since the former owns the later.
+  // Called when the stack is to be closed. This will cause this instance to be
+  // self destructed after the native window closes.
   virtual void Close() = 0;
 
-  // Called when |panel| is being added to or removed from the stack.
-  virtual void OnPanelAddedOrRemoved(Panel* panel) = 0;
+  // Makes |panel| be enclosed by this stack window.
+
+  // Adds |panel| to the set of panels grouped and shown inside this stack
+  // Window. It does not take ownership of |panel|.
+  virtual void AddPanel(Panel* panel) = 0;
+
+  // Removes |panel| from the set of panels grouped and shown inside this stack
+  // window.
+  virtual void RemovePanel(Panel* panel) = 0;
+
+  // Returns true if no panel is being shown inside this stack window.
+  virtual bool IsEmpty() const = 0;
 
   // Sets the bounds that is big enough to enclose all panels in the stack.
   virtual void SetBounds(const gfx::Rect& bounds) = 0;
