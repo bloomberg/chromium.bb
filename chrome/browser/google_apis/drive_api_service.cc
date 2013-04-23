@@ -358,7 +358,7 @@ void DriveAPIService::SearchByTitle(
   DCHECK(!callback.is_null());
 
   std::string query;
-  base::StringAppendF(&query, "title contains '%s'",
+  base::StringAppendF(&query, "title = '%s'",
                       drive::util::EscapeQueryStringValue(title).c_str());
   if (!directory_resource_id.empty()) {
     base::StringAppendF(

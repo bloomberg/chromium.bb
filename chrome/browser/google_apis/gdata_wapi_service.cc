@@ -232,15 +232,11 @@ void GDataWapiService::SearchByTitle(
   DCHECK(!callback.is_null());
 
   runner_->StartOperationWithRetry(
-      new GetResourceListOperation(
+      new SearchByTitleOperation(
           operation_registry(),
           url_request_context_getter_,
           url_generator_,
-          GURL(),  // No override url
-          0,  // start changestamp
-          base::StringPrintf(
-              "title:'%s'",
-              drive::util::EscapeQueryStringValue(title).c_str()),
+          title,
           directory_resource_id,
           callback));
 }
