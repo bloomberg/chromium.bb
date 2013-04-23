@@ -311,6 +311,8 @@
         'cryptohome/mock_async_method_caller.h',
         'dbus/fake_session_manager_client.cc',
         'dbus/fake_session_manager_client.h',
+        'dbus/fake_update_engine_client.cc',
+        'dbus/fake_update_engine_client.h',
         'dbus/mock_bluetooth_adapter_client.cc',
         'dbus/mock_bluetooth_adapter_client.h',
         'dbus/mock_bluetooth_device_client.cc',
