@@ -411,6 +411,32 @@ TEST_F(GDataWapiOperationsTest, GetResourceListOperation_InvalidFeed) {
   EXPECT_FALSE(result_data);
 }
 
+TEST_F(GDataWapiOperationsTest, SearchByTitleOperation) {
+  GDataErrorCode result_code = GDATA_OTHER_ERROR;
+  scoped_ptr<ResourceList> result_data;
+
+  SearchByTitleOperation* operation = new SearchByTitleOperation(
+      &operation_registry_,
+      request_context_getter_.get(),
+      *url_generator_,
+      "search-title",
+      std::string(),  // directory resource id
+      CreateComposedCallback(
+          base::Bind(&test_util::RunAndQuit),
+          test_util::CreateCopyResultCallback(&result_code, &result_data)));
+  operation->Start(kTestGDataAuthToken, kTestUserAgent,
+                   base::Bind(&test_util::DoNothingForReAuthenticateCallback));
+  MessageLoop::current()->Run();
+
+  EXPECT_EQ(HTTP_SUCCESS, result_code);
+  EXPECT_EQ(test_server::METHOD_GET, http_request_.method);
+  EXPECT_EQ("/feeds/default/private/full?v=3&alt=json&showroot=true&"
+            "showfolders=true&include-shared=true&max-results=500"
+            "&title=search-title&title-exact=true",
+            http_request_.relative_url);
+  EXPECT_TRUE(result_data);
+}
+
 TEST_F(GDataWapiOperationsTest, GetResourceEntryOperation_ValidResourceId) {
   GDataErrorCode result_code = GDATA_OTHER_ERROR;
   scoped_ptr<base::Value> result_data;

@@ -71,6 +71,40 @@ class GetResourceListOperation : public GetDataOperation {
   DISALLOW_COPY_AND_ASSIGN(GetResourceListOperation);
 };
 
+//============================ SearchByTitleOperation ==========================
+
+// This class performs the operation for searching resources by title.
+class SearchByTitleOperation : public GetDataOperation {
+ public:
+  // title: the search query.
+  //
+  // directory_resource_id: If given (non-empty), the search target is
+  //   directly under the directory with the |directory_resource_id|.
+  //   If empty, the search target is all the existing resources.
+  //
+  // callback:
+  //   Called once the feed is fetched. Must not be null.
+  SearchByTitleOperation(
+      OperationRegistry* registry,
+      net::URLRequestContextGetter* url_request_context_getter,
+      const GDataWapiUrlGenerator& url_generator,
+      const std::string& title,
+      const std::string& directory_resource_id,
+      const GetResourceListCallback& callback);
+  virtual ~SearchByTitleOperation();
+
+ protected:
+  // UrlFetchOperationBase overrides.
+  virtual GURL GetURL() const OVERRIDE;
+
+ private:
+  const GDataWapiUrlGenerator url_generator_;
+  const std::string title_;
+  const std::string directory_resource_id_;
+
+  DISALLOW_COPY_AND_ASSIGN(SearchByTitleOperation);
+};
+
 //========================= GetResourceEntryOperation ==========================
 
 // This class performs the operation for fetching a single resource entry.

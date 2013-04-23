@@ -186,6 +186,30 @@ GURL GetResourceListOperation::GetURL() const {
                                                 directory_resource_id_);
 }
 
+//============================ SearchByTitleOperation ==========================
+
+SearchByTitleOperation::SearchByTitleOperation(
+    OperationRegistry* registry,
+    net::URLRequestContextGetter* url_request_context_getter,
+    const GDataWapiUrlGenerator& url_generator,
+    const std::string& title,
+    const std::string& directory_resource_id,
+    const GetResourceListCallback& callback)
+    : GetDataOperation(registry, url_request_context_getter,
+                       base::Bind(&ParseResourceListAndRun, callback)),
+      url_generator_(url_generator),
+      title_(title),
+      directory_resource_id_(directory_resource_id) {
+  DCHECK(!callback.is_null());
+}
+
+SearchByTitleOperation::~SearchByTitleOperation() {}
+
+GURL SearchByTitleOperation::GetURL() const {
+  return url_generator_.GenerateSearchByTitleUrl(
+      title_, directory_resource_id_);
+}
+
 //============================ GetResourceEntryOperation =======================
 
 GetResourceEntryOperation::GetResourceEntryOperation(
