@@ -204,4 +204,4 @@ class BluetoothDeviceExperimentalChromeOS
 
 }  // namespace chromeos
 
-#endif /* DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_EXPERIMENTAL_CHROMEOS_H */
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_EXPERIMENTAL_CHROMEOS_H

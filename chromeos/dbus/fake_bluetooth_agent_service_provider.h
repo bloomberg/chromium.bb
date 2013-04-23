@@ -66,4 +66,4 @@ class CHROMEOS_EXPORT FakeBluetoothAgentServiceProvider
 
 }  // namespace chromeos
 
-#endif /* CHROMEOS_DBUS_FAKE_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_ */
+#endif  // CHROMEOS_DBUS_FAKE_BLUETOOTH_AGENT_SERVICE_PROVIDER_H_

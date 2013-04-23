@@ -188,4 +188,4 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
 
 }  // namespace chromeos
 
-#endif /* CHROMEOS_DBUS_FAKE_BLUETOOTH_DEVICE_CLIENT_H_ */
+#endif  // CHROMEOS_DBUS_FAKE_BLUETOOTH_DEVICE_CLIENT_H_

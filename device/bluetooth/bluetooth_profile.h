@@ -101,4 +101,4 @@ class BluetoothProfile {
 
 }  // namespace device
 
-#endif /* DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_H_ */
+#endif  // DEVICE_BLUETOOTH_BLUETOOTH_PROFILE_H_
