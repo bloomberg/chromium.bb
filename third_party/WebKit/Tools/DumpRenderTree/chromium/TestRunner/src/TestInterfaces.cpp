@@ -72,6 +72,7 @@ TestInterfaces::TestInterfaces()
     WebRuntimeFeatures::enableMediaStream(true);
     WebRuntimeFeatures::enablePeerConnection(true);
     WebRuntimeFeatures::enableWebAudio(true);
+    WebRuntimeFeatures::enableWebMIDI(true);
     WebRuntimeFeatures::enableVideoTrack(true);
     WebRuntimeFeatures::enableGamepad(true);
     WebRuntimeFeatures::enableShadowDOM(true);

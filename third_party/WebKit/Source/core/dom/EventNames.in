@@ -57,3 +57,4 @@ TrackEvent
 AutocompleteErrorEvent
 CSSFontFaceLoadEvent
 SecurityPolicyViolationEvent
+MIDIMessageEvent

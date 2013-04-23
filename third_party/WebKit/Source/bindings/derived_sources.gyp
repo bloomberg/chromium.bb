@@ -179,6 +179,7 @@
             '--include', '../modules/notifications',
             '--include', '../modules/webaudio',
             '--include', '../modules/webdatabase',
+            '--include', '../modules/webmidi',
             '--include', '../core/css',
             '--include', '../core/dom',
             '--include', '../core/fileapi',
