@@ -12,7 +12,6 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/ash_switches.h"
 #include "ash/caps_lock_delegate.h"
-#include "ash/debug.h"
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/desktop_background/user_wallpaper_delegate.h"
 #include "ash/display/display_controller.h"
@@ -374,10 +373,6 @@ void AcceleratorController::Init() {
     actions_allowed_in_app_mode_.insert(kActionsAllowedInAppMode[i]);
 
   RegisterAccelerators(kAcceleratorData, kAcceleratorDataLength);
-
-#if !defined(NDEBUG)
-  RegisterAccelerators(kDesktopAcceleratorData, kDesktopAcceleratorDataLength);
-#endif
 
   if (DebugShortcutsEnabled())
     RegisterAccelerators(kDebugAcceleratorData, kDebugAcceleratorDataLength);
@@ -819,17 +814,8 @@ bool AcceleratorController::PerformAction(int action,
       return HandleToggleDesktopBackgroundMode();
     case TOGGLE_ROOT_WINDOW_FULL_SCREEN:
       return HandleToggleRootWindowFullScreen();
-    case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
+    case DISPLAY_TOGGLE_SCALE:
       internal::DisplayManager::ToggleDisplayScaleFactor();
-      return true;
-    case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
-      ash::debug::ToggleShowDebugBorders();
-      return true;
-    case DEBUG_TOGGLE_SHOW_FPS_COUNTER:
-      ash::debug::ToggleShowFpsCounter();
-      return true;
-    case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
-      ash::debug::ToggleShowPaintRects();
       return true;
     case MAGNIFY_SCREEN_ZOOM_IN:
       return HandleMagnifyScreen(1);
