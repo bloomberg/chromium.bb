@@ -180,7 +180,7 @@ void UpdateChecker::OnGpuInfoUpdate() {
 
   if (!gpu_data_manager->GpuAccessAllowed() ||
       gpu_data_manager->IsFeatureBlacklisted(content::GPU_FEATURE_TYPE_WEBGL) ||
-      gpu_data_manager->ShouldUseSoftwareRendering()) {
+      gpu_data_manager->ShouldUseSwiftShader()) {
     gpu_data_manager->RemoveObserver(this);
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
     base::FilePath path = GetSwiftShaderBaseDirectory();

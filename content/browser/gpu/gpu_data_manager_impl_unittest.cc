@@ -214,46 +214,46 @@ TEST_F(GpuDataManagerImplTest, DisableHardwareAcceleration) {
             manager->GetBlacklistedFeatureCount());
 }
 
-TEST_F(GpuDataManagerImplTest, SoftwareRendering) {
+TEST_F(GpuDataManagerImplTest, SwiftShaderRendering) {
   // Blacklist, then register SwiftShader.
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed());
-  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+  EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   manager->DisableHardwareAcceleration();
   EXPECT_FALSE(manager->GpuAccessAllowed());
-  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+  EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
-  // If software rendering is enabled, even if we blacklist GPU,
+  // If SwiftShader is enabled, even if we blacklist GPU,
   // GPU process is still allowed.
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
-  EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
+  EXPECT_TRUE(manager->ShouldUseSwiftShader());
   EXPECT_TRUE(manager->GpuAccessAllowed());
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(
       manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
 }
 
-TEST_F(GpuDataManagerImplTest, SoftwareRendering2) {
+TEST_F(GpuDataManagerImplTest, SwiftShaderRendering2) {
   // Register SwiftShader, then blacklist.
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed());
-  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+  EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
   EXPECT_EQ(0u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(manager->GpuAccessAllowed());
-  EXPECT_FALSE(manager->ShouldUseSoftwareRendering());
+  EXPECT_FALSE(manager->ShouldUseSwiftShader());
 
   manager->DisableHardwareAcceleration();
   EXPECT_TRUE(manager->GpuAccessAllowed());
-  EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
+  EXPECT_TRUE(manager->ShouldUseSwiftShader());
   EXPECT_EQ(1u, manager->GetBlacklistedFeatureCount());
   EXPECT_TRUE(
       manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS));
@@ -281,14 +281,14 @@ TEST_F(GpuDataManagerImplTest, GpuInfoUpdate) {
   EXPECT_TRUE(observer.gpu_info_updated());
 }
 
-TEST_F(GpuDataManagerImplTest, NoGpuInfoUpdateWithSoftwareRendering) {
+TEST_F(GpuDataManagerImplTest, NoGpuInfoUpdateWithSwiftShader) {
   ScopedGpuDataManagerImpl manager;
   ASSERT_TRUE(manager.get());
 
   manager->DisableHardwareAcceleration();
   const base::FilePath test_path(FILE_PATH_LITERAL("AnyPath"));
   manager->RegisterSwiftShaderPath(test_path);
-  EXPECT_TRUE(manager->ShouldUseSoftwareRendering());
+  EXPECT_TRUE(manager->ShouldUseSwiftShader());
   EXPECT_TRUE(manager->GpuAccessAllowed());
 
   {

@@ -325,13 +325,13 @@ bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
   if (!host)
     return false;
 
-  // The Gpu process is invalid if it's not using software, the card is
+  // The Gpu process is invalid if it's not using SwiftShader, the card is
   // blacklisted, and we can kill it and start over.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess) ||
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kInProcessGPU) ||
       (host->valid_ &&
-       (host->software_rendering() ||
-        !GpuDataManagerImpl::GetInstance()->ShouldUseSoftwareRendering()))) {
+       (host->swiftshader_rendering_ ||
+        !GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()))) {
     return true;
   }
 
@@ -423,7 +423,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     : host_id_(host_id),
       valid_(true),
       in_process_(false),
-      software_rendering_(false),
+      swiftshader_rendering_(false),
       kind_(kind),
       process_launched_(false),
       initialized_(false),
@@ -467,20 +467,19 @@ GpuProcessHost::~GpuProcessHost() {
   static int gpu_recent_crash_count = 0;
   static base::Time last_gpu_crash_time;
   static bool crashed_before = false;
-  static int gpu_software_crash_count = 0;
+  static int swiftshader_crash_count = 0;
 
   // Ending only acts as a failure if the GPU process was actually started and
   // was intended for actual rendering (and not just checking caps or other
   // options).
   if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
-    if (software_rendering_) {
-      UMA_HISTOGRAM_ENUMERATION("GPU.SoftwareRendererLifetimeEvents",
-                                DIED_FIRST_TIME + gpu_software_crash_count,
+    if (swiftshader_rendering_) {
+      UMA_HISTOGRAM_ENUMERATION("GPU.SwiftShaderLifetimeEvents",
+                                DIED_FIRST_TIME + swiftshader_crash_count,
                                 GPU_PROCESS_LIFETIME_EVENT_MAX);
 
-      if (++gpu_software_crash_count >= kGpuMaxCrashCount) {
-        // The software renderer is too unstable to use. Disable it for current
-        // session.
+      if (++swiftshader_crash_count >= kGpuMaxCrashCount) {
+        // SwiftShader is too unstable to use. Disable it for current session.
         gpu_enabled_ = false;
       }
     } else {
@@ -1055,10 +1054,6 @@ void GpuProcessHost::OnProcessCrashed(int exit_code) {
       process_->GetTerminationStatus(NULL));
 }
 
-bool GpuProcessHost::software_rendering() {
-  return software_rendering_;
-}
-
 GpuProcessHost::GpuProcessKind GpuProcessHost::kind() {
   return kind_;
 }
@@ -1084,7 +1079,7 @@ void GpuProcessHost::EndFrameSubscription(int surface_id) {
 
 bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   if (!(gpu_enabled_ &&
-      GpuDataManagerImpl::GetInstance()->ShouldUseSoftwareRendering()) &&
+      GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()) &&
       !hardware_gpu_enabled_) {
     SendOutstandingReplies();
     return false;
@@ -1156,11 +1151,12 @@ bool GpuProcessHost::LaunchGpuProcess(const std::string& channel_id) {
   GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line);
 
   if (cmd_line->HasSwitch(switches::kUseGL)) {
-    software_rendering_ =
+    swiftshader_rendering_ =
         (cmd_line->GetSwitchValueASCII(switches::kUseGL) == "swiftshader");
   }
 
-  UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessSoftwareRendering", software_rendering_);
+  UMA_HISTOGRAM_BOOLEAN("GPU.GPU.GPUProcessSoftwareRendering",
+                        swiftshader_rendering_);
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())

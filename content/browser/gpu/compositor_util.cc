@@ -24,8 +24,8 @@ bool CanDoAcceleratedCompositing() {
       manager->IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
     return false;
 
-  // Check for the software rasterizer (SwiftShader).
-  if (manager->ShouldUseSoftwareRendering())
+  // Check for SwiftShader.
+  if (manager->ShouldUseSwiftShader())
     return false;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();

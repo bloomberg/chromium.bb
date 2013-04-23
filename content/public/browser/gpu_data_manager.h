@@ -61,10 +61,10 @@ class GpuDataManager {
   // which can be retrieved via the GPU data manager's on-update function.
   virtual void RequestVideoMemoryUsageStatsUpdate() const = 0;
 
-  // Returns true if the software rendering should currently be used.
-  virtual bool ShouldUseSoftwareRendering() const = 0;
+  // Returns true if SwiftShader should be used.
+  virtual bool ShouldUseSwiftShader() const = 0;
 
-  // Register a path to the SwiftShader software renderer.
+  // Register a path to SwiftShader.
   virtual void RegisterSwiftShaderPath(const base::FilePath& path) = 0;
 
   // Registers/unregister |observer|.

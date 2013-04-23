@@ -368,8 +368,7 @@ base::Value* GetFeatureStatus() {
           else
             status += "_off";
         }
-      } else if (GpuDataManagerImpl::GetInstance()->
-            ShouldUseSoftwareRendering()) {
+      } else if (GpuDataManagerImpl::GetInstance()->ShouldUseSwiftShader()) {
         status = "unavailable_software";
       } else if (kGpuFeatureInfo[i].blocked ||
                  gpu_access_blocked) {

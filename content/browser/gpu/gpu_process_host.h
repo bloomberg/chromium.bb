@@ -118,9 +118,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
     // Tells the GPU process to delete image.
   void DeleteImage(int client_id, int image_id, int sync_point);
 
-  // Whether this GPU process is set up to use software rendering.
-  bool software_rendering();
-
   // What kind of GPU process, e.g. sandboxed or unsandboxed.
   GpuProcessKind kind();
 
@@ -213,7 +210,7 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // of a separate GPU process.
   bool in_process_;
 
-  bool software_rendering_;
+  bool swiftshader_rendering_;
   GpuProcessKind kind_;
 
   scoped_ptr<GpuMainThread> in_process_gpu_thread_;

@@ -121,7 +121,7 @@ void GpuDataManagerImpl::InitializeForTesting(
 }
 
 bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
-  if (software_rendering_) {
+  if (use_swiftshader_) {
     // Skia's software rendering is probably more efficient than going through
     // software emulation of the GPU, so use that.
     if (feature == GPU_FEATURE_TYPE_ACCELERATED_2D_CANVAS)
@@ -133,7 +133,7 @@ bool GpuDataManagerImpl::IsFeatureBlacklisted(int feature) const {
 }
 
 size_t GpuDataManagerImpl::GetBlacklistedFeatureCount() const {
-  if (software_rendering_)
+  if (use_swiftshader_)
     return 1;
   return blacklisted_features_.size();
 }
@@ -168,7 +168,7 @@ void GpuDataManagerImpl::GetGpuProcessHandles(
 }
 
 bool GpuDataManagerImpl::GpuAccessAllowed() const {
-  if (software_rendering_)
+  if (use_swiftshader_)
     return true;
 
   if (!gpu_info_.gpu_accessible)
@@ -225,13 +225,13 @@ void GpuDataManagerImpl::RequestVideoMemoryUsageStatsUpdate() const {
       new GpuMsg_GetVideoMemoryUsageStats());
 }
 
-bool GpuDataManagerImpl::ShouldUseSoftwareRendering() const {
-  return software_rendering_;
+bool GpuDataManagerImpl::ShouldUseSwiftShader() const {
+  return use_swiftshader_;
 }
 
 void GpuDataManagerImpl::RegisterSwiftShaderPath(const base::FilePath& path) {
   swiftshader_path_ = path;
-  EnableSoftwareRenderingIfNecessary();
+  EnableSwiftShaderIfNecessary();
 }
 
 void GpuDataManagerImpl::AddObserver(GpuDataManagerObserver* observer) {
@@ -348,8 +348,8 @@ void GpuDataManagerImpl::Initialize() {
 }
 
 void GpuDataManagerImpl::UpdateGpuInfo(const GPUInfo& gpu_info) {
-  // No further update of gpu_info if falling back to software renderer.
-  if (software_rendering_)
+  // No further update of gpu_info if falling back to SwiftShader.
+  if (use_swiftshader_)
     return;
 
   GPUInfo my_gpu_info;
@@ -419,7 +419,7 @@ void GpuDataManagerImpl::AppendRendererCommandLine(
   if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE) &&
       !command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode))
     command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-  if (ShouldUseSoftwareRendering())
+  if (ShouldUseSwiftShader())
     command_line->AppendSwitch(switches::kDisableFlashFullscreen3d);
 }
 
@@ -438,7 +438,7 @@ void GpuDataManagerImpl::AppendGpuCommandLine(
   if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_TEXTURE_SHARING))
     command_line->AppendSwitch(switches::kDisableImageTransportSurface);
 
-  if (software_rendering_) {
+  if (use_swiftshader_) {
     command_line->AppendSwitchASCII(switches::kUseGL, "swiftshader");
     if (swiftshader_path.empty())
       swiftshader_path = swiftshader_path_;
@@ -538,6 +538,7 @@ void GpuDataManagerImpl::AppendPluginCommandLine(
 void GpuDataManagerImpl::UpdateRendererWebPrefs(
     webkit_glue::WebPreferences* prefs) const {
   DCHECK(prefs);
+
   if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_COMPOSITING))
     prefs->accelerated_compositing_enabled = false;
   if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_WEBGL))
@@ -561,9 +562,9 @@ void GpuDataManagerImpl::UpdateRendererWebPrefs(
   if (IsFeatureBlacklisted(GPU_FEATURE_TYPE_ACCELERATED_VIDEO))
     prefs->accelerated_compositing_for_video_enabled = false;
 
-  // Accelerated video and animation are slower than regular when using a
-  // software 3d rasterizer. 3D CSS may also be too slow to be worthwhile.
-  if (ShouldUseSoftwareRendering()) {
+  // Accelerated video and animation are slower than regular when using
+  // SwiftShader. 3D CSS may also be too slow to be worthwhile.
+  if (ShouldUseSwiftShader()) {
     prefs->accelerated_compositing_for_video_enabled = false;
     prefs->accelerated_compositing_for_animation_enabled = false;
     prefs->accelerated_compositing_for_3d_transforms_enabled = false;
@@ -583,7 +584,7 @@ void GpuDataManagerImpl::DisableHardwareAcceleration() {
   for (int i = 0; i < NUMBER_OF_GPU_FEATURE_TYPES; ++i)
     blacklisted_features_.insert(i);
 
-  EnableSoftwareRenderingIfNecessary();
+  EnableSwiftShaderIfNecessary();
   NotifyGpuInfoUpdate();
 }
 
@@ -646,7 +647,7 @@ bool GpuDataManagerImpl::IsUsingAcceleratedSurface() const {
 
   if (gpu_info_.amd_switchable)
     return false;
-  if (software_rendering_)
+  if (use_swiftshader_)
     return false;
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableImageTransportSurface))
@@ -685,7 +686,7 @@ GpuDataManagerImpl::GpuDataManagerImpl()
     : complete_gpu_info_already_requested_(false),
       gpu_switching_(GPU_SWITCHING_OPTION_AUTOMATIC),
       observer_list_(new GpuDataManagerObserverList),
-      software_rendering_(false),
+      use_swiftshader_(false),
       card_blacklisted_(false),
       update_histograms_(true),
       window_count_(0),
@@ -769,7 +770,7 @@ void GpuDataManagerImpl::UpdateBlacklistedFeatures(
     blacklisted_features_.insert(GPU_FEATURE_TYPE_WEBGL);
   }
 
-  EnableSoftwareRenderingIfNecessary();
+  EnableSwiftShaderIfNecessary();
 }
 
 void GpuDataManagerImpl::UpdatePreliminaryBlacklistedFeatures() {
@@ -799,13 +800,13 @@ void GpuDataManagerImpl::NotifyGpuInfoUpdate() {
   observer_list_->Notify(&GpuDataManagerObserver::OnGpuInfoUpdate);
 }
 
-void GpuDataManagerImpl::EnableSoftwareRenderingIfNecessary() {
+void GpuDataManagerImpl::EnableSwiftShaderIfNecessary() {
   if (!GpuAccessAllowed() ||
       blacklisted_features_.count(GPU_FEATURE_TYPE_WEBGL)) {
     if (!swiftshader_path_.empty() &&
         !CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kDisableSoftwareRasterizer))
-      software_rendering_ = true;
+      use_swiftshader_ = true;
   }
 }
 

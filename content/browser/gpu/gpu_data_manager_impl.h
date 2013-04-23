@@ -76,7 +76,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   virtual void RequestCompleteGpuInfoIfNeeded() OVERRIDE;
   virtual bool IsCompleteGpuInfoAvailable() const OVERRIDE;
   virtual void RequestVideoMemoryUsageStatsUpdate() const OVERRIDE;
-  virtual bool ShouldUseSoftwareRendering() const OVERRIDE;
+  virtual bool ShouldUseSwiftShader() const OVERRIDE;
   virtual void RegisterSwiftShaderPath(const base::FilePath& path) OVERRIDE;
   virtual void AddObserver(GpuDataManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(GpuDataManagerObserver* observer) OVERRIDE;
@@ -192,11 +192,11 @@ class CONTENT_EXPORT GpuDataManagerImpl
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuSideExceptions);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
                            DisableHardwareAcceleration);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SoftwareRendering);
-  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SoftwareRendering2);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SwiftShaderRendering);
+  FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, SwiftShaderRendering2);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest, GpuInfoUpdate);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
-                           NoGpuInfoUpdateWithSoftwareRendering);
+                           NoGpuInfoUpdateWithSwiftShader);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
                            GPUVideoMemoryUsageStatsUpdate);
   FRIEND_TEST_ALL_PREFIXES(GpuDataManagerImplTest,
@@ -233,8 +233,8 @@ class CONTENT_EXPORT GpuDataManagerImpl
   // Notify all observers whenever there is a GPU info update.
   void NotifyGpuInfoUpdate();
 
-  // Try to switch to software rendering, if possible and necessary.
-  void EnableSoftwareRenderingIfNecessary();
+  // Try to switch to SwiftShader rendering, if possible and necessary.
+  void EnableSwiftShaderIfNecessary();
 
   // Helper to extract the domain from a given URL.
   std::string GetDomainFromURL(const GURL& url) const;
@@ -273,7 +273,7 @@ class CONTENT_EXPORT GpuDataManagerImpl
   ListValue log_messages_;
   mutable base::Lock log_messages_lock_;
 
-  bool software_rendering_;
+  bool use_swiftshader_;
 
   base::FilePath swiftshader_path_;
 
