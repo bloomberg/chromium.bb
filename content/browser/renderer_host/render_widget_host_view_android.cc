@@ -250,7 +250,7 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
 }
 
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
-  return content_view_core_;
+  return content_view_core_->GetViewAndroid();
 }
 
 gfx::NativeViewId RenderWidgetHostViewAndroid::GetNativeViewId() const {

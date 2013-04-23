@@ -77,10 +77,10 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
             @Override
             public void run() {
                 int nativeWebContents = ContentViewUtil.createNativeWebContents(false);
-                WindowAndroid nativeWindow = new WindowAndroid(getActivity());
+                WindowAndroid windowAndroid = new WindowAndroid(getActivity());
                 ContentView contentView = ContentView.newInstance(
                         getActivity(), nativeWebContents,
-                        nativeWindow, ContentView.PERSONALITY_CHROME);
+                        windowAndroid, ContentView.PERSONALITY_CHROME);
                 contentView.destroy();
             }
         });

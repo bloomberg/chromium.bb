@@ -4,7 +4,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/platform_util.h"
-#include "content/public/browser/android/content_view_core.h"
+#include "ui/android/view_android.h"
 
 namespace platform_util {
 

@@ -21,8 +21,8 @@ import android.widget.TextView;
 import java.util.ArrayList;
 
 import org.chromium.chrome.R;
-import org.chromium.content.browser.ContainerViewDelegate;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
+import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
 
 /**
@@ -45,7 +45,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
 
     private final AutofillPopupDelegate mAutofillCallback;
     private final Context mContext;
-    private final ContainerViewDelegate mContainerViewDelegate;
+    private final ViewAndroidDelegate mViewAndroidDelegate;
     private AnchorView mAnchorView;
     private Rect mAnchorRect;
     private Paint mNameViewPaint;
@@ -123,20 +123,20 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
     /**
      * Creates an AutofillWindow with specified parameters.
      * @param context Application context.
-     * @param containerViewDelegate View delegate used to add and remove views.
+     * @param viewAndroidDelegate View delegate used to add and remove views.
      * @param autofillCallback A object that handles the calls to the native AutofillPopupView.
      */
-    public AutofillPopup(Context context, ContainerViewDelegate containerViewDelegate,
+    public AutofillPopup(Context context, ViewAndroidDelegate viewAndroidDelegate,
             AutofillPopupDelegate autofillCallback) {
         super(context);
         mContext = context;
-        mContainerViewDelegate = containerViewDelegate;
+        mViewAndroidDelegate = viewAndroidDelegate ;
         mAutofillCallback = autofillCallback;
 
         setOnItemClickListener(this);
 
         mAnchorView = new AnchorView(context, this);
-        mContainerViewDelegate.addViewToContainerView(mAnchorView);
+        mViewAndroidDelegate.addViewToContainerView(mAnchorView);
         setAnchorView(mAnchorView);
     }
 
@@ -152,7 +152,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
         float scale = (float) DeviceDisplayInfo.create(mContext).getDIPScale();
         mAnchorRect = new Rect(Math.round(x * scale), Math.round(y * scale),
                 Math.round((x + width) * scale), Math.round((y + height) * scale));
-        mAnchorRect.offset(0, mContainerViewDelegate.getChildViewOffsetYPix());
+        mAnchorRect.offset(0, mViewAndroidDelegate.getChildViewOffsetYPix());
     }
 
     /**
@@ -188,7 +188,7 @@ public class AutofillPopup extends ListPopupWindow implements AdapterView.OnItem
      */
     public void hide() {
         super.dismiss();
-        mContainerViewDelegate.removeViewFromContainerView(mAnchorView);
+        mViewAndroidDelegate.removeViewFromContainerView(mAnchorView);
     }
 
     /**

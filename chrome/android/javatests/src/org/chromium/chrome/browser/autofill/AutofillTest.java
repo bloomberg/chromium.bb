@@ -12,11 +12,11 @@ import org.chromium.chrome.browser.autofill.AutofillPopup.AutofillPopupDelegate;
 import org.chromium.chrome.browser.autofill.AutofillSuggestion;
 import org.chromium.chrome.testshell.ChromiumTestShellActivity;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
-import org.chromium.content.browser.ContainerViewDelegate;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -40,8 +40,8 @@ public class AutofillTest extends ChromiumTestShellTestBase {
 
         mMockAutofillCallback = new MockAutofillCallback();
         mWindowAndroid = new WindowAndroid(activity);
-        final ContainerViewDelegate viewDelegate =
-                activity.getActiveContentView().getContentViewCore().getContainerViewDelegate();
+        final ViewAndroidDelegate viewDelegate =
+                activity.getActiveContentView().getContentViewCore().getViewAndroidDelegate();
 
         UiUtils.runOnUiThread(getActivity(), new Runnable() {
             @Override

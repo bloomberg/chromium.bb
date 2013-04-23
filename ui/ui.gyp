@@ -41,6 +41,8 @@
       'sources' : [
         'android/ui_jni_registrar.cc',
         'android/ui_jni_registrar.h',
+        'android/view_android.cc',
+        'android/view_android.h',
         'android/window_android.cc',
         'android/window_android.h',
         'base/accelerators/accelerator.cc',
@@ -889,6 +891,7 @@
              'android/java/src/org/chromium/ui/gfx/DeviceDisplayInfo.java',
              'android/java/src/org/chromium/ui/LocalizationUtils.java',
              'android/java/src/org/chromium/ui/SelectFileDialog.java',
+             'android/java/src/org/chromium/ui/ViewAndroid.java',
              'android/java/src/org/chromium/ui/WindowAndroid.java',
            ],
            'variables': {

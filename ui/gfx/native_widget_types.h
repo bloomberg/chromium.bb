@@ -108,11 +108,9 @@ typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 #elif defined(OS_ANDROID)
 struct ANativeWindow;
-namespace content {
-class ContentViewCore;
-}
 namespace ui {
 class WindowAndroid;
+class ViewAndroid;
 }
 #endif
 class SkBitmap;
@@ -149,7 +147,7 @@ typedef GdkRegion* NativeRegion;
 typedef GdkEvent* NativeEvent;
 #elif defined(OS_ANDROID)
 typedef void* NativeCursor;
-typedef content::ContentViewCore* NativeView;
+typedef ui::ViewAndroid* NativeView;
 typedef ui::WindowAndroid* NativeWindow;
 typedef void* NativeRegion;
 typedef jobject NativeEvent;

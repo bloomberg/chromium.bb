@@ -26,6 +26,7 @@
 struct WebMenuItem;
 
 namespace ui {
+class ViewAndroid;
 class WindowAndroid;
 }
 
@@ -43,13 +44,13 @@ class ContentViewCoreImpl : public ContentViewCore,
                       bool hardware_accelerated,
                       bool input_events_delivered_at_vsync,
                       WebContents* web_contents,
+                      ui::ViewAndroid* view_android,
                       ui::WindowAndroid* window_android);
 
   // ContentViewCore implementation.
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() OVERRIDE;
-  virtual base::android::ScopedJavaLocalRef<jobject> GetContainerViewDelegate()
-      OVERRIDE;
   virtual WebContents* GetWebContents() const OVERRIDE;
+  virtual ui::ViewAndroid* GetViewAndroid() const OVERRIDE;
   virtual ui::WindowAndroid* GetWindowAndroid() const OVERRIDE;
   virtual scoped_refptr<cc::Layer> GetLayer() const OVERRIDE;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) OVERRIDE;
@@ -343,6 +344,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Device scale factor.
   float dpi_scale_;
+
+  // The Android view that can be used to add and remove decoration layers
+  // like AutofillPopup.
+  ui::ViewAndroid* view_android_;
 
   // The owning window that has a hold of main application activity.
   ui::WindowAndroid* window_android_;

@@ -22,20 +22,20 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private final AutofillDialog mAutofillDialog;
     private final AutofillDialogAccountHelper mAccountHelper;
 
-    public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid nativeWindow,
+    public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid windowAndroid,
             String saveLocallyText) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
-        mAccountHelper = new AutofillDialogAccountHelper(this, nativeWindow.getContext());
+        mAccountHelper = new AutofillDialogAccountHelper(this, windowAndroid.getContext());
 
-        mAutofillDialog = new AutofillDialog(nativeWindow.getContext(), this, saveLocallyText);
+        mAutofillDialog = new AutofillDialog(windowAndroid.getContext(), this, saveLocallyText);
         mAutofillDialog.show();
     }
 
     @CalledByNative
     private static AutofillDialogGlue create(int nativeAutofillDialogViewAndroid,
-            WindowAndroid nativeWindow,
+            WindowAndroid windowAndroid,
             String saveLocallyText) {
-        return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, nativeWindow,
+        return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, windowAndroid,
                 saveLocallyText);
     }
 

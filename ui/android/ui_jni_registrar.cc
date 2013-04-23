@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_registrar.h"
+#include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/base/clipboard/clipboard_android_initialization.h"
 #include "ui/base/l10n/l10n_util_android.h"
@@ -20,6 +21,7 @@ static base::android::RegistrationMethod kUiRegisteredMethods[] = {
   { "DeviceDisplayInfo", gfx::DeviceDisplayInfo::RegisterDeviceDisplayInfo },
   { "JavaBitmap", gfx::JavaBitmap::RegisterJavaBitmap },
   { "LocalizationUtils", l10n_util::RegisterLocalizationUtil },
+  { "ViewAndroid", ui::ViewAndroid::RegisterViewAndroid },
   { "WindowAndroid", ui::WindowAndroid::RegisterWindowAndroid },
 };
 

@@ -23,6 +23,7 @@ class Vector2dF;
 }
 
 namespace ui {
+class ViewAndroid;
 class WindowAndroid;
 }
 
@@ -44,8 +45,7 @@ class CONTENT_EXPORT ContentViewCore {
 
   virtual WebContents* GetWebContents() const = 0;
   virtual base::android::ScopedJavaLocalRef<jobject> GetJavaObject() = 0;
-  virtual base::android::ScopedJavaLocalRef<jobject> GetContainerViewDelegate()
-      = 0;
+  virtual ui::ViewAndroid* GetViewAndroid() const = 0;
   virtual ui::WindowAndroid* GetWindowAndroid() const = 0;
   virtual scoped_refptr<cc::Layer> GetLayer() const = 0;
   virtual void LoadUrl(NavigationController::LoadURLParams& params) = 0;

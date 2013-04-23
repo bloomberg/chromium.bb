@@ -45,6 +45,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/android/WebInputEventFactory.h"
+#include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/screen.h"
@@ -152,12 +153,14 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
                                          bool hardware_accelerated,
                                          bool input_events_delivered_at_vsync,
                                          WebContents* web_contents,
+                                         ui::ViewAndroid* view_android,
                                          ui::WindowAndroid* window_android)
     : java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::Layer::Create()),
       tab_crashed_(false),
       input_events_delivered_at_vsync_(input_events_delivered_at_vsync),
+      view_android_(view_android),
       window_android_(window_android) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
@@ -307,14 +310,6 @@ RenderWidgetHostViewAndroid*
 ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetJavaObject() {
   JNIEnv* env = AttachCurrentThread();
   return java_ref_.get(env);
-}
-
-ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContainerViewDelegate() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return ScopedJavaLocalRef<jobject>();
-  return Java_ContentViewCore_getContainerViewDelegate(env, obj.obj());
 }
 
 void ContentViewCoreImpl::OnWebPreferencesUpdated() {
@@ -708,6 +703,12 @@ void ContentViewCoreImpl::SetVSyncNotificationEnabled(bool enabled) {
     return;
   Java_ContentViewCore_setVSyncNotificationEnabled(
       env, obj.obj(), static_cast<jboolean>(enabled));
+}
+
+ui::ViewAndroid* ContentViewCoreImpl::GetViewAndroid() const {
+  // view_android_ should never be null for Chrome.
+  DCHECK(view_android_);
+  return view_android_;
 }
 
 ui::WindowAndroid* ContentViewCoreImpl::GetWindowAndroid() const {
@@ -1528,11 +1529,13 @@ jint Init(JNIEnv* env, jobject obj,
           jboolean input_events_delivered_at_vsync,
           jboolean hardware_accelerated,
           jint native_web_contents,
-          jint native_window) {
+          jint view_android,
+          jint window_android) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj, input_events_delivered_at_vsync, hardware_accelerated,
       reinterpret_cast<WebContents*>(native_web_contents),
-      reinterpret_cast<ui::WindowAndroid*>(native_window));
+      reinterpret_cast<ui::ViewAndroid*>(view_android),
+      reinterpret_cast<ui::WindowAndroid*>(window_android));
   return reinterpret_cast<jint>(view);
 }
 

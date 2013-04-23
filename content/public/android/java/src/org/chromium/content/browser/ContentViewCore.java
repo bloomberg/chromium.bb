@@ -51,6 +51,8 @@ import org.chromium.content.browser.input.InsertionHandleController;
 import org.chromium.content.browser.input.SelectPopupDialog;
 import org.chromium.content.browser.input.SelectionHandleController;
 import org.chromium.content.common.TraceEvent;
+import org.chromium.ui.ViewAndroid;
+import org.chromium.ui.ViewAndroidDelegate;
 import org.chromium.ui.WindowAndroid;
 
 import java.lang.annotation.Annotation;
@@ -294,6 +296,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Whether we received a new frame since consumePendingRendererFrame() was last called.
     private boolean mPendingRendererFrame = false;
 
+    private ViewAndroid mViewAndroid;
+
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
      * a ContentViewCore and before using it.
@@ -355,11 +359,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * compatibility breaks with existing applications. If in doubt, contact the
      * android_webview/OWNERS
      *
-     * @return A ContainerViewDelegate that can be used to add and remove views.
+     * @return A ViewAndroidDelegate that can be used to add and remove views.
      */
-    @CalledByNative
-    public ContainerViewDelegate getContainerViewDelegate() {
-        return new ContainerViewDelegate() {
+    @VisibleForTesting
+    public ViewAndroidDelegate getViewAndroidDelegate() {
+        return new ViewAndroidDelegate() {
             @Override
             public void addViewToContainerView(View view) {
                 mContainerView.addView(view);
@@ -535,8 +539,14 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         int windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
 
+        int viewAndroidNativePointer = 0;
+        if (windowNativePointer != 0) {
+            mViewAndroid = new ViewAndroid(windowAndroid, getViewAndroidDelegate());
+            viewAndroidNativePointer = mViewAndroid.getNativePointer();
+        }
+
         mNativeContentViewCore = nativeInit(mHardwareAccelerated, inputEventsDeliveredAtVSync,
-                nativeWebContents, windowNativePointer);
+                nativeWebContents, viewAndroidNativePointer, windowNativePointer);
         mContentSettings = new ContentSettings(
                 this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
         initializeContainerView(internalDispatcher);
@@ -689,6 +699,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
         resetVSyncNotification();
+        if (mViewAndroid != null) mViewAndroid.destroy();
         mNativeContentViewCore = 0;
         mContentSettings = null;
         mJavaScriptInterfaces.clear();
@@ -2703,7 +2714,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     private native int nativeInit(boolean hardwareAccelerated, boolean inputEventsDeliveredAtVSync,
-            int webContentsPtr, int windowAndroidPtr);
+            int webContentsPtr, int viewAndroidPtr, int windowAndroidPtr);
 
     private native void nativeOnJavaContentViewCoreDestroyed(int nativeContentViewCoreImpl);
 
