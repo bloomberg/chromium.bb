@@ -148,13 +148,6 @@ void DisplayInfo::Copy(const DisplayInfo& native_info) {
     rotation_ = native_info.rotation_;
     ui_scale_ = native_info.ui_scale_;
   }
-  // It makes little sense to scale beyond the original
-  // resolution. This guard is to protect applying
-  // ui_scale to an external display whose DPI has changed
-  // from 2.0 to 1.0 for some reason.
-  if (ui_scale_ > device_scale_factor_)
-    ui_scale_ = 1.0f;
-
   // Don't copy insets as it may be given by preference.  |rotation_|
   // is treated as a native so that it can be specified in
   // |CreateFromSpec|.
