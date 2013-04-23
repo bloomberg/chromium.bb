@@ -43,6 +43,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void TruncateData();
   void ZeroLengthIO();
   void Buffering();
+  void SizeAtCreate();
   void SizeChanges();
   void ReuseEntry(int size);
   void InvalidData();
@@ -1013,6 +1014,29 @@ TEST_F(DiskCacheEntryTest, BufferingNoBuffer) {
   InitCache();
   cache_impl_->SetFlags(disk_cache::kNoBuffering);
   Buffering();
+}
+
+// Checks that entries are zero length when created.
+void DiskCacheEntryTest::SizeAtCreate() {
+  const char key[]  = "the first key";
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry(key, &entry));
+
+  const int kNumStreams = 3;
+  for (int i = 0; i < kNumStreams; ++i)
+    EXPECT_EQ(0, entry->GetDataSize(i));
+  entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SizeAtCreate) {
+  InitCache();
+  SizeAtCreate();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryOnlySizeAtCreate) {
+  SetMemoryOnlyMode();
+  InitCache();
+  SizeAtCreate();
 }
 
 // Some extra tests to make sure that buffering works properly when changing
@@ -2271,6 +2295,12 @@ TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheBuffering) {
   SetSimpleCacheMode();
   InitCache();
   Buffering();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheSizeAtCreate) {
+  SetSimpleCacheMode();
+  InitCache();
+  SizeAtCreate();
 }
 
 TEST_F(DiskCacheEntryTest, SimpleCacheReuseExternalEntry) {
