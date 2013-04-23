@@ -11,6 +11,7 @@
 #include "base/message_loop_proxy.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
@@ -33,6 +34,70 @@ void DeleteBackendImpl(disk_cache::Backend** backend,
   delete *backend;
   *backend = NULL;
   callback.Run(result);
+}
+
+// Detects if the files in the cache directory match the current disk cache
+// backend type and version. If the directory contains no cache, occupies it
+// with the fresh structure.
+//
+// There is a convention among disk cache backends: looking at the magic in the
+// file "index" it should be sufficient to determine if the cache belongs to the
+// currently running backend. The Simple Backend stores its index in the file
+// "the-real-index" (see simple_index.cc) and the file "index" only signifies
+// presence of the implementation's magic and version. There are two reasons for
+// that:
+// 1. Absence of the index is itself not a fatal error in the Simple Backend
+// 2. The Simple Backend has pickled file format for the index making it hacky
+//    to have the magic in the right place.
+bool FileStructureConsistent(const base::FilePath& path) {
+  if (!file_util::PathExists(path) && !file_util::CreateDirectory(path)) {
+    LOG(ERROR) << "Failed to create directory: " << path.LossyDisplayName();
+    return false;
+  }
+  const base::FilePath fake_index = path.AppendASCII("index");
+  base::PlatformFileError error;
+  base::PlatformFile fake_index_file = base::CreatePlatformFile(
+      fake_index,
+      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
+      NULL,
+      &error);
+  if (error == base::PLATFORM_FILE_ERROR_NOT_FOUND) {
+    base::PlatformFile file = base::CreatePlatformFile(
+        fake_index,
+        base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE,
+        NULL, &error);
+    disk_cache::SimpleFileHeader file_contents;
+    file_contents.initial_magic_number = disk_cache::kSimpleInitialMagicNumber;
+    file_contents.version = disk_cache::kSimpleVersion;
+    int bytes_written = base::WritePlatformFile(
+        file, 0, reinterpret_cast<char*>(&file_contents),
+        sizeof(file_contents));
+    if (!base::ClosePlatformFile(file) ||
+        bytes_written != sizeof(file_contents)) {
+      LOG(ERROR) << "Failed to write cache structure file: "
+                 << path.LossyDisplayName();
+      return false;
+    }
+    return true;
+  } else if (error != base::PLATFORM_FILE_OK) {
+    LOG(ERROR) << "Could not open cache structure file: "
+               << path.LossyDisplayName();
+    return false;
+  } else {
+    disk_cache::SimpleFileHeader file_header;
+    int bytes_read = base::ReadPlatformFile(
+        fake_index_file, 0, reinterpret_cast<char*>(&file_header),
+        sizeof(file_header));
+    if (!base::ClosePlatformFile(fake_index_file) ||
+        bytes_read != sizeof(file_header) ||
+        file_header.initial_magic_number !=
+            disk_cache::kSimpleInitialMagicNumber ||
+        file_header.version != disk_cache::kSimpleVersion) {
+      LOG(ERROR) << "File structure does not match the disk cache backend.";
+      return false;
+    }
+    return true;
+  }
 }
 
 }  // namespace
@@ -62,7 +127,7 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
                  base::Unretained(this),
                  completion_callback);
   cache_thread_->PostTask(FROM_HERE,
-                          base::Bind(&SimpleBackendImpl::CreateDirectory,
+                          base::Bind(&SimpleBackendImpl::ProvideDirectory,
                                      MessageLoopProxy::current(),  // io_thread
                                      path_,
                                      initialize_index_callback));
@@ -166,16 +231,16 @@ void SimpleBackendImpl::InitializeIndex(
 }
 
 // static
-void SimpleBackendImpl::CreateDirectory(
+void SimpleBackendImpl::ProvideDirectory(
     SingleThreadTaskRunner* io_thread,
     const base::FilePath& path,
     const InitializeIndexCallback& initialize_index_callback) {
   int rv = net::OK;
-  if (!file_util::PathExists(path) && !file_util::CreateDirectory(path)) {
-    LOG(ERROR) << "Simple Cache Backend: failed to create: " << path.value();
+  if (!FileStructureConsistent(path)) {
+    LOG(ERROR) << "Simple Cache Backend: wrong file structure on disk: "
+               << path.LossyDisplayName();
     rv = net::ERR_FAILED;
   }
-
   io_thread->PostTask(FROM_HERE, base::Bind(initialize_index_callback, rv));
 }
 

@@ -124,7 +124,7 @@ SimpleIndex::SimpleIndex(
       low_watermark_(0),
       eviction_in_progress_(false),
       initialized_(false),
-      index_filename_(path.AppendASCII("simple-index")),
+      index_filename_(path.AppendASCII("the-real-index")),
       cache_thread_(cache_thread),
       io_thread_(io_thread) {
 }

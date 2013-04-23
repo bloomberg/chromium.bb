@@ -86,7 +86,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
 
   // Try to create the directory if it doesn't exist.
   // Must run on Cache Thread.
-  static void CreateDirectory(
+  static void ProvideDirectory(
       base::SingleThreadTaskRunner* io_thread,
       const base::FilePath& path,
       const InitializeIndexCallback& initialize_index_callback);
