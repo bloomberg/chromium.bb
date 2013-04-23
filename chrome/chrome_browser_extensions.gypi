@@ -90,7 +90,9 @@
         'browser/extensions/api/app_window/app_window_api.h',
         'browser/extensions/api/audio/audio_api.cc',
         'browser/extensions/api/audio/audio_api.h',
+        'browser/extensions/api/audio/audio_service.cc',
         'browser/extensions/api/audio/audio_service.h',
+        'browser/extensions/api/audio/audio_service_chromeos.cc',
         'browser/extensions/api/autotest_private/autotest_private_api.cc',
         'browser/extensions/api/autotest_private/autotest_private_api.h',
         'browser/extensions/api/autotest_private/autotest_private_api_factory.cc',
@@ -753,11 +755,6 @@
         'browser/extensions/window_controller_list_observer.h',
       ],
       'conditions': [
-        ['chromeos==0', {
-          'sources': [
-             'browser/extensions/api/audio/audio_service.cc',
-          ],
-        }],
         ['chromeos==1', {
           'dependencies': [
             '../build/linux/system.gyp:dbus',
@@ -766,11 +763,11 @@
             'contacts_proto',
           ],
           'sources!': [
+            'browser/extensions/api/audio/audio_service.cc',
             'browser/extensions/default_apps.cc',
             'browser/extensions/default_apps.h',
           ],
           'sources': [
-            'browser/extensions/api/audio/audio_service_chromeos.cc',
             'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.cc',
             'browser/extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api.h',
             'browser/extensions/api/input_ime/input_ime_api.cc',
@@ -915,8 +912,6 @@
                 '<(INTERMEDIATE_DIR)/chrome',
               ],
               'sources/': [
-                ['include', '^browser/extensions/'],
-
                 # Other excluded stuff.
                 ['exclude', '^browser/extensions/extension_host_mac.h'],
                 ['exclude', '^browser/extensions/extension_host_mac.mm'],
