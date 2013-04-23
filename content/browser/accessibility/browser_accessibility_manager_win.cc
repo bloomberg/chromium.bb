@@ -63,6 +63,10 @@ void BrowserAccessibilityManagerWin::RemoveNode(BrowserAccessibility* node) {
   unique_id_to_renderer_id_map_.erase(
       node->ToBrowserAccessibilityWin()->unique_id_win());
   BrowserAccessibilityManager::RemoveNode(node);
+  if (node == tracked_scroll_object_) {
+    tracked_scroll_object_->Release();
+    tracked_scroll_object_ = NULL;
+  }
 }
 
 void BrowserAccessibilityManagerWin::NotifyAccessibilityEvent(
