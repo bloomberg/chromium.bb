@@ -27,6 +27,13 @@ img {
   padding: 2px 2px;
 }
 
+.small-section {
+  background-color: rgb(240, 244, 253);
+  font-weight: bold;
+  margin: 5px 0 0;
+  padding: 2px 2px;
+}
+
 .row {
   border-bottom: 1px solid #A0A0A0;
   padding: 5px;

@@ -81,6 +81,8 @@ static const char kFaviconUrlField[] = "faviconUrl";
 static const char kPidField[]  = "pid";
 static const char kAdbSerialField[] = "adbSerial";
 static const char kAdbModelField[] = "adbModel";
+static const char kAdbPackageField[] = "adbPackage";
+static const char kAdbSocketField[] = "adbSocket";
 static const char kAdbDebugUrlField[] = "adbDebugUrl";
 static const char kAdbFrontendUrlField[] = "adbFrontendUrl";
 
@@ -240,13 +242,15 @@ void InspectMessageHandler::HandleInspectCommand(const ListValue* args) {
     // Check for ADB serial
     const DictionaryValue* data;
     std::string serial;
+    std::string socket;
     std::string debug_url;
     std::string frontend_url;
     if (args->GetSize() == 1 && args->GetDictionary(0, &data) &&
         data->GetString(kAdbSerialField, &serial) &&
+        data->GetString(kAdbSocketField, &socket) &&
         data->GetString(kAdbDebugUrlField, &debug_url) &&
         data->GetString(kAdbFrontendUrlField, &frontend_url)) {
-      adb_bridge_->Attach(serial, debug_url, frontend_url);
+      adb_bridge_->Attach(serial, socket, debug_url, frontend_url);
     }
     return;
   }
@@ -457,6 +461,8 @@ void InspectUI::OnAdbPages(
         0);
     target_data->SetString(kAdbSerialField, page->serial());
     target_data->SetString(kAdbModelField, page->model());
+    target_data->SetString(kAdbPackageField, page->package());
+    target_data->SetString(kAdbSocketField, page->socket());
     target_data->SetString(kAdbDebugUrlField, page->debug_url());
     target_data->SetString(kAdbFrontendUrlField, page->frontend_url());
     targets.Append(target_data);

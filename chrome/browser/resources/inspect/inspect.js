@@ -95,7 +95,21 @@ function populateDeviceLists() {
       document.body.appendChild(listElement);
     }
 
-    addTargetToList(page, listId, ['faviconUrl', 'name', 'url']);
+    var packageId = 'package-' + page.adbModel + '-' + page.adbPackage;
+    var packageElement = document.getElementById(packageId);
+    if (!packageElement) {
+      var sectionElement = document.createElement('div');
+      sectionElement.className = 'small-section package';
+      sectionElement.textContent = page.adbPackage;
+
+      packageElement = document.createElement('div');
+      packageElement.className = 'list package';
+      packageElement.id = packageId;
+      listElement.appendChild(sectionElement);
+      listElement.appendChild(packageElement);
+    }
+
+    addTargetToList(page, packageId, ['faviconUrl', 'name', 'url']);
   }
 
   setTimeout(populateDeviceLists, 1000);

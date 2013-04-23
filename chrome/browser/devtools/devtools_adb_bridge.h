@@ -31,10 +31,14 @@ class DevToolsAdbBridge {
    public:
     RemotePage(const std::string& serial,
                const std::string& model,
+               const std::string& package,
+               const std::string& socket,
                const base::DictionaryValue& value);
 
     std::string serial() { return serial_; }
     std::string model() { return model_; }
+    std::string package() { return package_; }
+    std::string socket() { return socket_; }
     std::string id() { return id_; }
     std::string url() { return url_; }
     std::string title() { return title_; }
@@ -48,6 +52,8 @@ class DevToolsAdbBridge {
     virtual ~RemotePage();
     std::string serial_;
     std::string model_;
+    std::string package_;
+    std::string socket_;
     std::string id_;
     std::string url_;
     std::string title_;
@@ -67,6 +73,7 @@ class DevToolsAdbBridge {
   void Query(const std::string query, const Callback& callback);
   void Pages(const PagesCallback& callback);
   void Attach(const std::string& serial,
+              const std::string& socket,
               const std::string& debug_url,
               const std::string& frontend_url);
 
