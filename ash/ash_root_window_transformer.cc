@@ -51,6 +51,10 @@ gfx::Rect AshRootWindowTransformer::GetRootWindowBounds(
   bounds = ui::ConvertRectToDIP(root_window_->layer(), bounds);
   gfx::RectF new_bounds(bounds);
   root_window_->layer()->transform().TransformRect(&new_bounds);
+  // It makes little sense to scale beyond the original
+  // resolution.
+  DCHECK_LE(root_window_scale_,
+            ui::GetDeviceScaleFactor(root_window_->layer()));
   // Apply |root_window_scale_| twice as the downscaling
   // is already applied once in |SetTransformInternal()|.
   // TODO(oshima): This is a bit ugly. Consider specifying

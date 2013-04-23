@@ -106,6 +106,9 @@ const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 const char kAshImmersiveHideTabIndicators[] =
     "ash-immersive-hide-tab-indicators";
 
+// Specifies the internal display's ui scale.
+const char kAshInternalDisplayUIScale[] = "ash-internal-display-ui-scale";
+
 // Specifies the layout mode and offsets for the secondary display for
 // testing. The format is "<t|r|b|l>,<offset>" where t=TOP, r=RIGHT,
 // b=BOTTOM and L=LEFT. For example, 'r,-100' means the secondary display
@@ -114,11 +117,6 @@ const char kAshSecondaryDisplayLayout[] = "ash-secondary-display-layout";
 
 // Enables the heads-up display for tracking touch points.
 const char kAshTouchHud[] = "ash-touch-hud";
-
-// Uses the 1st display in --ash-host-window-bounds as internal display.
-// This is for debugging on linux desktop.
-const char kAshUseFirstDisplayAsInternal[] =
-    "ash-use-first-display-as-internal";
 
 // (Most) Chrome OS hardware reports ACPI power button releases correctly.
 // Standard hardware reports releases immediately after presses.  If set, we

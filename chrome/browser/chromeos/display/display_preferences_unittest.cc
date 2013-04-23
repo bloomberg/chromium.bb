@@ -246,7 +246,6 @@ TEST_F(DisplayPreferencesTest, BasicStores) {
 
   UpdateDisplay("200x200*2,200x200");
   int64 id1 = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay().id();
-  gfx::Display::SetInternalDisplayId(id1);
   int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
   int64 dummy_id = id2 + 1;
   ASSERT_NE(id1, dummy_id);
@@ -424,7 +423,6 @@ TEST_F(DisplayPreferencesTest, DontStoreInGuestMode) {
 
   LoggedInAsGuest();
   int64 id1 = ash::ScreenAsh::GetNativeScreen()->GetPrimaryDisplay().id();
-  gfx::Display::SetInternalDisplayId(id1);
   int64 id2 = ash::ScreenAsh::GetSecondaryDisplay().id();
   ash::DisplayLayout layout(ash::DisplayLayout::TOP, 10);
   SetCurrentAndDefaultDisplayLayout(layout);

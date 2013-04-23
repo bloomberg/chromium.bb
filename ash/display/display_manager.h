@@ -45,7 +45,7 @@ class ASH_EXPORT DisplayManager : public aura::RootWindowObserver {
   static void ToggleDisplayScaleFactor();
 
   // Returns next valid UI scale.
-  static float GetNextUIScale(const DisplayInfo& info, bool up);
+  static float GetNextUIScale(float scale, bool up);
 
   // When set to true, the MonitorManager calls OnDisplayBoundsChanged
   // even if the display's bounds didn't change. Used to swap primary

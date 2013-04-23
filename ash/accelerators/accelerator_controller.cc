@@ -181,7 +181,7 @@ bool HandleScaleUI(bool up) {
     return false;
   const DisplayInfo& display_info = display_manager->GetDisplayInfo(display_id);
   float next_scale =
-      internal::DisplayManager::GetNextUIScale(display_info, up);
+      internal::DisplayManager::GetNextUIScale(display_info.ui_scale(), up);
   display_manager->SetDisplayUIScale(display_id, next_scale);
   return true;
 }
