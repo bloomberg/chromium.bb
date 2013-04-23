@@ -244,14 +244,16 @@ void InspectorOverlay::setPausedInDebuggerMessage(const String* message)
 void InspectorOverlay::hideHighlight()
 {
     m_highlightNode.clear();
+    m_eventTargetNode.clear();
     m_highlightQuad.clear();
     update();
 }
 
-void InspectorOverlay::highlightNode(Node* node, const HighlightConfig& highlightConfig)
+void InspectorOverlay::highlightNode(Node* node, Node* eventTarget, const HighlightConfig& highlightConfig)
 {
     m_nodeHighlightConfig = highlightConfig;
     m_highlightNode = node;
+    m_eventTargetNode = eventTarget;
     update();
 }
 
@@ -269,7 +271,7 @@ Node* InspectorOverlay::highlightedNode() const
 
 void InspectorOverlay::update()
 {
-    if (!m_highlightNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty()) {
+    if (!m_highlightNode && !m_eventTargetNode && !m_highlightQuad && m_pausedInDebuggerMessage.isNull() && m_size.isEmpty()) {
         m_client->hideHighlight();
         return;
     }
@@ -335,6 +337,7 @@ static PassRefPtr<InspectorObject> buildObjectForHighlight(FrameView* mainView, 
     object->setString("paddingColor", highlight.paddingColor.serialized());
     object->setString("borderColor", highlight.borderColor.serialized());
     object->setString("marginColor", highlight.marginColor.serialized());
+    object->setString("eventTargetColor", highlight.eventTargetColor.serialized());
 
     FloatRect visibleRect = mainView->visibleContentRect();
     object->setNumber("scrollX", visibleRect.x());
@@ -363,6 +366,11 @@ void InspectorOverlay::drawNodeHighlight()
 
     Highlight highlight;
     buildNodeHighlight(m_highlightNode.get(), m_nodeHighlightConfig, &highlight);
+    if (m_eventTargetNode) {
+        Highlight eventTargetHighlight;
+        buildNodeHighlight(m_eventTargetNode.get(), m_nodeHighlightConfig, &eventTargetHighlight);
+        highlight.quads.append(eventTargetHighlight.quads[1]); // Add border from eventTargetNode to highlight.
+    }
     RefPtr<InspectorObject> highlightObject = buildObjectForHighlight(m_page->mainFrame()->view(), highlight);
 
     Node* node = m_highlightNode.get();

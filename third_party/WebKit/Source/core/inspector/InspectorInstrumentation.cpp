@@ -272,10 +272,10 @@ void InspectorInstrumentation::didUpdateRegionLayoutImpl(InstrumentingAgents* in
         cssAgent->didUpdateRegionLayout(document, namedFlow);
 }
 
-void InspectorInstrumentation::mouseDidMoveOverElementImpl(InstrumentingAgents* instrumentingAgents, const HitTestResult& result, unsigned modifierFlags)
+void InspectorInstrumentation::handleMouseMoveImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const PlatformMouseEvent& event)
 {
     if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        domAgent->mouseDidMoveOverElement(result, modifierFlags);
+        domAgent->handleMouseMove(frame, event);
 }
 
 void InspectorInstrumentation::didScrollImpl(InstrumentingAgents* instrumentingAgents)

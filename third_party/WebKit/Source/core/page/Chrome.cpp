@@ -382,8 +382,6 @@ void Chrome::mouseDidMoveOverElement(const HitTestResult& result, unsigned modif
             prefetchDNS(result.absoluteLinkURL().host());
     }
     m_client->mouseDidMoveOverElement(result, modifierFlags);
-
-    InspectorInstrumentation::mouseDidMoveOverElement(m_page, result, modifierFlags);
 }
 
 void Chrome::setToolTip(const HitTestResult& result)

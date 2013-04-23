@@ -1,0 +1,103 @@
+<html>
+<head>
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<style>
+div {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+#outer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+}
+#inner {
+    pointer-events: none;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    bottom: 10px;
+    right: 10px;
+}
+</style>
+<script>
+
+function clickInner(withShift)
+{
+    var target = document.getElementById("inner");
+    var rect = target.getBoundingClientRect();
+    // Simulate the mouse click over the target to trigger an event dispatch.
+    if (window.eventSender) {
+        window.eventSender.mouseMoveTo(rect.left + rect.width / 2, rect.top + rect.height / 2, withShift ? "shiftKey" : "");
+        window.eventSender.mouseDown();
+        window.eventSender.mouseUp();
+    }
+}
+
+function test()
+{
+    function selectedNodeId()
+    {
+        var selectedElement = WebInspector.panels.elements.treeOutline.selectedTreeElement;
+        if (!selectedElement)
+            return "<no selected node>";
+        return selectedElement.representedObject.getAttribute("id");
+    }
+
+    function expectSelectedNode(expectedId)
+    {
+        var id = selectedNodeId();
+        if (id === expectedId)
+            InspectorTest.addResult("PASS: selected node with id '" + id + "'");
+        else
+            InspectorTest.addResult("FAIL: unexpected selection " + id);
+    }
+
+    function step1()
+    {
+        WebInspector.domAgent.setInspectModeEnabled(true, step2);
+    }
+
+    function step2()
+    {
+        WebInspector.panels.elements.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        InspectorTest.evaluateInPage("clickInner(true)");
+    }
+
+    function step3()
+    {
+        WebInspector.panels.elements.treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step3);
+        expectSelectedNode("inner");
+        WebInspector.domAgent.setInspectModeEnabled(true, step4);
+    }
+
+    function step4()
+    {
+        WebInspector.panels.elements.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+        InspectorTest.evaluateInPage("clickInner(false)");
+    }
+
+    function step5()
+    {
+        WebInspector.panels.elements.treeOutline.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step5);
+        expectSelectedNode("outer");
+        InspectorTest.completeTest();
+    }
+
+    WebInspector.showPanel("elements");
+    step1();
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>Test that Web Inspector can inspect element with <code>pointer-events:none</code>.
+</p>
+<div id="outer"><div id="inner"></div></div>
+</body>
+</html>

@@ -134,7 +134,7 @@ public:
     static void willRemoveNamedFlow(Document*, NamedFlow*);
     static void didUpdateRegionLayout(Document*, NamedFlow*);
 
-    static void mouseDidMoveOverElement(Page*, const HitTestResult&, unsigned modifierFlags);
+    static void handleMouseMove(Frame*, const PlatformMouseEvent&);
     static bool handleMousePress(Page*);
     static bool handleTouchEvent(Page*, Node*);
     static bool forcePseudoState(Element*, CSSSelector::PseudoType);
@@ -314,7 +314,7 @@ private:
     static void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
     static void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, NamedFlow*);
 
-    static void mouseDidMoveOverElementImpl(InstrumentingAgents*, const HitTestResult&, unsigned modifierFlags);
+    static void handleMouseMoveImpl(InstrumentingAgents*, Frame*, const PlatformMouseEvent&);
     static bool handleTouchEventImpl(InstrumentingAgents*, Node*);
     static bool handleMousePressImpl(InstrumentingAgents*);
     static bool forcePseudoStateImpl(InstrumentingAgents*, Element*, CSSSelector::PseudoType);
@@ -598,11 +598,11 @@ inline void InspectorInstrumentation::didUpdateRegionLayout(Document* document, 
         didUpdateRegionLayoutImpl(instrumentingAgents, document, namedFlow);
 }
 
-inline void InspectorInstrumentation::mouseDidMoveOverElement(Page* page, const HitTestResult& result, unsigned modifierFlags)
+inline void InspectorInstrumentation::handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
 {
     FAST_RETURN_IF_NO_FRONTENDS(void());
-    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
-        mouseDidMoveOverElementImpl(instrumentingAgents, result, modifierFlags);
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(frame->page()))
+        handleMouseMoveImpl(instrumentingAgents, frame, event);
 }
 
 inline bool InspectorInstrumentation::handleTouchEvent(Page* page, Node* node)

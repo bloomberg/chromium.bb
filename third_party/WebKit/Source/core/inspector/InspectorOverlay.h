@@ -57,6 +57,7 @@ public:
     Color padding;
     Color border;
     Color margin;
+    Color eventTarget;
     bool showInfo;
     bool showRulers;
 };
@@ -80,6 +81,7 @@ struct Highlight {
         paddingColor = highlightConfig.padding;
         borderColor = highlightConfig.border;
         marginColor = highlightConfig.margin;
+        eventTargetColor = highlightConfig.eventTarget;
         showRulers = highlightConfig.showRulers;
     }
 
@@ -88,8 +90,9 @@ struct Highlight {
     Color paddingColor;
     Color borderColor;
     Color marginColor;
+    Color eventTargetColor;
 
-    // When the type is Node, there are 4 quads (margin, border, padding, content).
+    // When the type is Node, there are 4 or 5 quads (margin, border, padding, content, optional eventTarget).
     // When the type is Rects, this is just a list of quads.
     HighlightType type;
     Vector<FloatQuad> quads;
@@ -114,7 +117,7 @@ public:
     void setPausedInDebuggerMessage(const String*);
 
     void hideHighlight();
-    void highlightNode(Node*, const HighlightConfig&);
+    void highlightNode(Node*, Node* eventTarget, const HighlightConfig&);
     void highlightQuad(PassOwnPtr<FloatQuad>, const HighlightConfig&);
 
     Node* highlightedNode() const;
@@ -138,6 +141,7 @@ private:
     InspectorClient* m_client;
     String m_pausedInDebuggerMessage;
     RefPtr<Node> m_highlightNode;
+    RefPtr<Node> m_eventTargetNode;
     HighlightConfig m_nodeHighlightConfig;
     OwnPtr<FloatQuad> m_highlightQuad;
     OwnPtr<Page> m_overlayPage;

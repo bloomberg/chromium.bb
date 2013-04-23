@@ -298,6 +298,16 @@ function drawOutlinedQuadWithClip(quad, clipQuad, fillColor)
     context.restore();
 }
 
+function drawUnderlyingQuad(quad, fillColor)
+{
+    context.save();
+    context.lineWidth = 2;
+    context.globalCompositeOperation = "destination-over";
+    context.fillStyle = fillColor;
+    quadToPath(quad).fill();
+    context.restore();
+}
+
 function quadEquals(quad1, quad2)
 {
     return quad1[0].x === quad2[0].x && quad1[0].y === quad2[0].y &&
@@ -507,6 +517,7 @@ function drawNodeHighlight(highlight)
     }
 
     var quads = highlight.quads.slice();
+    var eventTargetQuad = quads.length >= 5 ? quads.pop() : null;
     var contentQuad = quads.pop();
     var paddingQuad = quads.pop();
     var borderQuad = quads.pop();
@@ -516,6 +527,7 @@ function drawNodeHighlight(highlight)
     var hasPadding = paddingQuad && highlight.paddingColor !== transparentColor;
     var hasBorder = borderQuad && highlight.borderColor !== transparentColor;
     var hasMargin = marginQuad && highlight.marginColor !== transparentColor;
+    var hasEventTarget = eventTargetQuad && highlight.eventTargetColor !== transparentColor;
 
     var clipQuad;
     if (hasMargin && (!hasBorder || !quadEquals(marginQuad, borderQuad))) {
@@ -532,6 +544,8 @@ function drawNodeHighlight(highlight)
     }
     if (hasContent)
         drawOutlinedQuad(contentQuad, highlight.contentColor, highlight.contentOutlineColor);
+    if (hasEventTarget)
+        drawUnderlyingQuad(eventTargetQuad, highlight.eventTargetColor);
 
     var width = canvas.width;
     var height = canvas.height;

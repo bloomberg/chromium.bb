@@ -82,8 +82,10 @@
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "Pasteboard.h"
+#include "PlatformMouseEvent.h"
 #include "RenderStyle.h"
 #include "RenderStyleConstants.h"
+#include "RenderView.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
@@ -166,6 +168,21 @@ static bool parseQuad(const RefPtr<InspectorArray>& quadArray, FloatQuad* quad)
     quad->setP4(FloatPoint(coordinates[6], coordinates[7]));
 
     return true;
+}
+
+static Node* hoveredNodeForEvent(Frame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
+{
+    HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
+    if (ignorePointerEventsNone)
+        hitType |= HitTestRequest::IgnorePointerEventsNone;
+    HitTestRequest request(hitType);
+    HitTestResult result(frame->view()->windowToContents(event.position()));
+    frame->contentRenderer()->hitTest(request, result);
+    result.setToNonShadowAncestor();
+    Node* node = result.innerNode();
+    while (node && node->nodeType() == Node::TEXT_NODE)
+        node = node->parentNode();
+    return node;
 }
 
 class RevalidateStyleAttributeTask {
@@ -1053,7 +1070,7 @@ bool InspectorDOMAgent::handleTouchEvent(Node* node)
     if (!m_searchingForNode)
         return false;
     if (node && m_inspectModeHighlightConfig) {
-        m_overlay->highlightNode(node, *m_inspectModeHighlightConfig);
+        m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig);
         inspect(node);
         return true;
     }
@@ -1077,16 +1094,20 @@ void InspectorDOMAgent::inspect(Node* inspectedNode)
     setSearchingForNode(&error, false, 0);
 }
 
-void InspectorDOMAgent::mouseDidMoveOverElement(const HitTestResult& result, unsigned)
+void InspectorDOMAgent::handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
 {
     if (!m_searchingForNode)
         return;
 
-    Node* node = result.innerNode();
-    while (node && node->nodeType() == Node::TEXT_NODE)
-        node = node->parentNode();
+    if (!frame->view() || !frame->contentRenderer())
+        return;
+    Node* node = hoveredNodeForEvent(frame, event, event.shiftKey());
+    Node* eventTarget = event.shiftKey() ? hoveredNodeForEvent(frame, event, false) : 0;
+    if (eventTarget == node)
+        eventTarget = 0;
+
     if (node && m_inspectModeHighlightConfig)
-        m_overlay->highlightNode(node, *m_inspectModeHighlightConfig);
+        m_overlay->highlightNode(node, eventTarget, *m_inspectModeHighlightConfig);
 }
 
 void InspectorDOMAgent::setSearchingForNode(ErrorString* errorString, bool enabled, InspectorObject* highlightInspectorObject)
@@ -1121,6 +1142,7 @@ PassOwnPtr<HighlightConfig> InspectorDOMAgent::highlightConfigFromInspectorObjec
     highlightConfig->padding = parseConfigColor("paddingColor", highlightInspectorObject);
     highlightConfig->border = parseConfigColor("borderColor", highlightInspectorObject);
     highlightConfig->margin = parseConfigColor("marginColor", highlightInspectorObject);
+    highlightConfig->eventTarget = parseConfigColor("eventTargetColor", highlightInspectorObject);
     return highlightConfig.release();
 }
 
@@ -1173,7 +1195,7 @@ void InspectorDOMAgent::highlightNode(ErrorString* errorString, const RefPtr<Ins
     if (!highlightConfig)
         return;
 
-    m_overlay->highlightNode(node, *highlightConfig);
+    m_overlay->highlightNode(node, 0 /* eventTarget */, *highlightConfig);
 }
 
 void InspectorDOMAgent::highlightFrame(
@@ -1188,7 +1210,7 @@ void InspectorDOMAgent::highlightFrame(
         highlightConfig->showInfo = true; // Always show tooltips for frames.
         highlightConfig->content = parseColor(color);
         highlightConfig->contentOutline = parseColor(outlineColor);
-        m_overlay->highlightNode(frame->ownerElement(), *highlightConfig);
+        m_overlay->highlightNode(frame->ownerElement(), 0 /* eventTarget */, *highlightConfig);
     }
 }
 

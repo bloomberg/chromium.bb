@@ -1529,6 +1529,9 @@ bool EventHandler::mouseMoved(const PlatformMouseEvent& event)
     hoveredNode.setToNonShadowAncestor();
     page->chrome()->mouseDidMoveOverElement(hoveredNode, event.modifierFlags());
     page->chrome()->setToolTip(hoveredNode);
+
+    InspectorInstrumentation::handleMouseMove(m_frame, event);
+
     return result;
 }
 

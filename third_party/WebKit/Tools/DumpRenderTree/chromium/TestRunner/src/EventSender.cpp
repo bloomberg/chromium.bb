@@ -518,6 +518,8 @@ void EventSender::mouseMoveTo(const CppArgumentList& arguments, CppVariant* resu
     } else {
         WebMouseEvent event;
         initMouseEvent(WebInputEvent::MouseMove, pressedButton, mousePos, &event, getCurrentEventTimeSec(m_delegate));
+        if (arguments.size() >= 3 && (arguments[2].isObject() || arguments[2].isString()))
+            applyKeyModifiers(&(arguments[2]), &event);
         doMouseMove(event);
     }
 }
