@@ -5,7 +5,7 @@
 #include "chrome/common/crash_keys.h"
 
 #if defined(OS_MACOSX)
-#include "breakpad/src/common/mac/SimpleStringDictionary.h"
+#include "breakpad/src/common/simple_string_dictionary.h"
 #elif defined(OS_WIN)
 #include "breakpad/src/client/windows/common/ipc_protocol.h"
 #endif
