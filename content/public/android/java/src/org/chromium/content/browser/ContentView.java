@@ -33,13 +33,14 @@ import org.chromium.ui.WindowAndroid;
  * TODO(joth): Remove any methods overrides from this class that were added for WebView
  *             compatibility.
  */
-public class ContentView extends FrameLayout implements ContentViewCore.InternalAccessDelegate {
+public class ContentView extends FrameLayout
+        implements ContentViewCore.InternalAccessDelegate, PageInfo {
     // Used when ContentView implements a standalone View.
     public static final int PERSONALITY_VIEW = ContentViewCore.PERSONALITY_VIEW;
     // Used for Chrome.
     public static final int PERSONALITY_CHROME = ContentViewCore.PERSONALITY_CHROME;
 
-    private ContentViewCore mContentViewCore;
+    private final ContentViewCore mContentViewCore;
 
     private float mCurrentTouchOffsetX;
     private float mCurrentTouchOffsetY;
@@ -111,6 +112,43 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid, false);
     }
 
+    // PageInfo implementation.
+
+    @Override
+    public String getUrl() {
+        return mContentViewCore.getUrl();
+    }
+
+    @Override
+    public String getTitle() {
+        return mContentViewCore.getTitle();
+    }
+
+    @Override
+    public boolean isReadyForSnapshot() {
+        return !isCrashed() && isReady();
+    }
+
+    @Override
+    public Bitmap getBitmap() {
+        return getBitmap(getWidth(), getHeight());
+    }
+
+    @Override
+    public Bitmap getBitmap(int width, int height) {
+        return mContentViewCore.getBitmap(width, height);
+    }
+
+    @Override
+    public int getBackgroundColor() {
+        return mContentViewCore.getBackgroundColor();
+    }
+
+    @Override
+    public View getView() {
+        return this;
+    }
+
     /**
      * @return The core component of the ContentView that handles JNI communication.  Should only be
      *         used for passing to native.
@@ -180,16 +218,12 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
         return mContentViewCore.getContentViewClient();
     }
 
-    public int getBackgroundColor() {
-        return mContentViewCore.getBackgroundColor();
-    }
-
     /**
      * Load url without fixing up the url string. Consumers of ContentView are responsible for
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
      * off during user input).
      *
-     * @param pararms Parameters for this load.
+     * @param params Parameters for this load.
      */
     public void loadUrl(LoadUrlParams params) {
         mContentViewCore.loadUrl(params);
@@ -204,32 +238,6 @@ public class ContentView extends FrameLayout implements ContentViewCore.Internal
      */
     public void stopLoading() {
         mContentViewCore.stopLoading();
-    }
-
-    /**
-     * Get the URL of the current page.
-     *
-     * @return The URL of the current page.
-     */
-    public String getUrl() {
-        return mContentViewCore.getUrl();
-    }
-
-    /**
-     * Get the title of the current page.
-     *
-     * @return The title of the current page.
-     */
-    public String getTitle() {
-        return mContentViewCore.getTitle();
-    }
-
-    public Bitmap getBitmap() {
-        return getBitmap(getWidth(), getHeight());
-    }
-
-    public Bitmap getBitmap(int width, int height) {
-        return mContentViewCore.getBitmap(width, height);
     }
 
     /**

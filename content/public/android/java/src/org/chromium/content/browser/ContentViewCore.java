@@ -766,7 +766,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * ensuring the URL passed in is properly formatted (i.e. the scheme has been added if left
      * off during user input).
      *
-     * @param pararms Parameters for this load.
+     * @param params Parameters for this load.
      */
     public void loadUrl(LoadUrlParams params) {
         if (mNativeContentViewCore == 0) return;
@@ -1185,10 +1185,10 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      * Used in automation tests.
      *
      * @param script The Javascript to execute.
-     * @param message The callback to be fired off when a result is ready. The script's
-     *                result will be json encoded and passed as the parameter, and the call
-     *                will be made on the main thread.
-     *                If no result is required, pass null.
+     * @param callback The callback to be fired off when a result is ready. The script's
+     *                 result will be json encoded and passed as the parameter, and the call
+     *                 will be made on the main thread.
+     *                 If no result is required, pass null.
      * @throws IllegalStateException If the ContentView has been destroyed.
      */
     public void evaluateJavaScript(
@@ -2651,6 +2651,14 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     /**
+     * @return The original request URL for the current navigation entry, or null if there is no
+     *         current entry.
+     */
+    public String getOriginalUrlForActiveNavigationEntry() {
+        return nativeGetOriginalUrlForActiveNavigationEntry(mNativeContentViewCore);
+    }
+
+    /**
      * @return The cached copy of render positions and scales.
      */
     public RenderCoordinates getRenderCoordinates() {
@@ -2839,6 +2847,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native int nativeGetNavigationHistory(int nativeContentViewCoreImpl, Object context);
     private native void nativeGetDirectedNavigationHistory(int nativeContentViewCoreImpl,
             Object context, boolean isForward, int maxEntries);
+    private native String nativeGetOriginalUrlForActiveNavigationEntry(
+            int nativeContentViewCoreImpl);
 
     private native void nativeUpdateVSyncParameters(int nativeContentViewCoreImpl,
             long timebaseMicros, long intervalMicros);

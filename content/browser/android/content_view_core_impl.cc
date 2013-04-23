@@ -1353,13 +1353,13 @@ static void AddNavigationEntryToHistory(JNIEnv* env, jobject obj,
 
 int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
                                               jobject obj,
-                                              jobject context) {
+                                              jobject history) {
   // Iterate through navigation entries to populate the list
   const NavigationController& controller = web_contents_->GetController();
   int count = controller.GetEntryCount();
   for (int i = 0; i < count; ++i) {
     AddNavigationEntryToHistory(
-        env, obj, context, controller.GetEntryAtIndex(i), i);
+        env, obj, history, controller.GetEntryAtIndex(i), i);
   }
 
   return controller.GetCurrentEntryIndex();
@@ -1367,7 +1367,7 @@ int ContentViewCoreImpl::GetNavigationHistory(JNIEnv* env,
 
 void ContentViewCoreImpl::GetDirectedNavigationHistory(JNIEnv* env,
                                                        jobject obj,
-                                                       jobject context,
+                                                       jobject history,
                                                        jboolean is_forward,
                                                        jint max_entries) {
   // Iterate through navigation entries to populate the list
@@ -1382,9 +1382,18 @@ void ContentViewCoreImpl::GetDirectedNavigationHistory(JNIEnv* env,
       break;
 
     AddNavigationEntryToHistory(
-        env, obj, context, controller.GetEntryAtIndex(i), i);
+        env, obj, history, controller.GetEntryAtIndex(i), i);
     num_added++;
   }
+}
+
+ScopedJavaLocalRef<jstring>
+ContentViewCoreImpl::GetOriginalUrlForActiveNavigationEntry(JNIEnv* env,
+                                                            jobject obj) {
+  NavigationEntry* entry = web_contents_->GetController().GetActiveEntry();
+  if (entry == NULL)
+    return ScopedJavaLocalRef<jstring>(env, NULL);
+  return ConvertUTF8ToJavaString(env, entry->GetOriginalRequestURL().spec());
 }
 
 int ContentViewCoreImpl::GetNativeImeAdapter(JNIEnv* env, jobject obj) {

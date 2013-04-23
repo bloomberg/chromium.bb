@@ -187,12 +187,14 @@ class ContentViewCoreImpl : public ContentViewCore,
                               jclass safe_annotation_clazz,
                               jobject retained_object_set);
   void RemoveJavascriptInterface(JNIEnv* env, jobject obj, jstring name);
-  int GetNavigationHistory(JNIEnv* env, jobject obj, jobject context);
+  int GetNavigationHistory(JNIEnv* env, jobject obj, jobject history);
   void GetDirectedNavigationHistory(JNIEnv* env,
                                     jobject obj,
-                                    jobject context,
+                                    jobject history,
                                     jboolean is_forward,
                                     jint max_entries);
+  base::android::ScopedJavaLocalRef<jstring>
+      GetOriginalUrlForActiveNavigationEntry(JNIEnv* env, jobject obj);
   void UpdateVSyncParameters(JNIEnv* env, jobject obj, jlong timebase_micros,
                              jlong interval_micros);
   void OnVSync(JNIEnv* env, jobject /* obj */, jlong frame_time_micros);
