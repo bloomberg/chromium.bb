@@ -209,6 +209,8 @@
 #include "webkit/plugins/npapi/webplugin_impl.h"
 
 #if defined(OS_ANDROID)
+#include <cpu-features.h>
+
 #include "content/common/android/device_telephony_info.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
 #include "content/renderer/android/address_detector.h"
@@ -2663,6 +2665,11 @@ WebMediaPlayer* RenderViewImpl::createMediaPlayer(
   const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 #if defined(ENABLE_WEBRTC)
   if (MediaStreamImpl::CheckMediaStream(url)) {
+#if defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
+    bool found_neon =
+        (android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0;
+    UMA_HISTOGRAM_BOOLEAN("Platform.WebRtcNEONFound", found_neon);
+#endif  // defined(OS_ANDROID) && defined(ARCH_CPU_ARMEL)
     EnsureMediaStreamImpl();
     return new webkit_media::WebMediaPlayerMS(
         frame, client, AsWeakPtr(), media_stream_impl_, new RenderMediaLog());

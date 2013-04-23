@@ -338,6 +338,9 @@
       'dependencies': [
         '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber',
       ],
+      'includes': [
+        '../build/android/cpufeatures.gypi',
+      ],
     }],
     # TODO(jrg): remove the OS=="android" section?
     # http://crbug.com/113172
