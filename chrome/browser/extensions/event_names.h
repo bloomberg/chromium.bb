@@ -117,6 +117,9 @@ extern const char kOnNetworkListChanged[];
 extern const char kOnLaunched[];
 extern const char kOnRestarted[];
 
+// Audio
+extern const char kOnAudioDeviceChanged[];
+
 }  // namespace event_names
 
 }  // namespace extensions

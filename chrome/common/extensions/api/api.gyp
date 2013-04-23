@@ -23,6 +23,7 @@
           'app_current_window_internal.idl',
           'app_runtime.idl',
           'app_window.idl',
+          'audio.idl',
           'autotest_private.idl',
           'bluetooth.idl',
           'bookmark_manager_private.json',

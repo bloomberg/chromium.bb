@@ -1254,6 +1254,7 @@
         'browser/extensions/alert_apitest.cc',
         'browser/extensions/all_urls_apitest.cc',
         'browser/extensions/api/app_window/app_window_apitest.cc',
+        'browser/extensions/api/audio/audio_apitest.cc',
         'browser/extensions/api/autotest_private/autotest_private_apitest.cc',
         'browser/extensions/api/bluetooth/bluetooth_apitest.cc',
         'browser/extensions/api/bookmark_manager_private/bookmark_manager_private_apitest.cc',

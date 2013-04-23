@@ -256,6 +256,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kSystemInfoDisplay, "systemInfo.display" },
     { APIPermission::kPointerLock, "pointerLock" },
     { APIPermission::kFullscreen, "fullscreen" },
+    { APIPermission::kAudio, "audio" },
   };
 
   std::vector<APIPermissionInfo*> permissions;

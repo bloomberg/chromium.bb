@@ -41,6 +41,7 @@ class APIPermission {
     kAppCurrentWindowInternal,
     kAppRuntime,
     kAppWindow,
+    kAudio,
     kAudioCapture,
     kAutoTestPrivate,
     kBackground,

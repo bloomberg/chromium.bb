@@ -1,0 +1,24 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "base/command_line.h"
+#include "base/message_loop.h"
+#include "chrome/browser/extensions/api/audio/audio_api.h"
+#include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/extensions/extension_test_message_listener.h"
+#include "chrome/common/chrome_switches.h"
+
+namespace extensions {
+
+class AudioApiTest: public ExtensionApiTest {
+ public:
+  AudioApiTest() {}
+  virtual ~AudioApiTest() {}
+};
+
+IN_PROC_BROWSER_TEST_F(AudioApiTest, Audio) {
+  // TODO: implement this test.
+}
+
+} // namespace extensions

@@ -1,0 +1,69 @@
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+namespace audio {
+
+  dictionary OutputDeviceInfo {
+    // The unique identifier of the audio output device.
+    DOMString id;
+    // The user-friendly name (e.g. "Bose Amplifier").
+    DOMString name;
+    // True if this is the current active device.
+    boolean isActive;
+    // True if this is muted.
+    boolean isMuted;
+    // The output volume ranging from 0.0 to 1.0.
+    double volume;
+  };
+
+  dictionary InputDeviceInfo {
+    // The unique identifier of the audio input device.
+    DOMString id;
+    // The user-friendly name (e.g. "USB Microphone").
+    DOMString name;
+    // True if this is the current active device.
+    boolean isActive;
+    // True if this is muted.
+    boolean isMuted;
+    // The input gain ranging from 0.0 to 1.0.
+    double gain;
+  };
+
+  dictionary DeviceProperties {
+    // True if this is muted.
+    boolean isMuted;
+    // If this is an output device then this field indicates the output volume.
+    // If this is an input device then this field is ignored.
+    double? volume;
+    // If this is an input device then this field indicates the input gain.
+    // If this is an output device then this field is ignored.
+    double? gain;
+  };
+
+  callback GetInfoCallback = void(OutputDeviceInfo[] outputInfo,
+                                  InputDeviceInfo[] inputInfo);
+  callback SetActiveDevicesCallback = void();
+  callback SetPropertiesCallback = void();
+
+  interface Functions {
+    // Get the information of all audio output and input devices.
+    static void getInfo(GetInfoCallback callback);
+
+    // Select a subset of audio devices as active.
+    static void setActiveDevices(DOMString[] ids,
+                                 SetActiveDevicesCallback callback);
+
+    // Sets the properties for the input or output device.
+    static void setProperties(DOMString id,
+                              DeviceProperties properties,
+                              SetPropertiesCallback callback);
+  };
+
+  interface Events {
+    // Fired when anything changes to the audio device configuration.
+    // TODO(hshi): as suggested by mpcomplete this should pass down the same
+    // data as GetInfoCallback. Implement this once we have getInfo working.
+    static void onDeviceChanged();
+  };
+};
