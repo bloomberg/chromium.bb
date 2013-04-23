@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/find_bar/find_bar.h"
 #include "chrome/browser/ui/find_bar/find_bar_controller.h"
 #include "chrome/browser/ui/search/search_model.h"
-#include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -106,12 +105,14 @@ const int BrowserViewLayout::kToolbarTabStripVerticalOverlap = 3;
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, public:
 
-BrowserViewLayout::BrowserViewLayout(Browser* browser)
-    : browser_(browser),
+BrowserViewLayout::BrowserViewLayout()
+    : browser_(NULL),
+      browser_view_(NULL),
+      bookmark_bar_(NULL),
+      infobar_container_(NULL),
       contents_split_(NULL),
       contents_container_(NULL),
       download_shelf_(NULL),
-      browser_view_(NULL),
       find_bar_y_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           dialog_host_(new WebContentsModalDialogHostViews(this))),
@@ -121,13 +122,24 @@ BrowserViewLayout::BrowserViewLayout(Browser* browser)
 BrowserViewLayout::~BrowserViewLayout() {
 }
 
+void BrowserViewLayout::Init(Browser* browser,
+                             BrowserView* browser_view,
+                             InfoBarContainerView* infobar_container,
+                             views::SingleSplitView* contents_split,
+                             ContentsContainer* contents_container) {
+  browser_ = browser;
+  browser_view_ = browser_view;
+  infobar_container_ = infobar_container;
+  contents_split_ = contents_split;
+  contents_container_ = contents_container;
+}
+
 WebContentsModalDialogHost*
     BrowserViewLayout::GetWebContentsModalDialogHost() {
   return dialog_host_.get();
 }
 
 gfx::Size BrowserViewLayout::GetMinimumSize() {
-  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
   gfx::Size tabstrip_size(
       browser()->SupportsWindowFeature(Browser::FEATURE_TABSTRIP) ?
       browser_view_->tabstrip_->GetMinimumSize() : gfx::Size());
@@ -140,13 +152,13 @@ gfx::Size BrowserViewLayout::GetMinimumSize() {
   if (tabstrip_size.height() && toolbar_size.height())
     toolbar_size.Enlarge(0, -kToolbarTabStripVerticalOverlap);
   gfx::Size bookmark_bar_size;
-  if (bookmark_bar &&
-      bookmark_bar->visible() &&
+  if (bookmark_bar_ &&
+      bookmark_bar_->visible() &&
       browser()->SupportsWindowFeature(Browser::FEATURE_BOOKMARKBAR)) {
-    bookmark_bar_size = bookmark_bar->GetMinimumSize();
+    bookmark_bar_size = bookmark_bar_->GetMinimumSize();
     bookmark_bar_size.Enlarge(0,
         -(views::NonClientFrameView::kClientEdgeThickness +
-            bookmark_bar->GetToolbarOverlap(true)));
+            bookmark_bar_->GetToolbarOverlap(true)));
   }
   gfx::Size contents_size(contents_split_->GetMinimumSize());
 
@@ -272,31 +284,6 @@ int BrowserViewLayout::NonClientHitTest(
 
 //////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, views::LayoutManager implementation:
-
-void BrowserViewLayout::Installed(views::View* host) {
-  contents_split_ = NULL;
-  contents_container_ = NULL;
-  download_shelf_ = NULL;
-  browser_view_ = static_cast<BrowserView*>(host);
-}
-
-void BrowserViewLayout::Uninstalled(views::View* host) {}
-
-void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
-  switch (view->id()) {
-    case VIEW_ID_CONTENTS_SPLIT: {
-      contents_split_ = static_cast<views::SingleSplitView*>(view);
-      // We're installed as the LayoutManager before BrowserView creates the
-      // contents, so we have to set contents_container_ here rather than in
-      // Installed.
-      contents_container_ = browser_view_->contents_container_;
-      break;
-    }
-    case VIEW_ID_DOWNLOAD_SHELF:
-      download_shelf_ = static_cast<DownloadShelfView*>(view);
-      break;
-  }
-}
 
 void BrowserViewLayout::Layout(views::View* host) {
   // Showing Instant extended suggestions causes us to temporarily hide any
@@ -464,12 +451,11 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
   web_contents_modal_dialog_top_y_ =
       top + browser_view_->y() - kConstrainedWindowOverlap;
   find_bar_y_ = top + browser_view_->y() - 1;
-  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
-  if (bookmark_bar) {
+  if (bookmark_bar_) {
     // If we're showing the Bookmark bar in detached style, then we
     // need to show any Info bar _above_ the Bookmark bar, since the
     // Bookmark bar is styled to look like it's part of the page.
-    if (bookmark_bar->IsDetached())
+    if (bookmark_bar_->IsDetached())
       return LayoutBookmarkBar(LayoutInfoBar(top));
     // Otherwise, Bookmark bar first, Info bar second.
     top = std::max(browser_view_->toolbar_->bounds().bottom(),
@@ -480,23 +466,21 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
 }
 
 int BrowserViewLayout::LayoutBookmarkBar(int top) {
-  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
-  DCHECK(bookmark_bar);
   int y = top;
   if (!browser_view_->IsBookmarkBarVisible()) {
-    bookmark_bar->SetVisible(false);
+    bookmark_bar_->SetVisible(false);
     // TODO(jamescook): Don't change the bookmark bar height when it is
     // invisible, so we can use its height for layout even in that state.
-    bookmark_bar->SetBounds(0, y, browser_view_->width(), 0);
+    bookmark_bar_->SetBounds(0, y, browser_view_->width(), 0);
     return y;
   }
 
-  bookmark_bar->set_infobar_visible(InfobarVisible());
-  int bookmark_bar_height = bookmark_bar->GetPreferredSize().height();
+  bookmark_bar_->set_infobar_visible(InfobarVisible());
+  int bookmark_bar_height = bookmark_bar_->GetPreferredSize().height();
   y -= views::NonClientFrameView::kClientEdgeThickness +
-      bookmark_bar->GetToolbarOverlap(false);
-  bookmark_bar->SetVisible(true);
-  bookmark_bar->SetBounds(vertical_layout_rect_.x(), y,
+      bookmark_bar_->GetToolbarOverlap(false);
+  bookmark_bar_->SetVisible(true);
+  bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
                                  vertical_layout_rect_.width(),
                                  bookmark_bar_height);
   return y + bookmark_bar_height;
@@ -535,10 +519,9 @@ void BrowserViewLayout::LayoutContentsSplitView(int top, int bottom) {
 int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
   // If the bookmark bar is hidden or attached to the omnibox the web contents
   // will appear directly underneath it and does not need an offset.
-  BookmarkBarView* bookmark_bar = browser_view_->bookmark_bar_view_.get();
-  if (!bookmark_bar ||
+  if (!bookmark_bar_ ||
       !browser_view_->IsBookmarkBarVisible() ||
-      !bookmark_bar->IsDetached()) {
+      !bookmark_bar_->IsDetached()) {
     return 0;
   }
 
@@ -547,7 +530,7 @@ int BrowserViewLayout::GetContentsOffsetForBookmarkBar() {
     return 0;
 
   // Offset for the detached bookmark bar.
-  return bookmark_bar->height() -
+  return bookmark_bar_->height() -
       views::NonClientFrameView::kClientEdgeThickness;
 }
 
@@ -625,7 +608,8 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
 }
 
 bool BrowserViewLayout::InfobarVisible() const {
-  views::View* infobar_container = browser_view_->infobar_container_;
+  // Cast to a views::View to access GetPreferredSize().
+  views::View* infobar_container = infobar_container_;
   // NOTE: Can't check if the size IsEmpty() since it's always 0-width.
   return browser_->SupportsWindowFeature(Browser::FEATURE_INFOBAR) &&
       (infobar_container->GetPreferredSize().height() != 0);

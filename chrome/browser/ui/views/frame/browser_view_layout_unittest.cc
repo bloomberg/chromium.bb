@@ -5,37 +5,35 @@
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/infobars/infobar_container_view.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-// Tests of the LayoutManger for BrowserView.
+// Tests of BrowserViewLayout. Runs tests without constructing a BrowserView.
 class BrowserViewLayoutTest : public BrowserWithTestWindowTest {
  public:
-  BrowserViewLayoutTest() : layout_(NULL) {}
+  BrowserViewLayoutTest() {}
   virtual ~BrowserViewLayoutTest() {}
 
   virtual void SetUp() OVERRIDE {
-    // BrowserWithTestWindowTest takes ownership of BrowserView via |window_|.
-    BrowserView* browser_view = new BrowserView;
-    set_window(browser_view);
-
-    // Creates a Browser using |browser_view| as its BrowserWindow.
     BrowserWithTestWindowTest::SetUp();
 
-    // Memory ownership is tricky here. BrowserView needs ownership of
-    // |browser|, so BrowserWithTestWindowTest cannot continue to own it.
-    Browser* browser = release_browser();
-    browser_view->Init(browser);
-
-    // BrowserView also takes ownership of |layout_|.
-    layout_ = new BrowserViewLayout(browser);
-    browser_view->SetLayoutManager(layout_);
+    // Because we have a TestBrowserWindow, not a BrowserView, |layout_| is
+    // not attached to a host view.
+    layout_.reset(new BrowserViewLayout);
+    infobar_container_.reset(new InfoBarContainerView(NULL, NULL));
+    layout_->Init(browser(),
+                  NULL,
+                  infobar_container_.get(),
+                  NULL,
+                  NULL);
   }
 
-  BrowserViewLayout* layout() { return layout_; }
+  BrowserViewLayout* layout() { return layout_.get(); }
 
  private:
-  BrowserViewLayout* layout_;
+  scoped_ptr<BrowserViewLayout> layout_;
+  scoped_ptr<InfoBarContainerView> infobar_container_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayoutTest);
 };
@@ -45,6 +43,7 @@ TEST_F(BrowserViewLayoutTest, BrowserViewLayout) {
   EXPECT_TRUE(layout()->browser());
   EXPECT_TRUE(layout()->GetWebContentsModalDialogHost());
   EXPECT_EQ(BrowserViewLayout::kInstantUINone, layout()->GetInstantUIState());
+  EXPECT_FALSE(layout()->InfobarVisible());
   // TODO(jamescook): Add more as we break dependencies.
 }
 

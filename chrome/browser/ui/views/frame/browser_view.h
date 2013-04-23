@@ -451,6 +451,7 @@ class BrowserView : public BrowserWindow,
 
  private:
   friend class BrowserViewLayout;
+  FRIEND_TEST_ALL_PREFIXES(BrowserViewTest, BrowserView);
   FRIEND_TEST_ALL_PREFIXES(BrowserViewsAccessibilityTest,
                            TestAboutChromeViewAccObj);
 

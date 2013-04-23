@@ -439,6 +439,9 @@ BrowserView::~BrowserView() {
   // downloads can be destroyed along with |browser_| and the observer
   // notifications will call back into deleted objects).
   download_shelf_.reset();
+  BrowserViewLayout* browser_view_layout = GetBrowserViewLayout();
+  if (browser_view_layout)
+    browser_view_layout->set_download_shelf(NULL);
 
   // The TabStrip attaches a listener to the model. Make sure we shut down the
   // TabStrip first so that it can cleanly remove the listener.
@@ -1207,6 +1210,7 @@ DownloadShelf* BrowserView::GetDownloadShelf() {
   if (!download_shelf_.get()) {
     download_shelf_.reset(new DownloadShelfView(browser_.get(), this));
     download_shelf_->set_owned_by_client();
+    GetBrowserViewLayout()->set_download_shelf(download_shelf_.get());
   }
   return download_shelf_.get();
 }
@@ -1941,7 +1945,6 @@ void BrowserView::OnSysColorChange() {
 void BrowserView::InitViews() {
   GetWidget()->AddObserver(this);
 
-  SetLayoutManager(new BrowserViewLayout(browser()));
   // Stow a pointer to this object onto the window handle so that we can get at
   // it later when all we have is a native view.
   GetWidget()->SetNativeWindowProperty(kBrowserViewKey, this);
@@ -2014,6 +2017,14 @@ void BrowserView::InitViews() {
   toolbar_ = new ToolbarView(browser_.get());
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
+
+  BrowserViewLayout* browser_view_layout = new BrowserViewLayout;
+  browser_view_layout->Init(browser(),
+                            this,
+                            infobar_container_,
+                            contents_split_,
+                            contents_container_);
+  SetLayoutManager(browser_view_layout);
 
 #if defined(OS_WIN) && !defined(USE_AURA)
   // Create a custom JumpList and add it to an observer of TabRestoreService
@@ -2095,6 +2106,7 @@ bool BrowserView::MaybeShowBookmarkBar(WebContents* contents) {
     bookmark_bar_view_->SetBookmarkBarState(
         browser_->bookmark_bar_state(),
         BookmarkBar::DONT_ANIMATE_STATE_CHANGE);
+    GetBrowserViewLayout()->set_bookmark_bar(bookmark_bar_view_.get());
   }
   bookmark_bar_view_->SetVisible(show_bookmark_bar);
   bookmark_bar_view_->SetPageNavigator(contents);

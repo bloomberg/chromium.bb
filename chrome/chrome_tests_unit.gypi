@@ -1461,6 +1461,7 @@
         'browser/ui/views/extensions/browser_action_drag_data_unittest.cc',
         'browser/ui/views/first_run_bubble_unittest.cc',
         'browser/ui/views/frame/browser_view_layout_unittest.cc',
+        'browser/ui/views/frame/browser_view_unittest.cc',
         'browser/ui/views/reload_button_unittest.cc',
         'browser/ui/views/select_file_dialog_extension_unittest.cc',
         'browser/ui/views/status_icons/status_tray_win_unittest.cc',

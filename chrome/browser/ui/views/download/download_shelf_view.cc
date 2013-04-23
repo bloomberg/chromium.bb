@@ -93,6 +93,9 @@ int CenterPosition(int size, int target_size) {
 
 DownloadShelfView::DownloadShelfView(Browser* browser, BrowserView* parent)
     : browser_(browser),
+      arrow_image_(NULL),
+      show_all_view_(NULL),
+      close_button_(NULL),
       parent_(parent),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           mouse_watcher_(new views::MouseWatcherViewHost(this, gfx::Insets()),

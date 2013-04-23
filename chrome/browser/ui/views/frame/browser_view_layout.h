@@ -17,6 +17,7 @@ class Browser;
 class BrowserView;
 class ContentsContainer;
 class DownloadShelfView;
+class InfoBarContainerView;
 class TabContentsContainer;
 class TabStrip;
 class ToolbarView;
@@ -37,8 +38,23 @@ class BrowserViewLayout : public views::LayoutManager {
   // The vertical overlap between the TabStrip and the Toolbar.
   static const int kToolbarTabStripVerticalOverlap;
 
-  explicit BrowserViewLayout(Browser* browser);
+  BrowserViewLayout();
   virtual ~BrowserViewLayout();
+
+  // Sets all the views to be managed. Tests may inject stubs or NULL.
+  void Init(Browser* browser,
+            BrowserView* browser_view,
+            InfoBarContainerView* infobar_container,
+            views::SingleSplitView* contents_split,
+            ContentsContainer* contents_container);
+
+  // Sets or updates views that are not available when |this| is initialized.
+  void set_bookmark_bar(BookmarkBarView* bookmark_bar) {
+    bookmark_bar_ = bookmark_bar;
+  }
+  void set_download_shelf(DownloadShelfView* download_shelf) {
+    download_shelf_ = download_shelf;
+  }
 
   WebContentsModalDialogHost* GetWebContentsModalDialogHost();
 
@@ -59,9 +75,6 @@ class BrowserViewLayout : public views::LayoutManager {
   int NonClientHitTest(const gfx::Point& point);
 
   // views::LayoutManager overrides:
-  virtual void Installed(views::View* host) OVERRIDE;
-  virtual void Uninstalled(views::View* host) OVERRIDE;
-  virtual void ViewAdded(views::View* host, views::View* view) OVERRIDE;
   virtual void Layout(views::View* host) OVERRIDE;
   virtual gfx::Size GetPreferredSize(views::View* host) OVERRIDE;
 
@@ -130,12 +143,15 @@ class BrowserViewLayout : public views::LayoutManager {
   // The browser from the owning BrowserView.
   Browser* browser_;
 
+  // The owning BrowserView. May be NULL in tests.
+  BrowserView* browser_view_;
+
   // Child views that the layout manager manages.
+  BookmarkBarView* bookmark_bar_;
+  InfoBarContainerView* infobar_container_;
   views::SingleSplitView* contents_split_;
   ContentsContainer* contents_container_;
   DownloadShelfView* download_shelf_;
-
-  BrowserView* browser_view_;
 
   // The bounds within which the vertically-stacked contents of the BrowserView
   // should be laid out within. This is just the local bounds of the
