@@ -1452,6 +1452,17 @@ void DriveFileSystem::MarkCacheFileAsUnmounted(
   cache_->MarkAsUnmounted(cache_file_path, callback);
 }
 
+void DriveFileSystem::GetCacheEntryByResourceId(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetCacheEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!resource_id.empty());
+  DCHECK(!callback.is_null());
+
+  cache_->GetCacheEntry(resource_id, md5, callback);
+}
+
 void DriveFileSystem::OnDisableDriveHostedFilesChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   PrefService* pref_service = profile_->GetPrefs();

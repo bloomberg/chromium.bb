@@ -249,6 +249,13 @@ void FakeDriveFileSystem::MarkCacheFileAsUnmounted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeDriveFileSystem::GetCacheEntryByResourceId(
+    const std::string& resource_id,
+    const std::string& md5,
+    const GetCacheEntryCallback& callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeDriveFileSystem::Reload() {
 }
 

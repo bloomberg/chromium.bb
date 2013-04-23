@@ -141,6 +141,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) OVERRIDE;
+  virtual void GetCacheEntryByResourceId(
+      const std::string& resource_id,
+      const std::string& md5,
+      const GetCacheEntryCallback& callback) OVERRIDE;
   virtual void Reload() OVERRIDE;
 
   // file_system::OperationObserver overrides.

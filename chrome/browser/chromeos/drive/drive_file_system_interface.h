@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
+#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/google_apis/gdata_wapi_operations.h"
@@ -445,6 +446,18 @@ class DriveFileSystemInterface {
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) = 0;
+
+  // Gets the cache entry for file corresponding to |resource_id| and |md5|
+  // and runs |callback| with true and the found entry if the entry exists
+  // in the cache map. Otherwise, runs |callback| with false.
+  // |md5| can be empty if only matching |resource_id| is desired, which may
+  // happen when looking for pinned entries where symlinks' filenames have no
+  // extension and hence no md5.
+  // |callback| must not be null.
+  virtual void GetCacheEntryByResourceId(
+      const std::string& resource_id,
+      const std::string& md5,
+      const GetCacheEntryCallback& callback) = 0;
 
   // Reloads the file system feeds from the server.
   virtual void Reload() = 0;

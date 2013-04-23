@@ -114,6 +114,10 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
   MOCK_METHOD2(MarkCacheFileAsUnmounted,
                void(const base::FilePath& cache_file_path,
                     const FileOperationCallback& callback));
+  MOCK_METHOD3(GetCacheEntryByResourceId,
+               void(const std::string& resource_id,
+                    const std::string& md5,
+                    const GetCacheEntryCallback& callback));
   MOCK_METHOD0(Reload, void());
 };
 
