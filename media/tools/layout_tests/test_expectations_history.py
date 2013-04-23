@@ -7,8 +7,10 @@
 from datetime import datetime
 from datetime import timedelta
 
+import os
 import re
 import sys
+import tempfile
 import time
 import pysvn
 
@@ -59,14 +61,16 @@ class TestExpectationsHistory(object):
       A list of tuples (old_rev, new_rev, author, date, message, lines). The
           |lines| contains the diff of the tests of interest.
     """
+    temp_directory = tempfile.mkdtemp()
+    test_expectations_path = os.path.join(temp_directory, 'TestExpectations')
     # Get directory name which is necesary to call PySVN.checkout().
     te_location_dir = te_location[0:te_location.rindex('/')]
     client = pysvn.Client()
-    client.checkout(te_location_dir, 'tmp', recurse=False)
+    client.checkout(te_location_dir, temp_directory, recurse=False)
     # PySVN.log() (http://pysvn.tigris.org/docs/pysvn_prog_ref.html
     # #pysvn_client_log) returns the log messages (including revision
     # number in chronological order).
-    logs = client.log('tmp/TestExpectations',
+    logs = client.log(test_expectations_path,
                       revision_start=pysvn.Revision(
                           pysvn.opt_revision_kind.date, start),
                       revision_end=pysvn.Revision(
@@ -78,7 +82,7 @@ class TestExpectationsHistory(object):
           (datetime.fromtimestamp(start) - (
               timedelta(days=gobackdays))).timetuple())
       logs_before_time_period = (
-          client.log('tmp/TestExpectations',
+          client.log(test_expectations_path,
                      revision_start=pysvn.Revision(
                          pysvn.opt_revision_kind.date, goback_start),
                      revision_end=pysvn.Revision(
@@ -99,7 +103,7 @@ class TestExpectationsHistory(object):
       old_path = TestExpectationsHistory.GetTestExpectationsPathForRevision(
           old_rev);
 
-      text = client.diff('/tmp',
+      text = client.diff(temp_directory,
                          url_or_path=old_path,
                          revision1=pysvn.Revision(
                              pysvn.opt_revision_kind.number, old_rev),
