@@ -808,8 +808,8 @@ public:
         NotCompositedForNoVisibleContent,
     };
 
-    void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { m_viewportConstrainedNotCompositedReason = reason; }
-    ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason() const { return static_cast<ViewportConstrainedNotCompositedReason>(m_viewportConstrainedNotCompositedReason); }
+    void setViewportConstrainedNotCompositedReason(ViewportConstrainedNotCompositedReason reason) { m_compositingProperties.viewportConstrainedNotCompositedReason = reason; }
+    ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason() const { return static_cast<ViewportConstrainedNotCompositedReason>(m_compositingProperties.viewportConstrainedNotCompositedReason); }
 
     bool isOutOfFlowRenderFlowThread() const { return renderer()->isOutOfFlowRenderFlowThread(); }
 
@@ -1058,8 +1058,8 @@ private:
     // FIXME: Temporary. Remove when new columns come online.
     bool useRegionBasedColumns() const;
     
-    bool hasCompositingDescendant() const { return m_hasCompositingDescendant; }
-    void setHasCompositingDescendant(bool b)  { m_hasCompositingDescendant = b; }
+    bool hasCompositingDescendant() const { return m_compositingProperties.hasCompositingDescendant; }
+    void setHasCompositingDescendant(bool b)  { m_compositingProperties.hasCompositingDescendant = b; }
     
     enum IndirectCompositingReason {
         NoIndirectCompositingReason,
@@ -1071,9 +1071,9 @@ private:
         IndirectCompositingForPreserve3D
     };
     
-    void setIndirectCompositingReason(IndirectCompositingReason reason) { m_indirectCompositingReason = reason; }
-    IndirectCompositingReason indirectCompositingReason() const { return static_cast<IndirectCompositingReason>(m_indirectCompositingReason); }
-    bool mustCompositeForIndirectReasons() const { return m_indirectCompositingReason; }
+    void setIndirectCompositingReason(IndirectCompositingReason reason) { m_compositingProperties.indirectCompositingReason = reason; }
+    IndirectCompositingReason indirectCompositingReason() const { return static_cast<IndirectCompositingReason>(m_compositingProperties.indirectCompositingReason); }
+    bool mustCompositeForIndirectReasons() const { return m_compositingProperties.indirectCompositingReason; }
 
     // Returns true if z ordering would not change if this layer were a stacking container.
     bool canBeStackingContainer() const;
@@ -1149,10 +1149,6 @@ protected:
     bool m_3DTransformedDescendantStatusDirty : 1;
     bool m_has3DTransformedDescendant : 1;  // Set on a stacking context layer that has 3D descendants anywhere
                                             // in a preserves3D hierarchy. Hint to do 3D-aware hit testing.
-
-    bool m_hasCompositingDescendant : 1; // In the z-order tree.
-    unsigned m_indirectCompositingReason : 3;
-    unsigned m_viewportConstrainedNotCompositedReason : 2;
 
     bool m_containsDirtyOverlayScrollbars : 1;
     bool m_updatingMarqueePosition : 1;
@@ -1233,6 +1229,27 @@ protected:
 
     // Pointer to the enclosing RenderLayer that caused us to be paginated. It is 0 if we are not paginated.
     RenderLayer* m_enclosingPaginationLayer;
+
+    // Properties that are computed while updating compositing layers. These values may be dirty/invalid if
+    // compositing status is not up-to-date before using them.
+    struct CompositingProperties {
+        CompositingProperties()
+            : hasCompositingDescendant(false)
+            , indirectCompositingReason(NoIndirectCompositingReason)
+            , viewportConstrainedNotCompositedReason(NoNotCompositedReason)
+        { }
+
+        // Used only while determining what layers should be composited. Applies to the tree of z-order lists.
+        bool hasCompositingDescendant : 1;
+
+        // Used only while determining what layers should be composited.
+        unsigned indirectCompositingReason : 3;
+
+        // The reason, if any exists, that a fixed-position layer is chosen not to be composited.
+        unsigned viewportConstrainedNotCompositedReason : 2;
+    };
+
+    CompositingProperties m_compositingProperties;
 
 private:
     IntRect m_blockSelectionGapsBounds;
