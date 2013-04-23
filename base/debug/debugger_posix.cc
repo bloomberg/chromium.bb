@@ -211,21 +211,26 @@ bool BeingDebugged() {
 #define DEBUG_BREAK() abort()
 #elif defined(OS_ANDROID)
 // Though Android has a "helpful" process called debuggerd to catch native
-// signals on the general assumption that they are fatal errors. The bkpt
-// instruction appears to cause SIGBUS which is trapped by debuggerd, and
-// we've had great difficulty continuing in a debugger once we stop from
-// SIG triggered by native code.
-//
-// Use GDB to set |go| to 1 to resume execution.
+// signals on the general assumption that they are fatal errors. If no debugger
+// is attached, we call abort since Breakpad needs SIGABRT to create a dump.
+// When debugger is attached, for ARM platform the bkpt instruction appears
+// to cause SIGBUS which is trapped by debuggerd, and we've had great
+// difficulty continuing in a debugger once we stop from SIG triggered by native
+// code, use GDB to set |go| to 1 to resume execution; for X86 platform, use
+// "int3" to setup breakpiont and raise SIGTRAP.
 namespace {
 void DebugBreak() {
   if (!BeingDebugged()) {
     abort();
   } else {
+#if defined(ARCH_CPU_X86_FAMILY)
+    asm("int3");
+#else
     volatile int go = 0;
     while (!go) {
       base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(100));
     }
+#endif
   }
 }
 }  // namespace
