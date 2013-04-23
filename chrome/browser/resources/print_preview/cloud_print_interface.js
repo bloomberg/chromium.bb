@@ -500,7 +500,7 @@ cr.define('cloudprint', function() {
       if (request.xhr.status == 200 && request.result['success']) {
         var submitDoneEvent = new cr.Event(
             CloudPrintInterface.EventType.SUBMIT_DONE);
-        submitDoneEvent.jobId = result['job']['id'];
+        submitDoneEvent.jobId = request.result['job']['id'];
         this.dispatchEvent(submitDoneEvent);
       } else {
         var errorEvent = this.createErrorEvent_(
