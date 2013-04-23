@@ -115,6 +115,7 @@ class CONTENT_EXPORT ContentRendererClient {
   // (lack of information on the error code) so the caller should take care to
   // initialize the string values with safe defaults before the call.
   virtual void GetNavigationErrorStrings(
+      WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error,
       std::string* error_html,

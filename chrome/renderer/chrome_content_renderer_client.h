@@ -70,6 +70,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual bool HasErrorPage(int http_status_code,
                             std::string* error_domain) OVERRIDE;
   virtual void GetNavigationErrorStrings(
+      WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& failed_request,
       const WebKit::WebURLError& error,
       std::string* error_html,

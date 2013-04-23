@@ -62,6 +62,7 @@ bool AwContentRendererClient::HasErrorPage(int http_status_code,
 }
 
 void AwContentRendererClient::GetNavigationErrorStrings(
+    WebKit::WebFrame* /* frame */,
     const WebKit::WebURLRequest& failed_request,
     const WebKit::WebURLError& error,
     std::string* error_html,

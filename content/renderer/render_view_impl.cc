@@ -1856,7 +1856,7 @@ void RenderViewImpl::LoadNavigationErrorPage(
     error_html = &html;
   } else {
     GetContentClient()->renderer()->GetNavigationErrorStrings(
-        failed_request, error, &alt_html, NULL);
+        frame, failed_request, error, &alt_html, NULL);
     error_html = &alt_html;
   }
 
@@ -3444,6 +3444,7 @@ void RenderViewImpl::didFailProvisionalLoad(WebFrame* frame,
   params.is_main_frame = !frame->parent();
   params.error_code = error.reason;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
+      frame,
       failed_request,
       error,
       NULL,
@@ -3690,6 +3691,7 @@ void RenderViewImpl::didFailLoad(WebFrame* frame, const WebURLError& error) {
   const WebURLRequest& failed_request = ds->request();
   string16 error_description;
   GetContentClient()->renderer()->GetNavigationErrorStrings(
+      frame,
       failed_request,
       error,
       NULL,
