@@ -327,6 +327,10 @@
         'browser/chrome_browser_application_mac.mm',
         'browser/chrome_browser_field_trials.cc',
         'browser/chrome_browser_field_trials.h',
+        'browser/chrome_browser_field_trials_desktop.cc',
+        'browser/chrome_browser_field_trials_desktop.h',
+        'browser/chrome_browser_field_trials_mobile.cc',
+        'browser/chrome_browser_field_trials_mobile.h',
         'browser/chrome_browser_main.cc',
         'browser/chrome_browser_main.h',
         'browser/chrome_browser_main_android.cc',
@@ -2628,8 +2632,15 @@
             'browser/sessions/session_service_factory.h',
           ],
         }],
-        ['OS!="android" and OS!="ios"', {
+        ['OS=="android" or OS=="ios"', {
           'sources!': [
+            'browser/chrome_browser_field_trials_desktop.cc',
+            'browser/chrome_browser_field_trials_desktop.h',
+          ],
+        }, {  # OS!="android" and OS!="ios"
+          'sources!': [
+            'browser/chrome_browser_field_trials_mobile.cc',
+            'browser/chrome_browser_field_trials_mobile.h',
             'browser/metrics/variations/eula_accepted_notifier_mobile.cc',
             'browser/metrics/variations/eula_accepted_notifier_mobile.h',
             'browser/metrics/variations/variations_request_scheduler_mobile.cc',

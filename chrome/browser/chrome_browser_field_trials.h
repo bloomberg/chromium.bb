@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
-#include "base/time.h"
 
 class PrefService;
 
@@ -21,56 +20,6 @@ class ChromeBrowserFieldTrials {
   void SetupFieldTrials(PrefService* local_state);
 
  private:
-  // Sets up common desktop-only field trials.
-  // Add an invocation of your field trial init function to this method, or to
-  // SetupFieldTrials if it is for all platforms.
-  // |local_state| is needed by some other methods called from within this one.
-  void SetupDesktopFieldTrials(PrefService* local_state);
-
-#if defined(OS_ANDROID) || defined(OS_IOS)
-  // Sets up mobile-only field trials.
-  // Add invocation of your field trial initialization code in this method.
-  void SetupMobileFieldTrials();
-
-  // Mobile compression rollout field trial.
-  void DataCompressionProxyFieldTrial();
-#endif  // defined(OS_ANDROID) || defined(OS_IOS)
-
-  // This is not quite a field trial initialization, but it's an initialization
-  // that depends on a field trial, so why not? :-)
-  // |local_state| is needed to reset a local pref based on the chosen group.
-  void SetupAppLauncherFieldTrial(PrefService* local_state);
-
-  // A/B test for spdy when --use-spdy not set.
-  void SpdyFieldTrial();
-
-  // Field trial to see what disabling DNS pre-resolution does to
-  // latency of page loads.
-  void PredictorFieldTrial();
-
-  // A field trial to see what effects launching Chrome automatically on
-  // computer startup has on retention and usage of Chrome.
-  void AutoLaunchChromeFieldTrial();
-
-  // A collection of one-time-randomized and session-randomized field trials
-  // intended to test the uniformity and correctness of the field trial control,
-  // bucketing and reporting systems.
-  void SetupUniformityFieldTrials(const base::Time& install_date);
-
-  // Sets up the InfiniteCache field trial.
-  void SetUpInfiniteCacheFieldTrial();
-
-  // Sets up field trials for doing Cache Sensitivity Analysis.
-  void SetUpCacheSensitivityAnalysisFieldTrial();
-
-  // Disables the show profile switcher field trial if multi-profiles is not
-  // enabled.
-  void DisableShowProfileSwitcherTrialIfNecessary();
-
-  // A field trial to determine the impact of using non-blocking reads for
-  // TCP sockets on Windows instead of overlapped I/O.
-  void WindowsOverlappedTCPReadsFieldTrial();
-
   // A field trial to check the simple cache performance.
   void SetUpSimpleCacheFieldTrial();
 

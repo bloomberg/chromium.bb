@@ -5,7 +5,7 @@ per-file about_flags.cc=*
 per-file chrome_content_browser_client.cc=*
 per-file chrome_content_browser_client.h=*
 
-per-file chrome_browser_field_trials.*=asvitkine@chromium.org
-per-file chrome_browser_field_trials.*=stevet@chromium.org
+per-file chrome_browser_field_trials*=asvitkine@chromium.org
+per-file chrome_browser_field_trials*=stevet@chromium.org
 
 per-file enumerate_modules_model*=finnur@chromium.org
