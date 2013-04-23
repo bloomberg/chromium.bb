@@ -325,3 +325,7 @@ WebUIBrowserAsyncGenDeferredToGlobalTest.*
 WebUIAccessibilityAuditBrowserTest_TestsDisabledInFixture.*
 PasswordManagerBrowserTest*
 RangeHistoryWebUITest*
+# DrM-i#1052-c#46
+WebGLInfobarTest.*
+StartupBrowserCreatorTest.*
+PrefsTabHelperBrowserTest*
