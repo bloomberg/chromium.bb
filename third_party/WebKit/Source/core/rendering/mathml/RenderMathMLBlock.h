@@ -33,8 +33,6 @@
 #include "RenderTable.h"
 #include "StyleInheritedData.h"
 
-#define ENABLE_DEBUG_MATH_LAYOUT 0
-
 namespace WebCore {
     
 class RenderMathMLOperator;
@@ -77,10 +75,6 @@ public:
     virtual void computePreferredLogicalWidths() OVERRIDE;
     
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const OVERRIDE;
-    
-#if ENABLE(DEBUG_MATH_LAYOUT)
-    virtual void paint(PaintInfo&, const LayoutPoint&);
-#endif
     
     // Create a new RenderMathMLBlock, with a new style inheriting from this->style().
     RenderMathMLBlock* createAnonymousMathMLBlock(EDisplay = FLEX);

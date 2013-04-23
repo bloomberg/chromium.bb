@@ -34,10 +34,6 @@
 #include "MathMLNames.h"
 #include "RenderView.h"
 
-#if ENABLE(DEBUG_MATH_LAYOUT)
-#include "PaintInfo.h"
-#endif
-
 namespace WebCore {
     
 using namespace MathMLNames;
@@ -151,41 +147,6 @@ const char* RenderMathMLBlock::renderName() const
     ASSERT_NOT_REACHED();
     return isAnonymous() ? "RenderMathMLBlock (anonymous)" : "RenderMathMLBlock";
 }
-
-#if ENABLE(DEBUG_MATH_LAYOUT)
-void RenderMathMLBlock::paint(PaintInfo& info, const LayoutPoint& paintOffset)
-{
-    RenderFlexibleBox::paint(info, paintOffset);
-    
-    if (info.context->paintingDisabled() || info.phase != PaintPhaseForeground)
-        return;
-
-    IntPoint adjustedPaintOffset = roundedIntPoint(paintOffset + location());
-
-    GraphicsContextStateSaver stateSaver(*info.context);
-    
-    info.context->setStrokeThickness(1.0f);
-    info.context->setStrokeStyle(SolidStroke);
-    info.context->setStrokeColor(Color(0, 0, 255), ColorSpaceSRGB);
-    
-    info.context->drawLine(adjustedPaintOffset, IntPoint(adjustedPaintOffset.x() + pixelSnappedOffsetWidth(), adjustedPaintOffset.y()));
-    info.context->drawLine(IntPoint(adjustedPaintOffset.x() + pixelSnappedOffsetWidth(), adjustedPaintOffset.y()), IntPoint(adjustedPaintOffset.x() + pixelSnappedOffsetWidth(), adjustedPaintOffset.y() + pixelSnappedOffsetHeight()));
-    info.context->drawLine(IntPoint(adjustedPaintOffset.x(), adjustedPaintOffset.y() + pixelSnappedOffsetHeight()), IntPoint(adjustedPaintOffset.x() + pixelSnappedOffsetWidth(), adjustedPaintOffset.y() + pixelSnappedOffsetHeight()));
-    info.context->drawLine(adjustedPaintOffset, IntPoint(adjustedPaintOffset.x(), adjustedPaintOffset.y() + pixelSnappedOffsetHeight()));
-    
-    int topStart = paddingTop();
-    
-    info.context->setStrokeColor(Color(0, 255, 0), ColorSpaceSRGB);
-    
-    info.context->drawLine(IntPoint(adjustedPaintOffset.x(), adjustedPaintOffset.y() + topStart), IntPoint(adjustedPaintOffset.x() + pixelSnappedOffsetWidth(), adjustedPaintOffset.y() + topStart));
-    
-    int baseline = roundToInt(baselinePosition(AlphabeticBaseline, true, HorizontalLine));
-    
-    info.context->setStrokeColor(Color(255, 0, 0), ColorSpaceSRGB);
-    
-    info.context->drawLine(IntPoint(adjustedPaintOffset.x(), adjustedPaintOffset.y() + baseline), IntPoint(adjustedPaintOffset.x() + pixelSnappedOffsetWidth(), adjustedPaintOffset.y() + baseline));
-}
-#endif // ENABLE(DEBUG_MATH_LAYOUT)
 
 int RenderMathMLTable::firstLineBoxBaseline() const
 {
