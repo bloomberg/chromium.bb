@@ -35,9 +35,6 @@ void SetChromeSpecificCommandLineFlags() {
   // Turn on autologin.
   SetCommandLineSwitch(switches::kEnableAutologin);
 
-  // Turn on query extraction on omnibox searches.
-  SetCommandLineSwitch(switches::kEnableInstantExtendedAPI);
-
   // Enable prerender for the omnibox.
   SetCommandLineSwitchASCII(
       switches::kPrerenderMode, switches::kPrerenderModeSwitchValueEnabled);
