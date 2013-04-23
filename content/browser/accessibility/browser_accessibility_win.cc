@@ -15,6 +15,7 @@
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/common/accessibility_messages.h"
+#include "content/public/common/content_client.h"
 #include "ui/base/accessibility/accessible_text_utils.h"
 #include "ui/base/win/accessibility_ids_win.h"
 #include "ui/base/win/accessibility_misc_utils.h"
@@ -849,6 +850,41 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
   }
 
   return E_NOTIMPL;
+}
+
+//
+// IAccessibleApplication methods.
+//
+
+STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
+  std::string product_name = GetContentClient()->GetProduct();
+  *app_name = SysAllocString(UTF8ToUTF16(product_name).c_str());
+  DCHECK(*app_name);
+  return *app_name ? S_OK : E_FAIL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
+  std::string user_agent = GetContentClient()->GetUserAgent();
+  *app_version = SysAllocString(UTF8ToUTF16(user_agent).c_str());
+  DCHECK(*app_version);
+  return *app_version ? S_OK : E_FAIL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_toolkitName(BSTR* toolkit_name) {
+  // This is hard-coded; all products based on the Chromium engine
+  // will have the same toolkit name, so that assistive technology can
+  // detect any Chrome-based product.
+  *toolkit_name = SysAllocString(L"Chrome");
+  DCHECK(*toolkit_name);
+  return *toolkit_name ? S_OK : E_FAIL;
+}
+
+STDMETHODIMP BrowserAccessibilityWin::get_toolkitVersion(
+    BSTR* toolkit_version) {
+  std::string user_agent = GetContentClient()->GetUserAgent();
+  *toolkit_version = SysAllocString(UTF8ToUTF16(user_agent).c_str());
+  DCHECK(*toolkit_version);
+  return *toolkit_version ? S_OK : E_FAIL;
 }
 
 //
@@ -2531,6 +2567,7 @@ STDMETHODIMP BrowserAccessibilityWin::QueryService(REFGUID guidService,
   if (guidService == IID_IAccessible ||
       guidService == IID_IAccessible2 ||
       guidService == IID_IAccessibleAction ||
+      guidService == IID_IAccessibleApplication ||
       guidService == IID_IAccessibleHyperlink ||
       guidService == IID_IAccessibleHypertext ||
       guidService == IID_IAccessibleImage ||

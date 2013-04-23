@@ -43,6 +43,7 @@ BrowserAccessibilityWin
       public CComObjectRootEx<CComMultiThreadModel>,
       public IDispatchImpl<IAccessible2, &IID_IAccessible2,
                            &LIBID_IAccessible2Lib>,
+      public IAccessibleApplication,
       public IAccessibleHyperlink,
       public IAccessibleHypertext,
       public IAccessibleImage,
@@ -62,6 +63,7 @@ BrowserAccessibilityWin
     COM_INTERFACE_ENTRY2(IAccessible, IAccessible2)
     COM_INTERFACE_ENTRY2(IAccessibleText, IAccessibleHypertext)
     COM_INTERFACE_ENTRY(IAccessible2)
+    COM_INTERFACE_ENTRY(IAccessibleApplication)
     COM_INTERFACE_ENTRY(IAccessibleHyperlink)
     COM_INTERFACE_ENTRY(IAccessibleHypertext)
     COM_INTERFACE_ENTRY(IAccessibleImage)
@@ -253,6 +255,17 @@ BrowserAccessibilityWin
   CONTENT_EXPORT STDMETHODIMP get_locale(IA2Locale* locale) {
     return E_NOTIMPL;
   }
+
+  //
+  // IAccessibleApplication methods.
+  //
+  CONTENT_EXPORT STDMETHODIMP get_appName(BSTR* app_name);
+
+  CONTENT_EXPORT STDMETHODIMP get_appVersion(BSTR* app_version);
+
+  CONTENT_EXPORT STDMETHODIMP get_toolkitName(BSTR* toolkit_name);
+
+  CONTENT_EXPORT STDMETHODIMP get_toolkitVersion(BSTR* toolkit_version);
 
   //
   // IAccessibleImage methods.
