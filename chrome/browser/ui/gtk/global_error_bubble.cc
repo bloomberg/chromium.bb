@@ -36,7 +36,8 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
                                      GtkWidget* anchor)
     : browser_(browser),
       bubble_(NULL),
-      error_(error) {
+      error_(error),
+      message_width_(kMinMessageLabelWidth) {
   DCHECK(browser_);
   DCHECK(error_);
   GtkWidget* content = gtk_vbox_new(FALSE, ui::kControlSpacing);
@@ -55,16 +56,15 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   GtkWidget* title_label = theme_service->BuildLabel(
       UTF16ToUTF8(error_->GetBubbleViewTitle()),
       ui::kGdkBlack);
-  // TODO(yoz): Support multi-line messages.
-  string16 message;
-  if (!error_->GetBubbleViewMessages().empty())
-    message = error_->GetBubbleViewMessages()[0];
-  message_label_ = theme_service->BuildLabel(
-      UTF16ToUTF8(message),
-      ui::kGdkBlack);
-  gtk_util::ForceFontSizePixels(message_label_, kMessageTextSize);
+  std::vector<string16> messages = error_->GetBubbleViewMessages();
+  for (size_t i = 0; i < messages.size(); ++i) {
+    message_labels_.push_back(theme_service->BuildLabel(
+        UTF16ToUTF8(messages[i]),
+        ui::kGdkBlack));
+    gtk_util::ForceFontSizePixels(message_labels_[i], kMessageTextSize);
+  }
   // Message label will be sized later in "realize" callback because we need
-  // to now the width of buttons group.
+  // to know the width of the title and the width of the buttons group.
   GtkWidget* accept_button = gtk_button_new_with_label(
       UTF16ToUTF8(error_->GetBubbleViewAcceptButtonLabel()).c_str());
   string16 cancel_string = error_->GetBubbleViewCancelButtonLabel();
@@ -80,8 +80,9 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
   gtk_box_pack_start(GTK_BOX(top), title_label, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), top, FALSE, FALSE, 0);
 
-  // Middle, message.
-  gtk_box_pack_start(GTK_BOX(content), message_label_, FALSE, FALSE, 0);
+  // Middle, messages.
+  for (size_t i = 0; i < message_labels_.size(); ++i)
+    gtk_box_pack_start(GTK_BOX(content), message_labels_[i], FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(content), gtk_hbox_new(FALSE, 0), FALSE, FALSE, 0);
 
   // Bottom, accept and cancel button.
@@ -103,7 +104,8 @@ GlobalErrorBubble::GlobalErrorBubble(Browser* browser,
                      G_CALLBACK(OnCancelButtonThunk), this);
   }
 
-  g_signal_connect(bottom, "realize", G_CALLBACK(OnBottomRealizeThunk), this);
+  g_signal_connect(top, "realize", G_CALLBACK(OnRealizeThunk), this);
+  g_signal_connect(bottom, "realize", G_CALLBACK(OnRealizeThunk), this);
 
   bubble_ = BubbleGtk::Show(anchor,
                             NULL,
@@ -141,10 +143,11 @@ void GlobalErrorBubble::OnCancelButton(GtkWidget* sender) {
   bubble_->Close();
 }
 
-void GlobalErrorBubble::OnBottomRealize(GtkWidget* sender) {
-  int bottom_width = gtk_util::GetWidgetSize(sender).width();
-  gtk_util::SetLabelWidth(message_label_,
-                          std::max(kMinMessageLabelWidth, bottom_width));
+void GlobalErrorBubble::OnRealize(GtkWidget* sender) {
+  int width = gtk_util::GetWidgetSize(sender).width();
+  message_width_ = std::max(message_width_, width);
+  for (size_t i = 0; i < message_labels_.size(); ++i)
+    gtk_util::SetLabelWidth(message_labels_[i], message_width_);
 }
 
 void GlobalErrorBubble::CloseBubbleView() {

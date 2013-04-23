@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_UI_GTK_GLOBAL_ERROR_BUBBLE_H_
 #define CHROME_BROWSER_UI_GTK_GLOBAL_ERROR_BUBBLE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
@@ -32,14 +34,15 @@ class GlobalErrorBubble : public BubbleDelegateGtk,
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnDestroy);
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnAcceptButton);
   CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnCancelButton);
-  CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnBottomRealize);
+  CHROMEGTK_CALLBACK_0(GlobalErrorBubble, void, OnRealize);
 
   virtual void CloseBubbleView() OVERRIDE;
 
   Browser* browser_;
   BubbleGtk* bubble_;
   base::WeakPtr<GlobalError> error_;
-  GtkWidget* message_label_;
+  std::vector<GtkWidget*> message_labels_;
+  int message_width_;
 
   DISALLOW_COPY_AND_ASSIGN(GlobalErrorBubble);
 };
