@@ -32,8 +32,10 @@ class MockIBusInputContextClient;
 class MockIBusPanelService;
 
 // This class provides an another mock DBusThreadManager without gmock
-// dependency. This class is used only for places where GMock is not allowed
-// (ex. ui/).
+// dependency. This class is used for places where GMock is not allowed
+// (ex. ui/) or is not used.
+// TODO(haruki): Along with crbug.com/223061, we can rename this class to
+// clarify that this can also provides fakes and stubs.
 class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
  public:
   MockDBusThreadManagerWithoutGMock();

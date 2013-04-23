@@ -55,6 +55,8 @@ class PowerPolicyController;
 // This class provides a mock DBusThreadManager with mock clients
 // installed. You can customize the behaviors of mock clients with
 // mock_foo_client() functions.
+// Please avoid adding more GMock in this class. We have an ongoing effort to
+// remove GMock dependency. TODO(haruki): crbug.com/223061.
 class MockDBusThreadManager : public DBusThreadManager {
  public:
   MockDBusThreadManager();
