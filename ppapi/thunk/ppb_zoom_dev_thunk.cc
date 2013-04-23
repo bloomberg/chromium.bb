@@ -2,10 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// From dev/ppb_zoom_dev.idl modified Thu Apr 18 10:24:21 2013.
+
 #include "ppapi/c/dev/ppb_zoom_dev.h"
-#include "ppapi/thunk/thunk.h"
+#include "ppapi/c/pp_errors.h"
+#include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
 #include "ppapi/thunk/ppb_instance_api.h"
+#include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
@@ -13,6 +18,7 @@ namespace thunk {
 namespace {
 
 void ZoomChanged(PP_Instance instance, double factor) {
+  VLOG(4) << "PPB_Zoom_Dev::ZoomChanged()";
   EnterInstance enter(instance);
   if (enter.succeeded())
     enter.functions()->ZoomChanged(instance, factor);
@@ -21,14 +27,15 @@ void ZoomChanged(PP_Instance instance, double factor) {
 void ZoomLimitsChanged(PP_Instance instance,
                        double minimum_factor,
                        double maximum_factor) {
+  VLOG(4) << "PPB_Zoom_Dev::ZoomLimitsChanged()";
   EnterInstance enter(instance);
-  if (enter.succeeded()) {
+  if (enter.succeeded())
     enter.functions()->ZoomLimitsChanged(instance,
-                                         minimum_factor, maximum_factor);
-  }
+                                         minimum_factor,
+                                         maximum_factor);
 }
 
-const PPB_Zoom_Dev g_ppb_zoom_thunk = {
+const PPB_Zoom_Dev_0_2 g_ppb_zoom_dev_thunk_0_2 = {
   &ZoomChanged,
   &ZoomLimitsChanged
 };
@@ -36,7 +43,7 @@ const PPB_Zoom_Dev g_ppb_zoom_thunk = {
 }  // namespace
 
 const PPB_Zoom_Dev_0_2* GetPPB_Zoom_Dev_0_2_Thunk() {
-  return &g_ppb_zoom_thunk;
+  return &g_ppb_zoom_dev_thunk_0_2;
 }
 
 }  // namespace thunk
