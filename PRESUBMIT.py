@@ -27,10 +27,6 @@ _EXCLUDED_PATHS = (
     r".+[\\\/]pnacl_shim\.c$",
 )
 
-# Fragment of a regular expression that matches file name suffixes
-# used to indicate different platforms.
-_PLATFORM_SPECIFIERS = r'(_(android|chromeos|gtk|mac|posix|win))?'
-
 # Fragment of a regular expression that matches C++ and Objective-C++
 # implementation files.
 _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
@@ -40,8 +36,8 @@ _IMPLEMENTATION_EXTENSIONS = r'\.(cc|cpp|cxx|mm)$'
 _TEST_CODE_EXCLUDED_PATHS = (
     r'.*[/\\](fake_|test_|mock_).+%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.+_test_(base|support|util)%s' % _IMPLEMENTATION_EXTENSIONS,
-    r'.+_(api|browser|perf|unit|ui)?test%s%s' % (_PLATFORM_SPECIFIERS,
-                                                 _IMPLEMENTATION_EXTENSIONS),
+    r'.+_(api|browser|perf|unit|ui)?test(_[a-z]+)?%s' %
+        _IMPLEMENTATION_EXTENSIONS,
     r'.+profile_sync_service_harness%s' % _IMPLEMENTATION_EXTENSIONS,
     r'.*[/\\](test|tool(s)?)[/\\].*',
     # At request of folks maintaining this folder.
