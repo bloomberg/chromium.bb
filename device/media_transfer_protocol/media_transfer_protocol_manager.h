@@ -20,7 +20,7 @@ class MtpFileEntry;
 class MtpStorageInfo;
 
 namespace base {
-class MessageLoopProxy;
+class SequencedTaskRunner;
 }
 
 namespace device {
@@ -133,12 +133,12 @@ class MediaTransferProtocolManager {
                                const GetFileInfoCallback& callback) = 0;
 
   // Creates and returns the global MediaTransferProtocolManager instance.
-  // On Linux, |loop_proxy| specifies the message loop proxy to process
-  // asynchronous operations.
-  // On ChromeOS, |loop_proxy| is set to NULL because ChromeOS already has a
-  // dedicated message loop proxy.
+  // On Linux, |task_runner| specifies the task runner to process asynchronous
+  // operations.
+  // On ChromeOS, |task_runner| should just be set to NULL because ChromeOS
+  // already has a dedicated message loop proxy.
   static MediaTransferProtocolManager* Initialize(
-      scoped_refptr<base::MessageLoopProxy> loop_proxy);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 };
 
 }  // namespace device
