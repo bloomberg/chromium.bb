@@ -597,7 +597,14 @@ void Dispatcher::OnUnloaded(const std::string& id) {
   // changed origin whitelist.
   user_script_slave_->RemoveIsolatedWorld(id);
 
-  v8_context_set_.OnExtensionUnloaded(id);
+  // Invalidate all of the contexts that were removed.
+  // TODO(kalman): add an invalidation observer interface to ChromeV8Context.
+  ChromeV8ContextSet::ContextSet removed_contexts =
+      v8_context_set_.OnExtensionUnloaded(id);
+  for (ChromeV8ContextSet::ContextSet::iterator it = removed_contexts.begin();
+       it != removed_contexts.end(); ++it) {
+    request_sender_->InvalidateSource(*it);
+  }
 
   // Invalidates the messages map for the extension in case the extension is
   // reloaded with a new messages map.

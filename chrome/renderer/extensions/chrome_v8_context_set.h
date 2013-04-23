@@ -70,7 +70,11 @@ class ChromeV8ContextSet {
                                   const GURL& event_url) const;
 
   // Cleans up contexts belonging to an unloaded extension.
-  void OnExtensionUnloaded(const std::string& extension_id);
+  //
+  // Returns the set of ChromeV8Contexts that were removed as a result. These
+  // are safe to interact with until the end of the current event loop, since
+  // they're deleted asynchronously.
+  ContextSet OnExtensionUnloaded(const std::string& extension_id);
 
  private:
   ContextSet contexts_;
