@@ -374,6 +374,8 @@
         'chromeos',
       ],
       'sources': [
+        'dbus/fake_cros_disks_client.cc',
+        'dbus/fake_cros_disks_client.h',
         'dbus/mock_dbus_thread_manager_without_gmock.cc',
         'dbus/mock_dbus_thread_manager_without_gmock.h',
         'dbus/ibus/mock_ibus_client.cc',

@@ -24,6 +24,7 @@ class FakeBluetoothAgentManagerClient;
 class FakeBluetoothDeviceClient;
 class FakeBluetoothInputClient;
 class FakeBluetoothProfileManagerClient;
+class FakeCrosDisksClient;
 class MockIBusClient;
 class MockIBusConfigClient;
 class MockIBusEngineFactoryService;
@@ -150,6 +151,8 @@ class MockDBusThreadManagerWithoutGMock : public DBusThreadManager {
   scoped_ptr<FakeBluetoothInputClient> fake_bluetooth_input_client_;
   scoped_ptr<FakeBluetoothProfileManagerClient>
       fake_bluetooth_profile_manager_client_;
+  scoped_ptr<FakeCrosDisksClient> fake_cros_disks_client_;
+
   scoped_ptr<MockIBusClient> mock_ibus_client_;
   scoped_ptr<MockIBusConfigClient> mock_ibus_config_client_;
   scoped_ptr<MockIBusInputContextClient> mock_ibus_input_context_client_;
