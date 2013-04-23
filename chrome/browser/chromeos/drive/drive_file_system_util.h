@@ -10,7 +10,7 @@
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
@@ -160,7 +160,7 @@ void ParseCacheFilePath(const base::FilePath& path,
                         std::string* extra_extension);
 
 // Callback type for PrepareWritablebase::FilePathAndRun.
-typedef base::Callback<void (DriveFileError, const base::FilePath& path)>
+typedef base::Callback<void (FileError, const base::FilePath& path)>
     OpenFileCallback;
 
 // Invokes |callback| on blocking thread pool, after converting virtual |path|
@@ -178,7 +178,7 @@ void PrepareWritableFileAndRun(Profile* profile,
 // Ensures the existence of |directory| of '/special/drive/foo'.  This will
 // create |directory| and its ancestors if they don't exist.  |callback| is
 // invoked after making sure that |directory| exists.  |callback| should
-// interpret error codes of either DRIVE_FILE_OK or DRIVE_FILE_ERROR_EXISTS as
+// interpret error codes of either FILE_ERROR_OK or FILE_ERROR_EXISTS as
 // indicating that |directory| now exists.
 //
 // If |directory| is not a Drive path, it won't check the existence and just
@@ -190,7 +190,7 @@ void EnsureDirectoryExists(Profile* profile,
                            const FileOperationCallback& callback);
 
 // Converts GData error code into file platform error code.
-DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status);
+FileError GDataToFileError(google_apis::GDataErrorCode status);
 
 // Converts the proto representation to the platform file.
 void ConvertProtoToPlatformFileInfo(const PlatformFileInfoProto& proto,
@@ -201,7 +201,7 @@ void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
                                     PlatformFileInfoProto* proto);
 
 // Does nothing with |error|. Used with functions taking FileOperationCallback.
-void EmptyFileOperationCallback(DriveFileError error);
+void EmptyFileOperationCallback(FileError error);
 
 // Helper to destroy objects which needs Destroy() to be called on destruction.
 struct DestroyHelper {

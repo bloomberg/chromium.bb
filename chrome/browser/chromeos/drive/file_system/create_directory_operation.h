@@ -10,7 +10,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "googleurl/src/gurl.h"
 
@@ -120,7 +120,7 @@ class CreateDirectoryOperation {
   // recursive creation of a directory path by calling CreateDirectory again.
   void ContinueCreateDirectory(scoped_ptr<CreateDirectoryParams> params,
                                const base::FilePath& created_directory_path,
-                               DriveFileError error,
+                               FileError error,
                                const base::FilePath& moved_file_path);
 
   // Finds the first missing parent directory of |directory_path|.
@@ -138,7 +138,7 @@ class CreateDirectoryOperation {
   // FindFirstMissingParentDirectory.
   void ContinueFindFirstMissingParentDirectory(
       scoped_ptr<FindFirstMissingParentDirectoryParams> params,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   DriveScheduler* drive_scheduler_;

@@ -56,7 +56,7 @@ class MoveOperation {
   // to the destination directory.
   void MoveAfterRename(const FileOperationCallback& callback,
                        scoped_ptr<EntryInfoPairResult> src_dest_info,
-                       DriveFileError error,
+                       FileError error,
                        const base::FilePath& src_path);
 
   // Step 3 of Move(), called after the resource is added to the new directory.
@@ -66,7 +66,7 @@ class MoveOperation {
   // resource is contained in both the new and the old directories.
   void MoveAfterAddToDirectory(const FileOperationCallback& callback,
                                scoped_ptr<EntryInfoPairResult> src_dest_info,
-                               DriveFileError error,
+                               FileError error,
                                const base::FilePath& src_path);
 
   // Step 4 of Move(), called after the resource is removed from the old

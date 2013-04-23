@@ -262,11 +262,11 @@ void DriveSystemService::ReinitializeResourceMetadataAfterClearCache(
 
 void DriveSystemService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
-    DriveFileError error) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(false);
     return;
   }
@@ -361,12 +361,12 @@ void DriveSystemService::InitializeAfterCacheInitialized(bool success) {
 }
 
 void DriveSystemService::InitializeAfterResourceMetadataInitialized(
-    DriveFileError error) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Failed to initialize resource metadata. Disabling Drive : "
-                 << DriveFileErrorToString(error);
+                 << FileErrorToString(error);
     DisableDrive();
     return;
   }

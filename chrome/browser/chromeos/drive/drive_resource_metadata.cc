@@ -58,7 +58,7 @@ std::string DirectoryFetchInfo::ToString() const {
           ", changestamp: " + base::Int64ToString(changestamp_));
 }
 
-EntryInfoResult::EntryInfoResult() : error(DRIVE_FILE_ERROR_FAILED) {
+EntryInfoResult::EntryInfoResult() : error(FILE_ERROR_FAILED) {
 }
 
 EntryInfoResult::~EntryInfoResult() {
@@ -72,14 +72,14 @@ EntryInfoPairResult::~EntryInfoPairResult() {
 
 // Struct to hold result values passed to FileMoveCallback.
 struct DriveResourceMetadata::FileMoveResult {
-  FileMoveResult(DriveFileError error, const base::FilePath& path)
+  FileMoveResult(FileError error, const base::FilePath& path)
       : error(error),
         path(path) {}
 
-  explicit FileMoveResult(DriveFileError error)
+  explicit FileMoveResult(FileError error)
       : error(error) {}
 
-  FileMoveResult() : error(DRIVE_FILE_OK) {}
+  FileMoveResult() : error(FILE_ERROR_OK) {}
 
   // Runs GetEntryInfoCallback with the values stored in |result|.
   static void RunCallbackWithResult(const FileMoveCallback& callback,
@@ -88,17 +88,17 @@ struct DriveResourceMetadata::FileMoveResult {
     callback.Run(result.error, result.path);
   }
 
-  DriveFileError error;
+  FileError error;
   base::FilePath path;
 };
 
 // Struct to hold result values passed to GetEntryInfoCallback.
 struct DriveResourceMetadata::GetEntryInfoResult {
-  GetEntryInfoResult(DriveFileError error, scoped_ptr<DriveEntryProto> entry)
+  GetEntryInfoResult(FileError error, scoped_ptr<DriveEntryProto> entry)
       : error(error),
         entry(entry.Pass()) {}
 
-  explicit GetEntryInfoResult(DriveFileError error)
+  explicit GetEntryInfoResult(FileError error)
       : error(error) {}
 
   // Runs GetEntryInfoCallback with the values stored in |result|.
@@ -109,20 +109,20 @@ struct DriveResourceMetadata::GetEntryInfoResult {
     callback.Run(result->error, result->entry.Pass());
   }
 
-  DriveFileError error;
+  FileError error;
   scoped_ptr<DriveEntryProto> entry;
 };
 
 // Struct to hold result values passed to GetEntryInfoWithFilePathCallback.
 struct DriveResourceMetadata::GetEntryInfoWithFilePathResult {
-  GetEntryInfoWithFilePathResult(DriveFileError error,
+  GetEntryInfoWithFilePathResult(FileError error,
                                  const base::FilePath& path,
                                  scoped_ptr<DriveEntryProto> entry)
       : error(error),
         path(path),
         entry(entry.Pass()) {}
 
-  explicit GetEntryInfoWithFilePathResult(DriveFileError error)
+  explicit GetEntryInfoWithFilePathResult(FileError error)
       : error(error) {}
 
   // Runs GetEntryInfoWithFilePathCallback with the values stored in |result|.
@@ -134,14 +134,14 @@ struct DriveResourceMetadata::GetEntryInfoWithFilePathResult {
     callback.Run(result->error, result->path, result->entry.Pass());
   }
 
-  DriveFileError error;
+  FileError error;
   base::FilePath path;
   scoped_ptr<DriveEntryProto> entry;
 };
 
 // Struct to hold result values passed to ReadDirectoryCallback.
 struct DriveResourceMetadata::ReadDirectoryResult {
-  ReadDirectoryResult(DriveFileError error,
+  ReadDirectoryResult(FileError error,
                       scoped_ptr<DriveEntryProtoVector> entries)
       : error(error),
         entries(entries.Pass()) {}
@@ -154,7 +154,7 @@ struct DriveResourceMetadata::ReadDirectoryResult {
     callback.Run(result->error, result->entries.Pass());
   }
 
-  DriveFileError error;
+  FileError error;
   scoped_ptr<DriveEntryProtoVector> entries;
 };
 
@@ -207,19 +207,19 @@ DriveResourceMetadata::~DriveResourceMetadata() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 }
 
-DriveFileError DriveResourceMetadata::InitializeOnBlockingPool() {
+FileError DriveResourceMetadata::InitializeOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return DRIVE_FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_SPACE;
 
   // Initialize the storage.
   if (!storage_->Initialize())
-    return DRIVE_FILE_ERROR_FAILED;
+    return FILE_ERROR_FAILED;
 
   SetUpDefaultEntries();
 
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
 void DriveResourceMetadata::SetUpDefaultEntries() {
@@ -247,7 +247,7 @@ void DriveResourceMetadata::DestroyOnBlockingPool() {
 void DriveResourceMetadata::ResetOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // TODO(hashimoto): Return DRIVE_FILE_ERROR_NO_SPACE here.
+  // TODO(hashimoto): Return FILE_ERROR_NO_SPACE here.
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
     LOG(ERROR) << "Required disk space not available.";
     return;
@@ -466,15 +466,15 @@ int64 DriveResourceMetadata::GetLargestChangestampOnBlockingPool() {
   return storage_->GetLargestChangestamp();
 }
 
-DriveFileError DriveResourceMetadata::SetLargestChangestampOnBlockingPool(
+FileError DriveResourceMetadata::SetLargestChangestampOnBlockingPool(
     int64 value) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return DRIVE_FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_SPACE;
 
   storage_->SetLargestChangestamp(value);
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
 DriveResourceMetadata::FileMoveResult
@@ -486,29 +486,29 @@ DriveResourceMetadata::MoveEntryToDirectoryOnBlockingPool(
   DCHECK(!file_path.empty());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+    return FileMoveResult(FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(file_path);
   if (!entry)
-    return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
+    return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
   // Cannot move an entry without its parent. (i.e. the root)
   if (entry->parent_resource_id().empty())
-    return FileMoveResult(DRIVE_FILE_ERROR_INVALID_OPERATION);
+    return FileMoveResult(FILE_ERROR_INVALID_OPERATION);
 
   scoped_ptr<DriveEntryProto> destination = FindEntryByPathSync(directory_path);
   base::FilePath moved_file_path;
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   if (!destination) {
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
+    error = FILE_ERROR_NOT_FOUND;
   } else if (!destination->file_info().is_directory()) {
-    error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
+    error = FILE_ERROR_NOT_A_DIRECTORY;
   } else {
     DetachEntryFromDirectory(entry->resource_id());
     entry->set_parent_resource_id(destination->resource_id());
     AddEntryToDirectory(*entry);
     moved_file_path = GetFilePath(entry->resource_id());
-    error = DRIVE_FILE_OK;
+    error = FILE_ERROR_OK;
   }
   DVLOG(1) << "MoveEntryToDirectory " << moved_file_path.value();
   return FileMoveResult(error, moved_file_path);
@@ -525,14 +525,14 @@ DriveResourceMetadata::RenameEntryOnBlockingPool(
   DVLOG(1) << "RenameEntry " << file_path.value() << " to " << new_name;
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+    return FileMoveResult(FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(file_path);
   if (!entry)
-    return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
+    return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
   if (base::FilePath::FromUTF8Unsafe(new_name) == file_path.BaseName())
-    return FileMoveResult(DRIVE_FILE_ERROR_EXISTS);
+    return FileMoveResult(FILE_ERROR_EXISTS);
 
   entry->set_title(new_name);
   scoped_ptr<GetEntryInfoWithFilePathResult> result =
@@ -546,18 +546,18 @@ DriveResourceMetadata::RemoveEntryOnBlockingPool(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+    return FileMoveResult(FILE_ERROR_NO_SPACE);
 
   // Disallow deletion of special entries "/drive" and "/drive/other".
   if (util::IsSpecialResourceId(resource_id))
-    return FileMoveResult(DRIVE_FILE_ERROR_ACCESS_DENIED);
+    return FileMoveResult(FILE_ERROR_ACCESS_DENIED);
 
   scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);
   if (!entry)
-    return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
+    return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
   RemoveDirectoryChild(entry->resource_id());
-  return FileMoveResult(DRIVE_FILE_OK,
+  return FileMoveResult(FILE_ERROR_OK,
                         GetFilePath(entry->parent_resource_id()));
 }
 
@@ -600,13 +600,13 @@ DriveResourceMetadata::GetEntryInfoByResourceIdOnBlockingPool(
   DCHECK(!resource_id.empty());
 
   scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   base::FilePath drive_file_path;
   if (entry) {
-    error = DRIVE_FILE_OK;
+    error = FILE_ERROR_OK;
     drive_file_path = GetFilePath(resource_id);
   } else {
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
+    error = FILE_ERROR_NOT_FOUND;
   }
 
   return make_scoped_ptr(
@@ -619,7 +619,7 @@ DriveResourceMetadata::GetEntryInfoByPathOnBlockingPool(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(path);
-  DriveFileError error = entry ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_NOT_FOUND;
+  FileError error = entry ? FILE_ERROR_OK : FILE_ERROR_NOT_FOUND;
 
   return make_scoped_ptr(new GetEntryInfoResult(error, entry.Pass()));
 }
@@ -630,16 +630,16 @@ DriveResourceMetadata::ReadDirectoryByPathOnBlockingPool(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_ptr<DriveEntryProtoVector> entries;
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
 
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(path);
   if (entry && entry->file_info().is_directory()) {
     entries = DirectoryChildrenToProtoVector(entry->resource_id());
-    error = DRIVE_FILE_OK;
+    error = FILE_ERROR_OK;
   } else if (entry && !entry->file_info().is_directory()) {
-    error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
+    error = FILE_ERROR_NOT_A_DIRECTORY;
   } else {
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
+    error = FILE_ERROR_NOT_FOUND;
   }
 
   return make_scoped_ptr(new ReadDirectoryResult(error, entries.Pass()));
@@ -669,21 +669,21 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
     return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NO_SPACE));
+        new GetEntryInfoWithFilePathResult(FILE_ERROR_NO_SPACE));
   }
 
   scoped_ptr<DriveEntryProto> entry =
       storage_->GetEntry(entry_proto.resource_id());
   if (!entry) {
     return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NOT_FOUND));
+        new GetEntryInfoWithFilePathResult(FILE_ERROR_NOT_FOUND));
   }
 
   if (entry->parent_resource_id().empty() ||  // Rejct root.
       entry->file_info().is_directory() !=  // Reject incompatible input.
       entry_proto.file_info().is_directory()) {
     return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_INVALID_OPERATION));
+        new GetEntryInfoWithFilePathResult(FILE_ERROR_INVALID_OPERATION));
   }
 
   // Update data.
@@ -692,7 +692,7 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
 
   if (!new_parent) {
     return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(DRIVE_FILE_ERROR_NOT_FOUND));
+        new GetEntryInfoWithFilePathResult(FILE_ERROR_NOT_FOUND));
   }
 
   // Remove from the old parent and add it to the new parent with the new data.
@@ -703,7 +703,7 @@ DriveResourceMetadata::RefreshEntryOnBlockingPool(
   scoped_ptr<DriveEntryProto> result_entry_proto =
       storage_->GetEntry(entry->resource_id());
   return make_scoped_ptr(
-      new GetEntryInfoWithFilePathResult(DRIVE_FILE_OK,
+      new GetEntryInfoWithFilePathResult(FILE_ERROR_OK,
                                          GetFilePath(entry->resource_id()),
                                          result_entry_proto.Pass()));
 }
@@ -716,16 +716,16 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
   DCHECK(!directory_fetch_info.empty());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+    return FileMoveResult(FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> directory = storage_->GetEntry(
       directory_fetch_info.resource_id());
 
   if (!directory)
-    return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
+    return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
   if (!directory->file_info().is_directory())
-    return FileMoveResult(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
+    return FileMoveResult(FILE_ERROR_NOT_A_DIRECTORY);
 
   directory->mutable_directory_specific_info()->set_changestamp(
       directory_fetch_info.changestamp());
@@ -736,7 +736,7 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
   for (DriveEntryProtoMap::const_iterator it = entry_proto_map.begin();
        it != entry_proto_map.end(); ++it) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-      return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+      return FileMoveResult(FILE_ERROR_NO_SPACE);
 
     const DriveEntryProto& entry_proto = it->second;
     // Skip if the parent resource ID does not match. This is needed to
@@ -765,14 +765,14 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
       DirectoryChildrenToProtoVector(directory->resource_id());
   for (size_t i = 0; i < entries->size(); ++i) {
     if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-      return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+      return FileMoveResult(FILE_ERROR_NO_SPACE);
 
     const DriveEntryProto& entry_proto = entries->at(i);
     if (entry_proto_map.count(entry_proto.resource_id()) == 0)
       RemoveDirectoryChild(entry_proto.resource_id());
   }
 
-  return FileMoveResult(DRIVE_FILE_OK, GetFilePath(directory->resource_id()));
+  return FileMoveResult(FILE_ERROR_OK, GetFilePath(directory->resource_id()));
 }
 
 DriveResourceMetadata::FileMoveResult
@@ -781,20 +781,20 @@ DriveResourceMetadata::AddEntryOnBlockingPool(
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
-    return FileMoveResult(DRIVE_FILE_ERROR_NO_SPACE);
+    return FileMoveResult(FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> existing_entry =
       storage_->GetEntry(entry_proto.resource_id());
   if (existing_entry)
-    return FileMoveResult(DRIVE_FILE_ERROR_EXISTS);
+    return FileMoveResult(FILE_ERROR_EXISTS);
 
   scoped_ptr<DriveEntryProto> parent =
       GetDirectory(entry_proto.parent_resource_id());
   if (!parent)
-    return FileMoveResult(DRIVE_FILE_ERROR_NOT_FOUND);
+    return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
   AddEntryToDirectory(entry_proto);
-  return FileMoveResult(DRIVE_FILE_OK, GetFilePath(entry_proto.resource_id()));
+  return FileMoveResult(FILE_ERROR_OK, GetFilePath(entry_proto.resource_id()));
 }
 
 scoped_ptr<DriveEntryProto> DriveResourceMetadata::GetDirectory(
@@ -854,7 +854,7 @@ void DriveResourceMetadata::GetDescendantDirectoryPaths(
 void DriveResourceMetadata::RemoveAllOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // TODO(hashimoto): Return DRIVE_FILE_ERROR_NO_SPACE here.
+  // TODO(hashimoto): Return FILE_ERROR_NO_SPACE here.
   if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
     LOG(ERROR) << "Required disk space not available.";
     return;
@@ -876,7 +876,7 @@ void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(
     const base::FilePath& first_path,
     const base::FilePath& second_path,
     const GetEntryInfoPairCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
@@ -887,7 +887,7 @@ void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetFirst(
   result->first.proto = entry_proto.Pass();
 
   // If the first one is not found, don't continue.
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(result.Pass());
     return;
   }
@@ -906,7 +906,7 @@ void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetSecond(
     const base::FilePath& second_path,
     const GetEntryInfoPairCallback& callback,
     scoped_ptr<EntryInfoPairResult> result,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());

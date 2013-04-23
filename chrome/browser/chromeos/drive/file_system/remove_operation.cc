@@ -18,7 +18,7 @@ namespace file_system {
 
 namespace {
 
-void EmptyFileOperationCallback(DriveFileError error) {}
+void EmptyFileOperationCallback(FileError error) {}
 
 }  // namespace
 
@@ -57,12 +57,12 @@ void RemoveOperation::Remove(
 
 void RemoveOperation::RemoveAfterGetEntryInfo(
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -83,8 +83,8 @@ void RemoveOperation::RemoveResourceLocally(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
+  FileError error = util::GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -99,12 +99,12 @@ void RemoveOperation::RemoveResourceLocally(
 
 void RemoveOperation::NotifyDirectoryChanged(
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == DRIVE_FILE_OK)
+  if (error == FILE_ERROR_OK)
     observer_->OnDirectoryChangedByOperation(directory_path);
 
   callback.Run(error);

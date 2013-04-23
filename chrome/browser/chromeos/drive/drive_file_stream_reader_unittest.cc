@@ -153,7 +153,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingCallback) {
   EXPECT_EQ(net::ERR_IO_PENDING, result);
 
   // Emulate that an error is found. The callback should be called internally.
-  proxy.OnError(DRIVE_FILE_ERROR_FAILED);
+  proxy.OnError(FILE_ERROR_FAILED);
   result = callback.GetResult(result);
   EXPECT_EQ(net::ERR_FAILED, result);
 
@@ -178,7 +178,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingData) {
   proxy.OnGetContent(data.Pass());
 
   // Emulate that an error is found.
-  proxy.OnError(DRIVE_FILE_ERROR_FAILED);
+  proxy.OnError(FILE_ERROR_FAILED);
 
   // The next Read call should return the error code, even if there is
   // pending data (the pending data should be released in OnError.
@@ -266,7 +266,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   scoped_ptr<DriveFileStreamReader> reader(
       new DriveFileStreamReader(GetDriveFileSystemGetter()));
 
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   reader->Initialize(
       kDriveFile,
@@ -275,7 +275,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
                      google_apis::test_util::CreateCopyResultCallback(
                          &error, &entry)));
   message_loop_.Run();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
 
   // Read data from the reader.
@@ -295,7 +295,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   reader.reset(
       new DriveFileStreamReader(GetDriveFileSystemGetter()));
 
-  error = DRIVE_FILE_ERROR_FAILED;
+  error = FILE_ERROR_FAILED;
   entry.reset();
   reader->Initialize(
       kDriveFile,
@@ -304,7 +304,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
                      google_apis::test_util::CreateCopyResultCallback(
                          &error, &entry)));
   message_loop_.Run();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
 
   // The size should be same.

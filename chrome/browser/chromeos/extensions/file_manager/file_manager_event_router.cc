@@ -64,8 +64,8 @@ DictionaryValue* DiskToDictionaryValue(
 }
 
 // Used as a callback for DriveCache::MarkAsUnmounted().
-void OnMarkAsUnmounted(drive::DriveFileError error) {
-  LOG_IF(ERROR, error != drive::DRIVE_FILE_OK)
+void OnMarkAsUnmounted(drive::FileError error) {
+  LOG_IF(ERROR, error != drive::FILE_ERROR_OK)
       << "Failed to unmount: " << error;
 }
 

@@ -100,7 +100,7 @@ class CopyOperation {
   void OnGetFileCompleteForTransferFile(
       const base::FilePath& local_dest_file_path,
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& local_file_path,
       const std::string& unused_mime_type,
       DriveFileType file_type);
@@ -131,7 +131,7 @@ class CopyOperation {
   // |callback| must not be null.
   void MoveEntryFromRootDirectory(const base::FilePath& directory_path,
                                   const FileOperationCallback& callback,
-                                  DriveFileError error,
+                                  FileError error,
                                   const base::FilePath& file_path);
 
   // Part of Copy(). Called after GetEntryInfoPairByPaths() is
@@ -147,7 +147,7 @@ class CopyOperation {
   // Can be called from UI thread. |callback| is run on the calling thread.
   void OnGetFileCompleteForCopy(const base::FilePath& remote_dest_file_path,
                                 const FileOperationCallback& callback,
-                                DriveFileError error,
+                                FileError error,
                                 const base::FilePath& local_file_path,
                                 const std::string& unused_mime_type,
                                 DriveFileType file_type);
@@ -162,7 +162,7 @@ class CopyOperation {
   void StartFileUploadAfterGetEntryInfo(
       const StartFileUploadParams& params,
       const std::string& content_type,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper function that completes bookkeeping tasks related to
@@ -180,7 +180,7 @@ class CopyOperation {
       const base::FilePath& local_src_file_path,
       const base::FilePath& remote_dest_file_path,
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Initiates transfer of |local_file_path| with |resource_id| to

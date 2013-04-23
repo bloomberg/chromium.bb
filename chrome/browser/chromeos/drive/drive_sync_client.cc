@@ -244,15 +244,15 @@ void DriveSyncClient::OnGetResourceIdOfExistingPinnedFile(
 void DriveSyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& /* drive_file_path */,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
+    error = FILE_ERROR_NOT_FOUND;
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Entry not found: " << resource_id;
     return;
   }
@@ -270,10 +270,10 @@ void DriveSyncClient::OnGetEntryInfoByResourceId(
 }
 
 void DriveSyncClient::OnRemove(const std::string& resource_id,
-                               DriveFileError error) {
+                               FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Failed to remove cache entry: " << resource_id;
     return;
   }
@@ -288,10 +288,10 @@ void DriveSyncClient::OnRemove(const std::string& resource_id,
 }
 
 void DriveSyncClient::OnPinned(const std::string& resource_id,
-                               DriveFileError error) {
+                               FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Failed to pin cache entry: " << resource_id;
     return;
   }
@@ -301,7 +301,7 @@ void DriveSyncClient::OnPinned(const std::string& resource_id,
 }
 
 void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
-                                          DriveFileError error,
+                                          FileError error,
                                           const base::FilePath& local_path,
                                           const std::string& ununsed_mime_type,
                                           DriveFileType file_type) {
@@ -309,34 +309,34 @@ void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
 
   fetch_list_.erase(resource_id);
 
-  if (error == DRIVE_FILE_OK) {
+  if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Fetched " << resource_id << ": "
              << local_path.value();
   } else {
     switch (error) {
-      case DRIVE_FILE_ERROR_NO_CONNECTION:
+      case FILE_ERROR_NO_CONNECTION:
         // Re-queue the task so that we'll retry once the connection is back.
         AddTaskToQueue(FETCH, resource_id);
         break;
       default:
         LOG(WARNING) << "Failed to fetch " << resource_id
-                     << ": " << DriveFileErrorToString(error);
+                     << ": " << FileErrorToString(error);
     }
   }
 }
 
 void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
-                                           DriveFileError error) {
+                                           FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   upload_list_.erase(resource_id);
 
-  if (error == DRIVE_FILE_OK) {
+  if (error == FILE_ERROR_OK) {
     DVLOG(1) << "Uploaded " << resource_id;
   } else {
     // TODO(satorux): We should re-queue if the error is recoverable.
     LOG(WARNING) << "Failed to upload " << resource_id << ": "
-                 << DriveFileErrorToString(error);
+                 << FileErrorToString(error);
   }
 }
 

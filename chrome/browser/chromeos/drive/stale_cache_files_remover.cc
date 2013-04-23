@@ -18,8 +18,8 @@ namespace {
 
 // Emits the log when the remove failed.
 void EmitErrorLog(const std::string& resource_id,
-                  DriveFileError error) {
-  if (error != DRIVE_FILE_OK) {
+                  FileError error) {
+  if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Failed to remove a stale cache file. resource_id:"
                  << resource_id;
   }
@@ -66,13 +66,13 @@ void StaleCacheFilesRemover::GetEntryInfoAndRemoveCacheIfNecessary(
 void StaleCacheFilesRemover::RemoveCacheIfNecessary(
     const std::string& resource_id,
     const std::string& cache_md5,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // The entry is not found in the file system.
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     cache_->Remove(resource_id, base::Bind(&EmitErrorLog, resource_id));
     return;
   }

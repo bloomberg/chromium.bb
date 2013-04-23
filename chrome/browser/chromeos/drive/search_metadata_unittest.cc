@@ -38,11 +38,11 @@ class SearchMetadataTest : public testing::Test {
         temp_dir_.path(),
         blocking_task_runner_));
 
-    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    FileError error = FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_EQ(DRIVE_FILE_OK, error);
+    ASSERT_EQ(FILE_ERROR_OK, error);
 
     AddEntriesToMetadata();
   }
@@ -105,14 +105,14 @@ class SearchMetadataTest : public testing::Test {
   }
 
   void AddEntryToMetadata(const DriveEntryProto& entry) {
-    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    FileError error = FILE_ERROR_FAILED;
     base::FilePath drive_path;
 
     resource_metadata_->AddEntry(
         entry,
         google_apis::test_util::CreateCopyResultCallback(&error, &drive_path));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
   }
 
   MessageLoopForUI message_loop_;
@@ -124,7 +124,7 @@ class SearchMetadataTest : public testing::Test {
 };
 
 TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -134,12 +134,12 @@ TEST_F(SearchMetadataTest, SearchMetadata_ZeroMatches) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(0U, result->size());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -149,7 +149,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
             result->at(0).path.AsUTF8Unsafe());
@@ -158,7 +158,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFile) {
 // This test checks if |FindAndHighlight| does case-insensitive search.
 // Tricker test cases for |FindAndHighlight| can be found below.
 TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   // The query is all in lower case.
@@ -169,14 +169,14 @@ TEST_F(SearchMetadataTest, SearchMetadata_CaseInsensitiveSearch) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Directory 1/SubDirectory File 1.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -186,7 +186,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(2U, result->size());
 
   // The results should be sorted by the last accessed time in descending order.
@@ -201,7 +201,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_RegularFiles) {
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   // There are two files matching "SubDir" but only one file should be
@@ -213,14 +213,14 @@ TEST_F(SearchMetadataTest, SearchMetadata_AtMostOneFile) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Slash \xE2\x88\x95 in directory/Slash SubDir File.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -230,13 +230,13 @@ TEST_F(SearchMetadataTest, SearchMetadata_Directory) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Directory 1", result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -246,7 +246,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
 
   EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
@@ -254,7 +254,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_HostedDocument) {
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -264,12 +264,12 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeHostedDocument) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(0U, result->size());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -279,14 +279,14 @@ TEST_F(SearchMetadataTest, SearchMetadata_SharedWithMe) {
                  google_apis::test_util::CreateCopyResultCallback(
                      &error, &result));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
   EXPECT_EQ("drive/root/Directory 1/Shared To The Account Owner.txt",
             result->at(0).path.AsUTF8Unsafe());
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -297,7 +297,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
                      &error, &result));
 
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(2U, result->size());
 
   EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
@@ -307,7 +307,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_FileAndDirectory) {
 }
 
 TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<MetadataSearchResultVector> result;
 
   SearchMetadata(resource_metadata_.get(),
@@ -318,7 +318,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
                      &error, &result));
 
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_EQ(1U, result->size());
 
   EXPECT_EQ("drive/root/Document 1 excludeDir-test.gdoc",
@@ -329,7 +329,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeDirectory) {
 TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
   const char* kQueries[] = { "drive", "root", "other" };
   for (size_t i = 0; i < arraysize(kQueries); ++i) {
-    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    FileError error = FILE_ERROR_FAILED;
     scoped_ptr<MetadataSearchResultVector> result;
 
     const std::string query = kQueries[i];
@@ -341,7 +341,7 @@ TEST_F(SearchMetadataTest, SearchMetadata_ExcludeSpecialDirectories) {
                        &error, &result));
 
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
     ASSERT_TRUE(result->empty()) << ": " << query << " should not match";
   }
 }

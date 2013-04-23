@@ -186,7 +186,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |error| is the error code returned by ChangeListLoader.
   void OnSearch(const SearchCallback& callback,
                 ScopedVector<ChangeList> change_lists,
-                DriveFileError error);
+                FileError error);
 
   // Callback for DriveResourceMetadata::RefreshEntry, from OnSearch.
   // Adds |drive_file_path| to |results|. When |entry_proto| is not present in
@@ -196,7 +196,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void AddToSearchResults(std::vector<SearchResultInfo>* results,
                           bool should_run_callback,
                           const base::Closure& callback,
-                          DriveFileError error,
+                          FileError error,
                           const base::FilePath& drive_file_path,
                           scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -210,17 +210,17 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnGetEntryInfoForCreateFile(const base::FilePath& file_path,
                                    bool is_exclusive,
                                    const FileOperationCallback& callback,
-                                   DriveFileError result,
+                                   FileError result,
                                    scoped_ptr<DriveEntryProto> entry_proto);
 
   // Used to implement Pin().
   void PinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
-                                  DriveFileError error,
+                                  FileError error,
                                   scoped_ptr<DriveEntryProto> entry);
 
   // Used to implement Unpin().
   void UnpinAfterGetEntryInfoByPath(const FileOperationCallback& callback,
-                                    DriveFileError error,
+                                    FileError error,
                                     scoped_ptr<DriveEntryProto> entry);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by
@@ -229,7 +229,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnGetEntryInfoCompleteForGetFileByPath(
       const base::FilePath& file_path,
       const GetFileCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> file_info);
 
   // Invoked upon completion of GetEntryInfoByPath initiated by OpenFile.
@@ -238,7 +238,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void OnGetEntryInfoCompleteForOpenFile(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> file_info);
 
   // Invoked at the last step of OpenFile. It removes |file_path| from the
@@ -246,7 +246,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| function.
   void OnOpenFileFinished(const base::FilePath& file_path,
                           const OpenFileCallback& callback,
-                          DriveFileError result,
+                          FileError result,
                           const base::FilePath& cache_file_path);
 
   // Invoked during the process of CloseFile. What is done here is as follows:
@@ -257,18 +257,18 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void CloseFileAfterGetEntryInfo(const base::FilePath& file_path,
                                   const FileOperationCallback& callback,
-                                  DriveFileError error,
+                                  FileError error,
                                   scoped_ptr<DriveEntryProto> entry_proto);
   void CloseFileFinalize(const base::FilePath& file_path,
                          const FileOperationCallback& callback,
-                         DriveFileError result);
+                         FileError result);
 
   // Invoked upon completion of GetFileByPath initiated by OpenFile. If
   // GetFileByPath is successful, calls MarkDirtyInCache to mark the cache
   // file as dirty for the file identified by |file_info.resource_id| and
   // |file_info.md5|.
   void OnGetFileCompleteForOpenFile(const GetFileCompleteForOpenParams& params,
-                                    DriveFileError error,
+                                    FileError error,
                                     const base::FilePath& file_path,
                                     const std::string& mime_type,
                                     DriveFileType file_type);
@@ -276,7 +276,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Invoked upon completion of MarkDirtyInCache initiated by OpenFile.
   void OnMarkDirtyInCacheCompleteForOpenFile(
       const GetFileCompleteForOpenParams& params,
-      DriveFileError error);
+      FileError error);
 
   // Callback for handling about resource fetch.
   void OnGetAboutResource(
@@ -286,12 +286,12 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // Adds the uploaded file to the cache.
   void AddUploadedFileToCache(const AddUploadedFileParams& params,
-                              DriveFileError error,
+                              FileError error,
                               const base::FilePath& file_path);
 
   // Callback for handling results of ReloadFeedFromServerIfNeeded() initiated
   // from CheckForUpdates().
-  void OnUpdateChecked(DriveFileError error);
+  void OnUpdateChecked(FileError error);
 
   // Changes state of hosted documents visibility, triggers directory refresh.
   void SetHideHostedDocuments(bool hide);
@@ -308,14 +308,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetEntryInfoByPathAfterGetEntry1(
       const base::FilePath& file_path,
       const GetEntryInfoCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
   void GetEntryInfoByPathAfterLoad(const base::FilePath& file_path,
                                    const GetEntryInfoCallback& callback,
-                                   DriveFileError error);
+                                   FileError error);
   void GetEntryInfoByPathAfterGetEntry2(
       const GetEntryInfoCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of ReadDirectoryByPath()
@@ -326,15 +326,15 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void ReadDirectoryByPathAfterGetEntry(
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
   void ReadDirectoryByPathAfterLoad(
       const base::FilePath& directory_path,
       const ReadDirectoryWithSettingCallback& callback,
-      DriveFileError error);
+      FileError error);
   void ReadDirectoryByPathAfterRead(
       const ReadDirectoryWithSettingCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProtoVector> entries);
 
   // Gets the file at |file_path| from the cache (if found in the cache),
@@ -344,10 +344,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetResolvedFileByPathAfterCreateDocumentJsonFile(
       scoped_ptr<GetResolvedFileParams> params,
       const base::FilePath* file_path,
-      DriveFileError error);
+      FileError error);
   void GetResolvedFileByPathAfterGetFileFromCache(
       scoped_ptr<GetResolvedFileParams> params,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& cache_file_path);
   void GetResolvedFileByPathAfterGetResourceEntry(
       scoped_ptr<GetResolvedFileParams> params,
@@ -356,7 +356,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetResolvedFileByPathAfterRefreshEntry(
       scoped_ptr<GetResolvedFileParams> params,
       const GURL& download_url,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
   void GetResolvedFileByPathAfterFreeDiskSpace(
@@ -380,10 +380,10 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void GetResolvedFileByPathAfterStore(
       scoped_ptr<GetResolvedFileParams> params,
       const base::FilePath& downloaded_file_path,
-      DriveFileError error);
+      FileError error);
   void GetResolvedFileByPathAfterGetFile(
       scoped_ptr<GetResolvedFileParams> params,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& cache_file);
 
   // Part of GetEntryInfoByResourceId(). Called after
@@ -391,7 +391,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // |callback| must not be null.
   void GetEntryInfoByResourceIdAfterGetEntry(
       const GetEntryInfoWithFilePathCallback& callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -403,7 +403,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const DriveClientContext& context,
       const GetFileCallback& get_file_callback,
       const google_apis::GetContentCallback& get_content_callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -416,7 +416,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of RefreshDirectory(). Called after
@@ -424,7 +424,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void RefreshDirectoryAfterGetEntryInfo(
       const base::FilePath& directory_path,
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of GetEntryByResourceId and GetEntryByPath. Checks whether there is a
@@ -441,7 +441,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   void CheckLocalModificationAndRunAfterGetCacheFile(
       scoped_ptr<DriveEntryProto> entry_proto,
       const GetEntryInfoCallback& callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& local_cache_path);
   void CheckLocalModificationAndRunAfterGetFileInfo(
       scoped_ptr<DriveEntryProto> entry_proto,
@@ -453,7 +453,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // completed. |callback| must not be null.
   void MarkCacheFileAsMountedAfterGetEntryInfo(
       const OpenFileCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // The profile hosts the DriveFileSystem via DriveSystemService.
@@ -470,7 +470,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   base::Time last_update_check_time_;
 
   // Error of the last update check.
-  DriveFileError last_update_check_error_;
+  FileError last_update_check_error_;
 
   // True if hosted documents should be hidden.
   bool hide_hosted_docs_;

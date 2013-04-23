@@ -88,7 +88,7 @@ class JobListLogger : public JobListObserver {
     events.push_back(EventLog(UPDATED, info));
   }
 
-  virtual void OnJobDone(const JobInfo& info, DriveFileError error) OVERRIDE {
+  virtual void OnJobDone(const JobInfo& info, FileError error) OVERRIDE {
     events.push_back(EventLog(DONE, info));
   }
 

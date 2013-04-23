@@ -7,7 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/download/all_download_item_notifier.h"
 #include "content/public/browser/download_manager_delegate.h"
 
@@ -40,7 +40,7 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
                   const base::FilePath& drive_tmp_download_path);
 
   // Callback used to return results from SubstituteDriveDownloadPath.
-  // TODO(hashimoto): Report error with a DriveFileError. crbug.com/171345
+  // TODO(hashimoto): Report error with a FileError. crbug.com/171345
   typedef base::Callback<void(const base::FilePath&)>
       SubstituteDriveDownloadPathCallback;
 
@@ -80,13 +80,13 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
   // Used to implement SubstituteDriveDownloadPath().
   void OnEntryFound(const base::FilePath& drive_dir_path,
                     const SubstituteDriveDownloadPathCallback& callback,
-                    DriveFileError error,
+                    FileError error,
                     scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for DriveFileSystem::CreateDirectory().
   // Used to implement SubstituteDriveDownloadPath().
   void OnCreateDirectory(const SubstituteDriveDownloadPathCallback& callback,
-                         DriveFileError error);
+                         FileError error);
 
   // Starts the upload of a downloaded/downloading file.
   void UploadDownloadItem(content::DownloadItem* download);

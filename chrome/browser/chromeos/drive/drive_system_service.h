@@ -13,9 +13,9 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "sync/notifier/invalidation_handler.h"
@@ -138,7 +138,7 @@ class DriveSystemService : public ProfileKeyedService,
   // Adds back the drive mount point.
   // Used to implement ClearCacheAndRemountFileSystem().
   void AddBackDriveMountPoint(const base::Callback<void(bool)>& callback,
-                              DriveFileError error);
+                              FileError error);
 
   // Called when cache initialization is done. Continues initialization if
   // the cache initialization is successful.
@@ -146,7 +146,7 @@ class DriveSystemService : public ProfileKeyedService,
 
   // Called when resource metadata initialization is done. Continues
   // initialization if resource metadata initialization is successful.
-  void InitializeAfterResourceMetadataInitialized(DriveFileError error);
+  void InitializeAfterResourceMetadataInitialized(FileError error);
 
   // Disables Drive. Used to disable Drive when needed (ex. initialization of
   // the Drive cache failed).

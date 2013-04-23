@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_WRITE_HELPER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 
 namespace base {
 class FilePath;
@@ -38,11 +38,11 @@ class FileWriteHelper {
   void PrepareWritableFileAndRunAfterCreateFile(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
-      DriveFileError result);
+      FileError result);
   void PrepareWritableFileAndRunAfterOpenFile(
       const base::FilePath& file_path,
       const OpenFileCallback& callback,
-      DriveFileError result,
+      FileError result,
       const base::FilePath& local_cache_path);
   void PrepareWritableFileAndRunAfterCallback(const base::FilePath& file_path);
 

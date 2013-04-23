@@ -14,8 +14,8 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "net/url_request/url_request_job.h"
 
@@ -84,7 +84,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
 
   // Helper callback for handling async responses from
   // DriveFileSystem::GetFileByResourceId().
-  void OnGetFileByResourceId(DriveFileError error,
+  void OnGetFileByResourceId(FileError error,
                              const base::FilePath& local_file_path,
                              const std::string& mime_type,
                              DriveFileType file_type);
@@ -93,7 +93,7 @@ class DriveURLRequestJob : public net::URLRequestJob {
   void OnGetFileSize(int64 *file_size, bool success);
 
   // Helper callback for GetEntryInfoByPath invoked by Start().
-  void OnGetEntryInfoByPath(DriveFileError error,
+  void OnGetEntryInfoByPath(FileError error,
                             scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper methods for ReadRawData to open file and read from its corresponding

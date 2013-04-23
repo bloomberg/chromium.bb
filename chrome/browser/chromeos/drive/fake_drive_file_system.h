@@ -11,8 +11,8 @@
 #include "base/callback_forward.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace google_apis {
@@ -175,7 +175,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
       scoped_ptr<google_apis::ResourceEntry> resource_entry);
   void GetEntryInfoByResourceIdAfterGetFilePath(
       const GetEntryInfoWithFilePathCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto,
       const base::FilePath& parent_file_path);
 
@@ -190,7 +190,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
   void GetFileContentByPathAfterDownloadFile(
       const FileOperationCallback& completion_callback,
@@ -215,7 +215,7 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
   void GetEntryInfoByPathAfterGetParentEntryInfo(
       const base::FilePath& base_name,
       const GetEntryInfoCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> parent_entry_proto);
   void GetEntryInfoByPathAfterGetResourceList(
       const base::FilePath& base_name,

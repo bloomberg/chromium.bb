@@ -59,7 +59,7 @@ class DrivePrefetcher : public DriveFileSystemObserver {
 
   // Called when DoPrefetch is done.
   void OnPrefetchFinished(const std::string& resource_id,
-                          DriveFileError error,
+                          FileError error,
                           const base::FilePath& file_path,
                           const std::string& mime_type,
                           DriveFileType file_type);
@@ -71,7 +71,7 @@ class DrivePrefetcher : public DriveFileSystemObserver {
   void VisitFile(const DriveEntryProto& entry);
   void VisitDirectory(const base::FilePath& directory_path);
   void OnReadDirectory(const base::FilePath& directory_path,
-                       DriveFileError error,
+                       FileError error,
                        bool hide_hosted_documents,
                        scoped_ptr<DriveEntryProtoVector> entries);
   void OnReadDirectoryFinished();

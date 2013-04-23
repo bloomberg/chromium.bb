@@ -224,12 +224,12 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
 
   // Called when GetEntryInfoByPath() is complete.
   void OnGetEntryInfoByPath(const base::FilePath& path,
-                            drive::DriveFileError error,
+                            drive::FileError error,
                             scoped_ptr<drive::DriveEntryProto> entry);
 
   // Called when ReadDirectoryByPath() is complete.
   void OnReadDirectoryByPath(const base::FilePath& parent_path,
-                             drive::DriveFileError error,
+                             drive::FileError error,
                              bool hide_hosted_documents,
                              scoped_ptr<drive::DriveEntryProtoVector> entries);
 
@@ -527,7 +527,7 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
           metadata.last_update_check_time));
   delta_update_status.SetString(
       "last-update-check-error",
-      drive::DriveFileErrorToString(metadata.last_update_check_error));
+      drive::FileErrorToString(metadata.last_update_check_error));
 
   web_ui()->CallJavascriptFunction("updateDeltaUpdateStatus",
                                    delta_update_status);
@@ -663,9 +663,9 @@ void DriveInternalsWebUIHandler::OnGetGCacheContents(
 
 void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
     const base::FilePath& path,
-    drive::DriveFileError error,
+    drive::FileError error,
     scoped_ptr<drive::DriveEntryProto> entry) {
-  if (error == drive::DRIVE_FILE_OK) {
+  if (error == drive::FILE_ERROR_OK) {
     DCHECK(entry.get());
     const base::StringValue value(FormatEntry(path, *entry) + "\n");
     web_ui()->CallJavascriptFunction("updateFileSystemContents", value);
@@ -674,10 +674,10 @@ void DriveInternalsWebUIHandler::OnGetEntryInfoByPath(
 
 void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
     const base::FilePath& parent_path,
-    drive::DriveFileError error,
+    drive::FileError error,
     bool hide_hosted_documents,
     scoped_ptr<drive::DriveEntryProtoVector> entries) {
-  if (error == drive::DRIVE_FILE_OK) {
+  if (error == drive::FILE_ERROR_OK) {
     DCHECK(entries.get());
 
     std::string file_system_as_text;

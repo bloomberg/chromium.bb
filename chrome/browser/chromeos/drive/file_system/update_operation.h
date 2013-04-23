@@ -60,7 +60,7 @@ class UpdateOperation {
   void UpdateFileByEntryInfo(
       DriveClientContext context,
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -73,7 +73,7 @@ class UpdateOperation {
       const FileOperationCallback& callback,
       const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& cache_file_path);
 
   // Part of UpdateFileByResourceId().
@@ -90,7 +90,7 @@ class UpdateOperation {
   // Part of UpdateFileByResourceId().
   // |callback| must not be null.
   void OnUpdatedFileRefreshed(const FileOperationCallback& callback,
-                              DriveFileError error,
+                              FileError error,
                               const base::FilePath& drive_file_path,
                               scoped_ptr<DriveEntryProto> entry_proto);
 

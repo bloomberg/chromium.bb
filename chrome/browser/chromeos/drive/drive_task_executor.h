@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_handler_util.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
@@ -37,7 +37,7 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
                     const std::string& action_id);
   virtual ~DriveTaskExecutor();
 
-  void OnFileEntryFetched(DriveFileError error,
+  void OnFileEntryFetched(FileError error,
                           scoped_ptr<DriveEntryProto> entry_proto);
   void OnAppAuthorized(const std::string& resource_id,
                        google_apis::GDataErrorCode error,

@@ -288,11 +288,11 @@ void InstallCRX(Browser* browser, const base::FilePath& path) {
 
 // Called when a crx file on Drive was downloaded.
 void OnCRXDownloadCallback(Browser* browser,
-                           drive::DriveFileError error,
+                           drive::FileError error,
                            const base::FilePath& file,
                            const std::string& unused_mime_type,
                            drive::DriveFileType file_type) {
-  if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE)
+  if (error != drive::FILE_ERROR_OK || file_type != drive::REGULAR_FILE)
     return;
   InstallCRX(browser, file);
 }

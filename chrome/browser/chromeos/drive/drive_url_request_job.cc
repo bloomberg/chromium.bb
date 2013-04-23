@@ -106,7 +106,7 @@ void GetEntryInfoByPathOnUIThread(
 
   DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
+    callback.Run(FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
     return;
   }
   file_system->GetEntryInfoByPath(path, callback);
@@ -141,7 +141,7 @@ void GetFileByResourceIdOnUIThread(
 
   DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
-    get_file_callback.Run(DRIVE_FILE_ERROR_FAILED,
+    get_file_callback.Run(FILE_ERROR_FAILED,
                           base::FilePath(),
                           std::string(),
                           REGULAR_FILE);
@@ -423,14 +423,14 @@ DriveURLRequestJob::~DriveURLRequestJob() {
 //======================= DriveURLRequestJob private methods ===================
 
 void DriveURLRequestJob::OnGetEntryInfoByPath(
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
+    error = FILE_ERROR_NOT_FOUND;
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     mime_type_.clear();
     drive_file_path_.clear();
     initial_file_size_ = 0;
@@ -556,14 +556,14 @@ bool DriveURLRequestJob::ReadFromDownloadData() {
 }
 
 void DriveURLRequestJob::OnGetFileByResourceId(
-    DriveFileError error,
+    FileError error,
     const base::FilePath& local_file_path,
     const std::string& mime_type,
     DriveFileType file_type) {
   DVLOG(1) << "Got OnGetFileByResourceId";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error != DRIVE_FILE_OK || file_type != REGULAR_FILE) {
+  if (error != FILE_ERROR_OK || file_type != REGULAR_FILE) {
     LOG(WARNING) << "Failed to start request: can't get file for resource id";
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            net::ERR_FILE_NOT_FOUND));

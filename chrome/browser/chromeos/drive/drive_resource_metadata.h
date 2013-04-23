@@ -15,8 +15,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -69,27 +69,27 @@ enum DriveFileType {
 
 // Callback similar to FileOperationCallback but with a given |file_path|.
 // Used for operations that change a file path like moving files.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path)>
     FileMoveCallback;
 
 // Used to get entry info from the file system.
-// If |error| is not DRIVE_FILE_OK, |entry_info| is set to NULL.
-typedef base::Callback<void(DriveFileError error,
+// If |error| is not FILE_ERROR_OK, |entry_info| is set to NULL.
+typedef base::Callback<void(FileError error,
                             scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoCallback;
 
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             scoped_ptr<DriveEntryProtoVector> entries)>
     ReadDirectoryCallback;
 
 // Used to get entry info from the file system, with the Drive file path.
-// If |error| is not DRIVE_FILE_OK, |entry_proto| is set to NULL.
+// If |error| is not FILE_ERROR_OK, |entry_proto| is set to NULL.
 //
 // |drive_file_path| parameter is provided as DriveEntryProto does not contain
 // the Drive file path (i.e. only contains the base name without parent
 // directory names).
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             const base::FilePath& drive_file_path,
                             scoped_ptr<DriveEntryProto> entry_proto)>
     GetEntryInfoWithFilePathCallback;
@@ -106,7 +106,7 @@ struct EntryInfoResult {
   ~EntryInfoResult();
 
   base::FilePath path;
-  DriveFileError error;
+  FileError error;
   scoped_ptr<DriveEntryProto> proto;
 };
 
@@ -240,7 +240,7 @@ class DriveResourceMetadata {
   virtual ~DriveResourceMetadata();
 
   // Used to implement Initialize();
-  DriveFileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
+  FileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
 
   // Sets up entries which should be present by default.
   void SetUpDefaultEntries();
@@ -255,7 +255,7 @@ class DriveResourceMetadata {
   int64 GetLargestChangestampOnBlockingPool();
 
   // Used to implement SetLargestChangestamp().
-  DriveFileError SetLargestChangestampOnBlockingPool(int64 value);
+  FileError SetLargestChangestampOnBlockingPool(int64 value);
 
   // Used to implement AddEntry().
   FileMoveResult AddEntryOnBlockingPool(const DriveEntryProto& entry_proto);
@@ -310,7 +310,7 @@ class DriveResourceMetadata {
       const base::FilePath& first_path,
       const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Continues with GetIntroInfoPairByPaths after the second DriveEntry has been
@@ -319,7 +319,7 @@ class DriveResourceMetadata {
       const base::FilePath& second_path,
       const GetEntryInfoPairCallback& callback,
       scoped_ptr<EntryInfoPairResult> result,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Searches for |file_path| synchronously.

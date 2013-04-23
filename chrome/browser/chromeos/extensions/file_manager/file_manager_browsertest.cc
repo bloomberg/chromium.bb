@@ -587,14 +587,14 @@ bool FileManagerBrowserDriveTest::PathExists(const base::FilePath& file_path) {
   DCHECK(system_service_);
   DCHECK(system_service_->file_system());
 
-  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  drive::FileError error = drive::FILE_ERROR_FAILED;
   scoped_ptr<drive::DriveEntryProto> entry_proto;
   system_service_->file_system()->GetEntryInfoByPath(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
 
-  return error == drive::DRIVE_FILE_OK;
+  return error == drive::FILE_ERROR_OK;
 }
 
 bool FileManagerBrowserDriveTest::WaitUntilFilePresentWithSize(
@@ -632,14 +632,14 @@ bool FileManagerBrowserDriveTest::FileIsPresentWithSize(
   DCHECK(system_service_);
   DCHECK(system_service_->file_system());
 
-  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  drive::FileError error = drive::FILE_ERROR_FAILED;
   scoped_ptr<drive::DriveEntryProto> entry_proto;
   system_service_->file_system()->GetEntryInfoByPath(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
 
-  return (error == drive::DRIVE_FILE_OK &&
+  return (error == drive::FILE_ERROR_OK &&
           entry_proto->file_info().size() == file_size);
 }
 
@@ -648,14 +648,14 @@ bool FileManagerBrowserDriveTest::FileIsNotPresent(
   DCHECK(system_service_);
   DCHECK(system_service_->file_system());
 
-  drive::DriveFileError error = drive::DRIVE_FILE_ERROR_FAILED;
+  drive::FileError error = drive::FILE_ERROR_FAILED;
   scoped_ptr<drive::DriveEntryProto> entry_proto;
   system_service_->file_system()->GetEntryInfoByPath(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
 
-  return error == drive::DRIVE_FILE_ERROR_NOT_FOUND;
+  return error == drive::FILE_ERROR_NOT_FOUND;
 }
 
 void FileManagerBrowserDriveTest::CheckForUpdates() {

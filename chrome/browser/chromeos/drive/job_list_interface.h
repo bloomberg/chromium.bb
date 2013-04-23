@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 
 namespace drive {
 
@@ -88,10 +88,10 @@ class JobListObserver {
   virtual void OnJobAdded(const JobInfo& job_info) {}
 
   // Called when a job id finished.
-  // |error| is DRIVE_FILE_OK when the job successfully finished, and a value
+  // |error| is FILE_ERROR_OK when the job successfully finished, and a value
   // telling the reason of failure when the jobs is failed.
   virtual void OnJobDone(const JobInfo& job_info,
-                         DriveFileError error) {}
+                         FileError error) {}
 
   // Called when a job status is updated.
   virtual void OnJobUpdated(const JobInfo& job_info) {}

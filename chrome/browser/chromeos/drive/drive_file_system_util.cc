@@ -301,7 +301,7 @@ void PrepareWritableFileAndRun(Profile* profile,
     file_write_helper->PrepareWritableFileAndRun(remote_path, callback);
   } else {
     content::BrowserThread::GetBlockingPool()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_FILE_OK, path));
+        FROM_HERE, base::Bind(callback, FILE_ERROR_OK, path));
   }
 }
 
@@ -321,31 +321,31 @@ void EnsureDirectoryExists(Profile* profile,
         callback);
   } else {
     base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, DRIVE_FILE_OK));
+        FROM_HERE, base::Bind(callback, FILE_ERROR_OK));
   }
 }
 
-DriveFileError GDataToDriveFileError(google_apis::GDataErrorCode status) {
+FileError GDataToFileError(google_apis::GDataErrorCode status) {
   switch (status) {
     case google_apis::HTTP_SUCCESS:
     case google_apis::HTTP_CREATED:
     case google_apis::HTTP_NO_CONTENT:
-      return DRIVE_FILE_OK;
+      return FILE_ERROR_OK;
     case google_apis::HTTP_UNAUTHORIZED:
     case google_apis::HTTP_FORBIDDEN:
-      return DRIVE_FILE_ERROR_ACCESS_DENIED;
+      return FILE_ERROR_ACCESS_DENIED;
     case google_apis::HTTP_NOT_FOUND:
-      return DRIVE_FILE_ERROR_NOT_FOUND;
+      return FILE_ERROR_NOT_FOUND;
     case google_apis::GDATA_PARSE_ERROR:
     case google_apis::GDATA_FILE_ERROR:
-      return DRIVE_FILE_ERROR_ABORT;
+      return FILE_ERROR_ABORT;
     case google_apis::GDATA_NO_CONNECTION:
-      return DRIVE_FILE_ERROR_NO_CONNECTION;
+      return FILE_ERROR_NO_CONNECTION;
     case google_apis::HTTP_SERVICE_UNAVAILABLE:
     case google_apis::HTTP_INTERNAL_SERVER_ERROR:
-      return DRIVE_FILE_ERROR_THROTTLED;
+      return FILE_ERROR_THROTTLED;
     default:
-      return DRIVE_FILE_ERROR_FAILED;
+      return FILE_ERROR_FAILED;
   }
 }
 
@@ -372,7 +372,7 @@ void ConvertPlatformFileInfoToProto(const base::PlatformFileInfo& file_info,
   proto->set_creation_time(file_info.creation_time.ToInternalValue());
 }
 
-void EmptyFileOperationCallback(DriveFileError error) {
+void EmptyFileOperationCallback(FileError error) {
 }
 
 }  // namespace util

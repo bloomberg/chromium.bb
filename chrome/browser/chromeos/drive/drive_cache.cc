@@ -158,7 +158,7 @@ void DeleteFilesSelectively(const base::FilePath& path_to_delete_pattern,
 // Used to implement GetFile, MarkAsMounted.
 void RunGetFileFromCacheCallback(
     const GetFileFromCacheCallback& callback,
-    scoped_ptr<std::pair<DriveFileError, base::FilePath> > result) {
+    scoped_ptr<std::pair<FileError, base::FilePath> > result) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(result.get());
@@ -554,7 +554,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::GetFileOnBlockingPool(
   DriveCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry) ||
       !cache_entry.is_present()) {
-    result->first = DRIVE_FILE_ERROR_NOT_FOUND;
+    result->first = FILE_ERROR_NOT_FOUND;
     return result.Pass();
   }
 
@@ -566,7 +566,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::GetFileOnBlockingPool(
   } else {
     file_origin = CACHED_FILE_FROM_SERVER;
   }
-  result->first = DRIVE_FILE_OK;
+  result->first = FILE_ERROR_OK;
   result->second = GetCacheFilePath(resource_id,
                                     md5,
                                     GetSubDirectoryType(cache_entry),
@@ -574,7 +574,7 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::GetFileOnBlockingPool(
   return result.Pass();
 }
 
-DriveFileError DriveCache::StoreOnBlockingPool(
+FileError DriveCache::StoreOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5,
     const base::FilePath& source_path,
@@ -585,11 +585,11 @@ DriveFileError DriveCache::StoreOnBlockingPool(
   if (file_operation_type == FILE_OPERATION_COPY) {
     if (!file_util::GetFileSize(source_path, &file_size)) {
       LOG(WARNING) << "Couldn't get file size for: " << source_path.value();
-      return DRIVE_FILE_ERROR_FAILED;
+      return FILE_ERROR_FAILED;
     }
   }
   if (!FreeDiskSpaceOnBlockingPoolIfNeededFor(file_size))
-    return DRIVE_FILE_ERROR_NO_SPACE;
+    return FILE_ERROR_NO_SPACE;
 
   base::FilePath symlink_path;
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
@@ -604,7 +604,7 @@ DriveFileError DriveCache::StoreOnBlockingPool(
                    << (cache_entry.is_dirty() ? "dirty" : "mounted")
                    << " file: res_id=" << resource_id
                    << ", md5=" << md5;
-      return DRIVE_FILE_ERROR_IN_USE;
+      return FILE_ERROR_IN_USE;
     }
 
     if (cache_entry.is_pinned())
@@ -655,11 +655,11 @@ DriveFileError DriveCache::StoreOnBlockingPool(
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
 
-  return success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
+  return success ? FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
-                                             const std::string& md5) {
+FileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
+                                        const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   bool is_persistent = true;
@@ -676,7 +676,7 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
       // - don't need to move the file.
       if (!cache_entry.is_present()) {
         DCHECK(cache_entry.is_pinned());
-        return DRIVE_FILE_OK;
+        return FILE_ERROR_OK;
       }
       // File exists, move it to persistent dir.
       // Gets the current path of the file in cache.
@@ -689,7 +689,7 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
                                                   CACHE_TYPE_PERSISTENT,
                                                   CACHED_FILE_FROM_SERVER);
       if (!MoveFile(source_path, dest_path))
-        return DRIVE_FILE_ERROR_FAILED;
+        return FILE_ERROR_FAILED;
     }
   }
 
@@ -698,11 +698,11 @@ DriveFileError DriveCache::PinOnBlockingPool(const std::string& resource_id,
   cache_entry.set_is_pinned(true);
   cache_entry.set_is_persistent(is_persistent);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
-DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
-                                               const std::string& md5) {
+FileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
+                                          const std::string& md5) {
   AssertOnSequencedWorkerPool();
 
   // Unpinning a file means its entry must exist in cache.
@@ -711,7 +711,7 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
     LOG(WARNING) << "Can't unpin a file that wasn't pinned or cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    return DRIVE_FILE_ERROR_NOT_FOUND;
+    return FILE_ERROR_NOT_FOUND;
   }
 
   CacheSubDirectoryType sub_dir_type = CACHE_TYPE_TMP;
@@ -735,7 +735,7 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
                                             CACHE_TYPE_TMP,
                                             CACHED_FILE_FROM_SERVER);
       if (!MoveFile(source_path, dest_path))
-        return DRIVE_FILE_ERROR_FAILED;
+        return FILE_ERROR_FAILED;
     }
   }
 
@@ -749,7 +749,7 @@ DriveFileError DriveCache::UnpinOnBlockingPool(const std::string& resource_id,
     // Remove the existing entry if we are unpinning a non-present file.
     metadata_->RemoveCacheEntry(resource_id);
   }
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
 scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
@@ -762,12 +762,12 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
   // Get cache entry associated with the resource_id and md5
   DriveCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry)) {
-    result->first = DRIVE_FILE_ERROR_NOT_FOUND;
+    result->first = FILE_ERROR_NOT_FOUND;
     return result.Pass();
   }
 
   if (cache_entry.is_mounted()) {
-    result->first = DRIVE_FILE_ERROR_INVALID_OPERATION;
+    result->first = FILE_ERROR_INVALID_OPERATION;
     return result.Pass();
   }
 
@@ -792,12 +792,12 @@ scoped_ptr<DriveCache::GetFileResult> DriveCache::MarkAsMountedOnBlockingPool(
     cache_entry.set_is_persistent(true);
     metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
   }
-  result->first = success ? DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
+  result->first = success ? FILE_ERROR_OK : FILE_ERROR_FAILED;
   result->second = mounted_path;
   return result.Pass();
 }
 
-DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
+FileError DriveCache::MarkAsUnmountedOnBlockingPool(
     const base::FilePath& file_path) {
   AssertOnSequencedWorkerPool();
   DCHECK(IsUnderDriveCacheDirectory(file_path));
@@ -813,10 +813,10 @@ DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
   // Get cache entry associated with the resource_id and md5
   DriveCacheEntry cache_entry;
   if (!GetCacheEntryOnBlockingPool(resource_id, md5, &cache_entry))
-    return DRIVE_FILE_ERROR_NOT_FOUND;
+    return FILE_ERROR_NOT_FOUND;
 
   if (!cache_entry.is_mounted())
-    return DRIVE_FILE_ERROR_INVALID_OPERATION;
+    return FILE_ERROR_INVALID_OPERATION;
 
   // Get the subdir type and path for the unmounted state.
   CacheSubDirectoryType unmounted_subdir =
@@ -831,17 +831,17 @@ DriveFileError DriveCache::MarkAsUnmountedOnBlockingPool(
 
   // Move cache file.
   if (!MoveFile(mounted_path, unmounted_path))
-    return DRIVE_FILE_ERROR_FAILED;
+    return FILE_ERROR_FAILED;
 
   // Now that cache operation is complete, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_mounted(false);
   cache_entry.set_is_persistent(unmounted_subdir == CACHE_TYPE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
-DriveFileError DriveCache::MarkDirtyOnBlockingPool(
+FileError DriveCache::MarkDirtyOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
@@ -859,7 +859,7 @@ DriveFileError DriveCache::MarkDirtyOnBlockingPool(
     LOG(WARNING) << "Can't mark dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    return DRIVE_FILE_ERROR_NOT_FOUND;
+    return FILE_ERROR_NOT_FOUND;
   }
 
   // If a file is already dirty (i.e. MarkDirtyInCache was called before),
@@ -879,7 +879,7 @@ DriveFileError DriveCache::MarkDirtyOnBlockingPool(
                                              CACHED_FILE_FROM_SERVER);
     DeleteSymlink(symlink_path);
 
-    return DRIVE_FILE_OK;
+    return FILE_ERROR_OK;
   }
 
   // Move file to persistent dir with new .local extension.
@@ -897,17 +897,17 @@ DriveFileError DriveCache::MarkDirtyOnBlockingPool(
                                               CACHED_FILE_LOCALLY_MODIFIED);
 
   if (!MoveFile(source_path, cache_file_path))
-    return DRIVE_FILE_ERROR_FAILED;
+    return FILE_ERROR_FAILED;
 
   // Now that file operations have completed, update metadata.
   cache_entry.set_md5(md5);
   cache_entry.set_is_dirty(true);
   cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
-DriveFileError DriveCache::CommitDirtyOnBlockingPool(
+FileError DriveCache::CommitDirtyOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
@@ -925,7 +925,7 @@ DriveFileError DriveCache::CommitDirtyOnBlockingPool(
     LOG(WARNING) << "Can't commit dirty a file that wasn't cached: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    return DRIVE_FILE_ERROR_NOT_FOUND;
+    return FILE_ERROR_NOT_FOUND;
   }
 
   // If a file is not dirty (it should have been marked dirty via
@@ -934,7 +934,7 @@ DriveFileError DriveCache::CommitDirtyOnBlockingPool(
     LOG(WARNING) << "Can't commit a non-dirty file: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    return DRIVE_FILE_ERROR_INVALID_OPERATION;
+    return FILE_ERROR_INVALID_OPERATION;
   }
 
   // Dirty files must be in persistent dir.
@@ -953,10 +953,10 @@ DriveFileError DriveCache::CommitDirtyOnBlockingPool(
                                           CACHED_FILE_LOCALLY_MODIFIED);
 
   return CreateSymlink(target_path, symlink_path) ?
-      DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
-DriveFileError DriveCache::ClearDirtyOnBlockingPool(
+FileError DriveCache::ClearDirtyOnBlockingPool(
     const std::string& resource_id,
     const std::string& md5) {
   AssertOnSequencedWorkerPool();
@@ -972,7 +972,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
     LOG(WARNING) << "Can't clear dirty state of a file that wasn't cached: "
                  << "res_id=" << resource_id
                  << ", md5=" << md5;
-    return DRIVE_FILE_ERROR_NOT_FOUND;
+    return FILE_ERROR_NOT_FOUND;
   }
 
   // If a file is not dirty (it should have been marked dirty via
@@ -981,7 +981,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
     LOG(WARNING) << "Can't clear dirty state of a non-dirty file: res_id="
                  << resource_id
                  << ", md5=" << md5;
-    return DRIVE_FILE_ERROR_INVALID_OPERATION;
+    return FILE_ERROR_INVALID_OPERATION;
   }
 
   // File must be dirty and hence in persistent dir.
@@ -1005,7 +1005,7 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
                                               CACHED_FILE_FROM_SERVER);
 
   if (!MoveFile(source_path, dest_path))
-    return DRIVE_FILE_ERROR_FAILED;
+    return FILE_ERROR_FAILED;
 
   // Delete symlink in outgoing dir.
   base::FilePath symlink_path = GetCacheFilePath(resource_id,
@@ -1019,10 +1019,10 @@ DriveFileError DriveCache::ClearDirtyOnBlockingPool(
   cache_entry.set_is_dirty(false);
   cache_entry.set_is_persistent(sub_dir_type == CACHE_TYPE_PERSISTENT);
   metadata_->AddOrUpdateCacheEntry(resource_id, cache_entry);
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
-DriveFileError DriveCache::RemoveOnBlockingPool(
+FileError DriveCache::RemoveOnBlockingPool(
     const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
@@ -1040,7 +1040,7 @@ DriveFileError DriveCache::RemoveOnBlockingPool(
                  (cache_entry.is_dirty() ? "dirty" : "mounted") :
                  "non-existent")
              << " in cache, not removing";
-    return DRIVE_FILE_OK;
+    return FILE_ERROR_OK;
   }
 
   // Determine paths to delete all cache versions of |resource_id| in
@@ -1073,7 +1073,7 @@ DriveFileError DriveCache::RemoveOnBlockingPool(
   // Now that all file operations have completed, remove from metadata.
   metadata_->RemoveCacheEntry(resource_id);
 
-  return DRIVE_FILE_OK;
+  return FILE_ERROR_OK;
 }
 
 bool DriveCache::ClearAllOnBlockingPool() {
@@ -1094,13 +1094,13 @@ bool DriveCache::ClearAllOnBlockingPool() {
 void DriveCache::OnPinned(const std::string& resource_id,
                           const std::string& md5,
                           const FileOperationCallback& callback,
-                          DriveFileError error) {
+                          FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   callback.Run(error);
 
-  if (error == DRIVE_FILE_OK)
+  if (error == FILE_ERROR_OK)
     FOR_EACH_OBSERVER(DriveCacheObserver,
                       observers_,
                       OnCachePinned(resource_id, md5));
@@ -1109,13 +1109,13 @@ void DriveCache::OnPinned(const std::string& resource_id,
 void DriveCache::OnUnpinned(const std::string& resource_id,
                             const std::string& md5,
                             const FileOperationCallback& callback,
-                            DriveFileError error) {
+                            FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   callback.Run(error);
 
-  if (error == DRIVE_FILE_OK)
+  if (error == FILE_ERROR_OK)
     FOR_EACH_OBSERVER(DriveCacheObserver,
                       observers_,
                       OnCacheUnpinned(resource_id, md5));
@@ -1132,13 +1132,13 @@ void DriveCache::OnUnpinned(const std::string& resource_id,
 
 void DriveCache::OnCommitDirty(const std::string& resource_id,
                                const FileOperationCallback& callback,
-                               DriveFileError error) {
+                               FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   callback.Run(error);
 
-  if (error == DRIVE_FILE_OK)
+  if (error == FILE_ERROR_OK)
     FOR_EACH_OBSERVER(DriveCacheObserver,
                       observers_,
                       OnCacheCommitted(resource_id));

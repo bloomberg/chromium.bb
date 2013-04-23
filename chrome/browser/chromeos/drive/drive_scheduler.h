@@ -313,7 +313,7 @@ class DriveScheduler
   // up the job information and returns |queue_entry| as is so that callers can
   // extract and invoke the callback function object stored there.
   scoped_ptr<QueueEntry> OnJobDone(scoped_ptr<QueueEntry> queue_entry,
-                                   DriveFileError error);
+                                   FileError error);
 
   // Callback for job finishing with a GetResourceListCallback.
   void OnGetResourceListJobDone(
@@ -377,7 +377,7 @@ class DriveScheduler
 
   // Notifies updates to observers.
   void NotifyJobAdded(const JobInfo& job_info);
-  void NotifyJobDone(const JobInfo& job_info, DriveFileError error);
+  void NotifyJobDone(const JobInfo& job_info, FileError error);
   void NotifyJobUpdated(const JobInfo& job_info);
 
   // Number of jobs in flight for each queue.

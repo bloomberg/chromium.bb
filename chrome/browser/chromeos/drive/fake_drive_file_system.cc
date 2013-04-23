@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -271,7 +271,7 @@ void FakeDriveFileSystem::GetFilePathAfterGetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We assume the call always success for test.
-  DCHECK_EQ(util::GDataToDriveFileError(error), DRIVE_FILE_OK);
+  DCHECK_EQ(util::GDataToFileError(error), FILE_ERROR_OK);
   DCHECK(about_resource);
 
   GetFilePathInternal(about_resource->root_folder_id(), resource_id,
@@ -308,7 +308,7 @@ void FakeDriveFileSystem::GetFilePathAfterGetResourceEntry(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // We assume the call always success for test.
-  DCHECK_EQ(util::GDataToDriveFileError(error_in), DRIVE_FILE_OK);
+  DCHECK_EQ(util::GDataToFileError(error_in), FILE_ERROR_OK);
   DCHECK(resource_entry);
 
   DriveEntryProto entry_proto =
@@ -328,8 +328,8 @@ void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError error = util::GDataToDriveFileError(error_in);
-  if (error != DRIVE_FILE_OK) {
+  FileError error = util::GDataToFileError(error_in);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath(), scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -349,7 +349,7 @@ void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetResourceEntry(
 
 void FakeDriveFileSystem::GetEntryInfoByResourceIdAfterGetFilePath(
     const GetEntryInfoWithFilePathCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto,
     const base::FilePath& parent_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -364,11 +364,11 @@ void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
     const FileOperationCallback& completion_callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     completion_callback.Run(error);
     return;
   }
@@ -378,15 +378,15 @@ void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
       cache_dir_.path().AppendASCII(entry_proto->resource_id());
   if (file_util::PathExists(cache_path)) {
     // Cache file is found.
-    initialized_callback.Run(DRIVE_FILE_OK, entry_proto.Pass(), cache_path);
-    completion_callback.Run(DRIVE_FILE_OK);
+    initialized_callback.Run(FILE_ERROR_OK, entry_proto.Pass(), cache_path);
+    completion_callback.Run(FILE_ERROR_OK);
     return;
   }
 
   // Copy the URL here before passing |entry_proto| to the callback.
   const GURL download_url(entry_proto->download_url());
   initialized_callback.Run(
-      DRIVE_FILE_OK, entry_proto.Pass(), base::FilePath());
+      FILE_ERROR_OK, entry_proto.Pass(), base::FilePath());
   drive_service_->DownloadFile(
       file_path,
       cache_path,
@@ -403,7 +403,7 @@ void FakeDriveFileSystem::GetFileContentByPathAfterDownloadFile(
     google_apis::GDataErrorCode gdata_error,
     const base::FilePath& temp_file) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  completion_callback.Run(util::GDataToDriveFileError(gdata_error));
+  completion_callback.Run(util::GDataToFileError(gdata_error));
 }
 
 // Implementation of GetEntryInfoByPath.
@@ -413,8 +413,8 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource(
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError error = util::GDataToDriveFileError(gdata_error);
-  if (error != DRIVE_FILE_OK) {
+  FileError error = util::GDataToFileError(gdata_error);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -430,11 +430,11 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetAboutResource(
 void FakeDriveFileSystem::GetEntryInfoByPathAfterGetParentEntryInfo(
     const base::FilePath& base_name,
     const GetEntryInfoCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> parent_entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -454,8 +454,8 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList(
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError error = util::GDataToDriveFileError(gdata_error);
-  if (error != DRIVE_FILE_OK) {
+  FileError error = util::GDataToFileError(gdata_error);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -468,12 +468,12 @@ void FakeDriveFileSystem::GetEntryInfoByPathAfterGetResourceList(
         ConvertResourceEntryToDriveEntryProto(*entries[i])));
     if (entry->base_name() == base_name.AsUTF8Unsafe()) {
       // Found the target entry.
-      callback.Run(DRIVE_FILE_OK, entry.Pass());
+      callback.Run(FILE_ERROR_OK, entry.Pass());
       return;
     }
   }
 
-  callback.Run(DRIVE_FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
+  callback.Run(FILE_ERROR_NOT_FOUND, scoped_ptr<DriveEntryProto>());
 }
 
 }  // namespace test_util

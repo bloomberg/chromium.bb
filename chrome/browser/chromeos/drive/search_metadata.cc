@@ -157,7 +157,7 @@ class SearchMetadataHelper {
   // Prepares results by popping candidates one by one.
   void PrepareResults() {
     if (result_candidates_.empty()) {
-      Finish(DRIVE_FILE_OK);
+      Finish(FILE_ERROR_OK);
       return;
     }
     resource_metadata_->GetEntryInfoByResourceId(
@@ -167,10 +167,10 @@ class SearchMetadataHelper {
   }
 
   // Implements PrepareResults().
-  void ContinuePrepareResults(DriveFileError error,
+  void ContinuePrepareResults(FileError error,
                               const base::FilePath& path,
                               scoped_ptr<DriveEntryProto> unused_entry) {
-    if (error != DRIVE_FILE_OK) {
+    if (error != FILE_ERROR_OK) {
       Finish(error);
       return;
     }
@@ -181,12 +181,12 @@ class SearchMetadataHelper {
   }
 
   // Sends the result to the callback and deletes this instance.
-  void Finish(DriveFileError error) {
+  void Finish(FileError error) {
     // Reverse the order here because |result_candidates_| puts the most
     // uninterested candidate at the top.
     std::reverse(results_->begin(), results_->end());
 
-    if (error != DRIVE_FILE_OK)
+    if (error != FILE_ERROR_OK)
       results_.reset();
     callback_.Run(error, results_.Pass());
     delete this;

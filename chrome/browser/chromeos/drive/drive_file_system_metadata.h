@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 
 namespace drive {
 
@@ -27,7 +27,7 @@ struct DriveFileSystemMetadata {
   base::Time last_update_check_time;
 
   // Error code of the last update check.
-  DriveFileError last_update_check_error;
+  FileError last_update_check_error;
 };
 
 }  // namespace drive

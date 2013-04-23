@@ -98,7 +98,7 @@ class ScreenshotSource : public content::URLDataSource {
   void GetSavedScreenshotCallback(
       const std::string& screenshot_path,
       const content::URLDataSource::GotDataCallback& callback,
-      drive::DriveFileError error,
+      drive::FileError error,
       const base::FilePath& file,
       const std::string& unused_mime_type,
       drive::DriveFileType file_type);

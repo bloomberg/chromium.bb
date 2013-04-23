@@ -702,7 +702,7 @@ void DriveScheduler::ResetThrottleAndContinueJobLoop(QueueType queue_type) {
 
 scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
     scoped_ptr<DriveScheduler::QueueEntry> queue_entry,
-    DriveFileError error) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
@@ -713,7 +713,7 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
   --jobs_running_[queue_type];
 
   // Retry, depending on the error.
-  if (error == DRIVE_FILE_ERROR_THROTTLED) {
+  if (error == FILE_ERROR_THROTTLED) {
     job_info->state = STATE_RETRY;
     NotifyJobUpdated(*job_info);
 
@@ -742,7 +742,7 @@ void DriveScheduler::OnGetResourceListJobDone(
     scoped_ptr<google_apis::ResourceList> resource_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -763,7 +763,7 @@ void DriveScheduler::OnGetResourceEntryJobDone(
     scoped_ptr<google_apis::ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -784,7 +784,7 @@ void DriveScheduler::OnGetAboutResourceJobDone(
     scoped_ptr<google_apis::AboutResource> about_resource) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -801,7 +801,7 @@ void DriveScheduler::OnGetAccountMetadataJobDone(
     scoped_ptr<google_apis::AccountMetadata> account_metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -819,7 +819,7 @@ void DriveScheduler::OnGetAppListJobDone(
     scoped_ptr<google_apis::AppList> app_list) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -833,7 +833,7 @@ void DriveScheduler::OnGetAppListJobDone(
 void DriveScheduler::OnEntryActionJobDone(
     scoped_ptr<DriveScheduler::QueueEntry> queue_entry,
     google_apis::GDataErrorCode error) {
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -849,7 +849,7 @@ void DriveScheduler::OnDownloadActionJobDone(
     scoped_ptr<DriveScheduler::QueueEntry> queue_entry,
     google_apis::GDataErrorCode error,
     const base::FilePath& temp_file) {
-  DriveFileError drive_error(util::GDataToDriveFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -867,7 +867,7 @@ void DriveScheduler::OnUploadCompletionJobDone(
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  DriveFileError drive_error(DriveUploadErrorToDriveFileError(error));
+  FileError drive_error(DriveUploadErrorToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 
@@ -937,7 +937,7 @@ void DriveScheduler::NotifyJobAdded(const JobInfo& job_info) {
 }
 
 void DriveScheduler::NotifyJobDone(const JobInfo& job_info,
-                                   DriveFileError error) {
+                                   FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(JobListObserver, observer_list_,
                     OnJobDone(job_info, error));

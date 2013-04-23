@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "net/base/completion_callback.h"
 
@@ -38,7 +38,7 @@ class ReaderProxy {
   virtual void OnGetContent(scoped_ptr<std::string> data) = 0;
 
   // Called when an error is found, during the network downloading.
-  virtual void OnError(DriveFileError error) = 0;
+  virtual void OnError(FileError error) = 0;
 };
 
 // The read operation implementation for the locally cached files.
@@ -53,7 +53,7 @@ class LocalReaderProxy : public ReaderProxy {
   virtual int Read(net::IOBuffer* buffer, int buffer_length,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual void OnGetContent(scoped_ptr<std::string> data) OVERRIDE;
-  virtual void OnError(DriveFileError error) OVERRIDE;
+  virtual void OnError(FileError error) OVERRIDE;
 
  private:
   scoped_ptr<net::FileStream> file_stream_;
@@ -71,7 +71,7 @@ class NetworkReaderProxy : public ReaderProxy {
   virtual int Read(net::IOBuffer* buffer, int buffer_length,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual void OnGetContent(scoped_ptr<std::string> data) OVERRIDE;
-  virtual void OnError(DriveFileError error) OVERRIDE;
+  virtual void OnError(FileError error) OVERRIDE;
 
  private:
   // The data received from the server, but not yet read.
@@ -107,7 +107,7 @@ class DriveFileStreamReader {
   typedef base::Callback<DriveFileSystemInterface*()> DriveFileSystemGetter;
 
   // Callback to return the result of Initialize().
-  typedef base::Callback<void(DriveFileError error,
+  typedef base::Callback<void(FileError error,
                               scoped_ptr<DriveEntryProto> entry)>
       InitializeCompletionCallback;
 
@@ -137,7 +137,7 @@ class DriveFileStreamReader {
   // is done.
   void InitializeAfterGetFileContentByPathInitialized(
       const InitializeCompletionCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry,
       const base::FilePath& drive_file_path);
 
@@ -155,7 +155,7 @@ class DriveFileStreamReader {
   // Called when GetFileContentByPath is completed.
   void OnGetFileContentByPathCompletion(
       const InitializeCompletionCallback& callback,
-      DriveFileError error);
+      FileError error);
 
   const DriveFileSystemGetter drive_file_system_getter_;
   scoped_ptr<internal::ReaderProxy> reader_proxy_;

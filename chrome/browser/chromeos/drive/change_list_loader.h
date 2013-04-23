@@ -33,7 +33,7 @@ class DriveWebAppsRegistry;
 
 // Callback run as a response to SearchFromServer.
 typedef base::Callback<void(ScopedVector<ChangeList> change_lists,
-                            DriveFileError error)> LoadFeedListCallback;
+                            FileError error)> LoadFeedListCallback;
 
 // ChangeListLoader is used to load feeds from WAPI (codename for
 // Documents List API) or Google Drive API and load the cached metadata.
@@ -127,13 +127,13 @@ class ChangeListLoader {
   // Part of Load().
   // This function should be called when the change list load is complete.
   // Flushes the callbacks for change list loading and all directory loading.
-  void OnChangeListLoadComplete(DriveFileError error);
+  void OnChangeListLoadComplete(FileError error);
 
   // Part of Load().
   // This function should be called when the directory load is complete.
   // Flushes the callbacks waiting for the directory to be loaded.
   void OnDirectoryLoadComplete(const DirectoryFetchInfo& directory_fetch_info,
-                               DriveFileError error);
+                               FileError error);
 
   // ================= Implementation for change list loading =================
 
@@ -160,7 +160,7 @@ class ChangeListLoader {
       const DirectoryFetchInfo& directory_fetch_info,
       scoped_ptr<google_apis::AboutResource> about_resource,
       int64 start_changestamp,
-      DriveFileError error);
+      FileError error);
 
   // Part of LoadFromServerIfNeeded().
   // Starts loading the change list since |start_changestamp|, or the full
@@ -186,7 +186,7 @@ class ChangeListLoader {
       scoped_ptr<google_apis::AboutResource> about_resource,
       bool is_delta_feed,
       ScopedVector<ChangeList> change_lists,
-      DriveFileError error);
+      FileError error);
 
   // Part of LoadFromServerIfNeeded().
   // Called when UpdateMetadataFromFeedAfterLoadFromServer is finished.
@@ -222,7 +222,7 @@ class ChangeListLoader {
   void DoLoadGrandRootDirectoryFromServerAfterGetEntryInfoByPath(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Part of DoLoadDirectoryFromServer() for the grand root ("/drive").
@@ -237,13 +237,13 @@ class ChangeListLoader {
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
       ScopedVector<ChangeList> change_lists,
-      DriveFileError error);
+      FileError error);
 
   // Part of DoLoadDirectoryFromServer().
   void DoLoadDirectoryFromServerAfterRefresh(
       const DirectoryFetchInfo& directory_fetch_info,
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& directory_path);
 
   // ================= Implementation for other stuff =================

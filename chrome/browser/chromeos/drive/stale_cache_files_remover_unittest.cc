@@ -107,11 +107,11 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     cache_->RequestInitializeForTesting();
     google_apis::test_util::RunBlockingPoolTask();
 
-    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    FileError error = FILE_ERROR_FAILED;
     resource_metadata_->Initialize(
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_EQ(DRIVE_FILE_OK, error);
+    ASSERT_EQ(FILE_ERROR_OK, error);
 
     stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system_,
                                                                 cache_.get()));
@@ -158,11 +158,11 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
   fake_free_disk_space_getter_->set_fake_free_disk_space(kLotsOfSpace);
 
   // Create a stale cache file.
-  DriveFileError error = DRIVE_FILE_OK;
+  FileError error = FILE_ERROR_OK;
   cache_->Store(resource_id, md5, dummy_file, DriveCache::FILE_OPERATION_COPY,
                 google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
 
   // Verify that the cache entry exists.
   bool success = false;
@@ -180,7 +180,7 @@ TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
       google_apis::test_util::CreateCopyResultCallback(
           &error, &unused, &entry_proto));
   google_apis::test_util::RunBlockingPoolTask();
-  EXPECT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  EXPECT_EQ(FILE_ERROR_NOT_FOUND, error);
   EXPECT_FALSE(entry_proto.get());
 
   // Load a root feed again to kick the StaleCacheFilesRemover.

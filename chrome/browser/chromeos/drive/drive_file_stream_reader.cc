@@ -77,7 +77,7 @@ void LocalReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   NOTREACHED();
 }
 
-void LocalReaderProxy::OnError(DriveFileError error) {
+void LocalReaderProxy::OnError(FileError error) {
   // This method should never be called, because we don't access to the server
   // during the reading of local-cache file.
   NOTREACHED();
@@ -149,12 +149,12 @@ void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   base::ResetAndReturn(&callback_).Run(result);
 }
 
-void NetworkReaderProxy::OnError(DriveFileError error) {
+void NetworkReaderProxy::OnError(FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_NE(error, DRIVE_FILE_OK);
+  DCHECK_NE(error, FILE_ERROR_OK);
 
   error_code_ =
-      net::PlatformFileErrorToNetError(DriveFileErrorToPlatformError(error));
+      net::PlatformFileErrorToNetError(FileErrorToPlatformError(error));
   pending_data_.clear();
 
   if (callback_.is_null()) {
@@ -173,7 +173,7 @@ namespace {
 
 // Calls DriveFileSystemInterface::GetFileContentByPath if the file system
 // is available. If not, the |completion_callback| is invoked with
-// DRIVE_FILE_ERROR_FAILED.
+// FILE_ERROR_FAILED.
 void GetFileContentByPathOnUIThread(
     const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
@@ -184,7 +184,7 @@ void GetFileContentByPathOnUIThread(
 
   DriveFileSystemInterface* file_system = file_system_getter.Run();
   if (!file_system) {
-    completion_callback.Run(DRIVE_FILE_ERROR_FAILED);
+    completion_callback.Run(FILE_ERROR_FAILED);
     return;
   }
 
@@ -257,12 +257,12 @@ int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
 
 void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     const InitializeCompletionCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry,
     const base::FilePath& drive_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, scoped_ptr<DriveEntryProto>());
     return;
   }
@@ -272,7 +272,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     // The file is not cached, and being downloaded.
     reader_proxy_.reset(
         new internal::NetworkReaderProxy(entry->file_info().size()));
-    callback.Run(DRIVE_FILE_OK, entry.Pass());
+    callback.Run(FILE_ERROR_OK, entry.Pass());
     return;
   }
 
@@ -308,12 +308,12 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (open_result != net::OK) {
-    callback.Run(DRIVE_FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
+    callback.Run(FILE_ERROR_FAILED, scoped_ptr<DriveEntryProto>());
     return;
   }
 
   reader_proxy_.reset(new internal::LocalReaderProxy(file_stream.Pass()));
-  callback.Run(DRIVE_FILE_OK, entry.Pass());
+  callback.Run(FILE_ERROR_OK, entry.Pass());
 }
 
 void DriveFileStreamReader::OnGetContent(google_apis::GDataErrorCode error_code,
@@ -325,10 +325,10 @@ void DriveFileStreamReader::OnGetContent(google_apis::GDataErrorCode error_code,
 
 void DriveFileStreamReader::OnGetFileContentByPathCompletion(
     const InitializeCompletionCallback& callback,
-    DriveFileError error) {
+    FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error == DRIVE_FILE_OK) {
+  if (error == FILE_ERROR_OK) {
     // We are interested in only errors.
     return;
   }

@@ -655,7 +655,7 @@ void RequestLocalFileSystemFunction::RespondSuccessOnUIThread(
   SetResult(dict);
   dict->SetString("name", name);
   dict->SetString("path", root_path.spec());
-  dict->SetInteger("error", drive::DRIVE_FILE_OK);
+  dict->SetInteger("error", drive::FILE_ERROR_OK);
   SendResponse(true);
 }
 
@@ -1296,7 +1296,7 @@ void FileBrowserFunction::GetSelectedFileInfoInternal(
       // |system_service| is NULL if Drive is disabled.
       if (!system_service) {
         ContinueGetSelectedFileInfo(params.Pass(),
-                                    drive::DRIVE_FILE_ERROR_FAILED,
+                                    drive::FILE_ERROR_FAILED,
                                     base::FilePath(),
                                     std::string(),
                                     drive::REGULAR_FILE);
@@ -1318,14 +1318,14 @@ void FileBrowserFunction::GetSelectedFileInfoInternal(
 
 void FileBrowserFunction::ContinueGetSelectedFileInfo(
     scoped_ptr<GetSelectedFileInfoParams> params,
-    drive::DriveFileError error,
+    drive::FileError error,
     const base::FilePath& local_file_path,
     const std::string& mime_type,
     drive::DriveFileType file_type) {
   const int index = params->selected_files.size();
   const base::FilePath& file_path = params->file_paths[index];
   base::FilePath local_path;
-  if (error == drive::DRIVE_FILE_OK) {
+  if (error == drive::FILE_ERROR_OK) {
     local_path = local_file_path;
   } else {
     DLOG(ERROR) << "Failed to get " << file_path.value()
@@ -1531,7 +1531,7 @@ bool AddMountFunction::RunImpl() {
                        this, mount_type_str, display_name));
       } else {
         OnMountedStateSet(mount_type_str, display_name,
-                          drive::DRIVE_FILE_OK, path);
+                          drive::FILE_ERROR_OK, path);
       }
       break;
     }
@@ -1543,7 +1543,7 @@ bool AddMountFunction::RunImpl() {
 void AddMountFunction::MarkCacheAsMounted(
     const std::string& mount_type,
     const base::FilePath::StringType& display_name,
-    drive::DriveFileError error,
+    drive::FileError error,
     scoped_ptr<drive::DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -1552,7 +1552,7 @@ void AddMountFunction::MarkCacheAsMounted(
   drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
 
   if (!cache ||
-      error != drive::DRIVE_FILE_OK ||
+      error != drive::FILE_ERROR_OK ||
       !entry_proto ||
       !entry_proto->has_file_specific_info()) {
     SendResponse(false);
@@ -1567,11 +1567,11 @@ void AddMountFunction::MarkCacheAsMounted(
 void AddMountFunction::OnMountedStateSet(
     const std::string& mount_type,
     const base::FilePath::StringType& file_name,
-    drive::DriveFileError error,
+    drive::FileError error,
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != drive::DRIVE_FILE_OK) {
+  if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);
     return;
   }
@@ -1748,10 +1748,10 @@ bool GetSizeStatsFunction::RunImpl() {
 }
 
 void GetSizeStatsFunction::GetDriveAvailableSpaceCallback(
-    drive::DriveFileError error,
+    drive::FileError error,
     int64 bytes_total,
     int64 bytes_used) {
-  if (error == drive::DRIVE_FILE_OK) {
+  if (error == drive::FILE_ERROR_OK) {
     int64 bytes_remaining = bytes_total - bytes_used;
     const size_t total_size_kb = static_cast<size_t>(bytes_total/1024);
     const size_t remaining_size_kb = static_cast<size_t>(bytes_remaining/1024);
@@ -2347,7 +2347,7 @@ void GetDriveFilePropertiesFunction::DoOperation(
   // Nothing to do here so simply call OnOperationComplete().
   OnOperationComplete(file_path,
                       property_dict,
-                      drive::DRIVE_FILE_OK,
+                      drive::FILE_ERROR_OK,
                       entry_proto.Pass());
 }
 
@@ -2405,7 +2405,7 @@ void GetDriveFilePropertiesFunction::GetNextFileProperties() {
   if (!system_service) {
     OnOperationComplete(file_path,
                         property_dict,
-                        drive::DRIVE_FILE_ERROR_FAILED,
+                        drive::FILE_ERROR_FAILED,
                         scoped_ptr<drive::DriveEntryProto>());
     return;
   }
@@ -2429,14 +2429,14 @@ void GetDriveFilePropertiesFunction::CompleteGetFileProperties() {
 void GetDriveFilePropertiesFunction::OnGetFileInfo(
     const base::FilePath& file_path,
     base::DictionaryValue* property_dict,
-    drive::DriveFileError error,
+    drive::FileError error,
     scoped_ptr<drive::DriveEntryProto> entry_proto) {
   DCHECK(property_dict);
 
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = drive::DRIVE_FILE_ERROR_NOT_FOUND;
+    error = drive::FILE_ERROR_NOT_FOUND;
 
-  if (error == drive::DRIVE_FILE_OK)
+  if (error == drive::FILE_ERROR_OK)
     DoOperation(file_path, property_dict, entry_proto.Pass());
   else
     OnOperationComplete(file_path, property_dict, error, entry_proto.Pass());
@@ -2445,12 +2445,12 @@ void GetDriveFilePropertiesFunction::OnGetFileInfo(
 void GetDriveFilePropertiesFunction::OnOperationComplete(
     const base::FilePath& file_path,
     base::DictionaryValue* property_dict,
-    drive::DriveFileError error,
+    drive::FileError error,
     scoped_ptr<drive::DriveEntryProto> entry_proto) {
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = drive::DRIVE_FILE_ERROR_NOT_FOUND;
+    error = drive::FILE_ERROR_NOT_FOUND;
 
-  if (error != drive::DRIVE_FILE_OK) {
+  if (error != drive::FILE_ERROR_OK) {
     property_dict->SetInteger("errorCode", error);
     CompleteGetFileProperties();
     return;
@@ -2572,13 +2572,13 @@ bool PinDriveFileFunction::RunImpl() {
   return true;
 }
 
-void PinDriveFileFunction::OnPinStateSet(drive::DriveFileError error) {
+void PinDriveFileFunction::OnPinStateSet(drive::FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == drive::DRIVE_FILE_OK) {
+  if (error == drive::FILE_ERROR_OK) {
     SendResponse(true);
   } else {
-    error_ = drive::DriveFileErrorToString(error);
+    error_ = drive::FileErrorToString(error);
     SendResponse(false);
   }
 }
@@ -2662,7 +2662,7 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if Drive is disabled.
   if (!system_service) {
-    OnFileReady(drive::DRIVE_FILE_ERROR_FAILED,
+    OnFileReady(drive::FILE_ERROR_FAILED,
                 drive_path,
                 "",  // mime_type
                 drive::REGULAR_FILE);
@@ -2676,13 +2676,13 @@ void GetDriveFilesFunction::GetFileOrSendResponse() {
 
 
 void GetDriveFilesFunction::OnFileReady(
-    drive::DriveFileError error,
+    drive::FileError error,
     const base::FilePath& local_path,
     const std::string& unused_mime_type,
     drive::DriveFileType file_type) {
   base::FilePath drive_path = remaining_drive_paths_.front();
 
-  if (error == drive::DRIVE_FILE_OK) {
+  if (error == drive::FILE_ERROR_OK) {
     local_paths_->Append(new base::StringValue(local_path.value()));
     DVLOG(1) << "Got " << drive_path.value() << " as " << local_path.value();
 
@@ -2828,13 +2828,13 @@ bool TransferFileFunction::RunImpl() {
   return true;
 }
 
-void TransferFileFunction::OnTransferCompleted(drive::DriveFileError error) {
-  if (error == drive::DRIVE_FILE_OK) {
+void TransferFileFunction::OnTransferCompleted(drive::FileError error) {
+  if (error == drive::FILE_ERROR_OK) {
     SendResponse(true);
   } else {
     error_ = base::StringPrintf("%d", static_cast<int>(
         fileapi::PlatformFileErrorToWebFileError(
-            drive::DriveFileErrorToPlatformError(error))));
+            drive::FileErrorToPlatformError(error))));
     SendResponse(false);
   }
 }
@@ -2945,10 +2945,10 @@ void SearchDriveFunction::OnFileSystemOpened(
 }
 
 void SearchDriveFunction::OnSearch(
-    drive::DriveFileError error,
+    drive::FileError error,
     const GURL& next_feed,
     scoped_ptr<std::vector<drive::SearchResultInfo> > results) {
-  if (error != drive::DRIVE_FILE_OK) {
+  if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);
     return;
   }
@@ -3039,9 +3039,9 @@ void SearchDriveMetadataFunction::OnFileSystemOpened(
 }
 
 void SearchDriveMetadataFunction::OnSearchMetadata(
-    drive::DriveFileError error,
+    drive::FileError error,
     scoped_ptr<drive::MetadataSearchResultVector> results) {
-  if (error != drive::DRIVE_FILE_OK) {
+  if (error != drive::FILE_ERROR_OK) {
     SendResponse(false);
     return;
   }

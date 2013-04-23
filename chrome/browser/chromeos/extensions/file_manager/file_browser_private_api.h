@@ -14,7 +14,7 @@
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/zip_file_creator.h"
@@ -287,7 +287,7 @@ class FileBrowserFunction : public AsyncExtensionFunction {
 
   // Used to implement GetSelectedFileInfo().
   void ContinueGetSelectedFileInfo(scoped_ptr<GetSelectedFileInfoParams> params,
-                                   drive::DriveFileError error,
+                                   drive::FileError error,
                                    const base::FilePath& local_file_path,
                                    const std::string& mime_type,
                                    drive::DriveFileType file_type);
@@ -379,13 +379,13 @@ class AddMountFunction : public FileBrowserFunction {
   // Calls DriveCache::MarkCacheAsMounted.
   void MarkCacheAsMounted(const std::string& mount_type,
                           const base::FilePath::StringType& display_name,
-                          drive::DriveFileError error,
+                          drive::FileError error,
                           scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   // A callback method to handle the result of MarkCacheAsMounted.
   void OnMountedStateSet(const std::string& mount_type,
                          const base::FilePath::StringType& file_name,
-                         drive::DriveFileError error,
+                         drive::FileError error,
                          const base::FilePath& file_path);
 };
 
@@ -466,7 +466,7 @@ class GetSizeStatsFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  void GetDriveAvailableSpaceCallback(drive::DriveFileError error,
+  void GetDriveAvailableSpaceCallback(drive::FileError error,
                                       int64 bytes_total,
                                       int64 bytes_used);
 
@@ -507,7 +507,7 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
 // Retrieve property information for multiple files, returning a list of the
 // same length as the input list of file URLs.  If a particular file has an
 // error, then return a dictionary with the key "error" set to the error number
-// (drive::DriveFileError) for that entry in the returned list.
+// (drive::FileError) for that entry in the returned list.
 class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFileProperties",
@@ -528,7 +528,7 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
 
   void OnOperationComplete(const base::FilePath& file_path,
                            base::DictionaryValue* properties,
-                           drive::DriveFileError error,
+                           drive::FileError error,
                            scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   // AsyncExtensionFunction overrides.
@@ -540,7 +540,7 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  private:
   void OnGetFileInfo(const base::FilePath& file_path,
                      base::DictionaryValue* property_dict,
-                     drive::DriveFileError error,
+                     drive::FileError error,
                      scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   void CacheStateReceived(base::DictionaryValue* property_dict,
@@ -568,7 +568,7 @@ class PinDriveFileFunction : public FileBrowserFunction {
 
  private:
   // Callback for RunImpl().
-  void OnPinStateSet(drive::DriveFileError error);
+  void OnPinStateSet(drive::FileError error);
 };
 
 // Get file locations for the given list of file URLs. Returns a list of
@@ -616,7 +616,7 @@ class GetDriveFilesFunction : public FileBrowserFunction {
 
   // Called by DriveFileSystem::GetFile(). Pops the file from
   // |remaining_drive_paths_|, and calls GetFileOrSendResponse().
-  void OnFileReady(drive::DriveFileError error,
+  void OnFileReady(drive::FileError error,
                    const base::FilePath& local_path,
                    const std::string& unused_mime_type,
                    drive::DriveFileType file_type);
@@ -674,7 +674,7 @@ class TransferFileFunction : public FileBrowserFunction {
 
  private:
   // Helper callback for handling response from DriveFileSystem::TransferFile().
-  void OnTransferCompleted(drive::DriveFileError error);
+  void OnTransferCompleted(drive::FileError error);
 };
 
 // Read setting value.
@@ -719,7 +719,7 @@ class SearchDriveFunction : public AsyncExtensionFunction {
                           const std::string& file_system_name,
                           const GURL& file_system_url);
   // Callback for google_apis::SearchAsync called after file system is opened.
-  void OnSearch(drive::DriveFileError error,
+  void OnSearch(drive::FileError error,
                 const GURL& next_feed,
                 scoped_ptr<std::vector<drive::SearchResultInfo> > result_paths);
 
@@ -753,7 +753,7 @@ class SearchDriveMetadataFunction : public AsyncExtensionFunction {
                           const GURL& file_system_url);
   // Callback for LocalSearch().
   void OnSearchMetadata(
-      drive::DriveFileError error,
+      drive::FileError error,
       scoped_ptr<drive::MetadataSearchResultVector> results);
 
   // Query for which the search is being performed.

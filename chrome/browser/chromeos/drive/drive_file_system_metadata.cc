@@ -9,7 +9,7 @@ namespace drive {
 DriveFileSystemMetadata::DriveFileSystemMetadata()
     : largest_changestamp(0),
       refreshing(false),
-      last_update_check_error(DRIVE_FILE_OK) {
+      last_update_check_error(FILE_ERROR_OK) {
 }
 
 DriveFileSystemMetadata::~DriveFileSystemMetadata() {

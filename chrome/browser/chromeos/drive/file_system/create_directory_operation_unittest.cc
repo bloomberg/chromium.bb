@@ -49,11 +49,11 @@ class CreateDirectoryOperationTest
     metadata_.reset(new DriveResourceMetadata(temp_dir_.path(),
                                               blocking_task_runner_));
 
-    DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+    FileError error = FILE_ERROR_FAILED;
     metadata_->Initialize(
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_EQ(DRIVE_FILE_OK, error);
+    ASSERT_EQ(FILE_ERROR_OK, error);
 
     scheduler_.reset(
         new DriveScheduler(profile_.get(), fake_drive_service_.get()));
@@ -67,7 +67,7 @@ class CreateDirectoryOperationTest
         DirectoryFetchInfo(),
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    ASSERT_EQ(DRIVE_FILE_OK, error);
+    ASSERT_EQ(FILE_ERROR_OK, error);
 
     operation_.reset(
         new CreateDirectoryOperation(scheduler_.get(), metadata_.get(), this));

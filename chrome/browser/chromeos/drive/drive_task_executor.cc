@@ -75,7 +75,7 @@ bool DriveTaskExecutor::ExecuteAndNotify(
 }
 
 void DriveTaskExecutor::OnFileEntryFetched(
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   // If we aborted, then this will be zero.
   if (!current_index_)
@@ -86,9 +86,9 @@ void DriveTaskExecutor::OnFileEntryFetched(
 
   // Here, we are only interested in files.
   if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = DRIVE_FILE_ERROR_NOT_FOUND;
+    error = FILE_ERROR_NOT_FOUND;
 
-  if (!system_service || error != DRIVE_FILE_OK) {
+  if (!system_service || error != FILE_ERROR_OK) {
     Done(false);
     return;
   }

@@ -53,16 +53,16 @@ void MoveOperation::MoveAfterGetEntryInfoPair(
   DCHECK(!callback.is_null());
   DCHECK(src_dest_info.get());
 
-  if (src_dest_info->first.error != DRIVE_FILE_OK) {
+  if (src_dest_info->first.error != FILE_ERROR_OK) {
     callback.Run(src_dest_info->first.error);
     return;
   }
-  if (src_dest_info->second.error != DRIVE_FILE_OK) {
+  if (src_dest_info->second.error != FILE_ERROR_OK) {
     callback.Run(src_dest_info->second.error);
     return;
   }
   if (!src_dest_info->second.proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 
@@ -85,11 +85,11 @@ void MoveOperation::MoveAfterGetEntryInfoPair(
 void MoveOperation::MoveAfterRename(
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> src_dest_info,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& src_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -101,7 +101,7 @@ void MoveOperation::MoveAfterRename(
   // The source and the destination directory are the same. Nothing more to do.
   if (src_path.DirName() == dest_dir_path) {
     observer_->OnDirectoryChangedByOperation(dest_dir_path);
-    callback.Run(DRIVE_FILE_OK);
+    callback.Run(FILE_ERROR_OK);
     return;
   }
 
@@ -115,11 +115,11 @@ void MoveOperation::MoveAfterRename(
 void MoveOperation::MoveAfterAddToDirectory(
     const FileOperationCallback& callback,
     scoped_ptr<EntryInfoPairResult> src_dest_info,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& new_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -142,7 +142,7 @@ void MoveOperation::Rename(const std::string& src_id,
 
   // It is a no-op if the file is renamed to the same name.
   if (src_path.BaseName() == new_name) {
-    callback.Run(DRIVE_FILE_OK, src_path);
+    callback.Run(FILE_ERROR_OK, src_path);
     return;
   }
 
@@ -168,8 +168,8 @@ void MoveOperation::RenameLocally(const base::FilePath& src_path,
                                   google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
+  const FileError error = util::GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath());
     return;
   }
@@ -199,8 +199,8 @@ void MoveOperation::AddToDirectoryLocally(const base::FilePath& src_path,
                                           google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  const DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
+  const FileError error = util::GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error, base::FilePath());
     return;
   }
@@ -225,7 +225,7 @@ void MoveOperation::RemoveFromDirectoryCompleted(
     const FileOperationCallback& callback,
     google_apis::GDataErrorCode status) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  callback.Run(util::GDataToDriveFileError(status));
+  callback.Run(util::GDataToFileError(status));
 }
 
 }  // namespace file_system

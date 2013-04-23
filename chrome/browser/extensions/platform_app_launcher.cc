@@ -36,10 +36,10 @@
 #include "webkit/fileapi/isolated_context.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #endif
 
 #if defined(OS_WIN)
@@ -181,13 +181,13 @@ class PlatformAppPathLauncher
         base::Bind(&PlatformAppPathLauncher::OnGotDriveFile, this));
   }
 
-  void OnGotDriveFile(drive::DriveFileError error,
+  void OnGotDriveFile(drive::FileError error,
                       const base::FilePath& file_path,
                       const std::string& mime_type,
                       drive::DriveFileType file_type) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-    if (error != drive::DRIVE_FILE_OK || file_type != drive::REGULAR_FILE) {
+    if (error != drive::FILE_ERROR_OK || file_type != drive::REGULAR_FILE) {
       LaunchWithNoLaunchData();
       return;
     }

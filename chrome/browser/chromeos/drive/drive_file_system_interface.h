@@ -68,13 +68,13 @@ struct MetadataSearchResult {
 typedef std::vector<MetadataSearchResult> MetadataSearchResultVector;
 
 // Used to get files from the file system.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path,
                             const std::string& mime_type,
                             DriveFileType file_type)> GetFileCallback;
 
 // Used to get file content from the file system.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             scoped_ptr<DriveEntryProto> entry_proto,
                             const base::FilePath& local_file)>
     GetFileContentInitializedCallback;
@@ -82,33 +82,33 @@ typedef base::Callback<void(DriveFileError error,
 // Used to read a directory from the file system.
 // Similar to ReadDirectoryCallback but this one provides
 // |hide_hosted_documents|
-// If |error| is not DRIVE_FILE_OK, |entries| is set to NULL.
+// If |error| is not FILE_ERROR_OK, |entries| is set to NULL.
 // |entries| are contents, both files and directories, of the directory.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             bool hide_hosted_documents,
                             scoped_ptr<DriveEntryProtoVector> entries)>
     ReadDirectoryWithSettingCallback;
 
 // Used to get drive content search results.
-// If |error| is not DRIVE_FILE_OK, |result_paths| is empty.
+// If |error| is not FILE_ERROR_OK, |result_paths| is empty.
 typedef base::Callback<void(
-    DriveFileError error,
+    FileError error,
     const GURL& next_feed,
     scoped_ptr<std::vector<SearchResultInfo> > result_paths)> SearchCallback;
 
-// Callback for SearchMetadata(). On success, |error| is DRIVE_FILE_OK, and
+// Callback for SearchMetadata(). On success, |error| is FILE_ERROR_OK, and
 // |result| contains the search result.
 typedef base::Callback<void(
-    DriveFileError error,
+    FileError error,
     scoped_ptr<MetadataSearchResultVector> result)> SearchMetadataCallback;
 
 // Used to open files from the file system. |file_path| is the path on the local
 // file system for the opened file.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path)> OpenFileCallback;
 
 // Used to get available space for the account from Drive.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             int64 bytes_total,
                             int64 bytes_used)> GetAvailableSpaceCallback;
 

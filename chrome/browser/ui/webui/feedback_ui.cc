@@ -115,10 +115,10 @@ bool ScreenshotDriveTimestampComp(const drive::DriveEntryProto& entry1,
 void ReadDirectoryCallback(size_t max_saved,
                            std::vector<std::string>* saved_screenshots,
                            base::Closure callback,
-                           drive::DriveFileError error,
+                           drive::FileError error,
                            bool hide_hosted_documents,
                            scoped_ptr<drive::DriveEntryProtoVector> entries) {
-  if (error != drive::DRIVE_FILE_OK) {
+  if (error != drive::FILE_ERROR_OK) {
     callback.Run();
     return;
   }

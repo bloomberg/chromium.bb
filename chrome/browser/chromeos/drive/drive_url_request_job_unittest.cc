@@ -202,7 +202,7 @@ TEST_F(DriveURLRequestJobTest, NonGetMethod) {
 
 TEST_F(DriveURLRequestJobTest, HostedDocument) {
   // Get a hosted document's path.
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   base::FilePath file_path;
   drive_file_system_->GetEntryInfoByResourceId(
@@ -211,7 +211,7 @@ TEST_F(DriveURLRequestJobTest, HostedDocument) {
           &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, error);
+  EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   ASSERT_TRUE(entry->file_specific_info().is_hosted_document());
 

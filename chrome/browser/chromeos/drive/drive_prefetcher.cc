@@ -117,15 +117,15 @@ void DrivePrefetcher::DoPrefetch() {
 }
 
 void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
-                                         DriveFileError error,
+                                         FileError error,
                                          const base::FilePath& file_path,
                                          const std::string& mime_type,
                                          DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (error != DRIVE_FILE_OK)
-    LOG(WARNING) << "Prefetch failed: " << DriveFileErrorToString(error);
+  if (error != FILE_ERROR_OK)
+    LOG(WARNING) << "Prefetch failed: " << FileErrorToString(error);
   event_logger_->Log("Prefetcher: Finish fetching (%s) %s",
-                     DriveFileErrorToString(error).c_str(),
+                     FileErrorToString(error).c_str(),
                      resource_id.c_str());
 }
 
@@ -156,12 +156,12 @@ void DrivePrefetcher::VisitDirectory(const base::FilePath& directory_path) {
 
 void DrivePrefetcher::OnReadDirectory(
     const base::FilePath& directory_path,
-    DriveFileError error,
+    FileError error,
     bool hide_hosted_documents,
     scoped_ptr<DriveEntryProtoVector> entries) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     LOG(WARNING) << "Directory cannot be scanned by prefetcher: "
                  << directory_path.value();
     OnReadDirectoryFinished();

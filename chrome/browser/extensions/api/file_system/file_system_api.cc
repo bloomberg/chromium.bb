@@ -207,10 +207,10 @@ void CheckLocalWritableFile(const base::FilePath& path,
 #if defined(OS_CHROMEOS)
 void CheckRemoteWritableFile(const base::Closure& on_success,
                              const base::Closure& on_failure,
-                             drive::DriveFileError error,
+                             drive::FileError error,
                              const base::FilePath& path) {
   content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-      error == drive::DRIVE_FILE_OK ? on_success : on_failure);
+      error == drive::FILE_ERROR_OK ? on_success : on_failure);
 }
 #endif
 

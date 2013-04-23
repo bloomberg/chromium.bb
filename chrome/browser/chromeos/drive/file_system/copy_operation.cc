@@ -33,12 +33,12 @@ const char kMimeTypeOctetStream[] = "application/octet-stream";
 
 // Copies a file from |src_file_path| to |dest_file_path| on the local
 // file system using file_util::CopyFile.
-// Returns DRIVE_FILE_OK on success or DRIVE_FILE_ERROR_FAILED otherwise.
-DriveFileError CopyLocalFileOnBlockingPool(
+// Returns FILE_ERROR_OK on success or FILE_ERROR_FAILED otherwise.
+FileError CopyLocalFileOnBlockingPool(
     const base::FilePath& src_file_path,
     const base::FilePath& dest_file_path) {
   return file_util::CopyFile(src_file_path, dest_file_path) ?
-      DRIVE_FILE_OK : DRIVE_FILE_ERROR_FAILED;
+      FILE_ERROR_OK : FILE_ERROR_FAILED;
 }
 
 // Checks if a local file at |local_file_path| is a JSON file referencing a
@@ -129,14 +129,14 @@ void CopyOperation::TransferFileFromRemoteToLocal(
 void CopyOperation::OnGetFileCompleteForTransferFile(
     const base::FilePath& local_dest_file_path,
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& local_file_path,
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -218,8 +218,8 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DriveFileError error = util::GDataToDriveFileError(status);
-  if (error != DRIVE_FILE_OK) {
+  FileError error = util::GDataToFileError(status);
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -238,14 +238,14 @@ void CopyOperation::OnCopyHostedDocumentCompleted(
 void CopyOperation::MoveEntryFromRootDirectory(
     const base::FilePath& directory_path,
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK_EQ(util::kDriveMyDriveRootPath, file_path.DirName().value());
 
   // Return if there is an error or |dir_path| is the root directory.
-  if (error != DRIVE_FILE_OK ||
+  if (error != FILE_ERROR_OK ||
       directory_path == util::GetDriveMyDriveRootPath()) {
     callback.Run(error);
     return;
@@ -264,10 +264,10 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
   DCHECK(!callback.is_null());
   DCHECK(result.get());
 
-  if (result->first.error != DRIVE_FILE_OK) {
+  if (result->first.error != FILE_ERROR_OK) {
     callback.Run(result->first.error);
     return;
-  } else if (result->second.error != DRIVE_FILE_OK) {
+  } else if (result->second.error != FILE_ERROR_OK) {
     callback.Run(result->second.error);
     return;
   }
@@ -276,13 +276,13 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
   scoped_ptr<DriveEntryProto> dest_parent_proto = result->second.proto.Pass();
 
   if (!dest_parent_proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   } else if (src_file_proto->file_info().is_directory()) {
     // TODO(kochi): Implement copy for directories. In the interim,
     // we handle recursive directory copy in the file manager.
     // crbug.com/141596
-    callback.Run(DRIVE_FILE_ERROR_INVALID_OPERATION);
+    callback.Run(FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -310,14 +310,14 @@ void CopyOperation::CopyAfterGetEntryInfoPair(
 void CopyOperation::OnGetFileCompleteForCopy(
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& local_file_path,
     const std::string& unused_mime_type,
     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -345,15 +345,15 @@ void CopyOperation::StartFileUpload(const StartFileUploadParams& params,
 void CopyOperation::StartFileUploadAfterGetEntryInfo(
     const StartFileUploadParams& params,
     const std::string& content_type,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!params.callback.is_null());
 
   if (entry_proto.get() && !entry_proto->file_info().is_directory())
-    error = DRIVE_FILE_ERROR_NOT_A_DIRECTORY;
+    error = FILE_ERROR_NOT_A_DIRECTORY;
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     params.callback.Run(error);
     return;
   }
@@ -385,7 +385,7 @@ void CopyOperation::OnTransferCompleted(
                                         file_path,
                                         callback);
   } else {
-    callback.Run(DriveUploadErrorToDriveFileError(error));
+    callback.Run(DriveUploadErrorToFileError(error));
   }
 }
 
@@ -393,12 +393,12 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
     const base::FilePath& local_src_file_path,
     const base::FilePath& remote_dest_file_path,
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -406,7 +406,7 @@ void CopyOperation::TransferFileFromLocalToRemoteAfterGetEntryInfo(
   DCHECK(entry_proto.get());
   if (!entry_proto->file_info().is_directory()) {
     // The parent of |remote_dest_file_path| is not a directory.
-    callback.Run(DRIVE_FILE_ERROR_NOT_A_DIRECTORY);
+    callback.Run(FILE_ERROR_NOT_A_DIRECTORY);
     return;
   }
 

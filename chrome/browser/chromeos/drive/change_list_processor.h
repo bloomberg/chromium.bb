@@ -14,7 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "googleurl/src/gurl.h"
 
@@ -109,7 +109,7 @@ class ChangeListProcessor {
   // DriveResourceMetadata::GetEntryInfoByResourceId.
   void ContinueApplyEntryProto(
       const DriveEntryProto& entry_proto,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> old_entry_proto);
 
@@ -122,7 +122,7 @@ class ChangeListProcessor {
 
   // Callback for DriveResourceMetadata::AddEntry.
   void NotifyForAddEntry(bool is_directory,
-                         DriveFileError error,
+                         FileError error,
                          const base::FilePath& file_path);
 
   // Removes entry pointed to by |resource_id| from its parent. Updates
@@ -143,7 +143,7 @@ class ChangeListProcessor {
       bool is_directory,
       const base::FilePath& file_path,
       const std::set<base::FilePath>& child_directories,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& parent_path);
 
   // Refreshes DriveResourceMetadata entry that has the same resource_id as
@@ -154,7 +154,7 @@ class ChangeListProcessor {
   // Callback for DriveResourceMetadata::RefreshEntry.
   void NotifyForRefreshEntry(
       const base::FilePath& old_file_path,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 
@@ -167,14 +167,14 @@ class ChangeListProcessor {
   // DriveResourceMetadata::GetEntryInfoByPath is complete. Updates the root
   // proto, and refreshes the root entry with the proto.
   void UpdateRootEntryAfterGetEntry(const base::Closure& closure,
-                                    DriveFileError error,
+                                    FileError error,
                                     scoped_ptr<DriveEntryProto> root_proto);
 
   // Part of UpdateRootEntry(). Called after
   // DriveResourceMetadata::RefreshEntry() is complete. Calls OnComplete() to
   // finish the change list processing.
   void UpdateRootEntryAfterRefreshEntry(const base::Closure& closure,
-                                        DriveFileError error,
+                                        FileError error,
                                         const base::FilePath& root_path,
                                         scoped_ptr<DriveEntryProto> root_proto);
 

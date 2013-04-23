@@ -23,11 +23,11 @@ namespace {
 // Callback for DriveResourceMetadata::SetLargestChangestamp.
 // Runs |on_complete_callback|. |on_complete_callback| must not be null.
 void RunOnCompleteCallback(const base::Closure& on_complete_callback,
-                           DriveFileError error) {
+                           FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!on_complete_callback.is_null());
-  DLOG_IF(ERROR, error != DRIVE_FILE_OK) << "SetLargestChangeStamp failed: "
-                                         << DriveFileErrorToString(error);
+  DLOG_IF(ERROR, error != FILE_ERROR_OK) << "SetLargestChangeStamp failed: "
+                                         << FileErrorToString(error);
   on_complete_callback.Run();
 }
 
@@ -210,12 +210,12 @@ void ChangeListProcessor::ApplyEntryProto(const DriveEntryProto& entry_proto) {
 
 void ChangeListProcessor::ContinueApplyEntryProto(
     const DriveEntryProto& entry_proto,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& file_path,
     scoped_ptr<DriveEntryProto> old_entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  if (error == DRIVE_FILE_OK) {
+  if (error == FILE_ERROR_OK) {
     if (entry_proto.deleted()) {
       // Deleted file/directory.
       RemoveEntryFromParent(entry_proto, file_path);
@@ -223,7 +223,7 @@ void ChangeListProcessor::ContinueApplyEntryProto(
       // Entry exists and needs to be refreshed.
       RefreshEntry(entry_proto, file_path);
     }
-  } else if (error == DRIVE_FILE_ERROR_NOT_FOUND && !entry_proto.deleted()) {
+  } else if (error == FILE_ERROR_NOT_FOUND && !entry_proto.deleted()) {
     // Adding a new entry.
     AddEntry(entry_proto);
   } else {
@@ -243,13 +243,13 @@ void ChangeListProcessor::AddEntry(const DriveEntryProto& entry_proto) {
 }
 
 void ChangeListProcessor::NotifyForAddEntry(bool is_directory,
-                                            DriveFileError error,
+                                            FileError error,
                                             const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForAddEntry " << file_path.value() << ", error = "
-           << DriveFileErrorToString(error);
-  if (error == DRIVE_FILE_OK) {
+           << FileErrorToString(error);
+  if (error == FILE_ERROR_OK) {
     // Notify if a directory has been created.
     if (is_directory)
       changed_dirs_.insert(file_path);
@@ -301,12 +301,12 @@ void ChangeListProcessor::NotifyForRemoveEntryFromParent(
     bool is_directory,
     const base::FilePath& file_path,
     const std::set<base::FilePath>& child_directories,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& parent_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForRemoveEntryFromParent " << file_path.value();
-  if (error == DRIVE_FILE_OK) {
+  if (error == FILE_ERROR_OK) {
     // Notify parent.
     changed_dirs_.insert(parent_path);
 
@@ -336,13 +336,13 @@ void ChangeListProcessor::RefreshEntry(const DriveEntryProto& entry_proto,
 
 void ChangeListProcessor::NotifyForRefreshEntry(
     const base::FilePath& old_file_path,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   DVLOG(1) << "NotifyForRefreshEntry " << file_path.value();
-  if (error == DRIVE_FILE_OK) {
+  if (error == FILE_ERROR_OK) {
     // Notify old parent.
     changed_dirs_.insert(old_file_path.DirName());
 
@@ -421,12 +421,12 @@ void ChangeListProcessor::UpdateRootEntry(const base::Closure& closure) {
 
 void ChangeListProcessor::UpdateRootEntryAfterGetEntry(
     const base::Closure& closure,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> root_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!closure.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     // TODO(satorux): Need to trigger recovery if root is corrupt.
     LOG(WARNING) << "Failed to get the proto for root directory";
     closure.Run();
@@ -447,12 +447,12 @@ void ChangeListProcessor::UpdateRootEntryAfterGetEntry(
 
 void ChangeListProcessor::UpdateRootEntryAfterRefreshEntry(
     const base::Closure& closure,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& /* root_path */,
     scoped_ptr<DriveEntryProto> /* root_proto */) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!closure.is_null());
-  LOG_IF(WARNING, error != DRIVE_FILE_OK) << "Failed to refresh root directory";
+  LOG_IF(WARNING, error != FILE_ERROR_OK) << "Failed to refresh root directory";
 
   closure.Run();
 }

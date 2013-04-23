@@ -67,9 +67,9 @@ base::FilePath GetDriveTempDownloadPath(
 
 // Moves downloaded file to Drive.
 void MoveDownloadedFile(const base::FilePath& downloaded_file,
-                        DriveFileError error,
+                        FileError error,
                         const base::FilePath& dest_path) {
-  if (error != DRIVE_FILE_OK)
+  if (error != FILE_ERROR_OK)
     return;
   file_util::Move(downloaded_file, dest_path);
 }
@@ -77,9 +77,9 @@ void MoveDownloadedFile(const base::FilePath& downloaded_file,
 // Used to implement CheckForFileExistence().
 void ContinueCheckingForFileExistence(
     const content::CheckForFileExistenceCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
-  callback.Run(error == DRIVE_FILE_OK);
+  callback.Run(error == FILE_ERROR_OK);
 }
 
 // Returns true if |download| is a Drive download created from data persisted
@@ -257,9 +257,9 @@ void DriveDownloadHandler::OnDownloadUpdated(
 void DriveDownloadHandler::OnEntryFound(
     const base::FilePath& drive_dir_path,
     const SubstituteDriveDownloadPathCallback& callback,
-    DriveFileError error,
+    FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
-  if (error == DRIVE_FILE_ERROR_NOT_FOUND) {
+  if (error == FILE_ERROR_NOT_FOUND) {
     // Destination Drive directory doesn't exist, so create it.
     const bool is_exclusive = false, is_recursive = true;
     file_system_->CreateDirectory(
@@ -267,22 +267,22 @@ void DriveDownloadHandler::OnEntryFound(
         base::Bind(&DriveDownloadHandler::OnCreateDirectory,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
-  } else if (error == DRIVE_FILE_OK) {
+  } else if (error == FILE_ERROR_OK) {
     // Directory is already ready.
-    OnCreateDirectory(callback, DRIVE_FILE_OK);
+    OnCreateDirectory(callback, FILE_ERROR_OK);
   } else {
     LOG(WARNING) << "Failed to get entry info for path: "
                  << drive_dir_path.value() << ", error = "
-                 << DriveFileErrorToString(error);
+                 << FileErrorToString(error);
     callback.Run(base::FilePath());
   }
 }
 
 void DriveDownloadHandler::OnCreateDirectory(
     const SubstituteDriveDownloadPathCallback& callback,
-    DriveFileError error) {
-  DVLOG(1) << "OnCreateDirectory " << DriveFileErrorToString(error);
-  if (error == DRIVE_FILE_OK) {
+    FileError error) {
+  DVLOG(1) << "OnCreateDirectory " << FileErrorToString(error);
+  if (error == FILE_ERROR_OK) {
     base::PostTaskAndReplyWithResult(
         BrowserThread::GetBlockingPool(),
         FROM_HERE,
@@ -290,7 +290,7 @@ void DriveDownloadHandler::OnCreateDirectory(
         callback);
   } else {
     LOG(WARNING) << "Failed to create directory, error = "
-                 << DriveFileErrorToString(error);
+                 << FileErrorToString(error);
     callback.Run(base::FilePath());
   }
 }

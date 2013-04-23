@@ -47,7 +47,7 @@ class FakeDriveFileSystemTest : public ::testing::Test {
 };
 
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByResourceId) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   base::FilePath file_path;
 
@@ -57,7 +57,7 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByResourceId) {
           &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(FILE_ERROR_OK, error);
   EXPECT_EQ(
       util::GetDriveMyDriveRootPath().AppendASCII(
           "Directory 1/Sub Directory Folder"),
@@ -69,7 +69,7 @@ TEST_F(FakeDriveFileSystemTest,
        GetEntryInfoByResourceId_PathCompatibleWithGetEntryInfoByPath) {
   const std::string document_resource_id = "document:5_document_resource_id";
 
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   base::FilePath file_path;
 
@@ -80,29 +80,29 @@ TEST_F(FakeDriveFileSystemTest,
           &error, &file_path, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->file_specific_info().is_hosted_document());
 
   // Get entry info by path given by GetEntryInfoByResourceId.
-  error = DRIVE_FILE_ERROR_FAILED;
+  error = FILE_ERROR_FAILED;
   entry.reset();
   fake_drive_file_system_->GetEntryInfoByPath(
       file_path,
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ(document_resource_id, entry->resource_id());
 }
 
 TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
-  DriveFileError initialize_error = DRIVE_FILE_ERROR_FAILED;
+  FileError initialize_error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry_proto;
   base::FilePath cache_file_path;
   google_apis::test_util::TestGetContentCallback get_content_callback;
-  DriveFileError completion_error = DRIVE_FILE_ERROR_FAILED;
+  FileError completion_error = FILE_ERROR_FAILED;
 
   const base::FilePath kDriveFile =
       util::GetDriveMyDriveRootPath().AppendASCII("File 1.txt");
@@ -116,7 +116,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, initialize_error);
+  EXPECT_EQ(FILE_ERROR_OK, initialize_error);
   EXPECT_TRUE(entry_proto);
 
   // No cache file is available yet.
@@ -126,12 +126,12 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   // should have the actual data.
   std::string content = get_content_callback.GetConcatenatedData();
   EXPECT_EQ(10U, content.size());
-  EXPECT_EQ(DRIVE_FILE_OK, completion_error);
+  EXPECT_EQ(FILE_ERROR_OK, completion_error);
 
-  initialize_error = DRIVE_FILE_ERROR_FAILED;
+  initialize_error = FILE_ERROR_FAILED;
   entry_proto.reset();
   get_content_callback.mutable_data()->clear();
-  completion_error = DRIVE_FILE_ERROR_FAILED;
+  completion_error = FILE_ERROR_FAILED;
 
   // For the second time, the cache file should be found.
   fake_drive_file_system_->GetFileContentByPath(
@@ -142,7 +142,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
       google_apis::test_util::CreateCopyResultCallback(&completion_error));
   google_apis::test_util::RunBlockingPoolTask();
 
-  EXPECT_EQ(DRIVE_FILE_OK, initialize_error);
+  EXPECT_EQ(FILE_ERROR_OK, initialize_error);
   EXPECT_TRUE(entry_proto);
 
   // Cache file should be available.
@@ -150,7 +150,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
 
   // There should be a cache file so no data should be downloaded.
   EXPECT_TRUE(get_content_callback.data().empty());
-  EXPECT_EQ(DRIVE_FILE_OK, completion_error);
+  EXPECT_EQ(FILE_ERROR_OK, completion_error);
 
   // Make sure the cached file's content.
   std::string cache_file_content;
@@ -160,7 +160,7 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
 }
 
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   fake_drive_file_system_->GetEntryInfoByPath(
       util::GetDriveMyDriveRootPath().AppendASCII(
@@ -168,20 +168,20 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_EQ("folder:sub_dir_folder_resource_id", entry->resource_id());
 }
 
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Root) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   fake_drive_file_system_->GetEntryInfoByPath(
       util::GetDriveMyDriveRootPath(),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_OK, error);
+  ASSERT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
   EXPECT_TRUE(entry->file_info().is_directory());
   EXPECT_EQ(fake_drive_service_->GetRootResourceId(), entry->resource_id());
@@ -189,14 +189,14 @@ TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Root) {
 }
 
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath_Invalid) {
-  DriveFileError error = DRIVE_FILE_ERROR_FAILED;
+  FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   fake_drive_file_system_->GetEntryInfoByPath(
       util::GetDriveMyDriveRootPath().AppendASCII("Invalid File Name"),
       google_apis::test_util::CreateCopyResultCallback(&error, &entry));
   google_apis::test_util::RunBlockingPoolTask();
 
-  ASSERT_EQ(DRIVE_FILE_ERROR_NOT_FOUND, error);
+  ASSERT_EQ(FILE_ERROR_NOT_FOUND, error);
   ASSERT_FALSE(entry);
 }
 

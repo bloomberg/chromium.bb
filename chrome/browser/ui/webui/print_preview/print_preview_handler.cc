@@ -226,9 +226,9 @@ void PrintToPdfCallback(Metafile* metafile, const base::FilePath& path) {
 
 #if defined(OS_CHROMEOS)
 void PrintToPdfCallbackWithCheck(Metafile* metafile,
-                                 drive::DriveFileError error,
+                                 drive::FileError error,
                                  const base::FilePath& path) {
-  if (error != drive::DRIVE_FILE_OK) {
+  if (error != drive::FILE_ERROR_OK) {
     LOG(ERROR) << "Save to pdf failed to write: " << error;
   } else {
     metafile->SaveTo(path);

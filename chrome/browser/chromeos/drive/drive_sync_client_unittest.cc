@@ -100,21 +100,21 @@ class DriveSyncClientTest : public testing::Test {
               file_util::WriteFile(temp_file, content.data(), content.size()));
 
     // Prepare 3 pinned-but-not-present files.
-    DriveFileError error = DRIVE_FILE_OK;
+    FileError error = FILE_ERROR_OK;
     cache_->Pin("resource_id_not_fetched_foo", "",
                 google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
 
     cache_->Pin("resource_id_not_fetched_bar", "",
                 google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
 
     cache_->Pin("resource_id_not_fetched_baz", "",
                 google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
 
     // Prepare a pinned-and-fetched file.
     const std::string resource_id_fetched = "resource_id_fetched";
@@ -124,11 +124,11 @@ class DriveSyncClientTest : public testing::Test {
                   DriveCache::FILE_OPERATION_COPY,
                   google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
     cache_->Pin(resource_id_fetched, md5_fetched,
                 google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
 
     // Prepare a pinned-and-fetched-and-dirty file.
     const std::string resource_id_dirty = "resource_id_dirty";
@@ -137,21 +137,21 @@ class DriveSyncClientTest : public testing::Test {
                   DriveCache::FILE_OPERATION_COPY,
                   google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
     cache_->Pin(resource_id_dirty, md5_dirty,
                 google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
     cache_->MarkDirty(
         resource_id_dirty, md5_dirty,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
     cache_->CommitDirty(
         resource_id_dirty, md5_dirty,
         google_apis::test_util::CreateCopyResultCallback(&error));
     google_apis::test_util::RunBlockingPoolTask();
-    EXPECT_EQ(DRIVE_FILE_OK, error);
+    EXPECT_EQ(FILE_ERROR_OK, error);
   }
 
   // Sets the expectation for MockDriveFileSystem::GetFileByResourceId(),
@@ -161,7 +161,7 @@ class DriveSyncClientTest : public testing::Test {
                 GetFileByResourceId(resource_id, _, _, _))
         .WillOnce(
             MockGetFileByResourceId(
-                DRIVE_FILE_OK,
+                FILE_ERROR_OK,
                 base::FilePath::FromUTF8Unsafe("local_path_does_not_matter"),
                 std::string("mime_type_does_not_matter"),
                 REGULAR_FILE));
@@ -173,7 +173,7 @@ class DriveSyncClientTest : public testing::Test {
       const std::string& resource_id) {
     EXPECT_CALL(*mock_file_system_,
                 UpdateFileByResourceId(resource_id, _, _))
-        .WillOnce(MockUpdateFileByResourceId(DRIVE_FILE_OK));
+        .WillOnce(MockUpdateFileByResourceId(FILE_ERROR_OK));
   }
 
   // Sets the expectation for MockDriveFileSystem::GetFileInfoByResourceId(),
@@ -188,7 +188,7 @@ class DriveSyncClientTest : public testing::Test {
     EXPECT_CALL(*mock_file_system_,
                 GetEntryInfoByResourceId(resource_id, _))
         .WillOnce(MockUpdateFileByResourceId(
-            DRIVE_FILE_OK,
+            FILE_ERROR_OK,
             new_md5));
   }
 

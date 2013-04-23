@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 
 class Profile;
 
@@ -31,7 +31,7 @@ class DriveCacheMetadata;
 class DriveCacheObserver;
 
 // Callback for GetFileFromCache.
-typedef base::Callback<void(DriveFileError error,
+typedef base::Callback<void(FileError error,
                             const base::FilePath& cache_file_path)>
     GetFileFromCacheCallback;
 
@@ -44,7 +44,7 @@ typedef base::Callback<void(bool success, const DriveCacheEntry& cache_entry)>
 
 // Callback for RequestInitialize.
 // |success| indicates if the operation was successful.
-// TODO(satorux): Change this to DriveFileError when it becomes necessary.
+// TODO(satorux): Change this to FileError when it becomes necessary.
 typedef base::Callback<void(bool success)>
     InitializeCacheCallback;
 
@@ -263,7 +263,7 @@ class DriveCache {
  private:
   friend class DriveCacheTest;
 
-  typedef std::pair<DriveFileError, base::FilePath> GetFileResult;
+  typedef std::pair<FileError, base::FilePath> GetFileResult;
 
   // Enum defining origin of a cached file.
   enum CachedFileOrigin {
@@ -315,18 +315,18 @@ class DriveCache {
       const std::string& md5);
 
   // Used to implement Store.
-  DriveFileError StoreOnBlockingPool(const std::string& resource_id,
-                                     const std::string& md5,
-                                     const base::FilePath& source_path,
-                                     FileOperationType file_operation_type);
+  FileError StoreOnBlockingPool(const std::string& resource_id,
+                                const std::string& md5,
+                                const base::FilePath& source_path,
+                                FileOperationType file_operation_type);
 
   // Used to implement Pin.
-  DriveFileError PinOnBlockingPool(const std::string& resource_id,
-                                   const std::string& md5);
+  FileError PinOnBlockingPool(const std::string& resource_id,
+                              const std::string& md5);
 
   // Used to implement Unpin.
-  DriveFileError UnpinOnBlockingPool(const std::string& resource_id,
-                                     const std::string& md5);
+  FileError UnpinOnBlockingPool(const std::string& resource_id,
+                                const std::string& md5);
 
   // Used to implement MarkAsMounted.
   scoped_ptr<GetFileResult> MarkAsMountedOnBlockingPool(
@@ -334,22 +334,22 @@ class DriveCache {
       const std::string& md5);
 
   // Used to implement MarkAsUnmounted.
-  DriveFileError MarkAsUnmountedOnBlockingPool(const base::FilePath& file_path);
+  FileError MarkAsUnmountedOnBlockingPool(const base::FilePath& file_path);
 
   // Used to implement MarkDirty.
-  DriveFileError MarkDirtyOnBlockingPool(const std::string& resource_id,
-                                         const std::string& md5);
+  FileError MarkDirtyOnBlockingPool(const std::string& resource_id,
+                                    const std::string& md5);
 
   // Used to implement CommitDirty.
-  DriveFileError CommitDirtyOnBlockingPool(const std::string& resource_id,
-                                           const std::string& md5);
+  FileError CommitDirtyOnBlockingPool(const std::string& resource_id,
+                                      const std::string& md5);
 
   // Used to implement ClearDirty.
-  DriveFileError ClearDirtyOnBlockingPool(const std::string& resource_id,
-                                          const std::string& md5);
+  FileError ClearDirtyOnBlockingPool(const std::string& resource_id,
+                                     const std::string& md5);
 
   // Used to implement Remove.
-  DriveFileError RemoveOnBlockingPool(const std::string& resource_id);
+  FileError RemoveOnBlockingPool(const std::string& resource_id);
 
   // Used to implement ClearAll.
   bool ClearAllOnBlockingPool();
@@ -358,18 +358,18 @@ class DriveCache {
   void OnPinned(const std::string& resource_id,
                 const std::string& md5,
                 const FileOperationCallback& callback,
-                DriveFileError error);
+                FileError error);
 
   // Runs callback and notifies the observers when file is unpinned.
   void OnUnpinned(const std::string& resource_id,
                   const std::string& md5,
                   const FileOperationCallback& callback,
-                  DriveFileError error);
+                  FileError error);
 
   // Runs callback and notifies the observers when file is committed.
   void OnCommitDirty(const std::string& resource_id,
                      const FileOperationCallback& callback,
-                     DriveFileError error);
+                     FileError error);
 
   // Returns true if we have sufficient space to store the given number of
   // bytes, while keeping kMinFreeSpace bytes on the disk.

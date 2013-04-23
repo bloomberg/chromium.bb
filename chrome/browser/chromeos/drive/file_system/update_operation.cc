@@ -57,20 +57,20 @@ void UpdateOperation::UpdateFileByResourceId(
 void UpdateOperation::UpdateFileByEntryInfo(
     DriveClientContext context,
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
 
   DCHECK(entry_proto.get());
   if (entry_proto->file_info().is_directory()) {
-    callback.Run(DRIVE_FILE_ERROR_NOT_FOUND);
+    callback.Run(FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -91,12 +91,12 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
     const FileOperationCallback& callback,
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }
@@ -122,8 +122,8 @@ void UpdateOperation::OnUpdatedFileUploaded(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  DriveFileError drive_error = DriveUploadErrorToDriveFileError(error);
-  if (drive_error != DRIVE_FILE_OK) {
+  FileError drive_error = DriveUploadErrorToFileError(error);
+  if (drive_error != FILE_ERROR_OK) {
     callback.Run(drive_error);
     return;
   }
@@ -136,13 +136,13 @@ void UpdateOperation::OnUpdatedFileUploaded(
 
 void UpdateOperation::OnUpdatedFileRefreshed(
     const FileOperationCallback& callback,
-    DriveFileError error,
+    FileError error,
     const base::FilePath& drive_file_path,
     scoped_ptr<DriveEntryProto> entry_proto) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error != DRIVE_FILE_OK) {
+  if (error != FILE_ERROR_OK) {
     callback.Run(error);
     return;
   }

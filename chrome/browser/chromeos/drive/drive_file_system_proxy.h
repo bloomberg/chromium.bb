@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
 #define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
 
-#include "chrome/browser/chromeos/drive/drive_file_error.h"
+#include "chrome/browser/chromeos/drive/file_errors.h"
 #include "webkit/fileapi/remote_file_system_proxy.h"
 
 namespace fileapi {
@@ -110,7 +110,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   // calling thread.
   void OnStatusCallback(
       const fileapi::FileSystemOperation::StatusCallback& callback,
-      DriveFileError error);
+      FileError error);
 
   // Helper callback for relaying reply for metadata retrieval request to the
   // calling thread.
@@ -118,7 +118,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& file_path,
       const fileapi::FileSystemOperation::GetMetadataCallback&
           callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper callback for relaying reply for GetEntryInfoByPath() to the
@@ -127,7 +127,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& entry_path,
       const fileapi::FileSystemOperation::SnapshotFileCallback&
           callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Helper callback for relaying reply for ReadDirectory() to the calling
@@ -135,7 +135,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnReadDirectory(
       const fileapi::FileSystemOperation::ReadDirectoryCallback&
           callback,
-      DriveFileError error,
+      FileError error,
       bool hide_hosted_documents,
       scoped_ptr<DriveEntryProtoVector> proto_entries);
 
@@ -144,7 +144,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
   void OnCreateWritableSnapshotFile(
       const base::FilePath& virtual_path,
       const fileapi::WritableSnapshotFile& callback,
-      DriveFileError result,
+      FileError result,
       const base::FilePath& local_path);
 
   // Helper callback for closing the local cache file and committing the dirty
@@ -160,7 +160,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       const base::FilePath& virtual_path,
       int64 length,
       const fileapi::FileSystemOperation::StatusCallback& callback,
-      DriveFileError open_result,
+      FileError open_result,
       const base::FilePath& local_cache_path);
 
   // Invoked during Truncate() operation. This is called when the truncation of
@@ -177,7 +177,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       int file_flags,
       base::ProcessHandle peer_handle,
       const fileapi::FileSystemOperation::OpenFileCallback& callback,
-      DriveFileError file_error,
+      FileError file_error,
       const base::FilePath& local_cache_path);
 
   // Invoked during OpenFile() operation when file create flags are set.
@@ -186,7 +186,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
       int file_flags,
       base::ProcessHandle peer_handle,
       const fileapi::FileSystemOperation::OpenFileCallback& callback,
-      DriveFileError file_error);
+      FileError file_error);
 
   // Invoked during OpenFile() operation when base::PLATFORM_FILE_OPEN_TRUNCATED
   // flag is set. This is called when the truncation of a local cache file is

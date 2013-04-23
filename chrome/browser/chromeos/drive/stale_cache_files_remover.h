@@ -45,7 +45,7 @@ class StaleCacheFilesRemover : public DriveFileSystemObserver {
   void RemoveCacheIfNecessary(
       const std::string& resource_id,
       const std::string& cache_md5,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& drive_file_path,
       scoped_ptr<DriveEntryProto> entry_proto);
 

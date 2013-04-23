@@ -69,7 +69,7 @@ struct TestEntry {
 // resource_id (arg0) to |fetched_list|, and calls back a successful completion.
 ACTION_P(MockGetFile, fetched_list) {
   fetched_list->push_back(arg0);
-  arg2.Run(DRIVE_FILE_OK, base::FilePath(), std::string(), REGULAR_FILE);
+  arg2.Run(FILE_ERROR_OK, base::FilePath(), std::string(), REGULAR_FILE);
 }
 
 // Mocks DriveFileSystem::ReadDirectory. It holds the flat list of all entries
@@ -84,7 +84,7 @@ ACTION_P(MockReadDirectory, test_entries) {
     if (test_entries[i].IsDirectChildOf(directory))
       entries->push_back(test_entries[i].ToDriveEntryProto());
   }
-  callback.Run(DRIVE_FILE_OK, false /* hide_hosted_document */, entries.Pass());
+  callback.Run(FILE_ERROR_OK, false /* hide_hosted_document */, entries.Pass());
 }
 
 #define FPL FILE_PATH_LITERAL

@@ -54,7 +54,7 @@ class RemoveOperation {
   // |callback| must not be null.
   void RemoveAfterGetEntryInfo(
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
   // Callback for DriveServiceInterface::DeleteResource. Removes the entry with
@@ -69,7 +69,7 @@ class RemoveOperation {
   // and runs |callback| with |error|. |callback| must not be null.
   void NotifyDirectoryChanged(
       const FileOperationCallback& callback,
-      DriveFileError error,
+      FileError error,
       const base::FilePath& directory_path);
 
   DriveScheduler* drive_scheduler_;
