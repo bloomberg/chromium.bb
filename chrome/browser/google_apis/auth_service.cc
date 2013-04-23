@@ -11,7 +11,6 @@
 #include "base/message_loop_proxy.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/google_apis/auth_service_observer.h"
-#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/token_service.h"
 #include "chrome/browser/signin/token_service_factory.h"
@@ -46,11 +45,9 @@ const int kSuccessRatioHistogramMaxValue = 4;  // The max value is exclusive.
 }  // namespace
 
 // OAuth2 authorization token retrieval operation.
-class AuthOperation : public OperationRegistry::Operation,
-                      public OAuth2AccessTokenConsumer {
+class AuthOperation : public OAuth2AccessTokenConsumer {
  public:
-  AuthOperation(OperationRegistry* registry,
-                net::URLRequestContextGetter* url_request_context_getter,
+  AuthOperation(net::URLRequestContextGetter* url_request_context_getter,
                 const AuthStatusCallback& callback,
                 const std::vector<std::string>& scopes,
                 const std::string& refresh_token);
@@ -61,9 +58,6 @@ class AuthOperation : public OperationRegistry::Operation,
   virtual void OnGetTokenSuccess(const std::string& access_token,
                                  const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const GoogleServiceAuthError& error) OVERRIDE;
-
-  // Overridden from OperationRegistry::Operation
-  virtual void DoCancel() OVERRIDE;
 
  private:
   net::URLRequestContextGetter* url_request_context_getter_;
@@ -76,13 +70,11 @@ class AuthOperation : public OperationRegistry::Operation,
 };
 
 AuthOperation::AuthOperation(
-    OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
     const AuthStatusCallback& callback,
     const std::vector<std::string>& scopes,
     const std::string& refresh_token)
-    : OperationRegistry::Operation(registry),
-      url_request_context_getter_(url_request_context_getter),
+    : url_request_context_getter_(url_request_context_getter),
       refresh_token_(refresh_token),
       callback_(callback),
       scopes_(scopes) {
@@ -95,17 +87,11 @@ void AuthOperation::Start() {
   DCHECK(!refresh_token_.empty());
   oauth2_access_token_fetcher_.reset(new OAuth2AccessTokenFetcher(
       this, url_request_context_getter_));
-  NotifyStart();
   oauth2_access_token_fetcher_->Start(
       GaiaUrls::GetInstance()->oauth2_chrome_client_id(),
       GaiaUrls::GetInstance()->oauth2_chrome_client_secret(),
       refresh_token_,
       scopes_);
-}
-
-void AuthOperation::DoCancel() {
-  oauth2_access_token_fetcher_->CancelRequest();
-  callback_.Run(GDATA_CANCELLED, std::string());
 }
 
 // Callback for OAuth2AccessTokenFetcher on success. |access_token| is the token
@@ -119,7 +105,7 @@ void AuthOperation::OnGetTokenSuccess(const std::string& access_token,
                             kSuccessRatioHistogramMaxValue);
 
   callback_.Run(HTTP_SUCCESS, access_token);
-  NotifyFinish(OPERATION_COMPLETED);
+  delete this;
 }
 
 // Callback for OAuth2AccessTokenFetcher on failure.
@@ -150,7 +136,7 @@ void AuthOperation::OnGetTokenFailure(const GoogleServiceAuthError& error) {
                               kSuccessRatioHistogramMaxValue);
     callback_.Run(HTTP_UNAUTHORIZED, std::string());
   }
-  NotifyFinish(OPERATION_FAILED);
+  delete this;
 }
 
 void AuthService::Initialize(Profile* profile) {
@@ -184,8 +170,7 @@ AuthService::AuthService(
 AuthService::~AuthService() {
 }
 
-void AuthService::StartAuthentication(OperationRegistry* registry,
-                                      const AuthStatusCallback& callback) {
+void AuthService::StartAuthentication(const AuthStatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   scoped_refptr<base::MessageLoopProxy> relay_proxy(
       base::MessageLoopProxy::current());
@@ -196,8 +181,7 @@ void AuthService::StartAuthentication(OperationRegistry* registry,
          base::Bind(callback, HTTP_SUCCESS, access_token_));
   } else if (HasRefreshToken()) {
     // We have refresh token, let's get an access token.
-    (new AuthOperation(registry,
-                       url_request_context_getter_,
+    (new AuthOperation(url_request_context_getter_,
                        base::Bind(&AuthService::OnAuthCompleted,
                                   weak_ptr_factory_.GetWeakPtr(),
                                   callback),

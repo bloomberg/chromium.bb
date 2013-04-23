@@ -23,7 +23,6 @@ namespace google_apis {
 class AboutResource;
 class AccountMetadata;
 class AppList;
-class OperationRegistry;
 class ResourceEntry;
 class ResourceList;
 

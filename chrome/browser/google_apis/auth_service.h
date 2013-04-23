@@ -23,7 +23,6 @@ class URLRequestContextGetter;
 
 namespace google_apis {
 
-class OperationRegistry;
 class AuthServiceObserver;
 
 // This class provides authentication for Google services.
@@ -45,8 +44,7 @@ class AuthService : public AuthServiceInterface,
   virtual void AddObserver(AuthServiceObserver* observer) OVERRIDE;
   virtual void RemoveObserver(AuthServiceObserver* observer) OVERRIDE;
   virtual void Initialize(Profile* profile) OVERRIDE;
-  virtual void StartAuthentication(OperationRegistry* registry,
-                                   const AuthStatusCallback& callback) OVERRIDE;
+  virtual void StartAuthentication(const AuthStatusCallback& callback) OVERRIDE;
   virtual bool HasAccessToken() const OVERRIDE;
   virtual bool HasRefreshToken() const OVERRIDE;
   virtual const std::string& access_token() const OVERRIDE;

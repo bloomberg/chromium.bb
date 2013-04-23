@@ -47,7 +47,6 @@ void OperationRunner::StartOperationWithRetry(
   if (!auth_service_->HasAccessToken()) {
     // Fetch OAuth2 access token from the refresh token first.
     auth_service_->StartAuthentication(
-        operation_registry_.get(),
         base::Bind(&OperationRunner::OnAccessTokenFetched,
                    weak_ptr_factory_.GetWeakPtr(),
                    operation->GetWeakPtr()));

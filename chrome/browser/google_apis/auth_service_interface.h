@@ -38,8 +38,7 @@ class AuthServiceInterface {
 
   // Starts fetching OAuth2 access token from the refresh token.
   // |callback| must not be null.
-  virtual void StartAuthentication(OperationRegistry* registry,
-                                   const AuthStatusCallback& callback) = 0;
+  virtual void StartAuthentication(const AuthStatusCallback& callback) = 0;
 
   // True if an OAuth2 access token is retrieved and believed to be fresh.
   // The access token is used to access the Drive server.
