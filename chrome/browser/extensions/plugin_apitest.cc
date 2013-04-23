@@ -27,6 +27,10 @@ using extensions::Extension;
 #if defined(OS_WIN)
 // http://crbug.com/123851 : test flakily fails on win.
 #define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
+#elif defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// ExtensionBrowserTest.PluginLoadUnload started failing after the switch to
+// dynamic ASan runtime library on Mac. See http://crbug.com/234591.
+#define MAYBE_PluginLoadUnload DISABLED_PluginLoadUnload
 #else
 #define MAYBE_PluginLoadUnload PluginLoadUnload
 #endif
@@ -102,8 +106,15 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginLoadUnload) {
 #endif
 }
 
+#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
+// ExtensionBrowserTest.PluginPrivate started failing after the switch to
+// dynamic ASan runtime library on Mac. See http://crbug.com/234591.
+#define MAYBE_PluginPrivate DISABLED_PluginPrivate
+#else
+#define MAYBE_PluginPrivate PluginPrivate
+#endif
 // Tests that private extension plugins are only visible to the extension.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PluginPrivate) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PluginPrivate) {
   if (!webkit::npapi::NPAPIPluginsSupported())
     return;
   
