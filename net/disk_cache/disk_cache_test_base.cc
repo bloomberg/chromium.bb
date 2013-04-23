@@ -51,6 +51,7 @@ void DiskCacheTest::TearDown() {
 DiskCacheTestWithCache::DiskCacheTestWithCache()
     : cache_(NULL),
       cache_impl_(NULL),
+      simple_cache_impl_(NULL),
       mem_cache_(NULL),
       mask_(0),
       size_(0),
@@ -99,6 +100,9 @@ void DiskCacheTestWithCache::SetTestMode() {
 
 void DiskCacheTestWithCache::SetMaxSize(int size) {
   size_ = size;
+  if (simple_cache_impl_)
+    EXPECT_TRUE(simple_cache_impl_->SetMaxSize(size));
+
   if (cache_impl_)
     EXPECT_TRUE(cache_impl_->SetMaxSize(size));
 
@@ -273,7 +277,7 @@ void DiskCacheTestWithCache::CreateBackend(uint32 flags, base::Thread* thread) {
                                           make_scoped_refptr(runner), NULL);
     int rv = simple_backend->Init(cb.callback());
     ASSERT_EQ(net::OK, cb.GetResult(rv));
-    cache_ = simple_backend;
+    cache_ = simple_cache_impl_ = simple_backend;
     return;
   }
 

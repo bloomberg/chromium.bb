@@ -48,7 +48,8 @@ SimpleBackendImpl::SimpleBackendImpl(
   : path_(path),
     index_(new SimpleIndex(cache_thread,
                            MessageLoopProxy::current(),  // io_thread
-                           path)),
+                           path,
+                           max_bytes)),
     cache_thread_(cache_thread) {}
 
 SimpleBackendImpl::~SimpleBackendImpl() {
@@ -66,6 +67,10 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
                                      path_,
                                      initialize_index_callback));
   return net::ERR_IO_PENDING;
+}
+
+bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
+  return index_->SetMaxSize(max_bytes);
 }
 
 net::CacheType SimpleBackendImpl::GetCacheType() const {

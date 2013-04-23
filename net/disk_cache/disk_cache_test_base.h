@@ -26,6 +26,7 @@ class Backend;
 class BackendImpl;
 class Entry;
 class MemBackendImpl;
+class SimpleBackendImpl;
 
 }  // namespace disk_cache
 
@@ -143,6 +144,7 @@ class DiskCacheTestWithCache : public DiskCacheTest {
   // initialized. The implementation pointers can be NULL.
   disk_cache::Backend* cache_;
   disk_cache::BackendImpl* cache_impl_;
+  disk_cache::SimpleBackendImpl* simple_cache_impl_;
   disk_cache::MemBackendImpl* mem_cache_;
 
   uint32 mask_;

@@ -76,11 +76,14 @@ class NET_EXPORT_PRIVATE SimpleIndex
   SimpleIndex(
       base::SingleThreadTaskRunner* cache_thread,
       base::SingleThreadTaskRunner* io_thread,
-      const base::FilePath& path);
+      const base::FilePath& path,
+      int max_size);
 
   virtual ~SimpleIndex();
 
   void Initialize();
+
+  bool SetMaxSize(int max_bytes);
 
   void Insert(const std::string& key);
   void Remove(const std::string& key);
@@ -124,6 +127,9 @@ class NET_EXPORT_PRIVATE SimpleIndex
   typedef base::Callback<void(scoped_ptr<EntrySet>, bool force_index_flush)>
       IndexCompletionCallback;
 
+  void StartEvictionIfNeeded();
+  void EvictionDone(int result);
+
   void PostponeWritingToDisk();
 
   // Using the mtime of the file and its mtime, detects if the index file is
@@ -148,6 +154,10 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   EntrySet entries_set_;
   uint64 cache_size_;  // Total cache storage size in bytes.
+  uint64 max_size_;
+  uint64 high_watermark_;
+  uint64 low_watermark_;
+  bool eviction_in_progress_;
 
   // This stores all the hash_key of entries that are removed during
   // initialization.

@@ -11,12 +11,16 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
+#include "base/metrics/histogram.h"
 #include "base/pickle.h"
+#include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index_file.h"
+#include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
 
 namespace {
@@ -27,6 +31,37 @@ const int kWriteToDiskDelaySecs = 20;
 
 // WriteToDisk at lest every 5 minutes.
 const int kMaxWriteToDiskDelaySecs = 300;
+
+// Cache size when all other size heuristics failed.
+const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
+
+// Divides the cache space into this amount of parts to evict when only one part
+// is left.
+const uint32 kEvictionMarginDivisor = 20;
+
+// Utility class used for timestamp comparisons in entry metadata while sorting.
+class CompareHashesForTimestamp {
+  typedef disk_cache::SimpleIndex SimpleIndex;
+  typedef disk_cache::SimpleIndex::EntrySet EntrySet;
+ public:
+  explicit CompareHashesForTimestamp(const EntrySet& set);
+
+  bool operator()(uint64 hash1, uint64 hash2);
+ private:
+  const EntrySet& entry_set_;
+};
+
+CompareHashesForTimestamp::CompareHashesForTimestamp(const EntrySet& set)
+  : entry_set_(set) {
+}
+
+bool CompareHashesForTimestamp::operator()(uint64 hash1, uint64 hash2) {
+  EntrySet::const_iterator it1 = entry_set_.find(hash1);
+  DCHECK(it1 != entry_set_.end());
+  EntrySet::const_iterator it2 = entry_set_.find(hash2);
+  DCHECK(it2 != entry_set_.end());
+  return it1->second.GetLastUsedTime() < it2->second.GetLastUsedTime();
+}
 
 }  // namespace
 
@@ -81,8 +116,13 @@ void EntryMetadata::MergeWith(const EntryMetadata& from) {
 SimpleIndex::SimpleIndex(
     base::SingleThreadTaskRunner* cache_thread,
     base::SingleThreadTaskRunner* io_thread,
-    const base::FilePath& path)
+    const base::FilePath& path,
+    int max_size)
     : cache_size_(0),
+      max_size_(max_size),
+      high_watermark_(0),
+      low_watermark_(0),
+      eviction_in_progress_(false),
       initialized_(false),
       index_filename_(path.AppendASCII("simple-index")),
       cache_thread_(cache_thread),
@@ -101,6 +141,19 @@ SimpleIndex::~SimpleIndex() {
 
 void SimpleIndex::Initialize() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+
+  if (!max_size_) {
+    int64 available = base::SysInfo::AmountOfFreeDiskSpace(index_filename_);
+    if (available < 0)
+      max_size_ = kDefaultCacheSize;
+    else
+      // TODO(pasko): Move PreferedCacheSize() to cache_util.h. Also fix the
+      // spelling.
+      max_size_ = PreferedCacheSize(available);
+  }
+  DCHECK(max_size_);
+  SetMaxSize(max_size_);
+
   IndexCompletionCallback merge_callback =
       base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());
   base::WorkerPool::PostTask(FROM_HERE,
@@ -109,6 +162,20 @@ void SimpleIndex::Initialize() {
                                         io_thread_,
                                         merge_callback),
                              true);
+}
+
+bool SimpleIndex::SetMaxSize(int max_bytes) {
+  if (max_bytes < 0)
+    return false;
+
+  // Zero size means use the default.
+  if (!max_bytes)
+    return true;
+
+  max_size_ = max_bytes;
+  high_watermark_ = max_size_ - max_size_ / kEvictionMarginDivisor;
+  low_watermark_ = max_size_ - 2 * (max_size_ / kEvictionMarginDivisor);
+  return true;
 }
 
 int SimpleIndex::ExecuteWhenReady(const net::CompletionCallback& task) {
@@ -134,6 +201,7 @@ scoped_ptr<std::vector<uint64> > SimpleIndex::RemoveEntriesBetween(
     if (initial_time <= entry_time && entry_time < extended_end_time) {
       ret_hashes->push_back(metadata.GetHashKey());
       entries_set_.erase(it++);
+      cache_size_ -= metadata.GetEntrySize();
     } else {
       it++;
     }
@@ -190,6 +258,49 @@ bool SimpleIndex::UseIfExists(const std::string& key) {
   return true;
 }
 
+void SimpleIndex::StartEvictionIfNeeded() {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  if (eviction_in_progress_ || cache_size_ <= high_watermark_)
+    return;
+
+  // Take all live key hashes from the index and sort them by time.
+  eviction_in_progress_ = true;
+  scoped_ptr<std::vector<uint64> > entry_hashes(new std::vector<uint64>());
+  for (EntrySet::const_iterator it = entries_set_.begin(),
+       end = entries_set_.end(); it != end; ++it) {
+    entry_hashes->push_back(it->second.GetHashKey());
+  }
+  std::sort(entry_hashes->begin(), entry_hashes->end(),
+            CompareHashesForTimestamp(entries_set_));
+
+  // Remove as many entries from the index to get below |low_watermark_|.
+  std::vector<uint64>::iterator it = entry_hashes->begin();
+  uint64 evicted_so_far_size = 0;
+  while (evicted_so_far_size < cache_size_ - low_watermark_) {
+    DCHECK(it != entry_hashes->end());
+    EntrySet::iterator found_meta = entries_set_.find(*it);
+    DCHECK(found_meta != entries_set_.end());
+    uint64 to_evict_size = found_meta->second.GetEntrySize();
+    evicted_so_far_size += to_evict_size;
+    entries_set_.erase(found_meta);
+    cache_size_ -= to_evict_size;
+    ++it;
+  }
+
+  // Take out the rest of hashes from the eviction list.
+  entry_hashes->erase(it, entry_hashes->end());
+
+  net::CompletionCallback callback =
+      base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr());
+  base::WorkerPool::PostTask(FROM_HERE,
+                             base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
+                                        base::Passed(&entry_hashes),
+                                        index_filename_.DirName(),
+                                        io_thread_,
+                                        callback),
+                             true);
+}
+
 bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   EntrySet::iterator it = entries_set_.find(simple_util::GetEntryHashKey(key));
@@ -201,7 +312,15 @@ bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   cache_size_ += entry_size;
   it->second.SetEntrySize(entry_size);
   PostponeWritingToDisk();
+  StartEvictionIfNeeded();
   return true;
+}
+
+void SimpleIndex::EvictionDone(int result) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  // Ignore the result of eviction. We did our best.
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EvictionSuccess", result == net::OK);
+  eviction_in_progress_ = false;
 }
 
 // static

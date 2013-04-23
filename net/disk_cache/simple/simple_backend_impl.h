@@ -46,6 +46,9 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   // Must run on IO Thread.
   int Init(const CompletionCallback& completion_callback);
 
+  // Sets the maximum size for the total amount of data stored by this instance.
+  bool SetMaxSize(int max_bytes);
+
   // From Backend:
   virtual net::CacheType GetCacheType() const OVERRIDE;
   virtual int32 GetEntryCount() const OVERRIDE;

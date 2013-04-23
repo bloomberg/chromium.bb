@@ -9,6 +9,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/timer.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -56,6 +57,7 @@ class DiskCacheEntryTest : public DiskCacheTestWithCache {
   void UpdateSparseEntry();
   void DoomSparseEntry();
   void PartialSparseEntry();
+  void EvictOldEntries();
 };
 
 // This part of the test runs on the background thread.
@@ -2024,6 +2026,55 @@ TEST_F(DiskCacheEntryTest, MemoryPartialSparseEntry) {
   PartialSparseEntry();
 }
 
+// Tests that old entries are evicted while new entries remain in the index.
+// May need to update some thresholds to match individual backend heuristics.
+void DiskCacheEntryTest::EvictOldEntries() {
+  const int kMaxSize = 200 * 1024;
+  const int kWriteSize = kMaxSize / 10;
+  const int kNumExtraEntries = 12;
+  SetMaxSize(kMaxSize);
+  InitCache();
+
+  std::string key1("the first key");
+  disk_cache::Entry* entry;
+  ASSERT_EQ(net::OK, CreateEntry(key1, &entry));
+  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kWriteSize));
+  CacheTestFillBuffer(buffer->data(), kWriteSize, false);
+  EXPECT_EQ(kWriteSize, WriteData(entry, 0, 0, buffer, kWriteSize, false));
+  entry->Close();
+
+  std::string key2("the key prefix");
+  for (int i = 0; i < kNumExtraEntries; i++) {
+    ASSERT_EQ(net::OK, CreateEntry(key2 + base::StringPrintf("%d", i), &entry));
+    EXPECT_EQ(kWriteSize, WriteData(entry, 0, 0, buffer, kWriteSize, false));
+    entry->Close();
+  }
+
+  ASSERT_NE(net::OK, OpenEntry(key1, &entry))
+      << "Should have evicted the old entry";
+  for (int i = 0; i < 2; i++) {
+    int entry_no = kNumExtraEntries - i - 1;
+    EXPECT_EQ(net::OK, OpenEntry(key2 + base::StringPrintf("%d", entry_no),
+                                 &entry))
+        << "Should not have evicted fresh entry " << entry_no;
+    entry->Close();
+  }
+}
+
+TEST_F(DiskCacheEntryTest, EvictOldEntries) {
+  EvictOldEntries();
+}
+
+TEST_F(DiskCacheEntryTest, NewEvictionEvictOldEntries) {
+  SetNewEviction();
+  EvictOldEntries();
+}
+
+TEST_F(DiskCacheEntryTest, MemoryEvictOldEntries) {
+  SetMemoryOnlyMode();
+  EvictOldEntries();
+}
+
 // Tests that corrupt sparse children are removed automatically.
 TEST_F(DiskCacheEntryTest, CleanupSparseEntry) {
   InitCache();
@@ -2319,6 +2370,11 @@ TEST_F(DiskCacheEntryTest, SimpleCacheBadChecksum) {
   EXPECT_EQ(net::ERR_FAILED,
             ReadData(entry, 0, 0, read_buffer, kReadBufferSize));
   entry->Close();
+}
+
+TEST_F(DiskCacheEntryTest, SimpleCacheEvictOldEntries) {
+  SetSimpleCacheMode();
+  EvictOldEntries();
 }
 
 #endif  // !defined(OS_WIN)

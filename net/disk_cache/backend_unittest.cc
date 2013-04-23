@@ -2835,8 +2835,7 @@ TEST_F(DiskCacheBackendTest, TracingBackendBasicsWithBackendImpl) {
 // different file system guarantees from Windows.
 #if !defined(OS_WIN)
 
-TEST_F(DiskCacheBackendTest,
-                   TracingBackendBasicsWithSimpleBackend) {
+TEST_F(DiskCacheBackendTest, TracingBackendBasicsWithSimpleBackend) {
   SetSimpleCacheMode();
   TracingBackendBasics();
   // TODO(pasko): implement integrity checking on the Simple Backend.
@@ -2907,6 +2906,17 @@ TEST_F(DiskCacheBackendTest, SimpleDoomRecent) {
 TEST_F(DiskCacheBackendTest, SimpleDoomBetween) {
   SetSimpleCacheMode();
   BackendDoomBetween();
+}
+
+TEST_F(DiskCacheBackendTest, SimpleCacheDoomAll) {
+  SetSimpleCacheMode();
+  BackendDoomAll();
+}
+
+// TODO(pasko): Write operation should fail fast in attempt to go over the size.
+TEST_F(DiskCacheBackendTest, DISABLED_SimpleCacheSetSize) {
+  SetSimpleCacheMode();
+  BackendSetSize();
 }
 
 #endif  // !defined(OS_WIN)
