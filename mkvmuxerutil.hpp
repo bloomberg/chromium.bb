@@ -88,6 +88,29 @@ uint64 WriteMetadataBlock(IMkvWriter* writer,
                           int64 timecode,
                           uint64 duration_timecode);
 
+// Output an Mkv Block with BlockAdditional data.
+// Inputs:
+//   data:         Pointer to the data.
+//   length:       Length of the data.
+//   additional:   Pointer to the additional data
+//   additional_length: Length of the additional data.
+//   add_id: Value of BlockAddID element.
+//   track_number: Track to add the data to. Value returned by Add track
+//                  functions.  Only values in the range [1, 126] are
+//                  permitted.
+//   timecode:     Relative timecode of the Block.  Only values in the
+//                  range [0, 2^15) are permitted.
+//   is_key:       Non-zero value specifies that frame is a key frame.
+uint64 WriteBlockWithAdditional(IMkvWriter* writer,
+                                const uint8* data,
+                                uint64 length,
+                                const uint8* additional,
+                                uint64 additional_length,
+                                uint64 add_id,
+                                uint64 track_number,
+                                int64 timecode,
+                                uint64 is_key);
+
 // Output a void element. |size| must be the entire size in bytes that will be
 // void. The function will calculate the size of the void header and subtract
 // it from |size|.

@@ -460,6 +460,7 @@ Track::Track(unsigned int* seed)
     : codec_id_(NULL),
       codec_private_(NULL),
       language_(NULL),
+      max_block_additional_id_(0),
       name_(NULL),
       number_(0),
       type_(0),
@@ -535,6 +536,8 @@ uint64 Track::PayloadSize() const {
     size += EbmlElementSize(kMkvLanguage, language_);
   if (name_)
     size += EbmlElementSize(kMkvName, name_);
+  if (max_block_additional_id_)
+    size += EbmlElementSize(kMkvMaxBlockAdditionID, max_block_additional_id_);
 
   if (content_encoding_entries_size_ > 0) {
     uint64 content_encodings_size = 0;
@@ -581,6 +584,8 @@ bool Track::Write(IMkvWriter* writer) const {
     size += EbmlElementSize(kMkvLanguage, language_);
   if (name_)
     size += EbmlElementSize(kMkvName, name_);
+  if (max_block_additional_id_)
+    size += EbmlElementSize(kMkvMaxBlockAdditionID, max_block_additional_id_);
 
   const int64 payload_position = writer->Position();
   if (payload_position < 0)
@@ -592,6 +597,11 @@ bool Track::Write(IMkvWriter* writer) const {
     return false;
   if (!WriteEbmlElement(writer, kMkvTrackType, type_))
     return false;
+  if (max_block_additional_id_)
+    if (!WriteEbmlElement(writer,
+                          kMkvMaxBlockAdditionID,
+                          max_block_additional_id_))
+      return false;
   if (codec_id_) {
     if (!WriteEbmlElement(writer, kMkvCodecID, codec_id_))
       return false;
@@ -719,6 +729,7 @@ VideoTrack::VideoTrack(unsigned int* seed)
       frame_rate_(0.0),
       height_(0),
       stereo_mode_(0),
+      alpha_mode_(0),
       width_(0) {
 }
 
@@ -734,6 +745,15 @@ bool VideoTrack::SetStereoMode(uint64 stereo_mode) {
     return false;
 
   stereo_mode_ = stereo_mode;
+  return true;
+}
+
+bool VideoTrack::SetAlphaMode(uint64 alpha_mode) {
+  if (alpha_mode != kNoAlpha &&
+      alpha_mode != kAlpha)
+    return false;
+
+  alpha_mode_ = alpha_mode;
   return true;
 }
 
@@ -772,6 +792,9 @@ bool VideoTrack::Write(IMkvWriter* writer) const {
   if (stereo_mode_ > kMono)
     if (!WriteEbmlElement(writer, kMkvStereoMode, stereo_mode_))
       return false;
+  if (alpha_mode_ > kNoAlpha)
+    if (!WriteEbmlElement(writer, kMkvAlphaMode, alpha_mode_))
+      return false;
   if (frame_rate_ > 0.0)
     if (!WriteEbmlElement(writer,
                           kMkvFrameRate,
@@ -795,6 +818,8 @@ uint64 VideoTrack::VideoPayloadSize() const {
     size += EbmlElementSize(kMkvDisplayHeight, display_height_);
   if (stereo_mode_ > kMono)
     size += EbmlElementSize(kMkvStereoMode, stereo_mode_);
+  if (alpha_mode_ > kNoAlpha)
+    size += EbmlElementSize(kMkvAlphaMode, alpha_mode_);
   if (frame_rate_ > 0.0)
     size += EbmlElementSize(kMkvFrameRate, static_cast<float>(frame_rate_));
 
@@ -1395,6 +1420,25 @@ bool Cluster::AddFrame(const uint8* frame,
                       &WriteSimpleBlock);
 }
 
+bool Cluster::AddFrameWithAdditional(const uint8* frame,
+                                     uint64 length,
+                                     const uint8* additional,
+                                     uint64 additional_length,
+                                     uint64 add_id,
+                                     uint64 track_number,
+                                     uint64 abs_timecode,
+                                     bool is_key) {
+  return DoWriteBlockWithAdditional(frame,
+                                    length,
+                                    additional,
+                                    additional_length,
+                                    add_id,
+                                    track_number,
+                                    abs_timecode,
+                                    is_key ? 1 : 0,
+                                    &WriteBlockWithAdditional);
+}
+
 bool Cluster::AddMetadata(const uint8* frame,
                           uint64 length,
                           uint64 track_number,
@@ -1481,6 +1525,66 @@ bool Cluster::DoWriteBlock(
   const uint64 element_size = (*write_block)(writer_,
                                              frame,
                                              length,
+                                             track_number,
+                                             rel_timecode,
+                                             generic_arg);
+
+  if (element_size == 0)
+    return false;
+
+  AddPayloadSize(element_size);
+  blocks_added_++;
+
+  return true;
+}
+
+bool Cluster::DoWriteBlockWithAdditional(
+    const uint8* frame,
+    uint64 length,
+    const uint8* additional,
+    uint64 additional_length,
+    uint64 add_id,
+    uint64 track_number,
+    uint64 abs_timecode,
+    uint64 generic_arg,
+    WriteBlockAdditional write_block) {
+  if (frame == NULL || length == 0 ||
+      additional == NULL || additional_length == 0)
+    return false;
+
+  // To simplify things, we require that there be fewer than 127
+  // tracks -- this allows us to serialize the track number value for
+  // a stream using a single byte, per the Matroska encoding.
+
+  if (track_number == 0 || track_number > 0x7E)
+    return false;
+
+  const int64 cluster_timecode = this->Cluster::timecode();
+  const int64 rel_timecode =
+      static_cast<int64>(abs_timecode) - cluster_timecode;
+
+  if (rel_timecode < 0)
+    return false;
+
+  if (rel_timecode > kMaxBlockTimecode)
+    return false;
+
+  if (write_block == NULL)
+    return false;
+
+  if (finalized_)
+    return false;
+
+  if (!header_written_)
+    if (!WriteClusterHeader())
+      return false;
+
+  const uint64 element_size = (*write_block)(writer_,
+                                             frame,
+                                             length,
+                                             additional,
+                                             additional_length,
+                                             add_id,
                                              track_number,
                                              rel_timecode,
                                              generic_arg);
@@ -2087,6 +2191,75 @@ bool Segment::AddFrame(const uint8* frame,
                          track_number,
                          abs_timecode,
                          is_key))
+    return false;
+
+  if (new_cuepoint_ && cues_track_ == track_number) {
+    if (!AddCuePoint(timestamp, cues_track_))
+      return false;
+  }
+
+  if (timestamp > last_timestamp_)
+    last_timestamp_ = timestamp;
+
+  return true;
+}
+
+bool Segment::AddFrameWithAdditional(const uint8* frame,
+                                     uint64 length,
+                                     const uint8* additional,
+                                     uint64 additional_length,
+                                     uint64 add_id,
+                                     uint64 track_number,
+                                     uint64 timestamp,
+                                     bool is_key) {
+  if (!frame || !additional)
+    return false;
+
+  if (!CheckHeaderInfo())
+    return false;
+
+  // Check for non-monotonically increasing timestamps.
+  if (timestamp < last_timestamp_)
+    return false;
+
+  // If the segment has a video track hold onto audio frames to make sure the
+  // audio that is associated with the start time of a video key-frame is
+  // muxed into the same cluster.
+  if (has_video_ && tracks_.TrackIsAudio(track_number) && !force_new_cluster_) {
+    Frame* const new_frame = new Frame();
+    if (!new_frame->Init(frame, length))
+      return false;
+    new_frame->set_track_number(track_number);
+    new_frame->set_timestamp(timestamp);
+    new_frame->set_is_key(is_key);
+
+    if (!QueueFrame(new_frame))
+      return false;
+
+    return true;
+  }
+
+  if (!DoNewClusterProcessing(track_number, timestamp, is_key))
+    return false;
+
+  if (cluster_list_size_ < 1)
+    return false;
+
+  Cluster* const cluster = cluster_list_[cluster_list_size_ - 1];
+  if (!cluster)
+    return false;
+
+  const uint64 timecode_scale = segment_info_.timecode_scale();
+  const uint64 abs_timecode = timestamp / timecode_scale;
+
+  if (!cluster->AddFrameWithAdditional(frame,
+                                       length,
+                                       additional,
+                                       additional_length,
+                                       add_id,
+                                       track_number,
+                                       abs_timecode,
+                                       is_key))
     return false;
 
   if (new_cuepoint_ && cues_track_ == track_number) {
