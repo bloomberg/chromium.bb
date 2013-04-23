@@ -330,16 +330,6 @@ const GridTrackSize& RenderGrid::gridTrackSize(TrackSizingDirection direction, s
     return trackStyles[i];
 }
 
-static size_t estimatedGridSizeForPosition(const GridPosition& position)
-{
-    if (position.isAuto())
-        return 1;
-
-    // Negative explicit values never grow the grid as they are clamped against
-    // the explicit grid's size. Thus we don't special case them here.
-    return std::max(position.integerPosition(), 1);
-}
-
 size_t RenderGrid::explicitGridColumnCount() const
 {
     return style()->gridColumns().size();
@@ -356,18 +346,14 @@ size_t RenderGrid::maximumIndexInDirection(TrackSizingDirection direction) const
 
     for (RenderBox* child = firstChildBox(); child; child = child->nextSiblingBox()) {
         // This function bypasses the cache (cachedGridCoordinate()) as it is used to build it.
-        // Also we can't call resolveGridPositionsFromStyle here as it assumes that the grid is build and we are in
-        // the middle of building it. However we should be able to share more code with the previous logic (FIXME).
-        const GridPosition& initialPosition = (direction == ForColumns) ? child->style()->gridItemStart() : child->style()->gridItemBefore();
-        const GridPosition& finalPosition = (direction == ForColumns) ? child->style()->gridItemEnd() : child->style()->gridItemAfter();
+        OwnPtr<GridSpan> positions = resolveGridPositionsFromStyle(child, direction);
 
-        size_t estimatedSizeForInitialPosition = estimatedGridSizeForPosition(initialPosition);
-        size_t estimatedSizeForFinalPosition = estimatedGridSizeForPosition(finalPosition);
-        ASSERT(estimatedSizeForInitialPosition);
-        ASSERT(estimatedSizeForFinalPosition);
+        // |positions| is NULL if we need to run the auto-placement algorithm. Our estimation ignores
+        // this case as the auto-placement algorithm will grow the grid as needed.
+        if (!positions)
+            continue;
 
-        maximumIndex = std::max(maximumIndex, estimatedSizeForInitialPosition);
-        maximumIndex = std::max(maximumIndex, estimatedSizeForFinalPosition);
+        maximumIndex = std::max(maximumIndex, positions->finalPositionIndex + 1);
     }
 
     return maximumIndex;
@@ -733,8 +719,6 @@ RenderGrid::GridSpan RenderGrid::resolveGridPositionsFromAutoPlacementPosition(c
 
 PassOwnPtr<RenderGrid::GridSpan> RenderGrid::resolveGridPositionsFromStyle(const RenderBox* gridItem, TrackSizingDirection direction) const
 {
-    ASSERT(gridWasPopulated());
-
     const GridPosition& initialPosition = (direction == ForColumns) ? gridItem->style()->gridItemStart() : gridItem->style()->gridItemBefore();
     const GridPositionSide initialPositionSide = (direction == ForColumns) ? StartSide : BeforeSide;
     const GridPosition& finalPosition = (direction == ForColumns) ? gridItem->style()->gridItemEnd() : gridItem->style()->gridItemAfter();
@@ -772,8 +756,6 @@ PassOwnPtr<RenderGrid::GridSpan> RenderGrid::resolveGridPositionsFromStyle(const
 
 size_t RenderGrid::resolveGridPositionFromStyle(const GridPosition& position, GridPositionSide side) const
 {
-    ASSERT(gridWasPopulated());
-
     // FIXME: Handle other values for grid-{row,column} like ranges or line names.
     switch (position.type()) {
     case IntegerPosition: {
