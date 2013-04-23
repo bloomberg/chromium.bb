@@ -1910,3 +1910,10 @@
    fun:ExtensionService::AddNewOrUpdatedExtension
    fun:ExtensionService::OnExtensionInstalled
 }
+{
+   bug_234754
+   Heapcheck:Leak
+   fun:MessageLoop
+   fun:MessageLoopForIO
+   fun:drive::internal::LocalReaderProxyTest_Read_Test::TestBody
+}
