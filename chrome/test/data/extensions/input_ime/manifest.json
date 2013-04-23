@@ -5,11 +5,21 @@
   "manifest_version": 2,
   "description": "Sample Input Method For Testing",
   "permissions": [ "input" ],
+  "background": {
+    "scripts": ["main.js"]
+  },
   "input_components": [{
     "name": "test ime",
     "type": "ime",
-    "id": "test-ime",
-    "description": "A input method for testing.",
+    "id": "IdentityIME",
+    "description": "Works as IME but do nothing",
+    "language": "en",
+    "layouts": ["us::eng"]
+  },{
+    "name": "test ime",
+    "type": "ime",
+    "id": "ToUpperIME",
+    "description": "Convert given key character to upper case.",
     "language": "en",
     "layouts": ["us::eng"]
   }]

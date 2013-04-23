@@ -2,11 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/chromeos/input_method/input_method_configuration.h"
+#include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_update_engine_client.h"
+#include "chromeos/ime/input_method_descriptor.h"
 #include "dbus/mock_bus.h"
 
 // TODO(nona): Remove gmock dependency once crbug.com/223061 is fixed.
@@ -16,6 +19,7 @@ using testing::Return;
 using testing::_;
 
 namespace chromeos {
+namespace input_method {
 namespace {
 
 // InputMethod extension should work on 1)normal extension, 2)normal extension
@@ -103,9 +107,23 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineIBusBrowserTest,
   ASSERT_TRUE(LoadExtensionWithType("input_ime", GetParam()));
   // The reason why not EXPECT_EQ is that extension will be reloaded in the
   // case of incognito mode switching. Thus registeration will be happend
-  // multiple times. Calling at least once is sufficient for IBus component.
-  EXPECT_LE(1, ibus_client->register_component_call_count());
+  // multiple times. Calling at least once per engine is sufficient for IBus
+  // component. Here, there is two engine, thus expectation is at least twice.
+  EXPECT_LE(2, ibus_client->register_component_call_count());
+
+  InputMethodDescriptors extension_imes;
+  GetInputMethodManager()->GetInputMethodExtensions(&extension_imes);
+
+  // Test IME has two input methods, thus InputMethodManager should have two
+  // extension IME.
+  // Note: Even extension is loaded by LoadExtensionAsComponent as above, the
+  // IME does not managed by ComponentExtensionIMEManager or it's id won't start
+  // with __comp__. The component extension IME is whitelisted and managed by
+  // ComponentExtensionIMEManager, but its framework is same as normal extension
+  // IME.
+  EXPECT_EQ(2U, extension_imes.size());
 }
 
 }  // namespace
+}  // namespace input_method
 }  // namespace chromeos
