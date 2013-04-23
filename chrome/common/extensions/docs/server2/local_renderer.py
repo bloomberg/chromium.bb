@@ -27,7 +27,7 @@ class LocalRenderer(object):
   '''Renders pages fetched from the local file system.
   '''
   def __init__(self, base_dir):
-    self._base_dir = base_dir.rstrip(os.path.sep)
+    self._base_dir = base_dir.replace(os.sep, '/').rstrip('/')
 
   def Render(self, path, headers={}, always_online=False):
     '''Renders |path|, returning a tuple of (status, contents, headers).
@@ -38,7 +38,8 @@ class LocalRenderer(object):
     Handler.ALWAYS_ONLINE = always_online
     try:
       response = _Response()
-      Handler(_Request(urlparse.urlparse(path).path, headers), response).get()
+      url_path = urlparse.urlparse(path.replace(os.sep, '/')).path
+      Handler(_Request(url_path, headers), response).get()
       content = response.out.getvalue()
       if isinstance(content, unicode):
         content = content.encode('utf-8', 'replace')
