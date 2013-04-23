@@ -16,7 +16,6 @@
 #include "content/renderer/render_thread_impl.h"
 #include "ipc/ipc_forwarding_message_filter.h"
 #include "ipc/ipc_sync_channel.h"
-#include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 
 #if defined(OS_ANDROID)
@@ -69,6 +68,8 @@ CompositorOutputSurface::CompositorOutputSurface(
   capabilities_.has_parent_compositor = command_line->HasSwitch(
       switches::kEnableDelegatedRenderer);
   DetachFromThread();
+  message_sender_ = RenderThreadImpl::current()->sync_message_filter();
+  DCHECK(message_sender_);
 }
 
 CompositorOutputSurface::~CompositorOutputSurface() {
@@ -163,7 +164,7 @@ void CompositorOutputSurface::OnSwapAck(const cc::CompositorFrameAck& ack) {
 }
 
 bool CompositorOutputSurface::Send(IPC::Message* message) {
-  return ChildThread::current()->sync_message_filter()->Send(message);
+  return message_sender_->Send(message);
 }
 
 namespace {

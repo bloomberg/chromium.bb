@@ -13,6 +13,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time.h"
 #include "cc/output/output_surface.h"
+#include "ipc/ipc_sync_message_filter.h"
 
 namespace base {
 class TaskRunner;
@@ -93,6 +94,7 @@ class CompositorOutputSurface
 
   scoped_refptr<IPC::ForwardingMessageFilter> output_surface_filter_;
   scoped_refptr<CompositorOutputSurfaceProxy> output_surface_proxy_;
+  scoped_refptr<IPC::SyncMessageFilter> message_sender_;
   int routing_id_;
   bool prefers_smoothness_;
   base::PlatformThreadId main_thread_id_;
