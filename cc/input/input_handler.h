@@ -56,6 +56,10 @@ class CC_EXPORT InputHandlerClient {
       gfx::Point viewport_point,
       WebKit::WebScrollbar::ScrollDirection direction) = 0;
 
+  // Returns ScrollStarted if a layer was being actively being scrolled,
+  // ScrollIgnored if not.
+  virtual ScrollStatus FlingScrollBegin() = 0;
+
   // Stop scrolling the selected layer. Should only be called if ScrollBegin()
   // returned ScrollStarted.
   virtual void ScrollEnd() = 0;

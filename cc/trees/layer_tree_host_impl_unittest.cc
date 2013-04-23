@@ -494,6 +494,59 @@ TEST_F(LayerTreeHostImplTest, WheelEventHandlers) {
             host_impl_->ScrollBegin(gfx::Point(), InputHandlerClient::Gesture));
 }
 
+TEST_F(LayerTreeHostImplTest, FlingOnlyWhenScrollingTouchscreen) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  InitializeRendererAndDrawFrame();
+
+  // Ignore the fling since no layer is being scrolled
+  EXPECT_EQ(InputHandlerClient::ScrollIgnored,
+            host_impl_->FlingScrollBegin());
+
+  // Start scrolling a layer
+  EXPECT_EQ(InputHandlerClient::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandlerClient::Gesture));
+
+  // Now the fling should go ahead since we've started scrolling a layer
+  EXPECT_EQ(InputHandlerClient::ScrollStarted,
+            host_impl_->FlingScrollBegin());
+}
+
+TEST_F(LayerTreeHostImplTest, FlingOnlyWhenScrollingTouchpad) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  InitializeRendererAndDrawFrame();
+
+  // Ignore the fling since no layer is being scrolled
+  EXPECT_EQ(InputHandlerClient::ScrollIgnored,
+            host_impl_->FlingScrollBegin());
+
+  // Start scrolling a layer
+  EXPECT_EQ(InputHandlerClient::ScrollStarted,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandlerClient::Wheel));
+
+  // Now the fling should go ahead since we've started scrolling a layer
+  EXPECT_EQ(InputHandlerClient::ScrollStarted,
+            host_impl_->FlingScrollBegin());
+}
+
+TEST_F(LayerTreeHostImplTest, NoFlingWhenScrollingOnMain) {
+  SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  host_impl_->SetViewportSize(gfx::Size(50, 50));
+  InitializeRendererAndDrawFrame();
+  LayerImpl* root = host_impl_->active_tree()->root_layer();
+
+  root->SetShouldScrollOnMainThread(true);
+
+  // Start scrolling a layer
+  EXPECT_EQ(InputHandlerClient::ScrollOnMainThread,
+            host_impl_->ScrollBegin(gfx::Point(), InputHandlerClient::Gesture));
+
+  // The fling should be ignored since there's no layer being scrolled impl-side
+  EXPECT_EQ(InputHandlerClient::ScrollIgnored,
+            host_impl_->FlingScrollBegin());
+}
+
 TEST_F(LayerTreeHostImplTest, ShouldScrollOnMainThread) {
   SetupScrollAndContentsLayers(gfx::Size(100, 100));
   host_impl_->SetViewportSize(gfx::Size(50, 50));

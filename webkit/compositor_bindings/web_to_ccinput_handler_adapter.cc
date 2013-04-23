@@ -57,6 +57,11 @@ class WebToCCInputHandlerAdapter::ClientAdapter : public WebInputHandlerClient {
     return client_->ScrollVerticallyByPage(point, direction);
   }
 
+  virtual ScrollStatus flingScrollBegin() {
+    return static_cast<WebInputHandlerClient::ScrollStatus>(
+        client_->FlingScrollBegin());
+  }
+
   virtual void scrollEnd() { client_->ScrollEnd(); }
 
   virtual void pinchGestureBegin() { client_->PinchGestureBegin(); }

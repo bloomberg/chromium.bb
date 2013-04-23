@@ -103,6 +103,7 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandlerClient,
       gfx::Point viewport_point,
       WebKit::WebScrollbar::ScrollDirection direction) OVERRIDE;
   virtual void ScrollEnd() OVERRIDE;
+  virtual InputHandlerClient::ScrollStatus FlingScrollBegin() OVERRIDE;
   virtual void PinchGestureBegin() OVERRIDE;
   virtual void PinchGestureUpdate(float magnify_delta,
                                   gfx::Point anchor) OVERRIDE;

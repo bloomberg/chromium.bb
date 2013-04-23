@@ -1735,6 +1735,13 @@ void LayerTreeHostImpl::ScrollEnd() {
   StartScrollbarAnimation(CurrentFrameTimeTicks());
 }
 
+InputHandlerClient::ScrollStatus LayerTreeHostImpl::FlingScrollBegin() {
+  if (active_tree_->CurrentlyScrollingLayer())
+    return ScrollStarted;
+
+  return ScrollIgnored;
+}
+
 void LayerTreeHostImpl::PinchGestureBegin() {
   pinch_gesture_active_ = true;
   previous_pinch_anchor_ = gfx::Point();
