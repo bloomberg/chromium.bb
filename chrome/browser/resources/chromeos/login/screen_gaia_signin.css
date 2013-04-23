@@ -3,6 +3,16 @@
  * found in the LICENSE file.
  */
 
+#gaia-signin {
+  height: 609px;
+  padding: 70px 17px 69px;    /* Screen has no controls. */
+  width: 722px;
+}
+
+#gaia-signin.no-right-panel {
+  width: 522px;
+}
+
 #signin-right {
   -webkit-margin-before: 80px;
   -webkit-margin-start: 30px;
@@ -87,4 +97,9 @@
 
 #enterprise-info-container #enterprise-info {
   display: inline-block;
+}
+
+#gaia-signin .step-contents {
+  -webkit-box-pack: center;
+  display: -webkit-box;
 }

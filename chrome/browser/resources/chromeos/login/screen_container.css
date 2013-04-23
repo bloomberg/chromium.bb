@@ -1,0 +1,155 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#outer-container {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  -webkit-perspective: 600px;
+  bottom: 48px;  /* Leave space for the header bar */
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+#inner-container {
+  border-radius: 2px;
+  padding: 0;
+  position: relative;
+}
+
+#inner-container.animation {
+  overflow: hidden;
+}
+
+/* Screens that have a border and background. */
+#oobe.connect #inner-container,
+#oobe.enrollment #inner-container,
+#oobe.eula #inner-container,
+#oobe.gaia-signin #inner-container,
+#oobe.oauth-enrollment #inner-container,
+#oobe.reset #inner-container,
+#oobe.update #inner-container,
+#oobe.user-image #inner-container,
+#oobe.managed-user-creation-dialog #inner-container,
+#oobe.managed-user-creation-flow #inner-container,
+#oobe.password-changed #inner-container,
+#oobe.terms-of-service #inner-container,
+#oobe.wrong-hwid #inner-container {
+  background: -webkit-linear-gradient(rgba(255,255,255,0.99),
+                                      rgba(255,255,255,0.95));
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+#oobe.error-message #inner-container,
+#oobe.tpm-error-message #inner-container {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3),
+              0 4px 23px 5px rgba(0, 0, 0, 0.2),
+              0 2px 6px rgba(0, 0, 0, 0.15);
+
+}
+
+/* Only play this animation when 'down' class is removed. */
+.oobe-display #inner-container:not(.down) {
+  -webkit-transition: -webkit-transform 200ms ease-in-out;
+}
+
+.oobe-display #inner-container.down {
+  -webkit-transform: translateY(50px) rotateX(-2.5deg);
+}
+
+#step-logo {
+  -webkit-margin-start: 17px;
+  display: -webkit-box;
+  position: absolute;
+  top: 15px;
+}
+
+#progress-dots {
+  -webkit-box-pack: center;
+  -webkit-margin-before: 15px;
+  display: -webkit-box;
+}
+
+/* Hidden for the duration of initial transition. */
+.oobe-display #progress-dots.down {
+  visibility: hidden;
+}
+
+.progdot {
+  -webkit-margin-end: 12px;
+  background: white;
+  height: 10px;
+  opacity: 0.4;
+  width: 10px;
+}
+
+.progdot-active {
+  opacity: 0.5;
+}
+
+#account-picker-dot,
+#enrollment-dot,
+#oauth-enrollment-dot,
+#reset-dot,
+#error-message-dot,
+#tpm-error-message-dot,
+#password-changed-dot,
+#managed-user-creation-flow-dot,
+#managed-user-creation-dialog-dot,
+#terms-of-service-dot,
+#wrong-hwid-dot {
+  display: none;
+}
+
+#oobe.connect #connect-dot,
+#oobe.enrollment #gaia-signin-dot,
+#oobe.enrollment #signin-dot,
+#oobe.eula #eula-dot,
+#oobe.gaia-signin #gaia-signin-dot,
+#oobe.oauth-enrollment #gaia-signin-dot,
+#oobe.oauth-enrollment #signin-dot,
+#oobe.signin #signin-dot,
+#oobe.update #update-dot,
+#oobe.user-image #user-image-dot {
+  opacity: 1;
+}
+
+body.login-display #inner-container {
+  height: 262px;
+  padding: 0;
+  width: 1100px;
+}
+
+body.login-display #progress-dots {
+  display: none;
+}
+
+html[build=chrome] #header-sections {
+  -webkit-margin-start: -48px;
+}
+
+html[build=chromium] #header-sections {
+  -webkit-margin-start: 5px;
+}
+
+.header-section {
+  color: rgb(119, 120, 123);  /* Should matching text color of the logo. */
+  display: none;
+  font-size: 23px;
+  line-height: 31px;
+  text-transform: lowercase;
+  width: 20em;
+}
+
+.header-section::before {
+  /* Divider in header between product name and title,
+   * like "[Product name] > [step header]". */
+  content: '\00A0\203A\00A0\00A0';
+}
+

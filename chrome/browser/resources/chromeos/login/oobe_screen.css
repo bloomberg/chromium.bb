@@ -1,0 +1,155 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ *
+ * This contains common styling for all the OOBE screens.
+ */
+
+.step {
+  box-sizing: border-box;
+  position: absolute;
+}
+
+.step.animated {
+  -webkit-transition: -webkit-transform 200ms ease-in-out,
+                      opacity 200ms ease-in-out,
+                      visibility 200ms ease-in-out;
+}
+
+.step.hidden {
+  visibility: hidden;
+}
+
+.faded,
+.left,
+.right {
+  opacity: 0;
+}
+
+.step.right {
+  -webkit-transform: translateX(50px);
+}
+
+.step.left {
+  -webkit-transform: translateX(-50px)
+}
+
+.step-controls {
+  -webkit-box-pack: end;
+  -webkit-padding-end: 34px;  /* Double the padding of .step */
+  bottom: 21px;
+  box-sizing: border-box;
+  display: -webkit-box;
+  height: 28px;
+  position: absolute;
+  width: 100%;
+}
+
+.animation .step-controls button {
+  /* Don't grey out disabled buttons during animation. */
+  color: buttontext !important;
+}
+
+.step.loading .step-contents,
+.step.loading .step-controls,
+.step.loading .step-extra-controls {
+  visibility: hidden;
+}
+
+.step:not(.loading) #user-images-loading {
+  visibility: hidden;
+}
+
+.step:not(.loading) #eula-busy {
+  visibility: hidden;
+}
+
+/* Center spinner wrapper vertically and horizontally.
+ * Vertical centering uses top: 50% and negative margin
+ * instead of top: 0; bottom: 0 due to http://crbug.com/155320.
+ */
+.step-loading {
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  display: -webkit-box;
+  left: 0;
+  margin-top: -16px;
+  position: absolute;
+  right: 0;
+  top: 50%;
+}
+
+.step-loading .spinner {
+  height: 32px;
+  width: 32px;
+}
+
+#security-info a,
+#eula a,
+.step-extra-controls a {
+  color: #8c8c8c;
+  font-size: 12px;
+  text-decoration: none;
+}
+
+.step-extra-controls {
+  bottom: 26px;
+  left: 49px;
+  position: absolute;
+}
+
+/* EULA screen extra controls have 2 elements
+   so they require different alignment. */
+#eula-extra-controls {
+  bottom: 17px;
+}
+
+#security-info a:focus,
+#eula a:focus,
+.step-extra-controls a:focus {
+  -webkit-transition: outline-color 200ms;
+  /* Note: May use 1px solid here. */
+  outline-color: rgb(77, 144, 254);
+}
+
+.step-extra-controls > *:not(:first-child) {
+  -webkit-margin-before: 7px;
+}
+
+html[dir=rtl] .step-extra-controls {
+  left: auto;
+  right: 49px;
+}
+
+#oobe.connect #continue-button,
+#oobe.eula #accept-button,
+#oobe.eula #back-button,
+#oobe.oauth-enrollment #oauth-enroll-cancel-button,
+#oobe.oauth-enrollment #oauth-enroll-done-button,
+#oobe.oauth-enrollment #oauth-enroll-explain-button,
+#oobe.oauth-enrollment #oauth-enroll-try-again-button,
+#oobe.reset #reset-button,
+#oobe.reset #reset-cancel-button,
+#oobe.signin #signin-button,
+#oobe.user-image #ok-button {
+  display: block;
+}
+
+#back-button,
+#reset-button,
+#password-changed-back-button,
+#tos-back-button {
+  -webkit-margin-end: 8px;
+}
+
+.menu-area {
+  margin: 5px;
+}
+
+.menu-control {
+  color: #444;
+  font-family: inherit;
+  line-height: 20px;
+  position: relative;
+  width: 250px;
+}

@@ -1,0 +1,92 @@
+/* Copyright 2013 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+#oauth-enrollment {
+  min-height: 609px;
+  padding: 70px 17px 21px;
+  width: 722px;
+}
+
+#oauth-enroll-container {
+  display: -webkit-box;
+}
+
+#oauth-enroll-signin-frame {
+  height: 456px;
+}
+
+#oauth-enroll-signin-frame {
+  border: 0 none;
+  width: 100%;
+}
+
+#oauth-enroll-signin-frame-container {
+  box-sizing: border-box;
+  padding-bottom: 20px;
+  width: 100%;
+}
+
+#oauth-enroll-signin-link-container {
+  -webkit-box-pack: end;
+  display: -webkit-box;
+}
+#oauth-enroll-step-signin {
+  width: 100%;
+}
+
+.oauth-enroll-step-center {
+  height: 480px;
+}
+
+.oauth-enroll-step-center {
+  display: table;
+  margin: 0 auto;
+}
+
+.oauth-enroll-step-content {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.oauth-enroll-step-icon {
+  display: inline-block;
+  position: relative;
+  top: 0.5em;
+  vertical-align: top;
+}
+
+.oauth-enroll-step-icon > * {
+  -webkit-margin-end: .4em;
+  display: inline-block;
+  height: 22px;
+  position: relative;
+  top: -11px;
+  width: 22px;
+}
+
+.oauth-enroll-step-message {
+  display: inline-block;
+  max-width: 400px;
+  text-align: left;
+  vertical-align: top;
+}
+
+#oauth-enroll-explain-message {
+  white-space: pre-line;
+}
+
+.oauth-enroll-link {
+  color: -webkit-link;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+#oobe.oauth-enrollment #header-oauth-enrollment {
+  display: block;
+}
+
+#oauth-enrollment .step-contents {
+  -webkit-margin-after: 10px;
+}
