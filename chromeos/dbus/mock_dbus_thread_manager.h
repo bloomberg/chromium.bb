@@ -28,7 +28,6 @@ class MockBluetoothNodeClient;
 class MockBluetoothOutOfBandClient;
 class MockCrosDisksClient;
 class MockCryptohomeClient;
-class MockDebugDaemonClient;
 class MockShillDeviceClient;
 class MockShillIPConfigClient;
 class MockShillManagerClient;
@@ -36,12 +35,8 @@ class MockShillProfileClient;
 class MockShillServiceClient;
 class MockGsmSMSClient;
 class MockImageBurnerClient;
-class MockIntrospectableClient;
-class MockModemMessagingClient;
-class MockPermissionBrokerClient;
 class MockPowerManagerClient;
 class MockSessionManagerClient;
-class MockSMSClient;
 class MockSystemClockClient;
 class MockUpdateEngineClient;
 class MockIBusClient;
@@ -138,9 +133,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockCryptohomeClient* mock_cryptohome_client() {
     return mock_cryptohome_client_.get();
   }
-  MockDebugDaemonClient* mock_debugdaemon_client() {
-    return mock_debugdaemon_client_.get();
-  }
   MockShillDeviceClient* mock_shill_device_client() {
     return mock_shill_device_client_.get();
   }
@@ -162,23 +154,11 @@ class MockDBusThreadManager : public DBusThreadManager {
   MockImageBurnerClient* mock_image_burner_client() {
     return mock_image_burner_client_.get();
   }
-  MockIntrospectableClient* mock_introspectable_client() {
-    return mock_introspectable_client_.get();
-  }
-  MockModemMessagingClient* mock_modem_messaging_client() {
-    return mock_modem_messaging_client_.get();
-  }
-  MockPermissionBrokerClient* mock_permission_broker_client() {
-    return mock_permission_broker_client_.get();
-  }
   MockPowerManagerClient* mock_power_manager_client() {
     return mock_power_manager_client_.get();
   }
   MockSessionManagerClient* mock_session_manager_client() {
     return mock_session_manager_client_.get();
-  }
-  MockSMSClient* mock_sms_client() {
-    return mock_sms_client_.get();
   }
   MockSystemClockClient* mock_system_clock_client() {
     return mock_system_clock_client_.get();
@@ -218,7 +198,6 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockBluetoothOutOfBandClient> mock_bluetooth_out_of_band_client_;
   scoped_ptr<MockCrosDisksClient> mock_cros_disks_client_;
   scoped_ptr<MockCryptohomeClient> mock_cryptohome_client_;
-  scoped_ptr<MockDebugDaemonClient> mock_debugdaemon_client_;
   scoped_ptr<MockShillDeviceClient> mock_shill_device_client_;
   scoped_ptr<MockShillIPConfigClient> mock_shill_ipconfig_client_;
   scoped_ptr<MockShillManagerClient> mock_shill_manager_client_;
@@ -226,12 +205,8 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<MockShillServiceClient> mock_shill_service_client_;
   scoped_ptr<MockGsmSMSClient> mock_gsm_sms_client_;
   scoped_ptr<MockImageBurnerClient> mock_image_burner_client_;
-  scoped_ptr<MockIntrospectableClient> mock_introspectable_client_;
-  scoped_ptr<MockModemMessagingClient> mock_modem_messaging_client_;
-  scoped_ptr<MockPermissionBrokerClient> mock_permission_broker_client_;
   scoped_ptr<MockPowerManagerClient> mock_power_manager_client_;
   scoped_ptr<MockSessionManagerClient> mock_session_manager_client_;
-  scoped_ptr<MockSMSClient> mock_sms_client_;
   scoped_ptr<MockSystemClockClient> mock_system_clock_client_;
   scoped_ptr<MockUpdateEngineClient> mock_update_engine_client_;
   scoped_ptr<PowerPolicyController> power_policy_controller_;
