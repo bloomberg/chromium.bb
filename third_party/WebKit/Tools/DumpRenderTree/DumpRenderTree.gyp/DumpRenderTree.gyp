@@ -186,6 +186,12 @@
                         ],
                     },
                 }],
+                # The test plugin relies on X11.
+                ['OS=="linux" and use_x11==0', {
+                    'dependencies!': [
+                        'copy_TestNetscapePlugIn',
+                    ],
+                }],
                 ['use_x11 == 1', {
                     'dependencies': [
                         '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
