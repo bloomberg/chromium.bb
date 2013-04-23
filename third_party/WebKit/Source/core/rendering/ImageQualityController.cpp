@@ -130,7 +130,7 @@ void ImageQualityController::restartTimer()
     m_timer.startOneShot(cLowQualityTimeThreshold);
 }
 
-bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, RenderBoxModelObject* object, Image* image, const void *layer, const LayoutSize& size)
+bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, RenderBoxModelObject* object, Image* image, const void *layer, const LayoutSize& layoutSize)
 {
     // If the image is not a bitmap image, then none of this is relevant and we just paint at high
     // quality.
@@ -139,10 +139,6 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
 
     if (object->style()->imageRendering() == ImageRenderingOptimizeContrast)
         return true;
-
-    // Make sure to use the unzoomed image size, since if a full page zoom is in effect, the image
-    // is actually being scaled.
-    IntSize imageSize(image->width(), image->height());
 
     // Look ourselves up in the hashtables.
     ObjectLayerSizeMap::iterator i = m_objectLayerSizeMap.find(object);
@@ -157,11 +153,19 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
         }
     }
 
+    const AffineTransform& currentTransform = context->getCTM();
+    bool contextIsScaled = !currentTransform.isIdentityOrTranslationOrFlipped();
+
+    // Make sure to use the unzoomed image size, since if a full page zoom is in effect, the image
+    // is actually being scaled.
+    LayoutSize scaledImageSize = currentTransform.mapSize(image->size());
+    LayoutSize scaledLayoutSize = currentTransform.mapSize(roundedIntSize(layoutSize));
+
     // If the containing FrameView is being resized, paint at low quality until resizing is finished.
     if (Frame* frame = object->document()->frame()) {
         bool frameViewIsCurrentlyInLiveResize = frame->view() && frame->view()->inLiveResize();
         if (frameViewIsCurrentlyInLiveResize) {
-            set(object, innerMap, layer, size);
+            set(object, innerMap, layer, scaledLayoutSize);
             restartTimer();
             m_liveResizeOptimizationIsActive = true;
             return true;
@@ -173,9 +177,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
         }
     }
 
-    const AffineTransform& currentTransform = context->getCTM();
-    bool contextIsScaled = !currentTransform.isIdentityOrTranslationOrFlipped();
-    if (!contextIsScaled && size == imageSize) {
+    if (!contextIsScaled && scaledLayoutSize == scaledImageSize) {
         // There is no scale in effect. If we had a scale in effect before, we can just remove this object from the list.
         removeLayer(object, innerMap, layer);
         return false;
@@ -190,16 +192,16 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
 
     // If an animated resize is active, paint in low quality and kick the timer ahead.
     if (m_animatedResizeIsActive) {
-        set(object, innerMap, layer, size);
+        set(object, innerMap, layer, scaledLayoutSize);
         restartTimer();
         return true;
     }
     // If this is the first time resizing this image, or its size is the
     // same as the last resize, draw at high res, but record the paint
     // size and set the timer.
-    if (isFirstResize || oldSize == size) {
+    if (isFirstResize || oldSize == scaledLayoutSize) {
         restartTimer();
-        set(object, innerMap, layer, size);
+        set(object, innerMap, layer, scaledLayoutSize);
         return false;
     }
     // If the timer is no longer active, draw at high quality and don't
@@ -211,7 +213,7 @@ bool ImageQualityController::shouldPaintAtLowQuality(GraphicsContext* context, R
     // This object has been resized to two different sizes while the timer
     // is active, so draw at low quality, set the flag for animated resizes and
     // the object to the list for high quality redraw.
-    set(object, innerMap, layer, size);
+    set(object, innerMap, layer, scaledLayoutSize);
     m_animatedResizeIsActive = true;
     restartTimer();
     return true;
