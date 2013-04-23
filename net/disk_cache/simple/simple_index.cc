@@ -308,6 +308,7 @@ bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
     return false;
 
   // Update the total cache size with the new entry size.
+  DCHECK(cache_size_ - it->second.GetEntrySize() <= cache_size_);
   cache_size_ -= it->second.GetEntrySize();
   cache_size_ += entry_size;
   it->second.SetEntrySize(entry_size);
@@ -473,7 +474,6 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   }
 
   // Recalculate the cache size while merging the two sets.
-  cache_size_ = 0;
   for (EntrySet::const_iterator it = index_file_entries->begin();
        it != index_file_entries->end(); ++it) {
     // If there is already an entry in the current entries_set_, we need to
@@ -481,6 +481,7 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
     EntrySet::iterator current_entry = entries_set_.find(it->first);
     if (current_entry != entries_set_.end()) {
       // When Merging, existing valid data in the |current_entry| will prevail.
+      cache_size_ -= current_entry->second.GetEntrySize();
       current_entry->second.MergeWith(it->second);
       cache_size_ += current_entry->second.GetEntrySize();
     } else {
