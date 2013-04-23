@@ -43,7 +43,7 @@
       },
       'sources': [
         'service/win/cloud_print_service_exe.ver',
-        'service/win/cloud_print_service_setup_exe.ver',
+        'service/win/cloud_print_service_config_exe.ver',
         'virtual_driver/win/gcp_portmon64_dll.ver',
         'virtual_driver/win/gcp_portmon_dll.ver',
         'virtual_driver/win/install/virtual_driver_setup_exe.ver',

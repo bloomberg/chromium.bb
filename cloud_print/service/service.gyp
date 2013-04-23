@@ -117,11 +117,11 @@
       },
     },
     {
-      'target_name': 'cloud_print_service_setup',
+      'target_name': 'cloud_print_service_config',
       'type': 'executable',
       'sources': [
-        '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_setup_exe_version.rc',
-        'win/cloud_print_service_setup.cc',
+        '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_config_exe_version.rc',
+        'win/cloud_print_service_config.cc',
       ],
       'includes': [
         'win/service_resources.gypi'
