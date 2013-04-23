@@ -302,6 +302,10 @@ bool WebMediaPlayerAndroid::copyVideoTextureToPlatformTexture(
 }
 
 bool WebMediaPlayerAndroid::hasSingleSecurityOrigin() const {
+  // TODO(qinmin): fix this for urls that are not file.
+  // https://code.google.com/p/chromium/issues/detail?id=28353
+  if (url_.SchemeIsFile())
+    return true;
   return false;
 }
 
