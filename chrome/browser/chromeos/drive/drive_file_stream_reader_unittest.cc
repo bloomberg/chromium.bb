@@ -26,6 +26,15 @@ using content::BrowserThread;
 
 namespace drive {
 namespace internal {
+namespace {
+
+// Increments the |num_called|, when this method is invoked.
+void IncrementCallback(int* num_called) {
+  DCHECK(num_called);
+  ++*num_called;
+}
+
+}  // namespace
 
 TEST(LocalReaderProxyTest, Read) {
   // Prepare the test content.
@@ -77,7 +86,7 @@ TEST(NetworkReaderProxyTest, EmptyFile) {
   MessageLoopForIO io_loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
 
-  NetworkReaderProxy proxy(0);
+  NetworkReaderProxy proxy(0, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 10;
@@ -93,7 +102,7 @@ TEST(NetworkReaderProxyTest, Read) {
   MessageLoopForIO io_loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
 
-  NetworkReaderProxy proxy(10);
+  NetworkReaderProxy proxy(10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 3;
@@ -142,7 +151,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingCallback) {
   MessageLoopForIO io_loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
 
-  NetworkReaderProxy proxy(10);
+  NetworkReaderProxy proxy(10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 3;
@@ -153,7 +162,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingCallback) {
   EXPECT_EQ(net::ERR_IO_PENDING, result);
 
   // Emulate that an error is found. The callback should be called internally.
-  proxy.OnError(FILE_ERROR_FAILED);
+  proxy.OnCompleted(FILE_ERROR_FAILED);
   result = callback.GetResult(result);
   EXPECT_EQ(net::ERR_FAILED, result);
 
@@ -167,7 +176,7 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingData) {
   MessageLoopForIO io_loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
 
-  NetworkReaderProxy proxy(10);
+  NetworkReaderProxy proxy(10, base::Bind(&base::DoNothing));
 
   net::TestCompletionCallback callback;
   const int kBufferSize = 3;
@@ -178,12 +187,35 @@ TEST(NetworkReaderProxyTest, ErrorWithPendingData) {
   proxy.OnGetContent(data.Pass());
 
   // Emulate that an error is found.
-  proxy.OnError(FILE_ERROR_FAILED);
+  proxy.OnCompleted(FILE_ERROR_FAILED);
 
   // The next Read call should return the error code, even if there is
-  // pending data (the pending data should be released in OnError.
+  // pending data (the pending data should be released in OnCompleted.
   EXPECT_EQ(net::ERR_FAILED,
             proxy.Read(buffer.get(), kBufferSize, callback.callback()));
+}
+
+TEST(NetworkReaderProxyTest, CancelJob) {
+  // The NetworkReaderProxy should live on IO thread.
+  MessageLoopForIO io_loop;
+  content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
+
+  int num_called = 0;
+  {
+    NetworkReaderProxy proxy(0, base::Bind(&IncrementCallback, &num_called));
+    proxy.OnCompleted(FILE_ERROR_OK);
+    // Destroy the instance after the network operation is completed.
+    // The cancelling callback shouldn't be called.
+  }
+  EXPECT_EQ(0, num_called);
+
+  num_called = 0;
+  {
+    NetworkReaderProxy proxy(0, base::Bind(&IncrementCallback, &num_called));
+    // Destroy the instance before the network operation is completed.
+    // The cancelling callback should be called.
+  }
+  EXPECT_EQ(1, num_called);
 }
 
 }  // namespace internal

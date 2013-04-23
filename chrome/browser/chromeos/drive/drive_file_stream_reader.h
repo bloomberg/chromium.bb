@@ -37,8 +37,8 @@ class ReaderProxy {
   // Called when the data from the server is received.
   virtual void OnGetContent(scoped_ptr<std::string> data) = 0;
 
-  // Called when an error is found, during the network downloading.
-  virtual void OnError(FileError error) = 0;
+  // Called when the accessing to the file system is completed.
+  virtual void OnCompleted(FileError error) = 0;
 };
 
 // The read operation implementation for the locally cached files.
@@ -53,7 +53,7 @@ class LocalReaderProxy : public ReaderProxy {
   virtual int Read(net::IOBuffer* buffer, int buffer_length,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual void OnGetContent(scoped_ptr<std::string> data) OVERRIDE;
-  virtual void OnError(FileError error) OVERRIDE;
+  virtual void OnCompleted(FileError error) OVERRIDE;
 
  private:
   scoped_ptr<net::FileStream> file_stream_;
@@ -64,14 +64,18 @@ class LocalReaderProxy : public ReaderProxy {
 // The read operation implementation for the file which is being downloaded.
 class NetworkReaderProxy : public ReaderProxy {
  public:
-  explicit NetworkReaderProxy(int64 content_length);
+  // If the instance is deleted during the download process, it is necessary
+  // to cancel the job. |job_canceller| should be the callback to run the
+  // cancelling.
+  NetworkReaderProxy(
+      int64 content_length, const base::Closure& job_canceller);
   virtual ~NetworkReaderProxy();
 
   // ReaderProxy overrides.
   virtual int Read(net::IOBuffer* buffer, int buffer_length,
                    const net::CompletionCallback& callback) OVERRIDE;
   virtual void OnGetContent(scoped_ptr<std::string> data) OVERRIDE;
-  virtual void OnError(FileError error) OVERRIDE;
+  virtual void OnCompleted(FileError error) OVERRIDE;
 
  private:
   // The data received from the server, but not yet read.
@@ -87,6 +91,11 @@ class NetworkReaderProxy : public ReaderProxy {
   scoped_refptr<net::IOBuffer> buffer_;
   int buffer_length_;
   net::CompletionCallback callback_;
+
+  // Keeps the closure to cancel downloading job if necessary.
+  // Will be reset when the job is completed (regardless whether the job is
+  // successfully done or not).
+  base::Closure job_canceller_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkReaderProxy);
 };
@@ -136,10 +145,11 @@ class DriveFileStreamReader {
   // Part of Initialize. Called after GetFileContentByPath's initialization
   // is done.
   void InitializeAfterGetFileContentByPathInitialized(
+      const base::FilePath& drive_file_path,
       const InitializeCompletionCallback& callback,
       FileError error,
       scoped_ptr<DriveEntryProto> entry,
-      const base::FilePath& drive_file_path);
+      const base::FilePath& local_cache_file_path);
 
   // Part of Initialize. Called when the local file open process is done.
   void InitializeAfterLocalFileOpen(

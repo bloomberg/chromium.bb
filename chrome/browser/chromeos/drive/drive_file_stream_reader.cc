@@ -53,6 +53,32 @@ int ReadInternal(ScopedVector<std::string>* pending_data,
   return offset;
 }
 
+// Calls DriveFileSystemInterface::CancelGetFile if the file system
+// is available.
+void CancelGetFileOnUIThread(
+    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
+    const base::FilePath& drive_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  DriveFileSystemInterface* file_system = file_system_getter.Run();
+  if (file_system) {
+    file_system->CancelGetFile(drive_file_path);
+  }
+}
+
+// Helper to run DriveFileSystemInterface::CancelGetFile on UI thread.
+void CancelGetFile(
+    const DriveFileStreamReader::DriveFileSystemGetter& file_system_getter,
+    const base::FilePath& drive_file_path) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind(&CancelGetFileOnUIThread,
+                 file_system_getter, drive_file_path));
+}
+
 }  // namespace
 
 LocalReaderProxy::LocalReaderProxy(scoped_ptr<net::FileStream> file_stream)
@@ -77,20 +103,25 @@ void LocalReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   NOTREACHED();
 }
 
-void LocalReaderProxy::OnError(FileError error) {
-  // This method should never be called, because we don't access to the server
-  // during the reading of local-cache file.
-  NOTREACHED();
+void LocalReaderProxy::OnCompleted(FileError error) {
+  // If this method is called, no network error should be happened.
+  DCHECK_EQ(FILE_ERROR_OK, error);
 }
 
-NetworkReaderProxy::NetworkReaderProxy(int64 content_length)
+NetworkReaderProxy::NetworkReaderProxy(
+    int64 content_length,
+    const base::Closure& job_canceller)
     : remaining_content_length_(content_length),
       error_code_(net::OK),
-      buffer_length_(0) {
+      buffer_length_(0),
+      job_canceller_(job_canceller) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 }
 
 NetworkReaderProxy::~NetworkReaderProxy() {
+  if (!job_canceller_.is_null()) {
+    job_canceller_.Run();
+  }
 }
 
 int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
@@ -149,9 +180,15 @@ void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   base::ResetAndReturn(&callback_).Run(result);
 }
 
-void NetworkReaderProxy::OnError(FileError error) {
+void NetworkReaderProxy::OnCompleted(FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK_NE(error, FILE_ERROR_OK);
+  // The downloading is completed, so we do not need to cancel the job
+  // in the destructor.
+  job_canceller_.Reset();
+
+  if (error == FILE_ERROR_OK) {
+    return;
+  }
 
   error_code_ =
       net::PlatformFileErrorToNetError(FileErrorToPlatformError(error));
@@ -238,6 +275,7 @@ void DriveFileStreamReader::Initialize(
       base::Bind(&DriveFileStreamReader
                      ::InitializeAfterGetFileContentByPathInitialized,
                  weak_ptr_factory_.GetWeakPtr(),
+                 drive_file_path,
                  callback),
       base::Bind(&DriveFileStreamReader::OnGetContent,
                  weak_ptr_factory_.GetWeakPtr()),
@@ -256,10 +294,11 @@ int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
 }
 
 void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
+    const base::FilePath& drive_file_path,
     const InitializeCompletionCallback& callback,
     FileError error,
     scoped_ptr<DriveEntryProto> entry,
-    const base::FilePath& drive_file_path) {
+    const base::FilePath& local_cache_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (error != FILE_ERROR_OK) {
@@ -268,10 +307,13 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
   }
   DCHECK(entry);
 
-  if (drive_file_path.empty()) {
+  if (local_cache_file_path.empty()) {
     // The file is not cached, and being downloaded.
     reader_proxy_.reset(
-        new internal::NetworkReaderProxy(entry->file_info().size()));
+        new internal::NetworkReaderProxy(
+            entry->file_info().size(),
+            base::Bind(&internal::CancelGetFile,
+                       drive_file_system_getter_, drive_file_path)));
     callback.Run(FILE_ERROR_OK, entry.Pass());
     return;
   }
@@ -286,7 +328,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
       base::Passed(&entry),
       base::Passed(&file_stream));
   int result = file_stream_ptr->Open(
-      drive_file_path,
+      local_cache_file_path,
       base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
       base::PLATFORM_FILE_ASYNC,
       open_completion_callback);
@@ -328,18 +370,22 @@ void DriveFileStreamReader::OnGetFileContentByPathCompletion(
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (error == FILE_ERROR_OK) {
-    // We are interested in only errors.
-    return;
-  }
-
   if (reader_proxy_) {
     // If the proxy object available, send the error to it.
-    reader_proxy_->OnError(error);
+    reader_proxy_->OnCompleted(error);
   } else {
-    // Here, this callback is invoked in the initialization process.
-    // So let the client know via initialization callback.
-    callback.Run(error, scoped_ptr<DriveEntryProto>());
+    // Here the proxy object is not yet available.
+    // There are two cases. 1) Some error happens during the initialization.
+    // 2) the cache file is found, but the proxy object is not *yet*
+    // initialized because the file is being opened.
+    // We are interested in 1) only. The callback for 2) will be called
+    // after opening the file is completed.
+    // Note: due to the same reason, LocalReaderProxy::OnCompleted may
+    // or may not be called. This is timing issue, and it is difficult to avoid
+    // unfortunately.
+    if (error != FILE_ERROR_OK) {
+      callback.Run(error, scoped_ptr<DriveEntryProto>());
+    }
   }
 }
 
