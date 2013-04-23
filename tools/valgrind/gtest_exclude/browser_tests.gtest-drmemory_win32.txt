@@ -329,3 +329,6 @@ RangeHistoryWebUITest*
 WebGLInfobarTest.*
 StartupBrowserCreatorTest.*
 PrefsTabHelperBrowserTest*
+# DrM-i#1052-c#47
+ManagedModeBrowserCreatorTest.*
+PolicyUITest.*
