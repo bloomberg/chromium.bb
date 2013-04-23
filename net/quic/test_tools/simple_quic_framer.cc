@@ -173,13 +173,6 @@ const vector<QuicRstStreamFrame>& SimpleQuicFramer::rst_stream_frames() const {
   return visitor_->rst_stream_frames();
 }
 
-CryptoHandshakeMessage* SimpleQuicFramer::HandshakeMessage(size_t index) const {
-  if (index >= visitor_->stream_frames().size()) {
-    return NULL;
-  }
-  return CryptoFramer::ParseMessage(visitor_->stream_frames()[index].data);
-}
-
 const vector<QuicCongestionFeedbackFrame>&
 SimpleQuicFramer::feedback_frames() const {
   return visitor_->feedback_frames();

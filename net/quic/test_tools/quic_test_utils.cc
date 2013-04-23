@@ -127,20 +127,32 @@ QuicRandom* MockHelper::GetRandomGenerator() {
   return &random_generator_;
 }
 
+void MockHelper::AdvanceTime(QuicTime::Delta delta) {
+  clock_.AdvanceTime(delta);
+}
+
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                bool is_server)
-    : QuicConnection(guid, address, new MockHelper(), is_server) {
+    : QuicConnection(guid, address, new MockHelper(), is_server),
+      has_mock_helper_(true) {
 }
 
 MockConnection::MockConnection(QuicGuid guid,
                                IPEndPoint address,
                                QuicConnectionHelperInterface* helper,
                                bool is_server)
-    : QuicConnection(guid, address, helper, is_server) {
+    : QuicConnection(guid, address, helper, is_server),
+      has_mock_helper_(false) {
 }
 
 MockConnection::~MockConnection() {
+}
+
+void MockConnection::AdvanceTime(QuicTime::Delta delta) {
+  CHECK(has_mock_helper_) << "Cannot advance time unless a MockClock is being"
+                             " used";
+  static_cast<MockHelper*>(helper())->AdvanceTime(delta);
 }
 
 PacketSavingConnection::PacketSavingConnection(QuicGuid guid,

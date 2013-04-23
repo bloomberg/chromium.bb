@@ -49,6 +49,10 @@ QuicCryptoClientStream::crypto_negotiated_params() const {
   return crypto_negotiated_params_;
 }
 
+int QuicCryptoClientStream::num_sent_client_hellos() const {
+  return num_client_hellos_;
+}
+
 // kMaxClientHellos is the maximum number of times that we'll send a client
 // hello. The value 3 accounts for:
 //   * One failure due to an incorrect or missing source-address token.

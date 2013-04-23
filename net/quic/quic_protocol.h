@@ -216,7 +216,7 @@ enum QuicErrorCode {
   // An internal error occured in crypto processing.
   QUIC_CRYPTO_INTERNAL_ERROR,
   // A crypto handshake message specified an unsupported version.
-  QUIC_VERSION_NOT_SUPPORTED,
+  QUIC_CRYPTO_VERSION_NOT_SUPPORTED,
   // There was no intersection between the crypto primitives supported by the
   // peer and ourselves.
   QUIC_CRYPTO_NO_SUPPORT,

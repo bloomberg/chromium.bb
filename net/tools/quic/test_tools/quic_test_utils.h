@@ -31,6 +31,10 @@ class MockConnection : public QuicConnection {
                  QuicConnectionHelperInterface* helper, bool is_server);
   virtual ~MockConnection();
 
+  // If the constructor that uses a MockHelper has been used then this method
+  // will advance the time of the MockClock.
+  void AdvanceTime(QuicTime::Delta delta);
+
   MOCK_METHOD3(ProcessUdpPacket, void(const IPEndPoint& self_address,
                                       const IPEndPoint& peer_address,
                                       const QuicEncryptedPacket& packet));

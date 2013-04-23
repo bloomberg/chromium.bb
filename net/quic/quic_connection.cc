@@ -180,6 +180,7 @@ bool QuicConnection::OnProtocolVersionMismatch(
     LOG(DFATAL) << "Framer called OnProtocolVersionMismatch for server. "
                 << "Closing connection.";
     CloseConnection(QUIC_INTERNAL_ERROR, false);
+    return false;
   }
   DCHECK_NE(quic_version_, received_version);
 
@@ -229,6 +230,7 @@ void QuicConnection::OnVersionNegotiationPacket(
     LOG(DFATAL) << "Framer parsed VersionNegotiationPacket for server."
                 << "Closing connection.";
     CloseConnection(QUIC_INTERNAL_ERROR, false);
+    return;
   }
   if (debug_visitor_) {
     debug_visitor_->OnVersionNegotiationPacket(packet);

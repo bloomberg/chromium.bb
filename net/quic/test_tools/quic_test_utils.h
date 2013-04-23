@@ -184,6 +184,7 @@ class MockHelper : public QuicConnectionHelperInterface {
   MOCK_METHOD1(SetConnection, void(QuicConnection* connection));
   const QuicClock* GetClock() const;
   QuicRandom* GetRandomGenerator();
+  void AdvanceTime(QuicTime::Delta delta);
   MOCK_METHOD2(WritePacketToWire, int(const QuicEncryptedPacket& packet,
                                       int* error));
   MOCK_METHOD0(IsWriteBlockedDataBuffered, bool());
@@ -196,7 +197,7 @@ class MockHelper : public QuicConnectionHelperInterface {
   MOCK_METHOD0(UnregisterSendAlarmIfRegistered, void());
   MOCK_METHOD0(ClearAckAlarm, void());
  private:
-  const MockClock clock_;
+  MockClock clock_;
   MockRandom random_generator_;
 };
 
@@ -209,6 +210,10 @@ class MockConnection : public QuicConnection {
                  QuicConnectionHelperInterface* helper,
                  bool is_server);
   virtual ~MockConnection();
+
+  // If the constructor that uses a MockHelper has been used then this method
+  // will advance the time of the MockClock.
+  void AdvanceTime(QuicTime::Delta delta);
 
   MOCK_METHOD3(ProcessUdpPacket, void(const IPEndPoint& self_address,
                                       const IPEndPoint& peer_address,
@@ -234,6 +239,8 @@ class MockConnection : public QuicConnection {
   }
 
  private:
+  const bool has_mock_helper_;
+
   DISALLOW_COPY_AND_ASSIGN(MockConnection);
 };
 

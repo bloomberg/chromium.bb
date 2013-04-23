@@ -10,6 +10,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "net/base/ip_endpoint.h"
+#include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/quic_config.h"
 #include "net/quic/quic_framer.h"
 #include "net/tools/flip_server/epoll_server.h"

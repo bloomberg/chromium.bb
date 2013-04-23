@@ -14,11 +14,13 @@
 
 namespace net {
 
+class ProofSource;
 class QuicClock;
 class QuicConfig;
 class QuicCryptoClientStream;
 class QuicCryptoServerConfig;
 class QuicCryptoServerStream;
+class QuicCryptoStream;
 class QuicRandom;
 
 namespace test {
@@ -27,11 +29,13 @@ class PacketSavingConnection;
 
 class CryptoTestUtils {
  public:
-  static void HandshakeWithFakeServer(PacketSavingConnection* client_conn,
-                                      QuicCryptoClientStream* client);
+  // returns: the number of client hellos that the client sent.
+  static int HandshakeWithFakeServer(PacketSavingConnection* client_conn,
+                                     QuicCryptoClientStream* client);
 
-  static void HandshakeWithFakeClient(PacketSavingConnection* server_conn,
-                                      QuicCryptoServerStream* server);
+  // returns: the number of client hellos that the client sent.
+  static int HandshakeWithFakeClient(PacketSavingConnection* server_conn,
+                                     QuicCryptoServerStream* server);
 
   // SetupCryptoServerConfigForTest configures |config| and |crypto_config|
   // with sensible defaults for testing.
@@ -41,9 +45,19 @@ class CryptoTestUtils {
       QuicConfig* config,
       QuicCryptoServerConfig* crypto_config);
 
+  // CommunicateHandshakeMessages moves messages from |a| to |b| and back until
+  // |a|'s handshake has completed.
+  static void CommunicateHandshakeMessages(PacketSavingConnection* a_conn,
+                                           QuicCryptoStream* a,
+                                           PacketSavingConnection* b_conn,
+                                           QuicCryptoStream* b);
+
   // Returns the value for the tag |tag| in the tag value map of |message|.
   static std::string GetValueForTag(const CryptoHandshakeMessage& message,
                                     CryptoTag tag);
+
+  // Returns a |ProofSource| that serves up test certificates.
+  static ProofSource* ProofSourceForTesting();
 
  private:
   static void CompareClientAndServerKeys(QuicCryptoClientStream* client,

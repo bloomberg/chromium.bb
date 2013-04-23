@@ -6,6 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "net/quic/crypto/crypto_handshake.h"
+#include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/crypto/quic_random.h"
@@ -18,6 +19,7 @@
 
 using base::StringPiece;
 using std::string;
+using std::vector;
 
 namespace net {
 namespace test {
@@ -36,39 +38,95 @@ class TestSession : public QuicSession {
   MOCK_METHOD0(CreateOutgoingReliableStream, ReliableQuicStream*());
 };
 
-// CommunicateHandshakeMessages moves messages from |a| to |b| and back until
-// |a|'s handshake has completed.
-void CommunicateHandshakeMessages(
-    PacketSavingConnection* a_conn,
-    QuicCryptoStream* a,
-    PacketSavingConnection* b_conn,
-    QuicCryptoStream* b) {
-  scoped_ptr<SimpleQuicFramer> framer;
+// CryptoFramerVisitor is a framer visitor that records handshake messages.
+class CryptoFramerVisitor : public CryptoFramerVisitorInterface {
+ public:
+  CryptoFramerVisitor()
+      : error_(false) {
+  }
 
-  for (size_t i = 0; !a->handshake_complete(); i++) {
-    framer.reset(new SimpleQuicFramer);
+  void OnError(CryptoFramer* framer) {
+    error_ = true;
+  }
 
-    ASSERT_LT(i, a_conn->packets_.size());
-    ASSERT_TRUE(framer->ProcessPacket(*a_conn->packets_[i]));
-    ASSERT_EQ(1u, framer->stream_frames().size());
+  void OnHandshakeMessage(const CryptoHandshakeMessage& message) {
+    messages_.push_back(message);
+  }
 
-    scoped_ptr<CryptoHandshakeMessage> a_msg(framer->HandshakeMessage(0));
-    b->OnHandshakeMessage(*(a_msg.get()));
+  bool error() const {
+    return error_;
+  }
 
-    framer.reset(new SimpleQuicFramer);
-    ASSERT_LT(i, b_conn->packets_.size());
-    ASSERT_TRUE(framer->ProcessPacket(*b_conn->packets_[i]));
-    ASSERT_EQ(1u, framer->stream_frames().size());
+  const vector<CryptoHandshakeMessage>& messages() const {
+    return messages_;
+  }
 
-    scoped_ptr<CryptoHandshakeMessage> b_msg(framer->HandshakeMessage(0));
-    a->OnHandshakeMessage(*(b_msg.get()));
+ private:
+  bool error_;
+  vector<CryptoHandshakeMessage> messages_;
+};
+
+// MovePackets parses crypto handshake messages from packet number
+// |*inout_packet_index| through to the last packet and has |dest_stream|
+// process them. |*inout_packet_index| is updated with an index one greater
+// than the last packet processed.
+void MovePackets(PacketSavingConnection* source_conn,
+                 size_t *inout_packet_index,
+                 QuicCryptoStream* dest_stream) {
+  SimpleQuicFramer framer;
+  CryptoFramer crypto_framer;
+  CryptoFramerVisitor crypto_visitor;
+
+  crypto_framer.set_visitor(&crypto_visitor);
+
+  size_t index = *inout_packet_index;
+  for (; index < source_conn->packets_.size(); index++) {
+    ASSERT_TRUE(framer.ProcessPacket(*source_conn->packets_[index]));
+    for (vector<QuicStreamFrame>::const_iterator
+         i =  framer.stream_frames().begin();
+         i != framer.stream_frames().end(); ++i) {
+      ASSERT_TRUE(crypto_framer.ProcessInput(i->data));
+      ASSERT_FALSE(crypto_visitor.error());
+    }
+  }
+  *inout_packet_index = index;
+
+  ASSERT_EQ(0u, crypto_framer.InputBytesRemaining());
+
+  for (vector<CryptoHandshakeMessage>::const_iterator
+       i = crypto_visitor.messages().begin();
+       i != crypto_visitor.messages().end(); ++i) {
+    dest_stream->OnHandshakeMessage(*i);
   }
 }
 
 }  // anonymous namespace
 
 // static
-void CryptoTestUtils::HandshakeWithFakeServer(
+void CryptoTestUtils::CommunicateHandshakeMessages(
+    PacketSavingConnection* a_conn,
+    QuicCryptoStream* a,
+    PacketSavingConnection* b_conn,
+    QuicCryptoStream* b) {
+  size_t a_i = 0, b_i = 0;
+  while (!a->handshake_complete()) {
+    ASSERT_GT(a_conn->packets_.size(), a_i);
+    LOG(INFO) << "Processing " << a_conn->packets_.size() - a_i
+              << " packets a->b";
+    MovePackets(a_conn, &a_i, b);
+
+    ASSERT_GT(b_conn->packets_.size(), b_i);
+    LOG(INFO) << "Processing " << b_conn->packets_.size() - b_i
+              << " packets b->a";
+    if (b_conn->packets_.size() - b_i == 2) {
+      LOG(INFO) << "here";
+    }
+    MovePackets(b_conn, &b_i, a);
+  }
+}
+
+// static
+int CryptoTestUtils::HandshakeWithFakeServer(
     PacketSavingConnection* client_conn,
     QuicCryptoClientStream* client) {
   QuicGuid guid(1);
@@ -94,10 +152,12 @@ void CryptoTestUtils::HandshakeWithFakeServer(
   CommunicateHandshakeMessages(client_conn, client, server_conn, &server);
 
   CompareClientAndServerKeys(client, &server);
+
+  return client->num_sent_client_hellos();
 }
 
 // static
-void CryptoTestUtils::HandshakeWithFakeClient(
+int CryptoTestUtils::HandshakeWithFakeClient(
     PacketSavingConnection* server_conn,
     QuicCryptoServerStream* server) {
   QuicGuid guid(1);
@@ -121,6 +181,8 @@ void CryptoTestUtils::HandshakeWithFakeClient(
   CommunicateHandshakeMessages(client_conn, &client, server_conn, server);
 
   CompareClientAndServerKeys(&client, server);
+
+  return client.num_sent_client_hellos();
 }
 
 // static

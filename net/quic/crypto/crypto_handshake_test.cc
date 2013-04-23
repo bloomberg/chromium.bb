@@ -5,6 +5,7 @@
 #include "net/quic/crypto/crypto_handshake.h"
 
 #include "net/quic/crypto/aes_128_gcm_encrypter.h"
+#include "net/quic/crypto/crypto_server_config.h"
 #include "net/quic/crypto/quic_random.h"
 #include "net/quic/quic_time.h"
 #include "net/quic/test_tools/mock_clock.h"

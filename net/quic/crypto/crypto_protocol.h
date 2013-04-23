@@ -40,6 +40,9 @@ const CryptoTag kAESG = MAKE_TAG('A', 'E', 'S', 'G');  // AES128 + GCM
 const CryptoTag kQBIC = MAKE_TAG('Q', 'B', 'I', 'C');  // TCP cubic
 const CryptoTag kINAR = MAKE_TAG('I', 'N', 'A', 'R');  // Inter arrival
 
+// Proof types (i.e. certificate types)
+const CryptoTag kX509 = MAKE_TAG('X', '5', '0', '9');  // X.509 certificate
+
 // Client hello tags
 const CryptoTag kVERS = MAKE_TAG('V', 'E', 'R', 'S');  // Version
 const CryptoTag kNONC = MAKE_TAG('N', 'O', 'N', 'C');  // The connection nonce
@@ -58,6 +61,9 @@ const CryptoTag kPUBS = MAKE_TAG('P', 'U', 'B', 'S');  // Public key values
 const CryptoTag kSCID = MAKE_TAG('S', 'C', 'I', 'D');  // Server config id
 const CryptoTag kSRCT = MAKE_TAG('S', 'R', 'C', 'T');  // Source-address token
 const CryptoTag kORBT = MAKE_TAG('O', 'B', 'I', 'T');  // Server orbit.
+const CryptoTag kPDMD = MAKE_TAG('P', 'D', 'M', 'D');  // Proof demand.
+const CryptoTag kCERT = MAKE_TAG('C', 'E', 'R', 'T');  // Certificate chain
+const CryptoTag kPROF = MAKE_TAG('P', 'R', 'O', 'F');  // Proof (signature).
 
 const size_t kMaxEntries = 16;  // Max number of entries in a message.
 

@@ -40,6 +40,11 @@ class NET_EXPORT_PRIVATE QuicCryptoClientStream : public QuicCryptoStream {
   const QuicNegotiatedParameters& negotiated_params() const;
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params() const;
 
+  // num_sent_client_hellos returns the number of client hello messages that
+  // have been sent. If the handshake has completed then this is one greater
+  // than the number of round-trips needed for the handshake.
+  int num_sent_client_hellos() const;
+
  private:
   friend class test::CryptoTestUtils;
 

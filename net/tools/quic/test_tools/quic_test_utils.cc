@@ -41,6 +41,12 @@ MockConnection::MockConnection(QuicGuid guid,
 MockConnection::~MockConnection() {
 }
 
+void MockConnection::AdvanceTime(QuicTime::Delta delta) {
+  CHECK(has_mock_helper_) << "Cannot advance time unless a MockClock is being"
+                             " used";
+  static_cast<MockHelper*>(helper())->AdvanceTime(delta);
+}
+
 }  // namespace test
 }  // namespace tools
 }  // namespace net

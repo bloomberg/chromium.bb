@@ -12,16 +12,23 @@ namespace net {
 
 class MockRandom : public QuicRandom {
  public:
+  MockRandom();
+
   // QuicRandom:
-  // Fills the |data| buffer with 'r'.
+  // Fills the |data| buffer with a repeating byte, initially 'r'.
   virtual void RandBytes(void* data, size_t len) OVERRIDE;
-  // Returns 0xDEADBEEF.
+  // Returns 0xDEADBEEF + the current increment.
   virtual uint64 RandUint64() OVERRIDE;
   // Returns false.
   virtual bool RandBool() OVERRIDE;
-  // Does nothing.
+  // Reseed advances |increment_| which causes the value returned by
+  // |RandUint64| to increment and the byte that |RandBytes| fills with, to
+  // advance.
   virtual void Reseed(const void* additional_entropy,
                       size_t entropy_len) OVERRIDE;
+
+ private:
+  uint8 increment_;
 };
 
 }  // namespace net

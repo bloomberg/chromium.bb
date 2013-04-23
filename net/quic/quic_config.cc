@@ -71,6 +71,8 @@ QuicErrorCode QuicConfig::ProcessFinalPeerHandshake(
     CryptoUtils::Priority priority,
     QuicNegotiatedParameters* out_params,
     string* error_details) const {
+  DCHECK(error_details != NULL);
+
   const CryptoTag* their_congestion_controls;
   size_t num_their_congestion_controls;
   QuicErrorCode error;
@@ -78,9 +80,7 @@ QuicErrorCode QuicConfig::ProcessFinalPeerHandshake(
   error = msg.GetTaglist(kCGST, &their_congestion_controls,
                          &num_their_congestion_controls);
   if (error != QUIC_NO_ERROR) {
-    if (error_details) {
-      *error_details = "Missing CGST";
-    }
+    *error_details = "Missing CGST";
     return error;
   }
 
@@ -90,18 +90,14 @@ QuicErrorCode QuicConfig::ProcessFinalPeerHandshake(
                                   priority,
                                   &out_params->congestion_control,
                                   NULL)) {
-    if (error_details) {
-      *error_details = "Unsuported CGST";
-    }
+    *error_details = "Unsuported CGST";
     return QUIC_CRYPTO_MESSAGE_PARAMETER_NO_OVERLAP;
   }
 
   uint32 idle;
   error = msg.GetUint32(kICSL, &idle);
   if (error != QUIC_NO_ERROR) {
-    if (error_details) {
-      *error_details = "Missing ICSL";
-    }
+    *error_details = "Missing ICSL";
     return error;
   }
 
@@ -122,9 +118,7 @@ QuicErrorCode QuicConfig::ProcessFinalPeerHandshake(
       out_params->keepalive_timeout = QuicTime::Delta::Zero();
       break;
     default:
-      if (error_details) {
-        *error_details = "Bad KATO";
-      }
+      *error_details = "Bad KATO";
       return error;
   }
 

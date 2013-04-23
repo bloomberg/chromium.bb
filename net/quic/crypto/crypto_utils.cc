@@ -72,7 +72,12 @@ void CryptoUtils::GenerateNonce(QuicTime::Delta now,
   nonce->reserve(kNonceSize);
   nonce->resize(kNonceSize);
   uint32 gmt_unix_time = now.ToSeconds();
-  memcpy(&(*nonce)[0], &gmt_unix_time, sizeof(gmt_unix_time));
+  // The time in the nonce must be encoded in big-endian because the
+  // strike-register depends on the nonces being ordered by time.
+  (*nonce)[0] = static_cast<char>(gmt_unix_time >> 24);
+  (*nonce)[1] = static_cast<char>(gmt_unix_time >> 16);
+  (*nonce)[2] = static_cast<char>(gmt_unix_time >> 8);
+  (*nonce)[3] = static_cast<char>(gmt_unix_time);
 
   size_t bytes_written = sizeof(gmt_unix_time);
   if (orbit.size() == 8) {
