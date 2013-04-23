@@ -1,5 +1,4 @@
 include_rules = [
-  "+cc/debug",
   "+chromeos",
   "+content/public",
   "+grit/ash_resources.h",

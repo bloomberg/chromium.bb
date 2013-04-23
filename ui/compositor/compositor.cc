@@ -757,15 +757,6 @@ Compositor::OffscreenContextProviderForCompositorThread() {
       OffscreenContextProviderForCompositorThread();
 }
 
-const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {
-  return host_->debug_state();
-}
-
-void Compositor::SetLayerTreeDebugState(
-    const cc::LayerTreeDebugState& debug_state) {
-  host_->SetDebugState(debug_state);
-}
-
 scoped_refptr<CompositorLock> Compositor::GetCompositorLock() {
   if (!compositor_lock_) {
     compositor_lock_ = new CompositorLock(this);
