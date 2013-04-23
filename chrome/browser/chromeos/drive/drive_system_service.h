@@ -35,13 +35,13 @@ class DriveCache;
 class DriveDownloadHandler;
 class DriveFileSystemInterface;
 class DriveFileSystemProxy;
-class DriveWebAppsRegistry;
-class DriveSyncClient;
 class DrivePrefetcher;
 class DriveResourceMetadata;
+class DriveWebAppsRegistry;
 class FileWriteHelper;
 class JobListInterface;
 class StaleCacheFilesRemover;
+class SyncClient;
 
 // Interface for classes that need to observe events from DriveSystemService.
 // All events are notified on UI thread.
@@ -172,7 +172,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<DriveFileSystemInterface> file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
   scoped_ptr<DriveDownloadHandler> download_handler_;
-  scoped_ptr<DriveSyncClient> sync_client_;
+  scoped_ptr<SyncClient> sync_client_;
   scoped_ptr<DrivePrefetcher> prefetcher_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
   scoped_refptr<DriveFileSystemProxy> file_system_proxy_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_sync_client.h"
+#include "chrome/browser/chromeos/drive/sync_client.h"
 
 #include <vector>
 
@@ -54,8 +54,8 @@ void CollectBacklog(std::vector<std::string>* to_fetch,
 
 }  // namespace
 
-DriveSyncClient::DriveSyncClient(DriveFileSystemInterface* file_system,
-                                 DriveCache* cache)
+SyncClient::SyncClient(DriveFileSystemInterface* file_system,
+                       DriveCache* cache)
     : file_system_(file_system),
       cache_(cache),
       delay_(base::TimeDelta::FromSeconds(kDelaySeconds)),
@@ -68,35 +68,35 @@ DriveSyncClient::DriveSyncClient(DriveFileSystemInterface* file_system,
   cache_->AddObserver(this);
 }
 
-DriveSyncClient::~DriveSyncClient() {
+SyncClient::~SyncClient() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   file_system_->RemoveObserver(this);
   cache_->RemoveObserver(this);
 }
 
-void DriveSyncClient::StartProcessingBacklog() {
+void SyncClient::StartProcessingBacklog() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   std::vector<std::string>* to_fetch = new std::vector<std::string>;
   std::vector<std::string>* to_upload = new std::vector<std::string>;
   cache_->Iterate(base::Bind(&CollectBacklog, to_fetch, to_upload),
-                  base::Bind(&DriveSyncClient::OnGetResourceIdsOfBacklog,
+                  base::Bind(&SyncClient::OnGetResourceIdsOfBacklog,
                              weak_ptr_factory_.GetWeakPtr(),
                              base::Owned(to_fetch),
                              base::Owned(to_upload)));
 }
 
-void DriveSyncClient::StartCheckingExistingPinnedFiles() {
+void SyncClient::StartCheckingExistingPinnedFiles() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   cache_->Iterate(
-      base::Bind(&DriveSyncClient::OnGetResourceIdOfExistingPinnedFile,
+      base::Bind(&SyncClient::OnGetResourceIdOfExistingPinnedFile,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&base::DoNothing));
 }
 
-std::vector<std::string> DriveSyncClient::GetResourceIdsForTesting(
+std::vector<std::string> SyncClient::GetResourceIdsForTesting(
     SyncType sync_type) const {
   switch (sync_type) {
     case FETCH:
@@ -108,27 +108,27 @@ std::vector<std::string> DriveSyncClient::GetResourceIdsForTesting(
   return std::vector<std::string>();
 }
 
-void DriveSyncClient::OnInitialLoadFinished() {
+void SyncClient::OnInitialLoadFinished() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   StartProcessingBacklog();
 }
 
-void DriveSyncClient::OnFeedFromServerLoaded() {
+void SyncClient::OnFeedFromServerLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   StartCheckingExistingPinnedFiles();
 }
 
-void DriveSyncClient::OnCachePinned(const std::string& resource_id,
-                                    const std::string& md5) {
+void SyncClient::OnCachePinned(const std::string& resource_id,
+                               const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   AddTaskToQueue(FETCH, resource_id);
 }
 
-void DriveSyncClient::OnCacheUnpinned(const std::string& resource_id,
-                                      const std::string& md5) {
+void SyncClient::OnCacheUnpinned(const std::string& resource_id,
+                                 const std::string& md5) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // Remove the resource_id if it's in the queue. This can happen if the
@@ -136,14 +136,14 @@ void DriveSyncClient::OnCacheUnpinned(const std::string& resource_id,
   pending_fetch_list_.erase(resource_id);
 }
 
-void DriveSyncClient::OnCacheCommitted(const std::string& resource_id) {
+void SyncClient::OnCacheCommitted(const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   AddTaskToQueue(UPLOAD, resource_id);
 }
 
-void DriveSyncClient::AddTaskToQueue(SyncType type,
-                                     const std::string& resource_id) {
+void SyncClient::AddTaskToQueue(SyncType type,
+                                const std::string& resource_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // If the same task is already queued, ignore this task.
@@ -167,14 +167,14 @@ void DriveSyncClient::AddTaskToQueue(SyncType type,
 
   base::MessageLoopProxy::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&DriveSyncClient::StartTask,
+      base::Bind(&SyncClient::StartTask,
                  weak_ptr_factory_.GetWeakPtr(),
                  type,
                  resource_id),
       delay_);
 }
 
-void DriveSyncClient::StartTask(SyncType type, const std::string& resource_id) {
+void SyncClient::StartTask(SyncType type, const std::string& resource_id) {
   switch (type) {
     case FETCH:
       // Check if the resource has been removed from the start list.
@@ -185,7 +185,7 @@ void DriveSyncClient::StartTask(SyncType type, const std::string& resource_id) {
         file_system_->GetFileByResourceId(
             resource_id,
             DriveClientContext(BACKGROUND),
-            base::Bind(&DriveSyncClient::OnFetchFileComplete,
+            base::Bind(&SyncClient::OnFetchFileComplete,
                        weak_ptr_factory_.GetWeakPtr(),
                        resource_id),
             google_apis::GetContentCallback());
@@ -199,14 +199,14 @@ void DriveSyncClient::StartTask(SyncType type, const std::string& resource_id) {
       file_system_->UpdateFileByResourceId(
           resource_id,
           DriveClientContext(BACKGROUND),
-          base::Bind(&DriveSyncClient::OnUploadFileComplete,
+          base::Bind(&SyncClient::OnUploadFileComplete,
                      weak_ptr_factory_.GetWeakPtr(),
                      resource_id));
       break;
   }
 }
 
-void DriveSyncClient::OnGetResourceIdsOfBacklog(
+void SyncClient::OnGetResourceIdsOfBacklog(
     const std::vector<std::string>* to_fetch,
     const std::vector<std::string>* to_upload) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -226,7 +226,7 @@ void DriveSyncClient::OnGetResourceIdsOfBacklog(
   }
 }
 
-void DriveSyncClient::OnGetResourceIdOfExistingPinnedFile(
+void SyncClient::OnGetResourceIdOfExistingPinnedFile(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -234,14 +234,14 @@ void DriveSyncClient::OnGetResourceIdOfExistingPinnedFile(
   if (cache_entry.is_pinned() && cache_entry.is_present()) {
     file_system_->GetEntryInfoByResourceId(
         resource_id,
-        base::Bind(&DriveSyncClient::OnGetEntryInfoByResourceId,
+        base::Bind(&SyncClient::OnGetEntryInfoByResourceId,
                    weak_ptr_factory_.GetWeakPtr(),
                    resource_id,
                    cache_entry));
   }
 }
 
-void DriveSyncClient::OnGetEntryInfoByResourceId(
+void SyncClient::OnGetEntryInfoByResourceId(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry,
     FileError error,
@@ -263,14 +263,14 @@ void DriveSyncClient::OnGetEntryInfoByResourceId(
   if (entry_proto->file_specific_info().file_md5() != cache_entry.md5() &&
       !cache_entry.is_dirty()) {
     cache_->Remove(resource_id,
-                   base::Bind(&DriveSyncClient::OnRemove,
+                   base::Bind(&SyncClient::OnRemove,
                               weak_ptr_factory_.GetWeakPtr(),
                               resource_id));
   }
 }
 
-void DriveSyncClient::OnRemove(const std::string& resource_id,
-                               FileError error) {
+void SyncClient::OnRemove(const std::string& resource_id,
+                          FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
@@ -282,13 +282,13 @@ void DriveSyncClient::OnRemove(const std::string& resource_id,
   // is downloaded properly to the persistent directory and marked pinned.
   cache_->Pin(resource_id,
               std::string(),
-              base::Bind(&DriveSyncClient::OnPinned,
+              base::Bind(&SyncClient::OnPinned,
                          weak_ptr_factory_.GetWeakPtr(),
                          resource_id));
 }
 
-void DriveSyncClient::OnPinned(const std::string& resource_id,
-                               FileError error) {
+void SyncClient::OnPinned(const std::string& resource_id,
+                          FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (error != FILE_ERROR_OK) {
@@ -300,11 +300,11 @@ void DriveSyncClient::OnPinned(const std::string& resource_id,
   AddTaskToQueue(FETCH, resource_id);
 }
 
-void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
-                                          FileError error,
-                                          const base::FilePath& local_path,
-                                          const std::string& ununsed_mime_type,
-                                          DriveFileType file_type) {
+void SyncClient::OnFetchFileComplete(const std::string& resource_id,
+                                     FileError error,
+                                     const base::FilePath& local_path,
+                                     const std::string& ununsed_mime_type,
+                                     DriveFileType file_type) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   fetch_list_.erase(resource_id);
@@ -325,8 +325,8 @@ void DriveSyncClient::OnFetchFileComplete(const std::string& resource_id,
   }
 }
 
-void DriveSyncClient::OnUploadFileComplete(const std::string& resource_id,
-                                           FileError error) {
+void SyncClient::OnUploadFileComplete(const std::string& resource_id,
+                                      FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   upload_list_.erase(resource_id);

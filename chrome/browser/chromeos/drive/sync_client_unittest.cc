@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_sync_client.h"
+#include "chrome/browser/chromeos/drive/sync_client.h"
 
 #include <vector>
 
@@ -49,9 +49,9 @@ ACTION_P2(MockUpdateFileByResourceId, error, md5) {
 
 }  // namespace
 
-class DriveSyncClientTest : public testing::Test {
+class SyncClientTest : public testing::Test {
  public:
-  DriveSyncClientTest()
+  SyncClientTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         mock_file_system_(new StrictMock<MockDriveFileSystem>) {
   }
@@ -77,8 +77,7 @@ class DriveSyncClientTest : public testing::Test {
     // Initialize the sync client.
     EXPECT_CALL(*mock_file_system_, AddObserver(_)).Times(1);
     EXPECT_CALL(*mock_file_system_, RemoveObserver(_)).Times(1);
-    sync_client_.reset(new DriveSyncClient(mock_file_system_.get(),
-                                           cache_.get()));
+    sync_client_.reset(new SyncClient(mock_file_system_.get(), cache_.get()));
 
     // Disable delaying so that DoSyncLoop() starts immediately.
     sync_client_->set_delay_for_testing(base::TimeDelta::FromSeconds(0));
@@ -194,25 +193,22 @@ class DriveSyncClientTest : public testing::Test {
 
   // Returns the resource IDs in the queue to be fetched.
   std::vector<std::string> GetResourceIdsToBeFetched() {
-    return sync_client_->GetResourceIdsForTesting(
-        DriveSyncClient::FETCH);
+    return sync_client_->GetResourceIdsForTesting(SyncClient::FETCH);
   }
 
   // Returns the resource IDs in the queue to be uploaded.
   std::vector<std::string> GetResourceIdsToBeUploaded() {
-    return sync_client_->GetResourceIdsForTesting(
-        DriveSyncClient::UPLOAD);
+    return sync_client_->GetResourceIdsForTesting(SyncClient::UPLOAD);
   }
 
   // Adds a resource ID of a file to fetch.
   void AddResourceIdToFetch(const std::string& resource_id) {
-    sync_client_->AddResourceIdForTesting(DriveSyncClient::FETCH, resource_id);
+    sync_client_->AddResourceIdForTesting(SyncClient::FETCH, resource_id);
   }
 
   // Adds a resource ID of a file to upload.
   void AddResourceIdToUpload(const std::string& resource_id) {
-    sync_client_->AddResourceIdForTesting(DriveSyncClient::UPLOAD,
-                                          resource_id);
+    sync_client_->AddResourceIdForTesting(SyncClient::UPLOAD, resource_id);
   }
 
  protected:
@@ -221,10 +217,10 @@ class DriveSyncClientTest : public testing::Test {
   base::ScopedTempDir temp_dir_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
-  scoped_ptr<DriveSyncClient> sync_client_;
+  scoped_ptr<SyncClient> sync_client_;
 };
 
-TEST_F(DriveSyncClientTest, StartInitialScan) {
+TEST_F(SyncClientTest, StartInitialScan) {
   // Start processing the files in the backlog. This will collect the
   // resource IDs of these files.
   sync_client_->StartProcessingBacklog();
@@ -240,7 +236,7 @@ TEST_F(DriveSyncClientTest, StartInitialScan) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveSyncClientTest, OnCachePinned) {
+TEST_F(SyncClientTest, OnCachePinned) {
   // This file will be fetched by GetFileByResourceId() as OnCachePinned()
   // will kick off the sync loop.
   SetExpectationForGetFileByResourceId("resource_id_not_fetched_foo");
@@ -250,7 +246,7 @@ TEST_F(DriveSyncClientTest, OnCachePinned) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
+TEST_F(SyncClientTest, OnCacheUnpinned) {
   AddResourceIdToFetch("resource_id_not_fetched_foo");
   AddResourceIdToFetch("resource_id_not_fetched_bar");
   AddResourceIdToFetch("resource_id_not_fetched_baz");
@@ -265,7 +261,7 @@ TEST_F(DriveSyncClientTest, OnCacheUnpinned) {
   google_apis::test_util::RunBlockingPoolTask();
 }
 
-TEST_F(DriveSyncClientTest, Deduplication) {
+TEST_F(SyncClientTest, Deduplication) {
   AddResourceIdToFetch("resource_id_not_fetched_foo");
 
   // Set the delay so that DoSyncLoop() is delayed.
@@ -277,7 +273,7 @@ TEST_F(DriveSyncClientTest, Deduplication) {
   ASSERT_EQ(1U, GetResourceIdsToBeFetched().size());
 }
 
-TEST_F(DriveSyncClientTest, ExistingPinnedFiles) {
+TEST_F(SyncClientTest, ExistingPinnedFiles) {
   // Set the expectation so that the MockDriveFileSystem returns "new_md5"
   // for "resource_id_fetched". This simulates that the file is updated on
   // the server side, and the new MD5 is obtained from the server (i.e. the

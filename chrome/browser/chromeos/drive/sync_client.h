@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYNC_CLIENT_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYNC_CLIENT_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_CLIENT_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_CLIENT_H_
 
 #include <set>
 #include <string>
@@ -22,7 +22,7 @@ class DriveCacheEntry;
 class DriveEntryProto;
 class DriveFileSystemInterface;
 
-// The DriveSyncClient is used to synchronize pinned files on Drive and the
+// The SyncClient is used to synchronize pinned files on Drive and the
 // cache on the local drive. The sync client works as follows.
 //
 // When the user pins files on Drive, this client is notified about the files
@@ -35,8 +35,8 @@ class DriveFileSystemInterface;
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
-class DriveSyncClient : public DriveFileSystemObserver,
-                        public DriveCacheObserver {
+class SyncClient : public DriveFileSystemObserver,
+                   public DriveCacheObserver {
  public:
   // Types of sync tasks.
   enum SyncType {
@@ -44,8 +44,8 @@ class DriveSyncClient : public DriveFileSystemObserver,
     UPLOAD,  // Upload a file to the Drive server.
   };
 
-  DriveSyncClient(DriveFileSystemInterface* file_system, DriveCache* cache);
-  virtual ~DriveSyncClient();
+  SyncClient(DriveFileSystemInterface* file_system, DriveCache* cache);
+  virtual ~SyncClient();
 
   // DriveFileSystemInterface::Observer overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
@@ -87,7 +87,7 @@ class DriveSyncClient : public DriveFileSystemObserver,
   void StartSyncLoop();
 
  private:
-  friend class DriveSyncClientTest;
+  friend class SyncClientTest;
 
   // Adds the given task to the queue. If the same task is queued, remove the
   // existing one, and adds a new one to the end of the queue.
@@ -154,11 +154,11 @@ class DriveSyncClient : public DriveFileSystemObserver,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveSyncClient> weak_ptr_factory_;
+  base::WeakPtrFactory<SyncClient> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveSyncClient);
+  DISALLOW_COPY_AND_ASSIGN(SyncClient);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SYNC_CLIENT_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_SYNC_CLIENT_H_

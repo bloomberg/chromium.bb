@@ -14,10 +14,10 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_prefetcher.h"
-#include "chrome/browser/chromeos/drive/drive_sync_client.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
+#include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/download/download_util.h"
@@ -152,7 +152,7 @@ DriveSystemService::DriveSystemService(
   file_write_helper_.reset(new FileWriteHelper(file_system()));
   download_handler_.reset(new DriveDownloadHandler(file_write_helper(),
                                                    file_system()));
-  sync_client_.reset(new DriveSyncClient(file_system(), cache()));
+  sync_client_.reset(new SyncClient(file_system(), cache()));
   prefetcher_.reset(new DrivePrefetcher(file_system(),
                                         event_logger(),
                                         DrivePrefetcherOptions()));
