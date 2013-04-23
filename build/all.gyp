@@ -287,6 +287,7 @@
         ['OS=="mac"', {
           'dependencies': [
             '../ui/app_list/app_list.gyp:app_list_unittests',
+            '../ui/message_center/message_center.gyp:*',
           ],
         }],
         ['test_isolation_mode != "noop"', {
