@@ -13,6 +13,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
@@ -89,6 +90,12 @@ bool FaviconTabHelper::ShouldDisplayFavicon() {
   const NavigationController& controller = web_contents()->GetController();
   if (controller.GetLastCommittedEntry() && controller.GetPendingEntry())
     return true;
+
+  GURL url = web_contents()->GetURL();
+  if (url.SchemeIs(chrome::kChromeUIScheme) &&
+      url.host() == chrome::kChromeUINewTabHost) {
+    return false;
+  }
 
   // No favicon on Instant New Tab Pages.
   if (chrome::IsInstantNTP(web_contents()))
