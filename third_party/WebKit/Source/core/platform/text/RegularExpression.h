@@ -52,8 +52,6 @@ private:
     ScopedPersistent<v8::RegExp> m_regex;
 };
 
-void replace(String&, const RegularExpression&, const String&);
-
 } // namespace WebCore
 
 #endif // RegularExpression_h

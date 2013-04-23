@@ -1224,7 +1224,11 @@ static PassRefPtr<TypeBuilder::Array<String> > selectorsFromSource(const CSSRule
         String selector = sheetText.substring(range.start, range.length());
 
         // We don't want to see any comments in the selector components, only the meaningful parts.
-        replace(selector, comment, "");
+        int matchLength;
+        int offset = 0;
+        while ((offset = comment.match(selector, offset, &matchLength)) >= 0)
+            selector.replace(offset, matchLength, "");
+
         result->addItem(selector.stripWhiteSpace());
     }
     return result.release();

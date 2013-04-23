@@ -108,19 +108,4 @@ int RegularExpression::match(const String& string, int startFrom, int* matchLeng
     return matchOffset;
 }
 
-void replace(String& string, const RegularExpression& target, const String& replacement)
-{
-    int index = 0;
-    while (index < static_cast<int>(string.length())) {
-        int matchLength;
-        index = target.match(string, index, &matchLength);
-        if (index < 0)
-            break;
-        string.replace(index, matchLength, replacement);
-        index += replacement.length();
-        if (!matchLength)
-            break;  // Avoid infinite loop on 0-length matches, e.g. [a-z]*
-    }
-}
-
 } // namespace WebCore
