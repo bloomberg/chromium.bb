@@ -215,6 +215,29 @@ class UsbIsochronousTransferFunction : public UsbAsyncApiTransferFunction {
   scoped_ptr<extensions::api::usb::IsochronousTransfer::Params> parameters_;
 };
 
+class UsbResetDeviceFunction : public UsbAsyncApiFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("usb.resetDevice", USB_RESETDEVICE)
+
+  UsbResetDeviceFunction();
+
+ protected:
+  virtual ~UsbResetDeviceFunction();
+
+  virtual bool Prepare() OVERRIDE;
+  virtual void AsyncWorkStart() OVERRIDE;
+
+ private:
+  // FILE thread.
+  void OnStartResest(UsbDeviceResource* resource);
+  void OnCompletedFileThread(bool success);
+
+  // IO thread.
+  void OnCompleted(bool success);
+  void OnError();
+
+  scoped_ptr<extensions::api::usb::ResetDevice::Params> parameters_;
+};
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_USB_USB_API_H_

@@ -16,10 +16,20 @@ using testing::_;
 
 namespace {
 
+ACTION(InvokeUsbCallback) {
+  ::std::tr1::get<0>(args).Run();
+}
+
 ACTION_TEMPLATE(InvokeUsbTransferCallback,
                 HAS_1_TEMPLATE_PARAMS(int, k),
                 AND_1_VALUE_PARAMS(p1)) {
   ::std::tr1::get<k>(args).Run(p1, new net::IOBuffer(1), 1);
+}
+
+ACTION_TEMPLATE(InvokeUsbResultCallback,
+                HAS_1_TEMPLATE_PARAMS(int, k),
+                AND_1_VALUE_PARAMS(p1)) {
+  ::std::tr1::get<k>(args).Run(p1);
 }
 
 // MSVC erroneously thinks that at least one of the arguments for the transfer
@@ -54,6 +64,8 @@ class MockUsbDevice : public UsbDevice {
       const unsigned int packets, const unsigned int packet_length,
       const unsigned int timeout, const UsbTransferCallback& callback));
 
+  MOCK_METHOD1(ResetDevice, void(const base::Callback<void(bool)>& callback));
+
  protected:
   virtual ~MockUsbDevice() {}
 };
@@ -80,7 +92,14 @@ class UsbApiTest : public ExtensionApiTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(UsbApiTest, DeviceHandling) {
-  EXPECT_CALL(*mock_device_, Close(_)).Times(1);
+  EXPECT_CALL(*mock_device_, Close(_))
+      .WillRepeatedly(InvokeUsbCallback());
+  EXPECT_CALL(*mock_device_, ResetDevice(_))
+    .WillOnce(InvokeUsbResultCallback<0>(true))
+    .WillOnce(InvokeUsbResultCallback<0>(false));
+  EXPECT_CALL(*mock_device_,
+              InterruptTransfer(UsbDevice::OUTBOUND, 2, _, 1, _, _))
+    .WillOnce(InvokeUsbTransferCallback<5>(USB_TRANSFER_COMPLETED));
   ASSERT_TRUE(RunExtensionTest("usb/device_handling"));
 }
 

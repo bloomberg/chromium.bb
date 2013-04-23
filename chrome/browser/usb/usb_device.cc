@@ -290,6 +290,11 @@ void UsbDevice::IsochronousTransfer(const TransferDirection direction,
   SubmitTransfer(transfer, USB_TRANSFER_ISOCHRONOUS, buffer, length, callback);
 }
 
+void UsbDevice::ResetDevice(const base::Callback<void(bool)>& callback) {
+  CheckDevice();
+  callback.Run(libusb_reset_device(handle_) == 0);
+}
+
 void UsbDevice::CheckDevice() {
   DCHECK(handle_) << "Device is already closed.";
 }

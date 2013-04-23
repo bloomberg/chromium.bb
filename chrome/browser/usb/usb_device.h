@@ -115,6 +115,8 @@ class UsbDevice : public base::RefCounted<UsbDevice> {
                                    const unsigned int timeout,
                                    const UsbTransferCallback& callback);
 
+  virtual void ResetDevice(const base::Callback<void(bool)>& callback);
+
   // Normal code should not call this function. It is called by the platform's
   // callback mechanism in such a way that it cannot be made private. Invokes
   // the callbacks associated with a given transfer, and removes it from the

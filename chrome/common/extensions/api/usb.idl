@@ -99,6 +99,7 @@ namespace usb {
   callback FindDevicesCallback = void (Device[] device);
   callback CloseDeviceCallback = void ();
   callback TransferCallback = void (TransferResultInfo info);
+  callback ResetDeviceCallback = void(boolean result);
 
   interface Functions {
     // Finds the first instance of the USB device specified by the vendorId/
@@ -171,5 +172,17 @@ namespace usb {
     static void isochronousTransfer(Device device,
         IsochronousTransferInfo transferInfo,
         TransferCallback callback);
+
+    // Try to reset the USB device and restore the previous status.
+    //
+    // If the reset fails, the given device will be closed and the USB device
+    // will appear to be disconected and reconnected.
+    // You must call <code>findDevice</code> again to acquire the device.
+    //
+    // |device|: An opened device to reset.
+    // |callback|: Invoked once the device is reset with a boolean indicating
+    // whether the reset is completed successfully.
+    static void resetDevice(Device device,
+        ResetDeviceCallback callback);
   };
 };

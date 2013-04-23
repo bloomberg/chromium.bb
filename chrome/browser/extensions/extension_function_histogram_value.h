@@ -519,6 +519,7 @@ enum HistogramValue {
   AUDIO_GETINFO,
   AUDIO_SETACTIVEDEVICES,
   AUDIO_SETPROPERTIES,
+  USB_RESETDEVICE,
   ENUM_BOUNDARY // Last entry: Add new entries above.
 };
 
