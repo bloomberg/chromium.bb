@@ -178,6 +178,10 @@ CrashGenerationClient::~CrashGenerationClient() {
 //
 // Returns true if the registration is successful; false otherwise.
 bool CrashGenerationClient::Register() {
+  if (IsRegistered()) {
+    return true;
+  }
+
   HANDLE pipe = ConnectToServer();
   if (!pipe) {
     return false;

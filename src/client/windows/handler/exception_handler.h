@@ -195,6 +195,27 @@ class ExceptionHandler {
                    HANDLE pipe_handle,
                    const CustomClientInfo* custom_info);
 
+  // ExceptionHandler that ENSURES out-of-process dump generation.  Expects a
+  // crash generation client that is already registered with a crash generation
+  // server.  Takes ownership of the passed-in crash_generation_client.
+  //
+  // Usage example:
+  //   crash_generation_client = new CrashGenerationClient(..);
+  //   if (crash_generation_client->Register()) {
+  //     // Registration with the crash generation server succeeded.
+  //     // Out-of-process dump generation is guaranteed.
+  //     g_handler = new ExceptionHandler(.., crash_generation_client, ..);
+  //     return true;
+  //   }
+  ExceptionHandler(const wstring& dump_path,
+                   FilterCallback filter,
+                   MinidumpCallback callback,
+                   void* callback_context,
+                   int handler_types,
+                   MINIDUMP_TYPE dump_type,
+                   CrashGenerationClient* crash_generation_client,
+                   const CustomClientInfo* custom_info);
+
   ~ExceptionHandler();
 
   // Get and set the minidump path.
@@ -264,6 +285,7 @@ class ExceptionHandler {
                   MINIDUMP_TYPE dump_type,
                   const wchar_t* pipe_name,
                   HANDLE pipe_handle,
+                  CrashGenerationClient* crash_generation_client,
                   const CustomClientInfo* custom_info);
 
   // Function pointer type for MiniDumpWriteDump, which is looked up
