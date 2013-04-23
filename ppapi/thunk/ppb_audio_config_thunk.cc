@@ -16,6 +16,7 @@ namespace {
 PP_Resource CreateStereo16bit(PP_Instance instance,
                               PP_AudioSampleRate sample_rate,
                               uint32_t sample_frame_count) {
+  VLOG(4) << "PPB_AudioConfig::CreateStereo16Bit()";
   EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
@@ -25,6 +26,7 @@ PP_Resource CreateStereo16bit(PP_Instance instance,
 
 uint32_t RecommendSampleFrameCount_1_0(PP_AudioSampleRate sample_rate,
                                        uint32_t requested_sample_frame_count) {
+  VLOG(4) << "PPB_AudioConfig::RecommendSampleFrameCount()";
   return PPB_AudioConfig_Shared::RecommendSampleFrameCount_1_0(sample_rate,
       requested_sample_frame_count);
 }
@@ -32,6 +34,7 @@ uint32_t RecommendSampleFrameCount_1_0(PP_AudioSampleRate sample_rate,
 uint32_t RecommendSampleFrameCount_1_1(PP_Instance instance,
                                        PP_AudioSampleRate sample_rate,
                                        uint32_t requested_sample_frame_count) {
+  VLOG(4) << "PPB_AudioConfig::RecommendSampleFrameCount()";
   EnterInstance enter(instance);
   if (enter.failed())
     return 0;
@@ -41,11 +44,13 @@ uint32_t RecommendSampleFrameCount_1_1(PP_Instance instance,
 
 
 PP_Bool IsAudioConfig(PP_Resource resource) {
+  VLOG(4) << "PPB_AudioConfig::IsAudioConfig()";
   EnterResource<PPB_AudioConfig_API> enter(resource, false);
   return PP_FromBool(enter.succeeded());
 }
 
 PP_AudioSampleRate GetSampleRate(PP_Resource config_id) {
+  VLOG(4) << "PPB_AudioConfig::GetSampleRate()";
   EnterResource<PPB_AudioConfig_API> enter(config_id, true);
   if (enter.failed())
     return PP_AUDIOSAMPLERATE_NONE;
@@ -53,6 +58,7 @@ PP_AudioSampleRate GetSampleRate(PP_Resource config_id) {
 }
 
 uint32_t GetSampleFrameCount(PP_Resource config_id) {
+  VLOG(4) << "PPB_AudioConfig::GetSampleFrameCount()";
   EnterResource<PPB_AudioConfig_API> enter(config_id, true);
   if (enter.failed())
     return 0;
@@ -60,6 +66,7 @@ uint32_t GetSampleFrameCount(PP_Resource config_id) {
 }
 
 PP_AudioSampleRate RecommendSampleRate(PP_Instance instance) {
+  VLOG(4) << "PPB_AudioConfig::RecommendSampleRate()";
   EnterInstance enter(instance);
   if (enter.failed())
     return PP_AUDIOSAMPLERATE_NONE;
