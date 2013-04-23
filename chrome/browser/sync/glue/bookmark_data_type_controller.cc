@@ -27,7 +27,9 @@ BookmarkDataTypeController::BookmarkDataTypeController(
     ProfileSyncService* sync_service)
     : FrontendDataTypeController(profile_sync_factory,
                                  profile,
-                                 sync_service) {
+                                 sync_service),
+      bookmark_model_(NULL),
+      installed_bookmark_observer_(false) {
 }
 
 syncer::ModelType BookmarkDataTypeController::type() const {
@@ -45,19 +47,25 @@ void BookmarkDataTypeController::Observe(
   if (!DependentsLoaded())
     return;
 
-  BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
-  model->RemoveObserver(this);
+  bookmark_model_->RemoveObserver(this);
+  installed_bookmark_observer_ = false;
 
   registrar_.RemoveAll();
   OnModelLoaded();
 }
 
-BookmarkDataTypeController::~BookmarkDataTypeController() {}
+BookmarkDataTypeController::~BookmarkDataTypeController() {
+  if (installed_bookmark_observer_ && bookmark_model_) {
+    DCHECK(profile_);
+    bookmark_model_->RemoveObserver(this);
+  }
+}
 
 bool BookmarkDataTypeController::StartModels() {
+  bookmark_model_ = BookmarkModelFactory::GetForProfile(profile_);
   if (!DependentsLoaded()) {
-    BookmarkModel* model = BookmarkModelFactory::GetForProfile(profile_);
-    model->AddObserver(this);
+    bookmark_model_->AddObserver(this);
+    installed_bookmark_observer_ = true;
 
     registrar_.Add(this, chrome::NOTIFICATION_HISTORY_LOADED,
                    content::Source<Profile>(sync_service_->profile()));
@@ -84,7 +92,9 @@ void BookmarkDataTypeController::BookmarkModelChanged() {
 
 void BookmarkDataTypeController::Loaded(BookmarkModel* model,
                                         bool ids_reassigned) {
+  DCHECK(model->IsLoaded());
   model->RemoveObserver(this);
+  installed_bookmark_observer_ = false;
 
   if (!DependentsLoaded())
     return;
@@ -93,12 +103,15 @@ void BookmarkDataTypeController::Loaded(BookmarkModel* model,
   OnModelLoaded();
 }
 
+void BookmarkDataTypeController::BookmarkModelBeingDeleted(
+    BookmarkModel* model) {
+  installed_bookmark_observer_ = false;
+}
+
 // Check that both the bookmark model and the history service (for favicons)
 // are loaded.
 bool BookmarkDataTypeController::DependentsLoaded() {
-  BookmarkModel* bookmark_model =
-      BookmarkModelFactory::GetForProfile(profile_);
-  if (!bookmark_model || !bookmark_model->IsLoaded())
+  if (!bookmark_model_ || !bookmark_model_->IsLoaded())
     return false;
 
   HistoryService* history = HistoryServiceFactory::GetForProfile(

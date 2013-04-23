@@ -43,12 +43,18 @@ class BookmarkDataTypeController : public FrontendDataTypeController,
   // BaseBookmarkModelObserver interface.
   virtual void BookmarkModelChanged() OVERRIDE;
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
+  virtual void BookmarkModelBeingDeleted(BookmarkModel* model) OVERRIDE;
 
   // Helper that returns true iff both the bookmark model and the history
   // service have finished loading.
   bool DependentsLoaded();
 
   content::NotificationRegistrar registrar_;
+
+  BookmarkModel* bookmark_model_;
+
+  // Have we installed ourselves as a BookmarkModel observer?
+  bool installed_bookmark_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);
 };
