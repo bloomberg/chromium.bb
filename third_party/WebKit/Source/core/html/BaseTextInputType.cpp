@@ -44,12 +44,9 @@ bool BaseTextInputType::patternMismatch(const String& value) const
     if (rawPattern.isNull() || value.isEmpty())
         return false;
     String pattern = "^(" + rawPattern + ")$";
-    RegularExpression regex(pattern, TextCaseSensitive);
-    if (!regex.isValid())
-        return false;
     int matchLength = 0;
     int valueLength = value.length();
-    int matchOffset = regex.match(value, 0, &matchLength);
+    int matchOffset = RegularExpression(pattern, TextCaseSensitive).match(value, 0, &matchLength);
     return matchOffset || matchLength != valueLength;
 }
 

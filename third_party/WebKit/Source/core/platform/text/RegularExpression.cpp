@@ -2,7 +2,6 @@
  * Copyright (C) 2004, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008 Collabora Ltd.
  * Copyright (C) 2011 Peter Varga (pvarga@webkit.org), University of Szeged
- * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,83 +28,67 @@
 #include "config.h"
 #include "RegularExpression.h"
 
-// FIXME: These seem like a layering violation, but converting the strings manually
-// without v8String is difficult, and calling into v8 without V8RecursionScope will
-// assert. Perhaps v8 basic utilities shouldn't be in bindings, or we should put
-// RegularExpression as some kind of abstract interface that's implemented in bindings.
-#include "V8Binding.h"
-#include "V8RecursionScope.h"
-#include <wtf/MainThread.h>
+#include <wtf/BumpPointerAllocator.h>
+#include <yarr/Yarr.h>
+#include "Logging.h"
 
 namespace WebCore {
 
-static v8::Local<v8::Context> regexContext()
-{
-    ASSERT(isMainThread());
-    static ScopedPersistent<v8::Context>* staticRegexContext = new ScopedPersistent<v8::Context>(v8::Context::New());
-    return v8::Local<v8::Context>::New(staticRegexContext->get());
-}
-
 RegularExpression::RegularExpression(const String& pattern, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
+    : m_numSubpatterns(0)
+    , m_regExpByteCode(compile(pattern, caseSensitivity, multilineMode))
 {
-    v8::HandleScope handleScope;
-    v8::Local<v8::Context> context(regexContext());
-    v8::Context::Scope scope(context);
-
-    unsigned flags = v8::RegExp::kNone;
-    if (caseSensitivity == TextCaseInsensitive)
-        flags |= v8::RegExp::kIgnoreCase;
-    if (multilineMode == MultilineEnabled)
-        flags |= v8::RegExp::kMultiline;
-
-    v8::TryCatch tryCatch;
-    v8::Local<v8::RegExp> regex = v8::RegExp::New(v8String(pattern, context->GetIsolate()), static_cast<v8::RegExp::Flags>(flags));
-
-    // If the regex failed to compile we'll get an empty handle.
-    if (!regex.IsEmpty())
-        m_regex.set(regex);
 }
 
-int RegularExpression::match(const String& string, int startFrom, int* matchLength) const
+PassOwnPtr<JSC::Yarr::BytecodePattern> RegularExpression::compile(const String& patternString, TextCaseSensitivity caseSensitivity, MultilineMode multilineMode)
 {
-    if (m_regex.isEmpty() || string.isNull())
-        return -1;
-
-    // v8 strings are limited to int.
-    if (string.length() > INT_MAX)
-        return -1;
-
-    v8::HandleScope handleScope;
-    v8::Local<v8::Context> context(regexContext());
-    v8::Context::Scope scope(context);
-    v8::TryCatch tryCatch;
-
-    V8RecursionScope::MicrotaskSuppression microtaskScope;
-
-    v8::Local<v8::Function> exec = m_regex->Get(v8::String::NewSymbol("exec")).As<v8::Function>();
-
-    v8::Handle<v8::Value> argv[] = { v8String(string, context->GetIsolate()) };
-    v8::Local<v8::Value> returnValue = exec->Call(m_regex.get(), 1, argv);
-
-    // RegExp#exec returns null if there's no match, otherwise it returns an
-    // Array of strings with the first being the whole match string and others
-    // being subgroups. The Array also has some random properties tacked on like
-    // "index" which is the offset of the match.
-    //
-    // https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/RegExp/exec
-
-    if (!returnValue->IsArray())
-        return -1;
-
-    v8::Local<v8::Array> result = returnValue.As<v8::Array>();
-    int matchOffset = result->Get(v8::String::NewSymbol("index"))->ToInt32()->Value();
-
-    if (matchLength) {
-        v8::Local<v8::String> match = result->Get(0).As<v8::String>();
-        *matchLength = match->Length();
+    const char* constructionError = 0;
+    JSC::Yarr::YarrPattern pattern(patternString, (caseSensitivity == TextCaseInsensitive), (multilineMode == MultilineEnabled), &constructionError);
+    if (constructionError) {
+        LOG_ERROR("RegularExpression: YARR compile failed with '%s'", constructionError);
+        return nullptr;
     }
 
-    return matchOffset;
+    m_numSubpatterns = pattern.m_numSubpatterns;
+
+    return JSC::Yarr::byteCompile(pattern, &m_regexAllocator);
+}
+
+int RegularExpression::match(const String& str, int startFrom, int* matchLength) const
+{
+    if (!m_regExpByteCode)
+        return -1;
+
+    if (str.isNull())
+        return -1;
+
+    int offsetVectorSize = (m_numSubpatterns + 1) * 2;
+    unsigned* offsetVector;
+    Vector<unsigned, 32> nonReturnedOvector;
+
+    nonReturnedOvector.resize(offsetVectorSize);
+    offsetVector = nonReturnedOvector.data();
+
+    ASSERT(offsetVector);
+    for (unsigned j = 0, i = 0; i < m_numSubpatterns + 1; j += 2, i++)
+        offsetVector[j] = JSC::Yarr::offsetNoMatch;
+
+    unsigned result;
+    if (str.length() <= INT_MAX)
+        result = JSC::Yarr::interpret(m_regExpByteCode.get(), str, startFrom, offsetVector);
+    else {
+        // This code can't handle unsigned offsets. Limit our processing to strings with offsets that 
+        // can be represented as ints.
+        result = JSC::Yarr::offsetNoMatch;
+    }
+
+    if (result == JSC::Yarr::offsetNoMatch)
+        return -1;
+
+    // 1 means 1 match; 0 means more than one match. First match is recorded in offsetVector.
+    if (matchLength)
+        *matchLength = offsetVector[1] - offsetVector[0];
+    return offsetVector[0];
 }
 
 } // namespace WebCore
