@@ -97,8 +97,6 @@ class WebContents;
 
 - (InstantOverlayControllerMac*)instantOverlayController;
 
-- (void)onWebContentsDestroyed:(content::WebContents*)webContents;
-
 - (void)activeContentsCompositingIOSurfaceCreated;
 
 @end

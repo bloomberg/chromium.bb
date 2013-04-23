@@ -13,8 +13,6 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "content/public/browser/notification_source.h"
-#include "content/public/browser/notification_types.h"
 
 InstantOverlayControllerMac::InstantOverlayControllerMac(
     Browser* browser,
@@ -68,20 +66,4 @@ void InstantOverlayControllerMac::OverlayStateChanged(
   }
 
   [window_ updateBookmarkBarStateForInstantOverlay];
-
-  registrar_.RemoveAll();
-  if (model.GetOverlayContents()) {
-    registrar_.Add(
-        this,
-        content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-        content::Source<content::WebContents>(model.GetOverlayContents()));
-  }
-}
-
-void InstantOverlayControllerMac::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
-  [overlay_ onWebContentsDestroyed:
-          content::Source<content::WebContents>(source).ptr()];
 }

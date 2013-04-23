@@ -129,13 +129,6 @@
   return instantOverlayController_.get();
 }
 
-- (void)onWebContentsDestroyed:(content::WebContents*)webContents {
-  if (overlayContents_ == webContents) {
-    [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
-    overlayContents_ = NULL;
-  }
-}
-
 - (void)activeContentsCompositingIOSurfaceCreated {
   if (!overlayContents_)
     return;
