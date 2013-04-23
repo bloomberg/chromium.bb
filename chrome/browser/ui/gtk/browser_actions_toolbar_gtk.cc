@@ -535,26 +535,27 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
 
   // |overflow_alignment| adds padding to the right of the browser action
   // buttons, but only appears when the overflow menu is showing.
-  overflow_alignment_ = gtk_alignment_new(0, 0, 1, 1);
-  gtk_container_add(GTK_CONTAINER(overflow_alignment_), chevron());
+  overflow_alignment_.Own(gtk_alignment_new(0, 0, 1, 1));
+  gtk_container_add(GTK_CONTAINER(overflow_alignment_.get()), chevron());
 
   // |overflow_area_| holds the overflow chevron and the separator, which
   // is only shown in GTK+ theme mode.
-  overflow_area_ = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(overflow_area_), overflow_alignment_,
+  overflow_area_.Own(gtk_hbox_new(FALSE, 0));
+  gtk_box_pack_start(GTK_BOX(overflow_area_.get()), overflow_alignment_.get(),
                      FALSE, FALSE, 0);
 
-  separator_ = gtk_vseparator_new();
-  gtk_box_pack_start(GTK_BOX(overflow_area_), separator_,
+  separator_.Own(gtk_vseparator_new());
+  gtk_box_pack_start(GTK_BOX(overflow_area_.get()), separator_.get(),
                      FALSE, FALSE, 0);
-  gtk_widget_set_no_show_all(separator_, TRUE);
+  gtk_widget_set_no_show_all(separator_.get(), TRUE);
 
-  gtk_widget_show_all(overflow_area_);
-  gtk_widget_set_no_show_all(overflow_area_, TRUE);
+  gtk_widget_show_all(overflow_area_.get());
+  gtk_widget_set_no_show_all(overflow_area_.get(), TRUE);
 
   gtk_box_pack_start(GTK_BOX(hbox_.get()), gripper, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(hbox_.get()), button_hbox_.get(), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_area_, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_.get()), overflow_area_.get(), FALSE, FALSE,
+                     0);
 
   model_ = extension_service->toolbar_model();
   model_->AddObserver(this);
@@ -606,7 +607,7 @@ void BrowserActionsToolbarGtk::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   DCHECK(chrome::NOTIFICATION_BROWSER_THEME_CHANGED == type);
-  gtk_widget_set_visible(separator_, theme_service_->UsingNativeTheme());
+  gtk_widget_set_visible(separator_.get(), theme_service_->UsingNativeTheme());
 }
 
 void BrowserActionsToolbarGtk::SetupDrags() {
@@ -729,7 +730,7 @@ void BrowserActionsToolbarGtk::BrowserActionAdded(const Extension* extension,
     return;
 
   // Animate the addition if we are showing all browser action buttons.
-  if (!gtk_widget_get_visible(overflow_area_)) {
+  if (!gtk_widget_get_visible(overflow_area_.get())) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
@@ -746,7 +747,7 @@ void BrowserActionsToolbarGtk::BrowserActionRemoved(
 
   RemoveButtonForExtension(extension);
 
-  if (!gtk_widget_get_visible(overflow_area_)) {
+  if (!gtk_widget_get_visible(overflow_area_.get())) {
     AnimateToShowNIcons(button_count());
     model_->SetVisibleIconCount(button_count());
   }
@@ -851,14 +852,15 @@ void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
       gtk_chrome_shrinkable_hbox_get_visible_child_count(
           GTK_CHROME_SHRINKABLE_HBOX(button_hbox_.get()));
   if (showing_icon_count == 0) {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(overflow_alignment_), 0, 0, 0, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(overflow_alignment_.get()),
+                              0, 0, 0, 0);
   } else {
-    gtk_alignment_set_padding(GTK_ALIGNMENT(overflow_alignment_), 0, 0,
-                              kButtonChevronPadding, 0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(overflow_alignment_.get()),
+                              0, 0, kButtonChevronPadding, 0);
   }
 
   if (button_count() > showing_icon_count) {
-    if (!gtk_widget_get_visible(overflow_area_)) {
+    if (!gtk_widget_get_visible(overflow_area_.get())) {
       if (drag_button_) {
         // During drags, when the overflow chevron shows for the first time,
         // take that much space away from |button_hbox_| to make the drag look
@@ -872,10 +874,10 @@ void BrowserActionsToolbarGtk::UpdateChevronVisibility() {
         gtk_widget_set_size_request(button_hbox_.get(), button_hbox_width, -1);
       }
 
-      gtk_widget_show(overflow_area_);
+      gtk_widget_show(overflow_area_.get());
     }
   } else {
-    gtk_widget_hide(overflow_area_);
+    gtk_widget_hide(overflow_area_.get());
   }
 }
 

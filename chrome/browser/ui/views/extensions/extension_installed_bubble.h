@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
 #define CHROME_BROWSER_UI_VIEWS_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -75,6 +76,8 @@ class ExtensionInstalledBubble
 
   // How many times we've deferred due to animations being in progress.
   int animation_wait_retries_;
+
+  base::WeakPtrFactory<ExtensionInstalledBubble> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubble);
 };

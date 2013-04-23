@@ -539,7 +539,8 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
     : extension_(extension),
       browser_(browser),
       icon_(icon),
-      animation_wait_retries_(0) {
+      animation_wait_retries_(0),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
   extensions::ExtensionActionManager* extension_action_manager =
       extensions::ExtensionActionManager::Get(browser_->profile());
   if (!extensions::OmniboxInfo::GetKeyword(extension).empty())
@@ -561,6 +562,8 @@ ExtensionInstalledBubble::ExtensionInstalledBubble(const Extension* extension,
       content::Source<Profile>(browser->profile()));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
       content::Source<Profile>(browser->profile()));
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_CLOSING,
+      content::Source<Browser>(browser));
 }
 
 ExtensionInstalledBubble::~ExtensionInstalledBubble() {}
@@ -578,13 +581,15 @@ void ExtensionInstalledBubble::Observe(
       MessageLoopForUI::current()->PostTask(
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                     base::Unretained(this)));
+                     weak_factory_.GetWeakPtr()));
     }
   } else if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
     const Extension* extension =
         content::Details<extensions::UnloadedExtensionInfo>(details)->extension;
     if (extension == extension_)
       extension_ = NULL;
+  } else if (type == chrome::NOTIFICATION_BROWSER_CLOSING) {
+    delete this;
   } else {
     NOTREACHED() << L"Received unexpected notification";
   }
@@ -606,7 +611,7 @@ void ExtensionInstalledBubble::ShowInternal() {
       MessageLoopForUI::current()->PostDelayedTask(
           FROM_HERE,
           base::Bind(&ExtensionInstalledBubble::ShowInternal,
-                     base::Unretained(this)),
+                     weak_factory_.GetWeakPtr()),
           base::TimeDelta::FromMilliseconds(kAnimationWaitTime));
       return;
     }
@@ -645,6 +650,12 @@ void ExtensionInstalledBubble::ShowInternal() {
   AddChildView(
       new InstalledBubbleContent(browser_, extension_, type_, &icon_, this));
   views::BubbleDelegateView::CreateBubble(this);
+
+  // The bubble widget is now the parent and owner of |this| and takes care of
+  // deletion when the bubble or browser go away.
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_CLOSING,
+      content::Source<Browser>(browser_));
+
   StartFade(true);
 }
 

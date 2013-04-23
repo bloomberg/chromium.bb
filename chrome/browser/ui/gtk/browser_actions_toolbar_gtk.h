@@ -193,12 +193,12 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer,
   scoped_ptr<CustomDrawButton> overflow_button_;
   // The separator just next to the overflow button. Only shown in GTK+ theme
   // mode. In Chrome theme mode, the overflow button has a separator built in.
-  GtkWidget* separator_;
+  ui::OwnedWidgetGtk separator_;
   scoped_ptr<MenuGtk> overflow_menu_;
   scoped_ptr<ui::SimpleMenuModel> overflow_menu_model_;
-  GtkWidget* overflow_area_;
+  ui::OwnedWidgetGtk overflow_area_;
   // A widget for adding extra padding to the left of the overflow button.
-  GtkWidget* overflow_alignment_;
+  ui::OwnedWidgetGtk overflow_alignment_;
 
   // The button that is currently being dragged, or NULL.
   BrowserActionButton* drag_button_;

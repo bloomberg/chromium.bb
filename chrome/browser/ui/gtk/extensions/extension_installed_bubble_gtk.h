@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_UI_GTK_EXTENSIONS_EXTENSION_INSTALLED_BUBBLE_GTK_H_
 
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/gtk/bubble/bubble_gtk.h"
 #include "chrome/browser/ui/gtk/custom_button.h"
 #include "content/public/browser/notification_observer.h"
@@ -34,9 +34,10 @@ class Extension;
 // ExtensionInstallBubble manages its own lifetime.
 class ExtensionInstalledBubbleGtk
     : public BubbleDelegateGtk,
-      public content::NotificationObserver,
-      public base::RefCountedThreadSafe<ExtensionInstalledBubbleGtk> {
+      public content::NotificationObserver {
  public:
+  virtual ~ExtensionInstalledBubbleGtk();
+
   // The behavior and content of this BubbleGtk comes in three varieties.
   enum BubbleType {
     OMNIBOX_KEYWORD,
@@ -54,14 +55,13 @@ class ExtensionInstalledBubbleGtk
                    const SkBitmap& icon);
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionInstalledBubbleGtk>;
-
   // Private ctor. Registers a listener for EXTENSION_LOADED.
   ExtensionInstalledBubbleGtk(const extensions::Extension* extension,
                               Browser *browser,
                               const SkBitmap& icon);
 
-  virtual ~ExtensionInstalledBubbleGtk();
+  // Notified when the bubble gets destroyed so we can delete our instance.
+  CHROMEGTK_CALLBACK_0(ExtensionInstalledBubbleGtk, void, OnDestroy);
 
   // Shows the bubble. Called internally via PostTask.
   void ShowInternal();
@@ -73,9 +73,6 @@ class ExtensionInstalledBubbleGtk
 
   // BubbleDelegateGtk:
   virtual void BubbleClosing(BubbleGtk* bubble, bool closed_by_escape) OVERRIDE;
-
-  // Calls Release() internally. Called internally via PostTask.
-  void Close();
 
   static void OnButtonClick(GtkWidget* button,
                             ExtensionInstalledBubbleGtk* toolbar);
@@ -97,6 +94,8 @@ class ExtensionInstalledBubbleGtk
   scoped_ptr<CustomDrawButton> close_button_;
 
   BubbleGtk* bubble_;
+
+  base::WeakPtrFactory<ExtensionInstalledBubbleGtk> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionInstalledBubbleGtk);
 };
