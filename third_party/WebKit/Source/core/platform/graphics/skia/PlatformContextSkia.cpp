@@ -31,6 +31,7 @@
 #include "config.h"
 
 #include "PlatformContextSkia.h"
+#include "PlatformContextSkiaState.h"
 
 #include "Extensions3D.h"
 #include "GraphicsContext.h"
@@ -43,7 +44,6 @@
 #include "skia/ext/platform_canvas.h"
 
 #include "SkBitmap.h"
-#include "SkColorPriv.h"
 #include "SkDashPathEffect.h"
 #include "SkShader.h"
 
@@ -61,127 +61,6 @@ struct PlatformContextSkia::DeferredSaveState {
     int m_restoreCount;
 };
 
-// State -----------------------------------------------------------------------
-
-// Encapsulates the additional painting state information we store for each
-// pushed graphics state.
-struct PlatformContextSkia::State {
-    State();
-    State(const State&);
-    ~State();
-
-    // Common shader state.
-    float m_alpha;
-    SkXfermode::Mode m_xferMode;
-    bool m_useAntialiasing;
-    SkDrawLooper* m_looper;
-
-    // Fill.
-    SkColor m_fillColor;
-
-    // Stroke.
-    StrokeStyle m_strokeStyle;
-    SkColor m_strokeColor;
-    float m_strokeThickness;
-    int m_dashRatio;  // Ratio of the length of a dash to its width.
-    float m_miterLimit;
-    SkPaint::Cap m_lineCap;
-    SkPaint::Join m_lineJoin;
-    SkDashPathEffect* m_dash;
-
-    // Text. (See TextModeFill & friends in GraphicsContext.h.)
-    TextDrawingModeFlags m_textDrawingMode;
-
-    // Helper function for applying the state's alpha value to the given input
-    // color to produce a new output color.
-    SkColor applyAlpha(SkColor) const;
-
-    // If non-empty, the current State is clipped to this image.
-    SkBitmap m_imageBufferClip;
-    // If m_imageBufferClip is non-empty, this is the region the image is clipped to.
-    SkRect m_clip;
-
-    InterpolationQuality m_interpolationQuality;
-
-    PlatformContextSkia::State cloneInheritedProperties();
-private:
-    // Not supported.
-    void operator=(const State&);
-};
-
-// Note: Keep theses default values in sync with GraphicsContextState.
-PlatformContextSkia::State::State()
-    : m_alpha(1)
-    , m_xferMode(SkXfermode::kSrcOver_Mode)
-    , m_useAntialiasing(true)
-    , m_looper(0)
-    , m_fillColor(0xFF000000)
-    , m_strokeStyle(SolidStroke)
-    , m_strokeColor(Color::black)
-    , m_strokeThickness(0)
-    , m_dashRatio(3)
-    , m_miterLimit(4)
-    , m_lineCap(SkPaint::kDefault_Cap)
-    , m_lineJoin(SkPaint::kDefault_Join)
-    , m_dash(0)
-    , m_textDrawingMode(TextModeFill)
-    , m_clip(SkRect::MakeEmpty())
-#if USE(LOW_QUALITY_IMAGE_INTERPOLATION)
-    , m_interpolationQuality(InterpolationLow)
-#else
-    , m_interpolationQuality(InterpolationHigh)
-#endif
-{
-}
-
-PlatformContextSkia::State::State(const State& other)
-    : m_alpha(other.m_alpha)
-    , m_xferMode(other.m_xferMode)
-    , m_useAntialiasing(other.m_useAntialiasing)
-    , m_looper(other.m_looper)
-    , m_fillColor(other.m_fillColor)
-    , m_strokeStyle(other.m_strokeStyle)
-    , m_strokeColor(other.m_strokeColor)
-    , m_strokeThickness(other.m_strokeThickness)
-    , m_dashRatio(other.m_dashRatio)
-    , m_miterLimit(other.m_miterLimit)
-    , m_lineCap(other.m_lineCap)
-    , m_lineJoin(other.m_lineJoin)
-    , m_dash(other.m_dash)
-    , m_textDrawingMode(other.m_textDrawingMode)
-    , m_imageBufferClip(other.m_imageBufferClip)
-    , m_clip(other.m_clip)
-    , m_interpolationQuality(other.m_interpolationQuality)
-{
-    // Up the ref count of these. SkSafeRef does nothing if its argument is 0.
-    SkSafeRef(m_looper);
-    SkSafeRef(m_dash);
-}
-
-PlatformContextSkia::State::~State()
-{
-    SkSafeUnref(m_looper);
-    SkSafeUnref(m_dash);
-}
-
-// Returns a new State with all of this object's inherited properties copied.
-PlatformContextSkia::State PlatformContextSkia::State::cloneInheritedProperties()
-{
-    return PlatformContextSkia::State(*this);
-}
-
-SkColor PlatformContextSkia::State::applyAlpha(SkColor c) const
-{
-    int s = roundf(m_alpha * 256);
-    if (s >= 256)
-        return c;
-    if (s < 0)
-        return 0;
-
-    int a = SkAlphaMul(SkColorGetA(c), s);
-    return (c & 0x00FFFFFF) | (a << 24);
-}
-
 // PlatformContextSkia ---------------------------------------------------------
 
 // Danger: canvas can be NULL.
@@ -194,7 +73,7 @@ PlatformContextSkia::PlatformContextSkia(SkCanvas* canvas)
     , m_drawingToImageBuffer(false)
     , m_deviceScaleFactor(1)
 {
-    m_stateStack.append(State());
+    m_stateStack.append(PlatformContextSkiaState());
     m_state = &m_stateStack.last();
 
     // will be assigned in setGraphicsContext()

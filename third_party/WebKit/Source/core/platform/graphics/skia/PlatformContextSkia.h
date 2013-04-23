@@ -47,6 +47,7 @@
 
 namespace WebCore {
 
+class PlatformContextSkiaState;
 enum CompositeOperator;
 
 // This class holds the platform-specific state for GraphicsContext. We put
@@ -255,9 +256,6 @@ private:
 
     void realizeSave(SkCanvas::SaveFlags);
 
-    // Defines drawing style.
-    struct State;
-
     struct DeferredSaveState;
 
     // NULL indicates painting is disabled. Never delete this object.
@@ -266,12 +264,12 @@ private:
 
     // States stack. Enables local drawing state change with save()/restore()
     // calls.
-    WTF::Vector<State> m_stateStack;
+    Vector<PlatformContextSkiaState> m_stateStack;
     // Pointer to the current drawing state. This is a cached value of
     // mStateStack.back().
-    State* m_state;
+    PlatformContextSkiaState* m_state;
 
-    WTF::Vector<DeferredSaveState> m_saveStateStack;
+    Vector<DeferredSaveState> m_saveStateStack;
 
     // Currently pending save flags.
     // FIXME: While defined as a bitmask of SkCanvas::SaveFlags, this is mostly used as a bool.

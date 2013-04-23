@@ -32,51 +32,13 @@
 #include "ImageBuffer.h"
 #include "IntRect.h"
 #include "RoundedRect.h"
-#include "TextRun.h"
+#include "TextRunIterator.h"
 
 #include "stdio.h"
 
 using namespace std;
 
 namespace WebCore {
-
-class TextRunIterator {
-public:
-    TextRunIterator()
-        : m_textRun(0)
-        , m_offset(0)
-    {
-    }
-
-    TextRunIterator(const TextRun* textRun, unsigned offset)
-        : m_textRun(textRun)
-        , m_offset(offset)
-    {
-    }
-
-    TextRunIterator(const TextRunIterator& other)
-        : m_textRun(other.m_textRun)
-        , m_offset(other.m_offset)
-    {
-    }
-
-    unsigned offset() const { return m_offset; }
-    void increment() { m_offset++; }
-    bool atEnd() const { return !m_textRun || m_offset >= m_textRun->length(); }
-    UChar current() const { return (*m_textRun)[m_offset]; }
-    WTF::Unicode::Direction direction() const { return atEnd() ? WTF::Unicode::OtherNeutral : WTF::Unicode::direction(current()); }
-
-    bool operator==(const TextRunIterator& other)
-    {
-        return m_offset == other.m_offset && m_textRun == other.m_textRun;
-    }
-
-    bool operator!=(const TextRunIterator& other) { return !operator==(other); }
-
-private:
-    const TextRun* m_textRun;
-    int m_offset;
-};
 
 GraphicsContext::GraphicsContext(PlatformGraphicsContext* platformGraphicsContext)
     : m_updatingControlTints(false)
