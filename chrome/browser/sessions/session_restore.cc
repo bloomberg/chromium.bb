@@ -720,6 +720,12 @@ class SessionRestoreImpl : public content::NotificationObserver {
       // from the history service which doesn't deal well with deleting the
       // object it is notifying.
       MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+
+      // The delete may take a while and at this point we no longer care about
+      // if the browser is deleted. Don't listen to anything. This avoid a
+      // possible double delete too (if browser is closed before DeleteSoon() is
+      // processed).
+      registrar_.RemoveAll();
     }
 
 #if defined(OS_CHROMEOS)
