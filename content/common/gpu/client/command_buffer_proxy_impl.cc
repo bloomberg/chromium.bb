@@ -427,6 +427,9 @@ bool CommandBufferProxyImpl::SignalSyncPoint(uint32 sync_point,
 bool CommandBufferProxyImpl::GenerateMailboxNames(
     unsigned num,
     std::vector<gpu::Mailbox>* names) {
+  if (last_state_.error != gpu::error::kNoError)
+    return false;
+
   return channel_->GenerateMailboxNames(num, names);
 }
 
