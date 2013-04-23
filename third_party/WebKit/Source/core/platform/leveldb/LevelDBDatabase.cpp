@@ -113,8 +113,11 @@ static leveldb::Status openDB(leveldb::Comparator* comparator, leveldb::Env* env
     options.comparator = comparator;
     options.create_if_missing = true;
     options.paranoid_checks = true;
-    // 20 max_open_files is the minimum LevelDB allows.
-    options.max_open_files = 20;
+    // 20 max_open_files is the minimum LevelDB allows but its cache behaves
+    // poorly with less than 4 files per shard. As of this writing the latest
+    // leveldb (1.9) hardcodes 16 shards. See
+    // https://code.google.com/p/chromium/issues/detail?id=227313#c11
+    options.max_open_files = 80;
     options.env = env;
 
     return leveldb::DB::Open(options, path.utf8().data(), db);
