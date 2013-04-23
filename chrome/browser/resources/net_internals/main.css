@@ -17,13 +17,11 @@ ul {
 /* This class is used to create the splitter widget in
    ResizbleVerticalSplitView */
 .vertical-splitter {
-  background: #bfbfbf;
-  border-left: 1px inset black;
-  border-right: 1px solid black;
-  cursor: col-resize;
+  border-left: 1px solid #afafaf;
+  cursor: ew-resize;
   position: absolute;
   user-select: none;
-  width: 8px;
+  width: 10px;
 }
 
 /* Needs to be wider on touch devices. */
