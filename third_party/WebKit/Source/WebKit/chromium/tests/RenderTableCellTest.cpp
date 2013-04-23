@@ -22,8 +22,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-// FIXME: If we get the TestWebKitAPI framework to bring a full Frame + DOM stack
-// in a portable way, this test should be shared with all ports!
 
 #include "config.h"
 

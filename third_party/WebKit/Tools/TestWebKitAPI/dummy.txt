@@ -1,0 +1,2 @@
+This text file exists because this directory is referenced in the main Chromium
+DEPS file. Once that reference is removed, we can remove this file.
