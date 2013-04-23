@@ -30,6 +30,7 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // If you change this method, update GetProperties too.
   virtual bool PropertyChanged(const std::string& key,
                                const base::Value& value) OVERRIDE;
+  virtual void InitialPropertiesReceived() OVERRIDE;
 
   // Fills |dictionary| with the state properties. All the properties that are
   // accepted by PropertyChanged are stored in |dictionary|, no other values are
@@ -74,6 +75,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   friend class NetworkStateHandler;
   friend class NetworkChangeNotifierChromeosUpdateTest;
 
+  // Updates the name from hex_ssid_ if provided, and validates name_.
+  void UpdateName();
+
   // Called by NetworkStateHandler when the ip config changes.
   void set_ip_address(const std::string& ip_address) {
     ip_address_ = ip_address;
@@ -99,6 +103,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   std::vector<std::string> dns_servers_;
   // Wireless properties
   int signal_strength_;
+  // Wifi properties
+  std::string hex_ssid_;
+  std::string country_code_;
   // Cellular properties
   std::string technology_;
   std::string activation_state_;

@@ -464,6 +464,7 @@
         'network/network_event_log_unittest.cc',
         'network/network_sms_handler_unittest.cc',
         'network/network_state_handler_unittest.cc',
+        'network/network_state_unittest.cc',
         'network/network_ui_data_unittest.cc',
         'network/network_util_unittest.cc',
         'network/onc/onc_certificate_importer_unittest.cc',

@@ -4,11 +4,19 @@
 
 #include "chromeos/network/network_state.h"
 
+#include "base/i18n/icu_encoding_detection.h"
+#include "base/i18n/icu_string_conversions.h"
+#include "base/string_util.h"
 #include "base/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/utf_string_conversion_utils.h"
 #include "base/values.h"
+#include "chromeos/network/network_event_log.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace {
+
+const char kLogModule[] = "NetworkState";
 
 bool ConvertListValueToStringVector(const base::ListValue& string_list,
                                     std::vector<std::string>* result) {
@@ -19,6 +27,26 @@ bool ConvertListValueToStringVector(const base::ListValue& string_list,
     result->push_back(str);
   }
   return true;
+}
+
+// Replace non UTF8 characters in |str| with a replacement character.
+std::string ValidateUTF8(const std::string& str) {
+  std::string result;
+  for (int32 index = 0; index < static_cast<int32>(str.size()); ++index) {
+    uint32 code_point_out;
+    bool is_unicode_char = base::ReadUnicodeCharacter(str.c_str(), str.size(),
+                                                      &index, &code_point_out);
+    const uint32 kFirstNonControlChar = 0x20;
+    if (is_unicode_char && (code_point_out >= kFirstNonControlChar)) {
+      base::WriteUnicodeCharacter(code_point_out, &result);
+    } else {
+      const uint32 kReplacementChar = 0xFFFD;
+      // Puts kReplacementChar if character is a control character [0,0x20)
+      // or is not readable UTF8.
+      base::WriteUnicodeCharacter(kReplacementChar, &result);
+    }
+  }
+  return result;
 }
 
 }  // namespace
@@ -81,8 +109,20 @@ bool NetworkState::PropertyChanged(const std::string& key,
     return GetBooleanValue(key, value, &activate_over_non_cellular_networks_);
   } else if (key == shill::kOutOfCreditsProperty) {
     return GetBooleanValue(key, value, &cellular_out_of_credits_);
+  } else if (key == flimflam::kWifiHexSsid) {
+    return GetStringValue(key, value, &hex_ssid_);
+  } else if (key == flimflam::kCountryProperty) {
+    // TODO(stevenjb): This is currently experimental. If we find a case where
+    // base::DetectEncoding() fails in UpdateName(), where country_code_ is
+    // set, figure out whether we can use country_code_ with ConvertToUtf8().
+    // crbug.com/233267.
+    return GetStringValue(key, value, &country_code_);
   }
   return false;
+}
+
+void NetworkState::InitialPropertiesReceived() {
+  UpdateName();
 }
 
 void NetworkState::GetProperties(base::DictionaryValue* dictionary) const {
@@ -138,6 +178,69 @@ bool NetworkState::IsConnectedState() const {
 
 bool NetworkState::IsConnectingState() const {
   return StateIsConnecting(connection_state_);
+}
+
+void NetworkState::UpdateName() {
+  if (hex_ssid_.empty()) {
+    // Validate name for UTF8.
+    std::string valid_ssid = ValidateUTF8(name());
+    if (valid_ssid != name()) {
+      set_name(valid_ssid);
+      network_event_log::AddEntry(
+          kLogModule, "UpdateName",
+          base::StringPrintf("%s: UTF8: %s", path().c_str(), name().c_str()));
+    }
+    return;
+  }
+
+  std::string ssid;
+  std::vector<uint8> raw_ssid_bytes;
+  if (base::HexStringToBytes(hex_ssid_, &raw_ssid_bytes)) {
+    ssid = std::string(raw_ssid_bytes.begin(), raw_ssid_bytes.end());
+  } else {
+    std::string desc = base::StringPrintf("%s: Error processing: %s",
+                                          path().c_str(), hex_ssid_.c_str());
+    network_event_log::AddEntry(kLogModule, "UpdateName", desc);
+    LOG(ERROR) << desc;
+    ssid = name();
+  }
+
+  if (IsStringUTF8(ssid)) {
+    if (ssid != name()) {
+      set_name(ssid);
+      network_event_log::AddEntry(
+          kLogModule, "UpdateName",
+          base::StringPrintf("%s: UTF8: %s", path().c_str(), name().c_str()));
+    }
+    return;
+  }
+
+  // Detect encoding and convert to UTF-8.
+  std::string encoding;
+  if (!base::DetectEncoding(ssid, &encoding)) {
+    // TODO(stevenjb): Test this. See comment in PropertyChanged() under
+    // flimflam::kCountryProperty.
+    encoding = country_code_;
+  }
+  if (!encoding.empty()) {
+    std::string utf8_ssid;
+    if (base::ConvertToUtf8AndNormalize(ssid, encoding, &utf8_ssid)) {
+      set_name(utf8_ssid);
+      network_event_log::AddEntry(
+          kLogModule, "UpdateName",
+          base::StringPrintf("%s: Encoding=%s: %s", path().c_str(),
+                             encoding.c_str(), name().c_str()));
+      return;
+    }
+  }
+
+  // Unrecognized encoding. Only use raw bytes if name_ is empty.
+  if (name().empty())
+    set_name(ssid);
+  network_event_log::AddEntry(
+      kLogModule, "UpdateName",
+      base::StringPrintf("%s: Unrecognized Encoding=%s: %s", path().c_str(),
+                         encoding.c_str(), name().c_str()));
 }
 
 // static

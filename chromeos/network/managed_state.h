@@ -45,6 +45,11 @@ class ManagedState {
   virtual bool PropertyChanged(const std::string& key,
                                const base::Value& value) = 0;
 
+  // Called by NetworkStateHandler after all calls to PropertyChanged for the
+  // initial set of properties. Used to update state requiring multiple
+  // parsed properties, e.g. name from hex_ssid in NetworkState.
+  virtual void InitialPropertiesReceived();
+
   const ManagedType managed_type() const { return managed_type_; }
   const std::string& path() const { return path_; }
   const std::string& name() const { return name_; }
@@ -69,6 +74,8 @@ class ManagedState {
   bool GetStringValue(const std::string& key,
                       const base::Value& value,
                       std::string* out_value);
+
+  void set_name(const std::string& name) { name_ = name; }
 
  private:
   friend class NetworkChangeNotifierChromeosUpdateTest;

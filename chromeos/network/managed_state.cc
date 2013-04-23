@@ -43,6 +43,9 @@ DeviceState* ManagedState::AsDeviceState() {
   return NULL;
 }
 
+void ManagedState::InitialPropertiesReceived() {
+}
+
 bool ManagedState::ManagedStatePropertyChanged(const std::string& key,
                                                const base::Value& value) {
   if (key == flimflam::kNameProperty) {

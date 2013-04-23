@@ -399,6 +399,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
       managed->PropertyChanged(iter.key(), iter.value());
     }
   }
+  managed->InitialPropertiesReceived();
   network_event_log::AddEntry(
       kLogModule, "PropertiesReceived",
       base::StringPrintf("%s (%s)", path.c_str(), managed->name().c_str()));
