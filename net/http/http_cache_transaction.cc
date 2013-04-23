@@ -1644,7 +1644,6 @@ void HttpCache::Transaction::SetRequest(const BoundNetLog& net_log,
       }
       external_validation_.values[i] = validation_value;
       external_validation_.initialized = true;
-      break;
     }
   }
 

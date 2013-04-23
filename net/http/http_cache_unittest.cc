@@ -297,7 +297,15 @@ bool RangeTransactionServer::modified_ = false;
 bool RangeTransactionServer::bad_200_ = false;
 
 // A dummy extra header that must be preserved on a given request.
-#define EXTRA_HEADER "Extra: header"
+
+// EXTRA_HEADER_LINE doesn't include a line terminator because it
+// will be passed to AddHeaderFromString() which doesn't accept them.
+#define EXTRA_HEADER_LINE "Extra: header"
+
+// EXTRA_HEADER contains a line terminator, as expected by
+// AddHeadersFromString() (_not_ AddHeaderFromString()).
+#define EXTRA_HEADER EXTRA_HEADER_LINE "\r\n"
+
 static const char kExtraHeaderKey[] = "Extra";
 
 // Static.
@@ -812,7 +820,7 @@ TEST(HttpCache, SimpleGET_LoadPreferringCache_VaryMatch) {
 
   // Write to the cache.
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "Foo: bar\n";
+  transaction.request_headers = "Foo: bar\r\n";
   transaction.response_headers = "Cache-Control: max-age=10000\n"
                                  "Vary: Foo\n";
   AddMockTransaction(&transaction);
@@ -834,7 +842,7 @@ TEST(HttpCache, SimpleGET_LoadPreferringCache_VaryMismatch) {
 
   // Write to the cache.
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "Foo: bar\n";
+  transaction.request_headers = "Foo: bar\r\n";
   transaction.response_headers = "Cache-Control: max-age=10000\n"
                                  "Vary: Foo\n";
   AddMockTransaction(&transaction);
@@ -843,7 +851,7 @@ TEST(HttpCache, SimpleGET_LoadPreferringCache_VaryMismatch) {
   // Attempt to read from the cache... this is a vary mismatch that must reach
   // the network again.
   transaction.load_flags |= net::LOAD_PREFERRING_CACHE;
-  transaction.request_headers = "Foo: none\n";
+  transaction.request_headers = "Foo: none\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
@@ -1044,7 +1052,7 @@ TEST(HttpCache, SimpleGET_LoadBypassCache_Implicit) {
 
   // force this transaction to write to the cache again
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "pragma: no-cache";
+  transaction.request_headers = "pragma: no-cache\r\n";
 
   RunTransactionTest(cache.http_cache(), transaction);
 
@@ -1061,7 +1069,7 @@ TEST(HttpCache, SimpleGET_LoadBypassCache_Implicit2) {
 
   // force this transaction to write to the cache again
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "cache-control: no-cache";
+  transaction.request_headers = "cache-control: no-cache\r\n";
 
   RunTransactionTest(cache.http_cache(), transaction);
 
@@ -1104,7 +1112,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache_Implicit) {
 
   // force this transaction to validate the cache
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "cache-control: max-age=0";
+  transaction.request_headers = "cache-control: max-age=0\r\n";
 
   RunTransactionTest(cache.http_cache(), transaction);
 
@@ -1954,7 +1962,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMatch) {
 
   // Write to the cache.
   MockTransaction transaction(kTypicalGET_Transaction);
-  transaction.request_headers = "Foo: bar\n";
+  transaction.request_headers = "Foo: bar\r\n";
   transaction.response_headers =
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
       "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
@@ -1983,7 +1991,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMismatch) {
 
   // Write to the cache.
   MockTransaction transaction(kTypicalGET_Transaction);
-  transaction.request_headers = "Foo: bar\n";
+  transaction.request_headers = "Foo: bar\r\n";
   transaction.response_headers =
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
       "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
@@ -1996,7 +2004,7 @@ TEST(HttpCache, SimpleGET_LoadValidateCache_VaryMismatch) {
   // Read from the cache and revalidate the entry.
   RevalidationServer server;
   transaction.handler = server.Handler;
-  transaction.request_headers = "Foo: none\n";
+  transaction.request_headers = "Foo: none\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_TRUE(server.EtagUsed());
@@ -2013,7 +2021,7 @@ TEST(HttpCache, SimpleGET_LoadDontValidateCache_VaryMismatch) {
 
   // Write to the cache.
   MockTransaction transaction(kTypicalGET_Transaction);
-  transaction.request_headers = "Foo: bar\n";
+  transaction.request_headers = "Foo: bar\r\n";
   transaction.response_headers =
       "Date: Wed, 28 Nov 2007 09:40:09 GMT\n"
       "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
@@ -2025,7 +2033,7 @@ TEST(HttpCache, SimpleGET_LoadDontValidateCache_VaryMismatch) {
   // Read from the cache and don't revalidate the entry.
   RevalidationServer server;
   transaction.handler = server.Handler;
-  transaction.request_headers = "Foo: none\n";
+  transaction.request_headers = "Foo: none\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_FALSE(server.EtagUsed());
@@ -2084,7 +2092,7 @@ TEST(HttpCache, ETagGET_Http10_Range) {
   // Get the same URL again, but use a byte range request.
   transaction.load_flags = net::LOAD_VALIDATE_CACHE;
   transaction.handler = ETagGet_UnconditionalRequest_Handler;
-  transaction.request_headers = "Range: bytes = 5-";
+  transaction.request_headers = "Range: bytes = 5-\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
@@ -2264,7 +2272,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache1) {
   };
 
   const char* extra_headers =
-      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\n";
+      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse2, extra_headers);
@@ -2291,7 +2299,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache2) {
     "body2"
   };
 
-  const char* extra_headers = "If-None-Match: \"ETAG1\"\n";
+  const char* extra_headers = "If-None-Match: \"ETAG1\"\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse2, extra_headers);
@@ -2328,7 +2336,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache3) {
   };
 
   const char* extra_headers =
-      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\n";
+      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kCachedResponse2, extra_headers);
@@ -2350,7 +2358,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache4) {
   };
 
   const char* kExtraRequestHeaders =
-      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT";
+      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   // We will control the network layer's responses for |kUrl| using
   // |mock_network_response|.
@@ -2394,7 +2402,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache5) {
   };
 
   const char* kExtraRequestHeaders =
-      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT";
+      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n";
 
   // We will control the network layer's responses for |kUrl| using
   // |mock_network_response|.
@@ -2447,7 +2455,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache6) {
   // This is two days in the future from the original response's last-modified
   // date!
   const char* kExtraRequestHeaders =
-      "If-Modified-Since: Fri, 08 Feb 2008 22:38:21 GMT\n";
+      "If-Modified-Since: Fri, 08 Feb 2008 22:38:21 GMT\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse1, kExtraRequestHeaders);
@@ -2475,7 +2483,7 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache7) {
   };
 
   // Different etag from original response.
-  const char* kExtraRequestHeaders = "If-None-Match: \"Foo2\"\n";
+  const char* kExtraRequestHeaders = "If-None-Match: \"Foo2\"\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse1, kExtraRequestHeaders);
@@ -2531,8 +2539,8 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache9) {
 
   // The etag doesn't match what we have stored.
   const char* kExtraRequestHeaders =
-      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\n"
-      "If-None-Match: \"Foo2\"\n";
+      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\r\n"
+      "If-None-Match: \"Foo2\"\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse1, kExtraRequestHeaders);
@@ -2560,37 +2568,8 @@ TEST(HttpCache, ConditionalizedRequestUpdatesCache10) {
 
   // The modification date doesn't match what we have stored.
   const char* kExtraRequestHeaders =
-      "If-Modified-Since: Fri, 08 Feb 2008 22:38:21 GMT\n"
-      "If-None-Match: \"Foo1\"\n";
-
-  ConditionalizedRequestUpdatesCacheHelper(
-      kNetResponse1, kNetResponse2, kNetResponse1, kExtraRequestHeaders);
-}
-
-// Test that doing an externally conditionalized request with two conflicting
-// headers does not update the cache.
-TEST(HttpCache, ConditionalizedRequestUpdatesCache11) {
-  static const Response kNetResponse1 = {
-    "HTTP/1.1 200 OK",
-    "Date: Fri, 12 Jun 2009 21:46:42 GMT\n"
-    "Etag: \"Foo1\"\n"
-    "Last-Modified: Wed, 06 Feb 2008 22:38:21 GMT\n",
-    "body1"
-  };
-
-  // Second network response for |kUrl|.
-  static const Response kNetResponse2 = {
-    "HTTP/1.1 200 OK",
-    "Date: Wed, 22 Jul 2009 03:15:26 GMT\n"
-    "Etag: \"Foo2\"\n"
-    "Last-Modified: Fri, 03 Jul 2009 02:14:27 GMT\n",
-    "body2"
-  };
-
-  // Two dates, the second matches what we have stored.
-  const char* kExtraRequestHeaders =
-      "If-Modified-Since: Mon, 04 Feb 2008 22:38:21 GMT\n"
-      "If-Modified-Since: Wed, 06 Feb 2008 22:38:21 GMT\n";
+      "If-Modified-Since: Fri, 08 Feb 2008 22:38:21 GMT\r\n"
+      "If-None-Match: \"Foo1\"\r\n";
 
   ConditionalizedRequestUpdatesCacheHelper(
       kNetResponse1, kNetResponse2, kNetResponse1, kExtraRequestHeaders);
@@ -3113,7 +3092,7 @@ TEST(HttpCache, RangeGET_SkipsCache) {
   EXPECT_EQ(0, cache.disk_cache()->create_count());
 
   MockTransaction transaction(kSimpleGET_Transaction);
-  transaction.request_headers = "If-None-Match: foo";
+  transaction.request_headers = "If-None-Match: foo\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
@@ -3121,7 +3100,7 @@ TEST(HttpCache, RangeGET_SkipsCache) {
   EXPECT_EQ(0, cache.disk_cache()->create_count());
 
   transaction.request_headers =
-      "If-Modified-Since: Wed, 28 Nov 2007 00:45:20 GMT";
+      "If-Modified-Since: Wed, 28 Nov 2007 00:45:20 GMT\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
@@ -3137,7 +3116,7 @@ TEST(HttpCache, RangeGET_SkipsCache2) {
   MockTransaction transaction(kRangeGET_Transaction);
   transaction.request_headers = "If-None-Match: foo\r\n"
                                 EXTRA_HEADER
-                                "\r\nRange: bytes = 40-49";
+                                "Range: bytes = 40-49\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(1, cache.network_layer()->transaction_count());
@@ -3147,7 +3126,7 @@ TEST(HttpCache, RangeGET_SkipsCache2) {
   transaction.request_headers =
       "If-Modified-Since: Wed, 28 Nov 2007 00:45:20 GMT\r\n"
       EXTRA_HEADER
-      "\r\nRange: bytes = 40-49";
+      "Range: bytes = 40-49\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
@@ -3156,7 +3135,7 @@ TEST(HttpCache, RangeGET_SkipsCache2) {
 
   transaction.request_headers = "If-Range: bla\r\n"
                                 EXTRA_HEADER
-                                "\r\nRange: bytes = 40-49\n";
+                                "Range: bytes = 40-49\r\n";
   RunTransactionTest(cache.http_cache(), transaction);
 
   EXPECT_EQ(3, cache.network_layer()->transaction_count());
@@ -5318,7 +5297,7 @@ TEST(HttpCache, UpdatesRequestResponseTimeOn304) {
   MockTransaction request = { 0 };
   request.url = kUrl;
   request.method = "GET";
-  request.request_headers = "";
+  request.request_headers = "\r\n";
   request.data = kData;
 
   static const Response kNetResponse1 = {
@@ -5631,7 +5610,7 @@ TEST(HttpCache, StopCachingTruncatedEntry) {
   net::TestCompletionCallback callback;
   MockHttpRequest request(kRangeGET_TransactionOK);
   request.extra_headers.Clear();
-  request.extra_headers.AddHeaderFromString(EXTRA_HEADER);
+  request.extra_headers.AddHeaderFromString(EXTRA_HEADER_LINE);
   AddMockTransaction(&kRangeGET_TransactionOK);
 
   std::string raw_headers("HTTP/1.1 200 OK\n"
