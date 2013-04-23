@@ -181,7 +181,7 @@ bool checkLayoutTestSystemDependencies()
     ::GetVersionEx(&versionInfo);
     const bool isVistaOrLater = (versionInfo.dwMajorVersion >= 6);
     NONCLIENTMETRICS metrics = {0};
-    metrics.cbSize = isVistaOrLater ? (sizeof NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
+    metrics.cbSize = isVistaOrLater ? sizeof(NONCLIENTMETRICS) : NONCLIENTMETRICS_SIZE_PRE_VISTA;
     const bool success = !!::SystemParametersInfo(SPI_GETNONCLIENTMETRICS, metrics.cbSize, &metrics, 0);
     ASSERT(success);
     LOGFONTW* systemFonts[] =
