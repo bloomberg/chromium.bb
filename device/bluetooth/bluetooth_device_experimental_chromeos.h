@@ -91,7 +91,7 @@ class BluetoothDeviceExperimentalChromeOS
   virtual void RequestPasskey(const dbus::ObjectPath& device_path,
                               const PasskeyCallback& callback) OVERRIDE;
   virtual void DisplayPasskey(const dbus::ObjectPath& device_path,
-                              uint32 passkey, int16 entered) OVERRIDE;
+                              uint32 passkey, uint16 entered) OVERRIDE;
   virtual void RequestConfirmation(const dbus::ObjectPath& device_path,
                                    uint32 passkey,
                                    const ConfirmationCallback& callback)

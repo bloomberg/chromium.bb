@@ -213,6 +213,13 @@ class BluetoothOptionsHandler
   // True while performing device discovery.
   bool discovering_;
 
+  // Cached information about the current pairing device, if any.
+  std::string pairing_device_address_;
+  std::string pairing_device_pairing_;
+  std::string pairing_device_pincode_;
+  int pairing_device_passkey_;
+  int pairing_device_entered_;
+
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than this object does.
   base::WeakPtrFactory<BluetoothOptionsHandler> weak_ptr_factory_;

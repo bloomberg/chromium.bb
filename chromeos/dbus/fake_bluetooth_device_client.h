@@ -168,7 +168,7 @@ class CHROMEOS_EXPORT FakeBluetoothDeviceClient
       const ErrorCallback& error_callback,
       ExperimentalBluetoothAgentServiceProvider::Delegate::Status status);
   void SimulateKeypress(
-      int16 entered,
+      uint16 entered,
       const dbus::ObjectPath& object_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback);

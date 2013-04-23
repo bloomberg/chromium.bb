@@ -236,17 +236,14 @@ class ExperimentalBluetoothAgentServiceProviderImpl
     dbus::MessageReader reader(method_call);
     dbus::ObjectPath device_path;
     uint32 passkey;
-    int16 entered;
+    uint16 entered;
     if (!reader.PopObjectPath(&device_path) ||
-        !reader.PopUint32(&passkey)) {
+        !reader.PopUint32(&passkey) ||
+        !reader.PopUint16(&entered)) {
       LOG(WARNING) << "DisplayPasskey called with incorrect paramters: "
                    << method_call->ToString();
       return;
     }
-
-    // This wasn't always provided, play it safe...
-    if (!reader.PopInt16(&entered))
-      entered = 0;
 
     delegate_->DisplayPasskey(device_path, passkey, entered);
 

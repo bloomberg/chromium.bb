@@ -114,7 +114,7 @@ class CHROMEOS_EXPORT ExperimentalBluetoothAgentServiceProvider {
     // As the user enters the passkey onto the device, |entered| will be
     // updated to reflect the number of digits entered so far.
     virtual void DisplayPasskey(const dbus::ObjectPath& device_path,
-                                uint32 passkey, int16 entered) = 0;
+                                uint32 passkey, uint16 entered) = 0;
 
     // This method will be called when the Bluetooth daemon requires that the
     // user confirm that the Passkey |passkey| is displayed on the screen

@@ -805,7 +805,7 @@ void FakeBluetoothDeviceClient::ConfirmationCallback(
 }
 
 void FakeBluetoothDeviceClient::SimulateKeypress(
-    int16 entered,
+    uint16 entered,
     const dbus::ObjectPath& object_path,
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

@@ -341,7 +341,8 @@ void BluetoothDeviceExperimentalChromeOS::RequestPasskey(
 
 void BluetoothDeviceExperimentalChromeOS::DisplayPasskey(
     const dbus::ObjectPath& device_path,
-    uint32 passkey, int16 entered) {
+    uint32 passkey,
+    uint16 entered) {
   DCHECK(agent_.get());
   DCHECK(device_path == object_path_);
   VLOG(1) << object_path_.value() << ": DisplayPasskey: " << passkey
