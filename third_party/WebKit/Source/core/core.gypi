@@ -3642,8 +3642,6 @@
         'webcore_test_support_files': [
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',
-            'testing/js/WebCoreTestSupport.cpp',
-            'testing/js/WebCoreTestSupport.h',
             'testing/InspectorFrontendClientLocal.cpp',
             'testing/InspectorFrontendClientLocal.h',
             'testing/Internals.cpp',

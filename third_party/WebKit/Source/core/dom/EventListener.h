@@ -23,11 +23,6 @@
 
 #include <wtf/RefCounted.h>
 
-namespace JSC {
-    class JSObject;
-    class SlotVisitor;
-}
-
 namespace WebCore {
 
     class ScriptExecutionContext;

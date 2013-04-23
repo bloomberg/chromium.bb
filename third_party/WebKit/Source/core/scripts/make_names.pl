@@ -1197,12 +1197,7 @@ sub printWrapperFactoryCppFile
 END
 ;
 
-    if ($wrapperFactoryType eq "JS") {    
-        print F <<END
-using namespace JSC;
-END
-;
-    } elsif ($wrapperFactoryType eq "V8") {
+    if ($wrapperFactoryType eq "V8") {
         print F <<END
 #include "V8$parameters{namespace}Element.h"
 
@@ -1394,27 +1389,7 @@ sub printWrapperFactoryHeaderFile
 
     print F "#if $parameters{guardFactoryWith}\n" if $parameters{guardFactoryWith};
 
-    if ($wrapperFactoryType eq "JS") {
-        print F <<END
-#include <wtf/Forward.h>
-
-namespace JSC {
-    class ExecState;
-}                                            
-                                             
-namespace WebCore {
-
-    class JSDOMWrapper;
-    class JSDOMGlobalObject;
-    class $parameters{namespace}Element;
-
-    JSDOMWrapper* createJS$parameters{namespace}Wrapper(JSC::ExecState*, JSDOMGlobalObject*, PassRefPtr<$parameters{namespace}Element>);
-
-}
- 
-END
-;
-    } elsif ($wrapperFactoryType eq "V8") {
+    if ($wrapperFactoryType eq "V8") {
         print F <<END
 #include <V8$parameters{namespace}Element.h>
 #include <V8$parameters{fallbackInterfaceName}.h>

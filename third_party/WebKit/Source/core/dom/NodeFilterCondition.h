@@ -28,12 +28,6 @@
 #include "ScriptState.h"
 #include <wtf/RefCounted.h>
 
-namespace JSC {
-
-class SlotVisitor;
-
-}
-
 namespace WebCore {
 
     class Node;
@@ -42,7 +36,6 @@ namespace WebCore {
     public:
         virtual ~NodeFilterCondition() { }
         virtual short acceptNode(ScriptState*, Node*) const = 0;
-        virtual void visitAggregate(JSC::SlotVisitor&) { }
     };
 
 } // namespace WebCore

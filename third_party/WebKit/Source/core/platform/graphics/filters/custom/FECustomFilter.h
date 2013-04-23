@@ -40,10 +40,6 @@
 #include "GraphicsTypes3D.h"
 #include <wtf/RefPtr.h>
 
-namespace JSC {
-class Uint8ClampedArray;
-}
-
 namespace WebCore {
 
 class CustomFilterRenderer;

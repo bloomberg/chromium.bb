@@ -39,8 +39,6 @@
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
 
-using namespace JSC;
-
 namespace WebCore {
 
 static const double backForwardCacheExpirationInterval=1800;
