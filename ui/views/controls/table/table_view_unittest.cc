@@ -153,7 +153,7 @@ class TestTableView : public TableView {
  public:
   TestTableView(ui::TableModel* model,
                 const std::vector<ui::TableColumn>& columns)
-      : TableView(model, columns, TEXT_ONLY, false, true, true) {
+      : TableView(model, columns, TEXT_ONLY, false) {
   }
 
   // View overrides:

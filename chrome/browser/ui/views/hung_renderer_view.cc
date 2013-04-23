@@ -373,8 +373,7 @@ void HungRendererDialogView::Init() {
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn());
   hung_pages_table_ = new views::TableView(
-      hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true,
-      false, true);
+      hung_pages_table_model_.get(), columns, views::ICON_AND_TEXT, true);
   hung_pages_table_->SetGrouper(hung_pages_table_model_.get());
 
   using views::GridLayout;

@@ -390,7 +390,7 @@ void TaskManagerView::Init() {
   columns_.back().sortable = true;
 
   tab_table_ = new views::TableView(
-      table_model_.get(), columns_, views::ICON_AND_TEXT, false, true, true);
+      table_model_.get(), columns_, views::ICON_AND_TEXT, false);
   tab_table_->SetGrouper(table_model_.get());
   if (highlight_background_resources_) {
     scoped_ptr<BackgroundPainter> painter(

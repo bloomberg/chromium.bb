@@ -117,10 +117,7 @@ TableView::PaintRegion::~PaintRegion() {}
 TableView::TableView(ui::TableModel* model,
                      const std::vector<ui::TableColumn>& columns,
                      TableTypes table_type,
-                     bool single_selection,
-                     bool resizable_columns,
-                     // TODO(sky); remove autosize_columns as it's not needed.
-                     bool autosize_columns)
+                     bool single_selection)
     : model_(NULL),
       columns_(columns),
       header_(NULL),

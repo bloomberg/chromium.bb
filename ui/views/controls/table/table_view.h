@@ -86,23 +86,10 @@ class VIEWS_EXPORT TableView
   // Creates a new table using the model and columns specified.
   // The table type applies to the content of the first column (text, icon and
   // text, checkbox and text).
-  // When autosize_columns is true, columns always fill the available width. If
-  // false, columns are not resized when the table is resized. An extra empty
-  // column at the right fills the remaining space.
-  // When resizable_columns is true, users can resize columns by dragging the
-  // separator on the column header.  NOTE: Right now this is always true.  The
-  // code to set it false is still in place to be a base for future, better
-  // resizing behavior (see http://b/issue?id=874646 ), but no one uses or
-  // tests the case where this flag is false.
-  // Note that setting both resizable_columns and autosize_columns to false is
-  // probably not a good idea, as there is no way for the user to increase a
-  // column's size in that case.
   TableView(ui::TableModel* model,
             const std::vector<ui::TableColumn>& columns,
             TableTypes table_type,
-            bool single_selection,
-            bool resizable_columns,
-            bool autosize_columns);
+            bool single_selection);
   virtual ~TableView();
 
   // Assigns a new model to the table view, detaching the old one if present.

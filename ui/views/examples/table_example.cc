@@ -66,7 +66,7 @@ void TableExample::CreateExampleView(View* container) {
   columns.push_back(TestTableColumn(2, "Origin"));
   columns.push_back(TestTableColumn(3, "Price"));
   columns.back().alignment = ui::TableColumn::RIGHT;
-  table_ = new TableView(this, columns, ICON_AND_TEXT, true, true, true);
+  table_ = new TableView(this, columns, ICON_AND_TEXT, true);
   table_->SetGrouper(this);
   table_->SetObserver(this);
   icon1_.setConfig(SkBitmap::kARGB_8888_Config, 16, 16);

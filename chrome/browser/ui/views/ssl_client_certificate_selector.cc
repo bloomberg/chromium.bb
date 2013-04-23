@@ -280,9 +280,7 @@ void SSLClientCertificateSelector::CreateCertTable() {
   table_ = new views::TableView(model_.get(),
                                 columns,
                                 views::TEXT_ONLY,
-                                true,  // single_selection
-                                true,  // resizable_columns
-                                true);  // autosize_columns
+                                true /* single_selection */);
   table_->SetObserver(this);
 }
 
