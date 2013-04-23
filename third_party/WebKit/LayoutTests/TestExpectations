@@ -1488,6 +1488,12 @@ crbug.com/77574 [ Linux ] fast/writing-mode/fallback-orientation.html [ ImageOnl
 # Chrome doesn't load favicons in DRT tests.
 webkit.org/b/57259 http/tests/misc/link-rel-icon-beforeload.html [ Failure ]
 
+# Crashing inspector test.
+crbug.com/234607 inspector-protocol/debugger-setVariableValue.html [ Crash Pass ]
+
+# Is now timing out.
+crbug.com/234614 http/tests/inspector/search/search-in-resources.html [ Timeout ]
+
 # These tests appears to timeout every 10 or 20 runs.
 webkit.org/b/60094 [ Debug ] fast/encoding/parser-tests.html [ Pass Timeout ]
 webkit.org/b/60094 [ Debug ] fast/encoding/parser-tests-10.html [ Pass Timeout ]
@@ -2850,7 +2856,7 @@ webkit.org/b/107962 http/tests/cache/iframe-304-crash.html [ Failure ]
 webkit.org/b/107893 [ MountainLion ] fast/exclusions/shape-inside/shape-inside-first-fit-001.html [ ImageOnlyFailure ] 
 
 # The test is flaky on chromium-ews
-webkit.org/b/107953 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Pass Failure ]
+webkit.org/b/107953 inspector-protocol/debugger-terminate-dedicated-worker-while-paused.html [ Pass Crash ]
 
 webkit.org/b/108286 virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-down.html [ ImageOnlyFailure ]
 webkit.org/b/108286 virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ ImageOnlyFailure ]
@@ -3070,7 +3076,8 @@ crbug.com/233995 fast/spatial-navigation/snav-container-white-space.html [ Failu
 crbug.com/233995 fast/spatial-navigation/snav-div-overflow-scrol-hidden.html [ Failure ]
 crbug.com/233995 fast/spatial-navigation/snav-imagemap-overlapped-areas.html [ Failure ]
 crbug.com/233995 fast/spatial-navigation/snav-unit-overflow-and-scroll-in-direction.html [ Failure ]
-crbug.com/233995 fast/spatial-navigation/snav-multiple-select-focusring.html [ Failure ]
+crbug.com/233995 [ Mac ] fast/spatial-navigation/snav-multiple-select-focusring.html [ ImageOnlyFailure ]
+crbug.com/233995 [ Linux Win ] fast/spatial-navigation/snav-multiple-select-focusring.html [ Failure ]
 
 crbug.com/234061 [ MountainLion ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ ImageOnlyFailure ]
 crbug.com/234066 fast/dom/everything-to-string.html [ Pass Failure ]
