@@ -10,7 +10,7 @@
 # Reverting problematic clang rolls is safe, though.
 CLANG_REVISION=179138
 # ASan Mac builders are pinned to this revision, see http://crbug.com/170629.
-CLANG_ASAN_MAC_REVISION=170392
+CLANG_ASAN_MAC_REVISION=${CLANG_REVISION}
 
 THIS_DIR="$(dirname "${0}")"
 LLVM_DIR="${THIS_DIR}/../../../third_party/llvm"
