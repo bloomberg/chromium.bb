@@ -12,6 +12,7 @@
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_picture_pile_impl.h"
+#include "cc/test/geometry_test_utils.h"
 #include "cc/test/impl_side_painting_settings.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,19 +31,32 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
     return make_scoped_ptr(new TestablePictureLayerImpl(tree_impl, id, pile));
   }
 
+  virtual scoped_ptr<LayerImpl> CreateLayerImpl(LayerTreeImpl* tree_impl)
+      OVERRIDE {
+    return make_scoped_ptr(
+        new TestablePictureLayerImpl(tree_impl, id())).PassAs<LayerImpl>();
+  }
+
   PictureLayerTilingSet& tilings() { return *tilings_; }
   Region& invalidation() { return invalidation_; }
 
   virtual gfx::Size CalculateTileSize(
       gfx::Size current_tile_size,
       gfx::Size content_bounds) OVERRIDE {
+    if (fixed_tile_size_.IsEmpty()) {
+      return PictureLayerImpl::CalculateTileSize(current_tile_size,
+                                                 content_bounds);
+    }
+
     if (current_tile_size.IsEmpty())
-      return gfx::Size(100, 100);
+      return fixed_tile_size_;
     return current_tile_size;
   }
 
   using PictureLayerImpl::AddTiling;
   using PictureLayerImpl::CleanUpTilingsOnActiveLayer;
+
+  void set_fixed_tile_size(gfx::Size size) { fixed_tile_size_ = size; }
 
  private:
   TestablePictureLayerImpl(
@@ -54,6 +68,11 @@ class TestablePictureLayerImpl : public PictureLayerImpl {
     SetBounds(pile_->size());
     CreateTilingSet();
   }
+
+  TestablePictureLayerImpl(LayerTreeImpl* tree_impl, int id)
+      : PictureLayerImpl(tree_impl, id) {}
+
+  gfx::Size fixed_tile_size_;
 };
 
 class MockCanvas : public SkCanvas {
@@ -190,7 +209,7 @@ class PictureLayerImplTest : public testing::Test {
       // Note: There are two rects: the initial clear and the explicitly
       // recorded rect. We only care about the second one.
       EXPECT_EQ(2u, mock_canvas.rects_.size());
-      EXPECT_EQ(*rect_iter, mock_canvas.rects_[1]);
+      EXPECT_RECT_EQ(*rect_iter, mock_canvas.rects_[1]);
       rect_iter++;
     }
   }
@@ -310,6 +329,7 @@ TEST_F(PictureLayerImplTest, NoInvalidationBoundsChange) {
       FakePicturePileImpl::CreateFilledPile(tile_size, active_layer_bounds);
 
   SetupTrees(pending_pile, active_pile);
+  pending_layer_->set_fixed_tile_size(gfx::Size(100, 100));
 
   Region invalidation;
   AddDefaultTilingsWithInvalidation(invalidation);
@@ -653,6 +673,105 @@ TEST_F(PictureLayerImplTest, DidLoseOutputSurface) {
   pending_layer_->CalculateContentsScale(
       1.3f, false, &result_scale_x, &result_scale_y, &result_bounds);
   EXPECT_EQ(2u, pending_layer_->tilings().num_tilings());
+}
+
+TEST_F(PictureLayerImplTest, ClampTilesToToMaxTileSize) {
+  // The default max tile size is larger than 400x400.
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(5000, 5000);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  SetupTrees(pending_pile, active_pile);
+  EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
+
+  pending_layer_->CalculateContentsScale(
+      1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  // The default value.
+  EXPECT_EQ(gfx::Size(256, 256).ToString(),
+            host_impl_.settings().default_tile_size.ToString());
+
+  Tile* tile = pending_layer_->tilings().tiling_at(0)->AllTilesForTesting()[0];
+  EXPECT_EQ(gfx::Size(256, 256).ToString(),
+            tile->content_rect().size().ToString());
+
+  pending_layer_->DidLoseOutputSurface();
+
+  // Change the max texture size on the output surface context.
+  scoped_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  context->set_max_texture_size(140);
+  host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
+      context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>());
+
+  pending_layer_->CalculateContentsScale(
+      1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  // Verify the tiles are not larger than the context's max texture size.
+  tile = pending_layer_->tilings().tiling_at(0)->AllTilesForTesting()[0];
+  EXPECT_GE(140, tile->content_rect().width());
+  EXPECT_GE(140, tile->content_rect().height());
+}
+
+TEST_F(PictureLayerImplTest, ClampSingleTileToToMaxTileSize) {
+  // The default max tile size is larger than 400x400.
+  gfx::Size tile_size(400, 400);
+  gfx::Size layer_bounds(500, 500);
+
+  scoped_refptr<FakePicturePileImpl> pending_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+  scoped_refptr<FakePicturePileImpl> active_pile =
+      FakePicturePileImpl::CreateFilledPile(tile_size, layer_bounds);
+
+  float result_scale_x, result_scale_y;
+  gfx::Size result_bounds;
+
+  SetupTrees(pending_pile, active_pile);
+  EXPECT_EQ(0u, pending_layer_->tilings().num_tilings());
+
+  pending_layer_->CalculateContentsScale(
+      1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  // The default value. The layer is smaller than this.
+  EXPECT_EQ(gfx::Size(512, 512).ToString(),
+            host_impl_.settings().max_untiled_layer_size.ToString());
+
+  // There should be a single tile since the layer is small.
+  PictureLayerTiling* high_res_tiling = pending_layer_->tilings().tiling_at(0);
+  EXPECT_EQ(1u, high_res_tiling->AllTilesForTesting().size());
+
+  pending_layer_->DidLoseOutputSurface();
+
+  // Change the max texture size on the output surface context.
+  scoped_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  context->set_max_texture_size(140);
+  host_impl_.InitializeRenderer(FakeOutputSurface::Create3d(
+      context.PassAs<WebKit::WebGraphicsContext3D>()).PassAs<OutputSurface>());
+
+  pending_layer_->CalculateContentsScale(
+      1.f, false, &result_scale_x, &result_scale_y, &result_bounds);
+  ASSERT_EQ(2u, pending_layer_->tilings().num_tilings());
+
+  // There should be more than one tile since the max texture size won't cover
+  // the layer.
+  high_res_tiling = pending_layer_->tilings().tiling_at(0);
+  EXPECT_LT(1u, high_res_tiling->AllTilesForTesting().size());
+
+  // Verify the tiles are not larger than the context's max texture size.
+  Tile* tile = pending_layer_->tilings().tiling_at(0)->AllTilesForTesting()[0];
+  EXPECT_GE(140, tile->content_rect().width());
+  EXPECT_GE(140, tile->content_rect().height());
 }
 
 }  // namespace

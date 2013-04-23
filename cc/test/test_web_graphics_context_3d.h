@@ -89,6 +89,10 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
       WebKit::WGC3Denum pname,
       WebKit::WGC3Duint* params);
 
+  virtual void getIntegerv(
+      WebKit::WGC3Denum pname,
+      WebKit::WGC3Dint* value);
+
   virtual void genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox);
   virtual void produceTextureCHROMIUM(WebKit::WGC3Denum target,
                                       const WebKit::WGC3Dbyte* mailbox) { }
@@ -133,6 +137,8 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     shared_contexts_.push_back(context3d);
   }
 
+  void set_max_texture_size(int size) { max_texture_size_ = size; }
+
   static const WebKit::WebGLId kExternalTextureId;
   virtual WebKit::WebGLId NextTextureId();
 
@@ -154,6 +160,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   std::vector<WebKit::WebGLId> textures_;
   base::hash_set<WebKit::WebGLId> used_textures_;
   std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
+  int max_texture_size_;
   int width_;
   int height_;
 };

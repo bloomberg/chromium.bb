@@ -45,6 +45,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D()
       times_end_query_succeeds_(-1),
       context_lost_(false),
       context_lost_callback_(NULL),
+      max_texture_size_(1024),
       width_(0),
       height_(0) {
 }
@@ -62,6 +63,7 @@ TestWebGraphicsContext3D::TestWebGraphicsContext3D(
       times_end_query_succeeds_(-1),
       context_lost_(false),
       context_lost_callback_(NULL),
+      max_texture_size_(1024),
       width_(0),
       height_(0) {
 }
@@ -295,6 +297,12 @@ void TestWebGraphicsContext3D::getQueryObjectuivEXT(
     *params = 1;
 }
 
+void TestWebGraphicsContext3D::getIntegerv(
+    WGC3Denum pname,
+    WebKit::WGC3Dint* value) {
+  if (pname == GL_MAX_TEXTURE_SIZE)
+    *value = max_texture_size_;
+}
 
 void TestWebGraphicsContext3D::genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox) {
   static char mailbox_name1 = '1';

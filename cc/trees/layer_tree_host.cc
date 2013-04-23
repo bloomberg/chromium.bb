@@ -178,14 +178,6 @@ void LayerTreeHost::InitializeRenderer() {
       contents_texture_manager_->CreateTexture(gfx::Size(), GL_RGBA);
 
   renderer_initialized_ = true;
-
-  int max_texture_size = proxy_->GetRendererCapabilities().max_texture_size;
-  settings_.default_tile_size = gfx::Size(
-      std::min(settings_.default_tile_size.width(), max_texture_size),
-      std::min(settings_.default_tile_size.height(), max_texture_size));
-  settings_.max_untiled_layer_size = gfx::Size(
-      std::min(settings_.max_untiled_layer_size.width(), max_texture_size),
-      std::min(settings_.max_untiled_layer_size.height(), max_texture_size));
 }
 
 LayerTreeHost::RecreateResult LayerTreeHost::RecreateOutputSurface() {
