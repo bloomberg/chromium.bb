@@ -453,44 +453,13 @@ HRESULT UnregisterVirtualDriver() {
   return hr;
 }
 
-HRESULT DeleteProgramDir(const base::FilePath& installer_source, bool wait) {
-  base::FilePath temp_path;
-  if (file_util::CreateTemporaryFile(&temp_path)) {
-    file_util::CopyFile(installer_source, temp_path);
-    file_util::DeleteAfterReboot(temp_path);
-    CommandLine command_line(temp_path);
-    command_line.AppendSwitchPath(kDelete, installer_source.DirName());
-    base::LaunchOptions options;
-    options.wait = wait;
-    base::ProcessHandle process_handle;
-    if (!base::LaunchProcess(command_line, options, &process_handle)) {
-      LOG(ERROR) << "Unable to launch child uninstall.";
-      return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
-    }
-    if (wait) {
-      int exit_code = -1;
-      base::TerminationStatus status =
-          base::GetTerminationStatus(process_handle, &exit_code);
-      if (status == base::TERMINATION_STATUS_NORMAL_TERMINATION) {
-        return exit_code;
-      } else {
-        LOG(ERROR) << "Improper termination of uninstall. " << status;
-        return E_FAIL;
-      }
-    }
-  }
-  return S_OK;
-}
-
 HRESULT DoUninstall() {
   DeleteGoogleUpdateKeys(kGoogleUpdateProductId);
   HRESULT result = UnregisterVirtualDriver();
   if (FAILED(result))
     return result;
   DeleteUninstallKey(kUninstallId);
-  base::FilePath installer_source;
-  if (PathService::Get(base::FILE_EXE, &installer_source))
-    return DeleteProgramDir(installer_source, false);
+  DeleteProgramDir(kDelete);
   return S_OK;
 }
 

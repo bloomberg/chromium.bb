@@ -7,9 +7,11 @@
 #include <windows.h>
 
 #include "base/command_line.h"
+#include "base/file_util.h"
 #include "base/file_version_info_win.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/process_util.h"
 #include "base/win/registry.h"
 
 namespace cloud_print {
@@ -30,7 +32,9 @@ const wchar_t kRegValueInstallerResultUIString[] = L"InstallerResultUIString";
 const wchar_t kUninstallKey[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\";
 const wchar_t kInstallLocation[] = L"InstallLocation";
+const wchar_t kUninstallString[] = L"UninstallString";
 const wchar_t kDisplayVersion[] = L"DisplayVersion";
+const wchar_t kDisplayIcon[] = L"DisplayIcon";
 const wchar_t kDisplayName[] = L"DisplayName";
 const wchar_t kPublisher[] = L"Publisher";
 const wchar_t kNoModify[] = L"NoModify";
@@ -118,7 +122,7 @@ void CreateUninstallKey(const string16& uninstall_id,
 
   CommandLine uninstall_command(unstall_binary);
   uninstall_command.AppendSwitch(uninstall_switch);
-  key.WriteValue(kUninstallKey,
+  key.WriteValue(kUninstallString,
                  uninstall_command.GetCommandLineString().c_str());
   key.WriteValue(kInstallLocation,
                  unstall_binary.DirName().value().c_str());
@@ -137,6 +141,7 @@ void CreateUninstallKey(const string16& uninstall_id,
     LOG(ERROR) << "Unable to get version string";
   }
   key.WriteValue(kDisplayName, product_name.c_str());
+  key.WriteValue(kDisplayIcon, unstall_binary.value().c_str());
   key.WriteValue(kNoModify, 1);
   key.WriteValue(kNoRepair, 1);
 }
@@ -157,6 +162,34 @@ base::FilePath GetInstallLocation(const string16& uninstall_id) {
   string16 install_path_value;
   key.ReadValue(kInstallLocation, &install_path_value);
   return base::FilePath(install_path_value);
+}
+
+void DeleteProgramDir(const std::string& delete_switch) {
+  base::FilePath installer_source;
+  if (!PathService::Get(base::FILE_EXE, &installer_source))
+    return;
+  // Deletes only subdirs of program files.
+  if (!IsProgramsFilesParent(installer_source))
+    return;
+  base::FilePath temp_path;
+  if (!file_util::CreateTemporaryFile(&temp_path))
+    return;
+  file_util::CopyFile(installer_source, temp_path);
+  file_util::DeleteAfterReboot(temp_path);
+  CommandLine command_line(temp_path);
+  command_line.AppendSwitchPath(delete_switch, installer_source.DirName());
+  base::LaunchOptions options;
+  base::ProcessHandle process_handle;
+  if (!base::LaunchProcess(command_line, options, &process_handle)) {
+    LOG(ERROR) << "Unable to launch child uninstall.";
+  }
+}
+
+bool IsProgramsFilesParent(const base::FilePath& path) {
+  base::FilePath program_files;
+  if (!PathService::Get(base::DIR_PROGRAM_FILESX86, &program_files))
+    return false;
+  return program_files.IsParent(path);
 }
 
 }  // namespace cloud_print

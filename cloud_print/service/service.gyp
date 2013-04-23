@@ -127,6 +127,7 @@
         'win/service_resources.gypi'
       ],
       'dependencies': [
+        '<(DEPTH)/cloud_print/common/common.gyp:cloud_print_install_lib',
         'cloud_print_service_lib',
       ],
       'msvs_settings': {

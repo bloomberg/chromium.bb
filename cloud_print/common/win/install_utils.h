@@ -34,6 +34,12 @@ void DeleteUninstallKey(const string16& uninstall_id);
 // Returns install location retrieved from control panel uninstall key.
 base::FilePath GetInstallLocation(const string16& uninstall_id);
 
+// Returns install location retrieved from control panel uninstall key.
+void DeleteProgramDir(const std::string& delete_switch);
+
+// Returns true if path is part of program files.
+bool IsProgramsFilesParent(const base::FilePath& path);
+
 }  // namespace cloud_print
 
 #endif  // CLOUD_PRINT_COMMON_INSTALL_UTILS_H_
