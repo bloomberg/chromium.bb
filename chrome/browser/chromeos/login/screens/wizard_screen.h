@@ -8,27 +8,17 @@
 #include <string>
 
 #include "base/gtest_prod_util.h"
+#include "chrome/browser/chromeos/login/screens/base_screen.h"
 
 namespace chromeos {
 
 class ScreenObserver;
 
 // Base class for the OOBE screens.
-class WizardScreen {
+class WizardScreen : public BaseScreen {
  public:
   explicit WizardScreen(ScreenObserver* screen_observer);
   virtual ~WizardScreen() {}
-
-  // Called before showing the screen. It is the right moment for the
-  // screen's actor to pass the information to the corresponding OobeDisplay.
-  virtual void PrepareToShow() = 0;
-  // Makes wizard screen visible.
-  virtual void Show() = 0;
-  // Makes wizard screen invisible.
-  virtual void Hide() = 0;
-
-  // Returns the screen name.
-  virtual std::string GetName() const = 0;
 
  protected:
   ScreenObserver* get_screen_observer() const {

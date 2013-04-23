@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 
 namespace chromeos {
 
@@ -65,11 +66,14 @@ class OobeDisplay {
   virtual TermsOfServiceScreenActor* GetTermsOfServiceScreenActor() = 0;
   virtual UserImageScreenActor* GetUserImageScreenActor() = 0;
   virtual ErrorScreenActor* GetErrorScreenActor() = 0;
-  // TODO(altimofeev): use real actors instead.
-  virtual ViewScreenDelegate* GetRegistrationScreenActor() = 0;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() = 0;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() = 0;
+
+  // Returns if JS side is fully loaded and ready to accept messages.
+  // If |false| is returned, then |display_is_ready_callback| is stored
+  // and will be called once display is ready.
+  virtual bool IsJSReady(const base::Closure& display_is_ready_callback) = 0;
 };
 
 }  // namespace chromeos

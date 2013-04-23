@@ -72,10 +72,11 @@ class OobeUI : public OobeDisplay,
       GetTermsOfServiceScreenActor() OVERRIDE;
   virtual UserImageScreenActor* GetUserImageScreenActor() OVERRIDE;
   virtual ErrorScreenActor* GetErrorScreenActor() OVERRIDE;
-  virtual ViewScreenDelegate* GetRegistrationScreenActor() OVERRIDE;
   virtual WrongHWIDScreenActor* GetWrongHWIDScreenActor() OVERRIDE;
   virtual LocallyManagedUserCreationScreenHandler*
       GetLocallyManagedUserCreationScreenActor() OVERRIDE;
+  virtual bool IsJSReady(const base::Closure& display_is_ready_callback)
+      OVERRIDE;
 
   // Collects localized strings from the owned handlers.
   void GetLocalizedStrings(base::DictionaryValue* localized_strings);
@@ -151,6 +152,13 @@ class OobeUI : public OobeDisplay,
 
   // Maps screen ids to JS screen names.
   std::vector<std::string> screen_names_;
+
+  // Flag that indicates whether JS part is fully loaded and ready to accept
+  // calls.
+  bool ready_;
+
+  // Callbacks to notify when JS part is fully loaded and ready to accept calls.
+  std::vector<base::Closure> ready_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(OobeUI);
 };

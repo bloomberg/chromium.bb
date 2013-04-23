@@ -140,7 +140,8 @@ OobeUI::OobeUI(content::WebUI* web_ui)
       terms_of_service_screen_actor_(NULL),
       user_image_screen_actor_(NULL),
       kiosk_app_menu_handler_(NULL),
-      current_screen_(SCREEN_UNKNOWN) {
+      current_screen_(SCREEN_UNKNOWN),
+      ready_(false) {
   InitializeScreenMaps();
 
   network_state_informer_ = new NetworkStateInformer();
@@ -278,11 +279,6 @@ ErrorScreenActor* OobeUI::GetErrorScreenActor() {
   return error_screen_handler_;
 }
 
-ViewScreenDelegate* OobeUI::GetRegistrationScreenActor() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
 LocallyManagedUserCreationScreenHandler*
     OobeUI::GetLocallyManagedUserCreationScreenActor() {
   return locally_managed_user_creation_screen_actor_;
@@ -362,8 +358,19 @@ void OobeUI::AddScreenHandler(BaseScreenHandler* handler) {
 }
 
 void OobeUI::InitializeHandlers() {
+  ready_ = true;
+  for (size_t i = 0; i < ready_callbacks_.size(); ++i)
+    ready_callbacks_[i].Run();
+  ready_callbacks_.clear();
+
   for (size_t i = 0; i < handlers_.size(); ++i)
     handlers_[i]->InitializeBase();
+}
+
+bool OobeUI::IsJSReady(const base::Closure& display_is_ready_callback) {
+  if (!ready_)
+    ready_callbacks_.push_back(display_is_ready_callback);
+  return ready_;
 }
 
 void OobeUI::ShowOobeUI(bool show) {
