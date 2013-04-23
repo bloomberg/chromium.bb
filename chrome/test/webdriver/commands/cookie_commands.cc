@@ -37,7 +37,7 @@ bool CookieCommand::DoesPost() {
 void CookieCommand::ExecuteGet(Response* const response) {
   std::string url;
   Error* error = session_->GetURL(&url);
-  ListValue* cookies;
+  ListValue* cookies = NULL;
   if (!error)
     error = session_->GetCookies(url, &cookies);
   if (error) {
