@@ -214,7 +214,9 @@ const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
 };
 
 const Experiment::Choice kSimpleCacheBackendChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, "", "off" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kUseSimpleCacheBackend, "off" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
     switches::kUseSimpleCacheBackend, "on"}
 };

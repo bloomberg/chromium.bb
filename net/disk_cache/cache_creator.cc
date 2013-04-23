@@ -81,7 +81,8 @@ int CacheCreator::Run() {
   // not belong to it.
   const std::string experiment_name =
       base::FieldTrialList::FindFullName("SimpleCacheTrial");
-  if (experiment_name == "ExplicitYes" || experiment_name == "ExperimentYes") {
+  if (experiment_name == "ExplicitYes" || experiment_name == "ExperimentYes" ||
+      experiment_name == "ExperimentYes2") {
     // TODO(gavinp,pasko): While simple backend development proceeds, we're only
     // testing it against net::DISK_CACHE. Turn it on for more cache types as
     // appropriate.

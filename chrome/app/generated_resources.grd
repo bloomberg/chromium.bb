@@ -14955,7 +14955,7 @@ Some features may be unavailable.  Please check that the profile exists and you 
 
     <!-- Simple Cache Backend experiment. -->
     <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_NAME" desc="Name of about:flags option to turn on the Simple Cache Backend">
-      Enable the Simple Cache for HTTP. Unstable! It may corrupt your cache! Do not use this option.
+      Simple Cache for HTTP.
     </message>
     <message name="IDS_FLAGS_ENABLE_SIMPLE_CACHE_BACKEND_DESCRIPTION" desc="Description of about:flags option to turn on the Simple Cache Backend">
       The Simple Cache for HTTP is a new cache. It relies on the filesystem for disk space allocation.

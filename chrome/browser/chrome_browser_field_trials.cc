@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/uniformity_field_trials.h"
 #include "chrome/common/pref_names.h"
 
@@ -52,34 +53,50 @@ void ChromeBrowserFieldTrials::SetupFieldTrials(PrefService* local_state) {
 // Sets up the experiment. The actual cache backend choice is made in the net/
 // internals by looking at the experiment state.
 void ChromeBrowserFieldTrials::SetUpSimpleCacheFieldTrial() {
-  if (parsed_command_line_.HasSwitch(switches::kUseSimpleCacheBackend)) {
-    const std::string opt_value = parsed_command_line_.GetSwitchValueASCII(
-        switches::kUseSimpleCacheBackend);
-    const base::FieldTrial::Probability kDivisor = 100;
-    scoped_refptr<base::FieldTrial> trial(
-        base::FieldTrialList::FactoryGetFieldTrial("SimpleCacheTrial", kDivisor,
-                                                   "ExperimentNo", 2013, 12, 31,
-                                                   NULL));
-    trial->UseOneTimeRandomization();
-    if (LowerCaseEqualsASCII(opt_value, "off")) {
-      trial->AppendGroup("ExplicitNo", kDivisor);
-      return;
-    }
-    if (LowerCaseEqualsASCII(opt_value, "on")) {
-      trial->AppendGroup("ExplicitYes", kDivisor);
-      return;
-    }
-#if defined(OS_ANDROID)
-    if (LowerCaseEqualsASCII(opt_value, "experiment")) {
-      // TODO(pasko): Make this the default on Android when the simple cache
-      // adds a few more necessary features. Also adjust the probability.
-      const base::FieldTrial::Probability kSimpleCacheProbability = 1;
-      trial->AppendGroup("ExperimentYes", kSimpleCacheProbability);
-      trial->AppendGroup("ExperimentControl", kSimpleCacheProbability);
-      trial->group();
-    }
-#endif
+  const std::string opt_value = parsed_command_line_.GetSwitchValueASCII(
+      switches::kUseSimpleCacheBackend);
+
+  const base::FieldTrial::Probability kDivisor = 100;
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial("SimpleCacheTrial", kDivisor,
+                                                 "ExperimentNo", 2013, 12, 31,
+                                                 NULL));
+  trial->UseOneTimeRandomization();
+
+  if (LowerCaseEqualsASCII(opt_value, "off")) {
+    trial->AppendGroup("ExplicitNo", kDivisor);
+    trial->group();
+    return;
   }
+  if (LowerCaseEqualsASCII(opt_value, "on")) {
+    trial->AppendGroup("ExplicitYes", kDivisor);
+    trial->group();
+    return;
+  }
+
+#if defined(OS_ANDROID)
+  base::FieldTrial::Probability simple_cache_experiment_probability = 0;
+  base::FieldTrial::Probability simple_cache_experiment2_probability = 0;
+  base::FieldTrial::Probability simple_cache_control_probability = 0;
+
+  switch (chrome::VersionInfo::GetChannel()) {
+    case chrome::VersionInfo::CHANNEL_DEV:
+      simple_cache_experiment_probability = 45;
+      simple_cache_control_probability = 45;
+      break;
+    case chrome::VersionInfo::CHANNEL_BETA:
+      simple_cache_experiment_probability = 80;
+      simple_cache_experiment2_probability = 10;
+      simple_cache_control_probability = 10;
+      break;
+    default:
+      break;
+  }
+  trial->AppendGroup("ExperimentYes", simple_cache_experiment_probability);
+  trial->AppendGroup("ExperimentYes2", simple_cache_experiment2_probability);
+  trial->AppendGroup("ExperimentControl", simple_cache_control_probability);
+#endif
+  trial->group();
 }
 
 void ChromeBrowserFieldTrials::InstantiateDynamicTrials() {
