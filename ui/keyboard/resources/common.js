@@ -392,11 +392,13 @@ BaseKey.prototype = {
  * A simple key which displays Characters.
  * @param {Object} key The Character for KEY_MODE.
  * @param {Object} shift The Character for SHIFT_MODE.
+ * @param {Object} num The Character for NUMBER_MODE.
+ * @param {Object} symbol The Character for SYMBOL_MODE.
  * @param {string} className An optional class name for the key.
  * @constructor
  * @extends {BaseKey}
  */
-function Key(key, shift, className) {
+function Key(key, shift, num, symbol, className) {
   this.modeElements_ = {};
   this.cellType_ = '';
   this.className_ = (className) ? 'key ' + className : 'key';
@@ -404,6 +406,8 @@ function Key(key, shift, className) {
   this.modes_ = {};
   this.modes_[KEY_MODE] = key;
   this.modes_[SHIFT_MODE] = shift;
+  this.modes_[NUMBER_MODE] = num;
+  this.modes_[SYMBOL_MODE] = symbol;
 }
 
 Key.prototype = {

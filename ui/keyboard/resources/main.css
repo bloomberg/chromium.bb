@@ -5,8 +5,10 @@
 */
 
 body {
+  -webkit-box-pack: center;
   -webkit-user-select: none;
   color: white;
+  display: -webkit-box;
   margin: 0;
   overflow: hidden;
   padding: 0;
@@ -16,10 +18,6 @@ div.main {
   -webkit-box-orient: vertical;
   background: -webkit-linear-gradient(#bababa, #868686) no-repeat;
   display: -webkit-box;
-  left: 0;
-  position: absolute;
-  right: 0;
-  top: -10px;
 }
 
 div.keyboard {
@@ -33,15 +31,15 @@ div.rows {
   -webkit-box-flex: 1;
   -webkit-box-orient: vertical;
   display: -webkit-box;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   text-align: center;
 }
 
 div.row {
   -webkit-box-flex: 1;
   display: -webkit-box;
-  margin-right: 5px;
-  margin-top: 5px;
+  margin-right: 3px;
+  margin-top: 3px;
 }
 
 div.row > div {
@@ -87,7 +85,7 @@ div.row > div {
   -webkit-box-flex: 1;
   background: -webkit-linear-gradient(#fff, #cacaca);
   border: 1px solid transparent;
-  border-radius: 6px;
+  border-radius: 3px;
   /* Reserving equivalent space to .key:active so
      keys don't shift when selected. */
   /* Do not use box shadow until performance improves
@@ -98,7 +96,7 @@ div.row > div {
   display: -webkit-box;
   font-family: sans-serif;
   font-weight: 100;
-  margin-left: 5px;
+  margin-left: 3px;
   position: relative;
 }
 
@@ -151,7 +149,6 @@ div.moddown {
 }
 
 .at,
-.tab,
 .com,
 .comma,
 .hide,
@@ -160,7 +157,8 @@ div.moddown {
   -webkit-box-flex: 1.3;
 }
 
-.symbol {
+.symbol,
+.shift {
   -webkit-box-flex: 1.4;
 }
 
