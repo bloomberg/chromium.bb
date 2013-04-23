@@ -491,6 +491,214 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
   return rc;
 }
 
+/* Cursor for iterating interior nodes.  Interior page cells contain a
+ * child page number and a rowid.  The child page contains items left
+ * of the rowid (less than).  The rightmost page of the subtree is
+ * stored in the page header.
+ *
+ * interiorCursorDestroy - release all resources associated with the
+ *                         cursor and any parent cursors.
+ * interiorCursorCreate - create a cursor with the given parent and page.
+ * interiorCursorEOF - returns true if neither the cursor nor the
+ *                     parent cursors can return any more data.
+ * interiorCursorNextPage - fetch the next child page from the cursor.
+ *
+ * Logically, interiorCursorNextPage() returns the next child page
+ * number from the page the cursor is currently reading, calling the
+ * parent cursor as necessary to get new pages to read, until done.
+ * SQLITE_ROW if a page is returned, SQLITE_DONE if out of pages,
+ * error otherwise.  Unfortunately, if the table is corrupted
+ * unexpected pages can be returned.  If any unexpected page is found,
+ * leaf or otherwise, it is returned to the caller for processing,
+ * with the interior cursor left empty.  The next call to
+ * interiorCursorNextPage() will recurse to the parent cursor until an
+ * interior page to iterate is returned.
+ *
+ * Note that while interiorCursorNextPage() will refuse to follow
+ * loops, it does not keep track of pages returned for purposes of
+ * preventing duplication.
+ *
+ * Note that interiorCursorEOF() could return false (not at EOF), and
+ * interiorCursorNextPage() could still return SQLITE_DONE.  This
+ * could happen if there are more cells to iterate in an interior
+ * page, but those cells refer to invalid pages.
+ */
+typedef struct RecoverInteriorCursor RecoverInteriorCursor;
+struct RecoverInteriorCursor {
+  RecoverInteriorCursor *pParent; /* Parent node to this node. */
+  DbPage *pPage;                  /* Reference to leaf page. */
+  unsigned nPageSize;             /* Size of page. */
+  unsigned nChildren;             /* Number of children on the page. */
+  unsigned iChild;                /* Index of next child to return. */
+};
+
+static void interiorCursorDestroy(RecoverInteriorCursor *pCursor){
+  /* Destroy all the cursors to the root. */
+  while( pCursor ){
+    RecoverInteriorCursor *p = pCursor;
+    pCursor = pCursor->pParent;
+
+    if( p->pPage ){
+      sqlite3PagerUnref(p->pPage);
+      p->pPage = NULL;
+    }
+
+    memset(p, 0xA5, sizeof(*p));
+    sqlite3_free(p);
+  }
+}
+
+/* Internal helper.  Reset storage in preparation for iterating pPage. */
+static void interiorCursorSetPage(RecoverInteriorCursor *pCursor,
+                                  DbPage *pPage){
+  assert( PageHeader(pPage)[kiPageTypeOffset]==kTableInteriorPage );
+
+  if( pCursor->pPage ){
+    sqlite3PagerUnref(pCursor->pPage);
+    pCursor->pPage = NULL;
+  }
+  pCursor->pPage = pPage;
+  pCursor->iChild = 0;
+
+  /* A child for each cell, plus one in the header. */
+  /* TODO(shess): Sanity-check the count?  Page header plus per-cell
+   * cost of 16-bit offset, 32-bit page number, and one varint
+   * (minimum 1 byte).
+   */
+  pCursor->nChildren = decodeUnsigned16(PageHeader(pPage) +
+                                        kiPageCellCountOffset) + 1;
+}
+
+static int interiorCursorCreate(RecoverInteriorCursor *pParent,
+                                DbPage *pPage, int nPageSize,
+                                RecoverInteriorCursor **ppCursor){
+  RecoverInteriorCursor *pCursor =
+    sqlite3_malloc(sizeof(RecoverInteriorCursor));
+  if( !pCursor ){
+    return SQLITE_NOMEM;
+  }
+
+  memset(pCursor, 0, sizeof(*pCursor));
+  pCursor->pParent = pParent;
+  pCursor->nPageSize = nPageSize;
+  interiorCursorSetPage(pCursor, pPage);
+  *ppCursor = pCursor;
+  return SQLITE_OK;
+}
+
+/* Internal helper.  Return the child page number at iChild. */
+static unsigned interiorCursorChildPage(RecoverInteriorCursor *pCursor){
+  assert( pCursor->iChild<pCursor->nChildren );
+
+  /* Rightmost child is in the header. */
+  const unsigned char *pPageHeader = PageHeader(pCursor->pPage);
+  if( pCursor->iChild==pCursor->nChildren-1 ){
+    return decodeUnsigned32(pPageHeader + kiPageRightChildOffset);
+  }
+
+  /* Each cell is a 4-byte integer page number and a varint rowid
+   * which is greater than the rowid of items in that sub-tree (this
+   * module ignores ordering). The offset is from the beginning of the
+   * page, not from the page header.
+   */
+  const unsigned char *pCellOffsets = pPageHeader + kiPageInteriorHeaderBytes;
+  const unsigned iCellOffset =
+      decodeUnsigned16(pCellOffsets + pCursor->iChild*2);
+  if( iCellOffset<=pCursor->nPageSize-4 ){
+    return decodeUnsigned32(PageData(pCursor->pPage, iCellOffset));
+  }
+
+  /* TODO(shess): Check for cell overlaps?  Cells require 4 bytes plus
+   * a varint.  Check could be identical to leaf check (or even a
+   * shared helper testing for "Cells starting in this range"?).
+   */
+
+  /* If the offset is broken, return an invalid page number. */
+  return 0;
+}
+
+static int interiorCursorEOF(RecoverInteriorCursor *pCursor){
+  /* Find a parent with remaining children.  EOF if none found. */
+  while( pCursor && pCursor->iChild>=pCursor->nChildren ){
+    pCursor = pCursor->pParent;
+  }
+  return pCursor==NULL;
+}
+
+/* Internal helper.  Used to detect if iPage would cause a loop. */
+static int interiorCursorPageInUse(RecoverInteriorCursor *pCursor,
+                                   unsigned iPage){
+  /* Find any parent using the indicated page. */
+  while( pCursor && pCursor->pPage->pgno!=iPage ){
+    pCursor = pCursor->pParent;
+  }
+  return pCursor!=NULL;
+}
+
+/* Get the next page from the interior cursor at *ppCursor.  Returns
+ * SQLITE_ROW with the page in *ppPage, or SQLITE_DONE if out of
+ * pages, or the error SQLite returned.
+ *
+ * If the tree is uneven, then when the cursor attempts to get a new
+ * interior page from the parent cursor, it may get a non-interior
+ * page.  In that case, the new page is returned, and *ppCursor is
+ * updated to point to the parent cursor (this cursor is freed).
+ */
+/* TODO(shess): I've tried to avoid recursion in most of this code,
+ * but this case is more challenging because the recursive call is in
+ * the middle of operation.  One option for converting it without
+ * adding memory management would be to retain the head pointer and
+ * use a helper to "back up" as needed.  Another option would be to
+ * reverse the list during traversal.
+ */
+static int interiorCursorNextPage(RecoverInteriorCursor **ppCursor,
+                                  DbPage **ppPage){
+  RecoverInteriorCursor *pCursor = *ppCursor;
+  while( 1 ){
+    /* Find a valid child page which isn't on the stack. */
+    while( pCursor->iChild<pCursor->nChildren ){
+      const unsigned iPage = interiorCursorChildPage(pCursor);
+      pCursor->iChild++;
+      if( interiorCursorPageInUse(pCursor, iPage) ){
+        fprintf(stderr, "Loop detected at %d\n", iPage);
+      }else{
+        int rc = sqlite3PagerAcquire(pCursor->pPage->pPager, iPage, ppPage, 0);
+        if( rc==SQLITE_OK ){
+          return SQLITE_ROW;
+        }
+      }
+    }
+
+    /* This page has no more children.  Get next page from parent. */
+    if( !pCursor->pParent ){
+      return SQLITE_DONE;
+    }
+    int rc = interiorCursorNextPage(&pCursor->pParent, ppPage);
+    if( rc!=SQLITE_ROW ){
+      return rc;
+    }
+
+    /* If a non-interior page is received, that either means that the
+     * tree is uneven, or that a child was re-used (say as an overflow
+     * page).  Remove this cursor and let the caller handle the page.
+     */
+    const unsigned char *pPageHeader = PageHeader(*ppPage);
+    if( pPageHeader[kiPageTypeOffset]!=kTableInteriorPage ){
+      *ppCursor = pCursor->pParent;
+      pCursor->pParent = NULL;
+      interiorCursorDestroy(pCursor);
+      return SQLITE_ROW;
+    }
+
+    /* Iterate the new page. */
+    interiorCursorSetPage(pCursor, *ppPage);
+    *ppPage = NULL;
+  }
+
+  assert(NULL);  /* NOTREACHED() */
+  return SQLITE_CORRUPT;
+}
+
 /* Large rows are spilled to overflow pages.  The row's main page
  * stores the overflow page number after the local payload, with a
  * linked list forward from there as necessary.  overflowMaybeCreate()
@@ -747,10 +955,6 @@ static int overflowGetSegment(DbPage *pPage, unsigned iRecordOffset,
 
 /* Primary structure for iterating the contents of a table.
  *
- * TODO(shess): Handle interior nodes by iterating them for new leaf
- * pages, with interior nodes iterating their parents, and so on to
- * the root.  For now, only handles tables with one leaf node.
- *
  * leafCursorDestroy - release all resources associated with the cursor.
  * leafCursorCreate - create a cursor to iterate items from tree at
  *                    the provided root page.
@@ -771,7 +975,7 @@ static int overflowGetSegment(DbPage *pPage, unsigned iRecordOffset,
  */
 typedef struct RecoverLeafCursor RecoverLeafCursor;
 struct RecoverLeafCursor {
-  /* TODO(shess): Something to handle interior nodes. */
+  RecoverInteriorCursor *pParent;  /* Parent node to this node. */
   DbPage *pPage;                   /* Reference to leaf page. */
   unsigned nPageSize;              /* Size of pPage. */
   unsigned nCells;                 /* Number of cells in pPage. */
@@ -798,9 +1002,11 @@ struct RecoverLeafCursor {
  * pPage is a leaf page, it will be stored in the cursor and state
  * initialized for reading cells.
  *
- * TODO(shess): leafCursorNextPage() will use this when handling
- * interior pages.  It will loop over pages returned from the parent
- * interior node until one of them "sticks".
+ * If pPage is an interior page, a new parent cursor is created and
+ * injected on the stack.  This is necessary to handle trees with
+ * uneven depth, but also is used during initial setup.
+ *
+ * If pPage is not a table page at all, it is discarded.
  *
  * If SQLITE_OK is returned, the caller no longer owns pPage,
  * otherwise the caller is responsible for discarding it.
@@ -813,15 +1019,22 @@ static int leafCursorLoadPage(RecoverLeafCursor *pCursor, DbPage *pPage){
     pCursor->iCell = pCursor->nCells = 0;
   }
 
-  /* TODO(shess): If the page is an interior node, use it to generate
-   * leaf pages.  For now, bail out.
+  /* If the page is an unexpected interior node, inject a new stack
+   * layer and try again from there.
    */
   const unsigned char *pPageHeader = PageHeader(pPage);
   if( pPageHeader[kiPageTypeOffset]==kTableInteriorPage ){
-    return SQLITE_ERROR;
+    RecoverInteriorCursor *pParent;
+    int rc = interiorCursorCreate(pCursor->pParent, pPage, pCursor->nPageSize,
+                                  &pParent);
+    if( rc!=SQLITE_OK ){
+      return rc;
+    }
+    pCursor->pParent = pParent;
+    return SQLITE_OK;
   }
 
-  /* If the page is not a leaf node, skip it. */
+  /* Not a leaf page, skip it. */
   if( pPageHeader[kiPageTypeOffset]!=kTableLeafPage ){
     sqlite3PagerUnref(pPage);
     return SQLITE_OK;
@@ -839,8 +1052,27 @@ static int leafCursorLoadPage(RecoverLeafCursor *pCursor, DbPage *pPage){
  * error which occurred.
  */
 static int leafCursorNextPage(RecoverLeafCursor *pCursor){
-  /* TODO(shess): Get the next leaf page and load it. */
-  return SQLITE_DONE;
+  if( !pCursor->pParent ){
+    return SQLITE_DONE;
+  }
+
+  /* Repeatedly load the parent's next child page until a leaf is found. */
+  do {
+    DbPage *pNextPage;
+    int rc = interiorCursorNextPage(&pCursor->pParent, &pNextPage);
+    if( rc!=SQLITE_ROW ){
+      assert( rc==SQLITE_DONE );
+      return rc;
+    }
+
+    rc = leafCursorLoadPage(pCursor, pNextPage);
+    if( rc!=SQLITE_OK ){
+      sqlite3PagerUnref(pNextPage);
+      return rc;
+    }
+  } while( !pCursor->pPage );
+
+  return SQLITE_ROW;
 }
 
 static void leafCursorDestroyCellData(RecoverLeafCursor *pCursor){
@@ -858,6 +1090,11 @@ static void leafCursorDestroyCellData(RecoverLeafCursor *pCursor){
 
 static void leafCursorDestroy(RecoverLeafCursor *pCursor){
   leafCursorDestroyCellData(pCursor);
+
+  if( pCursor->pParent ){
+    interiorCursorDestroy(pCursor->pParent);
+    pCursor->pParent = NULL;
+  }
 
   if( pCursor->pPage ){
     sqlite3PagerUnref(pCursor->pPage);
@@ -907,9 +1144,6 @@ static int leafCursorCreate(Pager *pPager, unsigned nPageSize,
   }
 
   /* pPage wasn't a leaf page, find the next leaf page. */
-  /* TODO(shess): When interior nodes are handled, this will scan
-   * forward to the first leaf node.
-   */
   if( !pCursor->pPage ){
     rc = leafCursorNextPage(pCursor);
     if( rc!=SQLITE_DONE && rc!=SQLITE_ROW ){

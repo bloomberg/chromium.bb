@@ -105,9 +105,43 @@ do_test recover-leaf-1.0 {
       leaf,
       t TEXT,
       n INTEGER
-    )
+    );
   }
   execsql {SELECT t, n FROM leaf_recover ORDER BY rowid}
 } {{Leaf-node-generating line 0} 0 {Leaf-node-generating line 1} 1 {Leaf-node-generating line 2} 2 {Leaf-node-generating line 3} 3 {Leaf-node-generating line 4} 4 {Leaf-node-generating line 5} 5 {Leaf-node-generating line 6} 6 {Leaf-node-generating line 7} 7 {Leaf-node-generating line 8} 8 {Leaf-node-generating line 9} 9}
+
+# Single level of interior node.
+do_test recover-interior-1.0 {
+  db close
+  sqlite3 db test.db
+  generate "interior" "Interior-node-generating line " 100
+
+  db eval {
+    DROP TABLE IF EXISTS temp.interior_recover;
+    CREATE VIRTUAL TABLE temp.interior_recover USING recover(
+      interior,
+      t TEXT,
+      n INTEGER
+    );
+  }
+  execsql {SELECT t, n FROM interior_recover WHERE (rowid%10)=0 ORDER BY rowid}
+} {{Interior-node-generating line 9} 9 {Interior-node-generating line 19} 19 {Interior-node-generating line 29} 29 {Interior-node-generating line 39} 39 {Interior-node-generating line 49} 49 {Interior-node-generating line 59} 59 {Interior-node-generating line 69} 69 {Interior-node-generating line 79} 79 {Interior-node-generating line 89} 89 {Interior-node-generating line 99} 99}
+
+# Multiple levels of interior node.
+do_test recover-interior-2.0 {
+  db close
+  sqlite3 db test.db
+  generate "interior2" "Interior-node-generating line " 5000
+
+  db eval {
+    DROP TABLE IF EXISTS temp.interior2_recover;
+    CREATE VIRTUAL TABLE temp.interior2_recover USING recover(
+      interior2,
+      t TEXT,
+      n INTEGER
+    );
+  }
+  execsql {SELECT t, n FROM interior2_recover WHERE (rowid%500)=0 ORDER BY rowid}
+} {{Interior-node-generating line 499} 499 {Interior-node-generating line 999} 999 {Interior-node-generating line 1499} 1499 {Interior-node-generating line 1999} 1999 {Interior-node-generating line 2499} 2499 {Interior-node-generating line 2999} 2999 {Interior-node-generating line 3499} 3499 {Interior-node-generating line 3999} 3999 {Interior-node-generating line 4499} 4499 {Interior-node-generating line 4999} 4999}
 
 finish_test
