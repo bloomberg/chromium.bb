@@ -13,6 +13,7 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/autofill/browser/validation.h"
 #include "components/autofill/common/autofill_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
@@ -391,11 +392,27 @@ void PasswordFormManager::SaveAsNewLogin(bool reset_preferred_login) {
   }
 
   pending_credentials_.date_created = Time::Now();
+  SanitizePossibleUsernames(&pending_credentials_);
   password_store->AddLogin(pending_credentials_);
 
   if (reset_preferred_login) {
     UpdatePreferredLoginState(password_store);
   }
+}
+
+void PasswordFormManager::SanitizePossibleUsernames(PasswordForm* form) {
+  // Remove any possible usernames that could be credit cards or SSN for privacy
+  // reasons. Also remove duplicates, both in possible_usernames and between
+  // possible_usernames and username_value.
+  std::set<string16> set;
+  for (std::vector<string16>::iterator it = form->possible_usernames.begin();
+       it != form->possible_usernames.end(); ++it) {
+    if (!autofill::IsValidCreditCardNumber(*it) && !autofill::IsSSN(*it))
+      set.insert(*it);
+  }
+  set.erase(form->username_value);
+  std::vector<string16> temp(set.begin(), set.end());
+  form->possible_usernames.swap(temp);
 }
 
 void PasswordFormManager::UpdatePreferredLoginState(

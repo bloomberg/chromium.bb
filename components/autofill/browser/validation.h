@@ -42,6 +42,9 @@ bool IsValidState(const base::string16& text);
 // Valid for US zip codes only.
 bool IsValidZip(const base::string16& text);
 
+// Returns true if |text| looks like an SSN, with or without separators.
+bool IsSSN(const string16& text);
+
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_BROWSER_VALIDATION_H_

@@ -200,6 +200,10 @@ class PasswordFormManager : public PasswordStoreConsumer {
   // generation manager to deside whether to show the password generation icon.
   virtual void SendNotBlacklistedToRenderer();
 
+  // Remove possible_usernames that may contains sensitive information and
+  // duplicates.
+  void SanitizePossibleUsernames(content::PasswordForm* form);
+
   // Set of PasswordForms from the DB that best match the form
   // being managed by this. Use a map instead of vector, because we most
   // frequently require lookups by username value in IsNewLogin.

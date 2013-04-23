@@ -6,11 +6,21 @@
 
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_regexes.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/state_names.h"
+
+using base::StringPiece16;
+
+namespace {
+
+// The separator characters for SSNs.
+const char16 kSSNSeparators[] = {' ', '-', 0};
+
+}  // namespace
 
 namespace autofill {
 
@@ -119,6 +129,68 @@ bool IsValidState(const base::string16& text) {
 bool IsValidZip(const base::string16& text) {
   const base::string16 kZipPattern = ASCIIToUTF16("^\\d{5}(-\\d{4})?$");
   return MatchesPattern(text, kZipPattern);
+}
+
+bool IsSSN(const string16& text) {
+  string16 number_string;
+  RemoveChars(text, kSSNSeparators, &number_string);
+
+  // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
+  // serial number). The validation we do here is simply checking if the area,
+  // group, and serial numbers are valid.
+  //
+  // Historically, the area number was assigned per state, with the group number
+  // ascending in an alternating even/odd sequence. With that scheme it was
+  // possible to check for validity by referencing a table that had the highest
+  // group number assigned for a given area number. (This was something that
+  // Chromium never did though, because the "high group" values were constantly
+  // changing.)
+  //
+  // However, starting on 25 June 2011 the SSA began issuing SSNs randomly from
+  // all areas and groups. Group numbers and serial numbers of zero remain
+  // invalid, and areas 000, 666, and 900-999 remain invalid.
+  //
+  // References for current practices:
+  //   http://www.socialsecurity.gov/employer/randomization.html
+  //   http://www.socialsecurity.gov/employer/randomizationfaqs.html
+  //
+  // References for historic practices:
+  //   http://www.socialsecurity.gov/history/ssn/geocard.html
+  //   http://www.socialsecurity.gov/employer/stateweb.htm
+  //   http://www.socialsecurity.gov/employer/ssnvhighgroup.htm
+
+  if (number_string.length() != 9 || !IsStringASCII(number_string))
+    return false;
+
+  int area;
+  if (!base::StringToInt(StringPiece16(number_string.begin(),
+                                       number_string.begin() + 3),
+                         &area)) {
+    return false;
+  }
+  if (area < 1 ||
+      area == 666 ||
+      area >= 900) {
+    return false;
+  }
+
+  int group;
+  if (!base::StringToInt(StringPiece16(number_string.begin() + 3,
+                                       number_string.begin() + 5),
+                         &group)
+      || group == 0) {
+    return false;
+  }
+
+  int serial;
+  if (!base::StringToInt(StringPiece16(number_string.begin() + 5,
+                                       number_string.begin() + 9),
+                         &serial)
+      || serial == 0) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace autofill

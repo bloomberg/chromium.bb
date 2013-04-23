@@ -13,8 +13,11 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/common/password_form.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using content::PasswordForm;
+
+using ::testing::Eq;
 
 class TestPasswordManagerDelegate : public PasswordManagerDelegate {
  public:
@@ -117,6 +120,10 @@ class PasswordFormManagerTest : public testing::Test {
     // Simply call the callback method when request done. This will transfer
     // the ownership of the objects in |result| to the |manager|.
     manager->OnGetPasswordStoreResults(result);
+  }
+
+  void SanitizePossibleUsernames(PasswordFormManager* p, PasswordForm* form) {
+    p->SanitizePossibleUsernames(form);
   }
 
   bool IgnoredResult(PasswordFormManager* p, PasswordForm* form) {
@@ -407,4 +414,37 @@ TEST_F(PasswordFormManagerTest, TestSendNotBlacklistedMessage) {
   result.push_back(CreateSavedMatch(true));
   SimulateResponseFromPasswordStore(manager.get(), result);
   EXPECT_EQ(0u, manager->num_sent_messages());
+}
+
+TEST_F(PasswordFormManagerTest, TestSanitizePossibleUsernames) {
+  scoped_ptr<PasswordFormManager> manager(new PasswordFormManager(
+      profile(), NULL, NULL, *observed_form(), false));
+  PasswordForm credentials(*observed_form());
+  credentials.possible_usernames.push_back(ASCIIToUTF16("543-43-1234"));
+  credentials.possible_usernames.push_back(ASCIIToUTF16("378282246310005"));
+  credentials.possible_usernames.push_back(ASCIIToUTF16("other username"));
+  credentials.username_value = ASCIIToUTF16("test@gmail.com");
+
+  SanitizePossibleUsernames(manager.get(), &credentials);
+
+  // Possible credit card number and SSN are stripped.
+  std::vector<string16> expected;
+  expected.push_back(ASCIIToUTF16("other username"));
+  EXPECT_THAT(credentials.possible_usernames, Eq(expected));
+
+  credentials.possible_usernames.clear();
+  credentials.possible_usernames.push_back(ASCIIToUTF16("511-32-9830"));
+  credentials.possible_usernames.push_back(ASCIIToUTF16("duplicate"));
+  credentials.possible_usernames.push_back(ASCIIToUTF16("duplicate"));
+  credentials.possible_usernames.push_back(ASCIIToUTF16("random"));
+  credentials.possible_usernames.push_back(ASCIIToUTF16("test@gmail.com"));
+
+  SanitizePossibleUsernames(manager.get(), &credentials);
+
+  // SSN, duplicate in |possible_usernames| and duplicate of |username_value|
+  // all removed.
+  expected.clear();
+  expected.push_back(ASCIIToUTF16("duplicate"));
+  expected.push_back(ASCIIToUTF16("random"));
+  EXPECT_THAT(credentials.possible_usernames, Eq(expected));
 }

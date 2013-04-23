@@ -8,7 +8,6 @@
 
 #include "base/prefs/pref_service.h"
 #include "base/string16.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "components/autofill/browser/autofill_external_delegate.h"
 #include "components/autofill/browser/validation.h"
@@ -20,7 +19,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 
-using base::StringPiece16;
 using content::BrowserContext;
 using content::WebContents;
 
@@ -30,71 +28,6 @@ namespace {
 // Limit on the number of suggestions to appear in the pop-up menu under an
 // text input element in a form.
 const int kMaxAutocompleteMenuItems = 6;
-
-// The separator characters for SSNs.
-const char16 kSSNSeparators[] = {' ', '-', 0};
-
-bool IsSSN(const base::string16& text) {
-  base::string16 number_string;
-  RemoveChars(text, kSSNSeparators, &number_string);
-
-  // A SSN is of the form AAA-GG-SSSS (A = area number, G = group number, S =
-  // serial number). The validation we do here is simply checking if the area,
-  // group, and serial numbers are valid.
-  //
-  // Historically, the area number was assigned per state, with the group number
-  // ascending in an alternating even/odd sequence. With that scheme it was
-  // possible to check for validity by referencing a table that had the highest
-  // group number assigned for a given area number. (This was something that
-  // Chromium never did though, because the "high group" values were constantly
-  // changing.)
-  //
-  // However, starting on 25 June 2011 the SSA began issuing SSNs randomly from
-  // all areas and groups. Group numbers and serial numbers of zero remain
-  // invalid, and areas 000, 666, and 900-999 remain invalid.
-  //
-  // References for current practices:
-  //   http://www.socialsecurity.gov/employer/randomization.html
-  //   http://www.socialsecurity.gov/employer/randomizationfaqs.html
-  //
-  // References for historic practices:
-  //   http://www.socialsecurity.gov/history/ssn/geocard.html
-  //   http://www.socialsecurity.gov/employer/stateweb.htm
-  //   http://www.socialsecurity.gov/employer/ssnvhighgroup.htm
-
-  if (number_string.length() != 9 || !IsStringASCII(number_string))
-    return false;
-
-  int area;
-  if (!base::StringToInt(StringPiece16(number_string.begin(),
-                                       number_string.begin() + 3),
-                         &area)) {
-    return false;
-  }
-  if (area < 1 ||
-      area == 666 ||
-      area >= 900) {
-    return false;
-  }
-
-  int group;
-  if (!base::StringToInt(StringPiece16(number_string.begin() + 3,
-                                       number_string.begin() + 5),
-                         &group)
-      || group == 0) {
-    return false;
-  }
-
-  int serial;
-  if (!base::StringToInt(StringPiece16(number_string.begin() + 5,
-                                       number_string.begin() + 9),
-                         &serial)
-      || serial == 0) {
-    return false;
-  }
-
-  return true;
-}
 
 bool IsTextField(const FormFieldData& field) {
   return
@@ -215,7 +148,7 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
         !iter->name.empty() &&
         IsTextField(*iter) &&
         !autofill::IsValidCreditCardNumber(iter->value) &&
-        !IsSSN(iter->value)) {
+        !autofill::IsSSN(iter->value)) {
       values.push_back(*iter);
     }
   }

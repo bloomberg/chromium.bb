@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/pickle.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "sql/statement.h"
@@ -18,7 +20,7 @@
 
 using content::PasswordForm;
 
-static const int kCurrentVersionNumber = 1;
+static const int kCurrentVersionNumber = 2;
 static const int kCompatibleVersionNumber = 1;
 
 namespace {
@@ -37,7 +39,9 @@ enum LoginTableColumns {
   COLUMN_PREFERRED,
   COLUMN_DATE_CREATED,
   COLUMN_BLACKLISTED_BY_USER,
-  COLUMN_SCHEME
+  COLUMN_SCHEME,
+  COLUMN_PASSWORD_TYPE,
+  COLUMN_POSSIBLE_USERNAMES
 };
 
 }  // namespace
@@ -85,7 +89,11 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
   db_path_ = db_path;
 
   // If the file on disk is an older database version, bring it up to date.
-  MigrateOldVersionsAsNeeded();
+  if (!MigrateOldVersionsAsNeeded()) {
+    LOG(WARNING) << "Unable to migrate database";
+    db_.Close();
+    return false;
+  }
 
   if (!transaction.Commit()) {
     db_.Close();
@@ -94,12 +102,19 @@ bool LoginDatabase::Init(const base::FilePath& db_path) {
   return true;
 }
 
-void LoginDatabase::MigrateOldVersionsAsNeeded() {
+bool LoginDatabase::MigrateOldVersionsAsNeeded() {
   switch (meta_table_.GetVersionNumber()) {
-    case kCurrentVersionNumber:
-      // No migration needed.
-      return;
+    case kCompatibleVersionNumber:
+      if (!db_.Execute("ALTER TABLE logins "
+                       "ADD COLUMN password_type INTEGER") ||
+          !db_.Execute("ALTER TABLE logins "
+                       "ADD COLUMN possible_usernames BLOB")) {
+        return false;
+      } else {
+        meta_table_.SetVersionNumber(kCurrentVersionNumber);
+      }
   }
+  return true;
 }
 
 bool LoginDatabase::InitLoginsTable() {
@@ -118,6 +133,8 @@ bool LoginDatabase::InitLoginsTable() {
                      "date_created INTEGER NOT NULL,"
                      "blacklisted_by_user INTEGER NOT NULL,"
                      "scheme INTEGER NOT NULL,"
+                     "password_type INTEGER,"
+                     "possible_usernames BLOB,"
                      "UNIQUE "
                      "(origin_url, username_element, "
                      "username_value, password_element, "
@@ -160,9 +177,9 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
       "(origin_url, action_url, username_element, username_value, "
       " password_element, password_value, submit_element, "
       " signon_realm, ssl_valid, preferred, date_created, "
-      " blacklisted_by_user, scheme) "
+      " blacklisted_by_user, scheme, password_type, possible_usernames) "
       "VALUES "
-      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
+      "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"));
   s.BindString(COLUMN_ORIGIN_URL, form.origin.spec());
   s.BindString(COLUMN_ACTION_URL, form.action.spec());
   s.BindString16(COLUMN_USERNAME_ELEMENT, form.username_element);
@@ -178,6 +195,9 @@ bool LoginDatabase::AddLogin(const PasswordForm& form) {
   s.BindInt64(COLUMN_DATE_CREATED, form.date_created.ToTimeT());
   s.BindInt(COLUMN_BLACKLISTED_BY_USER, form.blacklisted_by_user);
   s.BindInt(COLUMN_SCHEME, form.scheme);
+  s.BindInt(COLUMN_PASSWORD_TYPE, form.type);
+  Pickle pickle = SerializeVector(form.possible_usernames);
+  s.BindBlob(COLUMN_POSSIBLE_USERNAMES, pickle.data(), pickle.size());
 
   return s.Run();
 }
@@ -188,7 +208,8 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
       "action_url = ?, "
       "password_value = ?, "
       "ssl_valid = ?, "
-      "preferred = ? "
+      "preferred = ?, "
+      "possible_usernames = ? "
       "WHERE origin_url = ? AND "
       "username_element = ? AND "
       "username_value = ? AND "
@@ -200,11 +221,13 @@ bool LoginDatabase::UpdateLogin(const PasswordForm& form, int* items_changed) {
              static_cast<int>(encrypted_password.length()));
   s.BindInt(2, form.ssl_valid);
   s.BindInt(3, form.preferred);
-  s.BindString(4, form.origin.spec());
-  s.BindString16(5, form.username_element);
-  s.BindString16(6, form.username_value);
-  s.BindString16(7, form.password_element);
-  s.BindString(8, form.signon_realm);
+  Pickle pickle = SerializeVector(form.possible_usernames);
+  s.BindBlob(4, pickle.data(), pickle.size());
+  s.BindString(5, form.origin.spec());
+  s.BindString16(6, form.username_element);
+  s.BindString16(7, form.username_value);
+  s.BindString16(8, form.password_element);
+  s.BindString(9, form.signon_realm);
 
   if (!s.Run())
     return false;
@@ -270,6 +293,13 @@ void LoginDatabase::InitPasswordFormFromStatement(PasswordForm* form,
   int scheme_int = s.ColumnInt(COLUMN_SCHEME);
   DCHECK((scheme_int >= 0) && (scheme_int <= PasswordForm::SCHEME_OTHER));
   form->scheme = static_cast<PasswordForm::Scheme>(scheme_int);
+  int type_int = s.ColumnInt(COLUMN_PASSWORD_TYPE);
+  DCHECK(type_int >= 0 && type_int <= PasswordForm::TYPE_GENERATED);
+  form->type = static_cast<PasswordForm::Type>(type_int);
+  Pickle pickle(
+      static_cast<const char*>(s.ColumnBlob(COLUMN_POSSIBLE_USERNAMES)),
+      s.ColumnByteLength(COLUMN_POSSIBLE_USERNAMES));
+  form->possible_usernames = DeserializeVector(pickle);
 }
 
 bool LoginDatabase::GetLogins(const PasswordForm& form,
@@ -280,9 +310,9 @@ bool LoginDatabase::GetLogins(const PasswordForm& form,
       "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, "
-      "submit_element, signon_realm, ssl_valid, preferred, "
-      "date_created, blacklisted_by_user, scheme FROM logins "
-      "WHERE signon_realm == ? "));
+      "submit_element, signon_realm, ssl_valid, preferred, date_created, "
+      "blacklisted_by_user, scheme, password_type, possible_usernames "
+      "FROM logins WHERE signon_realm == ? "));
   s.BindString(0, form.signon_realm);
 
   while (s.Step()) {
@@ -303,9 +333,9 @@ bool LoginDatabase::GetLoginsCreatedBetween(
       "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, "
-      "submit_element, signon_realm, ssl_valid, preferred, "
-      "date_created, blacklisted_by_user, scheme FROM logins "
-      "WHERE date_created >= ? AND date_created < ?"
+      "submit_element, signon_realm, ssl_valid, preferred, date_created, "
+      "blacklisted_by_user, scheme, password_type, possible_usernames "
+      "FROM logins WHERE date_created >= ? AND date_created < ?"
       "ORDER BY origin_url"));
   s.BindInt64(0, begin.ToTimeT());
   s.BindInt64(1, end.is_null() ? std::numeric_limits<int64>::max()
@@ -338,9 +368,9 @@ bool LoginDatabase::GetAllLoginsWithBlacklistSetting(
       "SELECT origin_url, action_url, "
       "username_element, username_value, "
       "password_element, password_value, "
-      "submit_element, signon_realm, ssl_valid, preferred, "
-      "date_created, blacklisted_by_user, scheme FROM logins "
-      "WHERE blacklisted_by_user == ? "
+      "submit_element, signon_realm, ssl_valid, preferred, date_created, "
+      "blacklisted_by_user, scheme, password_type, possible_usernames "
+      "FROM logins WHERE blacklisted_by_user == ? "
       "ORDER BY origin_url"));
   s.BindInt(0, blacklisted ? 1 : 0);
 
@@ -359,4 +389,23 @@ bool LoginDatabase::DeleteAndRecreateDatabaseFile() {
   db_.Close();
   file_util::Delete(db_path_, false);
   return Init(db_path_);
+}
+
+Pickle LoginDatabase::SerializeVector(const std::vector<string16>& vec) const {
+  Pickle p;
+  for (size_t i = 0; i < vec.size(); ++i) {
+    p.WriteString16(vec[i]);
+  }
+  return p;
+}
+
+std::vector<string16> LoginDatabase::DeserializeVector(const Pickle& p) const {
+  std::vector<string16> ret;
+  string16 str;
+
+  PickleIterator iterator(p);
+  while (iterator.ReadString16(&str)) {
+    ret.push_back(str);
+  }
+  return ret;
 }

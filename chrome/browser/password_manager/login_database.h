@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/files/file_path.h"
+#include "base/pickle.h"
 #include "base/string16.h"
 #include "content/public/common/password_form.h"
 #include "sql/connection.h"
@@ -76,6 +77,8 @@ class LoginDatabase {
   bool DeleteAndRecreateDatabaseFile();
 
  private:
+  friend class LoginDatabaseTest;
+
   // Returns an encrypted version of plain_text.
   std::string EncryptedString(const string16& plain_text) const;
 
@@ -83,7 +86,7 @@ class LoginDatabase {
   string16 DecryptedString(const std::string& cipher_text) const;
 
   bool InitLoginsTable();
-  void MigrateOldVersionsAsNeeded();
+  bool MigrateOldVersionsAsNeeded();
 
   // Fills |form| from the values in the given statement (which is assumed to
   // be of the form used by the Get*Logins methods).
@@ -94,6 +97,10 @@ class LoginDatabase {
   // |forms|.
   bool GetAllLoginsWithBlacklistSetting(
       bool blacklisted, std::vector<content::PasswordForm*>* forms) const;
+
+  // Serialization routines for vectors.
+  Pickle SerializeVector(const std::vector<string16>& vec) const;
+  std::vector<string16> DeserializeVector(const Pickle& pickle) const;
 
   base::FilePath db_path_;
   mutable sql::Connection db_;
