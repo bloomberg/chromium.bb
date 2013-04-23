@@ -402,19 +402,8 @@ class CONTENT_EXPORT RenderViewHostImpl
     is_subframe_ = is_subframe;
   }
 
-  const std::string& frame_tree() const {
-    return frame_tree_;
-  }
-
   // Set the opener to null in the renderer process.
   void DisownOpener();
-
-  // Updates the frame tree for this RVH and sends an IPC down to the renderer
-  // process to keep them in sync. For more details, see the comments on
-  // ViewHostMsg_FrameTreeUpdated.
-  void UpdateFrameTree(int process_id,
-                       int route_id,
-                       const std::string& frame_tree);
 
   void set_save_accessibility_tree_for_testing(bool save) {
     save_accessibility_tree_for_testing_ = save;
@@ -566,7 +555,6 @@ class CONTENT_EXPORT RenderViewHostImpl
   void OnDidAccessInitialDocument();
   void OnDomOperationResponse(const std::string& json_string,
                               int automation_id);
-  void OnFrameTreeUpdated(const std::string& frame_tree);
   void OnGetWindowSnapshot(const int snapshot_id);
 
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -677,11 +665,6 @@ class CONTENT_EXPORT RenderViewHostImpl
 
   // Whether the accessibility tree should be saved, for unit testing.
   bool save_accessibility_tree_for_testing_;
-
-  // A JSON serialized representation of the frame tree for the current document
-  // in the render view. For more details, see the comments on
-  // ViewHostMsg_FrameTreeUpdated.
-  std::string frame_tree_;
 
   // The most recently received accessibility tree - for unit testing only.
   AccessibilityNodeDataTreeNode accessibility_tree_;

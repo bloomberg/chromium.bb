@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
 #include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
@@ -32,7 +31,6 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
-#include "content/common/content_constants_internal.h"
 #include "content/common/desktop_notification_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/inter_process_time_ticks_converter.h"
@@ -996,7 +994,6 @@ bool RenderViewHostImpl::OnMessageReceived(const IPC::Message& msg) {
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(AccessibilityHostMsg_Notifications,
                         OnAccessibilityNotifications)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_FrameTreeUpdated, OnFrameTreeUpdated)
     // Have the super handle all other messages.
     IPC_MESSAGE_UNHANDLED(
         handled = RenderWidgetHostImpl::OnMessageReceived(msg))
@@ -1233,9 +1230,6 @@ void RenderViewHostImpl::OnNavigate(const IPC::Message& msg) {
   FilterURL(policy, process, true, &validated_params.password_form.action);
 
   delegate_->DidNavigate(this, validated_params);
-
-  // TODO(nasko): Send frame tree update for the top level frame, once
-  // http://crbug.com/153701 is fixed.
 }
 
 void RenderViewHostImpl::OnUpdateState(int32 page_id,
@@ -1767,20 +1761,6 @@ void RenderViewHostImpl::DisownOpener() {
   Send(new ViewMsg_DisownOpener(GetRoutingID()));
 }
 
-void RenderViewHostImpl::UpdateFrameTree(
-    int process_id,
-    int route_id,
-    const std::string& frame_tree) {
-  // This should only be called when swapped out.
-  DCHECK(is_swapped_out_);
-
-  frame_tree_ = frame_tree;
-  Send(new ViewMsg_UpdateFrameTree(GetRoutingID(),
-                                   process_id,
-                                   route_id,
-                                   frame_tree_));
-}
-
 void RenderViewHostImpl::SetAccessibilityLayoutCompleteCallbackForTesting(
     const base::Closure& callback) {
   accessibility_layout_callback_ = callback;
@@ -2017,13 +1997,6 @@ void RenderViewHostImpl::OnDomOperationResponse(
       NOTIFICATION_DOM_OPERATION_RESPONSE,
       Source<RenderViewHost>(this),
       Details<DomOperationNotificationDetails>(&details));
-}
-
-void RenderViewHostImpl::OnFrameTreeUpdated(const std::string& frame_tree) {
-  // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
-  DCHECK(false);
-  frame_tree_ = frame_tree;
-  delegate_->DidUpdateFrameTree(this);
 }
 
 void RenderViewHostImpl::OnGetWindowSnapshot(const int snapshot_id) {

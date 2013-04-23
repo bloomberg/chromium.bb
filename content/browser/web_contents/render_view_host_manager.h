@@ -171,9 +171,6 @@ class CONTENT_EXPORT RenderViewHostManager
   // Called when a renderer sets its opener to null.
   void DidDisownOpener(RenderViewHost* render_view_host);
 
-  // Called when a renderer has navigated and when its frame tree is updated.
-  void DidUpdateFrameTree(RenderViewHost* render_view_host);
-
   // Helper method to create a RenderViewHost.  If |swapped_out| is true, it
   // will be initially placed on the swapped out hosts list.  Otherwise, it
   // will be used for a pending cross-site navigation.

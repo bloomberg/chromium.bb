@@ -14,6 +14,7 @@
 #if defined(OS_WIN)
 #include "base/shared_memory.h"
 #endif
+#include "base/values.h"
 #include "content/common/browser_plugin/browser_plugin_message_enums.h"
 #include "content/renderer/browser_plugin/browser_plugin_backing_store.h"
 #include "content/renderer/browser_plugin/browser_plugin_bindings.h"

@@ -265,36 +265,6 @@ void RenderViewHostManager::DidDisownOpener(RenderViewHost* render_view_host) {
   }
 }
 
-void RenderViewHostManager::DidUpdateFrameTree(
-    RenderViewHost* render_view_host) {
-  // TODO(nasko): This used to be a CHECK_EQ, but it causes more crashes than
-  // expected. Changing to if statement and the root cause will be tracked by
-  // http://crbug.com/147613.
-  if (render_view_host != current_host())
-    return;
-
-  RenderViewHostImpl* render_view_host_impl = static_cast<RenderViewHostImpl*>(
-      render_view_host);
-
-  for (RenderViewHostMap::iterator iter = swapped_out_hosts_.begin();
-       iter != swapped_out_hosts_.end();
-       ++iter) {
-    DCHECK_NE(iter->second->GetSiteInstance(),
-        current_host()->GetSiteInstance());
-
-    // Send updates to the other swapped out RVHs, unless it's the pending RVH
-    // (which is in the process of navigating).
-    // TODO(nasko): Don't send updates across BrowsingInstances.
-    // See http://crbug.com/150855.
-    if (iter->second != pending_render_view_host_) {
-      iter->second->UpdateFrameTree(
-          render_view_host_impl->GetProcess()->GetID(),
-          render_view_host_impl->GetRoutingID(),
-          render_view_host_impl->frame_tree());
-    }
-  }
-}
-
 void RenderViewHostManager::RendererAbortedProvisionalLoad(
     RenderViewHost* render_view_host) {
   // We used to cancel the pending renderer here for cross-site downloads.
@@ -666,9 +636,6 @@ int RenderViewHostManager::CreateRenderView(
     if (success) {
       // Don't show the view until we get a DidNavigate from it.
       new_render_view_host->GetView()->Hide();
-
-      // TODO(nasko): Send a frame tree update when creating the RV
-      // once http://crbug.com/153701 is fixed.
     } else if (!swapped_out) {
       CancelPending();
     }

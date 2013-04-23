@@ -6,10 +6,6 @@
 
 namespace content {
 
-const char kFrameTreeNodeNameKey[] = "name";
-const char kFrameTreeNodeIdKey[] = "id";
-const char kFrameTreeNodeSubtreeKey[] = "subtree";
-
 const int kHungRendererDelayMs = 30000;
 
 } // namespace content

@@ -13,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/debug/trace_event.h"
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/scoped_ptr.h"
@@ -31,7 +30,6 @@
 #include "content/common/appcache/appcache_dispatcher.h"
 #include "content/common/child_thread.h"
 #include "content/common/clipboard_messages.h"
-#include "content/common/content_constants_internal.h"
 #include "content/common/database_messages.h"
 #include "content/common/drag_messages.h"
 #include "content/common/fileapi/file_system_dispatcher.h"
@@ -377,14 +375,6 @@ static const size_t kContentIntentDelayMilliseconds = 700;
 static RenderViewImpl* (*g_create_render_view_impl)(RenderViewImplParams*) =
     NULL;
 
-static WebKit::WebFrame* FindFrameByID(WebKit::WebFrame* root, int frame_id) {
-  for (WebFrame* frame = root; frame; frame = frame->traverseNext(false)) {
-    if (frame->identifier() == frame_id)
-      return frame;
-  }
-  return NULL;
-}
-
 static void GetRedirectChain(WebDataSource* ds, std::vector<GURL>* result) {
   // Replace any occurrences of swappedout:// with about:blank.
   const WebURL& blank_url = GURL(chrome::kAboutBlankURL);
@@ -678,11 +668,7 @@ RenderViewImpl::RenderViewImpl(RenderViewImplParams* params)
       decrement_shared_popup_at_destruction_(false),
       handling_select_range_(false),
       next_snapshot_id_(0),
-      allow_partial_swap_(params->allow_partial_swap),
-      updating_frame_tree_(false),
-      pending_frame_tree_update_(false),
-      target_process_id_(0),
-      target_routing_id_(0) {
+      allow_partial_swap_(params->allow_partial_swap) {
 }
 
 void RenderViewImpl::Initialize(RenderViewImplParams* params) {
@@ -1108,7 +1094,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(JavaBridgeMsg_Init, OnJavaBridgeInit)
     IPC_MESSAGE_HANDLER(ViewMsg_SetAccessibilityMode, OnSetAccessibilityMode)
     IPC_MESSAGE_HANDLER(ViewMsg_DisownOpener, OnDisownOpener)
-    IPC_MESSAGE_HANDLER(ViewMsg_UpdateFrameTree, OnUpdatedFrameTree)
 #if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_ActivateNearestFindResult,
                         OnActivateNearestFindResult)
@@ -2124,11 +2109,6 @@ void RenderViewImpl::didStopLoading() {
 
   is_loading_ = false;
 
-  if (pending_frame_tree_update_) {
-    pending_frame_tree_update_ = false;
-    SendUpdatedFrameTree(NULL);
-  }
-
   // NOTE: For now we're doing the safest thing, and sending out notification
   // when done loading. This currently isn't an issue as the favicon is only
   // displayed when done loading. Ideally we would send notification when
@@ -2782,8 +2762,6 @@ void RenderViewImpl::didAccessInitialDocument(WebFrame* frame) {
 }
 
 void RenderViewImpl::didCreateFrame(WebFrame* parent, WebFrame* child) {
-  if (!updating_frame_tree_)
-    SendUpdatedFrameTree(NULL);
 }
 
 void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
@@ -2800,15 +2778,6 @@ void RenderViewImpl::didDisownOpener(WebKit::WebFrame* frame) {
 
 void RenderViewImpl::frameDetached(WebFrame* frame) {
   Send(new ViewHostMsg_FrameDetached(routing_id_, frame->identifier()));
-
-  if (is_loading_) {
-    pending_frame_tree_update_ = true;
-    // Make sure observers are notified, even if we return right away.
-    FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
-    return;
-  }
-  if (!updating_frame_tree_)
-    SendUpdatedFrameTree(frame);
 
   FOR_EACH_OBSERVER(RenderViewObserver, observers_, FrameDetached(frame));
 }
@@ -4043,71 +4012,10 @@ void RenderViewImpl::CheckPreferredSize() {
                                                       preferred_size_));
 }
 
-// The browser process needs to know the shape of the tree, as well as the names
-// and ids of all frames. This allows it to properly route JavaScript messages
-// across processes and frames. The serialization format is described in the
-// comments of the ViewMsg_FrameTreeUpdated message.
-// This function sends those updates to the browser and updates the RVH
-// corresponding to this object. It must be called on any events that modify
-// the tree structure or the names of any frames.
-void RenderViewImpl::SendUpdatedFrameTree(
-    WebKit::WebFrame* exclude_frame_subtree) {
-  // TODO(nasko): Frame tree updates are causing issues with postMessage, as
-  // described in http://crbug.com/153701. Disable them until a proper fix is
-  // in place.
-}
-
 BrowserPluginManager* RenderViewImpl::browser_plugin_manager() {
   if (!browser_plugin_manager_)
     browser_plugin_manager_ = BrowserPluginManager::Create(this);
   return browser_plugin_manager_;
-}
-
-void RenderViewImpl::CreateFrameTree(WebKit::WebFrame* frame,
-                                     base::DictionaryValue* frame_tree) {
-  // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
-  DCHECK(false);
-  NavigateToSwappedOutURL(frame);
-
-  string16 name;
-  if (frame_tree->GetString(kFrameTreeNodeNameKey, &name) && !name.empty())
-    frame->setName(name);
-
-  int remote_id;
-  if (frame_tree->GetInteger(kFrameTreeNodeIdKey, &remote_id))
-    active_frame_id_map_.insert(std::pair<int, int>(frame->identifier(),
-                                                    remote_id));
-
-  base::ListValue* children;
-  if (!frame_tree->GetList(kFrameTreeNodeSubtreeKey, &children))
-    return;
-
-  // Create an invisible iframe tree in the swapped out page.
-  base::DictionaryValue* child;
-  for (size_t i = 0; i < children->GetSize(); ++i) {
-    if (!children->GetDictionary(i, &child))
-      continue;
-    WebElement element = frame->document().createElement("iframe");
-    element.setAttribute("width", "0");
-    element.setAttribute("height", "0");
-    element.setAttribute("frameBorder", "0");
-    if (frame->document().body().appendChild(element)) {
-      WebFrame* subframe = WebFrame::fromFrameOwnerElement(element);
-      if (subframe)
-        CreateFrameTree(subframe, child);
-    } else {
-      LOG(ERROR) << "Failed to append created iframe element.";
-    }
-  }
-}
-
-WebKit::WebFrame* RenderViewImpl::GetFrameByRemoteID(int remote_frame_id) {
-  std::map<int, int>::const_iterator it = active_frame_id_map_.begin();
-  for (; it != active_frame_id_map_.end(); ++it) {
-    if (it->second == remote_frame_id)
-      return FindFrameByID(webview()->mainFrame(), it->first);
-  }
-  return NULL;
 }
 
 void RenderViewImpl::EnsureMediaStreamImpl() {
@@ -4367,21 +4275,6 @@ bool RenderViewImpl::willCheckAndDispatchMessageEvent(
   RenderViewImpl* source_view = FromWebView(sourceFrame->view());
   if (source_view)
     params.source_routing_id = source_view->routing_id();
-  params.source_frame_id = sourceFrame->identifier();
-
-  // Include the process, route, and frame IDs of the target frame. This allows
-  // the browser to detect races between this message being sent and the target
-  // frame no longer being valid.
-  params.target_process_id = target_process_id_;
-  params.target_routing_id = target_routing_id_;
-
-  std::map<int, int>::iterator it = active_frame_id_map_.find(
-      targetFrame->identifier());
-  if (it != active_frame_id_map_.end()) {
-    params.target_frame_id = it->second;
-  } else {
-    params.target_frame_id = 0;
-  }
 
   Send(new ViewHostMsg_RouteMessageEvent(routing_id_, params));
   return true;
@@ -5157,18 +5050,13 @@ void RenderViewImpl::OnScriptEvalRequest(const string16& frame_xpath,
 
 void RenderViewImpl::OnPostMessageEvent(
     const ViewMsg_PostMessage_Params& params) {
-  // Find the target frame of this message. The source tags the message with
-  // |target_frame_id|, so use it to locate the frame.
-  // TODO(nasko): Lookup based on the frame id, once http://crbug.com/153701
-  // is fixed and we can rely on having frame tree updates again.
+  // TODO(nasko): Support sending to subframes.
   WebFrame* frame = webview()->mainFrame();
 
   // Find the source frame if it exists.
   WebFrame* source_frame = NULL;
   if (params.source_routing_id != MSG_ROUTING_NONE) {
     RenderViewImpl* source_view = FromRoutingID(params.source_routing_id);
-    // TODO(nasko): Lookup based on the frame id, once http://crbug.com/153701
-    // is fixed and we can rely on having frame tree updates again.
     if (source_view)
       source_frame = source_view->webview()->mainFrame();
   }
@@ -6493,32 +6381,6 @@ void RenderViewImpl::OnDisownOpener() {
   WebFrame* main_frame = webview()->mainFrame();
   if (main_frame && main_frame->opener())
     main_frame->setOpener(NULL);
-}
-
-void RenderViewImpl::OnUpdatedFrameTree(
-    int process_id,
-    int route_id,
-    const std::string& frame_tree) {
-  // TODO(nasko): Remove once http://crbug.com/153701 is fixed.
-  DCHECK(false);
-  // We should only act on this message if we are swapped out.  It's possible
-  // for this to happen due to races.
-  if (!is_swapped_out_)
-    return;
-
-  base::DictionaryValue* frames = NULL;
-  scoped_ptr<base::Value> tree(base::JSONReader::Read(frame_tree));
-  if (tree.get() && tree->IsType(base::Value::TYPE_DICTIONARY))
-    tree->GetAsDictionary(&frames);
-
-  updating_frame_tree_ = true;
-  active_frame_id_map_.clear();
-
-  target_process_id_ = process_id;
-  target_routing_id_ = route_id;
-  CreateFrameTree(webview()->mainFrame(), frames);
-
-  updating_frame_tree_ = false;
 }
 
 #if defined(OS_ANDROID)

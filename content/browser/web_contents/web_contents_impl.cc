@@ -2935,10 +2935,6 @@ void WebContentsImpl::DidDisownOpener(RenderViewHost* rvh) {
   render_manager_.DidDisownOpener(rvh);
 }
 
-void WebContentsImpl::DidUpdateFrameTree(RenderViewHost* rvh) {
-  render_manager_.DidUpdateFrameTree(rvh);
-}
-
 void WebContentsImpl::DidAccessInitialDocument() {
   // Update the URL display.
   NotifyNavigationStateChanged(content::INVALIDATE_TYPE_URL);
@@ -3046,11 +3042,6 @@ void WebContentsImpl::RouteMessageEvent(
     return;
 
   ViewMsg_PostMessage_Params new_params(params);
-
-  // If the renderer has changed while the post message is being routed,
-  // drop the message, as it will not be delivered to the right target.
-  // TODO(nasko): Check for process ID and target frame id mismatch, once
-  // http://crbug.com/153701 is fixed.
 
   // If there is a source_routing_id, translate it to the routing ID for
   // the equivalent swapped out RVH in the target process.  If we need

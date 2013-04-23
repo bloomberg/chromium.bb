@@ -9,12 +9,6 @@
 
 namespace content {
 
-// Keys used for serializing the frame tree of a renderer process, used for
-// ViewMsg_UpdateFrameTree and ViewHostMsg_FrameTreeUpdated.
-CONTENT_EXPORT extern const char kFrameTreeNodeNameKey[];
-CONTENT_EXPORT extern const char kFrameTreeNodeIdKey[];
-CONTENT_EXPORT extern const char kFrameTreeNodeSubtreeKey[];
-
 // How long to wait before we consider a renderer hung.
 CONTENT_EXPORT extern const int kHungRendererDelayMs;
 
