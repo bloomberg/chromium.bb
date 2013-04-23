@@ -68,6 +68,11 @@ inline v8::Handle<v8::Object> wrap(TestObj* impl, v8::Handle<v8::Object> creatio
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
+        if (actualInfo != &V8TestObj::info)
+            CRASH();
+    }
     return V8TestObj::createWrapper(impl, creationContext, isolate);
 }
 
