@@ -1,9 +1,9 @@
-layer at (0,0) size 800x1000
-  RenderView at (0,0) size 800x600
-layer at (0,0) size 800x1000
-  RenderBlock {HTML} at (0,0) size 800x1000
-    RenderBody {BODY} at (0,0) size 800x1000
-      RenderBlock {P} at (0,210) size 800x20
+layer at (0,0) size 785x1000
+  RenderView at (0,0) size 785x600
+layer at (0,0) size 785x1000
+  RenderBlock {HTML} at (0,0) size 785x1000
+    RenderBody {BODY} at (0,0) size 785x1000
+      RenderBlock {P} at (0,210) size 785x20
         RenderText {#text} at (0,0) size 181x19
           text run at (0,0) width 181: "You should see no red above."
 layer at (20,70) size 100x100

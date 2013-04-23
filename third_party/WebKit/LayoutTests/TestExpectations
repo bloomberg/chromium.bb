@@ -3080,13 +3080,6 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 
 crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
 
-crbug.com/234715 virtual/softwarecompositing/geometry/fixed-in-composited.html [ Failure ]
-crbug.com/234715 virtual/softwarecompositing/geometry/video-fixed-scrolling.html [ Failure ]
-crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ ImageOnlyFailure ]
-crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ ImageOnlyFailure ]
-crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ ImageOnlyFailure ]
-
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
