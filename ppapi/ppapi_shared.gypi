@@ -258,7 +258,7 @@
           'thunk/ppb_widget_dev_thunk.cc',
           'thunk/ppb_x509_certificate_private_api.h',
           'thunk/ppb_x509_certificate_private_thunk.cc',
-          'thunk/ppb_zoom_dev_thunk.cc',
+          'thunk/ppb_zoom_thunk.cc',
           'thunk/thunk.h',
         ],
         'defines': [

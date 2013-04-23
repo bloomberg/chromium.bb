@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_zoom_dev.idl modified Thu Apr 18 10:24:21 2013. */
+/* From dev/ppb_zoom_dev.idl modified Thu Mar 28 11:07:32 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_ZOOM_DEV_H_
 #define PPAPI_C_DEV_PPB_ZOOM_DEV_H_
@@ -42,7 +42,7 @@ struct PPB_Zoom_Dev_0_2 {
    */
   void (*ZoomLimitsChanged)(PP_Instance instance,
                             double minimum_factor,
-                            double maximum_factor);
+                            double maximium_factor);
 };
 
 typedef struct PPB_Zoom_Dev_0_2 PPB_Zoom_Dev;
