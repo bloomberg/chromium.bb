@@ -735,6 +735,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
       media::IsMediaLibraryInitialized());
 #endif
 
+  WebRuntimeFeatures::enableWebMIDI(
+      command_line.HasSwitch(switches::kEnableWebMIDI));
+
   WebRuntimeFeatures::enableDeviceMotion(
       command_line.HasSwitch(switches::kEnableDeviceMotion));
 

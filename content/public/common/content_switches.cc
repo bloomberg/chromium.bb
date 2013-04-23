@@ -215,6 +215,9 @@ const char kDisableWebRTC[]                 = "disable-webrtc";
 const char kDisableWebAudio[]               = "disable-webaudio";
 #endif
 
+// Enables Web MIDI API.
+const char kEnableWebMIDI[]                 = "enable-web-midi";
+
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
