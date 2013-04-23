@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/i18n/string_compare.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -17,6 +18,7 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -302,6 +304,13 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
   std::vector<std::string> language_codes;
   TranslateManager::GetSupportedLanguages(&language_codes);
 
+  // Preparing for the alphabetical order in the locale.
+  UErrorCode error = U_ZERO_ERROR;
+  std::string locale = g_browser_process->GetApplicationLocale();
+  icu::Locale loc(locale.c_str());
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(loc, error));
+  collator->setStrength(icu::Collator::PRIMARY);
+
   languages_.reserve(language_codes.size());
   for (std::vector<std::string>::const_iterator iter = language_codes.begin();
        iter != language_codes.end(); ++iter) {
@@ -311,8 +320,10 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     // Insert the language in languages_ in alphabetical order.
     std::vector<LanguageNamePair>::iterator iter2;
     for (iter2 = languages_.begin(); iter2 != languages_.end(); ++iter2) {
-      if (language_name.compare(iter2->second) < 0)
+      if (base::i18n::CompareString16WithCollator(collator.get(),
+          language_name, iter2->second) == UCOL_LESS) {
         break;
+      }
     }
     languages_.insert(iter2, LanguageNamePair(language_code, language_name));
   }
