@@ -313,10 +313,7 @@ void ScreenCaptureDevice::Core::DoStop() {
 void ScreenCaptureDevice::Core::DoDeAllocate() {
   DCHECK(task_runner_->RunsTasksOnCurrentThread());
   DoStop();
-  if (screen_capturer_) {
-    screen_capturer_->Stop();
-    screen_capturer_.reset();
-  }
+  screen_capturer_.reset();
   waiting_for_frame_size_ = false;
 }
 

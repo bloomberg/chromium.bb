@@ -502,58 +502,6 @@ TEST_F(IpcDesktopEnvironmentTest, Reattach) {
   main_run_loop_.Run();
 }
 
-// Tests InvalidateRegion().
-TEST_F(IpcDesktopEnvironmentTest, InvalidateRegion) {
-  scoped_ptr<protocol::MockClipboardStub> clipboard_stub(
-      new protocol::MockClipboardStub());
-  EXPECT_CALL(*clipboard_stub, InjectClipboardEvent(_))
-      .Times(0);
-
-  // Start the input injector and screen capturer.
-  input_injector_->Start(clipboard_stub.PassAs<protocol::ClipboardStub>());
-  video_capturer_->Start(&screen_capturer_delegate_);
-
-  // Run the message loop until the desktop is attached.
-  setup_run_loop_->Run();
-
-  // Input injector should receive no events.
-  EXPECT_CALL(*remote_input_injector_, InjectClipboardEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectKeyEvent(_))
-      .Times(0);
-  EXPECT_CALL(*remote_input_injector_, InjectMouseEvent(_))
-      .Times(0);
-
-  // Stop the test when the first frame is captured.
-  EXPECT_CALL(screen_capturer_delegate_, OnCaptureCompleted(_))
-      .WillOnce(InvokeWithoutArgs(
-          this, &IpcDesktopEnvironmentTest::DeleteDesktopEnvironment));
-
-  // Invalidate a region that is larger than the screen.
-  SkIRect horizontal_rect = SkIRect::MakeXYWH(
-      -100,
-      media::ScreenCapturerFake::kHeight / 4,
-      media::ScreenCapturerFake::kWidth + 200,
-      media::ScreenCapturerFake::kHeight / 2);
-  SkIRect vertical_rect = SkIRect::MakeXYWH(
-      media::ScreenCapturerFake::kWidth / 4,
-      -100,
-      media::ScreenCapturerFake::kWidth / 2,
-      media::ScreenCapturerFake::kHeight + 200);
-
-  SkRegion invalid_region;
-  invalid_region.op(horizontal_rect, SkRegion::kUnion_Op);
-  invalid_region.op(vertical_rect, SkRegion::kUnion_Op);
-  video_capturer_->InvalidateRegion(invalid_region);
-
-  // Capture a single frame.
-  video_capturer_->CaptureFrame();
-
-  task_runner_ = NULL;
-  io_task_runner_ = NULL;
-  main_run_loop_.Run();
-}
-
 // Tests injection of clipboard events.
 TEST_F(IpcDesktopEnvironmentTest, InjectClipboardEvent) {
   scoped_ptr<protocol::MockClipboardStub> clipboard_stub(

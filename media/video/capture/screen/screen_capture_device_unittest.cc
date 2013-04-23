@@ -67,12 +67,6 @@ class FakeScreenCapturer : public ScreenCapturer {
   virtual void Start(Delegate* delegate) OVERRIDE {
     delegate_ = delegate;
   }
-  virtual void Stop() OVERRIDE {
-    delegate_ = NULL;
-  }
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
   virtual void CaptureFrame() OVERRIDE {
     scoped_refptr<ScreenCaptureData> frame =
         frames_[frame_index_ % arraysize(frames_)];

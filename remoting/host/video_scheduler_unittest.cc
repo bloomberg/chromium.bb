@@ -187,10 +187,6 @@ TEST_F(VideoSchedulerTest, StartAndStop) {
           InvokeWithoutArgs(this, &VideoSchedulerTest::StopVideoScheduler)))
       .RetiresOnSaturation();
 
-  EXPECT_CALL(*capturer, Stop())
-      .After(capturer_capture)
-      .WillOnce(Invoke(this, &VideoSchedulerTest::OnCapturerStop));
-
   // Start video frame capture.
   StartVideoScheduler(capturer.PassAs<media::ScreenCapturer>());
 

@@ -26,8 +26,6 @@ class MEDIA_EXPORT ScreenCapturerFake : public ScreenCapturer {
 
   // Overridden from ScreenCapturer:
   virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
 
  private:

@@ -150,10 +150,6 @@ class VideoScheduler : public base::RefCountedThreadSafe<VideoScheduler>,
   // Send updated cursor shape to client.
   void SendCursorShape(scoped_ptr<protocol::CursorShapeInfo> cursor_shape);
 
-  // Posted to the network thread to delete |capturer| on the thread that
-  // created it.
-  void StopOnNetworkThread(scoped_ptr<media::ScreenCapturer> capturer);
-
   // Encoder thread -----------------------------------------------------------
 
   // Encode a frame, passing generated VideoPackets to SendVideoPacket().

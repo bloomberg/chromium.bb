@@ -18,8 +18,6 @@ class MockScreenCapturer : public ScreenCapturer {
   virtual ~MockScreenCapturer();
 
   MOCK_METHOD1(Start, void(Delegate* delegate));
-  MOCK_METHOD0(Stop, void());
-  MOCK_METHOD1(InvalidateRegion, void(const SkRegion& invalid_region));
   MOCK_METHOD0(CaptureFrame, void());
 
  private:

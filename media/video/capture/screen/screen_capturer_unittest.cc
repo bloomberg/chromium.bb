@@ -45,7 +45,6 @@ scoped_refptr<SharedBuffer> ScreenCapturerTest::CreateSharedBuffer(
 TEST_F(ScreenCapturerTest, StartCapturer) {
   capturer_ = ScreenCapturer::Create();
   capturer_->Start(&delegate_);
-  capturer_->Stop();
 }
 
 TEST_F(ScreenCapturerTest, Capture) {
@@ -62,7 +61,6 @@ TEST_F(ScreenCapturerTest, Capture) {
   capturer_ = ScreenCapturer::Create();
   capturer_->Start(&delegate_);
   capturer_->CaptureFrame();
-  capturer_->Stop();
 }
 
 #if defined(OS_WIN)
@@ -82,7 +80,6 @@ TEST_F(ScreenCapturerTest, UseSharedBuffers) {
   capturer_ = ScreenCapturer::Create();
   capturer_->Start(&delegate_);
   capturer_->CaptureFrame();
-  capturer_->Stop();
   capturer_.reset();
 }
 

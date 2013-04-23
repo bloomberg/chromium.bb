@@ -224,24 +224,6 @@ void DesktopSessionProxy::SetAudioCapturer(
   audio_capturer_ = audio_capturer;
 }
 
-void DesktopSessionProxy::InvalidateRegion(const SkRegion& invalid_region) {
-  if (!caller_task_runner_->BelongsToCurrentThread()) {
-    caller_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&DesktopSessionProxy::InvalidateRegion, this,
-                              invalid_region));
-    return;
-  }
-
-  if (desktop_channel_) {
-    std::vector<SkIRect> invalid_rects;
-    for (SkRegion::Iterator i(invalid_region); !i.done(); i.next())
-      invalid_rects.push_back(i.rect());
-
-    SendToDesktop(
-        new ChromotingNetworkDesktopMsg_InvalidateRegion(invalid_rects));
-  }
-}
-
 void DesktopSessionProxy::CaptureFrame() {
   if (!caller_task_runner_->BelongsToCurrentThread()) {
     caller_task_runner_->PostTask(

@@ -120,8 +120,6 @@ class ScreenCapturerMac : public ScreenCapturer {
 
   // Overridden from ScreenCapturer:
   virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
 
  private:
@@ -235,6 +233,15 @@ ScreenCapturerMac::ScreenCapturerMac()
 }
 
 ScreenCapturerMac::~ScreenCapturerMac() {
+  if (power_assertion_id_display_ != kIOPMNullAssertionID) {
+    IOPMAssertionRelease(power_assertion_id_display_);
+    power_assertion_id_display_ = kIOPMNullAssertionID;
+  }
+  if (power_assertion_id_user_ != kIOPMNullAssertionID) {
+    IOPMAssertionRelease(power_assertion_id_user_);
+    power_assertion_id_user_ = kIOPMNullAssertionID;
+  }
+
   ReleaseBuffers();
   UnregisterRefreshAndMoveHandlers();
   CGError err = CGDisplayRemoveReconfigurationCallback(
@@ -291,21 +298,6 @@ void ScreenCapturerMac::Start(Delegate* delegate) {
                               kIOPMAssertionLevelOn,
                               CFSTR("Chrome Remote Desktop connection active"),
                               &power_assertion_id_user_);
-}
-
-void ScreenCapturerMac::Stop() {
-  if (power_assertion_id_display_ != kIOPMNullAssertionID) {
-    IOPMAssertionRelease(power_assertion_id_display_);
-    power_assertion_id_display_ = kIOPMNullAssertionID;
-  }
-  if (power_assertion_id_user_ != kIOPMNullAssertionID) {
-    IOPMAssertionRelease(power_assertion_id_user_);
-    power_assertion_id_user_ = kIOPMNullAssertionID;
-  }
-}
-
-void ScreenCapturerMac::InvalidateRegion(const SkRegion& invalid_region) {
-  helper_.InvalidateRegion(invalid_region);
 }
 
 void ScreenCapturerMac::CaptureFrame() {
@@ -795,7 +787,7 @@ void ScreenCapturerMac::ScreenRefresh(CGRectCount count,
 
   SkRegion region;
   region.setRects(skirect_array, count);
-  InvalidateRegion(region);
+  helper_.InvalidateRegion(region);
 }
 
 void ScreenCapturerMac::ScreenUpdateMove(CGScreenUpdateMoveDelta delta,

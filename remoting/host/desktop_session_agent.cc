@@ -83,8 +83,6 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
     IPC_BEGIN_MESSAGE_MAP(DesktopSessionAgent, message)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_CaptureFrame,
                           OnCaptureFrame)
-      IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InvalidateRegion,
-                          OnInvalidateRegion)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SharedBufferCreated,
                           OnSharedBufferCreated)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_InjectClipboardEvent,
@@ -359,32 +357,6 @@ void DesktopSessionAgent::OnCaptureFrame() {
   video_capturer_->CaptureFrame();
 }
 
-void DesktopSessionAgent::OnInvalidateRegion(
-    const std::vector<SkIRect>& invalid_rects) {
-  if (!video_capture_task_runner()->BelongsToCurrentThread()) {
-    video_capture_task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&DesktopSessionAgent::OnInvalidateRegion, this,
-                   invalid_rects));
-    return;
-  }
-
-  SkIRect bounds = SkIRect::MakeSize(current_size_);
-
-  // Convert |invalid_rects| into a region.
-  SkRegion invalid_region;
-  for (std::vector<SkIRect>::const_iterator i = invalid_rects.begin();
-      i != invalid_rects.end(); ++i) {
-    // Validate each rectange and clip it to the frame bounds.
-    SkIRect rect;
-    if (rect.intersect(*i, bounds)) {
-      invalid_region.op(rect, SkRegion::kUnion_Op);
-    }
-  }
-
-  video_capturer_->InvalidateRegion(invalid_region);
-}
-
 void DesktopSessionAgent::OnSharedBufferCreated(int id) {
   if (!video_capture_task_runner()->BelongsToCurrentThread()) {
     video_capture_task_runner()->PostTask(
@@ -501,10 +473,7 @@ void DesktopSessionAgent::StartVideoCapturer() {
 void DesktopSessionAgent::StopVideoCapturer() {
   DCHECK(video_capture_task_runner()->BelongsToCurrentThread());
 
-  if (video_capturer_) {
-    video_capturer_->Stop();
-    video_capturer_.reset();
-  }
+  video_capturer_.reset();
 
   // Free any shared buffers left.
   shared_buffers_.clear();

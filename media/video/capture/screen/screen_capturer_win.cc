@@ -80,8 +80,6 @@ class ScreenCapturerWin : public ScreenCapturer {
 
   // Overridden from ScreenCapturer:
   virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
 
  private:
@@ -224,10 +222,12 @@ ScreenCapturerWin::ScreenCapturerWin(bool disable_aero)
 }
 
 ScreenCapturerWin::~ScreenCapturerWin() {
-}
+  // Restore Aero.
+  if (composition_func_ != NULL) {
+    (*composition_func_)(DWM_EC_ENABLECOMPOSITION);
+  }
 
-void ScreenCapturerWin::InvalidateRegion(const SkRegion& invalid_region) {
-  helper_.InvalidateRegion(invalid_region);
+  delegate_ = NULL;
 }
 
 void ScreenCapturerWin::CaptureFrame() {
@@ -267,7 +267,7 @@ void ScreenCapturerWin::CaptureFrame() {
     SkRegion region;
     differ_->CalcDirtyRegion(last_buffer->pixels(), current_buffer->pixels(),
                              &region);
-    InvalidateRegion(region);
+    helper_.InvalidateRegion(region);
   } else {
     // No previous frame is available. Invalidate the whole screen.
     helper_.InvalidateScreen(current_buffer->dimensions());
@@ -294,15 +294,6 @@ void ScreenCapturerWin::Start(Delegate* delegate) {
   if (composition_func_ != NULL) {
     (*composition_func_)(DWM_EC_DISABLECOMPOSITION);
   }
-}
-
-void ScreenCapturerWin::Stop() {
-  // Restore Aero.
-  if (composition_func_ != NULL) {
-    (*composition_func_)(DWM_EC_ENABLECOMPOSITION);
-  }
-
-  delegate_ = NULL;
 }
 
 void ScreenCapturerWin::PrepareCaptureResources() {

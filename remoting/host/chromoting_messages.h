@@ -233,9 +233,6 @@ IPC_MESSAGE_CONTROL2(ChromotingNetworkDesktopMsg_StartSessionAgent,
 IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_SharedBufferCreated,
                      int /* id */)
 
-IPC_MESSAGE_CONTROL1(ChromotingNetworkDesktopMsg_InvalidateRegion,
-                     std::vector<SkIRect> /* invalid_region */ )
-
 IPC_MESSAGE_CONTROL0(ChromotingNetworkDesktopMsg_CaptureFrame)
 
 // Carries a clipboard event from the client to the desktop session agent.

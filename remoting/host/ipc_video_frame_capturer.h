@@ -31,8 +31,6 @@ class IpcVideoFrameCapturer : public media::ScreenCapturer {
 
   // media::ScreenCapturer interface.
   virtual void Start(Delegate* delegate) OVERRIDE;
-  virtual void Stop() OVERRIDE;
-  virtual void InvalidateRegion(const SkRegion& invalid_region) OVERRIDE;
   virtual void CaptureFrame() OVERRIDE;
 
   // Called when a video frame has been captured. |capture_data| describes

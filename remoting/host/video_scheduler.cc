@@ -61,6 +61,10 @@ void VideoScheduler::OnCaptureCompleted(
     scoped_refptr<media::ScreenCaptureData> capture_data) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
 
+  // Do nothing if the scheduler is being stopped.
+  if (!capturer_)
+    return;
+
   if (capture_data) {
     scheduler_.RecordCaptureTime(
         base::TimeDelta::FromMilliseconds(capture_data->capture_time_ms()));
@@ -80,6 +84,10 @@ void VideoScheduler::OnCaptureCompleted(
 void VideoScheduler::OnCursorShapeChanged(
     scoped_ptr<media::MouseCursorShape> cursor_shape) {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
+
+  // Do nothing if the scheduler is being stopped.
+  if (!capturer_)
+    return;
 
   scoped_ptr<protocol::CursorShapeInfo> cursor_proto(
       new protocol::CursorShapeInfo());
@@ -176,9 +184,6 @@ void VideoScheduler::StartOnCaptureThread() {
 
 void VideoScheduler::StopOnCaptureThread() {
   DCHECK(capture_task_runner_->BelongsToCurrentThread());
-
-  // Stop |capturer_| and clear it to prevent pending tasks from using it.
-  capturer_->Stop();
 
   // |capture_timer_| must be destroyed on the thread on which it is used.
   capture_timer_.reset();
@@ -278,14 +283,6 @@ void VideoScheduler::SendCursorShape(
   cursor_stub_->SetCursorShape(*cursor_shape);
 }
 
-void VideoScheduler::StopOnNetworkThread(
-    scoped_ptr<media::ScreenCapturer> capturer) {
-  DCHECK(network_task_runner_->BelongsToCurrentThread());
-
-  // This is posted by StopOnEncodeThread meaning that both capture and encode
-  // threads are stopped now and it is safe to delete |capturer|.
-}
-
 // Encoder thread --------------------------------------------------------------
 
 void VideoScheduler::EncodeFrame(
@@ -327,11 +324,9 @@ void VideoScheduler::StopOnEncodeThread(
   DCHECK(encode_task_runner_->BelongsToCurrentThread());
 
   // This is posted by StopOnCaptureThread, so we know that by the time we
-  // process it there are no more encode tasks queued. Pass |capturer_| for
-  // deletion on the thread that created it.
-  network_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VideoScheduler::StopOnNetworkThread, this,
-                            base::Passed(&capturer)));
+  // process it there are no more encode tasks queued. Pass |capturer| for
+  // deletion on the capture thread.
+  capture_task_runner_->DeleteSoon(FROM_HERE, capturer.release());
 }
 
 }  // namespace remoting

@@ -131,9 +131,6 @@ class DesktopSessionAgent
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();
 
-  // Handles InvalidateRegion requests from the client.
-  void OnInvalidateRegion(const std::vector<SkIRect>& invalid_rects);
-
   // Handles SharedBufferCreated notification from the client.
   void OnSharedBufferCreated(int id);
 

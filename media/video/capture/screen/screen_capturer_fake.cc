@@ -53,13 +53,6 @@ void ScreenCapturerFake::Start(Delegate* delegate) {
   }
 }
 
-void ScreenCapturerFake::Stop() {
-}
-
-void ScreenCapturerFake::InvalidateRegion(const SkRegion& invalid_region) {
-  helper_.InvalidateRegion(invalid_region);
-}
-
 void ScreenCapturerFake::CaptureFrame() {
   base::Time capture_start_time = base::Time::Now();
 
