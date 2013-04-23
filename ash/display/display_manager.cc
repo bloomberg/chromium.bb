@@ -4,6 +4,7 @@
 
 #include "ash/display/display_manager.h"
 
+#include <cmath>
 #include <set>
 #include <string>
 #include <vector>
@@ -55,11 +56,13 @@ typedef std::vector<DisplayInfo> DisplayInfoList;
 
 namespace {
 
-// List of value UI Scale values. These scales are equivalent to 640, 800, 1024,
-// 1280, 1440, 1600 and 1920 pixel width respectively on 2560 pixel width 2x
-// density display.
-const float kUIScales[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f, 1.25f, 1.5f};
-const size_t kUIScaleTableSize = arraysize(kUIScales);
+// List of value UI Scale values. Scales for 2x are equivalent to 640,
+// 800, 1024, 1280, 1440, 1600 and 1920 pixel width respectively on
+// 2560 pixel width 2x density display. Please see crbug.com/233375
+// for the full list of resolutions.
+const float kUIScalesFor2x[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f, 1.25f, 1.5f};
+const float kUIScalesFor1280[] = {0.5f, 0.625f, 0.8f, 1.0f, 1.125f };
+const float kUIScalesFor1366[] = {0.5f, 0.6f, 0.75f, 1.0f, 1.125f };
 
 struct DisplaySortFunctor {
   bool operator()(const gfx::Display& a, const gfx::Display& b) {
@@ -73,17 +76,45 @@ struct DisplayInfoSortFunctor {
   }
 };
 
+struct ScaleComparator {
+  ScaleComparator(float s) : scale(s) {}
+
+  bool operator()(float s) const {
+    const float kEpsilon = 0.0001f;
+    return std::abs(scale - s) < kEpsilon;
+  }
+  float scale;
+};
+
+std::vector<float> GetScalesForDisplay(const DisplayInfo& info) {
+  std::vector<float> ret;
+  if (info.device_scale_factor() == 2.0f) {
+    ret.assign(kUIScalesFor2x, kUIScalesFor2x + arraysize(kUIScalesFor2x));
+    return ret;
+  }
+  switch (info.bounds_in_pixel().width()) {
+    case 1280:
+      ret.assign(kUIScalesFor1280,
+                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
+      break;
+    case 1366:
+      ret.assign(kUIScalesFor1366,
+                 kUIScalesFor1366 + arraysize(kUIScalesFor1366));
+      break;
+    default:
+      ret.assign(kUIScalesFor1280,
+                 kUIScalesFor1280 + arraysize(kUIScalesFor1280));
+#if defined(OS_CHROMEOS)
+      if (base::chromeos::IsRunningOnChromeOS())
+        NOTREACHED() << "Unknown resolution:" << info.ToString();
+#endif
+  }
+  return ret;
+}
+
 gfx::Display& GetInvalidDisplay() {
   static gfx::Display* invalid_display = new gfx::Display();
   return *invalid_display;
-}
-
-bool IsValidUIScale(float scale) {
-  for (size_t i = 0; i < kUIScaleTableSize; ++i) {
-    if (kUIScales[i] == scale)
-      return true;
-  }
-  return false;
 }
 
 }  // namespace
@@ -122,14 +153,16 @@ void DisplayManager::ToggleDisplayScaleFactor() {
 }
 
 // static
-float DisplayManager::GetNextUIScale(float scale, bool up) {
-  for (size_t i = 0; i < kUIScaleTableSize; ++i) {
-    if (kUIScales[i] == scale) {
-      if (up && i != kUIScaleTableSize -1)
-        return kUIScales[i + 1];
+float DisplayManager::GetNextUIScale(const DisplayInfo& info, bool up) {
+  float scale = info.ui_scale();
+  std::vector<float> scales = GetScalesForDisplay(info);
+  for (size_t i = 0; i < scales.size(); ++i) {
+    if (ScaleComparator(scales[i])(scale)) {
+      if (up && i != scales.size() - 1)
+        return scales[i + 1];
       if (!up && i != 0)
-        return kUIScales[i - 1];
-      return kUIScales[i];
+        return scales[i - 1];
+      return scales[i];
     }
   }
   // Fallback to 1.0f if the |scale| wasn't in the list.
@@ -221,8 +254,10 @@ void DisplayManager::SetDisplayRotation(int64 display_id,
 
 void DisplayManager::SetDisplayUIScale(int64 display_id,
                                        float ui_scale) {
-  if (!IsDisplayUIScalingEnabled() || !IsValidUIScale(ui_scale))
+  if (!IsDisplayUIScalingEnabled() ||
+      gfx::Display::InternalDisplayId() != display_id) {
     return;
+  }
 
   DisplayInfoList display_info_list;
   for (DisplayList::const_iterator iter = displays_.begin();
@@ -231,6 +266,12 @@ void DisplayManager::SetDisplayUIScale(int64 display_id,
     if (info.id() == display_id) {
       if (info.ui_scale() == ui_scale)
         return;
+      std::vector<float> scales = GetScalesForDisplay(info);
+      ScaleComparator comparator(ui_scale);
+      if (std::find_if(scales.begin(), scales.end(), comparator) ==
+          scales.end()) {
+        return;
+      }
       info.set_ui_scale(ui_scale);
     }
     display_info_list.push_back(info);
@@ -249,7 +290,8 @@ void DisplayManager::RegisterDisplayProperty(
   }
 
   display_info_[display_id].set_rotation(rotation);
-  if (IsValidUIScale(ui_scale))
+  // Just in case the preference file was corrupted.
+  if (0.5f <= ui_scale && ui_scale <= 2.0f)
     display_info_[display_id].set_ui_scale(ui_scale);
   if (overscan_insets)
     display_info_[display_id].SetOverscanInsets(true, *overscan_insets);
@@ -586,15 +628,10 @@ void DisplayManager::OnRootWindowResized(const aura::RootWindow* root,
 int64 DisplayManager::GetDisplayIdForUIScaling() const {
   // UI Scaling is effective only on internal display.
   int64 display_id = gfx::Display::InternalDisplayId();
-#if defined(OS_CHROMEOS)
-  // On linux desktop, allow ui scalacing on the first dislpay.
-  if (!base::chromeos::IsRunningOnChromeOS())
-    display_id = first_display_id();
-#elif defined(OS_WIN)
+#if defined(OS_WIN)
   display_id = first_display_id();
 #endif
-  return GetDisplayForId(display_id).device_scale_factor() == 2.0f ?
-      display_id : gfx::Display::kInvalidDisplayID;
+  return display_id;
 }
 
 void DisplayManager::Init() {
@@ -610,6 +647,9 @@ void DisplayManager::Init() {
   if (displays_.empty())
     AddDisplayFromSpec(std::string() /* default */);
   first_display_id_ = displays_[0].id();
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kAshUseFirstDisplayAsInternal))
+    gfx::Display::SetInternalDisplayId(first_display_id_);
   num_connected_displays_ = displays_.size();
 }
 
@@ -681,21 +721,6 @@ void DisplayManager::InsertAndUpdateDisplayInfo(const DisplayInfo& new_info) {
     display_info_[new_info.id()] = new_info;
     display_info_[new_info.id()].set_native(false);
   }
-  bool on_chromeos = false;
-#if defined(OS_CHROMEOS)
-  on_chromeos = base::chromeos::IsRunningOnChromeOS();
-#endif
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if ((new_info.id() == gfx::Display::InternalDisplayId() || !on_chromeos) &&
-      command_line->HasSwitch(switches::kAshInternalDisplayUIScale)) {
-    double scale_in_double = 1.0;
-    std::string value = CommandLine::ForCurrentProcess()->
-        GetSwitchValueASCII(switches::kAshInternalDisplayUIScale);
-    if (!base::StringToDouble(value, &scale_in_double))
-      LOG(ERROR) << "Failed to parse the display scale:" << value;
-    display_info_[new_info.id()].set_ui_scale(scale_in_double);
-  }
-
   display_info_[new_info.id()].UpdateDisplaySize();
 }
 

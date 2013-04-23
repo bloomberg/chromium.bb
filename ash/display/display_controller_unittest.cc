@@ -319,14 +319,16 @@ TEST_F(DisplayControllerTest, BoundsUpdated) {
   display_manager->SetDisplayRotation(primary_id, gfx::Display::ROTATE_90);
   EXPECT_EQ(0, observer.CountAndReset());
 
-  // UI scale is eanbled only on internal display (=1st display in unittest).
+  // UI scale is eanbled only on internal display.
   int64 secondary_id = GetSecondaryDisplay().id();
   gfx::Display::SetInternalDisplayId(secondary_id);
-  display_manager->SetDisplayUIScale(secondary_id, 1.25f);
-  EXPECT_EQ(0, observer.CountAndReset());
-  display_manager->SetDisplayUIScale(primary_id, 1.25f);
+  display_manager->SetDisplayUIScale(secondary_id, 1.125f);
   EXPECT_EQ(1, observer.CountAndReset());
-  display_manager->SetDisplayUIScale(primary_id, 1.25f);
+  display_manager->SetDisplayUIScale(secondary_id, 1.125f);
+  EXPECT_EQ(0, observer.CountAndReset());
+  display_manager->SetDisplayUIScale(primary_id, 1.125f);
+  EXPECT_EQ(0, observer.CountAndReset());
+  display_manager->SetDisplayUIScale(primary_id, 1.125f);
   EXPECT_EQ(0, observer.CountAndReset());
 }
 
@@ -817,6 +819,8 @@ TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
   UpdateDisplay("600x400*2@1.5,500x300");
 
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
+  gfx::Display::SetInternalDisplayId(display1.id());
+
   gfx::Display display2 = ScreenAsh::GetSecondaryDisplay();
   Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ("0,0 450x300", display1.bounds().ToString());
@@ -831,7 +835,7 @@ TEST_F(DisplayControllerTest, MAYBE_ScaleRootWindow) {
 
   internal::DisplayManager* display_manager =
       Shell::GetInstance()->display_manager();
-  display_manager->SetDisplayUIScale(display1.id(), 1.25);
+  display_manager->SetDisplayUIScale(display1.id(), 1.25f);
   display1 = Shell::GetScreen()->GetPrimaryDisplay();
   display2 = ScreenAsh::GetSecondaryDisplay();
   EXPECT_EQ("0,0 375x250", display1.bounds().ToString());
