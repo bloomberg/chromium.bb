@@ -274,6 +274,8 @@ cr.define('options', function() {
           'bluetooth-keyboard-button' : 'bluetooth-passkey-char';
       this.clearElement_(passkeyEl);
       var key = String(this.device_.passkey);
+      // Passkey should always have 6 digits.
+      key = '000000'.substring(0, 6 - key.length) + key;
       var progress = this.device_.entered;
       for (var i = 0; i < key.length; i++) {
         var keyEl = document.createElement('span');
