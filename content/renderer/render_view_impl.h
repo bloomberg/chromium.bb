@@ -922,7 +922,6 @@ class CONTENT_EXPORT RenderViewImpl
   void OnClearFocusedNode();
   void OnClosePage();
   void OnContextMenuClosed(const CustomContextMenuContext& custom_context);
-  void OnShowContextMenu();
   void OnCopy();
   void OnCopyImageAt(int x, int y);
   void OnCut();

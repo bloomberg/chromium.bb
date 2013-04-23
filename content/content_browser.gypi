@@ -962,8 +962,6 @@
     'browser/web_contents/navigation_entry_impl.h',
     'browser/web_contents/render_view_host_manager.cc',
     'browser/web_contents/render_view_host_manager.h',
-    'browser/web_contents/touch_editable_impl_aura.cc',
-    'browser/web_contents/touch_editable_impl_aura.h',
     'browser/web_contents/web_contents_drag_win.cc',
     'browser/web_contents/web_contents_drag_win.h',
     'browser/web_contents/web_contents_impl.cc',
@@ -1253,7 +1251,6 @@
     ['use_aura==1', {
       'dependencies': [
         '../ui/aura/aura.gyp:aura',
-        '../ui/base/strings/ui_strings.gyp:ui_strings',
         '../ui/compositor/compositor.gyp:compositor',
       ],
       'sources/': [
@@ -1286,8 +1283,6 @@
         ['exclude', '^browser/renderer_host/software_output_device_x11.cc'],
         ['exclude', '^browser/renderer_host/software_output_device_x11.h'],
         ['exclude', '^browser/renderer_host/touchpad_tap_suppression_controller_aura.cc'],
-        ['exclude', '^browser/web_contents/touch_editable_impl_aura.cc'],
-        ['exclude', '^browser/web_contents/touch_editable_impl_aura.h'],
       ],
     }],
     ['enable_plugins==1', {

@@ -1982,9 +1982,6 @@ void RenderWidgetHostImpl::ProcessGestureAck(bool processed, int type) {
         gesture_event_filter_->GetGestureEventAwaitingAck(), processed);
   }
   gesture_event_filter_->ProcessGestureAck(processed, type);
-
-  if (view_)
-    view_->GestureEventAck(type);
 }
 
 void RenderWidgetHostImpl::ProcessTouchAck(InputEventAckState ack_result) {

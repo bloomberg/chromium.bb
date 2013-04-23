@@ -749,9 +749,6 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   if (command_line.HasSwitch(switches::kEnableTouchDragDrop))
     webview()->settings()->setTouchDragDropEnabled(true);
 
-  if (command_line.HasSwitch(switches::kEnableTouchEditing))
-    webview()->settings()->setTouchEditingEnabled(true);
-
   if (!params->frame_name.empty())
     webview()->mainFrame()->setName(params->frame_name);
   webview()->settings()->setMinimumTimerInterval(
@@ -1092,7 +1089,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
         ViewMsg_GetSerializedHtmlDataForCurrentPageWithLocalLinks,
         OnGetSerializedHtmlDataForCurrentPageWithLocalLinks)
     IPC_MESSAGE_HANDLER(ViewMsg_ContextMenuClosed, OnContextMenuClosed)
-    IPC_MESSAGE_HANDLER(ViewMsg_ShowContextMenu, OnShowContextMenu)
     // TODO(viettrungluu): Move to a separate message filter.
     IPC_MESSAGE_HANDLER(ViewMsg_SetHistoryLengthAndPrune,
                         OnSetHistoryLengthAndPrune)
@@ -4674,7 +4670,6 @@ void RenderViewImpl::SyncSelectionIfRequired() {
     selection_range_ = range;
     Send(new ViewHostMsg_SelectionChanged(routing_id_, text, offset, range));
   }
-  UpdateSelectionBounds();
 }
 
 GURL RenderViewImpl::GetAlternateErrorPageURL(const GURL& failed_url,
@@ -6368,11 +6363,6 @@ void RenderViewImpl::OnContextMenuClosed(
     // Internal request, forward to WebKit.
     context_menu_node_.reset();
   }
-}
-
-void RenderViewImpl::OnShowContextMenu() {
-  if (webview())
-    webview()->showContextMenu();
 }
 
 void RenderViewImpl::OnEnableViewSourceMode() {
