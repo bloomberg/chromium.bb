@@ -43,6 +43,13 @@
           },
           'includes': [ '../build/grit_action.gypi' ],
         },
+        {
+          'action_name': 'translate_internals_resources',
+          'variables': {
+            'grit_grd_file': 'browser/resources/translate_internals_resources.grd',
+          },
+          'includes': [ '../build/grit_action.gypi' ],
+        },
       ],
       'includes': [ '../build/grit_target.gypi' ],
       'conditions': [

@@ -97,7 +97,7 @@ void TranslatePrefs::ClearBlacklistedLanguages() {
   prefs_->ClearPref(kPrefTranslateLanguageBlacklist);
 }
 
-bool TranslatePrefs::HasBlacklistedSites() {
+bool TranslatePrefs::HasBlacklistedSites() const {
   return !IsListEmpty(kPrefTranslateSiteBlacklist);
 }
 

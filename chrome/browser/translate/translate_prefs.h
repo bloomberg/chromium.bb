@@ -50,7 +50,7 @@ class TranslatePrefs {
   void ClearBlacklistedLanguages();
 
   // Will return true if at least one site has been blacklisted.
-  bool HasBlacklistedSites();
+  bool HasBlacklistedSites() const;
   void ClearBlacklistedSites();
 
   // These methods are used to track how many times the user has denied the

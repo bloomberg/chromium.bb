@@ -43,6 +43,7 @@ const char* const kPaths[] = {
   chrome::kChromeUIStatsHost,
   chrome::kChromeUISyncInternalsHost,
   chrome::kChromeUITermsHost,
+  chrome::kChromeUITranslateInternalsHost,
   chrome::kChromeUIUserActionsHost,
   chrome::kChromeUIVersionHost,
 #if defined(OS_ANDROID)

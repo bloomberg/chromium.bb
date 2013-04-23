@@ -211,5 +211,9 @@
   "ui/keyboard/keyboard_resources.grd": {
     "includes": [28050],
   },
+  "chrome/browser/resources/translate_internals_resources.grd": {
+    "includes": [28500],
+  },
+
   # Resource ids starting at 31000 are reserved for projects built on Chromium.
 }
