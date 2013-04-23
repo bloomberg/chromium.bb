@@ -130,7 +130,7 @@ void DocumentWriter::begin(const KURL& urlReference, bool dispatch, Document* ow
     else
         document->createDOMWindow();
 
-    m_frame->loader()->clear(document.get(), !shouldReuseDefaultView, !shouldReuseDefaultView);
+    m_frame->loader()->clear(!shouldReuseDefaultView, !shouldReuseDefaultView);
     clear();
 
     if (!shouldReuseDefaultView)

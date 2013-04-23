@@ -527,11 +527,11 @@ void FrameLoader::cancelAndClear()
     if (!m_isComplete)
         closeURL();
 
-    clear(m_frame->document(), false);
+    clear(false);
     m_frame->script()->updatePlatformScriptObjects();
 }
 
-void FrameLoader::clear(Document* newDocument, bool clearWindowProperties, bool clearScriptObjects, bool clearFrameView)
+void FrameLoader::clear(bool clearWindowProperties, bool clearScriptObjects, bool clearFrameView)
 {
     m_frame->editor()->clear();
 
@@ -1858,7 +1858,7 @@ void FrameLoader::open(CachedFrameBase& cachedFrame)
     ASSERT(document);
     ASSERT(document->domWindow());
 
-    clear(document, true, true, cachedFrame.isMainFrame());
+    clear(true, true, cachedFrame.isMainFrame());
 
     document->setInPageCache(false);
 
