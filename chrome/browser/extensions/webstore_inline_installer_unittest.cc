@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/webstore_inline_installer.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_browser_thread.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,6 +50,10 @@ TestWebstoreInlineInstaller::~TestWebstoreInlineInstaller() {}
 // underlying WebstoreInlineInstaller in each test case.
 class WebstoreInlineInstallerTest : public ChromeRenderViewHostTestHarness {
  public:
+  // testing::Test
+  virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
+
   bool TestSingleVerifiedSite(const std::string& requestor_url,
                               const std::string& verified_site);
 
@@ -61,7 +66,18 @@ class WebstoreInlineInstallerTest : public ChromeRenderViewHostTestHarness {
       : thread_(content::BrowserThread::UI, &message_loop_) {}
 
   content::TestBrowserThread thread_;
+  scoped_ptr<content::WebContents> web_contents_;
 };
+
+void WebstoreInlineInstallerTest::SetUp() {
+  ChromeRenderViewHostTestHarness::SetUp();
+  web_contents_.reset(CreateTestWebContents());
+}
+
+void WebstoreInlineInstallerTest::TearDown() {
+  web_contents_.reset(NULL);
+  ChromeRenderViewHostTestHarness::TearDown();
+}
 
 // Simulates a test against the verified site string from a Webstore item's
 // "verified_site" manifest entry.
@@ -72,7 +88,7 @@ bool WebstoreInlineInstallerTest::TestSingleVerifiedSite(
   webstore_data.SetString("verified_site", verified_site);
 
   scoped_refptr<TestWebstoreInlineInstaller> installer =
-    new TestWebstoreInlineInstaller(CreateTestWebContents(), requestor_url);
+    new TestWebstoreInlineInstaller(web_contents_.get(), requestor_url);
   return installer->TestCheckRequestorPermitted(webstore_data);
 }
 
@@ -90,7 +106,7 @@ bool WebstoreInlineInstallerTest::TestMultipleVerifiedSites(
   webstore_data.Set("verified_sites", sites);
 
   scoped_refptr<TestWebstoreInlineInstaller> installer =
-    new TestWebstoreInlineInstaller(CreateTestWebContents(), requestor_url);
+    new TestWebstoreInlineInstaller(web_contents_.get(), requestor_url);
   return installer->TestCheckRequestorPermitted(webstore_data);
 }
 
