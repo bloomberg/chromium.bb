@@ -484,10 +484,8 @@ void GtkIMContextWrapper::ConfirmComposition() {
 }
 
 void GtkIMContextWrapper::HandleCommit(const string16& text) {
-  if (suppress_next_commit_) {
-    suppress_next_commit_ = false;
+  if (suppress_next_commit_)
     return;
-  }
 
   // Append the text to the buffer, because commit signal might be fired
   // multiple times when processing a key event.
