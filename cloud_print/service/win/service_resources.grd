@@ -21,6 +21,9 @@ file.
       <message name="IDS_SERVICENAME" translateable="false">
         CloudPrintService
       </message>
+      <message name="IDS_FULL_PRODUCT_NAME" translateable="false">
+        Google Cloud Print Service
+      </message>
       <message name="IDS_SETUP_PROGRAM_NAME">
         Service Options
       </message>

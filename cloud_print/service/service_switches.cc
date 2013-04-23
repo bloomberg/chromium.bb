@@ -5,6 +5,7 @@
 #include "cloud_print/service/service_switches.h"
 
 const char kConsoleSwitch[] = "console";
+const char kDeleteSwitch[] = "delete";
 const char kInstallSwitch[] = "install";
 const char kRequirementsSwitch[] = "requirements";
 const char kServiceSwitch[] = "service";

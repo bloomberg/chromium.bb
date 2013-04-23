@@ -20,6 +20,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
+#include "cloud_print/common/win/cloud_print_utils.h"
+#include "cloud_print/service/service_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
@@ -27,6 +29,7 @@
 namespace {
 
 const int kShutdownTimeoutMs = 30 * 1000;
+const int kUsageUpdateTimeoutMs = 6 * 3600 * 1000;  // 6 hours.
 
 static const char16 kAutoRunKeyPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
@@ -202,10 +205,14 @@ void ChromeLauncher::Run() {
       base::Time started = base::Time::Now();
       DWORD thread_id = 0;
       LaunchProcess(cmd, chrome_handle.Receive(), &thread_id);
-      int exit_code = 0;
+
       HANDLE handles[] = {stop_event_.handle(), chrome_handle};
-      DWORD wait_result = ::WaitForMultipleObjects(arraysize(handles), handles,
-                                                   FALSE, INFINITE);
+      DWORD wait_result = WAIT_TIMEOUT;
+      while (wait_result == WAIT_TIMEOUT) {
+        cloud_print::SetGoogleUpdateUsage(kGoogleUpdateId);
+        wait_result = ::WaitForMultipleObjects(arraysize(handles), handles,
+                                               FALSE, kUsageUpdateTimeoutMs);
+      }
       if (wait_result == WAIT_OBJECT_0) {
         ShutdownChrome(chrome_handle, thread_id);
         break;
@@ -289,7 +296,6 @@ std::string ChromeLauncher::CreateServiceStateFile(
     return result;
   }
 
-  int exit_code = 0;
   DWORD wait_result = ::WaitForSingleObject(chrome_handle, INFINITE);
   if (wait_result != WAIT_OBJECT_0) {
     LOG(ERROR) << "Chrome launch failed.";

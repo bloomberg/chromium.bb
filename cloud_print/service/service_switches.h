@@ -6,6 +6,7 @@
 #define CLOUD_PRINT_SERVICE_SERVICE_SWITCHES_H_
 
 extern const char kConsoleSwitch[];
+extern const char kDeleteSwitch[];
 extern const char kInstallSwitch[];
 extern const char kRequirementsSwitch[];
 extern const char kServiceSwitch[];

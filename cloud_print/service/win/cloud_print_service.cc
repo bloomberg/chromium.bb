@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
+#include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
@@ -29,8 +30,6 @@
 #include "cloud_print/service/win/setup_listener.h"
 
 namespace {
-
-const wchar_t kAppDataSubDir[] = L"Google\\Cloud Print Service";
 
 void InvalidUsage() {
   base::FilePath service_path;
@@ -367,7 +366,7 @@ class CloudPrintServiceModule
       return user_data_dir_switch_;
     base::FilePath result;
     CHECK(PathService::Get(base::DIR_LOCAL_APP_DATA, &result));
-    return result.Append(kAppDataSubDir);
+    return result.Append(kSubDirectory);
   }
 
   static BOOL WINAPI ConsoleCtrlHandler(DWORD type);

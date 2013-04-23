@@ -75,6 +75,8 @@
         '<(DEPTH)/content/public/common/content_switches.cc',
         '<(DEPTH)/cloud_print/common/win/cloud_print_utils.cc',
         '<(DEPTH)/cloud_print/common/win/cloud_print_utils.h',
+        'service_constants.cc',
+        'service_constants.h',
         'service_state.cc',
         'service_state.h',
         'service_switches.cc',
@@ -122,6 +124,8 @@
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_config_exe_version.rc',
         'win/cloud_print_service_config.cc',
+        'win/installer.cc',
+        'win/installer.h',
       ],
       'includes': [
         'win/service_resources.gypi'

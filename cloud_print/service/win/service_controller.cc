@@ -15,6 +15,7 @@
 #include "base/win/scoped_handle.h"
 #include "chrome/common/chrome_switches.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
+#include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
@@ -80,7 +81,7 @@ HRESULT OpenService(const string16& name, DWORD access,
 }  // namespace
 
 ServiceController::ServiceController(const string16& name)
-    : name_(name) {
+    : name_(name), command_line_(CommandLine::NO_PROGRAM) {
 }
 
 ServiceController::~ServiceController() {
@@ -119,6 +120,12 @@ HRESULT ServiceController::StopService() {
   return S_OK;
 }
 
+base::FilePath ServiceController::GetBinary() const {
+  base::FilePath service_path;
+  CHECK(PathService::Get(base::FILE_EXE, &service_path));
+  return service_path.DirName().Append(base::FilePath(kServiceExeName));
+}
+
 HRESULT ServiceController::InstallConnectorService(
     const string16& user,
     const string16& password,
@@ -152,9 +159,7 @@ HRESULT ServiceController::InstallService(const string16& user,
   if (FAILED(hr))
     return hr;
 
-  base::FilePath service_path;
-  CHECK(PathService::Get(base::FILE_EXE, &service_path));
-  service_path = service_path.DirName().Append(base::FilePath(kServiceExeName));
+  base::FilePath service_path = GetBinary();
   if (!file_util::PathExists(service_path))
     return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
   CommandLine command_line(service_path);
@@ -218,12 +223,49 @@ HRESULT ServiceController::UninstallService() {
   return hr;
 }
 
-void ServiceController::UpdateState() {
+HRESULT ServiceController::UpdateBinaryPath() {
+  UpdateState();
+  ServiceController::State origina_state = state();
+  if (origina_state < ServiceController::STATE_STOPPED)
+    return S_FALSE;
+
   ServiceHandle service;
+  HRESULT hr = OpenService(name_, SERVICE_CHANGE_CONFIG, &service);
+  if (FAILED(hr))
+    return hr;
+
+  base::FilePath service_path = GetBinary();
+  if (!file_util::PathExists(service_path))
+    return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+
+  command_line_.SetProgram(service_path);
+  if (!::ChangeServiceConfig(service, SERVICE_NO_CHANGE, SERVICE_NO_CHANGE,
+                             SERVICE_NO_CHANGE,
+                             command_line_.GetCommandLineString().c_str(), NULL,
+                             NULL, NULL, NULL, NULL, NULL)) {
+    return cloud_print::GetLastHResult();
+  }
+
+  if (origina_state != ServiceController::STATE_RUNNING)
+    return S_OK;
+
+  hr = StopService();
+  if (FAILED(hr))
+    return hr;
+
+  hr = StartService();
+  if (FAILED(hr))
+    return hr;
+
+  return S_OK;
+}
+
+void ServiceController::UpdateState() {
   state_ = STATE_NOT_FOUND;
   user_.clear();
   is_logging_enabled_ = false;
 
+  ServiceHandle service;
   HRESULT hr = OpenService(name_, SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG,
                            &service);
   if (FAILED(hr))
@@ -249,11 +291,15 @@ void ServiceController::UpdateState() {
     return;
   }
 
-  CommandLine command_line(CommandLine::FromString(config->lpBinaryPathName));
-  if (!command_line.HasSwitch(kServiceSwitch)) {
+  command_line_ = CommandLine::FromString(config->lpBinaryPathName);
+  if (!command_line_.HasSwitch(kServiceSwitch)) {
     state_ = STATE_NOT_FOUND;
     return;
   }
-  is_logging_enabled_ = command_line.HasSwitch(switches::kEnableLogging);
+  is_logging_enabled_ = command_line_.HasSwitch(switches::kEnableLogging);
   user_ = config->lpServiceStartName;
+}
+
+bool ServiceController::is_logging_enabled() const {
+  return command_line_.HasSwitch(switches::kEnableLogging);
 }

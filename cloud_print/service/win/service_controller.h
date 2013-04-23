@@ -8,6 +8,7 @@
 #include <atlbase.h>
 #include <string>
 
+#include "base/command_line.h"
 #include "base/string16.h"
 #include "cloud_print/resources.h"
 
@@ -46,11 +47,15 @@ class ServiceController {
   HRESULT StartService();
   HRESULT StopService();
 
+  HRESULT UpdateBinaryPath();
+
   // Query service status and options. Results accessible with getters below.
   void UpdateState();
   State state() const { return state_; }
   const string16& user() const { return user_; }
-  bool is_logging_enabled() const { return is_logging_enabled_; }
+  bool is_logging_enabled() const;
+
+  base::FilePath GetBinary() const;
 
  private:
   HRESULT InstallService(const string16& user,
@@ -64,6 +69,7 @@ class ServiceController {
   State state_;
   string16 user_;
   bool is_logging_enabled_;
+  CommandLine command_line_;
 };
 
 #endif  // CLOUD_PRINT_SERVICE_SERVICE_CONTROLLER_H_
