@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
@@ -128,6 +129,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
   int32 GetEntryCount() const;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IsIndexFileStale);
+
   typedef base::Callback<void(scoped_ptr<EntrySet>, bool force_index_flush)>
       IndexCompletionCallback;
 

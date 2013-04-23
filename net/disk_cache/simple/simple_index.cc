@@ -15,6 +15,7 @@
 #include "base/pickle.h"
 #include "base/sys_info.h"
 #include "base/task_runner.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_impl.h"
@@ -22,6 +23,11 @@
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
+
+#if defined(OS_POSIX)
+#include <sys/stat.h>
+#include <sys/time.h>
+#endif
 
 namespace {
 
@@ -59,6 +65,45 @@ bool CompareHashesForTimestamp::operator()(uint64 hash1, uint64 hash2) {
   EntrySet::const_iterator it2 = entry_set_.find(hash2);
   DCHECK(it2 != entry_set_.end());
   return it1->second.GetLastUsedTime() < it2->second.GetLastUsedTime();
+}
+
+bool GetNanoSecsFromStat(const struct stat& st, long* out_sec, long* out_nsec) {
+#if defined(OS_ANDROID)
+  *out_sec = st.st_mtime;
+  *out_nsec = st.st_mtime_nsec;
+#elif defined(OS_LINUX)
+  *out_sec = st.st_mtim.tv_sec;
+  *out_nsec = st.st_mtim.tv_nsec;
+#elif defined(OS_MACOSX) || defined(OS_IOS) || defined(OS_BSD)
+  *out_sec = st.st_mtimespec.tv_sec;
+  *out_nsec = st.st_mtimespec.tv_nsec;
+#else
+  return false;
+#endif
+  return true;
+}
+
+bool GetMTime(const base::FilePath& path, base::Time* out_mtime) {
+  DCHECK(out_mtime);
+#if defined(OS_POSIX)
+  base::ThreadRestrictions::AssertIOAllowed();
+  struct stat file_stat;
+  if (stat(path.value().c_str(), &file_stat) != 0)
+    return false;
+  long sec;
+  long nsec;
+  if (GetNanoSecsFromStat(file_stat, &sec, &nsec)) {
+    int64 usec = (nsec / base::Time::kNanosecondsPerMicrosecond);
+    *out_mtime = base::Time::FromTimeT(implicit_cast<time_t>(sec))
+        + base::TimeDelta::FromMicroseconds(usec);
+    return true;
+  }
+#endif
+  base::PlatformFileInfo file_info;
+  if (!file_util::GetFileInfo(path, &file_info))
+    return false;
+  *out_mtime = file_info.last_modified;
+  return true;
 }
 
 }  // namespace
@@ -355,19 +400,17 @@ void SimpleIndex::PostponeWritingToDisk() {
 
 // static
 bool SimpleIndex::IsIndexFileStale(const base::FilePath& index_filename) {
-  base::PlatformFileInfo dir_info;
-  base::PlatformFileInfo index_info;
-  if (!file_util::GetFileInfo(index_filename.DirName(), &dir_info))
-    return false;
-  DCHECK(dir_info.is_directory);
-  if (!file_util::GetFileInfo(index_filename, &index_info))
-    return false;
-
+  base::Time index_mtime;
+  base::Time dir_mtime;
+  if (!GetMTime(index_filename.DirName(), &dir_mtime))
+    return true;
+  if (!GetMTime(index_filename, &index_mtime))
+    return true;
   // Index file last_modified must be equal to the directory last_modified since
   // the last operation we do is ReplaceFile in the
   // SimpleIndexFile::WriteToDisk().
   // If not true, we need to restore the index.
-  return index_info.last_modified >= dir_info.last_modified;
+  return index_mtime < dir_mtime;
 }
 
 // static
