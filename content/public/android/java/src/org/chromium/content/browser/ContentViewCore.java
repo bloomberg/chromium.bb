@@ -1929,9 +1929,13 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 getContentViewClient().onContextualActionBarHidden();
             }
         };
-        mActionMode = mContainerView.startActionMode(
-                getContentViewClient().getSelectActionModeCallback(getContext(), actionHandler,
-                        nativeIsIncognito(mNativeContentViewCore)));
+        mActionMode = null;
+        // On ICS, startActionMode throws an NPE when getParent() is null.
+        if (mContainerView.getParent() != null) {
+            mActionMode = mContainerView.startActionMode(
+                    getContentViewClient().getSelectActionModeCallback(getContext(), actionHandler,
+                            nativeIsIncognito(mNativeContentViewCore)));
+        }
         mUnselectAllOnActionModeDismiss = true;
         if (mActionMode == null) {
             // There is no ActionMode, so remove the selection.
