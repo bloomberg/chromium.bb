@@ -10,6 +10,7 @@ import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
 import android.util.Log;
 
@@ -358,38 +359,16 @@ class DeviceMotionAndOrientation implements SensorEventListener {
     }
 
     private Handler getHandler() {
+        // TODO(timvolodine): Remove the mHandlerLock when sure that getHandler is not called
+        // from multiple threads. This will be the case when device motion and device orientation
+        // use the same polling thread (also see crbug/234282).
         synchronized (mHandlerLock) {
-            // If we don't have a background thread, start it now.
-            if (mThread == null) {
-                mThread = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        Looper.prepare();
-                        // Our Handler doesn't actually have to do anything, because
-                        // SensorManager posts directly to the underlying Looper.
-                        setHandler(new Handler());
-                        Looper.loop();
-                    }
-                });
-                mThread.start();
-            }
-            // Wait for the background thread to spin up.
-            while (mHandler == null) {
-                try {
-                    mHandlerLock.wait();
-                } catch (InterruptedException e) {
-                    // Somebody doesn't want us to wait! That's okay, SensorManager accepts null.
-                    return null;
-                }
+            if (mHandler == null) {
+                HandlerThread thread = new HandlerThread("DeviceMotionAndOrientation");
+                thread.start();
+                mHandler = new Handler(thread.getLooper());  // blocks on thread start
             }
             return mHandler;
-        }
-    }
-
-    private void setHandler(Handler handler) {
-        synchronized (mHandlerLock) {
-            mHandler = handler;
-            mHandlerLock.notify();
         }
     }
 
