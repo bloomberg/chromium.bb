@@ -4449,7 +4449,7 @@ struct PPB_WebSocket_1_0 Pnacl_Wrappers_PPB_WebSocket_1_0 = {
 /* Not generating wrapper interface for PPP_Instance_1_1 */
 
 struct PPP_Messaging_1_0 Pnacl_Wrappers_PPP_Messaging_1_0 = {
-    .HandleMessage = (void (*)(PP_Instance instance, struct PP_Var message))&Pnacl_M14_PPP_Messaging_HandleMessage
+    .HandleMessage = &Pnacl_M14_PPP_Messaging_HandleMessage
 };
 
 /* Not generating wrapper interface for PPP_MouseLock_1_0 */
@@ -4761,7 +4761,7 @@ struct PPB_VideoDecoder_Dev_0_16 Pnacl_Wrappers_PPB_VideoDecoder_Dev_0_16 = {
 /* Not generating wrapper interface for PPP_Scrollbar_Dev_0_3 */
 
 struct PPP_Selection_Dev_0_3 Pnacl_Wrappers_PPP_Selection_Dev_0_3 = {
-    .GetSelectedText = (struct PP_Var (*)(PP_Instance instance, PP_Bool html))&Pnacl_M13_PPP_Selection_Dev_GetSelectedText
+    .GetSelectedText = &Pnacl_M13_PPP_Selection_Dev_GetSelectedText
 };
 
 /* Not generating wrapper interface for PPP_TextInput_Dev_0_1 */
@@ -5074,15 +5074,15 @@ struct PPB_X509Certificate_Private_0_1 Pnacl_Wrappers_PPB_X509Certificate_Privat
 };
 
 struct PPP_ContentDecryptor_Private_0_6 Pnacl_Wrappers_PPP_ContentDecryptor_Private_0_6 = {
-    .GenerateKeyRequest = (void (*)(PP_Instance instance, struct PP_Var key_system, struct PP_Var type, struct PP_Var init_data))&Pnacl_M24_PPP_ContentDecryptor_Private_GenerateKeyRequest,
-    .AddKey = (void (*)(PP_Instance instance, struct PP_Var session_id, struct PP_Var key, struct PP_Var init_data))&Pnacl_M24_PPP_ContentDecryptor_Private_AddKey,
-    .CancelKeyRequest = (void (*)(PP_Instance instance, struct PP_Var session_id))&Pnacl_M24_PPP_ContentDecryptor_Private_CancelKeyRequest,
-    .Decrypt = (void (*)(PP_Instance instance, PP_Resource encrypted_block, const struct PP_EncryptedBlockInfo* encrypted_block_info))&Pnacl_M24_PPP_ContentDecryptor_Private_Decrypt,
-    .InitializeAudioDecoder = (void (*)(PP_Instance instance, const struct PP_AudioDecoderConfig* decoder_config, PP_Resource codec_extra_data))&Pnacl_M24_PPP_ContentDecryptor_Private_InitializeAudioDecoder,
-    .InitializeVideoDecoder = (void (*)(PP_Instance instance, const struct PP_VideoDecoderConfig* decoder_config, PP_Resource codec_extra_data))&Pnacl_M24_PPP_ContentDecryptor_Private_InitializeVideoDecoder,
-    .DeinitializeDecoder = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPP_ContentDecryptor_Private_DeinitializeDecoder,
-    .ResetDecoder = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, uint32_t request_id))&Pnacl_M24_PPP_ContentDecryptor_Private_ResetDecoder,
-    .DecryptAndDecode = (void (*)(PP_Instance instance, PP_DecryptorStreamType decoder_type, PP_Resource encrypted_buffer, const struct PP_EncryptedBlockInfo* encrypted_block_info))&Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecode
+    .GenerateKeyRequest = &Pnacl_M24_PPP_ContentDecryptor_Private_GenerateKeyRequest,
+    .AddKey = &Pnacl_M24_PPP_ContentDecryptor_Private_AddKey,
+    .CancelKeyRequest = &Pnacl_M24_PPP_ContentDecryptor_Private_CancelKeyRequest,
+    .Decrypt = &Pnacl_M24_PPP_ContentDecryptor_Private_Decrypt,
+    .InitializeAudioDecoder = &Pnacl_M24_PPP_ContentDecryptor_Private_InitializeAudioDecoder,
+    .InitializeVideoDecoder = &Pnacl_M24_PPP_ContentDecryptor_Private_InitializeVideoDecoder,
+    .DeinitializeDecoder = &Pnacl_M24_PPP_ContentDecryptor_Private_DeinitializeDecoder,
+    .ResetDecoder = &Pnacl_M24_PPP_ContentDecryptor_Private_ResetDecoder,
+    .DecryptAndDecode = &Pnacl_M24_PPP_ContentDecryptor_Private_DecryptAndDecode
 };
 
 /* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_0 */
@@ -5092,7 +5092,7 @@ struct PPP_ContentDecryptor_Private_0_6 Pnacl_Wrappers_PPP_ContentDecryptor_Priv
 /* Not generating wrapper interface for PPP_Flash_BrowserOperations_1_3 */
 
 struct PPP_Instance_Private_0_1 Pnacl_Wrappers_PPP_Instance_Private_0_1 = {
-    .GetInstanceObject = (struct PP_Var (*)(PP_Instance instance))&Pnacl_M18_PPP_Instance_Private_GetInstanceObject
+    .GetInstanceObject = &Pnacl_M18_PPP_Instance_Private_GetInstanceObject
 };
 
 struct PPB_Ext_Alarms_Dev_0_1 Pnacl_Wrappers_PPB_Ext_Alarms_Dev_0_1 = {

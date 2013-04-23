@@ -357,15 +357,24 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
         if not member.InReleases([iface.release]):
           continue
         prefix = self.WrapperMethodPrefix(iface.node, iface.release)
-        cast = self.cgen.GetSignature(member, iface.release, 'return',
-                                      prefix='',
-                                      func_as_ptr=True,
-                                      ptr_prefix='',
-                                      include_name=False)
-        methods.append('  .%s = (%s)&%s%s' % (member.GetName(),
-                                              cast,
-                                              prefix,
-                                              member.GetName()))
+        # Casts are necessary for the PPB_* wrappers because we must
+        # cast away "__attribute__((pnaclcall))".  The PPP_* wrappers
+        # must match the default calling conventions and so don't have
+        # the attribute, so omitting casts for them provides a little
+        # extra type checking.
+        if iface.node.GetName().startswith('PPB_'):
+          cast = '(%s)' % self.cgen.GetSignature(
+              member, iface.release, 'return',
+              prefix='',
+              func_as_ptr=True,
+              ptr_prefix='',
+              include_name=False)
+        else:
+          cast = ''
+        methods.append('  .%s = %s&%s%s' % (member.GetName(),
+                                            cast,
+                                            prefix,
+                                            member.GetName()))
       out.Write('  ' + ',\n  '.join(methods) + '\n')
       out.Write('};\n\n')
 
