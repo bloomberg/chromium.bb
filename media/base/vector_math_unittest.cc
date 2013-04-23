@@ -11,6 +11,7 @@
 #include "base/memory/aligned_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/string_number_conversions.h"
+#include "base/strings/stringize_macros.h"
 #include "base/time.h"
 #include "media/base/vector_math.h"
 #include "media/base/vector_math_testing.h"
@@ -101,6 +102,16 @@ TEST_F(VectorMathTest, FMAC) {
     VerifyOutput(kResult);
   }
 #endif
+
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+  {
+    SCOPED_TRACE("FMAC_NEON");
+    FillTestVectors(kInputFillValue, kOutputFillValue);
+    vector_math::FMAC_NEON(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+    VerifyOutput(kResult);
+  }
+#endif
 }
 
 // Ensure each optimized vector_math::FMUL() method returns the same value.
@@ -133,7 +144,24 @@ TEST_F(VectorMathTest, FMUL) {
     VerifyOutput(kResult);
   }
 #endif
+
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+  {
+    SCOPED_TRACE("FMUL_NEON");
+    FillTestVectors(kInputFillValue, kOutputFillValue);
+    vector_math::FMUL_NEON(
+        input_vector.get(), kScale, kVectorSize, output_vector.get());
+    VerifyOutput(kResult);
+  }
+#endif
 }
+
+// Define platform independent function name for FMACBenchmark* tests.
+#if defined(ARCH_CPU_X86_FAMILY)
+#define FMAC_FUNC FMAC_SSE
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#define FMAC_FUNC FMAC_NEON
+#endif
 
 // Benchmark for each optimized vector_math::FMAC() method.  Original benchmarks
 // were run with --vector-fmac-iterations=200000.
@@ -152,42 +180,54 @@ TEST_F(VectorMathTest, FMACBenchmark) {
   double total_time_c_ms = (TimeTicks::HighResNow() - start).InMillisecondsF();
   printf("FMAC_C took %.2fms.\n", total_time_c_ms);
 
+#if defined(FMAC_FUNC)
 #if defined(ARCH_CPU_X86_FAMILY)
   ASSERT_TRUE(base::CPU().has_sse());
+#endif
 
-  // Benchmark FMAC_SSE() with unaligned size.
+  // Benchmark FMAC_FUNC() with unaligned size.
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
             sizeof(float)), 0U);
   FillTestVectors(kInputFillValue, kOutputFillValue);
   start = TimeTicks::HighResNow();
   for (int j = 0; j < kBenchmarkIterations; ++j) {
-    vector_math::FMAC_SSE(
+    vector_math::FMAC_FUNC(
         input_vector.get(), kScale, kVectorSize - 1, output_vector.get());
   }
-  double total_time_sse_unaligned_ms =
+  double total_time_optimized_unaligned_ms =
       (TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("FMAC_SSE (unaligned size) took %.2fms; which is %.2fx faster than"
-         " FMAC_C.\n", total_time_sse_unaligned_ms,
-         total_time_c_ms / total_time_sse_unaligned_ms);
+  printf(STRINGIZE(FMAC_FUNC) " (unaligned size) took %.2fms; which is %.2fx "
+         "faster than FMAC_C.\n", total_time_optimized_unaligned_ms,
+         total_time_c_ms / total_time_optimized_unaligned_ms);
 
-  // Benchmark FMAC_SSE() with aligned size.
+  // Benchmark FMAC_FUNC() with aligned size.
   ASSERT_EQ(kVectorSize % (vector_math::kRequiredAlignment / sizeof(float)),
             0U);
   FillTestVectors(kInputFillValue, kOutputFillValue);
   start = TimeTicks::HighResNow();
   for (int j = 0; j < kBenchmarkIterations; ++j) {
-    vector_math::FMAC_SSE(
+    vector_math::FMAC_FUNC(
         input_vector.get(), kScale, kVectorSize, output_vector.get());
   }
-  double total_time_sse_aligned_ms =
+  double total_time_optimized_aligned_ms =
       (TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("FMAC_SSE (aligned size) took %.2fms; which is %.2fx faster than"
-         " FMAC_C and %.2fx faster than FMAC_SSE (unaligned size).\n",
-         total_time_sse_aligned_ms, total_time_c_ms / total_time_sse_aligned_ms,
-         total_time_sse_unaligned_ms / total_time_sse_aligned_ms);
+  printf(STRINGIZE(FMAC_FUNC) " (aligned) took %.2fms; which is %.2fx "
+         "faster than FMAC_C and %.2fx faster than "
+         STRINGIZE(FMAC_FUNC) " (unaligned).\n",
+         total_time_optimized_aligned_ms,
+         total_time_c_ms / total_time_optimized_aligned_ms,
+         total_time_optimized_unaligned_ms / total_time_optimized_aligned_ms);
 #endif
 }
 
+#undef FMAC_FUNC
+
+// Define platform independent function name for FMULBenchmark* tests.
+#if defined(ARCH_CPU_X86_FAMILY)
+#define FMUL_FUNC FMUL_SSE
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#define FMUL_FUNC FMUL_NEON
+#endif
 
 // Benchmark for each optimized vector_math::FMUL() method.  Original benchmarks
 // were run with --vector-math-iterations=200000.
@@ -206,8 +246,10 @@ TEST_F(VectorMathTest, FMULBenchmark) {
   double total_time_c_ms = (TimeTicks::HighResNow() - start).InMillisecondsF();
   printf("FMUL_C took %.2fms.\n", total_time_c_ms);
 
+#if defined(FMUL_FUNC)
 #if defined(ARCH_CPU_X86_FAMILY)
   ASSERT_TRUE(base::CPU().has_sse());
+#endif
 
   // Benchmark FMUL_SSE() with unaligned size.
   ASSERT_NE((kVectorSize - 1) % (vector_math::kRequiredAlignment /
@@ -215,14 +257,14 @@ TEST_F(VectorMathTest, FMULBenchmark) {
   FillTestVectors(kInputFillValue, kOutputFillValue);
   start = TimeTicks::HighResNow();
   for (int j = 0; j < kBenchmarkIterations; ++j) {
-    vector_math::FMUL_SSE(
+    vector_math::FMUL_FUNC(
         input_vector.get(), kScale, kVectorSize - 1, output_vector.get());
   }
-  double total_time_sse_unaligned_ms =
+  double total_time_optimized_unaligned_ms =
       (TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("FMUL_SSE (unaligned size) took %.2fms; which is %.2fx faster than"
-         " FMUL_C.\n", total_time_sse_unaligned_ms,
-         total_time_c_ms / total_time_sse_unaligned_ms);
+  printf(STRINGIZE(FMUL_FUNC) " (unaligned size) took %.2fms; which is %.2fx "
+         "faster than FMUL_C.\n", total_time_optimized_unaligned_ms,
+         total_time_c_ms / total_time_optimized_unaligned_ms);
 
   // Benchmark FMUL_SSE() with aligned size.
   ASSERT_EQ(kVectorSize % (vector_math::kRequiredAlignment / sizeof(float)),
@@ -230,16 +272,20 @@ TEST_F(VectorMathTest, FMULBenchmark) {
   FillTestVectors(kInputFillValue, kOutputFillValue);
   start = TimeTicks::HighResNow();
   for (int j = 0; j < kBenchmarkIterations; ++j) {
-    vector_math::FMUL_SSE(
+    vector_math::FMUL_FUNC(
         input_vector.get(), kScale, kVectorSize, output_vector.get());
   }
-  double total_time_sse_aligned_ms =
+  double total_time_optimized_aligned_ms =
       (TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf("FMUL_SSE (aligned size) took %.2fms; which is %.2fx faster than"
-         " FMUL_C and %.2fx faster than FMUL_SSE (unaligned size).\n",
-         total_time_sse_aligned_ms, total_time_c_ms / total_time_sse_aligned_ms,
-         total_time_sse_unaligned_ms / total_time_sse_aligned_ms);
+  printf(STRINGIZE(FMUL_FUNC) " (aligned) took %.2fms; which is %.2fx "
+         "faster than FMUL_C and %.2fx faster than "
+         STRINGIZE(FMUL_FUNC) " (unaligned).\n",
+         total_time_optimized_aligned_ms,
+         total_time_c_ms / total_time_optimized_aligned_ms,
+         total_time_optimized_unaligned_ms / total_time_optimized_aligned_ms);
 #endif
 }
+
+#undef FMUL_FUNC
 
 }  // namespace media

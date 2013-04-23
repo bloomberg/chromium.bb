@@ -205,7 +205,7 @@ TEST(SincResamplerTest, ConvolveBenchmark) {
   }
   double total_time_optimized_unaligned_ms =
       (base::TimeTicks::HighResNow() - start).InMillisecondsF();
-  printf(STRINGIZE(CONVOLVE_FUNC) "(unaligned) took %.2fms; which is %.2fx "
+  printf(STRINGIZE(CONVOLVE_FUNC) " (unaligned) took %.2fms; which is %.2fx "
          "faster than Convolve_C.\n", total_time_optimized_unaligned_ms,
          total_time_c_ms / total_time_optimized_unaligned_ms);
 

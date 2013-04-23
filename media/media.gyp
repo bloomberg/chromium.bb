@@ -1301,6 +1301,11 @@
                 'media_sse',
               ],
             }],
+            ['arm_neon == 1', {
+              'defines': [
+                'USE_NEON'
+              ],
+            }],
           ],
         },
         {

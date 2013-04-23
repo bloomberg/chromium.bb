@@ -7,6 +7,11 @@
 
 #include "base/cpu.h"
 #include "base/logging.h"
+#include "build/build_config.h"
+
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+#include <arm_neon.h>
+#endif
 
 namespace media {
 namespace vector_math {
@@ -31,6 +36,8 @@ void FMAC(const float src[], float scale, int len, float dest[]) {
   static const VectorFMACProc kVectorFMACProc =
       base::CPU().has_sse() ? FMAC_SSE : FMAC_C;
 #endif
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+  static const VectorFMACProc kVectorFMACProc = FMAC_NEON;
 #else
   static const VectorFMACProc kVectorFMACProc = FMAC_C;
 #endif
@@ -63,6 +70,8 @@ void FMUL(const float src[], float scale, int len, float dest[]) {
   static const VectorFMULProc kVectorFMULProc =
       base::CPU().has_sse() ? FMUL_SSE : FMUL_C;
 #endif
+#elif defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+  static const VectorFMULProc kVectorFMULProc = FMUL_NEON;
 #else
   static const VectorFMULProc kVectorFMULProc = FMUL_C;
 #endif
@@ -74,6 +83,34 @@ void FMUL_C(const float src[], float scale, int len, float dest[]) {
   for (int i = 0; i < len; ++i)
     dest[i] = src[i] * scale;
 }
+
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+void FMAC_NEON(const float src[], float scale, int len, float dest[]) {
+  const int rem = len % 4;
+  const int last_index = len - rem;
+  float32x4_t m_scale = vmovq_n_f32(scale);
+  for (int i = 0; i < last_index; i += 4) {
+    vst1q_f32(dest + i, vmlaq_f32(
+        vld1q_f32(dest + i), vld1q_f32(src + i), m_scale));
+  }
+
+  // Handle any remaining values that wouldn't fit in an NEON pass.
+  for (int i = last_index; i < len; ++i)
+    dest[i] += src[i] * scale;
+}
+
+void FMUL_NEON(const float src[], float scale, int len, float dest[]) {
+  const int rem = len % 4;
+  const int last_index = len - rem;
+  float32x4_t m_scale = vmovq_n_f32(scale);
+  for (int i = 0; i < last_index; i += 4)
+    vst1q_f32(dest + i, vmulq_f32(vld1q_f32(src + i), m_scale));
+
+  // Handle any remaining values that wouldn't fit in an NEON pass.
+  for (int i = last_index; i < len; ++i)
+    dest[i] = src[i] * scale;
+}
+#endif
 
 }  // namespace vector_math
 }  // namespace media

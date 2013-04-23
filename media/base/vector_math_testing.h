@@ -22,6 +22,13 @@ MEDIA_EXPORT void FMUL_SSE(const float src[], float scale, int len,
                            float dest[]);
 #endif
 
+#if defined(ARCH_CPU_ARM_FAMILY) && defined(USE_NEON)
+MEDIA_EXPORT void FMAC_NEON(const float src[], float scale, int len,
+                            float dest[]);
+MEDIA_EXPORT void FMUL_NEON(const float src[], float scale, int len,
+                            float dest[]);
+#endif
+
 }  // namespace vector_math
 }  // namespace media
 
