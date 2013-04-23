@@ -76,8 +76,7 @@ class MockAutofillDialogController : public AutofillDialogController {
   virtual void OnCancel() OVERRIDE;
   virtual void OnAccept() OVERRIDE;
 
-  virtual Profile* profile() OVERRIDE;
-
+  MOCK_METHOD0(profile, Profile*());
   virtual content::WebContents* web_contents() OVERRIDE;
  private:
   std::vector<ui::Range> range_;

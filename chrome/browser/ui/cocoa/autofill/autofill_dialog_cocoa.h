@@ -18,9 +18,9 @@ namespace autofill {
   class AutofillDialogController;
 }
 
-@class AutofillAccountChooser;
 @class AutofillDialogWindowController;
-@class GTMWidthBasedTweaker;
+@class AutofillSignInContainer;
+@class AutofillMainContainer;
 
 namespace autofill {
 
@@ -73,8 +73,8 @@ class AutofillDialogCocoa : public AutofillDialogView,
   content::WebContents* webContents_;  // weak.
   autofill::AutofillDialogCocoa* autofillDialog_;  // weak.
 
-  scoped_nsobject<GTMWidthBasedTweaker> buttonContainer_;
-  scoped_nsobject<AutofillAccountChooser> accountChooser_;
+  scoped_nsobject<AutofillMainContainer> mainContainer_;
+  scoped_nsobject<AutofillSignInContainer> signInContainer_;
 }
 
 // Designated initializer. The WebContents cannot be NULL.
@@ -83,6 +83,11 @@ class AutofillDialogCocoa : public AutofillDialogView,
 
 // Closes the sheet and ends the modal loop. This will also clean up the memory.
 - (IBAction)closeSheet:(id)sender;
+
+// Forwarding AutofillDialogView calls.
+- (void)updateAccountChooser;
+- (content::NavigationController*)showSignIn;
+- (void)hideSignIn;
 
 @end
 

@@ -177,8 +177,6 @@ void MockAutofillDialogController::OnCancel() {}
 
 void MockAutofillDialogController::OnAccept() {}
 
-Profile* MockAutofillDialogController::profile() { return NULL; }
-
 content::WebContents* MockAutofillDialogController::web_contents() {
   return NULL;
 }

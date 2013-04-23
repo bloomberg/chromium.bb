@@ -4,20 +4,16 @@
 
 #include "chrome/browser/ui/cocoa/autofill/autofill_dialog_cocoa.h"
 
-#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
 #include "base/mac/bundle_locations.h"
 #include "base/memory/scoped_nsobject.h"
+#import "chrome/browser/ui/cocoa/constrained_window/constrained_window_button.h"
 #include "chrome/browser/ui/chrome_style.h"
-#import "chrome/browser/ui/cocoa/autofill/autofill_account_chooser.h"
-#include "chrome/browser/ui/cocoa/autofill/autofill_dialog_constants.h"
+#include "chrome/browser/ui/chrome_style.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_main_container.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_sign_in_container.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
-#import "chrome/browser/ui/cocoa/key_equivalent_constants.h"
-#include "grit/generated_resources.h"
-#import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "ui/base/cocoa/window_size_constants.h"
-#include "ui/base/l10n/l10n_util.h"
 
 namespace autofill {
 
@@ -29,6 +25,14 @@ AutofillDialogView* AutofillDialogView::Create(
 
 AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogController* controller)
     : controller_(controller) {
+}
+
+AutofillDialogCocoa::~AutofillDialogCocoa() {
+}
+
+void AutofillDialogCocoa::Show() {
+  // This should only be called once.
+  DCHECK(!sheet_controller_.get());
   sheet_controller_.reset([[AutofillDialogWindowController alloc]
        initWithWebContents:controller_->web_contents()
             autofillDialog:this]);
@@ -39,16 +43,11 @@ AutofillDialogCocoa::AutofillDialogCocoa(AutofillDialogController* controller)
       new ConstrainedWindowMac(this, controller_->web_contents(), sheet));
 }
 
-AutofillDialogCocoa::~AutofillDialogCocoa() {
-}
-
-void AutofillDialogCocoa::Show() {
-}
-
 void AutofillDialogCocoa::Hide() {
 }
 
 void AutofillDialogCocoa::UpdateAccountChooser() {
+  [sheet_controller_ updateAccountChooser];
 }
 
 void AutofillDialogCocoa::UpdateButtonStrip() {
@@ -74,10 +73,12 @@ bool AutofillDialogCocoa::SaveDetailsLocally() {
 }
 
 const content::NavigationController* AutofillDialogCocoa::ShowSignIn() {
-  return NULL;
+  return [sheet_controller_ showSignIn];
 }
 
-void AutofillDialogCocoa::HideSignIn() {}
+void AutofillDialogCocoa::HideSignIn() {
+  [sheet_controller_ hideSignIn];
+}
 
 void AutofillDialogCocoa::UpdateProgressBar(double value) {}
 
@@ -125,73 +126,43 @@ void AutofillDialogCocoa::PerformClose() {
     clientFrame.size.height -= chrome_style::kTitleTopPadding +
                                chrome_style::kClientBottomPadding;
     clientFrame.origin.y = chrome_style::kClientBottomPadding;
+    mainContainer_.reset([[AutofillMainContainer alloc]
+                             initWithController:autofillDialog->controller()]);
+    [mainContainer_ setTarget:self];
+    [[mainContainer_ view] setFrame:clientFrame];
 
-    const CGFloat kAccountChooserHeight = 20.0;
-    NSRect accountChooserFrame = NSMakeRect(
-        clientFrame.origin.x, NSMaxY(clientFrame) - kAccountChooserHeight,
-        clientFrame.size.width, kAccountChooserHeight);
-    accountChooser_.reset([[AutofillAccountChooser alloc]
-                               initWithFrame:accountChooserFrame
-                                  controller:autofillDialog->controller()]);
+    signInContainer_.reset(
+        [[AutofillSignInContainer alloc]
+            initWithController:autofillDialog->controller()]);
+    [[signInContainer_ view] setHidden:YES];
+    [[signInContainer_ view] setFrame:clientFrame];
 
-    [[[self window] contentView] addSubview:accountChooser_];
-
-    [self buildWindowButtons];
-    [self layoutButtons];
+    [[[self window] contentView] setSubviews:
+        @[[mainContainer_ view], [signInContainer_ view]]];
   }
   return self;
 }
 
 - (void)updateAccountChooser {
-  [accountChooser_ update];
+  [[mainContainer_ accountChooser] update];
 }
+
+- (content::NavigationController*)showSignIn {
+  [signInContainer_ loadSignInPage];
+  [[mainContainer_ view] setHidden:YES];
+  [[signInContainer_ view] setHidden:NO];
+
+  return [signInContainer_ navigationController];
+}
+
+- (void)hideSignIn {
+  [[signInContainer_ view] setHidden:YES];
+  [[mainContainer_ view] setHidden:NO];
+}
+
 
 - (IBAction)closeSheet:(id)sender {
   autofillDialog_->PerformClose();
-}
-
-- (void)buildWindowButtons {
-  if (buttonContainer_.get())
-    return;
-
-  buttonContainer_.reset([[GTMWidthBasedTweaker alloc] initWithFrame:
-      ui::kWindowSizeDeterminedLater]);
-  [buttonContainer_
-      setAutoresizingMask:(NSViewMinXMargin | NSViewMinYMargin)];
-
-  scoped_nsobject<NSButton> button(
-      [[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
-  [button setTitle:l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
-  [button setKeyEquivalent:kKeyEquivalentEscape];
-  [button setTarget:self];
-  [button setAction:@selector(closeSheet:)];
-  [button sizeToFit];
-  [buttonContainer_ addSubview:button];
-
-  CGFloat nextX = NSMaxX([button frame]) + kButtonGap;
-  button.reset([[ConstrainedWindowButton alloc] initWithFrame:NSZeroRect]);
-  [button setFrameOrigin:NSMakePoint(nextX, 0)];
-  [button  setTitle:l10n_util::GetNSStringWithFixup(
-       IDS_AUTOFILL_DIALOG_SUBMIT_BUTTON)];
-  [button setKeyEquivalent:kKeyEquivalentReturn];
-  [button setTarget:self];
-  [button setAction:@selector(closeSheet:)];
-  [button sizeToFit];
-  [buttonContainer_ addSubview:button];
-
-  const CGFloat dialogOffset = NSWidth([[self window] frame]) -
-      chrome_style::kHorizontalPadding - NSMaxX([button frame]);
-  [buttonContainer_ setFrame:
-      NSMakeRect(dialogOffset, chrome_style::kClientBottomPadding,
-                 NSMaxX([button frame]), NSMaxY([button frame]))];
-
-  [[[self window] contentView] addSubview:buttonContainer_];
-}
-
-- (void)layoutButtons {
-  scoped_nsobject<GTMUILocalizerAndLayoutTweaker> layoutTweaker(
-      [[GTMUILocalizerAndLayoutTweaker alloc] init]);
-  [layoutTweaker tweakUI:buttonContainer_];
 }
 
 @end
