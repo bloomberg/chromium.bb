@@ -84,6 +84,8 @@ protected:
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore();
 
+    bool isDeleted() const;
+
     RefPtr<IDBCursorBackendInterface> m_backend;
     RefPtr<IDBRequest> m_request;
     const IndexedDB::CursorDirection m_direction;

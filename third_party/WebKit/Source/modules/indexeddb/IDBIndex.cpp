@@ -58,7 +58,7 @@ IDBIndex::~IDBIndex()
 PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, const String& directionString, ExceptionCode& ec)
 {
     IDB_TRACE("IDBIndex::openCursor");
-    if (m_deleted) {
+    if (isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -88,7 +88,7 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ScriptExecutionContext* context, con
 PassRefPtr<IDBRequest> IDBIndex::count(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, ExceptionCode& ec)
 {
     IDB_TRACE("IDBIndex::count");
-    if (m_deleted) {
+    if (isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -113,7 +113,7 @@ PassRefPtr<IDBRequest> IDBIndex::count(ScriptExecutionContext* context, const Sc
 PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, const String& directionString, ExceptionCode& ec)
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
-    if (m_deleted) {
+    if (isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -152,7 +152,7 @@ PassRefPtr<IDBRequest> IDBIndex::get(ScriptExecutionContext* context, const Scri
 PassRefPtr<IDBRequest> IDBIndex::get(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, ExceptionCode& ec)
 {
     IDB_TRACE("IDBIndex::get");
-    if (m_deleted) {
+    if (isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -183,7 +183,7 @@ PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, const S
 PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, PassRefPtr<IDBKeyRange> keyRange, ExceptionCode& ec)
 {
     IDB_TRACE("IDBIndex::getKey");
-    if (m_deleted) {
+    if (isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -204,6 +204,11 @@ PassRefPtr<IDBRequest> IDBIndex::getKey(ScriptExecutionContext* context, PassRef
 IDBDatabaseBackendInterface* IDBIndex::backendDB() const
 {
     return m_transaction->backendDB();
+}
+
+bool IDBIndex::isDeleted() const
+{
+    return m_deleted || m_objectStore->isDeleted();
 }
 
 } // namespace WebCore

@@ -70,6 +70,7 @@ public:
     PassRefPtr<IDBRequest> getKey(ScriptExecutionContext*, const ScriptValue& key, ExceptionCode&);
 
     void markDeleted() { m_deleted = true; }
+    bool isDeleted() const;
 
     IDBDatabaseBackendInterface* backendDB() const;
 

@@ -124,7 +124,7 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
 {
     IDB_TRACE("IDBCursor::update");
 
-    if (!m_gotValue || isKeyCursor()) {
+    if (!m_gotValue || isKeyCursor() || isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -155,7 +155,7 @@ void IDBCursor::advance(unsigned long count, ExceptionCode& ec)
 {
     ec = 0;
     IDB_TRACE("IDBCursor::advance");
-    if (!m_gotValue) {
+    if (!m_gotValue || isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return;
     }
@@ -196,7 +196,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionCode& ec)
         return;
     }
 
-    if (!m_gotValue) {
+    if (!m_gotValue || isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return;
     }
@@ -236,7 +236,7 @@ PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ScriptExecutionContext* context
         return 0;
     }
 
-    if (!m_gotValue || isKeyCursor()) {
+    if (!m_gotValue || isKeyCursor() || isDeleted()) {
         ec = IDBDatabaseException::InvalidStateError;
         return 0;
     }
@@ -291,6 +291,13 @@ PassRefPtr<IDBObjectStore> IDBCursor::effectiveObjectStore()
         return m_source->idbObjectStore();
     RefPtr<IDBIndex> index = m_source->idbIndex();
     return index->objectStore();
+}
+
+bool IDBCursor::isDeleted() const
+{
+    if (m_source->type() == IDBAny::IDBObjectStoreType)
+        return m_source->idbObjectStore()->isDeleted();
+    return m_source->idbIndex()->isDeleted();
 }
 
 IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionCode& ec)

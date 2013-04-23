@@ -85,6 +85,7 @@ public:
     PassRefPtr<IDBRequest> put(IDBDatabaseBackendInterface::PutMode, PassRefPtr<IDBAny> source, ScriptState*, ScriptValue&, PassRefPtr<IDBKey>, ExceptionCode&);
 
     void markDeleted() { m_deleted = true; }
+    bool isDeleted() const { return m_deleted; }
     void transactionFinished();
 
     IDBObjectStoreMetadata metadata() const { return m_metadata; }
