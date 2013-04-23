@@ -34,7 +34,6 @@
 #define CPP_BINDING_EXAMPLE_H__
 
 #include "webkit/glue/cpp_bound_class.h"
-#include "webkit/glue/webkit_glue_export.h"
 
 namespace webkit_glue {
 
@@ -42,7 +41,7 @@ class CppBindingExample : public CppBoundClass {
  public:
   // The default constructor initializes the property and method lists needed
   // to bind this class to a JS object.
-  WEBKIT_GLUE_EXPORT CppBindingExample();
+  CppBindingExample();
 
   //
   // These public member variables and methods implement the methods and

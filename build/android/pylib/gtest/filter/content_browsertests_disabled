@@ -57,6 +57,10 @@ BrowserPluginHostTest.*
 BrowserPluginTest.*
 PluginTest.*
 
+# These used to be test_shell_tests and were ported to content_browsertests in
+# https://codereview.chromium.org/14304004/. Investigate more.
+DomSerializerTests.*
+
 # http://crbug.com/187500
 RenderViewImplTest.*
 RendererAccessibilityTest.EditableTextModeFocusNotifications

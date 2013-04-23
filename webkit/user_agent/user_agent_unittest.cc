@@ -8,15 +8,13 @@
 
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/tools/test_shell/test_shell_test.h"
 
 namespace {
 
-class WebkitGlueUserAgentTest : public TestShellTest {
-};
+typedef testing::Test WebkitGlueUserAgentTest;
 
 bool IsSpoofedUserAgent(const std::string& user_agent) {
-  return user_agent.find("TestShell") == std::string::npos;
+  return user_agent.find("TestContentClient") == std::string::npos;
 }
 
 TEST_F(WebkitGlueUserAgentTest, UserAgentSpoofingHack) {

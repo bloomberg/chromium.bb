@@ -11,10 +11,11 @@
 
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
+#include "webkit/storage/webkit_storage_export.h"
 
 namespace chromeos {
 
-class FileAccessPermissions {
+class WEBKIT_STORAGE_EXPORT FileAccessPermissions {
  public:
   FileAccessPermissions();
   virtual ~FileAccessPermissions();

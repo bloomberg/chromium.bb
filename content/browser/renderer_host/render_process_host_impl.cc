@@ -144,6 +144,8 @@ static const char* kSiteProcessMapKeyName = "content_site_process_map";
 namespace content {
 namespace {
 
+base::MessageLoop* g_in_process_thread;
+
 void CacheShaderInfo(int32 id, base::FilePath path) {
   ShaderCacheFactory::GetInstance()->SetCacheInfo(id, path);
 }
@@ -171,9 +173,11 @@ class RendererMainThread : public base::Thread {
   virtual void Init() OVERRIDE {
     render_process_.reset(new RenderProcessImpl());
     new RenderThreadImpl(channel_id_);
+    g_in_process_thread = message_loop();
   }
 
   virtual void CleanUp() OVERRIDE {
+    g_in_process_thread = NULL;
     render_process_.reset();
 
     // It's a little lame to manually set this flag.  But the single process
@@ -497,11 +501,11 @@ bool RenderProcessHostImpl::Init() {
     in_process_renderer_.reset(new RendererMainThread(channel_id));
 
     base::Thread::Options options;
-#if !defined(TOOLKIT_GTK) && !defined(OS_ANDROID)
+#if defined(OS_WIN) && !defined(OS_MACOSX)
     // In-process plugins require this to be a UI message loop.
     options.message_loop_type = MessageLoop::TYPE_UI;
 #else
-    // We can't have multiple UI loops on GTK and Android, so we don't support
+    // We can't have multiple UI loops on Linux and Android, so we don't support
     // in-process plugins.
     options.message_loop_type = MessageLoop::TYPE_DEFAULT;
 #endif
@@ -1538,6 +1542,11 @@ void RenderProcessHostImpl::RegisterProcessHostForSite(
       .possibly_invalid_spec();
   if (!site.empty())
     map->RegisterProcess(site, process);
+}
+
+base::MessageLoop*
+    RenderProcessHostImpl::GetInProcessRendererThreadForTesting() {
+  return g_in_process_thread;
 }
 
 void RenderProcessHostImpl::ProcessDied(bool already_dead) {

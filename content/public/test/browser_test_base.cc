@@ -8,8 +8,11 @@
 #include "base/command_line.h"
 #include "base/debug/stack_trace.h"
 #include "base/process_util.h"
+#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "content/public/test/test_utils.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
@@ -22,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #endif
 
+namespace content {
 namespace {
 
 #if defined(OS_POSIX)
@@ -43,11 +47,15 @@ static void DumpStackTraceSignalHandler(int signal) {
 }
 #endif  // defined(OS_POSIX)
 
+void RunTaskOnRendererThread(const base::Closure& task,
+                             const base::Closure& quit_task) {
+  task.Run();
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, quit_task);
+}
+
 }  // namespace
 
-namespace content {
-
-extern int BrowserMain(const content::MainFunctionParams&);
+extern int BrowserMain(const MainFunctionParams&);
 
 BrowserTestBase::BrowserTestBase() {
 #if defined(OS_MACOSX)
@@ -118,6 +126,22 @@ void BrowserTestBase::CreateTestServer(const base::FilePath& test_server_base) {
       net::TestServer::TYPE_HTTP,
       net::TestServer::kLocalhost,
       test_server_base));
+}
+
+void BrowserTestBase::PostTaskToInProcessRendererAndWait(
+    const base::Closure& task) {
+  CHECK(CommandLine::ForCurrentProcess()->HasSwitch(switches::kSingleProcess));
+
+  scoped_refptr<MessageLoopRunner> runner = new MessageLoopRunner;
+
+  base::MessageLoop* renderer_loop =
+      RenderProcessHostImpl::GetInProcessRendererThreadForTesting();
+  CHECK(renderer_loop);
+
+  renderer_loop->PostTask(
+      FROM_HERE,
+      base::Bind(&RunTaskOnRendererThread, task, runner->QuitClosure()));
+  runner->Run();
 }
 
 }  // namespace content

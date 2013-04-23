@@ -21,6 +21,10 @@
 
 class CommandLine;
 
+namespace base {
+class MessageLoop;
+}
+
 namespace gfx {
 class Size;
 }
@@ -173,6 +177,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
       BrowserContext* browser_context,
       RenderProcessHost* process,
       const GURL& url);
+
+  static base::MessageLoop* GetInProcessRendererThreadForTesting();
 
  protected:
   // A proxy for our IPC::Channel that lives on the IO thread (see

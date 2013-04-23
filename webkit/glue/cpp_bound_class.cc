@@ -12,6 +12,8 @@
 //   name in its internal map of methods, and then calls the appropriate
 //   method.
 
+#include "webkit/glue/cpp_bound_class.h"
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
@@ -19,7 +21,6 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebString.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebBindings.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebFrame.h"
-#include "webkit/glue/cpp_bound_class.h"
 
 using WebKit::WebBindings;
 using WebKit::WebFrame;

@@ -5,9 +5,10 @@
 #ifndef CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_
 #define CONTENT_PUBLIC_TEST_BROWSER_TEST_BASE_H_
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "net/test/test_server.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 class CommandLine;
 
@@ -81,6 +82,11 @@ class BrowserTestBase : public testing::Test {
   // |test_server_base| is the path, relative to src, to give to the test HTTP
   // server.
   void CreateTestServer(const base::FilePath& test_server_base);
+
+  // When the test is running in --single-process mode, runs the given task on
+  // the in-process renderer thread. A nested message loop is run until it
+  // returns.
+  void PostTaskToInProcessRendererAndWait(const base::Closure& task);
 
  private:
   void ProxyRunTestOnMainThreadLoop();

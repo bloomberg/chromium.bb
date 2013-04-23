@@ -1,7 +1,5 @@
 include_rules = [
   "+content/public/renderer",
-  "+content/public/browser/native_web_keyboard_event.h", # For tests.
-  "+content/public/browser/web_ui_controller_factory.h", # For tests.
   "+jingle/glue",
   "+media",  # For audio input/output and audio/video decoding.
   "+third_party/hyphen/hyphen.h",
@@ -10,3 +8,10 @@ include_rules = [
   "+third_party/tcmalloc",
   "+v8/include",
 ]
+
+specific_include_rules = {
+  '.*_[a-z]*browsertest.*': [
+    "+content/public/browser",
+    "+content/shell",
+  ],
+}

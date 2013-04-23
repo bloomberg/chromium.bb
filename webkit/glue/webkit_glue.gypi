@@ -262,8 +262,6 @@
         '../plugins/webview_plugin.h',
         'alt_error_page_resource_fetcher.cc',
         'alt_error_page_resource_fetcher.h',
-        'cpp_binding_example.cc',
-        'cpp_binding_example.h',
         'cpp_bound_class.cc',
         'cpp_bound_class.h',
         'cpp_variant.cc',

@@ -11,6 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/plugins/ppapi/plugin_delegate.h"
 
+namespace base {
+class MessageLoop;
+}
+
 namespace webkit {
 namespace ppapi {
 
@@ -50,6 +54,8 @@ class PpapiUnittest : public testing::Test,
   // Note: module must be declared first since we want it to get destroyed last.
   scoped_refptr<PluginModule> module_;
   scoped_refptr<PluginInstance> instance_;
+
+  scoped_ptr<base::MessageLoop> message_loop_;
 
   // ModuleLifetime implementation.
   virtual void PluginModuleDead(PluginModule* dead_module);
