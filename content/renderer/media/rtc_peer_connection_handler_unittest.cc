@@ -689,10 +689,7 @@ TEST_F(RTCPeerConnectionHandlerTest, RemoteTrackState) {
             video_tracks[0].source().readyState());
 }
 
-// TODO(perkj): Enable this test once https://codereview.chromium.org/14314003
-// is landed.
-TEST_F(RTCPeerConnectionHandlerTest,
-       DISABLED_RemoveAndAddAudioTrackFromRemoteStream) {
+TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddAudioTrackFromRemoteStream) {
   std::string remote_stream_label("remote_stream");
   scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "audio"));
@@ -722,10 +719,7 @@ TEST_F(RTCPeerConnectionHandlerTest,
   EXPECT_EQ(1u, modified_audio_tracks2.size());
 }
 
-// TODO(perkj): Enable this test once https://codereview.chromium.org/14314003
-// is landed.
-TEST_F(RTCPeerConnectionHandlerTest,
-       DISABLED_RemoveAndAddVideoTrackFromRemoteStream) {
+TEST_F(RTCPeerConnectionHandlerTest, RemoveAndAddVideoTrackFromRemoteStream) {
   std::string remote_stream_label("remote_stream");
   scoped_refptr<webrtc::MediaStreamInterface> remote_stream(
       AddRemoteMockMediaStream(remote_stream_label, "video", "video"));
