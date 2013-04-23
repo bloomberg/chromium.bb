@@ -31,6 +31,7 @@ class RunLoop;
 namespace cc {
 class ContextProvider;
 class Layer;
+class LayerTreeDebugState;
 class LayerTreeHost;
 }
 
@@ -362,6 +363,9 @@ class COMPOSITOR_EXPORT Compositor
   int last_ended_frame() { return last_ended_frame_; }
 
   bool IsLocked() { return compositor_lock_ != NULL; }
+
+  const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
+  void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
 
  private:
   friend class base::RefCounted<Compositor>;
