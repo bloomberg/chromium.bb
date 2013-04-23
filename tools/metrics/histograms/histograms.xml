@@ -374,6 +374,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Cookie.ReinstatedCookies" units="seconds">
+  <summary>
+    The duration in seconds between a cookie getting evicted (due to the number
+    of cookies exceeding a domain limit), and subsequently reinstated.
+  </summary>
+</histogram>
+
 <histogram name="DiskCache.TotalIOTime" units="milliseconds">
   <obsolete>
     Deprecated.
@@ -6480,6 +6487,12 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.StartToFinish">
     <with-group name="parallel_4_prefetch"/>
   </affected-histogram>
+</fieldtrial>
+
+<fieldtrial name="DomainGoogle" separator="">
+  <group name="Google" label="only Google cookies are recorded."/>
+  <group name="Other" label="only NON-Google cookies are recorded."/>
+  <affected-histogram name="Cookie.ReinstatedCookies"/>
 </fieldtrial>
 
 <fieldtrial name="HttpPipeliningCompatibility">
