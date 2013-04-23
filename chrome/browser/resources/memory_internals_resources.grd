@@ -15,7 +15,8 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_MEMORY_INTERNALS_INDEX_HTML" file="memory_internals/index.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_MEMORY_INTERNALS_MEMORY_INTERNALS_HTML" file="memory_internals/memory_internals.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
+      <include name="IDR_MEMORY_INTERNALS_MEMORY_INTERNALS_JS" file="memory_internals/memory_internals.js" flattenhtml="true" type="BINDATA" />
     </includes>
   </release>
 </grit>

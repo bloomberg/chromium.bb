@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/memory_internals/memory_internals_ui.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/memory_internals/memory_internals_handler.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -16,7 +17,9 @@ content::WebUIDataSource* CreateMemoryInternalsHTMLSource() {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIMemoryInternalsHost);
 
-  source->SetDefaultResource(IDR_MEMORY_INTERNALS_INDEX_HTML);
+  source->AddResourcePath("memory_internals.js",
+                          IDR_MEMORY_INTERNALS_MEMORY_INTERNALS_JS);
+  source->SetDefaultResource(IDR_MEMORY_INTERNALS_MEMORY_INTERNALS_HTML);
   return source;
 }
 
@@ -24,6 +27,8 @@ content::WebUIDataSource* CreateMemoryInternalsHTMLSource() {
 
 MemoryInternalsUI::MemoryInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
+  web_ui->AddMessageHandler(new MemoryInternalsHandler());
+
   // Set up the chrome://memory-internals/ source.
   Profile* profile = Profile::FromWebUI(web_ui);
   content::WebUIDataSource::Add(profile, CreateMemoryInternalsHTMLSource());
