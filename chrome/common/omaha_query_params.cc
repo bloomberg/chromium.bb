@@ -39,6 +39,8 @@ const char kArch[] =
   "x86";
 #elif defined(__arm__)
   "arm";
+#elif defined(__mips__)
+  "mipsel";
 #else
   #error "unknown arch"
 #endif
