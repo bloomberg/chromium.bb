@@ -454,6 +454,26 @@
 				<key>LOCATION</key>
 				<integer>0</integer>
 				<key>NAME</key>
+				<string>Google Software Update</string>
+			</dict>
+			<key>PATH</key>
+			<dict>
+				<key>PATH</key>
+				<string>Keystone/GoogleSoftwareUpdate.pkg</string>
+				<key>PATH_TYPE</key>
+				<integer>1</integer>
+			</dict>
+			<key>TYPE</key>
+			<integer>1</integer>
+			<key>UUID</key>
+			<string>C2FF6FAA-0A85-4C10-9358-7126F63EA13D</string>
+		</dict>
+		<dict>
+			<key>PACKAGE_SETTINGS</key>
+			<dict>
+				<key>LOCATION</key>
+				<integer>0</integer>
+				<key>NAME</key>
 				<string>@@HOST_SERVICE_PKG@@</string>
 			</dict>
 			<key>PATH</key>
@@ -487,26 +507,6 @@
 			<integer>1</integer>
 			<key>UUID</key>
 			<string>6CDD4F42-2B4E-4AEB-AA1E-5EF7A29708ED</string>
-		</dict>
-		<dict>
-			<key>PACKAGE_SETTINGS</key>
-			<dict>
-				<key>LOCATION</key>
-				<integer>0</integer>
-				<key>NAME</key>
-				<string>Google Software Update</string>
-			</dict>
-			<key>PATH</key>
-			<dict>
-				<key>PATH</key>
-				<string>Keystone/GoogleSoftwareUpdate.pkg</string>
-				<key>PATH_TYPE</key>
-				<integer>1</integer>
-			</dict>
-			<key>TYPE</key>
-			<integer>1</integer>
-			<key>UUID</key>
-			<string>C2FF6FAA-0A85-4C10-9358-7126F63EA13D</string>
 		</dict>
 	</array>
 	<key>PROJECT</key>
