@@ -444,3 +444,10 @@ v8.dll!v8::internal::Factory::NewCode
 v8.dll!v8::internal::CodeGenerator::MakeCodeEpilogue
 v8.dll!v8::internal::FullCodeGenerator::MakeCode
 v8.dll!v8::internal::GenerateCode
+
+GDI USAGE ERROR
+name=http://crbug.com/234484
+# "DC created by one thread and used by another"
+...
+*!chrome::`anonymous namespace'::SetOverlayIcon
+
