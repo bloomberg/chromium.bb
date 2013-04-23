@@ -1523,9 +1523,9 @@ bool AddMountFunction::RunImpl() {
           SendResponse(false);
           break;
         }
-        file_system->GetEntryInfoByPath(
+        file_system->MarkCacheFileAsMounted(
             drive::util::ExtractDrivePath(path),
-            base::Bind(&AddMountFunction::MarkCacheAsMounted,
+            base::Bind(&AddMountFunction::OnMountedStateSet,
                        this, mount_type_str, display_name));
       } else {
         OnMountedStateSet(mount_type_str, display_name,
@@ -1536,30 +1536,6 @@ bool AddMountFunction::RunImpl() {
   }
 
   return true;
-}
-
-void AddMountFunction::MarkCacheAsMounted(
-    const std::string& mount_type,
-    const base::FilePath::StringType& display_name,
-    drive::FileError error,
-    scoped_ptr<drive::DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
-  drive::DriveSystemService* system_service =
-      drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  drive::DriveCache* cache = system_service ? system_service->cache() : NULL;
-
-  if (!cache ||
-      error != drive::FILE_ERROR_OK ||
-      !entry_proto ||
-      !entry_proto->has_file_specific_info()) {
-    SendResponse(false);
-    return;
-  }
-  cache->MarkAsMounted(entry_proto->resource_id(),
-                       entry_proto->file_specific_info().file_md5(),
-                       base::Bind(&AddMountFunction::OnMountedStateSet,
-                                  this, mount_type, display_name));
 }
 
 void AddMountFunction::OnMountedStateSet(

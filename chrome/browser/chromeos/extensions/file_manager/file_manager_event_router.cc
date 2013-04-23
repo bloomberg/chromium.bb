@@ -11,7 +11,6 @@
 #include "base/prefs/pref_service.h"
 #include "base/stl_util.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -63,10 +62,9 @@ DictionaryValue* DiskToDictionaryValue(
   return result;
 }
 
-// Used as a callback for DriveCache::MarkAsUnmounted().
+// Used as a callback for DriveFileSystem::MarkCacheFileAsUnmounted().
 void OnMarkAsUnmounted(drive::FileError error) {
-  LOG_IF(ERROR, error != drive::FILE_ERROR_OK)
-      << "Failed to unmount: " << error;
+  // Do nothing.
 }
 
 const char* MountErrorToString(chromeos::MountError error) {
@@ -480,13 +478,15 @@ void FileManagerEventRouter::OnMountEvent(
     // when mounting failed or unmounting succeeded.
     if ((event == DiskMountManager::MOUNTING) !=
         (error_code == chromeos::MOUNT_ERROR_NONE)) {
-      base::FilePath source_path(mount_info.source_path);
       DriveSystemService* system_service =
           DriveSystemServiceFactory::GetForProfile(profile_);
-      drive::DriveCache* cache =
-          system_service ? system_service->cache() : NULL;
-      if (cache && cache->IsUnderDriveCacheDirectory(source_path))
-        cache->MarkAsUnmounted(source_path, base::Bind(&OnMarkAsUnmounted));
+      drive::DriveFileSystemInterface* file_system =
+          system_service ? system_service->file_system() : NULL;
+      if (file_system) {
+        file_system->MarkCacheFileAsUnmounted(
+            base::FilePath(mount_info.source_path),
+            base::Bind(&OnMarkAsUnmounted));
+      }
     }
   }
 }

@@ -376,12 +376,6 @@ class AddMountFunction : public FileBrowserFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Calls DriveCache::MarkCacheAsMounted.
-  void MarkCacheAsMounted(const std::string& mount_type,
-                          const base::FilePath::StringType& display_name,
-                          drive::FileError error,
-                          scoped_ptr<drive::DriveEntryProto> entry_proto);
-
   // A callback method to handle the result of MarkCacheAsMounted.
   void OnMountedStateSet(const std::string& mount_type,
                          const base::FilePath::StringType& file_name,
