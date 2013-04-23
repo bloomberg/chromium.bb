@@ -796,8 +796,6 @@ public:
     public:
         ImageExtractor(Image*, ImageHtmlDomSource, bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
-        // Each platform must provide an implementation of this method to deallocate or release resources
-        // associated with the image if needed.
         ~ImageExtractor();
 
         bool extractSucceeded() { return m_extractSucceeded; }
@@ -809,9 +807,8 @@ public:
         unsigned imageSourceUnpackAlignment() { return m_imageSourceUnpackAlignment; }
         ImageHtmlDomSource imageHtmlDomSource() { return m_imageHtmlDomSource; }
     private:
-        // Each platform must provide an implementation of this method.
-        // Extracts the image and keeps track of its status, such as width, height, Source Alignment, format and AlphaOp etc,
-        // needs to lock the resources or relevant data if needed and returns true upon success
+        // Extract the image and keeps track of its status, such as width, height, Source Alignment, format and AlphaOp etc.
+        // This needs to lock the resources or relevant data if needed and return true upon success
         bool extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile);
 
         RefPtr<NativeImageSkia> m_nativeImage;

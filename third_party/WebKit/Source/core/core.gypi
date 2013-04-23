@@ -2957,7 +2957,6 @@
             'platform/graphics/skia/FontCustomPlatformData.h',
             'platform/graphics/skia/FontSkia.cpp',
             'platform/graphics/skia/GlyphPageTreeNodeSkia.cpp',
-            'platform/graphics/skia/GraphicsContext3DSkia.cpp',
             'platform/graphics/skia/GraphicsContextSkia.cpp',
             'platform/graphics/skia/ImageBufferSkia.cpp',
             'platform/graphics/skia/ImageSkia.cpp',

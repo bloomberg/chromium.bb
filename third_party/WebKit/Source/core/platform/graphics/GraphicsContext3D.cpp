@@ -39,6 +39,7 @@
 #include "Image.h"
 #include "ImageBuffer.h"
 #include "ImageData.h"
+#include "ImageDecoder.h"
 #include "ImageObserver.h"
 #include "SkTypes.h"
 
@@ -723,6 +724,64 @@ GraphicsContext3D::ImageExtractor::ImageExtractor(Image* image, ImageHtmlDomSour
     m_image = image;
     m_imageHtmlDomSource = imageHtmlDomSource;
     m_extractSucceeded = extractImage(premultiplyAlpha, ignoreGammaAndColorProfile);
+}
+
+GraphicsContext3D::ImageExtractor::~ImageExtractor()
+{
+    if (m_skiaImage)
+        m_skiaImage->bitmap().unlockPixels();
+}
+
+bool GraphicsContext3D::ImageExtractor::extractImage(bool premultiplyAlpha, bool ignoreGammaAndColorProfile)
+{
+    if (!m_image)
+        return false;
+    m_skiaImage = m_image->nativeImageForCurrentFrame();
+    m_alphaOp = AlphaDoNothing;
+    bool hasAlpha = m_skiaImage ? !m_skiaImage->bitmap().isOpaque() : true;
+    if ((!m_skiaImage || ignoreGammaAndColorProfile || (hasAlpha && !premultiplyAlpha)) && m_image->data()) {
+        // Attempt to get raw unpremultiplied image data.
+        OwnPtr<ImageDecoder> decoder(ImageDecoder::create(
+            *(m_image->data()), ImageSource::AlphaNotPremultiplied,
+            ignoreGammaAndColorProfile ? ImageSource::GammaAndColorProfileIgnored : ImageSource::GammaAndColorProfileApplied));
+        if (!decoder)
+            return false;
+        decoder->setData(m_image->data(), true);
+        if (!decoder->frameCount())
+            return false;
+        ImageFrame* frame = decoder->frameBufferAtIndex(0);
+        if (!frame || frame->status() != ImageFrame::FrameComplete)
+            return false;
+        hasAlpha = frame->hasAlpha();
+        m_nativeImage = frame->asNewNativeImage();
+        if (!m_nativeImage.get() || !m_nativeImage->isDataComplete() || !m_nativeImage->bitmap().width() || !m_nativeImage->bitmap().height())
+            return false;
+        SkBitmap::Config skiaConfig = m_nativeImage->bitmap().config();
+        if (skiaConfig != SkBitmap::kARGB_8888_Config)
+            return false;
+        m_skiaImage = m_nativeImage.get();
+        if (hasAlpha && premultiplyAlpha)
+            m_alphaOp = AlphaDoPremultiply;
+    } else if (!premultiplyAlpha && hasAlpha) {
+        // 1. For texImage2D with HTMLVideoElment input, assume no PremultiplyAlpha had been applied and the alpha value for each pixel is 0xFF
+        // which is true at present and may be changed in the future and needs adjustment accordingly.
+        // 2. For texImage2D with HTMLCanvasElement input in which Alpha is already Premultiplied in this port,
+        // do AlphaDoUnmultiply if UNPACK_PREMULTIPLY_ALPHA_WEBGL is set to false.
+        if (m_imageHtmlDomSource != HtmlDomVideo)
+            m_alphaOp = AlphaDoUnmultiply;
+    }
+    if (!m_skiaImage)
+        return false;
+
+    m_imageSourceFormat = SK_B32_SHIFT ? DataFormatRGBA8 : DataFormatBGRA8;
+    m_imageWidth = m_skiaImage->bitmap().width();
+    m_imageHeight = m_skiaImage->bitmap().height();
+    if (!m_imageWidth || !m_imageHeight)
+        return false;
+    m_imageSourceUnpackAlignment = 0;
+    m_skiaImage->bitmap().lockPixels();
+    m_imagePixelData = m_skiaImage->bitmap().getPixels();
+    return true;
 }
 
 bool GraphicsContext3D::packImageData(
