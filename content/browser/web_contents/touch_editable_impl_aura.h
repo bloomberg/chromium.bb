@@ -25,7 +25,7 @@ class TouchEditableImplAuraTest;
 // Aura specific implementation of ui::TouchEditable for a RenderWidgetHostView.
 class CONTENT_EXPORT TouchEditableImplAura
     : public ui::TouchEditable,
-      public RenderWidgetHostViewAura::TouchEditingClient {
+      public NON_EXPORTED_BASE(RenderWidgetHostViewAura::TouchEditingClient) {
  public:
   virtual ~TouchEditableImplAura();
 
