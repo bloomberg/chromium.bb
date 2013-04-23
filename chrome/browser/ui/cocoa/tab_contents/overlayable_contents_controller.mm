@@ -88,7 +88,6 @@
   // Add the overlay contents.
   if (overlayContents_) {
     [[[self view] window] disableScreenUpdatesUntilFlush];
-    overlayContents_->GetView()->SetAllowOverlappingViews(true);
     [[self view] addSubview:overlayContents_->GetView()->GetNativeView()];
   }
 
@@ -135,6 +134,17 @@
     [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
     overlayContents_ = NULL;
   }
+}
+
+- (void)activeContentsCompositingIOSurfaceCreated {
+  if (!overlayContents_)
+    return;
+
+  // If the active tab becomes composited the the overlay will no longer be
+  // visible. Workaround this by re-adding the overlay to the view hierarchy.
+  // See http://crbug.com/222122
+  [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
+  [[self view] addSubview:overlayContents_->GetView()->GetNativeView()];
 }
 
 - (NSView*)activeContainer {

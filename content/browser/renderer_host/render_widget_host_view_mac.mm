@@ -133,10 +133,11 @@ static float ScaleFactor(NSView* view) {
 @interface RenderWidgetHostViewCocoa ()
 @property(nonatomic, assign) NSRange selectedRange;
 @property(nonatomic, assign) NSRange markedRange;
+@property(nonatomic, assign)
+    NSObject<RenderWidgetHostViewMacDelegate>* delegate;
 
 + (BOOL)shouldAutohideCursorForEvent:(NSEvent*)event;
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
-- (void)setRWHVDelegate:(NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)gotUnhandledWheelEvent;
 - (void)scrollOffsetPinnedToLeft:(BOOL)left toRight:(BOOL)right;
 - (void)setHasHorizontalScrollbar:(BOOL)has_horizontal_scrollbar;
@@ -389,7 +390,7 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 
 void RenderWidgetHostViewMac::SetDelegate(
     NSObject<RenderWidgetHostViewMacDelegate>* delegate) {
-  [cocoa_view_ setRWHVDelegate:delegate];
+  [cocoa_view_ setDelegate:delegate];
 }
 
 void RenderWidgetHostViewMac::SetAllowOverlappingViews(bool overlapping) {
@@ -1084,12 +1085,14 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
     return true;
   }
 
+  bool should_post_notification = false;
   if (!compositing_iosurface_) {
     CompositingIOSurfaceMac::SurfaceOrder order = allow_overlapping_views_ ?
         CompositingIOSurfaceMac::SURFACE_ORDER_BELOW_WINDOW :
         CompositingIOSurfaceMac::SURFACE_ORDER_ABOVE_WINDOW;
     compositing_iosurface_.reset(
         CompositingIOSurfaceMac::Create(window_number(), order));
+    should_post_notification = true;
   }
 
   if (!compositing_iosurface_)
@@ -1114,6 +1117,12 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
                                           window_number(),
                                           frame_subscriber_.get());
   }
+
+  if (should_post_notification && [[cocoa_view_ delegate]
+          respondsToSelector:@selector(compositingIOSurfaceCreated)]) {
+    [[cocoa_view_ delegate] compositingIOSurfaceCreated];
+  }
+
   return true;
 }
 
@@ -1565,6 +1574,7 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
 @synthesize selectedRange = selectedRange_;
 @synthesize suppressNextEscapeKeyUp = suppressNextEscapeKeyUp_;
 @synthesize markedRange = markedRange_;
+@synthesize delegate = delegate_;
 
 - (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
   self = [super initWithFrame:NSZeroRect];
@@ -1605,10 +1615,6 @@ gfx::Rect RenderWidgetHostViewMac::GetScaledOpenGLPixelRect(
     [self addCursorRect:[self visibleRect] cursor:currentCursor_];
     [currentCursor_ setOnMouseEntered:YES];
   }
-}
-
-- (void)setRWHVDelegate:(NSObject<RenderWidgetHostViewMacDelegate>*)delegate {
-  delegate_ = delegate;
 }
 
 - (void)gotUnhandledWheelEvent {

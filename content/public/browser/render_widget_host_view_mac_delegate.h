@@ -41,6 +41,9 @@
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
                       isValidItem:(BOOL*)valid;
 
+// Notification that the compositing IO surface has been created.
+- (void)compositingIOSurfaceCreated;
+
 @end
 
 #endif  // CONTENT_PUBLIC_BROWSER_RENDER_WIDGET_HOST_VIEW_MAC_DELEGATE_H_
