@@ -15,7 +15,7 @@ MockIBusEngineService::~MockIBusEngineService() {
 void MockIBusEngineService::SetEngine(IBusEngineHandlerInterface* handler) {
 }
 
-void MockIBusEngineService::UnsetEngine() {
+void MockIBusEngineService::UnsetEngine(IBusEngineHandlerInterface* handler) {
 }
 
 void MockIBusEngineService::RegisterProperties(

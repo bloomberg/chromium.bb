@@ -116,8 +116,9 @@ class CHROMEOS_EXPORT IBusEngineService {
   // This class doesn't take the ownership of |handler|.
   virtual void SetEngine(IBusEngineHandlerInterface* handler) = 0;
 
-  // Unsets the current IBus engine handler.
-  virtual void UnsetEngine() = 0;
+  // Unsets the IBus engine handler if |handler| equals to current engine
+  // handler.
+  virtual void UnsetEngine(IBusEngineHandlerInterface* handler) = 0;
 
   // Emits RegisterProperties signal.
   virtual void RegisterProperties(

@@ -61,9 +61,13 @@ InputMethodEngineIBus::InputMethodEngineIBus()
 }
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
-  if (object_path_.IsValid())
-    GetCurrentService()->UnsetEngine();
   input_method::GetInputMethodManager()->RemoveInputMethodExtension(ibus_id_);
+
+  // Do not unset engine before removing input method extension, above function
+  // may call reset function of engine object.
+  // TODO(nona): Call Reset manually here and remove relevant code from
+  //             InputMethodManager once ibus-daemon is gone. (crbug.com/158273)
+  GetCurrentService()->UnsetEngine(this);
 }
 
 void InputMethodEngineIBus::Initialize(
