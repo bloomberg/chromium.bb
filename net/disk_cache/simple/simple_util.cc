@@ -46,10 +46,13 @@ bool GetEntryHashKeyFromHexString(const std::string& hash_key,
 }
 
 uint64 GetEntryHashKey(const std::string& key) {
-  const std::string sha_hash = base::SHA1HashString(key);
-  uint64 hash_key = 0;
-  sha_hash.copy(reinterpret_cast<char*>(&hash_key), sizeof(hash_key));
-  return hash_key;
+  union {
+    unsigned char sha_hash[base::kSHA1Length];
+    uint64 key_hash;
+  } u;
+  base::SHA1HashBytes(reinterpret_cast<const unsigned char*>(key.data()),
+                      key.size(), u.sha_hash);
+  return u.key_hash;
 }
 
 std::string GetFilenameFromHexStringAndIndex(const std::string& hex_key,
