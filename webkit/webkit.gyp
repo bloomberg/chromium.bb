@@ -5,7 +5,6 @@
 {
   'includes': [
     '../build/win_precompile.gypi',
-    '../third_party/WebKit/Source/WebKit/chromium/features.gypi',
     'tools/test_shell/test_shell.gypi',
   ],
   'variables': {
