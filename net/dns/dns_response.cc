@@ -127,6 +127,20 @@ bool DnsRecordParser::ReadRecord(DnsResourceRecord* out) {
   return false;
 }
 
+bool DnsRecordParser::SkipQuestion() {
+  size_t consumed = ReadName(cur_, NULL);
+  if (!consumed)
+    return false;
+
+  const char* next = cur_ + consumed + 2 * sizeof(uint16);  // QTYPE + QCLASS
+  if (next > packet_ + length_)
+    return false;
+
+  cur_ = next;
+
+  return true;
+}
+
 DnsResponse::DnsResponse()
     : io_buffer_(new IOBufferWithSize(dns_protocol::kMaxUDPSize + 1)) {
 }
@@ -172,6 +186,25 @@ bool DnsResponse::InitParse(int nbytes, const DnsQuery& query) {
   parser_ = DnsRecordParser(io_buffer_->data(),
                             nbytes,
                             hdr_size + question.size());
+  return true;
+}
+
+bool DnsResponse::InitParseWithoutQuery(int nbytes) {
+  if (nbytes >= io_buffer_->size())
+    return false;
+
+  size_t hdr_size = sizeof(dns_protocol::Header);
+  parser_ = DnsRecordParser(
+      io_buffer_->data(), nbytes, hdr_size);
+
+  unsigned qdcount = base::NetToHost16(header()->qdcount);
+  for (unsigned i = 0; i < qdcount; ++i) {
+    if (!parser_.SkipQuestion()) {
+      parser_ = DnsRecordParser();  // Make parser invalid again.
+      return false;
+    }
+  }
+
   return true;
 }
 

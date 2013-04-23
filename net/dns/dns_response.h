@@ -67,6 +67,9 @@ class NET_EXPORT_PRIVATE DnsRecordParser {
   // Parses the next resource record into |record|. Returns true if succeeded.
   bool ReadRecord(DnsResourceRecord* record);
 
+  // Skip a question section, returns true if succeeded.
+  bool SkipQuestion();
+
  private:
   const char* packet_;
   size_t length_;
@@ -114,6 +117,10 @@ class NET_EXPORT_PRIVATE DnsResponse {
   // Assuming the internal buffer holds |nbytes| bytes, returns true iff the
   // packet matches the |query| id and question.
   bool InitParse(int nbytes, const DnsQuery& query);
+
+  // Assuming the internal buffer holds |nbytes| bytes, initialize the parser
+  // without matching it against an existing query.
+  bool InitParseWithoutQuery(int nbytes);
 
   // Returns true if response is valid, that is, after successful InitParse.
   bool IsValid() const;

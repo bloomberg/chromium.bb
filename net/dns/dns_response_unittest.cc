@@ -245,6 +245,139 @@ TEST(DnsResponseTest, InitParse) {
   EXPECT_FALSE(parser.ReadRecord(&record));
 }
 
+TEST(DnsResponseTest, InitParseWithoutQuery) {
+  DnsResponse resp;
+  memcpy(resp.io_buffer()->data(), kT0ResponseDatagram,
+         sizeof(kT0ResponseDatagram));
+
+  // Accept matching question.
+  EXPECT_TRUE(resp.InitParseWithoutQuery(sizeof(kT0ResponseDatagram)));
+  EXPECT_TRUE(resp.IsValid());
+
+  // Check header access.
+  EXPECT_EQ(0x8180, resp.flags());
+  EXPECT_EQ(0x0, resp.rcode());
+  EXPECT_EQ(kT0RecordCount, resp.answer_count());
+
+  // Check question access.
+  EXPECT_EQ(kT0Qtype, resp.qtype());
+  EXPECT_EQ(kT0HostName, resp.GetDottedName());
+
+  DnsResourceRecord record;
+  DnsRecordParser parser = resp.Parser();
+  for (unsigned i = 0; i < kT0RecordCount; i ++) {
+    EXPECT_FALSE(parser.AtEnd());
+    EXPECT_TRUE(parser.ReadRecord(&record));
+  }
+  EXPECT_TRUE(parser.AtEnd());
+  EXPECT_FALSE(parser.ReadRecord(&record));
+}
+
+TEST(DnsResponseTest, InitParseWithoutQueryNoQuestions) {
+  const uint8 response_data[] = {
+    // Header
+    0xca, 0xfe,               // ID
+    0x81, 0x80,               // Standard query response, RA, no error
+    0x00, 0x00,               // No question
+    0x00, 0x01,               // 2 RRs (answers)
+    0x00, 0x00,               // 0 authority RRs
+    0x00, 0x00,               // 0 additional RRs
+
+    // Answer 1
+    0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w',
+    0x08, 'c', 'h', 'r', 'o', 'm', 'i', 'u', 'm',
+    0x03, 'o', 'r', 'g',
+    0x00,
+    0x00, 0x01,         // TYPE is A.
+    0x00, 0x01,         // CLASS is IN.
+    0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
+    0x00, 0x35,
+    0x00, 0x04,         // RDLENGTH is 4 bytes.
+    0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
+    0x5f, 0x79,
+  };
+
+  DnsResponse resp;
+  memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
+
+  EXPECT_TRUE(resp.InitParseWithoutQuery(sizeof(response_data)));
+
+  // Check header access.
+  EXPECT_EQ(0x8180, resp.flags());
+  EXPECT_EQ(0x0, resp.rcode());
+  EXPECT_EQ(0x1u, resp.answer_count());
+
+  DnsResourceRecord record;
+  DnsRecordParser parser = resp.Parser();
+
+  EXPECT_FALSE(parser.AtEnd());
+  EXPECT_TRUE(parser.ReadRecord(&record));
+  EXPECT_EQ("codereview.chromium.org", record.name);
+  EXPECT_EQ(0x00000035u, record.ttl);
+  EXPECT_EQ(dns_protocol::kTypeA, record.type);
+
+  EXPECT_TRUE(parser.AtEnd());
+  EXPECT_FALSE(parser.ReadRecord(&record));
+}
+
+TEST(DnsResponseTest, InitParseWithoutQueryTwoQuestions) {
+  const uint8 response_data[] = {
+    // Header
+    0xca, 0xfe,               // ID
+    0x81, 0x80,               // Standard query response, RA, no error
+    0x00, 0x02,               // 2 questions
+    0x00, 0x01,               // 2 RRs (answers)
+    0x00, 0x00,               // 0 authority RRs
+    0x00, 0x00,               // 0 additional RRs
+
+    // Question 1
+    0x0a, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w',
+    0x08, 'c', 'h', 'r', 'o', 'm', 'i', 'u', 'm',
+    0x03, 'o', 'r', 'g',
+    0x00,
+    0x00, 0x01,        // TYPE is A.
+    0x00, 0x01,        // CLASS is IN.
+
+    // Question 2
+    0x0b, 'c', 'o', 'd', 'e', 'r', 'e', 'v', 'i', 'e', 'w', '2',
+    0xc0, 0x18,        // pointer to "chromium.org"
+    0x00, 0x01,        // TYPE is A.
+    0x00, 0x01,        // CLASS is IN.
+
+    // Answer 1
+    0xc0, 0x0c,         // NAME is a pointer to name in Question section.
+    0x00, 0x01,         // TYPE is A.
+    0x00, 0x01,         // CLASS is IN.
+    0x00, 0x00,         // TTL (4 bytes) is 53 seconds.
+    0x00, 0x35,
+    0x00, 0x04,         // RDLENGTH is 4 bytes.
+    0x4a, 0x7d,         // RDATA is the IP: 74.125.95.121
+    0x5f, 0x79,
+  };
+
+  DnsResponse resp;
+  memcpy(resp.io_buffer()->data(), response_data, sizeof(response_data));
+
+  EXPECT_TRUE(resp.InitParseWithoutQuery(sizeof(response_data)));
+
+  // Check header access.
+  EXPECT_EQ(0x8180, resp.flags());
+  EXPECT_EQ(0x0, resp.rcode());
+  EXPECT_EQ(0x01u, resp.answer_count());
+
+  DnsResourceRecord record;
+  DnsRecordParser parser = resp.Parser();
+
+  EXPECT_FALSE(parser.AtEnd());
+  EXPECT_TRUE(parser.ReadRecord(&record));
+  EXPECT_EQ("codereview.chromium.org", record.name);
+  EXPECT_EQ(0x35u, record.ttl);
+  EXPECT_EQ(dns_protocol::kTypeA, record.type);
+
+  EXPECT_TRUE(parser.AtEnd());
+  EXPECT_FALSE(parser.ReadRecord(&record));
+}
+
 void VerifyAddressList(const std::vector<const char*>& ip_addresses,
                        const AddressList& addrlist) {
   ASSERT_EQ(ip_addresses.size(), addrlist.size());
