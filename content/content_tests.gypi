@@ -657,9 +657,12 @@
           ],
           'sources!': [
             'browser/accessibility/browser_accessibility_win_unittest.cc',
+          ],
+        }],
+        ['use_aura==1 and OS=="linux"', {
+          'sources!': [
             # http://crbug.com/234172: these tests depend on single process
             # mode, which doesn't work in content_browsertests on Linux Aura.
-            # TODO(jam): on Win Aura, they crash when launching the GPU process.
             'renderer/dom_operations_browsertest.cc',
             'renderer/dom_serializer_browsertest.cc',
             'renderer/resource_fetcher_browsertest.cc',

@@ -169,6 +169,10 @@ class DomSerializerTests : public ContentBrowserTest,
 
   virtual void SetUpCommandLine(CommandLine* command_line) {
     command_line->AppendSwitch(switches::kSingleProcess);
+#if defined(OS_WIN) && defined(USE_AURA)
+    // Don't want to try to create a GPU process.
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+#endif
   }
 
   // DomSerializerDelegate.
