@@ -60,10 +60,10 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   void Prerender();
 
- private:
   // Invoked when the sign-in status is changed to switch on/off sign-in view.
   void OnSigninStatusChanged();
 
+ private:
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;

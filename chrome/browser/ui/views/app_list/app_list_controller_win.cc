@@ -45,6 +45,8 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/util_constants.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_source.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
@@ -254,7 +256,8 @@ class ScopedKeepAlive {
 // TODO(tapted): Rename this class to AppListServiceWin and move entire file to
 // chrome/browser/ui/app_list/app_list_service_win.cc after removing
 // chrome/browser/ui/views dependency.
-class AppListController : public AppListService {
+class AppListController : public AppListService,
+                          public content::NotificationObserver {
  public:
   virtual ~AppListController();
 
@@ -304,6 +307,11 @@ class AppListController : public AppListService {
       const base::FilePath& profile_path) OVERRIDE;
 
   virtual AppListControllerDelegate* CreateControllerDelegate() OVERRIDE;
+
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<AppListController>;
@@ -390,6 +398,8 @@ class AppListController : public AppListService {
   // when this happens it is kept visible if the taskbar is seen briefly without
   // the right mouse button down, but not if this happens twice in a row.
   bool preserving_focus_for_taskbar_menu_;
+
+  content::NotificationRegistrar registrar_;
 
   base::WeakPtrFactory<AppListController> weak_factory_;
 
@@ -518,6 +528,14 @@ AppListControllerDelegate* AppListController::CreateControllerDelegate() {
   return new AppListControllerDelegateWin();
 }
 
+void AppListController::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  if (current_view_)
+    current_view_->OnSigninStatusChanged();
+}
+
 void AppListController::SetAppListProfile(
     const base::FilePath& profile_file_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -643,6 +661,12 @@ void AppListController::PopulateViewFromProfile(Profile* profile) {
 #endif
 
   profile_ = profile;
+  registrar_.RemoveAll();
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_SUCCESSFUL,
+                 content::Source<Profile>(profile_));
+  registrar_.Add(this, chrome::NOTIFICATION_GOOGLE_SIGNIN_FAILED,
+                 content::Source<Profile>(profile_));
+
   // The controller will be owned by the view delegate, and the delegate is
   // owned by the app list view. The app list view manages it's own lifetime.
   view_delegate_ = new AppListViewDelegate(CreateControllerDelegate(),
