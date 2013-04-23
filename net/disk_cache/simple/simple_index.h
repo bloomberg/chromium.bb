@@ -22,6 +22,10 @@
 #include "net/base/completion_callback.h"
 #include "net/base/net_export.h"
 
+#if defined(OS_ANDROID)
+#include "net/android/simple_cache_activity_status_notifier.h"
+#endif
+
 class Pickle;
 class PickleIterator;
 
@@ -152,6 +156,11 @@ class NET_EXPORT_PRIVATE SimpleIndex
   void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
                             bool force_index_flush);
 
+#if defined(OS_ANDROID)
+  void ActivityStatusChanged(
+      net::SimpleCacheActivityStatusNotifier::ActivityStatus activity_status);
+#endif
+
   EntrySet entries_set_;
   uint64 cache_size_;  // Total cache storage size in bytes.
   uint64 max_size_;
@@ -173,14 +182,15 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // thread, in all cases. |io_thread_checker_| documents and enforces this.
   base::ThreadChecker io_thread_checker_;
 
-  // Timestamp of the last time we wrote the index to disk.
-  // PostponeWritingToDisk() may give up postponing and allow the write if it
-  // has been a while since last time we wrote.
-  base::Time last_write_to_disk_;
   base::OneShotTimer<SimpleIndex> write_to_disk_timer_;
 
   typedef std::list<net::CompletionCallback> CallbackList;
   CallbackList to_run_when_initialized_;
+
+#if defined(OS_ANDROID)
+  net::SimpleCacheActivityStatusNotifier activity_status_notifier_;
+#endif
+  bool app_on_background_;
 };
 
 }  // namespace disk_cache

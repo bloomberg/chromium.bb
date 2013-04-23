@@ -27,10 +27,8 @@ namespace {
 
 // How many seconds we delay writing the index to disk since the last cache
 // operation has happened.
-const int kWriteToDiskDelaySecs = 20;
-
-// WriteToDisk at lest every 5 minutes.
-const int kMaxWriteToDiskDelaySecs = 300;
+const int kWriteToDiskDelayMSecs = 20000;
+const int kWriteToDiskOnBackgroundDelayMSecs = 100;
 
 // Cache size when all other size heuristics failed.
 const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
@@ -126,7 +124,12 @@ SimpleIndex::SimpleIndex(
       initialized_(false),
       index_filename_(path.AppendASCII("the-real-index")),
       cache_thread_(cache_thread),
-      io_thread_(io_thread) {
+      io_thread_(io_thread),
+#if defined(OS_ANDROID)
+      activity_status_notifier_(
+          base::Bind(&SimpleIndex::ActivityStatusChanged, AsWeakPtr())),
+#endif
+      app_on_background_(false) {
 }
 
 SimpleIndex::~SimpleIndex() {
@@ -336,19 +339,17 @@ void SimpleIndex::InsertInEntrySet(
 void SimpleIndex::PostponeWritingToDisk() {
   if (!initialized_)
     return;
-  const base::TimeDelta file_age = base::Time::Now() - last_write_to_disk_;
-  if (file_age > base::TimeDelta::FromSeconds(kMaxWriteToDiskDelaySecs) &&
-      write_to_disk_timer_.IsRunning()) {
-    // If the index file is too old and there is a timer programmed to run a
-    // WriteToDisk soon, we don't postpone it, so we always WriteToDisk
-    // approximately every kMaxWriteToDiskDelaySecs.
-    return;
+  int delay = kWriteToDiskDelayMSecs;
+  if (app_on_background_) {
+    // When the app is in the background we can write the index much more
+    // frequently. We could even write it to disk on every operation if we
+    // wanted to.
+    delay = kWriteToDiskOnBackgroundDelayMSecs;
   }
-
   // If the timer is already active, Start() will just Reset it, postponing it.
   write_to_disk_timer_.Start(
       FROM_HERE,
-      base::TimeDelta::FromSeconds(kWriteToDiskDelaySecs),
+      base::TimeDelta::FromMilliseconds(delay),
       base::Bind(&SimpleIndex::WriteToDisk, AsWeakPtr()));
 }
 
@@ -399,8 +400,6 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
     const base::FilePath& index_filename) {
   using file_util::FileEnumerator;
   LOG(INFO) << "Simple Cache Index is being restored from disk.";
-
-  file_util::Delete(index_filename, /* recursive = */ false);
   scoped_ptr<EntrySet> index_file_entries(new EntrySet());
 
   // TODO(felipeg,gavinp): Fix this once we have a one-file per entry format.
@@ -426,7 +425,6 @@ scoped_ptr<SimpleIndex::EntrySet> SimpleIndex::RestoreFromDisk(
             hash_key_string, &hash_key)) {
       LOG(WARNING) << "Invalid Entry Hash Key filename while restoring "
                    << "Simple Index from disk: " << hash_name;
-      // TODO(felipeg): Should we delete the invalid file here ?
       continue;
     }
 
@@ -489,7 +487,6 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
       cache_size_ += it->second.GetEntrySize();
     }
   }
-  last_write_to_disk_ = base::Time::Now();
   initialized_ = true;
   removed_entries_.clear();
 
@@ -506,11 +503,27 @@ void SimpleIndex::MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,
   to_run_when_initialized_.clear();
 }
 
+#if defined(OS_ANDROID)
+void SimpleIndex::ActivityStatusChanged(
+    net::SimpleCacheActivityStatusNotifier::ActivityStatus activity_status) {
+  DCHECK(io_thread_checker_.CalledOnValidThread());
+  // For more info about android activities, see:
+  // developer.android.com/training/basics/activity-lifecycle/pausing.html
+  // These values are defined in the file ActivityStatus.java
+  if (activity_status == net::SimpleCacheActivityStatusNotifier::RESUMED) {
+    app_on_background_ = false;
+  } else if (activity_status ==
+             net::SimpleCacheActivityStatusNotifier::STOPPED) {
+    app_on_background_ = true;
+    WriteToDisk();
+  }
+}
+#endif
+
 void SimpleIndex::WriteToDisk() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   if (!initialized_)
     return;
-  last_write_to_disk_ = base::Time::Now();
   SimpleIndexFile::IndexMetadata index_metadata(entries_set_.size(),
                                                 cache_size_);
   scoped_ptr<Pickle> pickle = SimpleIndexFile::Serialize(index_metadata,
