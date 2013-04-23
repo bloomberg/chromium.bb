@@ -11,15 +11,14 @@
 #include "sync/notifier/invalidation_handler.h"
 
 class Profile;
+class ProfileSyncService;
 
 namespace google_apis {
 
 // Informs observers when they should check Google Drive for updates.
 // Conditions under which updates should be searched:
 // 1. XMPP invalidation is received from Google Drive.
-//    TODO(calvinlo): Implement public syncer::InvalidationHandler interface.
 // 2. Polling timer counts down.
-//    TODO(calvinlo): Also add in backup timer.
 class DriveNotificationManager
     : public ProfileKeyedService,
       public syncer::InvalidationHandler {
@@ -39,24 +38,21 @@ class DriveNotificationManager
   void AddObserver(DriveNotificationObserver* observer);
   void RemoveObserver(DriveNotificationObserver* observer);
 
+  // True when XMPP notifications registered and enabled. False otherwise.
+  bool IsPushNotificationEnabled();
+
  private:
   void NotifyObserversToUpdate();
-
-  // XMPP notification related methods.
   void RegisterDriveNotifications();
-  bool IsDriveNotificationSupported();
-  void SetPushNotificationEnabled(syncer::InvalidatorState state);
 
   Profile* profile_;
+  ProfileSyncService* profile_sync_service_;
   ObserverList<DriveNotificationObserver> observers_;
 
-  // XMPP notification related variables.
   // True when Drive File Sync Service is registered for Drive notifications.
   bool push_notification_registered_;
   // True once the first drive notification is received with OK state.
   bool push_notification_enabled_;
-
-  // TODO(calvinlo): Polling variables to go here.
 
   DISALLOW_COPY_AND_ASSIGN(DriveNotificationManager);
 };

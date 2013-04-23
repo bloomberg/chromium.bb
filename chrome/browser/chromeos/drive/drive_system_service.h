@@ -16,9 +16,9 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
-#include "sync/notifier/invalidation_handler.h"
 
 namespace base {
 class FilePath;
@@ -65,8 +65,9 @@ class DriveSystemServiceObserver {
 // The class is essentially a container that manages lifetime of the objects
 // that are used to run the Drive system. The DriveSystemService object is
 // created per-profile.
-class DriveSystemService : public ProfileKeyedService,
-                           public syncer::InvalidationHandler {
+class DriveSystemService
+    : public ProfileKeyedService,
+      public google_apis::DriveNotificationObserver {
  public:
   // test_drive_service, test_cache_root and test_file_system are used by tests
   // to inject customized instances.
@@ -87,6 +88,9 @@ class DriveSystemService : public ProfileKeyedService,
   // Adds and removes the observer.
   void AddObserver(DriveSystemServiceObserver* observer);
   void RemoveObserver(DriveSystemServiceObserver* observer);
+
+  // google_apis::DriveNotificationObserver implementation.
+  virtual void OnNotificationReceived() OVERRIDE;
 
   google_apis::DriveServiceInterface* drive_service() {
     return drive_service_.get();
@@ -110,16 +114,7 @@ class DriveSystemService : public ProfileKeyedService,
   // Reloads and remounts the file system.
   void ReloadAndRemountFileSystem();
 
-  // Returns true if the push notification is enabled.
-  bool PushNotificationEnabled();
-
  private:
-  // syncer::InvalidationHandler implementation.
-  virtual void OnInvalidatorStateChange(
-      syncer::InvalidatorState state) OVERRIDE;
-  virtual void OnIncomingInvalidation(
-      const syncer::ObjectIdInvalidationMap& invalidation_map) OVERRIDE;
-
   // Returns true if Drive is enabled.
   // Must be called on UI thread.
   bool IsDriveEnabled();
@@ -158,9 +153,6 @@ class DriveSystemService : public ProfileKeyedService,
   Profile* profile_;
   // True if Drive is disabled due to initialization errors.
   bool drive_disabled_;
-
-  // True once this is registered to listen to the Drive updates.
-  bool push_notification_registered_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::EventLogger> event_logger_;

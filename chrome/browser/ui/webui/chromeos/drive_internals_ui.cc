@@ -23,6 +23,8 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
+#include "chrome/browser/google_apis/drive_notification_manager.h"
+#include "chrome/browser/google_apis/drive_notification_manager_factory.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_switches.h"
 #include "chrome/browser/google_apis/event_logger.h"
@@ -514,13 +516,16 @@ void DriveInternalsWebUIHandler::UpdateDeltaUpdateStatusSection() {
 void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
     const drive::DriveFileSystemMetadata& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  drive::DriveSystemService* const system_service = GetSystemService();
-  if (!system_service)
+  Profile* profile = Profile::FromWebUI(web_ui());
+  google_apis::DriveNotificationManager* drive_notification_manager =
+      google_apis::DriveNotificationManagerFactory::GetForProfile(profile);
+  if (!drive_notification_manager)
     return;
 
   base::DictionaryValue delta_update_status;
-  delta_update_status.SetBoolean("push-notification-enabled",
-                                 system_service->PushNotificationEnabled());
+  delta_update_status.SetBoolean(
+      "push-notification-enabled",
+      drive_notification_manager->IsPushNotificationEnabled());
   delta_update_status.SetString(
       "last-update-check-time",
       google_apis::util::FormatTimeAsStringLocaltime(
