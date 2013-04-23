@@ -865,6 +865,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDisableCompositingForFixedPosition,
     switches::kEnableAcceleratedPainting,
     switches::kEnableTouchDragDrop,
+    switches::kEnableTouchEditing,
     switches::kDisableThreadedCompositing,
     switches::kDisableTouchAdjustment,
     switches::kDefaultTileWidth,

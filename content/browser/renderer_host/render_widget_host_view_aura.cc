@@ -629,7 +629,8 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       accelerated_compositing_state_changed_(false),
       can_lock_compositor_(YES),
       paint_observer_(NULL),
-      accessible_parent_(NULL) {
+      accessible_parent_(NULL),
+      touch_editing_client_(NULL) {
   host_->SetView(this);
   window_observer_.reset(new WindowObserver(this));
   aura::client::SetTooltipText(window_, &tooltip_);
@@ -791,6 +792,10 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
   }
   window_->SetBounds(rect);
   host_->WasResized();
+  if (touch_editing_client_) {
+    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
+        selection_focus_rect_);
+  }
 }
 
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
@@ -996,6 +1001,8 @@ void RenderWidgetHostViewAura::TextInputStateChanged(
     can_compose_inline_ = params.can_compose_inline;
     if (GetInputMethod())
       GetInputMethod()->OnTextInputTypeChanged(this);
+    if (touch_editing_client_)
+      touch_editing_client_->OnTextInputTypeChanged(text_input_type_);
   }
 }
 
@@ -1111,6 +1118,11 @@ void RenderWidgetHostViewAura::SelectionBoundsChanged(
 
   if (GetInputMethod())
     GetInputMethod()->OnCaretBoundsChanged(this);
+
+  if (touch_editing_client_) {
+    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
+        selection_focus_rect_);
+  }
 }
 
 void RenderWidgetHostViewAura::ScrollOffsetChanged() {
@@ -1718,6 +1730,11 @@ gfx::Rect RenderWidgetHostViewAura::GetBoundsInRootWindow() {
   return window_->GetToplevelWindow()->GetBoundsInScreen();
 }
 
+void RenderWidgetHostViewAura::GestureEventAck(int gesture_event_type) {
+  if (touch_editing_client_)
+    touch_editing_client_->GestureEventAck(gesture_event_type);
+}
+
 void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
     const WebKit::WebTouchEvent& touch_event, InputEventAckState ack_result) {
   ScopedVector<ui::TouchEvent> events;
@@ -2059,6 +2076,8 @@ bool RenderWidgetHostViewAura::CanFocus() {
 
 void RenderWidgetHostViewAura::OnCaptureLost() {
   host_->LostCapture();
+  if (touch_editing_client_)
+    touch_editing_client_->EndTouchEditing();
 }
 
 void RenderWidgetHostViewAura::OnPaint(gfx::Canvas* canvas) {
@@ -2178,6 +2197,9 @@ scoped_refptr<ui::Texture> RenderWidgetHostViewAura::CopyTexture() {
 
 void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnKeyEvent");
+  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
+    return;
+
   if (popup_child_host_view_ && popup_child_host_view_->NeedsInputGrab()) {
     popup_child_host_view_->OnKeyEvent(event);
     if (event->handled())
@@ -2226,6 +2248,9 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
 
 void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnMouseEvent");
+
+  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
+    return;
 
   if (mouse_locked_) {
     // Hide the cursor if someone else has shown it.
@@ -2331,6 +2356,9 @@ void RenderWidgetHostViewAura::OnMouseEvent(ui::MouseEvent* event) {
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnScrollEvent");
+  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
+    return;
+
   if (event->type() == ui::ET_SCROLL) {
     if (event->finger_count() != 2)
       return;
@@ -2355,6 +2383,9 @@ void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {
 
 void RenderWidgetHostViewAura::OnTouchEvent(ui::TouchEvent* event) {
   TRACE_EVENT0("browser", "RenderWidgetHostViewAura::OnTouchEvent");
+  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
+    return;
+
   // Update the touch event first.
   WebKit::WebTouchPoint* point = UpdateWebTouchEventFromUIEvent(*event,
                                                                 &touch_event_);
@@ -2384,6 +2415,9 @@ void RenderWidgetHostViewAura::OnGestureEvent(ui::GestureEvent* event) {
     event->SetHandled();
     return;
   }
+
+  if (touch_editing_client_ && touch_editing_client_->HandleInputEvent(event))
+    return;
 
   RenderViewHostDelegate* delegate = NULL;
   if (popup_type_ == WebKit::WebPopupTypeNone && !is_fullscreen_)
@@ -2502,6 +2536,8 @@ void RenderWidgetHostViewAura::OnWindowFocused(aura::Window* gained_focus,
       in_shutdown_ = true;
       host_->Shutdown();
     }
+    if (touch_editing_client_)
+      touch_editing_client_->EndTouchEditing();
   }
 }
 
@@ -2640,6 +2676,8 @@ void RenderWidgetHostViewAura::OnLostResources() {
 RenderWidgetHostViewAura::~RenderWidgetHostViewAura() {
   if (paint_observer_)
     paint_observer_->OnViewDestroyed();
+  if (touch_editing_client_)
+    touch_editing_client_->OnViewDestroyed();
   if (!shared_surface_handle_.is_null()) {
     ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
     factory->DestroySharedSurfaceHandle(shared_surface_handle_);

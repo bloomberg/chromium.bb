@@ -280,6 +280,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
   virtual InputEventAckState FilterInputEvent(
       const WebKit::WebInputEvent& input_event) = 0;
 
+  virtual void GestureEventAck(int gesture_event_type) = 0;
+
   virtual void SetPopupType(WebKit::WebPopupType popup_type) = 0;
   virtual WebKit::WebPopupType GetPopupType() = 0;
 
