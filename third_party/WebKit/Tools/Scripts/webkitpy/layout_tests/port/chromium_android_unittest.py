@@ -180,7 +180,7 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
         self.port = chromium_android.ChromiumAndroidPort(
                 MockSystemHost(executive=MockExecutive2(run_command_fn=self.mock_run_command.mock_run_command_fn)),
                 'chromium-android')
-        self.driver = chromium_android.ChromiumAndroidDriver(self.port, worker_number=0, pixel_tests=True)
+        self.driver = chromium_android.ChromiumAndroidDriver(self.port, worker_number=0, pixel_tests=True, driver_details=chromium_android.ContentShellDriverDetails())
 
     def test_get_last_stacktrace(self):
         self.mock_run_command.mock_no_tombstone_dir()
@@ -237,12 +237,6 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
         cmd_line = self.driver.cmd_line(True, ['anything'])
         self.assertEqual(['adb', '-s', self.mock_run_command._mock_devices[0], 'shell'], cmd_line)
 
-    def test_drt_cmd_line(self):
-        cmd_line = self.driver._drt_cmd_line(True, ['--a'])
-        self.assertIn('--a', cmd_line)
-        self.assertIn('--create-stdin-fifo', cmd_line)
-        self.assertIn('--separate-stderr-fifo', cmd_line)
-
     def test_read_prompt(self):
         self.driver._server_process = driver_unittest.MockServerProcess(lines=['root@android:/ # '])
         self.assertIsNone(self.driver._read_prompt(time.time() + 1))
@@ -261,8 +255,8 @@ class ChromiumAndroidDriverTest(unittest.TestCase):
 
     def test_pid_from_android_ps_output(self):
         # FIXME: Use a larger blob of ps output.
-        ps_output = """u0_a72    21630 125   947920 59364 ffffffff 400beee4 S org.chromium.native_test"""
-        pid = self.driver._pid_from_android_ps_output(ps_output, "org.chromium.native_test")
+        ps_output = """u0_a72    21630 125   947920 59364 ffffffff 400beee4 S org.chromium.content_shell_apk"""
+        pid = self.driver._pid_from_android_ps_output(ps_output, "org.chromium.content_shell_apk")
         self.assertEqual(pid, 21630)
 
 
@@ -320,8 +314,8 @@ class ChromiumAndroidDriverTwoDriversTest(unittest.TestCase):
         port = chromium_android.ChromiumAndroidPort(
                 MockSystemHost(executive=MockExecutive2(run_command_fn=mock_run_command.mock_run_command_fn)),
                 'chromium-android')
-        driver0 = chromium_android.ChromiumAndroidDriver(port, worker_number=0, pixel_tests=True)
-        driver1 = chromium_android.ChromiumAndroidDriver(port, worker_number=1, pixel_tests=True)
+        driver0 = chromium_android.ChromiumAndroidDriver(port, worker_number=0, pixel_tests=True, driver_details=chromium_android.ContentShellDriverDetails())
+        driver1 = chromium_android.ChromiumAndroidDriver(port, worker_number=1, pixel_tests=True, driver_details=chromium_android.ContentShellDriverDetails())
 
         cmd_line0 = driver0.cmd_line(True, ['anything'])
         self.assertEqual(['adb', '-s', mock_run_command._mock_devices[0], 'shell'], cmd_line0)
