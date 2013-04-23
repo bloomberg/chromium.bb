@@ -6,8 +6,19 @@
 
 #include <string>
 
-#include "base/bind.h"
-#include "base/message_loop.h"
+#include "chrome/browser/browser_process.h"
+#include "googleurl/src/gurl.h"
+#include "net/http/http_status_code.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_request_status.h"
+
+namespace {
+
+const char kCertificateRequestURL[] = "https://chromeos-ca.gstatic.com/sign";
+const char kEnrollRequestURL[] = "https://chromeos-ca.gstatic.com/enroll";
+const char kMimeContentType[] = "application/octet-stream";
+
+}  // namespace
 
 namespace chromeos {
 namespace attestation {
@@ -18,13 +29,62 @@ AttestationCAClient::~AttestationCAClient() {}
 
 void AttestationCAClient::SendEnrollRequest(const std::string& request,
                                             const DataCallback& on_response) {
-  NOTIMPLEMENTED();
+  FetchURL(kEnrollRequestURL, request, on_response);
 }
 
 void AttestationCAClient::SendCertificateRequest(
     const std::string& request,
     const DataCallback& on_response) {
-  NOTIMPLEMENTED();
+  FetchURL(kCertificateRequestURL, request, on_response);
+}
+
+void AttestationCAClient::OnURLFetchComplete(const net::URLFetcher* source) {
+  FetcherCallbackMap::iterator iter = pending_requests_.find(source);
+  if (iter == pending_requests_.end()) {
+    LOG(WARNING) << "Callback from unknown source.";
+    return;
+  }
+
+  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
+    LOG(ERROR) << "Attestation CA request failed, status: "
+               << source->GetStatus().status() << ", error: "
+               << source->GetStatus().error();
+    iter->second.Run(false, "");
+    pending_requests_.erase(source);
+    delete source;
+    return;
+  }
+
+  if (source->GetResponseCode() != net::HTTP_OK) {
+    LOG(ERROR) << "Attestation CA sent an error response: "
+               << source->GetResponseCode();
+    iter->second.Run(false, "");
+    pending_requests_.erase(source);
+    delete source;
+    return;
+  }
+
+  std::string response;
+  bool result = source->GetResponseAsString(&response);
+  DCHECK(result) << "Invalid fetcher setting.";
+
+  iter->second.Run(true, response);
+  pending_requests_.erase(source);
+  delete source;
+}
+
+void AttestationCAClient::FetchURL(const std::string& url,
+                                   const std::string& request,
+                                   const DataCallback& on_response) {
+  // The first argument allows the use of TestURLFetcherFactory in tests.
+  net::URLFetcher* fetcher = net::URLFetcher::Create(0,
+                                                     GURL(url),
+                                                     net::URLFetcher::POST,
+                                                     this);
+  fetcher->SetRequestContext(g_browser_process->system_request_context());
+  fetcher->SetUploadData(kMimeContentType, request);
+  pending_requests_[fetcher] = on_response;
+  fetcher->Start();
 }
 
 }  // namespace attestation
