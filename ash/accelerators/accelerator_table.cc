@@ -64,23 +64,6 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_F13, ui::EF_NONE, LOCK_RELEASED },
   { true, ui::VKEY_POWER, ui::EF_NONE, POWER_PRESSED },
   { false, ui::VKEY_POWER, ui::EF_NONE, POWER_RELEASED },
-#if !defined(NDEBUG)
-  // Extra shortcut for debug build to control magnifier on linux desktop.
-  { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
-    MAGNIFY_SCREEN_ZOOM_OUT},
-  { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
-  // Extra shortcut for debug build to activate lock screen on linux desktop.
-  { true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_SCREEN },
-  // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
-  { true, ui::VKEY_F4, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN,
-    SWAP_PRIMARY_DISPLAY },
-  // Extra shortcut to lock the screen on linux desktop.
-  { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
-  { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
-  // Extra shortcut to rotate/scale up/down the screen on linux desktop.
-  { true, ui::VKEY_R,
-    ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_SCREEN },
-#endif  // !defined(NDEBUG)
   { true, ui::VKEY_O, ui::EF_CONTROL_DOWN, OPEN_FILE_DIALOG },
   { true, ui::VKEY_M, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
     OPEN_FILE_MANAGER },
@@ -181,25 +164,53 @@ const AcceleratorData kAcceleratorData[] = {
 
 const size_t kAcceleratorDataLength = arraysize(kAcceleratorData);
 
-const AcceleratorData kDebugAcceleratorData[] = {
-  { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
-    TOGGLE_DESKTOP_BACKGROUND_MODE },
-  { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
-  { true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI },
+#if !defined(NDEBUG)
+const AcceleratorData kDesktopAcceleratorData[] = {
+#if defined(OS_CHROMEOS)
+  // Extra shortcut for debug build to control magnifier on linux desktop.
+  { true, ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN,
+    MAGNIFY_SCREEN_ZOOM_OUT},
+  { true, ui::VKEY_BRIGHTNESS_UP, ui::EF_CONTROL_DOWN, MAGNIFY_SCREEN_ZOOM_IN},
+  // Extra shortcuts to lock the screen on linux desktop.
+  { true, ui::VKEY_L, ui::EF_ALT_DOWN, LOCK_SCREEN },
+  { true, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_PRESSED },
+  { false, ui::VKEY_POWER, ui::EF_SHIFT_DOWN, LOCK_RELEASED },
+#endif
+  // Extra shortcut for display swaping as alt-f4 is taken on linux desktop.
+  { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
+    SWAP_PRIMARY_DISPLAY },
+  // Extra shortcut to rotate/scale up/down the screen on linux desktop.
+  { true, ui::VKEY_R,
+    ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, ROTATE_SCREEN },
   // For testing on systems where Alt-Tab is already mapped.
   { true, ui::VKEY_W, ui::EF_ALT_DOWN, CYCLE_FORWARD_MRU },
+
+  { true, ui::VKEY_F11, ui::EF_CONTROL_DOWN, TOGGLE_ROOT_WINDOW_FULL_SCREEN },
+  { true, ui::VKEY_W, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN, TOGGLE_WIFI },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
       CYCLE_BACKWARD_MRU },
-  { true, ui::VKEY_HOME, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN,
-    DISPLAY_TOGGLE_SCALE },
-#if !defined(NDEBUG)
+  { true, ui::VKEY_B, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    TOGGLE_DESKTOP_BACKGROUND_MODE },
+};
+
+const size_t kDesktopAcceleratorDataLength = arraysize(kDesktopAcceleratorData);
+#endif
+
+const AcceleratorData kDebugAcceleratorData[] = {
   { true, ui::VKEY_L, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_LAYER_HIERARCHY },
   { true, ui::VKEY_V, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_VIEW_HIERARCHY },
   { true, ui::VKEY_W, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
     PRINT_WINDOW_HIERARCHY },
-#endif
+  { true, ui::VKEY_S, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DEBUG_TOGGLE_DEVICE_SCALE_FACTOR },
+  { true, ui::VKEY_B, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DEBUG_TOGGLE_SHOW_DEBUG_BORDERS },
+  { true, ui::VKEY_F, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DEBUG_TOGGLE_SHOW_FPS_COUNTER },
+  { true, ui::VKEY_P, ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN,
+    DEBUG_TOGGLE_SHOW_PAINT_RECTS },
 };
 
 const size_t kDebugAcceleratorDataLength = arraysize(kDebugAcceleratorData);
@@ -219,10 +230,6 @@ const size_t kReservedActionsLength = arraysize(kReservedActions);
 const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
-#if defined(OS_CHROMEOS)
-  CYCLE_DISPLAY_MODE,
-  DISABLE_GPU_WATCHDOG,
-#endif  // defined(OS_CHROMEOS)
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
@@ -230,10 +237,14 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   MAGNIFY_SCREEN_ZOOM_OUT,  // Control+F6
   NEXT_IME,
   PREVIOUS_IME,
+  PRINT_LAYER_HIERARCHY,
   PRINT_UI_HIERARCHIES,
+  PRINT_VIEW_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
+  ROTATE_WINDOW,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
-  TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
+  TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
@@ -241,16 +252,14 @@ const AcceleratorAction kActionsAllowedAtLoginOrLockScreen[] = {
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
-  ROTATE_WINDOW,
-#if !defined(NDEBUG)
-  PRINT_LAYER_HIERARCHY,
-  PRINT_VIEW_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
+#if defined(OS_CHROMEOS)
+  CYCLE_DISPLAY_MODE,
+  DISABLE_GPU_WATCHDOG,
 #endif
 #if defined(OS_CHROMEOS) && !defined(NDEBUG)
   POWER_PRESSED,
   POWER_RELEASED,
-#endif
+#endif  // defined(OS_CHROMEOS)
 };
 
 const size_t kActionsAllowedAtLoginOrLockScreenLength =
@@ -284,8 +293,8 @@ const AcceleratorAction kActionsAllowedAtModalWindow[] = {
   SHOW_KEYBOARD_OVERLAY,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,
-  TAKE_SCREENSHOT,
   TAKE_PARTIAL_SCREENSHOT,
+  TAKE_SCREENSHOT,
   TOGGLE_CAPS_LOCK,
   TOGGLE_SPOKEN_FEEDBACK,
   TOGGLE_WIFI,
@@ -310,9 +319,9 @@ const AcceleratorAction kNonrepeatableActions[] = {
   PRINT_UI_HIERARCHIES,  // Don't fill the logs if the key is held down.
   ROTATE_SCREEN,
   ROTATE_WINDOW,
-  SCALE_UI_UP,
   SCALE_UI_DOWN,
   SCALE_UI_RESET,
+  SCALE_UI_UP,
   TOGGLE_MAXIMIZED,
   WINDOW_MINIMIZE,
 };
@@ -323,10 +332,6 @@ const size_t kNonrepeatableActionsLength =
 const AcceleratorAction kActionsAllowedInAppMode[] = {
   BRIGHTNESS_DOWN,
   BRIGHTNESS_UP,
-#if defined(OS_CHROMEOS)
-  CYCLE_DISPLAY_MODE,
-  DISABLE_GPU_WATCHDOG,
-#endif  // defined(OS_CHROMEOS)
   DISABLE_CAPS_LOCK,
   KEYBOARD_BRIGHTNESS_DOWN,
   KEYBOARD_BRIGHTNESS_UP,
@@ -339,11 +344,14 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   POWER_PRESSED,
   POWER_RELEASED,
   PREVIOUS_IME,
+  PRINT_LAYER_HIERARCHY,
   PRINT_UI_HIERARCHIES,
+  PRINT_VIEW_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
   ROTATE_SCREEN,
-  SCALE_UI_UP,
   SCALE_UI_DOWN,
   SCALE_UI_RESET,
+  SCALE_UI_UP,
   SWAP_PRIMARY_DISPLAY,
   SWITCH_IME,  // Switch to another IME depending on the accelerator.
   TOGGLE_CAPS_LOCK,
@@ -353,11 +361,10 @@ const AcceleratorAction kActionsAllowedInAppMode[] = {
   VOLUME_DOWN,
   VOLUME_MUTE,
   VOLUME_UP,
-#if !defined(NDEBUG)
-  PRINT_LAYER_HIERARCHY,
-  PRINT_VIEW_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
-#endif
+#if defined(OS_CHROMEOS)
+  CYCLE_DISPLAY_MODE,
+  DISABLE_GPU_WATCHDOG,
+#endif  // defined(OS_CHROMEOS)
 };
 
 const size_t kActionsAllowedInAppModeLength =

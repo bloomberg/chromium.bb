@@ -21,8 +21,11 @@ enum AcceleratorAction {
   CYCLE_BACKWARD_MRU,
   CYCLE_FORWARD_LINEAR,
   CYCLE_FORWARD_MRU,
+  DEBUG_TOGGLE_DEVICE_SCALE_FACTOR,
+  DEBUG_TOGGLE_SHOW_DEBUG_BORDERS,
+  DEBUG_TOGGLE_SHOW_FPS_COUNTER,
+  DEBUG_TOGGLE_SHOW_PAINT_RECTS,
   DISABLE_CAPS_LOCK,
-  DISPLAY_TOGGLE_SCALE,
   EXIT,
   FOCUS_LAUNCHER,
   FOCUS_NEXT_PANE,
@@ -41,10 +44,13 @@ enum AcceleratorAction {
   NEW_WINDOW,
   NEXT_IME,
   OPEN_FEEDBACK_PAGE,
-  PREVIOUS_IME,
   POWER_PRESSED,
   POWER_RELEASED,
+  PREVIOUS_IME,
+  PRINT_LAYER_HIERARCHY,
   PRINT_UI_HIERARCHIES,
+  PRINT_VIEW_HIERARCHY,
+  PRINT_WINDOW_HIERARCHY,
   RESTORE_TAB,
   ROTATE_SCREEN,
   ROTATE_WINDOW,
@@ -88,16 +94,11 @@ enum AcceleratorAction {
   WINDOW_SNAP_RIGHT,
 #if defined(OS_CHROMEOS)
   CYCLE_DISPLAY_MODE,
+  DISABLE_GPU_WATCHDOG,
   LOCK_SCREEN,
   OPEN_CROSH,
   OPEN_FILE_DIALOG,  // Open 'Open file' dialog.
   OPEN_FILE_MANAGER,
-  DISABLE_GPU_WATCHDOG,
-#endif
-#if !defined(NDEBUG)
-  PRINT_LAYER_HIERARCHY,
-  PRINT_VIEW_HIERARCHY,
-  PRINT_WINDOW_HIERARCHY,
 #endif
 };
 
@@ -113,6 +114,14 @@ ASH_EXPORT extern const AcceleratorData kAcceleratorData[];
 
 // The number of elements in kAcceleratorData.
 ASH_EXPORT extern const size_t kAcceleratorDataLength;
+
+#if !defined(NDEBUG)
+// Accelerators useful when running on desktop. Debug build only.
+ASH_EXPORT extern const AcceleratorData kDesktopAcceleratorData[];
+
+// The number of elements in kDesktopAcceleratorData.
+ASH_EXPORT extern const size_t kDesktopAcceleratorDataLength;
+#endif
 
 // Debug accelerators enabled only when "Debugging keyboard shortcuts" flag
 // (--ash-debug-shortcuts) is enabled.
