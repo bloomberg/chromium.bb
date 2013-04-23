@@ -645,8 +645,8 @@
         ['OS=="android" and target_arch=="arm" and android_webview_build==0', {
           # Currently only supported on Android ARM, without webview.
           # When enabled, this will also enable WebAudio on Android
-          # ARM.  Default is disabled.
-          'use_openmax_dl_fft%': 0,
+          # ARM.  Default is enabled.
+          'use_openmax_dl_fft%': 1,
         }, {
           'use_openmax_dl_fft%': 0,
         }],
