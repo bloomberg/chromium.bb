@@ -916,11 +916,6 @@
             # related to ScrollbarThemeChromium.cpp.
             ['exclude', 'platform/chromium/ScrollbarThemeChromium\\.cpp$'],
 
-            # The Mac does not use ImageSourceCG.cpp from platform/graphics/cg
-            # even though it is included by regex above.
-            ['exclude', 'platform/graphics/cg/ImageSourceCG\\.cpp$'],
-            ['exclude', 'platform/graphics/cg/PDFDocumentImage\\.cpp$'],
-
             # Mac uses only ScrollAnimatorMac.
             ['exclude', 'platform/ScrollAnimatorNone\\.cpp$'],
             ['exclude', 'platform/ScrollAnimatorNone\\.h$'],
