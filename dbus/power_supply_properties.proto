@@ -4,6 +4,9 @@
 
 option optimize_for = LITE_RUNTIME;
 
+// TODO(derat): Remove this file after both powerd and Chrome are using
+// power_manager/power_supply_properties.proto instead.
+
 // This protobuf is intended to be used by powerd to communicate with the
 // browser. Perdiodically the browser requests the current power state of the
 // system by sending a request for all power supply properties. This structure
@@ -35,4 +38,8 @@ message PowerSupplyProperties {
     // calculation. This is done to signal that the time value maybe
     // inaccurate.
     optional bool is_calculating_battery_time = 12 [default = false];
+
+    // NOTE: Do not add any fields to this file; it is in the process of
+    // being deprecated in favor of
+    // power_manager/power_supply_properties.proto.
 }
