@@ -47,9 +47,13 @@ Me2MeDesktopEnvironment::Me2MeDesktopEnvironment(
     : BasicDesktopEnvironment(caller_task_runner,
                               input_task_runner,
                               ui_task_runner,
-                              client_session_control,
                               ui_strings) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
+
+  // On Linux Me2Me sessions are virtualized and don't need UI.
+#if !defined(OS_LINUX)
+  InitNonCurtainedSessionUI(client_session_control);
+#endif
 }
 
 Me2MeDesktopEnvironmentFactory::Me2MeDesktopEnvironmentFactory(

@@ -41,8 +41,13 @@ class BasicDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-      base::WeakPtr<ClientSessionControl> client_session_control,
       const UiStrings* ui_strings);
+
+  // Initializes UI elements required for non-curtained session:
+  // DisconnectWindow and LocalInputMonitor. Must be called by the factory when
+  // the session is not curtained (i.e. shared with a local user).
+  void InitNonCurtainedSessionUI(
+      base::WeakPtr<ClientSessionControl> client_session_control);
 
   scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner() const {
     return caller_task_runner_;

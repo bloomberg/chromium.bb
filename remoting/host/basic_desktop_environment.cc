@@ -66,25 +66,24 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    base::WeakPtr<ClientSessionControl> client_session_control,
     const UiStrings* ui_strings)
     : caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       ui_task_runner_(ui_task_runner),
       ui_strings_(ui_strings) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
+}
 
+void BasicDesktopEnvironment::InitNonCurtainedSessionUI(
+    base::WeakPtr<ClientSessionControl> client_session_control) {
   // Create the local input monitor.
   local_input_monitor_ = LocalInputMonitor::Create(caller_task_runner_,
                                                    input_task_runner_,
                                                    ui_task_runner_,
                                                    client_session_control);
 
-  // The host UI should be created on the UI thread.
-  bool want_user_interface = true;
-#if defined(OS_LINUX)
-  want_user_interface = false;
-#elif defined(OS_MACOSX)
+  bool show_disconnect_window = true;
+#if defined(OS_MACOSX)
   // Don't try to display any UI on top of the system's login screen as this
   // is rejected by the Window Server on OS X 10.7.4, and prevents the
   // capturer from working (http://crbug.com/140984).
@@ -92,11 +91,11 @@ BasicDesktopEnvironment::BasicDesktopEnvironment(
   // TODO(lambroslambrou): Use a better technique of detecting whether we're
   // running in the LoginWindow context, and refactor this into a separate
   // function to be used here and in CurtainMode::ActivateCurtain().
-  want_user_interface = getuid() != 0;
+  show_disconnect_window = getuid() != 0;
 #endif  // OS_MACOSX
 
   // Create the disconnect window.
-  if (want_user_interface) {
+  if (show_disconnect_window) {
     disconnect_window_ = HostWindow::CreateDisconnectWindow(*ui_strings_);
     disconnect_window_.reset(new HostWindowProxy(
         caller_task_runner_,
@@ -124,12 +123,14 @@ scoped_ptr<DesktopEnvironment> BasicDesktopEnvironmentFactory::Create(
     base::WeakPtr<ClientSessionControl> client_session_control) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  return scoped_ptr<DesktopEnvironment>(
+  scoped_ptr<BasicDesktopEnvironment> result(
       new BasicDesktopEnvironment(caller_task_runner(),
                                   input_task_runner(),
                                   ui_task_runner(),
-                                  client_session_control,
                                   &ui_strings_));
+  result->InitNonCurtainedSessionUI(client_session_control);
+
+  return result.PassAs<DesktopEnvironment>();
 }
 
 bool BasicDesktopEnvironmentFactory::SupportsAudioCapture() const {
