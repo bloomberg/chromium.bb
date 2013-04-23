@@ -321,7 +321,7 @@ GpuChannelHost::MessageFilter::MessageFilter(
     base::WeakPtr<GpuChannelHost> parent,
     GpuChannelHostFactory* factory)
     : parent_(parent),
-      factory_(factory) {
+      main_thread_loop_(factory->GetMainLoop()->message_loop_proxy()) {
 }
 
 GpuChannelHost::MessageFilter::~MessageFilter() {}
@@ -330,7 +330,6 @@ void GpuChannelHost::MessageFilter::AddRoute(
     int route_id,
     base::WeakPtr<IPC::Listener> listener,
     scoped_refptr<MessageLoopProxy> loop) {
-  DCHECK(factory_->IsIOThread());
   DCHECK(listeners_.find(route_id) == listeners_.end());
   GpuListenerInfo info;
   info.listener = listener;
@@ -339,7 +338,6 @@ void GpuChannelHost::MessageFilter::AddRoute(
 }
 
 void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
-  DCHECK(factory_->IsIOThread());
   ListenerMap::iterator it = listeners_.find(route_id);
   if (it != listeners_.end())
     listeners_.erase(it);
@@ -347,18 +345,14 @@ void GpuChannelHost::MessageFilter::RemoveRoute(int route_id) {
 
 bool GpuChannelHost::MessageFilter::OnMessageReceived(
     const IPC::Message& message) {
-  DCHECK(factory_->IsIOThread());
-
   // Never handle sync message replies or we will deadlock here.
   if (message.is_reply())
     return false;
 
   if (message.routing_id() == MSG_ROUTING_CONTROL) {
-    MessageLoop* main_loop = factory_->GetMainLoop();
-    main_loop->PostTask(FROM_HERE,
-                        base::Bind(&GpuChannelHost::OnMessageReceived,
-                                   parent_,
-                                   message));
+    main_thread_loop_->PostTask(
+        FROM_HERE, base::Bind(
+            &GpuChannelHost::OnMessageReceived, parent_, message));
     return true;
   }
 
@@ -378,14 +372,12 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
 }
 
 void GpuChannelHost::MessageFilter::OnChannelError() {
-  DCHECK(factory_->IsIOThread());
-
   // Post the task to signal the GpuChannelHost before the proxies. That way, if
   // they themselves post a task to recreate the context, they will not try to
   // re-use this channel host before it has a chance to mark itself lost.
-  MessageLoop* main_loop = factory_->GetMainLoop();
-  main_loop->PostTask(FROM_HERE,
-                      base::Bind(&GpuChannelHost::OnChannelError, parent_));
+  main_thread_loop_->PostTask(
+      FROM_HERE,
+      base::Bind(&GpuChannelHost::OnChannelError, parent_));
   // Inform all the proxies that an error has occurred. This will be reported
   // via OpenGL as a lost context.
   for (ListenerMap::iterator it = listeners_.begin();

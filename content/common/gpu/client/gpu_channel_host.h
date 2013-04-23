@@ -210,7 +210,7 @@ class GpuChannelHost : public IPC::Sender,
     // MessageFilter lives.
     base::WeakPtr<GpuChannelHost> parent_;
 
-    GpuChannelHostFactory* factory_;
+    scoped_refptr<base::MessageLoopProxy> main_thread_loop_;
 
     typedef base::hash_map<int, GpuListenerInfo> ListenerMap;
     ListenerMap listeners_;
