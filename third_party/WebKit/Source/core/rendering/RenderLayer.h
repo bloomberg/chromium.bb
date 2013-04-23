@@ -491,13 +491,12 @@ public:
     // necessarily be stacking contexts.
     bool isStackingContainer() const { return isStackingContext() || needsCompositedScrolling(); }
 
-    // Gets the enclosing stacking container for this layer, excluding this
-    // layer itself.
-    RenderLayer* stackingContainer() const;
+    RenderLayer* ancestorStackingContainer() const;
+    RenderLayer* ancestorStackingContext() const;
 
     // Gets the enclosing stacking container for this layer, possibly the layer
     // itself, if it is a stacking container.
-    RenderLayer* enclosingStackingContainer() { return isStackingContainer() ? this : stackingContainer(); }
+    RenderLayer* enclosingStackingContainer() { return isStackingContainer() ? this : ancestorStackingContainer(); }
 
     void dirtyZOrderLists();
     void dirtyStackingContainerZOrderLists();
@@ -846,6 +845,8 @@ private:
     bool shouldRepaintAfterLayout() const;
 
     void updateSelfPaintingLayer();
+    void updateIsNormalFlowOnly();
+    void updateVisibilityAfterStyleChange(const RenderStyle* oldStyle);
     void updateStackingContextsAfterStyleChange(const RenderStyle* oldStyle);
 
     void updateScrollbarsAfterStyleChange(const RenderStyle* oldStyle);
@@ -1127,6 +1128,7 @@ protected:
     // descendants in stacking order. This is one of the requirements of being
     // able to safely become a stacking context.
     bool m_descendantsAreContiguousInStackingOrder : 1;
+    bool m_descendantsAreContiguousInStackingOrderDirty : 1;
 
     const bool m_isRootLayer : 1;
 

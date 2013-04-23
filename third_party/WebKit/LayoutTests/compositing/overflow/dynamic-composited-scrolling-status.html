@@ -24,8 +24,9 @@
 
     function doTest()
     {
-      document.body.offsetHeight;
       document.getElementById('content').style.height = '1000px';
+      document.body.offsetHeight;
+
       if (window.internals)
         document.getElementById('result').innerText = window.internals.nonFastScrollableRects(document).length ? "FAIL" : "PASS";
     }

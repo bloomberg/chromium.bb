@@ -1,0 +1,39 @@
+iteration 0: PASS, does not have layer tree.
+iteration 1: PASS, does not have layer tree.
+iteration 2: PASS, does not have layer tree.
+iteration 3: PASS, does not have layer tree.
+iteration 4: PASS, has layer tree.
+iteration 5: PASS, does not have layer tree.
+iteration 6: PASS, has layer tree.
+iteration 7: PASS, does not have layer tree.
+iteration 8: PASS, has layer tree.
+iteration 9: PASS, does not have layer tree.
+iteration 10: PASS, does not have layer tree.
+iteration 11: PASS, has layer tree.
+iteration 12: PASS, has layer tree.
+iteration 13: PASS, has layer tree.
+iteration 14: PASS, has layer tree.
+iteration 15: PASS, has layer tree.
+iteration 16: PASS, has layer tree.
+iteration 17: PASS, does not have layer tree.
+iteration 18: PASS, does not have layer tree.
+iteration 19: PASS, has layer tree.
+iteration 20: PASS, has layer tree.
+iteration 21: PASS, has layer tree.
+iteration 22: PASS, has layer tree.
+iteration 23: PASS, has layer tree.
+iteration 24: PASS, has layer tree.
+iteration 25: PASS, does not have layer tree.
+iteration 26: PASS, does not have layer tree.
+iteration 27: PASS, has layer tree.
+iteration 28: PASS, has layer tree.
+iteration 29: PASS, has layer tree.
+iteration 30: PASS, has layer tree.
+iteration 31: PASS, has layer tree.
+iteration 32: PASS, has layer tree.
+iteration 33: PASS, has layer tree.
+iteration 34: PASS, has layer tree.
+iteration 35: PASS, does not have layer tree.
+iteration 36: PASS, has layer tree.
+iteration 37: PASS, has layer tree.
+

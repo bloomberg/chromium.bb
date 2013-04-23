@@ -2590,7 +2590,7 @@ static bool isRootmostFixedOrStickyLayer(RenderLayer* layer)
     if (layer->renderer()->style()->position() != FixedPosition)
         return false;
 
-    for (RenderLayer* stackingContainer = layer->stackingContainer(); stackingContainer; stackingContainer = stackingContainer->stackingContainer()) {
+    for (RenderLayer* stackingContainer = layer->ancestorStackingContainer(); stackingContainer; stackingContainer = stackingContainer->ancestorStackingContainer()) {
         if (stackingContainer->isComposited() && stackingContainer->renderer()->style()->position() == FixedPosition)
             return false;
     }
