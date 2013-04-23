@@ -10,19 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "base/task_runner.h"
 #include "base/time.h"
-#include "net/base/completion_callback.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace net {
 class IOBuffer;
@@ -35,23 +27,6 @@ namespace disk_cache {
 // a single thread between synchronization points.
 class SimpleSynchronousEntry {
  public:
-  // Callback type for the completion of creation of SimpleSynchronousEntry
-  // objects, for instance after OpenEntry() or CreateEntry(). |new_entry| is
-  // the newly created SimpleSynchronousEntry, constructed on the worker pool
-  // thread. |new_entry| == NULL in the case of error.
-  typedef base::Callback<void(SimpleSynchronousEntry* new_entry)>
-      SynchronousCreationCallback;
-
-  // Callback type for the completion of a read from an entry.
-  // |result| is the number of bytes read, or the net::Error if an error. |crc|
-  // is the crc32 of the data that was read on success, undefined otherwise.
-  typedef base::Callback<void(int result, uint32 read_data_crc)>
-      SynchronousReadCallback;
-
-  // Callback type for IO operations on an entry not requiring special callback
-  // arguments (e.g. Write). |result| is a net::Error result code.
-  typedef base::Callback<void(int result)> SynchronousOperationCallback;
-
   struct CRCRecord {
     CRCRecord();
     CRCRecord(int index_p, bool has_crc32_p, uint32 data_crc32_p);
@@ -64,14 +39,12 @@ class SimpleSynchronousEntry {
   static void OpenEntry(
       const base::FilePath& path,
       const std::string& key,
-      base::SingleThreadTaskRunner* callback_runner,
-      const SynchronousCreationCallback& callback);
+      SimpleSynchronousEntry** out_entry);
 
   static void CreateEntry(
       const base::FilePath& path,
       const std::string& key,
-      base::SingleThreadTaskRunner* callback_runner,
-      const SynchronousCreationCallback& callback);
+      SimpleSynchronousEntry** out_entry);
 
   // Deletes an entry without first Opening it. Does not check if there is
   // already an Entry object in memory holding the open files. Be careful! This
@@ -79,31 +52,30 @@ class SimpleSynchronousEntry {
   // run by |callback_runner|.
   static void DoomEntry(const base::FilePath& path,
                         const std::string& key,
-                        base::SingleThreadTaskRunner* callback_runner,
-                        const net::CompletionCallback& callback);
+                        int* out_result);
 
   // Like |DoomEntry()| above. Deletes all entries corresponding to the
   // |key_hashes|. Succeeds only when all entries are deleted.
   static void DoomEntrySet(scoped_ptr<std::vector<uint64> > key_hashes,
                            const base::FilePath& path,
-                           base::SingleThreadTaskRunner* callback_runner,
-                           const net::CompletionCallback& callback);
+                           int* out_result);
 
   // N.B. ReadData(), WriteData(), CheckEOFRecord() and Close() may block on IO.
   void ReadData(int index,
                 int offset,
                 net::IOBuffer* buf,
                 int buf_len,
-                const SynchronousReadCallback& callback);
+                uint32* out_crc32,
+                int* out_result);
   void WriteData(int index,
                  int offset,
                  net::IOBuffer* buf,
                  int buf_len,
-                 const SynchronousOperationCallback& callback,
-                 bool truncate);
+                 bool truncate,
+                 int* out_result);
   void CheckEOFRecord(int index,
                       uint32 expected_crc32,
-                      const SynchronousOperationCallback& callback);
+                      int* out_result);
 
   // Close all streams, and add write EOF records to streams indicated by the
   // CRCRecord entries in |crc32s_to_write|.
@@ -119,7 +91,6 @@ class SimpleSynchronousEntry {
 
  private:
   SimpleSynchronousEntry(
-      base::SingleThreadTaskRunner* callback_runner,
       const base::FilePath& path,
       const std::string& key);
 
@@ -141,7 +112,6 @@ class SimpleSynchronousEntry {
   static bool DeleteFilesForEntry(const base::FilePath& path,
                                   const std::string& key);
 
-  scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;
   const base::FilePath path_;
   const std::string key_;
 

@@ -2247,9 +2247,7 @@ TEST_F(DiskCacheEntryTest, SimpleCacheExternalAsyncIO) {
   ExternalAsyncIO();
 }
 
-// TODO(felipeg): flaky, failing to WritePlatformFile in
-// simple_synchronous_entry.cc. It failed in linux_asan bot.
-TEST_F(DiskCacheEntryTest, DISABLED_SimpleCacheReleaseBuffer) {
+TEST_F(DiskCacheEntryTest, SimpleCacheReleaseBuffer) {
   SetSimpleCacheMode();
   InitCache();
   ReleaseBuffer();

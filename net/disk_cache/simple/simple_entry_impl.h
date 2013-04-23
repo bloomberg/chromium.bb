@@ -10,6 +10,8 @@
 
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
@@ -30,9 +32,8 @@ class SimpleSynchronousEntry;
 // SimpleEntryImpl is the IO thread interface to an entry in the very simple
 // disk cache. It proxies for the SimpleSynchronousEntry, which performs IO
 // on the worker thread.
-class SimpleEntryImpl : public Entry,
-                        public base::RefCountedThreadSafe<SimpleEntryImpl> {
-  friend class base::RefCountedThreadSafe<SimpleEntryImpl>;
+class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
+  friend class base::RefCounted<SimpleEntryImpl>;
  public:
   static int OpenEntry(SimpleIndex* entry_index,
                        const base::FilePath& path,
@@ -112,28 +113,28 @@ class SimpleEntryImpl : public Entry,
                          bool truncate);
 
   // Called after a SimpleSynchronousEntry has completed CreateEntry() or
-  // OpenEntry(). If |sync_entry| is non-NULL, creation is successful and we
+  // OpenEntry(). If |in_sync_entry| is non-NULL, creation is successful and we
   // can return |this| SimpleEntryImpl to |*out_entry|. Runs
   // |completion_callback|.
   void CreationOperationComplete(
-      Entry** out_entry,
       const CompletionCallback& completion_callback,
-      SimpleSynchronousEntry* sync_entry);
+      scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
+      Entry** out_entry);
 
   // Called after a SimpleSynchronousEntry has completed an asynchronous IO
   // operation, such as ReadData() or WriteData(). Calls |completion_callback|.
   void EntryOperationComplete(
-      const CompletionCallback& completion_callback,
       int stream_index,
-      int result);
+      const CompletionCallback& completion_callback,
+      scoped_ptr<int> result);
 
   // Called after an asynchronous read. Updates |crc32s_| if possible.
   void ReadOperationComplete(
       int stream_index,
       int offset,
       const CompletionCallback& completion_callback,
-      int result,
-      uint32 read_data_crc);
+      scoped_ptr<uint32> read_crc32,
+      scoped_ptr<int> result);
 
   // Called after validating the checksums on an entry. Passes through the
   // original result if successful, propogates the error if the checksum does
@@ -142,7 +143,7 @@ class SimpleEntryImpl : public Entry,
       int stream_index,
       int orig_result,
       const CompletionCallback& completion_callback,
-      int result);
+      scoped_ptr<int> result);
 
   // Called on initialization and also after the completion of asynchronous IO
   // to initialize the IO thread copies of data returned by synchronous accessor

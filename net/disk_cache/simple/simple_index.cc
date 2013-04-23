@@ -338,15 +338,13 @@ void SimpleIndex::StartEvictionIfNeeded() {
   // Take out the rest of hashes from the eviction list.
   entry_hashes->erase(it, entry_hashes->end());
 
-  net::CompletionCallback callback =
-      base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr());
-  base::WorkerPool::PostTask(FROM_HERE,
-                             base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                                        base::Passed(&entry_hashes),
-                                        index_filename_.DirName(),
-                                        io_thread_,
-                                        callback),
-                             true);
+  scoped_ptr<int> result(new int());
+  base::Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
+                                  base::Passed(&entry_hashes),
+                                  index_filename_.DirName(), result.get());
+  base::Closure reply = base::Bind(&SimpleIndex::EvictionDone, AsWeakPtr(),
+                                   base::Passed(&result));
+  base::WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
 
 bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
@@ -365,10 +363,12 @@ bool SimpleIndex::UpdateEntrySize(const std::string& key, uint64 entry_size) {
   return true;
 }
 
-void SimpleIndex::EvictionDone(int result) {
+void SimpleIndex::EvictionDone(scoped_ptr<int> result) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
+  DCHECK(result);
+
   // Ignore the result of eviction. We did our best.
-  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EvictionSuccess", result == net::OK);
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EvictionSuccess", *result == net::OK);
   eviction_in_progress_ = false;
 }
 

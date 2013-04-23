@@ -16,6 +16,7 @@
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 
+using base::Closure;
 using base::FilePath;
 using base::MessageLoopProxy;
 using base::SingleThreadTaskRunner;
@@ -100,6 +101,13 @@ bool FileStructureConsistent(const base::FilePath& path) {
   }
 }
 
+void CallCompletionCallback(const net::CompletionCallback& callback,
+                            scoped_ptr<int> result) {
+  DCHECK(!callback.is_null());
+  DCHECK(result);
+  callback.Run(*result);
+}
+
 }  // namespace
 
 namespace disk_cache {
@@ -179,13 +187,12 @@ void SimpleBackendImpl::IndexReadyForDoom(Time initial_time,
   }
   scoped_ptr<std::vector<uint64> > key_hashes(
       index_->RemoveEntriesBetween(initial_time, end_time).release());
-  WorkerPool::PostTask(FROM_HERE,
-                       base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
-                                  base::Passed(&key_hashes),
-                                  path_,
-                                  MessageLoopProxy::current(),
-                                  callback),
-                       true);
+  scoped_ptr<int> new_result(new int());
+  Closure task = base::Bind(&SimpleSynchronousEntry::DoomEntrySet,
+                            base::Passed(&key_hashes), path_, new_result.get());
+  Closure reply = base::Bind(CallCompletionCallback,
+                             callback, base::Passed(&new_result));
+  WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
 }
 
 int SimpleBackendImpl::DoomEntriesBetween(

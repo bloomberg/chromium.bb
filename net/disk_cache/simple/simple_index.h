@@ -135,7 +135,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
       IndexCompletionCallback;
 
   void StartEvictionIfNeeded();
-  void EvictionDone(int result);
+  void EvictionDone(scoped_ptr<int> result);
 
   void PostponeWritingToDisk();
 

@@ -13,11 +13,8 @@
 #include "base/file_util.h"
 #include "base/hash.h"
 #include "base/location.h"
-#include "base/memory/scoped_ptr.h"
-#include "base/message_loop_proxy.h"
 #include "base/sha1.h"
 #include "base/stringprintf.h"
-#include "base/task_runner.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_util.h"
@@ -34,7 +31,6 @@ using base::PLATFORM_FILE_OPEN;
 using base::PLATFORM_FILE_READ;
 using base::PLATFORM_FILE_WRITE;
 using base::ReadPlatformFile;
-using base::SingleThreadTaskRunner;
 using base::Time;
 using base::TruncatePlatformFile;
 using base::WritePlatformFile;
@@ -66,36 +62,34 @@ SimpleSynchronousEntry::CRCRecord::CRCRecord(int index_p,
 void SimpleSynchronousEntry::OpenEntry(
     const FilePath& path,
     const std::string& key,
-    SingleThreadTaskRunner* callback_runner,
-    const SynchronousCreationCallback& callback) {
-  SimpleSynchronousEntry* sync_entry =
-      new SimpleSynchronousEntry(callback_runner, path, key);
+    SimpleSynchronousEntry** out_entry) {
+  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key);
   int rv = sync_entry->InitializeForOpen();
   if (rv != net::OK) {
     sync_entry->Doom();
     delete sync_entry;
-    sync_entry = NULL;
+    *out_entry = NULL;
+    return;
   }
-  callback_runner->PostTask(FROM_HERE, base::Bind(callback, sync_entry));
+  *out_entry = sync_entry;
 }
 
 // static
 void SimpleSynchronousEntry::CreateEntry(
     const FilePath& path,
     const std::string& key,
-    SingleThreadTaskRunner* callback_runner,
-    const SynchronousCreationCallback& callback) {
-  SimpleSynchronousEntry* sync_entry =
-      new SimpleSynchronousEntry(callback_runner, path, key);
+    SimpleSynchronousEntry** out_entry) {
+  SimpleSynchronousEntry* sync_entry = new SimpleSynchronousEntry(path, key);
   int rv = sync_entry->InitializeForCreate();
   if (rv != net::OK) {
     if (rv != net::ERR_FILE_EXISTS) {
       sync_entry->Doom();
     }
     delete sync_entry;
-    sync_entry = NULL;
+    *out_entry = NULL;
+    return;
   }
-  callback_runner->PostTask(FROM_HERE, base::Bind(callback, sync_entry));
+  *out_entry = sync_entry;
 }
 
 // static
@@ -117,29 +111,23 @@ bool SimpleSynchronousEntry::DeleteFilesForEntry(const FilePath& path,
 void SimpleSynchronousEntry::DoomEntry(
     const FilePath& path,
     const std::string& key,
-    SingleThreadTaskRunner* callback_runner,
-    const net::CompletionCallback& callback) {
+    int* out_result) {
   bool deleted_well = DeleteFilesForEntry(path,
                                           GetEntryHashKeyAsHexString(key));
-  int result = deleted_well ? net::OK : net::ERR_FAILED;
-  if (!callback.is_null())
-    callback_runner->PostTask(FROM_HERE, base::Bind(callback, result));
+  *out_result = deleted_well ? net::OK : net::ERR_FAILED;
 }
 
 // static
 void SimpleSynchronousEntry::DoomEntrySet(
     scoped_ptr<std::vector<uint64> > key_hashes,
     const FilePath& path,
-    SingleThreadTaskRunner* callback_runner,
-    const net::CompletionCallback& callback) {
+    int* out_result) {
   bool deleted_well = true;
   for (std::vector<uint64>::const_iterator it = key_hashes->begin(),
        end = key_hashes->end(); it != end; ++it)
     deleted_well &= DeleteFilesForEntry(path,
                                         ConvertEntryHashKeyToHexString((*it)));
-  int result = deleted_well ? net::OK : net::ERR_FAILED;
-  if (!callback.is_null())
-    callback_runner->PostTask(FROM_HERE, base::Bind(callback, result));
+  *out_result = deleted_well ? net::OK : net::ERR_FAILED;
 }
 
 void SimpleSynchronousEntry::ReadData(
@@ -147,20 +135,23 @@ void SimpleSynchronousEntry::ReadData(
     int offset,
     net::IOBuffer* buf,
     int buf_len,
-    const SynchronousReadCallback& callback) {
+    uint32* out_crc32,
+    int* out_result) {
   DCHECK(initialized_);
   int64 file_offset = GetFileOffsetFromKeyAndDataOffset(key_, offset);
   int bytes_read = ReadPlatformFile(files_[index], file_offset,
                                     buf->data(), buf_len);
-  uint32 crc = crc32(0L, Z_NULL, 0);
   if (bytes_read > 0) {
     last_used_ = Time::Now();
-    crc = crc32(crc, reinterpret_cast<const Bytef*>(buf->data()), bytes_read);
+    *out_crc32 = crc32(crc32(0L, Z_NULL, 0),
+                       reinterpret_cast<const Bytef*>(buf->data()), bytes_read);
   }
-  int result = (bytes_read >= 0) ? bytes_read : net::ERR_FAILED;
-  if (result == net::ERR_FAILED)
+  if (bytes_read >= 0) {
+    *out_result = bytes_read;
+  } else {
+    *out_result = net::ERR_FAILED;
     Doom();
-  callback_runner_->PostTask(FROM_HERE, base::Bind(callback, result, crc));
+  }
 }
 
 void SimpleSynchronousEntry::WriteData(
@@ -168,8 +159,8 @@ void SimpleSynchronousEntry::WriteData(
     int offset,
     net::IOBuffer* buf,
     int buf_len,
-    const SynchronousOperationCallback& callback,
-    bool truncate) {
+    bool truncate,
+    int* out_result) {
   DCHECK(initialized_);
 
   bool extending_by_write = offset + buf_len > data_size_[index];
@@ -179,8 +170,7 @@ void SimpleSynchronousEntry::WriteData(
         GetFileOffsetFromKeyAndDataOffset(key_, data_size_[index]);
     if (!TruncatePlatformFile(files_[index], file_eof_offset)) {
       Doom();
-      callback_runner_->PostTask(FROM_HERE,
-                                 base::Bind(callback, net::ERR_FAILED));
+      *out_result = net::ERR_FAILED;
       return;
     }
   }
@@ -189,8 +179,7 @@ void SimpleSynchronousEntry::WriteData(
     if (WritePlatformFile(files_[index], file_offset, buf->data(), buf_len) !=
         buf_len) {
       Doom();
-      callback_runner_->PostTask(FROM_HERE,
-                                 base::Bind(callback, net::ERR_FAILED));
+      *out_result = net::ERR_FAILED;
       return;
     }
   }
@@ -199,21 +188,20 @@ void SimpleSynchronousEntry::WriteData(
   } else {
     if (!TruncatePlatformFile(files_[index], file_offset + buf_len)) {
       Doom();
-      callback_runner_->PostTask(FROM_HERE,
-                                 base::Bind(callback, net::ERR_FAILED));
+      *out_result = net::ERR_FAILED;
       return;
     }
     data_size_[index] = offset + buf_len;
   }
 
   last_modified_ = Time::Now();
-  callback_runner_->PostTask(FROM_HERE, base::Bind(callback, buf_len));
+  *out_result = buf_len;
 }
 
 void SimpleSynchronousEntry::CheckEOFRecord(
     int index,
     uint32 expected_crc32,
-    const SynchronousOperationCallback& callback) {
+    int* out_result) {
   DCHECK(initialized_);
 
   SimpleFileEOF eof_record;
@@ -223,16 +211,14 @@ void SimpleSynchronousEntry::CheckEOFRecord(
                        reinterpret_cast<char*>(&eof_record),
                        sizeof(eof_record)) != sizeof(eof_record)) {
     Doom();
-    callback_runner_->PostTask(FROM_HERE,
-                               base::Bind(callback, net::ERR_FAILED));
+    *out_result = net::ERR_FAILED;
     return;
   }
 
   if (eof_record.final_magic_number != kSimpleFinalMagicNumber) {
     DLOG(INFO) << "eof record had bad magic number.";
     Doom();
-    callback_runner_->PostTask(FROM_HERE,
-                               base::Bind(callback, net::ERR_FAILED));
+    *out_result = net::ERR_FAILED;
     return;
   }
 
@@ -240,12 +226,11 @@ void SimpleSynchronousEntry::CheckEOFRecord(
       eof_record.data_crc32 != expected_crc32) {
     DLOG(INFO) << "eof record had bad crc.";
     Doom();
-    callback_runner_->PostTask(FROM_HERE,
-                               base::Bind(callback, net::ERR_FAILED));
+    *out_result = net::ERR_FAILED;
     return;
   }
 
-  callback_runner_->PostTask(FROM_HERE, base::Bind(callback, net::OK));
+  *out_result = net::OK;
 }
 
 void SimpleSynchronousEntry::Close(
@@ -278,11 +263,9 @@ void SimpleSynchronousEntry::Close(
 }
 
 SimpleSynchronousEntry::SimpleSynchronousEntry(
-    SingleThreadTaskRunner* callback_runner,
     const FilePath& path,
     const std::string& key)
-    : callback_runner_(callback_runner),
-      path_(path),
+    : path_(path),
       key_(key),
       initialized_(false) {
 }
