@@ -14,6 +14,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace extensions {
 namespace {
 
@@ -21,6 +25,9 @@ using base::test::ParseJson;
 using testing::HasSubstr;
 
 TEST(DeclarativeContentActionTest, InvalidCreation) {
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager user_manager;
+#endif
   TestExtensionEnvironment env;
   std::string error;
   bool bad_message = false;
@@ -52,6 +59,9 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 }
 
 TEST(DeclarativeContentActionTest, ShowPageAction) {
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager user_manager;
+#endif
   TestExtensionEnvironment env;
 
   std::string error;

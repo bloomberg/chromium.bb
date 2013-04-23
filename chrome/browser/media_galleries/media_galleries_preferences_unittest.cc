@@ -28,6 +28,10 @@
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace chrome {
 
 namespace {
@@ -214,6 +218,10 @@ class MediaGalleriesPreferencesTest : public extensions::ExtensionTest {
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 
   test::TestStorageMonitor monitor_;
   scoped_ptr<TestingProfile> profile_;

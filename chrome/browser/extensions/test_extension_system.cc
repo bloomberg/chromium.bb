@@ -27,10 +27,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 using content::BrowserThread;
 
 namespace extensions {
@@ -92,11 +88,7 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
   management_policy_.reset(new ManagementPolicy());
   management_policy_->RegisterProvider(
       standard_management_policy_provider_.get());
-#if defined(OS_CHROMEOS)
-  if (!test_user_manager_)
-    test_user_manager_.reset(new chromeos::ScopedTestUserManager);
-#endif
-    extension_service_.reset(new ExtensionService(profile_,
+  extension_service_.reset(new ExtensionService(profile_,
                                                 command_line,
                                                 install_directory,
                                                 extension_prefs_.get(),

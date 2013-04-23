@@ -39,6 +39,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace {
 
 template<typename T>
@@ -156,6 +160,10 @@ class ProfileSigninConfirmationHelperTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   TestingPrefStoreWithCustomReadError* user_prefs_;
   BookmarkModel* model_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 TEST_F(ProfileSigninConfirmationHelperTest, DoNotPromptForNewProfile) {

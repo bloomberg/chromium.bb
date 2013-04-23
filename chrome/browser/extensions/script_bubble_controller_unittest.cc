@@ -27,6 +27,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/test/test_browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using content::BrowserThread;
 
 namespace extensions {
@@ -70,6 +74,10 @@ class ScriptBubbleControllerTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread file_thread_;
   FeatureSwitch::ScopedOverride enable_script_bubble_;
   ScopedTestingPermissionsInfo permissions_info_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 TEST_F(ScriptBubbleControllerTest, Basics) {

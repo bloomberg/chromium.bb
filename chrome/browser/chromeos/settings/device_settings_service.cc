@@ -60,7 +60,7 @@ bool DeviceSettingsService::IsInitialized() {
 
 // static
 void DeviceSettingsService::Shutdown() {
-  CHECK(g_device_settings_service);
+  DCHECK(g_device_settings_service);
   delete g_device_settings_service;
   g_device_settings_service = NULL;
 }
@@ -314,6 +314,14 @@ void DeviceSettingsService::HandleCompletedOperation(
   delete operation;
 
   StartNextOperation();
+}
+
+ScopedTestDeviceSettingsService::ScopedTestDeviceSettingsService() {
+  DeviceSettingsService::Initialize();
+}
+
+ScopedTestDeviceSettingsService::~ScopedTestDeviceSettingsService() {
+  DeviceSettingsService::Shutdown();
 }
 
 }  // namespace chromeos

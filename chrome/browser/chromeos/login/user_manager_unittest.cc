@@ -140,6 +140,7 @@ class UserManagerTest : public testing::Test {
   scoped_ptr<TestingPrefServiceSimple> local_state_;
 
   ScopedStubCrosEnabler stub_cros_enabler_;
+  ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
 
   scoped_ptr<ScopedUserManagerEnabler> user_manager_enabler_;

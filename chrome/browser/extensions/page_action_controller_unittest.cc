@@ -22,6 +22,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using content::BrowserThread;
 
 namespace extensions {
@@ -56,6 +60,10 @@ class PageActionControllerTest : public ChromeRenderViewHostTestHarness {
  private:
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 TEST_F(PageActionControllerTest, NavigationClearsState) {

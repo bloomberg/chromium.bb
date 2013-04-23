@@ -6,6 +6,7 @@
 #include "base/message_loop.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -79,7 +80,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
-  ScopedTestCrosSettings test_cros_settings_;
+  ScopedTestUserManager test_user_manager_;
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;
   StrictMock<MockCryptohomeClient> cryptohome_client_;

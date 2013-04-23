@@ -27,6 +27,10 @@
 #include "sync/protocol/theme_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 using std::string;
 
 namespace {
@@ -230,6 +234,10 @@ class ThemeSyncableServiceTest : public testing::Test {
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 
   scoped_ptr<TestingProfile> profile_;
   FakeThemeService* fake_theme_service_;

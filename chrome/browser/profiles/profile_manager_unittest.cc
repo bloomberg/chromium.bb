@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -42,7 +41,6 @@
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -127,7 +125,7 @@ class ProfileManagerTest : public testing::Test {
   // before io_thread_ which requires CrosLibrary to be initialized to construct
   // its data member pref_proxy_config_tracker_ on ChromeOS.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
-  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedTestUserManager test_user_manager_;
 #endif
 
   // The path to temporary directory used to contain the test operations.
@@ -142,10 +140,6 @@ class ProfileManagerTest : public testing::Test {
   content::TestBrowserThread file_thread_;
   // IOThread is necessary for the creation of some services below.
   IOThread io_thread_;
-
-#if defined(OS_CHROMEOS)
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 };
 
 TEST_F(ProfileManagerTest, GetProfile) {

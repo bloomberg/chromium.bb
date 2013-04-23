@@ -64,19 +64,13 @@ ScopedUserManagerEnabler::~ScopedUserManagerEnabler() {
   UserManager::SetForTesting(previous_user_manager_);
 }
 
-ScopedTestUserManager::ScopedTestUserManager()
-    : initialized_user_manager_(false) {
-  if (!UserManager::IsInitialized()) {
-    UserManager::Initialize();
-    initialized_user_manager_ = true;
-  }
+ScopedTestUserManager::ScopedTestUserManager() {
+  UserManager::Initialize();
 }
 
 ScopedTestUserManager::~ScopedTestUserManager() {
-  if (initialized_user_manager_) {
-    UserManager::Get()->Shutdown();
-    UserManager::Destroy();
-  }
+  UserManager::Get()->Shutdown();
+  UserManager::Destroy();
 }
 
 }  // namespace chromeos

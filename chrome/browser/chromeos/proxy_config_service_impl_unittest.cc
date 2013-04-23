@@ -15,7 +15,7 @@
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/test/test_browser_thread.h"
@@ -330,9 +330,9 @@ class ProxyConfigServiceImplTestBase : public TESTBASE {
   // Default stub state has ethernet as the active connected network and
   // PROFILE_SHARED as profile type, which this unittest expects.
   ScopedStubCrosEnabler stub_cros_enabler_;
-  ScopedTestCrosSettings test_cros_settings_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread io_thread_;
+  ScopedTestUserManager test_user_manager_;
 };
 
 class ProxyConfigServiceImplTest

@@ -18,6 +18,10 @@
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 namespace extensions {
 
 class ActivityLogTest : public ChromeRenderViewHostTestHarness {
@@ -75,6 +79,10 @@ class ActivityLogTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
   content::TestBrowserThread file_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 TEST_F(ActivityLogTest, Enabled) {
