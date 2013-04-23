@@ -458,7 +458,8 @@ class DownloadManagerTest : public testing::Test {
     EXPECT_CALL(*mock_browser_context_.get(), IsOffTheRecord())
         .WillRepeatedly(Return(false));
 
-    download_manager_ = new DownloadManagerImpl(NULL);
+    download_manager_ = new DownloadManagerImpl(
+        NULL, mock_browser_context_.get());
     download_manager_->SetDownloadItemFactoryForTesting(
         scoped_ptr<DownloadItemFactory>(
             mock_download_item_factory_.get()).Pass());
@@ -468,7 +469,6 @@ class DownloadManagerTest : public testing::Test {
     observer_.reset(new MockDownloadManagerObserver());
     download_manager_->AddObserver(observer_.get());
     download_manager_->SetDelegate(mock_download_manager_delegate_.get());
-    download_manager_->Init(mock_browser_context_.get());
   }
 
   virtual void TearDown() {

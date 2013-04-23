@@ -231,14 +231,16 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
 }  // namespace
 
 DownloadManagerImpl::DownloadManagerImpl(
-    net::NetLog* net_log)
+    net::NetLog* net_log,
+    BrowserContext* browser_context)
     : item_factory_(new DownloadItemFactoryImpl()),
       file_factory_(new DownloadFileFactory()),
       history_size_(0),
-      shutdown_needed_(false),
-      browser_context_(NULL),
+      shutdown_needed_(true),
+      browser_context_(browser_context),
       delegate_(NULL),
       net_log_(net_log) {
+  DCHECK(browser_context);
 }
 
 DownloadManagerImpl::~DownloadManagerImpl() {
@@ -368,16 +370,6 @@ void DownloadManagerImpl::Shutdown() {
   if (delegate_)
     delegate_->Shutdown();
   delegate_ = NULL;
-}
-
-bool DownloadManagerImpl::Init(BrowserContext* browser_context) {
-  DCHECK(browser_context);
-  DCHECK(!shutdown_needed_)  << "DownloadManager already initialized.";
-  shutdown_needed_ = true;
-
-  browser_context_ = browser_context;
-
-  return true;
 }
 
 DownloadItem* DownloadManagerImpl::StartDownload(

@@ -3277,3 +3277,6 @@ IN_PROC_BROWSER_TEST_F(
 
 // TODO(benjhayden) Figure out why DisableExtension() does not fire
 // OnListenerRemoved.
+
+// TODO(benjhayden) Test that the shelf is shown for download() both with and
+// without a WebContents.

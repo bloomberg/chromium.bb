@@ -35,7 +35,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
  public:
   // Caller guarantees that |net_log| will remain valid
   // for the lifetime of DownloadManagerImpl (until Shutdown() is called).
-  DownloadManagerImpl(net::NetLog* net_log);
+  DownloadManagerImpl(net::NetLog* net_log, BrowserContext* browser_context);
 
   // Implementation functions (not part of the DownloadManager interface).
 
@@ -57,7 +57,6 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
   virtual DownloadManagerDelegate* GetDelegate() const OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void GetAllDownloads(DownloadVector* result) OVERRIDE;
-  virtual bool Init(BrowserContext* browser_context) OVERRIDE;
   virtual DownloadItem* StartDownload(
       scoped_ptr<DownloadCreateInfo> info,
       scoped_ptr<ByteStreamReader> stream) OVERRIDE;

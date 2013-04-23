@@ -102,9 +102,6 @@ class CONTENT_EXPORT DownloadManager
   // clearing |downloads| first.
   virtual void GetAllDownloads(DownloadVector* downloads) = 0;
 
-  // Returns true if initialized properly.
-  virtual bool Init(BrowserContext* browser_context) = 0;
-
   // Called by a download source (Currently DownloadResourceHandler)
   // to initiate the non-source portions of a download.
   // Returns the id assigned to the download.  If the DownloadCreateInfo

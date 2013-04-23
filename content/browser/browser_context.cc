@@ -158,13 +158,12 @@ DownloadManager* BrowserContext::GetDownloadManager(
     DCHECK(rdh);
     scoped_refptr<DownloadManager> download_manager =
         new DownloadManagerImpl(
-            GetContentClient()->browser()->GetNetLog());
+            GetContentClient()->browser()->GetNetLog(), context);
 
     context->SetUserData(
         kDownloadManagerKeyName,
         new UserDataAdapter<DownloadManager>(download_manager));
     download_manager->SetDelegate(context->GetDownloadManagerDelegate());
-    download_manager->Init(context);
   }
 
   return UserDataAdapter<DownloadManager>::Get(
