@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_task_executor.h"
+#include "chrome/browser/chromeos/drive/file_task_executor.h"
 
 #include <string>
 #include <vector>
@@ -31,19 +31,19 @@ using fileapi::FileSystemURL;
 
 namespace drive {
 
-DriveTaskExecutor::DriveTaskExecutor(Profile* profile,
-                                     const std::string& app_id,
-                                     const std::string& action_id)
+FileTaskExecutor::FileTaskExecutor(Profile* profile,
+                                   const std::string& app_id,
+                                   const std::string& action_id)
   : file_handler_util::FileTaskExecutor(profile, GURL(), "", app_id),
     action_id_(action_id),
     current_index_(0) {
   DCHECK("open-with" == action_id_);
 }
 
-DriveTaskExecutor::~DriveTaskExecutor() {
+FileTaskExecutor::~FileTaskExecutor() {
 }
 
-bool DriveTaskExecutor::ExecuteAndNotify(
+bool FileTaskExecutor::ExecuteAndNotify(
     const std::vector<FileSystemURL>& file_urls,
     const file_handler_util::FileTaskFinishedCallback& done) {
   std::vector<base::FilePath> raw_paths;
@@ -69,12 +69,12 @@ bool DriveTaskExecutor::ExecuteAndNotify(
       iter != raw_paths.end(); ++iter) {
     file_system->GetEntryInfoByPath(
         *iter,
-        base::Bind(&DriveTaskExecutor::OnFileEntryFetched, this));
+        base::Bind(&FileTaskExecutor::OnFileEntryFetched, this));
   }
   return true;
 }
 
-void DriveTaskExecutor::OnFileEntryFetched(
+void FileTaskExecutor::OnFileEntryFetched(
     FileError error,
     scoped_ptr<DriveEntryProto> entry_proto) {
   // If we aborted, then this will be zero.
@@ -109,12 +109,12 @@ void DriveTaskExecutor::OnFileEntryFetched(
   drive_service->AuthorizeApp(
       entry_proto->resource_id(),
       extension_id(),  // really app_id
-      base::Bind(&DriveTaskExecutor::OnAppAuthorized,
+      base::Bind(&FileTaskExecutor::OnAppAuthorized,
                  this,
                  entry_proto->resource_id()));
 }
 
-void DriveTaskExecutor::OnAppAuthorized(
+void FileTaskExecutor::OnAppAuthorized(
     const std::string& resource_id,
     google_apis::GDataErrorCode error,
     const GURL& open_link) {
@@ -151,7 +151,7 @@ void DriveTaskExecutor::OnAppAuthorized(
     Done(true);
 }
 
-void DriveTaskExecutor::Done(bool success) {
+void FileTaskExecutor::Done(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   current_index_ = 0;
   if (!done_.is_null())

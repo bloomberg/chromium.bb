@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TASK_EXECUTOR_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TASK_EXECUTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_TASK_EXECUTOR_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_TASK_EXECUTOR_H_
 
 #include <string>
 #include <vector>
@@ -21,7 +21,7 @@ class DriveEntryProto;
 // needs to find the file resource IDs and pass them to a server-side function
 // that will authorize the app to open the given document and return a URL
 // for opening the document in that app directly.
-class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
+class FileTaskExecutor : public file_handler_util::FileTaskExecutor {
  public:
   // FileTaskExecutor overrides
   virtual bool ExecuteAndNotify(
@@ -32,10 +32,10 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
   // FileTaskExecutor is the only class allowed to create one.
   friend class file_handler_util::FileTaskExecutor;
 
-  DriveTaskExecutor(Profile* profile,
-                    const std::string& app_id,
-                    const std::string& action_id);
-  virtual ~DriveTaskExecutor();
+  FileTaskExecutor(Profile* profile,
+                   const std::string& app_id,
+                   const std::string& action_id);
+  virtual ~FileTaskExecutor();
 
   void OnFileEntryFetched(FileError error,
                           scoped_ptr<DriveEntryProto> entry_proto);
@@ -54,4 +54,4 @@ class DriveTaskExecutor : public file_handler_util::FileTaskExecutor {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TASK_EXECUTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_TASK_EXECUTOR_H_

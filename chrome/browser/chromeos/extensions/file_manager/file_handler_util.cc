@@ -12,7 +12,7 @@
 #include "base/stringprintf.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_task_executor.h"
+#include "chrome/browser/chromeos/drive/file_task_executor.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_browser_handler.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_util.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -580,9 +580,9 @@ FileTaskExecutor* FileTaskExecutor::Create(Profile* profile,
                                      action_id);
 
   if (task_type == kTaskDrive)
-    return new drive::DriveTaskExecutor(profile,
-                                        extension_id,  // really app_id
-                                        action_id);
+    return new drive::FileTaskExecutor(profile,
+                                       extension_id,  // really app_id
+                                       action_id);
 
   if (task_type == kTaskApp)
     return new AppTaskExecutor(profile,
@@ -640,7 +640,7 @@ bool FileTaskExecutor::FileBrowserHasAccessPermissionForFiles(
 }
 
 // TODO(kaznacheev): Remove this method and inline its implementation at the
-// only place where it is used (DriveTaskExecutor::OnAppAuthorized)
+// only place where it is used (FileTaskExecutor::OnAppAuthorized)
 Browser* FileTaskExecutor::GetBrowser() const {
   return chrome::FindOrCreateTabbedBrowser(
       profile_ ? profile_ : ProfileManager::GetDefaultProfileOrOffTheRecord(),
