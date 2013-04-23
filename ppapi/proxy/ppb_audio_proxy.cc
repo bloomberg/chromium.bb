@@ -49,7 +49,7 @@ class Audio : public Resource, public PPB_Audio_Shared {
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
   virtual PP_Bool StartPlayback() OVERRIDE;
   virtual PP_Bool StopPlayback() OVERRIDE;
-  virtual int32_t OpenTrusted(
+  virtual int32_t Open(
       PP_Resource config_id,
       scoped_refptr<TrackedCallback> create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;
@@ -114,8 +114,8 @@ PP_Bool Audio::StopPlayback() {
   return PP_TRUE;
 }
 
-int32_t Audio::OpenTrusted(PP_Resource config_id,
-                           scoped_refptr<TrackedCallback> create_callback) {
+int32_t Audio::Open(PP_Resource config_id,
+                    scoped_refptr<TrackedCallback> create_callback) {
   return PP_ERROR_NOTSUPPORTED;  // Don't proxy the trusted interface.
 }
 
@@ -222,8 +222,8 @@ void PPB_Audio_Proxy::OnMsgCreate(PP_Instance instance_id,
   }
 
   // Initiate opening the audio object.
-  enter.SetResult(enter.object()->OpenTrusted(audio_config_res,
-                                              enter.callback()));
+  enter.SetResult(enter.object()->Open(audio_config_res,
+                                       enter.callback()));
 
   // Clean up the temporary audio config resource we made.
   const PPB_Core* core = static_cast<const PPB_Core*>(

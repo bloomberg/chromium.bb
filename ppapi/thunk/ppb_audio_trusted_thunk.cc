@@ -2,65 +2,70 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// From trusted/ppb_audio_trusted.idl modified Mon Apr 22 12:01:08 2013.
+
+#include "ppapi/c/pp_completion_callback.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/trusted/ppb_audio_trusted.h"
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/enter.h"
-#include "ppapi/thunk/thunk.h"
 #include "ppapi/thunk/ppb_audio_api.h"
+#include "ppapi/thunk/ppb_instance_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
+#include "ppapi/thunk/thunk.h"
 
 namespace ppapi {
 namespace thunk {
 
 namespace {
 
-typedef EnterResource<PPB_Audio_API> EnterAudio;
-
-PP_Resource Create(PP_Instance instance_id) {
-  EnterResourceCreation enter(instance_id);
+PP_Resource CreateTrusted(PP_Instance instance) {
+  VLOG(4) << "PPB_AudioTrusted::CreateTrusted()";
+  EnterResourceCreation enter(instance);
   if (enter.failed())
     return 0;
-  return enter.functions()->CreateAudioTrusted(instance_id);
+  return enter.functions()->CreateAudioTrusted(instance);
 }
 
-int32_t Open(PP_Resource audio_id,
-             PP_Resource config_id,
-             PP_CompletionCallback callback) {
-  EnterAudio enter(audio_id, callback, true);
+int32_t Open(PP_Resource audio,
+             PP_Resource config,
+             struct PP_CompletionCallback create_callback) {
+  VLOG(4) << "PPB_AudioTrusted::Open()";
+  EnterResource<PPB_Audio_API> enter(audio, create_callback, true);
   if (enter.failed())
     return enter.retval();
-  return enter.SetResult(enter.object()->OpenTrusted(config_id,
-                                                     enter.callback()));
+  return enter.SetResult(enter.object()->Open(config, enter.callback()));
 }
 
-int32_t GetSyncSocket(PP_Resource audio_id, int* sync_socket) {
-  EnterAudio enter(audio_id, true);
+int32_t GetSyncSocket(PP_Resource audio, int* sync_socket) {
+  VLOG(4) << "PPB_AudioTrusted::GetSyncSocket()";
+  EnterResource<PPB_Audio_API> enter(audio, true);
   if (enter.failed())
     return enter.retval();
   return enter.object()->GetSyncSocket(sync_socket);
 }
 
-int32_t GetSharedMemory(PP_Resource audio_id,
+int32_t GetSharedMemory(PP_Resource audio,
                         int* shm_handle,
                         uint32_t* shm_size) {
-  EnterAudio enter(audio_id, true);
+  VLOG(4) << "PPB_AudioTrusted::GetSharedMemory()";
+  EnterResource<PPB_Audio_API> enter(audio, true);
   if (enter.failed())
     return enter.retval();
   return enter.object()->GetSharedMemory(shm_handle, shm_size);
 }
 
-const PPB_AudioTrusted g_ppb_audio_trusted_thunk = {
-  &Create,
+const PPB_AudioTrusted_0_6 g_ppb_audiotrusted_thunk_0_6 = {
+  &CreateTrusted,
   &Open,
   &GetSyncSocket,
-  &GetSharedMemory,
+  &GetSharedMemory
 };
 
 }  // namespace
 
 const PPB_AudioTrusted_0_6* GetPPB_AudioTrusted_0_6_Thunk() {
-  return &g_ppb_audio_trusted_thunk;
+  return &g_ppb_audiotrusted_thunk_0_6;
 }
 
 }  // namespace thunk

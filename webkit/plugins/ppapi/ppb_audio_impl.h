@@ -57,7 +57,7 @@ class PPB_Audio_Impl : public ::ppapi::Resource,
   virtual PP_Resource GetCurrentConfig() OVERRIDE;
   virtual PP_Bool StartPlayback() OVERRIDE;
   virtual PP_Bool StopPlayback() OVERRIDE;
-  virtual int32_t OpenTrusted(
+  virtual int32_t Open(
       PP_Resource config_id,
       scoped_refptr< ::ppapi::TrackedCallback> create_callback) OVERRIDE;
   virtual int32_t GetSyncSocket(int* sync_socket) OVERRIDE;

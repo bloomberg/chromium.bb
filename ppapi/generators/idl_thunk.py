@@ -344,7 +344,7 @@ def DefineMember(filenode, node, member, release, include_version, meta):
     body += '%s\n' % _MakeEnterLine(filenode, node, member, args[0], False,
                                     None, meta)
     body += 'return PP_FromBool(enter.succeeded());'
-  elif member.GetName() == 'Create':
+  elif member.GetName() == 'Create' or member.GetName() == 'CreateTrusted':
     body += _MakeCreateMemberBody(node, member, args)
   else:
     body += _MakeNormalMemberBody(filenode, release, node, member, rtype, args,

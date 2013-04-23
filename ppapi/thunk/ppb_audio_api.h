@@ -25,7 +25,7 @@ class PPAPI_THUNK_EXPORT PPB_Audio_API {
   virtual PP_Bool StopPlayback() = 0;
 
   // Trusted API.
-  virtual int32_t OpenTrusted(
+  virtual int32_t Open(
       PP_Resource config_id,
       scoped_refptr<TrackedCallback> create_callback) = 0;
   virtual int32_t GetSyncSocket(int* sync_socket) = 0;

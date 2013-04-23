@@ -112,7 +112,7 @@ PP_Bool PPB_Audio_Impl::StopPlayback() {
   return PP_TRUE;
 }
 
-int32_t PPB_Audio_Impl::OpenTrusted(
+int32_t PPB_Audio_Impl::Open(
     PP_Resource config,
     scoped_refptr<TrackedCallback> create_callback) {
   // Validate the config and keep a reference to it.
