@@ -75,6 +75,22 @@ inline void checkTypeOrDieTrying(Float64Array* object)
 }
 #endif // ENABLE(BINDING_INTEGRITY)
 
+#if defined(OS_WIN)
+// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
+// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
+} // namespace WebCore
+using WebCore::ScriptWrappable;
+using WebCore::V8Float64Array;
+using WebCore::Float64Array;
+#endif
+void initializeScriptWrappableForInterface(Float64Array* object)
+{
+    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
+        ScriptWrappable::setTypeInfoInObject(object, &V8Float64Array::info);
+}
+#if defined(OS_WIN)
+namespace WebCore {
+#endif
 WrapperTypeInfo V8Float64Array::info = { V8Float64Array::GetTemplate, V8Float64Array::derefObject, 0, 0, 0, V8Float64Array::installPerContextPrototypeProperties, &V8ArrayBufferView::info, WrapperTypeObjectPrototype };
 
 namespace Float64ArrayV8Internal {

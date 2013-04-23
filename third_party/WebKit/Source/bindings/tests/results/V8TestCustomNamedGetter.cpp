@@ -65,6 +65,22 @@ inline void checkTypeOrDieTrying(TestCustomNamedGetter* object)
 }
 #endif // ENABLE(BINDING_INTEGRITY)
 
+#if defined(OS_WIN)
+// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
+// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
+} // namespace WebCore
+using WebCore::ScriptWrappable;
+using WebCore::V8TestCustomNamedGetter;
+using WebCore::TestCustomNamedGetter;
+#endif
+void initializeScriptWrappableForInterface(TestCustomNamedGetter* object)
+{
+    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestCustomNamedGetter::info);
+}
+#if defined(OS_WIN)
+namespace WebCore {
+#endif
 WrapperTypeInfo V8TestCustomNamedGetter::info = { V8TestCustomNamedGetter::GetTemplate, V8TestCustomNamedGetter::derefObject, 0, 0, 0, V8TestCustomNamedGetter::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestCustomNamedGetterV8Internal {

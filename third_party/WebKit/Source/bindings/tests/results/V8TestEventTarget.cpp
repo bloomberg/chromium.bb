@@ -69,6 +69,22 @@ inline void checkTypeOrDieTrying(TestEventTarget* object)
 }
 #endif // ENABLE(BINDING_INTEGRITY)
 
+#if defined(OS_WIN)
+// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
+// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
+} // namespace WebCore
+using WebCore::ScriptWrappable;
+using WebCore::V8TestEventTarget;
+using WebCore::TestEventTarget;
+#endif
+void initializeScriptWrappableForInterface(TestEventTarget* object)
+{
+    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestEventTarget::info);
+}
+#if defined(OS_WIN)
+namespace WebCore {
+#endif
 WrapperTypeInfo V8TestEventTarget::info = { V8TestEventTarget::GetTemplate, V8TestEventTarget::derefObject, 0, V8TestEventTarget::toEventTarget, 0, V8TestEventTarget::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestEventTargetV8Internal {

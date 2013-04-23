@@ -26,9 +26,9 @@
 #include "DOMStringList.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "MessagePort.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SVGPropertyTearOff.h"
+#include "ScriptController.h"
 #include "SerializedScriptValue.h"
 #include "V8Binding.h"
 #include "V8DOMStringList.h"
@@ -37,7 +37,6 @@
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
 #include "V8TestSubObj.h"
-#include <wtf/ArrayBuffer.h>
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(BINDING_INTEGRITY)
@@ -74,6 +73,22 @@ inline void checkTypeOrDieTrying(TestTypedefs* object)
 }
 #endif // ENABLE(BINDING_INTEGRITY)
 
+#if defined(OS_WIN)
+// In ScriptWrappable, the use of extern function prototypes inside templated static methods has an issue on windows.
+// These prototypes do not pick up the surrounding namespace, so drop out of WebCore as a workaround.
+} // namespace WebCore
+using WebCore::ScriptWrappable;
+using WebCore::V8TestTypedefs;
+using WebCore::TestTypedefs;
+#endif
+void initializeScriptWrappableForInterface(TestTypedefs* object)
+{
+    if (ScriptWrappable::wrapperCanBeStoredInObject(object))
+        ScriptWrappable::setTypeInfoInObject(object, &V8TestTypedefs::info);
+}
+#if defined(OS_WIN)
+namespace WebCore {
+#endif
 WrapperTypeInfo V8TestTypedefs::info = { V8TestTypedefs::GetTemplate, V8TestTypedefs::derefObject, 0, 0, 0, V8TestTypedefs::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
 namespace TestTypedefsV8Internal {
@@ -276,52 +291,6 @@ static v8::Handle<v8::Value> funcMethodCallback(const v8::Arguments& args)
     return TestTypedefsV8Internal::funcMethod(args);
 }
 
-static v8::Handle<v8::Value> multiTransferListMethod(const v8::Arguments& args)
-{
-    if (args.Length() < 1)
-        return throwNotEnoughArgumentsError(args.GetIsolate());
-    TestTypedefs* imp = V8TestTypedefs::toNative(args.Holder());
-    MessagePortArray messagePortArrayTx;
-    ArrayBufferArray arrayBufferArrayTx;
-    if (args.Length() > 1) {
-        if (!extractTransferables(args[1], messagePortArrayTx, arrayBufferArrayTx, args.GetIsolate()))
-            return throwTypeError("Could not extract transferables", args.GetIsolate());
-    }
-    bool firstDidThrow = false;
-    RefPtr<SerializedScriptValue> first = SerializedScriptValue::create(args[0], &messagePortArrayTx, &arrayBufferArrayTx, firstDidThrow, args.GetIsolate());
-    if (firstDidThrow)
-        return v8Undefined();
-    if (args.Length() <= 1) {
-        imp->multiTransferList(first);
-        return v8Undefined();
-    }
-    if (args.Length() <= 2) {
-        imp->multiTransferList(first, messagePortArrayTx);
-        return v8Undefined();
-    }
-    MessagePortArray messagePortArrayTxx;
-    ArrayBufferArray arrayBufferArrayTxx;
-    if (args.Length() > 3) {
-        if (!extractTransferables(args[3], messagePortArrayTxx, arrayBufferArrayTxx, args.GetIsolate()))
-            return throwTypeError("Could not extract transferables", args.GetIsolate());
-    }
-    bool secondDidThrow = false;
-    RefPtr<SerializedScriptValue> second = SerializedScriptValue::create(args[2], &messagePortArrayTxx, &arrayBufferArrayTxx, secondDidThrow, args.GetIsolate());
-    if (secondDidThrow)
-        return v8Undefined();
-    if (args.Length() <= 3) {
-        imp->multiTransferList(first, messagePortArrayTx, second);
-        return v8Undefined();
-    }
-    imp->multiTransferList(first, messagePortArrayTx, second, messagePortArrayTxx);
-    return v8Undefined();
-}
-
-static v8::Handle<v8::Value> multiTransferListMethodCallback(const v8::Arguments& args)
-{
-    return TestTypedefsV8Internal::multiTransferListMethod(args);
-}
-
 static v8::Handle<v8::Value> setShadowMethod(const v8::Arguments& args)
 {
     if (args.Length() < 3)
@@ -514,12 +483,11 @@ static const V8DOMConfiguration::BatchedAttribute V8TestTypedefsAttrs[] = {
 };
 
 static const V8DOMConfiguration::BatchedMethod V8TestTypedefsMethods[] = {
-    {"func", TestTypedefsV8Internal::funcMethodCallback, 0},
-    {"multiTransferList", TestTypedefsV8Internal::multiTransferListMethodCallback, 0},
-    {"setShadow", TestTypedefsV8Internal::setShadowMethodCallback, 0},
-    {"funcWithClamp", TestTypedefsV8Internal::funcWithClampMethodCallback, 0},
-    {"immutablePointFunction", TestTypedefsV8Internal::immutablePointFunctionMethodCallback, 0},
-    {"methodWithException", TestTypedefsV8Internal::methodWithExceptionMethodCallback, 0},
+    {"func", TestTypedefsV8Internal::funcMethodCallback, 0, 0},
+    {"setShadow", TestTypedefsV8Internal::setShadowMethodCallback, 0, 3},
+    {"funcWithClamp", TestTypedefsV8Internal::funcWithClampMethodCallback, 0, 1},
+    {"immutablePointFunction", TestTypedefsV8Internal::immutablePointFunctionMethodCallback, 0, 0},
+    {"methodWithException", TestTypedefsV8Internal::methodWithExceptionMethodCallback, 0, 0},
 };
 
 v8::Handle<v8::Value> V8TestTypedefs::constructorCallback(const v8::Arguments& args)
@@ -543,11 +511,11 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestTypedefsTemplate(v8::
         V8TestTypedefsMethods, WTF_ARRAY_LENGTH(V8TestTypedefsMethods), isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature); // In some cases, it will not be used.
     desc->SetCallHandler(V8TestTypedefs::constructorCallback);
+    desc->SetLength(2);
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance); // In some cases, it will not be used.
     UNUSED_PARAM(proto); // In some cases, it will not be used.
-    
 
     // Custom Signature 'methodWithSequenceArg'
     const int methodWithSequenceArgArgc = 1;

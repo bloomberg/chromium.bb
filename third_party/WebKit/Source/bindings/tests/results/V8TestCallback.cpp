@@ -38,7 +38,7 @@ namespace WebCore {
 V8TestCallback::V8TestCallback(v8::Handle<v8::Object> callback, ScriptExecutionContext* context)
     : ActiveDOMCallback(context)
     , m_callback(callback)
-    , m_world(DOMWrapperWorld::current(context))
+    , m_world(DOMWrapperWorld::current())
 {
 }
 
