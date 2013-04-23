@@ -66,6 +66,9 @@ void DisableNavigationErrorPages();
 // Set the device scale factor and force the compositor to resize.
 void SetDeviceScaleFactor(RenderView* render_view, float factor);
 
+// Disable system calls related to drag & drop.
+void DisableSystemDragDrop();
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_TEST_LAYOUTTEST_SUPPORT_H_

@@ -56,6 +56,9 @@ class CONTENT_EXPORT WebContentsDragWin
   virtual void OnWaitForData();
   virtual void OnDataObjectDisposed();
 
+  // Don't invoke OLE DoDragDrop during tests.
+  static void DisableDragDropForTesting();
+
  private:
   // Called on either UI thread or drag-and-drop thread.
   void PrepareDragForDownload(const WebDropData& drop_data,

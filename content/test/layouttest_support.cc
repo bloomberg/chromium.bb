@@ -15,6 +15,10 @@
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGamepads.h"
 #include "third_party/WebKit/Tools/DumpRenderTree/chromium/TestRunner/public/WebTestProxy.h"
 
+#if defined(OS_WIN) && !defined(USE_AURA)
+#include "content/browser/web_contents/web_contents_drag_win.h"
+#endif
+
 using WebKit::WebGamepads;
 using WebTestRunner::WebTestProxy;
 using WebTestRunner::WebTestProxyBase;
@@ -98,6 +102,12 @@ void DisableNavigationErrorPages() {
 void SetDeviceScaleFactor(RenderView* render_view, float factor) {
   static_cast<RenderViewImpl*>(render_view)
       ->SetDeviceScaleFactorForTesting(factor);
+}
+
+void DisableSystemDragDrop() {
+#if defined(OS_WIN) && !defined(USE_AURA)
+  WebContentsDragWin::DisableDragDropForTesting();
+#endif
 }
 
 }  // namespace content

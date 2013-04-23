@@ -46,6 +46,8 @@ using WebKit::WebDragOperationMove;
 namespace content {
 namespace {
 
+bool run_do_drag_drop = true;
+
 HHOOK msg_hook = NULL;
 DWORD drag_out_thread_id = 0;
 bool mouse_up_received = false;
@@ -353,8 +355,8 @@ bool WebContentsDragWin::DoDragging(const WebDropData& drop_data,
 
   // We need to enable recursive tasks on the message loop so we can get
   // updates while in the system DoDragDrop loop.
-  DWORD effect;
-  {
+  DWORD effect = DROPEFFECT_NONE;
+  if (run_do_drag_drop) {
     // Keep a reference count such that |drag_source_| will not get deleted
     // if the contents view window is gone in the nested message loop invoked
     // from DoDragDrop.
@@ -428,6 +430,11 @@ void WebContentsDragWin::OnDataObjectDisposed() {
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(&WebContentsDragWin::CloseThread, this));
+}
+
+// static
+void WebContentsDragWin::DisableDragDropForTesting() {
+  run_do_drag_drop = false;
 }
 
 }  // namespace content
