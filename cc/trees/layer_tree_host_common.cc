@@ -367,7 +367,7 @@ static LayerImpl* NextTargetSurface(LayerImpl* layer) {
 gfx::Transform ComputeSizeDeltaCompensation(
     LayerImpl* layer,
     LayerImpl* container,
-    const gfx::Vector2dF& position_offset) {
+    gfx::Vector2dF position_offset) {
   gfx::Transform result_transform;
 
   // To apply a translate in the container's layer space,
@@ -412,10 +412,10 @@ gfx::Transform ComputeSizeDeltaCompensation(
   // Apply step 3
   gfx::Transform container_layer_space_to_target_surface_space;
   if (target_surface_space_to_container_layer_space.GetInverse(
-      &container_layer_space_to_target_surface_space))
+          &container_layer_space_to_target_surface_space)) {
     result_transform.PreconcatTransform(
         container_layer_space_to_target_surface_space);
-  else {
+  } else {
     // FIXME: A non-invertible matrix could still make meaningful projection.
     // For example ScaleZ(0) is non-invertible but the layer is still visible.
     return gfx::Transform();
@@ -435,13 +435,12 @@ void ApplyPositionAdjustment(
     Layer* layer,
     Layer* container,
     const gfx::Transform& scroll_compensation,
-    gfx::Transform* combined_transform) { }
+    gfx::Transform* combined_transform) {}
 void ApplyPositionAdjustment(
     LayerImpl* layer,
     LayerImpl* container,
     const gfx::Transform& scroll_compensation,
-    gfx::Transform* combined_transform)
-{
+    gfx::Transform* combined_transform) {
   if (!layer->position_constraint().is_fixed_position())
     return;
 

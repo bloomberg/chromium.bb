@@ -153,7 +153,7 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
 
   static void RunRasterTask(
       uint8* buffer,
-      const gfx::Rect& rect,
+      gfx::Rect rect,
       float contents_scale,
       const RasterTaskMetadata& metadata,
       RenderingStatsInstrumentation* stats_instrumentation,

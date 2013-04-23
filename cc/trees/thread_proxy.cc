@@ -455,7 +455,7 @@ void ThreadProxy::SendManagedMemoryStats() {
 
 bool ThreadProxy::IsInsideDraw() { return inside_draw_; }
 
-void ThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
+void ThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
   DCHECK(IsMainThread());
   TRACE_EVENT0("cc", "ThreadProxy::SetNeedsRedraw");
   Proxy::ImplThread()->PostTask(base::Bind(
@@ -1162,7 +1162,7 @@ void ThreadProxy::LayerTreeHostClosedOnImplThread(CompletionEvent* completion) {
   completion->Signal();
 }
 
-void ThreadProxy::SetViewportDamageOnImplThread(const gfx::Rect& damage_rect) {
+void ThreadProxy::SetViewportDamageOnImplThread(gfx::Rect damage_rect) {
   DCHECK(IsImplThread());
   layer_tree_host_impl_->SetViewportDamage(damage_rect);
 }

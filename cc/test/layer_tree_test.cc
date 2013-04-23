@@ -371,8 +371,7 @@ void LayerTreeTest::PostSetNeedsRedrawToMainThread() {
                  main_thread_weak_ptr_));
 }
 
-void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(
-    const gfx::Rect& damage_rect) {
+void LayerTreeTest::PostSetNeedsRedrawRectToMainThread(gfx::Rect damage_rect) {
   proxy()->MainThread()->PostTask(
       base::Bind(&LayerTreeTest::DispatchSetNeedsRedrawRect,
                  main_thread_weak_ptr_, damage_rect));
@@ -502,7 +501,7 @@ void LayerTreeTest::DispatchSetNeedsRedraw() {
     layer_tree_host_->SetNeedsRedraw();
 }
 
-void LayerTreeTest::DispatchSetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+void LayerTreeTest::DispatchSetNeedsRedrawRect(gfx::Rect damage_rect) {
   DCHECK(!proxy() || proxy()->IsMainThread());
 
   if (layer_tree_host_)

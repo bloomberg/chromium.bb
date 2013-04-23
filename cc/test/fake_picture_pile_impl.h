@@ -27,7 +27,7 @@ class FakePicturePileImpl : public PicturePileImpl {
 
   void RemoveRecordingAt(int x, int y);
 
-  void add_draw_rect(const gfx::Rect& rect) {
+  void add_draw_rect(gfx::Rect rect) {
     client_.add_draw_rect(rect, default_paint_);
   }
 

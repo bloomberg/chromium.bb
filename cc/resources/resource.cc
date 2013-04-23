@@ -7,11 +7,6 @@
 
 namespace cc {
 
-void Resource::set_dimensions(const gfx::Size& size, GLenum format) {
-  size_ = size;
-  format_ = format;
-}
-
 size_t Resource::bytes() const {
   if (size_.IsEmpty())
     return 0;
@@ -36,7 +31,7 @@ size_t Resource::BytesPerPixel(GLenum format) {
   return components_per_pixel * bytes_per_component;
 }
 
-size_t Resource::MemorySizeBytes(const gfx::Size& size, GLenum format) {
+size_t Resource::MemorySizeBytes(gfx::Size size, GLenum format) {
   return BytesPerPixel(format) * size.width() * size.height();
 }
 

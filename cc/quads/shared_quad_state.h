@@ -20,9 +20,9 @@ class CC_EXPORT SharedQuadState {
   scoped_ptr<SharedQuadState> Copy() const;
 
   void SetAll(const gfx::Transform& content_to_target_transform,
-              const gfx::Size content_bounds,
-              const gfx::Rect& visible_content_rect,
-              const gfx::Rect& clip_rect,
+              gfx::Size content_bounds,
+              gfx::Rect visible_content_rect,
+              gfx::Rect clip_rect,
               bool is_clipped,
               float opacity);
 

@@ -228,7 +228,7 @@ void SingleThreadProxy::SetNeedsCommit() {
   layer_tree_host_->ScheduleComposite();
 }
 
-void SingleThreadProxy::SetNeedsRedraw(const gfx::Rect& damage_rect) {
+void SingleThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
   // FIXME: Once we move render_widget scheduling into this class, we can
   // treat redraw requests more efficiently than CommitAndRedraw requests.
   layer_tree_host_impl_->SetViewportDamage(damage_rect);

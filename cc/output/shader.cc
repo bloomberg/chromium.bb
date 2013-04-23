@@ -8,13 +8,13 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "cc/output/gl_renderer.h" // For the GLC() macro.
+#include "cc/output/gl_renderer.h"  // For the GLC() macro.
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
 #define SHADER0(Src) #Src
-#define VERTEX_SHADER(Src) setVertexTexCoordPrecision(SHADER0(Src))
-#define FRAGMENT_SHADER(Src) setFragTexCoordPrecision(precision, SHADER0(Src))
+#define VERTEX_SHADER(Src) SetVertexTexCoordPrecision(SHADER0(Src))
+#define FRAGMENT_SHADER(Src) SetFragTexCoordPrecision(precision, SHADER0(Src))
 
 using WebKit::WebGraphicsContext3D;
 
@@ -45,46 +45,46 @@ static void GetProgramUniformLocations(WebGraphicsContext3D* context,
   }
 }
 
-static std::string setFragTexCoordPrecision(
-    TexCoordPrecision requestedPrecision, std::string shaderString)
-{
-    switch (requestedPrecision) {
+static std::string SetFragTexCoordPrecision(
+    TexCoordPrecision requested_precision, std::string shader_string) {
+  switch (requested_precision) {
     case TexCoordPrecisionHigh:
-      DCHECK_NE(shaderString.find("TexCoordPrecision"), std::string::npos);
-      return "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
-               "  #define TexCoordPrecision highp\n"
-               "#else\n"
-               "  #define TexCoordPrecision mediump\n"
-               "#endif\n" +
-               shaderString;
+      DCHECK_NE(shader_string.find("TexCoordPrecision"), std::string::npos);
+      return
+          "#ifdef GL_FRAGMENT_PRECISION_HIGH\n"
+          "  #define TexCoordPrecision highp\n"
+          "#else\n"
+          "  #define TexCoordPrecision mediump\n"
+          "#endif\n" +
+          shader_string;
     case TexCoordPrecisionMedium:
-      DCHECK_NE(shaderString.find("TexCoordPrecision"), std::string::npos);
+      DCHECK_NE(shader_string.find("TexCoordPrecision"), std::string::npos);
       return "#define TexCoordPrecision mediump\n" +
-               shaderString;
+          shader_string;
     case TexCoordPrecisionNA:
-      DCHECK_EQ(shaderString.find("TexCoordPrecision"), std::string::npos);
-      DCHECK_EQ(shaderString.find("texture2D"), std::string::npos);
-      return shaderString;
-    }
-    return shaderString;
+      DCHECK_EQ(shader_string.find("TexCoordPrecision"), std::string::npos);
+      DCHECK_EQ(shader_string.find("texture2D"), std::string::npos);
+      return shader_string;
+  }
+  return shader_string;
 }
 
-static std::string setVertexTexCoordPrecision(const char* shaderString)
-{
-    // We unconditionally use highp in the vertex shader since
-    // we are unlikely to be vertex shader bound when drawing large quads.
-    // Also, some vertex shaders mutate the texture coordinate in such a
-    // way that the effective precision might be lower than expected.
-    return "#define TexCoordPrecision highp\n" +
-           std::string(shaderString);
+static std::string SetVertexTexCoordPrecision(const char* shader_string) {
+  // We unconditionally use highp in the vertex shader since
+  // we are unlikely to be vertex shader bound when drawing large quads.
+  // Also, some vertex shaders mutate the texture coordinate in such a
+  // way that the effective precision might be lower than expected.
+  return "#define TexCoordPrecision highp\n" +
+      std::string(shader_string);
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
                                             int highp_threshold_min,
                                             int x, int y) {
   // Initialize range and precision with minimum spec values for when
-  // getShaderPrecisionFormat is a test stub.
-  // TODO: Implement better stubs of getShaderPrecisionFormat everywhere.
+  // GetShaderPrecisionFormat is a test stub.
+  // TODO(brianderson): Implement better stubs of GetShaderPrecisionFormat
+  // everywhere.
   GLint range[2] = { 14, 14 };
   GLint precision = 10;
   GLC(context, context->getShaderPrecisionFormat(GL_FRAGMENT_SHADER,
@@ -96,18 +96,18 @@ TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
   return TexCoordPrecisionMedium;
 }
 
-} // namespace
+}  // namespace
 
 TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
                                             int highp_threshold_min,
-                                            const gfx::Point& max_coordinate) {
+                                            gfx::Point max_coordinate) {
   return TexCoordPrecisionRequired(context, highp_threshold_min,
                                    max_coordinate.x(), max_coordinate.y());
 }
 
 TexCoordPrecision TexCoordPrecisionRequired(WebGraphicsContext3D* context,
                                             int highp_threshold_min,
-                                            const gfx::Size& max_size) {
+                                            gfx::Size max_size) {
   return TexCoordPrecisionRequired(context, highp_threshold_min,
                                    max_size.width(), max_size.height());
 }

@@ -561,7 +561,7 @@ void LayerTreeHost::SetNeedsRedraw() {
   SetNeedsRedrawRect(gfx::Rect(device_viewport_size_));
 }
 
-void LayerTreeHost::SetNeedsRedrawRect(const gfx::Rect& damage_rect) {
+void LayerTreeHost::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   proxy_->SetNeedsRedraw(damage_rect);
   if (!proxy_->ImplThread())
     client_->ScheduleComposite();

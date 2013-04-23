@@ -20,7 +20,7 @@ class CC_EXPORT ResourcePool {
   class CC_EXPORT Resource : public cc::Resource {
    public:
     Resource(ResourceProvider* resource_provider,
-             const gfx::Size& size,
+             gfx::Size size,
              GLenum format);
     ~Resource();
 
@@ -38,8 +38,8 @@ class CC_EXPORT ResourcePool {
 
   ResourceProvider* resource_provider() { return resource_provider_; }
 
-  scoped_ptr<ResourcePool::Resource> AcquireResource(
-      const gfx::Size&, GLenum format);
+  scoped_ptr<ResourcePool::Resource> AcquireResource(gfx::Size size,
+                                                     GLenum format);
   void ReleaseResource(scoped_ptr<ResourcePool::Resource>);
 
   void SetMaxMemoryUsageBytes(

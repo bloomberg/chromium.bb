@@ -67,7 +67,7 @@ void PictureLayerTiling::CreateTile(int i, int j) {
 }
 
 Region PictureLayerTiling::OpaqueRegionInContentRect(
-    const gfx::Rect& content_rect) const {
+    gfx::Rect content_rect) const {
   Region opaque_region;
   // TODO(enne): implement me
   return opaque_region;

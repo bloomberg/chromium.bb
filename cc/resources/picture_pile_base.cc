@@ -117,7 +117,7 @@ void PicturePileBase::SetMinContentsScale(float min_contents_scale) {
   min_contents_scale_ = min_contents_scale;
 }
 
-void PicturePileBase::SetTileGridSize(const gfx::Size& tile_grid_size) {
+void PicturePileBase::SetTileGridSize(gfx::Size tile_grid_size) {
   tile_grid_info_.fTileInterval.set(
       tile_grid_size.width() - 2 * kTileGridBorderPixels,
       tile_grid_size.height() - 2 * kTileGridBorderPixels);

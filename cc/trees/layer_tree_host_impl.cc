@@ -721,7 +721,7 @@ void LayerTreeHostImpl::UpdateBackgroundAnimateTicking(
   time_source_client_adapter_->SetActive(enabled);
 }
 
-void LayerTreeHostImpl::SetViewportDamage(const gfx::Rect& damage_rect) {
+void LayerTreeHostImpl::SetViewportDamage(gfx::Rect damage_rect) {
   viewport_damage_rect_.Union(damage_rect);
 }
 

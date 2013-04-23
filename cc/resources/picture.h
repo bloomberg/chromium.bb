@@ -34,8 +34,8 @@ class CC_EXPORT Picture
   static scoped_refptr<Picture> CreateFromBase64String(
       const std::string& encoded_string);
 
-  const gfx::Rect& LayerRect() const { return layer_rect_; }
-  const gfx::Rect& OpaqueRect() const { return opaque_rect_; }
+  gfx::Rect LayerRect() const { return layer_rect_; }
+  gfx::Rect OpaqueRect() const { return opaque_rect_; }
 
   // Get thread-safe clone for rasterizing with on a specific thread.
   scoped_refptr<Picture> GetCloneForDrawingOnThread(
@@ -59,7 +59,7 @@ class CC_EXPORT Picture
               bool enable_lcd_text);
 
   void GatherPixelRefs(
-      const gfx::Rect& layer_rect,
+      gfx::Rect layer_rect,
       std::list<skia::LazyPixelRef*>& pixel_ref_list);
 
   void AsBase64String(std::string* output) const;

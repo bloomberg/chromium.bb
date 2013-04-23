@@ -34,7 +34,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
-  virtual void SetNeedsRedraw(const gfx::Rect& damage_rect) OVERRIDE;
+  virtual void SetNeedsRedraw(gfx::Rect damage_rect) OVERRIDE;
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}

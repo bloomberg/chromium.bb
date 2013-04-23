@@ -15,7 +15,8 @@ ScopedResource::~ScopedResource() {
   Free();
 }
 
-bool ScopedResource::Allocate(const gfx::Size& size, GLenum format,
+bool ScopedResource::Allocate(gfx::Size size,
+                              GLenum format,
                               ResourceProvider::TextureUsageHint hint) {
   DCHECK(!id());
   DCHECK(!size.IsEmpty());

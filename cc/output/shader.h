@@ -31,12 +31,12 @@ enum TexCoordPrecision {
 CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     WebKit::WebGraphicsContext3D* context,
     int highp_threshold_min,
-    const gfx::Point& max_coordinate);
+    gfx::Point max_coordinate);
 
 CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
     WebKit::WebGraphicsContext3D* context,
     int highp_threshold_min,
-    const gfx::Size& max_size);
+    gfx::Size max_size);
 
 class VertexShaderPosTex {
  public:

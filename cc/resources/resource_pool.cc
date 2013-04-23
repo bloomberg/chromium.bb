@@ -9,7 +9,7 @@
 namespace cc {
 
 ResourcePool::Resource::Resource(cc::ResourceProvider* resource_provider,
-                                 const gfx::Size& size,
+                                 gfx::Size size,
                                  GLenum format)
     : cc::Resource(resource_provider->CreateManagedResource(
                        size,
@@ -40,7 +40,7 @@ ResourcePool::~ResourcePool() {
 }
 
 scoped_ptr<ResourcePool::Resource> ResourcePool::AcquireResource(
-    const gfx::Size& size, GLenum format) {
+    gfx::Size size, GLenum format) {
   for (ResourceList::iterator it = resources_.begin();
        it != resources_.end(); ++it) {
     Resource* resource = *it;

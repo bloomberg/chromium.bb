@@ -27,7 +27,7 @@ class FakeContentLayerClient : public cc::ContentLayerClient {
 
   void set_paint_all_opaque(bool opaque) { paint_all_opaque_ = opaque; }
 
-  void add_draw_rect(const gfx::Rect& rect, const SkPaint& paint) {
+  void add_draw_rect(gfx::Rect rect, const SkPaint& paint) {
     draw_rects_.push_back(std::make_pair(rect, paint));
   }
 

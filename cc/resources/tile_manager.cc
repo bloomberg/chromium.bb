@@ -814,7 +814,6 @@ void TileManager::OnRasterTaskCompleted(
 
   // Finish resource initialization if |can_use_gpu_memory| is true.
   if (managed_tile_state.can_use_gpu_memory) {
-
     // Tile resources can't be freed until upload has completed.
     tile->drawing_info().can_be_freed_ = false;
 
@@ -848,7 +847,7 @@ void TileManager::DidTileTreeBinChange(Tile* tile,
 // static
 void TileManager::RunRasterTask(
     uint8* buffer,
-    const gfx::Rect& rect,
+    gfx::Rect rect,
     float contents_scale,
     const RasterTaskMetadata& metadata,
     RenderingStatsInstrumentation* stats_instrumentation,

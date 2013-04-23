@@ -163,10 +163,10 @@ class CC_EXPORT LayerImpl : LayerAnimationValueObserver {
     return is_container_for_fixed_position_layers_;
   }
 
-  void SetFixedContainerSizeDelta(const gfx::Vector2dF& delta) {
+  void SetFixedContainerSizeDelta(gfx::Vector2dF delta) {
     fixed_container_size_delta_ = delta;
   }
-  const gfx::Vector2dF& fixed_container_size_delta() const {
+  gfx::Vector2dF fixed_container_size_delta() const {
     return fixed_container_size_delta_;
   }
 

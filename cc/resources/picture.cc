@@ -207,7 +207,7 @@ void Picture::Raster(
   canvas->restore();
 }
 
-void Picture::GatherPixelRefs(const gfx::Rect& layer_rect,
+void Picture::GatherPixelRefs(gfx::Rect layer_rect,
                               std::list<skia::LazyPixelRef*>& pixel_ref_list) {
   DCHECK(picture_);
   SkData* pixel_refs = SkPictureUtils::GatherPixelRefs(

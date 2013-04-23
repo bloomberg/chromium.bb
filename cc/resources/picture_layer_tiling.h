@@ -123,7 +123,7 @@ class CC_EXPORT PictureLayerTiling {
     friend class PictureLayerTiling;
   };
 
-  Region OpaqueRegionInContentRect(const gfx::Rect&) const;
+  Region OpaqueRegionInContentRect(gfx::Rect content_rect) const;
 
   void Reset() { return tiles_.clear(); }
 

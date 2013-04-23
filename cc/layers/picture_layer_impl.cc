@@ -93,7 +93,7 @@ void PictureLayerImpl::PushPropertiesTo(LayerImpl* base_layer) {
 
 void PictureLayerImpl::AppendQuads(QuadSink* quad_sink,
                                    AppendQuadsData* append_quads_data) {
-  const gfx::Rect& rect = visible_content_rect();
+  gfx::Rect rect(visible_content_rect());
   gfx::Rect content_rect(content_bounds());
 
   SharedQuadState* shared_quad_state =
@@ -540,7 +540,7 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
   DCHECK(layer_tree_impl()->IsPendingTree());
   DCHECK(ideal_contents_scale_);
 
-  const gfx::Rect& rect = visible_content_rect();
+  gfx::Rect rect(visible_content_rect());
 
   float min_acceptable_scale =
       std::min(raster_contents_scale_, ideal_contents_scale_);

@@ -21,17 +21,20 @@ class CC_EXPORT Resource {
         format_(format) {}
 
   ResourceProvider::ResourceId id() const { return id_; }
-  const gfx::Size& size() const { return size_; }
+  gfx::Size size() const { return size_; }
   GLenum format() const { return format_; }
 
   size_t bytes() const;
 
   static size_t BytesPerPixel(GLenum format);
-  static size_t MemorySizeBytes(const gfx::Size& size, GLenum format);
+  static size_t MemorySizeBytes(gfx::Size size, GLenum format);
 
  protected:
   void set_id(ResourceProvider::ResourceId id) { id_ = id; }
-  void set_dimensions(const gfx::Size&, GLenum format);
+  void set_dimensions(gfx::Size size, GLenum format) {
+    size_ = size;
+    format_ = format;
+  }
 
  private:
   ResourceProvider::ResourceId id_;
