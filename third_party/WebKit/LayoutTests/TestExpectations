@@ -3079,3 +3079,10 @@ crbug.com/234066 fast/dom/everything-to-string.html [ Pass Failure ]
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Pass Failure ]
 
 crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
+
+crbug.com/234715 virtual/softwarecompositing/geometry/fixed-in-composited.html [ Failure ]
+crbug.com/234715 virtual/softwarecompositing/geometry/video-fixed-scrolling.html [ Failure ]
+crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow-scrolled.html [ Failure ]
+crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-absolute-overflow.html [ Failure ]
+crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow-scrolled.html [ Failure ]
+crbug.com/234715 [ Release ] virtual/softwarecompositing/rtl/rtl-iframe-fixed-overflow.html [ Failure ]
