@@ -339,21 +339,22 @@ ButterBar.prototype.onCopyProgress_ = function(event) {
  * @private
  */
 ButterBar.prototype.onDelete_ = function(event) {
+  var urls = Array.prototype.slice.call(event.urls);
   switch (event.reason) {
     case 'BEGIN':
       if (this.currentMode_ != ButterBar.Mode.DELETE)
         this.totalDeleted_ = 0;
     case 'PROGRESS':
       var props = [];
-      for (var i = 0; i < event.urls.length; i++) {
+      for (var i = 0; i < urls.length; i++) {
         props[i] = { deleted: true };
       }
-      this.metadataCache_.set(event.urls, 'internal', props);
+      this.metadataCache_.set(urls, 'internal', props);
 
-      this.totalDeleted_ += event.urls.length;
+      this.totalDeleted_ += urls.length;
       var title = strf('DELETED_MESSAGE_PLURAL', this.totalDeleted_);
       if (this.totalDeleted_ == 1) {
-        var fullPath = util.extractFilePath(event.urls[0]);
+        var fullPath = util.extractFilePath(urls[0]);
         var fileName = PathUtil.split(fullPath).pop();
         title = strf('DELETED_MESSAGE', fileName);
       }
@@ -366,10 +367,10 @@ ButterBar.prototype.onDelete_ = function(event) {
 
     case 'SUCCESS':
       var props = [];
-      for (var i = 0; i < event.urls.length; i++) {
+      for (var i = 0; i < urls.length; i++) {
         props[i] = { deleted: false };
       }
-      this.metadataCache_.set(event.urls, 'internal', props);
+      this.metadataCache_.set(urls, 'internal', props);
 
       this.hide_();
       break;
