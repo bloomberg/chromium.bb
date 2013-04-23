@@ -1732,7 +1732,6 @@
                 'test/nacl/nacl_browsertest_util.h',
               ],
               'dependencies': [
-                'test/data/extensions/api_test/api_test_data.gyp:socket_ppapi',
                 'test/data/nacl/nacl_test_data.gyp:*',
                 '../ppapi/native_client/native_client.gyp:nacl_irt',
                 '../ppapi/ppapi_untrusted.gyp:ppapi_nacl_tests',
