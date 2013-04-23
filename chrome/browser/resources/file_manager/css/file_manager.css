@@ -249,7 +249,7 @@ body[new-ui] .dialog-container {
 }
 
 body[new-ui] .dialog-sidebar {
-  -webkit-border-end: 1px solid rgb(200, 200, 200);
+  -webkit-border-end: 1px solid rgb(225, 225, 225);
   background-color: #f1f1f1;
   min-width: 100px;
   width: 200px;
@@ -272,7 +272,7 @@ body[new-ui] .dialog-sidebar-header #app-name {
 
 body[new-ui] .dialog-sidebar-contents {
   -webkit-box-flex: 1;
-  border-top: 1px solid rgb(200, 200, 200);
+  border-top: 1px solid rgb(210, 210, 210);
   display: -webkit-box;
   position: relative;
 }
@@ -567,6 +567,10 @@ body[maximized][type='full-page'] .dialog-header {
   position: relative;
 }
 
+body[new-ui] .dialog-body {
+  border-top: 1px solid rgb(225, 225, 225);
+}
+
 .main-panel {
   -webkit-box-flex: 1;
   display: -webkit-box;
@@ -587,6 +591,10 @@ body[new-ui] .dialog-middlebar-contents {
   border-top: 1px solid #d2d2d2;
   display: -webkit-box;
   padding: 10px 17px 14px 15px;
+}
+
+body[new-ui] .dialog-footer {
+  border-top: 1px solid rgb(225, 225, 225);
 }
 
 .dialog-footer:not([progress]) .progress-bar,
@@ -713,7 +721,7 @@ body[new-ui] .breadcrumb-path:not(.breadcrumb-last) {
   width: 25px;
 }
 
-body[new-ui] .dialog-header button {
+body[new-ui] .dialog-header .buttonbar button {
   background-image: none;
   background-position: center;
   background-repeat: no-repeat;
@@ -1068,6 +1076,11 @@ body[new-ui][type='full-page'] list .filename-label > :hover {
   width: 240px;
 }
 
+body[new-ui] .thumbnail-grid .thumbnail-frame {
+  background-color: rgb(245, 245, 245);
+  background-image: none;
+}
+
 .thumbnail-grid .thumbnail-item[selected] .thumbnail-frame,
 .thumbnail-grid .thumbnail-item.accepts .thumbnail-frame,
 .thumbnail-grid .thumbnail-item:hover .thumbnail-frame {
@@ -1286,7 +1299,7 @@ input.rename {
 
 body[new-ui] .preview-panel {
   background-color: white;
-  border-top: 1px solid #d4d4d4;
+  border-top: 1px solid rgb(225, 225, 225);
   height: 51px;
   padding: 0 12px 0 7px;
 }

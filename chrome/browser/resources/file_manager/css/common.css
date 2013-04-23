@@ -122,28 +122,28 @@ input.common[type='checkbox']::after {
   -webkit-box-pack: end;
 }
 
-.buttonbar button:first-child {
+body:not([new-ui]) .buttonbar button:first-child {
   margin-left: 0;
 }
 
-.buttonbar button.right {
+body:not([new-ui]) .buttonbar button.right {
   -webkit-border-radius: 0 2px 2px 0;
   margin-left: -1px;
 }
 
-.buttonbar button.left {
+body:not([new-ui]) .buttonbar button.left {
   -webkit-border-radius: 2px 0 0 2px;
   border-right-color: transparent;
   margin-right: 0;
 }
 
-.buttonbar button.small {
+body:not([new-ui]) .buttonbar button.small {
   min-width: 34px;
   padding: 0;
   width: 34px;
 }
 
-.buttonbar button {
+body:not([new-ui]) .buttonbar button {
   -webkit-border-radius: 2px;
   -webkit-box-shadow: none;
   -webkit-transition: all 218ms;
@@ -165,7 +165,13 @@ input.common[type='checkbox']::after {
   z-index: 1;
 }
 
-.buttonbar button:hover {
+body[new-ui] .cr-dialog-buttons button,
+body[new-ui] .buttonbar button {
+  height: 27px;
+  line-height: 27px;
+}
+
+body:not([new-ui]) .buttonbar button:hover {
   -webkit-transition: all 0;
   background-image: -webkit-linear-gradient(top, #F8F8F8, #F1F1F1);
   border: 1px solid #C6C6C6;
@@ -173,22 +179,22 @@ input.common[type='checkbox']::after {
   color: #222;
 }
 
-.buttonbar button:active {
+body:not([new-ui]) .buttonbar button:active {
   background-color: #F6F6F6;
   background-image: -webkit-linear-gradient(top,#F6F6F6,#F1F1F1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
-.buttonbar button[disabled] {
+body:not([new-ui]) .buttonbar button[disabled] {
   background-color: #EEE;
   background-image: -webkit-linear-gradient(top, #EEE, #E0E0E0);
   border: 1px solid #CCC;
   color: #333;
 }
 
-.buttonbar button:hover,
-.buttonbar button:active,
-.buttonbar button[disabled] {
+body:not([new-ui]) .buttonbar button:hover,
+body:not([new-ui]) .buttonbar button:active,
+body:not([new-ui]) .buttonbar button[disabled] {
   z-index: 10;
 }
 
@@ -220,10 +226,10 @@ input.common[type='checkbox']::after {
   opacity: .8;
 }
 
-.buttonbar button.action,
-.buttonbar button.action:focus,
-.buttonbar button.action:hover,
-.buttonbar button.action:active {
+body:not([new-ui]) .buttonbar button.action,
+body:not([new-ui]) .buttonbar button.action:focus,
+body:not([new-ui]) .buttonbar button.action:hover,
+body:not([new-ui]) .buttonbar button.action:active {
   background-color: rgb(209, 72, 54);
   background-image: -webkit-gradient(linear,
       left top, left bottom, from(rgb(221, 75, 57)), to(rgb(209, 72, 54)));
@@ -234,11 +240,11 @@ input.common[type='checkbox']::after {
   text-transform: uppercase;
 }
 
-.buttonbar button.action:not([disabled]):focus {
+body:not([new-ui]) .buttonbar button.action:not([disabled]):focus {
   border-color: rgb(209, 72, 54);
 }
 
-.buttonbar button.action:not([disabled]):hover {
+body:not([new-ui]) .buttonbar button.action:not([disabled]):hover {
   background-color: rgb(197, 55, 39);
   background-image: -webkit-gradient(linear,
       left top, left bottom, from(rgb(221, 75, 57)), to(rgb(197, 55, 39)));
@@ -246,14 +252,14 @@ input.common[type='checkbox']::after {
   border-color: rgb(176, 40, 26);
 }
 
-.buttonbar button.action:not([disabled]):active {
+body:not([new-ui]) .buttonbar button.action:not([disabled]):active {
   background-color: rgb(176, 40, 26);
   background-image: -webkit-gradient(linear,
       left top, left bottom, from(rgb(221, 75, 57)), to(rgb(176, 40, 26)));
   border-color: rgb(153, 42, 27);
 }
 
-.buttonbar button.action[disabled] {
+body:not([new-ui]) .buttonbar button.action[disabled] {
   background-color: rgb(209, 72, 54);
   border-color: rgb(176, 40, 26);
   opacity: 0.5;
@@ -390,10 +396,10 @@ menu.chrome-menu > [checked]::before {
 }
 
 /* Ok/Cancel style buttons */
-button,
-input[type='button'],
-input[type='submit'],
-select {
+body:not([new-ui]) button,
+body:not([new-ui]) input[type='button'],
+body:not([new-ui]) input[type='submit'],
+body:not([new-ui]) select {
   -webkit-border-radius: 2px;
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   -webkit-user-select: none;
@@ -406,34 +412,92 @@ select {
   padding: 3px 12px 3px 12px;
 }
 
-button:hover,
-input[type='button']:hover,
-input[type='submit']:hover,
-select:hover {
+body[new-ui] button,
+body[new-ui] input[type='button'],
+body[new-ui] input[type='submit'],
+body[new-ui] select {
+  -webkit-border-radius: 2px;
+  -webkit-box-shadow: inset 0 1px 1px 0 rgb(255, 255, 255);
+  background-color: rgb(250, 250, 250);
+  background-image: none;
+  border: 1px solid rgb(255, 255, 255);
+  border-bottom: 1px solid rgb(180, 180, 180);
+  border-left: 1px solid rgb(220, 220, 220);
+  border-right: 1px solid rgb(200, 200, 200);
+  border-top: 1px solid rgb(220, 220, 220);
+  box-sizing: content-box;
+  color: rgb(34, 34, 34);
+  cursor: default;
+  min-width: 60px;
+  padding: 0 10px;
+  position: relative;
+  text-align: center;
+  z-index: 1;
+}
+
+body:not([new-ui]) button:hover,
+body:not([new-ui]) input[type='button']:hover,
+body:not([new-ui]) input[type='submit']:hover,
+body:not([new-ui]) select:hover {
   -webkit-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   background: #ebebeb -webkit-linear-gradient(#fefefe, #f8f8f8 40%, #e9e9e9);
   border-color: #999;
   color: #222;
 }
 
-button:active,
-input[type='button']:active,
-input[type='submit']:active {
-  -webkit-box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+body[new-ui] button:hover,
+body[new-ui] input[type='button']:hover,
+body[new-ui] input[type='submit']:hover,
+body[new-ui] select:hover {
+  -webkit-box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: #ebebeb -webkit-linear-gradient(#fefefe, #f8f8f8 40%, #f0f0f0);
+  border-color: rgb(190, 190, 190);
+  color: #222;
+}
+
+body:not([new-ui]) button:active,
+body:not([new-ui]) input[type='button']:active,
+body:not([new-ui]) input[type='submit']:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   background: #ebebeb -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
   color: #333;
 }
 
-button[disabled],
-input[type='button'][disabled],
-input[type='submit'][disabled],
-button[disabled]:hover,
-input[type='button'][disabled]:hover,
-input[type='submit'][disabled]:hover {
+body[new-ui] button:active,
+body[new-ui] input[type='button']:active,
+body[new-ui] input[type='submit']:active {
+  -webkit-box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  background: #ebebeb -webkit-linear-gradient(#f4f4f4, #efefef 40%, #dcdcdc);
+  color: #333;
+}
+
+body:not([new-ui]) button[disabled],
+body:not([new-ui]) input[type='button'][disabled],
+body:not([new-ui]) input[type='submit'][disabled],
+body:not([new-ui]) button[disabled]:hover,
+body:not([new-ui]) input[type='button'][disabled]:hover,
+body:not([new-ui]) input[type='submit'][disabled]:hover {
   -webkit-box-shadow: none;
   background: -webkit-linear-gradient(#fafafa, #f4f4f4 40%, #e5e5e5);
   border-color: #aaa;
   color: #888;
+}
+
+body[new-ui] button[disabled],
+body[new-ui] input[type='button'][disabled],
+body[new-ui] input[type='submit'][disabled],
+body[new-ui] button[disabled]:hover,
+body[new-ui] input[type='button'][disabled]:hover,
+body[new-ui] input[type='submit'][disabled]:hover {
+  -webkit-box-shadow: inset 0 1px 1px 0 rgb(255, 255, 255);
+  background-color: rgb(250, 250, 250);
+  background-image: none;
+  border: 1px solid rgb(255, 255, 255);
+  border-bottom: 1px solid rgb(180, 180, 180);
+  border-left: 1px solid rgb(220, 220, 220);
+  border-right: 1px solid rgb(200, 200, 200);
+  border-top: 1px solid rgb(220, 220, 220);
+  color: rgb(150, 150, 150);
 }
 
 /* Blue progress bar. */
