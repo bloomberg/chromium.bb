@@ -335,7 +335,15 @@ class DomSerializerTests : public ContentBrowserTest,
   }
 
   void SerializeHTMLDOMWithAddingMOTWOnRenderer(
-      const GURL& file_url, const std::string& motw_declaration) {
+      const GURL& file_url, const std::string& original_contents) {
+    // Make sure original contents does not have MOTW;
+    std::string motw_declaration =
+       WebPageSerializer::generateMarkOfTheWebDeclaration(file_url).utf8();
+    ASSERT_FALSE(motw_declaration.empty());
+    // The encoding of original contents is ISO-8859-1, so we convert the MOTW
+    // declaration to ASCII and search whether original contents has it or not.
+    ASSERT_TRUE(std::string::npos == original_contents.find(motw_declaration));
+
     // Do serialization.
     SerializeDomForURL(file_url, false);
     // Make sure the serialized contents have MOTW ;
@@ -835,20 +843,14 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithAddingMOTW) {
   // Get file URL.
   GURL file_url = net::FilePathToFileURL(page_file_path);
   ASSERT_TRUE(file_url.SchemeIsFile());
-  // Make sure original contents does not have MOTW;
-  std::string motw_declaration =
-     WebPageSerializer::generateMarkOfTheWebDeclaration(file_url).utf8();
-  ASSERT_FALSE(motw_declaration.empty());
-  // The encoding of original contents is ISO-8859-1, so we convert the MOTW
-  // declaration to ASCII and search whether original contents has it or not.
-  ASSERT_TRUE(std::string::npos == original_contents.find(motw_declaration));
+
   // Load the test file.
   NavigateToURL(shell(), file_url);
 
   PostTaskToInProcessRendererAndWait(
         base::Bind(
             &DomSerializerTests::SerializeHTMLDOMWithAddingMOTWOnRenderer,
-            base::Unretained(this), file_url, motw_declaration));
+            base::Unretained(this), file_url, original_contents));
 }
 
 // When serializing DOM, we will add the META which have correct charset
