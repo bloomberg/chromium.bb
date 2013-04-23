@@ -10,6 +10,7 @@
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/nacl_string.h"
 #include "native_client/src/trusted/plugin/callback_source.h"
+#include "ppapi/c/private/pp_file_handle.h"
 #include "ppapi/c/trusted/ppb_file_io_trusted.h"
 #include "ppapi/c/trusted/ppb_url_loader_trusted.h"
 #include "ppapi/cpp/file_io.h"
@@ -24,7 +25,8 @@ class Plugin;
 typedef enum {
   DOWNLOAD_TO_FILE = 0,
   DOWNLOAD_TO_BUFFER,
-  DOWNLOAD_STREAM
+  DOWNLOAD_STREAM,
+  DOWNLOAD_NONE
 } DownloadMode;
 
 typedef enum {
@@ -46,10 +48,11 @@ class FileDownloader {
   FileDownloader()
       : instance_(NULL),
         file_open_notify_callback_(pp::BlockUntilComplete()),
+        file_handle_(PP_kInvalidFileHandle),
         file_io_trusted_interface_(NULL),
         url_loader_trusted_interface_(NULL),
         open_time_(-1),
-        mode_(DOWNLOAD_TO_FILE),
+        mode_(DOWNLOAD_NONE),
         url_scheme_(SCHEME_OTHER),
         data_stream_callback_source_(NULL) {}
   ~FileDownloader() {}
@@ -80,6 +83,10 @@ class FileDownloader {
   bool OpenStream(const nacl::string& url,
                   const pp::CompletionCallback& callback,
                   StreamCallbackSource* stream_callback_source);
+
+  // Bypasses downloading and takes a handle to the open file. To get the fd,
+  // call GetPOSIXFileDescriptor().
+  void OpenFast(const nacl::string& url, PP_FileHandle file_handle);
 
   // If downloading and opening succeeded, this returns a valid read-only
   // POSIX file descriptor.  On failure, the return value is an invalid
@@ -122,6 +129,7 @@ class FileDownloader {
   bool streaming_to_file() const;
   bool streaming_to_buffer() const;
   bool streaming_to_user() const;
+  bool not_streaming() const;
 
   int status_code() const { return status_code_; }
 
@@ -151,6 +159,7 @@ class FileDownloader {
   nacl::string url_;
   pp::CompletionCallback file_open_notify_callback_;
   pp::FileIO file_reader_;
+  PP_FileHandle file_handle_;
   const PPB_FileIOTrusted* file_io_trusted_interface_;
   const PPB_URLLoaderTrusted* url_loader_trusted_interface_;
   pp::URLLoader url_loader_;

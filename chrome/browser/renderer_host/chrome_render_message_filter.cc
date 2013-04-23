@@ -151,6 +151,8 @@ bool ChromeRenderMessageFilter::OnMessageReceived(const IPC::Message& message,
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_NaClCreateTemporaryFile,
                                     OnNaClCreateTemporaryFile)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_NaClErrorStatus, OnNaClErrorStatus)
+    IPC_MESSAGE_HANDLER_DELAY_REPLY(ChromeViewHostMsg_OpenNaClExecutable,
+                                    OnOpenNaClExecutable)
 #endif
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_DnsPrefetch, OnDnsPrefetch)
     IPC_MESSAGE_HANDLER(ChromeViewHostMsg_ResourceTypeStats,
@@ -279,6 +281,13 @@ void ChromeRenderMessageFilter::OnNaClErrorStatus(int render_view_id,
   // Currently there is only one kind of error status, for which
   // we want to show the user an infobar.
   ShowNaClInfobar(render_process_id_, render_view_id, error_id);
+}
+
+void ChromeRenderMessageFilter::OnOpenNaClExecutable(int render_view_id,
+                                                     const GURL& file_url,
+                                                     IPC::Message* reply_msg) {
+  nacl_file_host::OpenNaClExecutable(this, extension_info_map_,
+                                     render_view_id, file_url, reply_msg);
 }
 #endif
 

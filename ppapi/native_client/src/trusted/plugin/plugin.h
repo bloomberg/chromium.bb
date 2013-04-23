@@ -401,6 +401,11 @@ class Plugin : public pp::InstancePrivate {
   // to a LOG_FATAL this method will do nothing.
   void CopyCrashLogToJsConsole();
 
+  // Open an app file by requesting a file descriptor from the browser. This
+  // method first checks that the url is for an installed file before making the
+  // request so it won't slow down non-installed file downloads.
+  bool OpenURLFast(const nacl::string& url, FileDownloader* downloader);
+
   ScriptablePlugin* scriptable_plugin_;
 
   int argc_;

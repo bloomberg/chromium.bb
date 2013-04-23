@@ -1208,15 +1208,20 @@ void Plugin::ProcessNaClManifest(const nacl::string& manifest_json) {
                              "the --enable-pnacl flag).");
       }
     } else {
-      pp::CompletionCallback open_callback =
-          callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
-      // Will always call the callback on success or failure.
-      CHECK(
-          nexe_downloader_.Open(program_url,
-                                DOWNLOAD_TO_FILE,
-                                open_callback,
-                                true,
-                                &UpdateDownloadProgress));
+      // Try the fast path first. This will only block if the file is installed.
+      if (OpenURLFast(program_url, &nexe_downloader_)) {
+        NexeFileDidOpen(PP_OK);
+      } else {
+        pp::CompletionCallback open_callback =
+            callback_factory_.NewCallback(&Plugin::NexeFileDidOpen);
+        // Will always call the callback on success or failure.
+        CHECK(
+            nexe_downloader_.Open(program_url,
+                                  DOWNLOAD_TO_FILE,
+                                  open_callback,
+                                  true,
+                                  &UpdateDownloadProgress));
+      }
       return;
     }
   }
@@ -1332,8 +1337,6 @@ bool Plugin::StreamAsFile(const nacl::string& url,
   FileDownloader* downloader = new FileDownloader();
   downloader->Initialize(this);
   url_downloaders_.insert(downloader);
-  pp::CompletionCallback open_callback = callback_factory_.NewCallback(
-      &Plugin::UrlDidOpenForStreamAsFile, downloader, callback);
   // Untrusted loads are always relative to the page's origin.
   CHECK(url_util_ != NULL);
   pp::Var resolved_url =
@@ -1345,6 +1348,15 @@ bool Plugin::StreamAsFile(const nacl::string& url,
                    plugin_base_url().c_str()));
     return false;
   }
+
+  // Try the fast path first. This will only block if the file is installed.
+  if (OpenURLFast(url, downloader)) {
+    UrlDidOpenForStreamAsFile(PP_OK, downloader, callback);
+    return true;
+  }
+
+  pp::CompletionCallback open_callback = callback_factory_.NewCallback(
+      &Plugin::UrlDidOpenForStreamAsFile, downloader, callback);
   // If true, will always call the callback on success or failure.
   return downloader->Open(url,
                           DOWNLOAD_TO_FILE,
@@ -1583,6 +1595,40 @@ void Plugin::DispatchProgressEvent(int32_t result) {
     PLUGIN_PRINTF(("Plugin::DispatchProgressEvent:"
                    " event dispatch failed.\n"));
   }
+}
+
+bool Plugin::OpenURLFast(const nacl::string& url,
+                         FileDownloader* downloader) {
+  // Fast path only works for installed file URLs.
+  if (GetUrlScheme(url) != SCHEME_CHROME_EXTENSION)
+    return false;
+  // IMPORTANT: Make sure the document can request the given URL. If we don't
+  // check, a malicious app could probe the extension system. This enforces a
+  // same-origin policy which prevents the app from requesting resources from
+  // another app.
+  if (!DocumentCanRequest(url))
+    return false;
+
+  PP_NaClExecutableMetadata file_metadata;
+  PP_FileHandle file_handle =
+      nacl_interface()->OpenNaClExecutable(pp_instance(),
+                                           url.c_str(),
+                                           &file_metadata);
+  // We shouldn't hit this if the file URL is in an installed app.
+  if (file_handle == PP_kInvalidFileHandle)
+    return false;
+
+  // Release the PP_Var in the metadata struct.
+  pp::Module* module = pp::Module::Get();
+  const PPB_Var* var_interface =
+      static_cast<const PPB_Var*>(
+          module->GetBrowserInterface(PPB_VAR_INTERFACE));
+  var_interface->Release(file_metadata.file_path);
+
+  // FileDownloader takes ownership of the file handle.
+  // TODO(bbudge) Consume metadata once we have the final format.
+  downloader->OpenFast(url, file_handle);
+  return true;
 }
 
 UrlSchemeType Plugin::GetUrlScheme(const std::string& url) {

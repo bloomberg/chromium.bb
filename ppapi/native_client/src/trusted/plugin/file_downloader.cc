@@ -144,17 +144,38 @@ bool FileDownloader::Open(
   return true;
 }
 
-int32_t FileDownloader::GetPOSIXFileDescriptor() {
-  if (!streaming_to_file()) {
-    return NACL_NO_FILE_DESC;
-  }
-  // Use the trusted interface to get the file descriptor.
-  if (file_io_trusted_interface_ == NULL) {
-    return NACL_NO_FILE_DESC;
-  }
-  int32_t file_desc = file_io_trusted_interface_->GetOSFileDescriptor(
-      file_reader_.pp_resource());
+void FileDownloader::OpenFast(const nacl::string& url,
+                              PP_FileHandle file_handle) {
+  PLUGIN_PRINTF(("FileDownloader::OpenFast (url=%s)\n", url.c_str()));
+  CHECK(instance_ != NULL);
+  open_time_ = NaClGetTimeOfDayMicroseconds();
+  status_code_ = NACL_HTTP_STATUS_OK;
+  url_to_open_ = url;
+  url_ = url;
+  mode_ = DOWNLOAD_NONE;
+  file_handle_ = file_handle;
+}
 
+int32_t FileDownloader::GetPOSIXFileDescriptor() {
+  int32_t file_desc = NACL_NO_FILE_DESC;
+  if (not_streaming() && file_handle_ != PP_kInvalidFileHandle) {
+#if NACL_WINDOWS
+    // On Windows, valid handles are 32 bit unsigned integers so this is safe.
+    file_desc = reinterpret_cast<uintptr_t>(file_handle_);
+#else
+    file_desc = file_handle_;
+#endif
+  } else {
+    if (!streaming_to_file()) {
+      return NACL_NO_FILE_DESC;
+    }
+    // Use the trusted interface to get the file descriptor.
+    if (file_io_trusted_interface_ == NULL) {
+      return NACL_NO_FILE_DESC;
+    }
+    file_desc = file_io_trusted_interface_->GetOSFileDescriptor(
+        file_reader_.pp_resource());
+  }
 
 #if NACL_WINDOWS
   // Convert the Windows HANDLE from Pepper to a POSIX file descriptor.
@@ -377,6 +398,10 @@ bool FileDownloader::streaming_to_buffer() const {
 
 bool FileDownloader::streaming_to_user() const {
   return mode_ == DOWNLOAD_STREAM;
+}
+
+bool FileDownloader::not_streaming() const {
+  return mode_ == DOWNLOAD_NONE;
 }
 
 }  // namespace plugin

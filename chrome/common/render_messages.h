@@ -583,6 +583,14 @@ IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_NaClErrorStatus,
                      int /* render_view_id */,
                      int /* Error ID */)
 
+// A renderer sends this to the browser process when it wants to
+// open a NaCl executable file from an installed application directory.
+IPC_SYNC_MESSAGE_CONTROL2_2(ChromeViewHostMsg_OpenNaClExecutable,
+                            int /* render_view_id */,
+                            GURL /* URL of NaCl executable file */,
+                            base::FilePath /* absolute path to opened file */,
+                            IPC::PlatformFileForTransit /* output file */)
+
 // Notification that the page has an OpenSearch description document
 // associated with it.
 IPC_MESSAGE_ROUTED3(ChromeViewHostMsg_PageHasOSDD,

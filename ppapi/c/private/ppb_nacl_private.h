@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From private/ppb_nacl_private.idl modified Fri Apr 19 16:37:41 2013. */
+/* From private/ppb_nacl_private.idl modified Mon Apr 22 22:25:20 2013. */
 
 #ifndef PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
 #define PPAPI_C_PRIVATE_PPB_NACL_PRIVATE_H_
@@ -12,13 +12,15 @@
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/pp_macros.h"
 #include "ppapi/c/pp_stdint.h"
+#include "ppapi/c/pp_var.h"
 
 #define PPB_NACL_PRIVATE_INTERFACE_1_0 "PPB_NaCl_Private;1.0"
 #define PPB_NACL_PRIVATE_INTERFACE PPB_NACL_PRIVATE_INTERFACE_1_0
 
 /**
  * @file
- * This file contains NaCl private interfaces. */
+ * This file contains NaCl private interfaces. This interface is not versioned
+ * and is for internal Chrome use. It may change without notice. */
 
 
 #include "ppapi/c/private/pp_file_handle.h"
@@ -50,6 +52,19 @@ typedef enum {
    */
   PP_NACL_MANIFEST_MISSING_ARCH = 0
 } PP_NaClError;
+/**
+ * @}
+ */
+
+/**
+ * @addtogroup Structs
+ * @{
+ */
+struct PP_NaClExecutableMetadata {
+  /** File path of NaCl executable. This is created by the OpenNaClExecutableFd
+   *  function. It is the caller's responsiblity to release it. */
+  struct PP_Var file_path;
+};
 /**
  * @}
  */
@@ -111,7 +126,7 @@ struct PPB_NaCl_Private_1_0 {
                                    uint32_t desired_access,
                                    uint32_t options);
   /* Returns a read-only file descriptor of a file rooted in the Pnacl
-   * component directory, or -1 on error.
+   * component directory, or an invalid handle on failure.
    * Do we want this to take a completion callback and be async, or
    * could we make this happen on another thread?
    */
@@ -130,6 +145,14 @@ struct PPB_NaCl_Private_1_0 {
   /* Display a UI message to the user. */
   PP_NaClResult (*ReportNaClError)(PP_Instance instance,
                                    PP_NaClError message_id);
+  /* Opens a NaCl executable file in the application's extension directory
+   * corresponding to the file URL and returns a file descriptor, or an invalid
+   * handle on failure. |metadata| is left unchanged on failure.
+   */
+  PP_FileHandle (*OpenNaClExecutable)(
+      PP_Instance instance,
+      const char* file_url,
+      struct PP_NaClExecutableMetadata* metadata);
 };
 
 typedef struct PPB_NaCl_Private_1_0 PPB_NaCl_Private;

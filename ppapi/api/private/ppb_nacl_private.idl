@@ -3,7 +3,8 @@
  * found in the LICENSE file.
  */
 
-/* This file contains NaCl private interfaces. */
+/* This file contains NaCl private interfaces. This interface is not versioned
+ * and is for internal Chrome use. It may change without notice. */
 
 #inline c
 #include "ppapi/c/private/pp_file_handle.h"
@@ -31,6 +32,12 @@ enum PP_NaClError {
    *  user's architecture
   */
   PP_NACL_MANIFEST_MISSING_ARCH = 0
+};
+
+struct PP_NaClExecutableMetadata {
+  /** File path of NaCl executable. This is created by the OpenNaClExecutableFd
+   *  function. It is the caller's responsiblity to release it. */
+  PP_Var file_path;
 };
 
 /* PPB_NaCl_Private */
@@ -92,7 +99,7 @@ interface PPB_NaCl_Private {
                                 [in] uint32_t options);
 
   /* Returns a read-only file descriptor of a file rooted in the Pnacl
-   * component directory, or -1 on error.
+   * component directory, or an invalid handle on failure.
    * Do we want this to take a completion callback and be async, or
    * could we make this happen on another thread?
    */
@@ -115,4 +122,12 @@ interface PPB_NaCl_Private {
   /* Display a UI message to the user. */
   PP_NaClResult ReportNaClError([in] PP_Instance instance,
                                 [in] PP_NaClError message_id);
+
+  /* Opens a NaCl executable file in the application's extension directory
+   * corresponding to the file URL and returns a file descriptor, or an invalid
+   * handle on failure. |metadata| is left unchanged on failure.
+   */
+  PP_FileHandle OpenNaClExecutable([in] PP_Instance instance,
+                                   [in] str_t file_url,
+                                   [out] PP_NaClExecutableMetadata metadata);
 };

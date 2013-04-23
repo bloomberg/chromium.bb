@@ -7,14 +7,19 @@
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/platform_file.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/render_messages.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_view_host.h"
+#include "content/public/browser/site_instance.h"
 #include "ipc/ipc_platform_file.h"
 
 using content::BrowserThread;
@@ -123,6 +128,85 @@ void DoCreateTemporaryFile(
   chrome_render_message_filter->Send(reply_msg);
 }
 
+// Convert the file URL into a file path in the extension directory.
+// This function is security sensitive.  Be sure to check with a security
+// person before you modify it.
+bool GetExtensionFilePath(
+    scoped_refptr<ExtensionInfoMap> extension_info_map,
+    const GURL& file_url,
+    base::FilePath* file_path) {
+  // Check that the URL is recognized by the extension system.
+  const extensions::Extension* extension =
+      extension_info_map->extensions().GetExtensionOrAppByURL(
+          ExtensionURLInfo(file_url));
+  if (!extension)
+    return false;
+
+  // Check that the URL references a resource in the extension.
+  extensions::ExtensionResource resource =
+      extension->GetResource(file_url.path());
+  if (resource.empty())
+    return false;
+
+  const base::FilePath resource_file_path = resource.GetFilePath();
+  if (resource_file_path.empty())
+    return false;
+
+  *file_path = resource_file_path;
+  return true;
+}
+
+// Convert the file URL into a file descriptor.
+// This function is security sensitive.  Be sure to check with a security
+// person before you modify it.
+void DoOpenNaClExecutableOnThreadPool(
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    scoped_refptr<ExtensionInfoMap> extension_info_map,
+    const GURL& file_url,
+    IPC::Message* reply_msg) {
+  DCHECK(BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  base::FilePath file_path;
+  if (!GetExtensionFilePath(extension_info_map, file_url, &file_path)) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  // Get a file descriptor. On Windows, we need 'GENERIC_EXECUTE' in order to
+  // memory map the executable.
+  // IMPORTANT: This file descriptor must not have write access - that could
+  // allow a sandbox escape.
+  base::PlatformFileError error_code;
+  base::PlatformFile file = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_OPEN |
+          base::PLATFORM_FILE_READ |
+          base::PLATFORM_FILE_EXECUTE,  // Windows only flag.
+      NULL,
+      &error_code);
+  if (error_code != base::PLATFORM_FILE_OK) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+  // Check that the file does not reference a directory. Returning a descriptor
+  // to an extension directory could allow a sandbox escape.
+  base::PlatformFileInfo file_info;
+  if (!base::GetPlatformFileInfo(file, &file_info) || file_info.is_directory)
+  {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  IPC::PlatformFileForTransit file_desc = IPC::GetFileHandleForProcess(
+      file,
+      chrome_render_message_filter->peer_handle(),
+      true /* close_source */);
+
+  ChromeViewHostMsg_OpenNaClExecutable::WriteReplyParams(
+      reply_msg, file_path, file_desc);
+  chrome_render_message_filter->Send(reply_msg);
+}
+
 }  // namespace
 
 namespace nacl_file_host {
@@ -182,6 +266,54 @@ void CreateTemporaryFile(
           base::Bind(&DoCreateTemporaryFile,
                      make_scoped_refptr(chrome_render_message_filter),
                      reply_msg))) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+  }
+}
+
+void OpenNaClExecutable(
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    scoped_refptr<ExtensionInfoMap> extension_info_map,
+    int render_view_id,
+    const GURL& file_url,
+    IPC::Message* reply_msg) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::Bind(
+            &OpenNaClExecutable,
+            chrome_render_message_filter,
+            extension_info_map,
+            render_view_id, file_url, reply_msg));
+    return;
+  }
+
+  // Make sure render_view_id is valid and that the URL is a part of the
+  // render view's site. Without these checks, apps could probe the extension
+  // directory or run NaCl code from other extensions.
+  content::RenderViewHost* rvh = content::RenderViewHost::FromID(
+      chrome_render_message_filter->render_process_id(), render_view_id);
+  if (!rvh) {
+    chrome_render_message_filter->BadMessageReceived();  // Kill the renderer.
+    return;
+  }
+  content::SiteInstance* site_instance = rvh->GetSiteInstance();
+  if (!content::SiteInstance::IsSameWebSite(site_instance->GetBrowserContext(),
+                                            site_instance->GetSiteURL(),
+                                            file_url)) {
+    NotifyRendererOfError(chrome_render_message_filter, reply_msg);
+    return;
+  }
+
+  // The URL is part of the current app. Now query the extension system for the
+  // file path and convert that to a file descriptor. This should be done on a
+  // blocking pool thread.
+  if (!BrowserThread::PostBlockingPoolTask(
+      FROM_HERE,
+      base::Bind(
+          &DoOpenNaClExecutableOnThreadPool,
+          chrome_render_message_filter,
+          extension_info_map,
+          file_url, reply_msg))) {
     NotifyRendererOfError(chrome_render_message_filter, reply_msg);
   }
 }

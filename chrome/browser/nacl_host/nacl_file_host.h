@@ -7,7 +7,11 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
+
 class ChromeRenderMessageFilter;
+class ExtensionInfoMap;
+class GURL;
 
 namespace base {
 class FilePath;
@@ -15,7 +19,7 @@ class FilePath;
 
 namespace IPC {
 class Message;
-}  // namespace IPC
+}
 
 // Opens NaCl Files in the Browser process, on behalf of the NaCl plugin.
 
@@ -35,6 +39,14 @@ bool PnaclCanOpenFile(const std::string& filename,
 // is closed, or earlier.
 void CreateTemporaryFile(
     ChromeRenderMessageFilter* chrome_render_message_filter,
+    IPC::Message* reply_msg);
+
+// Opens a NaCl executable file for reading and executing.
+void OpenNaClExecutable(
+    scoped_refptr<ChromeRenderMessageFilter> chrome_render_message_filter,
+    scoped_refptr<ExtensionInfoMap> extension_info_map,
+    int render_view_id,
+    const GURL& file_url,
     IPC::Message* reply_msg);
 
 }  // namespace nacl_file_host
