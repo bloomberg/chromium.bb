@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
@@ -16,9 +17,11 @@
 #include "ui/views/controls/combobox/combobox_listener.h"
 #include "ui/views/controls/link_listener.h"
 #include "ui/views/controls/progress_bar.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/focus/focus_manager.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_delegate.h"
 
 namespace content {
@@ -59,6 +62,7 @@ struct DetailInput;
 class AutofillDialogViews : public AutofillDialogView,
                             public TestableAutofillDialogView,
                             public views::DialogDelegate,
+                            public views::WidgetObserver,
                             public views::ButtonListener,
                             public views::TextfieldController,
                             public views::FocusChangeListener,
@@ -113,6 +117,11 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) OVERRIDE;
 
+  // views::WidgetObserver implementation:
+  virtual void OnWidgetClosing(views::Widget* widget) OVERRIDE;
+  virtual void OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
+
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
@@ -142,6 +151,26 @@ class AutofillDialogViews : public AutofillDialogView,
       OVERRIDE;
 
  private:
+  // A view that contains a single child view, and adds a vertical scrollbar
+  // after a certain maximum height is reached.
+  class SizeLimitedScrollView : public views::ScrollView {
+   public:
+    explicit SizeLimitedScrollView(views::View* scroll_contents);
+    virtual ~SizeLimitedScrollView();
+
+    // views::View implementation.
+    virtual void Layout() OVERRIDE;
+    virtual gfx::Size GetPreferredSize() OVERRIDE;
+
+    // Sets the maximum height for the viewport.
+    void SetMaximumHeight(int max_height);
+
+   private:
+    int max_height_;
+
+    DISALLOW_COPY_AND_ASSIGN(SizeLimitedScrollView);
+  };
+
   // A class which holds a textfield and draws extra stuff on top, like
   // invalid content indications.
   class DecoratedTextfield : public views::View {
@@ -472,6 +501,9 @@ class AutofillDialogViews : public AutofillDialogView,
   // View to host everything that isn't related to sign-in.
   views::View* main_container_;
 
+  // View that wraps |details_container_| and makes it scroll vertically.
+  SizeLimitedScrollView* scrollable_area_;
+
   // View to host details sections.
   views::View* details_container_;
 
@@ -497,6 +529,8 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // The focus manager for |window_|.
   views::FocusManager* focus_manager_;
+
+  ScopedObserver<views::Widget, AutofillDialogViews> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogViews);
 };

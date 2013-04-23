@@ -51,6 +51,9 @@ namespace autofill {
 
 namespace {
 
+// The minimum useful height of the contents area of the dialog.
+const int kMinimumContentsHeight = 100;
+
 // Horizontal padding between text and other elements (in pixels).
 const int kAroundTextPadding = 4;
 
@@ -104,6 +107,39 @@ views::Label* CreateDetailsSectionLabel(const string16& text) {
 }
 
 }  // namespace
+
+// AutofillDialogViews::SizeLimitedScrollView ----------------------------------
+
+AutofillDialogViews::SizeLimitedScrollView::SizeLimitedScrollView(
+    views::View* scroll_contents)
+    : max_height_(-1) {
+  set_hide_horizontal_scrollbar(true);
+  SetContents(scroll_contents);
+}
+
+AutofillDialogViews::SizeLimitedScrollView::~SizeLimitedScrollView() {}
+
+void AutofillDialogViews::SizeLimitedScrollView::Layout() {
+  contents()->SizeToPreferredSize();
+  ScrollView::Layout();
+}
+
+gfx::Size AutofillDialogViews::SizeLimitedScrollView::GetPreferredSize() {
+  gfx::Size size = contents()->GetPreferredSize();
+  if (max_height_ >= 0 && max_height_ < size.height())
+    size.set_height(max_height_);
+
+  return size;
+}
+
+void AutofillDialogViews::SizeLimitedScrollView::SetMaximumHeight(
+    int max_height) {
+  int old_max = max_height_;
+  max_height_ = max_height;
+
+  if (max_height_ < height() || old_max <= height())
+    PreferredSizeChanged();
+}
 
 // AutofillDialogViews::DecoratedTextfield -------------------------------------
 
@@ -327,6 +363,22 @@ void AutofillDialogViews::NotificationArea::OnPaint(gfx::Canvas* canvas) {
     canvas->ClipPath(arrow);
     canvas->DrawColor(notifications_[0].GetBackgroundColor());
   }
+}
+
+void AutofillDialogViews::OnWidgetClosing(views::Widget* widget) {
+  observer_.Remove(widget);
+}
+
+void AutofillDialogViews::OnWidgetBoundsChanged(views::Widget* widget,
+                                                const gfx::Rect& new_bounds) {
+  int non_scrollable_height = window_->GetContentsView()->bounds().height() -
+      scrollable_area_->bounds().height();
+  int browser_window_height = widget->GetContentsView()->bounds().height();
+
+  scrollable_area_->SetMaximumHeight(
+      std::max(kMinimumContentsHeight,
+               (browser_window_height - non_scrollable_height) * 8 / 10));
+  ContentsPreferredSizeChanged();
 }
 
 void AutofillDialogViews::NotificationArea::ButtonPressed(
@@ -566,6 +618,7 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       cancel_sign_in_(NULL),
       sign_in_webview_(NULL),
       main_container_(NULL),
+      scrollable_area_(NULL),
       details_container_(NULL),
       button_strip_extra_view_(NULL),
       save_in_chrome_checkbox_(NULL),
@@ -573,7 +626,8 @@ AutofillDialogViews::AutofillDialogViews(AutofillDialogController* controller)
       autocheckout_progress_bar_(NULL),
       footnote_view_(NULL),
       legal_document_view_(NULL),
-      focus_manager_(NULL) {
+      focus_manager_(NULL),
+      ALLOW_THIS_IN_INITIALIZER_LIST(observer_(this)) {
   DCHECK(controller);
   detail_groups_.insert(std::make_pair(SECTION_EMAIL,
                                        DetailsGroup(SECTION_EMAIL)));
@@ -609,6 +663,13 @@ void AutofillDialogViews::Show() {
   web_contents_modal_dialog_manager->ShowDialog(window_->GetNativeView());
   focus_manager_ = window_->GetFocusManager();
   focus_manager_->AddFocusChangeListener(this);
+
+  // Listen for size changes on the browser.
+  views::Widget* browser_widget =
+      views::Widget::GetTopLevelWidgetForNativeView(
+          controller_->web_contents()->GetView()->GetNativeView());
+  observer_.Add(browser_widget);
+  OnWidgetBoundsChanged(browser_widget, gfx::Rect());
 }
 
 void AutofillDialogViews::Hide() {
@@ -844,7 +905,7 @@ views::View* AutofillDialogViews::CreateFootnoteView() {
 
   legal_document_view_ = new views::StyledLabel(string16(), this);
   footnote_view_->AddChildView(legal_document_view_);
-  UpdateAccountChooser();
+  footnote_view_->SetVisible(false);
 
   return footnote_view_;
 }
@@ -1028,7 +1089,8 @@ views::View* AutofillDialogViews::CreateMainContainer() {
   notification_area_->set_arrow_centering_anchor(account_chooser_->AsWeakPtr());
   main_container_->AddChildView(notification_area_);
 
-  main_container_->AddChildView(CreateDetailsContainer());
+  scrollable_area_ = new SizeLimitedScrollView(CreateDetailsContainer());
+  main_container_->AddChildView(scrollable_area_);
   return main_container_;
 }
 
