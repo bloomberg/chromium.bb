@@ -8,7 +8,6 @@
 #include "base/bind_helpers.h"
 #include "base/message_loop.h"
 #include "base/values.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
@@ -74,7 +73,7 @@ class KioskModeSettingsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
-  ScopedTestUserManager test_user_manager_;
+  ScopedTestCrosSettings test_cros_settings_;
 
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;

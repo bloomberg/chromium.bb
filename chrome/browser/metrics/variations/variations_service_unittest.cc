@@ -20,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #endif
@@ -111,7 +110,7 @@ class VariationsServiceTest : public testing::Test {
  private:
 #if defined(OS_CHROMEOS)
   // Not used directly. Initializes CrosSettings for testing.
-  chromeos::ScopedTestUserManager test_user_manager_;
+  chromeos::ScopedTestCrosSettings scoped_test_cros_settings;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VariationsServiceTest);

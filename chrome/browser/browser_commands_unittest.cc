@@ -17,6 +17,10 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/mock_user_manager.h"
+#endif
+
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
 using content::OpenURLParams;

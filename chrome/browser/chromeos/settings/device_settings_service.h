@@ -11,7 +11,6 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
@@ -234,17 +233,6 @@ class DeviceSettingsService : public SessionManagerClient::Observer {
   int load_retries_left_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSettingsService);
-};
-
-// Helper class for tests. Initializes the DeviceSettingsService singleton on
-// construction and tears it down again on destruction.
-class ScopedTestDeviceSettingsService {
- public:
-  ScopedTestDeviceSettingsService();
-  ~ScopedTestDeviceSettingsService();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ScopedTestDeviceSettingsService);
 };
 
 }  // namespace chromeos

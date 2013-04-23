@@ -16,10 +16,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 namespace extensions {
 
 using base::test::ParseJson;
@@ -34,10 +30,6 @@ class DeclarativeContentRulesRegistryTest : public testing::Test {
       const ContentRulesRegistry& registry) {
     return registry.active_rules_;
   }
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 };
 
 namespace {

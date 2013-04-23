@@ -75,8 +75,8 @@ class MergeSessionLoadPageTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
 
-  ScopedStubCrosEnabler stub_cros_enabler_;
-  ScopedTestUserManager test_user_manager_;
+  chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  chromeos::ScopedTestUserManager test_user_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionLoadPageTest);
 };

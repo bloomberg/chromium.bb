@@ -50,10 +50,6 @@
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 #if defined(OS_WIN)
 #include "chrome/browser/storage_monitor/test_portable_device_watcher_win.h"
 #include "chrome/browser/storage_monitor/test_storage_monitor_win.h"
@@ -379,10 +375,6 @@ class MediaFileSystemRegistryTest : public ChromeRenderViewHostTestHarness {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   extensions::ScopedTestingPermissionsInfo permissions_info_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
 // TODO(gbillock): Eliminate windows-specific code from this test.
 #if defined(OS_WIN)

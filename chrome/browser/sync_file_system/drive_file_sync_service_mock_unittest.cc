@@ -34,10 +34,6 @@
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/syncable_file_system_util.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 #define FPL(x) FILE_PATH_LITERAL(x)
 
 using ::testing::AnyNumber;
@@ -636,10 +632,6 @@ class DriveFileSyncServiceMockTest : public testing::Test {
 
   base::ScopedTempDir base_dir_;
   scoped_ptr<TestingProfile> profile_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   scoped_ptr<DriveFileSyncService> sync_service_;
 

@@ -20,10 +20,6 @@
 #include "extensions/common/constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 using extensions::Extension;
 using extensions::Manifest;
 
@@ -130,10 +126,6 @@ class ExtensionUITest : public extensions::ExtensionTest {
   ExtensionService* extension_service_;
   extensions::ManagementPolicy* management_policy_;
   scoped_ptr<ExtensionSettingsHandler> handler_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 };
 
 TEST_F(ExtensionUITest, GenerateExtensionsJSONData) {

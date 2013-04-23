@@ -25,10 +25,6 @@
 #include "ui/gfx/skia_util.h"
 #include "webkit/glue/image_decoder.h"
 
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#endif
-
 using content::BrowserThread;
 
 namespace extensions {
@@ -171,10 +167,6 @@ class ExtensionActionIconFactoryTest
   content::TestBrowserThread io_thread_;
   scoped_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;
-
-#if defined OS_CHROMEOS
-  chromeos::ScopedTestUserManager test_user_manager_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionActionIconFactoryTest);
 };

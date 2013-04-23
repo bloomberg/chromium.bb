@@ -19,10 +19,6 @@
 #include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
 
-// X11/Xlib.h does |#define Status int|, breaking compilation as several classes
-// define enum types called |Status|.
-#undef Status
-
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"

@@ -9,6 +9,10 @@
 #include "base/message_loop.h"
 #include "content/public/test/test_browser_thread.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#endif
+
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
 #endif
@@ -59,6 +63,10 @@ class TestExtensionEnvironment {
   // We may need to add the rest of the browser threads here.  This is
   // likely to be indicated by memory leaks in which the object was
   // expected to be freed by a DeleteSoon() call.
+
+#if defined(OS_CHROMEOS)
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 
 #if defined(OS_WIN)
   ui::ScopedOleInitializer ole_initializer_;
