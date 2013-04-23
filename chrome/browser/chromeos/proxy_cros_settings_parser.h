@@ -29,6 +29,7 @@ extern const char kProxyFtpPort[];
 extern const char kProxySocks[];
 extern const char kProxySocksPort[];
 extern const char kProxyIgnoreList[];
+extern const char kProxyUsePacUrl[];
 
 extern const char* const kProxySettings[];
 extern const size_t kProxySettingsCount;

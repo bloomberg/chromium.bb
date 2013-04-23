@@ -29,6 +29,7 @@ const char kProxyFtpPort[]        = "cros.session.proxy.ftpport";
 const char kProxySocks[]          = "cros.session.proxy.socks";
 const char kProxySocksPort[]      = "cros.session.proxy.socksport";
 const char kProxyIgnoreList[]     = "cros.session.proxy.ignorelist";
+const char kProxyUsePacUrl[]      = "cros.session.proxy.usepacurl";
 
 const char* const kProxySettings[] = {
   kProxyPacUrl,
@@ -45,6 +46,7 @@ const char* const kProxySettings[] = {
   kProxySocks,
   kProxySocksPort,
   kProxyIgnoreList,
+  kProxyUsePacUrl,
 };
 
 // We have to explicitly export this because the arraysize macro doesn't like
@@ -232,6 +234,16 @@ void SetProxyPrefValue(Profile* profile,
         config_service->UISetProxyConfigToProxyPerScheme("http",
             config.http_proxy.server);
     }
+  } else if (path == kProxyUsePacUrl) {
+    bool use_pac_url;
+    if (in_value->GetAsBoolean(&use_pac_url)) {
+      if (use_pac_url && config.automatic_proxy.pac_url.is_valid()) {
+        config_service->UISetProxyConfigToPACScript(
+            config.automatic_proxy.pac_url);
+      } else {
+        config_service->UISetProxyConfigToAutoDetect();
+      }
+    }
   } else if (path == kProxyFtpUrl) {
     std::string val;
     if (in_value->GetAsString(&val)) {
@@ -337,6 +349,9 @@ bool GetProxyPrefValue(Profile* profile,
   } else if (path == kProxySingle) {
     data = base::Value::CreateBooleanValue(config.mode ==
         chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_SINGLE_PROXY);
+  } else if (path == kProxyUsePacUrl) {
+    data = base::Value::CreateBooleanValue(config.mode ==
+        chromeos::ProxyConfigServiceImpl::ProxyConfig::MODE_PAC_SCRIPT);
   } else if (path == kProxyFtpUrl) {
     data = CreateServerHostValue(config.ftp_proxy);
   } else if (path == kProxySocks) {

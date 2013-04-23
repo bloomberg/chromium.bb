@@ -650,10 +650,16 @@
             <span i18n-content="proxyAutomatic"></span>
           </label>
         </div>
+        <div class="checkbox">
+          <label>
+            <input id="proxy-use-pac-url" type="checkbox"
+                pref="cros.session.proxy.usepacurl">
+            <span i18n-content="proxyUseConfigUrl"></span>
+          </label>
+        </div>
         <div>
           <label>
-            <div i18n-content="proxyConfigUrl"></div>
-            <input id="proxy-config" type="url" size="50"
+            <input id="proxy-pac-url" type="url" size="50"
                 pref="cros.session.proxy.pacurl">
           </label>
         </div>

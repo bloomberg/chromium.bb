@@ -42,7 +42,7 @@ void ProxyHandler::GetLocalizedValues(
     { "ftpProxy", IDS_PROXY_FTP_PROXY },
     { "socksHost", IDS_PROXY_SOCKS_HOST },
     { "proxyAutomatic", IDS_PROXY_AUTOMATIC },
-    { "proxyConfigUrl", IDS_PROXY_CONFIG_URL },
+    { "proxyUseConfigUrl", IDS_PROXY_USE_AUTOCONFIG_URL },
     { "advancedProxyConfig", IDS_PROXY_ADVANCED_CONFIG },
     { "addHost", IDS_PROXY_ADD_HOST },
     { "removeHost", IDS_PROXY_REMOVE_HOST },

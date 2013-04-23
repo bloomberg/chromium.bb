@@ -2366,8 +2366,8 @@ Battery full
   <message name="IDS_PROXY_AUTOMATIC" desc="Radio to select configuring from a URL.">
     Automatic proxy configuration
   </message>
-  <message name="IDS_PROXY_CONFIG_URL" desc="Label for the proxy config URL box.">
-    Autoconfiguration URL
+  <message name="IDS_PROXY_USE_AUTOCONFIG_URL" desc="Label for the checkbox that controls whether to use an autoconfiguration URL.">
+    Use an autoconfiguration URL
   </message>
   <message name="IDS_PROXY_ADVANCED_CONFIG" desc="Label for the Advanced Proxy.">
     Advanced Configuration

@@ -261,11 +261,14 @@ cr.define('options.internet', function() {
       $('auto-proxy').addEventListener('click', this.disableManualProxy_);
       $('proxy-all-protocols').addEventListener('click',
                                                 this.toggleSingleProxy_);
+      $('proxy-use-pac-url').addEventListener('change',
+                                              this.handleAutoConfigProxy_);
 
       observePrefsUI($('direct-proxy'));
       observePrefsUI($('manual-proxy'));
       observePrefsUI($('auto-proxy'));
       observePrefsUI($('proxy-all-protocols'));
+      observePrefsUI($('proxy-use-pac-url'));
 
       $('ip-automatic-configuration-checkbox').addEventListener('click',
         this.handleIpAutoConfig_);
@@ -430,6 +433,16 @@ cr.define('options.internet', function() {
     },
 
     /**
+     * Handler for when the user clicks on the checkbox to enter
+     * auto configuration URL.
+     * @private
+     * @param {Event} e Click Event.
+     */
+    handleAutoConfigProxy_: function(e) {
+      $('proxy-pac-url').disabled = !$('proxy-use-pac-url').checked;
+    },
+
+    /**
      * Handler for selecting a radio button that will disable the manual
      * controls.
      * @private
@@ -448,8 +461,10 @@ cr.define('options.internet', function() {
       $('ftp-proxy-port').disabled = true;
       $('socks-host').disabled = true;
       $('socks-port').disabled = true;
-      $('proxy-config').disabled = $('auto-proxy').disabled ||
-                                   !$('auto-proxy').checked;
+      $('proxy-use-pac-url').disabled = $('auto-proxy').disabled ||
+                                        !$('auto-proxy').checked;
+      $('proxy-pac-url').disabled = $('proxy-use-pac-url').disabled ||
+                                    !$('proxy-use-pac-url').checked;
     },
 
     /**
@@ -476,7 +491,8 @@ cr.define('options.internet', function() {
       $('ftp-proxy-port').disabled = allDisabled;
       $('socks-host').disabled = allDisabled;
       $('socks-port').disabled = allDisabled;
-      $('proxy-config').disabled = true;
+      $('proxy-use-pac-url').disabled = true;
+      $('proxy-pac-url').disabled = true;
     },
   };
 
