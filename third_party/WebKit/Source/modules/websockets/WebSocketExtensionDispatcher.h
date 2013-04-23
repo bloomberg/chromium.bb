@@ -31,12 +31,12 @@
 #ifndef WebSocketExtensionDispatcher_h
 #define WebSocketExtensionDispatcher_h
 
-#include "WebSocketExtensionProcessor.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "modules/websockets/WebSocketExtensionProcessor.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

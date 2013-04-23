@@ -26,11 +26,11 @@
 #ifndef IDBVersionChangeEvent_h
 #define IDBVersionChangeEvent_h
 
-#include "Event.h"
-#include "IDBAny.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/Event.h"
+#include "modules/indexeddb/IDBAny.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

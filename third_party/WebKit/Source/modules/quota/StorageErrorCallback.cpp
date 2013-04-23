@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include "StorageErrorCallback.h"
+#include "modules/quota/StorageErrorCallback.h"
 
-#include "DOMCoreException.h"
 #include "ExceptionCodeDescription.h"
+#include "core/dom/DOMCoreException.h"
 
 namespace WebCore {
 

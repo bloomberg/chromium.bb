@@ -33,16 +33,16 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ActiveDOMObject.h"
-#include "Dictionary.h"
-#include "EventTarget.h"
-#include "ExceptionBase.h"
-#include "MediaStream.h"
-#include "RTCIceCandidate.h"
-#include "RTCPeerConnectionHandler.h"
-#include "RTCPeerConnectionHandlerClient.h"
-#include "Timer.h"
-#include <wtf/RefCounted.h>
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionBase.h"
+#include "core/platform/Timer.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
+#include "modules/mediastream/MediaStream.h"
+#include "modules/mediastream/RTCIceCandidate.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

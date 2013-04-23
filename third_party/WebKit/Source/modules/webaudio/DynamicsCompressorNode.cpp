@@ -26,12 +26,12 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "DynamicsCompressorNode.h"
+#include "modules/webaudio/DynamicsCompressorNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
-#include "DynamicsCompressor.h"
+#include "core/platform/audio/DynamicsCompressor.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
 
 // Set output to stereo by default.
 static const unsigned defaultNumberOfOutputChannels = 2;

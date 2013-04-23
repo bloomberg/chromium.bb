@@ -27,12 +27,12 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioParamTimeline.h"
+#include "modules/webaudio/AudioParamTimeline.h"
 
-#include "AudioUtilities.h"
-#include "FloatConversion.h"
+#include "core/platform/FloatConversion.h"
+#include "core/platform/audio/AudioUtilities.h"
 #include <algorithm>
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

@@ -25,12 +25,12 @@
 #ifndef WaveShaperProcessor_h
 #define WaveShaperProcessor_h
 
-#include "AudioDSPKernel.h"
-#include "AudioDSPKernelProcessor.h"
-#include "AudioNode.h"
-#include <wtf/Float32Array.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
+#include "core/platform/audio/AudioDSPKernel.h"
+#include "core/platform/audio/AudioDSPKernelProcessor.h"
+#include "modules/webaudio/AudioNode.h"
+#include "wtf/Float32Array.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

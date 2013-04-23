@@ -26,8 +26,8 @@
 #ifndef Coordinates_h
 #define Coordinates_h
 
-#include "Event.h"
-#include <wtf/RefCounted.h>
+#include "core/dom/Event.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

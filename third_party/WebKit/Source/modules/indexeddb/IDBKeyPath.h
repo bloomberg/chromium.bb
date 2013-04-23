@@ -26,8 +26,8 @@
 #ifndef IDBKeyPath_h
 #define IDBKeyPath_h
 
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

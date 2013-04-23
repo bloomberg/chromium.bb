@@ -22,8 +22,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

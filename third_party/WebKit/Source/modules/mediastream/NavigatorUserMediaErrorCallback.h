@@ -27,8 +27,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "NavigatorUserMediaError.h"
-#include <wtf/RefCounted.h>
+#include "modules/mediastream/NavigatorUserMediaError.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

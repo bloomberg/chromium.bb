@@ -29,9 +29,9 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "DOMWindowProperty.h"
-#include "Supplementable.h"
-#include <wtf/text/WTFString.h>
+#include "core/page/DOMWindowProperty.h"
+#include "core/platform/Supplementable.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

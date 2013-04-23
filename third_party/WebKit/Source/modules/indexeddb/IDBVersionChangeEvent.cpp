@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "IDBVersionChangeEvent.h"
+#include "modules/indexeddb/IDBVersionChangeEvent.h"
 
-#include "EventNames.h"
-#include "IDBAny.h"
+#include "core/dom/EventNames.h"
+#include "modules/indexeddb/IDBAny.h"
 
 namespace WebCore {
 

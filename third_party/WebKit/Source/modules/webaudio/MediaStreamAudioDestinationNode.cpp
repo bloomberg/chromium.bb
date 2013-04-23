@@ -26,15 +26,15 @@
 
 #if ENABLE(WEB_AUDIO) && ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamAudioDestinationNode.h"
+#include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "LocalMediaStream.h"
-#include "MediaStreamCenter.h"
-#include "RTCPeerConnectionHandler.h"
-#include "UUID.h"
-#include <wtf/Locker.h>
+#include "core/platform/UUID.h"
+#include "core/platform/mediastream/MediaStreamCenter.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "modules/mediastream/LocalMediaStream.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "wtf/Locker.h"
 
 namespace WebCore {
 

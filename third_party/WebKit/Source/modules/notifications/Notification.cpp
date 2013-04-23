@@ -33,23 +33,23 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "Notification.h"
+#include "modules/notifications/Notification.h"
 
-#include "DOMWindow.h"
-#include "DOMWindowNotifications.h"
-#include "Dictionary.h"
-#include "Document.h"
-#include "ErrorEvent.h"
-#include "EventNames.h"
-#include "NotificationCenter.h"
-#include "NotificationClient.h"
-#include "NotificationController.h"
-#include "NotificationPermissionCallback.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
-#include "ThreadableLoader.h"
-#include "WindowFocusAllowedIndicator.h"
-#include "WorkerContext.h"
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/Document.h"
+#include "core/dom/ErrorEvent.h"
+#include "core/dom/EventNames.h"
+#include "core/loader/ThreadableLoader.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/WindowFocusAllowedIndicator.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
+#include "core/workers/WorkerContext.h"
+#include "modules/notifications/DOMWindowNotifications.h"
+#include "modules/notifications/NotificationCenter.h"
+#include "modules/notifications/NotificationClient.h"
+#include "modules/notifications/NotificationController.h"
+#include "modules/notifications/NotificationPermissionCallback.h"
 
 namespace WebCore {
 

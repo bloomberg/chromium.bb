@@ -26,16 +26,16 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioBufferSourceNode.h"
+#include "modules/webaudio/AudioBufferSourceNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeOutput.h"
-#include "AudioUtilities.h"
-#include "FloatConversion.h"
-#include "PageConsole.h"
+#include "core/page/PageConsole.h"
+#include "core/platform/FloatConversion.h"
+#include "core/platform/audio/AudioUtilities.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
-#include <wtf/MainThread.h>
-#include <wtf/MathExtras.h>
+#include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "NavigatorGamepad.h"
+#include "modules/gamepad/NavigatorGamepad.h"
 
 #if ENABLE(GAMEPAD)
 
-#include "GamepadList.h"
-#include "Gamepads.h"
-#include "Navigator.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/page/Navigator.h"
+#include "core/platform/Gamepads.h"
+#include "modules/gamepad/GamepadList.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -32,11 +32,11 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCVoidRequestImpl.h"
+#include "modules/mediastream/RTCVoidRequestImpl.h"
 
-#include "RTCErrorCallback.h"
-#include "RTCPeerConnection.h"
-#include "VoidCallback.h"
+#include "core/html/VoidCallback.h"
+#include "modules/mediastream/RTCErrorCallback.h"
+#include "modules/mediastream/RTCPeerConnection.h"
 
 namespace WebCore {
 

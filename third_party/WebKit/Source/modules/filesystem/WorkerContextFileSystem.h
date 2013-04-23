@@ -27,8 +27,8 @@
 #ifndef WorkerContextFileSystem_h
 #define WorkerContextFileSystem_h
 
-#include "DOMFileSystemSync.h"
-#include <wtf/PassRefPtr.h>
+#include "modules/filesystem/DOMFileSystemSync.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

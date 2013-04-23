@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "EntryArraySync.h"
+#include "modules/filesystem/EntryArraySync.h"
 
-#include "EntryArray.h"
+#include "modules/filesystem/EntryArray.h"
 
 namespace WebCore {
 

@@ -26,14 +26,14 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AsyncAudioDecoder.h"
+#include "modules/webaudio/AsyncAudioDecoder.h"
 
-#include "AudioBuffer.h"
-#include "AudioBufferCallback.h"
-#include <wtf/ArrayBuffer.h>
-#include <wtf/MainThread.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioBufferCallback.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/MainThread.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

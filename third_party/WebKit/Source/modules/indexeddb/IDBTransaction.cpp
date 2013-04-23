@@ -24,21 +24,21 @@
  */
 
 #include "config.h"
-#include "IDBTransaction.h"
+#include "modules/indexeddb/IDBTransaction.h"
 
-#include "EventException.h"
-#include "EventQueue.h"
-#include "ExceptionCodePlaceholder.h"
-#include "IDBDatabase.h"
-#include "IDBDatabaseException.h"
-#include "IDBEventDispatcher.h"
-#include "IDBIndex.h"
-#include "IDBObjectStore.h"
-#include "IDBOpenDBRequest.h"
-#include "IDBPendingTransactionMonitor.h"
-#include "IDBTracing.h"
-#include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventQueue.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBEventDispatcher.h"
+#include "modules/indexeddb/IDBIndex.h"
+#include "modules/indexeddb/IDBObjectStore.h"
+#include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
+#include "modules/indexeddb/IDBTracing.h"
 
 namespace WebCore {
 

@@ -30,11 +30,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "ChannelMergerNode.h"
+#include "modules/webaudio/ChannelMergerNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
 
 const unsigned DefaultNumberOfOutputChannels = 1;
 

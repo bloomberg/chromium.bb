@@ -26,11 +26,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioBasicInspectorNode.h"
+#include "modules/webaudio/AudioBasicInspectorNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
 
 namespace WebCore {
 

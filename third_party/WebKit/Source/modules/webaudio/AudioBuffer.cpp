@@ -30,13 +30,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioBuffer.h"
+#include "modules/webaudio/AudioBuffer.h"
 
-#include "AudioBus.h"
-#include "AudioContext.h"
-#include "AudioFileReader.h"
-#include "ExceptionCode.h"
-#include <wtf/OwnPtr.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioFileReader.h"
+#include "modules/webaudio/AudioContext.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

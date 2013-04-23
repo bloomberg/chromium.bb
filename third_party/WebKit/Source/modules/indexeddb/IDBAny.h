@@ -26,13 +26,13 @@
 #ifndef IDBAny_h
 #define IDBAny_h
 
-#include "IDBKeyPath.h"
-#include "ScriptValue.h"
-#include "ScriptWrappable.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

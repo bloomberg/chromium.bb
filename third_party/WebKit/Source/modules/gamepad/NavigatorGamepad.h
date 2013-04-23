@@ -28,7 +28,7 @@
 
 #if ENABLE(GAMEPAD)
 
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 
 namespace WebCore {
 

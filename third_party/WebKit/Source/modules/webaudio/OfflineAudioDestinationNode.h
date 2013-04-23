@@ -25,11 +25,11 @@
 #ifndef OfflineAudioDestinationNode_h
 #define OfflineAudioDestinationNode_h
 
-#include "AudioBuffer.h"
-#include "AudioDestinationNode.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioDestinationNode.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

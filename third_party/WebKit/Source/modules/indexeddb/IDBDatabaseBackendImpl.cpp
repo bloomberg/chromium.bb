@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
-#include "IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
 
-#include "IDBBackingStore.h"
-#include "IDBCursorBackendImpl.h"
-#include "IDBDatabaseException.h"
-#include "IDBFactoryBackendImpl.h"
-#include "IDBKeyRange.h"
-#include "IDBObjectStoreBackendImpl.h"
-#include "IDBTracing.h"
-#include "IDBTransactionBackendImpl.h"
-#include "IDBTransactionCoordinator.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBCursorBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBFactoryBackendImpl.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBObjectStoreBackendImpl.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransactionBackendImpl.h"
+#include "modules/indexeddb/IDBTransactionCoordinator.h"
 #include <public/Platform.h>
-#include <wtf/TemporaryChange.h>
+#include "wtf/TemporaryChange.h"
 
 namespace WebCore {
 

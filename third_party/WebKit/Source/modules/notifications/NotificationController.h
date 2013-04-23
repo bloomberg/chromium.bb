@@ -28,9 +28,9 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "Page.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
+#include "core/page/Page.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

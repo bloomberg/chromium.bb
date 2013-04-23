@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "DatabaseBase.h"
+#include "modules/webdatabase/DatabaseBase.h"
 
-#include "ScriptExecutionContext.h"
-#include <wtf/Assertions.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

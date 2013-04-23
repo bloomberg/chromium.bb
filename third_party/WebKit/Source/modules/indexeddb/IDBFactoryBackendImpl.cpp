@@ -27,16 +27,16 @@
  */
 
 #include "config.h"
-#include "IDBFactoryBackendImpl.h"
+#include "modules/indexeddb/IDBFactoryBackendImpl.h"
 
-#include "DOMStringList.h"
-#include "IDBBackingStore.h"
-#include "IDBDatabaseBackendImpl.h"
-#include "IDBDatabaseException.h"
-#include "IDBTracing.h"
-#include "IDBTransactionCoordinator.h"
-#include "SecurityOrigin.h"
-#include <wtf/UnusedParam.h>
+#include "core/dom/DOMStringList.h"
+#include "core/page/SecurityOrigin.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransactionCoordinator.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

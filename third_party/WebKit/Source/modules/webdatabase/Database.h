@@ -29,11 +29,11 @@
 #ifndef Database_h
 #define Database_h
 
-#include "DatabaseBackend.h"
-#include "DatabaseBase.h"
-#include "DatabaseBasicTypes.h"
-#include "DatabaseError.h"
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/DatabaseBase.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/DatabaseError.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

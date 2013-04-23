@@ -30,23 +30,23 @@
  */
 
 #include "config.h"
-#include "SQLTransactionBackendSync.h"
+#include "modules/webdatabase/SQLTransactionBackendSync.h"
 
-#include "DatabaseAuthorizer.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseSync.h"
-#include "SQLException.h"
-#include "SQLResultSet.h"
-#include "SQLStatementSync.h"
-#include "SQLTransactionClient.h"
-#include "SQLTransactionSync.h"
-#include "SQLTransactionSyncCallback.h"
-#include "SQLValue.h"
-#include "SQLiteTransaction.h"
-#include "ScriptExecutionContext.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/sql/SQLValue.h"
+#include "core/platform/sql/SQLiteTransaction.h"
+#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseSync.h"
+#include "modules/webdatabase/SQLException.h"
+#include "modules/webdatabase/SQLResultSet.h"
+#include "modules/webdatabase/SQLStatementSync.h"
+#include "modules/webdatabase/SQLTransactionClient.h"
+#include "modules/webdatabase/SQLTransactionSync.h"
+#include "modules/webdatabase/SQLTransactionSyncCallback.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

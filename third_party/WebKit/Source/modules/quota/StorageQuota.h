@@ -31,8 +31,8 @@
 #ifndef StorageQuota_h
 #define StorageQuota_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "IDBAny.h"
+#include "modules/indexeddb/IDBAny.h"
 
-#include "IDBCursorWithValue.h"
-#include "IDBDatabase.h"
-#include "IDBFactory.h"
-#include "IDBIndex.h"
-#include "IDBKeyPath.h"
-#include "IDBObjectStore.h"
-#include "DOMStringList.h"
+#include "core/dom/DOMStringList.h"
+#include "modules/indexeddb/IDBCursorWithValue.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBFactory.h"
+#include "modules/indexeddb/IDBIndex.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBObjectStore.h"
 
 namespace WebCore {
 

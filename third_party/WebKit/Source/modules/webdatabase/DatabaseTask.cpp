@@ -26,11 +26,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "DatabaseTask.h"
+#include "modules/webdatabase/DatabaseTask.h"
 
-#include "Database.h"
-#include "DatabaseBackend.h"
-#include "Logging.h"
+#include "core/platform/Logging.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 
 namespace WebCore {
 

@@ -28,10 +28,10 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Uint8Array.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Uint8Array.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

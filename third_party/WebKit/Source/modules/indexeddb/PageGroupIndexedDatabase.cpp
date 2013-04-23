@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "PageGroupIndexedDatabase.h"
+#include "modules/indexeddb/PageGroupIndexedDatabase.h"
 
-#include "IDBFactoryBackendInterface.h"
-#include "PageGroup.h"
+#include "core/page/PageGroup.h"
+#include "modules/indexeddb/IDBFactoryBackendInterface.h"
 
 namespace WebCore {
 

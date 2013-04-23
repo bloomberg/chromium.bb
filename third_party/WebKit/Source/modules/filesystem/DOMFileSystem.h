@@ -31,9 +31,9 @@
 #ifndef DOMFileSystem_h
 #define DOMFileSystem_h
 
-#include "ActiveDOMObject.h"
-#include "DOMFileSystemBase.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/filesystem/DOMFileSystemBase.h"
 
 namespace WebCore {
 

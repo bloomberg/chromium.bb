@@ -29,13 +29,13 @@
 #ifndef WaveTable_h
 #define WaveTable_h
 
-#include "AudioArray.h"
-#include <wtf/Float32Array.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "core/platform/audio/AudioArray.h"
+#include "wtf/Float32Array.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

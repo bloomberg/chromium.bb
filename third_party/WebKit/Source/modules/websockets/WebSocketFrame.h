@@ -31,7 +31,7 @@
 #ifndef WebSocketFrame_h
 #define WebSocketFrame_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

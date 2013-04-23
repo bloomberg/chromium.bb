@@ -26,12 +26,12 @@
 #ifndef IDBDatabaseBackendImpl_h
 #define IDBDatabaseBackendImpl_h
 
-#include "IDBCallbacks.h"
-#include "IDBMetadata.h"
+#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBMetadata.h"
 #include <stdint.h>
-#include <wtf/Deque.h>
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
+#include "wtf/Deque.h"
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
 
 namespace WebCore {
 

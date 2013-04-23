@@ -26,13 +26,13 @@
 
 #if ENABLE(WEB_AUDIO) && ENABLE(VIDEO)
 
-#include "MediaElementAudioSourceNode.h"
+#include "modules/webaudio/MediaElementAudioSourceNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeOutput.h"
-#include "Logging.h"
-#include "MediaPlayer.h"
-#include <wtf/Locker.h>
+#include "core/platform/Logging.h"
+#include "core/platform/graphics/MediaPlayer.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "wtf/Locker.h"
 
 // These are somewhat arbitrary limits, but we need to do some kind of sanity-checking.
 const unsigned minSampleRate = 8000;

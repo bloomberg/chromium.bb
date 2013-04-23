@@ -28,8 +28,8 @@
 #ifndef SQLCallbackWrapper_h
 #define SQLCallbackWrapper_h
 
-#include "ScriptExecutionContext.h"
-#include <wtf/ThreadingPrimitives.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/ThreadingPrimitives.h"
 
 namespace WebCore {
 

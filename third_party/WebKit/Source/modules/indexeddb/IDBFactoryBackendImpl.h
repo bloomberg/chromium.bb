@@ -28,15 +28,15 @@
 #ifndef IDBFactoryBackendImpl_h
 #define IDBFactoryBackendImpl_h
 
-#include "IDBCallbacks.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBFactoryBackendInterface.h"
-#include "SecurityOrigin.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefCounted.h>
-#include <wtf/WeakPtr.h>
-#include <wtf/text/StringHash.h>
+#include "core/page/SecurityOrigin.h"
+#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBFactoryBackendInterface.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefCounted.h"
+#include "wtf/WeakPtr.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

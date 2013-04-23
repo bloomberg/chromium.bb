@@ -26,7 +26,7 @@
 #ifndef DatabaseError_h
 #define DatabaseError_h
 
-#include <wtf/EnumClass.h>
+#include "wtf/EnumClass.h"
 
 namespace WebCore {
 

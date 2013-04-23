@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "DOMWindowQuota.h"
+#include "modules/quota/DOMWindowQuota.h"
 
-#include "DOMWindow.h"
-#include "Document.h"
-#include "Frame.h"
-#include "PageConsole.h"
-#include "StorageInfo.h"
-#include <wtf/PassRefPtr.h>
+#include "core/dom/Document.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/PageConsole.h"
+#include "modules/quota/StorageInfo.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

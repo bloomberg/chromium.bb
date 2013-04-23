@@ -26,15 +26,15 @@
 
 #include "config.h"
 
-#include "DOMWindowWebDatabase.h"
+#include "modules/webdatabase/DOMWindowWebDatabase.h"
 
-#include "DOMWindow.h"
-#include "Database.h"
-#include "DatabaseCallback.h"
-#include "DatabaseManager.h"
-#include "Document.h"
-#include "Frame.h"
-#include "SecurityOrigin.h"
+#include "core/dom/Document.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseCallback.h"
+#include "modules/webdatabase/DatabaseManager.h"
 
 namespace WebCore {
 

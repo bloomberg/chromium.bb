@@ -27,12 +27,12 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ActiveDOMObject.h"
-#include "RTCStatsRequest.h"
-#include "RTCStatsResponse.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/platform/mediastream/RTCStatsRequest.h"
+#include "modules/mediastream/RTCStatsResponse.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

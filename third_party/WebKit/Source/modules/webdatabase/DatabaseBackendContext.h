@@ -26,7 +26,7 @@
 #ifndef DatabaseBackendContext_h
 #define DatabaseBackendContext_h
 
-#include "DatabaseContext.h"
+#include "modules/webdatabase/DatabaseContext.h"
 
 namespace WebCore {
 

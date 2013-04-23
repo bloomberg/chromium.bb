@@ -21,12 +21,12 @@
  */
 
 #include "config.h"
-#include "NavigatorGeolocation.h"
+#include "modules/geolocation/NavigatorGeolocation.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "Geolocation.h"
-#include "Navigator.h"
+#include "core/dom/Document.h"
+#include "core/page/Frame.h"
+#include "core/page/Navigator.h"
+#include "modules/geolocation/Geolocation.h"
 
 namespace WebCore {
 

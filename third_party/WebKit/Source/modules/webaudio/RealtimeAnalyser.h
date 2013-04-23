@@ -25,10 +25,10 @@
 #ifndef RealtimeAnalyser_h
 #define RealtimeAnalyser_h
 
-#include "AudioArray.h"
-#include <wtf/Forward.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
+#include "core/platform/audio/AudioArray.h"
+#include "wtf/Forward.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

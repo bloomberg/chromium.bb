@@ -33,8 +33,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ActiveDOMObject.h"
-#include "RTCSessionDescriptionRequest.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
 
 namespace WebCore {
 

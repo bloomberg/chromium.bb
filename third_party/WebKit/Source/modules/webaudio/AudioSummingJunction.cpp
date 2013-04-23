@@ -26,10 +26,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioSummingJunction.h"
+#include "modules/webaudio/AudioSummingJunction.h"
 
-#include "AudioContext.h"
-#include "AudioNodeOutput.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 
 using namespace std;

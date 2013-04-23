@@ -27,13 +27,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioParam.h"
+#include "modules/webaudio/AudioParam.h"
 
-#include "AudioNode.h"
-#include "AudioNodeOutput.h"
-#include "AudioUtilities.h"
-#include "FloatConversion.h"
-#include <wtf/MathExtras.h>
+#include "core/platform/FloatConversion.h"
+#include "core/platform/audio/AudioUtilities.h"
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

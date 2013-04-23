@@ -26,11 +26,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeInput.h"
 
-#include "AudioContext.h"
-#include "AudioNode.h"
-#include "AudioNodeOutput.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioNodeOutput.h"
 #include <algorithm>
 
 using namespace std;

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Coordinates.h"
+#include "modules/geolocation/Coordinates.h"
 
 namespace WebCore {
 

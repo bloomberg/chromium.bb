@@ -26,7 +26,7 @@
 #ifndef ChangeVersionData_h
 #define ChangeVersionData_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

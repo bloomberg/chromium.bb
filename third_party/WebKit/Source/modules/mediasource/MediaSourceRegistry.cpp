@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "MediaSourceRegistry.h"
+#include "modules/mediasource/MediaSourceRegistry.h"
 
-#include "KURL.h"
-#include "MediaSource.h"
-#include <wtf/MainThread.h>
+#include "core/platform/KURL.h"
+#include "modules/mediasource/MediaSource.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

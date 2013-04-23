@@ -33,17 +33,17 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "UserMediaRequest.h"
+#include "modules/mediastream/UserMediaRequest.h"
 
-#include "Dictionary.h"
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "LocalMediaStream.h"
-#include "MediaConstraintsImpl.h"
-#include "MediaStreamCenter.h"
-#include "MediaStreamDescriptor.h"
-#include "SpaceSplitString.h"
-#include "UserMediaController.h"
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/SpaceSplitString.h"
+#include "core/platform/mediastream/MediaStreamCenter.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "modules/mediastream/LocalMediaStream.h"
+#include "modules/mediastream/MediaConstraintsImpl.h"
+#include "modules/mediastream/UserMediaController.h"
 
 namespace WebCore {
 

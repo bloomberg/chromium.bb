@@ -29,8 +29,8 @@
 #ifndef DatabaseDetails_h
 #define DatabaseDetails_h
 
-#include <wtf/Threading.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Threading.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

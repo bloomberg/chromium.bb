@@ -33,8 +33,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "UserMediaRequest.h"
-#include <wtf/text/WTFString.h>
+#include "modules/mediastream/UserMediaRequest.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

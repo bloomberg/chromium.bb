@@ -26,9 +26,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "BiquadProcessor.h"
+#include "modules/webaudio/BiquadProcessor.h"
 
-#include "BiquadDSPKernel.h"
+#include "modules/webaudio/BiquadDSPKernel.h"
 
 namespace WebCore {
     

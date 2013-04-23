@@ -31,11 +31,11 @@
 #ifndef DirectoryEntrySync_h
 #define DirectoryEntrySync_h
 
-#include "EntrySync.h"
-#include "FileSystemFlags.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "modules/filesystem/EntrySync.h"
+#include "modules/filesystem/FileSystemFlags.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

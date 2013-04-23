@@ -28,16 +28,16 @@
  */
 
 #include "config.h"
-#include "SQLStatementSync.h"
+#include "modules/webdatabase/SQLStatementSync.h"
 
-#include "DatabaseSync.h"
-#include "SQLException.h"
-#include "SQLResultSet.h"
-#include "SQLValue.h"
-#include "SQLiteDatabase.h"
-#include "SQLiteStatement.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "core/platform/sql/SQLValue.h"
+#include "core/platform/sql/SQLiteDatabase.h"
+#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/DatabaseSync.h"
+#include "modules/webdatabase/SQLException.h"
+#include "modules/webdatabase/SQLResultSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

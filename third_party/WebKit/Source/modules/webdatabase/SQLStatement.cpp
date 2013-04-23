@@ -26,20 +26,20 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "SQLStatement.h"
+#include "modules/webdatabase/SQLStatement.h"
 
-#include "AbstractDatabaseServer.h"
-#include "AbstractSQLStatementBackend.h"
-#include "Database.h"
-#include "DatabaseManager.h"
-#include "Logging.h"
-#include "SQLStatementCallback.h"
-#include "SQLStatementErrorCallback.h"
-#include "SQLTransaction.h"
-#include "SQLValue.h"
-#include "SQLiteDatabase.h"
-#include "SQLiteStatement.h"
-#include <wtf/text/CString.h>
+#include "core/platform/Logging.h"
+#include "core/platform/sql/SQLValue.h"
+#include "core/platform/sql/SQLiteDatabase.h"
+#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/AbstractDatabaseServer.h"
+#include "modules/webdatabase/AbstractSQLStatementBackend.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/SQLStatementCallback.h"
+#include "modules/webdatabase/SQLStatementErrorCallback.h"
+#include "modules/webdatabase/SQLTransaction.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

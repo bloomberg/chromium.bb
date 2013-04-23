@@ -27,9 +27,9 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "Page.h"
-#include "UserMediaClient.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/page/Page.h"
+#include "modules/mediastream/UserMediaClient.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -31,7 +31,7 @@
 #ifndef DOMFileSystemSync_h
 #define DOMFileSystemSync_h
 
-#include "DOMFileSystemBase.h"
+#include "modules/filesystem/DOMFileSystemBase.h"
 
 namespace WebCore {
 

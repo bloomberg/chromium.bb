@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "DirectoryEntry.h"
+#include "modules/filesystem/DirectoryEntry.h"
 
-#include "DirectoryReader.h"
-#include "EntryCallback.h"
-#include "ErrorCallback.h"
-#include "FileError.h"
-#include "VoidCallback.h"
+#include "core/fileapi/FileError.h"
+#include "core/html/VoidCallback.h"
+#include "modules/filesystem/DirectoryReader.h"
+#include "modules/filesystem/EntryCallback.h"
+#include "modules/filesystem/ErrorCallback.h"
 
 namespace WebCore {
 

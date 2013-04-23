@@ -28,12 +28,12 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "ContextDestructionObserver.h"
-#include "EventTarget.h"
-#include "PlatformSpeechSynthesisUtterance.h"
-#include "SpeechSynthesisVoice.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/EventTarget.h"
+#include "core/platform/PlatformSpeechSynthesisUtterance.h"
+#include "modules/speech/SpeechSynthesisVoice.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
     

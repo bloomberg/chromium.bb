@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "GeolocationController.h"
+#include "modules/geolocation/GeolocationController.h"
 
-#include "GeolocationClient.h"
-#include "GeolocationError.h"
-#include "GeolocationPosition.h"
-#include "InspectorInstrumentation.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "modules/geolocation/GeolocationClient.h"
+#include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationPosition.h"
 
 namespace WebCore {
 

@@ -26,17 +26,17 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCDataChannel.h"
+#include "modules/mediastream/RTCDataChannel.h"
 
-#include "Blob.h"
-#include "Event.h"
-#include "ExceptionCode.h"
-#include "MessageEvent.h"
-#include "RTCDataChannelHandler.h"
-#include "RTCPeerConnectionHandler.h"
-#include "ScriptExecutionContext.h"
-#include <wtf/ArrayBuffer.h>
-#include <wtf/ArrayBufferView.h>
+#include "core/dom/Event.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessageEvent.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
+#include "core/platform/mediastream/RTCDataChannelHandler.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
 

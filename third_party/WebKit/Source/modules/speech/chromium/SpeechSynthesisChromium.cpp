@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "SpeechSynthesis.h"
+#include "modules/speech/SpeechSynthesis.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "SpeechSynthesisUtterance.h"
-#include "SpeechSynthesisVoice.h"
+#include "modules/speech/SpeechSynthesisUtterance.h"
+#include "modules/speech/SpeechSynthesisVoice.h"
 
 namespace WebCore {
     

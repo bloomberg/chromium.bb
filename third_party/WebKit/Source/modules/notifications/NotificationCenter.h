@@ -32,15 +32,15 @@
 #ifndef NotificationCenter_h
 #define NotificationCenter_h
 
-#include "ExceptionCode.h"
-#include "Notification.h"
-#include "ScriptExecutionContext.h"
-#include "Timer.h"
-#include "VoidCallback.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/html/VoidCallback.h"
+#include "core/platform/Timer.h"
+#include "modules/notifications/Notification.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 

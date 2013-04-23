@@ -24,24 +24,24 @@
  */
 
 #include "config.h"
-#include "IDBObjectStore.h"
+#include "modules/indexeddb/IDBObjectStore.h"
 
-#include "DOMStringList.h"
-#include "IDBAny.h"
-#include "IDBBindingUtilities.h"
-#include "IDBCursorWithValue.h"
-#include "IDBDatabase.h"
-#include "IDBDatabaseException.h"
-#include "IDBIndex.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "IDBKeyRange.h"
-#include "IDBTracing.h"
-#include "IDBTransaction.h"
-#include "ScriptExecutionContext.h"
-#include "SerializedScriptValue.h"
-#include "SharedBuffer.h"
-#include <wtf/UnusedParam.h>
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "core/dom/DOMStringList.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBAny.h"
+#include "modules/indexeddb/IDBCursorWithValue.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBIndex.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransaction.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

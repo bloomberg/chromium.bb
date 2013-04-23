@@ -28,8 +28,8 @@
 #ifndef ChangeVersionWrapper_h
 #define ChangeVersionWrapper_h
 
-#include "SQLTransactionBackend.h"
-#include <wtf/Forward.h>
+#include "modules/webdatabase/SQLTransactionBackend.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

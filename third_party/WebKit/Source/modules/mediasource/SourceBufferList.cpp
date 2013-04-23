@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "SourceBufferList.h"
+#include "modules/mediasource/SourceBufferList.h"
 
-#include "Event.h"
-#include "GenericEventQueue.h"
-#include "SourceBuffer.h"
+#include "core/dom/Event.h"
+#include "core/dom/GenericEventQueue.h"
+#include "modules/mediasource/SourceBuffer.h"
 
 namespace WebCore {
 

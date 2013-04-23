@@ -31,10 +31,10 @@
 #ifndef SourceBuffer_h
 #define SourceBuffer_h
 
-#include "ExceptionCode.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ExceptionCode.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 class MediaSource;

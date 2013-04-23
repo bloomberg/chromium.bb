@@ -27,14 +27,14 @@
 #ifndef Geolocation_h
 #define Geolocation_h
 
-#include "ActiveDOMObject.h"
-#include "Geoposition.h"
-#include "PositionCallback.h"
-#include "PositionError.h"
-#include "PositionErrorCallback.h"
-#include "PositionOptions.h"
-#include "ScriptWrappable.h"
-#include "Timer.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/platform/Timer.h"
+#include "modules/geolocation/Geoposition.h"
+#include "modules/geolocation/PositionCallback.h"
+#include "modules/geolocation/PositionError.h"
+#include "modules/geolocation/PositionErrorCallback.h"
+#include "modules/geolocation/PositionOptions.h"
 
 namespace WebCore {
 

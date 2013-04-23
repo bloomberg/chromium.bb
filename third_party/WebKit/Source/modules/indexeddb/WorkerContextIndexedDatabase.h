@@ -27,7 +27,7 @@
 #ifndef WorkerContextIndexedDatabase_h
 #define WorkerContextIndexedDatabase_h
 
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 
 namespace WebCore {
 

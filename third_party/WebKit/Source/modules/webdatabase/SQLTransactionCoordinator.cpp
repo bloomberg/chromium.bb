@@ -30,15 +30,15 @@
  */
 
 #include "config.h"
-#include "SQLTransactionCoordinator.h"
+#include "modules/webdatabase/SQLTransactionCoordinator.h"
 
-#include "DatabaseBackend.h"
-#include "SQLTransactionBackend.h"
-#include "SecurityOrigin.h"
-#include <wtf/Deque.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
+#include "core/page/SecurityOrigin.h"
+#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/SQLTransactionBackend.h"
+#include "wtf/Deque.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

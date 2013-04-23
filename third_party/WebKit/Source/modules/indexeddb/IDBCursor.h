@@ -26,14 +26,14 @@
 #ifndef IDBCursor_h
 #define IDBCursor_h
 
-#include "IDBKey.h"
-#include "IDBTransaction.h"
-#include "IndexedDB.h"
-#include "ScriptValue.h"
-#include "ScriptWrappable.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBTransaction.h"
+#include "modules/indexeddb/IndexedDB.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

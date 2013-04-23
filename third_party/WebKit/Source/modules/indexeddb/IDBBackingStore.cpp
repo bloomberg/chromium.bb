@@ -24,24 +24,24 @@
  */
 
 #include "config.h"
-#include "IDBBackingStore.h"
+#include "modules/indexeddb/IDBBackingStore.h"
 
-#include "FileSystem.h"
-#include "HistogramSupport.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "IDBKeyRange.h"
-#include "IDBLevelDBCoding.h"
-#include "IDBMetadata.h"
-#include "IDBTracing.h"
-#include "LevelDBComparator.h"
-#include "LevelDBDatabase.h"
-#include "LevelDBIterator.h"
-#include "LevelDBSlice.h"
-#include "LevelDBTransaction.h"
-#include "SharedBuffer.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/HistogramSupport.h"
+#include "core/platform/SharedBuffer.h"
+#include "core/platform/leveldb/LevelDBComparator.h"
+#include "core/platform/leveldb/LevelDBDatabase.h"
+#include "core/platform/leveldb/LevelDBIterator.h"
+#include "core/platform/leveldb/LevelDBSlice.h"
+#include "core/platform/leveldb/LevelDBTransaction.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBLevelDBCoding.h"
+#include "modules/indexeddb/IDBMetadata.h"
+#include "modules/indexeddb/IDBTracing.h"
 #include <public/Platform.h>
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

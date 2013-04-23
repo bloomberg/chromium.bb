@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "IDBTransactionBackendImpl.h"
+#include "modules/indexeddb/IDBTransactionBackendImpl.h"
 
-#include "IDBBackingStore.h"
-#include "IDBCursorBackendImpl.h"
-#include "IDBDatabaseBackendImpl.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBDatabaseException.h"
-#include "IDBTracing.h"
-#include "IDBTransactionCoordinator.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBCursorBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransactionCoordinator.h"
 
 namespace WebCore {
 

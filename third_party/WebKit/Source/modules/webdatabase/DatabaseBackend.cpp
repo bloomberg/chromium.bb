@@ -24,19 +24,19 @@
  */
 
 #include "config.h"
-#include "DatabaseBackend.h"
+#include "modules/webdatabase/DatabaseBackend.h"
 
-#include "ChangeVersionData.h"
-#include "ChangeVersionWrapper.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseTask.h"
-#include "DatabaseThread.h"
-#include "DatabaseTracker.h"
-#include "Logging.h"
-#include "SQLTransaction.h"
-#include "SQLTransactionBackend.h"
-#include "SQLTransactionClient.h"
-#include "SQLTransactionCoordinator.h"
+#include "core/platform/Logging.h"
+#include "modules/webdatabase/ChangeVersionData.h"
+#include "modules/webdatabase/ChangeVersionWrapper.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseTask.h"
+#include "modules/webdatabase/DatabaseThread.h"
+#include "modules/webdatabase/DatabaseTracker.h"
+#include "modules/webdatabase/SQLTransaction.h"
+#include "modules/webdatabase/SQLTransactionBackend.h"
+#include "modules/webdatabase/SQLTransactionClient.h"
+#include "modules/webdatabase/SQLTransactionCoordinator.h"
 
 namespace WebCore {
 

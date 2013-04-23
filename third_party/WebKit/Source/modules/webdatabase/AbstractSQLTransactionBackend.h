@@ -26,14 +26,14 @@
 #ifndef AbstractSQLTransactionBackend_h
 #define AbstractSQLTransactionBackend_h
 
-#include "AbstractSQLStatement.h"
-#include "SQLError.h"
-#include "SQLTransactionState.h"
-#include "SQLValue.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/AbstractSQLStatement.h"
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLTransactionState.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WebSocketHandshakeRequest.h"
+#include "modules/websockets/WebSocketHandshakeRequest.h"
 
 #include <cstring>
 

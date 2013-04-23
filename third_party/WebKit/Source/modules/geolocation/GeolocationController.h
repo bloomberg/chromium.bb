@@ -26,11 +26,11 @@
 #ifndef GeolocationController_h
 #define GeolocationController_h
 
-#include "Geolocation.h"
-#include "Page.h"
-#include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/RefPtr.h>
+#include "core/page/Page.h"
+#include "modules/geolocation/Geolocation.h"
+#include "wtf/HashSet.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

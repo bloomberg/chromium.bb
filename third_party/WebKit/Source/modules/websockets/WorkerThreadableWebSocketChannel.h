@@ -31,15 +31,15 @@
 #ifndef WorkerThreadableWebSocketChannel_h
 #define WorkerThreadableWebSocketChannel_h
 
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
-#include "WorkerContext.h"
+#include "core/workers/WorkerContext.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannelClient.h"
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

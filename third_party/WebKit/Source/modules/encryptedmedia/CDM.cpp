@@ -27,15 +27,15 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "CDM.h"
+#include "modules/encryptedmedia/CDM.h"
 
-#include "CDMPrivate.h"
-#include "MediaKeyError.h"
-#include "MediaKeys.h"
-#include <wtf/text/WTFString.h>
+#include "core/html/MediaKeyError.h"
+#include "modules/encryptedmedia/CDMPrivate.h"
+#include "modules/encryptedmedia/MediaKeys.h"
+#include "wtf/text/WTFString.h"
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
-#include "CDMPrivateAVFoundation.h"
+#include "modules/encryptedmedia/CDMPrivateAVFoundation.h"
 #endif
 
 namespace WebCore {

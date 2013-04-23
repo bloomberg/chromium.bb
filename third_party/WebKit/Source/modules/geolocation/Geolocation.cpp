@@ -26,19 +26,19 @@
  */
 
 #include "config.h"
-#include "Geolocation.h"
+#include "modules/geolocation/Geolocation.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "Geoposition.h"
-#include "Page.h"
-#include <wtf/CurrentTime.h>
+#include "core/dom/Document.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "modules/geolocation/Geoposition.h"
+#include "wtf/CurrentTime.h"
 
-#include "Coordinates.h"
-#include "GeolocationController.h"
-#include "GeolocationError.h"
-#include "GeolocationPosition.h"
-#include "PositionError.h"
+#include "modules/geolocation/Coordinates.h"
+#include "modules/geolocation/GeolocationController.h"
+#include "modules/geolocation/GeolocationError.h"
+#include "modules/geolocation/GeolocationPosition.h"
+#include "modules/geolocation/PositionError.h"
 
 namespace WebCore {
 

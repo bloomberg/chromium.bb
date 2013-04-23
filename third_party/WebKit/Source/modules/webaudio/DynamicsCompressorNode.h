@@ -25,9 +25,9 @@
 #ifndef DynamicsCompressorNode_h
 #define DynamicsCompressorNode_h
 
-#include "AudioNode.h"
-#include "AudioParam.h"
-#include <wtf/OwnPtr.h>
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioParam.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

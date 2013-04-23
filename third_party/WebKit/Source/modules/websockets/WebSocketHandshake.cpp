@@ -31,30 +31,30 @@
 
 #include "config.h"
 
-#include "WebSocketHandshake.h"
 #include "WebSocket.h"
+#include "modules/websockets/WebSocketHandshake.h"
 
-#include "Cookie.h"
-#include "CookieJar.h"
-#include "Document.h"
-#include "HTTPHeaderMap.h"
-#include "HTTPParsers.h"
-#include "KURL.h"
-#include "Logging.h"
-#include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include <wtf/CryptographicallyRandomNumber.h>
-#include <wtf/MD5.h>
-#include <wtf/SHA1.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/StringExtras.h>
-#include <wtf/Vector.h>
-#include <wtf/text/Base64.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
-#include <wtf/unicode/CharacterNames.h>
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/loader/CookieJar.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/Cookie.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Logging.h"
+#include "core/platform/network/HTTPHeaderMap.h"
+#include "core/platform/network/HTTPParsers.h"
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/MD5.h"
+#include "wtf/SHA1.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/StringExtras.h"
+#include "wtf/Vector.h"
+#include "wtf/text/Base64.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
+#include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
 

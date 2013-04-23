@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "IDBDatabaseException.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #ifndef IDBDatabaseException_h
 #define IDBDatabaseException_h
 
-#include "ExceptionBase.h"
+#include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 

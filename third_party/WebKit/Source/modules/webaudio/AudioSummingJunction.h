@@ -25,9 +25,9 @@
 #ifndef AudioSummingJunction_h
 #define AudioSummingJunction_h
 
-#include "AudioBus.h"
-#include <wtf/HashSet.h>
-#include <wtf/Vector.h>
+#include "core/platform/audio/AudioBus.h"
+#include "wtf/HashSet.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

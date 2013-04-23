@@ -30,17 +30,17 @@
 #ifndef DatabaseBackendBase_h
 #define DatabaseBackendBase_h
 
-#include "DatabaseBasicTypes.h"
-#include "DatabaseDetails.h"
-#include "DatabaseError.h"
-#include "SQLiteDatabase.h"
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/sql/SQLiteDatabase.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/DatabaseDetails.h"
+#include "modules/webdatabase/DatabaseError.h"
+#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/text/WTFString.h"
 
 #if !LOG_DISABLED || !ERROR_DISABLED
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #endif
 
 namespace WebCore {

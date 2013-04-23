@@ -26,8 +26,8 @@
 #ifndef IDBPendingTransactionMonitor_h
 #define IDBPendingTransactionMonitor_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -27,10 +27,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "EventTarget.h"
-#include "RTCDataChannelHandlerClient.h"
-#include "Timer.h"
-#include <wtf/RefCounted.h>
+#include "core/dom/EventTarget.h"
+#include "core/platform/Timer.h"
+#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

@@ -25,10 +25,10 @@
 #ifndef WaveShaperNode_h
 #define WaveShaperNode_h
 
-#include "AudioBasicProcessorNode.h"
-#include "BiquadProcessor.h"
-#include "WaveShaperProcessor.h"
-#include <wtf/Forward.h>
+#include "modules/webaudio/AudioBasicProcessorNode.h"
+#include "modules/webaudio/BiquadProcessor.h"
+#include "modules/webaudio/WaveShaperProcessor.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
     

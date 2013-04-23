@@ -20,8 +20,8 @@
 #ifndef NavigatorGeolocation_h
 #define NavigatorGeolocation_h
 
-#include "DOMWindowProperty.h"
-#include "Supplementable.h"
+#include "core/page/DOMWindowProperty.h"
+#include "core/platform/Supplementable.h"
 
 namespace WebCore {
 

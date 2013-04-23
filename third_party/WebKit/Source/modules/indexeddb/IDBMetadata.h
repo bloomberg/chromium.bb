@@ -29,10 +29,10 @@
 #ifndef IDBMetadata_h
 #define IDBMetadata_h
 
-#include "IDBKeyPath.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -29,8 +29,8 @@
 #ifndef IDBEventDispatcher_h
 #define IDBEventDispatcher_h
 
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "SpeechSynthesis.h"
+#include "modules/speech/SpeechSynthesis.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "PlatformSpeechSynthesisVoice.h"
-#include "PlatformSpeechSynthesizer.h"
-#include "SpeechSynthesisEvent.h"
-#include "SpeechSynthesisUtterance.h"
-#include <wtf/CurrentTime.h>
+#include "core/platform/PlatformSpeechSynthesisVoice.h"
+#include "core/platform/PlatformSpeechSynthesizer.h"
+#include "modules/speech/SpeechSynthesisEvent.h"
+#include "modules/speech/SpeechSynthesisUtterance.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
     

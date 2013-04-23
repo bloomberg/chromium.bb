@@ -31,16 +31,16 @@
 #ifndef ThreadableWebSocketChannelClientWrapper_h
 #define ThreadableWebSocketChannelClientWrapper_h
 
-#include "ScriptExecutionContext.h"
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
-#include "WorkerThreadableWebSocketChannel.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannelClient.h"
+#include "modules/websockets/WorkerThreadableWebSocketChannel.h"
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

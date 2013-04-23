@@ -31,12 +31,12 @@
 #ifndef MediaSource_h
 #define MediaSource_h
 
-#include "ActiveDOMObject.h"
-#include "GenericEventQueue.h"
-#include "MediaSourcePrivate.h"
-#include "SourceBuffer.h"
-#include "SourceBufferList.h"
-#include <wtf/RefCounted.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/GenericEventQueue.h"
+#include "core/platform/graphics/MediaSourcePrivate.h"
+#include "modules/mediasource/SourceBuffer.h"
+#include "modules/mediasource/SourceBufferList.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

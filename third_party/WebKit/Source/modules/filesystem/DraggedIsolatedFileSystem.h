@@ -31,9 +31,9 @@
 #ifndef DraggedIsolatedFileSystem_h
 #define DraggedIsolatedFileSystem_h
 
-#include "ChromiumDataObject.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

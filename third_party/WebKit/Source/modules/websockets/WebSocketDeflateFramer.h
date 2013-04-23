@@ -31,11 +31,11 @@
 #ifndef WebSocketDeflateFramer_h
 #define WebSocketDeflateFramer_h
 
-#include "WebSocketDeflater.h"
-#include "WebSocketExtensionProcessor.h"
-#include "WebSocketFrame.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "modules/websockets/WebSocketDeflater.h"
+#include "modules/websockets/WebSocketExtensionProcessor.h"
+#include "modules/websockets/WebSocketFrame.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -25,10 +25,10 @@
 #ifndef ConvolverNode_h
 #define ConvolverNode_h
 
-#include "AudioNode.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
+#include "modules/webaudio/AudioNode.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

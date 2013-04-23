@@ -22,10 +22,10 @@
 
 #include "config.h"
 
-#include "WebSocketFrame.h"
+#include "modules/websockets/WebSocketFrame.h"
 
-#include <wtf/CryptographicallyRandomNumber.h>
-#include <wtf/MathExtras.h>
+#include "wtf/CryptographicallyRandomNumber.h"
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

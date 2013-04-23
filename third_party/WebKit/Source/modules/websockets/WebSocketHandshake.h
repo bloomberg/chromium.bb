@@ -31,13 +31,13 @@
 #ifndef WebSocketHandshake_h
 #define WebSocketHandshake_h
 
-#include "KURL.h"
-#include "WebSocketExtensionDispatcher.h"
-#include "WebSocketExtensionProcessor.h"
-#include "WebSocketHandshakeRequest.h"
-#include "WebSocketHandshakeResponse.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/KURL.h"
+#include "modules/websockets/WebSocketExtensionDispatcher.h"
+#include "modules/websockets/WebSocketExtensionProcessor.h"
+#include "modules/websockets/WebSocketHandshakeRequest.h"
+#include "modules/websockets/WebSocketHandshakeResponse.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -28,10 +28,10 @@
 
 #if ENABLE(GAMEPAD)
 
-#include "Gamepad.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "modules/gamepad/Gamepad.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

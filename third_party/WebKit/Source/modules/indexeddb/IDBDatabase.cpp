@@ -24,28 +24,28 @@
  */
 
 #include "config.h"
-#include "IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabase.h"
 
-#include "DOMStringList.h"
-#include "EventQueue.h"
-#include "ExceptionCode.h"
-#include "HistogramSupport.h"
-#include "IDBAny.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBDatabaseError.h"
-#include "IDBDatabaseException.h"
-#include "IDBEventDispatcher.h"
-#include "IDBHistograms.h"
-#include "IDBIndex.h"
-#include "IDBKeyPath.h"
-#include "IDBObjectStore.h"
-#include "IDBTracing.h"
-#include "IDBTransaction.h"
-#include "IDBVersionChangeEvent.h"
-#include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/DOMStringList.h"
+#include "core/dom/EventQueue.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/platform/HistogramSupport.h"
+#include "modules/indexeddb/IDBAny.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBDatabaseError.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBEventDispatcher.h"
+#include "modules/indexeddb/IDBHistograms.h"
+#include "modules/indexeddb/IDBIndex.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBObjectStore.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransaction.h"
+#include "modules/indexeddb/IDBVersionChangeEvent.h"
 #include <limits>
-#include <wtf/Atomics.h>
+#include "wtf/Atomics.h"
 
 namespace WebCore {
 

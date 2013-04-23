@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "SQLResultSetRowList.h"
+#include "modules/webdatabase/SQLResultSetRowList.h"
 
 namespace WebCore {
 

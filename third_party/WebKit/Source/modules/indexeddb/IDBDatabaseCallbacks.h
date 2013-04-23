@@ -26,9 +26,9 @@
 #ifndef IDBDatabaseCallbacks_h
 #define IDBDatabaseCallbacks_h
 
-#include "IDBDatabaseError.h"
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "modules/indexeddb/IDBDatabaseError.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

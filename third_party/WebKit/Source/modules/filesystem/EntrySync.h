@@ -31,11 +31,11 @@
 #ifndef EntrySync_h
 #define EntrySync_h
 
-#include "DOMFileSystemSync.h"
-#include "EntryBase.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "modules/filesystem/DOMFileSystemSync.h"
+#include "modules/filesystem/EntryBase.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

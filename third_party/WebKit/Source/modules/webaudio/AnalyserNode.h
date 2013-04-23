@@ -25,9 +25,9 @@
 #ifndef AnalyserNode_h
 #define AnalyserNode_h
 
-#include "AudioBasicInspectorNode.h"
-#include "RealtimeAnalyser.h"
-#include <wtf/Forward.h>
+#include "modules/webaudio/AudioBasicInspectorNode.h"
+#include "modules/webaudio/RealtimeAnalyser.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

@@ -25,23 +25,23 @@
 #ifndef AudioContext_h
 #define AudioContext_h
 
-#include "ActiveDOMObject.h"
-#include "AsyncAudioDecoder.h"
-#include "AudioBus.h"
-#include "AudioDestinationNode.h"
-#include "EventListener.h"
-#include "EventTarget.h"
-#include "HRTFDatabaseLoader.h"
-#include <wtf/HashSet.h>
-#include <wtf/MainThread.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventTarget.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
+#include "modules/webaudio/AsyncAudioDecoder.h"
+#include "modules/webaudio/AudioDestinationNode.h"
+#include "wtf/HashSet.h"
+#include "wtf/MainThread.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

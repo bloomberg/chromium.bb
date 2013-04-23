@@ -29,24 +29,24 @@
  */
 
 #include "config.h"
-#include "DOMFileSystemBase.h"
+#include "modules/filesystem/DOMFileSystemBase.h"
 
-#include "DOMFilePath.h"
-#include "DirectoryEntry.h"
-#include "DirectoryReaderBase.h"
-#include "EntriesCallback.h"
-#include "EntryArray.h"
-#include "EntryBase.h"
-#include "EntryCallback.h"
-#include "ErrorCallback.h"
-#include "FileError.h"
-#include "FileSystemCallbacks.h"
-#include "MetadataCallback.h"
-#include "ScriptExecutionContext.h"
-#include "VoidCallback.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/FileError.h"
+#include "core/html/VoidCallback.h"
+#include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/DirectoryReaderBase.h"
+#include "modules/filesystem/EntriesCallback.h"
+#include "modules/filesystem/EntryArray.h"
+#include "modules/filesystem/EntryBase.h"
+#include "modules/filesystem/EntryCallback.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/MetadataCallback.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

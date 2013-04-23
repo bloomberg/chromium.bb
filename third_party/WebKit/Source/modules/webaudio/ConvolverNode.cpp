@@ -26,14 +26,14 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "ConvolverNode.h"
+#include "modules/webaudio/ConvolverNode.h"
 
-#include "AudioBuffer.h"
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
-#include "Reverb.h"
-#include <wtf/MainThread.h>
+#include "core/platform/audio/Reverb.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "wtf/MainThread.h"
 
 // Note about empirical tuning:
 // The maximum FFT size affects reverb performance and accuracy.

@@ -26,16 +26,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "SQLStatementBackend.h"
+#include "modules/webdatabase/SQLStatementBackend.h"
 
-#include "AbstractSQLStatement.h"
-#include "DatabaseBackend.h"
-#include "Logging.h"
-#include "SQLError.h"
-#include "SQLValue.h"
-#include "SQLiteDatabase.h"
-#include "SQLiteStatement.h"
-#include <wtf/text/CString.h>
+#include "core/platform/Logging.h"
+#include "core/platform/sql/SQLValue.h"
+#include "core/platform/sql/SQLiteDatabase.h"
+#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/AbstractSQLStatement.h"
+#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/SQLError.h"
+#include "wtf/text/CString.h"
 
 
 // The Life-Cycle of a SQLStatement i.e. Who's keeping the SQLStatement alive? 

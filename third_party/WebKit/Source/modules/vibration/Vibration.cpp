@@ -18,11 +18,11 @@
  */
 
 #include "config.h"
-#include "Vibration.h"
+#include "modules/vibration/Vibration.h"
 
 #if ENABLE(VIBRATION)
 
-#include "VibrationClient.h"
+#include "modules/vibration/VibrationClient.h"
 
 namespace WebCore {
 

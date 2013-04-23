@@ -31,7 +31,7 @@
 #ifndef DatabaseObserver_h
 #define DatabaseObserver_h
 
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

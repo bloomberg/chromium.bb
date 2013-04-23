@@ -22,7 +22,7 @@
 
 #if ENABLE(BATTERY_STATUS)
 
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 
 namespace WebCore {
 

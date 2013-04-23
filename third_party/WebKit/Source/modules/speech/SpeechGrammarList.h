@@ -26,9 +26,9 @@
 #ifndef SpeechGrammarList_h
 #define SpeechGrammarList_h
 
-#include "SpeechGrammar.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "modules/speech/SpeechGrammar.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

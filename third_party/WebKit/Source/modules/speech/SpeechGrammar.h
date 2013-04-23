@@ -26,9 +26,9 @@
 #ifndef SpeechGrammar_h
 #define SpeechGrammar_h
 
-#include "KURL.h"
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/KURL.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

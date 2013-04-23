@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "Gamepad.h"
+#include "modules/gamepad/Gamepad.h"
 
 #if ENABLE(GAMEPAD)
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

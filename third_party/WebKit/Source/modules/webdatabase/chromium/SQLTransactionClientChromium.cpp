@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "SQLTransactionClient.h"
+#include "modules/webdatabase/SQLTransactionClient.h"
 
-#include "DatabaseBackendBase.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseObserver.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/chromium/DatabaseObserver.h"
 
 namespace WebCore {
 

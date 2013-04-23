@@ -30,20 +30,20 @@
 
 #include "config.h"
 
-#include "WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannel.h"
 
-#include "Document.h"
-#include "MainThreadWebSocketChannel.h"
-#include "RuntimeEnabledFeatures.h"
-#include "ScriptExecutionContext.h"
-#include "ThreadableWebSocketChannelClientWrapper.h"
-#include "WebSocketChannelClient.h"
-#include "WorkerContext.h"
-#include "WorkerRunLoop.h"
-#include "WorkerThread.h"
-#include "WorkerThreadableWebSocketChannel.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/RuntimeEnabledFeatures.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerRunLoop.h"
+#include "core/workers/WorkerThread.h"
+#include "modules/websockets/MainThreadWebSocketChannel.h"
+#include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
+#include "modules/websockets/WebSocketChannelClient.h"
+#include "modules/websockets/WorkerThreadableWebSocketChannel.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

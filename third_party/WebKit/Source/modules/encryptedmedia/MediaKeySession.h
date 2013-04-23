@@ -28,15 +28,15 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "ContextDestructionObserver.h"
-#include "EventTarget.h"
-#include "ExceptionCode.h"
-#include "Timer.h"
-#include <wtf/Deque.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Uint8Array.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/Timer.h"
+#include "wtf/Deque.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Uint8Array.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

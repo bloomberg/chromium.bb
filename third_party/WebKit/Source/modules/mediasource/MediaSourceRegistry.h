@@ -31,9 +31,9 @@
 #ifndef MediaSourceRegistry_h
 #define MediaSourceRegistry_h
 
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

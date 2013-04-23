@@ -31,7 +31,7 @@
 #ifndef SQLException_h
 #define SQLException_h
 
-#include "ExceptionBase.h"
+#include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 

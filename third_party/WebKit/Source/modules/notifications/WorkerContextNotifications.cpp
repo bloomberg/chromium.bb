@@ -26,13 +26,13 @@
  */
 
 #include "config.h"
-#include "WorkerContextNotifications.h"
+#include "modules/notifications/WorkerContextNotifications.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "NotificationCenter.h"
-#include "WorkerContext.h"
-#include "WorkerThread.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
+#include "modules/notifications/NotificationCenter.h"
 
 namespace WebCore {
 

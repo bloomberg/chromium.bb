@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "WebSocketDeflater.h"
+#include "modules/websockets/WebSocketDeflater.h"
 
-#include "Logging.h"
-#include <wtf/FastMalloc.h>
-#include <wtf/HashMap.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/Logging.h"
+#include "wtf/FastMalloc.h"
+#include "wtf/HashMap.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/StringExtras.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 #include <zlib.h>
 
 namespace WebCore {

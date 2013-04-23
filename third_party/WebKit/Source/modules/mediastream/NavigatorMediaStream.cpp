@@ -21,20 +21,20 @@
  */
 
 #include "config.h"
-#include "NavigatorMediaStream.h"
+#include "modules/mediastream/NavigatorMediaStream.h"
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "Dictionary.h"
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "Frame.h"
-#include "Navigator.h"
-#include "NavigatorUserMediaErrorCallback.h"
-#include "NavigatorUserMediaSuccessCallback.h"
-#include "Page.h"
-#include "UserMediaController.h"
-#include "UserMediaRequest.h"
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/page/Frame.h"
+#include "core/page/Navigator.h"
+#include "core/page/Page.h"
+#include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
+#include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
+#include "modules/mediastream/UserMediaController.h"
+#include "modules/mediastream/UserMediaRequest.h"
 
 namespace WebCore {
 

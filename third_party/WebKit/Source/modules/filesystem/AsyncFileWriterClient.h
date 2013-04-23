@@ -31,7 +31,7 @@
 #ifndef AsyncFileWriterClient_h
 #define AsyncFileWriterClient_h
 
-#include "FileError.h"
+#include "core/fileapi/FileError.h"
 
 namespace WebCore {
 

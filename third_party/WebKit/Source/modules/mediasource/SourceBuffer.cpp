@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "SourceBuffer.h"
+#include "modules/mediasource/SourceBuffer.h"
 
-#include "MediaSource.h"
-#include "SourceBufferPrivate.h"
-#include "TimeRanges.h"
-#include <wtf/Uint8Array.h>
+#include "core/html/TimeRanges.h"
+#include "core/platform/graphics/SourceBufferPrivate.h"
+#include "modules/mediasource/MediaSource.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 

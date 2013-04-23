@@ -24,16 +24,16 @@
  */
 
 #include "config.h"
-#include "MediaStream.h"
+#include "modules/mediastream/MediaStream.h"
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "Event.h"
-#include "ExceptionCode.h"
-#include "MediaStreamCenter.h"
-#include "MediaStreamSource.h"
-#include "MediaStreamTrackEvent.h"
-#include "UUID.h"
+#include "core/dom/Event.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/UUID.h"
+#include "core/platform/mediastream/MediaStreamCenter.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
+#include "modules/mediastream/MediaStreamTrackEvent.h"
 
 namespace WebCore {
 

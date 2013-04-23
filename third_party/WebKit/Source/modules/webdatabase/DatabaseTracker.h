@@ -29,12 +29,12 @@
 #ifndef DatabaseTracker_h
 #define DatabaseTracker_h
 
-#include "DatabaseError.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/ThreadingPrimitives.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseError.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/ThreadingPrimitives.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

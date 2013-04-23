@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "DatabaseServer.h"
+#include "modules/webdatabase/DatabaseServer.h"
 
-#include "Database.h"
-#include "DatabaseBackend.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseBackendSync.h"
-#include "DatabaseSync.h"
-#include "DatabaseTracker.h"
-#include <wtf/UnusedParam.h>
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseBackendSync.h"
+#include "modules/webdatabase/DatabaseSync.h"
+#include "modules/webdatabase/DatabaseTracker.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

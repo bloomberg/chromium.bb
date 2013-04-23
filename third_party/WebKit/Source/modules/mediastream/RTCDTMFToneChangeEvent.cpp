@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "RTCDTMFToneChangeEvent.h"
+#include "modules/mediastream/RTCDTMFToneChangeEvent.h"
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

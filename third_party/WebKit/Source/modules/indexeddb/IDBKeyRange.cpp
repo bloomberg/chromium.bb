@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "IDBKeyRange.h"
+#include "modules/indexeddb/IDBKeyRange.h"
 
-#include "DOMRequestState.h"
-#include "IDBBindingUtilities.h"
-#include "IDBDatabaseException.h"
-#include "IDBKey.h"
+#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBKey.h"
 
 namespace WebCore {
 

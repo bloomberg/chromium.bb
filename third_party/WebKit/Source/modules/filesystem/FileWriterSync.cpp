@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "FileWriterSync.h"
+#include "modules/filesystem/FileWriterSync.h"
 
-#include "AsyncFileWriter.h"
-#include "Blob.h"
-#include "FileException.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/FileException.h"
+#include "modules/filesystem/AsyncFileWriter.h"
 
 namespace WebCore {
 

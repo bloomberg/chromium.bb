@@ -31,9 +31,9 @@
 #ifndef StorageErrorCallback_h
 #define StorageErrorCallback_h
 
-#include "ScriptExecutionContext.h"
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

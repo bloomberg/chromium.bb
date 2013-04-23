@@ -25,10 +25,10 @@
 #ifndef AudioBasicProcessorNode_h
 #define AudioBasicProcessorNode_h
 
-#include "AudioNode.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Threading.h>
+#include "modules/webaudio/AudioNode.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

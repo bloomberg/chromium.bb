@@ -27,15 +27,15 @@
  */
 
 #include "config.h"
-#include "DatabaseThread.h"
+#include "modules/webdatabase/DatabaseThread.h"
 
-#include "Database.h"
-#include "DatabaseTask.h"
-#include "Logging.h"
-#include "SQLTransactionClient.h"
-#include "SQLTransactionCoordinator.h"
-#include <wtf/AutodrainedPool.h>
-#include <wtf/UnusedParam.h>
+#include "core/platform/Logging.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseTask.h"
+#include "modules/webdatabase/SQLTransactionClient.h"
+#include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "wtf/AutodrainedPool.h"
+#include "wtf/UnusedParam.h"
 
 namespace WebCore {
 

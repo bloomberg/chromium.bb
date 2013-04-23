@@ -28,7 +28,7 @@
 #ifndef IDBFactoryBackendInterfaceChromium_h
 #define IDBFactoryBackendInterfaceChromium_h
 
-#include "IDBFactoryBackendInterface.h"
+#include "modules/indexeddb/IDBFactoryBackendInterface.h"
 
 namespace WebCore {
 

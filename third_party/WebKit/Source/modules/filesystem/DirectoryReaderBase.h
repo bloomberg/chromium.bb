@@ -31,10 +31,10 @@
 #ifndef DirectoryReaderBase_h
 #define DirectoryReaderBase_h
 
-#include "DOMFileSystemBase.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "modules/filesystem/DOMFileSystemBase.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

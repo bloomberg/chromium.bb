@@ -31,11 +31,11 @@
 #ifndef FileSystemCallbacks_h
 #define FileSystemCallbacks_h
 
-#include "AsyncFileSystemCallbacks.h"
-#include "FileSystemType.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/AsyncFileSystemCallbacks.h"
+#include "modules/filesystem/FileSystemType.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

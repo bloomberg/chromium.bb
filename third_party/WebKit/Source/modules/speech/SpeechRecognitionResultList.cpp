@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "SpeechRecognitionResultList.h"
+#include "modules/speech/SpeechRecognitionResultList.h"
 
 namespace WebCore {
 

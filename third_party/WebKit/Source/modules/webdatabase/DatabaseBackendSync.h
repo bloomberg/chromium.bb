@@ -26,8 +26,8 @@
 #ifndef DatabaseBackendSync_h
 #define DatabaseBackendSync_h
 
-#include "DatabaseBackendBase.h"
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

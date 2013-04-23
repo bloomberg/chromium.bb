@@ -26,12 +26,12 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "OfflineAudioContext.h"
+#include "modules/webaudio/OfflineAudioContext.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "HRTFDatabaseLoader.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
 
 namespace WebCore {
 

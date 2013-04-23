@@ -32,34 +32,34 @@
 
 #include "WebSocket.h"
 
-#include "Blob.h"
-#include "BlobData.h"
-#include "CloseEvent.h"
-#include "ContentSecurityPolicy.h"
-#include "DOMWindow.h"
-#include "Document.h"
-#include "Event.h"
-#include "EventException.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "ExceptionCode.h"
-#include "Frame.h"
-#include "Logging.h"
-#include "MessageEvent.h"
-#include "ScriptCallStack.h"
-#include "ScriptController.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include "WebSocketChannel.h"
-#include <wtf/ArrayBuffer.h>
-#include <wtf/ArrayBufferView.h>
-#include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptController.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessageEvent.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/Logging.h"
+#include "core/platform/network/BlobData.h"
+#include "modules/websockets/CloseEvent.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
+#include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

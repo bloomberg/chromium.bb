@@ -27,23 +27,23 @@
  */
 
 #include "config.h"
-#include "SQLTransaction.h"
+#include "modules/webdatabase/SQLTransaction.h"
 
-#include "AbstractSQLTransactionBackend.h"
-#include "Database.h"
-#include "DatabaseAuthorizer.h"
-#include "DatabaseContext.h"
-#include "ExceptionCode.h"
-#include "Logging.h"
-#include "SQLError.h"
-#include "SQLStatementCallback.h"
-#include "SQLStatementErrorCallback.h"
-#include "SQLTransactionCallback.h"
-#include "SQLTransactionClient.h" // FIXME: Should be used in the backend only.
-#include "SQLTransactionErrorCallback.h"
-#include "VoidCallback.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/html/VoidCallback.h"
+#include "core/platform/Logging.h"
+#include "modules/webdatabase/AbstractSQLTransactionBackend.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "modules/webdatabase/DatabaseContext.h"
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLStatementCallback.h"
+#include "modules/webdatabase/SQLStatementErrorCallback.h"
+#include "modules/webdatabase/SQLTransactionCallback.h"
+#include "modules/webdatabase/SQLTransactionClient.h" // FIXME: Should be used in the backend only.
+#include "modules/webdatabase/SQLTransactionErrorCallback.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

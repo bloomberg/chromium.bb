@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "SQLTransactionStateMachine.h"
+#include "modules/webdatabase/SQLTransactionStateMachine.h"
 
-#include "Logging.h"
-#include <wtf/Assertions.h>
+#include "core/platform/Logging.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

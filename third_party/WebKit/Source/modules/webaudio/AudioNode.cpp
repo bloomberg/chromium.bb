@@ -26,17 +26,17 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioNode.h"
+#include "modules/webaudio/AudioNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
-#include "AudioParam.h"
-#include "ExceptionCode.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include <wtf/Atomics.h>
-#include <wtf/MainThread.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/AudioParam.h"
+#include "wtf/Atomics.h"
+#include "wtf/MainThread.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>

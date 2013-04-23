@@ -29,9 +29,9 @@
 #ifndef SQLResultSetRowList_h
 #define SQLResultSetRowList_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include "SQLValue.h"
+#include "core/platform/sql/SQLValue.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

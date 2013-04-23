@@ -31,14 +31,14 @@
 #ifndef DatabaseSync_h
 #define DatabaseSync_h
 
-#include "DatabaseBackendSync.h"
-#include "DatabaseBase.h"
-#include "DatabaseBasicTypes.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBackendSync.h"
+#include "modules/webdatabase/DatabaseBase.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 #ifndef NDEBUG
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #endif
 
 namespace WebCore {

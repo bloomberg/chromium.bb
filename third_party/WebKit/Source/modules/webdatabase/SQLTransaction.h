@@ -29,12 +29,12 @@
 #ifndef SQLTransaction_h
 #define SQLTransaction_h
 
-#include "AbstractSQLTransaction.h"
-#include "SQLCallbackWrapper.h"
-#include "SQLStatement.h"
-#include "SQLTransactionStateMachine.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "modules/webdatabase/AbstractSQLTransaction.h"
+#include "modules/webdatabase/SQLCallbackWrapper.h"
+#include "modules/webdatabase/SQLStatement.h"
+#include "modules/webdatabase/SQLTransactionStateMachine.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

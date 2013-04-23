@@ -31,16 +31,16 @@
 #ifndef WebSocket_h
 #define WebSocket_h
 
-#include "ActiveDOMObject.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
-#include "KURL.h"
-#include "WebSocketChannelClient.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
+#include "core/platform/KURL.h"
+#include "modules/websockets/WebSocketChannelClient.h"
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/AtomicStringHash.h"
 
 namespace WebCore {
 

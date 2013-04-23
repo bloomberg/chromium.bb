@@ -26,9 +26,9 @@
 #ifndef IDBLevelDBCoding_h
 #define IDBLevelDBCoding_h
 
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

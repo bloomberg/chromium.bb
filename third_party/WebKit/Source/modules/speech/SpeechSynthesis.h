@@ -28,14 +28,14 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "PlatformSpeechSynthesisUtterance.h"
-#include "PlatformSpeechSynthesizer.h"
-#include "SpeechSynthesisUtterance.h"
-#include "SpeechSynthesisVoice.h"
-#include <wtf/Deque.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "core/platform/PlatformSpeechSynthesisUtterance.h"
+#include "core/platform/PlatformSpeechSynthesizer.h"
+#include "modules/speech/SpeechSynthesisUtterance.h"
+#include "modules/speech/SpeechSynthesisVoice.h"
+#include "wtf/Deque.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
     

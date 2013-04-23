@@ -28,8 +28,8 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "Event.h"
-#include "MediaKeyError.h"
+#include "core/dom/Event.h"
+#include "core/html/MediaKeyError.h"
 
 namespace WebCore {
 

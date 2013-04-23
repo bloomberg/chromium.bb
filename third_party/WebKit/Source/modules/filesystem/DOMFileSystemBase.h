@@ -31,13 +31,13 @@
 #ifndef DOMFileSystemBase_h
 #define DOMFileSystemBase_h
 
-#include "AsyncFileSystem.h"
-#include "FileSystemFlags.h"
-#include "FileSystemType.h"
-#include "KURL.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/KURL.h"
+#include "modules/filesystem/FileSystemFlags.h"
+#include "modules/filesystem/FileSystemType.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

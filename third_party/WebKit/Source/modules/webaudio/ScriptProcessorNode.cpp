@@ -26,17 +26,17 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "ScriptProcessorNode.h"
+#include "modules/webaudio/ScriptProcessorNode.h"
 
-#include "AudioBuffer.h"
-#include "AudioBus.h"
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
-#include "AudioProcessingEvent.h"
-#include "Document.h"
-#include <wtf/Float32Array.h>
-#include <wtf/MainThread.h>
+#include "core/dom/Document.h"
+#include "core/platform/audio/AudioBus.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/AudioProcessingEvent.h"
+#include "wtf/Float32Array.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

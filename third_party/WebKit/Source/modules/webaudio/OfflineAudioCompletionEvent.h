@@ -25,10 +25,10 @@
 #ifndef OfflineAudioCompletionEvent_h
 #define OfflineAudioCompletionEvent_h
 
-#include "AudioBuffer.h"
-#include "Event.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "core/dom/Event.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "EntryBase.h"
+#include "modules/filesystem/EntryBase.h"
 
-#include "AsyncFileSystem.h"
-#include "DOMFilePath.h"
-#include "DOMFileSystemBase.h"
-#include "SecurityOrigin.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DOMFileSystemBase.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -31,8 +31,8 @@
 #ifndef NavigatorStorageQuota_h
 #define NavigatorStorageQuota_h
 
-#include "DOMWindowProperty.h"
-#include "Supplementable.h"
+#include "core/page/DOMWindowProperty.h"
+#include "core/platform/Supplementable.h"
 
 namespace WebCore {
 

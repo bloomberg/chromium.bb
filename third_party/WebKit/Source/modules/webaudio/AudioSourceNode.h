@@ -29,7 +29,7 @@
 #ifndef AudioSourceNode_h
 #define AudioSourceNode_h
 
-#include "AudioNode.h"
+#include "modules/webaudio/AudioNode.h"
 
 namespace WebCore {
 

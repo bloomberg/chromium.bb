@@ -26,63 +26,63 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioContext.h"
+#include "modules/webaudio/AudioContext.h"
 
-#include "AnalyserNode.h"
-#include "AsyncAudioDecoder.h"
-#include "AudioBuffer.h"
-#include "AudioBufferCallback.h"
-#include "AudioBufferSourceNode.h"
-#include "AudioListener.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
-#include "BiquadFilterNode.h"
-#include "ChannelMergerNode.h"
-#include "ChannelSplitterNode.h"
-#include "ConvolverNode.h"
-#include "DefaultAudioDestinationNode.h"
-#include "DelayNode.h"
-#include "Document.h"
-#include "DynamicsCompressorNode.h"
-#include "ExceptionCode.h"
-#include "FFTFrame.h"
-#include "GainNode.h"
-#include "HRTFDatabaseLoader.h"
-#include "HRTFPanner.h"
-#include "OfflineAudioCompletionEvent.h"
-#include "OfflineAudioDestinationNode.h"
-#include "OscillatorNode.h"
-#include "PannerNode.h"
-#include "ScriptCallStack.h"
-#include "ScriptProcessorNode.h"
-#include "WaveShaperNode.h"
-#include "WaveTable.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/platform/audio/FFTFrame.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
+#include "core/platform/audio/HRTFPanner.h"
+#include "modules/webaudio/AnalyserNode.h"
+#include "modules/webaudio/AsyncAudioDecoder.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioBufferCallback.h"
+#include "modules/webaudio/AudioBufferSourceNode.h"
+#include "modules/webaudio/AudioListener.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/BiquadFilterNode.h"
+#include "modules/webaudio/ChannelMergerNode.h"
+#include "modules/webaudio/ChannelSplitterNode.h"
+#include "modules/webaudio/ConvolverNode.h"
+#include "modules/webaudio/DefaultAudioDestinationNode.h"
+#include "modules/webaudio/DelayNode.h"
+#include "modules/webaudio/DynamicsCompressorNode.h"
+#include "modules/webaudio/GainNode.h"
+#include "modules/webaudio/OfflineAudioCompletionEvent.h"
+#include "modules/webaudio/OfflineAudioDestinationNode.h"
+#include "modules/webaudio/OscillatorNode.h"
+#include "modules/webaudio/PannerNode.h"
+#include "modules/webaudio/ScriptProcessorNode.h"
+#include "modules/webaudio/WaveShaperNode.h"
+#include "modules/webaudio/WaveTable.h"
+#include "wtf/MemoryInstrumentationHashSet.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 #if ENABLE(MEDIA_STREAM)
-#include "MediaStream.h"
-#include "MediaStreamAudioDestinationNode.h"
-#include "MediaStreamAudioSourceNode.h"
+#include "modules/mediastream/MediaStream.h"
+#include "modules/webaudio/MediaStreamAudioDestinationNode.h"
+#include "modules/webaudio/MediaStreamAudioSourceNode.h"
 #endif
 
 #if ENABLE(VIDEO)
-#include "HTMLMediaElement.h"
-#include "MediaElementAudioSourceNode.h"
+#include "core/html/HTMLMediaElement.h"
+#include "modules/webaudio/MediaElementAudioSourceNode.h"
 #endif
 
 #if DEBUG_AUDIONODE_REFERENCES
 #include <stdio.h>
 #endif
 
-#include <wtf/ArrayBuffer.h>
-#include <wtf/Atomics.h>
-#include <wtf/MainThread.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/Atomics.h"
+#include "wtf/MainThread.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 // FIXME: check the proper way to reference an undefined thread ID
 const int UndefinedThreadIdentifier = 0xffffffff;

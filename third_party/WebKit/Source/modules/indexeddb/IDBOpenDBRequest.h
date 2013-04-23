@@ -26,7 +26,7 @@
 #ifndef IDBOpenDBRequest_h
 #define IDBOpenDBRequest_h
 
-#include "IDBRequest.h"
+#include "modules/indexeddb/IDBRequest.h"
 
 namespace WebCore {
 

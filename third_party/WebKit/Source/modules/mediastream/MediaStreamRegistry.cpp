@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "MediaStreamRegistry.h"
+#include "modules/mediastream/MediaStreamRegistry.h"
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "KURL.h"
-#include "MediaStream.h"
-#include <wtf/MainThread.h>
+#include "core/platform/KURL.h"
+#include "modules/mediastream/MediaStream.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

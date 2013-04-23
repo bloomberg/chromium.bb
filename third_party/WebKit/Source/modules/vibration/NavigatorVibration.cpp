@@ -18,16 +18,16 @@
  */
 
 #include "config.h"
-#include "NavigatorVibration.h"
+#include "modules/vibration/NavigatorVibration.h"
 
 #if ENABLE(VIBRATION)
 
-#include "ExceptionCode.h"
-#include "Frame.h"
-#include "Navigator.h"
-#include "Page.h"
-#include "Vibration.h"
-#include <wtf/Uint32Array.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/page/Frame.h"
+#include "core/page/Navigator.h"
+#include "core/page/Page.h"
+#include "modules/vibration/Vibration.h"
+#include "wtf/Uint32Array.h"
 
 namespace WebCore {
 

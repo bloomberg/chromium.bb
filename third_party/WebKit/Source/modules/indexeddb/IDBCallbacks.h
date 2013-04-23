@@ -29,12 +29,12 @@
 #ifndef IDBCallbacks_h
 #define IDBCallbacks_h
 
-#include "IDBDatabaseBackendInterface.h"
-#include "IDBDatabaseError.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "SharedBuffer.h"
-#include <wtf/RefCounted.h>
+#include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseError.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 class IDBCursorBackendInterface;

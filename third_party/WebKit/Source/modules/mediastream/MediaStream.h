@@ -28,14 +28,14 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ContextDestructionObserver.h"
-#include "EventTarget.h"
-#include "ExceptionBase.h"
-#include "MediaStreamDescriptor.h"
-#include "MediaStreamTrack.h"
-#include "Timer.h"
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionBase.h"
+#include "core/platform/Timer.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "modules/mediastream/MediaStreamTrack.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

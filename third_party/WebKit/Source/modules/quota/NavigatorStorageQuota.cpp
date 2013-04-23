@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "NavigatorStorageQuota.h"
+#include "modules/quota/NavigatorStorageQuota.h"
 
-#include "Frame.h"
-#include "Navigator.h"
-#include "StorageQuota.h"
+#include "core/page/Frame.h"
+#include "core/page/Navigator.h"
+#include "modules/quota/StorageQuota.h"
 
 namespace WebCore {
 

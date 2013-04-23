@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "DraggedIsolatedFileSystem.h"
+#include "modules/filesystem/DraggedIsolatedFileSystem.h"
 
-#include "DOMFileSystem.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include "Supplementable.h"
-#include <wtf/MainThread.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/Supplementable.h"
+#include "modules/filesystem/DOMFileSystem.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

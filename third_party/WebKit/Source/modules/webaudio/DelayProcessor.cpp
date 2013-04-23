@@ -26,9 +26,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "DelayProcessor.h"
+#include "modules/webaudio/DelayProcessor.h"
  
-#include "DelayDSPKernel.h"
+#include "modules/webaudio/DelayDSPKernel.h"
 
 namespace WebCore {
 

@@ -29,22 +29,22 @@
  */
 
 #include "config.h"
-#include "DataTransferItemFileSystem.h"
+#include "modules/filesystem/DataTransferItemFileSystem.h"
 
-#include "AsyncFileSystem.h"
-#include "AsyncFileSystemCallbacks.h"
-#include "ChromiumDataObject.h"
-#include "ClipboardChromium.h"
-#include "DOMFilePath.h"
-#include "DOMFileSystem.h"
-#include "DirectoryEntry.h"
-#include "DraggedIsolatedFileSystem.h"
-#include "Entry.h"
-#include "File.h"
-#include "FileEntry.h"
-#include "FileMetadata.h"
-#include "FileSystem.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/File.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/AsyncFileSystemCallbacks.h"
+#include "core/platform/FileMetadata.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ClipboardChromium.h"
+#include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DOMFileSystem.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/DraggedIsolatedFileSystem.h"
+#include "modules/filesystem/Entry.h"
+#include "modules/filesystem/FileEntry.h"
 
 namespace WebCore {
 

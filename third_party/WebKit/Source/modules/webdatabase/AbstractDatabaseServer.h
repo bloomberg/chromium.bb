@@ -26,12 +26,12 @@
 #ifndef AbstractDatabaseServer_h
 #define AbstractDatabaseServer_h
 
-#include "DatabaseBasicTypes.h"
-#include "DatabaseDetails.h"
-#include "DatabaseError.h"
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/DatabaseDetails.h"
+#include "modules/webdatabase/DatabaseError.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

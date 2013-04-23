@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "DOMWindowIndexedDatabase.h"
+#include "modules/indexeddb/DOMWindowIndexedDatabase.h"
 
-#include "DOMWindow.h"
-#include "Document.h"
-#include "IDBFactory.h"
-#include "Page.h"
-#include "PageGroupIndexedDatabase.h"
+#include "core/dom/Document.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Page.h"
+#include "modules/indexeddb/IDBFactory.h"
+#include "modules/indexeddb/PageGroupIndexedDatabase.h"
 
 namespace WebCore {
 

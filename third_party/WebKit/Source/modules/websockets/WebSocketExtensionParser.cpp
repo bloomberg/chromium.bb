@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include "WebSocketExtensionParser.h"
+#include "modules/websockets/WebSocketExtensionParser.h"
 
-#include <wtf/ASCIICType.h>
-#include <wtf/text/CString.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

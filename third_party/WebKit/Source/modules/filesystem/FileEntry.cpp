@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "FileEntry.h"
+#include "modules/filesystem/FileEntry.h"
 
-#include "DOMFileSystem.h"
-#include "ErrorCallback.h"
-#include "File.h"
-#include "FileCallback.h"
-#include "FileWriterCallback.h"
+#include "core/fileapi/File.h"
+#include "modules/filesystem/DOMFileSystem.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileCallback.h"
+#include "modules/filesystem/FileWriterCallback.h"
 
 namespace WebCore {
 

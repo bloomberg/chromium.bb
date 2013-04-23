@@ -31,11 +31,11 @@
 #ifndef LocalFileSystem_h
 #define LocalFileSystem_h
 
-#include "DOMFileSystemBase.h"
-#include "FileSystemType.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "modules/filesystem/DOMFileSystemBase.h"
+#include "modules/filesystem/FileSystemType.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

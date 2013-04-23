@@ -28,7 +28,7 @@
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -33,10 +33,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ExceptionBase.h"
-#include "MediaConstraints.h"
-#include <wtf/HashMap.h>
-#include <wtf/Vector.h>
+#include "core/dom/ExceptionBase.h"
+#include "core/platform/mediastream/MediaConstraints.h"
+#include "wtf/HashMap.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 class Dictionary;

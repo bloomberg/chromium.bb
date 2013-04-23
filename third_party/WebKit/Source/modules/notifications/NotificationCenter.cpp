@@ -33,12 +33,12 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "NotificationCenter.h"
+#include "modules/notifications/NotificationCenter.h"
 
-#include "Document.h"
-#include "NotificationClient.h"
-#include "SecurityOrigin.h"
-#include "WorkerContext.h"
+#include "core/dom/Document.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/workers/WorkerContext.h"
+#include "modules/notifications/NotificationClient.h"
 
 namespace WebCore {
 

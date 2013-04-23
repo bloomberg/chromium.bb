@@ -29,26 +29,26 @@
  */
 
 #include "config.h"
-#include "DOMFileSystem.h"
+#include "modules/filesystem/DOMFileSystem.h"
 
-#include "AsyncFileSystem.h"
-#include "DOMFilePath.h"
-#include "DirectoryEntry.h"
-#include "ErrorCallback.h"
-#include "File.h"
-#include "FileCallback.h"
-#include "FileEntry.h"
-#include "FileMetadata.h"
-#include "FileSystemCallbacks.h"
-#include "FileWriter.h"
-#include "FileWriterBaseCallback.h"
-#include "FileWriterCallback.h"
-#include "MetadataCallback.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/File.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/FileMetadata.h"
+#include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileCallback.h"
+#include "modules/filesystem/FileEntry.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/FileWriter.h"
+#include "modules/filesystem/FileWriterBaseCallback.h"
+#include "modules/filesystem/FileWriterCallback.h"
+#include "modules/filesystem/MetadataCallback.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

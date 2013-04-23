@@ -31,10 +31,10 @@
 #ifndef QuotaTracker_h
 #define QuotaTracker_h
 
-#include "SecurityOrigin.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "core/page/SecurityOrigin.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

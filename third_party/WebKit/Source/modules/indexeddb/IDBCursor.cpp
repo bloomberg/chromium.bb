@@ -24,19 +24,19 @@
  */
 
 #include "config.h"
-#include "IDBCursor.h"
+#include "modules/indexeddb/IDBCursor.h"
 
-#include "IDBAny.h"
-#include "IDBBindingUtilities.h"
-#include "IDBCallbacks.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBKey.h"
-#include "IDBObjectStore.h"
-#include "IDBRequest.h"
-#include "IDBTracing.h"
-#include "IDBTransaction.h"
-#include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "modules/indexeddb/IDBAny.h"
+#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBObjectStore.h"
+#include "modules/indexeddb/IDBRequest.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransaction.h"
 #include <limits>
 
 namespace WebCore {

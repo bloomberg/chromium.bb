@@ -25,10 +25,10 @@
 #ifndef GainNode_h
 #define GainNode_h
 
-#include "AudioNode.h"
-#include "AudioParam.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioParam.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

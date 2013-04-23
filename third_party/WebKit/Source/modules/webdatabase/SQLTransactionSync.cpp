@@ -30,11 +30,11 @@
  */
 
 #include "config.h"
-#include "SQLTransactionSync.h"
+#include "modules/webdatabase/SQLTransactionSync.h"
 
-#include "DatabaseSync.h"
-#include "SQLTransactionSyncCallback.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/webdatabase/DatabaseSync.h"
+#include "modules/webdatabase/SQLTransactionSyncCallback.h"
 
 namespace WebCore {
 

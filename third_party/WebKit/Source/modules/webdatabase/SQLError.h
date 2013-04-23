@@ -29,8 +29,8 @@
 #ifndef SQLError_h
 #define SQLError_h
 
-#include <wtf/ThreadSafeRefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/ThreadSafeRefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -22,8 +22,8 @@
 
 #if ENABLE(VIBRATION)
 
-#include "ExceptionCode.h"
-#include <wtf/Vector.h>
+#include "core/dom/ExceptionCode.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

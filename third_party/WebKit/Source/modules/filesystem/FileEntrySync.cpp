@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "FileEntrySync.h"
+#include "modules/filesystem/FileEntrySync.h"
 
-#include "File.h"
-#include "FileWriterSync.h"
+#include "core/fileapi/File.h"
+#include "modules/filesystem/FileWriterSync.h"
 
 namespace WebCore {
 

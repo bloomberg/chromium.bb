@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "IDBLevelDBCoding.h"
+#include "modules/indexeddb/IDBLevelDBCoding.h"
 
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "LevelDBSlice.h"
-#include <wtf/ByteOrder.h>
-#include <wtf/text/StringBuilder.h>
+#include "core/platform/leveldb/LevelDBSlice.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "wtf/ByteOrder.h"
+#include "wtf/text/StringBuilder.h"
 
 // LevelDB stores key/value pairs. Keys and values are strings of bytes, normally of type Vector<char>.
 //

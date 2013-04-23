@@ -26,11 +26,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "DefaultAudioDestinationNode.h"
+#include "modules/webaudio/DefaultAudioDestinationNode.h"
 
-#include "ExceptionCode.h"
-#include "Logging.h"
-#include <wtf/MainThread.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/Logging.h"
+#include "wtf/MainThread.h"
 
 const unsigned EnabledInputChannels = 2;
 

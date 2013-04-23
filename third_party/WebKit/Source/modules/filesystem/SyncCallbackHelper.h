@@ -31,19 +31,19 @@
 #ifndef SyncCallbackHelper_h
 #define SyncCallbackHelper_h
 
-#include "DirectoryEntry.h"
-#include "EntriesCallback.h"
-#include "EntryArraySync.h"
-#include "EntryCallback.h"
-#include "ErrorCallback.h"
-#include "FileEntry.h"
-#include "FileError.h"
-#include "FileException.h"
-#include "FileSystemCallback.h"
-#include "MetadataCallback.h"
-#include "VoidCallback.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "core/fileapi/FileError.h"
+#include "core/fileapi/FileException.h"
+#include "core/html/VoidCallback.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/EntriesCallback.h"
+#include "modules/filesystem/EntryArraySync.h"
+#include "modules/filesystem/EntryCallback.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileEntry.h"
+#include "modules/filesystem/FileSystemCallback.h"
+#include "modules/filesystem/MetadataCallback.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

@@ -30,39 +30,39 @@
 
 #include "config.h"
 
-#include "MainThreadWebSocketChannel.h"
+#include "modules/websockets/MainThreadWebSocketChannel.h"
 
-#include "Blob.h"
-#include "CookieJar.h"
-#include "Document.h"
-#include "ExceptionCodePlaceholder.h"
-#include "FileError.h"
-#include "FileReaderLoader.h"
-#include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
-#include "InspectorInstrumentation.h"
-#include "Logging.h"
-#include "Page.h"
-#include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
-#include "Settings.h"
-#include "SocketStreamError.h"
-#include "SocketStreamHandle.h"
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
-#include "WebSocketHandshake.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/FileError.h"
+#include "core/fileapi/FileReaderLoader.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/loader/CookieJar.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
+#include "core/platform/Logging.h"
+#include "core/platform/network/chromium/SocketStreamError.h"
+#include "core/platform/network/chromium/SocketStreamHandle.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannelClient.h"
+#include "modules/websockets/WebSocketHandshake.h"
 
-#include <wtf/ArrayBuffer.h>
-#include <wtf/Deque.h>
-#include <wtf/FastMalloc.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/Deque.h"
+#include "wtf/FastMalloc.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 using namespace std;
 

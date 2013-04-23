@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
-#include "IDBObjectStoreBackendImpl.h"
+#include "modules/indexeddb/IDBObjectStoreBackendImpl.h"
 
-#include "IDBBackingStore.h"
-#include "IDBBindingUtilities.h"
-#include "IDBCallbacks.h"
-#include "IDBCursorBackendImpl.h"
-#include "IDBDatabaseBackendImpl.h"
-#include "IDBDatabaseException.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "IDBKeyRange.h"
-#include "IDBTracing.h"
-#include "IDBTransactionBackendImpl.h"
-#include <wtf/MathExtras.h>
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBCallbacks.h"
+#include "modules/indexeddb/IDBCursorBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransactionBackendImpl.h"
+#include "wtf/MathExtras.h"
 
 namespace WebCore {
 

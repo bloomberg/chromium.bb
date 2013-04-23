@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "SQLException.h"
+#include "modules/webdatabase/SQLException.h"
 
 namespace WebCore {
 

@@ -26,12 +26,12 @@
 #ifndef IDBObjectStoreBackendImpl_h
 #define IDBObjectStoreBackendImpl_h
 
-#include "IDBBackingStore.h"
-#include "IDBDatabaseBackendImpl.h"
-#include "IDBKeyPath.h"
-#include "IDBMetadata.h"
-#include <wtf/HashMap.h>
-#include <wtf/text/StringHash.h>
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBMetadata.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

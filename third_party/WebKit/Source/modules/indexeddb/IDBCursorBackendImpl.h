@@ -27,13 +27,13 @@
 #ifndef IDBCursorBackendImpl_h
 #define IDBCursorBackendImpl_h
 
-#include "IDBBackingStore.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBTransactionBackendImpl.h"
-#include "SharedBuffer.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBTransactionBackendImpl.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

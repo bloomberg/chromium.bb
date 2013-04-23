@@ -28,28 +28,28 @@
  */
 
 #include "config.h"
-#include "DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseBackendBase.h"
 
-#include "DatabaseAuthorizer.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseBase.h"
-#include "DatabaseContext.h"
-#include "DatabaseManager.h"
-#include "DatabaseTracker.h"
-#include "ExceptionCode.h"
-#include "Logging.h"
-#include "SQLiteStatement.h"
-#include "SQLiteTransaction.h"
-#include "SecurityOrigin.h"
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringHash.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/Logging.h"
+#include "core/platform/sql/SQLiteStatement.h"
+#include "core/platform/sql/SQLiteTransaction.h"
+#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseBase.h"
+#include "modules/webdatabase/DatabaseContext.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseTracker.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
 
-#include "DatabaseObserver.h" // For error reporting.
+#include "modules/webdatabase/chromium/DatabaseObserver.h" // For error reporting.
 
 // Registering "opened" databases with the DatabaseTracker
 // =======================================================

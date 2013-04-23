@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "IDBTransactionCoordinator.h"
+#include "modules/indexeddb/IDBTransactionCoordinator.h"
 
-#include "IDBDatabaseBackendImpl.h"
-#include "IDBTransactionBackendImpl.h"
+#include "modules/indexeddb/IDBDatabaseBackendImpl.h"
+#include "modules/indexeddb/IDBTransactionBackendImpl.h"
 
 namespace WebCore {
 

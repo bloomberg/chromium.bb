@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SpeechSynthesisUtterance.h"
+#include "modules/speech/SpeechSynthesisUtterance.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 

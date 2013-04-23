@@ -26,9 +26,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "WaveShaperDSPKernel.h"
+#include "modules/webaudio/WaveShaperDSPKernel.h"
 
-#include "WaveShaperProcessor.h"
+#include "modules/webaudio/WaveShaperProcessor.h"
 #include <algorithm>
 
 using namespace std;

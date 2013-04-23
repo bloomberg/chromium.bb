@@ -32,13 +32,13 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCSessionDescriptionRequestImpl.h"
+#include "modules/mediastream/RTCSessionDescriptionRequestImpl.h"
 
-#include "RTCErrorCallback.h"
-#include "RTCPeerConnection.h"
-#include "RTCSessionDescription.h"
-#include "RTCSessionDescriptionCallback.h"
-#include "RTCSessionDescriptionDescriptor.h"
+#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
+#include "modules/mediastream/RTCErrorCallback.h"
+#include "modules/mediastream/RTCPeerConnection.h"
+#include "modules/mediastream/RTCSessionDescription.h"
+#include "modules/mediastream/RTCSessionDescriptionCallback.h"
 
 namespace WebCore {
 

@@ -26,9 +26,9 @@
 #ifndef SpeechRecognitionController_h
 #define SpeechRecognitionController_h
 
-#include "Page.h"
-#include "SpeechRecognitionClient.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/page/Page.h"
+#include "modules/speech/SpeechRecognitionClient.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

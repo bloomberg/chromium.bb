@@ -26,21 +26,21 @@
  */
 
 #include "config.h"
-#include "DatabaseContext.h"
+#include "modules/webdatabase/DatabaseContext.h"
 
-#include "Chrome.h"
-#include "ChromeClient.h"
-#include "Database.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseManager.h"
-#include "DatabaseTask.h"
-#include "DatabaseThread.h"
-#include "Document.h"
-#include "Page.h"
-#include "SchemeRegistry.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include "Settings.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/Settings.h"
+#include "core/platform/SchemeRegistry.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseTask.h"
+#include "modules/webdatabase/DatabaseThread.h"
 
 namespace WebCore {
 

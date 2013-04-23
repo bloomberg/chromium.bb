@@ -22,9 +22,9 @@
 
 #if ENABLE(VIBRATION)
 
-#include "Page.h"
-#include "Timer.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/page/Page.h"
+#include "core/platform/Timer.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -30,25 +30,25 @@
 
 #include "config.h"
 
-#include "WorkerThreadableWebSocketChannel.h"
+#include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
-#include "Blob.h"
-#include "CrossThreadTask.h"
-#include "Document.h"
-#include "MainThreadWebSocketChannel.h"
-#include "RuntimeEnabledFeatures.h"
-#include "ScriptExecutionContext.h"
-#include "ThreadableWebSocketChannelClientWrapper.h"
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
-#include "WorkerContext.h"
-#include "WorkerLoaderProxy.h"
-#include "WorkerRunLoop.h"
-#include "WorkerThread.h"
-#include <wtf/ArrayBuffer.h>
-#include <wtf/MainThread.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/RuntimeEnabledFeatures.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/Blob.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerLoaderProxy.h"
+#include "core/workers/WorkerRunLoop.h"
+#include "core/workers/WorkerThread.h"
+#include "modules/websockets/MainThreadWebSocketChannel.h"
+#include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannelClient.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/MainThread.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

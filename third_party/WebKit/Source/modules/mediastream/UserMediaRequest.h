@@ -33,15 +33,15 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ActiveDOMObject.h"
-#include "ExceptionBase.h"
-#include "MediaStreamSource.h"
-#include "MediaStreamSourcesQueryClient.h"
-#include "NavigatorUserMediaErrorCallback.h"
-#include "NavigatorUserMediaSuccessCallback.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ExceptionBase.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
+#include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
+#include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
+#include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

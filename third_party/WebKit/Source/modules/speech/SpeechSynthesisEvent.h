@@ -28,8 +28,8 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "Event.h"
-#include <wtf/PassRefPtr.h>
+#include "core/dom/Event.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
     

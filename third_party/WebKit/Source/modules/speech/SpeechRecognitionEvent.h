@@ -26,10 +26,10 @@
 #ifndef SpeechRecognitionEvent_h
 #define SpeechRecognitionEvent_h
 
-#include "Event.h"
-#include "SpeechRecognitionResult.h"
-#include "SpeechRecognitionResultList.h"
-#include <wtf/RefPtr.h>
+#include "core/dom/Event.h"
+#include "modules/speech/SpeechRecognitionResult.h"
+#include "modules/speech/SpeechRecognitionResultList.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

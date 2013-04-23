@@ -26,17 +26,17 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "PannerNode.h"
+#include "modules/webaudio/PannerNode.h"
 
-#include "AudioBufferSourceNode.h"
-#include "AudioBus.h"
-#include "AudioContext.h"
-#include "AudioNodeInput.h"
-#include "AudioNodeOutput.h"
-#include "ExceptionCode.h"
-#include "HRTFPanner.h"
-#include "ScriptExecutionContext.h"
-#include <wtf/MathExtras.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/HRTFPanner.h"
+#include "modules/webaudio/AudioBufferSourceNode.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeInput.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

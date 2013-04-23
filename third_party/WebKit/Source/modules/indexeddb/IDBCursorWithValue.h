@@ -26,7 +26,7 @@
 #ifndef IDBCursorWithValue_h
 #define IDBCursorWithValue_h
 
-#include "IDBCursor.h"
+#include "modules/indexeddb/IDBCursor.h"
 
 namespace WebCore {
 

@@ -31,18 +31,18 @@
 #ifndef MainThreadWebSocketChannel_h
 #define MainThreadWebSocketChannel_h
 
-#include "FileReaderLoaderClient.h"
-#include "SocketStreamHandleClient.h"
-#include "Timer.h"
-#include "WebSocketChannel.h"
-#include "WebSocketDeflateFramer.h"
-#include "WebSocketFrame.h"
-#include "WebSocketHandshake.h"
-#include <wtf/Deque.h>
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/CString.h>
+#include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/platform/Timer.h"
+#include "core/platform/network/SocketStreamHandleClient.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketDeflateFramer.h"
+#include "modules/websockets/WebSocketFrame.h"
+#include "modules/websockets/WebSocketHandshake.h"
+#include "wtf/Deque.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

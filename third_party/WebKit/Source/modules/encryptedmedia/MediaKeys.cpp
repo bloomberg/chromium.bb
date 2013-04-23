@@ -24,17 +24,17 @@
  */
 
 #include "config.h"
-#include "MediaKeys.h"
+#include "modules/encryptedmedia/MediaKeys.h"
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "CDM.h"
-#include "EventNames.h"
-#include "HTMLMediaElement.h"
-#include "MediaKeyMessageEvent.h"
-#include "MediaKeySession.h"
-#include "UUID.h"
-#include <wtf/HashSet.h>
+#include "core/dom/EventNames.h"
+#include "core/html/HTMLMediaElement.h"
+#include "core/platform/UUID.h"
+#include "modules/encryptedmedia/CDM.h"
+#include "modules/encryptedmedia/MediaKeyMessageEvent.h"
+#include "modules/encryptedmedia/MediaKeySession.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

@@ -25,11 +25,11 @@
 #ifndef DelayProcessor_h
 #define DelayProcessor_h
 
-#include "AudioDSPKernelProcessor.h"
-#include "AudioParam.h"
+#include "core/platform/audio/AudioDSPKernelProcessor.h"
+#include "modules/webaudio/AudioParam.h"
 
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

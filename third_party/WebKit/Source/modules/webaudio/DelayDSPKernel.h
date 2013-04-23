@@ -25,9 +25,9 @@
 #ifndef DelayDSPKernel_h
 #define DelayDSPKernel_h
 
-#include "AudioArray.h"
-#include "AudioDSPKernel.h"
-#include "DelayProcessor.h"
+#include "core/platform/audio/AudioArray.h"
+#include "core/platform/audio/AudioDSPKernel.h"
+#include "modules/webaudio/DelayProcessor.h"
 
 namespace WebCore {
 

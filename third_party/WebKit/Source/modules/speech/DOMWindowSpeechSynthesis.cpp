@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "DOMWindowSpeechSynthesis.h"
+#include "modules/speech/DOMWindowSpeechSynthesis.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "DOMWindow.h"
-#include <wtf/PassRefPtr.h>
+#include "core/page/DOMWindow.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
     

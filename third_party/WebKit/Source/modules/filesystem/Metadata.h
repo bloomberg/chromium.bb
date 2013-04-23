@@ -31,8 +31,8 @@
 #ifndef Metadata_h
 #define Metadata_h
 
-#include "FileMetadata.h"
-#include <wtf/RefCounted.h>
+#include "core/platform/FileMetadata.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

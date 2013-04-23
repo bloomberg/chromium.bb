@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "EntrySync.h"
+#include "modules/filesystem/EntrySync.h"
 
-#include "DOMFilePath.h"
-#include "DOMFileSystemSync.h"
-#include "DirectoryEntry.h"
-#include "DirectoryEntrySync.h"
-#include "FileEntrySync.h"
-#include "FileException.h"
-#include "Metadata.h"
-#include "SyncCallbackHelper.h"
+#include "core/fileapi/FileException.h"
+#include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DOMFileSystemSync.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/DirectoryEntrySync.h"
+#include "modules/filesystem/FileEntrySync.h"
+#include "modules/filesystem/Metadata.h"
+#include "modules/filesystem/SyncCallbackHelper.h"
 
 namespace WebCore {
 

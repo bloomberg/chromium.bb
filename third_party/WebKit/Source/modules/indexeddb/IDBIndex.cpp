@@ -24,16 +24,16 @@
  */
 
 #include "config.h"
-#include "IDBIndex.h"
+#include "modules/indexeddb/IDBIndex.h"
 
-#include "IDBDatabaseException.h"
-#include "IDBKey.h"
-#include "IDBKeyRange.h"
-#include "IDBObjectStore.h"
-#include "IDBRequest.h"
-#include "IDBTracing.h"
-#include "IDBTransaction.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/indexeddb/IDBDatabaseException.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBObjectStore.h"
+#include "modules/indexeddb/IDBRequest.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransaction.h"
 
 namespace WebCore {
 

@@ -27,25 +27,25 @@
  */
 
 #include "config.h"
-#include "SQLTransactionBackend.h"
+#include "modules/webdatabase/SQLTransactionBackend.h"
 
-#include "AbstractSQLTransaction.h"
-#include "Database.h" // FIXME: Should only be used in the frontend.
-#include "DatabaseAuthorizer.h"
-#include "DatabaseBackend.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseThread.h"
-#include "DatabaseTracker.h"
-#include "ExceptionCode.h"
-#include "Logging.h"
-#include "SQLError.h"
-#include "SQLStatementBackend.h"
-#include "SQLTransactionClient.h"
-#include "SQLTransactionCoordinator.h"
-#include "SQLValue.h"
-#include "SQLiteTransaction.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/Logging.h"
+#include "core/platform/sql/SQLValue.h"
+#include "core/platform/sql/SQLiteTransaction.h"
+#include "modules/webdatabase/AbstractSQLTransaction.h"
+#include "modules/webdatabase/Database.h" // FIXME: Should only be used in the frontend.
+#include "modules/webdatabase/DatabaseAuthorizer.h"
+#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseThread.h"
+#include "modules/webdatabase/DatabaseTracker.h"
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLStatementBackend.h"
+#include "modules/webdatabase/SQLTransactionClient.h"
+#include "modules/webdatabase/SQLTransactionCoordinator.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 
 // How does a SQLTransaction work?

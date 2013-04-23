@@ -30,14 +30,14 @@
 
 #include "config.h"
 
-#include "WebSocketExtensionDispatcher.h"
+#include "modules/websockets/WebSocketExtensionDispatcher.h"
 
-#include "WebSocketExtensionParser.h"
+#include "modules/websockets/WebSocketExtensionParser.h"
 
-#include <wtf/ASCIICType.h>
-#include <wtf/HashMap.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringHash.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/HashMap.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

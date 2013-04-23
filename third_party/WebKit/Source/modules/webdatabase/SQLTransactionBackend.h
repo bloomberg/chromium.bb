@@ -28,13 +28,13 @@
 #ifndef SQLTransactionBackend_h
 #define SQLTransactionBackend_h
 
-#include "AbstractSQLStatement.h"
-#include "AbstractSQLTransactionBackend.h"
-#include "DatabaseBasicTypes.h"
-#include "SQLTransactionStateMachine.h"
-#include <wtf/Deque.h>
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/AbstractSQLStatement.h"
+#include "modules/webdatabase/AbstractSQLTransactionBackend.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/SQLTransactionStateMachine.h"
+#include "wtf/Deque.h"
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

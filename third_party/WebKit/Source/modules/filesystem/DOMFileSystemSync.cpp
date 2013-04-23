@@ -29,21 +29,21 @@
  */
 
 #include "config.h"
-#include "DOMFileSystemSync.h"
+#include "modules/filesystem/DOMFileSystemSync.h"
 
-#include "AsyncFileSystem.h"
-#include "AsyncFileWriter.h"
-#include "DOMFilePath.h"
-#include "DirectoryEntrySync.h"
-#include "ErrorCallback.h"
-#include "File.h"
-#include "FileEntrySync.h"
-#include "FileError.h"
-#include "FileException.h"
-#include "FileMetadata.h"
-#include "FileSystemCallbacks.h"
-#include "FileWriterBaseCallback.h"
-#include "FileWriterSync.h"
+#include "core/fileapi/File.h"
+#include "core/fileapi/FileError.h"
+#include "core/fileapi/FileException.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/FileMetadata.h"
+#include "modules/filesystem/AsyncFileWriter.h"
+#include "modules/filesystem/DOMFilePath.h"
+#include "modules/filesystem/DirectoryEntrySync.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileEntrySync.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/FileWriterBaseCallback.h"
+#include "modules/filesystem/FileWriterSync.h"
 
 namespace WebCore {
 

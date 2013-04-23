@@ -31,10 +31,10 @@
 #ifndef WebSocketDeflater_h
 #define WebSocketDeflater_h
 
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 struct z_stream_s;
 typedef z_stream_s z_stream;

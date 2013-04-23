@@ -26,9 +26,9 @@
 #ifndef DatabaseBackend_h
 #define DatabaseBackend_h
 
-#include "DatabaseBackendBase.h"
-#include <wtf/Deque.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "wtf/Deque.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

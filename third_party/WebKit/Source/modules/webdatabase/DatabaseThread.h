@@ -28,15 +28,15 @@
 #ifndef DatabaseThread_h
 #define DatabaseThread_h
 
-#include <wtf/Deque.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/MessageQueue.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
+#include "wtf/Deque.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/MessageQueue.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

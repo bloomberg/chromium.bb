@@ -31,8 +31,8 @@
 #ifndef WebSocketExtensionProcessor_h
 #define WebSocketExtensionProcessor_h
 
-#include <wtf/HashMap.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

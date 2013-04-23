@@ -27,14 +27,14 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCDTMFSender.h"
+#include "modules/mediastream/RTCDTMFSender.h"
 
-#include "ExceptionCode.h"
-#include "MediaStreamTrack.h"
-#include "RTCDTMFSenderHandler.h"
-#include "RTCDTMFToneChangeEvent.h"
-#include "RTCPeerConnectionHandler.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
+#include "modules/mediastream/MediaStreamTrack.h"
+#include "modules/mediastream/RTCDTMFToneChangeEvent.h"
 
 namespace WebCore {
 

@@ -22,8 +22,8 @@
 
 #if ENABLE(BATTERY_STATUS)
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

@@ -25,12 +25,12 @@
 #ifndef AudioNodeOutput_h
 #define AudioNodeOutput_h
 
-#include "AudioBus.h"
-#include "AudioNode.h"
-#include "AudioParam.h"
-#include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "core/platform/audio/AudioBus.h"
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioParam.h"
+#include "wtf/HashSet.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

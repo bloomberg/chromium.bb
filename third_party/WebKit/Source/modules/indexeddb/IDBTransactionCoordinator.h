@@ -26,9 +26,9 @@
 #ifndef IDBTransactionCoordinator_h
 #define IDBTransactionCoordinator_h
 
-#include <wtf/HashMap.h>
-#include <wtf/ListHashSet.h>
-#include <wtf/RefPtr.h>
+#include "wtf/HashMap.h"
+#include "wtf/ListHashSet.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

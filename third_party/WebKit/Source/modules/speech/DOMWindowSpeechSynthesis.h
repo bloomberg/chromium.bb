@@ -28,9 +28,9 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "DOMWindowProperty.h"
-#include "SpeechSynthesis.h"
-#include "Supplementable.h"
+#include "core/page/DOMWindowProperty.h"
+#include "core/platform/Supplementable.h"
+#include "modules/speech/SpeechSynthesis.h"
 
 namespace WebCore {
     

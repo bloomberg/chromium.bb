@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include "WebSocketHandshakeResponse.h"
+#include "modules/websockets/WebSocketHandshakeResponse.h"
 
-#include <wtf/Assertions.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Assertions.h"
+#include "wtf/text/AtomicString.h"
 
 using namespace std;
 

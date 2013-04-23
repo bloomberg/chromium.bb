@@ -27,11 +27,11 @@
 
 #include "config.h"
 
-#include "WorkerContextIndexedDatabase.h"
+#include "modules/indexeddb/WorkerContextIndexedDatabase.h"
 
-#include "IDBFactory.h"
-#include "IDBFactoryBackendInterface.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/indexeddb/IDBFactory.h"
+#include "modules/indexeddb/IDBFactoryBackendInterface.h"
 
 namespace WebCore {
 

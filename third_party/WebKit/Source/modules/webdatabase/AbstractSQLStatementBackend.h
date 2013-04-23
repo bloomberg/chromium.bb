@@ -26,9 +26,9 @@
 #ifndef AbstractSQLStatementBackend_h
 #define AbstractSQLStatementBackend_h
 
-#include "SQLError.h"
-#include "SQLResultSet.h"
-#include <wtf/ThreadSafeRefCounted.h>
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLResultSet.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 

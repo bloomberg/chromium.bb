@@ -28,8 +28,8 @@
 
 #if ENABLE(NOTIFICATIONS)
 
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

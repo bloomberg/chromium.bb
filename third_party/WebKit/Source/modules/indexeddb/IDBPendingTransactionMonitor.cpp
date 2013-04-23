@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "IDBPendingTransactionMonitor.h"
-#include "IDBTransaction.h"
-#include <wtf/ThreadSpecific.h>
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
+#include "modules/indexeddb/IDBTransaction.h"
+#include "wtf/ThreadSpecific.h"
 
 using WTF::ThreadSpecific;
 

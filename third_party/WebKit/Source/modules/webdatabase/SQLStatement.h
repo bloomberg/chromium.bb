@@ -28,13 +28,13 @@
 #ifndef SQLStatement_h
 #define SQLStatement_h
 
-#include "AbstractSQLStatement.h"
-#include "SQLCallbackWrapper.h"
-#include "SQLResultSet.h"
-#include "SQLValue.h"
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/AbstractSQLStatement.h"
+#include "modules/webdatabase/SQLCallbackWrapper.h"
+#include "modules/webdatabase/SQLResultSet.h"
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

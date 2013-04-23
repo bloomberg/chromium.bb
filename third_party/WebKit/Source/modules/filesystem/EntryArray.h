@@ -31,9 +31,9 @@
 #ifndef EntryArray_h
 #define EntryArray_h
 
-#include "Entry.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "modules/filesystem/Entry.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

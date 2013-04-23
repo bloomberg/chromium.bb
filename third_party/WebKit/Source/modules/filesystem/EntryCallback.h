@@ -31,7 +31,7 @@
 #ifndef EntryCallback_h
 #define EntryCallback_h
 
-#include <wtf/RefCounted.h>
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

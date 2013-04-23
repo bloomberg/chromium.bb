@@ -27,9 +27,9 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCStatsReport.h"
+#include "modules/mediastream/RTCStatsReport.h"
 
-#include <wtf/text/StringHash.h>
+#include "wtf/text/StringHash.h"
 
 namespace WebCore {
 

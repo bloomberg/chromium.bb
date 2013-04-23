@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "NavigatorDoNotTrack.h"
+#include "modules/donottrack/NavigatorDoNotTrack.h"
 
-#include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
-#include "Navigator.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
+#include "core/page/Navigator.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -28,15 +28,15 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "CDM.h"
-#include "EventTarget.h"
-#include "ExceptionCode.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Uint8Array.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/EventTarget.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/encryptedmedia/CDM.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Uint8Array.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

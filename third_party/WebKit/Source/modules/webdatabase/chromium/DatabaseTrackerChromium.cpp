@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "DatabaseTracker.h"
+#include "modules/webdatabase/DatabaseTracker.h"
 
-#include "DatabaseBackendBase.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseObserver.h"
-#include "QuotaTracker.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include "SecurityOriginHash.h"
-#include "SQLiteFileSystem.h"
-#include <wtf/Assertions.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/SecurityOriginHash.h"
+#include "core/platform/sql/SQLiteFileSystem.h"
+#include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/chromium/DatabaseObserver.h"
+#include "modules/webdatabase/chromium/QuotaTracker.h"
+#include "wtf/Assertions.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

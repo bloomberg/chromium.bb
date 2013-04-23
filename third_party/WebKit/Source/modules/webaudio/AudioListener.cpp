@@ -30,9 +30,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioListener.h"
+#include "modules/webaudio/AudioListener.h"
 
-#include "AudioBus.h"
+#include "core/platform/audio/AudioBus.h"
 
 namespace WebCore {
 

@@ -29,7 +29,7 @@
 #ifndef AudioScheduledSourceNode_h
 #define AudioScheduledSourceNode_h
 
-#include "AudioSourceNode.h"
+#include "modules/webaudio/AudioSourceNode.h"
 
 namespace WebCore {
 

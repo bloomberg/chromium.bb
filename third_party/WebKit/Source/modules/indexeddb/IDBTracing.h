@@ -29,7 +29,7 @@
 #ifndef IDBTracing_h
 #define IDBTracing_h
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 #define IDB_TRACE(a) TRACE_EVENT0("IndexedDB", (a));
 
 #endif // IDBTracing_h

@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "DOMFilePath.h"
+#include "modules/filesystem/DOMFilePath.h"
 
-#include <wtf/Vector.h>
-#include <wtf/text/CString.h>
+#include "wtf/Vector.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

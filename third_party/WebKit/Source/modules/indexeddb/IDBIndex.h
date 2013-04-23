@@ -26,16 +26,16 @@
 #ifndef IDBIndex_h
 #define IDBIndex_h
 
-#include "IDBCursor.h"
-#include "IDBDatabase.h"
-#include "IDBKeyPath.h"
-#include "IDBKeyRange.h"
-#include "IDBMetadata.h"
-#include "IDBObjectStore.h"
-#include "IDBRequest.h"
-#include "ScriptWrappable.h"
-#include <wtf/Forward.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/indexeddb/IDBMetadata.h"
+#include "modules/indexeddb/IDBObjectStore.h"
+#include "modules/indexeddb/IDBRequest.h"
+#include "wtf/Forward.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

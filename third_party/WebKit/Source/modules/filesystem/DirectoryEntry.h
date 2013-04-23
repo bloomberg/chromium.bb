@@ -31,11 +31,11 @@
 #ifndef DirectoryEntry_h
 #define DirectoryEntry_h
 
-#include "Entry.h"
-#include "FileSystemFlags.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "modules/filesystem/Entry.h"
+#include "modules/filesystem/FileSystemFlags.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

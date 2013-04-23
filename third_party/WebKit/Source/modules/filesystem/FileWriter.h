@@ -31,13 +31,13 @@
 #ifndef FileWriter_h
 #define FileWriter_h
 
-#include "ActiveDOMObject.h"
-#include "AsyncFileWriterClient.h"
-#include "EventTarget.h"
-#include "FileWriterBase.h"
-#include "ScriptExecutionContext.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/filesystem/AsyncFileWriterClient.h"
+#include "modules/filesystem/FileWriterBase.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

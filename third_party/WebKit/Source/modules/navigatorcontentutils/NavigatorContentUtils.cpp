@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "NavigatorContentUtils.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtils.h"
 
 #if ENABLE(NAVIGATOR_CONTENT_UTILS)
 
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "Frame.h"
-#include "Navigator.h"
-#include "Page.h"
-#include <wtf/HashSet.h>
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/page/Frame.h"
+#include "core/page/Navigator.h"
+#include "core/page/Page.h"
+#include "wtf/HashSet.h"
 
 namespace WebCore {
 

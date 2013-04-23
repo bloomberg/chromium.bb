@@ -29,8 +29,8 @@
 #ifndef ChannelMergerNode_h
 #define ChannelMergerNode_h
 
-#include "AudioNode.h"
-#include <wtf/PassRefPtr.h>
+#include "modules/webaudio/AudioNode.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

@@ -27,35 +27,35 @@
  */
 
 #include "config.h"
-#include "Database.h"
+#include "modules/webdatabase/Database.h"
 
-#include "ChangeVersionData.h"
-#include "CrossThreadTask.h"
-#include "DatabaseBackendContext.h"
-#include "DatabaseCallback.h"
-#include "DatabaseContext.h"
-#include "DatabaseManager.h"
-#include "DatabaseTask.h"
-#include "DatabaseThread.h"
-#include "DatabaseTracker.h"
-#include "Document.h"
-#include "Logging.h"
-#include "NotImplemented.h"
-#include "Page.h"
-#include "SQLError.h"
-#include "SQLTransaction.h"
-#include "SQLTransactionCallback.h"
-#include "SQLTransactionErrorCallback.h"
-#include "SQLiteStatement.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include "VoidCallback.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/text/CString.h>
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/html/VoidCallback.h"
+#include "core/page/Page.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/Logging.h"
+#include "core/platform/NotImplemented.h"
+#include "core/platform/sql/SQLiteStatement.h"
+#include "modules/webdatabase/ChangeVersionData.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseCallback.h"
+#include "modules/webdatabase/DatabaseContext.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseTask.h"
+#include "modules/webdatabase/DatabaseThread.h"
+#include "modules/webdatabase/DatabaseTracker.h"
+#include "modules/webdatabase/SQLError.h"
+#include "modules/webdatabase/SQLTransaction.h"
+#include "modules/webdatabase/SQLTransactionCallback.h"
+#include "modules/webdatabase/SQLTransactionErrorCallback.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

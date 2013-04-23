@@ -25,10 +25,10 @@
 #ifndef DelayNode_h
 #define DelayNode_h
 
-#include "AudioBasicProcessorNode.h"
-#include "DelayProcessor.h"
-#include "ExceptionCode.h"
-#include <wtf/PassRefPtr.h>
+#include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AudioBasicProcessorNode.h"
+#include "modules/webaudio/DelayProcessor.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

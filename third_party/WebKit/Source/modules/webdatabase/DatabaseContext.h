@@ -28,10 +28,10 @@
 #ifndef DatabaseContext_h
 #define DatabaseContext_h
 
-#include "ActiveDOMObject.h"
-#include "DatabaseDetails.h"
-#include <wtf/Assertions.h>
-#include <wtf/ThreadSafeRefCounted.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "modules/webdatabase/DatabaseDetails.h"
+#include "wtf/Assertions.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 

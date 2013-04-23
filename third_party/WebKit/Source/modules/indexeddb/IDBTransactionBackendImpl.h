@@ -26,13 +26,13 @@
 #ifndef IDBTransactionBackendImpl_h
 #define IDBTransactionBackendImpl_h
 
-#include "IDBBackingStore.h"
-#include "IDBDatabaseBackendInterface.h"
-#include "IDBDatabaseError.h"
-#include "Timer.h"
-#include <wtf/Deque.h>
-#include <wtf/HashSet.h>
-#include <wtf/RefPtr.h>
+#include "core/platform/Timer.h"
+#include "modules/indexeddb/IDBBackingStore.h"
+#include "modules/indexeddb/IDBDatabaseBackendInterface.h"
+#include "modules/indexeddb/IDBDatabaseError.h"
+#include "wtf/Deque.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

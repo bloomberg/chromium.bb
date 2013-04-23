@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "UserMediaController.h"
+#include "modules/mediastream/UserMediaController.h"
 
 #if ENABLE(MEDIA_STREAM)
 

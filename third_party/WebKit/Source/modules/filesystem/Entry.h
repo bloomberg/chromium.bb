@@ -31,10 +31,10 @@
 #ifndef Entry_h
 #define Entry_h
 
-#include "DOMFileSystem.h"
-#include "EntryBase.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "modules/filesystem/DOMFileSystem.h"
+#include "modules/filesystem/EntryBase.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

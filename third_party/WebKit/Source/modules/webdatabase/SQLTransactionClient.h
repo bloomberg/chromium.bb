@@ -31,8 +31,8 @@
 #ifndef SQLTransactionClient_h
 #define SQLTransactionClient_h
 
-#include <wtf/FastAllocBase.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/FastAllocBase.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

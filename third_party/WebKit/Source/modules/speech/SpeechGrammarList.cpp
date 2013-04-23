@@ -25,9 +25,9 @@
 
 #include "config.h"
 
-#include "SpeechGrammarList.h"
+#include "modules/speech/SpeechGrammarList.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

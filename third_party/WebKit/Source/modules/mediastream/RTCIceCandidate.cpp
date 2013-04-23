@@ -32,12 +32,12 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCIceCandidate.h"
+#include "modules/mediastream/RTCIceCandidate.h"
 
-#include "Dictionary.h"
-#include "ExceptionCode.h"
-#include "InspectorValues.h"
-#include "RTCIceCandidateDescriptor.h"
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
 
 namespace WebCore {
 

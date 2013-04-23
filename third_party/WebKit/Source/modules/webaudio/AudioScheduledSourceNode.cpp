@@ -26,12 +26,12 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioScheduledSourceNode.h"
+#include "modules/webaudio/AudioScheduledSourceNode.h"
 
-#include "AudioContext.h"
-#include "AudioUtilities.h"
+#include "core/platform/audio/AudioUtilities.h"
+#include "modules/webaudio/AudioContext.h"
 #include <algorithm>
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

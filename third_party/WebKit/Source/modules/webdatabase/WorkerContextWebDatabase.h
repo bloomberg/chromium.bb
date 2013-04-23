@@ -27,11 +27,11 @@
 #ifndef WorkerContextWebDatabase_h
 #define WorkerContextWebDatabase_h
 
-#include "ExceptionCode.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "core/dom/ExceptionCode.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -27,14 +27,14 @@
 
 #include "config.h"
 
-#include "WorkerContextWebDatabase.h"
+#include "modules/webdatabase/WorkerContextWebDatabase.h"
 
-#include "Database.h"
-#include "DatabaseCallback.h"
-#include "DatabaseManager.h"
-#include "DatabaseSync.h"
-#include "SecurityOrigin.h"
-#include "WorkerContext.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/workers/WorkerContext.h"
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/DatabaseCallback.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseSync.h"
 
 namespace WebCore {
 

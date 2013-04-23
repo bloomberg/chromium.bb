@@ -27,9 +27,9 @@
  */
 
 #include "config.h"
-#include "SQLResultSet.h"
+#include "modules/webdatabase/SQLResultSet.h"
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

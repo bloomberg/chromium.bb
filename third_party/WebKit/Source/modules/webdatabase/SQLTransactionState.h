@@ -26,7 +26,7 @@
 #ifndef SQLTransactionState_h
 #define SQLTransactionState_h
 
-#include <wtf/EnumClass.h>
+#include "wtf/EnumClass.h"
 
 namespace WebCore {
 

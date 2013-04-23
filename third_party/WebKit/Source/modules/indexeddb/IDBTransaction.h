@@ -26,17 +26,17 @@
 #ifndef IDBTransaction_h
 #define IDBTransaction_h
 
-#include "ActiveDOMObject.h"
-#include "DOMError.h"
-#include "Event.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
-#include "IDBMetadata.h"
-#include "IndexedDB.h"
-#include "ScriptWrappable.h"
-#include <wtf/HashSet.h>
-#include <wtf/RefCounted.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMError.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
+#include "modules/indexeddb/IDBMetadata.h"
+#include "modules/indexeddb/IndexedDB.h"
+#include "wtf/HashSet.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

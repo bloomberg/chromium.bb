@@ -26,10 +26,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioProcessingEvent.h"
+#include "modules/webaudio/AudioProcessingEvent.h"
 
-#include "AudioBuffer.h"
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
+#include "modules/webaudio/AudioBuffer.h"
 
 namespace WebCore {
 

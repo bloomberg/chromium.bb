@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "IDBKeyPath.h"
+#include "modules/indexeddb/IDBKeyPath.h"
 
-#include <wtf/ASCIICType.h>
-#include <wtf/dtoa.h>
-#include <wtf/unicode/Unicode.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/dtoa.h"
+#include "wtf/unicode/Unicode.h"
 
 namespace WebCore {
 

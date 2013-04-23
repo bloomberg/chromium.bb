@@ -26,9 +26,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "BiquadFilterNode.h"
+#include "modules/webaudio/BiquadFilterNode.h"
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

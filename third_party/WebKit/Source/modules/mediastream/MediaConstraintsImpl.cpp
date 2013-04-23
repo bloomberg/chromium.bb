@@ -32,12 +32,12 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaConstraintsImpl.h"
+#include "modules/mediastream/MediaConstraintsImpl.h"
 
-#include "ArrayValue.h"
-#include "Dictionary.h"
-#include "ExceptionCode.h"
-#include <wtf/HashMap.h>
+#include "bindings/v8/ArrayValue.h"
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/ExceptionCode.h"
+#include "wtf/HashMap.h"
 
 namespace WebCore {
 

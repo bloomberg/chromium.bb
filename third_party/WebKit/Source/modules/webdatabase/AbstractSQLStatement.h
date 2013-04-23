@@ -26,7 +26,7 @@
 #ifndef AbstractSQLStatement_h
 #define AbstractSQLStatement_h
 
-#include <wtf/ThreadSafeRefCounted.h>
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 

@@ -28,12 +28,12 @@
 #ifndef SQLStatementBackend_h
 #define SQLStatementBackend_h
 
-#include "AbstractSQLStatementBackend.h"
-#include "SQLValue.h"
-#include <wtf/Forward.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/AbstractSQLStatementBackend.h"
+#include "wtf/Forward.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

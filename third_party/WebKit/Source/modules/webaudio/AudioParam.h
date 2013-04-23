@@ -29,14 +29,14 @@
 #ifndef AudioParam_h
 #define AudioParam_h
 
-#include "AudioContext.h"
-#include "AudioParamTimeline.h"
-#include "AudioSummingJunction.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioParamTimeline.h"
+#include "modules/webaudio/AudioSummingJunction.h"
 #include <sys/types.h>
-#include <wtf/Float32Array.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Float32Array.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

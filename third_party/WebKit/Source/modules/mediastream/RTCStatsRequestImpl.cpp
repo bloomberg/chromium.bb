@@ -26,11 +26,11 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCStatsRequestImpl.h"
+#include "modules/mediastream/RTCStatsRequestImpl.h"
 
-#include "RTCStatsCallback.h"
-#include "RTCStatsRequest.h"
-#include "RTCStatsResponse.h"
+#include "core/platform/mediastream/RTCStatsRequest.h"
+#include "modules/mediastream/RTCStatsCallback.h"
+#include "modules/mediastream/RTCStatsResponse.h"
 
 namespace WebCore {
 

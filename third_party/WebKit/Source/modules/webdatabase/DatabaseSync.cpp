@@ -29,23 +29,23 @@
  */
 
 #include "config.h"
-#include "DatabaseSync.h"
+#include "modules/webdatabase/DatabaseSync.h"
 
-#include "DatabaseBackendContext.h"
-#include "DatabaseBackendSync.h"
-#include "DatabaseCallback.h"
-#include "DatabaseContext.h"
-#include "DatabaseManager.h"
-#include "DatabaseTracker.h"
-#include "Logging.h"
-#include "SQLException.h"
-#include "SQLTransactionSync.h"
-#include "SQLTransactionSyncCallback.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/CString.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/Logging.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseBackendSync.h"
+#include "modules/webdatabase/DatabaseCallback.h"
+#include "modules/webdatabase/DatabaseContext.h"
+#include "modules/webdatabase/DatabaseManager.h"
+#include "modules/webdatabase/DatabaseTracker.h"
+#include "modules/webdatabase/SQLException.h"
+#include "modules/webdatabase/SQLTransactionSync.h"
+#include "modules/webdatabase/SQLTransactionSyncCallback.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/CString.h"
 
 namespace WebCore {
 

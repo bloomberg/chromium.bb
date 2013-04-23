@@ -26,7 +26,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "DelayNode.h"
+#include "modules/webaudio/DelayNode.h"
 
 namespace WebCore {
 

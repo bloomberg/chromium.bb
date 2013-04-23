@@ -32,22 +32,22 @@
 #ifndef Notification_h  
 #define Notification_h
 
-#include "ActiveDOMObject.h"
-#include "EventNames.h"
-#include "EventTarget.h"
-#include "KURL.h"
-#include "NotificationClient.h"
-#include "SharedBuffer.h"
-#include "TextDirection.h"
-#include "ThreadableLoaderClient.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicStringHash.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
+#include "core/loader/ThreadableLoaderClient.h"
+#include "core/platform/KURL.h"
+#include "core/platform/SharedBuffer.h"
+#include "core/platform/text/TextDirection.h"
+#include "modules/notifications/NotificationClient.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicStringHash.h"
 
 #if ENABLE(NOTIFICATIONS)
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #endif
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)

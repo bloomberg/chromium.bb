@@ -28,12 +28,12 @@
 #ifndef IDBFactory_h
 #define IDBFactory_h
 
-#include "IDBOpenDBRequest.h"
-#include "ScriptWrappable.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptWrappable.h"
+#include "modules/indexeddb/IDBOpenDBRequest.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -26,13 +26,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "OfflineAudioDestinationNode.h"
+#include "modules/webaudio/OfflineAudioDestinationNode.h"
 
-#include "AudioBus.h"
-#include "AudioContext.h"
-#include "HRTFDatabaseLoader.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
+#include "modules/webaudio/AudioContext.h"
 #include <algorithm>
-#include <wtf/MainThread.h>
+#include "wtf/MainThread.h"
 
 using namespace std;
  

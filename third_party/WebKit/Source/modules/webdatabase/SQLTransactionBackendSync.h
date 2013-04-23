@@ -32,11 +32,11 @@
 #ifndef SQLTransactionBackendSync_h
 #define SQLTransactionBackendSync_h
 
-#include "DatabaseBasicTypes.h"
-#include <wtf/Forward.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "wtf/Forward.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

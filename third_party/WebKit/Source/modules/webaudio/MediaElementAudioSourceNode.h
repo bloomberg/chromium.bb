@@ -27,13 +27,13 @@
 
 #if ENABLE(WEB_AUDIO) && ENABLE(VIDEO)
 
-#include "AudioSourceNode.h"
-#include "AudioSourceProviderClient.h"
-#include "HTMLMediaElement.h"
-#include "MultiChannelResampler.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
+#include "core/html/HTMLMediaElement.h"
+#include "core/platform/audio/AudioSourceProviderClient.h"
+#include "core/platform/audio/MultiChannelResampler.h"
+#include "modules/webaudio/AudioSourceNode.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

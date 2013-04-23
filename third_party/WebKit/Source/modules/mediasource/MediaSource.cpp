@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "MediaSource.h"
+#include "modules/mediasource/MediaSource.h"
 
-#include "ContentType.h"
-#include "Event.h"
-#include "MIMETypeRegistry.h"
-#include "SourceBufferPrivate.h"
-#include "TimeRanges.h"
-#include <wtf/Uint8Array.h>
+#include "core/dom/Event.h"
+#include "core/html/TimeRanges.h"
+#include "core/platform/ContentType.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/graphics/SourceBufferPrivate.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 

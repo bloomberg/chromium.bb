@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "NotificationController.h"
+#include "modules/notifications/NotificationController.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "NotificationClient.h"
-#include <wtf/PassOwnPtr.h>
+#include "modules/notifications/NotificationClient.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

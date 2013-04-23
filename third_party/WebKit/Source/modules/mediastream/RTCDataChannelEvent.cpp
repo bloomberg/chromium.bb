@@ -23,12 +23,12 @@
  */
 
 #include "config.h"
-#include "RTCDataChannelEvent.h"
+#include "modules/mediastream/RTCDataChannelEvent.h"
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "EventNames.h"
-#include "RTCDataChannel.h"
+#include "core/dom/EventNames.h"
+#include "modules/mediastream/RTCDataChannel.h"
 
 namespace WebCore {
 

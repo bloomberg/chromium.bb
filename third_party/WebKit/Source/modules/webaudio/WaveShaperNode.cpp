@@ -26,8 +26,8 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "WaveShaperNode.h"
-#include <wtf/MainThread.h>
+#include "modules/webaudio/WaveShaperNode.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

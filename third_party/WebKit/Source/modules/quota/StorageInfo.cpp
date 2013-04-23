@@ -30,15 +30,15 @@
 
 #include "config.h"
 
-#include "StorageInfo.h"
+#include "modules/quota/StorageInfo.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "ScriptExecutionContext.h"
-#include "StorageErrorCallback.h"
-#include "StorageQuota.h"
-#include "StorageQuotaCallback.h"
-#include "StorageUsageCallback.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/quota/StorageErrorCallback.h"
+#include "modules/quota/StorageQuota.h"
+#include "modules/quota/StorageQuotaCallback.h"
+#include "modules/quota/StorageUsageCallback.h"
 
 namespace WebCore {
 

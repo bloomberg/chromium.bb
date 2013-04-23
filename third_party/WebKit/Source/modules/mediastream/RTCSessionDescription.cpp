@@ -32,11 +32,11 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCSessionDescription.h"
+#include "modules/mediastream/RTCSessionDescription.h"
 
-#include "Dictionary.h"
-#include "ExceptionCode.h"
-#include "RTCSessionDescriptionDescriptor.h"
+#include "bindings/v8/Dictionary.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
 
 namespace WebCore {
 

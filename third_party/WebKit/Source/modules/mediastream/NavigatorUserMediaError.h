@@ -25,8 +25,8 @@
 #ifndef NavigatorUserMediaError_h
 #define NavigatorUserMediaError_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 #if ENABLE(MEDIA_STREAM)
 

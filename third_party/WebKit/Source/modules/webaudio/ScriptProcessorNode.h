@@ -25,15 +25,15 @@
 #ifndef ScriptProcessorNode_h
 #define ScriptProcessorNode_h
 
-#include "ActiveDOMObject.h"
-#include "AudioBus.h"
-#include "AudioNode.h"
-#include "EventListener.h"
-#include "EventTarget.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventTarget.h"
+#include "core/platform/audio/AudioBus.h"
+#include "modules/webaudio/AudioNode.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -25,15 +25,15 @@
  */
 
 #include "config.h"
-#include "DOMWindowNotifications.h"
+#include "modules/notifications/DOMWindowNotifications.h"
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "DOMWindow.h"
-#include "Document.h"
-#include "NotificationCenter.h"
-#include "NotificationController.h"
-#include "Page.h"
+#include "core/dom/Document.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Page.h"
+#include "modules/notifications/NotificationCenter.h"
+#include "modules/notifications/NotificationController.h"
 
 namespace WebCore {
 

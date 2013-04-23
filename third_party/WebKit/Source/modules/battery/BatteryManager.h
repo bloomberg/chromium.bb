@@ -22,9 +22,9 @@
 
 #if ENABLE(BATTERY_STATUS)
 
-#include "ActiveDOMObject.h"
-#include "BatteryStatus.h"
-#include "EventTarget.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventTarget.h"
+#include "modules/battery/BatteryStatus.h"
 
 namespace WebCore {
 

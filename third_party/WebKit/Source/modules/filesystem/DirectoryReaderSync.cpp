@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "DirectoryReaderSync.h"
+#include "modules/filesystem/DirectoryReaderSync.h"
 
-#include "DirectoryEntry.h"
-#include "DirectoryEntrySync.h"
-#include "EntryArraySync.h"
-#include "EntrySync.h"
-#include "FileEntrySync.h"
-#include "FileException.h"
-#include "SyncCallbackHelper.h"
+#include "core/fileapi/FileException.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/DirectoryEntrySync.h"
+#include "modules/filesystem/EntryArraySync.h"
+#include "modules/filesystem/EntrySync.h"
+#include "modules/filesystem/FileEntrySync.h"
+#include "modules/filesystem/SyncCallbackHelper.h"
 
 namespace WebCore {
 

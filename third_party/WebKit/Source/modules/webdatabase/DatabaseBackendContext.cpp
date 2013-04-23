@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
 
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 

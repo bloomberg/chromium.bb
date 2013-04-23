@@ -30,15 +30,15 @@
 
 #include "config.h"
 
-#include "FileWriter.h"
+#include "modules/filesystem/FileWriter.h"
 
-#include "AsyncFileWriter.h"
-#include "Blob.h"
-#include "ExceptionCode.h"
-#include "FileError.h"
-#include "FileException.h"
-#include "ProgressEvent.h"
-#include <wtf/CurrentTime.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ProgressEvent.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/FileError.h"
+#include "core/fileapi/FileException.h"
+#include "modules/filesystem/AsyncFileWriter.h"
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 

@@ -30,13 +30,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "WaveTable.h"
+#include "modules/webaudio/WaveTable.h"
 
-#include "FFTFrame.h"
-#include "OscillatorNode.h"
-#include "VectorMath.h"
+#include "core/platform/audio/FFTFrame.h"
+#include "core/platform/audio/VectorMath.h"
+#include "modules/webaudio/OscillatorNode.h"
 #include <algorithm>
-#include <wtf/OwnPtr.h>
+#include "wtf/OwnPtr.h"
 
 const unsigned WaveTableSize = 4096; // This must be a power of two.
 const unsigned NumberOfRanges = 36; // There should be 3 * log2(WaveTableSize) 1/3 octave ranges.

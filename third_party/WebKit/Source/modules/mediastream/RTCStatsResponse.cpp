@@ -26,7 +26,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCStatsResponse.h"
+#include "modules/mediastream/RTCStatsResponse.h"
 
 namespace WebCore {
 

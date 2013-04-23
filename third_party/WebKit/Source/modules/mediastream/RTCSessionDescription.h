@@ -33,10 +33,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "ExceptionBase.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "core/dom/ExceptionBase.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

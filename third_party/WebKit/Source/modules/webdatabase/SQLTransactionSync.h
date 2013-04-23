@@ -32,7 +32,7 @@
 #ifndef SQLTransactionSync_h
 #define SQLTransactionSync_h
 
-#include "SQLTransactionBackendSync.h"
+#include "modules/webdatabase/SQLTransactionBackendSync.h"
 
 namespace WebCore {
 

@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
-#include "DOMWindowFileSystem.h"
+#include "modules/filesystem/DOMWindowFileSystem.h"
 
-#include "AsyncFileSystem.h"
-#include "DOMFileSystem.h"
-#include "DOMWindow.h"
-#include "Document.h"
-#include "EntryCallback.h"
-#include "ErrorCallback.h"
-#include "FileError.h"
-#include "FileSystemCallback.h"
-#include "FileSystemCallbacks.h"
-#include "FileSystemType.h"
-#include "LocalFileSystem.h"
-#include "SecurityOrigin.h"
+#include "core/dom/Document.h"
+#include "core/fileapi/FileError.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "modules/filesystem/DOMFileSystem.h"
+#include "modules/filesystem/EntryCallback.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/FileSystemType.h"
+#include "modules/filesystem/LocalFileSystem.h"
 
 namespace WebCore {
 

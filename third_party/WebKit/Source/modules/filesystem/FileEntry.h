@@ -31,7 +31,7 @@
 #ifndef FileEntry_h
 #define FileEntry_h
 
-#include "Entry.h"
+#include "modules/filesystem/Entry.h"
 
 namespace WebCore {
 

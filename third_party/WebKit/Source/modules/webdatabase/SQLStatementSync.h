@@ -31,11 +31,11 @@
 #ifndef SQLStatementSync_h
 #define SQLStatementSync_h
 
-#include "DatabaseBasicTypes.h"
-#include "SQLValue.h"
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

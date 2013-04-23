@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "ThreadableWebSocketChannelClientWrapper.h"
+#include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 
-#include "CrossThreadCopier.h"
-#include "CrossThreadTask.h"
-#include "ScriptExecutionContext.h"
-#include "WebSocketChannel.h"
-#include "WebSocketChannelClient.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/platform/CrossThreadCopier.h"
+#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/WebSocketChannelClient.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

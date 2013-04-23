@@ -29,12 +29,12 @@
 #ifndef AudioParamTimeline_h
 #define AudioParamTimeline_h
 
-#include "AudioContext.h"
-#include <wtf/Float32Array.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
+#include "modules/webaudio/AudioContext.h"
+#include "wtf/Float32Array.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

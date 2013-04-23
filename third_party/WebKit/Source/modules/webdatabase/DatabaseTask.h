@@ -28,16 +28,16 @@
 #ifndef DatabaseTask_h
 #define DatabaseTask_h
 
-#include "DatabaseBackend.h"
-#include "DatabaseBasicTypes.h"
-#include "DatabaseError.h"
-#include "SQLTransactionBackend.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "modules/webdatabase/DatabaseBackend.h"
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/DatabaseError.h"
+#include "modules/webdatabase/SQLTransactionBackend.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

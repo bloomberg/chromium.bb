@@ -25,15 +25,15 @@
 #ifndef AudioBufferSourceNode_h
 #define AudioBufferSourceNode_h
 
-#include "AudioBuffer.h"
-#include "AudioBus.h"
-#include "AudioParam.h"
-#include "AudioScheduledSourceNode.h"
-#include "PannerNode.h"
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
+#include "core/platform/audio/AudioBus.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioParam.h"
+#include "modules/webaudio/AudioScheduledSourceNode.h"
+#include "modules/webaudio/PannerNode.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

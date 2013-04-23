@@ -26,9 +26,9 @@
 #ifndef SpeechRecognitionResult_h
 #define SpeechRecognitionResult_h
 
-#include "SpeechRecognitionAlternative.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "modules/speech/SpeechRecognitionAlternative.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

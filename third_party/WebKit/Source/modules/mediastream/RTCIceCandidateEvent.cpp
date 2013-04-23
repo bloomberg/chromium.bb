@@ -26,10 +26,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCIceCandidateEvent.h"
+#include "modules/mediastream/RTCIceCandidateEvent.h"
 
-#include "EventNames.h"
-#include "RTCIceCandidate.h"
+#include "core/dom/EventNames.h"
+#include "modules/mediastream/RTCIceCandidate.h"
 
 namespace WebCore {
 

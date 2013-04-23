@@ -26,9 +26,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "WaveShaperProcessor.h"
+#include "modules/webaudio/WaveShaperProcessor.h"
 
-#include "WaveShaperDSPKernel.h"
+#include "modules/webaudio/WaveShaperDSPKernel.h"
 
 namespace WebCore {
     

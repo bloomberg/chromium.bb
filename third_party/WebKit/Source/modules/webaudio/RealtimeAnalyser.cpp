@@ -26,20 +26,20 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "RealtimeAnalyser.h"
+#include "modules/webaudio/RealtimeAnalyser.h"
 
-#include "AudioBus.h"
-#include "AudioUtilities.h"
-#include "FFTFrame.h"
-#include "VectorMath.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioUtilities.h"
+#include "core/platform/audio/FFTFrame.h"
+#include "core/platform/audio/VectorMath.h"
 
 #include <algorithm>
 #include <limits.h>
-#include <wtf/Complex.h>
-#include <wtf/Float32Array.h>
-#include <wtf/MainThread.h>
-#include <wtf/MathExtras.h>
-#include <wtf/Uint8Array.h>
+#include "wtf/Complex.h"
+#include "wtf/Float32Array.h"
+#include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
+#include "wtf/Uint8Array.h"
 
 using namespace std;
 

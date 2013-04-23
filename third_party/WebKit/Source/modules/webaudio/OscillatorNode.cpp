@@ -26,16 +26,16 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "OscillatorNode.h"
+#include "modules/webaudio/OscillatorNode.h"
 
-#include "AudioContext.h"
-#include "AudioNodeOutput.h"
-#include "AudioUtilities.h"
-#include "ExceptionCode.h"
-#include "VectorMath.h"
-#include "WaveTable.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/audio/AudioUtilities.h"
+#include "core/platform/audio/VectorMath.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/AudioNodeOutput.h"
+#include "modules/webaudio/WaveTable.h"
 #include <algorithm>
-#include <wtf/MathExtras.h>
+#include "wtf/MathExtras.h"
 
 using namespace std;
 

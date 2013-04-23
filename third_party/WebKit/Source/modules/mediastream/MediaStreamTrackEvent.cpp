@@ -25,10 +25,10 @@
 #include "config.h"
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamTrackEvent.h"
+#include "modules/mediastream/MediaStreamTrackEvent.h"
 
-#include "EventNames.h"
-#include "MediaStreamTrack.h"
+#include "core/dom/EventNames.h"
+#include "modules/mediastream/MediaStreamTrack.h"
 
 namespace WebCore {
 

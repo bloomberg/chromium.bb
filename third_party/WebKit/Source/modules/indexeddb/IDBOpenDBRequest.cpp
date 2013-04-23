@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "IDBOpenDBRequest.h"
+#include "modules/indexeddb/IDBOpenDBRequest.h"
 
-#include "IDBDatabase.h"
-#include "IDBDatabaseCallbacksImpl.h"
-#include "IDBPendingTransactionMonitor.h"
-#include "IDBTracing.h"
-#include "IDBVersionChangeEvent.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBVersionChangeEvent.h"
 
 namespace WebCore {
 

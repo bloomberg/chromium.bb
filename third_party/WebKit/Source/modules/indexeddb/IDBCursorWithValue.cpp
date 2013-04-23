@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "IDBCursorWithValue.h"
+#include "modules/indexeddb/IDBCursorWithValue.h"
 
-#include "IDBCursorBackendInterface.h"
-#include "IDBKey.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBKey.h"
 
 namespace WebCore {
 

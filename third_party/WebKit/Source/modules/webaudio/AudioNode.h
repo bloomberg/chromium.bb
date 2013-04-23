@@ -25,12 +25,12 @@
 #ifndef AudioNode_h
 #define AudioNode_h
 
-#include "AudioBus.h"
-#include <wtf/Forward.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "core/platform/audio/AudioBus.h"
+#include "wtf/Forward.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 #define DEBUG_AUDIONODE_REFERENCES 0
 

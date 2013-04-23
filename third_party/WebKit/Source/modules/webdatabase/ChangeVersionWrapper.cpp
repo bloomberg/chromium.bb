@@ -26,12 +26,12 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "ChangeVersionWrapper.h"
+#include "modules/webdatabase/ChangeVersionWrapper.h"
 
-#include "Database.h"
-#include "SQLError.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "modules/webdatabase/Database.h"
+#include "modules/webdatabase/SQLError.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

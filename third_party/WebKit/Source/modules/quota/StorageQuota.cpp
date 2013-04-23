@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "StorageQuota.h"
+#include "modules/quota/StorageQuota.h"
 
 namespace WebCore {
 

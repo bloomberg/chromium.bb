@@ -27,10 +27,10 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 
-#include "MediaKeyMessageEvent.h"
+#include "modules/encryptedmedia/MediaKeyMessageEvent.h"
 
-#include "EventNames.h"
-#include <wtf/Uint8Array.h>
+#include "core/dom/EventNames.h"
+#include "wtf/Uint8Array.h"
 
 namespace WebCore {
 

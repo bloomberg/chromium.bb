@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "IDBEventDispatcher.h"
+#include "modules/indexeddb/IDBEventDispatcher.h"
 
-#include "Event.h"
-#include "EventTarget.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventTarget.h"
 
 namespace WebCore {
 

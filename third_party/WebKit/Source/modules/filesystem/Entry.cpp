@@ -28,19 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "Entry.h"
+#include "modules/filesystem/Entry.h"
 
-#include "AsyncFileSystem.h"
-#include "DirectoryEntry.h"
-#include "EntryCallback.h"
-#include "ErrorCallback.h"
-#include "FileError.h"
-#include "FileSystemCallbacks.h"
-#include "MetadataCallback.h"
-#include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
-#include "VoidCallback.h"
-#include <wtf/text/StringBuilder.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/fileapi/FileError.h"
+#include "core/html/VoidCallback.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "modules/filesystem/DirectoryEntry.h"
+#include "modules/filesystem/EntryCallback.h"
+#include "modules/filesystem/ErrorCallback.h"
+#include "modules/filesystem/FileSystemCallbacks.h"
+#include "modules/filesystem/MetadataCallback.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

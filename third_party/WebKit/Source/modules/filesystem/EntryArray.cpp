@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "EntryArray.h"
+#include "modules/filesystem/EntryArray.h"
 
 namespace WebCore {
 

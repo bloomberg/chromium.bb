@@ -27,21 +27,21 @@
  */
 
 #include "config.h"
-#include "IDBRequest.h"
+#include "modules/indexeddb/IDBRequest.h"
 
-#include "EventException.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventQueue.h"
-#include "ExceptionCodePlaceholder.h"
-#include "IDBBindingUtilities.h"
-#include "IDBCursorBackendInterface.h"
-#include "IDBCursorWithValue.h"
-#include "IDBDatabase.h"
-#include "IDBEventDispatcher.h"
-#include "IDBTracing.h"
-#include "IDBTransaction.h"
-#include "ScriptExecutionContext.h"
+#include "bindings/v8/IDBBindingUtilities.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventQueue.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "modules/indexeddb/IDBCursorBackendInterface.h"
+#include "modules/indexeddb/IDBCursorWithValue.h"
+#include "modules/indexeddb/IDBDatabase.h"
+#include "modules/indexeddb/IDBEventDispatcher.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "modules/indexeddb/IDBTransaction.h"
 
 namespace WebCore {
 

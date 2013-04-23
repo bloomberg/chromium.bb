@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "DatabaseBackendSync.h"
+#include "modules/webdatabase/DatabaseBackendSync.h"
 
-#include "DatabaseBackendContext.h"
-#include "DatabaseTracker.h"
+#include "modules/webdatabase/DatabaseBackendContext.h"
+#include "modules/webdatabase/DatabaseTracker.h"
 
 namespace WebCore {
 

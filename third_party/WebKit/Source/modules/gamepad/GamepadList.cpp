@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "GamepadList.h"
+#include "modules/gamepad/GamepadList.h"
 
-#include "Gamepad.h"
+#include "modules/gamepad/Gamepad.h"
 
 #if ENABLE(GAMEPAD)
 

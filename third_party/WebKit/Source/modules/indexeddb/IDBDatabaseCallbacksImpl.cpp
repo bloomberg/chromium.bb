@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "IDBDatabaseCallbacksImpl.h"
+#include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
 
-#include "IDBDatabase.h"
+#include "modules/indexeddb/IDBDatabase.h"
 
 namespace WebCore {
 

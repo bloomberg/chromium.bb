@@ -25,11 +25,11 @@
 #ifndef AudioNodeInput_h
 #define AudioNodeInput_h
 
-#include "AudioBus.h"
-#include "AudioNode.h"
-#include "AudioSummingJunction.h"
-#include <wtf/HashSet.h>
-#include <wtf/Vector.h>
+#include "core/platform/audio/AudioBus.h"
+#include "modules/webaudio/AudioNode.h"
+#include "modules/webaudio/AudioSummingJunction.h"
+#include "wtf/HashSet.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

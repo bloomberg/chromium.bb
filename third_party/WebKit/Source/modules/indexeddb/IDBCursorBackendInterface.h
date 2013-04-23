@@ -26,8 +26,8 @@
 #ifndef IDBCursorBackendInterface_h
 #define IDBCursorBackendInterface_h
 
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

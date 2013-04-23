@@ -31,10 +31,10 @@
 #ifndef FileWriterSync_h
 #define FileWriterSync_h
 
-#include "AsyncFileWriterClient.h"
-#include "FileError.h"
-#include "FileWriterBase.h"
-#include <wtf/PassRefPtr.h>
+#include "core/fileapi/FileError.h"
+#include "modules/filesystem/AsyncFileWriterClient.h"
+#include "modules/filesystem/FileWriterBase.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

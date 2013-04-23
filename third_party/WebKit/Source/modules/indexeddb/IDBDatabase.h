@@ -26,20 +26,20 @@
 #ifndef IDBDatabase_h
 #define IDBDatabase_h
 
-#include "ActiveDOMObject.h"
-#include "DOMStringList.h"
-#include "Dictionary.h"
-#include "Event.h"
-#include "EventTarget.h"
-#include "IDBDatabaseCallbacks.h"
-#include "IDBMetadata.h"
-#include "IDBObjectStore.h"
-#include "IDBTransaction.h"
-#include "IndexedDB.h"
-#include "ScriptWrappable.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
+#include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/DOMStringList.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventTarget.h"
+#include "modules/indexeddb/IDBDatabaseCallbacks.h"
+#include "modules/indexeddb/IDBMetadata.h"
+#include "modules/indexeddb/IDBObjectStore.h"
+#include "modules/indexeddb/IDBTransaction.h"
+#include "modules/indexeddb/IndexedDB.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

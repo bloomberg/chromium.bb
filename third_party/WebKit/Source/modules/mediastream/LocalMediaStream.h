@@ -28,7 +28,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStream.h"
+#include "modules/mediastream/MediaStream.h"
 
 namespace WebCore {
 

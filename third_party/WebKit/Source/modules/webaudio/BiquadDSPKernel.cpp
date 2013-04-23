@@ -26,12 +26,12 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "BiquadDSPKernel.h"
+#include "modules/webaudio/BiquadDSPKernel.h"
 
-#include "BiquadProcessor.h"
-#include "FloatConversion.h"
+#include "core/platform/FloatConversion.h"
+#include "modules/webaudio/BiquadProcessor.h"
 #include <limits.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

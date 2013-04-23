@@ -29,9 +29,9 @@
 #ifndef SQLResultSet_h
 #define SQLResultSet_h
 
-#include "DatabaseBasicTypes.h"
-#include "SQLResultSetRowList.h"
-#include <wtf/ThreadSafeRefCounted.h>
+#include "modules/webdatabase/DatabaseBasicTypes.h"
+#include "modules/webdatabase/SQLResultSetRowList.h"
+#include "wtf/ThreadSafeRefCounted.h"
 
 namespace WebCore {
 

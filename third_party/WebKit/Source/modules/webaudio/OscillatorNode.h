@@ -25,13 +25,13 @@
 #ifndef OscillatorNode_h
 #define OscillatorNode_h
 
-#include "AudioBus.h"
-#include "AudioParam.h"
-#include "AudioScheduledSourceNode.h"
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
+#include "core/platform/audio/AudioBus.h"
+#include "modules/webaudio/AudioParam.h"
+#include "modules/webaudio/AudioScheduledSourceNode.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

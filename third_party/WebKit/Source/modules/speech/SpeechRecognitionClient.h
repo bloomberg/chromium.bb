@@ -26,7 +26,7 @@
 #ifndef SpeechRecognitionClient_h
 #define SpeechRecognitionClient_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
