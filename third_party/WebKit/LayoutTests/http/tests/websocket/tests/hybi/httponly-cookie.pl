@@ -17,7 +17,7 @@ print "\r\n";
 print <<HTML
 <html>
 <head>
-<script src="../../../../js-test-resources/js-test-pre.js"></script>
+<script src="/js-test-resources/js-test-pre.js"></script>
 </head>
 <body>
 <p>Test WebSocket sends HttpOnly cookies.</p>
@@ -59,7 +59,7 @@ ws.onclose = function() {
 };
 
 </script>
-<script src="../../../../js-test-resources/js-test-post.js"></script>
+<script src="/js-test-resources/js-test-post.js"></script>
 </body>
 </html>
 HTML
