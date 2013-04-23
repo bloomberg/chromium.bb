@@ -178,12 +178,13 @@ body[new-ui] .gallery > .header,
   -webkit-transition: opacity 300ms ease;
   background-color: rgba(18, 18, 18, 0.875);
   display: -webkit-box;
+  left: 0;
   min-width: 800px;
   opacity: 0;
   padding: 0 8px;
   pointer-events: none;
   position: absolute;
-  width: 100%;
+  right: 0;
 }
 
 body[new-ui] .gallery > .header,
@@ -568,11 +569,12 @@ body[new-ui] .gallery .image-wrapper > img:not(.cached) {
   visibility: visible;
 }
 
-.gallery > .toolbar button {
+body .gallery > .toolbar button {
   -webkit-box-align: center;
   -webkit-box-flex: 0;
   -webkit-box-orient: horizontal;
   -webkit-box-pack: end;
+  -webkit-box-shadow: none;
   background-color: rgba(0, 0, 0, 0);
   background-position: center;
   background-repeat: no-repeat;
