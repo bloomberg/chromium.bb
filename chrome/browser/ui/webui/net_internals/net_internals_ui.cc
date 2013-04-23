@@ -222,8 +222,6 @@ content::WebUIDataSource* CreateNetInternalsHTMLSource() {
       content::WebUIDataSource::Create(chrome::kChromeUINetInternalsHost);
 
   source->SetDefaultResource(IDR_NET_INTERNALS_INDEX_HTML);
-  source->AddResourcePath("help.html", IDR_NET_INTERNALS_HELP_HTML);
-  source->AddResourcePath("help.js", IDR_NET_INTERNALS_HELP_JS);
   source->AddResourcePath("index.js", IDR_NET_INTERNALS_INDEX_JS);
   source->SetJsonPath("strings.js");
   return source;

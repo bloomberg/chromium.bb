@@ -17,8 +17,6 @@
   </outputs>
   <release seq="1">
     <includes>
-      <include name="IDR_NET_INTERNALS_HELP_HTML" file="net_internals/help.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
-      <include name="IDR_NET_INTERNALS_HELP_JS" file="net_internals/help.js" type="BINDATA" />
       <include name="IDR_NET_INTERNALS_INDEX_HTML" file="net_internals/index.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_NET_INTERNALS_INDEX_JS" file="net_internals/index.js" flattenhtml="true" type="BINDATA" />
     </includes>
