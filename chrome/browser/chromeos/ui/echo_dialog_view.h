@@ -47,6 +47,8 @@ class EchoDialogView : public views::DialogDelegateView,
   void Show(gfx::NativeWindow parent);
 
  private:
+  friend class ExtensionEchoPrivateApiTest;
+
   // views::DialogDelegate overrides.
   virtual int GetDialogButtons() const OVERRIDE;
   virtual int GetDefaultDialogButton() const OVERRIDE;

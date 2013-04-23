@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/font.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -48,11 +49,20 @@ void EchoDialogView::InitForEnabledEcho(const string16& service_name,
                                              link,
                                              &offsets);
 
-  // TODO(tbarzic): Set style for service_name substring.
-
   label_ = new views::StyledLabel(text, this);
+
+  views::StyledLabel::RangeStyleInfo service_name_style;
+  service_name_style.font_style = gfx::Font::UNDERLINE;
+  service_name_style.tooltip = origin;
+  label_->AddStyleRange(
+      ui::Range(offsets[0], offsets[0] + service_name.length()),
+      service_name_style);
+
+  views::StyledLabel::RangeStyleInfo link_style;
+  link_style.font_style = gfx::Font::NORMAL;
+  link_style.is_link = true;
   label_->AddStyleRange(ui::Range(offsets[1], offsets[1] + link.length()),
-                        views:: StyledLabel::RangeStyleInfo::CreateForLink());
+                        link_style);
 
   SetLabelBorderAndBounds();
 
@@ -71,8 +81,11 @@ void EchoDialogView::InitForDisabledEcho() {
       IDS_ECHO_DISABLED_CONSENT_DIALOG_TEXT, link, &offset);
 
   label_ = new views::StyledLabel(text, this);
-  label_->AddStyleRange(ui::Range(offset, offset + link.length()),
-                        views::StyledLabel::RangeStyleInfo::CreateForLink());
+
+  views::StyledLabel::RangeStyleInfo link_style;
+  link_style.font_style = gfx::Font::NORMAL;
+  link_style.is_link = true;
+  label_->AddStyleRange(ui::Range(offset, offset + link.length()), link_style);
 
   SetLabelBorderAndBounds();
 

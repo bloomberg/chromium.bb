@@ -6,7 +6,12 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_ECHO_PRIVATE_API_H_
 
 #include "base/compiler_specific.h"
+#include "chrome/browser/chromeos/ui/echo_dialog_listener.h"
 #include "chrome/browser/extensions/extension_function.h"
+
+namespace chromeos {
+class EchoDialogView;
+}
 
 class EchoPrivateGetRegistrationCodeFunction : public SyncExtensionFunction {
  public:
@@ -58,14 +63,20 @@ class EchoPrivateCheckAllowRedeemOffersFunction
 // either asks user's consent to verify the device's eligibility for the offer,
 // or informs the user that the offers redeeming is disabled.
 // It returns whether the user consent was given.
-//
-// NOTE: Currently only the first part is implemented, and its result is kept in
-// |redeem_offers_allowed_|. The function itself always returns false.
-class EchoPrivateGetUserConsentFunction : public AsyncExtensionFunction {
+class EchoPrivateGetUserConsentFunction
+    : public AsyncExtensionFunction,
+      public chromeos::EchoDialogListener {
  public:
+  // Type for the dialog shown callback used in tests.
+  typedef base::Callback<void(chromeos::EchoDialogView* dialog)>
+          DialogShownTestCallback;
+
   EchoPrivateGetUserConsentFunction();
 
-  bool redeem_offers_allowed() const { return redeem_offers_allowed_; }
+  // Creates the function with non-null dialog_shown_callback_.
+  // To be used in tests.
+  static scoped_refptr<EchoPrivateGetUserConsentFunction> CreateForTest(
+      const DialogShownTestCallback& dialog_shown_callback);
 
  protected:
   virtual ~EchoPrivateGetUserConsentFunction();
@@ -73,6 +84,11 @@ class EchoPrivateGetUserConsentFunction : public AsyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
+  // chromeos::EchoDialogListener overrides.
+  virtual void OnAccept() OVERRIDE;
+  virtual void OnCancel() OVERRIDE;
+  virtual void OnMoreInfoLinkClicked() OVERRIDE;
+
   // Checks whether "allow redeem ChromeOS registration offers" setting is
   // disabled in cros settings. It may be asynchronous if the needed settings
   // provider is not yet trusted.
@@ -80,9 +96,13 @@ class EchoPrivateGetUserConsentFunction : public AsyncExtensionFunction {
   void CheckRedeemOffersAllowed();
   void OnRedeemOffersAllowedChecked(bool is_allowed);
 
-  // Used only for test, and only until the rest of functionality is
-  // implemented.
+  // Sets result and calls SendResponse.
+  void Finalize(bool consent);
+
+  // Result of |CheckRedeemOffersAllowed()|.
   bool redeem_offers_allowed_;
+  // Callback used in tests. Called after an echo dialog is shown.
+  DialogShownTestCallback dialog_shown_callback_;
 
   DECLARE_EXTENSION_FUNCTION("echoPrivate.getUserConsent",
                              ECHOPRIVATE_GETUSERCONSENT)

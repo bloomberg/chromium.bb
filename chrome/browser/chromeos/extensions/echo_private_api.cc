@@ -7,15 +7,17 @@
 #include <string>
 
 #include "base/bind.h"
-#include "base/compiler_specific.h"
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
-#include "base/values.h"
+#include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
+#include "chrome/browser/chromeos/ui/echo_dialog_view.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/echo_private.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,6 +25,15 @@
 namespace echo_api = extensions::api::echo_private;
 
 using content::BrowserThread;
+
+namespace {
+
+// URL of "More info" link shown in echo dialog in GetUserConsent function.
+const char kMoreInfoLink[] =
+    "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html?"
+    "answer=2677280";
+
+}  // namespace
 
 EchoPrivateGetRegistrationCodeFunction::
     EchoPrivateGetRegistrationCodeFunction() {}
@@ -142,20 +153,39 @@ EchoPrivateGetUserConsentFunction::EchoPrivateGetUserConsentFunction()
     : redeem_offers_allowed_(false) {
 }
 
+// static
+scoped_refptr<EchoPrivateGetUserConsentFunction>
+EchoPrivateGetUserConsentFunction::CreateForTest(
+      const DialogShownTestCallback& dialog_shown_callback) {
+  scoped_refptr<EchoPrivateGetUserConsentFunction> function(
+      new EchoPrivateGetUserConsentFunction());
+  function->dialog_shown_callback_ = dialog_shown_callback;
+  return function;
+}
+
 EchoPrivateGetUserConsentFunction::~EchoPrivateGetUserConsentFunction() {}
 
 bool EchoPrivateGetUserConsentFunction::RunImpl() {
-  scoped_ptr<echo_api::GetUserConsent::Params> params =
-       echo_api::GetUserConsent::Params::Create(*args_);
-   EXTENSION_FUNCTION_VALIDATE(params);
-
-   if (!GURL(params->consent_requester.origin).is_valid()) {
-     error_ = "Invalid origin.";
-     return false;
-   }
-
    CheckRedeemOffersAllowed();
    return true;
+}
+
+void EchoPrivateGetUserConsentFunction::OnAccept() {
+  Finalize(true);
+}
+
+void EchoPrivateGetUserConsentFunction::OnCancel() {
+  Finalize(false);
+}
+
+void EchoPrivateGetUserConsentFunction::OnMoreInfoLinkClicked() {
+  chrome::NavigateParams params(profile(),
+                                GURL(kMoreInfoLink),
+                                content::PAGE_TRANSITION_LINK);
+  // Open the link in a new window. The echo dialog is modal, so the current
+  // window is useless until the dialog is closed.
+  params.disposition = NEW_WINDOW;
+  chrome::Navigate(&params);
 }
 
 void EchoPrivateGetUserConsentFunction::CheckRedeemOffersAllowed() {
@@ -177,7 +207,44 @@ void EchoPrivateGetUserConsentFunction::OnRedeemOffersAllowedChecked(
     bool is_allowed) {
   redeem_offers_allowed_ = is_allowed;
 
-  // TODO(tbarzic): Implement dialogs to be used here.
-  results_ = echo_api::GetUserConsent::Results::Create(false);
+  scoped_ptr<echo_api::GetUserConsent::Params> params =
+      echo_api::GetUserConsent::Params::Create(*args_);
+
+  // Verify that the passed origin URL is valid.
+  GURL service_origin = GURL(params->consent_requester.origin);
+  if (!service_origin.is_valid()) {
+    error_ = "Invalid origin.";
+    SendResponse(false);
+    return;
+  }
+
+  // Add ref to ensure the function stays around until the dialog listener is
+  // called. The reference is release in |Finalize|.
+  AddRef();
+
+  // Create and show the dialog.
+  chromeos::EchoDialogView* dialog = new chromeos::EchoDialogView(this);
+  if (redeem_offers_allowed_) {
+    dialog->InitForEnabledEcho(
+        UTF8ToUTF16(params->consent_requester.service_name),
+        UTF8ToUTF16(params->consent_requester.origin));
+  } else {
+    dialog->InitForDisabledEcho();
+  }
+  dialog->Show(GetCurrentBrowser()->window()->GetNativeWindow());
+
+  // If there is a dialog_shown_callback_, invoke it with the created dialog.
+  if (!dialog_shown_callback_.is_null())
+    dialog_shown_callback_.Run(dialog);
+}
+
+void EchoPrivateGetUserConsentFunction::Finalize(bool consent) {
+  // Consent should not be true if offers redeeming is disabled.
+  CHECK(redeem_offers_allowed_ || !consent);
+  results_ = echo_api::GetUserConsent::Results::Create(consent);
   SendResponse(true);
+
+  // Release the reference added in |OnRedeemOffersAllowedChecked|, before
+  // showing the dialog.
+  Release();
 }
