@@ -23,12 +23,22 @@
         },
       ],
       'includes': [ '../../build/grit_target.gypi' ],
+      'copies': [
+        {
+          'destination': '<(PRODUCT_DIR)',
+          'files': [
+            '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/keyboard_resources.pak',
+          ],
+        },
+      ],
     },
     {
       'target_name': 'keyboard',
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../../build/temp_gyp/googleurl.gyp:googleurl',
         '../../content/content.gyp:content_browser',
         '../../skia/skia.gyp:skia',
         '../aura/aura.gyp:aura',
@@ -40,10 +50,13 @@
         'KEYBOARD_IMPLEMENTATION',
       ],
       'sources': [
+        'keyboard.cc',
+        'keyboard.h',
         'keyboard_constants.cc',
         'keyboard_constants.h',
         'keyboard_controller.cc',
         'keyboard_controller.h',
+        'keyboard_controller_proxy.cc',
         'keyboard_controller_proxy.h',
         'keyboard_export.h',
         'keyboard_switches.cc',

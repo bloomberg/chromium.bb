@@ -135,7 +135,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 }
 
 void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  browser_context_.reset();
   gfx::Screen* screen = Shell::GetInstance()->GetScreen();
   screen->RemoveObserver(window_watcher_.get());
 
@@ -149,6 +148,12 @@ void ShellBrowserMainParts::PostMainMessageLoopRun() {
   message_center::MessageCenter::Shutdown();
 #endif
   aura::Env::DeleteInstance();
+
+  // The keyboard may have created a WebContents. The WebContents is destroyed
+  // with the UI, and it needs the BrowserContext to be alive during its
+  // destruction. So destroy all of the UI elements before destroying the
+  // browser context.
+  browser_context_.reset();
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {

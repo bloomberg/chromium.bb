@@ -274,6 +274,9 @@ class ASH_EXPORT Shell
   internal::DisplayManager* display_manager() {
     return display_manager_.get();
   }
+  views::corewm::InputMethodEventFilter* input_method_filter() {
+    return input_method_filter_.get();
+  }
   views::corewm::CompoundEventFilter* env_filter() {
     return env_filter_.get();
   }

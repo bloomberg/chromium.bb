@@ -85,6 +85,8 @@
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/screen.h"
 #include "ui/gfx/size.h"
+#include "ui/keyboard/keyboard.h"
+#include "ui/keyboard/keyboard_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/views/corewm/compound_event_filter.h"
 #include "ui/views/corewm/corewm_switches.h"
@@ -504,6 +506,11 @@ void Shell::Init() {
   AddPreTargetHandler(system_gesture_filter_.get());
 
   capture_controller_.reset(new internal::CaptureController);
+
+  // The keyboard system must be initialized before the RootWindowController is
+  // created.
+  if (keyboard::IsKeyboardEnabled())
+    keyboard::InitializeKeyboard();
 
   internal::RootWindowController* root_window_controller =
       new internal::RootWindowController(root_window);

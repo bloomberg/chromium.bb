@@ -23,34 +23,28 @@ AshKeyboardControllerProxy::AshKeyboardControllerProxy() {}
 
 AshKeyboardControllerProxy::~AshKeyboardControllerProxy() {}
 
-aura::Window* AshKeyboardControllerProxy::GetKeyboardWindow() {
-  if (!web_contents_) {
-    Profile* profile = ProfileManager::GetDefaultProfile();
+void AshKeyboardControllerProxy::OnRequest(
+    const ExtensionHostMsg_Request_Params& params) {
+  extension_function_dispatcher_->Dispatch(
+      params, web_contents()->GetRenderViewHost());
+}
 
-    extension_function_dispatcher_.reset(
-        new ExtensionFunctionDispatcher(profile, this));
-
-    GURL keyboard_url("chrome://keyboard/");
-    web_contents_.reset(content::WebContents::Create(
-        content::WebContents::CreateParams(
-            profile,
-            content::SiteInstance::CreateForURL(profile, keyboard_url))));
-
-    content::WebContentsObserver::Observe(web_contents_.get());
-
-    web_contents_->GetController().LoadURL(
-        keyboard_url,
-        content::Referrer(),
-        content::PAGE_TRANSITION_AUTO_TOPLEVEL,
-        std::string());
-  }
-  return web_contents_->GetView()->GetNativeView();
+content::BrowserContext* AshKeyboardControllerProxy::GetBrowserContext() {
+  return ProfileManager::GetDefaultProfile();
 }
 
 ui::InputMethod* AshKeyboardControllerProxy::GetInputMethod() {
   aura::Window* root_window = ash::Shell::GetInstance()->GetPrimaryRootWindow();
   DCHECK(root_window);
   return root_window->GetProperty(aura::client::kRootWindowInputMethodKey);
+}
+
+void AshKeyboardControllerProxy::SetupWebContents(
+    content::WebContents* contents) {
+  extension_function_dispatcher_.reset(
+      new ExtensionFunctionDispatcher(ProfileManager::GetDefaultProfile(),
+                                      this));
+  Observe(contents);
 }
 
 extensions::WindowController*
@@ -61,13 +55,7 @@ extensions::WindowController*
 
 content::WebContents*
     AshKeyboardControllerProxy::GetAssociatedWebContents() const {
-  return web_contents_.get();
-}
-
-void AshKeyboardControllerProxy::OnRequest(
-    const ExtensionHostMsg_Request_Params& params) {
-  extension_function_dispatcher_->Dispatch(
-      params, web_contents_->GetRenderViewHost());
+  return web_contents();
 }
 
 bool AshKeyboardControllerProxy::OnMessageReceived(

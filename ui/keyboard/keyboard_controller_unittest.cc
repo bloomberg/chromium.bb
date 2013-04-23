@@ -66,6 +66,7 @@ class TestKeyboardControllerProxy : public KeyboardControllerProxy {
 
   // Overridden from KeyboardControllerProxy:
   virtual aura::Window* GetKeyboardWindow() OVERRIDE { return window_.get(); }
+  virtual content::BrowserContext* GetBrowserContext() OVERRIDE { return NULL; }
   virtual ui::InputMethod* GetInputMethod() OVERRIDE {
     return input_method_.get();
   }

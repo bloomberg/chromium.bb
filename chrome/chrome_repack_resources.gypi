@@ -27,11 +27,6 @@
           '<(grit_out_dir)/devtools_discovery_page_resources.pak',
         ],
       }],
-      ['use_aura==1', {
-        'pak_inputs': [
-          '<(SHARED_INTERMEDIATE_DIR)/ui/keyboard/keyboard_resources.pak',
-        ],
-      }],
     ],
   },
   'inputs': [

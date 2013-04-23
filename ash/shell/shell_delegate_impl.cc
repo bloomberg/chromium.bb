@@ -18,8 +18,33 @@
 #include "ash/wm/window_util.h"
 #include "base/message_loop.h"
 #include "ui/aura/window.h"
+#include "ui/keyboard/keyboard_controller_proxy.h"
+#include "ui/views/corewm/input_method_event_filter.h"
 
 namespace ash {
+
+namespace {
+
+class DummyKeyboardControllerProxy : public keyboard::KeyboardControllerProxy {
+ public:
+  DummyKeyboardControllerProxy() {}
+  virtual ~DummyKeyboardControllerProxy() {}
+
+ private:
+  // Overridden from keyboard::KeyboardControllerProxy:
+  virtual content::BrowserContext* GetBrowserContext() OVERRIDE {
+    return Shell::GetInstance()->browser_context();
+  }
+
+  virtual ui::InputMethod* GetInputMethod() OVERRIDE {
+    return Shell::GetInstance()->input_method_filter()->input_method();
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DummyKeyboardControllerProxy);
+};
+
+}  // namespace
+
 namespace shell {
 
 ShellDelegateImpl::ShellDelegateImpl()
@@ -99,7 +124,7 @@ void ShellDelegateImpl::ShowKeyboardOverlay() {
 
 keyboard::KeyboardControllerProxy*
     ShellDelegateImpl::CreateKeyboardControllerProxy() {
-  return NULL;
+  return new DummyKeyboardControllerProxy();
 }
 
 void ShellDelegateImpl::ShowTaskManager() {

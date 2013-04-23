@@ -33,23 +33,23 @@ class AshKeyboardControllerProxy
   AshKeyboardControllerProxy();
   virtual ~AshKeyboardControllerProxy();
 
+ private:
+  void OnRequest(const ExtensionHostMsg_Request_Params& params);
+
   // keyboard::KeyboardControllerProxy overrides
-  virtual aura::Window* GetKeyboardWindow() OVERRIDE;
+  virtual content::BrowserContext* GetBrowserContext() OVERRIDE;
   virtual ui::InputMethod* GetInputMethod() OVERRIDE;
+  virtual void SetupWebContents(content::WebContents* contents) OVERRIDE;
 
   // ExtensionFunctionDispatcher::Delegate overrides
   virtual extensions::WindowController* GetExtensionWindowController() const
       OVERRIDE;
   virtual content::WebContents* GetAssociatedWebContents() const OVERRIDE;
 
- private:
-  void OnRequest(const ExtensionHostMsg_Request_Params& params);
-
   // content::WebContentsObserver overrides
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
-  scoped_ptr<content::WebContents> web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AshKeyboardControllerProxy);
 };
