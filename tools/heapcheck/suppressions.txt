@@ -215,7 +215,7 @@
    ...
    fun:gfx::GLContextOSMesa::MakeCurrent
    ...
-   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::*
+   fun:webkit::gpu::GLInProcessContext::PumpCommands
 }
 {
    bug_148477_b
@@ -1814,40 +1814,18 @@
   fun:chromeos::input_method::InputMethodConfigurationTest_TestInitialize_Test::TestBody
 }
 {
-   bug_230366c
+   bug_181691
    Heapcheck:Leak
    fun:InitializeGlobalPools
    fun:InitThread
    fun:ShCompile
-   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource
-   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
-   fun:cc::ProgramBindingBase::LoadShader
-   fun:cc::ProgramBindingBase::Init
-   fun:ProgramBinding
-   fun:AcceleratedTextureCopier
-   fun:cc::AcceleratedTextureCopier::Create
-   fun:cc::ResourceProvider::Initialize
-   fun:cc::ResourceProvider::Create
-   fun:cc::LayerTreeHostImpl::InitializeRenderer
-   fun:cc::ThreadProxy::InitializeRendererOnImplThread
-}
-{
-   bug_230366d
-   Heapcheck:Leak
-   fun:InitializeGlobalParseContext
-   fun:InitThread
-   fun:ShCompile
-   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::AngleValidateShaderSource
-   fun:webkit::gpu::WebGraphicsContext3DInProcessImpl::compileShader
-   fun:cc::ProgramBindingBase::LoadShader
-   fun:cc::ProgramBindingBase::Init
-   fun:ProgramBinding
-   fun:AcceleratedTextureCopier
-   fun:cc::AcceleratedTextureCopier::Create
-   fun:cc::ResourceProvider::Initialize
-   fun:cc::ResourceProvider::Create
-   fun:cc::LayerTreeHostImpl::InitializeRenderer
-   fun:cc::ThreadProxy::InitializeRendererOnImplThread
+   fun:gpu::gles2::ShaderTranslator::Translate
+   fun:gpu::gles2::ProgramManager::ForceCompileShader
+   fun:gpu::gles2::ProgramManager::DoCompileShader
+   fun:gpu::gles2::GLES2DecoderImpl::DoCompileShader
+   fun:gpu::gles2::GLES2DecoderImpl::HandleCompileShader
+   fun:gpu::gles2::GLES2DecoderImpl::DoCommand
+   fun:gpu::CommandParser::ProcessCommand
 }
 # leak in OSMesa used to run compositor_unittests in bots.
 {
@@ -1911,4 +1889,3 @@
    ...
    fun:content::ResourceDispatcherHostTest_*_Test::TestBody
 }
-
