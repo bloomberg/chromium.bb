@@ -246,7 +246,7 @@ class GestureEventConsumeDelegate : public TestWindowDelegate {
       default:
         NOTREACHED();
     }
-    if (wait_until_event_ == gesture->type() && run_loop_.get()) {
+    if (wait_until_event_ == gesture->type() && run_loop_) {
       run_loop_->Quit();
       wait_until_event_ = ui::ET_UNKNOWN;
     }

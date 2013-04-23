@@ -467,7 +467,7 @@ void RootWindow::HoldMouseMoves() {
 void RootWindow::ReleaseMouseMoves() {
   --mouse_move_hold_count_;
   DCHECK_GE(mouse_move_hold_count_, 0);
-  if (!mouse_move_hold_count_ && held_mouse_move_.get()) {
+  if (!mouse_move_hold_count_ && held_mouse_move_) {
     // We don't want to call DispatchHeldEvents directly, because this might
     // be called from a deep stack while another event, in which case
     // dispatching another one may not be safe/expected.
@@ -1106,7 +1106,7 @@ bool RootWindow::DispatchMouseEventToTarget(ui::MouseEvent* event,
 }
 
 void RootWindow::DispatchHeldEvents() {
-  if (held_repostable_event_.get()) {
+  if (held_repostable_event_) {
     if (held_repostable_event_->type() == ui::ET_MOUSE_PRESSED) {
       ui::MouseEvent mouse_event(
           static_cast<const ui::MouseEvent&>(*held_repostable_event_.get()));
@@ -1118,7 +1118,7 @@ void RootWindow::DispatchHeldEvents() {
     }
     held_repostable_event_.reset();
   }
-  if (held_mouse_move_.get()) {
+  if (held_mouse_move_) {
     // If a mouse move has been synthesized, the target location is suspect,
     // so drop the held event.
     if (!synthesize_mouse_move_)

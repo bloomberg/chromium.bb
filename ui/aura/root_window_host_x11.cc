@@ -497,7 +497,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       UpdateIsInternalDisplay();
       // Always update barrier and mouse location because |bounds_| might
       // have already been updated in |SetBounds|.
-      if (pointer_barriers_.get()) {
+      if (pointer_barriers_) {
         UnConfineCursor();
         ConfineCursorToRootWindow();
       }
@@ -674,7 +674,7 @@ gfx::Insets RootWindowHostX11::GetInsets() const {
 
 void RootWindowHostX11::SetInsets(const gfx::Insets& insets) {
   insets_ = insets;
-  if (pointer_barriers_.get()) {
+  if (pointer_barriers_) {
     UnConfineCursor();
     ConfineCursorToRootWindow();
   }
@@ -726,7 +726,7 @@ bool RootWindowHostX11::QueryMouseLocation(gfx::Point* location_return) {
 bool RootWindowHostX11::ConfineCursorToRootWindow() {
 #if XFIXES_MAJOR >= 5
   DCHECK(!pointer_barriers_.get());
-  if (pointer_barriers_.get())
+  if (pointer_barriers_)
     return false;
   pointer_barriers_.reset(new XID[4]);
   gfx::Rect bounds(bounds_);
@@ -761,7 +761,7 @@ bool RootWindowHostX11::ConfineCursorToRootWindow() {
 
 void RootWindowHostX11::UnConfineCursor() {
 #if XFIXES_MAJOR >= 5
-  if (pointer_barriers_.get()) {
+  if (pointer_barriers_) {
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[0]);
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[1]);
     XFixesDestroyPointerBarrier(xdisplay_, pointer_barriers_[2]);
@@ -820,7 +820,7 @@ bool RootWindowHostX11::CopyAreaToSkCanvas(const gfx::Rect& source_bounds,
                                              const gfx::Point& dest_offset,
                                              SkCanvas* canvas) {
   scoped_ptr<ui::XScopedImage> scoped_image(GetXImage(source_bounds));
-  if (!scoped_image.get())
+  if (!scoped_image)
     return false;
 
   XImage* image = scoped_image->get();
@@ -861,7 +861,7 @@ bool RootWindowHostX11::GrabSnapshot(
     const gfx::Rect& snapshot_bounds,
     std::vector<unsigned char>* png_representation) {
   scoped_ptr<ui::XScopedImage> scoped_image(GetXImage(snapshot_bounds));
-  if (!scoped_image.get())
+  if (!scoped_image)
     return false;
 
   XImage* image = scoped_image->get();
@@ -1115,7 +1115,7 @@ scoped_ptr<ui::XScopedImage> RootWindowHostX11::GetXImage(
                 snapshot_bounds.x(), snapshot_bounds.y(),
                 snapshot_bounds.width(), snapshot_bounds.height(),
                 AllPlanes, ZPixmap)));
-  if (!image->get()) {
+  if (!image) {
     LOG(ERROR) << "XGetImage failed";
     image.reset();
   }
