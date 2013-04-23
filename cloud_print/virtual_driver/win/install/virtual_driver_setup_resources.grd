@@ -133,5 +133,10 @@ file.
         <ph name="xps_url">&lt;a=&quot;http://www.microsoft.com/download/details.aspx?id=11816&quot;&gt;<ex>http://www.microsoft.com/download/details.aspx?id=11816</ex></ph>XPS driver<ph name="xps_url_end">&lt;/a&gt;</ph> is not installed.
       </message>
     </messages>
+    <includes>
+      <if expr="lang == 'en'">
+        <include name="IDI_ICON" file="../../../service/win/resources/cloudprint.ico" type="ICON" translateable="false" />
+      </if>
+    </includes>
   </release>
 </grit>
