@@ -10,6 +10,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/file_handlers/app_file_handler_util.h"
+#include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,8 +22,8 @@ namespace extensions {
 
 namespace {
 
-const char kOnLaunchedEvent[] = "app.runtime.onLaunched";
-const char kOnRestartedEvent[] = "app.runtime.onRestarted";
+using event_names::kOnLaunched;
+using event_names::kOnRestarted;
 
 void DispatchOnLaunchedEventImpl(const std::string& extension_id,
                                  scoped_ptr<base::ListValue> args,
@@ -35,12 +36,11 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
   // extension does not actually have a listener, the event will just be
   // ignored (but an app that doesn't listen for the onLaunched event doesn't
   // make sense anyway).
-  system->event_router()->AddLazyEventListener(kOnLaunchedEvent, extension_id);
-  scoped_ptr<Event> event(new Event(kOnLaunchedEvent, args.Pass()));
+  system->event_router()->AddLazyEventListener(kOnLaunched, extension_id);
+  scoped_ptr<Event> event(new Event(kOnLaunched, args.Pass()));
   event->restrict_to_profile = profile;
   system->event_router()->DispatchEventToExtension(extension_id, event.Pass());
-  system->event_router()->RemoveLazyEventListener(kOnLaunchedEvent,
-                                                  extension_id);
+  system->event_router()->RemoveLazyEventListener(kOnLaunched, extension_id);
 }
 
 }  // anonymous namespace
@@ -74,7 +74,7 @@ void AppEventRouter::DispatchOnRestartedEvent(
   }
   scoped_ptr<ListValue> arguments(new ListValue());
   arguments->Append(file_entries_list);
-  scoped_ptr<Event> event(new Event(kOnRestartedEvent, arguments.Pass()));
+  scoped_ptr<Event> event(new Event(kOnRestarted, arguments.Pass()));
   event->restrict_to_profile = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), event.Pass());
