@@ -238,7 +238,6 @@ void DriveSystemService::ClearCacheAndRemountFileSystem(
   DCHECK(!callback.is_null());
 
   RemoveDriveMountPoint();
-  drive_service()->CancelAll();
   cache_->ClearAll(base::Bind(
       &DriveSystemService::ReinitializeResourceMetadataAfterClearCache,
       weak_ptr_factory_.GetWeakPtr(),
@@ -281,7 +280,6 @@ void DriveSystemService::ReloadAndRemountFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   RemoveDriveMountPoint();
-  drive_service()->CancelAll();
   file_system_->Reload();
 
   // Reload() is asynchronous. But we can add back the mount point right away
@@ -328,6 +326,8 @@ void DriveSystemService::AddDriveMountPoint() {
 
 void DriveSystemService::RemoveDriveMountPoint() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  job_list()->CancelAllJobs();
 
   FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
                     OnFileSystemBeingUnmounted());

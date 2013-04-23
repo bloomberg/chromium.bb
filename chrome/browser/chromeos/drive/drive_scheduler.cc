@@ -97,6 +97,25 @@ void DriveScheduler::RemoveObserver(JobListObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void DriveScheduler::CancelJob(JobID job_id) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(kinaba): Move the cancellation feature from DriveService
+  // to DriveScheduler. In particular, implement cancel based on job_id.
+  // crbug.com/231029
+  JobInfo* info = job_map_.Lookup(job_id);
+  if (info)
+    drive_service_->CancelForFilePath(info->file_path);
+}
+
+void DriveScheduler::CancelAllJobs() {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // TODO(kinaba): Move the cancellation feature from DriveService
+  // to DriveScheduler.
+  drive_service_->CancelAll();
+}
+
 void DriveScheduler::GetAccountMetadata(
     const google_apis::GetAccountMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));

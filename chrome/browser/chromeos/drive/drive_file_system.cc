@@ -290,10 +290,6 @@ DriveFileSystem::~DriveFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   change_list_loader_->RemoveObserver(this);
-
-  // Cancel all the in-flight operations.
-  // This asynchronously cancels the URL fetch operations.
-  drive_service_->CancelAll();
 }
 
 void DriveFileSystem::AddObserver(DriveFileSystemObserver* observer) {

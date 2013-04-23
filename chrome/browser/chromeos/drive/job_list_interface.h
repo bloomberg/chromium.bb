@@ -113,6 +113,12 @@ class JobListInterface {
 
   // Removes an observer.
   virtual void RemoveObserver(JobListObserver* observer) = 0;
+
+  // Cancels the job.
+  virtual void CancelJob(JobID job_id) = 0;
+
+  // Cancels all the jobs.
+  virtual void CancelAllJobs() = 0;
 };
 
 }  // namespace drive

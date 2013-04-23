@@ -36,6 +36,8 @@ class DriveScheduler
   virtual std::vector<JobInfo> GetJobInfoList() OVERRIDE;
   virtual void AddObserver(JobListObserver* observer) OVERRIDE;
   virtual void RemoveObserver(JobListObserver* observer) OVERRIDE;
+  virtual void CancelJob(JobID job_id) OVERRIDE;
+  virtual void CancelAllJobs() OVERRIDE;
 
   // Adds a GetAccountMetadata operation to the queue.
   // |callback| must not be null.
