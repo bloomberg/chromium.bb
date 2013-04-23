@@ -28,8 +28,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,9 +63,9 @@ void GetSystemEventTimes(
     base::Callback<void(
         const AutomaticRebootManager::SystemEventTimes&)> reply) {
   base::FilePath uptime_file;
-  CHECK(PathService::Get(chrome::FILE_UPTIME, &uptime_file));
+  CHECK(PathService::Get(chromeos::FILE_UPTIME, &uptime_file));
   base::FilePath update_reboot_needed_uptime_file;
-  CHECK(PathService::Get(chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
+  CHECK(PathService::Get(chromeos::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
                          &update_reboot_needed_uptime_file));
   reply_task_runner->PostTask(FROM_HERE, base::Bind(reply,
       AutomaticRebootManager::SystemEventTimes(
@@ -77,7 +77,7 @@ void SaveUpdateRebootNeededUptime() {
   const base::TimeDelta kZeroTimeDelta;
 
   base::FilePath update_reboot_needed_uptime_file;
-  CHECK(PathService::Get(chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
+  CHECK(PathService::Get(chromeos::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
                          &update_reboot_needed_uptime_file));
   const base::TimeDelta last_update_reboot_needed_uptime =
       ReadTimeDeltaFromFile(update_reboot_needed_uptime_file);
@@ -85,7 +85,7 @@ void SaveUpdateRebootNeededUptime() {
     return;
 
   base::FilePath uptime_file;
-  CHECK(PathService::Get(chrome::FILE_UPTIME, &uptime_file));
+  CHECK(PathService::Get(chromeos::FILE_UPTIME, &uptime_file));
   const base::TimeDelta uptime = ReadTimeDeltaFromFile(uptime_file);
   if (uptime == kZeroTimeDelta)
     return;

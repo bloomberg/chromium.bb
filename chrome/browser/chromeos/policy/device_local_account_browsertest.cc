@@ -38,9 +38,9 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_method_call_status.h"
@@ -459,7 +459,7 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
               file_util::WriteFile(install_attrs_file,
                                    install_attrs_blob.c_str(),
                                    install_attrs_blob.size()));
-    ASSERT_TRUE(PathService::Override(chrome::FILE_INSTALL_ATTRIBUTES,
+    ASSERT_TRUE(PathService::Override(chromeos::FILE_INSTALL_ATTRIBUTES,
                                       install_attrs_file));
   }
 
@@ -486,7 +486,8 @@ class DeviceLocalAccountTest : public InProcessBrowserTest {
             owner_key_file,
             reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
             owner_key_bits.size()));
-    ASSERT_TRUE(PathService::Override(chrome::FILE_OWNER_KEY, owner_key_file));
+    ASSERT_TRUE(
+        PathService::Override(chromeos::FILE_OWNER_KEY, owner_key_file));
 
     // Configure device-local account policy for the first device-local account.
     UserPolicyBuilder device_local_account_policy;

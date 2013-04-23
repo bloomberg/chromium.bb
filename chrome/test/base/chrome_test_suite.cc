@@ -41,6 +41,10 @@
 #include "ui/android/ui_jni_registrar.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/chromeos_paths.h"
+#endif
+
 #if defined(OS_MACOSX)
 #include "base/mac/bundle_locations.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -209,6 +213,9 @@ void ChromeTestSuite::Initialize() {
 #endif
 
   chrome::RegisterPathProvider();
+#if defined(OS_CHROMEOS)
+  chromeos::RegisterPathProvider();
+#endif
   if (!browser_dir_.empty()) {
     PathService::Override(base::DIR_EXE, browser_dir_);
     PathService::Override(base::DIR_MODULE, browser_dir_);

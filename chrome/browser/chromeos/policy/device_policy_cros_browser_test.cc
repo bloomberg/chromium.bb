@@ -12,7 +12,7 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_image_burner_client.h"
 #include "crypto/rsa_private_key.h"
@@ -62,7 +62,7 @@ void DevicePolicyCrosBrowserTest::InstallOwnerKey() {
           reinterpret_cast<const char*>(vector_as_array(&owner_key_bits)),
           owner_key_bits.size()),
       static_cast<int>(owner_key_bits.size()));
-  ASSERT_TRUE(PathService::Override(chrome::FILE_OWNER_KEY, owner_key_file));
+  ASSERT_TRUE(PathService::Override(chromeos::FILE_OWNER_KEY, owner_key_file));
 }
 
 void DevicePolicyCrosBrowserTest::RefreshDevicePolicy() {

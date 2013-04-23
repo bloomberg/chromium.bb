@@ -35,6 +35,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
@@ -160,7 +161,8 @@ class ComponentCloudPolicyTest : public ExtensionBrowserTest {
     base::FilePath user_key_path =
         temp_dir_.path().AppendASCII(kSanitizedUsername)
                         .AppendASCII("policy.pub");
-    PathService::Override(chrome::DIR_USER_POLICY_KEYS, temp_dir_.path());
+    ASSERT_TRUE(PathService::Override(chromeos::DIR_USER_POLICY_KEYS,
+                                      temp_dir_.path()));
 
     mock_dbus_thread_manager_ = new chromeos::MockDBusThreadManager();
     chromeos::DBusThreadManager::InitializeForTesting(

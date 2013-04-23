@@ -29,9 +29,9 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_notification_types.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_power_manager_client.h"
@@ -341,8 +341,8 @@ void AutomaticRebootManagerBasicTest::SetUp() {
       temp_dir.Append("update_reboot_needed_uptime");
   ASSERT_FALSE(file_util::WriteFile(
       update_reboot_needed_uptime_file_, NULL, 0));
-  ASSERT_TRUE(PathService::Override(chrome::FILE_UPTIME, uptime_file));
-  ASSERT_TRUE(PathService::Override(chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
+  ASSERT_TRUE(PathService::Override(chromeos::FILE_UPTIME, uptime_file));
+  ASSERT_TRUE(PathService::Override(chromeos::FILE_UPDATE_REBOOT_NEEDED_UPTIME,
                                     update_reboot_needed_uptime_file_));
 
   TestingBrowserProcess::GetGlobal()->SetLocalState(&local_state_);

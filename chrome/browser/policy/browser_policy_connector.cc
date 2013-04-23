@@ -68,6 +68,7 @@
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/chromeos/system/timezone_settings.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -138,7 +139,7 @@ BrowserPolicyConnector::BrowserPolicyConnector()
     install_attributes_.reset(
         new EnterpriseInstallAttributes(cryptohome, cryptohome_client));
     base::FilePath install_attrs_file;
-    CHECK(PathService::Get(chrome::FILE_INSTALL_ATTRIBUTES,
+    CHECK(PathService::Get(chromeos::FILE_INSTALL_ATTRIBUTES,
                            &install_attrs_file));
     install_attributes_->ReadCacheFile(install_attrs_file);
 
@@ -335,7 +336,7 @@ void BrowserPolicyConnector::InitializeUserPolicy(
   const base::FilePath resource_cache_dir =
       profile_dir.Append(kPolicy).Append(kResourceDir);
   base::FilePath policy_key_dir;
-  CHECK(PathService::Get(chrome::DIR_USER_POLICY_KEYS, &policy_key_dir));
+  CHECK(PathService::Get(chromeos::DIR_USER_POLICY_KEYS, &policy_key_dir));
 
   if (wait_for_policy_fetch)
     device_management_service_->ScheduleInitialization(0);

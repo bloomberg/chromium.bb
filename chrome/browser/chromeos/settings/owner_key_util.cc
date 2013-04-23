@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
-#include "chrome/common/chrome_paths.h"
+#include "chromeos/chromeos_paths.h"
 #include "crypto/rsa_private_key.h"
 
 namespace chromeos {
@@ -20,7 +20,7 @@ namespace chromeos {
 
 OwnerKeyUtil* OwnerKeyUtil::Create() {
   base::FilePath owner_key_path;
-  CHECK(PathService::Get(chrome::FILE_OWNER_KEY, &owner_key_path));
+  CHECK(PathService::Get(chromeos::FILE_OWNER_KEY, &owner_key_path));
   return new OwnerKeyUtilImpl(owner_key_path);
 }
 

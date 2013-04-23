@@ -69,6 +69,7 @@
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
+#include "chromeos/chromeos_paths.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -470,6 +471,9 @@ void ChromeMainDelegate::PreSandboxStartup() {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   chrome::RegisterPathProvider();
+#if defined(OS_CHROMEOS)
+  chromeos::RegisterPathProvider();
+#endif
 
 #if defined(OS_MACOSX)
   // On the Mac, the child executable lives at a predefined location within

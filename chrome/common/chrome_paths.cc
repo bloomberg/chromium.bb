@@ -95,32 +95,6 @@ const base::FilePath::CharType kFilepathSinglePrefExtensions[] =
 #endif  // defined(GOOGLE_CHROME_BUILD)
 #endif  // defined(OS_LINUX)
 
-#if defined(OS_CHROMEOS)
-
-const base::FilePath::CharType kDefaultAppOrderFileName[] =
-#if defined(GOOGLE_CHROME_BUILD)
-    FILE_PATH_LITERAL("/usr/share/google-chrome/default_app_order.json");
-#else
-    FILE_PATH_LITERAL("/usr/share/chromium/default_app_order.json");
-#endif  // defined(GOOGLE_CHROME_BUILD)
-
-const base::FilePath::CharType kDefaultUserPolicyKeysDir[] =
-    FILE_PATH_LITERAL("/var/run/user_policy");
-
-const base::FilePath::CharType kOwnerKeyFileName[] =
-    FILE_PATH_LITERAL("/var/lib/whitelist/owner.key");
-
-const base::FilePath::CharType kInstallAttributesFileName[] =
-    FILE_PATH_LITERAL("/var/run/lockbox/install_attributes.pb");
-
-const base::FilePath::CharType kUptimeFileName[] =
-    FILE_PATH_LITERAL("/proc/uptime");
-
-const base::FilePath::CharType kUpdateRebootNeededUptimeFile[] =
-    FILE_PATH_LITERAL("/var/run/chrome/update_reboot_needed_uptime");
-
-#endif  // defined(OS_CHROMEOS)
-
 }  // namespace
 
 namespace chrome {
@@ -426,24 +400,6 @@ bool PathProvider(int key, base::FilePath* result) {
       if (!PathService::Get(chrome::DIR_USER_DATA, &cur))
         return false;
       cur = cur.Append(FILE_PATH_LITERAL("custom_wallpapers"));
-      break;
-    case chrome::FILE_DEFAULT_APP_ORDER:
-      cur = base::FilePath(kDefaultAppOrderFileName);
-      break;
-    case chrome::DIR_USER_POLICY_KEYS:
-      cur = base::FilePath(kDefaultUserPolicyKeysDir);
-      break;
-    case chrome::FILE_OWNER_KEY:
-      cur = base::FilePath(kOwnerKeyFileName);
-      break;
-    case chrome::FILE_INSTALL_ATTRIBUTES:
-      cur = base::FilePath(kInstallAttributesFileName);
-      break;
-    case chrome::FILE_UPTIME:
-      cur = base::FilePath(kUptimeFileName);
-      break;
-    case chrome::FILE_UPDATE_REBOOT_NEEDED_UPTIME:
-      cur = base::FilePath(kUpdateRebootNeededUptimeFile);
       break;
 #endif
 #if defined(ENABLE_MANAGED_USERS)

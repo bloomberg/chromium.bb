@@ -38,6 +38,8 @@
         'attestation/attestation_flow.cc',
         'attestation/attestation_flow.h',
         'chromeos_export.h',
+        'chromeos_paths.cc',
+        'chromeos_paths.h',
         'chromeos_switches.cc',
         'chromeos_switches.h',
         'cryptohome/async_method_caller.cc',

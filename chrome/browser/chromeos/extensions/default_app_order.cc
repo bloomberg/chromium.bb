@@ -11,8 +11,8 @@
 #include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/time.h"
-#include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension_constants.h"
+#include "chromeos/chromeos_paths.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -109,7 +109,7 @@ const std::vector<std::string>& ExternalLoader::GetAppIds() {
 
 void ExternalLoader::Load() {
   base::FilePath ordinals_file;
-  CHECK(PathService::Get(chrome::FILE_DEFAULT_APP_ORDER, &ordinals_file));
+  CHECK(PathService::Get(chromeos::FILE_DEFAULT_APP_ORDER, &ordinals_file));
 
   scoped_ptr<base::ListValue> ordinals_value(
       ReadExternalOrdinalFile(ordinals_file));
