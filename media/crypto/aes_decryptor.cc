@@ -187,7 +187,7 @@ void AesDecryptor::AddKey(const std::string& key_system,
                             init_data_length);
   std::string key_string(reinterpret_cast<const char*>(key) , key_length);
   scoped_ptr<DecryptionKey> decryption_key(new DecryptionKey(key_string));
-  if (!decryption_key.get()) {
+  if (!decryption_key) {
     DVLOG(1) << "Could not create key.";
     key_error_cb_.Run(key_system, session_id, Decryptor::kUnknownError, 0);
     return;
@@ -329,7 +329,7 @@ bool AesDecryptor::DecryptionKey::Init() {
   CHECK(!secret_.empty());
   decryption_key_.reset(crypto::SymmetricKey::Import(
       crypto::SymmetricKey::AES, secret_));
-  if (!decryption_key_.get())
+  if (!decryption_key_)
     return false;
   return true;
 }

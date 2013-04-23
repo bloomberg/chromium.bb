@@ -276,7 +276,7 @@ void AudioManagerBase::Shutdown() {
     audio_thread_.swap(audio_thread);
   }
 
-  if (!audio_thread.get())
+  if (!audio_thread)
     return;
 
   CHECK_NE(base::MessageLoop::current(), audio_thread->message_loop());

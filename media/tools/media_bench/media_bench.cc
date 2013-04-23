@@ -336,7 +336,7 @@ int main(int argc, const char** argv) {
   // Buffer used for audio decoding.
   scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFree> audio_frame(
       avcodec_alloc_frame());
-  if (!audio_frame.get()) {
+  if (!audio_frame) {
     std::cerr << "Error: avcodec_alloc_frame for "
               << in_path.value() << std::endl;
     return 1;
@@ -345,7 +345,7 @@ int main(int argc, const char** argv) {
   // Buffer used for video decoding.
   scoped_ptr_malloc<AVFrame, media::ScopedPtrAVFree> video_frame(
       avcodec_alloc_frame());
-  if (!video_frame.get()) {
+  if (!video_frame) {
     std::cerr << "Error: avcodec_alloc_frame for "
               << in_path.value() << std::endl;
     return 1;

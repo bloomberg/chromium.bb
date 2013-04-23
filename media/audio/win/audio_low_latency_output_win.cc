@@ -284,7 +284,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
   CHECK(callback);
   CHECK(opened_);
 
-  if (render_thread_.get()) {
+  if (render_thread_) {
     CHECK_EQ(callback, source_);
     return;
   }
@@ -324,7 +324,7 @@ void WASAPIAudioOutputStream::Start(AudioSourceCallback* callback) {
 void WASAPIAudioOutputStream::Stop() {
   VLOG(1) << "WASAPIAudioOutputStream::Stop()";
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
-  if (!render_thread_.get())
+  if (!render_thread_)
     return;
 
   // Stop output audio streaming.

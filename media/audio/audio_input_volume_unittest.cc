@@ -54,7 +54,7 @@ class AudioInputVolumeTest : public ::testing::Test {
     if (!CoreAudioUtil::IsSupported())
       return false;
 #endif
-    if (!audio_manager_.get())
+    if (!audio_manager_)
       return false;
 
     return audio_manager_->HasAudioInputDevices();

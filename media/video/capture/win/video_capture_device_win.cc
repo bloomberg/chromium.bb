@@ -531,7 +531,7 @@ bool VideoCaptureDeviceWin::CreateCapabilityMap() {
       time_per_frame = h->AvgTimePerFrame;
 
       // Try to get the max frame rate from IAMVideoControl.
-      if (video_control.get()) {
+      if (video_control) {
         LONGLONG* max_fps_ptr;
         LONG list_size;
         SIZE size;

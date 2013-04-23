@@ -176,7 +176,7 @@ void AudioManagerLinux::GetAlsaDevicesInfo(
 
       media::AudioDeviceName name;
       name.unique_id = unique_device_name.get();
-      if (desc.get()) {
+      if (desc) {
         // Use the more user friendly description as name.
         // Replace '\n' with '-'.
         char* pret = strchr(desc.get(), '\n');

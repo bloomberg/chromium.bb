@@ -810,7 +810,7 @@ void SourceBufferStream::ResolveEndOverlap(
     AddToRanges(new_next_range);
 
   // If we didn't overlap a selected range, return.
-  if (selected_range_ != overlapped_range.get())
+  if (selected_range_ != overlapped_range)
     return;
 
   // If the |overlapped_range| transfers its next buffer position to

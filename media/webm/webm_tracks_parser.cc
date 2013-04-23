@@ -146,7 +146,7 @@ bool WebMTracksParser::OnListEnd(int id) {
     }
 
     std::string encryption_key_id;
-    if (track_content_encodings_client_.get()) {
+    if (track_content_encodings_client_) {
       DCHECK(!track_content_encodings_client_->content_encodings().empty());
       // If we have multiple ContentEncoding in one track. Always choose the
       // key id in the first ContentEncoding as the key id of the track.

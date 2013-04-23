@@ -219,7 +219,7 @@ int WebMStreamParser::ParseInfoAndTracks(const uint8* data, int size) {
 }
 
 int WebMStreamParser::ParseCluster(const uint8* data, int size) {
-  if (!cluster_parser_.get())
+  if (!cluster_parser_)
     return -1;
 
   int id;

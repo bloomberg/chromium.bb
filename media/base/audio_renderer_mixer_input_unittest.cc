@@ -41,7 +41,7 @@ class AudioRendererMixerInputTest : public testing::Test {
   }
 
   AudioRendererMixer* GetMixer(const AudioParameters& params) {
-    if (!mixer_.get()) {
+    if (!mixer_) {
       scoped_refptr<MockAudioRendererSink> sink = new MockAudioRendererSink();
       EXPECT_CALL(*sink, Start());
       EXPECT_CALL(*sink, Stop());

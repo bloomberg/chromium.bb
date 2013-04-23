@@ -211,7 +211,7 @@ bool WebMClusterParser::OnBinary(int id, const uint8* data, int size) {
   if (id != kWebMIdBlock)
     return true;
 
-  if (block_data_.get()) {
+  if (block_data_) {
     MEDIA_LOG(log_cb_) << "More than 1 Block in a BlockGroup is not supported.";
     return false;
   }

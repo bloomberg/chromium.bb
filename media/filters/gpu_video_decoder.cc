@@ -190,7 +190,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   // Throw away any already-decoded, not-yet-delivered frames.
   ready_video_frames_.clear();
 
-  if (!vda_.get()) {
+  if (!vda_) {
     gvd_loop_proxy_->PostTask(FROM_HERE, closure);
     return;
   }
@@ -207,7 +207,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
 
 void GpuVideoDecoder::Stop(const base::Closure& closure) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  if (vda_.get())
+  if (vda_)
     DestroyVDA();
   if (!pending_read_cb_.is_null())
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
@@ -335,7 +335,7 @@ void GpuVideoDecoder::Read(const ReadCB& read_cb) {
     return;
   }
 
-  if (!vda_.get()) {
+  if (!vda_) {
     base::ResetAndReturn(&pending_read_cb_).Run(
         kOk, VideoFrame::CreateEmptyFrame());
     return;
@@ -386,7 +386,7 @@ void GpuVideoDecoder::RequestBufferDecode(
     return;
   }
 
-  if (!vda_.get()) {
+  if (!vda_) {
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
     return;
   }
@@ -487,7 +487,7 @@ void GpuVideoDecoder::ProvidePictureBuffers(uint32 count,
     return;
   }
 
-  if (!vda_.get())
+  if (!vda_)
     return;
 
   CHECK_EQ(available_pictures_, -1);
@@ -580,7 +580,7 @@ void GpuVideoDecoder::ReusePictureBuffer(int64 picture_buffer_id) {
   CHECK_GE(available_pictures_, 0);
   available_pictures_++;
 
-  if (!vda_.get())
+  if (!vda_)
     return;
   vda_loop_proxy_->PostTask(FROM_HERE, base::Bind(
       &VideoDecodeAccelerator::ReusePictureBuffer, weak_vda_,
@@ -691,7 +691,7 @@ void GpuVideoDecoder::NotifyResetDone() {
 
 void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
-  if (!vda_.get())
+  if (!vda_)
     return;
 
   DLOG(ERROR) << "VDA Error: " << error;

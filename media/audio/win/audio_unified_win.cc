@@ -223,7 +223,7 @@ void WASAPIUnifiedStream::Start(AudioSourceCallback* callback) {
   CHECK(callback);
   CHECK(opened_);
 
-  if (audio_io_thread_.get()) {
+  if (audio_io_thread_) {
     CHECK_EQ(callback, source_);
     return;
   }
@@ -268,7 +268,7 @@ void WASAPIUnifiedStream::Start(AudioSourceCallback* callback) {
 
 void WASAPIUnifiedStream::Stop() {
   DCHECK_EQ(GetCurrentThreadId(), creating_thread_id_);
-  if (!audio_io_thread_.get())
+  if (!audio_io_thread_)
     return;
 
   // Stop input audio streaming.
