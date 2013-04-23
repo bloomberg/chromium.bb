@@ -280,6 +280,8 @@
         '../components/autofill/browser/test_autofill_external_delegate.h',
         '../components/autofill/browser/test_autofill_manager_delegate.cc',
         '../components/autofill/browser/test_autofill_manager_delegate.h',
+        '../components/autofill/browser/test_personal_data_manager.cc',
+        '../components/autofill/browser/test_personal_data_manager.h',
 
         '../ui/gfx/image/image_unittest_util.h',
         '../ui/gfx/image/image_unittest_util.cc',

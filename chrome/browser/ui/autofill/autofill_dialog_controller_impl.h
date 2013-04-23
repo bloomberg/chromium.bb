@@ -232,6 +232,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Exposed for testing.
   AutofillDialogView* view() { return view_.get(); }
   virtual AutofillDialogView* CreateView();
+  const DetailInput* input_showing_popup() const {
+    return input_showing_popup_;
+  }
 
   // Returns the PersonalDataManager for |profile_|.
   virtual PersonalDataManager* GetManager();

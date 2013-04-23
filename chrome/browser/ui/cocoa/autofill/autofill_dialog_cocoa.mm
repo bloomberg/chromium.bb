@@ -84,12 +84,6 @@ void AutofillDialogCocoa::UpdateProgressBar(double value) {}
 
 void AutofillDialogCocoa::ModelChanged() {}
 
-void AutofillDialogCocoa::SubmitForTesting() {}
-
-void AutofillDialogCocoa::CancelForTesting() {
-  PerformClose();
-}
-
 void AutofillDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   constrained_window_.reset();

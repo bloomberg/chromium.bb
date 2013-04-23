@@ -9,10 +9,13 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/browser/test_personal_data_manager.h"
 #include "components/autofill/common/form_data.h"
 #include "components/autofill/common/form_field_data.h"
 #include "content/public/test/test_utils.h"
@@ -107,6 +110,18 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
 
   // Increase visibility for testing.
   AutofillDialogView* view() { return AutofillDialogControllerImpl::view(); }
+  const DetailInput* input_showing_popup() const {
+    return AutofillDialogControllerImpl::input_showing_popup();
+  }
+
+  TestPersonalDataManager* GetTestingManager() {
+    return &test_manager_;
+  }
+
+ protected:
+  virtual PersonalDataManager* GetManager() OVERRIDE {
+    return &test_manager_;
+  }
 
  private:
   // To specify our own metric logger.
@@ -115,6 +130,7 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
   }
 
   const AutofillMetrics& metric_logger_;
+  TestPersonalDataManager test_manager_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogController);
@@ -127,136 +143,139 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
   AutofillDialogControllerTest() {}
   virtual ~AutofillDialogControllerTest() {}
 
+  void InitializeControllerOfType(DialogType dialog_type) {
+    FormData form;
+    form.name = ASCIIToUTF16("TestForm");
+    form.method = ASCIIToUTF16("POST");
+    form.origin = GURL("http://example.com/form.html");
+    form.action = GURL("http://example.com/submit.html");
+    form.user_submitted = true;
+
+    FormFieldData field;
+    field.autocomplete_attribute = "email";
+    form.fields.push_back(field);
+
+    message_loop_runner_ = new content::MessageLoopRunner;
+    controller_ = new TestAutofillDialogController(
+        GetActiveWebContents(),
+        form,
+        metric_logger_,
+        message_loop_runner_,
+        dialog_type);
+    controller_->Show();
+  }
+
   content::WebContents* GetActiveWebContents() {
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
-  TestAutofillDialogController* CreateController(
-      const FormData& form,
-      const AutofillMetrics& metric_logger,
-      const DialogType dialog_type) {
-    message_loop_runner_ = new content::MessageLoopRunner;
-    return new TestAutofillDialogController(
-        GetActiveWebContents(), form, metric_logger, message_loop_runner_,
-        dialog_type);
-  }
+  const MockAutofillMetrics& metric_logger() { return metric_logger_; }
+  TestAutofillDialogController* controller() { return controller_; }
 
   void RunMessageLoop() {
     message_loop_runner_->Run();
   }
 
  private:
+  MockAutofillMetrics metric_logger_;
+  TestAutofillDialogController* controller_;  // Weak reference.
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
 
-// TODO(isherman): Enable this test on other platforms once the UI is
+// TODO(isherman): Enable these tests on other platforms once the UI is
 // implemented on those platforms.
 #if defined(TOOLKIT_VIEWS)
-#define MAYBE_RequestAutocompleteUiDurationMetrics \
-    RequestAutocompleteUiDurationMetrics
-#else
-#define MAYBE_RequestAutocompleteUiDurationMetrics \
-    DISABLED_RequestAutocompleteUiDurationMetrics
-#endif  // defined(TOOLKIT_VIEWS)
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       MAYBE_RequestAutocompleteUiDurationMetrics) {
-  FormData form;
-  form.name = ASCIIToUTF16("TestForm");
-  form.method = ASCIIToUTF16("POST");
-  form.origin = GURL("http://example.com/form.html");
-  form.action = GURL("http://example.com/submit.html");
-  form.user_submitted = true;
+// Submit the form data.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Submit) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->view()->GetTestableView()->SubmitForTesting();
 
-  FormFieldData field;
-  field.autocomplete_attribute = "email";
-  form.fields.push_back(field);
+  RunMessageLoop();
 
-  // Submit the form data.
-  {
-    MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller = CreateController(
-        form, metric_logger, DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
-    dialog_controller->Show();
-    dialog_controller->view()->SubmitForTesting();
-
-    RunMessageLoop();
-
-    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-              metric_logger.dialog_dismissal_action());
-    EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger.dialog_type());
-  }
-
-  // Cancel out of the dialog.
-  {
-    MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller = CreateController(
-        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
-    dialog_controller->Show();
-    dialog_controller->view()->CancelForTesting();
-
-    RunMessageLoop();
-
-    EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
-              metric_logger.dialog_dismissal_action());
-    EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
-  }
-
-  // Take some other action that dismisses the dialog.
-  {
-    MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller = CreateController(
-        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
-    dialog_controller->Show();
-    dialog_controller->Hide();
-
-    RunMessageLoop();
-
-    EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
-              metric_logger.dialog_dismissal_action());
-    EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
-  }
-
-  // Test Autocheckout success metrics.
-  {
-    MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller = CreateController(
-        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
-    dialog_controller->Show();
-    dialog_controller->view()->SubmitForTesting();
-
-    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-              metric_logger.dialog_dismissal_action());
-    EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
-
-    dialog_controller->Hide();
-
-    RunMessageLoop();
-
-    EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
-              metric_logger.autocheckout_status());
-  }
-
-  // Test Autocheckout failure metric.
-  {
-    MockAutofillMetrics metric_logger;
-    TestAutofillDialogController* dialog_controller = CreateController(
-        form, metric_logger, DIALOG_TYPE_AUTOCHECKOUT);
-    dialog_controller->Show();
-    dialog_controller->view()->SubmitForTesting();
-
-    EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
-              metric_logger.dialog_dismissal_action());
-    EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger.dialog_type());
-
-    dialog_controller->OnAutocheckoutError();
-    dialog_controller->view()->CancelForTesting();
-
-    RunMessageLoop();
-
-    EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
-              metric_logger.autocheckout_status());
-  }
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
 }
+
+// Cancel out of the dialog.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->view()->GetTestableView()->CancelForTesting();
+
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
+}
+
+// Take some other action that dismisses the dialog.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+  controller()->Hide();
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_REQUEST_AUTOCOMPLETE, metric_logger().dialog_type());
+}
+
+// Test Autocheckout success metrics.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutSuccess) {
+  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
+  controller()->view()->GetTestableView()->SubmitForTesting();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
+
+  controller()->Hide();
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_SUCCEEDED,
+            metric_logger().autocheckout_status());
+}
+
+// Test Autocheckout failure metric.
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
+  InitializeControllerOfType(DIALOG_TYPE_AUTOCHECKOUT);
+  controller()->view()->GetTestableView()->SubmitForTesting();
+
+  EXPECT_EQ(AutofillMetrics::DIALOG_ACCEPTED,
+            metric_logger().dialog_dismissal_action());
+  EXPECT_EQ(DIALOG_TYPE_AUTOCHECKOUT, metric_logger().dialog_type());
+
+  controller()->OnAutocheckoutError();
+  controller()->view()->GetTestableView()->CancelForTesting();
+
+  RunMessageLoop();
+
+  EXPECT_EQ(AutofillMetrics::AUTOCHECKOUT_FAILED,
+            metric_logger().autocheckout_status());
+}
+
+// TODO(estade): fix the code so this test passes. http://crbug.com/231988
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+    DISABLED_FillInputFromAutofill) {
+  InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
+
+  AutofillProfile full_profile(test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+  const DetailInput& input = inputs[0];
+  string16 value = full_profile.GetRawInfo(input.type);
+  TestableAutofillDialogView* view = controller()->view()->GetTestableView();
+  view->SetTextContentsOfInput(input, value.substr(0, value.size() / 2));
+  view->ActivateInput(input);
+
+  ASSERT_EQ(&input, controller()->input_showing_popup());
+
+  controller()->DidAcceptSuggestion(string16(), 0);
+  EXPECT_EQ(value, view->GetTextContentsOfInput(input));
+}
+#endif  // defined(TOOLKIT_VIEWS)
 
 }  // namespace autofill

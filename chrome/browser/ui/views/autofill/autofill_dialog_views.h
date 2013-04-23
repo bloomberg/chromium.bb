@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/combobox/combobox_listener.h"
@@ -56,6 +57,7 @@ struct DetailInput;
 // Views toolkit implementation of the Autofill dialog that handles the
 // imperative autocomplete API call.
 class AutofillDialogViews : public AutofillDialogView,
+                            public TestableAutofillDialogView,
                             public views::DialogDelegate,
                             public views::ButtonListener,
                             public views::TextfieldController,
@@ -83,8 +85,15 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void HideSignIn() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
   virtual void ModelChanged() OVERRIDE;
+  virtual TestableAutofillDialogView* GetTestableView() OVERRIDE;
+
+  // TestableAutofillDialogView implementation:
   virtual void SubmitForTesting() OVERRIDE;
   virtual void CancelForTesting() OVERRIDE;
+  virtual string16 GetTextContentsOfInput(const DetailInput& input) OVERRIDE;
+  virtual void SetTextContentsOfInput(const DetailInput& input,
+                                      const string16& contents) OVERRIDE;
+  virtual void ActivateInput(const DetailInput& input) OVERRIDE;
 
   // views::DialogDelegate implementation:
   virtual string16 GetWindowTitle() const OVERRIDE;
@@ -423,6 +432,9 @@ class AutofillDialogViews : public AutofillDialogView,
 
   // Call this when the size of anything in |contents_| might've changed.
   void ContentsPreferredSizeChanged();
+
+  // Gets the textfield view that is shown for the given DetailInput model.
+  views::Textfield* TextfieldForInput(const DetailInput& input);
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;

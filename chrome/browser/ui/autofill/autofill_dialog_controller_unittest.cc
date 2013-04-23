@@ -13,6 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/browser/autofill_metrics.h"
+#include "components/autofill/browser/test_personal_data_manager.h"
 #include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
@@ -63,8 +64,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   }
   virtual void HideSignIn() OVERRIDE {}
   virtual void UpdateProgressBar(double value) OVERRIDE {}
-  virtual void SubmitForTesting() OVERRIDE {}
-  virtual void CancelForTesting() OVERRIDE {}
 
   MOCK_METHOD0(ModelChanged, void());
 
@@ -76,33 +75,6 @@ class TestAutofillDialogView : public AutofillDialogView {
   std::map<DialogSection, DetailOutputMap> outputs_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillDialogView);
-};
-
-class TestPersonalDataManager : public PersonalDataManager {
- public:
-  TestPersonalDataManager() : PersonalDataManager("en-US") {}
-  virtual ~TestPersonalDataManager() {}
-
-  void AddTestingProfile(AutofillProfile* profile) {
-    profiles_.push_back(profile);
-    FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
-                      OnPersonalDataChanged());
-  }
-
-  virtual const std::vector<AutofillProfile*>& GetProfiles() OVERRIDE {
-    return profiles_;
-  }
-
-  virtual void SaveImportedProfile(const AutofillProfile& imported_profile)
-      OVERRIDE {
-    imported_profile_ = imported_profile;
-  }
-
-  const AutofillProfile& imported_profile() { return imported_profile_; }
-
- private:
-  std::vector<AutofillProfile*> profiles_;
-  AutofillProfile imported_profile_;
 };
 
 class TestWalletClient : public wallet::WalletClient {

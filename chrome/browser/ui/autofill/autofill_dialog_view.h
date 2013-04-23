@@ -13,6 +13,8 @@ class NavigationController;
 
 namespace autofill {
 
+class TestableAutofillDialogView;
+
 // An interface for the dialog that appears when a site initiates an Autofill
 // action via the imperative autocomplete API.
 class AutofillDialogView {
@@ -64,11 +66,10 @@ class AutofillDialogView {
   // Called when the active suggestions data model changed.
   virtual void ModelChanged() = 0;
 
-  // Simulates the user pressing 'Submit' to accept the dialog.
-  virtual void SubmitForTesting() = 0;
-
-  // Simulates the user pressing 'Cancel' to abort the dialog.
-  virtual void CancelForTesting() = 0;
+  // Returns an object that can be used to test that the view is behaving as
+  // expected. This should be implemented on all platforms, but for now returns
+  // NULL on everything but Views.
+  virtual TestableAutofillDialogView* GetTestableView();
 
   // Factory function to create the dialog (implemented once per view
   // implementation). |controller| will own the created dialog.

@@ -261,14 +261,6 @@ void AutofillDialogViewAndroid::ModelChanged() {
   UpdateSection(SECTION_SHIPPING, CLEAR_USER_INPUT);
 }
 
-void AutofillDialogViewAndroid::SubmitForTesting() {
-  controller_->OnAccept();
-}
-
-void AutofillDialogViewAndroid::CancelForTesting() {
-  controller_->OnCancel();
-}
-
 // TODO(aruslan): bind to the list of accounts population.
 std::vector<std::string> AutofillDialogViewAndroid::GetAvailableUserAccounts() {
   std::vector<std::string> account_names;

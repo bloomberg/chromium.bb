@@ -53,8 +53,10 @@ class TestAutofillDialogController : public AutofillDialogControllerImpl {
     runner_->Run();
   }
 
-  // Increase visibility for testing.
-  AutofillDialogView* view() { return AutofillDialogControllerImpl::view(); }
+  AutofillDialogCocoa* GetView() {
+    return static_cast<AutofillDialogCocoa*>(
+        AutofillDialogControllerImpl::view());
+  }
 
  private:
   // To specify our own metric logger.
@@ -111,7 +113,7 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
 #endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, MAYBE_DisplayUI) {
   controller()->Show();
-  controller()->view()->CancelForTesting();
+  controller()->GetView()->PerformClose();
 
   controller()->RunMessageLoop();
 }

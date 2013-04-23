@@ -753,6 +753,10 @@ void AutofillDialogViews::ModelChanged() {
   }
 }
 
+TestableAutofillDialogView* AutofillDialogViews::GetTestableView() {
+  return this;
+}
+
 void AutofillDialogViews::SubmitForTesting() {
   Accept();
 }
@@ -760,6 +764,19 @@ void AutofillDialogViews::SubmitForTesting() {
 void AutofillDialogViews::CancelForTesting() {
   if (Cancel())
     Hide();
+}
+
+string16 AutofillDialogViews::GetTextContentsOfInput(const DetailInput& input) {
+  return TextfieldForInput(input)->text();
+}
+
+void AutofillDialogViews::SetTextContentsOfInput(const DetailInput& input,
+                                                 const string16& contents) {
+  TextfieldForInput(input)->SetText(contents);
+}
+
+void AutofillDialogViews::ActivateInput(const DetailInput& input) {
+  TextfieldEditedOrActivated(TextfieldForInput(input), false);
 }
 
 string16 AutofillDialogViews::GetWindowTitle() const {
@@ -1360,6 +1377,19 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
       return &iter->second;
     }
   }
+  return NULL;
+}
+
+views::Textfield* AutofillDialogViews::TextfieldForInput(
+    const DetailInput& input) {
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    TextfieldMap::iterator text_mapping = iter->second.textfields.find(&input);
+    if (text_mapping != iter->second.textfields.end())
+      return text_mapping->second->textfield();
+  }
+
+  NOTREACHED();
   return NULL;
 }
 
