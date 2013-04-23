@@ -1816,7 +1816,7 @@
 {
    bug_181691
    Heapcheck:Leak
-   fun:InitializeGlobalPools
+   ...
    fun:InitThread
    fun:ShCompile
    fun:gpu::gles2::ShaderTranslator::Translate
