@@ -30,63 +30,19 @@
 #include <wtf/WTFThreadData.h>
 #include <wtf/unicode/UTF8.h>
 
-#if USE(WEB_THREAD)
-#include <wtf/MainThread.h>
-#include <wtf/TCSpinLock.h>
-#endif
-
 namespace WTF {
 
 using namespace Unicode;
 
 COMPILE_ASSERT(sizeof(AtomicString) == sizeof(String), atomic_string_and_string_must_be_same_size);
 
-#if USE(WEB_THREAD)
-class AtomicStringTableLocker : public SpinLockHolder {
-    WTF_MAKE_NONCOPYABLE(AtomicStringTableLocker);
-
-    static SpinLock s_stringTableLock;
-public:
-    AtomicStringTableLocker()
-        : SpinLockHolder(&s_stringTableLock)
-    {
-    }
-};
-
-SpinLock AtomicStringTableLocker::s_stringTableLock = SPINLOCK_INITIALIZER;
-#else
-
-class AtomicStringTableLocker {
-    WTF_MAKE_NONCOPYABLE(AtomicStringTableLocker);
-public:
-    AtomicStringTableLocker() { }
-    ~AtomicStringTableLocker() { }
-};
-#endif // USE(WEB_THREAD)
-
 class AtomicStringTable {
     WTF_MAKE_FAST_ALLOCATED;
 public:
     static AtomicStringTable* create(WTFThreadData& data)
     {
-#if USE(WEB_THREAD)
-        // On iOS, one AtomicStringTable is shared between the main UI thread and the WebThread.
-        static AtomicStringTable* sharedStringTable = new AtomicStringTable;
-
-        bool currentThreadIsWebThread = isWebThread();
-        if (currentThreadIsWebThread || isUIThread())
-            data.m_atomicStringTable = sharedStringTable;
-        else
-            data.m_atomicStringTable = new AtomicStringTable;
-
-        // We do the following so that its destruction happens only
-        // once - on the main UI thread.
-        if (!currentThreadIsWebThread)
-            data.m_atomicStringTableDestructor = AtomicStringTable::destroy;
-#else
         data.m_atomicStringTable = new AtomicStringTable;
         data.m_atomicStringTableDestructor = AtomicStringTable::destroy;
-#endif // USE(WEB_THREAD)
         return data.m_atomicStringTable;
     }
 
@@ -120,8 +76,6 @@ static inline HashSet<StringImpl*>& stringTable()
 template<typename T, typename HashTranslator>
 static inline PassRefPtr<StringImpl> addToStringTable(const T& value)
 {
-    AtomicStringTableLocker locker;
-
     HashSet<StringImpl*>::AddResult addResult = stringTable().add<T, HashTranslator>(value);
 
     // If the string is newly-translated, then we need to adopt it.
@@ -429,7 +383,6 @@ PassRefPtr<StringImpl> AtomicString::addSlowCase(StringImpl* r)
     if (!r->length())
         return StringImpl::empty();
 
-    AtomicStringTableLocker locker;
     StringImpl* result = *stringTable().add(r).iterator;
     if (result == r)
         r->setIsAtomic(true);
@@ -452,7 +405,6 @@ AtomicStringImpl* AtomicString::find(const StringImpl* stringImpl)
     if (!stringImpl->length())
         return static_cast<AtomicStringImpl*>(StringImpl::empty());
 
-    AtomicStringTableLocker locker;
     HashSet<StringImpl*>::iterator iterator;
     if (stringImpl->is8Bit())
         iterator = findString<LChar>(stringImpl);
@@ -465,7 +417,6 @@ AtomicStringImpl* AtomicString::find(const StringImpl* stringImpl)
 
 void AtomicString::remove(StringImpl* r)
 {
-    AtomicStringTableLocker locker;
     stringTable().remove(r);
 }
 

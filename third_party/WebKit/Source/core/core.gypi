@@ -3041,7 +3041,6 @@
             'platform/mac/ScrollElasticityController.mm',
             'platform/mac/ScrollbarThemeMac.h',
             'platform/mac/ScrollbarThemeMac.mm',
-            'platform/mac/SharedBufferMac.mm',
             'platform/mac/ThemeMac.h',
             'platform/mac/ThemeMac.mm',
             'platform/mac/WebCoreSystemInterface.h',

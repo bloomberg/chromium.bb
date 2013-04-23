@@ -51,14 +51,6 @@ WTF_EXPORT_PRIVATE void setMainThreadCallbacksPaused(bool paused);
 
 WTF_EXPORT_PRIVATE bool isMainThread();
 
-#if USE(WEB_THREAD)
-WTF_EXPORT_PRIVATE bool isWebThread();
-WTF_EXPORT_PRIVATE bool isUIThread();
-#else
-inline bool isWebThread() { return isMainThread(); }
-inline bool isUIThread() { return isMainThread(); }
-#endif // USE(WEB_THREAD)
-
 void initializeGCThreads();
 
 inline bool isMainThreadOrGCThread() { return isMainThread(); }
