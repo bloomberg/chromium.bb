@@ -109,9 +109,17 @@ message PowerManagementPolicy {
   // unchanged.
   optional double presentation_idle_delay_factor = 7;
 
+  // Factor by which |screen_dim_ms| will be scaled if user activity is
+  // observed while the screen is dimmed or soon after it is turned off.
+  // Other delays' distances from |screen_dim_ms| are preserved after
+  // scaling.  The delays will return to their original values at the end
+  // of the current user session.  A value of 1.0 (or less) or an unset
+  // |screen_dim_ms| delay leaves delays unchanged.
+  optional double user_activity_screen_dim_delay_factor = 9;
+
   // Human-readable description of the factors contributing to this policy.
   // Logged by the power manager to aid in debugging.
   optional string reason = 8;
 
-  // Next ID to use: 9
+  // Next ID to use: 10
 }
