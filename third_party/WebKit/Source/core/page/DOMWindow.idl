@@ -48,7 +48,7 @@
     [Replaceable] readonly attribute Navigator clientInformation;
     readonly attribute Crypto crypto;
     [DoNotCheckSecurity, CustomSetter, Unforgeable] attribute Location location;
-    [Replaceable, CustomGetter, CustomSetter] readonly attribute Event event;
+    [MeasureAs=WindowEvent, NotEnumerable, Replaceable, CustomGetter, CustomSetter] readonly attribute Event event;
 
     DOMSelection getSelection();
 
