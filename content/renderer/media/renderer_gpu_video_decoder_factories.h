@@ -95,9 +95,14 @@ class CONTENT_EXPORT RendererGpuVideoDecoderFactories
   // This event is signaled if we have been asked to Abort().
   base::WaitableEvent aborted_waiter_;
 
-  // This event is signaled by asynchronous tasks to indicate their completion.
+  // This event is signaled by asynchronous tasks posted to the compositor
+  // message loop to indicate their completion.
   // e.g. AsyncCreateVideoDecodeAccelerator()/AsyncCreateTextures() etc.
-  base::WaitableEvent async_waiter_;
+  base::WaitableEvent compositor_loop_async_waiter_;
+
+  // This event is signaled by asynchronous tasks posted to the renderer thread
+  // message loop to indicate their completion. e.g. AsyncCreateSharedMemory.
+  base::WaitableEvent render_thread_async_waiter_;
 
   // The vda returned by the CreateVideoAcclelerator function.
   scoped_ptr<media::VideoDecodeAccelerator> vda_;
