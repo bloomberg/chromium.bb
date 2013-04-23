@@ -47,7 +47,7 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
   ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   extension_host_.reset(manager->CreateInfobarHost(url, browser));
-  extension_host_->SetAssociatedWebContents(infobar_service->GetWebContents());
+  extension_host_->SetAssociatedWebContents(infobar_service->web_contents());
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                  content::Source<Profile>(browser->profile()));

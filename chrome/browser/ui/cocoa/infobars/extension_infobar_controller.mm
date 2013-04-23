@@ -152,7 +152,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
     extensions::ExtensionHost* extensionHost =
         delegate_->AsExtensionInfoBarDelegate()->extension_host();
     Browser* browser =
-        chrome::FindBrowserWithWebContents(owner->GetWebContents());
+        chrome::FindBrowserWithWebContents(owner->web_contents());
     contextMenu_.reset([[ExtensionActionContextMenu alloc]
         initWithExtension:extensionHost->extension()
                   browser:browser
@@ -276,7 +276,7 @@ class InfobarBridge : public ExtensionInfoBarDelegate::DelegateObserver {
 
 InfoBar* ExtensionInfoBarDelegate::CreateInfoBar(InfoBarService* owner) {
   NSWindow* window =
-      [(NSView*)owner->GetWebContents()->GetView()->GetContentNativeView()
+      [(NSView*)owner->web_contents()->GetView()->GetContentNativeView()
           window];
   ExtensionInfoBarController* controller =
       [[ExtensionInfoBarController alloc] initWithDelegate:this

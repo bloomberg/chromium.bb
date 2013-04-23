@@ -552,7 +552,7 @@ string16 OneClickInfoBarDelegateImpl::GetButtonLabel(
 }
 
 bool OneClickInfoBarDelegateImpl::Accept() {
-  content::WebContents* web_contents = owner()->GetWebContents();
+  content::WebContents* web_contents = owner()->web_contents();
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   Profile* profile = Profile::FromBrowserContext(
       web_contents->GetBrowserContext());
@@ -576,7 +576,7 @@ bool OneClickInfoBarDelegateImpl::Accept() {
 
 bool OneClickInfoBarDelegateImpl::Cancel() {
   AddEmailToOneClickRejectedList(Profile::FromBrowserContext(
-      owner()->GetWebContents()->GetBrowserContext()), email_);
+      owner()->web_contents()->GetBrowserContext()), email_);
   RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
@@ -593,7 +593,7 @@ bool OneClickInfoBarDelegateImpl::LinkClicked(
       GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 

@@ -137,14 +137,8 @@ class WindowedPersonalDataManagerObserver
   }
 
   virtual ~WindowedPersonalDataManagerObserver() {
-    if (!infobar_service_)
-      return;
-
-    InfoBarDelegate* infobar = NULL;
-    if (infobar_service_->GetInfoBarCount() > 0 &&
-        (infobar = infobar_service_->GetInfoBarDelegateAt(0))) {
-      infobar_service_->RemoveInfoBar(infobar);
-    }
+    if (infobar_service_ && infobar_service_->infobar_count() > 0)
+      infobar_service_->RemoveInfoBar(infobar_service_->infobar_at(0));
   }
 
   void Wait() {
@@ -176,7 +170,7 @@ class WindowedPersonalDataManagerObserver
     // Accept in the infobar.
     infobar_service_ = InfoBarService::FromWebContents(
         browser_->tab_strip_model()->GetActiveWebContents());
-    InfoBarDelegate* infobar = infobar_service_->GetInfoBarDelegateAt(0);
+    InfoBarDelegate* infobar = infobar_service_->infobar_at(0);
 
     ConfirmInfoBarDelegate* confirm_infobar =
         infobar->AsConfirmInfoBarDelegate();
@@ -985,8 +979,8 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillAfterTranslate) {
       render_view_host(),
       ChromeViewHostMsg_TranslateLanguageDetermined(0, "ja", true));
   TranslateInfoBarDelegate* infobar = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents())->
-          GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+      browser()->tab_strip_model()->GetActiveWebContents())->infobar_at(0)->
+          AsTranslateInfoBarDelegate();
 
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
@@ -1220,7 +1214,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, InvalidCreditCardNumberIsNotAggregated) {
   ASSERT_EQ(0u,
             InfoBarService::FromWebContents(
                 browser()->tab_strip_model()->GetActiveWebContents())->
-                    GetInfoBarCount());
+                    infobar_count());
 }
 
 // Test whitespaces and separator chars are stripped for valid CC numbers.
@@ -1443,7 +1437,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, CCInfoNotStoredWhenAutocompleteOff) {
   ASSERT_EQ(0u,
             InfoBarService::FromWebContents(
                 browser()->tab_strip_model()->GetActiveWebContents())->
-                    GetInfoBarCount());
+                    infobar_count());
 }
 
 // http://crbug.com/150084

@@ -70,12 +70,11 @@ void InfoBarContainer::ChangeInfoBarService(InfoBarService* infobar_service) {
     registrar_.Add(this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REPLACED,
                    source);
 
-    for (size_t i = 0; i < infobar_service_->GetInfoBarCount(); ++i) {
+    for (size_t i = 0; i < infobar_service_->infobar_count(); ++i) {
       // As when we removed the infobars above, we prevent callbacks to
       // OnInfoBarAnimated() for each infobar.
       AddInfoBar(
-          infobar_service_->GetInfoBarDelegateAt(i)->CreateInfoBar(
-              infobar_service_),
+          infobar_service_->infobar_at(i)->CreateInfoBar(infobar_service_),
           i, false, NO_CALLBACK);
     }
   }

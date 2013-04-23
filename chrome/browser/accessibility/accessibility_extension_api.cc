@@ -213,10 +213,10 @@ bool AccessibilityGetAlertsForTabFunction::RunImpl() {
   ListValue* alerts_value = new ListValue;
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     // TODO(hashimoto): Make other kind of alerts available.  crosbug.com/24281
     ConfirmInfoBarDelegate* confirm_infobar_delegate =
-        infobar_service->GetInfoBarDelegateAt(i)->AsConfirmInfoBarDelegate();
+        infobar_service->infobar_at(i)->AsConfirmInfoBarDelegate();
     if (confirm_infobar_delegate) {
       DictionaryValue* alert_value = new DictionaryValue;
       const string16 message_text = confirm_infobar_delegate->GetMessageText();

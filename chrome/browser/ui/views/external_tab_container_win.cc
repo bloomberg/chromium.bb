@@ -264,7 +264,7 @@ bool ExternalTabContainerWin::Init(Profile* profile,
   if (!infobars_enabled) {
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(existing_contents);
-    infobar_service->SetInfoBarsEnabled(false);
+    infobar_service->set_infobars_enabled(false);
   }
 
   // Start loading initial URL

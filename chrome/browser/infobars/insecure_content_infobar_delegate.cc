@@ -24,9 +24,9 @@ void InsecureContentInfoBarDelegate::Create(InfoBarService* infobar_service,
 
   // Only supsersede an existing insecure content infobar if we are upgrading
   // from DISPLAY to RUN.
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
-    InsecureContentInfoBarDelegate* delegate = infobar_service->
-        GetInfoBarDelegateAt(i)->AsInsecureContentInfoBarDelegate();
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    InsecureContentInfoBarDelegate* delegate =
+        infobar_service->infobar_at(i)->AsInsecureContentInfoBarDelegate();
     if (delegate != NULL) {
       if ((type == RUN) && (delegate->type_ == DISPLAY))
         return;
@@ -91,7 +91,7 @@ bool InsecureContentInfoBarDelegate::Cancel() {
       (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
       NUM_EVENTS);
 
-  content::WebContents* web_contents = owner()->GetWebContents();
+  content::WebContents* web_contents = owner()->web_contents();
   if (web_contents) {
     int32 routing_id = web_contents->GetRoutingID();
     web_contents->Send((type_ == DISPLAY) ?
@@ -110,7 +110,7 @@ string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->GetWebContents()->OpenURL(OpenURLParams(
+  owner()->web_contents()->OpenURL(OpenURLParams(
       google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=1342714")),
       content::Referrer(),

@@ -474,9 +474,9 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest,
   // gets reloaded and noticed in the task manager.
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents());
-  ASSERT_EQ(1U, infobar_service->GetInfoBarCount());
-  ConfirmInfoBarDelegate* delegate = infobar_service->
-      GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+  ASSERT_EQ(1U, infobar_service->infobar_count());
+  ConfirmInfoBarDelegate* delegate =
+      infobar_service->infobar_at(0)->AsConfirmInfoBarDelegate();
   ASSERT_TRUE(delegate);
   delegate->Accept();
   TaskManagerBrowserTestUtil::WaitForWebResourceChange(3);

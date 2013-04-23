@@ -29,9 +29,9 @@ void RegisterProtocolHandlerInfoBarDelegate::Create(
       new RegisterProtocolHandlerInfoBarDelegate(infobar_service, registry,
                                                  handler));
 
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     RegisterProtocolHandlerInfoBarDelegate* existing_delegate =
-        infobar_service->GetInfoBarDelegateAt(i)->
+        infobar_service->infobar_at(i)->
             AsRegisterProtocolHandlerInfoBarDelegate();
     if ((existing_delegate != NULL) &&
         existing_delegate->handler_.IsEquivalent(handler)) {
@@ -123,7 +123,7 @@ bool RegisterProtocolHandlerInfoBarDelegate::LinkClicked(
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 

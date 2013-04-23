@@ -31,12 +31,12 @@ class ExtensionInstallUIBrowserTest : public ExtensionBrowserTest {
     ASSERT_TRUE(web_contents);
     InfoBarService* infobar_service =
         InfoBarService::FromWebContents(web_contents);
-    ASSERT_EQ(1U, infobar_service->GetInfoBarCount());
-    ConfirmInfoBarDelegate* delegate = infobar_service->
-        GetInfoBarDelegateAt(0)->AsConfirmInfoBarDelegate();
+    ASSERT_EQ(1U, infobar_service->infobar_count());
+    ConfirmInfoBarDelegate* delegate =
+        infobar_service->infobar_at(0)->AsConfirmInfoBarDelegate();
     ASSERT_TRUE(delegate);
     delegate->Cancel();
-    ASSERT_EQ(0U, infobar_service->GetInfoBarCount());
+    ASSERT_EQ(0U, infobar_service->infobar_count());
   }
 
   // Install the given theme from the data dir and verify expected name.

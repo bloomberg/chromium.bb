@@ -48,7 +48,7 @@ bool GoogleURLTrackerInfoBarDelegate::LinkClicked(
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 
@@ -73,7 +73,7 @@ void GoogleURLTrackerInfoBarDelegate::Close(bool redo_search) {
     replacements.SetHost(host.data(), url_parse::Component(0, host.length()));
     GURL new_search_url(search_url_.ReplaceComponents(replacements));
     if (new_search_url.is_valid()) {
-      owner()->GetWebContents()->OpenURL(content::OpenURLParams(
+      owner()->web_contents()->OpenURL(content::OpenURLParams(
           new_search_url, content::Referrer(), CURRENT_TAB,
           content::PAGE_TRANSITION_GENERATED, false));
     }

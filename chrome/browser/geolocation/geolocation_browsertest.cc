@@ -583,10 +583,10 @@ IN_PROC_BROWSER_TEST_F(GeolocationBrowserTest,
 
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
       current_browser_->tab_strip_model()->GetActiveWebContents());
-  size_t num_infobars_before_cancel = infobar_service->GetInfoBarCount();
+  size_t num_infobars_before_cancel = infobar_service->infobar_count();
   // Change the iframe, and ensure the infobar is gone.
   IFrameLoader change_iframe_1(current_browser_, 1, current_url_);
-  size_t num_infobars_after_cancel = infobar_service->GetInfoBarCount();
+  size_t num_infobars_after_cancel = infobar_service->infobar_count();
   EXPECT_EQ(num_infobars_before_cancel, num_infobars_after_cancel + 1);
 }
 

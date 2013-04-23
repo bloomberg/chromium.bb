@@ -49,7 +49,7 @@ bool AlternateNavInfoBarDelegate::LinkClicked(
       // the future.
       content::PAGE_TRANSITION_TYPED,
       false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
 
   // We should always close, even if the navigation did not occur within this
   // WebContents.

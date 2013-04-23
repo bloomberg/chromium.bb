@@ -99,7 +99,7 @@ InfoBarDelegate::InfoBarDelegate(InfoBarService* infobar_service)
 }
 
 void InfoBarDelegate::StoreActiveEntryUniqueID() {
-  content::WebContents* web_contents = owner_->GetWebContents();
+  content::WebContents* web_contents = owner_->web_contents();
   DCHECK(web_contents);
   NavigationEntry* active_entry =
       web_contents->GetController().GetActiveEntry();

@@ -94,7 +94,7 @@ string16 AppMetroInfoBarDelegateWin::GetButtonLabel(
 
 bool AppMetroInfoBarDelegateWin::Accept() {
   PrefService* prefs = g_browser_process->local_state();
-  content::WebContents* web_contents = owner()->GetWebContents();
+  content::WebContents* web_contents = owner()->web_contents();
   if (mode_ == SHOW_APP_LIST) {
     prefs->SetBoolean(prefs::kRestartWithAppList, true);
   } else {
@@ -109,7 +109,7 @@ bool AppMetroInfoBarDelegateWin::Accept() {
 }
 
 bool AppMetroInfoBarDelegateWin::Cancel() {
-  owner()->GetWebContents()->Close();
+  owner()->web_contents()->Close();
   return false;
 }
 
@@ -124,7 +124,7 @@ bool AppMetroInfoBarDelegateWin::LinkClicked(
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 

@@ -5,7 +5,13 @@
 #ifndef CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_
 #define CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_
 
+#include <vector>
+
 #include "base/memory/scoped_ptr.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
 class WebContents;
@@ -15,19 +21,12 @@ class InfoBarDelegate;
 
 // Provides access to creating, removing and enumerating info bars
 // attached to a tab.
-class InfoBarService {
+class InfoBarService : public content::WebContentsObserver,
+                       public content::NotificationObserver,
+                       public content::WebContentsUserData<InfoBarService> {
  public:
-  // Passthrough functions to the implementing subclass.  The subclass .cc file
-  // should define these.
-  static void CreateForWebContents(content::WebContents* web_contents);
-  static InfoBarService* FromWebContents(content::WebContents* web_contents);
-  static const InfoBarService*
-      FromWebContents(const content::WebContents* web_contents);
-
-  virtual ~InfoBarService();
-
   // Changes whether infobars are enabled.  The default is true.
-  virtual void SetInfoBarsEnabled(bool enabled) = 0;
+  void set_infobars_enabled(bool enabled) { infobars_enabled_ = enabled; }
 
   // Adds an InfoBar for the specified |delegate|.
   //
@@ -36,14 +35,14 @@ class InfoBarService {
   // |delegate| is closed immediately without being added.
   //
   // Returns the delegate if it was successfully added.
-  virtual InfoBarDelegate* AddInfoBar(scoped_ptr<InfoBarDelegate> delegate) = 0;
+  InfoBarDelegate* AddInfoBar(scoped_ptr<InfoBarDelegate> delegate);
 
   // Removes the InfoBar for the specified |delegate|.
   //
   // If infobars are disabled for this tab, this will do nothing, on the
   // assumption that the matching AddInfoBar() call will have already closed the
   // delegate (see above).
-  virtual void RemoveInfoBar(InfoBarDelegate* delegate) = 0;
+  void RemoveInfoBar(InfoBarDelegate* delegate);
 
   // Replaces one infobar with another, without any animation in between.
   //
@@ -53,21 +52,54 @@ class InfoBarService {
   // Returns the new delegate if it was successfully added.
   //
   // NOTE: This does not perform any EqualsDelegate() checks like AddInfoBar().
-  virtual InfoBarDelegate* ReplaceInfoBar(
-      InfoBarDelegate* old_delegate,
-      scoped_ptr<InfoBarDelegate> new_delegate) = 0;
+  InfoBarDelegate* ReplaceInfoBar(InfoBarDelegate* old_delegate,
+                                  scoped_ptr<InfoBarDelegate> new_delegate);
 
   // Returns the number of infobars for this tab.
-  virtual size_t GetInfoBarCount() const = 0;
+  size_t infobar_count() const { return infobars_.size(); }
 
   // Returns the infobar delegate at the given |index|.  The InfoBarService
   // retains ownership.
   //
   // Warning: Does not sanity check |index|.
-  virtual InfoBarDelegate* GetInfoBarDelegateAt(size_t index) = 0;
+  InfoBarDelegate* infobar_at(size_t index) { return infobars_[index]; }
 
   // Retrieve the WebContents for the tab this service is associated with.
-  virtual content::WebContents* GetWebContents() = 0;
+  content::WebContents* web_contents() {
+    return content::WebContentsObserver::web_contents();
+  }
+
+ private:
+  friend class content::WebContentsUserData<InfoBarService>;
+
+  typedef std::vector<InfoBarDelegate*> InfoBars;
+
+  explicit InfoBarService(content::WebContents* web_contents);
+  virtual ~InfoBarService();
+
+  // content::WebContentsObserver:
+  virtual void RenderViewGone(base::TerminationStatus status) OVERRIDE;
+  virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
+
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  void RemoveInfoBarInternal(InfoBarDelegate* delegate, bool animate);
+  void RemoveAllInfoBars(bool animate);
+
+  // Message handlers.
+  void OnDidBlockDisplayingInsecureContent();
+  void OnDidBlockRunningInsecureContent();
+
+  // Delegates for InfoBars associated with this InfoBarService.
+  InfoBars infobars_;
+  bool infobars_enabled_;
+
+  content::NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(InfoBarService);
 };
 
 #endif  // CHROME_BROWSER_INFOBARS_INFOBAR_SERVICE_H_

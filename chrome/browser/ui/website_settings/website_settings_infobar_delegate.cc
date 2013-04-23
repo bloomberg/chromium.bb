@@ -48,6 +48,6 @@ string16 WebsiteSettingsInfobarDelegate::GetButtonLabel(
 }
 
 bool WebsiteSettingsInfobarDelegate::Accept() {
-  owner()->GetWebContents()->GetController().Reload(true);
+  owner()->web_contents()->GetController().Reload(true);
   return true;
 }

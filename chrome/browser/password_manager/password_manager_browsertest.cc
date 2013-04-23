@@ -52,7 +52,7 @@ class NavigationObserver : public content::NotificationObserver,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE {
     // Accept in the infobar.
-    InfoBarDelegate* infobar = infobar_service_->GetInfoBarDelegateAt(0);
+    InfoBarDelegate* infobar = infobar_service_->infobar_at(0);
     ConfirmInfoBarDelegate* confirm_infobar =
         infobar->AsConfirmInfoBarDelegate();
     confirm_infobar->Accept();

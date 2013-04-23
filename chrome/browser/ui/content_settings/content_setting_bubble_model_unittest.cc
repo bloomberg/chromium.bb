@@ -230,8 +230,7 @@ TEST_F(ContentSettingBubbleModelTest, BlockedMediastream) {
   // |infobar_service|.
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents());
-  scoped_ptr<InfoBarDelegate> delegate(
-      infobar_service->GetInfoBarDelegateAt(0));
+  scoped_ptr<InfoBarDelegate> delegate(infobar_service->infobar_at(0));
   infobar_service->RemoveInfoBar(delegate.get());
 }
 

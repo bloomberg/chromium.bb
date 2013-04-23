@@ -108,8 +108,8 @@ string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 }
 
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->GetWebContents()->GetDelegate()->OpenURLFromTab(
-      owner()->GetWebContents(),
+  owner()->web_contents()->GetDelegate()->OpenURLFromTab(
+      owner()->web_contents(),
       content::OpenURLParams(
           GURL(autofill::kHelpURL),
           content::Referrer(),

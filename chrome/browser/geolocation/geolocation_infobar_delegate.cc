@@ -49,7 +49,7 @@ GeolocationInfoBarDelegate::GeolocationInfoBarDelegate(
       requesting_frame_(requesting_frame),
       display_languages_(display_languages) {
   const content::NavigationEntry* committed_entry = infobar_service->
-      GetWebContents()->GetController().GetLastCommittedEntry();
+      web_contents()->GetController().GetLastCommittedEntry();
    contents_unique_id_ = committed_entry ? committed_entry->GetUniqueID() : 0;
 }
 
@@ -87,7 +87,7 @@ string16 GeolocationInfoBarDelegate::GetButtonLabel(
 void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                                bool allowed) {
   controller_->OnPermissionSet(id_, requesting_frame_,
-                               owner()->GetWebContents()->GetURL(),
+                               owner()->web_contents()->GetURL(),
                                update_content_setting, allowed);
 }
 
@@ -119,6 +119,6 @@ bool GeolocationInfoBarDelegate::LinkClicked(
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;  // Do not dismiss the info bar.
 }

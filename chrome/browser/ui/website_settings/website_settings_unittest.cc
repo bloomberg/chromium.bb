@@ -368,9 +368,9 @@ TEST_F(WebsiteSettingsTest, NoInfoBar) {
   SetDefaultUIExpectations(mock_ui());
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
-  EXPECT_EQ(0u, infobar_service()->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
   website_settings()->OnUIClosing();
-  EXPECT_EQ(0u, infobar_service()->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
 }
 
 TEST_F(WebsiteSettingsTest, ShowInfoBar) {
@@ -390,16 +390,15 @@ TEST_F(WebsiteSettingsTest, ShowInfoBar) {
 
   EXPECT_CALL(*mock_ui(), SetSelectedTab(
       WebsiteSettingsUI::TAB_ID_PERMISSIONS));
-  EXPECT_EQ(0u, infobar_service()->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service()->infobar_count());
   website_settings()->OnSitePermissionChanged(
       CONTENT_SETTINGS_TYPE_GEOLOCATION, CONTENT_SETTING_ALLOW);
   website_settings()->OnUIClosing();
-  EXPECT_EQ(1u, infobar_service()->GetInfoBarCount());
+  EXPECT_EQ(1u, infobar_service()->infobar_count());
 
   // Removing an |InfoBarDelegate| from the |InfoBarService| does not delete
   // it. Hence the |delegate| must be cleaned up after it was removed from the
   // |infobar_service|.
-  scoped_ptr<InfoBarDelegate> delegate(
-      infobar_service()->GetInfoBarDelegateAt(0));
+  scoped_ptr<InfoBarDelegate> delegate(infobar_service()->infobar_at(0));
   infobar_service()->RemoveInfoBar(delegate.get());
 }

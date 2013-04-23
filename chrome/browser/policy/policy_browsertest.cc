@@ -1102,15 +1102,14 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   ASSERT_TRUE(contents);
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
   ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
 
   base::FilePath path(FILE_PATH_LITERAL("plugin/quicktime.html"));
   GURL url(URLRequestMockHTTPJob::GetMockUrl(path));
   ui_test_utils::NavigateToURL(browser(), url);
   // This should have triggered the dangerous plugin infobar.
-  ASSERT_EQ(1u, infobar_service->GetInfoBarCount());
-  InfoBarDelegate* infobar_delegate =
-      infobar_service->GetInfoBarDelegateAt(0);
+  ASSERT_EQ(1u, infobar_service->infobar_count());
+  InfoBarDelegate* infobar_delegate = infobar_service->infobar_at(0);
   EXPECT_TRUE(infobar_delegate->AsConfirmInfoBarDelegate());
   // And the plugin isn't running.
   EXPECT_EQ(0, CountPlugins());
@@ -1122,7 +1121,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, AlwaysAuthorizePlugins) {
   UpdateProviderPolicy(policies);
   // Reloading the page shouldn't trigger the infobar this time.
   ui_test_utils::NavigateToURL(browser(), url);
-  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
   // And the plugin started automatically.
   EXPECT_EQ(1, CountPlugins());
 }
@@ -1518,7 +1517,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
   ASSERT_TRUE(contents);
   InfoBarService* infobar_service = InfoBarService::FromWebContents(contents);
   ASSERT_TRUE(infobar_service);
-  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
 
   // Force enable the translate feature.
   PolicyMap policies;
@@ -1538,9 +1537,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
   ui_test_utils::NavigateToURL(browser(), url);
   language_observer1.Wait();
   // Verify that the translate infobar showed up.
-  ASSERT_EQ(1u, infobar_service->GetInfoBarCount());
-  InfoBarDelegate* infobar_delegate =
-      infobar_service->GetInfoBarDelegateAt(0);
+  ASSERT_EQ(1u, infobar_service->infobar_count());
+  InfoBarDelegate* infobar_delegate = infobar_service->infobar_at(0);
   TranslateInfoBarDelegate* delegate =
       infobar_delegate->AsTranslateInfoBarDelegate();
   ASSERT_TRUE(delegate);
@@ -1550,7 +1548,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
 
   // Now force disable translate.
   infobar_service->RemoveInfoBar(infobar_delegate);
-  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
   policies.Set(key::kTranslateEnabled, POLICY_LEVEL_MANDATORY,
                POLICY_SCOPE_USER, base::Value::CreateBooleanValue(false));
   UpdateProviderPolicy(policies);
@@ -1560,7 +1558,7 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, MAYBE_TranslateEnabled) {
       content::NotificationService::AllSources());
   ui_test_utils::NavigateToURL(browser(), url);
   language_observer2.Wait();
-  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, URLBlacklist) {

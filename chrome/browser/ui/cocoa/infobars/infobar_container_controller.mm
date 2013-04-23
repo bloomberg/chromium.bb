@@ -144,9 +144,9 @@ class InfoBarNotificationObserver : public content::NotificationObserver {
   if (currentWebContents_) {
     InfoBarService* infobarService =
         InfoBarService::FromWebContents(currentWebContents_);
-    for (size_t i = 0; i < infobarService->GetInfoBarCount(); ++i) {
-      InfoBar* infobar = infobarService->
-          GetInfoBarDelegateAt(i)->CreateInfoBar(infobarService);
+    for (size_t i = 0; i < infobarService->infobar_count(); ++i) {
+      InfoBar* infobar =
+          infobarService->infobar_at(i)->CreateInfoBar(infobarService);
       [self addInfoBar:infobar animate:NO];
     }
 

@@ -33,8 +33,8 @@ OptionsMenuModel::OptionsMenuModel(
 
   // Populate the menu.
   // Incognito mode does not get any preferences related items.
-  if (!translate_delegate->owner()->GetWebContents()->
-      GetBrowserContext()->IsOffTheRecord()) {
+  if (!translate_delegate->owner()->web_contents()->GetBrowserContext()->
+      IsOffTheRecord()) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
             original_language, target_language));
@@ -119,7 +119,7 @@ void OptionsMenuModel::ExecuteCommand(int command_id, int event_flags) {
 
     case IDC_TRANSLATE_OPTIONS_ABOUT: {
       WebContents* web_contents =
-          translate_infobar_delegate_->owner()->GetWebContents();
+          translate_infobar_delegate_->owner()->web_contents();
       if (web_contents) {
         OpenURLParams params(
             GURL(chrome::kAboutGoogleTranslateURL), Referrer(),

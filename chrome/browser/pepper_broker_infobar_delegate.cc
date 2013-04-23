@@ -158,7 +158,7 @@ bool PepperBrokerInfoBarDelegate::LinkClicked(
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 

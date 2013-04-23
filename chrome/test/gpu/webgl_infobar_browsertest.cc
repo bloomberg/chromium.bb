@@ -87,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossRaisesInfobar) {
   EXPECT_EQ(1u,
             InfoBarService::FromWebContents(
                 browser()->tab_strip_model()->GetActiveWebContents())->
-                    GetInfoBarCount());
+                    infobar_count());
 }
 
 IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
@@ -118,13 +118,10 @@ IN_PROC_BROWSER_TEST_F(WebGLInfobarTest, ContextLossInfobarReload) {
         content::NotificationService::AllSources());
   SimulateGPUCrash(browser());
   infobar_added.Wait();
-  EXPECT_EQ(1u,
-            InfoBarService::FromWebContents(
-                browser()->tab_strip_model()->GetActiveWebContents())->
-                    GetInfoBarCount());
-  InfoBarDelegate* delegate = InfoBarService::FromWebContents(
-      browser()->tab_strip_model()->GetActiveWebContents())->
-          GetInfoBarDelegateAt(0);
+  InfoBarService* infobar_service = InfoBarService::FromWebContents(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  EXPECT_EQ(1u, infobar_service->infobar_count());
+  InfoBarDelegate* delegate = infobar_service->infobar_at(0);
   ASSERT_TRUE(delegate);
   ASSERT_TRUE(delegate->AsThreeDAPIInfoBarDelegate());
   delegate->AsConfirmInfoBarDelegate()->Cancel();

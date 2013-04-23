@@ -48,8 +48,8 @@ void ThemeInstalledInfoBarDelegate::Create(
 
   // First find any previous theme preview infobars.
   InfoBarDelegate* old_delegate = NULL;
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
-    InfoBarDelegate* delegate = infobar_service->GetInfoBarDelegateAt(i);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    InfoBarDelegate* delegate = infobar_service->infobar_at(i);
     ThemeInstalledInfoBarDelegate* theme_infobar =
         delegate->AsThemePreviewInfobarDelegate();
     if (theme_infobar) {

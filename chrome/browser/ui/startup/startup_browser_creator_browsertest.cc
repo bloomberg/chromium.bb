@@ -872,7 +872,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   content::WebContents* web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
   EXPECT_EQ(1U,
-            InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
+            InfoBarService::FromWebContents(web_contents)->infobar_count());
 
   // The profile which normally opens last open pages displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_last,
@@ -884,7 +884,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
   EXPECT_EQ(1U,
-            InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
+            InfoBarService::FromWebContents(web_contents)->infobar_count());
 
   // The profile which normally opens URLs displays the new tab page.
   ASSERT_EQ(1u, chrome::GetBrowserCount(profile_urls,
@@ -896,7 +896,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   web_contents = tab_strip->GetWebContentsAt(0);
   EXPECT_EQ(GURL(chrome::kChromeUINewTabURL), web_contents->GetURL());
   EXPECT_EQ(1U,
-            InfoBarService::FromWebContents(web_contents)->GetInfoBarCount());
+            InfoBarService::FromWebContents(web_contents)->infobar_count());
 }
 
 class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {

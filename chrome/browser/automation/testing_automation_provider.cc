@@ -2099,9 +2099,9 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
   // Each infobar may have different properties depending on the type.
   ListValue* infobars = new ListValue;
   InfoBarService* infobar_service = InfoBarService::FromWebContents(wc);
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
     DictionaryValue* infobar_item = new DictionaryValue;
-    InfoBarDelegate* infobar = infobar_service->GetInfoBarDelegateAt(i);
+    InfoBarDelegate* infobar = infobar_service->infobar_at(i);
     switch (infobar->GetInfoBarAutomationType()) {
       case InfoBarDelegate::CONFIRM_INFOBAR:
         infobar_item->SetString("type", "confirm_infobar");
@@ -2181,12 +2181,12 @@ void TestingAutomationProvider::PerformActionOnInfobar(
 
   InfoBarDelegate* infobar = NULL;
   size_t infobar_index = static_cast<size_t>(infobar_index_int);
-  if (infobar_index >= infobar_service->GetInfoBarCount()) {
+  if (infobar_index >= infobar_service->infobar_count()) {
     reply.SendError(base::StringPrintf("No such infobar at index %" PRIuS,
                                        infobar_index));
     return;
   }
-  infobar = infobar_service->GetInfoBarDelegateAt(infobar_index);
+  infobar = infobar_service->infobar_at(infobar_index);
 
   if ("dismiss" == action) {
     infobar->InfoBarDismissed();

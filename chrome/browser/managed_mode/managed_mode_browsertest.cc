@@ -8,7 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
-#include "chrome/browser/infobars/infobar_tab_helper.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
 #include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
@@ -131,9 +131,9 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
     InfoBarService* service = InfoBarService::FromWebContents(
         browser()->tab_strip_model()->GetActiveWebContents());
 
-    for (unsigned int i = 0; i < service->GetInfoBarCount(); ++i) {
+    for (size_t i = 0; i < service->infobar_count(); ++i) {
       ConfirmInfoBarDelegate* delegate =
-          service->GetInfoBarDelegateAt(i)->AsConfirmInfoBarDelegate();
+          service->infobar_at(i)->AsConfirmInfoBarDelegate();
       if (delegate->GetMessageText() == l10n_util::GetStringUTF16(message_id))
         return true;
     }

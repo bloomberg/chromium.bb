@@ -57,12 +57,12 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 
 void PluginInfoBarDelegate::LoadBlockedPlugins() {
-  content::WebContents* web_contents = owner()->GetWebContents();
+  content::WebContents* web_contents = owner()->web_contents();
   if (web_contents) {
     content::RenderViewHost* host = web_contents->GetRenderViewHost();
     ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
@@ -149,8 +149,8 @@ bool UnauthorizedPluginInfoBarDelegate::Accept() {
 bool UnauthorizedPluginInfoBarDelegate::Cancel() {
   content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  content_settings_->AddExceptionForURL(owner()->GetWebContents()->GetURL(),
-                                        owner()->GetWebContents()->GetURL(),
+  content_settings_->AddExceptionForURL(owner()->web_contents()->GetURL(),
+                                        owner()->web_contents()->GetURL(),
                                         CONTENT_SETTINGS_TYPE_PLUGINS,
                                         std::string(),
                                         CONTENT_SETTING_ALLOW);
@@ -252,7 +252,7 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
     return false;
   }
 
-  content::WebContents* web_contents = owner()->GetWebContents();
+  content::WebContents* web_contents = owner()->web_contents();
   // A call to any of |OpenDownloadURL()| or |StartInstalling()| will
   // result in deleting ourselves. Accordingly, we make sure to
   // not pass a reference to an object that can go away.
@@ -429,7 +429,7 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
       url, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 
@@ -524,7 +524,7 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
 
 bool PluginMetroModeInfoBarDelegate::Cancel() {
   DCHECK_EQ(DESKTOP_MODE_REQUIRED, mode_);
-  content::WebContents* web_contents = owner()->GetWebContents();
+  content::WebContents* web_contents = owner()->web_contents();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   HostContentSettingsMap* content_settings =
@@ -552,7 +552,7 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
       Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
   return false;
 }
 #endif  // defined(OS_WIN)

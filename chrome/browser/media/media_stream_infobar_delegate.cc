@@ -38,9 +38,9 @@ bool MediaStreamInfoBarDelegate::Create(
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   InfoBarDelegate* old_infobar = NULL;
-  for (size_t i = 0; i < infobar_service->GetInfoBarCount(); ++i) {
-    old_infobar = infobar_service->GetInfoBarDelegateAt(i)->
-        AsMediaStreamInfoBarDelegate();
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    old_infobar =
+        infobar_service->infobar_at(i)->AsMediaStreamInfoBarDelegate();
     if (old_infobar)
       break;
   }
@@ -114,7 +114,7 @@ bool MediaStreamInfoBarDelegate::LinkClicked(
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->GetWebContents()->OpenURL(params);
+  owner()->web_contents()->OpenURL(params);
 
   return false;  // Do not dismiss the info bar.
 }

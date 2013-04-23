@@ -65,7 +65,7 @@ void InfoBarGtk::InitWidgets() {
   DCHECK(owner());
   DCHECK(!theme_service_);
   theme_service_ = GtkThemeService::GetFrom(Profile::FromBrowserContext(
-      owner()->GetWebContents()->GetBrowserContext()));
+      owner()->web_contents()->GetBrowserContext()));
 
   // Create |hbox_| and pad the sides.
   hbox_ = gtk_hbox_new(FALSE, kElementPadding);

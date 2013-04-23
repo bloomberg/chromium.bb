@@ -2681,17 +2681,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
   InfoBarService* infobar_service = InfoBarService::FromWebContents(
        browser()->tab_strip_model()->GetActiveWebContents());
   // Verify that there is only one infobar.
-  EXPECT_EQ(1u, infobar_service->GetInfoBarCount());
+  ASSERT_EQ(1u, infobar_service->infobar_count());
 
   // Get the infobar at index 0.
-  int infobar_index = 0;
-  InfoBarDelegate* infobar =
-      infobar_service->GetInfoBarDelegateAt(infobar_index);
-  EXPECT_TRUE(infobar != NULL);
+  InfoBarDelegate* infobar = infobar_service->infobar_at(0);
+  ASSERT_TRUE(infobar != NULL);
 
-  ConfirmInfoBarDelegate* confirm_infobar =
-      infobar->AsConfirmInfoBarDelegate();
-  EXPECT_TRUE(confirm_infobar != NULL);
+  ConfirmInfoBarDelegate* confirm_infobar = infobar->AsConfirmInfoBarDelegate();
+  ASSERT_TRUE(confirm_infobar != NULL);
 
   // Verify multi download warning infobar message.
   EXPECT_EQ(confirm_infobar->GetMessageText(),
@@ -2701,7 +2698,7 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, TestMultipleDownloadsInfobar) {
   if (confirm_infobar->Accept())
     infobar_service->RemoveInfoBar(infobar);
   // Verify that there are no more infobars.
-  EXPECT_EQ(0u, infobar_service->GetInfoBarCount());
+  EXPECT_EQ(0u, infobar_service->infobar_count());
 
   // Waits for the download to complete.
   downloads_observer->WaitForFinished();
