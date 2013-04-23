@@ -9,3 +9,6 @@ per-file chrome_browser_field_trials*=asvitkine@chromium.org
 per-file chrome_browser_field_trials*=stevet@chromium.org
 
 per-file enumerate_modules_model*=finnur@chromium.org
+
+per-file shell_integration_win*=gab@chromium.org
+per-file shell_integration_win*=grt@chromium.org
