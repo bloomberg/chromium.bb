@@ -48,6 +48,10 @@ base::MessageLoopProxy* PpapiGlobals::GetMainThreadMessageLoop() {
   return main_loop_proxy_.get();
 }
 
+void PpapiGlobals::ResetMainThreadMessageLoopForTesting() {
+  main_loop_proxy_ = base::MessageLoopProxy::current();
+}
+
 bool PpapiGlobals::IsHostGlobals() const {
   return false;
 }

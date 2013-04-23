@@ -7,6 +7,7 @@
 #include "base/message_loop.h"
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/ppp_instance.h"
+#include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/ppapi_permissions.h"
 #include "webkit/plugins/ppapi/gfx_conversion.h"
 #include "webkit/plugins/ppapi/mock_plugin_delegate.h"
@@ -81,6 +82,7 @@ void PpapiUnittest::SetUp() {
   // Initialize the mock module.
   module_ = new PluginModule("Mock plugin", base::FilePath(), this,
                              ::ppapi::PpapiPermissions());
+  ::ppapi::PpapiGlobals::Get()->ResetMainThreadMessageLoopForTesting();
   PluginModule::EntryPoints entry_points;
   entry_points.get_interface = &MockGetInterface;
   entry_points.initialize_module = &MockInitializeModule;

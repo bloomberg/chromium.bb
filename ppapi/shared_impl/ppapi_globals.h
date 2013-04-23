@@ -110,6 +110,11 @@ class PPAPI_SHARED_EXPORT PpapiGlobals {
   // constructor, so PpapiGlobals must be created on the main thread.
   base::MessageLoopProxy* GetMainThreadMessageLoop();
 
+  // In tests, the PpapiGlobals object persists across tests but the MLP pointer
+  // it hangs on will go stale and the next PPAPI test will crash because of
+  // thread checks. This resets the pointer to be the current MLP object.
+  void ResetMainThreadMessageLoopForTesting();
+
   // Return the MessageLoopShared of the current thread, if any. This will
   // always return NULL on the host side, where PPB_MessageLoop is not
   // supported.
