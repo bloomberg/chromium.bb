@@ -14,6 +14,7 @@
 #include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/i18n/rtl.h"
+#include "base/i18n/string_compare.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/path_service.h"
 #include "base/string_number_conversions.h"
@@ -777,21 +778,6 @@ string16 GetStringFUTF16Int(int message_id, int64 a) {
   return GetStringFUTF16(message_id, UTF8ToUTF16(base::Int64ToString(a)));
 }
 
-// Compares the character data stored in two different string16 strings by
-// specified Collator instance.
-UCollationResult CompareString16WithCollator(const icu::Collator* collator,
-                                             const string16& lhs,
-                                             const string16& rhs) {
-  DCHECK(collator);
-  UErrorCode error = U_ZERO_ERROR;
-  UCollationResult result = collator->compare(
-      static_cast<const UChar*>(lhs.c_str()), static_cast<int>(lhs.length()),
-      static_cast<const UChar*>(rhs.c_str()), static_cast<int>(rhs.length()),
-      error);
-  DCHECK(U_SUCCESS(error));
-  return result;
-}
-
 // Specialization of operator() method for string16 version.
 template <>
 bool StringComparator<string16>::operator()(const string16& lhs,
@@ -800,7 +786,8 @@ bool StringComparator<string16>::operator()(const string16& lhs,
   // string compare.
   if (!collator_)
     return lhs < rhs;
-  return CompareString16WithCollator(collator_, lhs, rhs) == UCOL_LESS;
+  return base::i18n::CompareString16WithCollator(collator_, lhs, rhs) ==
+      UCOL_LESS;
 };
 
 void SortStrings16(const std::string& locale,

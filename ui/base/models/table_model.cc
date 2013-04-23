@@ -4,9 +4,9 @@
 
 #include "ui/base/models/table_model.h"
 
+#include "base/i18n/string_compare.h"
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace ui {
@@ -76,7 +76,7 @@ int TableModel::CompareValues(int row1, int row2, int column_id) {
   icu::Collator* collator = GetCollator();
 
   if (collator)
-    return l10n_util::CompareString16WithCollator(collator, value1, value2);
+    return base::i18n::CompareString16WithCollator(collator, value1, value2);
 
   NOTREACHED();
   return 0;

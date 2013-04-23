@@ -9,9 +9,11 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/i18n/string_compare.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_expanded_state_tracker.h"
@@ -30,7 +32,6 @@
 #include "content/public/browser/notification_source.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_collator.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_util.h"
 
@@ -166,7 +167,7 @@ class SortComparator : public std::binary_function<const BookmarkNode*,
       // Types are the same, compare the names.
       if (!collator_)
         return n1->GetTitle() < n2->GetTitle();
-      return l10n_util::CompareString16WithCollator(
+      return base::i18n::CompareString16WithCollator(
           collator_, n1->GetTitle(), n2->GetTitle()) == UCOL_LESS;
     }
     // Types differ, sort such that folders come first.

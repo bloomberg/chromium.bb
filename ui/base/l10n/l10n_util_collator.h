@@ -10,18 +10,12 @@
 #include <string>
 #include <vector>
 
+#include "base/i18n/string_compare.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/utf_string_conversions.h"
 #include "third_party/icu/public/i18n/unicode/coll.h"
 #include "ui/base/ui_export.h"
 
 namespace l10n_util {
-
-// Compares the two strings using the specified collator.
-UI_EXPORT UCollationResult CompareString16WithCollator(
-    const icu::Collator* collator,
-    const string16& lhs,
-    const string16& rhs);
 
 // Used by SortStringsUsingMethod. Invokes a method on the objects passed to
 // operator (), comparing the string results using a collator.
@@ -37,8 +31,8 @@ class StringMethodComparatorWithCollator
 
   // Returns true if lhs preceeds rhs.
   bool operator() (T* lhs_t, T* rhs_t) {
-    return CompareString16WithCollator(collator_, (lhs_t->*method_)(),
-                                       (rhs_t->*method_)()) == UCOL_LESS;
+    return base::i18n::CompareString16WithCollator(collator_,
+        (lhs_t->*method_)(), (rhs_t->*method_)()) == UCOL_LESS;
   }
 
  private:

@@ -322,6 +322,8 @@
         'i18n/number_formatting.h',
         'i18n/rtl.cc',
         'i18n/rtl.h',
+        'i18n/string_compare.cc',
+        'i18n/string_compare.h',
         'i18n/string_search.cc',
         'i18n/string_search.h',
         'i18n/time_formatting.cc',

@@ -8,6 +8,7 @@
 
 #include "base/chromeos/chromeos_version.h"
 #include "base/command_line.h"
+#include "base/i18n/string_compare.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list_threadsafe.h"
 #include "base/string_util.h"
@@ -343,7 +344,7 @@ class CertLibraryImpl
       string16 rhs_name = GetDisplayString(rhs.get(), false);
       if (collator_ == NULL)
         return lhs_name < rhs_name;
-      return l10n_util::CompareString16WithCollator(
+      return base::i18n::CompareString16WithCollator(
           collator_, lhs_name, rhs_name) == UCOL_LESS;
     }
    private:

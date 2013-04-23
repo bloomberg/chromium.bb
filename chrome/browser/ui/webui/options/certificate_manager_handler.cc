@@ -10,10 +10,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/file_util.h"  // for FileAccessProvider
+#include "base/i18n/string_compare.h"
 #include "base/id_map.h"
 #include "base/memory/scoped_vector.h"
 #include "base/safe_strerror_posix.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/certificate_viewer.h"
@@ -28,7 +30,6 @@
 #include "net/base/net_errors.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/l10n_util_collator.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/cryptohome_client.h"
@@ -87,7 +88,7 @@ struct DictionaryIdComparator {
     b_dict->GetString(kNameId, &b_str);
     if (collator_ == NULL)
       return a_str < b_str;
-    return l10n_util::CompareString16WithCollator(
+    return base::i18n::CompareString16WithCollator(
         collator_, a_str, b_str) == UCOL_LESS;
   }
 
