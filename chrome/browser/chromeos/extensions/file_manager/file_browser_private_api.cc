@@ -2546,57 +2546,41 @@ PinDriveFileFunction::~PinDriveFileFunction() {
 
 bool PinDriveFileFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (args_->GetSize() != 2 || !args_->GetBoolean(1, &set_pin_))
+  std::string url;
+  bool set_pin = false;
+  if (args_->GetSize() != 2 ||
+      !args_->GetString(0, &url) ||
+      !args_->GetBoolean(1, &set_pin))
     return false;
-
-  PrepareResults();
-
-  return true;
-}
-
-void PinDriveFileFunction::DoOperation(
-    const base::FilePath& file_path,
-    base::DictionaryValue* properties,
-    scoped_ptr<drive::DriveEntryProto> entry_proto) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  // |system_service| is NULL if Drive is disabled.
-  if (!system_service) {
-    OnOperationComplete(file_path,
-                        properties,
-                        drive::DRIVE_FILE_ERROR_FAILED,
-                        entry_proto.Pass());
-    return;
+  drive::DriveFileSystemInterface* file_system =
+      system_service ? system_service->file_system() : NULL;
+  if (!file_system)  // |file_system| is NULL if Drive is disabled.
+    return false;
+
+  base::FilePath drive_path =
+      drive::util::ExtractDrivePath(GetLocalPathFromURL(GURL(url)));
+  if (set_pin) {
+    file_system->Pin(drive_path,
+                     base::Bind(&PinDriveFileFunction::OnPinStateSet, this));
+  } else {
+    file_system->Unpin(drive_path,
+                       base::Bind(&PinDriveFileFunction::OnPinStateSet, this));
   }
-
-  // This is subtle but we should take references of resource_id and md5
-  // before |file_info| is passed to |callback| by base::Passed(). Otherwise,
-  // file_info->whatever() crashes.
-  const std::string& resource_id = entry_proto->resource_id();
-  const std::string& md5 = entry_proto->file_specific_info().file_md5();
-  const drive::FileOperationCallback callback =
-      base::Bind(&PinDriveFileFunction::OnPinStateSet,
-                 this,
-                 file_path,
-                 properties,
-                 base::Passed(&entry_proto));
-
-  if (set_pin_)
-    system_service->cache()->Pin(resource_id, md5, callback);
-  else
-    system_service->cache()->Unpin(resource_id, md5, callback);
+  return true;
 }
 
-void PinDriveFileFunction::OnPinStateSet(
-    const base::FilePath& path,
-    base::DictionaryValue* properties,
-    scoped_ptr<drive::DriveEntryProto> entry_proto,
-    drive::DriveFileError error) {
+void PinDriveFileFunction::OnPinStateSet(drive::DriveFileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  OnOperationComplete(path, properties, error, entry_proto.Pass());
+  if (error == drive::DRIVE_FILE_OK) {
+    SendResponse(true);
+  } else {
+    error_ = drive::DriveFileErrorToString(error);
+    SendResponse(false);
+  }
 }
 
 GetFileLocationsFunction::GetFileLocationsFunction() {

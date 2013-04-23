@@ -686,26 +686,21 @@
         "description": "Pins/unpins a Drive file in the cache",
         "parameters": [
           {
-            "name": "fileUrls",
-            "type": "array",
-            "description": "Array of file URLs to pin/unpin."
+            "name": "fileUrl",
+            "type": "string",
+            "description": "URL of a file to pin/unpin."
           },
           {
             "name": "pin",
             "type": "boolean",
-            "description": "Pass true to pin the files listed."
+            "description": "Pass true to pin the file."
           },
           {
             "name": "callback",
             "type": "function",
-            "parameters": [
-              {
-                "name" : "fileProperties",
-                "type": "array",
-                "items": {"$ref": "DriveFileProperties"},
-                "description": "An array of the pinned properties after pinning/unpinning the requested files, one entry for each file in fileUrls."
-              }
-            ]
+            "optional": true,
+            "description": "Completion callback. $ref:runtime.lastError will be set if there was an error.",
+            "parameters": []
           }
         ]
       },
@@ -878,7 +873,7 @@
             "name": "callback",
             "type": "function",
             "optional": true,
-            "description": "Completion callback. chrome.runtime.lastError will be set if there was an error.",
+            "description": "Completion callback. $ref:runtime.lastError will be set if there was an error.",
             "parameters": []
           }
         ]
@@ -925,7 +920,7 @@
             "name": "callback",
             "type": "function",
             "optional": true,
-            "description": "Completion callback. chrome.runtime.lastError will be set if there was an error.",
+            "description": "Completion callback. $ref:runtime.lastError will be set if there was an error.",
             "parameters": []
           }
         ]

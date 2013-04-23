@@ -521,11 +521,10 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
   void GetNextFileProperties();
   void CompleteGetFileProperties();
 
-  // Virtual function that can be overridden to do operations on each virtual
-  // file path and update its the properties.
-  virtual void DoOperation(const base::FilePath& file_path,
-                           base::DictionaryValue* properties,
-                           scoped_ptr<drive::DriveEntryProto> entry_proto);
+  // Does operations on each virtual file path and update its properties.
+  void DoOperation(const base::FilePath& file_path,
+                   base::DictionaryValue* properties,
+                   scoped_ptr<drive::DriveEntryProto> entry_proto);
 
   void OnOperationComplete(const base::FilePath& file_path,
                            base::DictionaryValue* properties,
@@ -553,13 +552,8 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
   scoped_ptr<base::ListValue> file_properties_;
 };
 
-// Pin/unpin multiple files in the cache, returning a list of file
-// properties with the updated cache state.  The returned array is the
-// same length as the input list of file URLs.  If a particular file
-// has an error, then return a dictionary with the key "error" set to
-// the error number (drive::DriveFileError) for that entry in the
-// returned list.
-class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
+// Implements the chrome.fileBrowserPrivate.pinDriveFile method.
+class PinDriveFileFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.pinDriveFile",
                              FILEBROWSERPRIVATE_PINDRIVEFILE)
@@ -573,20 +567,8 @@ class PinDriveFileFunction : public GetDriveFilePropertiesFunction {
   virtual bool RunImpl() OVERRIDE;
 
  private:
-  // Actually do the pinning/unpinning of each file.
-  virtual void DoOperation(
-      const base::FilePath& file_path,
-      base::DictionaryValue* properties,
-      scoped_ptr<drive::DriveEntryProto> entry_proto) OVERRIDE;
-
-  // Callback for SetPinState. Updates properties with error.
-  void OnPinStateSet(const base::FilePath& path,
-                     base::DictionaryValue* properties,
-                     scoped_ptr<drive::DriveEntryProto> entry_proto,
-                     drive::DriveFileError error);
-
-  // True for pin, false for unpin.
-  bool set_pin_;
+  // Callback for RunImpl().
+  void OnPinStateSet(drive::DriveFileError error);
 };
 
 // Get file locations for the given list of file URLs. Returns a list of

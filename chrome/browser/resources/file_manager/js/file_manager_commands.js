@@ -419,9 +419,8 @@ Commands.togglePinnedCommand = {
                util.bytesToString(filesystem.size)));
     };
 
-    var callback = function(props) {
-      var fileProps = props[0];
-      if (fileProps.errorCode && pin) {
+    var callback = function() {
+      if (chrome.runtime.lastError && pin) {
         fileManager.metadataCache_.get(entry, 'filesystem', showError);
       }
       // We don't have update events yet, so clear the cached data.
@@ -431,7 +430,7 @@ Commands.togglePinnedCommand = {
       });
     };
 
-    chrome.fileBrowserPrivate.pinDriveFile([entry.toURL()], pin, callback);
+    chrome.fileBrowserPrivate.pinDriveFile(entry.toURL(), pin, callback);
     event.command.checked = pin;
   },
   canExecute: function(event, fileManager) {
