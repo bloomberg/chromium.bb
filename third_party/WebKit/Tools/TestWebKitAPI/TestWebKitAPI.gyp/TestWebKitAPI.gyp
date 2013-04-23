@@ -34,7 +34,6 @@
         'source_dir': '../../../Source',
     },
     'includes': [
-        '../TestWebKitAPI.gypi',
         '../../../Source/WebKit/chromium/features.gypi',
     ],
     'targets': [
@@ -61,14 +60,8 @@
             'sources': [
                 # Reuse the same testing driver of Chromium's webkit_unit_tests.
                 '<(source_dir)/WebKit/chromium/tests/RunAllTests.cpp',
-                '<@(TestWebKitAPI_files)',
             ],
             'conditions': [
-                ['component!="shared_library"', {
-                    'sources': [
-                        '../Tests/WebCore/HeapGraphSerializerTest.cpp'
-                    ],
-                }],
                 ['component=="shared_library"', {
                     'sources': [
                         # To satisfy linking of WTF::currentTime() etc. in shared library configuration,

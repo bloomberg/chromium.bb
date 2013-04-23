@@ -51,7 +51,7 @@ static std::ostream& operator<<(std::ostream& os, const String& string)
 
 }
 
-namespace TestWebKitAPI {
+namespace {
 
 using namespace WebCore;
 

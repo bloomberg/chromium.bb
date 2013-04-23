@@ -3696,6 +3696,10 @@
             'platform/chromium/support/WrappedResourceRequest.h',
             'platform/chromium/support/WrappedResourceResponse.h',
         ],
+        'core_unittest_files': [
+            'tests/HeapGraphSerializerTest.cpp',
+            'tests/LayoutUnit.cpp',
+        ],
         'conditions': [
             ['OS=="win"', {
                 # Using native perl rather than cygwin perl cuts execution time
