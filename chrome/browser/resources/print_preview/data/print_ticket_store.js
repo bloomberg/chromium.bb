@@ -85,7 +85,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.color_ = new print_preview.ticket_items.Color(
-        this.capabilitiesHolder_, this.destinationStore_);
+        this.appState_, this.destinationStore_);
 
     /**
      * Copies ticket item.
@@ -190,6 +190,10 @@ cr.define('print_preview', function() {
 
   PrintTicketStore.prototype = {
     __proto__: cr.EventTarget.prototype,
+
+    get color() {
+      return this.color_;
+    },
 
     /** @return {boolean} Whether the document is modifiable. */
     get isDocumentModifiable() {
@@ -308,7 +312,11 @@ cr.define('print_preview', function() {
       // Initialize ticket with user's previous values.
       this.marginsType_.updateValue(this.appState_.marginsType);
       this.customMargins_.updateValue(this.appState_.customMargins);
-      this.color_.updateValue(this.appState_.isColorEnabled);
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_COLOR_ENABLED)) {
+        this.color_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_COLOR_ENABLED));
+      }
       this.duplex_.updateValue(this.appState_.isDuplexEnabled);
       this.headerFooter_.updateValue(this.appState_.isHeaderFooterEnabled);
       this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
@@ -377,31 +385,6 @@ cr.define('print_preview', function() {
       if (this.collate_.getValue() != isCollateEnabled) {
         this.collate_.updateValue(isCollateEnabled);
         this.appState_.persistIsCollateEnabled(isCollateEnabled);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /**
-     * @return {boolean} Whether the ticket store has color printing capability.
-     */
-    hasColorCapability: function() {
-      return this.color_.isCapabilityAvailable();
-    },
-
-    /** @return {boolean} Whether color printing is enabled. */
-    isColorEnabled: function() {
-      return this.color_.getValue();
-    },
-
-    /**
-     * Updates whether color printing is enabled. Dispatches a TICKET_CHANGE if
-     * color has changed.
-     * @param {boolean} isColorEnabled Whether the color printing is enabled.
-     */
-    updateColor: function(isColorEnabled) {
-      if (this.color_.getValue() != isColorEnabled) {
-        this.color_.updateValue(isColorEnabled);
-        this.appState_.persistIsColorEnabled(isColorEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },

@@ -585,10 +585,8 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsTrue', function() {
 
   checkSectionVisible($('color-settings'), true);
 
-  var colorOption = $('color-settings').getElementsByClassName(
-      'color-settings-color-option')[0];
-  var bwOption = $('color-settings').getElementsByClassName(
-      'color-settings-bw-option')[0];
+  var colorOption = $('color-settings').querySelector('.color-option');
+  var bwOption = $('color-settings').querySelector('.bw-option');
   expectTrue(colorOption.checked);
   expectFalse(bwOption.checked);
 });
@@ -621,10 +619,8 @@ TEST_F('PrintPreviewWebUITest', 'TestColorSettingsFalse', function() {
 
   checkSectionVisible($('color-settings'), false);
 
-  var colorOption = $('color-settings').getElementsByClassName(
-      'color-settings-color-option')[0];
-  var bwOption = $('color-settings').getElementsByClassName(
-      'color-settings-bw-option')[0];
+  var colorOption = $('color-settings').querySelector('.color-option');
+  var bwOption = $('color-settings').querySelector('.bw-option');
   expectFalse(colorOption.checked);
   expectTrue(bwOption.checked);
 });
@@ -724,7 +720,7 @@ TEST_F('PrintPreviewWebUITest', 'TestPrinterChangeUpdatesPreview', function() {
 
   var previewGenerator = mock(print_preview.PreviewGenerator);
   printPreview.previewArea_.previewGenerator_ = previewGenerator.proxy();
-  previewGenerator.expects(once()).requestPreview();
+  previewGenerator.expects(exactly(2)).requestPreview();
 
   var barDestination;
   var destinations = printPreview.destinationStore_.destinations;

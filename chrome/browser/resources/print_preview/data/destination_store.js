@@ -222,11 +222,10 @@ cr.define('print_preview', function() {
           this.appState_.selectedDestinationOrigin) {
         this.initialDestinationId_ = this.appState_.selectedDestinationId;
         this.initialDestinationOrigin_ =
-            this.appState_.selectedDestinationOrigin_;
+            this.appState_.selectedDestinationOrigin;
       } else {
         this.initialDestinationId_ = systemDefaultDestinationId;
-        this.initialDestinationOrigin_ =
-            print_preview.Destination.Origin.LOCAL;
+        this.initialDestinationOrigin_ = print_preview.Destination.Origin.LOCAL;
       }
       this.isInAutoSelectMode_ = true;
       if (this.initialDestinationId_ == null ||

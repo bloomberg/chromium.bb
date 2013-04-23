@@ -10,18 +10,55 @@ cr.define('print_preview.ticket_items', function() {
    * ticket item has a value which can be set by the user. Ticket items can also
    * be unavailable for modifying if the print destination doesn't support it or
    * if other ticket item constraints are not met.
+   * @param {print_preview.AppState=} appState Application state model to update
+   *     when ticket items update.
+   * @param {print_preview.AppState.Field=} field Field of the app state to
+   *     update when ticket item is updated.
    * @constructor
    */
-  function TicketItem() {
+  function TicketItem(appState, field) {
+    cr.EventTarget.call(this);
+
+    /**
+     * Application state model to update when ticket items update.
+     * @type {print_preview.AppState}
+     * @private
+     */
+    this.appState_ = appState || null;
+
+    /**
+     * Field of the app state to update when ticket item is updated.
+     * @type {print_preview.AppState.Field}
+     * @private
+     */
+    this.field_ = field || null;
+
     /**
      * Backing store of the print ticket item.
      * @type {Object}
      * @private
      */
     this.value_ = null;
+
+    /**
+     * Keeps track of event listeners for the ticket item.
+     * @type {!EventTracker}
+     * @private
+     */
+    this.tracker_ = new EventTracker();
+  };
+
+  /**
+   * Event types dispatched by this class.
+   * @enum {string}
+   */
+  TicketItem.EventType = {
+    CHANGE: 'print_preview.ticket_items.TicketItem.CHANGE'
   };
 
   TicketItem.prototype = {
+    __proto__: cr.EventTarget.prototype,
+
     /**
      * Determines whether a given value is valid for the ticket item.
      * @param {Object} value The value to check for validity.
@@ -64,9 +101,24 @@ cr.define('print_preview.ticket_items', function() {
       return this.wouldValueBeValid(this.value_);
     },
 
+    /**
+     * @param {Object} value Value to compare to the value of this ticket item.
+     * @return {boolean} Whether the given value is equal to the value of the
+     *     ticket item.
+     */
+    isValueEqual: function(value) {
+      return this.value_ == value;
+    },
+
     /** @param {!Object} Value to set as the value of the ticket item. */
     updateValue: function(value) {
-      this.value_ = value;
+      if (!this.isValueEqual(value)) {
+        this.value_ = value;
+        if (this.appState_) {
+          this.appState_.persistField(this.field_, value);
+        }
+        cr.dispatchSimpleEvent(this, TicketItem.EventType.CHANGE);
+      }
     },
 
     /**
@@ -85,6 +137,15 @@ cr.define('print_preview.ticket_items', function() {
      */
     getCapabilityNotAvailableValueInternal: function() {
       throw Error('Abstract method not overridden');
+    },
+
+    /**
+     * @return {!EventTracker} Event tracker to keep track of events from
+     *     dependencies.
+     * @protected
+     */
+    getTrackerInternal: function() {
+      return this.tracker_;
     }
   };
 

@@ -67,7 +67,7 @@ cr.define('print_preview', function() {
      * @type {boolean}
      * @private
      */
-    this.isColorEnabled_ = false;
+    this.colorValue_ = false;
 
     /**
      * Whether the document should be fitted to the page.
@@ -144,7 +144,8 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether a new preview was actually requested.
      */
     requestPreview: function() {
-      if (!this.printTicketStore_.isTicketValidForPreview()) {
+      if (!this.printTicketStore_.isTicketValidForPreview() ||
+          !this.destinationStore_.selectedDestination) {
         return false;
       }
       if (!this.hasPreviewChanged_()) {
@@ -156,7 +157,7 @@ cr.define('print_preview', function() {
       this.isLandscapeEnabled_ = this.printTicketStore_.isLandscapeEnabled();
       this.isHeaderFooterEnabled_ =
           this.printTicketStore_.isHeaderFooterEnabled();
-      this.isColorEnabled_ = this.printTicketStore_.isColorEnabled();
+      this.colorValue_ = this.printTicketStore_.color.getValue();
       this.isFitToPageEnabled_ = this.printTicketStore_.isFitToPageEnabled();
       this.pageRanges_ = this.printTicketStore_.getPageRanges();
       this.marginsType_ = this.printTicketStore_.getMarginsType();
@@ -257,7 +258,7 @@ cr.define('print_preview', function() {
       return this.inFlightRequestId_ == -1 ||
           ticketStore.isLandscapeEnabled() != this.isLandscapeEnabled_ ||
           ticketStore.isHeaderFooterEnabled() != this.isHeaderFooterEnabled_ ||
-          ticketStore.isColorEnabled() != this.isColorEnabled_ ||
+          !ticketStore.color.isValueEqual(this.colorValue_) ||
           ticketStore.isFitToPageEnabled() != this.isFitToPageEnabled_ ||
           this.pageRanges_ == null ||
           !areRangesEqual(ticketStore.getPageRanges(), this.pageRanges_) ||

@@ -275,9 +275,9 @@ cr.define('cloudprint', function() {
       if (pts.hasCollateCapability()) {
         cjt.print.collate = {collate: pts.isCollateEnabled()};
       }
-      if (pts.hasColorCapability()) {
-        var colorType =
-            pts.isColorEnabled() ? 'STANDARD_COLOR' : 'STANDARD_MONOCHROME';
+      if (pts.color.isCapabilityAvailable()) {
+        var colorType = pts.color.getValue() ?
+            'STANDARD_COLOR' : 'STANDARD_MONOCHROME';
         // Find option with this colorType to read its vendor_id.
         var selectedOptions = destination.capabilities.printer.color.option.
             filter(function(option) {

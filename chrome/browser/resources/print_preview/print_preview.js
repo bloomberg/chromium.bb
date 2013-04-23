@@ -113,7 +113,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.layoutSettings_ = new print_preview.LayoutSettings(
-          this.printTicketStore_);
+        this.printTicketStore_);
     this.addChild(this.layoutSettings_);
 
     /**
@@ -121,8 +121,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.ColorSettings}
      * @private
      */
-    this.colorSettings_ = new print_preview.ColorSettings(
-        this.printTicketStore_);
+    this.colorSettings_ =
+        new print_preview.ColorSettings(this.printTicketStore_.color);
     this.addChild(this.colorSettings_);
 
     /**

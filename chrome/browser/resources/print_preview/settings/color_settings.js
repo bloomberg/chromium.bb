@@ -8,121 +8,62 @@ cr.define('print_preview', function() {
   /**
    * Creates a ColorSettings object. This object encapsulates all settings and
    * logic related to color selection (color/bw).
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used for writing
-   *     to the print ticket.
+   * @param {!print_preview.ticket_item.Color} colorTicketItem Used for writing
+   *     and reading color value.
    * @constructor
    * @extends {print_preview.Component}
    */
-  function ColorSettings(printTicketStore) {
+  function ColorSettings(colorTicketItem) {
     print_preview.Component.call(this);
 
     /**
-     * Used for writing to the print ticket.
-     * @type {!print_preview.PrintTicketStore}
+     * Used for reading/writing the color value.
+     * @type {!print_preview.ticket_items.Color}
      * @private
      */
-    this.printTicketStore_ = printTicketStore;
-  };
-
-  /**
-   * CSS classes used by the color settings.
-   * @enum {string}
-   * @private
-   */
-  ColorSettings.Classes_ = {
-    BW_OPTION: 'color-settings-bw-option',
-    COLOR_OPTION: 'color-settings-color-option'
+    this.colorTicketItem_ = colorTicketItem;
   };
 
   ColorSettings.prototype = {
     __proto__: print_preview.Component.prototype,
 
     set isEnabled(isEnabled) {
-      this.colorRadioButton_.disabled = !isEnabled;
-      this.bwRadioButton_.disabled = !isEnabled;
+      this.getChildElement('.color-option').disabled = !isEnabled;
+      this.getChildElement('.bw-option').disabled = !isEnabled;
     },
 
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
-      this.addEventListeners_();
-    },
-
-    get colorRadioButton_() {
-      return this.getElement().getElementsByClassName(
-          ColorSettings.Classes_.COLOR_OPTION)[0];
-    },
-
-    get bwRadioButton_() {
-      return this.getElement().getElementsByClassName(
-          ColorSettings.Classes_.BW_OPTION)[0];
-    },
-
-    /**
-     * Adding listeners to all targets and UI controls.
-     * @private
-     */
-    addEventListeners_: function() {
       this.tracker.add(
-          this.colorRadioButton_,
+          this.getChildElement('.color-option'),
           'click',
-          this.updatePrintTicket_.bind(this, true));
+          this.colorTicketItem_.updateValue.bind(this.colorTicketItem_, true));
       this.tracker.add(
-          this.bwRadioButton_,
+          this.getChildElement('.bw-option'),
           'click',
-          this.updatePrintTicket_.bind(this, false));
+          this.colorTicketItem_.updateValue.bind(this.colorTicketItem_, false));
       this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.INITIALIZE,
-          this.onCapabilitiesChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
-          this.onCapabilitiesChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onCapabilitiesChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onTicketChange_.bind(this));
+          this.colorTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.updateState_.bind(this));
     },
 
     /**
-     * Updates print ticket with whether the document should be printed in
-     * color.
-     * @param {boolean} isColor Whether the document should be printed in color.
+     * Updates state of the widget.
      * @private
      */
-    updatePrintTicket_: function(isColor) {
-      this.printTicketStore_.updateColor(isColor);
-    },
-
-    /**
-     * Called when the ticket store's capabilities have changed. Shows or hides
-     * the color settings.
-     * @private
-     */
-    onCapabilitiesChange_: function() {
-      if (this.printTicketStore_.hasColorCapability()) {
+    updateState_: function() {
+      var isColorCapAvailable = this.colorTicketItem_.isCapabilityAvailable();
+      if (isColorCapAvailable) {
         fadeInOption(this.getElement());
-        var isColorEnabled = this.printTicketStore_.isColorEnabled();
-        this.colorRadioButton_.checked = isColorEnabled;
-        this.bwRadioButton_.checked = !isColorEnabled;
+        var isColorEnabled = this.colorTicketItem_.getValue();
+        this.getChildElement('.color-option').checked = isColorEnabled;
+        this.getChildElement('.bw-option').checked = !isColorEnabled;
       } else {
         fadeOutOption(this.getElement());
       }
-      this.getElement().setAttribute(
-          'aria-hidden', !this.printTicketStore_.hasColorCapability());
-    },
-
-    onTicketChange_: function() {
-      if (this.printTicketStore_.hasColorCapability()) {
-        var isColorEnabled = this.printTicketStore_.isColorEnabled();
-        this.colorRadioButton_.checked = isColorEnabled;
-        this.bwRadioButton_.checked = !isColorEnabled;
-      }
+      this.getElement().setAttribute('aria-hidden', !isColorCapAvailable);
     }
   };
 

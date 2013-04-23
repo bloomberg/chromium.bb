@@ -272,6 +272,11 @@ cr.define('print_preview', function() {
           print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
           this.onTicketChange_.bind(this));
 
+      this.tracker.add(
+          this.printTicketStore_.color,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
+
       if (this.checkPluginCompatibility_()) {
         this.previewGenerator_ = new print_preview.PreviewGenerator(
             this.destinationStore_, this.printTicketStore_, this.nativeLayer_);
@@ -430,7 +435,7 @@ cr.define('print_preview', function() {
       this.plugin_.onPluginSizeChanged('onPreviewPluginVisualStateChange()');
 
       this.plugin_.removePrintButton();
-      this.plugin_.grayscale(!this.printTicketStore_.isColorEnabled());
+      this.plugin_.grayscale(!this.printTicketStore_.color.getValue());
     },
 
     /**
@@ -490,7 +495,7 @@ cr.define('print_preview', function() {
       this.plugin_.goToPage('0');
       this.plugin_.resetPrintPreviewUrl(event.previewUrl);
       this.plugin_.reload();
-      this.plugin_.grayscale(!this.printTicketStore_.isColorEnabled());
+      this.plugin_.grayscale(!this.printTicketStore_.color.getValue());
       cr.dispatchSimpleEvent(
           this, PreviewArea.EventType.PREVIEW_GENERATION_IN_PROGRESS);
     },
