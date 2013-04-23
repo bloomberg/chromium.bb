@@ -108,8 +108,9 @@
     'source_dir': '<(java_in_dir)/src',
     'apk_install_record': '<(intermediate_dir)/apk_install.record.stamp',
     'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
+    'device_intermediate_dir': '/data/local/tmp/chromium/<(_target_name)/<(CONFIGURATION_NAME)',
     'symlink_script_host_path': '<(intermediate_dir)/create_symlinks.sh',
-    'symlink_script_device_path': '/data/local/tmp/chromium/<(_target_name)/create_symlinks.sh',
+    'symlink_script_device_path': '<(device_intermediate_dir)/create_symlinks.sh',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -203,7 +204,7 @@
           'variables': {
             'libraries_source_dir': '<(intermediate_dir)/lib.stripped/<(android_app_abi)',
             'apk_package_native_libs_dir': '<(intermediate_dir)/libs.managed',
-            'device_library_dir': '/data/local/tmp/chromium/lib.stripped/<(_target_name)',
+            'device_library_dir': '<(device_intermediate_dir)/lib.stripped',
           },
           'dependencies': [
             '<(DEPTH)/tools/android/md5sum/md5sum.gyp:md5sum',

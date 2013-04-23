@@ -41,7 +41,10 @@ def DoPush(options):
 
     record_path = '%s.%s.push.md5.stamp' % (host_path, serial_number)
     md5_check.CallAndRecordIfStale(
-        Push, record_path=record_path, input_paths=[host_path])
+        Push,
+        record_path=record_path,
+        input_paths=[host_path],
+        input_strings=[device_path])
 
 
 def main(argv):
