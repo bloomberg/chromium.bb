@@ -50,8 +50,9 @@ class TestAutofillDialogView : public AutofillDialogView {
   virtual void UpdateNotificationArea() OVERRIDE {}
   virtual void UpdateAccountChooser() OVERRIDE {}
   virtual void UpdateButtonStrip() OVERRIDE {}
-  virtual void UpdateSection(DialogSection section, UserInputAction action)
-      OVERRIDE {}
+  virtual void UpdateSection(DialogSection section) OVERRIDE {}
+  virtual void FillSection(DialogSection section,
+                           const DetailInput& originating_input) OVERRIDE {};
   virtual void GetUserInput(DialogSection section, DetailOutputMap* output)
       OVERRIDE {
     *output = outputs_[section];

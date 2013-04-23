@@ -893,7 +893,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
   scoped_ptr<DataModelWrapper> model = CreateWrapper(section);
   model->FillInputs(inputs);
   section_editing_state_[section] = true;
-  view_->UpdateSection(section, CLEAR_USER_INPUT);
+  view_->UpdateSection(section);
 
   GetMetricLogger().LogDialogUiEvent(
       dialog_type_, DialogSectionToUiEditEvent(section));
@@ -902,7 +902,7 @@ void AutofillDialogControllerImpl::EditClickedForSection(
 void AutofillDialogControllerImpl::EditCancelledForSection(
     DialogSection section) {
   ResetManualInputForSection(section);
-  view_->UpdateSection(section, CLEAR_USER_INPUT);
+  view_->UpdateSection(section);
 }
 
 gfx::Image AutofillDialogControllerImpl::IconForField(
@@ -1327,16 +1327,10 @@ void AutofillDialogControllerImpl::DidAcceptSuggestion(const string16& value,
         GetManager()->GetProfileByGUID(pair.first), pair.second));
   }
 
-  // TODO(estade): use isherman's method of looping.
-  static const DialogSection sections[] = { SECTION_EMAIL,
-                                            SECTION_CC,
-                                            SECTION_CC_BILLING,
-                                            SECTION_BILLING,
-                                            SECTION_SHIPPING };
-  for (size_t i = 0; i < arraysize(sections); ++i) {
-    DialogSection section = sections[i];
+  for (size_t i = SECTION_MIN; i <= SECTION_MAX; ++i) {
+    DialogSection section = static_cast<DialogSection>(i);
     wrapper->FillInputs(MutableRequestedFieldsForSection(section));
-    view_->UpdateSection(section, KEEP_USER_INPUT);
+    view_->FillSection(section, *input_showing_popup_);
   }
 
   GetMetricLogger().LogDialogPopupEvent(

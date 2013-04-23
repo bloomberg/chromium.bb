@@ -37,9 +37,13 @@ class AutofillDialogView {
   // Updates the button strip based on the current controller state.
   virtual void UpdateButtonStrip() = 0;
 
-  // Called when the contents of a section have changed. Depending on |action|,
-  // the view may also clobber all manual inputs.
-  virtual void UpdateSection(DialogSection section, UserInputAction action) = 0;
+  // Called when the contents of a section have changed.
+  virtual void UpdateSection(DialogSection section) = 0;
+
+  // Fills the given section with Autofill data that was triggered by a user
+  // interaction with |originating_input|.
+  virtual void FillSection(DialogSection section,
+                           const DetailInput& originating_input) = 0;
 
   // Fills |output| with data the user manually input.
   virtual void GetUserInput(DialogSection section, DetailOutputMap* output) = 0;

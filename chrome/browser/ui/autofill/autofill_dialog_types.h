@@ -63,13 +63,6 @@ enum DialogSection {
   SECTION_MAX = SECTION_SHIPPING
 };
 
-// Used by UpdateSection() to indicate what to do with data that the user has
-// already input into textfields.
-enum UserInputAction {
-  CLEAR_USER_INPUT,
-  KEEP_USER_INPUT,
-};
-
 // A notification to show in the autofill dialog. Ranges from information to
 // seriously scary security messages, and will give you the color it should be
 // displayed (if you ask it).

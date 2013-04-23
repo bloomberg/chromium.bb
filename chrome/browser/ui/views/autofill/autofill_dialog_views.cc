@@ -720,36 +720,19 @@ void AutofillDialogViews::UpdateNotificationArea() {
   ContentsPreferredSizeChanged();
 }
 
-void AutofillDialogViews::UpdateSection(DialogSection section,
-                                        UserInputAction action) {
-  const DetailInputs& updated_inputs =
-      controller_->RequestedFieldsForSection(section);
+void AutofillDialogViews::UpdateSection(DialogSection section) {
+  UpdateSectionImpl(section, true);
+}
+
+void AutofillDialogViews::FillSection(DialogSection section,
+                                      const DetailInput& originating_input) {
   DetailsGroup* group = GroupForSection(section);
+  TextfieldMap::iterator text_mapping =
+      group->textfields.find(&originating_input);
+  if (text_mapping != group->textfields.end())
+    text_mapping->second->textfield()->SetText(string16());
 
-  for (DetailInputs::const_iterator iter = updated_inputs.begin();
-       iter != updated_inputs.end(); ++iter) {
-    const DetailInput& input = *iter;
-    TextfieldMap::iterator text_mapping = group->textfields.find(&input);
-
-    if (text_mapping != group->textfields.end() &&
-        (text_mapping->second->textfield()->text().empty() ||
-         action == CLEAR_USER_INPUT)) {
-      text_mapping->second->textfield()->SetText(iter->initial_value);
-    }
-
-    ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
-    if (combo_mapping != group->comboboxes.end()) {
-      views::Combobox* combobox = combo_mapping->second;
-      for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
-        if (input.initial_value == combobox->model()->GetItemAt(i)) {
-          combobox->SetSelectedIndex(i);
-          break;
-        }
-      }
-    }
-  }
-
-  UpdateDetailsGroupState(*group);
+  UpdateSectionImpl(section, false);
 }
 
 void AutofillDialogViews::GetUserInput(DialogSection section,
@@ -828,12 +811,40 @@ void AutofillDialogViews::CancelForTesting() {
 }
 
 string16 AutofillDialogViews::GetTextContentsOfInput(const DetailInput& input) {
-  return TextfieldForInput(input)->text();
+  views::Textfield* textfield = TextfieldForInput(input);
+  if (textfield)
+    return textfield->text();
+
+  views::Combobox* combobox = ComboboxForInput(input);
+  if (combobox)
+    return combobox->model()->GetItemAt(combobox->selected_index());
+
+  NOTREACHED();
+  return string16();
 }
 
 void AutofillDialogViews::SetTextContentsOfInput(const DetailInput& input,
                                                  const string16& contents) {
-  TextfieldForInput(input)->SetText(contents);
+  views::Textfield* textfield = TextfieldForInput(input);
+  if (textfield) {
+    TextfieldForInput(input)->SetText(contents);
+    return;
+  }
+
+  views::Combobox* combobox = ComboboxForInput(input);
+  if (combobox) {
+    for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
+      if (contents == combobox->model()->GetItemAt(i)) {
+        combobox->SetSelectedIndex(i);
+        return;
+      }
+    }
+    // If we don't find a match, return the combobox to its default state.
+    combobox->SetSelectedIndex(combobox->model()->GetDefaultIndex());
+    return;
+  }
+
+  NOTREACHED();
 }
 
 void AutofillDialogViews::ActivateInput(const DetailInput& input) {
@@ -1247,6 +1258,39 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
   return view;
 }
 
+void AutofillDialogViews::UpdateSectionImpl(
+    DialogSection section,
+    bool clobber_inputs) {
+  const DetailInputs& updated_inputs =
+      controller_->RequestedFieldsForSection(section);
+  DetailsGroup* group = GroupForSection(section);
+
+  for (DetailInputs::const_iterator iter = updated_inputs.begin();
+       iter != updated_inputs.end(); ++iter) {
+    const DetailInput& input = *iter;
+    TextfieldMap::iterator text_mapping = group->textfields.find(&input);
+
+    if (text_mapping != group->textfields.end() &&
+        (text_mapping->second->textfield()->text().empty() ||
+         clobber_inputs)) {
+      text_mapping->second->textfield()->SetText(iter->initial_value);
+    }
+
+    ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
+    if (combo_mapping != group->comboboxes.end()) {
+      views::Combobox* combobox = combo_mapping->second;
+      for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
+        if (input.initial_value == combobox->model()->GetItemAt(i)) {
+          combobox->SetSelectedIndex(i);
+          break;
+        }
+      }
+    }
+  }
+
+  UpdateDetailsGroupState(*group);
+}
+
 void AutofillDialogViews::UpdateDetailsGroupState(const DetailsGroup& group) {
   const SuggestionState& suggestion_state =
       controller_->SuggestionStateForSection(group.section);
@@ -1428,15 +1472,16 @@ AutofillDialogViews::DetailsGroup* AutofillDialogViews::GroupForView(
   views::View* control = ancestor ? ancestor : view;
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
-    if (control->parent() == iter->second.manual_input)
-      return &iter->second;
+    DetailsGroup* group = &iter->second;
+    if (control->parent() == group->manual_input)
+      return group;
 
     // Textfields need to check a second case, since they can be
     // suggested inputs instead of directly editable inputs. Those are
     // accessed via |suggested_info|.
     if (ancestor &&
-        ancestor == iter->second.suggested_info->decorated_textfield()) {
-      return &iter->second;
+        ancestor == group->suggested_info->decorated_textfield()) {
+      return group;
     }
   }
   return NULL;
@@ -1446,12 +1491,25 @@ views::Textfield* AutofillDialogViews::TextfieldForInput(
     const DetailInput& input) {
   for (DetailGroupMap::iterator iter = detail_groups_.begin();
        iter != detail_groups_.end(); ++iter) {
-    TextfieldMap::iterator text_mapping = iter->second.textfields.find(&input);
-    if (text_mapping != iter->second.textfields.end())
+    const DetailsGroup& group = iter->second;
+    TextfieldMap::const_iterator text_mapping = group.textfields.find(&input);
+    if (text_mapping != group.textfields.end())
       return text_mapping->second->textfield();
   }
 
-  NOTREACHED();
+  return NULL;
+}
+
+views::Combobox* AutofillDialogViews::ComboboxForInput(
+    const DetailInput& input) {
+  for (DetailGroupMap::iterator iter = detail_groups_.begin();
+       iter != detail_groups_.end(); ++iter) {
+    const DetailsGroup& group = iter->second;
+    ComboboxMap::const_iterator combo_mapping = group.comboboxes.find(&input);
+    if (combo_mapping != group.comboboxes.end())
+      return combo_mapping->second;
+  }
+
   return NULL;
 }
 

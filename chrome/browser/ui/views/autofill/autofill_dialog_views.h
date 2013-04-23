@@ -79,8 +79,9 @@ class AutofillDialogViews : public AutofillDialogView,
   virtual void UpdateAccountChooser() OVERRIDE;
   virtual void UpdateButtonStrip() OVERRIDE;
   virtual void UpdateNotificationArea() OVERRIDE;
-  virtual void UpdateSection(DialogSection section,
-                             UserInputAction action) OVERRIDE;
+  virtual void UpdateSection(DialogSection section) OVERRIDE;
+  virtual void FillSection(DialogSection section,
+                           const DetailInput& originating_input) OVERRIDE;
   virtual void GetUserInput(DialogSection section,
                             DetailOutputMap* output) OVERRIDE;
   virtual string16 GetCvc() OVERRIDE;
@@ -433,6 +434,11 @@ class AutofillDialogViews : public AutofillDialogView,
   // returned.
   views::View* InitInputsView(DialogSection section);
 
+  // Updates the given section to match the state provided by |controller_|. If
+  // |clobber_inputs| is true, the current state of the textfields will be
+  // ignored, otherwise their contents will be preserved.
+  void UpdateSectionImpl(DialogSection section, bool clobber_inputs);
+
   // Updates the visual state of the given group as per the model.
   void UpdateDetailsGroupState(const DetailsGroup& group);
 
@@ -462,8 +468,13 @@ class AutofillDialogViews : public AutofillDialogView,
   // Call this when the size of anything in |contents_| might've changed.
   void ContentsPreferredSizeChanged();
 
-  // Gets the textfield view that is shown for the given DetailInput model.
+  // Gets the textfield view that is shown for the given DetailInput model, or
+  // NULL.
   views::Textfield* TextfieldForInput(const DetailInput& input);
+
+  // Gets the combobox view that is shown for the given DetailInput model, or
+  // NULL.
+  views::Combobox* ComboboxForInput(const DetailInput& input);
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;

@@ -108,10 +108,7 @@ void AutofillDialogViewAndroid::UpdateButtonStrip() {
   NOTIMPLEMENTED();
 }
 
-void AutofillDialogViewAndroid::UpdateSection(DialogSection section,
-                                              UserInputAction action) {
-  // TODO(estade): respect |action|.
-
+void AutofillDialogViewAndroid::UpdateSection(DialogSection section) {
   JNIEnv* env = base::android::AttachCurrentThread();
   const DetailInputs& updated_inputs =
       controller_->RequestedFieldsForSection(section);
@@ -179,6 +176,12 @@ void AutofillDialogViewAndroid::UpdateSection(DialogSection section,
                                         field_array.obj(),
                                         menu_array.obj(),
                                         checkedItem);
+}
+
+void AutofillDialogViewAndroid::FillSection(
+    DialogSection section,
+    const DetailInput& originating_input) {
+  NOTIMPLEMENTED();
 }
 
 void AutofillDialogViewAndroid::GetUserInput(DialogSection section,
@@ -254,11 +257,11 @@ void AutofillDialogViewAndroid::ModelChanged() {
       env, java_object_.obj(),
       controller_->ShouldShowSpinner());
   UpdateSaveLocallyCheckBox();
-  UpdateSection(SECTION_EMAIL, CLEAR_USER_INPUT);
-  UpdateSection(SECTION_CC, CLEAR_USER_INPUT);
-  UpdateSection(SECTION_BILLING, CLEAR_USER_INPUT);
-  UpdateSection(SECTION_CC_BILLING, CLEAR_USER_INPUT);
-  UpdateSection(SECTION_SHIPPING, CLEAR_USER_INPUT);
+  UpdateSection(SECTION_EMAIL);
+  UpdateSection(SECTION_CC);
+  UpdateSection(SECTION_BILLING);
+  UpdateSection(SECTION_CC_BILLING);
+  UpdateSection(SECTION_SHIPPING);
 }
 
 // TODO(aruslan): bind to the list of accounts population.

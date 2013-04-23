@@ -9,6 +9,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_controller_impl.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view.h"
+#include "chrome/browser/ui/autofill/data_model_wrapper.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -214,6 +215,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Cancel) {
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, Hide) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
   controller()->Hide();
+
   RunMessageLoop();
 
   EXPECT_EQ(AutofillMetrics::DIALOG_CANCELED,
@@ -255,9 +257,7 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocheckoutError) {
             metric_logger().autocheckout_status());
 }
 
-// TODO(estade): fix the code so this test passes. http://crbug.com/231988
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-    DISABLED_FillInputFromAutofill) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   InitializeControllerOfType(DIALOG_TYPE_REQUEST_AUTOCOMPLETE);
 
   AutofillProfile full_profile(test::GetFullProfile());
@@ -265,16 +265,45 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
 
   const DetailInputs& inputs =
       controller()->RequestedFieldsForSection(SECTION_SHIPPING);
-  const DetailInput& input = inputs[0];
-  string16 value = full_profile.GetRawInfo(input.type);
+  const DetailInput& triggering_input = inputs[0];
+  string16 value = full_profile.GetRawInfo(triggering_input.type);
   TestableAutofillDialogView* view = controller()->view()->GetTestableView();
-  view->SetTextContentsOfInput(input, value.substr(0, value.size() / 2));
-  view->ActivateInput(input);
+  view->SetTextContentsOfInput(triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(triggering_input);
 
-  ASSERT_EQ(&input, controller()->input_showing_popup());
-
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
   controller()->DidAcceptSuggestion(string16(), 0);
-  EXPECT_EQ(value, view->GetTextContentsOfInput(input));
+
+  // All inputs should be filled.
+  AutofillProfileWrapper wrapper(&full_profile, 0);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_EQ(wrapper.GetInfo(inputs[i].type),
+              view->GetTextContentsOfInput(inputs[i]));
+  }
+
+  // Now simulate some user edits and try again.
+  std::vector<string16> expectations;
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    string16 users_input = i % 2 == 0 ? string16() : ASCIIToUTF16("dummy");
+    view->SetTextContentsOfInput(inputs[i], users_input);
+    // Empty inputs should be filled, others should be left alone.
+    string16 expectation =
+        &inputs[i] == &triggering_input || users_input.empty() ?
+        wrapper.GetInfo(inputs[i].type) :
+        users_input;
+    expectations.push_back(expectation);
+  }
+
+  view->SetTextContentsOfInput(triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(triggering_input);
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  controller()->DidAcceptSuggestion(string16(), 0);
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
+  }
 }
 #endif  // defined(TOOLKIT_VIEWS)
 

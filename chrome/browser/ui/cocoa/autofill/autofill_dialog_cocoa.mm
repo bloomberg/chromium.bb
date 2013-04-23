@@ -56,8 +56,11 @@ void AutofillDialogCocoa::UpdateButtonStrip() {
 void AutofillDialogCocoa::UpdateNotificationArea() {
 }
 
-void AutofillDialogCocoa::UpdateSection(DialogSection section,
-                                        UserInputAction action) {
+void AutofillDialogCocoa::UpdateSection(DialogSection section) {
+}
+
+void AutofillDialogCocoa::FillSection(DialogSection section,
+                                      const DetailInput& originating_input) {
 }
 
 void AutofillDialogCocoa::GetUserInput(DialogSection section,
