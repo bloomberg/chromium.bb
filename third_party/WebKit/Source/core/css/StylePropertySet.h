@@ -190,8 +190,6 @@ protected:
     unsigned m_arraySize : 28;
     
 private:
-    void setNeedsStyleRecalc();
-
     String getShorthandValue(const StylePropertyShorthand&) const;
     String getCommonValue(const StylePropertyShorthand&) const;
     enum CommonValueMode { OmitUncommonValues, ReturnNullOnUncommonValues };
