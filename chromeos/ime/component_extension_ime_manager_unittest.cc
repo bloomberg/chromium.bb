@@ -37,25 +37,25 @@ class ComponentExtensionIMEManagerTest :
     ext1.options_page_url = "chrome-extension://" + ext1.id + "/options.html";
     ext1.path = base::FilePath("ext1_file_path");
 
-    IBusComponent::EngineDescription ext1_engine1;
+    ComponentExtensionEngine ext1_engine1;
     ext1_engine1.engine_id = "ext1_engine1_engine_id";
     ext1_engine1.display_name = "ext1_engine_1_display_name";
     ext1_engine1.language_code = "en";
-    ext1_engine1.layout = "us";
+    ext1_engine1.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine1);
 
-    IBusComponent::EngineDescription ext1_engine2;
+    ComponentExtensionEngine ext1_engine2;
     ext1_engine2.engine_id = "ext1_engine2_engine_id";
     ext1_engine2.display_name = "ext1_engine2_display_name";
     ext1_engine2.language_code = "en";
-    ext1_engine2.layout = "us";
+    ext1_engine2.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine2);
 
-    IBusComponent::EngineDescription ext1_engine3;
+    ComponentExtensionEngine ext1_engine3;
     ext1_engine3.engine_id = "ext1_engine3_engine_id";
     ext1_engine3.display_name = "ext1_engine3_display_name";
     ext1_engine3.language_code = "ja";
-    ext1_engine3.layout = "us";
+    ext1_engine3.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine3);
 
     ime_list_.push_back(ext1);
@@ -65,25 +65,25 @@ class ComponentExtensionIMEManagerTest :
     ext2.description = "ext2_description";
     ext2.path = base::FilePath("ext2_file_path");
 
-    IBusComponent::EngineDescription ext2_engine1;
+    ComponentExtensionEngine ext2_engine1;
     ext2_engine1.engine_id = "ext2_engine1_engine_id";
     ext2_engine1.display_name = "ext2_engine_1_display_name";
     ext2_engine1.language_code = "en";
-    ext2_engine1.layout = "us";
+    ext2_engine1.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine1);
 
-    IBusComponent::EngineDescription ext2_engine2;
+    ComponentExtensionEngine ext2_engine2;
     ext2_engine2.engine_id = "ext2_engine2_engine_id";
     ext2_engine2.display_name = "ext2_engine2_display_name";
     ext2_engine2.language_code = "hi";
-    ext2_engine2.layout = "us";
+    ext2_engine2.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine2);
 
-    IBusComponent::EngineDescription ext2_engine3;
+    ComponentExtensionEngine ext2_engine3;
     ext2_engine3.engine_id = "ext2_engine3_engine_id";
     ext2_engine3.display_name = "ext2_engine3_display_name";
     ext2_engine3.language_code = "ja";
-    ext2_engine3.layout = "jp";
+    ext2_engine3.layouts.push_back("jp");
     ext2.engines.push_back(ext2_engine3);
 
     ime_list_.push_back(ext2);
@@ -94,25 +94,25 @@ class ComponentExtensionIMEManagerTest :
     ext1.options_page_url = "chrome-extension://" + ext3.id + "/options.html";
     ext3.path = base::FilePath("ext3_file_path");
 
-    IBusComponent::EngineDescription ext3_engine1;
+    ComponentExtensionEngine ext3_engine1;
     ext3_engine1.engine_id = "ext3_engine1_engine_id";
     ext3_engine1.display_name = "ext3_engine_1_display_name";
     ext3_engine1.language_code = "hi";
-    ext3_engine1.layout = "us";
+    ext3_engine1.layouts.push_back("us");
     ext3.engines.push_back(ext3_engine1);
 
-    IBusComponent::EngineDescription ext3_engine2;
+    ComponentExtensionEngine ext3_engine2;
     ext3_engine2.engine_id = "ext3_engine2_engine_id";
     ext3_engine2.display_name = "ext3_engine2_display_name";
     ext3_engine2.language_code = "en";
-    ext3_engine2.layout = "us";
+    ext3_engine2.layouts.push_back("us");
     ext3.engines.push_back(ext3_engine2);
 
-    IBusComponent::EngineDescription ext3_engine3;
+    ComponentExtensionEngine ext3_engine3;
     ext3_engine3.engine_id = "ext3_engine3_engine_id";
     ext3_engine3.display_name = "ext3_engine3_display_name";
     ext3_engine3.language_code = "en";
-    ext3_engine3.layout = "us";
+    ext3_engine3.layouts.push_back("us");
     ext3.engines.push_back(ext3_engine3);
 
     ime_list_.push_back(ext3);
@@ -204,7 +204,7 @@ TEST_F(ComponentExtensionIMEManagerTest, IsWhitelistedExtensionTest) {
 TEST_F(ComponentExtensionIMEManagerTest, GetNameDescriptionTest) {
   for (size_t i = 0; i < ime_list_.size(); ++i) {
     for (size_t j = 0; j < ime_list_[i].engines.size(); ++j) {
-      const IBusComponent::EngineDescription& engine
+      const ComponentExtensionEngine& engine
           = ime_list_[i].engines[j];
 
       const std::string input_method_id =

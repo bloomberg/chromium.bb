@@ -105,7 +105,7 @@ void InputMethodEngineIBus::Initialize(
     const input_method::InputMethodDescriptor* fallback_desc =
         manager->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
             fallback_id);
-    layout = fallback_desc->keyboard_layout();
+    layout = fallback_desc->GetPreferredKeyboardLayout();
   }
 
   component_.reset(new IBusComponent());

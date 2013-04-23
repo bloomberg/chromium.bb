@@ -15,14 +15,20 @@ namespace input_method {
 InputMethodDescriptor::InputMethodDescriptor(
     const std::string& id,
     const std::string& name,
-    const std::string& keyboard_layout,
+    const std::vector<std::string>& keyboard_layouts,
     const std::string& language_code,
     const std::string& options_page_url)
     : id_(id),
       name_(name),
-      keyboard_layout_(keyboard_layout),
+      keyboard_layouts_(keyboard_layouts),
       language_code_(language_code),
       options_page_url_(options_page_url) {
+}
+
+std::string InputMethodDescriptor::GetPreferredKeyboardLayout() const {
+  // TODO(nona): Investigate better way to guess the preferred layout
+  //             http://crbug.com/170601.
+  return keyboard_layouts_.empty() ? "us" : keyboard_layouts_[0];
 }
 
 InputMethodDescriptor::InputMethodDescriptor() {

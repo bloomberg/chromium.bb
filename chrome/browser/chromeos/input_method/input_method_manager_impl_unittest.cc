@@ -80,11 +80,11 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext1.description = "ext1_description";
     ext1.path = base::FilePath("ext1_file_path");
 
-    IBusComponent::EngineDescription ext1_engine1;
+    ComponentExtensionEngine ext1_engine1;
     ext1_engine1.engine_id = "ext1_engine1_engine_id";
     ext1_engine1.display_name = "ext1_engine_1_display_name";
     ext1_engine1.language_code = "en";
-    ext1_engine1.layout = "us";
+    ext1_engine1.layouts.push_back("us");
     ext1.engines.push_back(ext1_engine1);
 
     ime_list_.push_back(ext1);
@@ -94,11 +94,11 @@ class InputMethodManagerImplTest :  public testing::Test {
     ext2.description = "ext2_description";
     ext2.path = base::FilePath("ext2_file_path");
 
-    IBusComponent::EngineDescription ext2_engine1;
+    ComponentExtensionEngine ext2_engine1;
     ext2_engine1.engine_id = "ext2_engine1_engine_id";
     ext2_engine1.display_name = "ext2_engine_1_display_name";
     ext2_engine1.language_code = "en";
-    ext2_engine1.layout = "us";
+    ext2_engine1.layouts.push_back("us");
     ext2.engines.push_back(ext2_engine1);
 
     ime_list_.push_back(ext2);

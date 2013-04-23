@@ -318,9 +318,9 @@ void InputMethodManagerImpl::ChangeInputMethodInternal(
 
   // Change the keyboard layout to a preferred layout for the input method.
   if (!xkeyboard_->SetCurrentKeyboardLayoutByName(
-          current_input_method_.keyboard_layout())) {
+          current_input_method_.GetPreferredKeyboardLayout())) {
     LOG(ERROR) << "Failed to change keyboard layout to "
-               << current_input_method_.keyboard_layout();
+               << current_input_method_.GetPreferredKeyboardLayout();
   }
 
   // Update input method indicators (e.g. "US", "DV") in Chrome windows.
@@ -390,11 +390,10 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
   }
 
-  const std::string layout = layouts.empty() ? "" : layouts[0];
   // TODO(nona): Support options page for normal extension ime.
   //             crbug.com/156283.
   extra_input_methods_[id] =
-      InputMethodDescriptor(id, name, layout, language, "");
+      InputMethodDescriptor(id, name, layouts, language, "");
   if (!Contains(filtered_extension_imes_, id) &&
       !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     if (!Contains(active_input_method_ids_, id)) {

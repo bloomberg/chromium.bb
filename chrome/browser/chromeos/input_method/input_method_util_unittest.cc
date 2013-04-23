@@ -52,9 +52,11 @@ class InputMethodUtilTest : public testing::Test {
   InputMethodDescriptor GetDesc(const std::string& id,
                                 const std::string& raw_layout,
                                 const std::string& language_code) {
+    std::vector<std::string> layouts;
+    layouts.push_back(raw_layout);
     return InputMethodDescriptor(id,
                                  "",
-                                 raw_layout,
+                                 layouts,
                                  language_code,
                                  "");  // options page url
   }
@@ -344,7 +346,7 @@ TEST_F(InputMethodUtilTest, TestGetInputMethodDescriptorFromId) {
       util_.GetInputMethodDescriptorFromId("pinyin");
   ASSERT_TRUE(NULL != descriptor);  // ASSERT_NE doesn't compile.
   EXPECT_EQ("pinyin", descriptor->id());
-  EXPECT_EQ("us", descriptor->keyboard_layout());
+  EXPECT_EQ("us", descriptor->GetPreferredKeyboardLayout());
   // This used to be "zh" but now we have "zh-CN" in input_methods.h,
   // hence this should be zh-CN now.
   EXPECT_EQ("zh-CN", descriptor->language_code());

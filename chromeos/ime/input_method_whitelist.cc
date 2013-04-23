@@ -31,10 +31,13 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
   scoped_ptr<InputMethodDescriptors> input_methods(new InputMethodDescriptors);
   input_methods->reserve(arraysize(kInputMethods));
   for (size_t i = 0; i < arraysize(kInputMethods); ++i) {
+    std::vector<std::string> layouts;
+    layouts.push_back(kInputMethods[i].xkb_layout_id);
+
     input_methods->push_back(InputMethodDescriptor(
         kInputMethods[i].input_method_id,
         "",
-        kInputMethods[i].xkb_layout_id,
+        layouts,
         kInputMethods[i].language_code,
         ""));  // options page url, not available for non-extension input
                // method.

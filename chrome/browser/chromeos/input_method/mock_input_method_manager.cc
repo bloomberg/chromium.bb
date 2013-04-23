@@ -116,7 +116,7 @@ InputMethodDescriptor MockInputMethodManager::GetCurrentInputMethod() const {
   if (!current_input_method_id_.empty()) {
     return InputMethodDescriptor(current_input_method_id_,
                                  descriptor.name(),
-                                 descriptor.keyboard_layout(),
+                                 descriptor.keyboard_layouts(),
                                  descriptor.language_code(),
                                  "");  // options page url.
   }

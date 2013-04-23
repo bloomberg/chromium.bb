@@ -362,7 +362,7 @@ std::string InputMethodUtil::GetKeyboardLayoutName(
   InputMethodIdToDescriptorMap::const_iterator iter
       = id_to_descriptor_.find(input_method_id);
   return (iter == id_to_descriptor_.end()) ?
-      "" : iter->second.keyboard_layout();
+      "" : iter->second.GetPreferredKeyboardLayout();
 }
 
 std::string InputMethodUtil::GetInputMethodDisplayNameFromId(
@@ -557,8 +557,8 @@ void InputMethodUtil::GetFirstLoginInputMethodIds(
         GetInputMethodDescriptorFromId(input_method_id);
     if (descriptor &&
         descriptor->id() != current_input_method.id() &&
-        descriptor->keyboard_layout() ==
-        current_input_method.keyboard_layout()) {
+        descriptor->GetPreferredKeyboardLayout() ==
+        current_input_method.GetPreferredKeyboardLayout()) {
       most_popular_id = input_method_id;
       break;
     }
@@ -620,9 +620,11 @@ void InputMethodUtil::SetComponentExtensions(
 }
 
 InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
+  std::vector<std::string> layouts;
+  layouts.push_back("us");
   return InputMethodDescriptor("xkb:us::eng",
                                "",
-                               "us",
+                               layouts,
                                "en-US",
                                "");  // options page, not available.
 }
@@ -652,7 +654,8 @@ void InputMethodUtil::ReloadInternalMaps() {
         std::make_pair(input_method.id(), input_method));
     if (IsKeyboardLayout(input_method.id())) {
       xkb_id_to_descriptor_.insert(
-          std::make_pair(input_method.keyboard_layout(), input_method));
+          std::make_pair(input_method.GetPreferredKeyboardLayout(),
+                         input_method));
     }
   }
 

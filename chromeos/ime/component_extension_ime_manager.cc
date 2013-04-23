@@ -11,6 +11,12 @@ namespace {
 const char* kComponentExtensionIMEPrefix = "_comp_ime_";
 }  // namespace
 
+ComponentExtensionEngine::ComponentExtensionEngine() {
+}
+
+ComponentExtensionEngine::~ComponentExtensionEngine() {
+}
+
 ComponentExtensionIME::ComponentExtensionIME() {
 }
 
@@ -93,7 +99,7 @@ bool ComponentExtensionIMEManager::IsWhitelistedExtension(
 std::string ComponentExtensionIMEManager::GetId(
     const std::string& extension_id,
     const std::string& engine_id) {
-  IBusComponent::EngineDescription engine;
+  ComponentExtensionEngine engine;
   const std::string& input_method_id =
       GetComponentExtensionIMEId(extension_id, engine_id);
   if (!FindEngineEntry(input_method_id, NULL, &engine))
@@ -103,7 +109,7 @@ std::string ComponentExtensionIMEManager::GetId(
 
 std::string ComponentExtensionIMEManager::GetName(
     const std::string& input_method_id) {
-  IBusComponent::EngineDescription engine;
+  ComponentExtensionEngine engine;
   if (!FindEngineEntry(input_method_id, NULL, &engine))
     return "";
   return engine.display_name;
@@ -111,7 +117,7 @@ std::string ComponentExtensionIMEManager::GetName(
 
 std::string ComponentExtensionIMEManager::GetDescription(
     const std::string& input_method_id) {
-  IBusComponent::EngineDescription engine;
+  ComponentExtensionEngine engine;
   if (!FindEngineEntry(input_method_id, NULL, &engine))
     return "";
   return engine.description;
@@ -143,7 +149,7 @@ input_method::InputMethodDescriptors
                   component_extension_imes_[i].id,
                   component_extension_imes_[i].engines[j].engine_id),
               component_extension_imes_[i].engines[j].display_name,
-              component_extension_imes_[i].engines[j].layout,
+              component_extension_imes_[i].engines[j].layouts,
               component_extension_imes_[i].engines[j].language_code,
               component_extension_imes_[i].options_page_url));
     }
@@ -162,12 +168,12 @@ void ComponentExtensionIMEManager::RemoveObserver(Observer* observer) {
 bool ComponentExtensionIMEManager::FindEngineEntry(
     const std::string& input_method_id,
     ComponentExtensionIME* out_extension,
-    IBusComponent::EngineDescription* out_engine) {
+    ComponentExtensionEngine* out_engine) {
   if (!IsComponentExtensionIMEId(input_method_id))
     return false;
   for (size_t i = 0; i < component_extension_imes_.size(); ++i) {
     const std::string extension_id = component_extension_imes_[i].id;
-    const std::vector<IBusComponent::EngineDescription>& engines =
+    const std::vector<ComponentExtensionEngine>& engines =
         component_extension_imes_[i].engines;
 
     for (size_t j = 0; j < engines.size(); ++j) {

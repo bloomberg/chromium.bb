@@ -140,7 +140,7 @@ bool ComponentExtensionIMEManagerImpl::IsInitialized() {
 // static
 bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
     const DictionaryValue& dict,
-    IBusComponent::EngineDescription* out) {
+    ComponentExtensionEngine* out) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE));
   DCHECK(out);
   std::string type;
@@ -159,9 +159,10 @@ bool ComponentExtensionIMEManagerImpl::ReadEngineComponent(
   if (!dict.GetList(extension_manifest_keys::kLayouts, &layouts))
     return false;
 
-  if (layouts->GetSize() > 0) {
-    if (!layouts->GetString(0, &out->layout))
-      return false;
+  for (size_t i = 0; i < layouts->GetSize(); ++i) {
+    std::string buffer;
+    if (layouts->GetString(i, &buffer))
+      out->layouts.push_back(buffer);
   }
   return true;
 }
@@ -228,7 +229,7 @@ void ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo(
       if (!component_list->GetDictionary(i, &dictionary))
         continue;
 
-      IBusComponent::EngineDescription engine;
+      ComponentExtensionEngine engine;
       ReadEngineComponent(*dictionary, &engine);
       component_ime.engines.push_back(engine);
     }

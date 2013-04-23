@@ -9,10 +9,20 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/ibus/ibus_component.h"
 #include "chromeos/ime/input_method_descriptor.h"
 
 namespace chromeos {
+
+// Represents an engine in component extension IME.
+struct CHROMEOS_EXPORT ComponentExtensionEngine {
+  ComponentExtensionEngine();
+  ~ComponentExtensionEngine();
+  std::string engine_id;  // The engine id.
+  std::string display_name;  // The display name.
+  std::string language_code;  // The engine's language(ex. "en").
+  std::string description;  // The engine description.
+  std::vector<std::string> layouts;  // The list of keyboard layout of engine.
+};
 
 // Represents a component extension IME.
 // TODO(nona): Use GURL for |option_page_url| instead of string.
@@ -24,7 +34,7 @@ struct CHROMEOS_EXPORT ComponentExtensionIME {
   std::string description;  // description of extension.
   std::string options_page_url; // We can't use GURL due to deps restriction.
   base::FilePath path;
-  std::vector<IBusComponent::EngineDescription> engines;
+  std::vector<ComponentExtensionEngine> engines;
 };
 
 // Provides an interface to list/load/unload for component extension IME.
@@ -125,7 +135,7 @@ class CHROMEOS_EXPORT ComponentExtensionIMEManager {
   // returns false. |out_extension| and |out_engine| can be NULL.
   bool FindEngineEntry(const std::string& input_method_id,
                        ComponentExtensionIME* out_extension,
-                       IBusComponent::EngineDescription* out_engine);
+                       ComponentExtensionEngine* out_engine);
   scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate_;
 
   std::vector<ComponentExtensionIME> component_extension_imes_;

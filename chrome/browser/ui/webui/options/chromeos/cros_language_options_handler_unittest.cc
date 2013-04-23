@@ -43,9 +43,11 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
   InputMethodDescriptor GetDesc(const std::string& id,
                                 const std::string& raw_layout,
                                 const std::string& language_code) {
+    std::vector<std::string> layouts;
+    layouts.push_back(raw_layout);
     return InputMethodDescriptor(id,
                                  "",  // name
-                                 raw_layout,
+                                 layouts,
                                  language_code,
                                  "");  // options page url
   }
