@@ -2296,6 +2296,8 @@ webkit.org/b/88833 media/track/track-prefer-captions.html [ Timeout ]
 webkit.org/b/88832 [ XP ] http/tests/xmlhttprequest/origin-exact-matching.html [ Pass Timeout ]
 
 crbug.com/132898 http/tests/websocket/tests/hybi/workers/close.html [ Failure Pass ]
+crbug.com/128057 http/tests/websocket/tests/hybi/connect-error-by-no-websocket-server.html [ Failure Pass ]
+crbug.com/128057 http/tests/websocket/tests/hybi/workers/connect-error-by-no-websocket-server.html [ Failure Pass ]
 
 webkit.org/b/96839 compositing/geometry/fixed-position-transform-composited-page-scale.html [ ImageOnlyFailure ]
 webkit.org/b/96839 virtual/softwarecompositing/geometry/fixed-position-transform-composited-page-scale.html [ ImageOnlyFailure ]

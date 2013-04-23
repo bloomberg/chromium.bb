@@ -34,9 +34,11 @@
 
 #include "Logging.h"
 #include "NotImplemented.h"
+#include "SocketStreamError.h"
 #include "SocketStreamHandleClient.h"
 #include <public/Platform.h>
 #include <public/WebData.h>
+#include <public/WebSocketStreamError.h>
 #include <public/WebSocketStreamHandle.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -153,11 +155,8 @@ void SocketStreamHandleInternal::didFail(WebKit::WebSocketStreamHandle* socketHa
     LOG(Network, "SocketStreamHandleInternal %p didFail()", this);
     if (m_handle && m_socket) {
         ASSERT(socketHandle == m_socket.get());
-        m_socket.clear();
-        SocketStreamHandle* h = m_handle;
-        m_handle = 0;
-        if (h->m_client)
-            h->m_client->didCloseSocketStream(h); // didFail(h, err);
+        if (m_handle->m_client)
+            m_handle->m_client->didFailSocketStream(m_handle, *(PassRefPtr<SocketStreamError>(err)));
     }
 }
 

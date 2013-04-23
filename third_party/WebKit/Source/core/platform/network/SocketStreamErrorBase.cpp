@@ -33,13 +33,6 @@
 
 namespace WebCore {
 
-SocketStreamError SocketStreamErrorBase::copy() const
-{
-    SocketStreamError errorCopy;
-    errorCopy.m_errorCode = m_errorCode;
-    return errorCopy;
-}
-
 bool SocketStreamErrorBase::compare(const SocketStreamError& a, const SocketStreamError& b)
 {
     if (a.isNull() && b.isNull())

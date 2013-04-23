@@ -25,10 +25,6 @@ ws.onmessage = function(event) {
     ws.close();
 };
 
-ws.onerror = function(event) {
-    debug("onerror() was called.");
-};
-
 ws.onclose = function(event) {
     debug("onclose() was called.");
     closeEvent = event;

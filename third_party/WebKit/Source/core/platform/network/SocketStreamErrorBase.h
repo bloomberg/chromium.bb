@@ -40,8 +40,6 @@ namespace WebCore {
 
     class SocketStreamErrorBase {
     public:
-        // Makes a deep copy.  Useful for when you need to use a SocketStreamError on another thread.
-        SocketStreamError copy() const;
 
         bool isNull() const { return m_isNull; }
 

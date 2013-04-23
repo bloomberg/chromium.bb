@@ -32,14 +32,23 @@
 #define SocketStreamError_h
 
 #include "SocketStreamErrorBase.h"
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class SocketStreamError : public SocketStreamErrorBase {
+class SocketStreamError : public RefCounted<SocketStreamError>, public SocketStreamErrorBase {
 public:
-    SocketStreamError() { }
-    explicit SocketStreamError(int errorCode)
-            : SocketStreamErrorBase(errorCode) { }
+    static PassRefPtr<SocketStreamError> create(int errorCode, const String& errorMessage)
+    {
+        return adoptRef(new SocketStreamError(errorCode, errorMessage));
+    }
+
+private:
+    SocketStreamError(int errorCode, const String& errorMessage)
+        : SocketStreamErrorBase(errorCode, String(), errorMessage)
+    {
+    }
 };
 
 }  // namespace WebCore

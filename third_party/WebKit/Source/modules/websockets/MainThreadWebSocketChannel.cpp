@@ -76,6 +76,7 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_resumeTimer(this, &MainThreadWebSocketChannel::resumeTimerFired)
     , m_suspended(false)
     , m_closing(false)
+    , m_didFailOfClientAlreadyRun(false)
     , m_receivedClosingHandshake(false)
     , m_closingTimer(this, &MainThreadWebSocketChannel::closingTimerFired)
     , m_closed(false)
@@ -207,10 +208,13 @@ void MainThreadWebSocketChannel::fail(const String& reason)
     m_deflateFramer.didFail();
     m_hasContinuousFrame = false;
     m_continuousFrameData.clear();
-    m_client->didReceiveMessageError();
-
+    if (!m_didFailOfClientAlreadyRun) {
+        m_didFailOfClientAlreadyRun = true;
+        if (m_client)
+            m_client->didReceiveMessageError();
+    }
     if (m_handle && !m_closed)
-        m_handle->disconnect(); // Will call didClose().
+        m_handle->disconnect(); // Will call didCloseSocketStream().
 }
 
 void MainThreadWebSocketChannel::disconnect()
@@ -321,20 +325,27 @@ void MainThreadWebSocketChannel::didUpdateBufferedAmount(SocketStreamHandle*, si
 void MainThreadWebSocketChannel::didFailSocketStream(SocketStreamHandle* handle, const SocketStreamError& error)
 {
     LOG(Network, "MainThreadWebSocketChannel %p didFailSocketStream()", this);
-    ASSERT(handle == m_handle || !m_handle);
-    if (m_document) {
-        String message;
-        if (error.isNull())
-            message = "WebSocket network error";
-        else if (error.localizedDescription().isNull())
-            message = "WebSocket network error: error code " + String::number(error.errorCode());
-        else
-            message = "WebSocket network error: " + error.localizedDescription();
-        InspectorInstrumentation::didReceiveWebSocketFrameError(m_document, m_identifier, message);
-        m_document->addConsoleMessage(NetworkMessageSource, ErrorMessageLevel, message);
-    }
+    ASSERT_UNUSED(handle, handle == m_handle || !m_handle);
     m_shouldDiscardReceivedData = true;
-    handle->disconnect();
+    String message;
+    if (error.isNull())
+        message = "WebSocket network error";
+    else if (error.localizedDescription().isNull())
+        message = "WebSocket network error: error code " + String::number(error.errorCode());
+    else
+        message = "WebSocket network error: error code " + String::number(error.errorCode()) + ", " + error.localizedDescription();
+    String failingURL = error.failingURL();
+    ASSERT(failingURL.isNull() || m_handshake->url().string() == failingURL);
+    if (failingURL.isNull())
+        failingURL = m_handshake->url().string();
+    LOG(Network, "Error Message: '%s', FailURL: '%s'", message.utf8().data(), failingURL.utf8().data());
+    RefPtr<WebSocketChannel> protect(this);
+    if (m_client && !m_didFailOfClientAlreadyRun) {
+        m_didFailOfClientAlreadyRun = true;
+        m_client->didReceiveMessageError();
+    }
+    if (m_handle && !m_closed)
+        m_handle->disconnect();
 }
 
 void MainThreadWebSocketChannel::didStartLoading()

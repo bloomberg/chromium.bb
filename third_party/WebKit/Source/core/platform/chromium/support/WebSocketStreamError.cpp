@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Intel Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,42 +28,45 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebSocketStreamError_h
-#define WebSocketStreamError_h
+#include "config.h"
+#include <public/WebSocketStreamError.h>
 
-#include "WebCommon.h"
-#include "WebPrivatePtr.h"
+#include "SocketStreamError.h"
+#include <public/WebString.h>
 
-#if WEBKIT_IMPLEMENTATION
-#include <wtf/PassRefPtr.h>
-#endif
-
-namespace WebCore { class SocketStreamError; }
+using namespace WebCore;
 
 namespace WebKit {
 
-class WebString;
+void WebSocketStreamError::assign(int code, const WebString& message)
+{
+    m_private = SocketStreamError::create(code, message);
+}
 
-class WebSocketStreamError {
-public:
-    WebSocketStreamError(int code, const WebString& message) { assign(code, message); }
-    WebSocketStreamError(const WebSocketStreamError& other) { assign(other); }
-    ~WebSocketStreamError() { reset(); }
+void WebSocketStreamError::assign(const WebSocketStreamError& other)
+{
+    m_private = other.m_private;
+}
 
-    WEBKIT_EXPORT void assign(int code, const WebString& message);
-    WEBKIT_EXPORT void assign(const WebSocketStreamError&);
-    WEBKIT_EXPORT void reset();
+void WebSocketStreamError::reset()
+{
+    m_private.reset();
+}
 
-#if WEBKIT_IMPLEMENTATION
-    WebSocketStreamError(WTF::PassRefPtr<WebCore::SocketStreamError>);
-    WebSocketStreamError& operator=(WTF::PassRefPtr<WebCore::SocketStreamError>);
-    operator WTF::PassRefPtr<WebCore::SocketStreamError>() const;
-#endif
+WebSocketStreamError::WebSocketStreamError(PassRefPtr<SocketStreamError> error)
+{
+    m_private = error;
+}
 
-private:
-    WebPrivatePtr<WebCore::SocketStreamError> m_private;
-};
+WebSocketStreamError& WebSocketStreamError::operator=(PassRefPtr<SocketStreamError> error)
+{
+    m_private = error;
+    return *this;
+}
 
-} // namespace WebKit
+WebSocketStreamError::operator PassRefPtr<SocketStreamError>() const
+{
+    return m_private.get();
+}
 
-#endif
+}

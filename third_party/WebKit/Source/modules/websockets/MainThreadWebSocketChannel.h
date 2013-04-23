@@ -174,6 +174,7 @@ private:
     Timer<MainThreadWebSocketChannel> m_resumeTimer;
     bool m_suspended;
     bool m_closing;
+    bool m_didFailOfClientAlreadyRun;
     bool m_receivedClosingHandshake;
     Timer<MainThreadWebSocketChannel> m_closingTimer;
     bool m_closed;
