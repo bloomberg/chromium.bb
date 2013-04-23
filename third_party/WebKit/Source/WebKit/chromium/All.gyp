@@ -27,7 +27,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
-
 {
     'includes': [
         'features.gypi',
@@ -42,7 +41,6 @@
             'dependencies': [
                 'WebKitUnitTests.gyp:webkit_unit_tests',
                 '../../../Tools/DumpRenderTree/DumpRenderTree.gyp/DumpRenderTree.gyp:DumpRenderTree',
-                '../../../Tools/TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp:TestWebKitAPI',
             ],
             'conditions': [
                 ['OS=="android"', {
@@ -51,12 +49,11 @@
                     ],
                 }],
                 # Special target to wrap a gtest_target_type==shared_library
-                # webkit_unit_tests and TestWebKitAPI into an android apk for
-                # execution. See base.gyp for TODO(jrg)s about this strategy.
+                # webkit_unit_tests into an android apk for execution. See
+                # base.gyp for TODO(jrg)s about this strategy.
                 ['OS=="android" and gtest_target_type == "shared_library"', {
                     'dependencies': [
                         'WebKitUnitTests.gyp:webkit_unit_tests_apk',
-                        '../../../Tools/TestWebKitAPI/TestWebKitAPI.gyp/TestWebKitAPI.gyp:TestWebKitAPI_apk',
                     ],
                 }],
             ],
