@@ -1537,10 +1537,12 @@ decl_list:
     }
     | declaration error_location invalid_block_list maybe_space {
         parser->syntaxError($2);
+        parser->startProperty();
         $$ = false;
     }
     | declaration error_location invalid_block_list ';' maybe_space {
         parser->syntaxError($2);
+        parser->startProperty();
         $$ = false;
     }
     | errors ';' maybe_space {
@@ -1550,6 +1552,7 @@ decl_list:
     }
     | errors invalid_block_list error ';' maybe_space {
         parser->syntaxError($1, CSSParser::PropertyDeclarationError);
+        parser->startProperty();
         $$ = false;
     }
     | decl_list declaration ';' maybe_space {
