@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/tray/tray_constants.h"
@@ -283,7 +284,8 @@ void WebNotificationTray::HidePopups() {
 
 bool WebNotificationTray::ShouldShowMessageCenter() {
   return status_area_widget()->login_status() != user::LOGGED_IN_LOCKED &&
-      status_area_widget()->ShouldShowWebNotifications();
+      !(status_area_widget()->system_tray() &&
+        status_area_widget()->system_tray()->HasNotificationBubble());
 }
 
 void WebNotificationTray::ShowQuietModeMenu() {
