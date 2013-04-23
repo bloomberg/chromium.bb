@@ -59,7 +59,7 @@ class WebUIDataSourceTest : public testing::Test {
   void StartDataRequest(const std::string& path) {
      source_->StartDataRequest(
         path,
-        false,
+        0, 0,
         base::Bind(&WebUIDataSourceTest::SendResult,
         base::Unretained(this)));
   }

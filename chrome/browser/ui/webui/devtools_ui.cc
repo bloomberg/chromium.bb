@@ -103,7 +103,8 @@ class BundledDataSource : public content::URLDataSource {
 
   virtual void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
     std::string filename = PathWithoutParams(path);
 
@@ -145,7 +146,8 @@ class RemoteDataSource : public content::URLDataSource {
 
   virtual void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
 
     GURL url = GURL(kRemoteFrontendBase + path);
@@ -182,7 +184,8 @@ class LocalhostDataSource : public content::URLDataSource {
 
   virtual void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
 
     GURL url = GURL("http://localhost:9222/" + path);

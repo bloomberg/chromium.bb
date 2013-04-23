@@ -28,7 +28,8 @@ std::string BookmarksUIHTMLSource::GetSource() const {
 
 void BookmarksUIHTMLSource::StartDataRequest(
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   NOTREACHED() << "We should never get here since the extension should have"
                << "been triggered";

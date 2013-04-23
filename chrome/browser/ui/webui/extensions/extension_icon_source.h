@@ -75,7 +75,8 @@ class ExtensionIconSource : public content::URLDataSource,
   virtual std::string GetMimeType(const std::string&) const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
 
  private:

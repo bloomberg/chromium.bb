@@ -56,7 +56,8 @@ std::string ThemeSource::GetSource() const {
 
 void ThemeSource::StartDataRequest(
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   // Default scale factor if not specified.
   ui::ScaleFactor scale_factor;
@@ -68,8 +69,6 @@ void ThemeSource::StartDataRequest(
   if (uncached_path == kNewTabCSSPath ||
       uncached_path == kNewIncognitoTabCSSPath) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    DCHECK((uncached_path == kNewTabCSSPath && !is_incognito) ||
-           (uncached_path == kNewIncognitoTabCSSPath && is_incognito));
 
     callback.Run(css_bytes_);
     return;

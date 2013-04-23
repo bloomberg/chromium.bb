@@ -48,7 +48,8 @@ class CONTENT_EXPORT URLDataSource {
   // data is available or if the request could not be satisfied. This can be
   // called either in this callback or asynchronously with the response.
   virtual void StartDataRequest(const std::string& path,
-                                bool is_incognito,
+                                int render_process_id,
+                                int render_view_id,
                                 const GotDataCallback& callback) = 0;
 
   // Return the mimetype that should be sent with this response, or empty

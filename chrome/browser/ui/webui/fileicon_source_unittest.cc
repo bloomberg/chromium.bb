@@ -132,7 +132,7 @@ TEST_F(FileIconSourceTest, FileIconSource_Parse) {
                     base::FilePath(kBasicExpectations[i].unescaped_path),
                     kBasicExpectations[i].scale_factor,
                     kBasicExpectations[i].size, CallbackIsNull()));
-    source->StartDataRequest(kBasicExpectations[i].request_path, false,
+    source->StartDataRequest(kBasicExpectations[i].request_path, -1, -1,
                              callback);
   }
 }

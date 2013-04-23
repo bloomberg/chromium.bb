@@ -63,7 +63,8 @@ std::string LocalNtpSource::GetSource() const {
 
 void LocalNtpSource::StartDataRequest(
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   const std::string stripped_path = StripParameters(path);
   for (size_t i = 0; i < arraysize(kResources); ++i) {

@@ -83,7 +83,8 @@ std::string FaviconSource::GetSource() const {
 
 void FaviconSource::StartDataRequest(
     const std::string& raw_path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   FaviconService* favicon_service =
       FaviconServiceFactory::GetForProfile(profile_, Profile::EXPLICIT_ACCESS);

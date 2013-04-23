@@ -145,7 +145,8 @@ std::string ScreenshotSource::GetSource() const {
 
 void ScreenshotSource::StartDataRequest(
   const std::string& path,
-  bool is_incognito,
+  int render_process_id,
+  int render_view_id,
   const content::URLDataSource::GotDataCallback& callback) {
   SendScreenshot(path, callback);
 }

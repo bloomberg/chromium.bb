@@ -128,7 +128,8 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   virtual std::string GetSource() const OVERRIDE;
   virtual void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE;
   virtual std::string GetMimeType(const std::string&) const OVERRIDE {
     return "text/html";
@@ -223,7 +224,8 @@ std::string MobileSetupUIHTMLSource::GetSource() const {
 
 void MobileSetupUIHTMLSource::StartDataRequest(
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   CellularNetwork* network = NULL;
   if (!path.empty()) {

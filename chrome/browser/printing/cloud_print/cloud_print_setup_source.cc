@@ -49,7 +49,8 @@ std::string CloudPrintSetupSource::GetSource() const {
 
 void CloudPrintSetupSource::StartDataRequest(
     const std::string& path_raw,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   const char kCloudPrintSetupPath[] = "cloudprintsetup";
   const char kCloudPrintGaiaLoginPath[] = "gaialogin";

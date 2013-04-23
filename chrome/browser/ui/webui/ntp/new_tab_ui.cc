@@ -26,6 +26,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
@@ -318,7 +319,8 @@ std::string NewTabUI::NewTabHTMLSource::GetSource() const {
 
 void NewTabUI::NewTabHTMLSource::StartDataRequest(
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -345,9 +347,13 @@ void NewTabUI::NewTabHTMLSource::StartDataRequest(
 #if !defined(OS_ANDROID)
     NOTREACHED() << path << " should not have been requested on the NTP";
 #endif
+    callback.Run(NULL);
     return;
   }
 
+  content::RenderProcessHost* render_host =
+      content::RenderProcessHost::FromID(render_process_id);
+  bool is_incognito = render_host->GetBrowserContext()->IsOffTheRecord();
   scoped_refptr<base::RefCountedMemory> html_bytes(
       NTPResourceCacheFactory::GetForProfile(profile_)->
       GetNewTabHTML(is_incognito));

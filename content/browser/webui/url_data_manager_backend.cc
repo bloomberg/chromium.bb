@@ -28,6 +28,8 @@
 #include "content/browser/webui/url_data_source_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/url_constants.h"
 #include "googleurl/src/url_util.h"
 #include "net/base/io_buffer.h"
@@ -507,11 +509,17 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
   job->set_deny_xframe_options(
       source->source()->ShouldDenyXFrameOptions());
 
+  // Look up additional request info to pass down.
+  int render_process_id = -1;
+  int render_view_id = -1;
+  ResourceRequestInfo::GetRenderViewForRequest(request,
+                                               &render_process_id,
+                                               &render_view_id);
+
   // Forward along the request to the data source.
   MessageLoop* target_message_loop =
       source->source()->MessageLoopForRequestPath(path);
   if (!target_message_loop) {
-    bool is_incognito = job->is_incognito();
     job->MimeTypeAvailable(source->source()->GetMimeType(path));
     // Eliminate potentially dangling pointer to avoid future use.
     job = NULL;
@@ -520,7 +528,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     // on for this path.  Call directly into it from this thread, the IO
     // thread.
     source->source()->StartDataRequest(
-        path, is_incognito,
+        path, render_process_id, render_view_id,
         base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
   } else {
     // URLRequestChromeJob should receive mime type before data. This
@@ -538,8 +546,8 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
     target_message_loop->PostTask(
         FROM_HERE,
         base::Bind(&URLDataManagerBackend::CallStartRequest,
-                   make_scoped_refptr(source), path, job->is_incognito(),
-                   request_id));
+                   make_scoped_refptr(source), path, render_process_id,
+                   render_view_id, request_id));
   }
   return true;
 }
@@ -547,11 +555,21 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
 void URLDataManagerBackend::CallStartRequest(
     scoped_refptr<URLDataSourceImpl> source,
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     int request_id) {
+  if (BrowserThread::CurrentlyOn(BrowserThread::UI) &&
+      !RenderProcessHost::FromID(render_process_id)) {
+    // Make the request fail if its initiating renderer is no longer valid.
+    // This can happen when the IO thread posts this task just before the
+    // renderer shuts down.
+    source->SendResponse(request_id, NULL);
+    return;
+  }
   source->source()->StartDataRequest(
       path,
-      is_incognito,
+      render_process_id,
+      render_view_id,
       base::Bind(&URLDataSourceImpl::SendResponse, source, request_id));
 }
 

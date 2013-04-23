@@ -74,7 +74,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   std::string GetMimeType(const std::string& path) const;
   void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const URLDataSource::GotDataCallback& callback);
 
   void disable_set_font_strings_for_testing() {

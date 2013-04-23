@@ -36,7 +36,8 @@ std::string ThumbnailSource::GetSource() const {
 
 void ThumbnailSource::StartDataRequest(
     const std::string& raw_path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   // Translate to regular path if |raw_path| is of the form
   // chrome-search://favicon/<id> or chrome-search://thumb/<id>, where <id> is

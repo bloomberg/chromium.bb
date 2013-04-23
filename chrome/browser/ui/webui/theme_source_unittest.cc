@@ -25,8 +25,8 @@ class WebUISourcesTest : public testing::Test {
   ThemeSource* theme_source() const { return theme_source_.get(); }
   size_t result_data_size() const { return result_data_size_; }
 
-  void StartDataRequest(const std::string& source, bool is_incognito) {
-    theme_source()->StartDataRequest(source, is_incognito, callback_);
+  void StartDataRequest(const std::string& source) {
+    theme_source()->StartDataRequest(source, -1, -1, callback_);
   }
 
   size_t result_data_size_;
@@ -67,11 +67,11 @@ TEST_F(WebUISourcesTest, ThemeSourceMimeTypes) {
 TEST_F(WebUISourcesTest, ThemeSourceImages) {
   // We used to PNGEncode the images ourselves, but encoder differences
   // invalidated that. We now just check that the image exists.
-  StartDataRequest("IDR_THEME_FRAME_INCOGNITO", true);
+  StartDataRequest("IDR_THEME_FRAME_INCOGNITO");
   size_t min = 0;
   EXPECT_GT(result_data_size_, min);
 
-  StartDataRequest("IDR_THEME_TOOLBAR", true);
+  StartDataRequest("IDR_THEME_TOOLBAR");
   EXPECT_GT(result_data_size_, min);
 }
 
@@ -84,13 +84,13 @@ TEST_F(WebUISourcesTest, ThemeSourceCSS) {
   // just check for a successful request and data that is non-null.
   size_t empty_size = 0;
 
-  StartDataRequest("css/new_tab_theme.css", false);
+  StartDataRequest("css/new_tab_theme.css");
   EXPECT_NE(result_data_size_, empty_size);
 
-  StartDataRequest("css/new_tab_theme.css?pie", false);
+  StartDataRequest("css/new_tab_theme.css?pie");
   EXPECT_NE(result_data_size_, empty_size);
 
   // Check that we send NULL back when we can't find what we're looking for.
-  StartDataRequest("css/WRONGURL", false);
+  StartDataRequest("css/WRONGURL");
   EXPECT_EQ(result_data_size_, empty_size);
 }

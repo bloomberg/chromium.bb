@@ -136,7 +136,8 @@ std::string FileIconSource::GetSource() const {
 
 void FileIconSource::StartDataRequest(
     const std::string& url_path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string query;
   base::FilePath file_path;

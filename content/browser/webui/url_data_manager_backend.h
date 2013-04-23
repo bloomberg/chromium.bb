@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/supports_user_data.h"
 #include "content/browser/webui/url_data_manager.h"
+#include "content/public/browser/url_data_source.h"
 #include "net/url_request/url_request_job_factory.h"
 
 class GURL;
@@ -75,7 +76,8 @@ class URLDataManagerBackend : public base::SupportsUserData::Data {
   // need to add a refcount on the source.
   static void CallStartRequest(scoped_refptr<URLDataSourceImpl> source,
                                const std::string& path,
-                               bool is_incognito,
+                               int render_process_id,
+                               int render_view_id,
                                int request_id);
 
   // Remove a request from the list of pending requests.

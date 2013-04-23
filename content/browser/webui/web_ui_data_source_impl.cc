@@ -43,9 +43,11 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
   virtual void StartDataRequest(
       const std::string& path,
-      bool is_incognito,
+      int render_process_id,
+      int render_view_id,
       const URLDataSource::GotDataCallback& callback) OVERRIDE {
-    return parent_->StartDataRequest(path, is_incognito, callback);
+    return parent_->StartDataRequest(path, render_process_id, render_view_id,
+                                     callback);
   }
   virtual bool ShouldAddContentSecurityPolicy() const OVERRIDE {
     return parent_->add_csp_;
@@ -171,7 +173,8 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 
 void WebUIDataSourceImpl::StartDataRequest(
     const std::string& path,
-    bool is_incognito,
+    int render_process_id,
+    int render_view_id,
     const URLDataSource::GotDataCallback& callback) {
   if (!filter_callback_.is_null() &&
       filter_callback_.Run(path, callback)) {
