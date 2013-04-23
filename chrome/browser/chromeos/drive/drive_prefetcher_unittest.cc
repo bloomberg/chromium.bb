@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_test_util.h"
-#include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
+#include "chrome/browser/google_apis/event_logger.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -184,7 +184,7 @@ class DrivePrefetcherTest : public testing::Test {
     EXPECT_EQ(expected, fetched_list);
   }
 
-  EventLogger dummy_event_logger_;
+  google_apis::EventLogger dummy_event_logger_;
   scoped_ptr<StrictMock<MockDriveFileSystem> > mock_file_system_;
   scoped_ptr<DrivePrefetcher> prefetcher_;
   MessageLoopForUI message_loop_;

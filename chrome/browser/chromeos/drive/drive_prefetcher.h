@@ -19,9 +19,11 @@ namespace base {
 class FilePath;
 }
 
-namespace drive {
-
+namespace google_apis {
 class EventLogger;
+}
+
+namespace drive {
 
 // The parameters for DrivePrefetcher construction.
 struct DrivePrefetcherOptions {
@@ -38,7 +40,7 @@ struct DrivePrefetcherOptions {
 class DrivePrefetcher : public DriveFileSystemObserver {
  public:
   DrivePrefetcher(DriveFileSystemInterface* file_system,
-                  EventLogger* event_logger,
+                  google_apis::EventLogger* event_logger,
                   const DrivePrefetcherOptions& options);
   virtual ~DrivePrefetcher();
 
@@ -94,7 +96,7 @@ class DrivePrefetcher : public DriveFileSystemObserver {
   DriveFileSystemInterface* file_system_;
 
   // Event logger is owned by DriveSystemService.
-  EventLogger* event_logger_;
+  google_apis::EventLogger* event_logger_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

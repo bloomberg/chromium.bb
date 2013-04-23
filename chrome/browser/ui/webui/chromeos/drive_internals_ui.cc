@@ -20,12 +20,12 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
-#include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_switches.h"
+#include "chrome/browser/google_apis/event_logger.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/google_apis/time_util.h"
@@ -216,7 +216,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateFileSystemContentsSection();
   void UpdateLocalStorageUsageSection();
   void UpdateCacheContentsSection(drive::DriveCache* cache);
-  void UpdateEventLogSection(drive::EventLogger* event_logger);
+  void UpdateEventLogSection(google_apis::EventLogger* event_logger);
 
   // Called when GetGCacheContents() is complete.
   void OnGetGCacheContents(base::ListValue* gcache_contents,
@@ -630,8 +630,8 @@ void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
 }
 
 void DriveInternalsWebUIHandler::UpdateEventLogSection(
-    drive::EventLogger* event_logger) {
-  const std::deque<drive::EventLogger::Event>& log =
+    google_apis::EventLogger* event_logger) {
+  const std::deque<google_apis::EventLogger::Event>& log =
       event_logger->history();
 
   base::ListValue list;

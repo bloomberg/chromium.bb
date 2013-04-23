@@ -613,6 +613,8 @@
         'browser/google_apis/drive_upload_mode.h',
         'browser/google_apis/drive_uploader.cc',
         'browser/google_apis/drive_uploader.h',
+        'browser/google_apis/event_logger.cc',
+        'browser/google_apis/event_logger.h',
         'browser/google_apis/gdata_contacts_operations.cc',
         'browser/google_apis/gdata_contacts_operations.h',
         'browser/google_apis/gdata_errorcode.h',

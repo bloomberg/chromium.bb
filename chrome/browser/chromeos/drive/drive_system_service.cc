@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/drive_prefetcher.h"
 #include "chrome/browser/chromeos/drive/drive_sync_client.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
-#include "chrome/browser/chromeos/drive/event_logger.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/download/download_service.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_service.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
+#include "chrome/browser/google_apis/event_logger.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -113,7 +113,7 @@ DriveSystemService::DriveSystemService(
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
 
-  event_logger_.reset(new EventLogger(kEventLogHistorySize));
+  event_logger_.reset(new google_apis::EventLogger(kEventLogHistorySize));
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
   } else if (google_apis::util::IsDriveV2ApiEnabled()) {

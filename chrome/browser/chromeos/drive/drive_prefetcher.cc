@@ -9,7 +9,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/event_logger.h"
+#include "chrome/browser/google_apis/event_logger.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -54,7 +54,7 @@ DrivePrefetcherOptions::DrivePrefetcherOptions()
 }
 
 DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
-                                 EventLogger* event_logger,
+                                 google_apis::EventLogger* event_logger,
                                  const DrivePrefetcherOptions& options)
     : latest_files_(&ComparePrefetchPriority),
       number_of_inflight_traversals_(0),

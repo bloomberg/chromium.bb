@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/event_logger.h"
+#include "chrome/browser/google_apis/event_logger.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace drive {
+namespace google_apis {
 
 TEST(EventLoggerTest, BasicLogging) {
   EventLogger logger(3);  // At most 3 events are kept.
@@ -37,4 +37,4 @@ TEST(EventLoggerTest, BasicLogging) {
   EXPECT_EQ("fourth", logger.history()[2].what);
 }
 
-}   // namespace drive
+}   // namespace google_apis

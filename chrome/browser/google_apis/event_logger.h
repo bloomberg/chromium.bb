@@ -2,21 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_EVENT_LOGGER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_EVENT_LOGGER_H_
+#ifndef CHROME_BROWSER_GOOGLE_APIS_EVENT_LOGGER_H_
+#define CHROME_BROWSER_GOOGLE_APIS_EVENT_LOGGER_H_
 
 #include <stdarg.h>   // va_list
-#include <string>
 #include <deque>
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/time.h"
 
-namespace drive {
+namespace google_apis {
 
-// EventLogger is used to expose text messages to chrome:drive-internals,
-// for diagnosing the behavior of the Drive client.
+// EventLogger is used to collect and expose text messages for diagnosing
+// behaviors of Google APIs stuff. For instance, the collected messages are
+// exposed to chrome:drive-internals.
 class EventLogger {
  public:
   // Represents a single event log.
@@ -47,6 +48,6 @@ class EventLogger {
   DISALLOW_COPY_AND_ASSIGN(EventLogger);
 };
 
-}  // namespace drive
+}  // namespace google_apis
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_EVENT_LOGGER_H_
+#endif  // CHROME_BROWSER_GOOGLE_APIS_EVENT_LOGGER_H_

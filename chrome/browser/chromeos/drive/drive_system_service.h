@@ -26,6 +26,7 @@ class FilePath;
 
 namespace google_apis {
 class DriveServiceInterface;
+class EventLogger;
 }
 
 namespace drive {
@@ -38,7 +39,6 @@ class DriveWebAppsRegistry;
 class DriveSyncClient;
 class DrivePrefetcher;
 class DriveResourceMetadata;
-class EventLogger;
 class FileWriteHelper;
 class JobListInterface;
 class StaleCacheFilesRemover;
@@ -97,7 +97,7 @@ class DriveSystemService : public ProfileKeyedService,
   FileWriteHelper* file_write_helper() { return file_write_helper_.get(); }
   DriveDownloadHandler* download_handler() { return download_handler_.get(); }
   DriveWebAppsRegistry* webapps_registry() { return webapps_registry_.get(); }
-  EventLogger* event_logger() { return event_logger_.get(); }
+  google_apis::EventLogger* event_logger() { return event_logger_.get(); }
   JobListInterface* job_list() { return scheduler_.get(); }
 
   // Clears all the local cache files and in-memory data, and remounts the
@@ -163,7 +163,7 @@ class DriveSystemService : public ProfileKeyedService,
   bool push_notification_registered_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
-  scoped_ptr<EventLogger> event_logger_;
+  scoped_ptr<google_apis::EventLogger> event_logger_;
   scoped_ptr<DriveCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
   scoped_ptr<DriveScheduler> scheduler_;

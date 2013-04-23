@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/event_logger.h"
+#include "chrome/browser/google_apis/event_logger.h"
 
 #include "base/stringprintf.h"
 
-namespace drive {
+namespace google_apis {
 
 EventLogger::Event::Event(int id, const std::string& what)
     : id(id),
@@ -36,4 +36,4 @@ void EventLogger::Log(const char* format, ...) {
     history_.pop_front();
 }
 
-}  // namespace drive
+}  // namespace google_apis
