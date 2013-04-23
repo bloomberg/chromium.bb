@@ -3075,3 +3075,5 @@ crbug.com/233995 fast/spatial-navigation/snav-multiple-select-focusring.html [ F
 crbug.com/234061 [ MountainLion ] fast/regions/shape-inside/shape-inside-recursive-layout.html [ ImageOnlyFailure ]
 crbug.com/234066 fast/dom/everything-to-string.html [ Pass Failure ]
 crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-touch-editing-combined.html [ Pass Failure ]
+
+crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
