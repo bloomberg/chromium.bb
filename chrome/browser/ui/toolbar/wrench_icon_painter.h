@@ -54,9 +54,8 @@ class WrenchIconPainter : ui::AnimationDelegate {
   static bool ShouldAnimateUpgradeLevel(
       UpgradeDetector::UpgradeNotificationAnnoyanceLevel level);
 
-  // Map a global error level to a severity level.
-  static Severity SeverityFromGlobalErrorSeverity(
-      GlobalError::Severity severity);
+  // Get the severity level for global errors.
+  static Severity GlobalErrorSeverity();
 
   explicit WrenchIconPainter(Delegate* delegate);
   virtual ~WrenchIconPainter();

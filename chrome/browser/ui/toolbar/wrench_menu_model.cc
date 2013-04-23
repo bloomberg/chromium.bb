@@ -613,7 +613,7 @@ void WrenchMenuModel::Build(bool is_new_menu) {
 #if defined(OS_WIN)
   SetIcon(GetIndexOfCommandId(IDC_VIEW_INCOMPATIBILITIES),
           ui::ResourceBundle::GetSharedInstance().
-              GetNativeImageNamed(IDR_CONFLICT_MENU));
+              GetNativeImageNamed(IDR_INPUT_ALERT_MENU));
 #endif
 
   if (!is_new_menu) {

@@ -571,8 +571,7 @@ class NotificationBridge
   GlobalError* error = GlobalErrorServiceFactory::GetForProfile(
       browser_->profile())->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
   if (error) {
-    [cell setSeverity:WrenchIconPainter::SeverityFromGlobalErrorSeverity(
-        error->GetSeverity())
+    [cell setSeverity:WrenchIconPainter::GlobalErrorSeverity()
         shouldAnimate:YES];
     return;
   }

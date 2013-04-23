@@ -114,7 +114,7 @@ void OutdatedUpgradeBubbleView::Init() {
   text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   views::ImageView* image_view = new views::ImageView();
-  image_view->SetImage(rb.GetImageSkiaNamed(IDR_UPDATE_MENU3));
+  image_view->SetImage(rb.GetImageSkiaNamed(IDR_UPDATE_MENU_SEVERITY_HIGH));
 
   GridLayout* layout = new GridLayout(this);
   SetLayoutManager(layout);

@@ -128,9 +128,7 @@
       <structure type="chrome_scaled_image" name="IDR_BROWSER_ACTIONS_OVERFLOW_P" file="common/browser_actions_overflow_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_CLOSE_BUTTON_MASK" file="close_button_mask.png" />
       <if expr="is_win">
-        <structure type="chrome_scaled_image" name="IDR_CONFLICT_BADGE" file="conflict_badge.png" />
         <structure type="chrome_scaled_image" name="IDR_CONFLICT_FAVICON" file="common/favicon_conflicts.png" />
-        <structure type="chrome_scaled_image" name="IDR_CONFLICT_MENU" file="conflict_menu.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_CENTER_V" file="constrained_bottom_center_vista.png" />
       <structure type="chrome_scaled_image" name="IDR_CONSTRAINED_BOTTOM_LEFT_CORNER_V" file="constrained_bottom_left_corner_vista.png" />
@@ -403,8 +401,9 @@
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_SYNC" file="infobar_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_THEME" file="infobar_theme.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" />
-      <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="input_alert.png" />
-      <structure type="chrome_scaled_image" name="IDR_INPUT_GOOD" file="input_good.png" />
+      <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />
+      <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT_MENU" file="common/input_alert_menu.png" />
+      <structure type="chrome_scaled_image" name="IDR_INPUT_GOOD" file="common/input_good.png" />
       <structure type="chrome_scaled_image" name="IDR_KEYWORD_SEARCH_MAGNIFIER" file="keyword_search_magnifier.png" />
       <structure type="chrome_scaled_image" name="IDR_KILLED_TAB" file="killtab.png" />
       <structure type="chrome_scaled_image" name="IDR_LAPTOP_FAVICON" file="common/favicon_laptop.png" />
@@ -886,20 +885,17 @@
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_MEDIUM" file="common/browser_tools_bar_medium.png" />
       <structure type="chrome_scaled_image" name="IDR_TOOLS_BAR_HIGH" file="common/browser_tools_bar_high.png" />
 
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_AVAILABLE" file="update_available.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE" file="update_badge.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE2" file="update_badge2.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE3" file="update_badge3.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE4" file="update_badge4.png" />
-      <!-- TODO(mpcomplete): need icon for IDR_UPDATE_*_EXTENSION -->
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE_EXTENSION" file="external_extension_install_badge.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_FAIL" file="update_fail.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU" file="update_menu.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU2" file="update_menu2.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU3" file="update_menu3.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU4" file="update_menu4.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_EXTENSION" file="external_extension_install_menu.png" />
-      <structure type="chrome_scaled_image" name="IDR_UPDATE_UPTODATE" file="update_uptodate.png" />
+      <if expr="not is_macosx and not pp_ifdef('toolkit_views')">
+        <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE" file="update_badge.png" />
+        <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE2" file="update_badge2.png" />
+        <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE3" file="update_badge3.png" />
+        <structure type="chrome_scaled_image" name="IDR_UPDATE_BADGE4" file="update_badge4.png" />
+      </if>
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_FAIL" file="common/update_fail.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_LOW" file="common/update_menu_severity_low.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_MEDIUM" file="common/update_menu_severity_medium.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_MENU_SEVERITY_HIGH" file="common/update_menu_severity_high.png" />
+      <structure type="chrome_scaled_image" name="IDR_UPDATE_UPTODATE" file="common/update_uptodate.png" />
       <if expr="pp_ifdef('chromeos')">
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_CAPTURE" file="snapshot_wide.png" />
         <structure type="chrome_scaled_image" name="IDR_USER_IMAGE_CAPTURE_DISABLED" file="snapshot_wide_disabled.png" />

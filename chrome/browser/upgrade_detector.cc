@@ -38,26 +38,44 @@ void UpgradeDetector::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 int UpgradeDetector::GetIconResourceID(UpgradeNotificationIconType type) {
-  bool badge = type == UPGRADE_ICON_TYPE_BADGE;
-  switch (upgrade_notification_stage_) {
-    case UPGRADE_ANNOYANCE_CRITICAL:
-      // The critical annoyance state, somewhat ironically, re-purposes the
-      // icon for the second highest severity state, since that state has the
-      // icon most closely resembling the one requested of this feature and the
-      // critical annoyance is never part of the sliding scale of severity
-      // anyway (always shown on its own).
-      return badge ? IDR_UPDATE_BADGE3 : IDR_UPDATE_MENU3;
-    case UPGRADE_ANNOYANCE_SEVERE:
-      return badge ? IDR_UPDATE_BADGE4 : IDR_UPDATE_MENU4;
-    case UPGRADE_ANNOYANCE_HIGH:
-      return badge ? IDR_UPDATE_BADGE3 : IDR_UPDATE_MENU3;
-    case UPGRADE_ANNOYANCE_ELEVATED:
-      return badge ? IDR_UPDATE_BADGE2 : IDR_UPDATE_MENU2;
-    case UPGRADE_ANNOYANCE_LOW:
-      return badge ? IDR_UPDATE_BADGE : IDR_UPDATE_MENU;
-    default:
-      return 0;
+  if (type == UPGRADE_ICON_TYPE_BADGE) {
+    // Badges do not exist on Views and Mac OS X.
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
+    switch (upgrade_notification_stage_) {
+      case UPGRADE_ANNOYANCE_NONE:
+        return 0;
+      case UPGRADE_ANNOYANCE_LOW:
+        return IDR_UPDATE_BADGE;
+      case UPGRADE_ANNOYANCE_ELEVATED:
+        return IDR_UPDATE_BADGE2;
+      case UPGRADE_ANNOYANCE_HIGH:
+        return IDR_UPDATE_BADGE3;
+      case UPGRADE_ANNOYANCE_SEVERE:
+        return IDR_UPDATE_BADGE3;
+      case UPGRADE_ANNOYANCE_CRITICAL:
+        return IDR_UPDATE_BADGE3;
+    }
+#endif
+    NOTREACHED();
+    return 0;
   }
+
+  switch (upgrade_notification_stage_) {
+    case UPGRADE_ANNOYANCE_NONE:
+      return 0;
+    case UPGRADE_ANNOYANCE_LOW:
+      return IDR_UPDATE_MENU_SEVERITY_LOW;
+    case UPGRADE_ANNOYANCE_ELEVATED:
+      return IDR_UPDATE_MENU_SEVERITY_MEDIUM;
+    case UPGRADE_ANNOYANCE_HIGH:
+      return IDR_UPDATE_MENU_SEVERITY_HIGH;
+    case UPGRADE_ANNOYANCE_SEVERE:
+      return IDR_UPDATE_MENU_SEVERITY_HIGH;
+    case UPGRADE_ANNOYANCE_CRITICAL:
+      return IDR_UPDATE_MENU_SEVERITY_HIGH;
+  }
+  NOTREACHED();
+  return 0;
 }
 
 UpgradeDetector::UpgradeDetector()

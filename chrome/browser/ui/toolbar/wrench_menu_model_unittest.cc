@@ -34,10 +34,6 @@ class MenuError : public GlobalError {
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { execute_count_++; }
 
   virtual bool HasBubbleView() OVERRIDE { return false; }
-  virtual int GetBubbleViewIconResourceID() OVERRIDE {
-    ADD_FAILURE();
-    return 0;
-  }
   virtual string16 GetBubbleViewTitle() OVERRIDE {
     ADD_FAILURE();
     return string16();

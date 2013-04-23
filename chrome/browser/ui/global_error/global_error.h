@@ -38,7 +38,7 @@ class GlobalError : public base::SupportsWeakPtr<GlobalError> {
   // Returns the label for the menu item.
   virtual string16 MenuItemLabel() = 0;
   // Returns the resource ID for the menu item icon.
-  virtual int MenuItemIconResourceID();
+  int MenuItemIconResourceID();
   // Called when the user clicks on the menu item.
   virtual void ExecuteMenuItem(Browser* browser) = 0;
 
@@ -51,7 +51,7 @@ class GlobalError : public base::SupportsWeakPtr<GlobalError> {
   // Returns the bubble view.
   virtual GlobalErrorBubbleViewBase* GetBubbleView();
   // Returns the resource ID for bubble view icon.
-  virtual int GetBubbleViewIconResourceID();
+  int GetBubbleViewIconResourceID();
   // Returns the title for the bubble view.
   virtual string16 GetBubbleViewTitle() = 0;
   // Returns the messages for the bubble view, one per line. Multiple messages

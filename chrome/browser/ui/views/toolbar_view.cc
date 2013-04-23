@@ -813,7 +813,7 @@ void ToolbarView::UpdateWrenchButtonSeverity() {
   if (ShouldShowIncompatibilityWarning()) {
     if (!was_showing)
       content::RecordAction(UserMetricsAction("ConflictBadge"));
-    app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_HIGH, true);
+    app_menu_->SetSeverity(WrenchIconPainter::SEVERITY_MEDIUM, true);
     incompatibility_badge_showing = true;
     return;
   }
@@ -823,8 +823,7 @@ void ToolbarView::UpdateWrenchButtonSeverity() {
   GlobalError* error =
       service->GetHighestSeverityGlobalErrorWithWrenchMenuItem();
   if (error) {
-    app_menu_->SetSeverity(WrenchIconPainter::SeverityFromGlobalErrorSeverity(
-        error->GetSeverity()), true);
+    app_menu_->SetSeverity(WrenchIconPainter::GlobalErrorSeverity(), true);
     return;
   }
 

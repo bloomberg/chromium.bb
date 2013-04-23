@@ -60,11 +60,6 @@ body {
   width: 17px;
 }
 
-#update-status-icon.available {
-  background-image: url('chrome://theme/IDR_UPDATE_AVAILABLE');
-  background-size: 17px;
-}
-
 #update-status-icon.up-to-date {
   background-image: url('chrome://theme/IDR_UPDATE_UPTODATE');
   background-size: 17px;

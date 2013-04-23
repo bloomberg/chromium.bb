@@ -21,7 +21,9 @@ GlobalError::Severity GlobalError::GetSeverity() {
 }
 
 int GlobalError::MenuItemIconResourceID() {
-  return IDR_UPDATE_MENU4;
+  // If you change this make sure to also change the bubble icon and the wrench
+  // icon color.
+  return IDR_INPUT_ALERT_MENU;
 }
 
 bool GlobalError::HasShownBubbleView() {
@@ -44,6 +46,8 @@ GlobalErrorBubbleViewBase* GlobalError::GetBubbleView() {
 }
 
 int GlobalError::GetBubbleViewIconResourceID() {
+  // If you change this make sure to also change the menu icon and the wrench
+  // icon color.
   return IDR_INPUT_ALERT;
 }
 

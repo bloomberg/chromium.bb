@@ -28,17 +28,9 @@ class BaseError : public GlobalError {
     ADD_FAILURE();
     return string16();
   }
-  virtual int MenuItemIconResourceID() OVERRIDE {
-    ADD_FAILURE();
-    return 0;
-  }
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE { ADD_FAILURE(); }
 
   virtual bool HasBubbleView() OVERRIDE { return false; }
-  virtual int GetBubbleViewIconResourceID() OVERRIDE {
-    ADD_FAILURE();
-    return 0;
-  }
   virtual string16 GetBubbleViewTitle() OVERRIDE {
     ADD_FAILURE();
     return string16();

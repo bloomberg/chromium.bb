@@ -173,7 +173,7 @@ void CriticalNotificationBubbleView::Init() {
   layout->StartRow(0, top_column_set_id);
 
   views::ImageView* image = new views::ImageView();
-  image->SetImage(rb.GetImageSkiaNamed(IDR_UPDATE_MENU3));
+  image->SetImage(rb.GetImageSkiaNamed(IDR_UPDATE_MENU_SEVERITY_HIGH));
   layout->AddView(image);
 
   headline_ = new views::Label();

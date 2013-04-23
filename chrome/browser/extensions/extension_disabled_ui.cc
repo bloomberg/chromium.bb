@@ -138,7 +138,6 @@ class ExtensionDisabledGlobalError : public GlobalError,
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
-  virtual int MenuItemIconResourceID() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
@@ -209,10 +208,6 @@ bool ExtensionDisabledGlobalError::HasMenuItem() {
 
 int ExtensionDisabledGlobalError::MenuItemCommandID() {
   return menu_command_id_;
-}
-
-int ExtensionDisabledGlobalError::MenuItemIconResourceID() {
-  return IDR_UPDATE_MENU;
 }
 
 string16 ExtensionDisabledGlobalError::MenuItemLabel() {

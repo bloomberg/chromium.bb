@@ -65,18 +65,10 @@ bool WrenchIconPainter::ShouldAnimateUpgradeLevel(
 }
 
 // static
-WrenchIconPainter::Severity WrenchIconPainter::SeverityFromGlobalErrorSeverity(
-    GlobalError::Severity severity) {
-  switch (severity) {
-    case GlobalError::SEVERITY_LOW:
-      return SEVERITY_LOW;
-    case GlobalError::SEVERITY_MEDIUM:
-      return SEVERITY_MEDIUM;
-    case GlobalError::SEVERITY_HIGH:
-      return SEVERITY_HIGH;
-  }
-  NOTREACHED();
-  return SEVERITY_LOW;
+WrenchIconPainter::Severity WrenchIconPainter::GlobalErrorSeverity() {
+  // If you change this make sure to also change the menu icon and the bubble
+  // icon.
+  return SEVERITY_MEDIUM;
 }
 
 WrenchIconPainter::WrenchIconPainter(Delegate* delegate)

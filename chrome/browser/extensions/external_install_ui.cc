@@ -96,7 +96,6 @@ class ExternalInstallMenuAlert : public GlobalError,
   virtual bool HasMenuItem() OVERRIDE;
   virtual int MenuItemCommandID() OVERRIDE;
   virtual string16 MenuItemLabel() OVERRIDE;
-  virtual int MenuItemIconResourceID() OVERRIDE;
   virtual void ExecuteMenuItem(Browser* browser) OVERRIDE;
   virtual bool HasBubbleView() OVERRIDE;
   virtual string16 GetBubbleViewTitle() OVERRIDE;
@@ -220,10 +219,6 @@ bool ExternalInstallMenuAlert::HasMenuItem() {
 
 int ExternalInstallMenuAlert::MenuItemCommandID() {
   return kMenuCommandId;
-}
-
-int ExternalInstallMenuAlert::MenuItemIconResourceID() {
-  return IDR_UPDATE_MENU_EXTENSION;
 }
 
 string16 ExternalInstallMenuAlert::MenuItemLabel() {
