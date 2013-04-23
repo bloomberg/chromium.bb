@@ -470,6 +470,7 @@ void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameVi
     resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
     resetData->setObject("frameViewFullSize", buildObjectForSize(frameViewFullSize));
+    resetData->setNumber("pageZoomFactor", m_page->mainFrame()->pageZoomFactor());
     evaluateInOverlay("reset", resetData.release());
 }
 

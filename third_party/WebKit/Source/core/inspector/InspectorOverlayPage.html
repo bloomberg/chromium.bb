@@ -135,8 +135,17 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
         return;
     context.save();
 
-    var width = canvas.width;
-    var height = canvas.height;
+    function zoom(x)
+    {
+        return x * pageZoomFactor;
+    }
+    function unzoom(x)
+    {
+        return x / pageZoomFactor;
+    }
+
+    var width = canvas.width / pageZoomFactor;
+    var height = canvas.height / pageZoomFactor;
 
     const gridSubStep = 5;
     const gridStep = 50;
@@ -146,25 +155,25 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
         context.save();
         context.fillStyle = gridBackgroundColor;
         if (rulerAtBottom)
-            context.fillRect(0, height - 15, width, height);
+            context.fillRect(0, zoom(height) - 15, zoom(width), zoom(height));
         else
-            context.fillRect(0, 0, width, 15);
+            context.fillRect(0, 0, zoom(width), 15);
 
         // Clip out backgrounds intersection
         context.globalCompositeOperation = "destination-out";
         context.fillStyle = "red";
         if (rulerAtRight)
-            context.fillRect(width - 15, 0, width, height);
+            context.fillRect(zoom(width) - 15, 0, zoom(width), zoom(height));
         else
-            context.fillRect(0, 0, 15, height);
+            context.fillRect(0, 0, 15, zoom(height));
         context.restore();
 
         // Draw Y grid background
         context.fillStyle = gridBackgroundColor;
         if (rulerAtRight)
-            context.fillRect(width - 15, 0, width, height);
+            context.fillRect(zoom(width) - 15, 0, zoom(width), zoom(height));
         else
-            context.fillRect(0, 0, 15, height);
+            context.fillRect(0, 0, 15, zoom(height));
     }
 
     context.lineWidth = 1;
@@ -174,17 +183,19 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
         // Draw labels.
         context.save();
         context.translate(-highlight.scrollX, 0.5 - highlight.scrollY);
-        for (var y = 2 * gridStep; y < height + highlight.scrollY; y += 2 * gridStep) {
+        var maxY = height + unzoom(highlight.scrollY);
+        for (var y = 2 * gridStep; y < maxY; y += 2 * gridStep) {
             context.save();
-            context.translate(highlight.scrollX, y);
+            context.translate(highlight.scrollX, zoom(y));
             context.rotate(-Math.PI / 2);
-            context.fillText(y, 2, rulerAtRight ? width - 7 : 13);
+            context.fillText(y, 2, rulerAtRight ? zoom(width) - 7 : 13);
             context.restore();
         }
         context.translate(0.5, -0.5);
-        for (var x = 2 * gridStep; x < width + highlight.scrollX; x += 2 * gridStep) {
+        var maxX = width + unzoom(highlight.scrollX);
+        for (var x = 2 * gridStep; x < maxX; x += 2 * gridStep) {
             context.save();
-            context.fillText(x, x + 2, rulerAtBottom ? highlight.scrollY + height - 7 : highlight.scrollY + 13);
+            context.fillText(x, zoom(x) + 2, rulerAtBottom ? highlight.scrollY + zoom(height) - 7 : highlight.scrollY + 13);
             context.restore();
         }
         context.restore();
@@ -194,24 +205,25 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
         // Draw vertical grid
         context.save();
         if (rulerAtRight) {
-            context.translate(width, 0);
+            context.translate(zoom(width), 0);
             context.scale(-1, 1);
         }
         context.translate(-highlight.scrollX, 0.5 - highlight.scrollY);
-        for (var y = gridStep; y < height + highlight.scrollY; y += gridStep) {
+        var maxY = height + unzoom(highlight.scrollY);
+        for (var y = gridStep; y < maxY; y += gridStep) {
             context.beginPath();
-            context.moveTo(highlight.scrollX, y);
+            context.moveTo(highlight.scrollX, zoom(y));
             var markLength = (y % (gridStep * 2)) ? 5 : 8;
-            context.lineTo(highlight.scrollX + markLength, y);
+            context.lineTo(highlight.scrollX + markLength, zoom(y));
             context.stroke();
         }  
         context.strokeStyle = lightGridColor;
-        for (var y = gridSubStep; y < highlight.scrollY + height; y += gridSubStep) {
+        for (var y = gridSubStep; y < maxY; y += gridSubStep) {
             if (!(y % gridStep))
                 continue;
             context.beginPath();
-            context.moveTo(highlight.scrollX, y);
-            context.lineTo(highlight.scrollX + gridSubStep, y);
+            context.moveTo(highlight.scrollX, zoom(y));
+            context.lineTo(highlight.scrollX + gridSubStep, zoom(y));
             context.stroke();
         }
         context.restore();
@@ -221,24 +233,25 @@ function _drawGrid(highlight, rulerAtRight, rulerAtBottom)
         // Draw horizontal grid
         context.save();
         if (rulerAtBottom) {
-            context.translate(0, height);
+            context.translate(0, zoom(height));
             context.scale(1, -1);
         }
         context.translate(0.5 - highlight.scrollX, -highlight.scrollY);
-        for (var x = gridStep; x < width + highlight.scrollX; x += gridStep) {
+        var maxX = width + unzoom(highlight.scrollX);
+        for (var x = gridStep; x < maxX; x += gridStep) {
             context.beginPath();
-            context.moveTo(x, highlight.scrollY);
+            context.moveTo(zoom(x), highlight.scrollY);
             var markLength = (x % (gridStep * 2)) ? 5 : 8;
-            context.lineTo(x, highlight.scrollY + markLength);
+            context.lineTo(zoom(x), highlight.scrollY + markLength);
             context.stroke();
         }
         context.strokeStyle = lightGridColor;
-        for (var x = gridSubStep; x < highlight.scrollX + width; x += gridSubStep) {
+        for (var x = gridSubStep; x < maxX; x += gridSubStep) {
             if (!(x % gridStep))
                 continue;
             context.beginPath();
-            context.moveTo(x, highlight.scrollY);
-            context.lineTo(x, highlight.scrollY + gridSubStep);
+            context.moveTo(zoom(x), highlight.scrollY);
+            context.lineTo(zoom(x), highlight.scrollY + gridSubStep);
             context.stroke();
         }
         context.restore();
@@ -318,6 +331,7 @@ function reset(resetData)
     var deviceScaleFactor = resetData.deviceScaleFactor;
     var viewportSize = resetData.viewportSize;
     window.frameViewFullSize = resetData.frameViewFullSize;
+    window.pageZoomFactor = resetData.pageZoomFactor;
 
     window.canvas = document.getElementById("canvas");
     window.context = canvas.getContext("2d");
