@@ -783,6 +783,11 @@ class DomSerializerTests : public ContentBrowserTest,
   const base::FilePath local_directory_name_;
 };
 
+// These tests randomly crash on the Mac trybots with no callstacks. They never
+// failed locally across hundreds of runs in both debug and release.
+// TODO(jam): http://crbug.com/126514
+#if !defined(OS_MACOSX)
+
 // If original contents have document type, the serialized contents also have
 // document type.
 IN_PROC_BROWSER_TEST_F(DomSerializerTests, SerializeHTMLDOMWithDocType) {
@@ -1015,5 +1020,7 @@ IN_PROC_BROWSER_TEST_F(DomSerializerTests,
                 SubResourceForElementsInNonHTMLNamespaceOnRenderer,
             base::Unretained(this), file_url));
 }
+
+#endif  // !OS_MACOSX
 
 }  // namespace content

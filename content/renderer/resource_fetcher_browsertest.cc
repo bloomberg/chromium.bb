@@ -217,6 +217,7 @@ class ResourceFetcherTests : public ContentBrowserTest {
 
 // These tests randomly crash on the Mac trybots with no callstacks. They never
 // failed locally across hundreds of runs in both debug and release.
+// TODO(jam): http://crbug.com/126514
 #if !defined(OS_MACOSX)
 
 // Test a fetch from the test server.
@@ -285,6 +286,6 @@ IN_PROC_BROWSER_TEST_F(ResourceFetcherTests, ResourceFetcherDeletedInCallback) {
             base::Unretained(this), url));
 }
 
-#endif  // OS_MACOSX
+#endif  // !OS_MACOSX
 
 }  // namespace content

@@ -83,6 +83,11 @@ class DomOperationsTests : public ContentBrowserTest {
   }
 };
 
+// These tests randomly crash on the Mac trybots with no callstacks. They never
+// failed locally across hundreds of runs in both debug and release.
+// TODO(jam): http://crbug.com/126514
+#if !defined(OS_MACOSX)
+
 // Test function GetAllSavableResourceLinksForCurrentPage with a web page
 // which has valid savable resource links.
 IN_PROC_BROWSER_TEST_F(DomOperationsTests,
@@ -135,5 +140,7 @@ IN_PROC_BROWSER_TEST_F(DomOperationsTests,
       GetTestFilePath("dom_serializer", "youtube_2.htm");
   GetSavableResourceLinksForPage(page_file_path, expected_resources_set);
 }
+
+#endif  // !OS_MACOSX
 
 }  // namespace content
