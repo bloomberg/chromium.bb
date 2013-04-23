@@ -33,19 +33,6 @@ import logging
 _log = logging.getLogger(__name__)
 
 
-# FIXME: Should this function live with the ports somewhere?
-# Perhaps this should move onto PortFactory?
-def _baseline_search_tree(host, port_names):
-    tree = {}
-    for port_name in port_names:
-        port = host.port_factory.get(port_name)
-        webkit_base = port.webkit_base()
-        search_path = port.baseline_search_path()
-        if search_path:
-            tree[port_name] = [host.filesystem.relpath(path, webkit_base) for path in search_path] + ['LayoutTests']
-    return tree
-
-
 # FIXME: Should this function be somewhere more general?
 def _invert_dictionary(dictionary):
     inverted_dictionary = {}
@@ -57,16 +44,23 @@ def _invert_dictionary(dictionary):
     return inverted_dictionary
 
 
-# FIXME: This class is massively more complicated than necessary now that we only need to support Chromium baselines.
 class BaselineOptimizer(object):
+    ROOT_LAYOUT_TESTS_DIRECTORY = 'LayoutTests'
+
     def __init__(self, host, port_names):
         self._filesystem = host.filesystem
+        self._port_factory = host.port_factory
         self._scm = host.scm()
-        self._tree = _baseline_search_tree(host, port_names)
+        self._port_names = port_names
+
+    def _relative_baseline_search_paths(self, port_name):
+        port = self._port_factory.get(port_name)
+        relative_paths = [self._filesystem.relpath(path, port.webkit_base()) for path in port.baseline_search_path()]
+        return relative_paths + [self.ROOT_LAYOUT_TESTS_DIRECTORY]
 
     def read_results_by_directory(self, baseline_name):
         results_by_directory = {}
-        directories = reduce(set.union, map(set, self._tree.values()))
+        directories = reduce(set.union, map(set, [self._relative_baseline_search_paths(port_name) for port_name in self._port_names]))
         for directory in directories:
             path = self._filesystem.join(self._scm.checkout_root, directory, baseline_name)
             if self._filesystem.exists(path):
@@ -75,97 +69,89 @@ class BaselineOptimizer(object):
 
     def _results_by_port_name(self, results_by_directory):
         results_by_port_name = {}
-        for port_name, search_path in self._tree.items():
-            for directory in search_path:
+        for port_name in self._port_names:
+            for directory in self._relative_baseline_search_paths(port_name):
                 if directory in results_by_directory:
                     results_by_port_name[port_name] = results_by_directory[directory]
                     break
         return results_by_port_name
 
-    def _most_specific_common_directory(self, port_names):
-        paths = [self._tree[port_name] for port_name in port_names]
-        common_directories = reduce(set.intersection, map(set, paths))
+    def _directories_immediately_preceding_root(self):
+        directories = set()
+        for port_name in self._port_names:
+            port = self._port_factory.get(port_name)
+            directory = self._filesystem.relpath(port.baseline_search_path()[-1], port.webkit_base())
+            directories.add(directory)
+        return directories
 
-        def score(directory):
-            return sum([path.index(directory) for path in paths])
+    def _optimize_result_for_root(self, new_results_by_directory):
+        # The root directory (i.e. LayoutTests) is the only one that doesn't correspond
+        # to a specific platform. As such, it's the only one where the baseline in fallback directories
+        # immediately before it can be promoted up, i.e. if chromium-win and chromium-mac
+        # have the same baseline, then it can be promoted up to be the LayoutTests baseline.
+        # All other baselines can only be removed if they're redundant with a baseline earlier
+        # in the fallback order. They can never promoted up.
+        directories_immediately_preceding_root = self._directories_immediately_preceding_root()
 
-        _, directory = sorted([(score(directory), directory) for directory in common_directories])[0]
-        return directory
+        shared_result = None
+        root_baseline_unused = False
+        for directory in directories_immediately_preceding_root:
+            this_result = new_results_by_directory.get(directory)
 
-    def _filter_port_names_by_result(self, predicate, port_names_by_result):
-        filtered_port_names_by_result = {}
-        for result, port_names in port_names_by_result.items():
-            filtered_port_names = filter(predicate, port_names)
-            if filtered_port_names:
-                filtered_port_names_by_result[result] = filtered_port_names
-        return filtered_port_names_by_result
+            # If any of these directories don't have a baseline, there's no optimization we can do.
+            if not this_result:
+                return
 
-    def _place_results_in_most_specific_common_directory(self, port_names_by_result, results_by_directory):
-        for result, port_names in port_names_by_result.items():
-            directory = self._most_specific_common_directory(port_names)
-            results_by_directory[directory] = result
+            if not shared_result:
+                shared_result = this_result
+            elif shared_result != this_result:
+                root_baseline_unused = True
+
+        # The root baseline is unused if all the directories immediately preceding the root
+        # have a baseline, but have different baselines, so the baselines can't be promoted up.
+        if root_baseline_unused:
+            del new_results_by_directory[self.ROOT_LAYOUT_TESTS_DIRECTORY]
+            return
+
+        new_results_by_directory[self.ROOT_LAYOUT_TESTS_DIRECTORY] = shared_result
+        for directory in directories_immediately_preceding_root:
+            del new_results_by_directory[directory]
 
     def _find_optimal_result_placement(self, baseline_name):
         results_by_directory = self.read_results_by_directory(baseline_name)
         results_by_port_name = self._results_by_port_name(results_by_directory)
         port_names_by_result = _invert_dictionary(results_by_port_name)
 
-        new_results_by_directory = self._optimize_by_most_specific_common_directory(results_by_directory, results_by_port_name, port_names_by_result)
-        if not new_results_by_directory:
-            new_results_by_directory = self._optimize_by_pushing_results_up(results_by_directory, results_by_port_name, port_names_by_result)
+        new_results_by_directory = self._remove_redundant_results(results_by_directory, results_by_port_name, port_names_by_result)
+        self._optimize_result_for_root(new_results_by_directory)
 
         return results_by_directory, new_results_by_directory
 
-    def _optimize_by_most_specific_common_directory(self, results_by_directory, results_by_port_name, port_names_by_result):
-        new_results_by_directory = {}
-        unsatisfied_port_names_by_result = port_names_by_result
-        while unsatisfied_port_names_by_result:
-            self._place_results_in_most_specific_common_directory(unsatisfied_port_names_by_result, new_results_by_directory)
-            new_results_by_port_name = self._results_by_port_name(new_results_by_directory)
+    def _remove_redundant_results(self, results_by_directory, results_by_port_name, port_names_by_result):
+        new_results_by_directory = copy.copy(results_by_directory)
+        for port_name in self._port_names:
+            current_result = results_by_port_name.get(port_name)
 
-            def is_unsatisfied(port_name):
-                return results_by_port_name[port_name] != new_results_by_port_name[port_name]
+            # This happens if we're missing baselines for a port.
+            if not current_result:
+                continue;
 
-            new_unsatisfied_port_names_by_result = self._filter_port_names_by_result(is_unsatisfied, port_names_by_result)
-
-            if len(new_unsatisfied_port_names_by_result.values()) >= len(unsatisfied_port_names_by_result.values()):
-                return {}  # Frowns. We do not appear to be converging.
-            unsatisfied_port_names_by_result = new_unsatisfied_port_names_by_result
+            fallback_path = self._relative_baseline_search_paths(port_name)
+            current_index, current_directory = self._find_in_fallbackpath(fallback_path, current_result, new_results_by_directory)
+            for index in range(current_index + 1, len(fallback_path)):
+                new_directory = fallback_path[index]
+                if not new_directory in new_results_by_directory:
+                    # No result for this baseline in this directory.
+                    continue
+                elif new_results_by_directory[new_directory] == current_result:
+                    # Result for new_directory are redundant with the result earlier in the fallback order.
+                    if current_directory in new_results_by_directory:
+                        del new_results_by_directory[current_directory]
+                else:
+                    # The new_directory contains a different result, so stop trying to push results up.
+                    break
 
         return new_results_by_directory
-
-    def _optimize_by_pushing_results_up(self, results_by_directory, results_by_port_name, port_names_by_result):
-        try:
-            results_by_directory = results_by_directory
-            best_so_far = results_by_directory
-            while True:
-                new_results_by_directory = copy.copy(best_so_far)
-                for port_name in self._tree.keys():
-                    fallback_path = self._tree[port_name]
-                    current_index, current_directory = self._find_in_fallbackpath(fallback_path, results_by_port_name[port_name], best_so_far)
-                    current_result = results_by_port_name[port_name]
-                    for index in range(current_index + 1, len(fallback_path)):
-                        new_directory = fallback_path[index]
-                        if not new_directory in new_results_by_directory:
-                            new_results_by_directory[new_directory] = current_result
-                            if current_directory in new_results_by_directory:
-                                del new_results_by_directory[current_directory]
-                        elif new_results_by_directory[new_directory] == current_result:
-                            if current_directory in new_results_by_directory:
-                                del new_results_by_directory[current_directory]
-                        else:
-                            # The new_directory contains a different result, so stop trying to push results up.
-                            break
-
-                if len(new_results_by_directory) >= len(best_so_far):
-                    # We've failed to improve, so give up.
-                    break
-                best_so_far = new_results_by_directory
-
-            return best_so_far
-        except KeyError as e:
-            # FIXME: KeyErrors get raised if we're missing baselines. We should handle this better.
-            return {}
 
     def _find_in_fallbackpath(self, fallback_path, current_result, results_by_directory):
         for index, directory in enumerate(fallback_path):
@@ -174,7 +160,7 @@ class BaselineOptimizer(object):
         assert False, "result %s not found in fallback_path %s, %s" % (current_result, fallback_path, results_by_directory)
 
     def _platform(self, filename):
-        platform_dir = 'LayoutTests' + self._filesystem.sep + 'platform' + self._filesystem.sep
+        platform_dir = self.ROOT_LAYOUT_TESTS_DIRECTORY + self._filesystem.sep + 'platform' + self._filesystem.sep
         if filename.startswith(platform_dir):
             return filename.replace(platform_dir, '').split(self._filesystem.sep)[0]
         platform_dir = self._filesystem.join(self._scm.checkout_root, platform_dir)
@@ -223,16 +209,21 @@ class BaselineOptimizer(object):
     def optimize(self, baseline_name):
         basename = self._filesystem.basename(baseline_name)
         results_by_directory, new_results_by_directory = self._find_optimal_result_placement(baseline_name)
-        self.new_results_by_directory = new_results_by_directory
+
         if new_results_by_directory == results_by_directory:
             if new_results_by_directory:
                 _log.debug("  %s: (already optimal)" % basename)
                 self.write_by_directory(results_by_directory, _log.debug, "    ")
             else:
                 _log.debug("  %s: (no baselines found)" % basename)
+            # This is just used for unittests. Intentionally set it to the old data if we don't modify anything.
+            self.new_results_by_directory = results_by_directory
             return True
+
         if self._results_by_port_name(results_by_directory) != self._results_by_port_name(new_results_by_directory):
-            _log.warning("  %s: optimization failed" % basename)
+            # This really should never happen. Just a sanity check to make sure the script fails in the case of bugs
+            # instead of committing incorrect baselines.
+            _log.error("  %s: optimization failed" % basename)
             self.write_by_directory(results_by_directory, _log.warning, "      ")
             return False
 
