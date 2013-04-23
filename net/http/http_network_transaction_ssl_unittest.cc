@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "net/base/net_util.h"
 #include "net/base/request_priority.h"
 #include "net/dns/mock_host_resolver.h"
@@ -77,10 +78,11 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     session_params_.transport_security_state = &transport_security_state_;
   }
 
-  HttpRequestInfo* GetRequestInfo(std::string url) {
+  HttpRequestInfo* GetRequestInfo(const std::string& url) {
     HttpRequestInfo* request_info = new HttpRequestInfo;
     request_info->url = GURL(url);
     request_info->method = "GET";
+    request_info_vector_.push_back(request_info);
     return request_info;
   }
 
@@ -97,6 +99,7 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
   HttpServerPropertiesImpl http_server_properties_;
   TransportSecurityState transport_security_state_;
   HttpNetworkSession::Params session_params_;
+  ScopedVector<HttpRequestInfo> request_info_vector_;
 };
 
 // Tests that HttpNetworkTransaction does not attempt to

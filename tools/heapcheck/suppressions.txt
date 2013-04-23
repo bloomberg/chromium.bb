@@ -1911,11 +1911,4 @@
    ...
    fun:content::ResourceDispatcherHostTest_*_Test::TestBody
 }
-{
-   bug_234187
-   Heapcheck:Leak
-   ...
-   fun:net::HttpNetworkTransactionSSLTest::GetRequestInfo
-   fun:net::HttpNetworkTransactionSSLTest_*_Test::TestBody
-}
 

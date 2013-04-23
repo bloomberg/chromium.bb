@@ -7122,11 +7122,4 @@
    ...
    fun:_ZN7content*ResourceDispatcherHostTest_*_Test8TestBodyEv
 }
-{
-   bug_234187
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN3net29HttpNetworkTransactionSSLTest14GetRequestInfoESs
-   fun:_ZN3net*HttpNetworkTransactionSSLTest_*_Test8TestBodyEv
-}
 
