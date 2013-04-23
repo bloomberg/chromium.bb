@@ -2201,6 +2201,14 @@ void AutofillDialogControllerImpl::FinishSubmit() {
 
   LogOnFinishSubmitMetrics();
 
+  // On a successful submit, if the user manually selected "pay without wallet",
+  // stop trying to pay with Wallet on future runs of the dialog.
+  bool manually_selected_pay_without_wallet =
+      !account_chooser_model_.WalletIsSelected() &&
+      !account_chooser_model_.had_wallet_error();
+  profile_->GetPrefs()->SetBoolean(::prefs::kAutofillDialogPayWithoutWallet,
+                                   manually_selected_pay_without_wallet);
+
   switch (dialog_type_) {
     case DIALOG_TYPE_AUTOCHECKOUT:
       // Stop observing PersonalDataManager to avoid the dialog redrawing while

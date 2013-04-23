@@ -35,6 +35,8 @@ namespace autofill {
 
 namespace {
 
+const char kFakeEmail[] = "user@example.com";
+
 using content::BrowserThread;
 
 class TestAutofillDialogView : public AutofillDialogView {
@@ -158,7 +160,9 @@ class TestAccountChooserModel : public AccountChooserModel {
   DISALLOW_COPY_AND_ASSIGN(TestAccountChooserModel);
 };
 
-class TestAutofillDialogController : public AutofillDialogControllerImpl {
+class TestAutofillDialogController
+    : public AutofillDialogControllerImpl,
+      public base::SupportsWeakPtr<TestAutofillDialogController> {
  public:
   TestAutofillDialogController(
       content::WebContents* contents,
@@ -250,8 +254,6 @@ class AutofillDialogControllerTest : public testing::Test {
     FormData form_data;
     form_data.fields.push_back(field);
 
-    profile()->GetPrefs()->SetBoolean(
-        ::prefs::kAutofillDialogPayWithoutWallet, true);
     profile()->CreateRequestContext();
     test_web_contents_.reset(
         content::WebContentsTester::CreateTestWebContents(profile(), NULL));
@@ -259,22 +261,41 @@ class AutofillDialogControllerTest : public testing::Test {
     base::Callback<void(const FormStructure*, const std::string&)> callback =
         base::Bind(&AutofillDialogControllerTest::FinishedCallback,
                    base::Unretained(this));
-    controller_ = new TestAutofillDialogController(
+    controller_ = (new TestAutofillDialogController(
         test_web_contents_.get(),
         form_data,
         GURL(),
         metric_logger_,
         DIALOG_TYPE_REQUEST_AUTOCOMPLETE,
-        callback);
+        callback))->AsWeakPtr();
     controller_->Init(profile());
     controller_->Show();
   }
 
   virtual void TearDown() OVERRIDE {
-    controller_->ViewClosed();
+    if (controller_)
+      controller_->ViewClosed();
   }
 
  protected:
+  static scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
+    base::DictionaryValue dict;
+    scoped_ptr<base::ListValue> list(new base::ListValue());
+    list->AppendString("verify_cvv");
+    dict.Set("required_action", list.release());
+    return wallet::FullWallet::CreateFullWallet(dict);
+  }
+
+  void FillCreditCardInputs() {
+    DetailOutputMap cc_outputs;
+    const DetailInputs& cc_inputs =
+        controller()->RequestedFieldsForSection(SECTION_CC);
+    for (size_t i = 0; i < cc_inputs.size(); ++i) {
+      cc_outputs[&cc_inputs[i]] = ASCIIToUTF16("11");
+    }
+    controller()->GetView()->SetUserInput(SECTION_CC, cc_outputs);
+  }
+
   std::vector<DialogNotification> NotificationsOfType(
       DialogNotification::Type type) {
     std::vector<DialogNotification> right_type;
@@ -287,16 +308,8 @@ class AutofillDialogControllerTest : public testing::Test {
     return right_type;
   }
 
-  static scoped_ptr<wallet::FullWallet> CreateFullWalletWithVerifyCvv() {
-    base::DictionaryValue dict;
-    scoped_ptr<base::ListValue> list(new base::ListValue());
-    list->AppendString("verify_cvv");
-    dict.Set("required_action", list.release());
-    return wallet::FullWallet::CreateFullWallet(dict);
-  }
-
   void SetUpWallet() {
-    controller()->OnUserNameFetchSuccess("user@example.com");
+    controller()->OnUserNameFetchSuccess(kFakeEmail);
     ui::MenuModel* account_model = controller()->MenuModelForAccountChooser();
     ASSERT_TRUE(account_model);
     account_model->ActivatedAt(TestAccountChooserModel::kActiveWalletItemId);
@@ -325,7 +338,7 @@ class AutofillDialogControllerTest : public testing::Test {
   TestingProfile profile_;
 
   // The controller owns itself.
-  TestAutofillDialogController* controller_;
+  base::WeakPtr<TestAutofillDialogController> controller_;
 
   scoped_ptr<content::WebContents> test_web_contents_;
 
@@ -395,7 +408,7 @@ TEST_F(AutofillDialogControllerTest, AutofillProfileVariants) {
   names.push_back(ASCIIToUTF16("John Doe"));
   names.push_back(ASCIIToUTF16("Jane Doe"));
   full_profile.SetRawMultiInfo(EMAIL_ADDRESS, names);
-  const string16 kEmail1 = ASCIIToUTF16("user@example.com");
+  const string16 kEmail1 = ASCIIToUTF16(kFakeEmail);
   const string16 kEmail2 = ASCIIToUTF16("admin@example.com");
   std::vector<string16> emails;
   emails.push_back(kEmail1);
@@ -543,13 +556,7 @@ TEST_F(AutofillDialogControllerTest, EditAutofillProfile) {
   controller()->GetView()->SetUserInput(SECTION_SHIPPING, outputs);
 
   // We also have to simulate CC inputs to keep the controller happy.
-  DetailOutputMap cc_outputs;
-  const DetailInputs& cc_inputs =
-      controller()->RequestedFieldsForSection(SECTION_CC);
-  for (size_t i = 0; i < cc_inputs.size(); ++i) {
-    cc_outputs[&cc_inputs[i]] = ASCIIToUTF16("11");
-  }
-  controller()->GetView()->SetUserInput(SECTION_CC, cc_outputs);
+  FillCreditCardInputs();
 
   controller()->OnAccept();
   const AutofillProfile& edited_profile =
@@ -815,6 +822,40 @@ TEST_F(AutofillDialogControllerTest, NoWalletNotifications) {
       DialogNotification::EXPLANATORY_MESSAGE).empty());
   EXPECT_TRUE(NotificationsOfType(
       DialogNotification::WALLET_USAGE_CONFIRMATION).empty());
+}
+
+TEST_F(AutofillDialogControllerTest, ViewCancelDoesntSetPref) {
+  ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+
+  controller()->OnUserNameFetchSuccess(kFakeEmail);
+  controller()->MenuModelForAccountChooser()->ActivatedAt(
+      TestAccountChooserModel::kAutofillItemId);
+
+  controller()->OnCancel();
+  controller()->ViewClosed();
+
+  EXPECT_FALSE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+}
+
+TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
+  ASSERT_FALSE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+
+  controller()->OnUserNameFetchSuccess(kFakeEmail);
+  controller()->MenuModelForAccountChooser()->ActivatedAt(
+      TestAccountChooserModel::kAutofillItemId);
+
+  // We also have to simulate CC inputs to keep the controller happy.
+  FillCreditCardInputs();
+
+  controller()->OnAccept();
+
+  EXPECT_TRUE(profile()->GetPrefs()->HasPrefPath(
+      ::prefs::kAutofillDialogPayWithoutWallet));
+  EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
+      ::prefs::kAutofillDialogPayWithoutWallet));
 }
 
 }  // namespace autofill
