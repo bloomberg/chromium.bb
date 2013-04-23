@@ -287,7 +287,7 @@ int ScoredHistoryMatch::ScoreComponentForMatches(
     const TermMatches& provided_matches,
     const WordStarts& word_starts,
     size_t max_length) {
-  if (provided_matches.empty())
+  if (provided_matches.empty() || (max_length == 0))
     return 0;
 
   // The actual matches we'll use for matching.  This is |provided_matches|
