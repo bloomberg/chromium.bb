@@ -274,7 +274,7 @@ class FilterBufferState {
   }
 
   SkCanvas* Canvas() {
-    if (!canvas_.get())
+    if (!canvas_)
       CreateCanvas();
     return canvas_.get();
   }

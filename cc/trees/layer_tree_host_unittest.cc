@@ -1365,7 +1365,7 @@ class EvictionTestLayer : public Layer {
   virtual ~EvictionTestLayer() {}
 
   void CreateTextureIfNeeded() {
-    if (texture_.get())
+    if (texture_)
       return;
     texture_ = PrioritizedResource::Create(
         layer_tree_host()->contents_texture_manager());
@@ -1402,7 +1402,7 @@ class EvictionTestLayerImpl : public LayerImpl {
 
 void EvictionTestLayer::SetTexturePriorities(const PriorityCalculator&) {
   CreateTextureIfNeeded();
-  if (!texture_.get())
+  if (!texture_)
     return;
   texture_->set_request_priority(PriorityCalculator::UIPriority(true));
 }
@@ -1411,7 +1411,7 @@ void EvictionTestLayer::Update(ResourceUpdateQueue* queue,
                                const OcclusionTracker*,
                                RenderingStats*) {
   CreateTextureIfNeeded();
-  if (!texture_.get())
+  if (!texture_)
     return;
 
   gfx::Rect full_rect(0, 0, 10, 10);

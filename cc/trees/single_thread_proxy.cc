@@ -94,7 +94,7 @@ bool SingleThreadProxy::InitializeOutputSurface() {
   DCHECK(Proxy::IsMainThread());
   scoped_ptr<OutputSurface> output_surface =
       layer_tree_host_->CreateOutputSurface();
-  if (!output_surface.get())
+  if (!output_surface)
     return false;
   output_surface_before_initialization_ = output_surface.Pass();
   return true;
@@ -134,7 +134,7 @@ bool SingleThreadProxy::RecreateOutputSurface() {
 
   scoped_ptr<OutputSurface> output_surface =
       layer_tree_host_->CreateOutputSurface();
-  if (!output_surface.get())
+  if (!output_surface)
     return false;
   scoped_refptr<cc::ContextProvider> offscreen_context_provider;
   if (created_offscreen_context_provider_) {
@@ -313,7 +313,7 @@ void SingleThreadProxy::ReduceWastedContentsTextureMemoryOnImplThread() {
 
 void SingleThreadProxy::SendManagedMemoryStats() {
   DCHECK(Proxy::IsImplThread());
-  if (!layer_tree_host_impl_.get())
+  if (!layer_tree_host_impl_)
     return;
   if (!layer_tree_host_->contents_texture_manager())
     return;
