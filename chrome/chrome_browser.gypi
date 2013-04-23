@@ -1796,7 +1796,6 @@
         'browser/spellchecker/spellcheck_message_filter_mac.h',
         'browser/spellchecker/spellcheck_platform_mac.h',
         'browser/spellchecker/spellcheck_platform_mac.mm',
-        'browser/spellchecker/spellcheck_profile_provider.h',
         'browser/spellchecker/spellcheck_service.cc',
         'browser/spellchecker/spellcheck_service.h',
         'browser/spellchecker/spelling_service_client.cc',
