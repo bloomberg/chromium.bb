@@ -424,7 +424,8 @@ _settings = dict(
 
 # disk_vm_layout -- layout of image_to_vm.sh resulting image. See
 #                   disk_layout for more info.
-  disk_vm_layout=None,
+  disk_vm_layout='2gb-rootfs-updatable',
+
 
 # TODO(sosa): Collapse to one option.
 # ====================== Dev installer prebuilts options =======================
@@ -722,7 +723,6 @@ asan = _config(
   profile='asan',
   useflags=['asan'], # see profile for more
   disk_layout='2gb-rootfs',
-  disk_vm_layout='2gb-rootfs-updatable',
 )
 
 _config.add_raw_config('refresh-packages',
@@ -827,6 +827,7 @@ chromium_info = chromium_pfq.derive(
   important=False,
   manifest_version=False,
   vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  disk_vm_layout='usb',
 )
 
 chrome_info = chromium_info.derive(
@@ -1168,6 +1169,7 @@ _release = full.derive(official, internal,
   dev_installer_prebuilts=True,
   git_sync=False,
   vm_tests=constants.SMOKE_SUITE_TEST_TYPE,
+  disk_vm_layout='usb',
   hw_tests=HWTestConfig.DefaultList(),
   upload_hw_test_artifacts=True,
   signer_tests=True,
