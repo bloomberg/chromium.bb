@@ -4,7 +4,10 @@
 
 #include "chrome/browser/google_apis/drive_api_util.h"
 
+#include <string>
+
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
@@ -15,8 +18,17 @@ namespace google_apis {
 namespace util {
 
 bool IsDriveV2ApiEnabled() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableDriveV2Api);
+  const CommandLine* command_line = CommandLine::ForCurrentProcess();
+  std::string value =
+      command_line->GetSwitchValueASCII(switches::kEnableDriveV2Api);
+  StringToLowerASCII(&value);
+  if (value == "false") {
+    return false;
+  }
+
+  // The value should be empty or "true".
+  DCHECK(value.empty() || value == "true");
+  return true;
 }
 
 }  // namespace util
