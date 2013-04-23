@@ -838,24 +838,6 @@
         ]
       },
       {
-        "name": "getFileTransfers",
-        "description": "Get the list of ongoing file transfer operations.",
-        "parameters": [
-          {
-            "name": "callback",
-            "type": "function",
-            "parameters": [
-              {
-                "name" : "fileTransfers",
-                "type": "array",
-                "items": {"$ref": "FileTransferStatus"},
-                "description": "The list of FileTransferStatus representing ongoing file transfers."
-              }
-            ]
-          }
-        ]
-      },
-      {
         "name": "transferFile",
         "description": "Transfers file from local to remote file system.",
         "parameters": [

@@ -625,24 +625,6 @@ class GetDriveFilesFunction : public FileBrowserFunction {
   ListValue* local_paths_;
 };
 
-// Implements the chrome.fileBrowserPrivate.executeTask method.
-class GetFileTransfersFunction : public AsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getFileTransfers",
-                             FILEBROWSERPRIVATE_GETFILETRANSFERS)
-
-  GetFileTransfersFunction();
-
- protected:
-  virtual ~GetFileTransfersFunction();
-
-  // AsyncExtensionFunction overrides.
-  virtual bool RunImpl() OVERRIDE;
-
- private:
-  ListValue* GetFileTransfersList();
-};
-
 // Implements the chrome.fileBrowserPrivate.cancelFileTransfers method.
 class CancelFileTransfersFunction : public FileBrowserFunction {
  public:

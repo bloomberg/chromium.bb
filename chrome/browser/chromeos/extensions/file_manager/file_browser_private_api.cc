@@ -48,7 +48,6 @@
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
-#include "chrome/browser/google_apis/operation_registry.h"
 #include "chrome/browser/google_apis/time_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
@@ -571,7 +570,6 @@ FileBrowserPrivateAPI::FileBrowserPrivateAPI(Profile* profile)
   registry->RegisterFunction<PinDriveFileFunction>();
   registry->RegisterFunction<GetFileLocationsFunction>();
   registry->RegisterFunction<GetDriveFilesFunction>();
-  registry->RegisterFunction<GetFileTransfersFunction>();
   registry->RegisterFunction<CancelFileTransfersFunction>();
   registry->RegisterFunction<TransferFileFunction>();
   registry->RegisterFunction<GetPreferencesFunction>();
@@ -2701,35 +2699,6 @@ void GetDriveFilesFunction::OnFileReady(
 
   // Start getting the next file.
   GetFileOrSendResponse();
-}
-
-GetFileTransfersFunction::GetFileTransfersFunction() {}
-
-GetFileTransfersFunction::~GetFileTransfersFunction() {}
-
-ListValue* GetFileTransfersFunction::GetFileTransfersList() {
-  drive::DriveSystemService* system_service =
-      drive::DriveSystemServiceFactory::GetForProfile(profile_);
-  // |system_service| is NULL if Drive is disabled.
-  if (!system_service)
-    return NULL;
-
-  google_apis::OperationProgressStatusList list =
-      system_service->drive_service()->GetProgressStatusList();
-  return file_manager_util::ProgressStatusVectorToListValue(
-      profile_, extension_->id(), list);
-}
-
-bool GetFileTransfersFunction::RunImpl() {
-  scoped_ptr<ListValue> progress_status_list(GetFileTransfersList());
-  if (!progress_status_list.get()) {
-    SendResponse(false);
-    return false;
-  }
-
-  SetResult(progress_status_list.release());
-  SendResponse(true);
-  return true;
 }
 
 CancelFileTransfersFunction::CancelFileTransfersFunction() {}
