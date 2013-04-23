@@ -51,7 +51,7 @@ class MessageCenterNotificationManager
   virtual void ShowSettings(const std::string& notification_id) OVERRIDE;
   virtual void ShowSettingsDialog(gfx::NativeView context) OVERRIDE;
 
-  // MessageCenter::Observer
+  // MessageCenterObserver
   virtual void OnNotificationRemoved(const std::string& notification_id,
                                      bool by_user) OVERRIDE;
   virtual void OnNotificationClicked(
@@ -59,6 +59,8 @@ class MessageCenterNotificationManager
   virtual void OnNotificationButtonClicked(
       const std::string& notification_id,
       int button_index) OVERRIDE;
+  virtual void OnNotificationDisplayed(
+      const std::string& notification_id) OVERRIDE;
 
  private:
   typedef base::Callback<void(const gfx::Image&)> SetImageCallback;

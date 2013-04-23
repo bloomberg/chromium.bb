@@ -449,6 +449,7 @@ void MessageCenterView::AddNotification(const Notification& notification) {
   view->set_scroller(scroller_);
   message_views_[notification.id()] = view;
   message_list_view_->AddChildView(view);
+  message_center_->DisplayedNotification(notification.id());
 }
 
 }  // namespace message_center

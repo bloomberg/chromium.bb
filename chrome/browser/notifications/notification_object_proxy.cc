@@ -14,7 +14,8 @@ NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
     : process_id_(process_id),
       route_id_(route_id),
       notification_id_(notification_id),
-      worker_(worker) {
+      worker_(worker),
+      displayed_(false) {
   if (worker_) {
     // TODO(johnnyg): http://crbug.com/23065  Worker support coming soon.
     NOTREACHED();
@@ -22,6 +23,12 @@ NotificationObjectProxy::NotificationObjectProxy(int process_id, int route_id,
 }
 
 void NotificationObjectProxy::Display() {
+  // This method is called each time the notification is shown to the user
+  // but we only want to fire the event the first time.
+  if (displayed_)
+    return;
+  displayed_ = true;
+
   RenderViewHost* host = RenderViewHost::FromID(process_id_, route_id_);
   if (host)
     host->DesktopNotificationPostDisplay(notification_id_);

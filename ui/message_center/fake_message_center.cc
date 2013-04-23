@@ -117,6 +117,9 @@ void FakeMessageCenter::MarkSinglePopupAsShown(const std::string& id,
                                                bool mark_notification_as_read) {
 }
 
+void FakeMessageCenter::DisplayedNotification(const std::string& id) {
+}
+
 void FakeMessageCenter::SetQuietMode(bool in_quiet_mode) {
 }
 

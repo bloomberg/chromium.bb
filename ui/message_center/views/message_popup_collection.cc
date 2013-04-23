@@ -232,6 +232,8 @@ void MessagePopupCollection::UpdateWidgets() {
     widget->SetBounds(bounds);
     widget->Show();
     bottom -= view_height + kToastMargin;
+
+    message_center_->DisplayedNotification((*iter)->id());
   }
 }
 

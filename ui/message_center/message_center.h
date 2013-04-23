@@ -140,6 +140,7 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
                                          int button_index) = 0;
   virtual void MarkSinglePopupAsShown(const std::string& id,
                                       bool mark_notification_as_read) = 0;
+  virtual void DisplayedNotification(const std::string& id) = 0;
   virtual void SetQuietMode(bool in_quiet_mode) = 0;
   virtual void EnterQuietModeWithExpire(const base::TimeDelta& expires_in) = 0;
   // Informs the notification list whether the message center is visible.

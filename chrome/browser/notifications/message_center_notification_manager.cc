@@ -150,7 +150,6 @@ bool MessageCenterNotificationManager::UpdateNotification(
                                           notification.body(),
                                           notification.optional_fields());
       new_notification->StartDownloads();
-      notification.Display();
       return true;
     }
   }
@@ -239,6 +238,7 @@ void MessageCenterNotificationManager::OnNotificationClicked(
     return;
   profile_notification->notification().Click();
 }
+
 void MessageCenterNotificationManager::OnNotificationButtonClicked(
     const std::string& notification_id,
     int button_index) {
@@ -249,6 +249,10 @@ void MessageCenterNotificationManager::OnNotificationButtonClicked(
   profile_notification->notification().ButtonClick(button_index);
 }
 
+void MessageCenterNotificationManager::OnNotificationDisplayed(
+    const std::string& notification_id) {
+  FindProfileNotification(notification_id)->notification().Display();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 // ImageDownloads
@@ -409,7 +413,6 @@ void MessageCenterNotificationManager::AddProfileNotification(
                                    profile_notification->GetExtensionId(),
                                    notification.optional_fields());
   profile_notification->StartDownloads();
-  notification.Display();
 }
 
 void MessageCenterNotificationManager::RemoveProfileNotification(

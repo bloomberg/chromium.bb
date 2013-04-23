@@ -252,6 +252,11 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
                     OnNotificationUpdated(id));
 }
 
+void MessageCenterImpl::DisplayedNotification(const std::string& id) {
+  FOR_EACH_OBSERVER(MessageCenterObserver, observer_list_,
+                    OnNotificationDisplayed(id));
+}
+
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {
   notification_list_->SetQuietMode(in_quiet_mode);
 }

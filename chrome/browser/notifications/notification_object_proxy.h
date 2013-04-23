@@ -39,6 +39,7 @@ class NotificationObjectProxy
   int route_id_;
   int notification_id_;
   bool worker_;
+  bool displayed_;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_OBJECT_PROXY_H_

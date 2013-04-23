@@ -62,6 +62,7 @@ class MessageCenterImpl : public MessageCenter {
                                          int button_index) OVERRIDE;
   virtual void MarkSinglePopupAsShown(const std::string& id,
                                       bool mark_notification_as_read) OVERRIDE;
+  virtual void DisplayedNotification(const std::string& id) OVERRIDE;
   virtual void SetQuietMode(bool in_quiet_mode) OVERRIDE;
   virtual void EnterQuietModeWithExpire(
       const base::TimeDelta& expires_in) OVERRIDE;

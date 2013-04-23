@@ -98,11 +98,6 @@ namespace notifications {
   };
 
   interface Events {
-    // The system displayed the notification. Not all created notifications are
-    // displayed; for example, a low-priority notification might simply appear
-    // in the message center without interrupting the user.
-    static void onDisplayed(DOMString notificationId);
-
     // The notification closed, either by the system or by user action.
     static void onClosed(DOMString notificationId, boolean byUser);
 

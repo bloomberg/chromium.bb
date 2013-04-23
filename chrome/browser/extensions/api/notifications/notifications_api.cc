@@ -47,10 +47,7 @@ class NotificationsApiDelegate : public NotificationDelegate {
     return extension_id + "-" + id;
   }
 
-  virtual void Display() OVERRIDE {
-    scoped_ptr<ListValue> args(CreateBaseEventArgs());
-    SendEvent(event_names::kOnNotificationDisplayed, args.Pass());
-  }
+  virtual void Display() OVERRIDE { }
 
   virtual void Error() OVERRIDE {
     scoped_ptr<ListValue> args(CreateBaseEventArgs());

@@ -12,19 +12,8 @@ var testBasicEvents = function() {
   var onCreateCallback = function(id) {
     chrome.test.assertTrue(id.length > 0);
     chrome.test.assertEq(idString, id);
-    incidents++;
+    chrome.test.succeed();
   }
-
-  var onDisplayed = function(id) {
-    incidents++;
-    if (incidents == 2) {
-      chrome.test.assertEq(idString, id);
-      chrome.test.succeed();
-    } else {
-      chrome.test.fail("Unexpected number of incidents.");
-    }
-  }
-  notifications.onDisplayed.addListener(onDisplayed);
 
   var options = {
     type: "basic",
