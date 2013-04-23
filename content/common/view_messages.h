@@ -1387,13 +1387,9 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SelectPopupMenuItem,
 IPC_MESSAGE_ROUTED1(ViewMsg_SwapCompositorFrameAck,
                     cc::CompositorFrameAck /* ack */)
 
-// Sent from the browser to ask the renderer for a snapshot of the current view.
-// The renderer replies with whether the snapshot succeeded and the SkBitmap.
+// Sent by the browser to ask the renderer for a snapshot of the current view.
 IPC_MESSAGE_ROUTED1(ViewMsg_Snapshot,
                     gfx::Rect /* src_subrect */)
-IPC_MESSAGE_ROUTED2(ViewHostMsg_Snapshot,
-                    bool, /* success */
-                    SkBitmap /* bitmap */)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.
@@ -2121,6 +2117,12 @@ IPC_MESSAGE_ROUTED3(ViewHostMsg_AsyncOpenFile,
                     base::FilePath /* file path */,
                     int /* flags */,
                     int /* message_id */)
+
+// Reply to a snapshot request containing whether snapshotting succeeded and the
+// SkBitmap if it succeeded.
+IPC_MESSAGE_ROUTED2(ViewHostMsg_Snapshot,
+                    bool, /* success */
+                    SkBitmap /* bitmap */)
 
 //---------------------------------------------------------------------------
 // Request for cryptographic operation messages:
