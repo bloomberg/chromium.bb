@@ -27,9 +27,9 @@
  */
 
 #include "config.h"
-#include "V8DOMConfiguration.h"
+#include "bindings/v8/V8DOMConfiguration.h"
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

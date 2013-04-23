@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "DateExtension.h"
+#include "bindings/v8/DateExtension.h"
 
-#include "V8HiddenPropertyName.h"
-#include "V8Binding.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8RecursionScope.h"
 
 namespace WebCore {
 

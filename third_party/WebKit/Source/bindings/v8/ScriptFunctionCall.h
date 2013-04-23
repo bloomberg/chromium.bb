@@ -31,10 +31,10 @@
 #ifndef ScriptFunctionCall_h
 #define ScriptFunctionCall_h
 
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
     class ScriptValue;

@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "V8NodeFilterCondition.h"
+#include "bindings/v8/V8NodeFilterCondition.h"
 
-#include "Node.h"
-#include "NodeFilter.h"
-#include "ScriptController.h"
-#include "ScriptState.h"
 #include "V8Node.h"
-#include <wtf/OwnArrayPtr.h>
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptState.h"
+#include "core/dom/Node.h"
+#include "core/dom/NodeFilter.h"
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 

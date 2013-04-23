@@ -31,11 +31,11 @@
 #ifndef V8NamedNodesCollection_h
 #define V8NamedNodesCollection_h
 
-#include "Node.h"
-#include "NodeList.h"
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
+#include "core/dom/Node.h"
+#include "core/dom/NodeList.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -32,11 +32,11 @@
 
 #include "V8Console.h"
 
-#include "Console.h"
-#include "ScriptArguments.h"
-#include "ScriptCallStackFactory.h"
-#include "V8Binding.h"
 #include "V8MemoryInfo.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/inspector/ScriptArguments.h"
+#include "core/page/Console.h"
 
 namespace WebCore {
 

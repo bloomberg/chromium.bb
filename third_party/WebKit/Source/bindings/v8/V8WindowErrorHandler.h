@@ -31,9 +31,9 @@
 #ifndef V8WindowErrorHandler_h
 #define V8WindowErrorHandler_h
 
-#include "V8EventListener.h"
+#include "bindings/v8/V8EventListener.h"
 #include <v8.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

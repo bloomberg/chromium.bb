@@ -31,17 +31,17 @@
 #include "config.h"
 #include "V8HTMLOptionsCollection.h"
 
-#include "HTMLOptionsCollection.h"
-#include "HTMLOptionElement.h"
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLOptionElement.h"
+#include "core/html/HTMLOptionsCollection.h"
 
-#include "V8Binding.h"
-#include "V8Collection.h"
 #include "V8HTMLOptionElement.h"
-#include "V8HTMLSelectElementCustom.h"
-#include "V8NamedNodesCollection.h"
 #include "V8Node.h"
 #include "V8NodeList.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Collection.h"
+#include "bindings/v8/custom/V8HTMLSelectElementCustom.h"
+#include "bindings/v8/custom/V8NamedNodesCollection.h"
 
 namespace WebCore {
 

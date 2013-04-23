@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "RetainedDOMInfo.h"
+#include "bindings/v8/RetainedDOMInfo.h"
 
-#include "ContainerNode.h"
-#include "NodeTraversal.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/NodeTraversal.h"
 
 namespace WebCore {
 

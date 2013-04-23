@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "ScriptHeapSnapshot.h"
+#include "bindings/v8/ScriptHeapSnapshot.h"
 
-#include "InspectorValues.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/inspector/InspectorValues.h"
 #include <v8.h>
 #include <v8-profiler.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

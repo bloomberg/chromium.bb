@@ -32,9 +32,9 @@
 #define ScriptProfile_h
 
 #include "InspectorTypeBuilder.h"
-#include "ScriptProfileNode.h"
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptProfileNode.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace v8 {
 class CpuProfile;

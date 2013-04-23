@@ -31,20 +31,20 @@
 #include "config.h"
 #include "V8XMLHttpRequest.h"
 
-#include <wtf/ArrayBuffer.h>
-#include "Document.h"
-#include "Frame.h"
-#include "InspectorInstrumentation.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
-#include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8DOMFormData.h"
 #include "V8Document.h"
 #include "V8HTMLDocument.h"
-#include "V8Utilities.h"
-#include "WorkerContext.h"
-#include "XMLHttpRequest.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/Document.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/page/Frame.h"
+#include "core/workers/WorkerContext.h"
+#include "core/xml/XMLHttpRequest.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

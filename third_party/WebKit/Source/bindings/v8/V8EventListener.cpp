@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8EventListener.h"
+#include "bindings/v8/V8EventListener.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "ScriptController.h"
+#include "bindings/v8/ScriptController.h"
+#include "core/dom/Document.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

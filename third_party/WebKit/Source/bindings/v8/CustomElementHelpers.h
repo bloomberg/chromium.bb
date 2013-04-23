@@ -31,17 +31,17 @@
 #ifndef CustomElementHelpers_h
 #define CustomElementHelpers_h
 
-#include "CustomElementConstructor.h"
-#include "CustomElementRegistry.h"
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "ScriptValue.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
 #include "V8HTMLElement.h"
 #include "V8HTMLUnknownElement.h"
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "core/dom/CustomElementConstructor.h"
+#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

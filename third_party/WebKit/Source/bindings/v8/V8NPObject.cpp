@@ -30,19 +30,19 @@
 
 #include "config.h"
 
-#include "V8NPObject.h"
+#include "bindings/v8/V8NPObject.h"
 
-#include "HTMLPlugInElement.h"
-#include "NPV8Object.h"
-#include "V8Binding.h"
 #include "V8HTMLAppletElement.h"
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
-#include "V8NPUtils.h"
-#include "V8ObjectConstructor.h"
-#include "npruntime_impl.h"
-#include "npruntime_priv.h"
-#include <wtf/OwnArrayPtr.h>
+#include "bindings/v8/NPV8Object.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8NPUtils.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/npruntime_impl.h"
+#include "bindings/v8/npruntime_priv.h"
+#include "core/html/HTMLPlugInElement.h"
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 

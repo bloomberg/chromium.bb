@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ScriptInstance.h"
+#include "bindings/v8/ScriptInstance.h"
 
 namespace WebCore {
 

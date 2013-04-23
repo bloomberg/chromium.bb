@@ -32,12 +32,12 @@
 
 #include "V8MutationObserver.h"
 
-#include "ExceptionCode.h"
-#include "MutationObserver.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
-#include "V8MutationCallback.h"
-#include "V8Utilities.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8MutationCallback.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MutationObserver.h"
 
 namespace WebCore {
 

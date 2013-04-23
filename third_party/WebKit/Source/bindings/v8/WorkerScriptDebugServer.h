@@ -31,7 +31,7 @@
 #ifndef WorkerScriptDebugServer_h
 #define WorkerScriptDebugServer_h
 
-#include "ScriptDebugServer.h"
+#include "bindings/v8/ScriptDebugServer.h"
 
 namespace v8 {
 class Isolate;

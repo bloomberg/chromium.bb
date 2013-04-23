@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "PerformanceEntry.h"
+#include "core/page/PerformanceEntry.h"
 
-#include "Performance.h"
-#include "PerformanceMark.h"
-#include "PerformanceMeasure.h"
-#include "PerformanceResourceTiming.h"
+#include "core/page/Performance.h"
+#include "core/page/PerformanceMark.h"
+#include "core/page/PerformanceMeasure.h"
+#include "core/page/PerformanceResourceTiming.h"
 
 #include "V8PerformanceEntry.h"
 #include "V8PerformanceMark.h"
 #include "V8PerformanceMeasure.h"
 #include "V8PerformanceResourceTiming.h"
 
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

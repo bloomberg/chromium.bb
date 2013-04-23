@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "ScriptProfile.h"
+#include "bindings/v8/ScriptProfile.h"
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
 #include <v8-profiler.h>
 

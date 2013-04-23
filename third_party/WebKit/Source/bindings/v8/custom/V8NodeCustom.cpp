@@ -29,15 +29,9 @@
  */
 
 #include "config.h"
-#include "Node.h"
+#include "core/dom/Node.h"
 
-#include "BindingState.h"
-#include "Document.h"
-#include "EventListener.h"
-#include "ShadowRoot.h"
-#include "V8AbstractEventListener.h"
 #include "V8Attr.h"
-#include "V8Binding.h"
 #include "V8CDATASection.h"
 #include "V8Comment.h"
 #include "V8Document.h"
@@ -46,13 +40,19 @@
 #include "V8Element.h"
 #include "V8Entity.h"
 #include "V8EntityReference.h"
-#include "V8EventListener.h"
 #include "V8HTMLElement.h"
 #include "V8Node.h"
 #include "V8Notation.h"
 #include "V8ProcessingInstruction.h"
 #include "V8Text.h"
-#include <wtf/RefPtr.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8AbstractEventListener.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8EventListener.h"
+#include "core/dom/Document.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/ShadowRoot.h"
+#include "wtf/RefPtr.h"
 
 #if ENABLE(SVG)
 #include "V8SVGElement.h"

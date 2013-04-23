@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "V8StringResource.h"
+#include "bindings/v8/V8StringResource.h"
 
-#include "BindingVisitors.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/inspector/BindingVisitors.h"
 
 namespace WebCore {
 

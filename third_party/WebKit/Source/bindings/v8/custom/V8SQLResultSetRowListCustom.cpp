@@ -32,8 +32,8 @@
 
 #include "V8SQLResultSetRowList.h"
 
-#include "SQLResultSetRowList.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "modules/webdatabase/SQLResultSetRowList.h"
 
 namespace WebCore {
 

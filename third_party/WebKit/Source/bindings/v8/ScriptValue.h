@@ -31,17 +31,17 @@
 #ifndef ScriptValue_h
 #define ScriptValue_h
 
-#include "ScriptState.h"
-#include "SharedPersistent.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/SharedPersistent.h"
 #include <v8.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 #ifndef NDEBUG 
-#include "V8GCController.h" 
-#endif 
+#include "bindings/v8/V8GCController.h" 
+#endif
 
 namespace WTF {
 class ArrayBuffer;

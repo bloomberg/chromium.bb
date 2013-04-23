@@ -29,8 +29,6 @@
 
 #include "V8IDBAny.h"
 
-#include "ScriptValue.h"
-#include "V8Binding.h"
 #include "V8DOMStringList.h"
 #include "V8IDBCursor.h"
 #include "V8IDBCursorWithValue.h"
@@ -39,6 +37,8 @@
 #include "V8IDBIndex.h"
 #include "V8IDBObjectStore.h"
 #include "V8IDBTransaction.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

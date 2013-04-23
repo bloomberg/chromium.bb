@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8PerContextData.h"
+#include "bindings/v8/V8PerContextData.h"
 
-#include "V8Binding.h"
-#include "V8ObjectConstructor.h"
-#include <wtf/StringExtras.h>
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "wtf/StringExtras.h"
 
 namespace WebCore {
 

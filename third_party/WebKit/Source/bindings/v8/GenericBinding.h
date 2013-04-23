@@ -31,9 +31,9 @@
 #ifndef GenericBinding_h
 #define GenericBinding_h
 
-#include "BindingState.h"
-#include "Document.h"
-#include "Frame.h"
+#include "bindings/v8/BindingState.h"
+#include "core/dom/Document.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

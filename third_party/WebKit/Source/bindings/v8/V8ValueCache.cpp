@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "V8ValueCache.h"
+#include "bindings/v8/V8ValueCache.h"
 
-#include "V8Binding.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WTF {
 

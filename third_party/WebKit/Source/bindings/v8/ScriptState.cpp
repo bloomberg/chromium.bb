@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 
-#include "Frame.h"
-#include "Node.h"
-#include "Page.h"
-#include "ScriptController.h"
 #include "V8DOMWindow.h"
-#include "V8HiddenPropertyName.h"
 #include "V8WorkerContext.h"
-#include "WorkerContext.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/WorkerScriptController.h"
+#include "core/dom/Node.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/workers/WorkerContext.h"
 #include <v8.h>
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

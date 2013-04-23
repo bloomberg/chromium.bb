@@ -31,9 +31,9 @@
 #include "config.h"
 #include "V8HTMLInputElement.h"
 
-#include "HTMLInputElement.h"
+#include "core/html/HTMLInputElement.h"
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

@@ -31,7 +31,7 @@
 #ifndef NPObjectWrapper_h
 #define NPObjectWrapper_h
 
-#include "npruntime_impl.h"
+#include "bindings/v8/npruntime_impl.h"
 
 namespace WebCore {
 

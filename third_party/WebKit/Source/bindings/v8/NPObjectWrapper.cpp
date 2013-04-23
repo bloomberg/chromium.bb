@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "NPObjectWrapper.h"
+#include "bindings/v8/NPObjectWrapper.h"
 
 namespace WebCore {
 

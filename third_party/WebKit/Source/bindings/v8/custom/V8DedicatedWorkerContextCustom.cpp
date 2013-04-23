@@ -32,11 +32,11 @@
 
 #include "V8DedicatedWorkerContext.h"
 
-#include <wtf/ArrayBuffer.h>
-#include "DedicatedWorkerContext.h"
-#include "V8Binding.h"
-#include "V8Utilities.h"
-#include "V8WorkerContextEventListener.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "bindings/v8/V8WorkerContextEventListener.h"
+#include "core/workers/DedicatedWorkerContext.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

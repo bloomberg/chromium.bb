@@ -31,12 +31,12 @@
 #include "config.h"
 #include "V8HTMLFormElement.h"
 
-#include "HTMLCollection.h"
-#include "HTMLFormElement.h"
-#include "V8Binding.h"
-#include "V8NamedNodesCollection.h"
 #include "V8Node.h"
 #include "V8NodeList.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/custom/V8NamedNodesCollection.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLFormElement.h"
 
 namespace WebCore {
 

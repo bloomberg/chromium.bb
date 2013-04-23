@@ -64,8 +64,7 @@ inline v8::Handle<v8::Object> wrap(TestMediaQueryListListener* impl, v8::Handle<
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        if (actualInfo != &V8TestMediaQueryListListener::info)
-            CRASH();
+        RELEASE_ASSERT(actualInfo == &V8TestMediaQueryListListener::info);
     }
     return V8TestMediaQueryListListener::createWrapper(impl, creationContext, isolate);
 }

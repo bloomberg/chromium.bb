@@ -32,7 +32,7 @@
 #include "V8JavaScriptCallFrame.h"
 
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

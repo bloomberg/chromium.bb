@@ -31,11 +31,11 @@
 #ifndef ScheduledAction_h
 #define ScheduledAction_h
 
-#include "ScopedPersistent.h"
-#include "ScriptSourceCode.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptSourceCode.h"
 #include <v8.h>
-#include <wtf/Forward.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

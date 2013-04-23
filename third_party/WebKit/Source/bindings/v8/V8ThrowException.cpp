@@ -23,11 +23,11 @@
  */
 
 #include "config.h"
-#include "V8ThrowException.h"
+#include "bindings/v8/V8ThrowException.h"
 
 #include "ExceptionHeaders.h"
 #include "ExceptionInterfaces.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

@@ -31,13 +31,13 @@
 #ifndef ScriptSourceCode_h
 #define ScriptSourceCode_h
 
-#include "CachedResourceHandle.h"
-#include "CachedScript.h"
-#include "KURL.h"
+#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedScript.h"
+#include "core/platform/KURL.h"
 #include <v8.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

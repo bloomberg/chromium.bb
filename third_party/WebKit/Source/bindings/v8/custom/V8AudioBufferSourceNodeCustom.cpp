@@ -28,11 +28,11 @@
 
 #include "V8AudioBufferSourceNode.h"
 
-#include "AudioBuffer.h"
-#include "AudioBufferSourceNode.h"
-#include "ExceptionCode.h"
 #include "V8AudioBuffer.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioBufferSourceNode.h"
 
 namespace WebCore {
 

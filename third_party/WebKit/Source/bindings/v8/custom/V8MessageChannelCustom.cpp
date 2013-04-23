@@ -31,15 +31,15 @@
 #include "config.h"
 #include "V8MessageChannel.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "MessageChannel.h"
-#include "V8Binding.h"
 #include "V8MessagePort.h"
-#include "V8Utilities.h"
-#include "WorkerContext.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/Document.h"
+#include "core/dom/MessageChannel.h"
+#include "core/page/Frame.h"
+#include "core/workers/WorkerContext.h"
 
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

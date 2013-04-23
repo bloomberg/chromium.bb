@@ -32,10 +32,10 @@
 #define JavaScriptCallFrame_h
 
 
-#include "ScopedPersistent.h"
+#include "bindings/v8/ScopedPersistent.h"
 #include <v8-debug.h>
-#include <wtf/RefCounted.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "BindingState.h"
+#include "bindings/v8/BindingState.h"
 
-#include "DOMWindow.h"
-#include "Frame.h"
-#include "ScriptController.h"
-#include "V8Binding.h"
-#include <wtf/StdLibExtras.h>
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

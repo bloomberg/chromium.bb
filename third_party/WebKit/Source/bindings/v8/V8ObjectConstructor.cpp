@@ -23,12 +23,12 @@
  */
 
 #include "config.h"
-#include "V8ObjectConstructor.h"
+#include "bindings/v8/V8ObjectConstructor.h"
 
-#include "Frame.h"
-#include "TraceEvent.h"
-#include "V8Binding.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 
 namespace WebCore {

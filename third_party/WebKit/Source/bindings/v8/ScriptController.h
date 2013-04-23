@@ -31,16 +31,16 @@
 #ifndef ScriptController_h
 #define ScriptController_h
 
-#include "FrameLoaderTypes.h"
-#include "ScriptInstance.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptInstance.h"
+#include "bindings/v8/ScriptValue.h"
+#include "core/loader/FrameLoaderTypes.h"
 
 #include <v8.h>
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
-#include <wtf/text/TextPosition.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
+#include "wtf/text/TextPosition.h"
 
 struct NPObject;
 

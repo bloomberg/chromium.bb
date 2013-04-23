@@ -31,13 +31,13 @@
 #ifndef V8PerContextData_h
 #define V8PerContextData_h
 
-#include "ScopedPersistent.h"
-#include "V8DOMActivityLogger.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/v8/WrapperTypeInfo.h"
 #include <v8.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

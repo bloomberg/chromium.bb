@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "DataView.h"
+#include "core/html/canvas/DataView.h"
 
-#include "V8ArrayBufferViewCustom.h"
-#include "V8Binding.h"
 #include "V8DataView.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 
 namespace WebCore {
 

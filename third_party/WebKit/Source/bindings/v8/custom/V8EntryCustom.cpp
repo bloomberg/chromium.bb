@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "Entry.h"
+#include "modules/filesystem/Entry.h"
 
-#include "BindingState.h"
 #include "V8Attr.h"
-#include "V8Binding.h"
 #include "V8DirectoryEntry.h"
 #include "V8Entry.h"
 #include "V8FileEntry.h"
-#include <wtf/RefPtr.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

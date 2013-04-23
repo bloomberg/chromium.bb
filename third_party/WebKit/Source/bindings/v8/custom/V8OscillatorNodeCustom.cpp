@@ -28,9 +28,9 @@
 
 #include "V8OscillatorNode.h"
 
-#include "ExceptionCode.h"
-#include "OscillatorNode.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/OscillatorNode.h"
 
 namespace WebCore {
 

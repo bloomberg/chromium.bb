@@ -31,9 +31,9 @@
 #include "config.h"
 #include "V8CanvasRenderingContext.h"
 
-#include "CanvasRenderingContext.h"
 #include "V8CanvasRenderingContext2D.h"
 #include "V8WebGLRenderingContext.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 
 namespace WebCore {
 

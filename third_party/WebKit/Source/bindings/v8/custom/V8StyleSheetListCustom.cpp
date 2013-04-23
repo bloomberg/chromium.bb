@@ -31,10 +31,10 @@
 #include "config.h"
 #include "V8StyleSheetList.h"
 
-#include "HTMLStyleElement.h"
-#include "StyleSheetList.h"
-#include "V8Binding.h"
 #include "V8StyleSheet.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/css/StyleSheetList.h"
+#include "core/html/HTMLStyleElement.h"
 
 namespace WebCore {
 

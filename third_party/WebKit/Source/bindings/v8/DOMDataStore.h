@@ -31,20 +31,20 @@
 #ifndef DOMDataStore_h
 #define DOMDataStore_h
 
-#include "DOMWrapperMap.h"
-#include "DOMWrapperWorld.h"
-#include "Node.h"
-#include "ScriptWrappable.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/DOMWrapperMap.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScriptWrappable.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/dom/Node.h"
 #include <v8.h>
-#include <wtf/HashMap.h>
-#include <wtf/MainThread.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Threading.h>
-#include <wtf/ThreadSpecific.h>
-#include <wtf/Vector.h>
+#include "wtf/HashMap.h"
+#include "wtf/MainThread.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/ThreadSpecific.h"
+#include "wtf/Threading.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

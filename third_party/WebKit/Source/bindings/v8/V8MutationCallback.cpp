@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "V8MutationCallback.h"
+#include "bindings/v8/V8MutationCallback.h"
 
-#include "ScriptController.h"
-#include "ScriptExecutionContext.h"
-#include "V8Binding.h"
 #include "V8MutationObserver.h"
 #include "V8MutationRecord.h"
-#include <wtf/Assertions.h>
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

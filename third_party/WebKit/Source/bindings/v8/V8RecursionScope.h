@@ -31,9 +31,9 @@
 #ifndef V8RecursionScope_h
 #define V8RecursionScope_h
 
-#include "ScriptExecutionContext.h"
-#include "V8PerIsolateData.h"
-#include <wtf/Noncopyable.h>
+#include "bindings/v8/V8PerIsolateData.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

@@ -31,13 +31,13 @@
 #ifndef ScriptProfiler_h
 #define ScriptProfiler_h
 
-#include "ScriptHeapSnapshot.h"
-#include "ScriptProfile.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptHeapSnapshot.h"
+#include "bindings/v8/ScriptProfile.h"
+#include "bindings/v8/ScriptState.h"
 
-#include <wtf/Forward.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/Forward.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

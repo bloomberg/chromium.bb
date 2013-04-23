@@ -31,12 +31,12 @@
 #ifndef WorkerScriptController_h
 #define WorkerScriptController_h
 
-#include "ScriptValue.h"
-#include "V8Binding.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
 #include <v8.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Threading.h>
-#include <wtf/text/TextPosition.h>
+#include "wtf/OwnPtr.h"
+#include "wtf/Threading.h"
+#include "wtf/text/TextPosition.h"
 
 namespace WebCore {
 

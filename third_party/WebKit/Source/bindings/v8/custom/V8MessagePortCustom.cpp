@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include <wtf/ArrayBuffer.h>
-#include "ExceptionCode.h"
-#include "MessagePort.h"
-#include "SerializedScriptValue.h"
-#include "V8Binding.h"
 #include "V8MessagePort.h"
-#include "V8Utilities.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessagePort.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

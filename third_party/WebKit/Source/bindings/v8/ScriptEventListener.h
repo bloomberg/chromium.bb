@@ -31,10 +31,10 @@
 #ifndef ScriptEventListener_h
 #define ScriptEventListener_h
 
-#include "ScriptValue.h"
-#include "V8LazyEventListener.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8LazyEventListener.h"
 
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

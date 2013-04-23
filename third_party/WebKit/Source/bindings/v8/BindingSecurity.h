@@ -31,8 +31,8 @@
 #ifndef BindingSecurity_h
 #define BindingSecurity_h
 
-#include "BindingState.h"
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/BindingState.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

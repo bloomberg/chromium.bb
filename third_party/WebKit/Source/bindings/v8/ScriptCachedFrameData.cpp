@@ -24,4 +24,3 @@
  */
 
 #include "config.h"
-#include "ScriptCachedFrameData.h"

@@ -31,11 +31,11 @@
 #ifndef V8LazyEventListener_h
 #define V8LazyEventListener_h
 
-#include "V8AbstractEventListener.h"
+#include "bindings/v8/V8AbstractEventListener.h"
 #include <v8.h>
-#include <wtf/text/TextPosition.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/text/TextPosition.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

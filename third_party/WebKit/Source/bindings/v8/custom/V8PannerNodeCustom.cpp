@@ -28,9 +28,9 @@
 
 #include "V8PannerNode.h"
 
-#include "ExceptionCode.h"
-#include "PannerNode.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/PannerNode.h"
 
 namespace WebCore {
 

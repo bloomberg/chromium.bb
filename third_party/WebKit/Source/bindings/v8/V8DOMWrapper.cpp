@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "V8DOMWrapper.h"
+#include "bindings/v8/V8DOMWrapper.h"
 
-#include "V8AdaptorFunction.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
 #include "V8HTMLCollection.h"
 #include "V8HTMLDocument.h"
-#include "V8HiddenPropertyName.h"
-#include "V8ObjectConstructor.h"
-#include "V8PerContextData.h"
+#include "bindings/v8/V8AdaptorFunction.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8PerContextData.h"
 
 namespace WebCore {
 

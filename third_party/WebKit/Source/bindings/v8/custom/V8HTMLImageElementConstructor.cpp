@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "V8HTMLImageElementConstructor.h"
+#include "bindings/v8/custom/V8HTMLImageElementConstructor.h"
 
-#include "BindingState.h"
-#include "Document.h"
-#include "Frame.h"
-#include "HTMLImageElement.h"
 #include "HTMLNames.h"
-#include "V8Binding.h"
 #include "V8Document.h"
 #include "V8HTMLImageElement.h"
-#include <wtf/RefPtr.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/Document.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/page/Frame.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

@@ -31,11 +31,11 @@
 #include "config.h"
 #include "V8HTMLFormControlsCollection.h"
 
-#include "HTMLCollection.h"
-#include "RadioNodeList.h"
-#include "V8Binding.h"
 #include "V8Node.h"
 #include "V8RadioNodeList.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/RadioNodeList.h"
 
 namespace WebCore {
 

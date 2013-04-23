@@ -29,22 +29,22 @@
  */
 
 #include "config.h"
-#include "ScriptProfiler.h"
+#include "bindings/v8/ScriptProfiler.h"
 
-#include "BindingVisitors.h"
-#include "RetainedDOMInfo.h"
-#include "ScriptObject.h"
 #include "V8ArrayBufferView.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8DOMWrapper.h"
 #include "V8Node.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/RetainedDOMInfo.h"
+#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/BindingVisitors.h"
 
 #include <v8-profiler.h>
 
-#include <wtf/ThreadSpecific.h>
+#include "wtf/ThreadSpecific.h"
 
 namespace WebCore {
 

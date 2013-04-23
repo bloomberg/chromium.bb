@@ -26,13 +26,13 @@
 #include "config.h"
 #include "V8Geolocation.h"
 
-#include "Frame.h"
-#include "Geolocation.h"
-#include "V8Binding.h"
-#include "V8Callback.h"
 #include "V8PositionCallback.h"
 #include "V8PositionErrorCallback.h"
-#include "V8Utilities.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Callback.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/page/Frame.h"
+#include "modules/geolocation/Geolocation.h"
 
 using namespace std;
 using namespace WTF;

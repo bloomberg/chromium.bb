@@ -31,10 +31,10 @@
 #ifndef V8Collection_h
 #define V8Collection_h
 
-#include "HTMLFormElement.h"
-#include "HTMLSelectElement.h"
-#include "V8Binding.h"
 #include "V8Node.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/html/HTMLSelectElement.h"
 #include <v8.h>
 
 namespace WebCore {

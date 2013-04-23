@@ -31,17 +31,17 @@
 #include "config.h"
 #include "V8Location.h"
 
-#include "BindingState.h"
-#include "Document.h"
-#include "Frame.h"
-#include "FrameLoader.h"
-#include "KURL.h"
-#include "Location.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8EventListener.h"
-#include "V8Utilities.h"
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8EventListener.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/Document.h"
+#include "core/loader/FrameLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Location.h"
+#include "core/platform/KURL.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

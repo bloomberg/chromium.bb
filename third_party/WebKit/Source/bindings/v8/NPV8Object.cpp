@@ -26,25 +26,25 @@
 
 #include "config.h"
 
-#include "NPV8Object.h"
+#include "bindings/v8/NPV8Object.h"
 
-#include "DOMWindow.h"
-#include "Frame.h"
-#include "NPObjectWrapper.h"
-#include <wtf/OwnArrayPtr.h>
-#include "ScriptController.h"
-#include "ScriptSourceCode.h"
-#include "UserGestureIndicator.h"
-#include "V8Binding.h"
-#include "V8GCController.h"
-#include "V8NPUtils.h"
-#include "WrapperTypeInfo.h"
-#include "npruntime_impl.h"
-#include "npruntime_priv.h"
+#include "bindings/v8/NPObjectWrapper.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8NPUtils.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "bindings/v8/npruntime_impl.h"
+#include "bindings/v8/npruntime_priv.h"
+#include "core/dom/UserGestureIndicator.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "wtf/OwnArrayPtr.h"
 
 #include <stdio.h>
-#include <wtf/StringExtras.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/StringExtras.h"
+#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 

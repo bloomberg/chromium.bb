@@ -23,10 +23,10 @@
  */
 
 #include "config.h"
-#include "V8ArrayBufferViewCustom.h"
+#include "bindings/v8/custom/V8ArrayBufferViewCustom.h"
 
 #include "V8ArrayBufferViewCustomScript.h"
-#include "V8HiddenPropertyName.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 
 #include <v8.h>
 

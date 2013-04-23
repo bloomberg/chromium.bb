@@ -31,22 +31,22 @@
 #include "config.h"
 #include "V8CSSStyleDeclaration.h"
 
-#include "CSSParser.h"
 #include "CSSPropertyNames.h"
-#include "CSSStyleDeclaration.h"
-#include "CSSValue.h"
-#include "CSSPrimitiveValue.h"
-#include "EventTarget.h"
+#include "core/css/CSSParser.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSStyleDeclaration.h"
+#include "core/css/CSSValue.h"
+#include "core/dom/EventTarget.h"
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
-#include <wtf/text/StringBuilder.h>
-#include <wtf/text/StringConcatenate.h>
-#include <wtf/ASCIICType.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/ASCIICType.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringBuilder.h"
+#include "wtf/text/StringConcatenate.h"
 
 using namespace WTF;
 using namespace std;

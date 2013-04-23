@@ -31,9 +31,9 @@
 #include "config.h"
 #include "V8HTMLLinkElement.h"
 
-#include "HTMLLinkElement.h"
-#include "V8Binding.h"
 #include "V8DOMSettableTokenList.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/html/HTMLLinkElement.h"
 
 namespace WebCore {
 

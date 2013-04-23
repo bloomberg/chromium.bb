@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "WorkerScriptDebugServer.h"
+#include "bindings/v8/WorkerScriptDebugServer.h"
 
-#include "ScriptDebugListener.h"
-#include "WorkerContext.h"
-#include "WorkerDebuggerAgent.h"
-#include "WorkerThread.h"
+#include "core/inspector/ScriptDebugListener.h"
+#include "core/inspector/WorkerDebuggerAgent.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 #include <v8.h>
-#include <wtf/MessageQueue.h>
+#include "wtf/MessageQueue.h"
 
 
 namespace WebCore {

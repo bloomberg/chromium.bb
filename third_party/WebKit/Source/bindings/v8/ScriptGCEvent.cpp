@@ -31,11 +31,11 @@
 #include "config.h"
 
 
-#include "ScriptGCEvent.h"
-#include "ScriptGCEventListener.h"
-#include "V8Binding.h"
+#include "bindings/v8/ScriptGCEvent.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/inspector/ScriptGCEventListener.h"
 
-#include <wtf/CurrentTime.h>
+#include "wtf/CurrentTime.h"
 
 namespace WebCore {
 

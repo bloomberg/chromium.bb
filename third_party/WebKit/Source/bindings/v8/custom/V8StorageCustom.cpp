@@ -31,8 +31,8 @@
 #include "config.h"
 #include "V8Storage.h"
 
-#include "Storage.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/storage/Storage.h"
 
 namespace WebCore {
 

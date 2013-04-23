@@ -26,13 +26,13 @@
 #ifndef V8PerIsolateData_h
 #define V8PerIsolateData_h
 
-#include "ScopedPersistent.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/WrapperTypeInfo.h"
 #include <v8.h>
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

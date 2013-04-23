@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "BindingSecurity.h"
+#include "bindings/v8/BindingSecurity.h"
 
-#include "BindingState.h"
-#include "DOMWindow.h"
-#include "Document.h"
-#include "Frame.h"
-#include "HTMLFrameElementBase.h"
-#include "HTMLParserIdioms.h"
-#include "SecurityOrigin.h"
-#include "Settings.h"
+#include "bindings/v8/BindingState.h"
+#include "core/dom/Document.h"
+#include "core/html/HTMLFrameElementBase.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/Settings.h"
 
 namespace WebCore {
 

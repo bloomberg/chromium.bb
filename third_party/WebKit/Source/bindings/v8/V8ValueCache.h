@@ -26,12 +26,12 @@
 #ifndef V8ValueCache_h
 #define V8ValueCache_h
 
-#include "ScopedPersistent.h"
+#include "bindings/v8/ScopedPersistent.h"
 #include <v8.h>
-#include <wtf/HashMap.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

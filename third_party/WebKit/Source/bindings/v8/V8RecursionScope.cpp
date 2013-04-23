@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/V8RecursionScope.h"
 
-#include "CustomElementRegistry.h"
-#include "IDBPendingTransactionMonitor.h"
-#include "MutationObserver.h"
+#include "core/dom/CustomElementRegistry.h"
+#include "core/dom/MutationObserver.h"
+#include "modules/indexeddb/IDBPendingTransactionMonitor.h"
 
 namespace WebCore {
 

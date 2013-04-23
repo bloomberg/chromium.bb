@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "V8AdaptorFunction.h"
+#include "bindings/v8/V8AdaptorFunction.h"
 
-#include "V8PerIsolateData.h"
-#include <wtf/Vector.h>
+#include "bindings/v8/V8PerIsolateData.h"
+#include "wtf/Vector.h"
 
 #if ENABLE(CUSTOM_ELEMENTS)
 

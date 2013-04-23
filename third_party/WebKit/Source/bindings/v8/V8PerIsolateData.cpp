@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "V8PerIsolateData.h"
+#include "bindings/v8/V8PerIsolateData.h"
 
-#include "ScriptGCEvent.h"
-#include "ScriptProfiler.h"
-#include "V8Binding.h"
-#include <wtf/MemoryInstrumentationHashMap.h>
-#include <wtf/MemoryInstrumentationVector.h>
+#include "bindings/v8/ScriptGCEvent.h"
+#include "bindings/v8/ScriptProfiler.h"
+#include "bindings/v8/V8Binding.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
+#include "wtf/MemoryInstrumentationVector.h"
 
 namespace WTF {
 

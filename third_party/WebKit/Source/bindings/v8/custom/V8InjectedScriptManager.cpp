@@ -29,18 +29,18 @@
  */
 
 #include "config.h"
-#include "InjectedScriptManager.h"
+#include "core/inspector/InjectedScriptManager.h"
 
-#include "BindingState.h"
-#include "DOMWindow.h"
-#include "InjectedScriptHost.h"
-#include "ScriptDebugServer.h"
-#include "ScriptObject.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
 #include "V8InjectedScriptHost.h"
-#include "V8RecursionScope.h"
-#include <wtf/RefPtr.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/ScriptDebugServer.h"
+#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/inspector/InjectedScriptHost.h"
+#include "core/page/DOMWindow.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

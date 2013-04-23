@@ -28,16 +28,16 @@
 
 #include "V8AudioContext.h"
 
-#include "AudioBuffer.h"
-#include "AudioContext.h"
-#include "BindingState.h"
-#include "Frame.h"
-#include "OfflineAudioContext.h"
 #include "V8ArrayBuffer.h"
 #include "V8AudioBuffer.h"
-#include "V8Binding.h"
 #include "V8OfflineAudioContext.h"
-#include <wtf/ArrayBuffer.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/page/Frame.h"
+#include "modules/webaudio/AudioBuffer.h"
+#include "modules/webaudio/AudioContext.h"
+#include "modules/webaudio/OfflineAudioContext.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

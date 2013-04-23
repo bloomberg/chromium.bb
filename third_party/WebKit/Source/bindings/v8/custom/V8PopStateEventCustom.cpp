@@ -31,11 +31,11 @@
 #include "config.h"
 #include "V8PopStateEvent.h"
 
-#include "History.h"
-#include "PopStateEvent.h"
-#include "SerializedScriptValue.h"
-#include "V8HiddenPropertyName.h"
 #include "V8History.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/PopStateEvent.h"
+#include "core/page/History.h"
 
 namespace WebCore {
 

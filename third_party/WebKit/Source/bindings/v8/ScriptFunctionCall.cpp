@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "ScriptFunctionCall.h"
+#include "bindings/v8/ScriptFunctionCall.h"
 
-#include "ScriptController.h"
-#include "ScriptScope.h"
-#include "ScriptState.h"
-#include "ScriptValue.h"
-#include "V8Binding.h"
-#include "V8ObjectConstructor.h"
-#include "V8RecursionScope.h"
-#include "V8Utilities.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/V8Utilities.h"
 
 #include <v8.h>
-#include <wtf/OwnArrayPtr.h>
+#include "wtf/OwnArrayPtr.h"
 
 namespace WebCore {
 

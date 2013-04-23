@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "ScriptScope.h"
+#include "bindings/v8/ScriptScope.h"
 
-#include "ScriptState.h"
+#include "bindings/v8/ScriptState.h"
 
 #include <v8.h>
 

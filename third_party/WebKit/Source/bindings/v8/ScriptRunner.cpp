@@ -26,10 +26,10 @@
 #include "config.h"
 #include "ScriptRunner.h"
 
-#include "ScriptExecutionContext.h"
-#include "V8Binding.h"
-#include "V8GCController.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 

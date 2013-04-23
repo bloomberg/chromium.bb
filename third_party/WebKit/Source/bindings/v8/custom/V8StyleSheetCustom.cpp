@@ -31,9 +31,9 @@
 #include "config.h"
 #include "V8StyleSheet.h"
 
-#include "V8DOMWrapper.h"
 #include "V8CSSStyleSheet.h"
 #include "V8Node.h"
+#include "bindings/v8/V8DOMWrapper.h"
 
 namespace WebCore {
 

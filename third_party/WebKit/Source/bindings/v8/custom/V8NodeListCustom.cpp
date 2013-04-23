@@ -31,14 +31,14 @@
 #include "config.h"
 #include "V8NodeList.h" 
 
-#include "LiveNodeList.h"
-#include "NodeList.h"
-#include "V8Binding.h"
-#include "V8GCController.h"
 #include "V8Node.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
+#include "core/dom/LiveNodeList.h"
+#include "core/dom/NodeList.h"
 
-#include <wtf/RefPtr.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

@@ -29,22 +29,22 @@
  */
 
 #include "config.h"
-#include "V8Utilities.h"
+#include "bindings/v8/V8Utilities.h"
 
-#include "BindingState.h"
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "Frame.h"
-#include "MessagePort.h"
-#include "ScriptExecutionContext.h"
-#include "ScriptState.h"
-#include "V8AbstractEventListener.h"
 #include "V8ArrayBuffer.h"
-#include "V8Binding.h"
 #include "V8MessagePort.h"
-#include "WorkerContext.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/ScriptState.h"
+#include "bindings/v8/V8AbstractEventListener.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessagePort.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/Frame.h"
+#include "core/workers/WorkerContext.h"
 #include <v8.h>
-#include <wtf/ArrayBuffer.h>
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

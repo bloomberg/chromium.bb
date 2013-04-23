@@ -32,9 +32,9 @@
 
 #include "V8FileReader.h"
 
-#include "ScriptExecutionContext.h"
 #include "V8ArrayBuffer.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 

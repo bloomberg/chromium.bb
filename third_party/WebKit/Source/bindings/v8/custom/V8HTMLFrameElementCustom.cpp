@@ -31,10 +31,10 @@
 #include "config.h"
 #include "V8HTMLFrameElement.h"
 
-#include "BindingState.h"
-#include "HTMLFrameElement.h"
 #include "HTMLNames.h"
-#include "V8Binding.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/html/HTMLFrameElement.h"
 
 namespace WebCore {
 

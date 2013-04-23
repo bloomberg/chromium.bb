@@ -24,17 +24,17 @@
  */
 
 #include "config.h"
-#include "IDBBindingUtilities.h"
+#include "bindings/v8/IDBBindingUtilities.h"
 
-#include "DOMRequestState.h"
-#include "IDBKey.h"
-#include "IDBKeyPath.h"
-#include "IDBTracing.h"
-#include "SerializedScriptValue.h"
-#include "SharedBuffer.h"
-#include "V8Binding.h"
-#include <wtf/MathExtras.h>
-#include <wtf/Vector.h>
+#include "bindings/v8/DOMRequestState.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/platform/SharedBuffer.h"
+#include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBTracing.h"
+#include "wtf/MathExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

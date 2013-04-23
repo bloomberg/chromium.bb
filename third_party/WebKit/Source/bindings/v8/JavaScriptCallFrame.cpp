@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "JavaScriptCallFrame.h"
+#include "bindings/v8/JavaScriptCallFrame.h"
 
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "ScriptObject.h"
+#include "bindings/v8/ScriptObject.h"
 
-#include "ScriptScope.h"
-#include "ScriptState.h"
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptState.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "V8Binding.h"
 #include "V8InjectedScriptHost.h"
 #include "V8InspectorFrontendHost.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/Document.h"
+#include "core/page/Frame.h"
 
 #include <v8.h>
 

@@ -28,9 +28,9 @@
 
 #include "V8BiquadFilterNode.h"
 
-#include "BiquadFilterNode.h"
-#include "ExceptionCode.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "modules/webaudio/BiquadFilterNode.h"
 
 namespace WebCore {
 

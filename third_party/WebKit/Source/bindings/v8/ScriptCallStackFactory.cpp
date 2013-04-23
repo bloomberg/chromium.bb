@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
 
-#include "InspectorInstrumentation.h"
-#include "InspectorValues.h"
-#include "ScriptArguments.h"
-#include "ScriptCallFrame.h"
-#include "ScriptCallStack.h"
-#include "ScriptScope.h"
-#include "ScriptValue.h"
-#include "V8Binding.h"
-#include "V8Utilities.h"
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/InspectorValues.h"
+#include "core/inspector/ScriptArguments.h"
+#include "core/inspector/ScriptCallFrame.h"
+#include "core/inspector/ScriptCallStack.h"
 
 #include <v8-debug.h>
 

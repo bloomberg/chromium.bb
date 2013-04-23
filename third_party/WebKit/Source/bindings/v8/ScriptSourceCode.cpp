@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "ScriptSourceCode.h"
+#include "bindings/v8/ScriptSourceCode.h"
 
-#include "CachedMetadata.h"
-#include "CachedScript.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/loader/CachedMetadata.h"
+#include "core/loader/cache/CachedScript.h"
 
 namespace WebCore {
 

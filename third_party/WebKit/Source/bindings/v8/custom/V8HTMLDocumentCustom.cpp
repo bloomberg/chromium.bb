@@ -31,25 +31,25 @@
 #include "config.h"
 #include "V8HTMLDocument.h"
 
-#include "BindingState.h"
-#include "Frame.h"
-#include "HTMLAllCollection.h"
-#include "HTMLDocument.h"
-#include "HTMLCollection.h"
-#include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
-#include "ScriptController.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8DOMWindowShell.h"
 #include "V8HTMLAllCollection.h"
 #include "V8HTMLCollection.h"
 #include "V8Node.h"
-#include "V8RecursionScope.h"
-#include <wtf/text/StringBuilder.h>
-#include <wtf/OwnArrayPtr.h>
-#include <wtf/RefPtr.h>
-#include <wtf/StdLibExtras.h>
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWindowShell.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/html/HTMLAllCollection.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLDocument.h"
+#include "core/html/HTMLIFrameElement.h"
+#include "core/page/Frame.h"
+#include "wtf/OwnArrayPtr.h"
+#include "wtf/RefPtr.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 

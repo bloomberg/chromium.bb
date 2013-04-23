@@ -31,7 +31,7 @@
 #ifndef BindingState_h
 #define BindingState_h
 
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

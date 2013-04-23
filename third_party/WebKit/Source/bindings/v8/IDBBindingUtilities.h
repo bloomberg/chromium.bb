@@ -26,9 +26,9 @@
 #ifndef IDBBindingUtilities_h
 #define IDBBindingUtilities_h
 
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
 #include <v8.h>
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

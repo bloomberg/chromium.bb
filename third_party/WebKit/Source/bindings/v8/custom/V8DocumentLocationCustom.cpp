@@ -24,12 +24,12 @@
 #include "config.h"
 #include "V8Document.h"
 
-#include "BindingState.h"
-#include "DOMWindow.h"
-#include "Frame.h"
-#include "Location.h"
-#include "V8Binding.h"
 #include "V8Location.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/Location.h"
 
 namespace WebCore {
 

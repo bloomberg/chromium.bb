@@ -31,11 +31,11 @@
 #include "config.h"
 #include "V8DOMFormData.h"
 
-#include "DOMFormData.h"
-#include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8HTMLFormElement.h"
-#include "V8Utilities.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/html/DOMFormData.h"
 
 namespace WebCore {
 

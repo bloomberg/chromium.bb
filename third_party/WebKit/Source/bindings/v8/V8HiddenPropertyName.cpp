@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "V8HiddenPropertyName.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
 
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 #include <string.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

@@ -32,15 +32,15 @@
 
 #include "V8Worker.h"
 
-#include "Worker.h"
+#include "core/workers/Worker.h"
 
-#include <wtf/ArrayBuffer.h>
-#include "ExceptionCode.h"
-#include "Frame.h"
-#include "SerializedScriptValue.h"
-#include "V8Binding.h"
-#include "V8Utilities.h"
-#include "WorkerContext.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/page/Frame.h"
+#include "core/workers/WorkerContext.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

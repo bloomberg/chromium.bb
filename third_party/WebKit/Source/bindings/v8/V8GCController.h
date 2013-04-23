@@ -32,7 +32,7 @@
 #define V8GCController_h
 
 #include <v8.h>
-#include <wtf/Vector.h>
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

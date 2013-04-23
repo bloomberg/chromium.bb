@@ -32,10 +32,7 @@
 
 #include "V8WebGLRenderingContext.h"
 
-#include "ExceptionCode.h"
-#include "NotImplemented.h"
 #include "V8ArrayBufferView.h"
-#include "V8Binding.h"
 #include "V8EXTDrawBuffers.h"
 #include "V8EXTTextureFilterAnisotropic.h"
 #include "V8Float32Array.h"
@@ -69,9 +66,12 @@
 #include "V8WebGLTexture.h"
 #include "V8WebGLUniformLocation.h"
 #include "V8WebGLVertexArrayObjectOES.h"
-#include "WebGLRenderingContext.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/platform/NotImplemented.h"
 #include <limits>
-#include <wtf/FastMalloc.h>
+#include "wtf/FastMalloc.h"
 
 namespace WebCore {
 

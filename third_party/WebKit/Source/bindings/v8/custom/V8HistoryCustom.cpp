@@ -31,13 +31,13 @@
 #include "config.h"
 #include "V8History.h"
 
-#include "BindingState.h"
-#include "ExceptionCode.h"
-#include "History.h"
-#include "SerializedScriptValue.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8HiddenPropertyName.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/page/History.h"
 
 namespace WebCore {
 

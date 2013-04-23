@@ -26,15 +26,15 @@
 #ifndef Dictionary_h
 #define Dictionary_h
 
-#include "EventListener.h"
-#include "MessagePort.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/MessagePort.h"
 #include <v8.h>
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Vector.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
+#include "wtf/Vector.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

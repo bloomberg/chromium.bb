@@ -31,14 +31,14 @@
 #include "config.h"
 #include "V8InspectorFrontendHost.h"
 
-#include "HistogramSupport.h"
-#include "InspectorController.h"
-#include "InspectorFrontendClient.h"
-#include "InspectorFrontendHost.h"
-#include <wtf/text/WTFString.h>
+#include "core/inspector/InspectorController.h"
+#include "core/inspector/InspectorFrontendClient.h"
+#include "core/inspector/InspectorFrontendHost.h"
+#include "core/platform/HistogramSupport.h"
+#include "wtf/text/WTFString.h"
 
-#include "V8Binding.h"
 #include "V8MouseEvent.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

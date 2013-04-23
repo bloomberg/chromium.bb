@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "ScriptEventListener.h"
+#include "bindings/v8/ScriptEventListener.h"
 
-#include "Document.h"
-#include "EventListener.h"
-#include "Frame.h"
-#include "ScriptController.h"
-#include "ScriptScope.h"
-#include "DocumentParser.h"
-#include "V8AbstractEventListener.h"
-#include "V8Binding.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/V8AbstractEventListener.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentParser.h"
+#include "core/dom/EventListener.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

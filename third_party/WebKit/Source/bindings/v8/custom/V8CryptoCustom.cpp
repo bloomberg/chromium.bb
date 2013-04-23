@@ -25,13 +25,13 @@
 #include "config.h"
 #include "V8Crypto.h"
 
-#include "Crypto.h"
-#include "ExceptionCode.h"
 #include "V8ArrayBufferView.h"
-#include "V8Binding.h"
-#include "V8Utilities.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/page/Crypto.h"
 
-#include <wtf/ArrayBufferView.h>
+#include "wtf/ArrayBufferView.h"
 
 namespace WebCore {
 

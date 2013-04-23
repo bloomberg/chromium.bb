@@ -31,10 +31,10 @@
 #ifndef SharedPersistent_h
 #define SharedPersistent_h
 
-#include "ScopedPersistent.h"
+#include "bindings/v8/ScopedPersistent.h"
 #include <v8.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

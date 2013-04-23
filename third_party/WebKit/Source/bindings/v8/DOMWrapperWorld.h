@@ -31,14 +31,14 @@
 #ifndef DOMWrapperWorld_h
 #define DOMWrapperWorld_h
 
-#include "SecurityOrigin.h"
-#include "V8DOMActivityLogger.h"
-#include "V8PerContextData.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/v8/V8PerContextData.h"
+#include "core/page/SecurityOrigin.h"
 #include <v8.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

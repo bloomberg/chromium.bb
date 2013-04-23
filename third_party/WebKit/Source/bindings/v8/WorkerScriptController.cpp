@@ -30,22 +30,22 @@
 
 #include "config.h"
 
-#include "WorkerScriptController.h"
+#include "bindings/v8/WorkerScriptController.h"
 
-#include "DOMTimer.h"
-#include "ScriptCallStack.h"
 #include "ScriptRunner.h"
-#include "ScriptSourceCode.h"
-#include "ScriptValue.h"
-#include "V8GCController.h"
 #include "V8DedicatedWorkerContext.h"
-#include "V8Initializer.h"
 #include "V8SharedWorkerContext.h"
 #include "V8WorkerContext.h"
-#include "WorkerContext.h"
-#include "WorkerObjectProxy.h"
-#include "WorkerThread.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/ScriptValue.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8Initializer.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/page/DOMTimer.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerObjectProxy.h"
+#include "core/workers/WorkerThread.h"
 #include <v8.h>
 
 #include <public/Platform.h>

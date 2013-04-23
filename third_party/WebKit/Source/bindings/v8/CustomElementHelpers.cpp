@@ -29,15 +29,15 @@
  */
 
 #include "config.h"
-#include "CustomElementHelpers.h"
+#include "bindings/v8/CustomElementHelpers.h"
 
-#include "CustomElementRegistry.h"
-#include "DOMWrapperWorld.h"
 #include "SVGNames.h"
-#include "ScriptController.h"
 #include "V8CustomElementConstructor.h"
 #include "V8HTMLElementWrapperFactory.h"
 #include "V8SVGElementWrapperFactory.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScriptController.h"
+#include "core/dom/CustomElementRegistry.h"
 
 
 namespace WebCore {

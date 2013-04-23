@@ -31,12 +31,12 @@
 #ifndef DOMWrapperMap_h
 #define DOMWrapperMap_h
 
-#include "V8Utilities.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/V8Utilities.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <v8.h>
-#include <wtf/HashMap.h>
-#include <wtf/MemoryInstrumentationHashMap.h>
+#include "wtf/HashMap.h"
+#include "wtf/MemoryInstrumentationHashMap.h"
 
 namespace WebCore {
 

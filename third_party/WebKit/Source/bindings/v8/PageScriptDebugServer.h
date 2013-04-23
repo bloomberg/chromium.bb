@@ -32,8 +32,8 @@
 #define PageScriptDebugServer_h
 
 
-#include "ScriptDebugServer.h"
-#include <wtf/Forward.h>
+#include "bindings/v8/ScriptDebugServer.h"
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

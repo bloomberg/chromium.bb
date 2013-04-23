@@ -32,10 +32,10 @@
 #ifndef V8CustomXPathNSResolver_h
 #define V8CustomXPathNSResolver_h
 
-#include "XPathNSResolver.h"
+#include "core/xml/XPathNSResolver.h"
 #include <v8.h>
-#include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
+#include "wtf/Forward.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

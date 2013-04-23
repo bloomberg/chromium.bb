@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "ArrayValue.h"
+#include "bindings/v8/ArrayValue.h"
 
-#include "Dictionary.h"
-#include "V8Binding.h"
+#include "bindings/v8/Dictionary.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

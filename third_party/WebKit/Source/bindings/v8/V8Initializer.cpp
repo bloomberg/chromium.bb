@@ -24,25 +24,25 @@
  */
 
 #include "config.h"
-#include "V8Initializer.h"
+#include "bindings/v8/V8Initializer.h"
 
-#include "BindingState.h"
-#include "DOMWindow.h"
-#include "Document.h"
-#include "Frame.h"
-#include "MemoryUsageSupport.h"
-#include "ScriptCallStack.h"
-#include "ScriptCallStackFactory.h"
-#include "ScriptProfiler.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8GCController.h"
 #include "V8History.h"
 #include "V8Location.h"
-#include "V8PerContextData.h"
+#include "bindings/v8/BindingState.h"
+#include "bindings/v8/ScriptCallStackFactory.h"
+#include "bindings/v8/ScriptProfiler.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8PerContextData.h"
+#include "core/dom/Document.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/platform/MemoryUsageSupport.h"
 #include <v8-debug.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/RefPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

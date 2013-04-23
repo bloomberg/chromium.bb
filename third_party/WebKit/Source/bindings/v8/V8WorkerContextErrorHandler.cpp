@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "V8WorkerContextErrorHandler.h"
+#include "bindings/v8/V8WorkerContextErrorHandler.h"
 
-#include "EventNames.h"
-#include "ErrorEvent.h"
-#include "V8Binding.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/dom/ErrorEvent.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

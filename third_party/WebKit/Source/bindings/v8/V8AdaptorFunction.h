@@ -31,10 +31,10 @@
 #ifndef V8AdaptorFunction_h
 #define V8AdaptorFunction_h
 
-#include "V8Binding.h"
-#include "V8HiddenPropertyName.h"
-#include "WrapperTypeInfo.h"
-#include <wtf/PassRefPtr.h>
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "wtf/PassRefPtr.h"
 
 #if ENABLE(CUSTOM_ELEMENTS)
 

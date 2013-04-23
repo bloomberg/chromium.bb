@@ -31,8 +31,8 @@
 #ifndef V8Callback_h
 #define V8Callback_h
 
-#include "ExceptionCode.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
 #include <v8.h>
 
 namespace WebCore {

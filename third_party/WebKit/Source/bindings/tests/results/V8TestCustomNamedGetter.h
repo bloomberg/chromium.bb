@@ -65,8 +65,7 @@ inline v8::Handle<v8::Object> wrap(TestCustomNamedGetter* impl, v8::Handle<v8::O
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
     if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
         const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        if (actualInfo != &V8TestCustomNamedGetter::info)
-            CRASH();
+        RELEASE_ASSERT(actualInfo == &V8TestCustomNamedGetter::info);
     }
     return V8TestCustomNamedGetter::createWrapper(impl, creationContext, isolate);
 }

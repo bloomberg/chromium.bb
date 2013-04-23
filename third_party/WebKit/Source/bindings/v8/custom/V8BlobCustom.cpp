@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "Blob.h"
+#include "core/fileapi/Blob.h"
 
-#include "BlobBuilder.h"
-#include "Dictionary.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
-#include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8File.h"
-#include "V8Utilities.h"
-#include <wtf/RefPtr.h>
+#include "bindings/v8/Dictionary.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/fileapi/BlobBuilder.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

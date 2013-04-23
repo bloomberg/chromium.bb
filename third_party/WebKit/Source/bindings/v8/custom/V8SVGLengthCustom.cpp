@@ -33,10 +33,10 @@
 #if ENABLE(SVG)
 #include "V8SVGLength.h"
 
-#include "ExceptionCode.h"
-#include "SVGLengthContext.h"
-#include "SVGPropertyTearOff.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/svg/SVGLengthContext.h"
+#include "core/svg/properties/SVGPropertyTearOff.h"
 
 namespace WebCore {
 

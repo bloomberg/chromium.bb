@@ -28,18 +28,18 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "config.h"
-#include "V8CustomXPathNSResolver.h"
+#include "bindings/v8/custom/V8CustomXPathNSResolver.h"
 
-#include "DOMWindow.h"
-#include "Frame.h"
-#include "Page.h"
-#include "PageConsole.h"
-#include "ScriptCallStack.h"
-#include "ScriptController.h"
-#include "ScriptExecutionContext.h"
-#include "V8Binding.h"
-#include "V8Utilities.h"
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/PageConsole.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

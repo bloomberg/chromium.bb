@@ -63,6 +63,10 @@ inline v8::Handle<v8::Object> wrap(TestTypedefs* impl, v8::Handle<v8::Object> cr
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
+    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
+        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
+        RELEASE_ASSERT(actualInfo == &V8TestTypedefs::info);
+    }
     return V8TestTypedefs::createWrapper(impl, creationContext, isolate);
 }
 

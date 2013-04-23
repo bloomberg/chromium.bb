@@ -31,9 +31,9 @@
 #ifndef ScriptCallStackFactory_h
 #define ScriptCallStackFactory_h
 
-#include "ScriptCallStack.h"
+#include "core/inspector/ScriptCallStack.h"
 #include <v8.h>
-#include <wtf/Forward.h>
+#include "wtf/Forward.h"
 
 namespace WebCore {
 

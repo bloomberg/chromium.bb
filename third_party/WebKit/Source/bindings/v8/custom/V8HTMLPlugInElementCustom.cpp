@@ -29,14 +29,14 @@
 */
 
 #include "config.h"
-#include "HTMLPlugInElement.h"
+#include "core/html/HTMLPlugInElement.h"
 
-#include "ScriptInstance.h"
-#include "V8Binding.h"
 #include "V8HTMLAppletElement.h"
 #include "V8HTMLEmbedElement.h"
 #include "V8HTMLObjectElement.h"
-#include "V8NPObject.h"
+#include "bindings/v8/ScriptInstance.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8NPObject.h"
 
 namespace WebCore {
 

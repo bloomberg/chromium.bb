@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "Element.h"
+#include "core/dom/Element.h"
 
 #include "V8Element.h"
 #include "V8HTMLElement.h"

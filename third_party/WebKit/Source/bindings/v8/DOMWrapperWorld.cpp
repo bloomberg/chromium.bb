@@ -29,18 +29,18 @@
  */
 
 #include "config.h"
-#include "DOMWrapperWorld.h"
+#include "bindings/v8/DOMWrapperWorld.h"
 
-#include "DOMDataStore.h"
-#include "ScriptExecutionContext.h"
-#include "V8Binding.h"
-#include "V8DOMActivityLogger.h"
 #include "V8DOMWindow.h"
-#include "V8DOMWrapper.h"
-#include "WrapperTypeInfo.h"
-#include <wtf/HashTraits.h>
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
+#include "bindings/v8/DOMDataStore.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMActivityLogger.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/HashTraits.h"
+#include "wtf/MainThread.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

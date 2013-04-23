@@ -31,7 +31,7 @@
 #ifndef V8HTMLImageElementConstructor_h
 #define V8HTMLImageElementConstructor_h
 
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/WrapperTypeInfo.h"
 
 #include <v8.h>
 

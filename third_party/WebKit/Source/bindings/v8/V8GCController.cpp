@@ -29,20 +29,20 @@
  */
 
 #include "config.h"
-#include "V8GCController.h"
+#include "bindings/v8/V8GCController.h"
 
-#include "Attr.h"
-#include "HTMLImageElement.h"
-#include "MemoryUsageSupport.h"
-#include "RetainedDOMInfo.h"
-#include "TraceEvent.h"
-#include "V8AbstractEventListener.h"
-#include "V8Binding.h"
 #include "V8MessagePort.h"
 #include "V8MutationObserver.h"
 #include "V8Node.h"
-#include "V8RecursionScope.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/RetainedDOMInfo.h"
+#include "bindings/v8/V8AbstractEventListener.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/dom/Attr.h"
+#include "core/html/HTMLImageElement.h"
+#include "core/platform/MemoryUsageSupport.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include <algorithm>
 
 namespace WebCore {

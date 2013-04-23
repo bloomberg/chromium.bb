@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "RuntimeEnabledFeatures.h"
+#include "bindings/v8/RuntimeEnabledFeatures.h"
 
-#include "AsyncFileSystem.h"
-#include "DatabaseManager.h"
-#include "MediaPlayer.h"
-#include "SharedWorkerRepository.h"
 #include "WebSocket.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/graphics/MediaPlayer.h"
+#include "core/workers/SharedWorkerRepository.h"
+#include "modules/webdatabase/DatabaseManager.h"
 
 namespace WebCore {
 

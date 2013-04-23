@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "ScriptProfile.h"
+#include "bindings/v8/ScriptProfile.h"
 
-#include "InspectorValues.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/inspector/InspectorValues.h"
 #include <v8-profiler.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefPtr.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

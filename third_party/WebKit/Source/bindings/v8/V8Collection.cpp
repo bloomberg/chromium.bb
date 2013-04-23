@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8Collection.h"
+#include "bindings/v8/V8Collection.h"
 
-#include "ExceptionCode.h"
-#include "HTMLOptionElement.h"
 #include "V8HTMLOptionElement.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/html/HTMLOptionElement.h"
 
 namespace WebCore {
 

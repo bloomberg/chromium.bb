@@ -31,7 +31,7 @@
 #ifndef RetainedDOMInfo_h
 #define RetainedDOMInfo_h
 
-#include "RetainedObjectInfo.h"
+#include "bindings/v8/RetainedObjectInfo.h"
 
 namespace WebCore {
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "EventTarget.h"
+#include "core/dom/EventTarget.h"
 
 #include "EventTargetHeaders.h"
 #include "EventTargetInterfaces.h"

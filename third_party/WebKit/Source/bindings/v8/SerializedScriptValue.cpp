@@ -29,28 +29,16 @@
  */
 
 #include "config.h"
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
 
-#include "AsyncFileSystem.h"
-#include "Blob.h"
-#include "DataView.h"
-#include "ExceptionCode.h"
-#include "File.h"
-#include "FileList.h"
-#include "ImageData.h"
-#include "MessagePort.h"
-#include "SharedBuffer.h"
 #include "V8ArrayBuffer.h"
-#include "V8ArrayBufferCustom.h"
 #include "V8ArrayBufferView.h"
-#include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8DOMFileSystem.h"
 #include "V8DataView.h"
 #include "V8File.h"
 #include "V8FileList.h"
 #include "V8Float32Array.h"
-#include "V8Float64Array.h"
 #include "V8ImageData.h"
 #include "V8Int16Array.h"
 #include "V8Int32Array.h"
@@ -60,23 +48,35 @@
 #include "V8Uint32Array.h"
 #include "V8Uint8Array.h"
 #include "V8Uint8ClampedArray.h"
-#include "V8Utilities.h"
+#include "bindings/tests/results/V8Float64Array.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessagePort.h"
+#include "core/fileapi/Blob.h"
+#include "core/fileapi/File.h"
+#include "core/fileapi/FileList.h"
+#include "core/html/ImageData.h"
+#include "core/html/canvas/DataView.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/SharedBuffer.h"
 
-#include <wtf/ArrayBuffer.h>
-#include <wtf/ArrayBufferView.h>
-#include <wtf/Assertions.h>
-#include <wtf/ByteOrder.h>
-#include <wtf/Float32Array.h>
-#include <wtf/Float64Array.h>
-#include <wtf/Int16Array.h>
-#include <wtf/Int32Array.h>
-#include <wtf/Int8Array.h>
-#include <wtf/RefCounted.h>
-#include <wtf/Uint16Array.h>
-#include <wtf/Uint32Array.h>
-#include <wtf/Uint8Array.h>
-#include <wtf/Uint8ClampedArray.h>
-#include <wtf/Vector.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/ArrayBufferView.h"
+#include "wtf/Assertions.h"
+#include "wtf/ByteOrder.h"
+#include "wtf/Float32Array.h"
+#include "wtf/Float64Array.h"
+#include "wtf/Int16Array.h"
+#include "wtf/Int32Array.h"
+#include "wtf/Int8Array.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Uint16Array.h"
+#include "wtf/Uint32Array.h"
+#include "wtf/Uint8Array.h"
+#include "wtf/Uint8ClampedArray.h"
+#include "wtf/Vector.h"
 
 // FIXME: consider crashing in debug mode on deserialization errors
 // NOTE: be sure to change wireFormatVersion as necessary!

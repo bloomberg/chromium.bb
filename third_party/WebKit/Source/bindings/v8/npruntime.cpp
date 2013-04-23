@@ -26,14 +26,14 @@
 
 #include "config.h"
 
-#include "NPV8Object.h"
-#include "npruntime_impl.h"
-#include "npruntime_priv.h"
-#include "V8NPObject.h"
+#include "bindings/v8/NPV8Object.h"
+#include "bindings/v8/V8NPObject.h"
+#include "bindings/v8/npruntime_impl.h"
+#include "bindings/v8/npruntime_priv.h"
 
-#include <wtf/HashMap.h>
-#include <wtf/HashSet.h>
-#include <wtf/Assertions.h>
+#include "wtf/Assertions.h"
+#include "wtf/HashMap.h"
+#include "wtf/HashSet.h"
 
 using namespace WebCore;
 

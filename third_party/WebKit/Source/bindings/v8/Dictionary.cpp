@@ -24,15 +24,8 @@
  */
 
 #include "config.h"
-#include "Dictionary.h"
+#include "bindings/v8/Dictionary.h"
 
-#include "ArrayValue.h"
-#include "DOMStringList.h"
-#include "IDBKeyRange.h"
-#include "SpeechRecognitionError.h"
-#include "SpeechRecognitionResult.h"
-#include "SpeechRecognitionResultList.h"
-#include "V8Binding.h"
 #include "V8CSSFontFaceRule.h"
 #include "V8DOMError.h"
 #include "V8DOMWindow.h"
@@ -43,20 +36,27 @@
 #include "V8SpeechRecognitionResultList.h"
 #include "V8Storage.h"
 #include "V8Uint8Array.h"
-#include "V8Utilities.h"
 #include "V8VoidCallback.h"
-#include <wtf/MathExtras.h>
+#include "bindings/v8/ArrayValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/DOMStringList.h"
+#include "modules/indexeddb/IDBKeyRange.h"
+#include "modules/speech/SpeechRecognitionError.h"
+#include "modules/speech/SpeechRecognitionResult.h"
+#include "modules/speech/SpeechRecognitionResultList.h"
+#include "wtf/MathExtras.h"
 
 #if ENABLE(ENCRYPTED_MEDIA)
 #include "V8MediaKeyError.h"
 #endif
 
-#include "TrackBase.h"
 #include "V8TextTrack.h"
+#include "core/html/track/TrackBase.h"
 
 #if ENABLE(MEDIA_STREAM)
-#include "MediaStream.h"
 #include "V8MediaStream.h"
+#include "modules/mediastream/MediaStream.h"
 #endif
 
 namespace WebCore {

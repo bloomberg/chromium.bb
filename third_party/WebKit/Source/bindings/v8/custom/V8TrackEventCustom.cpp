@@ -32,9 +32,9 @@
 
 #include "V8TrackEvent.h"
 
-#include "TrackBase.h"
-#include "TrackEvent.h"
 #include "V8TextTrack.h"
+#include "core/html/track/TrackBase.h"
+#include "core/html/track/TrackEvent.h"
 
 namespace WebCore {
 

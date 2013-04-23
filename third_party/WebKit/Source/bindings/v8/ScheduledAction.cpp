@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "ScheduledAction.h"
+#include "bindings/v8/ScheduledAction.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "ScriptController.h"
-#include "ScriptExecutionContext.h"
-#include "ScriptSourceCode.h"
-#include "TraceEvent.h"
-#include "V8Binding.h"
-#include "V8GCController.h"
-#include "V8RecursionScope.h"
-#include "WorkerContext.h"
-#include "WorkerThread.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/page/Frame.h"
+#include "core/platform/chromium/TraceEvent.h"
+#include "core/workers/WorkerContext.h"
+#include "core/workers/WorkerThread.h"
 
 namespace WebCore {
 

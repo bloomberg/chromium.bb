@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
 
-#include "InspectorValues.h"
-#include "MessagePort.h"
-#include "ScriptScope.h"
-#include "SerializedScriptValue.h"
-#include "V8Binding.h"
-#include <wtf/ArrayBuffer.h>
+#include "bindings/v8/ScriptScope.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/MessagePort.h"
+#include "core/inspector/InspectorValues.h"
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

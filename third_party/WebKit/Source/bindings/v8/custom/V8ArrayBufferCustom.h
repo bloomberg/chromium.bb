@@ -27,7 +27,7 @@
 #define V8ArrayBufferCustom_h
 
 #include <v8.h>
-#include <wtf/ArrayBuffer.h>
+#include "wtf/ArrayBuffer.h"
 
 namespace WebCore {
 

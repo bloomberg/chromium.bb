@@ -31,10 +31,10 @@
 #ifndef SerializedScriptValue_h
 #define SerializedScriptValue_h
 
-#include "ScriptValue.h"
+#include "bindings/v8/ScriptValue.h"
 #include <v8.h>
-#include <wtf/ArrayBuffer.h>
-#include <wtf/Threading.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/Threading.h"
 
 namespace WebCore {
 

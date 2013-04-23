@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "V8ArrayBufferCustom.h"
+#include "bindings/v8/custom/V8ArrayBufferCustom.h"
 
-#include <wtf/ArrayBuffer.h>
-#include <wtf/StdLibExtras.h>
+#include "wtf/ArrayBuffer.h"
+#include "wtf/StdLibExtras.h"
 
-#include "ExceptionCode.h"
 #include "V8ArrayBuffer.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

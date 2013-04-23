@@ -29,20 +29,20 @@
  */
 
 #include "config.h"
-#include "PageScriptDebugServer.h"
+#include "bindings/v8/PageScriptDebugServer.h"
 
 
-#include "Frame.h"
-#include "InspectorInstrumentation.h"
-#include "Page.h"
-#include "ScriptController.h"
-#include "ScriptDebugListener.h"
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8RecursionScope.h"
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/StdLibExtras.h>
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/inspector/ScriptDebugListener.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

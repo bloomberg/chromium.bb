@@ -31,16 +31,16 @@
 #include "config.h"
 #include "V8HTMLFrameSetElement.h"
 
-#include "Document.h"
-#include "Frame.h"
-#include "HTMLCollection.h"
-#include "HTMLFrameElement.h"
-#include "HTMLFrameSetElement.h"
 #include "HTMLNames.h"
-#include "Node.h"
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
+#include "core/html/HTMLCollection.h"
+#include "core/html/HTMLFrameElement.h"
+#include "core/html/HTMLFrameSetElement.h"
+#include "core/page/Frame.h"
 
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

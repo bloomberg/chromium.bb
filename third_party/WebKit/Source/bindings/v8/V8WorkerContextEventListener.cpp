@@ -30,17 +30,17 @@
 
 #include "config.h"
 
-#include "V8WorkerContextEventListener.h"
+#include "bindings/v8/V8WorkerContextEventListener.h"
 
-#include "InspectorInstrumentation.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
 #include "V8Event.h"
 #include "V8EventTarget.h"
-#include "V8GCController.h"
-#include "V8RecursionScope.h"
-#include "WorkerContext.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8GCController.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "bindings/v8/WorkerScriptController.h"
+#include "core/inspector/InspectorInstrumentation.h"
+#include "core/workers/WorkerContext.h"
 
 namespace WebCore {
 

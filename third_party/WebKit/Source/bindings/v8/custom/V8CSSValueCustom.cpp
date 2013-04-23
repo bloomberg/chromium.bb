@@ -38,7 +38,7 @@
 #include "V8WebKitCSSFilterValue.h"
 
 #include "V8WebKitCSSMixFunctionValue.h"
-#include "WebKitCSSMixFunctionValue.h"
+#include "core/css/WebKitCSSMixFunctionValue.h"
 
 #if ENABLE(SVG)
 #include "V8SVGColor.h"

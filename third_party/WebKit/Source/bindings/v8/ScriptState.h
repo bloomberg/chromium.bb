@@ -31,12 +31,12 @@
 #ifndef ScriptState_h
 #define ScriptState_h
 
-#include "DOMWrapperWorld.h"
-#include "ScopedPersistent.h"
-#include "V8Utilities.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/V8Utilities.h"
 #include <v8.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/RefCounted.h>
+#include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

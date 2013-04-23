@@ -31,7 +31,7 @@
 #ifndef V8ObjectConstructor_h
 #define V8ObjectConstructor_h
 
-#include "V8PerIsolateData.h"
+#include "bindings/v8/V8PerIsolateData.h"
 
 #include <v8.h>
 

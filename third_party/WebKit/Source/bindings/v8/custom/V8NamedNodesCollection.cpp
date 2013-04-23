@@ -28,10 +28,10 @@
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "config.h"
-#include "V8NamedNodesCollection.h"
+#include "bindings/v8/custom/V8NamedNodesCollection.h"
 
-#include "Element.h"
-#include "NamedNodeMap.h"
+#include "core/dom/Element.h"
+#include "core/dom/NamedNodeMap.h"
 
 namespace WebCore {
 

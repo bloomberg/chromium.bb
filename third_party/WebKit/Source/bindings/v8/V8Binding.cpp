@@ -29,37 +29,37 @@
  */
 
 #include "config.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
 
-#include "BindingVisitors.h"
-#include "DOMStringList.h"
-#include "Element.h"
-#include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
-#include "QualifiedName.h"
-#include "ScriptController.h"
-#include "Settings.h"
 #include "V8DOMStringList.h"
 #include "V8DOMWindow.h"
 #include "V8Element.h"
-#include "V8NodeFilterCondition.h"
-#include "V8ObjectConstructor.h"
 #include "V8WorkerContext.h"
 #include "V8XPathNSResolver.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include "WorkerContext.h"
-#include "WorkerScriptController.h"
-#include "XPathNSResolver.h"
-#include <wtf/MathExtras.h>
-#include <wtf/MainThread.h>
-#include <wtf/StdLibExtras.h>
-#include <wtf/Threading.h>
-#include <wtf/text/AtomicString.h>
-#include <wtf/text/CString.h>
-#include <wtf/text/StringBuffer.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8NodeFilterCondition.h"
+#include "bindings/v8/V8ObjectConstructor.h"
+#include "bindings/v8/WorkerScriptController.h"
+#include "core/dom/DOMStringList.h"
+#include "core/dom/Element.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/inspector/BindingVisitors.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
+#include "core/workers/WorkerContext.h"
+#include "core/xml/XPathNSResolver.h"
+#include "wtf/MainThread.h"
+#include "wtf/MathExtras.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Threading.h"
+#include "wtf/text/AtomicString.h"
+#include "wtf/text/CString.h"
+#include "wtf/text/StringBuffer.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

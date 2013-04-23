@@ -31,14 +31,14 @@
 #include "config.h"
 #include "V8MessageEvent.h"
 
-#include "MessageEvent.h"
-#include "SerializedScriptValue.h"
+#include "bindings/v8/SerializedScriptValue.h"
+#include "core/dom/MessageEvent.h"
 
 #include "V8ArrayBuffer.h"
-#include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8DOMWindow.h"
 #include "V8MessagePort.h"
+#include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
 

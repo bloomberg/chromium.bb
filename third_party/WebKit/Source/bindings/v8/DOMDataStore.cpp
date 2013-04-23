@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "DOMDataStore.h"
+#include "bindings/v8/DOMDataStore.h"
 
-#include "DOMWrapperMap.h"
-#include "V8Binding.h"
-#include "WebCoreMemoryInstrumentation.h"
-#include <wtf/MainThread.h>
+#include "bindings/v8/DOMWrapperMap.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 

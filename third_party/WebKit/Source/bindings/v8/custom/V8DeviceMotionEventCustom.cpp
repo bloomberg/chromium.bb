@@ -26,8 +26,8 @@
 #include "config.h"
 #include "V8DeviceMotionEvent.h"
 
-#include "DeviceMotionData.h"
-#include "V8Binding.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/DeviceMotionData.h"
 
 #include <v8.h>
 

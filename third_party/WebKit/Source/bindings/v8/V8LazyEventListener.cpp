@@ -29,25 +29,25 @@
  */
 
 #include "config.h"
-#include "V8LazyEventListener.h"
+#include "bindings/v8/V8LazyEventListener.h"
 
-#include "ContentSecurityPolicy.h"
-#include "Document.h"
-#include "Frame.h"
-#include "HTMLElement.h"
-#include "HTMLFormElement.h"
-#include "Node.h"
-#include "ScriptController.h"
-#include "ScriptSourceCode.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
 #include "V8Document.h"
 #include "V8HTMLFormElement.h"
-#include "V8HiddenPropertyName.h"
 #include "V8Node.h"
-#include "V8RecursionScope.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/ScriptSourceCode.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
+#include "core/html/HTMLElement.h"
+#include "core/html/HTMLFormElement.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/Frame.h"
 
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

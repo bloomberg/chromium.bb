@@ -31,10 +31,10 @@
 #include "config.h"
 #include "V8DOMStringMap.h"
 
-#include "DOMStringMap.h"
-#include "V8Binding.h"
-#include "V8DOMWrapper.h"
 #include "V8Element.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8DOMWrapper.h"
+#include "core/dom/DOMStringMap.h"
 
 namespace WebCore {
 

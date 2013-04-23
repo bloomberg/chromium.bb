@@ -32,7 +32,7 @@
 #define ScopedPersistent_h
 
 #include <v8.h>
-#include <wtf/Noncopyable.h>
+#include "wtf/Noncopyable.h"
 
 namespace WebCore {
 

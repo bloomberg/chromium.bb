@@ -29,7 +29,7 @@
 #ifndef V8DOMConfiguration_h
 #define V8DOMConfiguration_h
 
-#include "V8DOMWrapper.h"
+#include "bindings/v8/V8DOMWrapper.h"
 #include <v8.h>
 
 namespace WebCore {

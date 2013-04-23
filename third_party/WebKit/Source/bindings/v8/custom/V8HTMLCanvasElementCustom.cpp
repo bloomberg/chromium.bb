@@ -32,17 +32,17 @@
 #include "config.h"
 #include "V8HTMLCanvasElement.h"
 
-#include "CanvasContextAttributes.h"
-#include "CanvasRenderingContext.h"
-#include "HTMLCanvasElement.h"
-#include "InspectorCanvasInstrumentation.h"
-#include "WebGLContextAttributes.h"
-#include "V8Binding.h"
 #include "V8CanvasRenderingContext2D.h"
 #include "V8Node.h"
 #include "V8WebGLRenderingContext.h"
-#include <wtf/MathExtras.h>
-#include <wtf/text/WTFString.h>
+#include "bindings/v8/V8Binding.h"
+#include "core/html/HTMLCanvasElement.h"
+#include "core/html/canvas/CanvasContextAttributes.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/WebGLContextAttributes.h"
+#include "core/inspector/InspectorCanvasInstrumentation.h"
+#include "wtf/MathExtras.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

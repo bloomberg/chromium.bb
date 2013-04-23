@@ -32,7 +32,7 @@
 #define V8DOMActivityLogger_h
 
 #include <v8.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

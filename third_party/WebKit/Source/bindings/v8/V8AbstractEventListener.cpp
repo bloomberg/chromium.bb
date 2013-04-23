@@ -1,3 +1,4 @@
+#include "bindings/v8/ScriptCachedFrameData.h"
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Google Inc. All rights reserved.
  *
@@ -29,20 +30,20 @@
  */
 
 #include "config.h"
-#include "V8AbstractEventListener.h"
+#include "bindings/v8/V8AbstractEventListener.h"
 
-#include "DateExtension.h"
-#include "Document.h"
-#include "Event.h"
-#include "EventNames.h"
-#include "Frame.h"
-#include "InspectorCounters.h"
-#include "V8Binding.h"
 #include "V8Event.h"
-#include "V8EventListenerList.h"
 #include "V8EventTarget.h"
-#include "V8HiddenPropertyName.h"
-#include "WorkerContext.h"
+#include "bindings/v8/DateExtension.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8EventListenerList.h"
+#include "bindings/v8/V8HiddenPropertyName.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
+#include "core/inspector/InspectorCounters.h"
+#include "core/page/Frame.h"
+#include "core/workers/WorkerContext.h"
 
 namespace WebCore {
 

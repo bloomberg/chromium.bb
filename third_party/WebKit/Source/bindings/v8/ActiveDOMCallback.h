@@ -31,8 +31,8 @@
 #ifndef ActiveDOMCallback_h
 #define ActiveDOMCallback_h
 
-#include "ContextDestructionObserver.h"
-#include <wtf/OwnPtr.h>
+#include "core/dom/ContextDestructionObserver.h"
+#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 

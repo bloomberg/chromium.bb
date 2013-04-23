@@ -32,15 +32,15 @@
 #define ScriptDebugServer_h
 
 
-#include "ScopedPersistent.h"
-#include "ScriptBreakpoint.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "core/inspector/ScriptBreakpoint.h"
 #include <v8-debug.h>
-#include <wtf/HashMap.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
-#include <wtf/text/StringHash.h>
-#include <wtf/text/WTFString.h>
+#include "wtf/HashMap.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/Vector.h"
+#include "wtf/text/StringHash.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

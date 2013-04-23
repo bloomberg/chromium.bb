@@ -31,13 +31,13 @@
 #ifndef V8AbstractEventListener_h
 #define V8AbstractEventListener_h
 
-#include "DOMWrapperWorld.h"
-#include "EventListener.h"
-#include "ScopedPersistent.h"
-#include "V8Utilities.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/EventListener.h"
 #include <v8.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 

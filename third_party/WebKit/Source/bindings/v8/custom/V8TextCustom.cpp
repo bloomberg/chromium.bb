@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "Node.h"
-#include "Text.h"
 #include "V8CDATASection.h"
 #include "V8Text.h"
+#include "core/dom/Node.h"
+#include "core/dom/Text.h"
 
 namespace WebCore {
 

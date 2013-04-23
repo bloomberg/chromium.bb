@@ -32,11 +32,11 @@
 
 #include "V8SQLStatementErrorCallback.h"
 
-#include "ScriptExecutionContext.h"
-#include "V8Callback.h"
 #include "V8SQLError.h"
 #include "V8SQLTransaction.h"
-#include <wtf/Assertions.h>
+#include "bindings/v8/V8Callback.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "wtf/Assertions.h"
 
 namespace WebCore {
 

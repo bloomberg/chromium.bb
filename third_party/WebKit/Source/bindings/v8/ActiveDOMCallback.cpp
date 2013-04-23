@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "ActiveDOMCallback.h"
+#include "bindings/v8/ActiveDOMCallback.h"
 
-#include "ActiveDOMObject.h"
-#include "ScriptExecutionContext.h"
-#include "WorkerContext.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/workers/WorkerContext.h"
 
 namespace WebCore {
 

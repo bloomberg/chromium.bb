@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "V8WindowErrorHandler.h"
+#include "bindings/v8/V8WindowErrorHandler.h"
 
-#include "EventNames.h"
-#include "ErrorEvent.h"
-#include "ScriptController.h"
-#include "V8Binding.h"
+#include "bindings/v8/ScriptController.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ErrorEvent.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

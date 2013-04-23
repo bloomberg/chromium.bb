@@ -32,13 +32,13 @@
 
 #include "V8SQLTransaction.h"
 
-#include "Database.h"
-#include "ExceptionCode.h"
-#include "SQLValue.h"
-#include "V8Binding.h"
 #include "V8SQLStatementCallback.h"
 #include "V8SQLStatementErrorCallback.h"
-#include <wtf/Vector.h>
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/platform/sql/SQLValue.h"
+#include "modules/webdatabase/Database.h"
+#include "wtf/Vector.h"
 
 using namespace WTF;
 

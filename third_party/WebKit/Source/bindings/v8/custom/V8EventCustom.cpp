@@ -31,14 +31,14 @@
 #include "config.h"
 #include "V8Event.h"
 
-#include "Clipboard.h"
-#include "ClipboardEvent.h"
-#include "Event.h"
 #include "EventHeaders.h"
 #include "EventInterfaces.h"
-#include "EventNames.h"
-#include "V8Binding.h"
 #include "V8Clipboard.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/Clipboard.h"
+#include "core/dom/ClipboardEvent.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

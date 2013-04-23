@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "V8GCForContextDispose.h"
+#include "bindings/v8/V8GCForContextDispose.h"
 
-#include <wtf/StdLibExtras.h>
+#include "wtf/StdLibExtras.h"
 
 namespace WebCore {
 

@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "ScriptDebugServer.h"
+#include "bindings/v8/ScriptDebugServer.h"
 
 
 #include "DebuggerScriptSource.h"
-#include "JavaScriptCallFrame.h"
-#include "ScopedPersistent.h"
-#include "ScriptDebugListener.h"
-#include "ScriptObject.h"
-#include "V8Binding.h"
 #include "V8JavaScriptCallFrame.h"
-#include "V8RecursionScope.h"
-#include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
+#include "bindings/v8/JavaScriptCallFrame.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/ScriptObject.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8RecursionScope.h"
+#include "core/inspector/ScriptDebugListener.h"
+#include "wtf/StdLibExtras.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 

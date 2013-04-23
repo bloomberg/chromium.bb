@@ -32,17 +32,17 @@
 
 #include "V8WorkerContext.h"
 
-#include "ContentSecurityPolicy.h"
-#include "DOMTimer.h"
-#include "ExceptionCode.h"
-#include "ScheduledAction.h"
-#include "ScriptCallStack.h"
-#include "V8Binding.h"
-#include "V8Utilities.h"
-#include "V8WorkerContextEventListener.h"
 #include "WebSocket.h"
-#include "WorkerContext.h"
-#include "WorkerScriptController.h"
+#include "bindings/v8/ScheduledAction.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8Utilities.h"
+#include "bindings/v8/V8WorkerContextEventListener.h"
+#include "bindings/v8/WorkerScriptController.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/inspector/ScriptCallStack.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/DOMTimer.h"
+#include "core/workers/WorkerContext.h"
 
 namespace WebCore {
 

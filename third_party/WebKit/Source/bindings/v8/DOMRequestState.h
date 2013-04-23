@@ -26,11 +26,11 @@
 #ifndef DOMRequestState_h
 #define DOMRequestState_h
 
-#include "DOMWrapperWorld.h"
-#include "ScriptExecutionContext.h"
-#include "V8Binding.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/V8Binding.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "v8.h"
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

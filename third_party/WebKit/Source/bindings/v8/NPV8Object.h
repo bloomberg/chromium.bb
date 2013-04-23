@@ -30,7 +30,7 @@
 #ifndef NPV8Object_h
 #define NPV8Object_h
 
-#include "V8DOMWrapper.h"
+#include "bindings/v8/V8DOMWrapper.h"
 
 // Chromium uses npruntime.h from the Chromium source repository under
 // third_party/npapi/bindings.

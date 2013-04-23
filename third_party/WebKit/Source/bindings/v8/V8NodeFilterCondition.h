@@ -31,10 +31,10 @@
 #ifndef V8NodeFilterCondition_h
 #define V8NodeFilterCondition_h
 
-#include "NodeFilterCondition.h"
-#include "ScopedPersistent.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "core/dom/NodeFilterCondition.h"
 #include <v8.h>
-#include <wtf/PassRefPtr.h>
+#include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 

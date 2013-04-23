@@ -31,18 +31,18 @@
 #ifndef V8DOMWindowShell_h
 #define V8DOMWindowShell_h
 
-#include "DOMWrapperWorld.h"
-#include "ScopedPersistent.h"
-#include "SecurityOrigin.h"
-#include "V8PerContextData.h"
-#include "WrapperTypeInfo.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/V8PerContextData.h"
+#include "bindings/v8/WrapperTypeInfo.h"
+#include "core/page/SecurityOrigin.h"
 #include <v8.h>
-#include <wtf/Forward.h>
-#include <wtf/HashMap.h>
-#include <wtf/PassRefPtr.h>
-#include <wtf/RefCounted.h>
-#include <wtf/RefPtr.h>
-#include <wtf/text/AtomicString.h>
+#include "wtf/Forward.h"
+#include "wtf/HashMap.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
+#include "wtf/RefPtr.h"
+#include "wtf/text/AtomicString.h"
 
 namespace WebCore {
 

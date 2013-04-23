@@ -26,13 +26,13 @@
 #ifndef V8MutationCallback_h
 #define V8MutationCallback_h
 
-#include "ActiveDOMCallback.h"
-#include "DOMWrapperWorld.h"
-#include "MutationCallback.h"
-#include "ScopedPersistent.h"
-#include "V8Utilities.h"
+#include "bindings/v8/ActiveDOMCallback.h"
+#include "bindings/v8/DOMWrapperWorld.h"
+#include "bindings/v8/ScopedPersistent.h"
+#include "bindings/v8/V8Utilities.h"
+#include "core/dom/MutationCallback.h"
 #include <v8.h>
-#include <wtf/RefPtr.h>
+#include "wtf/RefPtr.h"
 
 namespace WebCore {
 

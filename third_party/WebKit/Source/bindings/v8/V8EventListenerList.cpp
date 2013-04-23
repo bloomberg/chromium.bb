@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "V8EventListenerList.h"
+#include "bindings/v8/V8EventListenerList.h"
 
-#include "V8Binding.h"
 #include "V8DOMWindow.h"
-#include "V8WorkerContextEventListener.h"
+#include "bindings/v8/V8Binding.h"
+#include "bindings/v8/V8WorkerContextEventListener.h"
 
 namespace WebCore {
 
