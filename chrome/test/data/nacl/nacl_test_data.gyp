@@ -4,7 +4,7 @@
 
 {
   'includes': [
-    'nacl_browser_test.gypi',
+    '../../../../native_client/build/untrusted.gypi',
   ],
   'targets': [
     {
@@ -14,6 +14,8 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'test_files': [
           # TODO(ncbray) move into chrome/test/data/nacl when all tests are
           # converted.
@@ -21,6 +23,9 @@
           '<(DEPTH)/ppapi/native_client/tools/browser_tester/browserdata/nacltest.js',
         ],
       },
+      'dependencies': [
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
+      ],
     },
     {
       'target_name': 'simple_test',
@@ -30,6 +35,8 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'sources': [
           'simple.cc',
         ],
@@ -37,6 +44,9 @@
           'nacl_load_test.html',
         ],
       },
+      'dependencies': [
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
+      ],
     },
     {
       'target_name': 'exit_status_test',
@@ -46,6 +56,8 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'sources': [
           'exit_status/pm_exit_status_test.cc',
         ],
@@ -53,6 +65,9 @@
           'exit_status/pm_exit_status_test.html',
         ],
       },
+      'dependencies': [
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
+      ],
     },
     {
       'target_name': 'ppapi_test_lib',
@@ -63,6 +78,8 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'sources': [
           # TODO(ncbray) move these files once SCons no longer depends on them.
           '../../../../ppapi/native_client/tests/ppapi_test_lib/get_browser_interface.cc',
@@ -74,6 +91,7 @@
       },
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
       ],
     },
     {
@@ -84,6 +102,8 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'link_flags': [
           '-lppapi',
           '-lppapi_test_lib',
@@ -101,8 +121,7 @@
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
-        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
-        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
         'ppapi_test_lib',
       ],
     },
@@ -112,6 +131,8 @@
       'variables': {
         'nexe_target': 'pnacl_options',
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'sources': [
           'simple.cc',
         ],
@@ -125,6 +146,7 @@
       },
       'dependencies': [
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
       ]
     },
     # Legacy NaCl PPAPI interface tests being here.
@@ -136,6 +158,8 @@
         'build_newlib': 1,
         'build_glibc': 1,
         'build_pnacl_newlib': 1,
+        'nexe_destination_dir': 'nacl_test_data',
+        'current_depth': '<(DEPTH)',
         'link_flags': [
           '-lppapi',
           '-lppapi_test_lib',
@@ -153,8 +177,7 @@
         '<(DEPTH)/native_client/tools.gyp:prep_toolchain',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform_lib',
         '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio_lib',
-        '<(DEPTH)/ppapi/native_client/native_client.gyp:ppapi_lib',
-        '<(DEPTH)/ppapi/ppapi_untrusted.gyp:ppapi_cpp_lib',
+        '<(DEPTH)/ppapi/ppapi_nacl_test_common.gyp:nacl_test_common',
         'ppapi_test_lib',
       ],
     },

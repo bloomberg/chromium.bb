@@ -28,8 +28,9 @@ class DictField {
 
   const std::string& key() const { return key_; }
 
-  T& value() { return value_; }
-  const T& value() const { return value_; }
+  // Returns the value.
+  T& operator()() { return value_; }
+  const T& operator()() const { return value_; }
 
   // Adds this field to the dictionary var.
   bool AddTo(VarDictionary_Dev* dict) const {
@@ -66,8 +67,9 @@ class OptionalDictField {
 
   const std::string& key() const { return key_; }
 
-  Optional<T>& value() { return value_; }
-  const Optional<T>& value() const { return value_; }
+  // Returns the value.
+  Optional<T>& operator()() { return value_; }
+  const Optional<T>& operator()() const { return value_; }
 
   // Adds this field to the dictionary var, if |value| has been set.
   bool MayAddTo(VarDictionary_Dev* dict) const {
