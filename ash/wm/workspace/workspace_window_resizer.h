@@ -134,16 +134,15 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // snapping.
   void AdjustBoundsForMainWindow(int snap_size, gfx::Rect* bounds);
 
-  // Snaps the window bounds to the work area edges if necessary.
-  void SnapToWorkAreaEdges(
-      const gfx::Rect& work_area,
-      int snap_size,
-      gfx::Rect* bounds) const;
+  // Stick the window bounds to the work area during a move.
+  void StickToWorkAreaOnMove(const gfx::Rect& work_area,
+                             int sticky_size,
+                             gfx::Rect* bounds) const;
 
-  // Snaps the window bounds to the work area during a resize.
-  void SnapResizeToWorkAreaBounds(const gfx::Rect& work_area,
-                                  int snap_size,
-                                  gfx::Rect* bounds) const;
+  // Stick the window bounds to the work area during a resize.
+  void StickToWorkAreaOnResize(const gfx::Rect& work_area,
+                               int sticky_size,
+                               gfx::Rect* bounds) const;
 
   // Returns a coordinate along the primary axis. Used to share code for
   // left/right multi window resize and top/bottom resize.

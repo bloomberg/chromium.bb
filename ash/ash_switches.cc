@@ -89,6 +89,9 @@ const char kAshEnableMemoryMonitor[] = "ash-enable-memory-monitor";
 // Enables the Oak tree viewer.
 const char kAshEnableOak[] = "ash-enable-oak";
 
+// Enables "sticky" edges instead of "snap-to-edge"
+const char kAshEnableStickyEdges[] = "ash-enable-sticky-edges";
+
 // Enables showing the tray bubble by dragging on the shelf.
 const char kAshEnableTrayDragging[] = "ash-enable-tray-dragging";
 
