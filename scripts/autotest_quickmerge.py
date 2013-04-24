@@ -10,6 +10,8 @@ Simple script to be run inside the chroot. Used as a fast approximation of
 emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
+import argparse
+import errno
 import logging
 import os
 import re
@@ -21,7 +23,6 @@ from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 
-import argparse
 
 if cros_build_lib.IsInsideChroot():
   # Only import portage after we've checked that we're inside the chroot.
@@ -58,8 +59,7 @@ ItemizedChangeReport = namedtuple('ItemizedChangeReport',
 
 
 def GetStalePackageNames(change_list, autotest_sysroot):
-  """
-  Given a rsync change report, returns the names of stale test packages.
+  """Given a rsync change report, returns the names of stale test packages.
 
   This function pulls out test package names for client-side tests, stored
   within the client/site_tests directory tree, that had any files added or
@@ -116,8 +116,7 @@ def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
 
 
 def GetPackageAPI(portage_root, package_cp):
-  """
-  Gets portage API handles for the given package.
+  """Gets portage API handles for the given package.
 
   Arguments:
     portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
@@ -129,29 +128,31 @@ def GetPackageAPI(portage_root, package_cp):
       vartree is of type portage.dbapi.vartree.vartree
   """
   if portage_root is None:
-    portage_root = portage.root # pylint: disable-msg=E1101
+    # pylint: disable-msg=E1101
+    portage_root = portage.root
   # Ensure that portage_root ends with trailing slash.
   portage_root = os.path.join(portage_root, '')
 
-  # Create vartree object corresponding to portage_root
+  # Create a vartree object corresponding to portage_root.
   trees = portage.create_trees(portage_root, portage_root)
   vartree = trees[portage_root]['vartree']
 
-  # List matching installed packages in cpv format
+  # List the matching installed packages in cpv format.
   matching_packages = vartree.dbapi.cp_list(package_cp)
 
   if not matching_packages:
     raise ValueError('No matching package for %s in portage_root %s' % (
-        package_cp, portage_root))
+                     package_cp, portage_root))
 
   if len(matching_packages) > 1:
     raise ValueError('Too many matching packages for %s in portage_root '
-        '%s' % (package_cp, portage_root))
+                     '%s' % (package_cp, portage_root))
 
-  # Convert string match to package dblink
+  # Convert string match to package dblink.
   package_cpv = matching_packages[0]
   package_split = portage_utilities.SplitCPV(package_cpv)
-  package = portage.dblink(package_split.category, # pylint: disable-msg=E1101
+  # pylint: disable-msg=E1101
+  package = portage.dblink(package_split.category,
                            package_split.pv, settings=vartree.settings,
                            vartree=vartree)
 
@@ -160,8 +161,7 @@ def GetPackageAPI(portage_root, package_cp):
 
 def DowngradePackageVersion(portage_root, package_cp,
                             downgrade_to_version='0'):
-  """
-  Downgrade the specified portage package version.
+  """Downgrade the specified portage package version.
 
   Arguments:
     portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
@@ -182,10 +182,8 @@ def DowngradePackageVersion(portage_root, package_cp,
   return cros_build_lib.SudoRunCommand(command).returncode
 
 
-def UpdatePackageContents(change_report, package_cp,
-                          portage_root=None):
-  """
-  Add newly created files/directors to package contents.
+def UpdatePackageContents(change_report, package_cp, portage_root=None):
+  """Add newly created files/directors to package contents.
 
   Given an ItemizedChangeReport, add the newly created files and directories
   to the CONTENTS of an installed portage package, such that these files are
@@ -201,22 +199,20 @@ def UpdatePackageContents(change_report, package_cp,
   """
   package, vartree = GetPackageAPI(portage_root, package_cp)
 
-  # Append new contents to package contents dictionary
+  # Append new contents to package contents dictionary.
   contents = package.getcontents().copy()
   for _, filename in change_report.new_files:
     contents.setdefault(filename, (u'obj', '0', '0'))
   for _, dirname in change_report.new_directories:
-    # String trailing slashes if present.
-    dirname = dirname.rstrip('/')
-    contents.setdefault(dirname, (u'dir',))
+    # Strip trailing slashes if present.
+    contents.setdefault(dirname.rstrip('/'), (u'dir',))
 
-  # Write new contents dictionary to file
+  # Write new contents dictionary to file.
   vartree.dbapi.writeContentsToContentsFile(package, contents)
 
 
 def RemoveTestPackages(stale_packages, autotest_sysroot):
-  """
-  Remove bzipped test packages from sysroot.
+  """Remove bzipped test packages from sysroot.
 
   Arguments:
     stale_packages: List of test packages names to be removed.
@@ -227,13 +223,13 @@ def RemoveTestPackages(stale_packages, autotest_sysroot):
   for package in set(stale_packages):
     package_filename = 'test-' + package + '.tar.bz2'
     package_file_fullpath = os.path.join(autotest_sysroot, 'packages',
-        package_filename)
+                                         package_filename)
     try:
       os.remove(package_file_fullpath)
       logging.info('Removed stale %s', package_file_fullpath)
     except OSError as err:
       # Suppress no-such-file exceptions. Raise all others.
-      if err.errno != 2:
+      if err.errno != errno.ENOENT:
         raise
 
 
@@ -241,6 +237,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
                     include_pattern_file=None, pretend=False,
                     overwrite=False):
   """Run rsync quickmerge command, with specified arguments.
+
   Command will take form `rsync -a [options] --exclude=**.pyc
                          --exclude=**.pyo
                          [optional --include-from argument]
@@ -303,7 +300,7 @@ def main(argv):
 
   args = ParseArguments(argv)
 
-  if not os.geteuid()==0:
+  if os.geteuid() != 0:
     try:
       cros_build_lib.SudoRunCommand([sys.executable] + sys.argv)
     except cros_build_lib.RunCommandError:
@@ -327,7 +324,8 @@ def main(argv):
                                        'autotest', '')
 
   rsync_output = RsyncQuickmerge(source_path, sysroot_autotest_path,
-      include_pattern_file, args.pretend, args.overwrite)
+                                 include_pattern_file, args.pretend,
+                                 args.overwrite)
 
   if args.verbose:
     logging.info(rsync_output.output)
@@ -341,7 +339,7 @@ def main(argv):
     for ebuild in DOWNGRADE_EBUILDS:
       if DowngradePackageVersion(sysroot_path, ebuild) != 0:
         logging.warning('Unable to downgrade package %s version number.',
-            ebuild)
+                        ebuild)
     stale_packages = GetStalePackageNames(
         change_report.new_files + change_report.modified_files,
         sysroot_autotest_path)
@@ -349,12 +347,9 @@ def main(argv):
 
   if args.pretend:
     logging.info('The following message is pretend only. No filesystem '
-        'changes made.')
+                 'changes made.')
   logging.info('Quickmerge complete. Created or modified %s files.',
-      len(change_report.new_files) + len(change_report.modified_files))
+               len(change_report.new_files) +
+               len(change_report.modified_files))
 
   return 0
-
-
-if __name__ == '__main__':
-  sys.exit(main(sys.argv))
