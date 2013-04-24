@@ -962,10 +962,6 @@ crbug.com/28409 http/tests/xmlhttprequest/logout.html [ Failure ]
 # Timeout on Debug.
 webkit.org/b/82954 [ Mac Win Linux ] svg/hixie/perf/007.xml [ ImageOnlyFailure Pass Slow ]
 
-# Failures from merge 50972:51042
-# The test requires DRT/Test Shell to support error page handling.
-crbug.com/27850 fast/history/back-forward-reset-after-error-handling.html [ Failure ]
-
 # Started failing with move from Lighttpd to Apache.
 # Since we have some bots on Lighttpd and some on Apache, mark it as flaky for
 # now. Once we decide on one or the other, then we can address these tests.
@@ -1063,7 +1059,6 @@ crbug.com/37896 [ Linux Win ] fast/multicol/hit-test-above-or-below.html [ Failu
 crbug.com/40680 fast/media/view-mode-media-feature.html
 crbug.com/40680 fast/media/media-query-list-02.html
 crbug.com/40680 fast/media/media-query-list-03.html
-crbug.com/40680 fast/media/media-query-list-04.html
 crbug.com/40680 fast/media/media-query-list-05.html
 crbug.com/40680 fast/media/media-query-list-06.html
 crbug.com/40680 fast/media/media-query-list-07.html
@@ -1205,9 +1200,6 @@ webkit.org/b/96977 [ Mac Release ] perf/nested-combined-selectors.html [ Failure
 
 # new or failing since WebKit rev. 65740:65800
 crbug.com/53073 [ Debug ] storage/websql/change-version.html
-
-# Requires page cache.
-webkit.org/b/45652 fast/viewport/viewport-128.html [ Timeout ]
 
 webkit.org/b/45737 [ Win Linux Mac Debug ] fast/frames/frame-limit.html [ Timeout ]
 webkit.org/b/45737 [ Win Linux Release ] fast/frames/frame-limit.html [ Slow ]
@@ -1430,8 +1422,6 @@ webkit.org/b/54306 virtual/softwarecompositing/reflections/nested-reflection-tra
 # bots running tests on real hardware.
 webkit.org/b/49629 compositing/lots-of-img-layers.html
 webkit.org/b/49629 compositing/lots-of-img-layers-with-opacity.html
-webkit.org/b/49629 compositing/iframes/page-cache-layer-tree.html
-webkit.org/b/49629 virtual/softwarecompositing/iframes/page-cache-layer-tree.html
 
 webkit.org/b/53868 fast/notifications/notifications-document-close-crash.html [ Failure Pass ]
 
@@ -1539,9 +1529,6 @@ webkit.org/b/60103 [ Mac ] fast/replaced/border-radius-clip.html [ Failure ]
 
 # Need to figure out why this is slow.
 webkit.org/b/60131 fast/css/visited-link-hang.html [ Slow ]
-
-# Introduced in r84443
-webkit.org/b/59063 fast/images/animated-gif-restored-from-bfcache.html [ Failure ]
 
 webkit.org/b/56702 [ Win Debug ] http/tests/navigation/ping-cross-origin-from-https.html [ Failure Pass Timeout ]
 
@@ -1822,8 +1809,6 @@ webkit.org/b/72761 accessibility/anonymous-render-block-in-continuation-causes-c
 
 webkit.org/b/73766 css3/unicode-bidi-isolate-aharon-failing.html [ ImageOnlyFailure ]
 
-webkit.org/b/74357 plugins/netscape-plugin-page-cache-works.html [ Skip ]
-
 webkit.org/b/74662 [ Win ] fast/text/unicode-variation-selector.html [ Failure ]
 
 webkit.org/b/74746 [ Win ] http/tests/xmlhttprequest/workers/methods.html [ Failure Timeout ]
@@ -1875,10 +1860,6 @@ webkit.org/b/77314 [ Mac Win ] fast/events/touch/send-oncancel-event.html [ Fail
 
 # Skipped until setTouchPointRadius get implemented
 webkit.org/b/91012 touchadjustment/focusout-on-touch.html [ Skip ]
-
-# CRASH comes from BUGCR121442
-webkit.org/b/77397 [ Linux ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Crash Timeout ]
-webkit.org/b/77397 [ Mac Win ] plugins/crash-restoring-plugin-page-from-page-cache.html [ Timeout ]
 
 webkit.org/b/78159 compositing/iframes/scrolling-iframe.html [ Failure Pass ]
 webkit.org/b/78159 virtual/softwarecompositing/iframes/scrolling-iframe.html [ Failure Pass ]
@@ -2634,7 +2615,6 @@ crbug.com/172970 fast/events/touch/emulate-touch-events.html [ Failure Pass ]
 
 # These tests are failing already and because of virtual test suite for deferred
 # image decoding they need to be suppressed again.
-webkit.org/b/94240 virtual/deferred/fast/images/animated-gif-restored-from-bfcache.html [ Failure ]
 webkit.org/b/94240 [ Linux ] virtual/deferred/fast/images/color-jpeg-with-color-profile.html [ ImageOnlyFailure ]
 webkit.org/b/94240 [ Linux Win ] virtual/deferred/fast/images/gif-large-checkerboard.html [ ImageOnlyFailure ]
 webkit.org/b/94240 virtual/deferred/fast/images/gif-loop-count.html [ ImageOnlyFailure ]

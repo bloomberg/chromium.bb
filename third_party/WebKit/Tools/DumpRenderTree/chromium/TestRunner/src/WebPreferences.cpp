@@ -96,8 +96,6 @@ void WebPreferences::reset()
     shrinksStandaloneImagesToFit = false;
     textAreasAreResizable = true;
     userStyleSheetLocation = WebURL();
-    usesPageCache = false;
-    pageCacheSupportsPlugins = false;
     webSecurityEnabled = true;
     caretBrowsingEnabled = false;
 
@@ -168,8 +166,6 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setShrinksStandaloneImagesToFit(shrinksStandaloneImagesToFit);
     settings->setTextAreasAreResizable(textAreasAreResizable);
     settings->setUserStyleSheetLocation(userStyleSheetLocation);
-    settings->setUsesPageCache(usesPageCache);
-    settings->setPageCacheSupportsPlugins(pageCacheSupportsPlugins);
     settings->setWebSecurityEnabled(webSecurityEnabled);
     settings->setAllowUniversalAccessFromFileURLs(allowUniversalAccessFromFileURLs);
     settings->setEditingBehavior(editingBehavior);

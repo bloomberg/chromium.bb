@@ -130,7 +130,7 @@ public:
     virtual void setNeedsSiteSpecificQuirks(bool) = 0;
     virtual void setOfflineWebApplicationCacheEnabled(bool) = 0;
     virtual void setOpenGLMultisamplingEnabled(bool) = 0;
-    virtual void setPageCacheSupportsPlugins(bool) = 0;
+    virtual void setPageCacheSupportsPlugins(bool) { } // FIXME: remove once the embedder no longer calls it.
     virtual void setPasswordEchoDurationInSeconds(double) = 0;
     virtual void setPasswordEchoEnabled(bool) = 0;
     virtual void setPerTilePaintingEnabled(bool) = 0;
@@ -165,7 +165,7 @@ public:
     virtual void setUnsafePluginPastingEnabled(bool) = 0;
     virtual void setUserStyleSheetLocation(const WebURL&) = 0;
     virtual void setUsesEncodingDetector(bool) = 0;
-    virtual void setUsesPageCache(bool) = 0;
+    virtual void setUsesPageCache(bool) { } // FIXME: remove once the embedder no longer calls it.
     virtual void setUseWideViewport(bool) = 0;
     virtual void setValidationMessageTimerMagnification(int) = 0;
     virtual void setViewportEnabled(bool) = 0;
