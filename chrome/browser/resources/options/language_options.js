@@ -299,9 +299,9 @@ cr.define('options', function() {
         if (inputMethod.optionsPage) {
           var button = document.createElement('button');
           button.textContent = loadTimeData.getString('configure');
-          button.onclick = function(e) {
-            window.open(inputMethod.optionsPage);
-          };
+          button.onclick = function(optionsPage, e) {
+            window.open(optionsPage);
+          }.bind(this, inputMethod.optionsPage);
           element.appendChild(button);
         }
 
