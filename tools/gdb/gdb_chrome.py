@@ -185,6 +185,29 @@ class TimePrinter(object):
 pp_set.add_printer('base::Time', '^base::Time$', TimePrinter)
 
 
+class IpcMessagePrinter(Printer):
+    def header(self):
+        return self.val['header_'].cast(
+            gdb.lookup_type('IPC::Message::Header').pointer())
+
+    def to_string(self):
+        message_type = self.header()['type']
+        return '%s of kind %s line %s' % (
+            self.val.dynamic_type,
+            (message_type >> 16).cast(gdb.lookup_type('IPCMessageStart')),
+            message_type & 0xffff)
+
+    def children(self):
+        yield ('header_', self.header().dereference())
+        yield ('capacity_', self.val['capacity_'])
+        yield ('variable_buffer_offset_', self.val['variable_buffer_offset_'])
+        for field in self.val.type.fields():
+            if field.is_base_class:
+                continue
+            yield (field.name, self.val[field.name])
+pp_set.add_printer('IPC::Message', '^IPC::Message$', IpcMessagePrinter)
+
+
 class NotificationRegistrarPrinter(Printer):
     def to_string(self):
         try:
