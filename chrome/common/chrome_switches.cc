@@ -418,6 +418,10 @@ const char kDisableSyncPriorityPreferences[] =
 // Disable syncing custom search engines.
 const char kDisableSyncSearchEngines[]      = "disable-sync-search-engines";
 
+// Disable synced notifications.
+const char kDisableSyncSyncedNotifications[] =
+    "disable-sync-synced-notifications";
+
 // Disables syncing browser sessions. Will override kEnableSyncTabs.
 const char kDisableSyncTabs[]               = "disable-sync-tabs";
 
@@ -649,10 +653,6 @@ const char kEnableStackedTabStrip[]         = "enable-stacked-tab-strip";
 
 // Enables experimental suggestions pane in New Tab page.
 const char kEnableSuggestionsTabPage[]      = "enable-suggestions-ntp";
-
-// Enables synced notifications.
-const char kEnableSyncSyncedNotifications[] =
-    "enable-sync-synced-notifications";
 
 // Enables synced favicons
 const char kEnableSyncFavicons[]            = "enable-sync-favicons";
