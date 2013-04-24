@@ -107,10 +107,19 @@
     'final_apk_path%': '<(PRODUCT_DIR)/apks/<(apk_name).apk',
     'source_dir': '<(java_in_dir)/src',
     'apk_install_record': '<(intermediate_dir)/apk_install.record.stamp',
-    'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
     'device_intermediate_dir': '/data/local/tmp/chromium/<(_target_name)/<(CONFIGURATION_NAME)',
     'symlink_script_host_path': '<(intermediate_dir)/create_symlinks.sh',
     'symlink_script_device_path': '<(device_intermediate_dir)/create_symlinks.sh',
+    'variables': {
+      'conditions': [
+        ['gyp_managed_install == 1', {
+          'apk_package_native_libs_dir': '<(intermediate_dir)/libs.managed',
+        }, {
+          'apk_package_native_libs_dir': '<(intermediate_dir)/libs',
+        }],
+      ],
+    },
+    'apk_package_native_libs_dir': '<(apk_package_native_libs_dir)',
   },
   # Pass the jar path to the apk's "fake" jar target.  This would be better as
   # direct_dependent_settings, but a variable set by a direct_dependent_settings
@@ -144,8 +153,24 @@
       'variables': {
         'compile_input_paths': [ '<(native_libraries_java_stamp)' ],
         'generated_src_dirs': [ '<(native_libraries_java_dir)' ],
-        'native_libs_paths': ['<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)'],
+        'native_libs_paths': [
+          '<(SHARED_LIB_DIR)/<(native_lib_target).>(android_product_extension)'
+        ],
+        'package_input_paths': [
+          '<(apk_package_native_libs_dir)/<(android_app_abi)/gdbserver',
+        ],
       },
+      'copies': [
+        {
+          # gdbserver is always copied into the APK's native libs dir. The ant
+          # build scripts (apkbuilder task) will only include it in a debug
+          # build.
+          'destination': '<(apk_package_native_libs_dir)/<(android_app_abi)',
+          'files': [
+            '<(android_gdbserver)',
+          ],
+        },
+      ],
       'actions': [
         {
           'variables': {
@@ -203,7 +228,6 @@
         ['gyp_managed_install == 1', {
           'variables': {
             'libraries_source_dir': '<(intermediate_dir)/lib.stripped/<(android_app_abi)',
-            'apk_package_native_libs_dir': '<(intermediate_dir)/libs.managed',
             'device_library_dir': '<(device_intermediate_dir)/lib.stripped',
           },
           'dependencies': [
