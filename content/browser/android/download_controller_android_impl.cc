@@ -249,6 +249,8 @@ void DownloadControllerAndroidImpl::OnDownloadStarted(
 
 void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (item->IsDangerous() && !item->IsCancelled())
+    OnDangerousDownload(item);
 
   if (!item->IsComplete())
     return;
@@ -279,6 +281,19 @@ void DownloadControllerAndroidImpl::OnDownloadUpdated(DownloadItem* item) {
       GetJavaObject()->Controller(env).obj(), view_core.obj(), jurl.obj(),
       jcontent_disposition.obj(), jmime_type.obj(), jpath.obj(),
       item->GetReceivedBytes(), true);
+}
+
+void DownloadControllerAndroidImpl::OnDangerousDownload(DownloadItem* item) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jstring> jfilename = ConvertUTF8ToJavaString(
+      env, item->GetTargetFilePath().BaseName().value());
+  ScopedJavaLocalRef<jobject> view_core = GetContentViewCoreFromWebContents(
+      item->GetWebContents());
+  if (!view_core.is_null()) {
+    Java_DownloadController_onDangerousDownload(
+        env, GetJavaObject()->Controller(env).obj(), view_core.obj(),
+        jfilename.obj(), item->GetId());
+  }
 }
 
 ScopedJavaLocalRef<jobject> DownloadControllerAndroidImpl::GetContentView(
@@ -337,6 +352,21 @@ void DownloadControllerAndroidImpl::StartContextMenuDownload(
     dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
   dlm->DownloadUrl(dl_params.Pass());
+}
+
+void DownloadControllerAndroidImpl::DangerousDownloadValidated(
+    WebContents* web_contents, int download_id, bool accept) {
+  if (!web_contents)
+    return;
+  DownloadManagerImpl* dlm = static_cast<DownloadManagerImpl*>(
+      BrowserContext::GetDownloadManager(web_contents->GetBrowserContext()));
+  DownloadItem* item = dlm->GetDownload(download_id);
+  if (!item)
+    return;
+  if (accept)
+    item->DangerousDownloadValidated();
+  else
+    item->Delete(content::DownloadItem::DELETE_DUE_TO_USER_DISCARD);
 }
 
 DownloadControllerAndroidImpl::DownloadInfoAndroid::DownloadInfoAndroid(

@@ -38,4 +38,12 @@ public interface ContentViewDownloadDelegate {
      */
     void onDownloadCompleted(String url, String mimetype, String path,
             long contentLength, boolean successful);
+
+    /**
+     * Notify the host application that a download has an extension indicating
+     * a dangerous file type.
+     * @param filename File name of the downloaded file.
+     * @param downloadId The download id.
+     */
+    void onDangerousDownload(String filename, int downloadId);
 }

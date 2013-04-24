@@ -34,6 +34,10 @@ class CONTENT_EXPORT DownloadControllerAndroid {
       const ContextMenuParams& params, WebContents* web_contents,
       bool is_link) = 0;
 
+  // Called when a dangerous download item is verified or rejected.
+  virtual void DangerousDownloadValidated(
+      WebContents* web_contents, int download_id, bool accept) = 0;
+
  protected:
   virtual ~DownloadControllerAndroid() {};
 };

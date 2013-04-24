@@ -212,6 +212,11 @@ static const struct Executables {
   { "sh", AllowOnUserGesture },
   { "shar", AllowOnUserGesture },
   { "tcsh", AllowOnUserGesture },
+#elif defined(OS_ANDROID)
+  { "apk", AllowOnUserGesture },
+  { "sh", AllowOnUserGesture },
+  { "shar", AllowOnUserGesture },
+  { "dex", AllowOnUserGesture },
 #endif
 };
 

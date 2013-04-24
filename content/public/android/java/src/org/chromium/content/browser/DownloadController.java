@@ -80,6 +80,18 @@ class DownloadController {
         }
     }
 
+    /**
+     * Notifies the download delegate that a dangerous download started.
+     */
+    @CalledByNative
+    public void onDangerousDownload(ContentViewCore view, String filename,
+            int downloadId) {
+        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
+        if (downloadDelagate != null) {
+            downloadDelagate.onDangerousDownload(filename, downloadId);
+        }
+    }
+
     // native methods
     private native void nativeInit();
 }
