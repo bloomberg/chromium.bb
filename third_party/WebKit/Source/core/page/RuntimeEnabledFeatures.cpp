@@ -158,7 +158,7 @@ bool RuntimeEnabledFeatures::isVideoTrackEnabled = true;
 bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;
 #endif
 
-bool RuntimeEnabledFeatures::isShadowDOMEnabled = false;
+bool RuntimeEnabledFeatures::isShadowDOMEnabled = true;
 
 bool RuntimeEnabledFeatures::isExperimentalShadowDOMEnabled = false;
 
