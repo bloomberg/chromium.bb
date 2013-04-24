@@ -24,6 +24,7 @@ cr.define('print_preview.ticket_items', function() {
      * @type {!print_preview.DestinationStore}
      * @private
      */
+    // TODO(rltoscano): Move DestinationStore into a base class.
     this.destinationStore_ = destinationStore;
 
     this.addEventHandlers_();

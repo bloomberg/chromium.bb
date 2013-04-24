@@ -2,12 +2,12 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.print-header {
+#print-header {
   padding-bottom: 10px;
   padding-top: 10px;
 }
 
-.print-header-summary {
+#print-header .summary {
   color: rgb(83, 99, 125);
   display: block;
   min-height: 30px;

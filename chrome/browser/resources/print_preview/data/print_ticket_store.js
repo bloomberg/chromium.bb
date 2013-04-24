@@ -76,8 +76,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.ticket_items.Collate}
      * @private
      */
-    this.collate_ =
-        new print_preview.ticket_items.Collate(this.capabilitiesHolder_);
+    this.collate_ = new print_preview.ticket_items.Collate(
+        this.appState_, this.destinationStore_);
 
     /**
      * Color ticket item.
@@ -93,7 +93,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.copies_ =
-        new print_preview.ticket_items.Copies(this.capabilitiesHolder_);
+        new print_preview.ticket_items.Copies(this.destinationStore_);
 
     /**
      * Duplex ticket item.
@@ -191,8 +191,16 @@ cr.define('print_preview', function() {
   PrintTicketStore.prototype = {
     __proto__: cr.EventTarget.prototype,
 
+    get collate() {
+      return this.collate_;
+    },
+
     get color() {
       return this.color_;
+    },
+
+    get copies() {
+      return this.copies_;
     },
 
     /** @return {boolean} Whether the document is modifiable. */
@@ -320,73 +328,12 @@ cr.define('print_preview', function() {
       this.duplex_.updateValue(this.appState_.isDuplexEnabled);
       this.headerFooter_.updateValue(this.appState_.isHeaderFooterEnabled);
       this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
-      this.collate_.updateValue(this.appState_.isCollateEnabled);
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_COLLATE_ENABLED)) {
+        this.collate_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_COLLATE_ENABLED));
+      }
       this.cssBackground_.updateValue(this.appState_.isCssBackgroundEnabled);
-    },
-
-    /** @return {boolean} Whether the ticket store has the copies capability. */
-    hasCopiesCapability: function() {
-      return this.copies_.isCapabilityAvailable();
-    },
-
-    /**
-     * @return {boolean} Whether the string representation of the copies value
-     *     currently in the ticket store is valid.
-     */
-    isCopiesValid: function() {
-      return this.copies_.isValid();
-    },
-
-    isCopiesValidForValue: function(value) {
-      return this.copies_.wouldValueBeValid(value);
-    },
-
-    /** @return {number} Number of copies to print. */
-    getCopies: function() {
-      return this.copies_.getValueAsNumber();
-    },
-
-    /**
-     * @return {string} String representation of the number of copies to print.
-     */
-    getCopiesStr: function() {
-      return this.copies_.getValue();
-    },
-
-    /**
-     * Updates the string representation of the number of copies to print.
-     * Dispatches a TICKET_CHANGE event if the string value has changed.
-     * @param {string} New string representation of the number of copies to
-     *     print.
-     */
-    updateCopies: function(copies) {
-      if (this.copies_.getValue() != copies) {
-        this.copies_.updateValue(copies);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /** @return {boolean} Whether the ticket store has a collate capability. */
-    hasCollateCapability: function() {
-      return this.collate_.isCapabilityAvailable();
-    },
-
-    /** @return {boolean} Whether collate is enabled. */
-    isCollateEnabled: function() {
-      return this.collate_.getValue();
-    },
-
-    /**
-     * Updates whether collate is enabled. Dispatches a TICKET_CHANGE event if
-     * collate has changed.
-     * @param {boolean} isCollateEnabled Whether collate is enabled.
-     */
-    updateCollate: function(isCollateEnabled) {
-      if (this.collate_.getValue() != isCollateEnabled) {
-        this.collate_.updateValue(isCollateEnabled);
-        this.appState_.persistIsCollateEnabled(isCollateEnabled);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
     },
 
     /** @return {boolean} Whether the header-footer capability is available. */
@@ -699,7 +646,7 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the ticket is valid for preview generation. */
     isTicketValidForPreview: function() {
-      return (!this.hasCopiesCapability() || this.isCopiesValid()) &&
+      return (!this.copies.isCapabilityAvailable() || this.copies.isValid()) &&
           (!this.hasMarginsCapability() ||
               this.getMarginsType() !=
                   print_preview.ticket_items.MarginsType.Value.CUSTOM ||

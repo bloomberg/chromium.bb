@@ -2,29 +2,29 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-#copies-settings .copies-settings-copies {
+#copies-settings input.copies {
   position: relative;
   width: 2.75em;
 }
 
-#copies-settings .copies-settings-copies.invalid {
+#copies-settings input.copies.invalid {
   background: rgb(255, 240, 240);
   color: rgb(140, 20, 20);
 }
 
-#copies-settings .copies-settings-increment:focus,
-#copies-settings .copies-settings-decrement:focus,
-.copies-settings:focus {
+#copies-settings button.increment:focus,
+#copies-settings button.decrement:focus,
+#copies-settings:focus {
   z-index: 1;
 }
 
-#copies-settings .copies-settings-collate {
+#copies-settings .collate-container {
  -webkit-padding-start: 16px;
   display: inline-block;
 }
 
-#copies-settings .copies-settings-increment,
-#copies-settings .copies-settings-decrement {
+#copies-settings button.increment,
+#copies-settings button.decrement {
   -webkit-padding-end: 0;
   -webkit-padding-start: 0;
   font-weight: 600;
@@ -34,12 +34,12 @@
   width: 2em;
 }
 
-#copies-settings .copies-settings-increment {
+#copies-settings button.increment {
   -webkit-margin-start: -5px;
   border-radius: 0;
 }
 
-#copies-settings .copies-settings-decrement {
+#copies-settings button.decrement {
   -webkit-margin-start: -5px;
   border-bottom-left-radius: 0;
   border-bottom-right-radius: 3px;
@@ -47,7 +47,7 @@
   border-top-right-radius: 3px;
 }
 
-html[dir='rtl'] #copies-settings .copies-settings-decrement {
+html[dir='rtl'] #copies-settings button.decrement {
   border-bottom-left-radius: 3px;
   border-bottom-right-radius: 0;
   border-top-left-radius: 3px;

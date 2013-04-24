@@ -9,22 +9,24 @@ cr.define('print_preview.ticket_items', function() {
    * Copies ticket item whose value is a {@code string} that indicates how many
    * copies of the document should be printed. The ticket item is backed by a
    * string since the user can textually input the copies value.
-   * @param {!print_preview.CapabilitiesHolder} capabilitiesHolder Capabilities
-   *     holder used to determine the default number of copies and if the copies
-   *     capability is available.
+   * @param {!print_preview.DestinationStore} destinationStore Destination store
+   *     used determine if a destination has the copies capability.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function Copies(capabilitiesHolder) {
+  function Copies(destinationStore) {
     print_preview.ticket_items.TicketItem.call(this);
 
     /**
-     * Capabilities holder used to determine the default number of copies and if
-     * the copies capability is available.
-     * @type {!print_preview.CapabilitiesHolder}
+     * Destination store used determine if a destination has the copies
+     * capability.
+     * @type {!print_preview.DestinationStore}
      * @private
      */
-    this.capabilitiesHolder_ = capabilitiesHolder;
+    // TODO(rltoscano): Move DestinationStore into a base class.
+    this.destinationStore_ = destinationStore;
+
+    this.addEventHandlers_();
   };
 
   Copies.prototype = {
@@ -44,8 +46,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      var cdd = this.capabilitiesHolder_.get();
-      return cdd && cdd.printer && cdd.printer.copies;
+      return !!this.getCopiesCapability_();
     },
 
     /** @return {number} The number of copies indicated by the ticket item. */
@@ -55,13 +56,48 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal: function() {
-      var cdd = this.capabilitiesHolder_.get();
-      return (cdd.printer.copies.default || 1) + '';
+      var cap = this.getCopiesCapability_();
+      return cap.hasOwnProperty('default') ? cap.default : '';
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
       return '1';
+    },
+
+    /**
+     * @return {Object} Copies capability of the selected destination.
+     * @private
+     */
+    getCopiesCapability_: function() {
+      var dest = this.destinationStore_.selectedDestination;
+      return (dest &&
+              dest.capabilities &&
+              dest.capabilities.printer &&
+              dest.capabilities.printer.copies) ||
+             null;
+    },
+
+    /**
+     * Adds event handlers for this class.
+     * @private
+     */
+    addEventHandlers_: function() {
+      this.getTrackerInternal().add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.
+              SELECTED_DESTINATION_CAPABILITIES_READY,
+          this.onCapsReady_.bind(this));
+    },
+
+    /**
+     * Called when the selected destination's capabilities are ready. Dispatches
+     * a CHANGE event.
+     * @private
+     */
+    onCapsReady_: function() {
+      cr.dispatchSimpleEvent(
+          this, print_preview.ticket_items.TicketItem.EventType.CHANGE);
     }
   };
 

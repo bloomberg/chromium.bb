@@ -104,7 +104,7 @@ cr.define('print_preview', function() {
      * @private
      */
     this.copiesSettings_ = new print_preview.CopiesSettings(
-        this.printTicketStore_);
+        this.printTicketStore_.copies, this.printTicketStore_.collate);
     this.addChild(this.copiesSettings_);
 
     /**

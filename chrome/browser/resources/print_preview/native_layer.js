@@ -173,8 +173,8 @@ cr.define('print_preview', function() {
         // preview, they still need to be included.
         'duplex': printTicketStore.isDuplexEnabled() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
-        'copies': printTicketStore.getCopies(),
-        'collate': printTicketStore.isCollateEnabled(),
+        'copies': printTicketStore.copies.getValueAsNumber(),
+        'collate': printTicketStore.collate.getValue(),
         'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled(),
         'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled()
       };
@@ -231,8 +231,8 @@ cr.define('print_preview', function() {
         'generateDraftData': true, // TODO(rltoscano): What should this be?
         'duplex': printTicketStore.isDuplexEnabled() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
-        'copies': printTicketStore.getCopies(),
-        'collate': printTicketStore.isCollateEnabled(),
+        'copies': printTicketStore.copies.getValueAsNumber(),
+        'collate': printTicketStore.collate.getValue(),
         'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled(),
         'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled(),
         'previewModifiable': printTicketStore.isDocumentModifiable,

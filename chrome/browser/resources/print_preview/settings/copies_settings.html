@@ -1,22 +1,16 @@
-<div id="copies-settings" class="copies-settings two-column visible">
+<div id="copies-settings" class="two-column visible">
   <h1 i18n-content="copiesLabel"></h1>
   <div class="right-column">
     <div>
-      <input class="copies-settings-copies" type="text" value="1" maxlength="3">
-      <button class="copies-settings-increment"
-          i18n-values="title:incrementTitle;">+</button>
-      <button class="copies-settings-decrement"
-          i18n-values="title:decrementTitle;">–</button>
-      <div class="copies-settings-collate checkbox" aria-live="polite" hidden>
-        <label>
-          <input class="copies-settings-collate-checkbox" type="checkbox"
-              checked>
-          <span i18n-content="optionCollate"></span>
-        </label>
-      </div>
+      <input class="copies" type="text" value="1" maxlength="3">
+      <button class="increment" i18n-values="title:incrementTitle;">+</button>
+      <button class="decrement" i18n-values="title:decrementTitle;">–</button>
+      <div class="collate-container checkbox" aria-live="polite" hidden><label>
+        <input class="collate" type="checkbox" checked>
+        <span i18n-content="optionCollate"></span>
+      </label></div>
     </div>
-    <span class="copies-settings-hint hint" i18n-content="copiesInstruction"
-        aria-live="polite">
+    <span class="hint" i18n-content="copiesInstruction" aria-live="polite">
     </span>
   </div>
 </div>

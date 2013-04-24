@@ -8,22 +8,27 @@ cr.define('print_preview.ticket_items', function() {
   /**
    * Collate ticket item whose value is a {@code boolean} that indicates whether
    * collation is enabled.
-   * @param {!print_preview.CapabilitiesHolder} capabilitiesHolder Capabilities
-   *     holder used to determine the default collate value and if the collate
-   *     capability is available.
+   * @param {!print_preview.AppState} appState App state used to persist collate
+   *     selection.
+   * @param {!print_preview.DestinationStore} destinationStore Destination store
+   *     used determine if a destination has the collate capability.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function Collate(capabilitiesHolder) {
-    print_preview.ticket_items.TicketItem.call(this);
+  function Collate(appState, destinationStore) {
+    print_preview.ticket_items.TicketItem.call(
+        this, appState, print_preview.AppState.Field.IS_COLLATE_ENABLED);
 
     /**
-     * Capabilities holder used to determine the default collate value and if
-     * the collate capability is available.
-     * @type {!print_preview.CapabilitiesHolder}
+     * Destination store used determine if a destination has the collate
+     * capability.
+     * @type {!print_preview.DestinationStore}
      * @private
      */
-    this.capabilitiesHolder_ = capabilitiesHolder;
+    // TODO(rltoscano): Move DestinationStore into a base class.
+    this.destinationStore_ = destinationStore;
+
+    this.addEventHandlers_();
   };
 
   Collate.prototype = {
@@ -36,19 +41,52 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      var cdd = this.capabilitiesHolder_.get();
-      return cdd && cdd.printer && cdd.printer.collate;
+      return !!this.getCollateCapability_();
     },
 
     /** @override */
     getDefaultValueInternal: function() {
-      var cdd = this.capabilitiesHolder_.get();
-      return !!cdd.printer.collate.default;
+      return this.getCollateCapability_().default || false;
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
       return false;
+    },
+
+    /**
+     * @return {Object} Collate capability of the selected destination.
+     * @private
+     */
+    getCollateCapability_: function() {
+      var dest = this.destinationStore_.selectedDestination;
+      return (dest &&
+              dest.capabilities &&
+              dest.capabilities.printer &&
+              dest.capabilities.printer.collate) ||
+             null;
+    },
+
+    /**
+     * Adds event handlers for this class.
+     * @private
+     */
+    addEventHandlers_: function() {
+      this.getTrackerInternal().add(
+          this.destinationStore_,
+          print_preview.DestinationStore.EventType.
+              SELECTED_DESTINATION_CAPABILITIES_READY,
+          this.onCapsReady_.bind(this));
+    },
+
+    /**
+     * Called when the selected destination's capabilities are ready. Dispatches
+     * a CHANGE event.
+     * @private
+     */
+    onCapsReady_: function() {
+      cr.dispatchSimpleEvent(
+          this, print_preview.ticket_items.TicketItem.EventType.CHANGE);
     }
   };
 

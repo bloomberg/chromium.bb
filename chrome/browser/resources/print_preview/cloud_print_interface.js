@@ -272,10 +272,10 @@ cr.define('cloudprint', function() {
         version: '1.0',
         print: {}
       };
-      if (pts.hasCollateCapability()) {
-        cjt.print.collate = {collate: pts.isCollateEnabled()};
+      if (pts.collate.isCapabilityAvailable() && pts.collate.isUserEdited()) {
+        cjt.print.collate = {collate: pts.collate.getValue() == 'true'};
       }
-      if (pts.color.isCapabilityAvailable()) {
+      if (pts.color.isCapabilityAvailable() && pts.color.isUserEdited()) {
         var colorType = pts.color.getValue() ?
             'STANDARD_COLOR' : 'STANDARD_MONOCHROME';
         // Find option with this colorType to read its vendor_id.
@@ -292,8 +292,8 @@ cr.define('cloudprint', function() {
           }
         }
       }
-      if (pts.hasCopiesCapability()) {
-        cjt.print.copies = {copies: pts.getCopies()};
+      if (pts.copies.isCapabilityAvailable() && pts.copies.isUserEdited()) {
+        cjt.print.copies = {copies: pts.copies.getValueAsNumber()};
       }
       if (pts.hasDuplexCapability()) {
         cjt.print.duplex =
