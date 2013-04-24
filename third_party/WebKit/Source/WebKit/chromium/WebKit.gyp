@@ -34,7 +34,7 @@
         '../../wtf/wtf.gypi',
         '../../core/core.gypi',
         'WebKit.gypi',
-        'features.gypi',
+        '../../core/features.gypi',
     ],
     'targets': [
         {

@@ -43,7 +43,7 @@
     },
     'includes': [
         '../DumpRenderTree.gypi',
-        '../../../Source/WebKit/chromium/features.gypi',
+        '../../../Source/core/features.gypi',
     ],
     'targets': [
         {

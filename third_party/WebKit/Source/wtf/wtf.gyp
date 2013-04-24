@@ -28,7 +28,7 @@
 {
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
-    '../WebKit/chromium/features.gypi',
+    '../core/features.gypi',
     'wtf.gypi',
   ],
   'conditions': [

@@ -32,7 +32,7 @@
   'includes': [
     '../core.gypi',
     '../../bindings/bindings.gypi',
-    '../../WebKit/chromium/features.gypi',
+    '../features.gypi',
   ],
 
   'targets': [

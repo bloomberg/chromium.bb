@@ -31,7 +31,7 @@
 {
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
-    '../WebKit/chromium/features.gypi',
+    '../core/features.gypi',
   ],
   'conditions': [
     ['os_posix == 1 and OS != "mac" and gcc_version>=46', {

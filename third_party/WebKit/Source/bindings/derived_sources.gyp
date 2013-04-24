@@ -31,7 +31,7 @@
 {
   'includes': [
     '../WebKit/chromium/WinPrecompile.gypi',
-    '../WebKit/chromium/features.gypi',
+    '../core/features.gypi',
     '../core/core.gypi',
     '../modules/modules.gypi',
     'bindings.gypi',

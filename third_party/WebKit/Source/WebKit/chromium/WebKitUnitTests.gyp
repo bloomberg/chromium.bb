@@ -30,7 +30,7 @@
 
 {
     'includes': [
-        'features.gypi',
+        '../../core/features.gypi',
         'WebKit.gypi',
         '../../wtf/wtf.gypi',
         '../../core/core.gypi',
