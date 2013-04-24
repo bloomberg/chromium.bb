@@ -99,6 +99,7 @@ class SimpleSynchronousEntry {
   ~SimpleSynchronousEntry();
 
   bool OpenOrCreateFiles(bool create);
+  void CloseFiles();
 
   // Returns a net::Error, i.e. net::OK on success.
   int InitializeForOpen();
@@ -115,6 +116,7 @@ class SimpleSynchronousEntry {
   const base::FilePath path_;
   const std::string key_;
 
+  bool have_open_files_;
   bool initialized_;
 
   base::Time last_used_;

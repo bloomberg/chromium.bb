@@ -20,6 +20,7 @@
 #include "net/disk_cache/simple/simple_util.h"
 #include "third_party/zlib/zlib.h"
 
+using base::kInvalidPlatformFileValue;
 using base::ClosePlatformFile;
 using base::FilePath;
 using base::GetPlatformFileInfo;
@@ -258,7 +259,7 @@ void SimpleSynchronousEntry::Close(
     bool did_close_file = ClosePlatformFile(files_[i]);
     CHECK(did_close_file);
   }
-
+  have_open_files_ = false;
   delete this;
 }
 
@@ -267,10 +268,20 @@ SimpleSynchronousEntry::SimpleSynchronousEntry(
     const std::string& key)
     : path_(path),
       key_(key),
+      have_open_files_(false),
       initialized_(false) {
+  COMPILE_ASSERT(arraysize(data_size_) == arraysize(files_),
+                 array_sizes_must_be_equal);
+  std::memset(data_size_, 0, sizeof(data_size_));
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    files_[i] = kInvalidPlatformFileValue;
+  }
 }
 
 SimpleSynchronousEntry::~SimpleSynchronousEntry() {
+  DCHECK(!(have_open_files_ && initialized_));
+  if (have_open_files_)
+    CloseFiles();
 }
 
 bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
@@ -309,7 +320,16 @@ bool SimpleSynchronousEntry::OpenOrCreateFiles(bool create) {
                                                                file_info.size);
   }
 
+  have_open_files_ = true;
   return true;
+}
+
+void SimpleSynchronousEntry::CloseFiles() {
+  for (int i = 0; i < kSimpleEntryFileCount; ++i) {
+    DCHECK_NE(kInvalidPlatformFileValue, files_[i]);
+    bool did_close = ClosePlatformFile(files_[i]);
+    DCHECK(did_close);
+  }
 }
 
 int64 SimpleSynchronousEntry::GetFileSize() const {
