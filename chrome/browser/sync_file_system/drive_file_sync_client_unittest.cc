@@ -243,11 +243,13 @@ void DidDownloadFile(bool* done_out,
                      std::string* expected_file_md5_out,
                      GDataErrorCode* error_out,
                      GDataErrorCode error,
-                     const std::string& expected_file_md5) {
+                     const std::string& file_md5,
+                     int64 file_size,
+                     const base::Time& updated_time) {
   EXPECT_FALSE(*done_out);
   *done_out = true;
   *error_out = error;
-  *expected_file_md5_out = expected_file_md5;
+  *expected_file_md5_out = file_md5;
 }
 
 void DidUploadFile(bool* done_out,

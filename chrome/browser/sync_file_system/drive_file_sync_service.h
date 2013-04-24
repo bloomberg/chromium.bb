@@ -355,7 +355,9 @@ class DriveFileSyncService
   void DidDownloadFileForRemoteSync(
       scoped_ptr<ProcessRemoteChangeParam> param,
       google_apis::GDataErrorCode error,
-      const std::string& md5_checksum);
+      const std::string& md5_checksum,
+      int64 file_size,
+      const base::Time& updated_time);
   void DidApplyRemoteChange(
       scoped_ptr<ProcessRemoteChangeParam> param,
       SyncStatusCode status);

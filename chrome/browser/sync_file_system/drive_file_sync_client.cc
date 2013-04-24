@@ -577,7 +577,7 @@ void DriveFileSyncClient::DownloadFileInternal(
 
   if (error != google_apis::HTTP_SUCCESS) {
     DVLOG(2) << "Error on getting resource entry for download";
-    callback.Run(error, std::string());
+    callback.Run(error, std::string(), 0, base::Time());
     return;
   }
   DCHECK(entry);
@@ -585,23 +585,27 @@ void DriveFileSyncClient::DownloadFileInternal(
   DVLOG(2) << "Got resource entry for download";
   // If local file and remote file are same, cancel the download.
   if (local_file_md5 == entry->file_md5()) {
-    callback.Run(google_apis::HTTP_NOT_MODIFIED, local_file_md5);
+    callback.Run(google_apis::HTTP_NOT_MODIFIED,
+                 local_file_md5,
+                 entry->file_size(),
+                 entry->updated_time());
     return;
   }
 
   DVLOG(2) << "Downloading file: " << entry->resource_id();
+  const GURL& download_url = entry->download_url();
   drive_service_->DownloadFile(
       base::FilePath(kDummyDrivePath),
       local_file_path,
-      entry->download_url(),
+      download_url,
       base::Bind(&DriveFileSyncClient::DidDownloadFile,
-                 AsWeakPtr(), entry->file_md5(), callback),
+                 AsWeakPtr(), base::Passed(&entry), callback),
       google_apis::GetContentCallback(),
       google_apis::ProgressCallback());
 }
 
 void DriveFileSyncClient::DidDownloadFile(
-    const std::string& downloaded_file_md5,
+    scoped_ptr<google_apis::ResourceEntry> entry,
     const DownloadFileCallback& callback,
     google_apis::GDataErrorCode error,
     const base::FilePath& downloaded_file_path) {
@@ -611,7 +615,8 @@ void DriveFileSyncClient::DidDownloadFile(
   else
     DVLOG(2) << "Error on downloading file: " << error;
 
-  callback.Run(error, downloaded_file_md5);
+  callback.Run(
+      error, entry->file_md5(), entry->file_size(), entry->updated_time());
 }
 
 void DriveFileSyncClient::DidUploadNewFile(

@@ -159,18 +159,22 @@ void FakeDriveFileSyncClient::DownloadFile(
   RemoteResourceByResourceId::iterator found =
       remote_resources_.find(resource_id);
   std::string file_md5;
+  int64 file_size = 0;
+  base::Time updated_time;
   google_apis::GDataErrorCode error = google_apis::HTTP_NOT_FOUND;
 
   if (found != remote_resources_.end() && !found->second.deleted) {
     scoped_ptr<google_apis::ResourceEntry> entry(
         CreateResourceEntry(found->second));
     file_md5 = entry->file_md5();
+    file_size = entry->file_size();
+    updated_time = entry->updated_time();
     error = google_apis::HTTP_SUCCESS;
   }
 
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE,
-      base::Bind(callback, error, file_md5));
+      base::Bind(callback, error, file_md5, file_size, updated_time));
 }
 
 void FakeDriveFileSyncClient::UploadNewFile(

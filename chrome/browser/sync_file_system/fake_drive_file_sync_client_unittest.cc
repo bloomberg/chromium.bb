@@ -19,7 +19,9 @@ namespace {
 void DidDownloadFile(google_apis::GDataErrorCode* error_out,
                      std::string* file_md5_out,
                      google_apis::GDataErrorCode error,
-                     const std::string& file_md5) {
+                     const std::string& file_md5,
+                     int64 file_size,
+                     const base::Time& updated_time) {
   *error_out = error;
   *file_md5_out = file_md5;
 }

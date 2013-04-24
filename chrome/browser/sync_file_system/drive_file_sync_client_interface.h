@@ -14,6 +14,10 @@
 class GURL;
 class Profile;
 
+namespace base {
+class Time;
+}
+
 namespace google_apis {
 class DriveUploaderInterface;
 }
@@ -39,7 +43,9 @@ class DriveFileSyncClientInterface {
   typedef base::Callback<void(google_apis::GDataErrorCode error)>
       GDataErrorCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
-                              const std::string& file_md5)>
+                              const std::string& file_md5,
+                              int64 file_size,
+                              const base::Time& last_updated)>
       DownloadFileCallback;
   typedef base::Callback<void(google_apis::GDataErrorCode error,
                               const std::string& resource_id,

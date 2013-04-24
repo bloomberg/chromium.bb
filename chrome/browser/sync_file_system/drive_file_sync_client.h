@@ -156,7 +156,7 @@ class DriveFileSyncClient
                             google_apis::GDataErrorCode error,
                             scoped_ptr<google_apis::ResourceEntry> entry);
 
-  void DidDownloadFile(const std::string& downloaded_file_md5,
+  void DidDownloadFile(scoped_ptr<google_apis::ResourceEntry> entry,
                        const DownloadFileCallback& callback,
                        google_apis::GDataErrorCode error,
                        const base::FilePath& downloaded_file_path);

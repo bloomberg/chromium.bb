@@ -1628,7 +1628,9 @@ void DriveFileSyncService::DidGetTemporaryFileForDownload(
 void DriveFileSyncService::DidDownloadFileForRemoteSync(
     scoped_ptr<ProcessRemoteChangeParam> param,
     google_apis::GDataErrorCode error,
-    const std::string& md5_checksum) {
+    const std::string& md5_checksum,
+    int64 file_size,
+    const base::Time& updated_time) {
   if (error == google_apis::HTTP_NOT_MODIFIED) {
     param->sync_action = SYNC_ACTION_NONE;
     DidApplyRemoteChange(param.Pass(), SYNC_STATUS_OK);
