@@ -30,11 +30,12 @@
  * rgbtestsrc is ported from MPlayer libmpcodecs/vf_rgbtest.c by
  * Michael Niedermayer.
  *
- * smptebars is by Paul B Mahol.
+ * smptebars and smptehdbars are by Paul B Mahol.
  */
 
 #include <float.h>
 
+#include "libavutil/avassert.h"
 #include "libavutil/common.h"
 #include "libavutil/opt.h"
 #include "libavutil/imgutils.h"
@@ -52,15 +53,13 @@ typedef struct {
     unsigned int nb_frame;
     AVRational time_base, frame_rate;
     int64_t pts;
-    char *frame_rate_str;       ///< video frame rate
-    char *duration_str;         ///< total duration of the generated video
     int64_t duration;           ///< duration expressed in microseconds
     AVRational sar;             ///< sample aspect ratio
     int nb_decimals;
     int draw_once;              ///< draw only the first frame, always put out the same picture
-    AVFilterBufferRef *picref;  ///< cached reference containing the painted picture
+    AVFrame *picref;            ///< cached reference containing the painted picture
 
-    void (* fill_picture_fn)(AVFilterContext *ctx, AVFilterBufferRef *picref);
+    void (* fill_picture_fn)(AVFilterContext *ctx, AVFrame *frame);
 
     /* only used by color */
     char *color_str;
@@ -75,46 +74,38 @@ typedef struct {
 #define OFFSET(x) offsetof(TestSourceContext, x)
 #define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
 
-static const AVOption options[] = {
-    { "size",     "set video size",     OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE, {.str = "320x240"}, 0, 0, FLAGS },
-    { "s",        "set video size",     OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE, {.str = "320x240"}, 0, 0, FLAGS },
-    { "rate",     "set video rate",     OFFSET(frame_rate_str), AV_OPT_TYPE_STRING, {.str = "25"}, 0, 0, FLAGS },
-    { "r",        "set video rate",     OFFSET(frame_rate_str), AV_OPT_TYPE_STRING, {.str = "25"}, 0, 0, FLAGS },
-    { "duration", "set video duration", OFFSET(duration_str), AV_OPT_TYPE_STRING, {.str = NULL},   0, 0, FLAGS },
-    { "d",        "set video duration", OFFSET(duration_str), AV_OPT_TYPE_STRING, {.str = NULL},   0, 0, FLAGS },
+#define COMMON_OPTIONS \
+    { "size",     "set video size",     OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE, {.str = "320x240"}, 0, 0, FLAGS },\
+    { "s",        "set video size",     OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE, {.str = "320x240"}, 0, 0, FLAGS },\
+    { "rate",     "set video rate",     OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, 0, FLAGS },\
+    { "r",        "set video rate",     OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, 0, FLAGS },\
+    { "duration", "set video duration", OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = -1}, -1, INT64_MAX, FLAGS },\
+    { "d",        "set video duration", OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = -1}, -1, INT64_MAX, FLAGS },\
     { "sar",      "set video sample aspect ratio", OFFSET(sar), AV_OPT_TYPE_RATIONAL, {.dbl= 1},  0, INT_MAX, FLAGS },
 
-    /* only used by color */
-    { "color", "set color", OFFSET(color_str), AV_OPT_TYPE_STRING, {.str = NULL}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "c",     "set color", OFFSET(color_str), AV_OPT_TYPE_STRING, {.str = NULL}, CHAR_MIN, CHAR_MAX, FLAGS },
 
-    /* only used by testsrc */
-    { "decimals", "set number of decimals to show", OFFSET(nb_decimals), AV_OPT_TYPE_INT, {.i64=0},  INT_MIN, INT_MAX, FLAGS },
-    { "n",        "set number of decimals to show", OFFSET(nb_decimals), AV_OPT_TYPE_INT, {.i64=0},  INT_MIN, INT_MAX, FLAGS },
+static const AVOption color_options[] = {
+    /* only used by color */
+    { "color", "set color", OFFSET(color_str), AV_OPT_TYPE_STRING, {.str = "black"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "c",     "set color", OFFSET(color_str), AV_OPT_TYPE_STRING, {.str = "black"}, CHAR_MIN, CHAR_MAX, FLAGS },
+
+    COMMON_OPTIONS
     { NULL },
 };
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static const AVOption options[] = {
+    COMMON_OPTIONS
+    /* only used by testsrc */
+    { "decimals", "set number of decimals to show", OFFSET(nb_decimals), AV_OPT_TYPE_INT, {.i64=0},  0, 17, FLAGS },
+    { "n",        "set number of decimals to show", OFFSET(nb_decimals), AV_OPT_TYPE_INT, {.i64=0},  0, 17, FLAGS },
+
+    { NULL },
+};
+
+static av_cold int init(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
     int ret = 0;
-
-    av_opt_set_defaults(test);
-
-    if ((ret = (av_set_options_string(test, args, "=", ":"))) < 0)
-        return ret;
-
-    if ((ret = av_parse_video_rate(&test->frame_rate, test->frame_rate_str)) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Invalid frame rate: '%s'\n", test->frame_rate_str);
-        return ret;
-    }
-
-    test->duration = -1;
-    if (test->duration_str &&
-        (ret = av_parse_time(&test->duration, test->duration_str, 1)) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Invalid duration: '%s'\n", test->duration_str);
-        return ret;
-    }
 
     if (test->nb_decimals && strcmp(ctx->filter->name, "testsrc")) {
         av_log(ctx, AV_LOG_WARNING,
@@ -149,8 +140,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
 
-    av_opt_free(test);
-    avfilter_unref_bufferp(&test->picref);
+    av_frame_free(&test->picref);
 }
 
 static int config_props(AVFilterLink *outlink)
@@ -169,7 +159,7 @@ static int config_props(AVFilterLink *outlink)
 static int request_frame(AVFilterLink *outlink)
 {
     TestSourceContext *test = outlink->src->priv;
-    AVFilterBufferRef *outpicref;
+    AVFrame *frame;
 
     if (test->duration >= 0 &&
         av_rescale_q(test->pts, test->time_base, AV_TIME_BASE_Q) >= test->duration)
@@ -178,39 +168,36 @@ static int request_frame(AVFilterLink *outlink)
     if (test->draw_once) {
         if (!test->picref) {
             test->picref =
-                ff_get_video_buffer(outlink, AV_PERM_WRITE|AV_PERM_PRESERVE|AV_PERM_REUSE,
-                                    test->w, test->h);
+                ff_get_video_buffer(outlink, test->w, test->h);
             if (!test->picref)
                 return AVERROR(ENOMEM);
             test->fill_picture_fn(outlink->src, test->picref);
         }
-        outpicref = avfilter_ref_buffer(test->picref, ~AV_PERM_WRITE);
+        frame = av_frame_clone(test->picref);
     } else
-        outpicref = ff_get_video_buffer(outlink, AV_PERM_WRITE, test->w, test->h);
+        frame = ff_get_video_buffer(outlink, test->w, test->h);
 
-    if (!outpicref)
+    if (!frame)
         return AVERROR(ENOMEM);
-    outpicref->pts = test->pts;
-    outpicref->pos = -1;
-    outpicref->video->key_frame = 1;
-    outpicref->video->interlaced = 0;
-    outpicref->video->pict_type = AV_PICTURE_TYPE_I;
-    outpicref->video->sample_aspect_ratio = test->sar;
+    frame->pts                 = test->pts;
+    frame->key_frame           = 1;
+    frame->interlaced_frame    = 0;
+    frame->pict_type           = AV_PICTURE_TYPE_I;
+    frame->sample_aspect_ratio = test->sar;
     if (!test->draw_once)
-        test->fill_picture_fn(outlink->src, outpicref);
+        test->fill_picture_fn(outlink->src, frame);
 
     test->pts++;
     test->nb_frame++;
 
-    return ff_filter_frame(outlink, outpicref);
+    return ff_filter_frame(outlink, frame);
 }
 
 #if CONFIG_COLOR_FILTER
 
-#define color_options options
 AVFILTER_DEFINE_CLASS(color);
 
-static void color_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
+static void color_fill_picture(AVFilterContext *ctx, AVFrame *picref)
 {
     TestSourceContext *test = ctx->priv;
     ff_fill_rectangle(&test->draw, &test->color,
@@ -218,14 +205,12 @@ static void color_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
                       0, 0, test->w, test->h);
 }
 
-static av_cold int color_init(AVFilterContext *ctx, const char *args)
+static av_cold int color_init(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
-    test->class = &color_class;
     test->fill_picture_fn = color_fill_picture;
     test->draw_once = 1;
-    av_opt_set(test, "color", "black", 0);
-    return init(ctx, args);
+    return init(ctx);
 }
 
 static int color_query_formats(AVFilterContext *ctx)
@@ -270,6 +255,7 @@ AVFilter avfilter_vsrc_color = {
     .name        = "color",
     .description = NULL_IF_CONFIG_SMALL("Provide an uniformly colored input."),
 
+    .priv_class = &color_class,
     .priv_size = sizeof(TestSourceContext),
     .init      = color_init,
     .uninit    = uninit,
@@ -277,7 +263,6 @@ AVFilter avfilter_vsrc_color = {
     .query_formats = color_query_formats,
     .inputs        = NULL,
     .outputs       = color_outputs,
-    .priv_class    = &color_class,
 };
 
 #endif /* CONFIG_COLOR_FILTER */
@@ -287,15 +272,14 @@ AVFilter avfilter_vsrc_color = {
 #define nullsrc_options options
 AVFILTER_DEFINE_CLASS(nullsrc);
 
-static void nullsrc_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref) { }
+static void nullsrc_fill_picture(AVFilterContext *ctx, AVFrame *picref) { }
 
-static av_cold int nullsrc_init(AVFilterContext *ctx, const char *args)
+static av_cold int nullsrc_init(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
 
-    test->class = &nullsrc_class;
     test->fill_picture_fn = nullsrc_fill_picture;
-    return init(ctx, args);
+    return init(ctx);
 }
 
 static const AVFilterPad nullsrc_outputs[] = {
@@ -314,9 +298,9 @@ AVFilter avfilter_vsrc_nullsrc = {
     .init       = nullsrc_init,
     .uninit     = uninit,
     .priv_size  = sizeof(TestSourceContext),
+    .priv_class = &nullsrc_class,
     .inputs     = NULL,
     .outputs    = nullsrc_outputs,
-    .priv_class = &nullsrc_class,
 };
 
 #endif /* CONFIG_NULLSRC_FILTER */
@@ -338,8 +322,8 @@ AVFILTER_DEFINE_CLASS(testsrc);
  * @param w width  of the rectangle to draw, expressed as a number of segment_width units
  * @param h height of the rectangle to draw, expressed as a number of segment_width units
  */
-static void draw_rectangle(unsigned val, uint8_t *dst, int dst_linesize, unsigned segment_width,
-                           unsigned x, unsigned y, unsigned w, unsigned h)
+static void draw_rectangle(unsigned val, uint8_t *dst, int dst_linesize, int segment_width,
+                           int x, int y, int w, int h)
 {
     int i;
     int step = 3;
@@ -353,8 +337,8 @@ static void draw_rectangle(unsigned val, uint8_t *dst, int dst_linesize, unsigne
     }
 }
 
-static void draw_digit(int digit, uint8_t *dst, unsigned dst_linesize,
-                       unsigned segment_width)
+static void draw_digit(int digit, uint8_t *dst, int dst_linesize,
+                       int segment_width)
 {
 #define TOP_HBAR        1
 #define MID_HBAR        2
@@ -398,7 +382,7 @@ static void draw_digit(int digit, uint8_t *dst, unsigned dst_linesize,
 
 #define GRADIENT_SIZE (6 * 256)
 
-static void test_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
+static void test_fill_picture(AVFilterContext *ctx, AVFrame *frame)
 {
     TestSourceContext *test = ctx->priv;
     uint8_t *p, *p0;
@@ -412,9 +396,9 @@ static void test_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
     int seg_size;
     int second;
     int i;
-    uint8_t *data = picref->data[0];
-    int width  = picref->video->w;
-    int height = picref->video->h;
+    uint8_t *data = frame->data[0];
+    int width  = frame->width;
+    int height = frame->height;
 
     /* draw colored bars and circle */
     radius = (width + height) / 4;
@@ -444,11 +428,11 @@ static void test_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
         }
         quad0 += dquad_y;
         dquad_y += 2;
-        p0 += picref->linesize[0];
+        p0 += frame->linesize[0];
     }
 
     /* draw sliding color line */
-    p0 = p = data + picref->linesize[0] * height * 3/4;
+    p0 = p = data + frame->linesize[0] * height * 3/4;
     grad = (256 * test->nb_frame * test->time_base.num / test->time_base.den) %
         GRADIENT_SIZE;
     rgrad = 0;
@@ -478,24 +462,29 @@ static void test_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
     }
     p = p0;
     for (y = height / 8; y > 0; y--) {
-        memcpy(p+picref->linesize[0], p, 3 * width);
-        p += picref->linesize[0];
+        memcpy(p+frame->linesize[0], p, 3 * width);
+        p += frame->linesize[0];
     }
 
     /* draw digits */
     seg_size = width / 80;
     if (seg_size >= 1 && height >= 13 * seg_size) {
+        int64_t p10decimals = 1;
         double time = av_q2d(test->time_base) * test->nb_frame *
                       pow(10, test->nb_decimals);
-        if (time > INT_MAX)
+        if (time >= INT_MAX)
             return;
-        second = (int)time;
+
+        for (x = 0; x < test->nb_decimals; x++)
+            p10decimals *= 10;
+
+        second = av_rescale_rnd(test->nb_frame * test->time_base.num, p10decimals, test->time_base.den, AV_ROUND_ZERO);
         x = width - (width - seg_size * 64) / 2;
         y = (height - seg_size * 13) / 2;
-        p = data + (x*3 + y * picref->linesize[0]);
+        p = data + (x*3 + y * frame->linesize[0]);
         for (i = 0; i < 8; i++) {
             p -= 3 * 8 * seg_size;
-            draw_digit(second % 10, p, picref->linesize[0], seg_size);
+            draw_digit(second % 10, p, frame->linesize[0], seg_size);
             second /= 10;
             if (second == 0)
                 break;
@@ -503,13 +492,12 @@ static void test_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
     }
 }
 
-static av_cold int test_init(AVFilterContext *ctx, const char *args)
+static av_cold int test_init(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
 
-    test->class = &testsrc_class;
     test->fill_picture_fn = test_fill_picture;
-    return init(ctx, args);
+    return init(ctx);
 }
 
 static int test_query_formats(AVFilterContext *ctx)
@@ -532,17 +520,17 @@ static const AVFilterPad avfilter_vsrc_testsrc_outputs[] = {
 };
 
 AVFilter avfilter_vsrc_testsrc = {
-    .name      = "testsrc",
-    .description = NULL_IF_CONFIG_SMALL("Generate test pattern."),
-    .priv_size = sizeof(TestSourceContext),
-    .init      = test_init,
-    .uninit    = uninit,
+    .name          = "testsrc",
+    .description   = NULL_IF_CONFIG_SMALL("Generate test pattern."),
+    .priv_size     = sizeof(TestSourceContext),
+    .priv_class    = &testsrc_class,
+    .init          = test_init,
+    .uninit        = uninit,
 
-    .query_formats   = test_query_formats,
+    .query_formats = test_query_formats,
 
     .inputs    = NULL,
     .outputs   = avfilter_vsrc_testsrc_outputs,
-    .priv_class = &testsrc_class,
 };
 
 #endif /* CONFIG_TESTSRC_FILTER */
@@ -588,13 +576,13 @@ static void rgbtest_put_pixel(uint8_t *dst, int dst_linesize,
     }
 }
 
-static void rgbtest_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
+static void rgbtest_fill_picture(AVFilterContext *ctx, AVFrame *frame)
 {
     TestSourceContext *test = ctx->priv;
-    int x, y, w = picref->video->w, h = picref->video->h;
+    int x, y, w = frame->width, h = frame->height;
 
     for (y = 0; y < h; y++) {
-         for (x = 0; x < picref->video->w; x++) {
+         for (x = 0; x < w; x++) {
              int c = 256*x/w;
              int r = 0, g = 0, b = 0;
 
@@ -602,20 +590,19 @@ static void rgbtest_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref
              else if (3*y < 2*h) g = c;
              else                b = c;
 
-             rgbtest_put_pixel(picref->data[0], picref->linesize[0], x, y, r, g, b,
+             rgbtest_put_pixel(frame->data[0], frame->linesize[0], x, y, r, g, b,
                                ctx->outputs[0]->format, test->rgba_map);
          }
      }
 }
 
-static av_cold int rgbtest_init(AVFilterContext *ctx, const char *args)
+static av_cold int rgbtest_init(AVFilterContext *ctx)
 {
     TestSourceContext *test = ctx->priv;
 
     test->draw_once = 1;
-    test->class = &rgbtestsrc_class;
     test->fill_picture_fn = rgbtest_fill_picture;
-    return init(ctx, args);
+    return init(ctx);
 }
 
 static int rgbtest_query_formats(AVFilterContext *ctx)
@@ -651,26 +638,23 @@ static const AVFilterPad avfilter_vsrc_rgbtestsrc_outputs[] = {
 };
 
 AVFilter avfilter_vsrc_rgbtestsrc = {
-    .name      = "rgbtestsrc",
-    .description = NULL_IF_CONFIG_SMALL("Generate RGB test pattern."),
-    .priv_size = sizeof(TestSourceContext),
-    .init      = rgbtest_init,
-    .uninit    = uninit,
+    .name          = "rgbtestsrc",
+    .description   = NULL_IF_CONFIG_SMALL("Generate RGB test pattern."),
+    .priv_size     = sizeof(TestSourceContext),
+    .priv_class    = &rgbtestsrc_class,
+    .init          = rgbtest_init,
+    .uninit        = uninit,
 
-    .query_formats   = rgbtest_query_formats,
+    .query_formats = rgbtest_query_formats,
 
     .inputs    = NULL,
 
     .outputs   = avfilter_vsrc_rgbtestsrc_outputs,
-    .priv_class = &rgbtestsrc_class,
 };
 
 #endif /* CONFIG_RGBTESTSRC_FILTER */
 
-#if CONFIG_SMPTEBARS_FILTER
-
-#define smptebars_options options
-AVFILTER_DEFINE_CLASS(smptebars);
+#if CONFIG_SMPTEBARS_FILTER || CONFIG_SMPTEHDBARS_FILTER
 
 static const uint8_t rainbow[7][4] = {
     { 191, 191, 191, 255 },     /* gray */
@@ -703,54 +687,34 @@ static const uint8_t pos4ire[4] = {  29,  29,  29, 255 }; /* 11.5% intensity bla
 static const uint8_t i_pixel[4] = {   0,  68, 130, 255 };
 static const uint8_t q_pixel[4] = {  67,   0, 130, 255 };
 
-static void smptebars_fill_picture(AVFilterContext *ctx, AVFilterBufferRef *picref)
+static const uint8_t gray40[4] = { 102, 102, 102, 255 };
+static const uint8_t gray15[4] = {  38,  38,  38, 255 };
+static const uint8_t   cyan[4] = {   0, 255, 255, 255 };
+static const uint8_t yellow[4] = { 255, 255,   0, 255 };
+static const uint8_t   blue[4] = {   0,   0, 255, 255 };
+static const uint8_t    red[4] = { 255,   0,   0, 255 };
+static const uint8_t black0[4] = {   5,   5,   5, 255 };
+static const uint8_t black2[4] = {  10,  10,  10, 255 };
+static const uint8_t black4[4] = {  15,  15,  15, 255 };
+static const uint8_t   neg2[4] = {   0,   0,   0, 255 };
+
+static void inline draw_bar(TestSourceContext *test, const uint8_t *color,
+                            unsigned x, unsigned y, unsigned w, unsigned h,
+                            AVFrame *frame)
 {
-    TestSourceContext *test = ctx->priv;
-    FFDrawColor color;
-    int r_w, r_h, w_h, p_w, p_h, i, x = 0;
+    FFDrawColor draw_color;
 
-    r_w = (test->w + 6) / 7;
-    r_h = test->h * 2 / 3;
-    w_h = test->h * 3 / 4 - r_h;
-    p_w = r_w * 5 / 4;
-    p_h = test->h - w_h - r_h;
+    x = FFMIN(x, test->w - 1);
+    y = FFMIN(y, test->h - 1);
+    w = FFMIN(w, test->w - x);
+    h = FFMIN(h, test->h - y);
 
-#define DRAW_COLOR(rgba, x, y, w, h)                                    \
-    ff_draw_color(&test->draw, &color, rgba);                           \
-    ff_fill_rectangle(&test->draw, &color,                              \
-                      picref->data, picref->linesize, x, y, w, h)       \
+    av_assert0(x + w <= test->w);
+    av_assert0(y + h <= test->h);
 
-    for (i = 0; i < 7; i++) {
-        DRAW_COLOR(rainbow[i], x, 0,   FFMIN(r_w, test->w - x), r_h);
-        DRAW_COLOR(wobnair[i], x, r_h, FFMIN(r_w, test->w - x), w_h);
-        x += r_w;
-    }
-    x = 0;
-    DRAW_COLOR(i_pixel, x, r_h + w_h, p_w, p_h);
-    x += p_w;
-    DRAW_COLOR(white, x, r_h + w_h, p_w, p_h);
-    x += p_w;
-    DRAW_COLOR(q_pixel, x, r_h + w_h, p_w, p_h);
-    x += p_w;
-    DRAW_COLOR(black, x, r_h + w_h, 5 * r_w - x, p_h);
-    x += 5 * r_w - x;
-    DRAW_COLOR(neg4ire, x, r_h + w_h, r_w / 3, p_h);
-    x += r_w / 3;
-    DRAW_COLOR(black, x, r_h + w_h, r_w / 3, p_h);
-    x += r_w / 3;
-    DRAW_COLOR(pos4ire, x, r_h + w_h, r_w / 3, p_h);
-    x += r_w / 3;
-    DRAW_COLOR(black, x, r_h + w_h, test->w - x, p_h);
-}
-
-static av_cold int smptebars_init(AVFilterContext *ctx, const char *args)
-{
-    TestSourceContext *test = ctx->priv;
-
-    test->class = &smptebars_class;
-    test->fill_picture_fn = smptebars_fill_picture;
-    test->draw_once = 1;
-    return init(ctx, args);
+    ff_draw_color(&test->draw, &draw_color, color);
+    ff_fill_rectangle(&test->draw, &draw_color,
+                      frame->data, frame->linesize, x, y, w, h);
 }
 
 static int smptebars_query_formats(AVFilterContext *ctx)
@@ -779,6 +743,57 @@ static const AVFilterPad smptebars_outputs[] = {
     { NULL }
 };
 
+#if CONFIG_SMPTEBARS_FILTER
+
+#define smptebars_options options
+AVFILTER_DEFINE_CLASS(smptebars);
+
+static void smptebars_fill_picture(AVFilterContext *ctx, AVFrame *picref)
+{
+    TestSourceContext *test = ctx->priv;
+    int r_w, r_h, w_h, p_w, p_h, i, tmp, x = 0;
+    const AVPixFmtDescriptor *pixdesc = av_pix_fmt_desc_get(picref->format);
+
+    r_w = FFALIGN((test->w + 6) / 7, 1 << pixdesc->log2_chroma_w);
+    r_h = FFALIGN(test->h * 2 / 3, 1 << pixdesc->log2_chroma_h);
+    w_h = FFALIGN(test->h * 3 / 4 - r_h,  1 << pixdesc->log2_chroma_h);
+    p_w = FFALIGN(r_w * 5 / 4, 1 << pixdesc->log2_chroma_w);
+    p_h = test->h - w_h - r_h;
+
+    for (i = 0; i < 7; i++) {
+        draw_bar(test, rainbow[i], x, 0,   r_w, r_h, picref);
+        draw_bar(test, wobnair[i], x, r_h, r_w, w_h, picref);
+        x += r_w;
+    }
+    x = 0;
+    draw_bar(test, i_pixel, x, r_h + w_h, p_w, p_h, picref);
+    x += p_w;
+    draw_bar(test, white, x, r_h + w_h, p_w, p_h, picref);
+    x += p_w;
+    draw_bar(test, q_pixel, x, r_h + w_h, p_w, p_h, picref);
+    x += p_w;
+    tmp = FFALIGN(5 * r_w - x,  1 << pixdesc->log2_chroma_w);
+    draw_bar(test, black, x, r_h + w_h, tmp, p_h, picref);
+    x += tmp;
+    tmp = FFALIGN(r_w / 3,  1 << pixdesc->log2_chroma_w);
+    draw_bar(test, neg4ire, x, r_h + w_h, tmp, p_h, picref);
+    x += tmp;
+    draw_bar(test, black, x, r_h + w_h, tmp, p_h, picref);
+    x += tmp;
+    draw_bar(test, pos4ire, x, r_h + w_h, tmp, p_h, picref);
+    x += tmp;
+    draw_bar(test, black, x, r_h + w_h, test->w - x, p_h, picref);
+}
+
+static av_cold int smptebars_init(AVFilterContext *ctx)
+{
+    TestSourceContext *test = ctx->priv;
+
+    test->fill_picture_fn = smptebars_fill_picture;
+    test->draw_once = 1;
+    return init(ctx);
+}
+
 AVFilter avfilter_vsrc_smptebars = {
     .name      = "smptebars",
     .description = NULL_IF_CONFIG_SMALL("Generate SMPTE color bars."),
@@ -793,3 +808,108 @@ AVFilter avfilter_vsrc_smptebars = {
 };
 
 #endif  /* CONFIG_SMPTEBARS_FILTER */
+
+#if CONFIG_SMPTEHDBARS_FILTER
+
+#define smptehdbars_options options
+AVFILTER_DEFINE_CLASS(smptehdbars);
+
+static void smptehdbars_fill_picture(AVFilterContext *ctx, AVFrame *picref)
+{
+    TestSourceContext *test = ctx->priv;
+    int d_w, r_w, r_h, l_w, i, tmp, x = 0, y = 0;
+    const AVPixFmtDescriptor *pixdesc = av_pix_fmt_desc_get(picref->format);
+
+    d_w = FFALIGN(test->w / 8, 1 << pixdesc->log2_chroma_w);
+    r_h = FFALIGN(test->h * 7 / 12, 1 << pixdesc->log2_chroma_h);
+    draw_bar(test, gray40, x, 0, d_w, r_h, picref);
+    x += d_w;
+
+    r_w = FFALIGN((((test->w + 3) / 4) * 3) / 7, 1 << pixdesc->log2_chroma_w);
+    for (i = 0; i < 7; i++) {
+        draw_bar(test, rainbow[i], x, 0, r_w, r_h, picref);
+        x += r_w;
+    }
+    draw_bar(test, gray40, x, 0, test->w - x, r_h, picref);
+    y = r_h;
+    r_h = FFALIGN(test->h / 12, 1 << pixdesc->log2_chroma_h);
+    draw_bar(test, cyan, 0, y, d_w, r_h, picref);
+    x = d_w;
+    draw_bar(test, i_pixel, x, y, r_w, r_h, picref);
+    x += r_w;
+    tmp = r_w * 6;
+    draw_bar(test, rainbow[0], x, y, tmp, r_h, picref);
+    x += tmp;
+    l_w = x;
+    draw_bar(test, blue, x, y, test->w - x, r_h, picref);
+    y += r_h;
+    draw_bar(test, yellow, 0, y, d_w, r_h, picref);
+    x = d_w;
+    draw_bar(test, q_pixel, x, y, r_w, r_h, picref);
+    x += r_w;
+
+    for (i = 0; i < tmp; i += 1 << pixdesc->log2_chroma_w) {
+        uint8_t yramp[4] = {0};
+
+        yramp[0] =
+        yramp[1] =
+        yramp[2] = i * 255 / tmp;
+        yramp[3] = 255;
+
+        draw_bar(test, yramp, x, y, 1 << pixdesc->log2_chroma_w, r_h, picref);
+        x += 1 << pixdesc->log2_chroma_w;
+    }
+    draw_bar(test, red, x, y, test->w - x, r_h, picref);
+    y += r_h;
+    draw_bar(test, gray15, 0, y, d_w, test->h - y, picref);
+    x = d_w;
+    tmp = FFALIGN(r_w * 3 / 2, 1 << pixdesc->log2_chroma_w);
+    draw_bar(test, black0, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    tmp = FFALIGN(r_w * 2, 1 << pixdesc->log2_chroma_w);
+    draw_bar(test, white, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    tmp = FFALIGN(r_w * 5 / 6, 1 << pixdesc->log2_chroma_w);
+    draw_bar(test, black0, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    tmp = FFALIGN(r_w / 3, 1 << pixdesc->log2_chroma_w);
+    draw_bar(test,   neg2, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    draw_bar(test, black0, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    draw_bar(test, black2, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    draw_bar(test, black0, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    draw_bar(test, black4, x, y, tmp, test->h - y, picref);
+    x += tmp;
+    r_w = l_w - x;
+    draw_bar(test, black0, x, y, r_w, test->h - y, picref);
+    x += r_w;
+    draw_bar(test, gray15, x, y, test->w - x, test->h - y, picref);
+}
+
+static av_cold int smptehdbars_init(AVFilterContext *ctx)
+{
+    TestSourceContext *test = ctx->priv;
+
+    test->fill_picture_fn = smptehdbars_fill_picture;
+    test->draw_once = 1;
+    return init(ctx);
+}
+
+AVFilter avfilter_vsrc_smptehdbars = {
+    .name      = "smptehdbars",
+    .description = NULL_IF_CONFIG_SMALL("Generate SMPTE HD color bars."),
+    .priv_size = sizeof(TestSourceContext),
+    .init      = smptehdbars_init,
+    .uninit    = uninit,
+
+    .query_formats = smptebars_query_formats,
+    .inputs        = NULL,
+    .outputs       = smptebars_outputs,
+    .priv_class    = &smptehdbars_class,
+};
+
+#endif  /* CONFIG_SMPTEHDBARS_FILTER */
+#endif  /* CONFIG_SMPTEBARS_FILTER || CONFIG_SMPTEHDBARS_FILTER */

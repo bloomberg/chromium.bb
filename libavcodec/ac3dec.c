@@ -874,7 +874,7 @@ static int decode_audio_block(AC3DecodeContext *s, int blk)
             /* check for enhanced coupling */
             if (s->eac3 && get_bits1(gbc)) {
                 /* TODO: parse enhanced coupling strategy info */
-                av_log_missing_feature(s->avctx, "Enhanced coupling", 1);
+                avpriv_request_sample(s->avctx, "Enhanced coupling");
                 return AVERROR_PATCHWELCOME;
             }
 
@@ -1375,10 +1375,8 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = s->num_blocks * 256;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
 
     /* decode the audio blocks */
     channel_map = ff_ac3_dec_channel_map[s->output_mode & ~AC3_OUTPUT_LFEON][s->lfe_on];
@@ -1406,7 +1404,7 @@ static int ac3_decode_frame(AVCodecContext * avctx, void *data,
         }
     }
 
-    frame->decode_error_flags = err ? FF_DECODE_ERROR_INVALID_BITSTREAM : 0;
+    av_frame_set_decode_error_flags(frame, err ? FF_DECODE_ERROR_INVALID_BITSTREAM : 0);
 
     /* keep last block for error concealment in next frame */
     for (ch = 0; ch < s->out_channels; ch++)

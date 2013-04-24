@@ -73,51 +73,19 @@ typedef struct {
     uint8_t *temp[2]; ///< temporary buffer used in blur_power()
 } BoxBlurContext;
 
-#define OFFSET(x) offsetof(BoxBlurContext, x)
-#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
-
-static const AVOption boxblur_options[] = {
-    { "luma_radius", "set luma radius", OFFSET(luma_param.radius_expr), AV_OPT_TYPE_STRING, {.str="2"}, .flags = FLAGS },
-    { "lr",          "set luma radius", OFFSET(luma_param.radius_expr), AV_OPT_TYPE_STRING, {.str="2"}, .flags = FLAGS },
-    { "luma_power",  "set luma power",  OFFSET(luma_param.power), AV_OPT_TYPE_INT, {.i64=2}, 0, INT_MAX, .flags = FLAGS },
-    { "lp",          "set luma power",  OFFSET(luma_param.power), AV_OPT_TYPE_INT, {.i64=2}, 0, INT_MAX, .flags = FLAGS },
-
-    { "chroma_radius", "set chroma radius", OFFSET(chroma_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
-    { "cr",            "set chroma radius", OFFSET(chroma_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
-    { "chroma_power",  "set chroma power",  OFFSET(chroma_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
-    { "cp",            "set chroma power",  OFFSET(chroma_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
-
-    { "alpha_radius", "set alpha radius", OFFSET(alpha_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
-    { "ar",           "set alpha radius", OFFSET(alpha_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
-    { "alpha_power",  "set alpha power",  OFFSET(alpha_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
-    { "ap",           "set alpha power",  OFFSET(alpha_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
-
-    { NULL }
-};
-
-AVFILTER_DEFINE_CLASS(boxblur);
-
 #define Y 0
 #define U 1
 #define V 2
 #define A 3
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
     BoxBlurContext *boxblur = ctx->priv;
-    static const char *shorthand[] = {
-        "luma_radius",   "luma_power",
-        "chroma_radius", "chroma_power",
-        "alpha_radius",  "alpha_power",
-        NULL
-    };
-    int ret;
 
-    boxblur->class = &boxblur_class;
-    av_opt_set_defaults(boxblur);
-
-    if ((ret = av_opt_set_from_string(boxblur, args, shorthand, "=", ":")) < 0)
-        return ret;
+    if (!boxblur->luma_param.radius_expr) {
+        av_log(ctx, AV_LOG_ERROR, "Luma radius expression is not set.\n");
+        return AVERROR(EINVAL);
+    }
 
     /* fill missing params */
     if (!boxblur->chroma_param.radius_expr) {
@@ -145,7 +113,6 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     av_freep(&boxblur->temp[0]);
     av_freep(&boxblur->temp[1]);
-    av_opt_free(boxblur);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -328,23 +295,23 @@ static void vblur(uint8_t *dst, int dst_linesize, const uint8_t *src, int src_li
                    h, radius, power, temp);
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
+static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
     BoxBlurContext *boxblur = ctx->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
-    AVFilterBufferRef *out;
+    AVFrame *out;
     int plane;
-    int cw = inlink->w >> boxblur->hsub, ch = in->video->h >> boxblur->vsub;
+    int cw = inlink->w >> boxblur->hsub, ch = in->height >> boxblur->vsub;
     int w[4] = { inlink->w, cw, cw, inlink->w };
-    int h[4] = { in->video->h, ch, ch, in->video->h };
+    int h[4] = { in->height, ch, ch, in->height };
 
-    out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+    out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        avfilter_unref_bufferp(&in);
+        av_frame_free(&in);
         return AVERROR(ENOMEM);
     }
-    avfilter_copy_buffer_ref_props(out, in);
+    av_frame_copy_props(out, in);
 
     for (plane = 0; in->data[plane] && plane < 4; plane++)
         hblur(out->data[plane], out->linesize[plane],
@@ -358,10 +325,34 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
               w[plane], h[plane], boxblur->radius[plane], boxblur->power[plane],
               boxblur->temp);
 
-    avfilter_unref_bufferp(&in);
+    av_frame_free(&in);
 
     return ff_filter_frame(outlink, out);
 }
+
+#define OFFSET(x) offsetof(BoxBlurContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+
+static const AVOption boxblur_options[] = {
+    { "luma_radius", "Radius of the luma blurring box", OFFSET(luma_param.radius_expr), AV_OPT_TYPE_STRING, {.str="2"}, .flags = FLAGS },
+    { "lr",          "Radius of the luma blurring box", OFFSET(luma_param.radius_expr), AV_OPT_TYPE_STRING, {.str="2"}, .flags = FLAGS },
+    { "luma_power",  "How many times should the boxblur be applied to luma",  OFFSET(luma_param.power), AV_OPT_TYPE_INT, {.i64=2}, 0, INT_MAX, .flags = FLAGS },
+    { "lp",          "How many times should the boxblur be applied to luma",  OFFSET(luma_param.power), AV_OPT_TYPE_INT, {.i64=2}, 0, INT_MAX, .flags = FLAGS },
+
+    { "chroma_radius", "Radius of the chroma blurring box", OFFSET(chroma_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
+    { "cr",            "Radius of the chroma blurring box", OFFSET(chroma_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
+    { "chroma_power",  "How many times should the boxblur be applied to chroma",  OFFSET(chroma_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
+    { "cp",            "How many times should the boxblur be applied to chroma",  OFFSET(chroma_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
+
+    { "alpha_radius", "Radius of the alpha blurring box", OFFSET(alpha_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
+    { "ar",           "Radius of the alpha blurring box", OFFSET(alpha_param.radius_expr), AV_OPT_TYPE_STRING, {.str=NULL}, .flags = FLAGS },
+    { "alpha_power",  "How many times should the boxblur be applied to alpha",  OFFSET(alpha_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
+    { "ap",           "How many times should the boxblur be applied to alpha",  OFFSET(alpha_param.power), AV_OPT_TYPE_INT, {.i64=-1}, -1, INT_MAX, .flags = FLAGS },
+
+    { NULL }
+};
+
+AVFILTER_DEFINE_CLASS(boxblur);
 
 static const AVFilterPad avfilter_vf_boxblur_inputs[] = {
     {
@@ -369,7 +360,6 @@ static const AVFilterPad avfilter_vf_boxblur_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input,
         .filter_frame = filter_frame,
-        .min_perms    = AV_PERM_READ
     },
     { NULL }
 };
@@ -386,12 +376,12 @@ AVFilter avfilter_vf_boxblur = {
     .name          = "boxblur",
     .description   = NULL_IF_CONFIG_SMALL("Blur the input."),
     .priv_size     = sizeof(BoxBlurContext),
+    .priv_class    = &boxblur_class,
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
 
     .inputs    = avfilter_vf_boxblur_inputs,
     .outputs   = avfilter_vf_boxblur_outputs,
-
-    .priv_class = &boxblur_class,
+    .flags     = AVFILTER_FLAG_SUPPORT_TIMELINE,
 };

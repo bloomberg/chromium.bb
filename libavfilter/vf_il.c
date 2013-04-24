@@ -81,20 +81,6 @@ static const AVOption il_options[] = {
 
 AVFILTER_DEFINE_CLASS(il);
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
-{
-    IlContext *il = ctx->priv;
-    int ret;
-
-    il->class = &il_class;
-    av_opt_set_defaults(il);
-
-    if ((ret = av_set_options_string(il, args, "=", ":")) < 0)
-        return ret;
-
-    return 0;
-}
-
 static int query_formats(AVFilterContext *ctx)
 {
     AVFilterFormats *formats = NULL;
@@ -160,19 +146,19 @@ static void interleave(uint8_t *dst, uint8_t *src, int w, int h,
     }
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *inpicref)
+static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
 {
     IlContext *il = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
-    AVFilterBufferRef *out;
-    int ret, comp;
+    AVFrame *out;
+    int comp;
 
-    out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+    out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        avfilter_unref_bufferp(&inpicref);
+        av_frame_free(&inpicref);
         return AVERROR(ENOMEM);
     }
-    avfilter_copy_buffer_ref_props(out, inpicref);
+    av_frame_copy_props(out, inpicref);
 
     interleave(out->data[0], inpicref->data[0],
                il->linesize[0], inlink->h,
@@ -187,16 +173,15 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *inpicref)
     }
 
     if (il->has_alpha) {
-        int comp = il->nb_planes - 1;
+        comp = il->nb_planes - 1;
         interleave(out->data[comp], inpicref->data[comp],
                    il->linesize[comp], inlink->h,
                    out->linesize[comp], inpicref->linesize[comp],
                    il->alpha_mode, il->alpha_swap);
     }
 
-    ret = ff_filter_frame(outlink, out);
-    avfilter_unref_bufferp(&inpicref);
-    return ret;
+    av_frame_free(&inpicref);
+    return ff_filter_frame(outlink, out);
 }
 
 static const AVFilterPad inputs[] = {
@@ -222,7 +207,6 @@ AVFilter avfilter_vf_il = {
     .name          = "il",
     .description   = NULL_IF_CONFIG_SMALL("Deinterleave or interleave fields."),
     .priv_size     = sizeof(IlContext),
-    .init          = init,
     .query_formats = query_formats,
     .inputs        = inputs,
     .outputs       = outputs,

@@ -215,25 +215,6 @@ int avcodec_get_pix_fmt_loss(enum AVPixelFormat dst_pix_fmt,
     return loss;
 }
 
-#if FF_API_FIND_BEST_PIX_FMT
-enum AVPixelFormat avcodec_find_best_pix_fmt(int64_t pix_fmt_mask, enum AVPixelFormat src_pix_fmt,
-                                            int has_alpha, int *loss_ptr)
-{
-    enum AVPixelFormat dst_pix_fmt;
-    int i;
-
-    if (loss_ptr) /* all losses count (for backward compatibility) */
-        *loss_ptr = 0;
-
-    dst_pix_fmt = AV_PIX_FMT_NONE; /* so first iteration doesn't have to be treated special */
-    for(i = 0; i< FFMIN(AV_PIX_FMT_NB, 64); i++){
-        if (pix_fmt_mask & (1ULL << i))
-            dst_pix_fmt = avcodec_find_best_pix_fmt_of_2(dst_pix_fmt, i, src_pix_fmt, has_alpha, loss_ptr);
-    }
-    return dst_pix_fmt;
-}
-#endif /* FF_API_FIND_BEST_PIX_FMT */
-
 enum AVPixelFormat avcodec_find_best_pix_fmt_of_2(enum AVPixelFormat dst_pix_fmt1, enum AVPixelFormat dst_pix_fmt2,
                                             enum AVPixelFormat src_pix_fmt, int has_alpha, int *loss_ptr)
 {
@@ -492,6 +473,8 @@ int av_picture_pad(AVPicture *dst, const AVPicture *src, int height, int width,
     return 0;
 }
 
+#if FF_API_DEINTERLACE
+
 #if !HAVE_MMX_EXTERNAL
 /* filter parameters: [-1 4 2 4 -1] // 8 */
 static void deinterlace_line_c(uint8_t *dst,
@@ -500,7 +483,7 @@ static void deinterlace_line_c(uint8_t *dst,
                              const uint8_t *lum,
                              int size)
 {
-    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
     int sum;
 
     for(;size > 0;size--) {
@@ -523,7 +506,7 @@ static void deinterlace_line_inplace_c(uint8_t *lum_m4, uint8_t *lum_m3,
                                        uint8_t *lum_m2, uint8_t *lum_m1,
                                        uint8_t *lum, int size)
 {
-    uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
+    const uint8_t *cm = ff_cropTbl + MAX_NEG_CROP;
     int sum;
 
     for(;size > 0;size--) {
@@ -650,6 +633,8 @@ int avpicture_deinterlace(AVPicture *dst, const AVPicture *src,
     emms_c();
     return 0;
 }
+
+#endif /* FF_API_DEINTERLACE */
 
 #ifdef TEST
 

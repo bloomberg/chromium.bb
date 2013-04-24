@@ -107,7 +107,7 @@ static int pcm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     n           = frame->nb_samples * avctx->channels;
     samples     = (const short *)frame->data[0];
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, n * sample_size)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, n * sample_size)) < 0)
         return ret;
     dst = avpkt->data;
 
@@ -356,10 +356,8 @@ static int pcm_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = n * samples_per_block / avctx->channels;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
     samples = frame->data[0];
 
     switch (avctx->codec_id) {

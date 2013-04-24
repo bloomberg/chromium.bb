@@ -45,37 +45,10 @@ typedef struct {
     int vsub, hsub;   ///< chroma subsampling
 } DrawBoxContext;
 
-#define OFFSET(x) offsetof(DrawBoxContext, x)
-#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
-
-static const AVOption drawbox_options[] = {
-    { "x",           "set the box top-left corner x position", OFFSET(x), AV_OPT_TYPE_INT, {.i64=0}, INT_MIN, INT_MAX, FLAGS },
-    { "y",           "set the box top-left corner y position", OFFSET(y), AV_OPT_TYPE_INT, {.i64=0}, INT_MIN, INT_MAX, FLAGS },
-    { "width",       "set the box width",  OFFSET(w), AV_OPT_TYPE_INT, {.i64=0}, 0, INT_MAX, FLAGS },
-    { "w",           "set the box width",  OFFSET(w), AV_OPT_TYPE_INT, {.i64=0}, 0, INT_MAX, FLAGS },
-    { "height",      "set the box height", OFFSET(h), AV_OPT_TYPE_INT, {.i64=0}, 0, INT_MAX, FLAGS },
-    { "h",           "set the box height", OFFSET(h), AV_OPT_TYPE_INT, {.i64=0}, 0, INT_MAX, FLAGS },
-    { "color",       "set the box edge color", OFFSET(color_str), AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "c",           "set the box edge color", OFFSET(color_str), AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "thickness",   "set the box maximum thickness", OFFSET(thickness), AV_OPT_TYPE_INT, {.i64=4}, 0, INT_MAX, FLAGS },
-    { "t",           "set the box maximum thickness", OFFSET(thickness), AV_OPT_TYPE_INT, {.i64=4}, 0, INT_MAX, FLAGS },
-    {NULL},
-};
-
-AVFILTER_DEFINE_CLASS(drawbox);
-
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
     DrawBoxContext *drawbox = ctx->priv;
     uint8_t rgba_color[4];
-    static const char *shorthand[] = { "x", "y", "w", "h", "color", "thickness", NULL };
-    int ret;
-
-    drawbox->class = &drawbox_class;
-    av_opt_set_defaults(drawbox);
-
-    if ((ret = av_opt_set_from_string(drawbox, args, shorthand, "=", ":")) < 0)
-        return ret;
 
     if (!strcmp(drawbox->color_str, "invert"))
         drawbox->invert_color = 1;
@@ -90,12 +63,6 @@ static av_cold int init(AVFilterContext *ctx, const char *args)
     }
 
     return 0;
-}
-
-static av_cold void uninit(AVFilterContext *ctx)
-{
-    DrawBoxContext *drawbox = ctx->priv;
-    av_opt_free(drawbox);
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -130,13 +97,13 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
+static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
     DrawBoxContext *drawbox = inlink->dst->priv;
     int plane, x, y, xb = drawbox->x, yb = drawbox->y;
     unsigned char *row[4];
 
-    for (y = FFMAX(yb, 0); y < frame->video->h && y < (yb + drawbox->h); y++) {
+    for (y = FFMAX(yb, 0); y < frame->height && y < (yb + drawbox->h); y++) {
         row[0] = frame->data[0] + y * frame->linesize[0];
 
         for (plane = 1; plane < 3; plane++)
@@ -144,12 +111,12 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
                  frame->linesize[plane] * (y >> drawbox->vsub);
 
         if (drawbox->invert_color) {
-            for (x = FFMAX(xb, 0); x < xb + drawbox->w && x < frame->video->w; x++)
+            for (x = FFMAX(xb, 0); x < xb + drawbox->w && x < frame->width; x++)
                 if ((y - yb < drawbox->thickness-1) || (yb + drawbox->h - y < drawbox->thickness) ||
                     (x - xb < drawbox->thickness-1) || (xb + drawbox->w - x < drawbox->thickness))
                     row[0][x] = 0xff - row[0][x];
         } else {
-            for (x = FFMAX(xb, 0); x < xb + drawbox->w && x < frame->video->w; x++) {
+            for (x = FFMAX(xb, 0); x < xb + drawbox->w && x < frame->width; x++) {
                 double alpha = (double)drawbox->yuv_color[A] / 255;
 
                 if ((y - yb < drawbox->thickness-1) || (yb + drawbox->h - y < drawbox->thickness) ||
@@ -165,6 +132,25 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
     return ff_filter_frame(inlink->dst->outputs[0], frame);
 }
 
+#define OFFSET(x) offsetof(DrawBoxContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+
+static const AVOption drawbox_options[] = {
+    { "x",      "Horizontal position of the left box edge", OFFSET(x),         AV_OPT_TYPE_INT,    { .i64 = 0 }, INT_MIN, INT_MAX, FLAGS },
+    { "y",      "Vertical position of the top box edge",    OFFSET(y),         AV_OPT_TYPE_INT,    { .i64 = 0 }, INT_MIN, INT_MAX, FLAGS },
+    { "width",  "Width of the box",                         OFFSET(w),         AV_OPT_TYPE_INT,    { .i64 = 0 }, 0,       INT_MAX, FLAGS },
+    { "w",      "Width of the box",                         OFFSET(w),         AV_OPT_TYPE_INT,    { .i64 = 0 }, 0,       INT_MAX, FLAGS },
+    { "height", "Height of the box",                        OFFSET(h),         AV_OPT_TYPE_INT,    { .i64 = 0 }, 0,       INT_MAX, FLAGS },
+    { "h",      "Height of the box",                        OFFSET(h),         AV_OPT_TYPE_INT,    { .i64 = 0 }, 0,       INT_MAX, FLAGS },
+    { "color",  "Color of the box",                         OFFSET(color_str), AV_OPT_TYPE_STRING, { .str = "black" }, CHAR_MIN, CHAR_MAX, .flags = FLAGS },
+    { "c",      "Color of the box",                         OFFSET(color_str), AV_OPT_TYPE_STRING, { .str = "black" }, CHAR_MIN, CHAR_MAX, .flags = FLAGS },
+    { "thickness",   "set the box maximum thickness",       OFFSET(thickness), AV_OPT_TYPE_INT, {.i64=4}, 0, INT_MAX, FLAGS },
+    { "t",           "set the box maximum thickness",       OFFSET(thickness), AV_OPT_TYPE_INT, {.i64=4}, 0, INT_MAX, FLAGS },
+    { NULL },
+};
+
+AVFILTER_DEFINE_CLASS(drawbox);
+
 static const AVFilterPad avfilter_vf_drawbox_inputs[] = {
     {
         .name             = "default",
@@ -172,7 +158,7 @@ static const AVFilterPad avfilter_vf_drawbox_inputs[] = {
         .config_props     = config_input,
         .get_video_buffer = ff_null_get_video_buffer,
         .filter_frame     = filter_frame,
-        .min_perms        = AV_PERM_WRITE | AV_PERM_READ,
+        .needs_writable   = 1,
     },
     { NULL }
 };
@@ -189,11 +175,11 @@ AVFilter avfilter_vf_drawbox = {
     .name      = "drawbox",
     .description = NULL_IF_CONFIG_SMALL("Draw a colored box on the input video."),
     .priv_size = sizeof(DrawBoxContext),
+    .priv_class = &drawbox_class,
     .init      = init,
-    .uninit    = uninit,
 
     .query_formats   = query_formats,
     .inputs    = avfilter_vf_drawbox_inputs,
     .outputs   = avfilter_vf_drawbox_outputs,
-    .priv_class = &drawbox_class,
+    .flags     = AVFILTER_FLAG_SUPPORT_TIMELINE,
 };

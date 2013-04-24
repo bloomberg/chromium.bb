@@ -28,6 +28,7 @@
 #include "libavutil/cpu.h"
 #include "internal.h"
 #include "avcodec.h"
+#include "error_resilience.h"
 #include "mpegvideo.h"
 #include "h263.h"
 #include "h263_parser.h"
@@ -362,7 +363,8 @@ uint64_t time= rdtsc();
     if (buf_size == 0) {
         /* special case for last picture */
         if (s->low_delay==0 && s->next_picture_ptr) {
-            *pict = s->next_picture_ptr->f;
+            if ((ret = av_frame_ref(pict, &s->next_picture_ptr->f)) < 0)
+                return ret;
             s->next_picture_ptr= NULL;
 
             *got_frame = 1;
@@ -651,7 +653,8 @@ retry:
     if ((ret = ff_MPV_frame_start(s, avctx)) < 0)
         return ret;
 
-    if (!s->divx_packed) ff_thread_finish_setup(avctx);
+    if (!s->divx_packed && !avctx->hwaccel)
+        ff_thread_finish_setup(avctx);
 
     if (CONFIG_MPEG4_VDPAU_DECODER && (s->avctx->codec->capabilities & CODEC_CAP_HWACCEL_VDPAU)) {
         ff_vdpau_mpeg4_decode_picture(s, s->gb.buffer, s->gb.buffer_end - s->gb.buffer);
@@ -740,17 +743,25 @@ intrax8_decoded:
 
     ff_MPV_frame_end(s);
 
-    assert(s->current_picture.f.pict_type == s->current_picture_ptr->f.pict_type);
-    assert(s->current_picture.f.pict_type == s->pict_type);
+    if (!s->divx_packed && avctx->hwaccel)
+        ff_thread_finish_setup(avctx);
+
+    av_assert1(s->current_picture.f.pict_type == s->current_picture_ptr->f.pict_type);
+    av_assert1(s->current_picture.f.pict_type == s->pict_type);
     if (s->pict_type == AV_PICTURE_TYPE_B || s->low_delay) {
-        *pict = s->current_picture_ptr->f;
+        if ((ret = av_frame_ref(pict, &s->current_picture_ptr->f)) < 0)
+            return ret;
+        ff_print_debug_info(s, s->current_picture_ptr, pict);
+        ff_mpv_export_qp_table(s, pict, s->current_picture_ptr, FF_QSCALE_TYPE_MPEG1);
     } else if (s->last_picture_ptr != NULL) {
-        *pict = s->last_picture_ptr->f;
+        if ((ret = av_frame_ref(pict, &s->last_picture_ptr->f)) < 0)
+            return ret;
+        ff_print_debug_info(s, s->last_picture_ptr, pict);
+        ff_mpv_export_qp_table(s, pict, s->last_picture_ptr, FF_QSCALE_TYPE_MPEG1);
     }
 
     if(s->last_picture_ptr || s->low_delay){
         *got_frame = 1;
-        ff_print_debug_info(s, pict);
     }
 
 #ifdef PRINT_FRAME_TIME

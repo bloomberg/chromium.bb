@@ -15,10 +15,10 @@ ffservertest: ffserver$(EXESUF) tests/vsynth1/00.pgm tests/data/asynth1.sw
 
 OBJDIRS += tests/data tests/vsynth1
 
-tests/vsynth1/00.pgm: tests/videogen$(HOSTEXESUF) | tests/vsynth1
+$(VREF): tests/videogen$(HOSTEXESUF) | tests/vsynth1
 	$(M)./$< 'tests/vsynth1/'
 
-tests/data/asynth1.sw: tests/audiogen$(HOSTEXESUF) | tests/data
+$(AREF): tests/audiogen$(HOSTEXESUF) | tests/data
 	$(M)./$< $@
 
 tests/data/asynth-%.wav: tests/audiogen$(HOSTEXESUF) | tests/data
@@ -32,7 +32,7 @@ tests/data/vsynth2.yuv: tests/rotozoom$(HOSTEXESUF) | tests/data
 
 tests/data/ffprobe-test.nut: ffmpeg$(EXESUF) | tests/data
 	$(M)$(TARGET_EXEC) ./$< \
-        -f lavfi -i "aevalsrc=sin(400*PI*2*t)::d=0.125[out0]; testsrc=d=0.125[out1]; testsrc=s=100x100:d=0.125[out2]" \
+        -f lavfi -i "aevalsrc=sin(400*PI*2*t):d=0.125[out0]; testsrc=d=0.125[out1]; testsrc=s=100x100:d=0.125[out2]" \
         -f ffmetadata -i $(SRC_PATH)/tests/test.ffmeta \
         -flags +bitexact -map 0:0 -map 0:1 -map 0:2 -map_metadata 1 \
         -map_metadata:s:0 1:s:0 -map_metadata:s:1 1:s:1 \
@@ -59,6 +59,10 @@ ENCDEC2 = $(call ALLYES, $(firstword $(1))_ENCODER $(lastword $(1))_DECODER  \
 DEMDEC  = $(call ALLYES, $(1)_DEMUXER $(2:%=%_DECODER))
 ENCMUX  = $(call ALLYES, $(1:%=%_ENCODER) $(2)_MUXER)
 
+FILTERDEMDEC       = $(call ALLYES, $(1)_FILTER $(2)_DEMUXER $(3)_DECODER)
+FILTERDEMDECMUX    = $(call ALLYES, $(1)_FILTER $(2)_DEMUXER $(3)_DECODER $(4)_MUXER)
+FILTERDEMDECENCMUX = $(call ALLYES, $(1)_FILTER $(2)_DEMUXER $(3)_DECODER $(4)_ENCODER $(5)_MUXER)
+
 include $(SRC_PATH)/tests/fate/acodec.mak
 include $(SRC_PATH)/tests/fate/vcodec.mak
 include $(SRC_PATH)/tests/fate/avformat.mak
@@ -83,7 +87,8 @@ include $(SRC_PATH)/tests/fate/dpcm.mak
 include $(SRC_PATH)/tests/fate/ea.mak
 include $(SRC_PATH)/tests/fate/ffmpeg.mak
 include $(SRC_PATH)/tests/fate/ffprobe.mak
-include $(SRC_PATH)/tests/fate/filter.mak
+include $(SRC_PATH)/tests/fate/filter-audio.mak
+include $(SRC_PATH)/tests/fate/filter-video.mak
 include $(SRC_PATH)/tests/fate/flac.mak
 include $(SRC_PATH)/tests/fate/fft.mak
 include $(SRC_PATH)/tests/fate/gif.mak
@@ -147,7 +152,7 @@ $(FATE_EXTERN):
 	@echo "$@ requires external samples and SAMPLES not specified"; false
 endif
 
-FATE_UTILS = base64 tiny_psnr
+FATE_UTILS = base64 tiny_psnr tiny_ssim
 
 TOOL = ffmpeg
 
@@ -155,10 +160,24 @@ fate:: $(FATE)
 
 $(FATE) $(FATE_TESTS-no): $(FATE_UTILS:%=tests/%$(HOSTEXESUF))
 	@echo "TEST    $(@:fate-%=%)"
-	$(Q)$(SRC_PATH)/tests/fate-run.sh $@ "$(SAMPLES)" "$(TARGET_EXEC)" "$(TARGET_PATH)" '$(CMD)' '$(CMP)' '$(REF)' '$(FUZZ)' '$(THREADS)' '$(THREAD_TYPE)' '$(CPUFLAGS)' '$(CMP_SHIFT)' '$(CMP_TARGET)' '$(SIZE_TOLERANCE)' '$(CMP_UNIT)'
+	$(Q)$(SRC_PATH)/tests/fate-run.sh $@ "$(SAMPLES)" "$(TARGET_EXEC)" "$(TARGET_PATH)" '$(CMD)' '$(CMP)' '$(REF)' '$(FUZZ)' '$(THREADS)' '$(THREAD_TYPE)' '$(CPUFLAGS)' '$(CMP_SHIFT)' '$(CMP_TARGET)' '$(SIZE_TOLERANCE)' '$(CMP_UNIT)' '$(GEN)'
 
 fate-list:
 	@printf '%s\n' $(sort $(FATE))
+
+coverage.info: TAG = LCOV
+coverage.info:
+	$(M)lcov -d $(CURDIR) -b $(SRC_PATH) --capture | sed -e 's#/./#/#g' > $@
+	$(M)lcov --remove $@ "/usr*" -o $@
+
+lcov:  TAG = GENHTML
+lcov: coverage.info
+	$(M)genhtml -o $(CURDIR)/lcov $<
+
+lcov-reset: TAG = LCOV
+lcov-reset:
+	$(M)lcov -d $(CURDIR) --zerocounters
+	$(Q)$(RM) -f coverage.info
 
 clean:: testclean
 
@@ -169,4 +188,5 @@ testclean:
 
 -include $(wildcard tests/*.d)
 
-.PHONY: fate*
+.PHONY: fate* lcov lcov-reset
+.INTERMEDIATE: coverage.info

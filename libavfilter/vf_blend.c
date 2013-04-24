@@ -60,8 +60,8 @@ enum BlendMode {
     BLEND_NB
 };
 
-static const char *const var_names[] = {   "X",   "Y",   "W",   "H",   "SW",   "SH",   "T",     "A",        "B",   "TOP",   "BOTTOM",        NULL };
-enum                                   { VAR_X, VAR_Y, VAR_W, VAR_H, VAR_SW, VAR_SH, VAR_T,   VAR_A,      VAR_B, VAR_TOP, VAR_BOTTOM, VAR_VARS_NB };
+static const char *const var_names[] = {   "X",   "Y",   "W",   "H",   "SW",   "SH",   "T",   "N",   "A",   "B",   "TOP",   "BOTTOM",        NULL };
+enum                                   { VAR_X, VAR_Y, VAR_W, VAR_H, VAR_SW, VAR_SH, VAR_T, VAR_N, VAR_A, VAR_B, VAR_TOP, VAR_BOTTOM, VAR_VARS_NB };
 
 typedef struct FilterParams {
     enum BlendMode mode;
@@ -219,16 +219,10 @@ static void blend_expr(const uint8_t *top, int top_linesize,
     }
 }
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
     BlendContext *b = ctx->priv;
     int ret, plane;
-
-    b->class = &blend_class;
-    av_opt_set_defaults(b);
-
-    if ((ret = av_set_options_string(b, args, "=", ":")) < 0)
-        return ret;
 
     for (plane = 0; plane < FF_ARRAY_ELEMS(b->params); plane++) {
         FilterParams *param = &b->params[plane];
@@ -286,7 +280,8 @@ static int query_formats(AVFilterContext *ctx)
 {
     static const enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUVA422P, AV_PIX_FMT_YUVA420P,
-        AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV420P,
+        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ422P,AV_PIX_FMT_YUVJ420P,
+        AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV422P, AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV410P,
         AV_PIX_FMT_GBRP, AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE
     };
 
@@ -343,7 +338,6 @@ static av_cold void uninit(AVFilterContext *ctx)
     BlendContext *b = ctx->priv;
     int i;
 
-    av_opt_free(b);
     ff_bufqueue_discard_all(&b->queue_top);
     ff_bufqueue_discard_all(&b->queue_bottom);
 
@@ -359,7 +353,7 @@ static int request_frame(AVFilterLink *outlink)
 
     b->frame_requested = 1;
     while (b->frame_requested) {
-        in = ff_bufqueue_peek(&b->queue_top, TOP) ? BOTTOM : TOP;
+        in = ff_bufqueue_peek(&b->queue_top, 0) ? BOTTOM : TOP;
         ret = ff_request_frame(ctx->inputs[in]);
         if (ret < 0)
             return ret;
@@ -368,9 +362,9 @@ static int request_frame(AVFilterLink *outlink)
 }
 
 static void blend_frame(AVFilterContext *ctx,
-                        AVFilterBufferRef *top_buf,
-                        AVFilterBufferRef *bottom_buf,
-                        AVFilterBufferRef *dst_buf)
+                        AVFrame *top_buf,
+                        AVFrame *bottom_buf,
+                        AVFrame *dst_buf)
 {
     BlendContext *b = ctx->priv;
     AVFilterLink *inlink = ctx->inputs[0];
@@ -380,25 +374,26 @@ static void blend_frame(AVFilterContext *ctx,
     for (plane = 0; dst_buf->data[plane]; plane++) {
         int hsub = plane == 1 || plane == 2 ? b->hsub : 0;
         int vsub = plane == 1 || plane == 2 ? b->vsub : 0;
-        int outw = dst_buf->video->w >> hsub;
-        int outh = dst_buf->video->h >> vsub;
+        int outw = dst_buf->width  >> hsub;
+        int outh = dst_buf->height >> vsub;
         uint8_t *dst    = dst_buf->data[plane];
         uint8_t *top    = top_buf->data[plane];
         uint8_t *bottom = bottom_buf->data[plane];
 
         param = &b->params[plane];
+        param->values[VAR_N]  = inlink->frame_count;
         param->values[VAR_T]  = dst_buf->pts == AV_NOPTS_VALUE ? NAN : dst_buf->pts * av_q2d(inlink->time_base);
         param->values[VAR_W]  = outw;
         param->values[VAR_H]  = outh;
-        param->values[VAR_SW] = outw / dst_buf->video->w;
-        param->values[VAR_SH] = outh / dst_buf->video->h;
+        param->values[VAR_SW] = outw / dst_buf->width;
+        param->values[VAR_SH] = outh / dst_buf->height;
         param->blend(top, top_buf->linesize[plane],
                      bottom, bottom_buf->linesize[plane],
                      dst, dst_buf->linesize[plane], outw, outh, param);
     }
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *buf)
+static int filter_frame(AVFilterLink *inlink, AVFrame *buf)
 {
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
@@ -411,26 +406,25 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *buf)
     ff_bufqueue_add(ctx, queue, buf);
 
     while (1) {
-        AVFilterBufferRef *top_buf, *bottom_buf, *out_buf;
+        AVFrame *top_buf, *bottom_buf, *out_buf;
 
-        if (!ff_bufqueue_peek(&b->queue_top, TOP) ||
-            !ff_bufqueue_peek(&b->queue_bottom, BOTTOM)) break;
+        if (!ff_bufqueue_peek(&b->queue_top, 0) ||
+            !ff_bufqueue_peek(&b->queue_bottom, 0)) break;
 
         top_buf = ff_bufqueue_get(&b->queue_top);
         bottom_buf = ff_bufqueue_get(&b->queue_bottom);
 
-        out_buf = ff_get_video_buffer(outlink, AV_PERM_WRITE,
-                                      outlink->w, outlink->h);
+        out_buf = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out_buf) {
             return AVERROR(ENOMEM);
         }
-        avfilter_copy_buffer_ref_props(out_buf, top_buf);
+        av_frame_copy_props(out_buf, top_buf);
 
         b->frame_requested = 0;
         blend_frame(ctx, top_buf, bottom_buf, out_buf);
         ret = ff_filter_frame(ctx->outputs[0], out_buf);
-        avfilter_unref_buffer(top_buf);
-        avfilter_unref_buffer(bottom_buf);
+        av_frame_free(&top_buf);
+        av_frame_free(&bottom_buf);
     }
     return ret;
 }
@@ -441,12 +435,10 @@ static const AVFilterPad blend_inputs[] = {
         .type             = AVMEDIA_TYPE_VIDEO,
         .config_props     = config_input_top,
         .filter_frame     = filter_frame,
-        .min_perms        = AV_PERM_READ | AV_PERM_PRESERVE,
     },{
         .name             = "bottom",
         .type             = AVMEDIA_TYPE_VIDEO,
         .filter_frame     = filter_frame,
-        .min_perms        = AV_PERM_READ | AV_PERM_PRESERVE,
     },
     { NULL }
 };

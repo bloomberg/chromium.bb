@@ -43,7 +43,6 @@
 
 typedef struct TiffContext {
     AVCodecContext *avctx;
-    AVFrame picture;
     GetByteContext gb;
 
     int width, height;
@@ -268,7 +267,7 @@ static char *shorts2str(int16_t *sp, int count, const char *sep)
 
 static int add_doubles_metadata(int count,
                                 const char *name, const char *sep,
-                                TiffContext *s)
+                                TiffContext *s, AVFrame *frame)
 {
     char *ap;
     int i;
@@ -289,12 +288,12 @@ static int add_doubles_metadata(int count,
     av_freep(&dp);
     if (!ap)
         return AVERROR(ENOMEM);
-    av_dict_set(&s->picture.metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+    av_dict_set(avpriv_frame_get_metadatap(frame), name, ap, AV_DICT_DONT_STRDUP_VAL);
     return 0;
 }
 
 static int add_shorts_metadata(int count, const char *name,
-                               const char *sep, TiffContext *s)
+                               const char *sep, TiffContext *s, AVFrame *frame)
 {
     char *ap;
     int i;
@@ -315,12 +314,12 @@ static int add_shorts_metadata(int count, const char *name,
     av_freep(&sp);
     if (!ap)
         return AVERROR(ENOMEM);
-    av_dict_set(&s->picture.metadata, name, ap, AV_DICT_DONT_STRDUP_VAL);
+    av_dict_set(avpriv_frame_get_metadatap(frame), name, ap, AV_DICT_DONT_STRDUP_VAL);
     return 0;
 }
 
 static int add_string_metadata(int count, const char *name,
-                               TiffContext *s)
+                               TiffContext *s, AVFrame *frame)
 {
     char *value;
 
@@ -334,17 +333,17 @@ static int add_string_metadata(int count, const char *name,
     bytestream2_get_bufferu(&s->gb, value, count);
     value[count] = 0;
 
-    av_dict_set(&s->picture.metadata, name, value, AV_DICT_DONT_STRDUP_VAL);
+    av_dict_set(avpriv_frame_get_metadatap(frame), name, value, AV_DICT_DONT_STRDUP_VAL);
     return 0;
 }
 
 static int add_metadata(int count, int type,
-                        const char *name, const char *sep, TiffContext *s)
+                        const char *name, const char *sep, TiffContext *s, AVFrame *frame)
 {
     switch(type) {
-    case TIFF_DOUBLE: return add_doubles_metadata(count, name, sep, s);
-    case TIFF_SHORT : return add_shorts_metadata(count, name, sep, s);
-    case TIFF_STRING: return add_string_metadata(count, name, s);
+    case TIFF_DOUBLE: return add_doubles_metadata(count, name, sep, s, frame);
+    case TIFF_SHORT : return add_shorts_metadata(count, name, sep, s, frame);
+    case TIFF_STRING: return add_string_metadata(count, name, s, frame);
     default         : return AVERROR_INVALIDDATA;
     };
 }
@@ -597,7 +596,7 @@ static int tiff_unpack_strip(TiffContext *s, uint8_t *dst, int stride,
     return 0;
 }
 
-static int init_image(TiffContext *s)
+static int init_image(TiffContext *s, AVFrame *frame)
 {
     int i, ret;
     uint32_t *pal;
@@ -642,18 +641,14 @@ static int init_image(TiffContext *s)
             return ret;
         avcodec_set_dimensions(s->avctx, s->width, s->height);
     }
-    if (s->picture.data[0])
-        s->avctx->release_buffer(s->avctx, &s->picture);
-    if ((ret = ff_get_buffer(s->avctx, &s->picture)) < 0) {
-        av_log(s->avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(s->avctx, frame, 0)) < 0)
         return ret;
-    }
     if (s->avctx->pix_fmt == AV_PIX_FMT_PAL8) {
         if (s->palette_is_set) {
-            memcpy(s->picture.data[1], s->palette, sizeof(s->palette));
+            memcpy(frame->data[1], s->palette, sizeof(s->palette));
         } else {
             /* make default grayscale pal */
-            pal = (uint32_t *) s->picture.data[1];
+            pal = (uint32_t *) frame->data[1];
             for (i = 0; i < 1<<s->bpp; i++)
                 pal[i] = 0xFFU << 24 | i * 255 / ((1<<s->bpp) - 1) * 0x010101;
         }
@@ -661,7 +656,7 @@ static int init_image(TiffContext *s)
     return 0;
 }
 
-static int tiff_decode_tag(TiffContext *s)
+static int tiff_decode_tag(TiffContext *s, AVFrame *frame)
 {
     unsigned tag, type, count, off, value = 0;
     int i, j, k, pos, start;
@@ -899,7 +894,7 @@ static int tiff_decode_tag(TiffContext *s)
             s->fax_opts = value;
         break;
 #define ADD_METADATA(count, name, sep)\
-    if ((ret = add_metadata(count, type, name, sep, s)) < 0) {\
+    if ((ret = add_metadata(count, type, name, sep, s, frame)) < 0) {\
         av_log(s->avctx, AV_LOG_ERROR, "Error allocating temporary buffer\n");\
         return ret;\
     }
@@ -1041,8 +1036,7 @@ static int decode_frame(AVCodecContext *avctx,
                         void *data, int *got_frame, AVPacket *avpkt)
 {
     TiffContext *const s = avctx->priv_data;
-    AVFrame *picture = data;
-    AVFrame *const p = &s->picture;
+    AVFrame *const p = data;
     unsigned off;
     int id, le, ret;
     int i, j, entries;
@@ -1073,9 +1067,6 @@ static int decode_frame(AVCodecContext *avctx,
     s->compr = TIFF_RAW;
     s->fill_order = 0;
     free_geotags(s);
-    /* metadata has been destroyed from lavc internals, that pointer is not
-     * valid anymore */
-    s->picture.metadata = NULL;
 
     // As TIFF 6.0 specification puts it "An arbitrary but carefully chosen number
     // that further identifies the file as a TIFF file"
@@ -1097,7 +1088,7 @@ static int decode_frame(AVCodecContext *avctx,
     if (bytestream2_get_bytes_left(&s->gb) < entries * 12)
         return AVERROR_INVALIDDATA;
     for (i = 0; i < entries; i++) {
-        if ((ret = tiff_decode_tag(s)) < 0)
+        if ((ret = tiff_decode_tag(s, p)) < 0)
             return ret;
     }
 
@@ -1111,7 +1102,7 @@ static int decode_frame(AVCodecContext *avctx,
             av_log(avctx, AV_LOG_WARNING, "Type of GeoTIFF key %d is wrong\n", s->geotags[i].key);
             continue;
         }
-        ret = av_dict_set(&s->picture.metadata, keyname, s->geotags[i].val, 0);
+        ret = av_dict_set(avpriv_frame_get_metadatap(p), keyname, s->geotags[i].val, 0);
         if (ret<0) {
             av_log(avctx, AV_LOG_ERROR, "Writing metadata with key '%s' failed\n", keyname);
             return ret;
@@ -1123,7 +1114,7 @@ static int decode_frame(AVCodecContext *avctx,
         return AVERROR_INVALIDDATA;
     }
     /* now we have the data and may start decoding */
-    if ((ret = init_image(s)) < 0)
+    if ((ret = init_image(s, p)) < 0)
         return ret;
 
     if (s->strips == 1 && !s->stripsize) {
@@ -1197,14 +1188,13 @@ static int decode_frame(AVCodecContext *avctx,
     }
 
     if (s->invert) {
-        dst = s->picture.data[0];
+        dst = p->data[0];
         for (i = 0; i < s->height; i++) {
-            for (j = 0; j < s->picture.linesize[0]; j++)
+            for (j = 0; j < p->linesize[0]; j++)
                 dst[j] = (s->avctx->pix_fmt == AV_PIX_FMT_PAL8 ? (1<<s->bpp) - 1 : 255) - dst[j];
-            dst += s->picture.linesize[0];
+            dst += p->linesize[0];
         }
     }
-    *picture   = s->picture;
     *got_frame = 1;
 
     return avpkt->size;
@@ -1217,8 +1207,6 @@ static av_cold int tiff_init(AVCodecContext *avctx)
     s->width = 0;
     s->height = 0;
     s->avctx = avctx;
-    avcodec_get_frame_defaults(&s->picture);
-    avctx->coded_frame = &s->picture;
     ff_lzw_decode_open(&s->lzw);
     ff_ccitt_unpack_init();
 
@@ -1233,8 +1221,6 @@ static av_cold int tiff_end(AVCodecContext *avctx)
 
     ff_lzw_decode_close(&s->lzw);
     av_freep(&s->deinvert_buf);
-    if (s->picture.data[0])
-        avctx->release_buffer(avctx, &s->picture);
     return 0;
 }
 

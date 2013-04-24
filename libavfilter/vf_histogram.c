@@ -73,20 +73,6 @@ static const AVOption histogram_options[] = {
 
 AVFILTER_DEFINE_CLASS(histogram);
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
-{
-    HistogramContext *h = ctx->priv;
-    int ret;
-
-    h->class = &histogram_class;
-    av_opt_set_defaults(h);
-
-    if ((ret = (av_set_options_string(h, args, "=", ":"))) < 0)
-        return ret;
-
-    return 0;
-}
-
 static const enum AVPixelFormat color_pix_fmts[] = {
     AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVA444P, AV_PIX_FMT_YUVJ444P,
     AV_PIX_FMT_NONE
@@ -174,24 +160,23 @@ static int config_output(AVFilterLink *outlink)
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
+static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     HistogramContext *h   = inlink->dst->priv;
     AVFilterContext *ctx  = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
-    AVFilterBufferRef *out;
+    AVFrame *out;
     const uint8_t *src;
     uint8_t *dst;
-    int i, j, k, l, ret;
+    int i, j, k, l;
 
-    out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+    out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        avfilter_unref_bufferp(&in);
+        av_frame_free(&in);
         return AVERROR(ENOMEM);
     }
 
     out->pts = in->pts;
-    out->pos = in->pos;
 
     for (k = 0; k < h->ncomp; k++)
         for (i = 0; i < outlink->h; i++)
@@ -202,9 +187,9 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
         for (k = 0; k < h->ncomp; k++) {
             int start = k * (h->level_height + h->scale_height) * h->display_mode;
 
-            for (i = 0; i < in->video->h; i++) {
+            for (i = 0; i < in->height; i++) {
                 src = in->data[k] + i * in->linesize[k];
-                for (j = 0; j < in->video->w; j++)
+                for (j = 0; j < in->width; j++)
                     h->histogram[src[j]]++;
             }
 
@@ -212,7 +197,7 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
                 h->max_hval = FFMAX(h->max_hval, h->histogram[i]);
 
             for (i = 0; i < outlink->w; i++) {
-                int col_height = h->level_height - (float)h->histogram[i] / h->max_hval * h->level_height;
+                int col_height = h->level_height - (h->histogram[i] * (int64_t)h->level_height + h->max_hval - 1) / h->max_hval;
 
                 for (j = h->level_height - 1; j >= col_height; j--) {
                     if (h->display_mode) {
@@ -300,18 +285,8 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
         av_assert0(0);
     }
 
-    ret = ff_filter_frame(outlink, out);
-    avfilter_unref_bufferp(&in);
-    if (ret < 0)
-        return ret;
-    return 0;
-}
-
-static av_cold void uninit(AVFilterContext *ctx)
-{
-    HistogramContext *h = ctx->priv;
-
-    av_opt_free(h);
+    av_frame_free(&in);
+    return ff_filter_frame(outlink, out);
 }
 
 static const AVFilterPad inputs[] = {
@@ -320,7 +295,6 @@ static const AVFilterPad inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
         .config_props = config_input,
-        .min_perms    = AV_PERM_READ,
     },
     { NULL }
 };
@@ -338,8 +312,6 @@ AVFilter avfilter_vf_histogram = {
     .name          = "histogram",
     .description   = NULL_IF_CONFIG_SMALL("Compute and draw a histogram."),
     .priv_size     = sizeof(HistogramContext),
-    .init          = init,
-    .uninit        = uninit,
     .query_formats = query_formats,
     .inputs        = inputs,
     .outputs       = outputs,

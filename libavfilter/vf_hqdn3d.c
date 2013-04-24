@@ -26,10 +26,14 @@
  * libmpcodecs/vf_hqdn3d.c.
  */
 
+#include <float.h>
+
 #include "config.h"
 #include "libavutil/common.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/intreadwrite.h"
+#include "libavutil/opt.h"
+
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -37,9 +41,10 @@
 #include "vf_hqdn3d.h"
 
 #define LUT_BITS (depth==16 ? 8 : 4)
-#define LOAD(x) (((depth==8 ? src[x] : AV_RN16A(src+(x)*2)) << (16-depth)) + (((1<<(16-depth))-1)>>1))
-#define STORE(x,val) (depth==8 ? dst[x] = (val) >> (16-depth)\
-                    : AV_WN16A(dst+(x)*2, (val) >> (16-depth)))
+#define LOAD(x) (((depth == 8 ? src[x] : AV_RN16A(src + (x) * 2)) << (16 - depth))\
+                 + (((1 << (16 - depth)) - 1) >> 1))
+#define STORE(x,val) (depth == 8 ? dst[x] = (val) >> (16 - depth) : \
+                                   AV_WN16A(dst + (x) * 2, (val) >> (16 - depth)))
 
 av_always_inline
 static uint32_t lowpass(int prev, int cur, int16_t *coef, int depth)
@@ -176,60 +181,22 @@ static int16_t *precalc_coefs(double dist25, int depth)
 #define PARAM2_DEFAULT 3.0
 #define PARAM3_DEFAULT 6.0
 
-static int init(AVFilterContext *ctx, const char *args)
+static int init(AVFilterContext *ctx)
 {
     HQDN3DContext *hqdn3d = ctx->priv;
-    double lum_spac, lum_tmp, chrom_spac, chrom_tmp;
-    double param1, param2, param3, param4;
 
-    lum_spac   = PARAM1_DEFAULT;
-    chrom_spac = PARAM2_DEFAULT;
-    lum_tmp    = PARAM3_DEFAULT;
-    chrom_tmp  = lum_tmp * chrom_spac / lum_spac;
-
-    if (args) {
-        switch (sscanf(args, "%lf:%lf:%lf:%lf",
-                       &param1, &param2, &param3, &param4)) {
-        case 1:
-            lum_spac   = param1;
-            chrom_spac = PARAM2_DEFAULT * param1 / PARAM1_DEFAULT;
-            lum_tmp    = PARAM3_DEFAULT * param1 / PARAM1_DEFAULT;
-            chrom_tmp  = lum_tmp * chrom_spac / lum_spac;
-            break;
-        case 2:
-            lum_spac   = param1;
-            chrom_spac = param2;
-            lum_tmp    = PARAM3_DEFAULT * param1 / PARAM1_DEFAULT;
-            chrom_tmp  = lum_tmp * chrom_spac / lum_spac;
-            break;
-        case 3:
-            lum_spac   = param1;
-            chrom_spac = param2;
-            lum_tmp    = param3;
-            chrom_tmp  = lum_tmp * chrom_spac / lum_spac;
-            break;
-        case 4:
-            lum_spac   = param1;
-            chrom_spac = param2;
-            lum_tmp    = param3;
-            chrom_tmp  = param4;
-            break;
-        }
-    }
-
-    hqdn3d->strength[0] = lum_spac;
-    hqdn3d->strength[1] = lum_tmp;
-    hqdn3d->strength[2] = chrom_spac;
-    hqdn3d->strength[3] = chrom_tmp;
+    if (!hqdn3d->strength[LUMA_SPATIAL])
+        hqdn3d->strength[LUMA_SPATIAL] = PARAM1_DEFAULT;
+    if (!hqdn3d->strength[CHROMA_SPATIAL])
+        hqdn3d->strength[CHROMA_SPATIAL] = PARAM2_DEFAULT * hqdn3d->strength[LUMA_SPATIAL] / PARAM1_DEFAULT;
+    if (!hqdn3d->strength[LUMA_TMP])
+        hqdn3d->strength[LUMA_TMP]   = PARAM3_DEFAULT * hqdn3d->strength[LUMA_SPATIAL] / PARAM1_DEFAULT;
+    if (!hqdn3d->strength[CHROMA_TMP])
+        hqdn3d->strength[CHROMA_TMP] = hqdn3d->strength[LUMA_TMP] * hqdn3d->strength[CHROMA_SPATIAL] / hqdn3d->strength[LUMA_SPATIAL];
 
     av_log(ctx, AV_LOG_VERBOSE, "ls:%f cs:%f lt:%f ct:%f\n",
-           lum_spac, chrom_spac, lum_tmp, chrom_tmp);
-    if (lum_spac < 0 || chrom_spac < 0 || isnan(chrom_tmp)) {
-        av_log(ctx, AV_LOG_ERROR,
-               "Invalid negative value for luma or chroma spatial strength, "
-               "or resulting value for chroma temporal strength is nan.\n");
-        return AVERROR(EINVAL);
-    }
+           hqdn3d->strength[LUMA_SPATIAL], hqdn3d->strength[CHROMA_SPATIAL],
+           hqdn3d->strength[LUMA_TMP], hqdn3d->strength[CHROMA_TMP]);
 
     return 0;
 }
@@ -304,40 +271,59 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
+static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     HQDN3DContext *hqdn3d = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
 
-    AVFilterBufferRef *out;
-    int direct = 0, c;
+    AVFrame *out;
+    int direct, c;
 
-    if (in->perms & AV_PERM_WRITE) {
+    if (av_frame_is_writable(in)) {
         direct = 1;
         out = in;
     } else {
-        out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+        direct = 0;
+        out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            avfilter_unref_bufferp(&in);
+            av_frame_free(&in);
             return AVERROR(ENOMEM);
         }
-        avfilter_copy_buffer_ref_props(out, in);
+
+        av_frame_copy_props(out, in);
     }
 
     for (c = 0; c < 3; c++) {
         denoise(hqdn3d, in->data[c], out->data[c],
                 hqdn3d->line, &hqdn3d->frame_prev[c],
-                in->video->w >> (!!c * hqdn3d->hsub),
-                in->video->h >> (!!c * hqdn3d->vsub),
+                in->width  >> (!!c * hqdn3d->hsub),
+                in->height >> (!!c * hqdn3d->vsub),
                 in->linesize[c], out->linesize[c],
                 hqdn3d->coefs[c?2:0], hqdn3d->coefs[c?3:1]);
     }
 
     if (!direct)
-        avfilter_unref_bufferp(&in);
+        av_frame_free(&in);
 
     return ff_filter_frame(outlink, out);
 }
+
+#define OFFSET(x) offsetof(HQDN3DContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
+static const AVOption options[] = {
+    { "luma_spatial",   "spatial luma strength",    OFFSET(strength[LUMA_SPATIAL]),   AV_OPT_TYPE_DOUBLE, { .dbl = 0.0 }, 0, DBL_MAX, FLAGS },
+    { "chroma_spatial", "spatial chroma strength",  OFFSET(strength[CHROMA_SPATIAL]), AV_OPT_TYPE_DOUBLE, { .dbl = 0.0 }, 0, DBL_MAX, FLAGS },
+    { "luma_tmp",       "temporal luma strength",   OFFSET(strength[LUMA_TMP]),       AV_OPT_TYPE_DOUBLE, { .dbl = 0.0 }, 0, DBL_MAX, FLAGS },
+    { "chroma_tmp",     "temporal chroma strength", OFFSET(strength[CHROMA_TMP]),     AV_OPT_TYPE_DOUBLE, { .dbl = 0.0 }, 0, DBL_MAX, FLAGS },
+    { NULL },
+};
+
+static const AVClass hqdn3d_class = {
+    .class_name = "hqdn3d",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
 
 static const AVFilterPad avfilter_vf_hqdn3d_inputs[] = {
     {
@@ -363,11 +349,12 @@ AVFilter avfilter_vf_hqdn3d = {
     .description   = NULL_IF_CONFIG_SMALL("Apply a High Quality 3D Denoiser."),
 
     .priv_size     = sizeof(HQDN3DContext),
+    .priv_class    = &hqdn3d_class,
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
 
     .inputs    = avfilter_vf_hqdn3d_inputs,
-
     .outputs   = avfilter_vf_hqdn3d_outputs,
+    .flags     = AVFILTER_FLAG_SUPPORT_TIMELINE,
 };

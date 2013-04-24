@@ -331,27 +331,12 @@ static av_cold int g726_encode_init(AVCodecContext *avctx)
 
     g726_reset(c);
 
-#if FF_API_OLD_ENCODE_AUDIO
-    avctx->coded_frame = avcodec_alloc_frame();
-    if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
-    avctx->coded_frame->key_frame = 1;
-#endif
-
     /* select a frame size that will end on a byte boundary and have a size of
        approximately 1024 bytes */
     avctx->frame_size = ((int[]){ 4096, 2736, 2048, 1640 })[c->code_size - 2];
 
     return 0;
 }
-
-#if FF_API_OLD_ENCODE_AUDIO
-static av_cold int g726_encode_close(AVCodecContext *avctx)
-{
-    av_freep(&avctx->coded_frame);
-    return 0;
-}
-#endif
 
 static int g726_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                              const AVFrame *frame, int *got_packet_ptr)
@@ -362,7 +347,7 @@ static int g726_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     int i, ret, out_size;
 
     out_size = (frame->nb_samples * c->code_size + 7) / 8;
-    if ((ret = ff_alloc_packet2(avctx, avpkt, out_size)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, out_size)) < 0)
         return ret;
     init_put_bits(&pb, avpkt->data, avpkt->size);
 
@@ -402,9 +387,6 @@ AVCodec ff_adpcm_g726_encoder = {
     .priv_data_size = sizeof(G726Context),
     .init           = g726_encode_init,
     .encode2        = g726_encode_frame,
-#if FF_API_OLD_ENCODE_AUDIO
-    .close          = g726_encode_close,
-#endif
     .capabilities   = CODEC_CAP_SMALL_LAST_FRAME,
     .sample_fmts    = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16,
                                                      AV_SAMPLE_FMT_NONE },
@@ -449,10 +431,8 @@ static int g726_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = out_samples;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
     samples = (int16_t *)frame->data[0];
 
     init_get_bits(&gb, buf, buf_size * 8);

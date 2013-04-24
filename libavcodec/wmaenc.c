@@ -50,11 +50,6 @@ static int encode_init(AVCodecContext * avctx){
         return AVERROR(EINVAL);
     }
 
-#if FF_API_OLD_ENCODE_AUDIO
-    if (!(avctx->coded_frame = avcodec_alloc_frame()))
-        return AVERROR(ENOMEM);
-#endif
-
     /* extract flag infos */
     flags1 = 0;
     flags2 = 1;
@@ -366,7 +361,7 @@ static int encode_superframe(AVCodecContext *avctx, AVPacket *avpkt,
         }
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 2 * MAX_CODED_SUPERFRAME_SIZE)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, 2 * MAX_CODED_SUPERFRAME_SIZE)) < 0)
         return ret;
 
     total_gain= 128;

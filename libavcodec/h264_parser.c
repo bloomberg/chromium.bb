@@ -28,6 +28,7 @@
 #include "parser.h"
 #include "h264data.h"
 #include "golomb.h"
+#include "internal.h"
 
 
 static int ff_h264_find_frame_end(H264Context *h, const uint8_t *buf, int buf_size)
@@ -174,7 +175,7 @@ static inline int parse_nal_units(AVCodecParserContext *s,
             }
             src_length = nalsize;
         } else {
-        buf = avpriv_mpv_find_start_code(buf, buf_end, &state);
+        buf = avpriv_find_start_code(buf, buf_end, &state);
         if(buf >= buf_end)
             break;
         --buf;

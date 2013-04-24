@@ -278,11 +278,12 @@ static void get_tag(AVFormatContext *s, const char *key, int type, int len, int 
 {
     char *value;
     int64_t off = avio_tell(s->pb);
+#define LEN 22
 
-    if ((unsigned)len >= (UINT_MAX - 1) / 2)
+    if ((unsigned)len >= (UINT_MAX - LEN) / 2)
         return;
 
-    value = av_malloc(2 * len + 1);
+    value = av_malloc(2 * len + LEN);
     if (!value)
         goto finish;
 
@@ -302,7 +303,7 @@ static void get_tag(AVFormatContext *s, const char *key, int type, int len, int 
         goto finish;
     } else if (type > 1 && type <= 5) {  // boolean or DWORD or QWORD or WORD
         uint64_t num = get_value(s->pb, type, type2_size);
-        snprintf(value, len, "%"PRIu64, num);
+        snprintf(value, LEN, "%"PRIu64, num);
     } else if (type == 6) { // (don't) handle GUID
         av_log(s, AV_LOG_DEBUG, "Unsupported GUID value in tag %s.\n", key);
         goto finish;
@@ -1011,6 +1012,7 @@ static int asf_read_frame_header(AVFormatContext *s, AVIOContext *pb)
         asf->packet_obj_size = avio_rl32(pb);
         if (asf->packet_obj_size >= (1 << 24) || asf->packet_obj_size <= 0) {
             av_log(s, AV_LOG_ERROR, "packet_obj_size invalid\n");
+            asf->packet_obj_size = 0;
             return AVERROR_INVALIDDATA;
         }
         asf->packet_frag_timestamp = avio_rl32(pb); // timestamp
@@ -1280,9 +1282,10 @@ static int ff_asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pk
                            asf_st->ds_span);
                 } else {
                     /* packet descrambling */
-                    uint8_t *newdata = av_malloc(asf_st->pkt.size +
-                                                 FF_INPUT_BUFFER_PADDING_SIZE);
-                    if (newdata) {
+                    AVBufferRef *buf = av_buffer_alloc(asf_st->pkt.size +
+                                                       FF_INPUT_BUFFER_PADDING_SIZE);
+                    if (buf) {
+                        uint8_t *newdata = buf->data;
                         int offset = 0;
                         memset(newdata + asf_st->pkt.size, 0,
                                FF_INPUT_BUFFER_PADDING_SIZE);
@@ -1298,13 +1301,18 @@ static int ff_asf_parse_packet(AVFormatContext *s, AVIOContext *pb, AVPacket *pk
                                    asf_st->ds_chunk_size);
                             offset += asf_st->ds_chunk_size;
                         }
-                        av_free(asf_st->pkt.data);
-                        asf_st->pkt.data = newdata;
+                        av_buffer_unref(&asf_st->pkt.buf);
+                        asf_st->pkt.buf  = buf;
+                        asf_st->pkt.data = buf->data;
                     }
                 }
             }
             asf_st->frag_offset         = 0;
             *pkt                        = asf_st->pkt;
+#if FF_API_DESTRUCT_PACKET
+            asf_st->pkt.destruct        = NULL;
+#endif
+            asf_st->pkt.buf             = 0;
             asf_st->pkt.size            = 0;
             asf_st->pkt.data            = 0;
             asf_st->pkt.side_data_elems = 0;

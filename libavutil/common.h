@@ -26,7 +26,6 @@
 #ifndef AVUTIL_COMMON_H
 #define AVUTIL_COMMON_H
 
-#include <ctype.h>
 #include <errno.h>
 #include <inttypes.h>
 #include <limits.h>
@@ -221,6 +220,23 @@ static av_always_inline int av_sat_dadd32_c(int a, int b)
  * @return clipped value
  */
 static av_always_inline av_const float av_clipf_c(float a, float amin, float amax)
+{
+#if defined(HAVE_AV_CONFIG_H) && defined(ASSERT_LEVEL) && ASSERT_LEVEL >= 2
+    if (amin > amax) abort();
+#endif
+    if      (a < amin) return amin;
+    else if (a > amax) return amax;
+    else               return a;
+}
+
+/**
+ * Clip a double value into the amin-amax range.
+ * @param a value to clip
+ * @param amin minimum value of the clip range
+ * @param amax maximum value of the clip range
+ * @return clipped value
+ */
+static av_always_inline av_const double av_clipd_c(double a, double amin, double amax)
 {
 #if defined(HAVE_AV_CONFIG_H) && defined(ASSERT_LEVEL) && ASSERT_LEVEL >= 2
     if (amin > amax) abort();
@@ -428,6 +444,9 @@ static av_always_inline av_const int av_popcount64_c(uint64_t x)
 #endif
 #ifndef av_clipf
 #   define av_clipf         av_clipf_c
+#endif
+#ifndef av_clipd
+#   define av_clipd         av_clipd_c
 #endif
 #ifndef av_popcount
 #   define av_popcount      av_popcount_c

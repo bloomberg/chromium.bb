@@ -36,8 +36,8 @@
  *  8bit  compatible version   (0)
  *  8bit  sample size
  *  8bit  history mult         (40)
- *  8bit  initial history      (14)
- *  8bit  rice param limit     (10)
+ *  8bit  initial history      (10)
+ *  8bit  rice param limit     (14)
  *  8bit  channels
  * 16bit  maxRun               (255)
  * 32bit  max coded frame size (0 means unknown)
@@ -289,10 +289,8 @@ static int decode_element(AVCodecContext *avctx, AVFrame *frame, int ch_index,
     if (!alac->nb_samples) {
         /* get output buffer */
         frame->nb_samples = output_samples;
-        if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-            av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+        if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
             return ret;
-        }
     } else if (output_samples != alac->nb_samples) {
         av_log(avctx, AV_LOG_ERROR, "sample count mismatch: %u != %d\n",
                output_samples, alac->nb_samples);
@@ -588,8 +586,7 @@ static av_cold int alac_decode_init(AVCodecContext * avctx)
     case 24:
     case 32: avctx->sample_fmt = req_packed ? AV_SAMPLE_FMT_S32 : AV_SAMPLE_FMT_S32P;
              break;
-    default: av_log_ask_for_sample(avctx, "Sample depth %d is not supported.\n",
-                                   alac->sample_size);
+    default: avpriv_request_sample(avctx, "Sample depth %d", alac->sample_size);
              return AVERROR_PATCHWELCOME;
     }
     avctx->bits_per_raw_sample = alac->sample_size;

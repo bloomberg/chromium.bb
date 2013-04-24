@@ -56,8 +56,8 @@ static const struct {
     int             is_2d_trans;
 } transforms[18] = {
     { ff_ivi_inverse_haar_8x8,  ff_ivi_dc_haar_2d,       1 },
-    { NULL, NULL, 0 }, /* inverse Haar 8x1 */
-    { NULL, NULL, 0 }, /* inverse Haar 1x8 */
+    { ff_ivi_inverse_haar_8x1,  ff_ivi_dc_haar_2d,       1 },
+    { ff_ivi_inverse_haar_1x8,  ff_ivi_dc_haar_2d,       1 },
     { ff_ivi_put_pixels_8x8,    ff_ivi_put_dc_pixel_8x8, 1 },
     { ff_ivi_inverse_slant_8x8, ff_ivi_dc_slant_2d,      1 },
     { ff_ivi_row_slant8,        ff_ivi_dc_row_slant,     1 },
@@ -331,12 +331,12 @@ static int decode_band_hdr(IVI45DecContext *ctx, IVIBandDesc *band,
             transform_id = get_bits(&ctx->gb, 5);
             if (transform_id >= FF_ARRAY_ELEMS(transforms) ||
                 !transforms[transform_id].inv_trans) {
-                av_log_ask_for_sample(avctx, "Unimplemented transform: %d!\n", transform_id);
+                avpriv_request_sample(avctx, "Transform %d", transform_id);
                 return AVERROR_PATCHWELCOME;
             }
             if ((transform_id >= 7 && transform_id <= 9) ||
                  transform_id == 17) {
-                av_log_ask_for_sample(avctx, "DCT transform not supported yet!\n");
+                avpriv_request_sample(avctx, "DCT transform");
                 return AVERROR_PATCHWELCOME;
             }
 

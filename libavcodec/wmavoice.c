@@ -1763,7 +1763,7 @@ static int synth_superframe(AVCodecContext *ctx, AVFrame *frame,
      * are really WMAPro-in-WMAVoice-superframes. I've never seen those in
      * the wild yet. */
     if (!get_bits1(gb)) {
-        av_log_missing_feature(ctx, "WMAPro-in-WMAVoice", 1);
+        avpriv_request_sample(ctx, "WMAPro-in-WMAVoice");
         return AVERROR_PATCHWELCOME;
     }
 
@@ -1799,10 +1799,8 @@ static int synth_superframe(AVCodecContext *ctx, AVFrame *frame,
 
     /* get output buffer */
     frame->nb_samples = 480;
-    if ((res = ff_get_buffer(ctx, frame)) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((res = ff_get_buffer(ctx, frame, 0)) < 0)
         return res;
-    }
     frame->nb_samples = n_samples;
     samples = (float *)frame->data[0];
 

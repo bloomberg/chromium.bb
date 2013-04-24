@@ -399,12 +399,6 @@ static av_cold int flac_encode_init(AVCodecContext *avctx)
     s->frame_count   = 0;
     s->min_framesize = s->max_framesize;
 
-#if FF_API_OLD_ENCODE_AUDIO
-    avctx->coded_frame = avcodec_alloc_frame();
-    if (!avctx->coded_frame)
-        return AVERROR(ENOMEM);
-#endif
-
     if (channels == 3 &&
             avctx->channel_layout != (AV_CH_LAYOUT_STEREO|AV_CH_FRONT_CENTER) ||
         channels == 4 &&
@@ -1276,7 +1270,7 @@ static int flac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         }
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, frame_bytes)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, frame_bytes)) < 0)
         return ret;
 
     out_bytes = write_frame(s, avpkt);
@@ -1310,9 +1304,6 @@ static av_cold int flac_encode_close(AVCodecContext *avctx)
     }
     av_freep(&avctx->extradata);
     avctx->extradata_size = 0;
-#if FF_API_OLD_ENCODE_AUDIO
-    av_freep(&avctx->coded_frame);
-#endif
     return 0;
 }
 

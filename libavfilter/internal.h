@@ -68,32 +68,12 @@ struct AVFilterPad {
     enum AVMediaType type;
 
     /**
-     * Minimum required permissions on incoming buffers. Any buffer with
-     * insufficient permissions will be automatically copied by the filter
-     * system to a new buffer which provides the needed access permissions.
-     *
-     * Input pads only.
-     */
-    int min_perms;
-
-    /**
-     * Permissions which are not accepted on incoming buffers. Any buffer
-     * which has any of these permissions set will be automatically copied
-     * by the filter system to a new buffer which does not have those
-     * permissions. This can be used to easily disallow buffers with
-     * AV_PERM_REUSE.
-     *
-     * Input pads only.
-     */
-    int rej_perms;
-
-    /**
      * Callback function to get a video buffer. If NULL, the filter system will
      * use ff_default_get_video_buffer().
      *
      * Input video pads only.
      */
-    AVFilterBufferRef *(*get_video_buffer)(AVFilterLink *link, int perms, int w, int h);
+    AVFrame *(*get_video_buffer)(AVFilterLink *link, int w, int h);
 
     /**
      * Callback function to get an audio buffer. If NULL, the filter system will
@@ -101,8 +81,7 @@ struct AVFilterPad {
      *
      * Input audio pads only.
      */
-    AVFilterBufferRef *(*get_audio_buffer)(AVFilterLink *link, int perms,
-                                           int nb_samples);
+    AVFrame *(*get_audio_buffer)(AVFilterLink *link, int nb_samples);
 
     /**
      * Filtering callback. This is where a filter receives a frame with
@@ -114,7 +93,7 @@ struct AVFilterPad {
      * must ensure that samplesref is properly unreferenced on error if it
      * hasn't been passed on to another filter.
      */
-    int (*filter_frame)(AVFilterLink *link, AVFilterBufferRef *frame);
+    int (*filter_frame)(AVFilterLink *link, AVFrame *frame);
 
     /**
      * Frame poll callback. This returns the number of immediately available
@@ -234,8 +213,6 @@ int ff_parse_channel_layout(int64_t *ret, const char *arg, void *log_ctx);
 
 void ff_update_link_current_pts(AVFilterLink *link, int64_t pts);
 
-void ff_free_pool(AVFilterPool *pool);
-
 void ff_command_queue_pop(AVFilterContext *filter);
 
 /* misc trace functions */
@@ -252,7 +229,7 @@ void ff_command_queue_pop(AVFilterContext *filter);
 
 char *ff_get_ref_perms_string(char *buf, size_t buf_size, int perms);
 
-void ff_tlog_ref(void *ctx, AVFilterBufferRef *ref, int end);
+void ff_tlog_ref(void *ctx, AVFrame *ref, int end);
 
 void ff_tlog_link(void *ctx, AVFilterLink *link, int end);
 
@@ -346,6 +323,35 @@ int ff_buffersink_read_samples_compat(AVFilterContext *ctx, AVFilterBufferRef **
  * @return >= 0 on success, a negative AVERROR on error. The receiving filter
  * is responsible for unreferencing frame in case of error.
  */
-int ff_filter_frame(AVFilterLink *link, AVFilterBufferRef *frame);
+int ff_filter_frame(AVFilterLink *link, AVFrame *frame);
+
+/**
+ * Flags for AVFilterLink.flags.
+ */
+enum {
+
+    /**
+     * Frame requests may need to loop in order to be fulfilled.
+     * A filter must set this flags on an output link if it may return 0 in
+     * request_frame() without filtering a frame.
+     */
+    FF_LINK_FLAG_REQUEST_LOOP = 1,
+
+};
+
+/**
+ * Allocate a new filter context and return it.
+ *
+ * @param filter what filter to create an instance of
+ * @param inst_name name to give to the new filter context
+ *
+ * @return newly created filter context or NULL on failure
+ */
+AVFilterContext *ff_filter_alloc(const AVFilter *filter, const char *inst_name);
+
+/**
+ * Remove a filter from a graph;
+ */
+void ff_filter_graph_remove_filter(AVFilterGraph *graph, AVFilterContext *filter);
 
 #endif /* AVFILTER_INTERNAL_H */

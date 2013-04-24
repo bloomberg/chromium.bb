@@ -45,7 +45,6 @@
 #define RIGHT_SIDE 2
 
 typedef struct SonicContext {
-    AVFrame frame;
     int lossless, decorrelation;
 
     int num_taps, downsampling;
@@ -513,6 +512,8 @@ static av_cold int sonic_encode_init(AVCodecContext *avctx)
 
     if (avctx->channels == 2)
         s->decorrelation = MID_SIDE;
+    else
+        s->decorrelation = 3;
 
     if (avctx->codec->id == AV_CODEC_ID_SONIC_LS)
     {
@@ -632,7 +633,7 @@ static int sonic_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     int ret;
     const short *samples = (const int16_t*)frame->data[0];
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, s->frame_size * 5 + 1000)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, s->frame_size * 5 + 1000)) < 0)
         return ret;
 
     init_put_bits(&pb, avpkt->data, avpkt->size);
@@ -765,9 +766,6 @@ static av_cold int sonic_decode_init(AVCodecContext *avctx)
     s->channels = avctx->channels;
     s->samplerate = avctx->sample_rate;
 
-    avcodec_get_frame_defaults(&s->frame);
-    avctx->coded_frame = &s->frame;
-
     if (!avctx->extradata)
     {
         av_log(avctx, AV_LOG_ERROR, "No mandatory headers present\n");
@@ -801,6 +799,10 @@ static av_cold int sonic_decode_init(AVCodecContext *avctx)
     if (!s->lossless)
         skip_bits(&gb, 3); // XXX FIXME
     s->decorrelation = get_bits(&gb, 2);
+    if (s->decorrelation != 3 && s->channels != 2) {
+        av_log(avctx, AV_LOG_ERROR, "invalid decorrelation %d\n", s->decorrelation);
+        return AVERROR_INVALIDDATA;
+    }
 
     s->downsampling = get_bits(&gb, 2);
     if (!s->downsampling) {
@@ -873,15 +875,14 @@ static int sonic_decode_frame(AVCodecContext *avctx,
     GetBitContext gb;
     int i, quant, ch, j, ret;
     int16_t *samples;
+    AVFrame *frame = data;
 
     if (buf_size == 0) return 0;
 
-    s->frame.nb_samples = s->frame_size;
-    if ((ret = ff_get_buffer(avctx, &s->frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    frame->nb_samples = s->frame_size / avctx->channels;
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
-    samples = (int16_t *)s->frame.data[0];
+    samples = (int16_t *)frame->data[0];
 
 //    av_log(NULL, AV_LOG_INFO, "buf_size: %d\n", buf_size);
 
@@ -954,7 +955,6 @@ static int sonic_decode_frame(AVCodecContext *avctx,
     align_get_bits(&gb);
 
     *got_frame_ptr = 1;
-    *(AVFrame*)data = s->frame;
 
     return (get_bits_count(&gb)+7)/8;
 }

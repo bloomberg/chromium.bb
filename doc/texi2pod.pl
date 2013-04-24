@@ -121,7 +121,7 @@ INF: while(<$inf>) {
         $chapters{$chapter_name} .= postprocess($chapter) if ($chapter_name);
 
         # start new chapter
-        $chapter_name = $1, push (@chapters_sequence, $chapter_name);
+        $chapter_name = $1, push (@chapters_sequence, $chapter_name) unless $skipping;
         $chapters{$chapter_name} = "" unless exists $chapters{$chapter_name};
         $chapter = "";
         $output = 1;
@@ -377,7 +377,7 @@ sub postprocess
     s/\(?\@xref\{(?:[^\}]*)\}(?:[^.<]|(?:<[^<>]*>))*\.\)?//g;
     s/\s+\(\@pxref\{(?:[^\}]*)\}\)//g;
     s/;\s+\@pxref\{(?:[^\}]*)\}//g;
-    s/\@ref\{(?:[^,]*,)(?:[^,]*,)([^,\}]*).*\}/$1/g;
+    s/\@ref\{(?:[^,\}]*,)(?:[^,\}]*,)([^,\}]*).*\}/$1/g;
     s/\@ref\{([^\}]*)\}/$1/g;
     s/\@noindent\s*//g;
     s/\@refill//g;

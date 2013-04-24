@@ -308,7 +308,7 @@ static int rtp_new_av_stream(HTTPContext *c,
 
 static const char *my_program_name;
 
-static const char *config_filename = "/etc/ffserver.conf";
+static const char *config_filename;
 
 static int ffserver_debug;
 static int no_launch;
@@ -396,14 +396,14 @@ static int resolve_host(struct in_addr *sin_addr, const char *hostname)
     return 0;
 }
 
-static char *ctime1(char *buf2)
+static char *ctime1(char *buf2, int buf_size)
 {
     time_t ti;
     char *p;
 
     ti = time(NULL);
     p = ctime(&ti);
-    strcpy(buf2, p);
+    av_strlcpy(buf2, p, buf_size);
     p = buf2 + strlen(p) - 1;
     if (*p == '\n')
         *p = '\0';
@@ -416,7 +416,7 @@ static void http_vlog(const char *fmt, va_list vargs)
     if (logfile) {
         if (print_prefix) {
             char buf[32];
-            ctime1(buf);
+            ctime1(buf, sizeof(buf));
             fprintf(logfile, "%s ", buf);
         }
         print_prefix = strstr(fmt, "\n") != NULL;
@@ -1125,7 +1125,7 @@ static int extract_rates(char *rates, int ratelen, const char *request)
         if (av_strncasecmp(p, "Pragma:", 7) == 0) {
             const char *q = p + 7;
 
-            while (*q && *q != '\n' && isspace(*q))
+            while (*q && *q != '\n' && av_isspace(*q))
                 q++;
 
             if (av_strncasecmp(q, "stream-switch-entry=", 20) == 0) {
@@ -1147,7 +1147,7 @@ static int extract_rates(char *rates, int ratelen, const char *request)
                     if (stream_no < ratelen && stream_no >= 0)
                         rates[stream_no] = rate_no;
 
-                    while (*q && *q != '\n' && !isspace(*q))
+                    while (*q && *q != '\n' && !av_isspace(*q))
                         q++;
                 }
 
@@ -1258,7 +1258,7 @@ static void get_word(char *buf, int buf_size, const char **pp)
     p = *pp;
     skip_spaces(&p);
     q = buf;
-    while (!isspace(*p) && *p != '\0') {
+    while (!av_isspace(*p) && *p != '\0') {
         if ((q - buf) < buf_size - 1)
             *q++ = *p;
         p++;
@@ -1275,7 +1275,7 @@ static void get_arg(char *buf, int buf_size, const char **pp)
     int quote;
 
     p = *pp;
-    while (isspace(*p)) p++;
+    while (av_isspace(*p)) p++;
     q = buf;
     quote = 0;
     if (*p == '\"' || *p == '\'')
@@ -1285,7 +1285,7 @@ static void get_arg(char *buf, int buf_size, const char **pp)
             if (*p == quote)
                 break;
         } else {
-            if (isspace(*p))
+            if (av_isspace(*p))
                 break;
         }
         if (*p == '\0')
@@ -1389,7 +1389,7 @@ static IPAddressACL* parse_dynamic_acl(FFStream *stream, HTTPContext *c)
             break;
         line_num++;
         p = line;
-        while (isspace(*p))
+        while (av_isspace(*p))
             p++;
         if (*p == '\0' || *p == '#')
             continue;
@@ -1540,7 +1540,7 @@ static int http_parse_request(HTTPContext *c)
     for (p = c->buffer; *p && *p != '\r' && *p != '\n'; ) {
         if (av_strncasecmp(p, "User-Agent:", 11) == 0) {
             useragent = p + 11;
-            if (*useragent && *useragent != '\n' && isspace(*useragent))
+            if (*useragent && *useragent != '\n' && av_isspace(*useragent))
                 useragent++;
             break;
         }
@@ -1668,7 +1668,7 @@ static int http_parse_request(HTTPContext *c)
             char *eoh;
             char hostbuf[260];
 
-            while (isspace(*hostinfo))
+            while (av_isspace(*hostinfo))
                 hostinfo++;
 
             eoh = strchr(hostinfo, '\n');
@@ -4100,7 +4100,7 @@ static int parse_ffconfig(const char *filename)
             break;
         line_num++;
         p = line;
-        while (isspace(*p))
+        while (av_isspace(*p))
             p++;
         if (*p == '\0' || *p == '#')
             continue;
@@ -4237,7 +4237,7 @@ static int parse_ffconfig(const char *filename)
                 get_arg(arg, sizeof(arg), &p);
                 p1 = arg;
                 fsize = strtod(p1, &p1);
-                switch(toupper(*p1)) {
+                switch(av_toupper(*p1)) {
                 case 'K':
                     fsize *= 1024;
                     break;
@@ -4545,14 +4545,6 @@ static int parse_ffconfig(const char *filename)
                     ERROR("VideoQMin out of range\n");
                 }
             }
-        } else if (!av_strcasecmp(cmd, "LumaElim")) {
-            get_arg(arg, sizeof(arg), &p);
-            if (stream)
-                video_enc.luma_elim_threshold = atoi(arg);
-        } else if (!av_strcasecmp(cmd, "ChromaElim")) {
-            get_arg(arg, sizeof(arg), &p);
-            if (stream)
-                video_enc.chroma_elim_threshold = atoi(arg);
         } else if (!av_strcasecmp(cmd, "LumiMask")) {
             get_arg(arg, sizeof(arg), &p);
             if (stream)
@@ -4724,6 +4716,9 @@ int main(int argc, char **argv)
 
     parse_options(NULL, argc, argv, options, NULL);
 
+    if (!config_filename)
+        config_filename = av_strdup("/etc/ffserver.conf");
+
     unsetenv("http_proxy");             /* Kill the http_proxy */
 
     av_lfg_init(&random_state, av_get_random_seed());
@@ -4736,6 +4731,7 @@ int main(int argc, char **argv)
         fprintf(stderr, "Incorrect config file - exiting.\n");
         exit(1);
     }
+    av_freep(&config_filename);
 
     /* open log file if needed */
     if (logfilename[0] != '\0') {

@@ -225,13 +225,20 @@ enum AVPixelFormat av_pix_fmt_desc_get_id(const AVPixFmtDescriptor *desc);
  * you do check the return code!
  *
  * @param[in]  pix_fmt the pixel format
- * @param[out] h_shift store log2_chroma_h
- * @param[out] v_shift store log2_chroma_w
+ * @param[out] h_shift store log2_chroma_w
+ * @param[out] v_shift store log2_chroma_h
  *
  * @return 0 on success, AVERROR(ENOSYS) on invalid or unknown pixel format
  */
 int av_pix_fmt_get_chroma_sub_sample(enum AVPixelFormat pix_fmt,
                                      int *h_shift, int *v_shift);
 
+/**
+ * @return number of planes in pix_fmt, a negative AVERROR if pix_fmt is not a
+ * valid pixel format.
+ */
+int av_pix_fmt_count_planes(enum AVPixelFormat pix_fmt);
+
+void ff_check_pixfmt_descriptors(void);
 
 #endif /* AVUTIL_PIXDESC_H */

@@ -72,6 +72,7 @@ static const char *const var_names[] = {
     "text_w", "tw",           ///< width  of the rendered text
     "x",
     "y",
+    "pict_type",
     NULL
 };
 
@@ -108,6 +109,7 @@ enum var_name {
     VAR_TEXT_W, VAR_TW,
     VAR_X,
     VAR_Y,
+    VAR_PICT_TYPE,
     VAR_VARS_NB
 };
 
@@ -164,7 +166,6 @@ typedef struct {
     AVRational  tc_rate;            ///< frame rate for timecode
     AVTimecode  tc;                 ///< timecode context
     int tc24hmax;                   ///< 1 if timecode is wrapped to 24 hours, 0 otherwise
-    int frame_id;
     int reload;                     ///< reload text file for each frame
 } DrawTextContext;
 
@@ -172,53 +173,53 @@ typedef struct {
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 
 static const AVOption drawtext_options[]= {
-{"fontfile", "set font file",        OFFSET(fontfile),           AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
-{"text",     "set text",             OFFSET(text),               AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
-{"textfile", "set text file",        OFFSET(textfile),           AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
-{"fontcolor",   "set foreground color", OFFSET(fontcolor_string),   AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, FLAGS},
-{"boxcolor",    "set box color",        OFFSET(boxcolor_string),    AV_OPT_TYPE_STRING, {.str="white"}, CHAR_MIN, CHAR_MAX, FLAGS},
-{"shadowcolor", "set shadow color",     OFFSET(shadowcolor_string), AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, FLAGS},
-{"box",      "set box",              OFFSET(draw_box),           AV_OPT_TYPE_INT,    {.i64=0},     0,        1       , FLAGS},
-{"fontsize", "set font size",        OFFSET(fontsize),           AV_OPT_TYPE_INT,    {.i64=0},     0,        INT_MAX , FLAGS},
-{"x",        "set x expression",     OFFSET(x_expr),             AV_OPT_TYPE_STRING, {.str="0"},   CHAR_MIN, CHAR_MAX, FLAGS},
-{"y",        "set y expression",     OFFSET(y_expr),             AV_OPT_TYPE_STRING, {.str="0"},   CHAR_MIN, CHAR_MAX, FLAGS},
-{"shadowx",  "set x",                OFFSET(shadowx),            AV_OPT_TYPE_INT,    {.i64=0},     INT_MIN,  INT_MAX , FLAGS},
-{"shadowy",  "set y",                OFFSET(shadowy),            AV_OPT_TYPE_INT,    {.i64=0},     INT_MIN,  INT_MAX , FLAGS},
-{"tabsize",  "set tab size",         OFFSET(tabsize),            AV_OPT_TYPE_INT,    {.i64=4},     0,        INT_MAX , FLAGS},
-{"basetime", "set base time",        OFFSET(basetime),           AV_OPT_TYPE_INT64,  {.i64=AV_NOPTS_VALUE}, INT64_MIN, INT64_MAX , FLAGS},
-{"draw",     "if false do not draw", OFFSET(draw_expr),          AV_OPT_TYPE_STRING, {.str="1"},   CHAR_MIN, CHAR_MAX, FLAGS},
+    {"fontfile",    "set font file",        OFFSET(fontfile),           AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
+    {"text",        "set text",             OFFSET(text),               AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
+    {"textfile",    "set text file",        OFFSET(textfile),           AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
+    {"fontcolor",   "set foreground color", OFFSET(fontcolor_string),   AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, FLAGS},
+    {"boxcolor",    "set box color",        OFFSET(boxcolor_string),    AV_OPT_TYPE_STRING, {.str="white"}, CHAR_MIN, CHAR_MAX, FLAGS},
+    {"shadowcolor", "set shadow color",     OFFSET(shadowcolor_string), AV_OPT_TYPE_STRING, {.str="black"}, CHAR_MIN, CHAR_MAX, FLAGS},
+    {"box",         "set box",              OFFSET(draw_box),           AV_OPT_TYPE_INT,    {.i64=0},     0,        1       , FLAGS},
+    {"fontsize",    "set font size",        OFFSET(fontsize),           AV_OPT_TYPE_INT,    {.i64=0},     0,        INT_MAX , FLAGS},
+    {"x",           "set x expression",     OFFSET(x_expr),             AV_OPT_TYPE_STRING, {.str="0"},   CHAR_MIN, CHAR_MAX, FLAGS},
+    {"y",           "set y expression",     OFFSET(y_expr),             AV_OPT_TYPE_STRING, {.str="0"},   CHAR_MIN, CHAR_MAX, FLAGS},
+    {"shadowx",     "set x",                OFFSET(shadowx),            AV_OPT_TYPE_INT,    {.i64=0},     INT_MIN,  INT_MAX , FLAGS},
+    {"shadowy",     "set y",                OFFSET(shadowy),            AV_OPT_TYPE_INT,    {.i64=0},     INT_MIN,  INT_MAX , FLAGS},
+    {"tabsize",     "set tab size",         OFFSET(tabsize),            AV_OPT_TYPE_INT,    {.i64=4},     0,        INT_MAX , FLAGS},
+    {"basetime",    "set base time",        OFFSET(basetime),           AV_OPT_TYPE_INT64,  {.i64=AV_NOPTS_VALUE}, INT64_MIN, INT64_MAX , FLAGS},
+    {"draw",        "if false do not draw", OFFSET(draw_expr),          AV_OPT_TYPE_STRING, {.str="1"},   CHAR_MIN, CHAR_MAX, FLAGS},
 
-{"expansion","set the expansion mode", OFFSET(exp_mode),         AV_OPT_TYPE_INT,    {.i64=EXP_NORMAL},   0,        2, FLAGS, "expansion"},
-{"none",     "set no expansion",     OFFSET(exp_mode),           AV_OPT_TYPE_CONST,  {.i64=EXP_NONE},     0,        0, FLAGS, "expansion"},
-{"normal",   "set normal expansion", OFFSET(exp_mode),           AV_OPT_TYPE_CONST,  {.i64=EXP_NORMAL},   0,        0, FLAGS, "expansion"},
-{"strftime", "set strftime expansion (deprecated)", OFFSET(exp_mode), AV_OPT_TYPE_CONST, {.i64=EXP_STRFTIME}, 0,    0, FLAGS, "expansion"},
+    {"expansion", "set the expansion mode", OFFSET(exp_mode), AV_OPT_TYPE_INT, {.i64=EXP_NORMAL}, 0, 2, FLAGS, "expansion"},
+        {"none",     "set no expansion",                    OFFSET(exp_mode), AV_OPT_TYPE_CONST, {.i64=EXP_NONE},     0, 0, FLAGS, "expansion"},
+        {"normal",   "set normal expansion",                OFFSET(exp_mode), AV_OPT_TYPE_CONST, {.i64=EXP_NORMAL},   0, 0, FLAGS, "expansion"},
+        {"strftime", "set strftime expansion (deprecated)", OFFSET(exp_mode), AV_OPT_TYPE_CONST, {.i64=EXP_STRFTIME}, 0, 0, FLAGS, "expansion"},
 
-{"timecode", "set initial timecode", OFFSET(tc_opt_string),      AV_OPT_TYPE_STRING, {.str=NULL},  CHAR_MIN, CHAR_MAX, FLAGS},
-{"tc24hmax", "set 24 hours max (timecode only)", OFFSET(tc24hmax), AV_OPT_TYPE_INT,  {.i64=0},            0,        1, FLAGS},
-{"timecode_rate", "set rate (timecode only)", OFFSET(tc_rate),   AV_OPT_TYPE_RATIONAL, {.dbl=0},          0,  INT_MAX, FLAGS},
-{"r",        "set rate (timecode only)", OFFSET(tc_rate),        AV_OPT_TYPE_RATIONAL, {.dbl=0},          0,  INT_MAX, FLAGS},
-{"rate",     "set rate (timecode only)", OFFSET(tc_rate),        AV_OPT_TYPE_RATIONAL, {.dbl=0},          0,  INT_MAX, FLAGS},
-{"reload",   "reload text file for each frame", OFFSET(reload),  AV_OPT_TYPE_INT,    {.i64=0},            0,        1, FLAGS},
-{"fix_bounds", "if true, check and fix text coords to avoid clipping", OFFSET(fix_bounds), AV_OPT_TYPE_INT, {.i64=1}, 0, 1, FLAGS},
+    {"timecode",        "set initial timecode",             OFFSET(tc_opt_string), AV_OPT_TYPE_STRING,   {.str=NULL}, CHAR_MIN, CHAR_MAX, FLAGS},
+    {"tc24hmax",        "set 24 hours max (timecode only)", OFFSET(tc24hmax),      AV_OPT_TYPE_INT,      {.i64=0},           0,        1, FLAGS},
+    {"timecode_rate",   "set rate (timecode only)",         OFFSET(tc_rate),       AV_OPT_TYPE_RATIONAL, {.dbl=0},           0,  INT_MAX, FLAGS},
+    {"r",               "set rate (timecode only)",         OFFSET(tc_rate),       AV_OPT_TYPE_RATIONAL, {.dbl=0},           0,  INT_MAX, FLAGS},
+    {"rate",            "set rate (timecode only)",         OFFSET(tc_rate),       AV_OPT_TYPE_RATIONAL, {.dbl=0},           0,  INT_MAX, FLAGS},
+    {"reload",     "reload text file for each frame",                       OFFSET(reload),     AV_OPT_TYPE_INT, {.i64=0}, 0, 1, FLAGS},
+    {"fix_bounds", "if true, check and fix text coords to avoid clipping",  OFFSET(fix_bounds), AV_OPT_TYPE_INT, {.i64=1}, 0, 1, FLAGS},
 
-/* FT_LOAD_* flags */
-{"ft_load_flags", "set font loading flags for libfreetype",   OFFSET(ft_load_flags),  AV_OPT_TYPE_FLAGS,  {.i64=FT_LOAD_DEFAULT|FT_LOAD_RENDER}, 0, INT_MAX, FLAGS, "ft_load_flags"},
-{"default",                     "set default",                     0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_DEFAULT},                     INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"no_scale",                    "set no_scale",                    0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_NO_SCALE},                    INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"no_hinting",                  "set no_hinting",                  0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_NO_HINTING},                  INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"render",                      "set render",                      0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_RENDER},                      INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"no_bitmap",                   "set no_bitmap",                   0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_NO_BITMAP},                   INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"vertical_layout",             "set vertical_layout",             0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_VERTICAL_LAYOUT},             INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"force_autohint",              "set force_autohint",              0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_FORCE_AUTOHINT},              INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"crop_bitmap",                 "set crop_bitmap",                 0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_CROP_BITMAP},                 INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"pedantic",                    "set pedantic",                    0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_PEDANTIC},                    INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"ignore_global_advance_width", "set ignore_global_advance_width", 0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH}, INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"no_recurse",                  "set no_recurse",                  0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_NO_RECURSE},                  INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"ignore_transform",            "set ignore_transform",            0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_IGNORE_TRANSFORM},            INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"monochrome",                  "set monochrome",                  0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_MONOCHROME},                  INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"linear_design",               "set linear_design",               0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_LINEAR_DESIGN},               INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{"no_autohint",                 "set no_autohint",                 0, AV_OPT_TYPE_CONST, {.i64=FT_LOAD_NO_AUTOHINT},                 INT_MIN, INT_MAX, FLAGS, "ft_load_flags"},
-{NULL},
+    /* FT_LOAD_* flags */
+    { "ft_load_flags", "set font loading flags for libfreetype", OFFSET(ft_load_flags), AV_OPT_TYPE_FLAGS, { .i64 = FT_LOAD_DEFAULT | FT_LOAD_RENDER}, 0, INT_MAX, FLAGS, "ft_load_flags" },
+        { "default",                     NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_DEFAULT },                     .flags = FLAGS, .unit = "ft_load_flags" },
+        { "no_scale",                    NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_NO_SCALE },                    .flags = FLAGS, .unit = "ft_load_flags" },
+        { "no_hinting",                  NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_NO_HINTING },                  .flags = FLAGS, .unit = "ft_load_flags" },
+        { "render",                      NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_RENDER },                      .flags = FLAGS, .unit = "ft_load_flags" },
+        { "no_bitmap",                   NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_NO_BITMAP },                   .flags = FLAGS, .unit = "ft_load_flags" },
+        { "vertical_layout",             NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_VERTICAL_LAYOUT },             .flags = FLAGS, .unit = "ft_load_flags" },
+        { "force_autohint",              NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_FORCE_AUTOHINT },              .flags = FLAGS, .unit = "ft_load_flags" },
+        { "crop_bitmap",                 NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_CROP_BITMAP },                 .flags = FLAGS, .unit = "ft_load_flags" },
+        { "pedantic",                    NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_PEDANTIC },                    .flags = FLAGS, .unit = "ft_load_flags" },
+        { "ignore_global_advance_width", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_IGNORE_GLOBAL_ADVANCE_WIDTH }, .flags = FLAGS, .unit = "ft_load_flags" },
+        { "no_recurse",                  NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_NO_RECURSE },                  .flags = FLAGS, .unit = "ft_load_flags" },
+        { "ignore_transform",            NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_IGNORE_TRANSFORM },            .flags = FLAGS, .unit = "ft_load_flags" },
+        { "monochrome",                  NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_MONOCHROME },                  .flags = FLAGS, .unit = "ft_load_flags" },
+        { "linear_design",               NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_LINEAR_DESIGN },               .flags = FLAGS, .unit = "ft_load_flags" },
+        { "no_autohint",                 NULL, 0, AV_OPT_TYPE_CONST, { .i64 = FT_LOAD_NO_AUTOHINT },                 .flags = FLAGS, .unit = "ft_load_flags" },
+    { NULL},
 };
 
 AVFILTER_DEFINE_CLASS(drawtext);
@@ -416,17 +417,11 @@ static int load_textfile(AVFilterContext *ctx)
     return 0;
 }
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
     int err;
     DrawTextContext *dtext = ctx->priv;
     Glyph *glyph;
-
-    dtext->class = &drawtext_class;
-    av_opt_set_defaults(dtext);
-
-    if ((err = av_set_options_string(dtext, args, "=", ":")) < 0)
-        return err;
 
     if (!dtext->fontfile && !CONFIG_FONTCONFIG) {
         av_log(ctx, AV_LOG_ERROR, "No font filename provided\n");
@@ -542,10 +537,10 @@ static av_cold void uninit(AVFilterContext *ctx)
     av_expr_free(dtext->x_pexpr); dtext->x_pexpr = NULL;
     av_expr_free(dtext->y_pexpr); dtext->y_pexpr = NULL;
     av_expr_free(dtext->draw_pexpr); dtext->draw_pexpr = NULL;
-    av_opt_free(dtext);
 
     av_freep(&dtext->positions);
     dtext->nb_positions = 0;
+
 
     av_tree_enumerate(dtext->glyphs, NULL, NULL, glyph_enu_free);
     av_tree_destroy(dtext->glyphs);
@@ -607,12 +602,21 @@ static int command(AVFilterContext *ctx, const char *cmd, const char *arg, char 
         int ret;
         uninit(ctx);
         dtext->reinit = 1;
-        if ((ret = init(ctx, arg)) < 0)
+        if ((ret = init(ctx)) < 0)
             return ret;
         return config_input(ctx->inputs[0]);
     }
 
     return AVERROR(ENOSYS);
+}
+
+static int func_pict_type(AVFilterContext *ctx, AVBPrint *bp,
+                          char *fct, unsigned argc, char **argv, int tag)
+{
+    DrawTextContext *dtext = ctx->priv;
+
+    av_bprintf(bp, "%c", av_get_picture_type_char(dtext->var_values[VAR_PICT_TYPE]));
+    return 0;
 }
 
 static int func_pts(AVFilterContext *ctx, AVBPrint *bp,
@@ -684,6 +688,7 @@ static const struct drawtext_function {
 } functions[] = {
     { "expr",      1, 1, 0,   func_eval_expr },
     { "e",         1, 1, 0,   func_eval_expr },
+    { "pict_type", 0, 0, 0,   func_pict_type },
     { "pts",       0, 0, 0,   func_pts      },
     { "gmtime",    0, 1, 'G', func_strftime },
     { "localtime", 0, 1, 'L', func_strftime },
@@ -784,7 +789,7 @@ static int expand_text(AVFilterContext *ctx)
     return 0;
 }
 
-static int draw_glyphs(DrawTextContext *dtext, AVFilterBufferRef *picref,
+static int draw_glyphs(DrawTextContext *dtext, AVFrame *frame,
                        int width, int height, const uint8_t rgbcolor[4], FFDrawColor *color, int x, int y)
 {
     char *text = dtext->expanded_text.str;
@@ -812,7 +817,7 @@ static int draw_glyphs(DrawTextContext *dtext, AVFilterBufferRef *picref,
         y1 = dtext->positions[i].y+dtext->y+y;
 
         ff_blend_mask(&dtext->dc, color,
-                      picref->data, picref->linesize, width, height,
+                      frame->data, frame->linesize, width, height,
                       glyph->bitmap.buffer, glyph->bitmap.pitch,
                       glyph->bitmap.width, glyph->bitmap.rows,
                       glyph->bitmap.pixel_mode == FT_PIXEL_MODE_MONO ? 0 : 3,
@@ -822,10 +827,11 @@ static int draw_glyphs(DrawTextContext *dtext, AVFilterBufferRef *picref,
     return 0;
 }
 
-static int draw_text(AVFilterContext *ctx, AVFilterBufferRef *picref,
+static int draw_text(AVFilterContext *ctx, AVFrame *frame,
                      int width, int height)
 {
     DrawTextContext *dtext = ctx->priv;
+    AVFilterLink *inlink = ctx->inputs[0];
     uint32_t code = 0, prev_code = 0;
     int x = 0, y = 0, i = 0, ret;
     int max_text_line_w = 0, len;
@@ -845,7 +851,7 @@ static int draw_text(AVFilterContext *ctx, AVFilterBufferRef *picref,
     av_bprint_clear(bp);
 
     if(dtext->basetime != AV_NOPTS_VALUE)
-        now= picref->pts*av_q2d(ctx->inputs[0]->time_base) + dtext->basetime/1000000;
+        now= frame->pts*av_q2d(ctx->inputs[0]->time_base) + dtext->basetime/1000000;
 
     switch (dtext->exp_mode) {
     case EXP_NONE:
@@ -863,7 +869,7 @@ static int draw_text(AVFilterContext *ctx, AVFilterBufferRef *picref,
 
     if (dtext->tc_opt_string) {
         char tcbuf[AV_TIMECODE_STR_SIZE];
-        av_timecode_make_string(&dtext->tc, tcbuf, dtext->frame_id++);
+        av_timecode_make_string(&dtext->tc, tcbuf, inlink->frame_count);
         av_bprint_clear(bp);
         av_bprintf(bp, "%s%s", dtext->text, tcbuf);
     }
@@ -962,23 +968,23 @@ static int draw_text(AVFilterContext *ctx, AVFilterBufferRef *picref,
     /* draw box */
     if (dtext->draw_box)
         ff_blend_rectangle(&dtext->dc, &dtext->boxcolor,
-                           picref->data, picref->linesize, width, height,
+                           frame->data, frame->linesize, width, height,
                            dtext->x, dtext->y, box_w, box_h);
 
     if (dtext->shadowx || dtext->shadowy) {
-        if ((ret = draw_glyphs(dtext, picref, width, height, dtext->shadowcolor.rgba,
+        if ((ret = draw_glyphs(dtext, frame, width, height, dtext->shadowcolor.rgba,
                                &dtext->shadowcolor, dtext->shadowx, dtext->shadowy)) < 0)
             return ret;
     }
 
-    if ((ret = draw_glyphs(dtext, picref, width, height, dtext->fontcolor.rgba,
+    if ((ret = draw_glyphs(dtext, frame, width, height, dtext->fontcolor.rgba,
                            &dtext->fontcolor, 0, 0)) < 0)
         return ret;
 
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
+static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
@@ -989,17 +995,18 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
         if ((ret = load_textfile(ctx)) < 0)
             return ret;
 
+    dtext->var_values[VAR_N] = inlink->frame_count;
     dtext->var_values[VAR_T] = frame->pts == AV_NOPTS_VALUE ?
         NAN : frame->pts * av_q2d(inlink->time_base);
 
-    draw_text(ctx, frame, frame->video->w, frame->video->h);
+    dtext->var_values[VAR_PICT_TYPE] = frame->pict_type;
+
+    draw_text(ctx, frame, frame->width, frame->height);
 
     av_log(ctx, AV_LOG_DEBUG, "n:%d t:%f text_w:%d text_h:%d x:%d y:%d\n",
            (int)dtext->var_values[VAR_N], dtext->var_values[VAR_T],
            (int)dtext->var_values[VAR_TEXT_W], (int)dtext->var_values[VAR_TEXT_H],
            dtext->x, dtext->y);
-
-    dtext->var_values[VAR_N] += 1.0;
 
     return ff_filter_frame(outlink, frame);
 }
@@ -1011,8 +1018,7 @@ static const AVFilterPad avfilter_vf_drawtext_inputs[] = {
         .get_video_buffer = ff_null_get_video_buffer,
         .filter_frame     = filter_frame,
         .config_props     = config_input,
-        .min_perms        = AV_PERM_WRITE |
-                            AV_PERM_READ,
+        .needs_writable   = 1,
     },
     { NULL }
 };
@@ -1029,6 +1035,7 @@ AVFilter avfilter_vf_drawtext = {
     .name          = "drawtext",
     .description   = NULL_IF_CONFIG_SMALL("Draw text on top of video frames using libfreetype library."),
     .priv_size     = sizeof(DrawTextContext),
+    .priv_class    = &drawtext_class,
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
@@ -1036,5 +1043,4 @@ AVFilter avfilter_vf_drawtext = {
     .inputs    = avfilter_vf_drawtext_inputs,
     .outputs   = avfilter_vf_drawtext_outputs,
     .process_command = command,
-    .priv_class = &drawtext_class,
 };

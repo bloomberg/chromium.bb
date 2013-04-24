@@ -532,23 +532,23 @@ static int rgbToPlanarRgbWrapper(SwsContext *c, const uint8_t *src[],
                           dst[1] + srcSliceY * dstStride[1] };
 
     switch (c->srcFormat) {
-    case PIX_FMT_RGB24:
+    case AV_PIX_FMT_RGB24:
         packedtogbr24p((const uint8_t *) src[0], srcStride[0], dst201,
                        stride201, srcSliceH, alpha_first, 3, c->srcW);
         break;
-    case PIX_FMT_BGR24:
+    case AV_PIX_FMT_BGR24:
         packedtogbr24p((const uint8_t *) src[0], srcStride[0], dst102,
                        stride102, srcSliceH, alpha_first, 3, c->srcW);
         break;
-    case PIX_FMT_ARGB:
+    case AV_PIX_FMT_ARGB:
         alpha_first = 1;
-    case PIX_FMT_RGBA:
+    case AV_PIX_FMT_RGBA:
         packedtogbr24p((const uint8_t *) src[0], srcStride[0], dst201,
                        stride201, srcSliceH, alpha_first, 4, c->srcW);
         break;
-    case PIX_FMT_ABGR:
+    case AV_PIX_FMT_ABGR:
         alpha_first = 1;
-    case PIX_FMT_BGRA:
+    case AV_PIX_FMT_BGRA:
         packedtogbr24p((const uint8_t *) src[0], srcStride[0], dst102,
                        stride102, srcSliceH, alpha_first, 4, c->srcW);
         break;
@@ -746,13 +746,14 @@ static int bgr24ToYv12Wrapper(SwsContext *c, const uint8_t *src[],
                               int srcStride[], int srcSliceY, int srcSliceH,
                               uint8_t *dst[], int dstStride[])
 {
-    rgb24toyv12(
+    ff_rgb24toyv12(
         src[0],
         dst[0] +  srcSliceY       * dstStride[0],
         dst[1] + (srcSliceY >> 1) * dstStride[1],
         dst[2] + (srcSliceY >> 1) * dstStride[2],
         c->srcW, srcSliceH,
-        dstStride[0], dstStride[1], srcStride[0]);
+        dstStride[0], dstStride[1], srcStride[0],
+        c->input_rgb2yuv_table);
     if (dst[3])
         fillPlane(dst[3], dstStride[3], c->srcW, srcSliceH, srcSliceY, 255);
     return srcSliceH;

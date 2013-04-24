@@ -27,6 +27,7 @@
 #include "libavutil/eval.h"
 #include "libavutil/internal.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/opt.h"
 #include "libavutil/time.h"
 #include "avfilter.h"
 #include "internal.h"
@@ -78,19 +79,21 @@ enum var_name {
 };
 
 typedef struct {
+    const AVClass *class;
+    char *expr_str;
     AVExpr *expr;
     double var_values[VAR_VARS_NB];
     enum AVMediaType type;
 } SetPTSContext;
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
     SetPTSContext *setpts = ctx->priv;
     int ret;
 
-    if ((ret = av_expr_parse(&setpts->expr, args ? args : "PTS",
+    if ((ret = av_expr_parse(&setpts->expr, setpts->expr_str,
                              var_names, NULL, NULL, NULL, NULL, 0, ctx)) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Error while parsing expression '%s'\n", args);
+        av_log(ctx, AV_LOG_ERROR, "Error while parsing expression '%s'\n", setpts->expr_str);
         return ret;
     }
 
@@ -138,7 +141,7 @@ static inline char *double2int64str(char *buf, double v)
 
 #define d2istr(v) double2int64str((char[BUF_SIZE]){0}, v)
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
+static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
     SetPTSContext *setpts = inlink->dst->priv;
     int64_t in_pts = frame->pts;
@@ -150,16 +153,16 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
     }
     setpts->var_values[VAR_PTS       ] = TS2D(frame->pts);
     setpts->var_values[VAR_T         ] = TS2T(frame->pts, inlink->time_base);
-    setpts->var_values[VAR_POS       ] = frame->pos == -1 ? NAN : frame->pos;
+    setpts->var_values[VAR_POS       ] = av_frame_get_pkt_pos(frame) == -1 ? NAN : av_frame_get_pkt_pos(frame);
     setpts->var_values[VAR_RTCTIME   ] = av_gettime();
 
     switch (inlink->type) {
     case AVMEDIA_TYPE_VIDEO:
-        setpts->var_values[VAR_INTERLACED] = frame->video->interlaced;
+        setpts->var_values[VAR_INTERLACED] = frame->interlaced_frame;
         break;
 
     case AVMEDIA_TYPE_AUDIO:
-        setpts->var_values[VAR_NB_SAMPLES] = frame->audio->nb_samples;
+        setpts->var_values[VAR_NB_SAMPLES] = frame->nb_samples;
         break;
     }
 
@@ -192,7 +195,7 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *frame)
     setpts->var_values[VAR_PREV_OUTT]   = TS2T(frame->pts, inlink->time_base);
     setpts->var_values[VAR_N] += 1.0;
     if (setpts->type == AVMEDIA_TYPE_AUDIO) {
-        setpts->var_values[VAR_NB_CONSUMED_SAMPLES] += frame->audio->nb_samples;
+        setpts->var_values[VAR_NB_CONSUMED_SAMPLES] += frame->nb_samples;
     }
     return ff_filter_frame(inlink->dst->outputs[0], frame);
 }
@@ -205,6 +208,21 @@ static av_cold void uninit(AVFilterContext *ctx)
 }
 
 #if CONFIG_ASETPTS_FILTER
+
+#define OFFSET(x) offsetof(SetPTSContext, x)
+#define AFLAGS AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
+static const AVOption aoptions[] = {
+    { "expr", "Expression determining the frame timestamp", OFFSET(expr_str), AV_OPT_TYPE_STRING, { .str = "PTS" }, .flags = AFLAGS },
+    { NULL },
+};
+
+static const AVClass asetpts_class = {
+    .class_name = "asetpts",
+    .item_name  = av_default_item_name,
+    .option     = aoptions,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 static const AVFilterPad avfilter_af_asetpts_inputs[] = {
     {
         .name             = "default",
@@ -230,12 +248,28 @@ AVFilter avfilter_af_asetpts = {
     .init      = init,
     .uninit    = uninit,
     .priv_size = sizeof(SetPTSContext),
+    .priv_class= &asetpts_class,
     .inputs    = avfilter_af_asetpts_inputs,
     .outputs   = avfilter_af_asetpts_outputs,
 };
 #endif /* CONFIG_ASETPTS_FILTER */
 
 #if CONFIG_SETPTS_FILTER
+
+#define OFFSET(x) offsetof(SetPTSContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
+static const AVOption options[] = {
+    { "expr", "Expression determining the frame timestamp", OFFSET(expr_str), AV_OPT_TYPE_STRING, { .str = "PTS" }, .flags = FLAGS },
+    { NULL },
+};
+
+static const AVClass setpts_class = {
+    .class_name = "setpts",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 static const AVFilterPad avfilter_vf_setpts_inputs[] = {
     {
         .name             = "default",
@@ -262,6 +296,7 @@ AVFilter avfilter_vf_setpts = {
     .uninit    = uninit,
 
     .priv_size = sizeof(SetPTSContext),
+    .priv_class = &setpts_class,
 
     .inputs    = avfilter_vf_setpts_inputs,
     .outputs   = avfilter_vf_setpts_outputs,

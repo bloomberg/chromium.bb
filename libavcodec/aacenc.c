@@ -570,10 +570,8 @@ static int aac_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         }
         start_ch += chans;
     }
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 8192 * s->channels))) {
-        av_log(avctx, AV_LOG_ERROR, "Error getting output packet\n");
+    if ((ret = ff_alloc_packet2(avctx, avpkt, 8192 * s->channels)) < 0)
         return ret;
-    }
     do {
         int frame_bits;
 
@@ -681,9 +679,6 @@ static av_cold int aac_encode_end(AVCodecContext *avctx)
     av_freep(&s->buffer.samples);
     av_freep(&s->cpe);
     ff_af_queue_close(&s->afq);
-#if FF_API_OLD_ENCODE_AUDIO
-    av_freep(&avctx->coded_frame);
-#endif
     return 0;
 }
 
@@ -716,11 +711,6 @@ static av_cold int alloc_buffers(AVCodecContext *avctx, AACEncContext *s)
 
     for(ch = 0; ch < s->channels; ch++)
         s->planar_samples[ch] = s->buffer.samples + 3 * 1024 * ch;
-
-#if FF_API_OLD_ENCODE_AUDIO
-    if (!(avctx->coded_frame = avcodec_alloc_frame()))
-        goto alloc_fail;
-#endif
 
     return 0;
 alloc_fail:
@@ -775,6 +765,9 @@ static av_cold int aac_encode_init(AVCodecContext *avctx)
         goto fail;
     s->psypp = ff_psy_preprocess_init(avctx);
     s->coder = &ff_aac_coders[s->options.aac_coder];
+
+    if (HAVE_MIPSDSPR1)
+        ff_aac_coder_init_mips(s);
 
     s->lambda = avctx->global_quality ? avctx->global_quality : 120;
 

@@ -35,6 +35,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/common.h"
 #include "libavutil/cpu.h"
+#include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
@@ -42,17 +43,6 @@
 #include "gradfun.h"
 #include "internal.h"
 #include "video.h"
-
-#define OFFSET(x) offsetof(GradFunContext, x)
-#define F AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
-
-static const AVOption gradfun_options[] = {
-    { "strength", "set the maximum amount by which the filter will change any one pixel", OFFSET(strength), AV_OPT_TYPE_DOUBLE, {.dbl = 1.2}, 0.51, 64, F },
-    { "radius",   "set the neighborhood to fit the gradient to",                          OFFSET(radius),   AV_OPT_TYPE_INT,    {.i64 =  16},    4, 32, F },
-    { NULL }
-};
-
-AVFILTER_DEFINE_CLASS(gradfun);
 
 DECLARE_ALIGNED(16, static const uint16_t, dither)[8][8] = {
     {0x00,0x60,0x18,0x78,0x06,0x66,0x1E,0x7E},
@@ -131,20 +121,12 @@ static void filter(GradFunContext *ctx, uint8_t *dst, const uint8_t *src, int wi
     }
 }
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
-    int ret;
     GradFunContext *gf = ctx->priv;
-    static const char *shorthand[] = { "strength", "radius", NULL };
 
-    gf->class = &gradfun_class;
-    av_opt_set_defaults(gf);
-
-    if ((ret = av_opt_set_from_string(gf, args, shorthand, "=", ":")) < 0)
-        return ret;
-
-    gf->thresh = (1 << 15) / gf->strength;
-    gf->radius = av_clip((gf->radius + 1) & ~1, 4, 32);
+    gf->thresh  = (1 << 15) / gf->strength;
+    gf->radius  = av_clip((gf->radius + 1) & ~1, 4, 32);
 
     gf->blur_line   = ff_gradfun_blur_line_c;
     gf->filter_line = ff_gradfun_filter_line_c;
@@ -197,23 +179,24 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
+static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     GradFunContext *gf = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
-    AVFilterBufferRef *out;
-    int p, direct = 0;
+    AVFrame *out;
+    int p, direct;
 
-    if (in->perms & AV_PERM_WRITE) {
+    if (av_frame_is_writable(in)) {
         direct = 1;
         out = in;
     } else {
-        out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+        direct = 0;
+        out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            avfilter_unref_bufferp(&in);
+            av_frame_free(&in);
             return AVERROR(ENOMEM);
         }
-        avfilter_copy_buffer_ref_props(out, in);
+        av_frame_copy_props(out, in);
     }
 
     for (p = 0; p < 4 && in->data[p]; p++) {
@@ -233,10 +216,21 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
     }
 
     if (!direct)
-        avfilter_unref_bufferp(&in);
+        av_frame_free(&in);
 
     return ff_filter_frame(outlink, out);
 }
+
+#define OFFSET(x) offsetof(GradFunContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+
+static const AVOption gradfun_options[] = {
+    { "strength", "The maximum amount by which the filter will change any one pixel.", OFFSET(strength), AV_OPT_TYPE_FLOAT, { .dbl = 1.2 }, 0.51, 64, FLAGS },
+    { "radius",   "The neighborhood to fit the gradient to.",                          OFFSET(radius),   AV_OPT_TYPE_INT,   { .i64 = 16  }, 4,    32, FLAGS },
+    { NULL },
+};
+
+AVFILTER_DEFINE_CLASS(gradfun);
 
 static const AVFilterPad avfilter_vf_gradfun_inputs[] = {
     {
@@ -244,7 +238,6 @@ static const AVFilterPad avfilter_vf_gradfun_inputs[] = {
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input,
         .filter_frame = filter_frame,
-        .min_perms    = AV_PERM_READ,
     },
     { NULL }
 };
@@ -261,10 +254,11 @@ AVFilter avfilter_vf_gradfun = {
     .name          = "gradfun",
     .description   = NULL_IF_CONFIG_SMALL("Debands video quickly using gradients."),
     .priv_size     = sizeof(GradFunContext),
+    .priv_class    = &gradfun_class,
     .init          = init,
     .uninit        = uninit,
     .query_formats = query_formats,
     .inputs        = avfilter_vf_gradfun_inputs,
     .outputs       = avfilter_vf_gradfun_outputs,
-    .priv_class    = &gradfun_class,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE,
 };

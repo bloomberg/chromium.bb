@@ -1185,10 +1185,8 @@ static int g723_1_decode_frame(AVCodecContext *avctx, void *data,
     }
 
     frame->nb_samples = FRAME_LEN;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
 
     out = (int16_t *)frame->data[0];
 
@@ -2458,7 +2456,7 @@ static int g723_1_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         offset += LPC_ORDER;
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, 24)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, 24)) < 0)
         return ret;
 
     *got_packet_ptr = 1;

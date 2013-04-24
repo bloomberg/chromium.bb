@@ -32,25 +32,25 @@
 
 typedef struct {
     AVCodecContext *avctx;
-    AVFrame prev, cur;
+    AVFrame prev;
 } KgvContext;
 
 static void decode_flush(AVCodecContext *avctx)
 {
     KgvContext * const c = avctx->priv_data;
 
-    if (c->prev.data[0])
-        avctx->release_buffer(avctx, &c->prev);
+    av_frame_unref(&c->prev);
 }
 
 static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                         AVPacket *avpkt)
 {
+    AVFrame *frame = data;
     const uint8_t *buf = avpkt->data;
     const uint8_t *buf_end = buf + avpkt->size;
     KgvContext * const c = avctx->priv_data;
     int offsets[8];
-    uint16_t *out, *prev;
+    uint8_t *out, *prev;
     int outcnt = 0, maxcnt;
     int w, h, i, res;
 
@@ -65,19 +65,17 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return res;
 
     if (w != avctx->width || h != avctx->height) {
-        if (c->prev.data[0])
-            avctx->release_buffer(avctx, &c->prev);
+        av_frame_unref(&c->prev);
         avcodec_set_dimensions(avctx, w, h);
     }
 
     maxcnt = w * h;
 
-    c->cur.reference = 3;
-    if ((res = ff_get_buffer(avctx, &c->cur)) < 0)
+    if ((res = ff_get_buffer(avctx, frame, AV_GET_BUFFER_FLAG_REF)) < 0)
         return res;
-    out  = (uint16_t *) c->cur.data[0];
+    out  = frame->data[0];
     if (c->prev.data[0]) {
-        prev = (uint16_t *) c->prev.data[0];
+        prev = c->prev.data[0];
     } else {
         prev = NULL;
     }
@@ -90,11 +88,10 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         buf += 2;
 
         if (!(code & 0x8000)) {
-            out[outcnt++] = code; // rgb555 pixel coded directly
+            AV_WN16A(&out[2 * outcnt], code); // rgb555 pixel coded directly
+            outcnt++;
         } else {
             int count;
-            int inp_off;
-            uint16_t *inp;
 
             if ((code & 0x6000) == 0x6000) {
                 // copy from previous frame
@@ -112,7 +109,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
 
                 start = (outcnt + offsets[oidx]) % maxcnt;
 
-                if (maxcnt - start < count)
+                if (maxcnt - start < count || maxcnt - outcnt < count)
                     break;
 
                 if (!prev) {
@@ -121,8 +118,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                     break;
                 }
 
-                inp = prev;
-                inp_off = start;
+                memcpy(out + 2 * outcnt, prev + 2 * start, 2 * count);
             } else {
                 // copy from earlier in this frame
                 int offset = (code & 0x1FFF) + 1;
@@ -137,31 +133,23 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
                     count = 4 + *buf++;
                 }
 
-                if (outcnt < offset)
+                if (outcnt < offset || maxcnt - outcnt < count)
                     break;
 
-                inp = out;
-                inp_off = outcnt - offset;
+                av_memcpy_backptr(out + 2 * outcnt, 2 * offset, 2 * count);
             }
-
-            if (maxcnt - outcnt < count)
-                break;
-
-            for (i = inp_off; i < count + inp_off; i++) {
-                out[outcnt++] = inp[i];
-            }
+            outcnt += count;
         }
     }
 
     if (outcnt - maxcnt)
         av_log(avctx, AV_LOG_DEBUG, "frame finished with %d diff\n", outcnt - maxcnt);
 
-    *got_frame = 1;
-    *(AVFrame*)data = c->cur;
+    av_frame_unref(&c->prev);
+    if ((res = av_frame_ref(&c->prev, frame)) < 0)
+        return res;
 
-    if (c->prev.data[0])
-        avctx->release_buffer(avctx, &c->prev);
-    FFSWAP(AVFrame, c->cur, c->prev);
+    *got_frame = 1;
 
     return avpkt->size;
 }

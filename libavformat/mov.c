@@ -3,6 +3,9 @@
  * Copyright (c) 2001 Fabrice Bellard
  * Copyright (c) 2009 Baptiste Coudurier <baptiste dot coudurier at gmail dot com>
  *
+ * first version by Francois Revol <revol@free.fr>
+ * seek function by Gael Chardon <gael.dev@4now.net>
+ *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -47,11 +50,6 @@
 #if CONFIG_ZLIB
 #include <zlib.h>
 #endif
-
-/*
- * First version by Francois Revol revol@free.fr
- * Seek function by Gael Chardon gael.dev@4now.net
- */
 
 #include "qtpalette.h"
 
@@ -835,7 +833,7 @@ static int mov_read_mdhd(MOVContext *c, AVIOContext *pb, MOVAtom atom)
 
     version = avio_r8(pb);
     if (version > 1) {
-        av_log_ask_for_sample(c->fc, "unsupported version %d\n", version);
+        avpriv_request_sample(c->fc, "Version %d", version);
         return AVERROR_PATCHWELCOME;
     }
     avio_rb24(pb); /* flags */
@@ -1033,7 +1031,9 @@ static int mov_read_wave(MOVContext *c, AVIOContext *pb, MOVAtom atom)
     if ((uint64_t)atom.size > (1<<30))
         return AVERROR_INVALIDDATA;
 
-    if (st->codec->codec_id == AV_CODEC_ID_QDM2 || st->codec->codec_id == AV_CODEC_ID_QDMC) {
+    if (st->codec->codec_id == AV_CODEC_ID_QDM2 ||
+        st->codec->codec_id == AV_CODEC_ID_QDMC ||
+        st->codec->codec_id == AV_CODEC_ID_SPEEX) {
         // pass all frma atom to codec, needed at least for QDMC and QDM2
         av_free(st->codec->extradata);
         st->codec->extradata_size = 0;

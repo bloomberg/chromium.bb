@@ -1,6 +1,18 @@
 /*
  * Copyright (c) 2001-2003 The ffmpeg Project
  *
+ * first version by Francois Revol (revol@free.fr)
+ * fringe ADPCM codecs (e.g., DK3, DK4, Westwood)
+ *   by Mike Melanson (melanson@pcisys.net)
+ * CD-ROM XA ADPCM codec by BERO
+ * EA ADPCM decoder by Robin Kay (komadori@myrealbox.com)
+ * EA ADPCM R1/R2/R3 decoder by Peter Ross (pross@xvid.org)
+ * EA IMA EACS decoder by Peter Ross (pross@xvid.org)
+ * EA IMA SEAD decoder by Peter Ross (pross@xvid.org)
+ * EA ADPCM XAS decoder by Peter Ross (pross@xvid.org)
+ * MAXIS EA ADPCM decoder by Robert Marston (rmarston@gmail.com)
+ * THP ADPCM decoder by Marco Gerards (mgerards@xs4all.nl)
+ *
  * This file is part of FFmpeg.
  *
  * FFmpeg is free software; you can redistribute it and/or
@@ -28,18 +40,6 @@
 /**
  * @file
  * ADPCM decoders
- * First version by Francois Revol (revol@free.fr)
- * Fringe ADPCM codecs (e.g., DK3, DK4, Westwood)
- *   by Mike Melanson (melanson@pcisys.net)
- * CD-ROM XA ADPCM codec by BERO
- * EA ADPCM decoder by Robin Kay (komadori@myrealbox.com)
- * EA ADPCM R1/R2/R3 decoder by Peter Ross (pross@xvid.org)
- * EA IMA EACS decoder by Peter Ross (pross@xvid.org)
- * EA IMA SEAD decoder by Peter Ross (pross@xvid.org)
- * EA ADPCM XAS decoder by Peter Ross (pross@xvid.org)
- * MAXIS EA ADPCM decoder by Robert Marston (rmarston@gmail.com)
- * THP ADPCM decoder by Marco Gerards (mgerards@xs4all.nl)
- *
  * Features and limitations:
  *
  * Reference documents:
@@ -323,7 +323,7 @@ static int xa_decode(AVCodecContext *avctx, int16_t *out0, int16_t *out1,
         shift  = 12 - (in[4+i*2] & 15);
         filter = in[4+i*2] >> 4;
         if (filter >= FF_ARRAY_ELEMS(xa_adpcm_table)) {
-            av_log_ask_for_sample(avctx, "unknown XA-ADPCM filter %d\n", filter);
+            avpriv_request_sample(avctx, "unknown XA-ADPCM filter %d", filter);
             filter=0;
         }
         f0 = xa_adpcm_table[filter][0];
@@ -352,7 +352,7 @@ static int xa_decode(AVCodecContext *avctx, int16_t *out0, int16_t *out1,
         shift  = 12 - (in[5+i*2] & 15);
         filter = in[5+i*2] >> 4;
         if (filter >= FF_ARRAY_ELEMS(xa_adpcm_table)) {
-            av_log_ask_for_sample(avctx, "unknown XA-ADPCM filter %d\n", filter);
+            avpriv_request_sample(avctx, "unknown XA-ADPCM filter %d", filter);
             filter=0;
         }
 
@@ -637,10 +637,8 @@ static int adpcm_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = nb_samples;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
     samples = (short *)frame->data[0];
     samples_p = (int16_t **)frame->extended_data;
 

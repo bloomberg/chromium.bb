@@ -41,9 +41,6 @@
 #include "gsm.h"
 
 static av_cold int libgsm_encode_close(AVCodecContext *avctx) {
-#if FF_API_OLD_ENCODE_AUDIO
-    av_freep(&avctx->coded_frame);
-#endif
     gsm_destroy(avctx->priv_data);
     avctx->priv_data = NULL;
     return 0;
@@ -88,12 +85,6 @@ static av_cold int libgsm_encode_init(AVCodecContext *avctx) {
         }
     }
 
-#if FF_API_OLD_ENCODE_AUDIO
-    avctx->coded_frame= avcodec_alloc_frame();
-    if (!avctx->coded_frame)
-        goto error;
-#endif
-
     return 0;
 error:
     libgsm_encode_close(avctx);
@@ -107,7 +98,7 @@ static int libgsm_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
     gsm_signal *samples = (gsm_signal *)frame->data[0];
     struct gsm_state *state = avctx->priv_data;
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, avctx->block_align)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, avctx->block_align)) < 0)
         return ret;
 
     switch(avctx->codec_id) {
@@ -207,10 +198,8 @@ static int libgsm_decode_frame(AVCodecContext *avctx, void *data,
 
     /* get output buffer */
     frame->nb_samples = avctx->frame_size;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "get_buffer() failed\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
     samples = (int16_t *)frame->data[0];
 
     for (i = 0; i < avctx->frame_size / GSM_FRAME_SIZE; i++) {

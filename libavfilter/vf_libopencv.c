@@ -30,12 +30,13 @@
 #include "libavutil/avstring.h"
 #include "libavutil/common.h"
 #include "libavutil/file.h"
+#include "libavutil/opt.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
 #include "video.h"
 
-static void fill_iplimage_from_picref(IplImage *img, const AVFilterBufferRef *picref, enum AVPixelFormat pixfmt)
+static void fill_iplimage_from_frame(IplImage *img, const AVFrame *frame, enum AVPixelFormat pixfmt)
 {
     IplImage *tmpimg;
     int depth, channels_nb;
@@ -45,18 +46,18 @@ static void fill_iplimage_from_picref(IplImage *img, const AVFilterBufferRef *pi
     else if (pixfmt == AV_PIX_FMT_BGR24) { depth = IPL_DEPTH_8U;  channels_nb = 3; }
     else return;
 
-    tmpimg = cvCreateImageHeader((CvSize){picref->video->w, picref->video->h}, depth, channels_nb);
+    tmpimg = cvCreateImageHeader((CvSize){frame->width, frame->height}, depth, channels_nb);
     *img = *tmpimg;
-    img->imageData = img->imageDataOrigin = picref->data[0];
+    img->imageData = img->imageDataOrigin = frame->data[0];
     img->dataOrder = IPL_DATA_ORDER_PIXEL;
     img->origin    = IPL_ORIGIN_TL;
-    img->widthStep = picref->linesize[0];
+    img->widthStep = frame->linesize[0];
 }
 
-static void fill_picref_from_iplimage(AVFilterBufferRef *picref, const IplImage *img, enum AVPixelFormat pixfmt)
+static void fill_frame_from_iplimage(AVFrame *frame, const IplImage *img, enum AVPixelFormat pixfmt)
 {
-    picref->linesize[0] = img->widthStep;
-    picref->data[0]     = img->imageData;
+    frame->linesize[0] = img->widthStep;
+    frame->data[0]     = img->imageData;
 }
 
 static int query_formats(AVFilterContext *ctx)
@@ -70,7 +71,9 @@ static int query_formats(AVFilterContext *ctx)
 }
 
 typedef struct {
-    const char *name;
+    const AVClass *class;
+    char *name;
+    char *params;
     int (*init)(AVFilterContext *ctx, const char *args);
     void (*uninit)(AVFilterContext *ctx);
     void (*end_frame_filter)(AVFilterContext *ctx, IplImage *inimg, IplImage *outimg);
@@ -95,7 +98,7 @@ static av_cold int smooth_init(AVFilterContext *ctx, const char *args)
     smooth->param4 = 0.0;
 
     if (args)
-        sscanf(args, "%127[^:]:%d:%d:%lf:%lf", type_str, &smooth->param1, &smooth->param2, &smooth->param3, &smooth->param4);
+        sscanf(args, "%127[^|]|%d|%d|%lf|%lf", type_str, &smooth->param1, &smooth->param2, &smooth->param3, &smooth->param4);
 
     if      (!strcmp(type_str, "blur"         )) smooth->type = CV_BLUR;
     else if (!strcmp(type_str, "blur_no_scale")) smooth->type = CV_BLUR_NO_SCALE;
@@ -177,7 +180,7 @@ static int read_shape_from_file(int *cols, int *rows, int **values, const char *
                 p++;
                 break;
             } else
-                (*values)[*cols*i + j] = !!isgraph(*(p++));
+                (*values)[*cols*i + j] = !!av_isgraph(*(p++));
         }
     }
     av_file_unmap(buf, size);
@@ -258,17 +261,18 @@ static av_cold int dilate_init(AVFilterContext *ctx, const char *args)
     const char *buf = args;
     int ret;
 
-    dilate->nb_iterations = 1;
-
     if (args)
-        kernel_str = av_get_token(&buf, ":");
-    if ((ret = parse_iplconvkernel(&dilate->kernel,
-                                   *kernel_str ? kernel_str : default_kernel_str,
-                                   ctx)) < 0)
+        kernel_str = av_get_token(&buf, "|");
+    else
+        kernel_str = av_strdup(default_kernel_str);
+    if (!kernel_str)
+        return AVERROR(ENOMEM);
+    if ((ret = parse_iplconvkernel(&dilate->kernel, kernel_str, ctx)) < 0)
         return ret;
     av_free(kernel_str);
 
-    sscanf(buf, ":%d", &dilate->nb_iterations);
+    if (!buf || sscanf(buf, "|%d", &dilate->nb_iterations) != 1)
+        dilate->nb_iterations = 1;
     av_log(ctx, AV_LOG_VERBOSE, "iterations_nb:%d\n", dilate->nb_iterations);
     if (dilate->nb_iterations <= 0) {
         av_log(ctx, AV_LOG_ERROR, "Invalid non-positive value '%d' for nb_iterations\n",
@@ -314,30 +318,29 @@ static OCVFilterEntry ocv_filter_entries[] = {
     { "smooth", sizeof(SmoothContext), smooth_init, NULL, smooth_end_frame_filter },
 };
 
-static av_cold int init(AVFilterContext *ctx, const char *args)
+static av_cold int init(AVFilterContext *ctx)
 {
     OCVContext *ocv = ctx->priv;
-    char name[128], priv_args[1024];
     int i;
-    char c;
 
-    sscanf(args, "%127[^=:]%c%1023s", name, &c, priv_args);
-
+    if (!ocv->name) {
+        av_log(ctx, AV_LOG_ERROR, "No libopencv filter name specified\n");
+        return AVERROR(EINVAL);
+    }
     for (i = 0; i < FF_ARRAY_ELEMS(ocv_filter_entries); i++) {
         OCVFilterEntry *entry = &ocv_filter_entries[i];
-        if (!strcmp(name, entry->name)) {
-            ocv->name             = entry->name;
+        if (!strcmp(ocv->name, entry->name)) {
             ocv->init             = entry->init;
             ocv->uninit           = entry->uninit;
             ocv->end_frame_filter = entry->end_frame_filter;
 
             if (!(ocv->priv = av_mallocz(entry->priv_size)))
                 return AVERROR(ENOMEM);
-            return ocv->init(ctx, priv_args);
+            return ocv->init(ctx, ocv->params);
         }
     }
 
-    av_log(ctx, AV_LOG_ERROR, "No libopencv filter named '%s'\n", name);
+    av_log(ctx, AV_LOG_ERROR, "No libopencv filter named '%s'\n", ocv->name);
     return AVERROR(EINVAL);
 }
 
@@ -348,40 +351,53 @@ static av_cold void uninit(AVFilterContext *ctx)
     if (ocv->uninit)
         ocv->uninit(ctx);
     av_free(ocv->priv);
-    memset(ocv, 0, sizeof(*ocv));
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *in)
+static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
     OCVContext *ocv = ctx->priv;
     AVFilterLink *outlink= inlink->dst->outputs[0];
-    AVFilterBufferRef *out;
+    AVFrame *out;
     IplImage inimg, outimg;
 
-    out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+    out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
-        avfilter_unref_bufferp(&in);
+        av_frame_free(&in);
         return AVERROR(ENOMEM);
     }
-    avfilter_copy_buffer_ref_props(out, in);
+    av_frame_copy_props(out, in);
 
-    fill_iplimage_from_picref(&inimg , in , inlink->format);
-    fill_iplimage_from_picref(&outimg, out, inlink->format);
+    fill_iplimage_from_frame(&inimg , in , inlink->format);
+    fill_iplimage_from_frame(&outimg, out, inlink->format);
     ocv->end_frame_filter(ctx, &inimg, &outimg);
-    fill_picref_from_iplimage(out, &outimg, inlink->format);
+    fill_frame_from_iplimage(out, &outimg, inlink->format);
 
-    avfilter_unref_bufferp(&in);
+    av_frame_free(&in);
 
     return ff_filter_frame(outlink, out);
 }
+
+#define OFFSET(x) offsetof(OCVContext, x)
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
+static const AVOption options[] = {
+    { "filter_name",   NULL, OFFSET(name),   AV_OPT_TYPE_STRING, .flags = FLAGS },
+    { "filter_params", NULL, OFFSET(params), AV_OPT_TYPE_STRING, .flags = FLAGS },
+    { NULL },
+};
+
+static const AVClass ocv_class = {
+    .class_name = "ocv",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
 
 static const AVFilterPad avfilter_vf_ocv_inputs[] = {
     {
         .name       = "default",
         .type       = AVMEDIA_TYPE_VIDEO,
         .filter_frame = filter_frame,
-        .min_perms  = AV_PERM_READ
     },
     { NULL }
 };
@@ -399,6 +415,7 @@ AVFilter avfilter_vf_ocv = {
     .description = NULL_IF_CONFIG_SMALL("Apply transform using libopencv."),
 
     .priv_size = sizeof(OCVContext),
+    .priv_class = &ocv_class,
 
     .query_formats = query_formats,
     .init = init,

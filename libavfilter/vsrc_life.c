@@ -31,6 +31,7 @@
 #include "libavutil/opt.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/random_seed.h"
+#include "libavutil/avstring.h"
 #include "avfilter.h"
 #include "internal.h"
 #include "formats.h"
@@ -59,8 +60,7 @@ typedef struct {
     uint16_t stay_rule;         ///< encode the behavior for filled cells
     uint16_t born_rule;         ///< encode the behavior for empty cells
     uint64_t pts;
-    AVRational time_base;
-    char *rate;                 ///< video frame rate
+    AVRational frame_rate;
     double   random_fill_ratio;
     uint32_t random_seed;
     int stitch;
@@ -72,7 +72,7 @@ typedef struct {
     uint8_t death_color[4];
     uint8_t  mold_color[4];
     AVLFG lfg;
-    void (*draw)(AVFilterContext*, AVFilterBufferRef*);
+    void (*draw)(AVFilterContext*, AVFrame*);
 } LifeContext;
 
 #define ALIVE_CELL 0xFF
@@ -84,8 +84,8 @@ static const AVOption life_options[] = {
     { "f",        "set source file",  OFFSET(filename), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
     { "size",     "set video size",   OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE, {.str = NULL}, 0, 0, FLAGS },
     { "s",        "set video size",   OFFSET(w),        AV_OPT_TYPE_IMAGE_SIZE, {.str = NULL}, 0, 0, FLAGS },
-    { "rate",     "set video rate",   OFFSET(rate),     AV_OPT_TYPE_STRING, {.str = "25"}, 0, 0, FLAGS },
-    { "r",        "set video rate",   OFFSET(rate),     AV_OPT_TYPE_STRING, {.str = "25"}, 0, 0, FLAGS },
+    { "rate",     "set video rate",   OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, 0, FLAGS },
+    { "r",        "set video rate",   OFFSET(frame_rate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, 0, FLAGS },
     { "rule",     "set rule",         OFFSET(rule_str), AV_OPT_TYPE_STRING, {.str = "B3/S23"}, CHAR_MIN, CHAR_MAX, FLAGS },
     { "random_fill_ratio", "set fill ratio for filling initial grid randomly", OFFSET(random_fill_ratio), AV_OPT_TYPE_DOUBLE, {.dbl=1/M_PHI}, 0, 1, FLAGS },
     { "ratio",             "set fill ratio for filling initial grid randomly", OFFSET(random_fill_ratio), AV_OPT_TYPE_DOUBLE, {.dbl=1/M_PHI}, 0, 1, FLAGS },
@@ -212,7 +212,7 @@ static int init_pattern_from_file(AVFilterContext *ctx)
             if (*p == '\n') {
                 p++; break;
             } else
-                life->buf[0][i*life->w + j] = isgraph(*(p++)) ? ALIVE_CELL : 0;
+                life->buf[0][i*life->w + j] = av_isgraph(*(p++)) ? ALIVE_CELL : 0;
         }
     }
     life->buf_idx = 0;
@@ -220,23 +220,10 @@ static int init_pattern_from_file(AVFilterContext *ctx)
     return 0;
 }
 
-static int init(AVFilterContext *ctx, const char *args)
+static int init(AVFilterContext *ctx)
 {
     LifeContext *life = ctx->priv;
-    AVRational frame_rate;
     int ret;
-
-    life->class = &life_class;
-    av_opt_set_defaults(life);
-
-    if ((ret = av_set_options_string(life, args, "=", ":")) < 0)
-        return ret;
-
-    if ((ret = av_parse_video_rate(&frame_rate, life->rate)) < 0) {
-        av_log(ctx, AV_LOG_ERROR, "Invalid frame rate: %s\n", life->rate);
-        return AVERROR(EINVAL);
-    }
-    av_freep(&life->rate);
 
     if (!life->w && !life->filename)
         av_opt_set(life, "size", "320x240", 0);
@@ -260,9 +247,6 @@ static int init(AVFilterContext *ctx, const char *args)
     if (!life->mold && memcmp(life->mold_color, "\x00\x00\x00", 3))
         av_log(ctx, AV_LOG_WARNING,
                "Mold color is set while mold isn't, ignoring the color.\n");
-
-    life->time_base.num = frame_rate.den;
-    life->time_base.den = frame_rate.num;
 
     if (!life->filename) {
         /* fill the grid randomly */
@@ -292,7 +276,7 @@ static int init(AVFilterContext *ctx, const char *args)
 
     av_log(ctx, AV_LOG_VERBOSE,
            "s:%dx%d r:%d/%d rule:%s stay_rule:%d born_rule:%d stitch:%d seed:%u\n",
-           life->w, life->h, frame_rate.num, frame_rate.den,
+           life->w, life->h, life->frame_rate.num, life->frame_rate.den,
            life->rule_str, life->stay_rule, life->born_rule, life->stitch,
            life->random_seed);
     return 0;
@@ -314,7 +298,7 @@ static int config_props(AVFilterLink *outlink)
 
     outlink->w = life->w;
     outlink->h = life->h;
-    outlink->time_base = life->time_base;
+    outlink->time_base = av_inv_q(life->frame_rate);
 
     return 0;
 }
@@ -374,7 +358,7 @@ static void evolve(AVFilterContext *ctx)
     life->buf_idx = !life->buf_idx;
 }
 
-static void fill_picture_monoblack(AVFilterContext *ctx, AVFilterBufferRef *picref)
+static void fill_picture_monoblack(AVFilterContext *ctx, AVFrame *picref)
 {
     LifeContext *life = ctx->priv;
     uint8_t *buf = life->buf[life->buf_idx];
@@ -399,7 +383,7 @@ static void fill_picture_monoblack(AVFilterContext *ctx, AVFilterBufferRef *picr
 // apply a fast variant: (X+127)/255 = ((X+127)*257+257)>>16 = ((X+128)*257)>>16
 #define FAST_DIV255(x) ((((x) + 128) * 257) >> 16)
 
-static void fill_picture_rgb(AVFilterContext *ctx, AVFilterBufferRef *picref)
+static void fill_picture_rgb(AVFilterContext *ctx, AVFrame *picref)
 {
     LifeContext *life = ctx->priv;
     uint8_t *buf = life->buf[life->buf_idx];
@@ -429,19 +413,18 @@ static void fill_picture_rgb(AVFilterContext *ctx, AVFilterBufferRef *picref)
 static int request_frame(AVFilterLink *outlink)
 {
     LifeContext *life = outlink->src->priv;
-    AVFilterBufferRef *picref = ff_get_video_buffer(outlink, AV_PERM_WRITE, life->w, life->h);
-    picref->video->sample_aspect_ratio = (AVRational) {1, 1};
+    AVFrame *picref = ff_get_video_buffer(outlink, life->w, life->h);
+    if (!picref)
+        return AVERROR(ENOMEM);
+    picref->sample_aspect_ratio = (AVRational) {1, 1};
     picref->pts = life->pts++;
-    picref->pos = -1;
 
     life->draw(outlink->src, picref);
     evolve(outlink->src);
 #ifdef DEBUG
     show_life_grid(outlink->src);
 #endif
-    ff_filter_frame(outlink, picref);
-
-    return 0;
+    return ff_filter_frame(outlink, picref);
 }
 
 static int query_formats(AVFilterContext *ctx)

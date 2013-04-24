@@ -31,15 +31,7 @@
 
 typedef struct {
     unsigned int frame;
-    int vsub, hsub;
 } BBoxContext;
-
-static av_cold int init(AVFilterContext *ctx, const char *args)
-{
-    BBoxContext *bbox = ctx->priv;
-    bbox->frame = 0;
-    return 0;
-}
 
 static int query_formats(AVFilterContext *ctx)
 {
@@ -56,7 +48,7 @@ static int query_formats(AVFilterContext *ctx)
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
+static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
 {
     AVFilterContext *ctx = inlink->dst;
     BBoxContext *bbox = ctx->priv;
@@ -65,14 +57,14 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
 
     has_bbox =
         ff_calculate_bounding_box(&box,
-                                  picref->data[0], picref->linesize[0],
+                                  frame->data[0], frame->linesize[0],
                                   inlink->w, inlink->h, 16);
     w = box.x2 - box.x1 + 1;
     h = box.y2 - box.y1 + 1;
 
     av_log(ctx, AV_LOG_INFO,
            "n:%d pts:%s pts_time:%s", bbox->frame,
-           av_ts2str(picref->pts), av_ts2timestr(picref->pts, &inlink->time_base));
+           av_ts2str(frame->pts), av_ts2timestr(frame->pts, &inlink->time_base));
 
     if (has_bbox) {
         av_log(ctx, AV_LOG_INFO,
@@ -85,16 +77,14 @@ static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *picref)
     av_log(ctx, AV_LOG_INFO, "\n");
 
     bbox->frame++;
-    return ff_filter_frame(inlink->dst->outputs[0], picref);
+    return ff_filter_frame(inlink->dst->outputs[0], frame);
 }
 
 static const AVFilterPad bbox_inputs[] = {
     {
         .name             = "default",
         .type             = AVMEDIA_TYPE_VIDEO,
-        .get_video_buffer = ff_null_get_video_buffer,
         .filter_frame     = filter_frame,
-        .min_perms        = AV_PERM_READ,
     },
     { NULL }
 };
@@ -112,7 +102,6 @@ AVFilter avfilter_vf_bbox = {
     .description   = NULL_IF_CONFIG_SMALL("Compute bounding box for each frame."),
     .priv_size     = sizeof(BBoxContext),
     .query_formats = query_formats,
-    .init          = init,
     .inputs        = bbox_inputs,
     .outputs       = bbox_outputs,
 };

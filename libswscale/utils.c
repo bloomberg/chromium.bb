@@ -799,6 +799,100 @@ static void getSubSampleFactors(int *h, int *v, enum AVPixelFormat format)
     *v = desc->log2_chroma_h;
 }
 
+static void fill_rgb2yuv_table(SwsContext *c, const int table[4], int dstRange)
+{
+    int64_t W, V, Z, Cy, Cu, Cv;
+    int64_t vr =  table[0];
+    int64_t ub =  table[1];
+    int64_t ug = -table[2];
+    int64_t vg = -table[3];
+    int64_t ONE = 65536;
+    int64_t cy = ONE;
+    uint8_t *p = (uint8_t*)c->input_rgb2yuv_table;
+    int i;
+    static const int8_t map[] = {
+    BY_IDX, GY_IDX, -1    , BY_IDX, BY_IDX, GY_IDX, -1    , BY_IDX,
+    RY_IDX, -1    , GY_IDX, RY_IDX, RY_IDX, -1    , GY_IDX, RY_IDX,
+    RY_IDX, GY_IDX, -1    , RY_IDX, RY_IDX, GY_IDX, -1    , RY_IDX,
+    BY_IDX, -1    , GY_IDX, BY_IDX, BY_IDX, -1    , GY_IDX, BY_IDX,
+    BU_IDX, GU_IDX, -1    , BU_IDX, BU_IDX, GU_IDX, -1    , BU_IDX,
+    RU_IDX, -1    , GU_IDX, RU_IDX, RU_IDX, -1    , GU_IDX, RU_IDX,
+    RU_IDX, GU_IDX, -1    , RU_IDX, RU_IDX, GU_IDX, -1    , RU_IDX,
+    BU_IDX, -1    , GU_IDX, BU_IDX, BU_IDX, -1    , GU_IDX, BU_IDX,
+    BV_IDX, GV_IDX, -1    , BV_IDX, BV_IDX, GV_IDX, -1    , BV_IDX,
+    RV_IDX, -1    , GV_IDX, RV_IDX, RV_IDX, -1    , GV_IDX, RV_IDX,
+    RV_IDX, GV_IDX, -1    , RV_IDX, RV_IDX, GV_IDX, -1    , RV_IDX,
+    BV_IDX, -1    , GV_IDX, BV_IDX, BV_IDX, -1    , GV_IDX, BV_IDX,
+    RY_IDX, BY_IDX, RY_IDX, BY_IDX, RY_IDX, BY_IDX, RY_IDX, BY_IDX,
+    BY_IDX, RY_IDX, BY_IDX, RY_IDX, BY_IDX, RY_IDX, BY_IDX, RY_IDX,
+    GY_IDX, -1    , GY_IDX, -1    , GY_IDX, -1    , GY_IDX, -1    ,
+    -1    , GY_IDX, -1    , GY_IDX, -1    , GY_IDX, -1    , GY_IDX,
+    RU_IDX, BU_IDX, RU_IDX, BU_IDX, RU_IDX, BU_IDX, RU_IDX, BU_IDX,
+    BU_IDX, RU_IDX, BU_IDX, RU_IDX, BU_IDX, RU_IDX, BU_IDX, RU_IDX,
+    GU_IDX, -1    , GU_IDX, -1    , GU_IDX, -1    , GU_IDX, -1    ,
+    -1    , GU_IDX, -1    , GU_IDX, -1    , GU_IDX, -1    , GU_IDX,
+    RV_IDX, BV_IDX, RV_IDX, BV_IDX, RV_IDX, BV_IDX, RV_IDX, BV_IDX,
+    BV_IDX, RV_IDX, BV_IDX, RV_IDX, BV_IDX, RV_IDX, BV_IDX, RV_IDX,
+    GV_IDX, -1    , GV_IDX, -1    , GV_IDX, -1    , GV_IDX, -1    ,
+    -1    , GV_IDX, -1    , GV_IDX, -1    , GV_IDX, -1    , GV_IDX, //23
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //24
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //25
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //26
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //27
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //28
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //29
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //30
+    -1    , -1    , -1    , -1    , -1    , -1    , -1    , -1    , //31
+    BY_IDX, GY_IDX, RY_IDX, -1    , -1    , -1    , -1    , -1    , //32
+    BU_IDX, GU_IDX, RU_IDX, -1    , -1    , -1    , -1    , -1    , //33
+    BV_IDX, GV_IDX, RV_IDX, -1    , -1    , -1    , -1    , -1    , //34
+    };
+
+    dstRange = 0; //FIXME range = 1 is handled elsewhere
+
+    if (!dstRange) {
+        cy = cy * 255 / 219;
+    } else {
+        vr = vr * 224 / 255;
+        ub = ub * 224 / 255;
+        ug = ug * 224 / 255;
+        vg = vg * 224 / 255;
+    }
+    W = ROUNDED_DIV(ONE*ONE*ug, ub);
+    V = ROUNDED_DIV(ONE*ONE*vg, vr);
+    Z = ONE*ONE-W-V;
+
+    Cy = ROUNDED_DIV(cy*Z, ONE);
+    Cu = ROUNDED_DIV(ub*Z, ONE);
+    Cv = ROUNDED_DIV(vr*Z, ONE);
+
+    c->input_rgb2yuv_table[RY_IDX] = -ROUNDED_DIV((1 << RGB2YUV_SHIFT)*V        , Cy);
+    c->input_rgb2yuv_table[GY_IDX] =  ROUNDED_DIV((1 << RGB2YUV_SHIFT)*ONE*ONE  , Cy);
+    c->input_rgb2yuv_table[BY_IDX] = -ROUNDED_DIV((1 << RGB2YUV_SHIFT)*W        , Cy);
+
+    c->input_rgb2yuv_table[RU_IDX] =  ROUNDED_DIV((1 << RGB2YUV_SHIFT)*V        , Cu);
+    c->input_rgb2yuv_table[GU_IDX] = -ROUNDED_DIV((1 << RGB2YUV_SHIFT)*ONE*ONE  , Cu);
+    c->input_rgb2yuv_table[BU_IDX] =  ROUNDED_DIV((1 << RGB2YUV_SHIFT)*(Z+W)    , Cu);
+
+    c->input_rgb2yuv_table[RV_IDX] =  ROUNDED_DIV((1 << RGB2YUV_SHIFT)*(V+Z)    , Cv);
+    c->input_rgb2yuv_table[GV_IDX] = -ROUNDED_DIV((1 << RGB2YUV_SHIFT)*ONE*ONE  , Cv);
+    c->input_rgb2yuv_table[BV_IDX] =  ROUNDED_DIV((1 << RGB2YUV_SHIFT)*W        , Cv);
+
+    if(/*!dstRange && */table == ff_yuv2rgb_coeffs[SWS_CS_DEFAULT]) {
+        c->input_rgb2yuv_table[BY_IDX] =  ((int)(0.114 * 219 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[BV_IDX] = (-(int)(0.081 * 224 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[BU_IDX] =  ((int)(0.500 * 224 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[GY_IDX] =  ((int)(0.587 * 219 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[GV_IDX] = (-(int)(0.419 * 224 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[GU_IDX] = (-(int)(0.331 * 224 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[RY_IDX] =  ((int)(0.299 * 219 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[RV_IDX] =  ((int)(0.500 * 224 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+        c->input_rgb2yuv_table[RU_IDX] = (-(int)(0.169 * 224 / 255 * (1 << RGB2YUV_SHIFT) + 0.5));
+    }
+    for(i=0; i<FF_ARRAY_ELEMS(map); i++)
+        AV_WL16(p + 16*4 + 2*i, map[i] >= 0 ? c->input_rgb2yuv_table[map[i]] : 0);
+}
+
 int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
                              int srcRange, const int table[4], int dstRange,
                              int brightness, int contrast, int saturation)
@@ -819,12 +913,13 @@ int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
     c->srcRange   = srcRange;
     c->dstRange   = dstRange;
 
-    if (isYUV(c->dstFormat) || isGray(c->dstFormat))
+    if ((isYUV(c->dstFormat) || isGray(c->dstFormat)) && (isYUV(c->srcFormat) || isGray(c->srcFormat)))
         return -1;
 
     c->dstFormatBpp = av_get_bits_per_pixel(desc_dst);
     c->srcFormatBpp = av_get_bits_per_pixel(desc_src);
 
+    if (!isYUV(c->dstFormat) && !isGray(c->dstFormat)) {
     ff_yuv2rgb_c_init_tables(c, inv_table, srcRange, brightness,
                              contrast, saturation);
     // FIXME factorize
@@ -832,6 +927,10 @@ int sws_setColorspaceDetails(struct SwsContext *c, const int inv_table[4],
     if (HAVE_ALTIVEC && av_get_cpu_flags() & AV_CPU_FLAG_ALTIVEC)
         ff_yuv2rgb_init_tables_altivec(c, inv_table, brightness,
                                        contrast, saturation);
+    }
+
+    fill_rgb2yuv_table(c, table, dstRange);
+
     return 0;
 }
 

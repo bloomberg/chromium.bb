@@ -136,7 +136,7 @@ static av_cold int decode_init(AVCodecContext *avctx)
 
     ctx->version = AV_RB16(avctx->extradata + 4);
     if (ctx->version != 0x103) {
-        av_log_ask_for_sample(avctx, "unknown version %X\n", ctx->version);
+        avpriv_request_sample(avctx, "Unknown version %X", ctx->version);
         return AVERROR_PATCHWELCOME;
     }
 
@@ -460,10 +460,8 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame_ptr,
     }
 
     frame->nb_samples = ctx->max_frame_size;
-    if ((ret = ff_get_buffer(avctx, frame)) < 0) {
-        av_log(avctx, AV_LOG_ERROR, "Me fail get_buffer()? That's unpossible!\n");
+    if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
-    }
     samples0 = (int16_t *)frame->data[0];
     samples1 = (int16_t *)frame->data[1];
 

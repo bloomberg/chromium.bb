@@ -29,6 +29,7 @@
 #include "libavutil/lfg.h"
 #include "libavutil/parseutils.h"
 #include "libavutil/pixdesc.h"
+#include "libavutil/x86/asm.h"
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
@@ -40,7 +41,6 @@
 
 #define NOISE_UNIFORM  1
 #define NOISE_TEMPORAL 2
-#define NOISE_QUALITY  4
 #define NOISE_AVERAGED 8
 #define NOISE_PATTERN  16
 
@@ -63,6 +63,8 @@ typedef struct {
     FilterParams param[4];
     int rand_shift[MAX_RES];
     int rand_shift_init;
+    void (*line_noise)(uint8_t *dst, const uint8_t *src, int8_t *noise, int len, int shift);
+    void (*line_noise_avg)(uint8_t *dst, const uint8_t *src, int len, int8_t **shift);
 } NoiseContext;
 
 #define OFFSET(x) offsetof(NoiseContext, x)
@@ -76,7 +78,6 @@ typedef struct {
     {#name"f", "set component #"#x" flags", OFFSET(param.flags), AV_OPT_TYPE_FLAGS, {.i64=0}, 0, 31, FLAGS, #name"_flags"},      \
     {"a", "averaged noise", 0, AV_OPT_TYPE_CONST, {.i64=NOISE_AVERAGED}, 0, 0, FLAGS, #name"_flags"},                            \
     {"p", "(semi)regular pattern", 0, AV_OPT_TYPE_CONST, {.i64=NOISE_PATTERN},  0, 0, FLAGS, #name"_flags"},                     \
-    {"q", "high quality",   0, AV_OPT_TYPE_CONST, {.i64=NOISE_QUALITY},  0, 0, FLAGS, #name"_flags"},                            \
     {"t", "temporal noise", 0, AV_OPT_TYPE_CONST, {.i64=NOISE_TEMPORAL}, 0, 0, FLAGS, #name"_flags"},                            \
     {"u", "uniform noise",  0, AV_OPT_TYPE_CONST, {.i64=NOISE_UNIFORM},  0, 0, FLAGS, #name"_flags"},
 
@@ -128,8 +129,8 @@ static int init_noise(NoiseContext *n, int comp)
         } else {
             double x1, x2, w, y1;
             do {
-                x1 = 2.0 * av_lfg_get(lfg) / (float)RAND_MAX - 1.0;
-                x2 = 2.0 * av_lfg_get(lfg) / (float)RAND_MAX - 1.0;
+                x1 = 2.0 * av_lfg_get(lfg) / (float)UINT_MAX - 1.0;
+                x2 = 2.0 * av_lfg_get(lfg) / (float)UINT_MAX - 1.0;
                 w = x1 * x1 + x2 * x2;
             } while (w >= 1.0);
 
@@ -161,36 +162,6 @@ static int init_noise(NoiseContext *n, int comp)
 
     fp->noise = noise;
     fp->shiftptr = 0;
-    return 0;
-}
-
-static av_cold int init(AVFilterContext *ctx, const char *args)
-{
-    NoiseContext *n = ctx->priv;
-    int ret, i;
-
-    n->class = &noise_class;
-    av_opt_set_defaults(n);
-
-    if ((ret = av_set_options_string(n, args, "=", ":")) < 0)
-        return ret;
-
-    for (i = 0; i < 4; i++) {
-        if (n->all.seed >= 0)
-            n->param[i].seed = n->all.seed;
-        else
-            n->param[i].seed = 123457;
-        if (n->all.strength)
-            n->param[i].strength = n->all.strength;
-        if (n->all.flags)
-            n->param[i].flags = n->all.flags;
-    }
-
-    for (i = 0; i < 4; i++) {
-        if (n->param[i].strength && ((ret = init_noise(n, i)) < 0))
-            return ret;
-    }
-
     return 0;
 }
 
@@ -228,7 +199,7 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static void line_noise(uint8_t *dst, const uint8_t *src, int8_t *noise,
+static inline void line_noise_c(uint8_t *dst, const uint8_t *src, int8_t *noise,
                        int len, int shift)
 {
     int i;
@@ -241,7 +212,69 @@ static void line_noise(uint8_t *dst, const uint8_t *src, int8_t *noise,
     }
 }
 
-static void line_noise_avg(uint8_t *dst, const uint8_t *src,
+#define ASMALIGN(ZEROBITS) ".p2align " #ZEROBITS "\n\t"
+
+static void line_noise_mmx(uint8_t *dst, const uint8_t *src,
+                           int8_t *noise, int len, int shift)
+{
+#if HAVE_MMX_INLINE
+    x86_reg mmx_len= len&(~7);
+    noise+=shift;
+
+    __asm__ volatile(
+            "mov %3, %%"REG_a"               \n\t"
+            "pcmpeqb %%mm7, %%mm7            \n\t"
+            "psllw $15, %%mm7                \n\t"
+            "packsswb %%mm7, %%mm7           \n\t"
+            ASMALIGN(4)
+            "1:                              \n\t"
+            "movq (%0, %%"REG_a"), %%mm0     \n\t"
+            "movq (%1, %%"REG_a"), %%mm1     \n\t"
+            "pxor %%mm7, %%mm0               \n\t"
+            "paddsb %%mm1, %%mm0             \n\t"
+            "pxor %%mm7, %%mm0               \n\t"
+            "movq %%mm0, (%2, %%"REG_a")     \n\t"
+            "add $8, %%"REG_a"               \n\t"
+            " js 1b                          \n\t"
+            :: "r" (src+mmx_len), "r" (noise+mmx_len), "r" (dst+mmx_len), "g" (-mmx_len)
+            : "%"REG_a
+    );
+    if (mmx_len!=len)
+        line_noise_c(dst+mmx_len, src+mmx_len, noise+mmx_len, len-mmx_len, 0);
+#endif
+}
+
+static void line_noise_mmxext(uint8_t *dst, const uint8_t *src,
+                              int8_t *noise, int len, int shift)
+{
+#if HAVE_MMXEXT_INLINE
+    x86_reg mmx_len= len&(~7);
+    noise+=shift;
+
+    __asm__ volatile(
+            "mov %3, %%"REG_a"                \n\t"
+            "pcmpeqb %%mm7, %%mm7             \n\t"
+            "psllw $15, %%mm7                 \n\t"
+            "packsswb %%mm7, %%mm7            \n\t"
+            ASMALIGN(4)
+            "1:                               \n\t"
+            "movq (%0, %%"REG_a"), %%mm0      \n\t"
+            "movq (%1, %%"REG_a"), %%mm1      \n\t"
+            "pxor %%mm7, %%mm0                \n\t"
+            "paddsb %%mm1, %%mm0              \n\t"
+            "pxor %%mm7, %%mm0                \n\t"
+            "movntq %%mm0, (%2, %%"REG_a")    \n\t"
+            "add $8, %%"REG_a"                \n\t"
+            " js 1b                           \n\t"
+            :: "r" (src+mmx_len), "r" (noise+mmx_len), "r" (dst+mmx_len), "g" (-mmx_len)
+            : "%"REG_a
+            );
+    if (mmx_len != len)
+        line_noise_c(dst+mmx_len, src+mmx_len, noise+mmx_len, len-mmx_len, 0);
+#endif
+}
+
+static inline void line_noise_avg_c(uint8_t *dst, const uint8_t *src,
                            int len, int8_t **shift)
 {
     int i;
@@ -251,6 +284,50 @@ static void line_noise_avg(uint8_t *dst, const uint8_t *src,
         const int n = shift[0][i] + shift[1][i] + shift[2][i];
         dst[i] = src2[i] + ((n * src2[i]) >> 7);
     }
+}
+
+static inline void line_noise_avg_mmx(uint8_t *dst, const uint8_t *src,
+                                      int len, int8_t **shift)
+{
+#if HAVE_MMX_INLINE
+    x86_reg mmx_len= len&(~7);
+
+    __asm__ volatile(
+            "mov %5, %%"REG_a"              \n\t"
+            ASMALIGN(4)
+            "1:                             \n\t"
+            "movq (%1, %%"REG_a"), %%mm1    \n\t"
+            "movq (%0, %%"REG_a"), %%mm0    \n\t"
+            "paddb (%2, %%"REG_a"), %%mm1   \n\t"
+            "paddb (%3, %%"REG_a"), %%mm1   \n\t"
+            "movq %%mm0, %%mm2              \n\t"
+            "movq %%mm1, %%mm3              \n\t"
+            "punpcklbw %%mm0, %%mm0         \n\t"
+            "punpckhbw %%mm2, %%mm2         \n\t"
+            "punpcklbw %%mm1, %%mm1         \n\t"
+            "punpckhbw %%mm3, %%mm3         \n\t"
+            "pmulhw %%mm0, %%mm1            \n\t"
+            "pmulhw %%mm2, %%mm3            \n\t"
+            "paddw %%mm1, %%mm1             \n\t"
+            "paddw %%mm3, %%mm3             \n\t"
+            "paddw %%mm0, %%mm1             \n\t"
+            "paddw %%mm2, %%mm3             \n\t"
+            "psrlw $8, %%mm1                \n\t"
+            "psrlw $8, %%mm3                \n\t"
+            "packuswb %%mm3, %%mm1          \n\t"
+            "movq %%mm1, (%4, %%"REG_a")    \n\t"
+            "add $8, %%"REG_a"              \n\t"
+            " js 1b                         \n\t"
+            :: "r" (src+mmx_len), "r" (shift[0]+mmx_len), "r" (shift[1]+mmx_len), "r" (shift[2]+mmx_len),
+               "r" (dst+mmx_len), "g" (-mmx_len)
+            : "%"REG_a
+        );
+
+    if (mmx_len != len){
+        int8_t *shift2[3]={shift[0]+mmx_len, shift[1]+mmx_len, shift[2]+mmx_len};
+        line_noise_avg_c(dst+mmx_len, src+mmx_len, len-mmx_len, shift2);
+    }
+#endif
 }
 
 static void noise(uint8_t *dst, const uint8_t *src,
@@ -280,14 +357,11 @@ static void noise(uint8_t *dst, const uint8_t *src,
         else
             shift = n->rand_shift[y];
 
-        if (!(flags & NOISE_QUALITY))
-            shift &= ~7;
-
         if (flags & NOISE_AVERAGED) {
-            line_noise_avg(dst, src, width, n->param[comp].prev_shift[y]);
+            n->line_noise_avg(dst, src, width, n->param[comp].prev_shift[y]);
             n->param[comp].prev_shift[y][n->param[comp].shiftptr] = noise + shift;
         } else {
-            line_noise(dst, src, noise, width, shift);
+            n->line_noise(dst, src, noise, width, shift);
         }
         dst += dst_linesize;
         src += src_linesize;
@@ -298,32 +372,65 @@ static void noise(uint8_t *dst, const uint8_t *src,
         n->param[comp].shiftptr = 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFilterBufferRef *inpicref)
+static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
 {
     NoiseContext *n = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
-    AVFilterBufferRef *out;
-    int ret, i;
+    AVFrame *out;
+    int i;
 
-    if (inpicref->perms & AV_PERM_WRITE) {
+    if (av_frame_is_writable(inpicref)) {
         out = inpicref;
     } else {
-        out = ff_get_video_buffer(outlink, AV_PERM_WRITE, outlink->w, outlink->h);
+        out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out) {
-            avfilter_unref_bufferp(&inpicref);
+            av_frame_free(&inpicref);
             return AVERROR(ENOMEM);
         }
-        avfilter_copy_buffer_ref_props(out, inpicref);
+        av_frame_copy_props(out, inpicref);
     }
 
     for (i = 0; i < n->nb_planes; i++)
         noise(out->data[i], inpicref->data[i], out->linesize[i],
               inpicref->linesize[i], n->linesize[i], n->height[i], n, i);
 
-    ret = ff_filter_frame(outlink, out);
     if (inpicref != out)
-        avfilter_unref_buffer(inpicref);
-    return ret;
+        av_frame_free(&inpicref);
+    return ff_filter_frame(outlink, out);
+}
+
+static av_cold int init(AVFilterContext *ctx)
+{
+    NoiseContext *n = ctx->priv;
+    int ret, i;
+    int cpu_flags = av_get_cpu_flags();
+
+    for (i = 0; i < 4; i++) {
+        if (n->all.seed >= 0)
+            n->param[i].seed = n->all.seed;
+        else
+            n->param[i].seed = 123457;
+        if (n->all.strength)
+            n->param[i].strength = n->all.strength;
+        if (n->all.flags)
+            n->param[i].flags = n->all.flags;
+    }
+
+    for (i = 0; i < 4; i++) {
+        if (n->param[i].strength && ((ret = init_noise(n, i)) < 0))
+            return ret;
+    }
+
+    if (HAVE_MMX_INLINE &&
+        cpu_flags & AV_CPU_FLAG_MMX) {
+        n->line_noise = line_noise_mmx;
+        n->line_noise_avg = line_noise_avg_mmx;
+    }
+    if (HAVE_MMXEXT_INLINE &&
+        cpu_flags & AV_CPU_FLAG_MMXEXT)
+        n->line_noise = line_noise_mmxext;
+
+    return 0;
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -333,7 +440,6 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     for (i = 0; i < 4; i++)
         av_freep(&n->param[i].noise);
-    av_opt_free(n);
 }
 
 static const AVFilterPad noise_inputs[] = {
@@ -343,7 +449,6 @@ static const AVFilterPad noise_inputs[] = {
         .get_video_buffer = ff_null_get_video_buffer,
         .filter_frame     = filter_frame,
         .config_props     = config_input,
-        .min_perms        = AV_PERM_READ,
     },
     { NULL }
 };
@@ -366,4 +471,5 @@ AVFilter avfilter_vf_noise = {
     .inputs        = noise_inputs,
     .outputs       = noise_outputs,
     .priv_class    = &noise_class,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE,
 };

@@ -23,12 +23,12 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "config.h"
 #include "common.h"
 #include "mem.h"
 #include "avstring.h"
+#include "bprint.h"
 
 int av_strstart(const char *str, const char *pfx, const char **ptr)
 {
@@ -43,7 +43,7 @@ int av_strstart(const char *str, const char *pfx, const char **ptr)
 
 int av_stristart(const char *str, const char *pfx, const char **ptr)
 {
-    while (*pfx && toupper((unsigned)*pfx) == toupper((unsigned)*str)) {
+    while (*pfx && av_toupper((unsigned)*pfx) == av_toupper((unsigned)*str)) {
         pfx++;
         str++;
     }
@@ -266,6 +266,45 @@ const char *av_dirname(char *path)
     *p = '\0';
 
     return path;
+}
+
+int av_escape(char **dst, const char *src, const char *special_chars,
+              enum AVEscapeMode mode, int flags)
+{
+    AVBPrint dstbuf;
+
+    av_bprint_init(&dstbuf, 1, AV_BPRINT_SIZE_UNLIMITED);
+    av_bprint_escape(&dstbuf, src, special_chars, mode, flags);
+
+    if (!av_bprint_is_complete(&dstbuf)) {
+        av_bprint_finalize(&dstbuf, NULL);
+        return AVERROR(ENOMEM);
+    } else {
+        av_bprint_finalize(&dstbuf, dst);
+        return dstbuf.len;
+    }
+}
+
+int av_isdigit(int c)
+{
+    return c >= '0' && c <= '9';
+}
+
+int av_isgraph(int c)
+{
+    return c > 32 && c < 127;
+}
+
+int av_isspace(int c)
+{
+    return c == ' ' || c == '\f' || c == '\n' || c == '\r' || c == '\t' ||
+           c == '\v';
+}
+
+int av_isxdigit(int c)
+{
+    c = av_tolower(c);
+    return av_isdigit(c) || (c >= 'a' && c <= 'f');
 }
 
 #ifdef TEST

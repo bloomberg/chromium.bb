@@ -102,6 +102,9 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec)
     s->av_class = &av_codec_context_class;
 
     s->codec_type = codec ? codec->type : AVMEDIA_TYPE_UNKNOWN;
+    if (codec)
+        s->codec_id = codec->id;
+
     if(s->codec_type == AVMEDIA_TYPE_AUDIO)
         flags= AV_OPT_FLAG_AUDIO_PARAM;
     else if(s->codec_type == AVMEDIA_TYPE_VIDEO)
@@ -111,8 +114,7 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec)
     av_opt_set_defaults2(s, flags, flags);
 
     s->time_base           = (AVRational){0,1};
-    s->get_buffer          = avcodec_default_get_buffer;
-    s->release_buffer      = avcodec_default_release_buffer;
+    s->get_buffer2         = avcodec_default_get_buffer2;
     s->get_format          = avcodec_default_get_format;
     s->execute             = avcodec_default_execute;
     s->execute2            = avcodec_default_execute2;
@@ -121,7 +123,6 @@ int avcodec_get_context_defaults3(AVCodecContext *s, const AVCodec *codec)
     s->sample_fmt          = AV_SAMPLE_FMT_NONE;
     s->timecode_frame_start = -1;
 
-    s->reget_buffer        = avcodec_default_reget_buffer;
     s->reordered_opaque    = AV_NOPTS_VALUE;
     if(codec && codec->priv_data_size){
         if(!s->priv_data){

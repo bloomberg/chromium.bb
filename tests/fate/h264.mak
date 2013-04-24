@@ -182,11 +182,18 @@ FATE_H264 = aud_mw_e                                                    \
             sva_nl1_b                                                   \
             sva_nl2_e                                                   \
 
+FATE_H264_REINIT_TESTS := large_420_8-to-small_420_8                    \
+                          small_420_8-to-large_444_10                   \
+                          small_420_9-to-small_420_8                    \
+                          small_422_9-to-small_420_9                    \
+
 FATE_H264  := $(FATE_H264:%=fate-h264-conformance-%)                    \
+              $(FATE_H264_REINIT_TESTS:%=fate-h264-reinit-%)            \
               fate-h264-extreme-plane-pred                              \
               fate-h264-lossless                                        \
 
 FATE_H264-$(call DEMDEC, H264, H264) += $(FATE_H264)
+FATE_H264-$(call DEMDEC,  MOV, H264) += fate-h264-crop-to-container
 FATE_H264-$(call DEMDEC,  MOV, H264) += fate-h264-interlace-crop
 FATE_H264-$(call ALLYES, MOV_DEMUXER H264_MP4TOANNEXB_BSF) += fate-h264-bsf-mp4toannexb
 
@@ -378,6 +385,9 @@ fate-h264-conformance-sva_nl1_b:                  CMD = framecrc -vsync drop -i 
 fate-h264-conformance-sva_nl2_e:                  CMD = framecrc -vsync drop -i $(SAMPLES)/h264-conformance/SVA_NL2_E.264
 
 fate-h264-bsf-mp4toannexb:                        CMD = md5 -i $(SAMPLES)/h264/interlaced_crop.mp4 -vcodec copy -bsf h264_mp4toannexb -f h264
+fate-h264-crop-to-container:                      CMD = framemd5 -i $(SAMPLES)/h264/crop-to-container-dims-canon.mov
 fate-h264-extreme-plane-pred:                     CMD = framemd5 -i $(SAMPLES)/h264/extreme-plane-pred.h264
 fate-h264-interlace-crop:                         CMD = framecrc -i $(SAMPLES)/h264/interlaced_crop.mp4 -vframes 3
 fate-h264-lossless:                               CMD = framecrc -i $(SAMPLES)/h264/lossless.h264
+
+fate-h264-reinit-%:                               CMD = framecrc -i $(SAMPLES)/h264/$(@:fate-h264-%=%).h264 -vf format=yuv444p10le,scale=352:288

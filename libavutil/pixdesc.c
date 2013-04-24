@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "avassert.h"
 #include "common.h"
 #include "pixfmt.h"
 #include "pixdesc.h"
@@ -498,7 +499,6 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
             { 0, 3, 1, 0, 7 },        /* R */
             { 0, 3, 2, 0, 7 },        /* G */
             { 0, 3, 3, 0, 7 },        /* B */
-            { 0, 3, 4, 0, 7 },        /* A */
         },
         .flags = PIX_FMT_RGB,
     },
@@ -523,7 +523,6 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
             { 0, 3, 3, 0, 7 },        /* R */
             { 0, 3, 2, 0, 7 },        /* G */
             { 0, 3, 1, 0, 7 },        /* B */
-            { 0, 3, 4, 0, 7 },        /* A */
         },
         .flags = PIX_FMT_RGB,
     },
@@ -1660,6 +1659,30 @@ const AVPixFmtDescriptor av_pix_fmt_descriptors[AV_PIX_FMT_NB] = {
         .log2_chroma_h = 1,
         .flags = PIX_FMT_HWACCEL,
     },
+    [AV_PIX_FMT_XYZ12LE] = {
+        .name = "xyz12le",
+        .nb_components = 3,
+        .log2_chroma_w = 0,
+        .log2_chroma_h = 0,
+        .comp = {
+            { 0, 5, 1, 4, 11 },       /* X */
+            { 0, 5, 3, 4, 11 },       /* Y */
+            { 0, 5, 5, 4, 11 },       /* Z */
+      },
+      /*.flags = -- not used*/
+    },
+    [AV_PIX_FMT_XYZ12BE] = {
+        .name = "xyz12be",
+        .nb_components = 3,
+        .log2_chroma_w = 0,
+        .log2_chroma_h = 0,
+        .comp = {
+            { 0, 5, 1, 4, 11 },       /* X */
+            { 0, 5, 3, 4, 11 },       /* Y */
+            { 0, 5, 5, 4, 11 },       /* Z */
+       },
+        .flags = PIX_FMT_BE,
+    },
 };
 
 static enum AVPixelFormat get_pix_fmt_internal(const char *name)
@@ -1790,4 +1813,58 @@ int av_pix_fmt_get_chroma_sub_sample(enum AVPixelFormat pix_fmt,
     *v_shift = desc->log2_chroma_h;
 
     return 0;
+}
+
+int av_pix_fmt_count_planes(enum AVPixelFormat pix_fmt)
+{
+    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(pix_fmt);
+    int i, planes[4] = { 0 }, ret = 0;
+
+    if (!desc)
+        return AVERROR(EINVAL);
+
+    for (i = 0; i < desc->nb_components; i++)
+        planes[desc->comp[i].plane] = 1;
+    for (i = 0; i < FF_ARRAY_ELEMS(planes); i++)
+        ret += planes[i];
+    return ret;
+}
+
+void ff_check_pixfmt_descriptors(void){
+    int i, j;
+
+    for (i=0; i<FF_ARRAY_ELEMS(av_pix_fmt_descriptors); i++) {
+        const AVPixFmtDescriptor *d = &av_pix_fmt_descriptors[i];
+        uint8_t fill[4][8+6+3] = {{0}};
+        uint8_t *data[4] = {fill[0], fill[1], fill[2], fill[3]};
+        int linesize[4] = {0,0,0,0};
+        uint16_t tmp[2];
+
+        if (!d->name && !d->nb_components && !d->log2_chroma_w && !d->log2_chroma_h && !d->flags)
+            continue;
+//         av_log(NULL, AV_LOG_DEBUG, "Checking: %s\n", d->name);
+        av_assert0(d->log2_chroma_w <= 3);
+        av_assert0(d->log2_chroma_h <= 3);
+        av_assert0(d->nb_components <= 4);
+        av_assert0(d->name && d->name[0]);
+        av_assert0((d->nb_components==4 || d->nb_components==2) == !!(d->flags & PIX_FMT_ALPHA));
+        av_assert2(av_get_pix_fmt(d->name) == i);
+
+        for (j=0; j<FF_ARRAY_ELEMS(d->comp); j++) {
+            const AVComponentDescriptor *c = &d->comp[j];
+            if(j>=d->nb_components) {
+                av_assert0(!c->plane && !c->step_minus1 && !c->offset_plus1 && !c->shift && !c->depth_minus1);
+                continue;
+            }
+            if (d->flags & PIX_FMT_BITSTREAM) {
+                av_assert0(c->step_minus1 >= c->depth_minus1);
+            } else {
+                av_assert0(8*(c->step_minus1+1) >= c->depth_minus1+1);
+            }
+            av_read_image_line(tmp, (void*)data, linesize, d, 0, 0, j, 2, 0);
+            av_assert0(tmp[0] == 0 && tmp[1] == 0);
+            tmp[0] = tmp[1] = (1<<(c->depth_minus1 + 1)) - 1;
+            av_write_image_line(tmp, data, linesize, d, 0, 0, j, 2);
+        }
+    }
 }

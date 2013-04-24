@@ -140,9 +140,6 @@ static av_cold int encode_end(AVCodecContext *avctx)
         av_free(s->path);
     }
     ff_af_queue_close(&s->afq);
-#if FF_API_OLD_ENCODE_AUDIO
-    av_freep(&avctx->coded_frame);
-#endif
 
     return 0;
 }
@@ -186,14 +183,6 @@ static av_cold int encode_init(AVCodecContext *avctx)
             goto error;
         }
     }
-
-#if FF_API_OLD_ENCODE_AUDIO
-    avctx->coded_frame = avcodec_alloc_frame();
-    if (!avctx->coded_frame) {
-        ret = AVERROR(ENOMEM);
-        goto error;
-    }
-#endif
 
     return 0;
 error:
@@ -401,7 +390,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         s->last_frame = 1;
     }
 
-    if ((ret = ff_alloc_packet2(avctx, avpkt, NELLY_BLOCK_LEN)))
+    if ((ret = ff_alloc_packet2(avctx, avpkt, NELLY_BLOCK_LEN)) < 0)
         return ret;
     encode_block(s, avpkt->data, avpkt->size);
 

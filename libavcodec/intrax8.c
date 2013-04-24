@@ -23,6 +23,7 @@
 
 #include "libavutil/avassert.h"
 #include "avcodec.h"
+#include "error_resilience.h"
 #include "get_bits.h"
 #include "mpegvideo.h"
 #include "msmpeg4data.h"
@@ -770,7 +771,7 @@ int ff_intrax8_decode_picture(IntraX8Context * const w, int dquant, int quant_of
                 /*emulate MB info in the relevant tables*/
                 s->mbskip_table [mb_xy]=0;
                 s->mbintra_table[mb_xy]=1;
-                s->current_picture.f.qscale_table[mb_xy] = w->quant;
+                s->current_picture.qscale_table[mb_xy] = w->quant;
                 mb_xy++;
             }
             s->dest[0]+= 8;

@@ -245,9 +245,11 @@ ffmpeg -i in.avi -f image2 -frames:v 1 img.jpeg
 Start the sequence from @var{number}. Default value is 1. Must be a
 positive number.
 
-@item updatefirst 1|0
-If set to 1, update the first written image file again and
-again. Default value is 0.
+@item -update @var{number}
+If @var{number} is nonzero, the filename will always be interpreted as just a
+filename, not a pattern, and this file will be continuously overwritten with new
+images.
+
 @end table
 
 The image muxer supports the .Y.U.V image file format. This format is
@@ -579,6 +581,13 @@ auto-select this format.
 
 @code{ext} is deprecated in favor or @code{csv}.
 
+@item ffconcat
+Generate an ffconcat file for the created segments. The resulting file
+can be read using the FFmpeg @ref{concat} demuxer.
+
+A list file with the suffix @code{".ffcat"} or @code{".ffconcat"} will
+auto-select this format.
+
 @item m3u8
 Generate an extended M3U8 file, version 3, compliant with
 @url{http://tools.ietf.org/id/draft-pantos-http-live-streaming}.
@@ -773,10 +782,10 @@ the options values contain a special character or the ':' separator, they
 must be escaped; note that this is a second level escaping.
 
 Example: encode something and both archive it in a WebM file and stream it
-as MPEG-TS over UDP:
+as MPEG-TS over UDP (the streams need to be explicitly mapped):
 
 @example
-ffmpeg -i ... -c:v libx264 -c:a mp2 -f tee
+ffmpeg -i ... -c:v libx264 -c:a mp2 -f tee -map 0:v -map 0:a
   "archive-20121107.mkv|[f=mpegts]udp://10.0.1.255:1234/"
 @end example
 

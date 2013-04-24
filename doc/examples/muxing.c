@@ -86,7 +86,6 @@ static AVStream *add_stream(AVFormatContext *oc, AVCodec **codec,
         break;
 
     case AVMEDIA_TYPE_VIDEO:
-        avcodec_get_context_defaults3(c, *codec);
         c->codec_id = codec_id;
 
         c->bit_rate = 400000;
@@ -343,25 +342,19 @@ static void write_video_frame(AVFormatContext *oc, AVStream *st)
 
         ret = av_interleaved_write_frame(oc, &pkt);
     } else {
-        /* encode the image */
-        AVPacket pkt;
-        int got_output;
-
+        AVPacket pkt = { 0 };
+        int got_packet;
         av_init_packet(&pkt);
-        pkt.data = NULL;    // packet data will be allocated by the encoder
-        pkt.size = 0;
 
-        ret = avcodec_encode_video2(c, &pkt, frame, &got_output);
+        /* encode the image */
+        ret = avcodec_encode_video2(c, &pkt, frame, &got_packet);
         if (ret < 0) {
             fprintf(stderr, "Error encoding video frame: %s\n", av_err2str(ret));
             exit(1);
         }
-
         /* If size is zero, it means the image was buffered. */
-        if (got_output) {
-            if (c->coded_frame->key_frame)
-                pkt.flags |= AV_PKT_FLAG_KEY;
 
+        if (!ret && got_packet && pkt.size) {
             pkt.stream_index = st->index;
 
             /* Write the compressed frame to the media file. */
@@ -396,7 +389,7 @@ int main(int argc, char **argv)
     AVStream *audio_st, *video_st;
     AVCodec *audio_codec, *video_codec;
     double audio_pts, video_pts;
-    int ret, i;
+    int ret;
 
     /* Initialize libavcodec, and register all codecs and formats. */
     av_register_all();
@@ -504,18 +497,12 @@ int main(int argc, char **argv)
     if (audio_st)
         close_audio(oc, audio_st);
 
-    /* Free the streams. */
-    for (i = 0; i < oc->nb_streams; i++) {
-        av_freep(&oc->streams[i]->codec);
-        av_freep(&oc->streams[i]);
-    }
-
     if (!(fmt->flags & AVFMT_NOFILE))
         /* Close the output file. */
         avio_close(oc->pb);
 
     /* free the stream */
-    av_free(oc);
+    avformat_free_context(oc);
 
     return 0;
 }

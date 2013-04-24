@@ -494,6 +494,8 @@ static inline int split_write_packet(AVFormatContext *s, AVPacket *pkt)
 
     did_split = av_packet_split_side_data(pkt);
     ret = s->oformat->write_packet(s, pkt);
+    if (s->flush_packets && s->pb && s->pb->error >= 0)
+        avio_flush(s->pb);
     if (did_split)
         av_packet_merge_side_data(pkt);
     return ret;
@@ -506,6 +508,8 @@ int av_write_frame(AVFormatContext *s, AVPacket *pkt)
     if (!pkt) {
         if (s->oformat->flags & AVFMT_ALLOW_FLUSH) {
             ret = s->oformat->write_packet(s, NULL);
+            if (s->flush_packets && s->pb && s->pb->error >= 0)
+                avio_flush(s->pb);
             if (ret >= 0 && s->pb && s->pb->error < 0)
                 ret = s->pb->error;
             return ret;
@@ -540,7 +544,10 @@ int ff_interleave_add_packet(AVFormatContext *s, AVPacket *pkt,
     if (!this_pktl)
         return AVERROR(ENOMEM);
     this_pktl->pkt = *pkt;
+#if FF_API_DESTRUCT_PACKET
     pkt->destruct  = NULL;           // do not free original but only the copy
+#endif
+    pkt->buf       = NULL;
     av_dup_packet(&this_pktl->pkt);  // duplicate the packet if it uses non-allocated memory
 
     if (s->streams[pkt->stream_index]->last_in_packet_buffer) {
@@ -695,15 +702,6 @@ int ff_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
         return 0;
     }
 }
-
-#if FF_API_INTERLEAVE_PACKET
-int av_interleave_packet_per_dts(AVFormatContext *s, AVPacket *out,
-                                 AVPacket *pkt, int flush)
-{
-    return ff_interleave_packet_per_dts(s, out, pkt, flush);
-}
-
-#endif
 
 /**
  * Interleave an AVPacket correctly so it can be muxed.
