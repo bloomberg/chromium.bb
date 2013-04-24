@@ -115,8 +115,16 @@ IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
 // MSID and bundle attribute from the initial offer to verify that
 // video is playing for the call even if the initiating client don't support
 // MSID. http://tools.ietf.org/html/draft-alvestrand-rtcweb-msid-02
+// Disabled for win7_aura, see http://crbug.com/235089.
+#if defined(OS_WIN) && defined(USE_AURA)
+#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
+        DISABLED_CanSetupAudioAndVideoCallWithoutMsidAndBundle
+#else
+#define MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle\
+        CanSetupAudioAndVideoCallWithoutMsidAndBundle
+#endif
 IN_PROC_BROWSER_TEST_F(WebrtcBrowserTest,
-                       CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
+                       MAYBE_CanSetupAudioAndVideoCallWithoutMsidAndBundle) {
   GURL url(test_server()->GetURL("files/media/peerconnection-call.html"));
   NavigateToURL(shell(), url);
 
