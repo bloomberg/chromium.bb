@@ -160,9 +160,6 @@ deps = {
   "src/third_party/WebKit/Tools/Scripts":
     Var("webkit_trunk") + "/Tools/Scripts@" + Var("webkit_revision"),
 
-  "src/third_party/WebKit/Tools/TestWebKitAPI":
-    Var("webkit_trunk") + "/Tools/TestWebKitAPI@" + Var("webkit_revision"),
-
   "src/third_party/ots":
     (Var("googlecode_url") % "ots") + "/trunk@97",
 
@@ -485,7 +482,6 @@ deps_os = {
     "src/third_party/WebKit/Source": None,
     "src/third_party/WebKit/Tools/DumpRenderTree": None,
     "src/third_party/WebKit/Tools/Scripts": None,
-    "src/third_party/WebKit/Tools/TestWebKitAPI": None,
     "src/third_party/yasm/source/patched-yasm": None,
     "src/tools/page_cycler/acid3": None,
     "src/v8": None,
