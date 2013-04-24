@@ -51,6 +51,19 @@ bool EnoughDiskSpaceIsAvailableForDBOperation(const base::FilePath& path) {
       kRequiredDiskSpaceInMB * (1 << 20);
 }
 
+// Runs |callback| with arguments.
+void RunGetEntryInfoWithFilePathCallback(
+    const GetEntryInfoWithFilePathCallback& callback,
+    base::FilePath* path,
+    scoped_ptr<DriveEntryProto> entry,
+    FileError error) {
+  DCHECK(!callback.is_null());
+
+  if (error != FILE_ERROR_OK)
+    entry.reset();
+  callback.Run(error, *path, entry.Pass());
+}
+
 }  // namespace
 
 std::string DirectoryFetchInfo::ToString() const {
@@ -110,32 +123,6 @@ struct DriveResourceMetadata::GetEntryInfoResult {
   }
 
   FileError error;
-  scoped_ptr<DriveEntryProto> entry;
-};
-
-// Struct to hold result values passed to GetEntryInfoWithFilePathCallback.
-struct DriveResourceMetadata::GetEntryInfoWithFilePathResult {
-  GetEntryInfoWithFilePathResult(FileError error,
-                                 const base::FilePath& path,
-                                 scoped_ptr<DriveEntryProto> entry)
-      : error(error),
-        path(path),
-        entry(entry.Pass()) {}
-
-  explicit GetEntryInfoWithFilePathResult(FileError error)
-      : error(error) {}
-
-  // Runs GetEntryInfoWithFilePathCallback with the values stored in |result|.
-  static void RunCallbackWithResult(
-      const GetEntryInfoWithFilePathCallback& callback,
-      scoped_ptr<GetEntryInfoWithFilePathResult> result) {
-    DCHECK(!callback.is_null());
-    DCHECK(result);
-    callback.Run(result->error, result->path, result->entry.Pass());
-  }
-
-  FileError error;
-  base::FilePath path;
   scoped_ptr<DriveEntryProto> entry;
 };
 
@@ -349,14 +336,22 @@ void DriveResourceMetadata::GetEntryInfoByResourceId(
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  base::FilePath* file_path = new base::FilePath;
+  scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+  DriveEntryProto* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveResourceMetadata::GetEntryInfoByResourceIdOnBlockingPool,
                  base::Unretained(this),
-                 resource_id),
-      base::Bind(&GetEntryInfoWithFilePathResult::RunCallbackWithResult,
-                 callback));
+                 resource_id,
+                 file_path,
+                 entry_ptr),
+      base::Bind(&RunGetEntryInfoWithFilePathCallback,
+                 callback,
+                 base::Owned(file_path),
+                 base::Passed(&entry)));
 }
 
 void DriveResourceMetadata::GetEntryInfoByPath(
@@ -394,14 +389,22 @@ void DriveResourceMetadata::RefreshEntry(
     const GetEntryInfoWithFilePathCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
+
+  base::FilePath* file_path = new base::FilePath;
+  scoped_ptr<DriveEntryProto> entry(new DriveEntryProto);
+  DriveEntryProto* entry_ptr = entry.get();
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
       base::Bind(&DriveResourceMetadata::RefreshEntryOnBlockingPool,
                  base::Unretained(this),
-                 entry_proto),
-      base::Bind(&GetEntryInfoWithFilePathResult::RunCallbackWithResult,
-                 callback));
+                 entry_proto,
+                 file_path,
+                 entry_ptr),
+      base::Bind(&RunGetEntryInfoWithFilePathCallback,
+                 callback,
+                 base::Owned(file_path),
+                 base::Passed(&entry)));
 }
 
 void DriveResourceMetadata::RefreshDirectory(
@@ -489,29 +492,17 @@ DriveResourceMetadata::MoveEntryToDirectoryOnBlockingPool(
     return FileMoveResult(FILE_ERROR_NO_SPACE);
 
   scoped_ptr<DriveEntryProto> entry = FindEntryByPathSync(file_path);
-  if (!entry)
-    return FileMoveResult(FILE_ERROR_NOT_FOUND);
-
-  // Cannot move an entry without its parent. (i.e. the root)
-  if (entry->parent_resource_id().empty())
-    return FileMoveResult(FILE_ERROR_INVALID_OPERATION);
-
   scoped_ptr<DriveEntryProto> destination = FindEntryByPathSync(directory_path);
-  base::FilePath moved_file_path;
-  FileError error = FILE_ERROR_FAILED;
-  if (!destination) {
-    error = FILE_ERROR_NOT_FOUND;
-  } else if (!destination->file_info().is_directory()) {
-    error = FILE_ERROR_NOT_A_DIRECTORY;
-  } else {
-    DetachEntryFromDirectory(entry->resource_id());
-    entry->set_parent_resource_id(destination->resource_id());
-    AddEntryToDirectory(*entry);
-    moved_file_path = GetFilePath(entry->resource_id());
-    error = FILE_ERROR_OK;
-  }
-  DVLOG(1) << "MoveEntryToDirectory " << moved_file_path.value();
-  return FileMoveResult(error, moved_file_path);
+  if (!entry || !destination)
+    return FileMoveResult(FILE_ERROR_NOT_FOUND);
+  if (!destination->file_info().is_directory())
+    return FileMoveResult(FILE_ERROR_NOT_A_DIRECTORY);
+
+  entry->set_parent_resource_id(destination->resource_id());
+
+  base::FilePath result_file_path;
+  FileError error = RefreshEntryOnBlockingPool(*entry, &result_file_path, NULL);
+  return FileMoveResult(error, result_file_path);
 }
 
 DriveResourceMetadata::FileMoveResult
@@ -535,9 +526,9 @@ DriveResourceMetadata::RenameEntryOnBlockingPool(
     return FileMoveResult(FILE_ERROR_EXISTS);
 
   entry->set_title(new_name);
-  scoped_ptr<GetEntryInfoWithFilePathResult> result =
-      RefreshEntryOnBlockingPool(*entry);
-  return FileMoveResult(result->error, result->path);
+  base::FilePath result_file_path;
+  FileError error = RefreshEntryOnBlockingPool(*entry, &result_file_path, NULL);
+  return FileMoveResult(error, result_file_path);
 }
 
 DriveResourceMetadata::FileMoveResult
@@ -593,24 +584,23 @@ scoped_ptr<DriveEntryProto> DriveResourceMetadata::FindEntryByPathSync(
   return entry.Pass();
 }
 
-scoped_ptr<DriveResourceMetadata::GetEntryInfoWithFilePathResult>
-DriveResourceMetadata::GetEntryInfoByResourceIdOnBlockingPool(
-    const std::string& resource_id) {
+FileError DriveResourceMetadata::GetEntryInfoByResourceIdOnBlockingPool(
+    const std::string& resource_id,
+    base::FilePath* out_file_path,
+    DriveEntryProto* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(!resource_id.empty());
 
   scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);
-  FileError error = FILE_ERROR_FAILED;
-  base::FilePath drive_file_path;
-  if (entry) {
-    error = FILE_ERROR_OK;
-    drive_file_path = GetFilePath(resource_id);
-  } else {
-    error = FILE_ERROR_NOT_FOUND;
-  }
+  if (!entry)
+    return FILE_ERROR_NOT_FOUND;
 
-  return make_scoped_ptr(
-      new GetEntryInfoWithFilePathResult(error, drive_file_path, entry.Pass()));
+  if (out_file_path)
+    *out_file_path = GetFilePath(resource_id);
+  if (out_entry)
+    *out_entry = *entry;
+
+  return FILE_ERROR_OK;
 }
 
 scoped_ptr<DriveResourceMetadata::GetEntryInfoResult>
@@ -662,50 +652,47 @@ void DriveResourceMetadata::GetEntryInfoPairByPaths(
                  callback));
 }
 
-scoped_ptr<DriveResourceMetadata::GetEntryInfoWithFilePathResult>
-DriveResourceMetadata::RefreshEntryOnBlockingPool(
-    const DriveEntryProto& entry_proto) {
+FileError DriveResourceMetadata::RefreshEntryOnBlockingPool(
+    const DriveEntryProto& entry,
+    base::FilePath* out_file_path,
+    DriveEntryProto* out_entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
-    return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(FILE_ERROR_NO_SPACE));
-  }
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FILE_ERROR_NO_SPACE;
 
-  scoped_ptr<DriveEntryProto> entry =
-      storage_->GetEntry(entry_proto.resource_id());
-  if (!entry) {
-    return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(FILE_ERROR_NOT_FOUND));
-  }
+  scoped_ptr<DriveEntryProto> old_entry =
+      storage_->GetEntry(entry.resource_id());
+  if (!old_entry)
+    return FILE_ERROR_NOT_FOUND;
 
-  if (entry->parent_resource_id().empty() ||  // Rejct root.
-      entry->file_info().is_directory() !=  // Reject incompatible input.
-      entry_proto.file_info().is_directory()) {
-    return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(FILE_ERROR_INVALID_OPERATION));
-  }
+  if (old_entry->parent_resource_id().empty() ||  // Rejct root.
+      old_entry->file_info().is_directory() !=  // Reject incompatible input.
+      entry.file_info().is_directory())
+    return FILE_ERROR_INVALID_OPERATION;
 
   // Update data.
   scoped_ptr<DriveEntryProto> new_parent =
-      GetDirectory(entry_proto.parent_resource_id());
+      GetDirectory(entry.parent_resource_id());
 
-  if (!new_parent) {
-    return make_scoped_ptr(
-        new GetEntryInfoWithFilePathResult(FILE_ERROR_NOT_FOUND));
-  }
+  if (!new_parent)
+    return FILE_ERROR_NOT_FOUND;
 
   // Remove from the old parent and add it to the new parent with the new data.
-  DetachEntryFromDirectory(entry->resource_id());
-  AddEntryToDirectory(CreateEntryWithProperBaseName(entry_proto));
+  DetachEntryFromDirectory(old_entry->resource_id());
+  AddEntryToDirectory(CreateEntryWithProperBaseName(entry));
 
-  // Note that base_name is not the same for the new entry and entry_proto.
-  scoped_ptr<DriveEntryProto> result_entry_proto =
-      storage_->GetEntry(entry->resource_id());
-  return make_scoped_ptr(
-      new GetEntryInfoWithFilePathResult(FILE_ERROR_OK,
-                                         GetFilePath(entry->resource_id()),
-                                         result_entry_proto.Pass()));
+  if (out_file_path)
+    *out_file_path = GetFilePath(entry.resource_id());
+
+  if (out_entry) {
+    // Note that base_name is not the same for the new entry and entry_proto.
+    scoped_ptr<DriveEntryProto> result_entry_proto =
+        storage_->GetEntry(entry.resource_id());
+    DCHECK(result_entry_proto);
+    *out_entry = *result_entry_proto;
+  }
+  return FILE_ERROR_OK;
 }
 
 DriveResourceMetadata::FileMoveResult

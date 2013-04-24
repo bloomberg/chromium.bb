@@ -233,7 +233,6 @@ class DriveResourceMetadata {
  private:
   struct FileMoveResult;
   struct GetEntryInfoResult;
-  struct GetEntryInfoWithFilePathResult;
   struct ReadDirectoryResult;
 
   // Note: Use Destroy() to delete this object.
@@ -273,8 +272,10 @@ class DriveResourceMetadata {
   FileMoveResult RemoveEntryOnBlockingPool(const std::string& resource_id);
 
   // Used to implement GetEntryInfoByResourceId().
-  scoped_ptr<GetEntryInfoWithFilePathResult>
-      GetEntryInfoByResourceIdOnBlockingPool(const std::string& resource_id);
+  FileError GetEntryInfoByResourceIdOnBlockingPool(
+      const std::string& resource_id,
+      base::FilePath* out_file_path,
+      DriveEntryProto* out_entry);
 
   // Used to implement GetEntryInfoByPath().
   scoped_ptr<GetEntryInfoResult> GetEntryInfoByPathOnBlockingPool(
@@ -285,8 +286,9 @@ class DriveResourceMetadata {
       const base::FilePath& file_path);
 
   // Used to implement RefreshEntry().
-  scoped_ptr<GetEntryInfoWithFilePathResult> RefreshEntryOnBlockingPool(
-      const DriveEntryProto& entry_proto);
+  FileError RefreshEntryOnBlockingPool(const DriveEntryProto& entry_proto,
+                                       base::FilePath* out_file_path,
+                                       DriveEntryProto* out_entry);
 
   // Used to implement RefreshDirectory().
   FileMoveResult RefreshDirectoryOnBlockingPool(
