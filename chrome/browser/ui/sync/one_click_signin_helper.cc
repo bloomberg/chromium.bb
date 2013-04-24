@@ -429,7 +429,7 @@ void CurrentHistoryCleaner::DidStopLoading(
     content::RenderViewHost* render_view_host) {
   content::NavigationController& nc = web_contents()->GetController();
   // Have to wait until something else gets added to history before removal.
-  if (history_index_to_remove_ != nc.GetLastCommittedEntryIndex()) {
+  if (history_index_to_remove_ < nc.GetLastCommittedEntryIndex()) {
     nc.RemoveEntryAtIndex(history_index_to_remove_);
     Observe(NULL);
     delete this;  /* success */
@@ -1042,7 +1042,6 @@ void OneClickSigninHelper::RedirectToNtpOrAppsPage(bool show_bubble) {
                                 CURRENT_TAB,
                                 content::PAGE_TRANSITION_AUTO_TOPLEVEL,
                                 false);
-  RemoveCurrentHistoryItem(contents);
   contents->OpenURL(params);
 
   error_message_.clear();
@@ -1153,6 +1152,7 @@ void OneClickSigninHelper::DidStopLoading(
   // explicit sign ins.
   if (!error_message_.empty() && auto_accept_ == AUTO_ACCEPT_EXPLICIT) {
     VLOG(1) << "OneClickSigninHelper::DidStopLoading: error=" << error_message_;
+    RemoveCurrentHistoryItem(contents);
     RedirectToNtpOrAppsPage(true);
     return;
   }
@@ -1187,6 +1187,7 @@ void OneClickSigninHelper::DidStopLoading(
     std::string unused_value;
     if (net::GetValueForKeyInQuery(url, "ntp", &unused_value)) {
       SyncPromoUI::SetUserSkippedSyncPromo(profile);
+      RemoveCurrentHistoryItem(contents);
       RedirectToNtpOrAppsPage(false);
     }
 
@@ -1364,6 +1365,7 @@ void OneClickSigninHelper::DidStopLoading(
       if (source_ != SyncPromoUI::SOURCE_SETTINGS &&
           source_ != SyncPromoUI::SOURCE_WEBSTORE_INSTALL) {
         signin_tracker_.reset(new SigninTracker(profile, this));
+        RemoveCurrentHistoryItem(contents);
         RedirectToNtpOrAppsPage(false);
       }
       break;
