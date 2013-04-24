@@ -25,6 +25,7 @@
 
 #include <errno.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -131,6 +132,13 @@ struct drm_fb {
 	void *map;
 };
 
+struct drm_edid {
+	char eisa_id[13];
+	char monitor_name[13];
+	char pnp_id[5];
+	char serial_number[13];
+};
+
 struct drm_output {
 	struct weston_output   base;
 
@@ -139,6 +147,7 @@ struct drm_output {
 	int pipe;
 	uint32_t connector_id;
 	drmModeCrtcPtr original_crtc;
+	struct drm_edid edid;
 
 	int vblank_pending;
 	int page_flip_pending;
@@ -1486,6 +1495,143 @@ drm_output_fini_pixman(struct drm_output *output)
 	}
 }
 
+static void
+edid_parse_string(const uint8_t *data, char text[])
+{
+	int i;
+	int replaced = 0;
+
+	/* this is always 12 bytes, but we can't guarantee it's null
+	 * terminated or not junk. */
+	strncpy(text, (const char *) data, 12);
+
+	/* remove insane chars */
+	for (i = 0; text[i] != '\0'; i++) {
+		if (text[i] == '\n' ||
+		    text[i] == '\r') {
+			text[i] = '\0';
+			break;
+		}
+	}
+
+	/* ensure string is printable */
+	for (i = 0; text[i] != '\0'; i++) {
+		if (!isprint(text[i])) {
+			text[i] = '-';
+			replaced++;
+		}
+	}
+
+	/* if the string is random junk, ignore the string */
+	if (replaced > 4)
+		text[0] = '\0';
+}
+
+#define EDID_DESCRIPTOR_ALPHANUMERIC_DATA_STRING	0xfe
+#define EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME		0xfc
+#define EDID_DESCRIPTOR_DISPLAY_PRODUCT_SERIAL_NUMBER	0xff
+#define EDID_OFFSET_DATA_BLOCKS				0x36
+#define EDID_OFFSET_LAST_BLOCK				0x6c
+#define EDID_OFFSET_PNPID				0x08
+#define EDID_OFFSET_SERIAL				0x0c
+
+static int
+edid_parse(struct drm_edid *edid, const uint8_t *data, size_t length)
+{
+	int i;
+	uint32_t serial_number;
+
+	/* check header */
+	if (length < 128)
+		return -1;
+	if (data[0] != 0x00 || data[1] != 0xff)
+		return -1;
+
+	/* decode the PNP ID from three 5 bit words packed into 2 bytes
+	 * /--08--\/--09--\
+	 * 7654321076543210
+	 * |\---/\---/\---/
+	 * R  C1   C2   C3 */
+	edid->pnp_id[0] = 'A' + ((data[EDID_OFFSET_PNPID + 0] & 0x7c) / 4) - 1;
+	edid->pnp_id[1] = 'A' + ((data[EDID_OFFSET_PNPID + 0] & 0x3) * 8) + ((data[EDID_OFFSET_PNPID + 1] & 0xe0) / 32) - 1;
+	edid->pnp_id[2] = 'A' + (data[EDID_OFFSET_PNPID + 1] & 0x1f) - 1;
+	edid->pnp_id[3] = '\0';
+
+	/* maybe there isn't a ASCII serial number descriptor, so use this instead */
+	serial_number = (uint32_t) data[EDID_OFFSET_SERIAL + 0];
+	serial_number += (uint32_t) data[EDID_OFFSET_SERIAL + 1] * 0x100;
+	serial_number += (uint32_t) data[EDID_OFFSET_SERIAL + 2] * 0x10000;
+	serial_number += (uint32_t) data[EDID_OFFSET_SERIAL + 3] * 0x1000000;
+	if (serial_number > 0)
+		sprintf(edid->serial_number, "%lu", (unsigned long) serial_number);
+
+	/* parse EDID data */
+	for (i = EDID_OFFSET_DATA_BLOCKS;
+	     i <= EDID_OFFSET_LAST_BLOCK;
+	     i += 18) {
+		/* ignore pixel clock data */
+		if (data[i] != 0)
+			continue;
+		if (data[i+2] != 0)
+			continue;
+
+		/* any useful blocks? */
+		if (data[i+3] == EDID_DESCRIPTOR_DISPLAY_PRODUCT_NAME) {
+			edid_parse_string(&data[i+5],
+					  edid->monitor_name);
+		} else if (data[i+3] == EDID_DESCRIPTOR_DISPLAY_PRODUCT_SERIAL_NUMBER) {
+			edid_parse_string(&data[i+5],
+					  edid->serial_number);
+		} else if (data[i+3] == EDID_DESCRIPTOR_ALPHANUMERIC_DATA_STRING) {
+			edid_parse_string(&data[i+5],
+					  edid->eisa_id);
+		}
+	}
+	return 0;
+}
+
+static void
+find_and_parse_output_edid(struct drm_compositor *ec,
+			   struct drm_output *output,
+			   drmModeConnector *connector)
+{
+	drmModePropertyBlobPtr edid_blob = NULL;
+	drmModePropertyPtr property;
+	int i;
+	int rc;
+
+	for (i = 0; i < connector->count_props && !edid_blob; i++) {
+		property = drmModeGetProperty(ec->drm.fd, connector->props[i]);
+		if (!property)
+			continue;
+		if ((property->flags & DRM_MODE_PROP_BLOB) &&
+		    !strcmp(property->name, "EDID")) {
+			edid_blob = drmModeGetPropertyBlob(ec->drm.fd,
+							   connector->prop_values[i]);
+		}
+		drmModeFreeProperty(property);
+	}
+	if (!edid_blob)
+		return;
+
+	rc = edid_parse(&output->edid,
+			edid_blob->data,
+			edid_blob->length);
+	if (!rc) {
+		weston_log("EDID data '%s', '%s', '%s'\n",
+			   output->edid.pnp_id,
+			   output->edid.monitor_name,
+			   output->edid.serial_number);
+		if (output->edid.pnp_id[0] != '\0')
+			output->base.make = output->edid.pnp_id;
+		if (output->edid.monitor_name[0] != '\0')
+			output->base.model = output->edid.monitor_name;
+		if (output->edid.serial_number[0] != '\0')
+			output->base.serial_number = output->edid.serial_number;
+	}
+	drmModeFreePropertyBlob(edid_blob);
+}
+
 static int
 create_output_for_connector(struct drm_compositor *ec,
 			    drmModeRes *resources,
@@ -1517,6 +1663,7 @@ create_output_for_connector(struct drm_compositor *ec,
 	output->base.subpixel = drm_subpixel_to_wayland(connector->subpixel);
 	output->base.make = "unknown";
 	output->base.model = "unknown";
+	output->base.serial_number = "unknown";
 	wl_list_init(&output->base.mode_list);
 
 	if (connector->connector_type < ARRAY_LENGTH(connector_type_names))
@@ -1641,6 +1788,8 @@ create_output_for_connector(struct drm_compositor *ec,
 	}
 
 	wl_list_insert(ec->base.output_list.prev, &output->base.link);
+
+	find_and_parse_output_edid(ec, output, connector);
 
 	output->base.origin = output->base.current;
 	output->base.start_repaint_loop = drm_output_start_repaint_loop;
