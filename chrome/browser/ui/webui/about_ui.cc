@@ -113,7 +113,7 @@ const int kOnlineTermsTimeoutSec = 10;
 // redirect solves the problem by eliminating the process transition during the
 // time that about memory is being computed.
 std::string GetAboutMemoryRedirectResponse(Profile* profile) {
-  return base::StringPrintf("<meta http-equiv=\"refresh\" content=\"0;%s\">",
+  return base::StringPrintf("<meta http-equiv='refresh' content='0;%s'>",
                             chrome::kChromeUIMemoryRedirectURL);
 }
 
@@ -338,11 +338,11 @@ void AppendHeader(std::string* output, int refresh,
     output->append(net::EscapeForHTML(unescaped_title));
     output->append("</title>\n");
   }
-  output->append("<meta charset=\"utf-8\">\n");
+  output->append("<meta charset='utf-8'>\n");
   if (refresh > 0) {
-    output->append("<meta http-equiv=\"refresh\" content=\"");
+    output->append("<meta http-equiv='refresh' content='");
     output->append(base::IntToString(refresh));
-    output->append("\"/>\n");
+    output->append("'/>\n");
   }
 }
 
@@ -408,14 +408,20 @@ std::string AddStringRow(const std::string& name, const std::string& value) {
   return WrapWithTR(row);
 }
 
+void AddContentSecurityPolicy(std::string* output) {
+  output->append("<meta http-equiv='Content-Security-Policy' "
+      "content='default-src 'none';'>");
+}
+
 // TODO(stevenjb): L10N AboutDiscards.
 
 std::string AboutDiscardsRun() {
   std::string output;
   AppendHeader(&output, 0, "About discards");
   output.append(
-      base::StringPrintf("<meta http-equiv=\"refresh\" content=\"2;%s\">",
+      base::StringPrintf("<meta http-equiv='refresh' content='2;%s'>",
       chrome::kChromeUIDiscardsURL));
+  AddContentSecurityPolicy(&output);
   output.append(WrapWithTag("p", "Discarding a tab..."));
   g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
   AppendFooter(&output);
@@ -428,6 +434,7 @@ std::string AboutDiscards(const std::string& path) {
   if (path == kRunCommand)
     return AboutDiscardsRun();
   AppendHeader(&output, 0, "About discards");
+  AddContentSecurityPolicy(&output);
   AppendBody(&output);
   output.append("<h3>About discards</h3>");
   output.append(
@@ -441,6 +448,7 @@ std::string AboutDiscards(const std::string& path) {
     std::vector<string16>::iterator it = titles.begin();
     for ( ; it != titles.end(); ++it) {
       std::string title = UTF16ToUTF8(*it);
+      title = net::EscapeForHTML(title);
       output.append(WrapWithTag("li", title));
     }
     output.append("</ul>");
@@ -859,11 +867,11 @@ void AboutSandboxRow(std::string* data, const std::string& prefix, int name_id,
   data->append(prefix);
   data->append(l10n_util::GetStringUTF8(name_id));
   if (good) {
-    data->append("</td><td style=\"color: green;\">");
+    data->append("</td><td style='color: green;'>");
     data->append(
         l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL));
   } else {
-    data->append("</td><td style=\"color: red;\">");
+    data->append("</td><td style='color: red;'>");
     data->append(
         l10n_util::GetStringUTF8(IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL));
   }
@@ -911,10 +919,10 @@ std::string AboutSandbox() {
   bool good = good_layer1 && good_layer2;
 
   if (good) {
-    data.append("<p style=\"color: green\">");
+    data.append("<p style='color: green'>");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_OK));
   } else {
-    data.append("<p style=\"color: red\">");
+    data.append("<p style='color: red'>");
     data.append(l10n_util::GetStringUTF8(IDS_ABOUT_SANDBOX_BAD));
   }
   data.append("</p>");
