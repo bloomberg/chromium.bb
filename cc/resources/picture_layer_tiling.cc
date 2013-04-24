@@ -395,7 +395,8 @@ void PictureLayerTiling::UpdateTilePriorities(
       starting_rect,
       prioritized_rect_area,
       ContentRect());
-  DCHECK(ContentRect().Contains(prioritized_rect));
+  DCHECK(prioritized_rect.IsEmpty() ||
+         ContentRect().Contains(prioritized_rect));
 
   // Iterate through all of the tiles that were live last frame but will
   // not be live this frame, and mark them as being dead.
