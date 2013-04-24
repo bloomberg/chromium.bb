@@ -656,9 +656,7 @@ class GitWrapper(SCMWrapper):
       # git clone doesn't seem to insert a newline properly before printing
       # to stdout
       print('')
-    template_path = os.path.join(
-        os.path.dirname(THIS_FILE_PATH), 'git-templates')
-    clone_cmd = ['clone', '--progress', '--template=%s' % template_path]
+    clone_cmd = ['clone', '--progress']
     if revision.startswith('refs/heads/'):
       clone_cmd.extend(['-b', revision.replace('refs/heads/', '')])
       detach_head = False
