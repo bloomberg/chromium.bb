@@ -69,6 +69,18 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
       jobject obj,
       jint section,
       jint field_id);
+  base::android::ScopedJavaLocalRef<jstring> GetDialogButtonText(
+      JNIEnv* env,
+      jobject obj,
+      jint dialog_button_id);
+  jboolean IsDialogButtonEnabled(
+      JNIEnv* env,
+      jobject obj,
+      jint dialog_button_id);
+  base::android::ScopedJavaLocalRef<jstring> GetSaveLocallyText(JNIEnv* env,
+                                                                jobject obj);
+  base::android::ScopedJavaLocalRef<jstring> GetProgressBarText(JNIEnv* env,
+                                                                jobject obj);
 
   static bool RegisterAutofillDialogViewAndroid(JNIEnv* env);
 

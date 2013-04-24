@@ -22,21 +22,18 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private final AutofillDialog mAutofillDialog;
     private final AutofillDialogAccountHelper mAccountHelper;
 
-    public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid windowAndroid,
-            String saveLocallyText) {
+    public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid windowAndroid) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
         mAccountHelper = new AutofillDialogAccountHelper(this, windowAndroid.getContext());
 
-        mAutofillDialog = new AutofillDialog(windowAndroid.getContext(), this, saveLocallyText);
+        mAutofillDialog = new AutofillDialog(windowAndroid.getContext(), this);
         mAutofillDialog.show();
     }
 
     @CalledByNative
     private static AutofillDialogGlue create(int nativeAutofillDialogViewAndroid,
-            WindowAndroid windowAndroid,
-            String saveLocallyText) {
-        return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, windowAndroid,
-                saveLocallyText);
+            WindowAndroid windowAndroid) {
+        return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, windowAndroid);
     }
 
     /**
@@ -216,6 +213,26 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
         return nativeGetListForField(mNativeDialogPopup, field);
     }
 
+    @Override
+    public String getDialogButtonText(int dialogButtonId) {
+        return nativeGetDialogButtonText(mNativeDialogPopup, dialogButtonId);
+    }
+
+    @Override
+    public boolean isDialogButtonEnabled(int dialogButtonId) {
+        return nativeIsDialogButtonEnabled(mNativeDialogPopup, dialogButtonId);
+    }
+
+    @Override
+    public String getSaveLocallyText() {
+        return nativeGetSaveLocallyText(mNativeDialogPopup);
+    }
+
+    @Override
+    public String getProgressBarText() {
+        return nativeGetProgressBarText(mNativeDialogPopup);
+    }
+
     // Helper methods for AutofillDialogField and AutofillDialogItem ------------------------------
 
     @CalledByNative
@@ -306,4 +323,10 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
             int fieldType, String input);
     private native String nativeGetPlaceholderForField(int nativeAutofillDialogViewAndroid,
             int section, int fieldType);
+    private native String nativeGetDialogButtonText(int nativeAutofillDialogViewAndroid,
+            int dialogButtonId);
+    private native boolean nativeIsDialogButtonEnabled(int nativeAutofillDialogViewAndroid,
+            int dialogButtonId);
+    private native String nativeGetSaveLocallyText(int nativeAutofillDialogViewAndroid);
+    private native String nativeGetProgressBarText(int nativeAutofillDialogViewAndroid);
 }

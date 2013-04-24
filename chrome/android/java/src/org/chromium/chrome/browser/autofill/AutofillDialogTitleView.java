@@ -28,21 +28,22 @@ public class AutofillDialogTitleView extends FrameLayout {
     private ArrayAdapter<String> mAdapter;
 
     /**
-     * Create a title using the given context with only the default dropdown items.
+     * Creates a title using the given context with only the default dropdown items.
      * @param context The context to create the title within.
      */
     public AutofillDialogTitleView(Context context) {
         super(context);
 
         LayoutInflater.from(context).inflate(R.layout.autofill_dialog_title, this, true);
-        Spinner accountsSpinner = (Spinner)findViewById(R.id.accounts_spinner);
+        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         mAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item);
         mAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         accountsSpinner.setAdapter(mAdapter);
+        accountsSpinner.setEnabled(false);
     }
 
     /**
-     * Update account chooser dropdown with given accounts and create the title view if needed.
+     * Updates account chooser dropdown with given accounts and creates the title view if needed.
      * @param accountNames The dropdown items to be listed.
      * @param selectedAccountIndex The index of a currently selected account or
      *                             -1 if nothing is selected.
@@ -52,18 +53,27 @@ public class AutofillDialogTitleView extends FrameLayout {
         mAdapter.clear();
         mAccountNames = accountNames;
         mAdapter.addAll(mAccountNames);
-        Spinner accountsSpinner = (Spinner)findViewById(R.id.accounts_spinner);
+        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
         if (selectedAccountIndex >= 0) {
             accountsSpinner.setSelection(selectedAccountIndex);
         }
     }
 
     /**
-     * Set the listener for all the dropdown members in the layout.
+     * Enables/disables the account chooser.
+     * @param enabled True if the account chooser is enabled.
+     */
+    public void setAccountChooserEnabled(boolean enabled) {
+        Spinner accountsSpinner = (Spinner) findViewById(R.id.accounts_spinner);
+        accountsSpinner.setEnabled(enabled);
+    }
+
+    /**
+     * Sets the listener for all the dropdown members in the layout.
      * @param listener The listener object to attach to the dropdowns.
      */
     public void setOnItemSelectedListener(OnItemSelectedListener listener) {
-        Spinner accounts_spinner = (Spinner)findViewById(R.id.accounts_spinner);
+        Spinner accounts_spinner = (Spinner) findViewById(R.id.accounts_spinner);
         accounts_spinner.setOnItemSelectedListener(listener);
     }
 }

@@ -8,6 +8,12 @@ package org.chromium.chrome.browser.autofill;
  * Constants required for AutofillDialog.
  */
 public class AutofillDialogConstants {
+    // Dialog button identifiers used to specify which buttons to show the user.
+    // This list should be kept in sync with enum DialogButton in ui_base_types.h.
+    public static final int DIALOG_BUTTON_NONE = 0;
+    public static final int DIALOG_BUTTON_OK = 1;
+    public static final int DIALOG_BUTTON_CANCEL = 2;
+
     // Section ID constants. This list should be kept in sync with enum DialogSection in
     // autofill_dialog_types.h
 
@@ -21,7 +27,7 @@ public class AutofillDialogConstants {
     public static final int NUM_SECTIONS = 5;
 
 
-    // Filed Type ID constants. This list should be kept in sync with enum AutofillFieldType
+    // Field Type ID constants. This list should be kept in sync with enum AutofillFieldType
     // in field_types.h
 
     // Server indication that it has no data for the requested field.
@@ -91,6 +97,5 @@ public class AutofillDialogConstants {
     public static final int FIELD_WITH_DEFAULT_VALUE = 61;
 
     // No new types can be added.
-
     public static final int MAX_VALID_FIELD_TYPE = 62;
 }

@@ -75,14 +75,11 @@
       <message desc="Message for adding a new billing item to the autofill dialog. [CHAR-LIMIT=64]" name="IDS_AUTOFILL_NEW_CC_BILLING">
         Add new billing details
       </message>
-      <message desc="Message for positive button on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON">
-        Submit
-      </message>
-      <message desc="Message for negative button on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEGATIVE_BUTTON">
-        Cancel
-      </message>
       <message desc="Message for positive button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_POSITIVE_BUTTON_EDITING">
         Done
+      </message>
+      <message desc="Message for negative button while editing details on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_NEGATIVE_BUTTON_EDITING">
+        Cancel
       </message>
       <message desc="Message for editing an single item on the autofill dialog. [CHAR-LIMIT=32]" name="IDS_AUTOFILL_EDIT_BUTTON">
         Edit

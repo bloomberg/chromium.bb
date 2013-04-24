@@ -37,15 +37,14 @@ AutofillDialogViewAndroid::~AutofillDialogViewAndroid() {}
 
 void AutofillDialogViewAndroid::Show() {
   JNIEnv* env = base::android::AttachCurrentThread();
-  ScopedJavaLocalRef<jstring> save_locally_text =
-        base::android::ConvertUTF16ToJavaString(
-            env, controller_->SaveLocallyText());
   java_object_.Reset(Java_AutofillDialogGlue_create(
       env,
       reinterpret_cast<jint>(this),
       WindowAndroidHelper::FromWebContents(controller_->web_contents())->
-          GetWindowAndroid()->GetJavaObject().obj(),
-      save_locally_text.obj()));
+          GetWindowAndroid()->GetJavaObject().obj()));
+  ModelChanged();
+  UpdateNotificationArea();
+  UpdateAccountChooser();
 }
 
 void AutofillDialogViewAndroid::Hide() {
@@ -189,10 +188,10 @@ void AutofillDialogViewAndroid::GetUserInput(DialogSection section,
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobjectArray> fields =
       Java_AutofillDialogGlue_getSection(env, java_object_.obj(), section);
-  DCHECK(fields.obj());
+  if (fields.is_null())
+    return;
 
   const int arrayLength = env->GetArrayLength(fields.obj());
-
   for (int i = 0; i < arrayLength; ++i) {
     ScopedJavaLocalRef<jobject> field(
         env, env->GetObjectArrayElement(fields.obj(), i));
@@ -304,6 +303,54 @@ ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetPlaceholderForField(
   // TODO(aruslan): We shouldn't be hardcoding this.
   string16 cvc(ASCIIToUTF16("CVC"));
   return base::android::ConvertUTF16ToJavaString(env, cvc);
+}
+
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetDialogButtonText(
+    JNIEnv* env,
+    jobject obj,
+    jint dialog_button_id) {
+  switch (static_cast<ui::DialogButton>(dialog_button_id)) {
+    case ui::DIALOG_BUTTON_OK:
+      return base::android::ConvertUTF16ToJavaString(
+          env,
+          controller_->ConfirmButtonText());
+
+    case ui::DIALOG_BUTTON_CANCEL:
+      return base::android::ConvertUTF16ToJavaString(
+          env,
+          controller_->CancelButtonText());
+
+    case ui::DIALOG_BUTTON_NONE:
+      break;
+  }
+
+  NOTREACHED();
+  return ScopedJavaLocalRef<jstring>();
+}
+
+jboolean AutofillDialogViewAndroid::IsDialogButtonEnabled(
+    JNIEnv* env,
+    jobject obj,
+    jint dialog_button_id) {
+  return static_cast<jboolean>(
+      controller_->IsDialogButtonEnabled(
+          static_cast<ui::DialogButton>(dialog_button_id)));
+}
+
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetSaveLocallyText(
+    JNIEnv* env,
+    jobject obj) {
+  return base::android::ConvertUTF16ToJavaString(
+      env,
+      controller_->SaveLocallyText());
+}
+
+ScopedJavaLocalRef<jstring> AutofillDialogViewAndroid::GetProgressBarText(
+    JNIEnv* env,
+    jobject obj) {
+  return base::android::ConvertUTF16ToJavaString(
+      env,
+      controller_->ProgressBarText());
 }
 
 void AutofillDialogViewAndroid::AccountSelected(JNIEnv* env, jobject obj,

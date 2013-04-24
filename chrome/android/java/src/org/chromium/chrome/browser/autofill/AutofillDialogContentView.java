@@ -193,9 +193,9 @@ public class AutofillDialogContentView extends LinearLayout {
      * @return Whether the current layout is one of the editing layouts.
      */
     public boolean isInEditingMode() {
-        return mCurrentLayout != INVALID_LAYOUT &&
-                mCurrentLayout != LAYOUT_STEADY &&
-                        mCurrentLayout != LAYOUT_FETCHING;
+        return mCurrentLayout != INVALID_LAYOUT
+                && mCurrentLayout != LAYOUT_STEADY
+                && mCurrentLayout != LAYOUT_FETCHING;
     }
 
     /**
