@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: Cross-origin script load denied by Cross-Origin Resource Sharing policy.
+CONSOLE MESSAGE: Script from origin 'http://localhost:8080' has been blocked from loading by Cross-Origin Resource Sharing policy: Origin http://127.0.0.1:8000 is not allowed by Access-Control-Allow-Origin.
 This test passes if the script does not load.
 
 PASS

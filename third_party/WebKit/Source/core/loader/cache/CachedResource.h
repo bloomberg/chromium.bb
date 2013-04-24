@@ -160,7 +160,9 @@ public:
     // Updates the expire date on the cache entry file
     void finish();
 
+    // FIXME: Remove the stringless variant once all the callsites' error messages are updated.
     bool passesAccessControlCheck(SecurityOrigin*);
+    bool passesAccessControlCheck(SecurityOrigin*, String& errorDescription);
 
     // Called by the cache if the object has been removed from the cache
     // while still being referenced. This means the object should delete itself

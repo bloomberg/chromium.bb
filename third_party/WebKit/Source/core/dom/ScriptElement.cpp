@@ -349,13 +349,13 @@ void ScriptElement::notifyFinished(CachedResource* resource)
     if (!m_cachedScript)
         return;
 
+    String error;
     if (m_requestUsesAccessControl
         && !m_element->document()->securityOrigin()->canRequest(m_cachedScript->response().url())
-        && !m_cachedScript->passesAccessControlCheck(m_element->document()->securityOrigin())) {
+        && !m_cachedScript->passesAccessControlCheck(m_element->document()->securityOrigin(), error)) {
 
         dispatchErrorEvent();
-        DEFINE_STATIC_LOCAL(String, consoleMessage, (ASCIILiteral("Cross-origin script load denied by Cross-Origin Resource Sharing policy.")));
-        m_element->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, consoleMessage);
+        m_element->document()->addConsoleMessage(JSMessageSource, ErrorMessageLevel, "Script from origin '" + SecurityOrigin::create(m_cachedScript->response().url())->toString() + "' has been blocked from loading by Cross-Origin Resource Sharing policy: " + error);
         return;
     }
 
