@@ -121,7 +121,7 @@ void V8PerIsolateData::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
     info.ignoreMember(m_lazyEventListenerToStringTemplate);
     info.ignoreMember(m_v8Null);
     info.ignoreMember(m_liveRoot);
-    info.ignoreMember(m_auxiliaryContext);
+    info.ignoreMember(m_regexContext);
 }
 
 bool V8PerIsolateData::hasPrivateTemplate(WrapperWorldType currentWorldType, void* privatePointer)
@@ -154,6 +154,13 @@ v8::Persistent<v8::FunctionTemplate> V8PerIsolateData::rawTemplate(WrapperTypeIn
     v8::Persistent<v8::FunctionTemplate> templ = createRawTemplate(m_isolate);
     templates.add(info, templ);
     return templ;
+}
+
+v8::Local<v8::Context> V8PerIsolateData::ensureRegexContext()
+{
+    if (m_regexContext.isEmpty())
+        m_regexContext.set(v8::Context::New());
+    return v8::Local<v8::Context>::New(m_regexContext.get());
 }
 
 bool V8PerIsolateData::hasInstance(WrapperTypeInfo* info, v8::Handle<v8::Value> value, WrapperWorldType currentWorldType)
