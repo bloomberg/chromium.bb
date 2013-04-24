@@ -100,10 +100,14 @@ bool AdjustNavigateParamsForURL(chrome::NavigateParams* params) {
       return false;
     }
 
+    Browser* source_browser = params->browser;
     params->disposition = SINGLETON_TAB;
     params->browser =
         chrome::FindOrCreateTabbedBrowser(profile, params->host_desktop_type);
-    params->window_action = chrome::NavigateParams::SHOW_WINDOW;
+    // If the page was opened in a different browser window, raise that window
+    // to the front.
+    if (params->browser != source_browser)
+      params->window_action = chrome::NavigateParams::SHOW_WINDOW;
   }
 
   return true;
@@ -139,6 +143,8 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
         return params->browser;
       // Find a compatible window and re-execute this command in it. Otherwise
       // re-run with NEW_WINDOW.
+      if (params->window_action == chrome::NavigateParams::NO_ACTION)
+        params->window_action = chrome::NavigateParams::SHOW_WINDOW;
       return GetOrCreateBrowser(profile, params->host_desktop_type);
     case NEW_POPUP: {
       // Make a new popup window.
@@ -175,6 +181,8 @@ Browser* GetBrowserForDisposition(chrome::NavigateParams* params) {
     }
     case OFF_THE_RECORD:
       // Make or find an incognito window.
+      if (params->window_action == chrome::NavigateParams::NO_ACTION)
+        params->window_action = chrome::NavigateParams::SHOW_WINDOW;
       return GetOrCreateBrowser(profile->GetOffTheRecordProfile(),
                                 params->host_desktop_type);
     // The following types all result in no navigation.
@@ -425,7 +433,7 @@ NavigateParams::NavigateParams(Profile* a_profile,
       is_renderer_initiated(false),
       tabstrip_index(-1),
       tabstrip_add_types(TabStripModel::ADD_ACTIVE),
-      window_action(SHOW_WINDOW),
+      window_action(NO_ACTION),
       user_gesture(true),
       path_behavior(RESPECT),
       ref_behavior(IGNORE_REF),

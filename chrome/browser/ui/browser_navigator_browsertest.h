@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_BROWSER_NAVIGATOR_BROWSERTEST_H_
 
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/notification_types.h"
 
@@ -23,6 +24,7 @@ class WebContents;
 // for the |BrowserGuestModeNavigation| which tests navigation while in guest
 // mode.
 class BrowserNavigatorTest : public InProcessBrowserTest,
+                             public chrome::BrowserListObserver,
                              public content::NotificationObserver {
  protected:
   chrome::NavigateParams MakeNavigateParams() const;
@@ -37,12 +39,20 @@ class BrowserNavigatorTest : public InProcessBrowserTest,
   void RunUseNonIncognitoWindowTest(const GURL& url);
   void RunDoNothingIfIncognitoIsForcedTest(const GURL& url);
 
+  // InProcessBrowserTest:
+  virtual void SetUpOnMainThread() OVERRIDE;
+  virtual void CleanUpOnMainThread() OVERRIDE;
+
+  // chrome::BrowserListObserver:
+  virtual void OnBrowserSetLastActive(Browser* browser) OVERRIDE;
+
   // content::NotificationObserver:
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
   size_t created_tab_contents_count_;
+  const Browser* last_activated_browser_;
 };
 
 #endif  // CHROME_BROWSER_UI_BROWSER_NAVIGATOR_BROWSERTEST_H_
