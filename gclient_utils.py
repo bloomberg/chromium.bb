@@ -158,9 +158,6 @@ def rmtree(path):
 
   remove(os.rmdir, path)
 
-# TODO(maruel): Rename the references.
-RemoveDirectory = rmtree
-
 
 def safe_makedirs(tree):
   """Creates the directory in a safe manner.

@@ -526,7 +526,7 @@ class GitWrapper(SCMWrapper):
         full_path = os.path.join(self.checkout_path, path)
         if not os.path.islink(full_path):
           print('\n_____ removing unversioned directory %s' % path)
-          gclient_utils.RemoveDirectory(full_path)
+          gclient_utils.rmtree(full_path)
 
 
   def revert(self, options, args, file_list):
@@ -1080,7 +1080,7 @@ class SVNWrapper(SCMWrapper):
                    'try again.') % (url, self.checkout_path))
         # Ok delete it.
         print('\n_____ switching %s to a new checkout' % self.relpath)
-        gclient_utils.RemoveDirectory(self.checkout_path)
+        gclient_utils.rmtree(self.checkout_path)
         # We need to checkout.
         command = ['checkout', url, self.checkout_path]
         command = self._AddAdditionalUpdateFlags(command, options, revision)
@@ -1106,7 +1106,7 @@ class SVNWrapper(SCMWrapper):
             and os.path.isdir(full_path)
             and not os.path.islink(full_path)):
           print('\n_____ removing unversioned directory %s' % status[1])
-          gclient_utils.RemoveDirectory(full_path)
+          gclient_utils.rmtree(full_path)
 
   def updatesingle(self, options, args, file_list):
     filename = args.pop()

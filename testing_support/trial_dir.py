@@ -43,14 +43,14 @@ class TrialDir(object):
       TrialDir.TRIAL_ROOT = os.path.realpath(tempfile.mkdtemp(prefix='trial'))
       atexit.register(self._clean)
     self.root_dir = os.path.join(TrialDir.TRIAL_ROOT, self.subdir)
-    gclient_utils.RemoveDirectory(self.root_dir)
+    gclient_utils.rmtree(self.root_dir)
     os.makedirs(self.root_dir)
 
   def tear_down(self):
     """Cleans the trial subdirectory for this instance."""
     if not self.leak:
       logging.debug('Removing %s' % self.root_dir)
-      gclient_utils.RemoveDirectory(self.root_dir)
+      gclient_utils.rmtree(self.root_dir)
     else:
       logging.error('Leaking %s' % self.root_dir)
     self.root_dir = None
@@ -60,7 +60,7 @@ class TrialDir(object):
     """Cleans the root trial directory."""
     if not TrialDir.SHOULD_LEAK:
       logging.debug('Removing %s' % TrialDir.TRIAL_ROOT)
-      gclient_utils.RemoveDirectory(TrialDir.TRIAL_ROOT)
+      gclient_utils.rmtree(TrialDir.TRIAL_ROOT)
     else:
       logging.error('Leaking %s' % TrialDir.TRIAL_ROOT)
 

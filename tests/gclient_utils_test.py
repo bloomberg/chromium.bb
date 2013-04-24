@@ -34,7 +34,7 @@ class GclientUtilsUnittest(GclientUtilBase):
         'GetGClientRootAndEntries', 'GetEditor', 'IsDateRevision',
         'MakeDateRevision', 'MakeFileAutoFlush', 'MakeFileAnnotated',
         'PathDifference', 'ParseCodereviewSettingsContent', 'NumLocalCpus',
-        'PrintableObject', 'RemoveDirectory', 'RunEditor',
+        'PrintableObject', 'RunEditor',
         'SplitUrlRevision', 'SyntaxErrorToError', 'UpgradeToHttps', 'Wrapper',
         'WorkItem', 'codecs', 'lockedmethod', 'logging', 'os', 'Queue', 're',
         'rmtree', 'safe_makedirs', 'stat', 'subprocess', 'subprocess2', 'sys',

@@ -1167,7 +1167,7 @@ solutions = [
             # Delete the entry
             print('\n________ deleting \'%s\' in \'%s\'' % (
                 entry_fixed, self.root_dir))
-            gclient_utils.RemoveDirectory(e_dir)
+            gclient_utils.rmtree(e_dir)
       # record the current list of entries for next time
       self._SaveEntries()
     return 0

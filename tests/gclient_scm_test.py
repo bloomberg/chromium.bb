@@ -55,7 +55,7 @@ class BaseTestCase(GCBaseTestCase, SuperMoxTestBase):
         'CheckCallAndFilterAndHeader')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileRead')
     self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'FileWrite')
-    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'RemoveDirectory')
+    self.mox.StubOutWithMock(gclient_scm.gclient_utils, 'rmtree')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'Capture')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, '_CaptureInfo')
     self.mox.StubOutWithMock(gclient_scm.scm.SVN, 'CaptureStatus')
@@ -210,7 +210,6 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.isdir(join(self.base_path, '.hg')).AndReturn(False)
     # Checkout.
-    gclient_scm.os.path.exists(self.base_path).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.git')).AndReturn(False)
     gclient_scm.os.path.exists(join(self.base_path, '.hg')).AndReturn(False)
     gclient_scm.os.path.exists(self.base_path).AndReturn(False)
@@ -226,7 +225,7 @@ class SVNWrapperTestCase(BaseTestCase):
         ['checkout', self.url, self.base_path, '--force', '--ignore-externals'],
         cwd=self.root_dir,
         file_list=files_list)
-
+    gclient_scm.gclient_utils.rmtree(self.base_path)
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,
                             relpath=self.relpath)
@@ -268,7 +267,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
     gclient_scm.os.path.islink(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
-    gclient_scm.gclient_utils.RemoveDirectory(file_path)
+    gclient_scm.gclient_utils.rmtree(file_path)
     gclient_scm.os.path.isdir(self.base_path).AndReturn(True)
     gclient_scm.scm.SVN.RunAndGetFileList(
         options.verbose,
@@ -293,13 +292,13 @@ class SVNWrapperTestCase(BaseTestCase):
     ]
     gclient_scm.scm.SVN.CaptureStatus(
         None, self.base_path, no_ignore=False).AndReturn(items)
-    # RemoveDirectory() doesn't work on path ending with '.', like 'foo/.'.
+    # gclient_utils.rmtree() doesn't work on path ending with '.', like 'foo/.'.
     file_path = self.base_path
     gclient_scm.os.path.exists(file_path).AndReturn(True)
     gclient_scm.os.path.isfile(file_path).AndReturn(False)
     gclient_scm.os.path.islink(file_path).AndReturn(False)
     gclient_scm.os.path.isdir(file_path).AndReturn(True)
-    gclient_scm.gclient_utils.RemoveDirectory(file_path)
+    gclient_scm.gclient_utils.rmtree(file_path)
     # pylint: disable=E1120
     gclient_scm.os.path.isdir(self.base_path).AndReturn(False)
     gclient_scm.SVNWrapper.update(options, [], ['.'])
@@ -463,7 +462,7 @@ class SVNWrapperTestCase(BaseTestCase):
     gclient_scm.os.path.isdir(join(self.base_path, 'dir')).AndReturn(True)
     gclient_scm.os.path.isdir(join(self.base_path, 'file')).AndReturn(False)
     gclient_scm.os.path.islink(join(self.base_path, 'dir')).AndReturn(False)
-    gclient_scm.gclient_utils.RemoveDirectory(join(self.base_path, 'dir'))
+    gclient_scm.gclient_utils.rmtree(join(self.base_path, 'dir'))
 
     self.mox.ReplayAll()
     scm = self._scm_wrapper(url=self.url, root_dir=self.root_dir,

@@ -567,7 +567,7 @@ class SVN(object):
             # Warning: It's bad, it assumes args[2] is the directory
             # argument.
             if os.path.isdir(args[2]):
-              gclient_utils.RemoveDirectory(args[2])
+              gclient_utils.rmtree(args[2])
           else:
             # Progress was made, convert to update since an aborted checkout
             # is now an update.
@@ -856,7 +856,7 @@ class SVN(object):
       buf.close()
       return result
     finally:
-      gclient_utils.RemoveDirectory(bogus_dir)
+      gclient_utils.rmtree(bogus_dir)
 
   @staticmethod
   def _DiffItemInternal(filename, cwd, info, bogus_dir, full_move, revision):
@@ -1054,8 +1054,8 @@ class SVN(object):
           logging.info('os.remove(%s)' % file_path)
           os.remove(file_path)
         elif os.path.isdir(file_path):
-          logging.info('RemoveDirectory(%s)' % file_path)
-          gclient_utils.RemoveDirectory(file_path)
+          logging.info('rmtree(%s)' % file_path)
+          gclient_utils.rmtree(file_path)
         else:
           logging.critical(
             ('No idea what is %s.\nYou just found a bug in gclient'
