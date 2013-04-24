@@ -120,10 +120,6 @@ class CONTENT_EXPORT NavigationControllerImpl
 
   // For use by WebContentsImpl ------------------------------------------------
 
-  // Allow renderer-initiated navigations to create a pending entry when the
-  // provisional load starts.
-  void SetPendingEntry(content::NavigationEntryImpl* entry);
-
   // Handles updating the navigation state after the renderer has navigated.
   // This is used by the WebContentsImpl.
   //
