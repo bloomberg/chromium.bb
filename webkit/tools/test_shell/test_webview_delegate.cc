@@ -557,7 +557,7 @@ void TestWebViewDelegate::loadURLExternally(
 }
 
 WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
-    WebFrame* frame, const WebURLRequest& request,
+    WebFrame* frame, WebDataSource* dataSource, const WebURLRequest& request,
     WebNavigationType type, WebNavigationPolicy default_policy,
     bool is_redirect) {
   WebNavigationPolicy result;
@@ -578,9 +578,9 @@ WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
 
 WebNavigationPolicy TestWebViewDelegate::decidePolicyForNavigation(
     WebFrame* frame, const WebURLRequest& request,
-    WebNavigationType type, const WebNode& originating_node,
-    WebNavigationPolicy default_policy, bool is_redirect) {
-  return decidePolicyForNavigation(frame, request, type,
+    WebNavigationType type, WebNavigationPolicy default_policy,
+    bool is_redirect) {
+  return decidePolicyForNavigation(frame, 0, request, type,
                                    default_policy, is_redirect);
 }
 

@@ -2842,8 +2842,9 @@ void RenderViewImpl::loadURLExternally(
 }
 
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
-    WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
-    WebNavigationPolicy default_policy, bool is_redirect) {
+    WebFrame* frame, WebDataSource* dataSource, const WebURLRequest& request,
+    WebNavigationType type, WebNavigationPolicy default_policy,
+    bool is_redirect) {
   if (request.url() != GURL(kSwappedOutURL) &&
       GetContentClient()->renderer()->HandleNavigation(frame, request, type,
                                                        default_policy,
@@ -2886,7 +2887,7 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
   // A content initiated navigation may have originated from a link-click,
   // script, drag-n-drop operation, etc.
   bool is_content_initiated =
-      DocumentState::FromDataSource(frame->provisionalDataSource())->
+      DocumentState::FromDataSource(dataSource)->
           navigation_state()->is_content_initiated();
 
   // Experimental:
@@ -3040,9 +3041,9 @@ WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
 
 WebNavigationPolicy RenderViewImpl::decidePolicyForNavigation(
     WebFrame* frame, const WebURLRequest& request, WebNavigationType type,
-    const WebNode&, WebNavigationPolicy default_policy, bool is_redirect) {
-  return decidePolicyForNavigation(frame, request, type,
-                                   default_policy, is_redirect);
+    WebNavigationPolicy default_policy, bool is_redirect) {
+  return decidePolicyForNavigation(frame, frame->provisionalDataSource(),
+                                   request, type, default_policy, is_redirect);
 }
 
 bool RenderViewImpl::canHandleRequest(

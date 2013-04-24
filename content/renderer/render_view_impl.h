@@ -535,6 +535,7 @@ class CONTENT_EXPORT RenderViewImpl
                                  const WebKit::WebString& suggested_name);
   virtual WebKit::WebNavigationPolicy decidePolicyForNavigation(
       WebKit::WebFrame* frame,
+      WebKit::WebDataSource* dataSource,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
       WebKit::WebNavigationPolicy default_policy,
@@ -544,7 +545,6 @@ class CONTENT_EXPORT RenderViewImpl
       WebKit::WebFrame* frame,
       const WebKit::WebURLRequest& request,
       WebKit::WebNavigationType type,
-      const WebKit::WebNode&,
       WebKit::WebNavigationPolicy default_policy,
       bool is_redirect);
   virtual bool canHandleRequest(WebKit::WebFrame* frame,
