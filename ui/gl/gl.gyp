@@ -40,6 +40,14 @@
         '<(DEPTH)/third_party/mesa/mesa.gyp:mesa_headers',
       ],
      'sources': [
+        'android/gl_jni_registrar.cc',
+        'android/gl_jni_registrar.h',
+        'android/scoped_java_surface.cc',
+        'android/scoped_java_surface.h',
+        'android/surface_texture_bridge.cc',
+        'android/surface_texture_bridge.h',
+        'android/surface_texture_listener.cc',
+        'android/surface_texture_listener.h',
         'async_pixel_transfer_delegate.h',
         'async_pixel_transfer_delegate_idle.cc',
         'async_pixel_transfer_delegate_idle.h',
@@ -253,6 +261,9 @@
           ],
         }],
         ['OS=="android"', {
+          'dependencies': [
+            'gl_jni_headers',
+          ],
           'sources': [
             'async_pixel_transfer_delegate_android.cc',
             'async_pixel_transfer_delegate_android.h',
@@ -274,6 +285,9 @@
             'GL_GLEXT_PROTOTYPES',
             'EGL_EGLEXT_PROTOTYPES',
           ],
+        }],
+        ['OS!="android"', {
+          'sources/': [ ['exclude', '^android/'] ],
         }],
       ],
     },
@@ -303,5 +317,44 @@
         '<(gl_binding_output_dir)/gl_mock_autogen_gl.h',
       ],
     },
+  ],
+  'conditions': [
+    ['OS=="android"' , {
+      'targets': [
+        {
+          'target_name': 'surface_texture_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'ui/gl',
+            'input_java_class': 'android/graphics/SurfaceTexture.class',
+          },
+          'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'surface_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'ui/gl',
+            'input_java_class': 'android/view/Surface.class',
+          },
+          'includes': [ '../../build/jar_file_jni_generator.gypi' ],
+        },
+        {
+          'target_name': 'gl_jni_headers',
+          'type': 'none',
+          'dependencies': [
+            'surface_texture_jni_headers',
+            'surface_jni_headers',
+          ],
+          'sources': [
+            '../android/java/src/org/chromium/ui/gfx/SurfaceTextureListener.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'ui/gl',
+          },
+          'includes': [ '../../build/jni_generator.gypi' ],
+        },
+      ],
+    }],
   ],
 }

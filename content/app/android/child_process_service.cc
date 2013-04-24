@@ -10,7 +10,6 @@
 #include "base/android/jni_array.h"
 #include "base/logging.h"
 #include "base/posix/global_descriptors.h"
-#include "content/common/android/scoped_java_surface.h"
 #include "content/common/android/surface_texture_peer.h"
 #include "content/common/child_process.h"
 #include "content/common/child_thread.h"
@@ -19,6 +18,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "ipc/ipc_descriptors.h"
 #include "jni/ChildProcessService_jni.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 using base::android::AttachCurrentThread;
 using base::android::CheckException;
@@ -45,7 +45,7 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
 
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle pid,
-      scoped_refptr<content::SurfaceTextureBridge> surface_texture_bridge,
+      scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
       int primary_id,
       int secondary_id) {
     JNIEnv* env = base::android::AttachCurrentThread();
@@ -58,7 +58,7 @@ class SurfaceTexturePeerChildImpl : public content::SurfaceTexturePeer,
 
   virtual gfx::AcceleratedWidget AcquireNativeWidget(int surface_id) OVERRIDE {
     JNIEnv* env = base::android::AttachCurrentThread();
-    ScopedJavaSurface surface(
+    gfx::ScopedJavaSurface surface(
         content::Java_ChildProcessService_getViewSurface(
         env, service_.obj(), surface_id));
 

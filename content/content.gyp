@@ -372,24 +372,6 @@
           'includes': [ '../build/android/java_cpp_template.gypi' ],
         },
         {
-          'target_name': 'surface_texture_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_package': 'content',
-            'input_java_class': 'android/graphics/SurfaceTexture.class',
-          },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
-        },
-        {
-          'target_name': 'surface_jni_headers',
-          'type': 'none',
-          'variables': {
-            'jni_gen_package': 'content',
-            'input_java_class': 'android/view/Surface.class',
-          },
-          'includes': [ '../build/jar_file_jni_generator.gypi' ],
-        },
-        {
           'target_name': 'java_set_jni_headers',
           'type': 'none',
           'variables': {
@@ -404,8 +386,6 @@
           'type': 'none',
           'dependencies': [
             'java_set_jni_headers',
-            'surface_texture_jni_headers',
-            'surface_jni_headers',
           ],
           'direct_dependent_settings': {
             'include_dirs': [

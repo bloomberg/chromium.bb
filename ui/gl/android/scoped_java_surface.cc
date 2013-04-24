@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/scoped_java_surface.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 #include "base/logging.h"
-#include "content/common/android/surface_texture_bridge.h"
 #include "jni/Surface_jni.h"
+#include "ui/gl/android/surface_texture_bridge.h"
 
 namespace {
 
@@ -21,7 +21,7 @@ void RegisterNativesIfNeeded(JNIEnv* env) {
 
 }  // anonymous namespace
 
-namespace content {
+namespace gfx {
 
 ScopedJavaSurface::ScopedJavaSurface() {
 }
@@ -51,4 +51,4 @@ ScopedJavaSurface::~ScopedJavaSurface() {
   }
 }
 
-}  // namespace content
+}  // namespace gfx

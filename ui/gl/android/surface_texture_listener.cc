@@ -1,16 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/android/surface_texture_listener.h"
+#include "ui/gl/android/surface_texture_listener.h"
 
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
-#include "content/common/android/surface_texture_bridge.h"
 #include "jni/SurfaceTextureListener_jni.h"
+#include "ui/gl/android/surface_texture_bridge.h"
 
-namespace content {
+namespace gfx {
 
 // static
 jobject SurfaceTextureListener::CreateSurfaceTextureListener(
@@ -50,4 +50,4 @@ bool SurfaceTextureListener::RegisterSurfaceTextureListener(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-}  // namespace content
+}  // namespace gfx

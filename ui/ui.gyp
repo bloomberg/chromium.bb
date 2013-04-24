@@ -885,6 +885,11 @@
          {
            'target_name': 'ui_jni_headers',
            'type': 'none',
+           'direct_dependent_settings': {
+             'include_dirs': [
+               '<(SHARED_INTERMEDIATE_DIR)/ui',
+             ],
+           },
            'sources': [
              'android/java/src/org/chromium/ui/Clipboard.java',
              'android/java/src/org/chromium/ui/gfx/BitmapHelper.java',

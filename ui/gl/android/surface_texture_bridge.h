@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
-#define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
+#ifndef UI_GL_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
+#define UI_GL_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
 
 #include <jni.h>
 
@@ -13,7 +13,7 @@
 
 struct ANativeWindow;
 
-namespace content {
+namespace gfx {
 
 // This class serves as a bridge for native code to call java functions inside
 // android SurfaceTexture class.
@@ -72,6 +72,6 @@ class SurfaceTextureBridge
   DISALLOW_COPY_AND_ASSIGN(SurfaceTextureBridge);
 };
 
-}  // namespace content
+}  // namespace gfx
 
-#endif  // CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_BRIDGE_H_
+#endif  // UI_GL_ANDROID_SURFACE_TEXTURE_BRIDGE_H_

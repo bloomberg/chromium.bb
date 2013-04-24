@@ -6,7 +6,7 @@
 #define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_PEER_H_
 
 #include "base/process.h"
-#include "content/common/android/surface_texture_bridge.h"
+#include "ui/gl/android/surface_texture_bridge.h"
 
 namespace content {
 
@@ -20,7 +20,7 @@ class SurfaceTexturePeer {
   // process.
   virtual void EstablishSurfaceTexturePeer(
       base::ProcessHandle pid,
-      scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
+      scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
       int primary_id,
       int secondary_id) = 0;
 

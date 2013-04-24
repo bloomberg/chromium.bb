@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_SCOPED_JAVA_SURFACE_H_
-#define CONTENT_COMMON_ANDROID_SCOPED_JAVA_SURFACE_H_
+#ifndef UI_GL_ANDROID_SCOPED_JAVA_SURFACE_H_
+#define UI_GL_ANDROID_SCOPED_JAVA_SURFACE_H_
 
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
 
-namespace content {
+namespace gfx {
 
 class SurfaceTextureBridge;
 
@@ -37,6 +37,6 @@ class ScopedJavaSurface {
   base::android::ScopedJavaGlobalRef<jobject> j_surface_;
 };
 
-}  // namespace content
+}  // namespace gfx
 
-#endif  // CONTENT_COMMON_ANDROID_SCOPED_JAVA_SURFACE_H_
+#endif  // UI_GL_ANDROID_SCOPED_JAVA_SURFACE_H_

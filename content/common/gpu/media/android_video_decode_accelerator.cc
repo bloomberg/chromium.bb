@@ -7,12 +7,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "content/common/android/scoped_java_surface.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/limits.h"
 #include "media/video/picture.h"
+#include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/gl_bindings.h"
 
 namespace content {
@@ -102,7 +102,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(
   gl_decoder_->RestoreTextureUnitBindings(0);
   gl_decoder_->RestoreActiveTexture();
 
-  surface_texture_ = new SurfaceTextureBridge(surface_texture_id_);
+  surface_texture_ = new gfx::SurfaceTextureBridge(surface_texture_id_);
 
   ConfigureMediaCodec();
 
@@ -381,7 +381,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodec() {
 
   media_codec_.reset(new media::MediaCodecBridge(codec_));
 
-  ScopedJavaSurface surface(surface_texture_.get());
+  gfx::ScopedJavaSurface surface(surface_texture_.get());
   // VDA does not pass the container indicated resolution in the initialization
   // phase. Here, we set 720p by default.
   // TODO(dwkang): find out a way to remove the following hard-coded value.

@@ -59,6 +59,8 @@ class GLManager {
 
   void MakeCurrent();
 
+  void SetSurface(gfx::GLSurface* surface);
+
   gles2::MailboxManager* mailbox_manager() const {
     return mailbox_manager_.get();
   }

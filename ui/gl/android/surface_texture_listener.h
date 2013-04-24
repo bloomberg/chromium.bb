@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_LISTENER_H_
-#define CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_LISTENER_H_
+#ifndef UI_GL_ANDROID_SURFACE_TEXTURE_LISTENER_H_
+#define UI_GL_ANDROID_SURFACE_TEXTURE_LISTENER_H_
 
 #include <jni.h>
 #include "base/callback.h"
@@ -13,7 +13,7 @@ namespace base {
 class MessageLoopProxy;
 }
 
-namespace content {
+namespace gfx {
 
 // Listener class for all the callbacks from android SurfaceTexture.
 class SurfaceTextureListener {
@@ -46,6 +46,6 @@ private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SurfaceTextureListener);
 };
 
-}  // namespace content
+}  // namespace gfx
 
-#endif  // CONTENT_COMMON_ANDROID_SURFACE_TEXTURE_LISTENER_H_
+#endif  // UI_GL_ANDROID_SURFACE_TEXTURE_LISTENER_H_

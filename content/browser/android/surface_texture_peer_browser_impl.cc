@@ -6,10 +6,10 @@
 
 #include "content/browser/android/media_player_manager_android.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/common/android/scoped_java_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/base/android/media_player_bridge.h"
+#include "ui/gl/android/scoped_java_surface.h"
 
 namespace content {
 
@@ -18,7 +18,7 @@ namespace {
 // Pass a java surface object to the MediaPlayerBridge object
 // identified by render process handle, render view ID and player ID.
 static void SetSurfacePeer(
-    scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
+    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
     base::ProcessHandle render_process_handle,
     int render_view_id,
     int player_id) {
@@ -40,7 +40,7 @@ static void SetSurfacePeer(
           host->media_player_manager()->GetPlayer(player_id);
       if (player &&
           player != host->media_player_manager()->GetFullscreenPlayer()) {
-        ScopedJavaSurface surface(surface_texture_bridge.get());
+        gfx::ScopedJavaSurface surface(surface_texture_bridge.get());
         player->SetVideoSurface(surface.j_surface().obj());
       }
     }
@@ -57,7 +57,7 @@ SurfaceTexturePeerBrowserImpl::~SurfaceTexturePeerBrowserImpl() {
 
 void SurfaceTexturePeerBrowserImpl::EstablishSurfaceTexturePeer(
     base::ProcessHandle render_process_handle,
-    scoped_refptr<SurfaceTextureBridge> surface_texture_bridge,
+    scoped_refptr<gfx::SurfaceTextureBridge> surface_texture_bridge,
     int render_view_id,
     int player_id) {
   if (!surface_texture_bridge)

@@ -11,8 +11,8 @@
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
-#include "content/common/android/surface_texture_bridge.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebGraphicsContext3D.h"
+#include "ui/gl/android/surface_texture_bridge.h"
 #include "webkit/compositor_bindings/web_compositor_support_impl.h"
 
 namespace content {
@@ -24,7 +24,7 @@ static const uint32 kGLTextureExternalOES = 0x8D65;
 class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
  public:
   SurfaceRefAndroid(
-      const scoped_refptr<SurfaceTextureBridge>& surface,
+      const scoped_refptr<gfx::SurfaceTextureBridge>& surface,
       ANativeWindow* window)
       : surface_(surface),
         window_(window) {
@@ -37,7 +37,7 @@ class SurfaceRefAndroid : public GpuSurfaceTracker::SurfaceRef {
     ANativeWindow_release(window_);
   }
 
-  scoped_refptr<SurfaceTextureBridge> surface_;
+  scoped_refptr<gfx::SurfaceTextureBridge> surface_;
   ANativeWindow* window_;
 };
 
@@ -56,7 +56,7 @@ scoped_refptr<cc::Layer> SurfaceTextureTransportClient::Initialize() {
   // Use a SurfaceTexture to stream frames to the UI thread.
   video_layer_ = cc::VideoLayer::Create(this);
 
-  surface_texture_ = new SurfaceTextureBridge(0);
+  surface_texture_ = new gfx::SurfaceTextureBridge(0);
   surface_texture_->SetFrameAvailableCallback(
       base::Bind(
           &SurfaceTextureTransportClient::OnSurfaceTextureFrameAvailable,

@@ -5,17 +5,17 @@
 #include "content/common/gpu/stream_texture_manager_android.h"
 
 #include "base/bind.h"
-#include "content/common/android/surface_texture_bridge.h"
 #include "content/common/gpu/gpu_channel.h"
 #include "content/common/gpu/gpu_messages.h"
 #include "gpu/command_buffer/service/stream_texture.h"
 #include "ui/gfx/size.h"
+#include "ui/gl/android/surface_texture_bridge.h"
 
 namespace content {
 
 StreamTextureManagerAndroid::StreamTextureAndroid::StreamTextureAndroid(
     GpuChannel* channel, int service_id)
-    : surface_texture_bridge_(new SurfaceTextureBridge(service_id)),
+    : surface_texture_bridge_(new gfx::SurfaceTextureBridge(service_id)),
       has_updated_(false),
       channel_(channel) {
   memset(current_matrix_, 0, sizeof(current_matrix_));

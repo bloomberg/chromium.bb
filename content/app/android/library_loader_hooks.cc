@@ -27,6 +27,7 @@
 #include "media/base/android/media_jni_registrar.h"
 #include "net/android/net_jni_registrar.h"
 #include "ui/android/ui_jni_registrar.h"
+#include "ui/gl/android/gl_jni_registrar.h"
 #include "ui/shell_dialogs/android/shell_dialogs_jni_registrar.h"
 
 namespace {
@@ -78,6 +79,9 @@ static jint LibraryLoaded(JNIEnv* env, jclass clazz,
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!ui::android::RegisterJni(env))
+    return RESULT_CODE_FAILED_TO_REGISTER_JNI;
+
+  if (!ui::gl::android::RegisterJni(env))
     return RESULT_CODE_FAILED_TO_REGISTER_JNI;
 
   if (!ui::shell_dialogs::RegisterJni(env))

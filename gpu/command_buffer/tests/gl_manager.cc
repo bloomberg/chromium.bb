@@ -228,6 +228,10 @@ void GLManager::MakeCurrent() {
   ::gles2::SetGLContext(gles2_implementation_.get());
 }
 
+void GLManager::SetSurface(gfx::GLSurface* surface) {
+  decoder_->SetSurface(surface);
+}
+
 void GLManager::Destroy() {
   if (gles2_implementation_.get()) {
     MakeCurrent();
