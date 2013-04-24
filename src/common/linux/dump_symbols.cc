@@ -72,6 +72,7 @@
 // This namespace contains helper functions.
 namespace {
 
+using google_breakpad::DumpOptions;
 using google_breakpad::DwarfCFIToModule;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::DwarfLineToModule;
@@ -216,6 +217,7 @@ template<typename ElfClass>
 bool LoadDwarf(const string& dwarf_filename,
                const typename ElfClass::Ehdr* elf_header,
                const bool big_endian,
+               bool handle_inter_cu_refs,
                Module* module) {
   typedef typename ElfClass::Shdr Shdr;
 
@@ -224,7 +226,9 @@ bool LoadDwarf(const string& dwarf_filename,
   dwarf2reader::ByteReader byte_reader(endianness);
 
   // Construct a context for this file.
-  DwarfCUToModule::FileContext file_context(dwarf_filename, module);
+  DwarfCUToModule::FileContext file_context(dwarf_filename,
+                                            module,
+                                            handle_inter_cu_refs);
 
   // Build a map of the ELF file's sections.
   const Shdr* sections =
@@ -238,14 +242,16 @@ bool LoadDwarf(const string& dwarf_filename,
                   section->sh_name;
     const char* contents = GetOffset<ElfClass, char>(elf_header,
                                                      section->sh_offset);
-    uint64 length = section->sh_size;
-    file_context.section_map[name] = std::make_pair(contents, length);
+    file_context.AddSectionToSectionMap(name, contents, section->sh_size);
   }
 
   // Parse all the compilation units in the .debug_info section.
   DumperLineToModule line_to_module(&byte_reader);
-  std::pair<const char *, uint64> debug_info_section
-      = file_context.section_map[".debug_info"];
+  dwarf2reader::SectionMap::const_iterator debug_info_entry =
+      file_context.section_map().find(".debug_info");
+  assert(debug_info_entry != file_context.section_map().end());
+  const std::pair<const char*, uint64>& debug_info_section =
+      debug_info_entry->second;
   // This should never have been called if the file doesn't have a
   // .debug_info section.
   assert(debug_info_section.first);
@@ -258,7 +264,7 @@ bool LoadDwarf(const string& dwarf_filename,
     // Make a Dwarf2Handler that drives the DIEHandler.
     dwarf2reader::DIEDispatcher die_dispatcher(&root_handler);
     // Make a DWARF parser for the compilation unit at OFFSET.
-    dwarf2reader::CompilationUnit reader(file_context.section_map,
+    dwarf2reader::CompilationUnit reader(file_context.section_map(),
                                          offset,
                                          &byte_reader,
                                          &die_dispatcher);
@@ -521,7 +527,7 @@ bool LoadSymbols(const string& obj_file,
                  const typename ElfClass::Ehdr* elf_header,
                  const bool read_gnu_debug_link,
                  LoadSymbolsInfo<ElfClass>* info,
-                 SymbolData symbol_data,
+                 const DumpOptions& options,
                  Module* module) {
   typedef typename ElfClass::Addr Addr;
   typedef typename ElfClass::Phdr Phdr;
@@ -542,7 +548,7 @@ bool LoadSymbols(const string& obj_file,
   bool found_debug_info_section = false;
   bool found_usable_info = false;
 
-  if (symbol_data != ONLY_CFI) {
+  if (options.symbol_data != ONLY_CFI) {
 #ifndef NO_STABS_SUPPORT
     // Look for STABS debugging information, and load it if present.
     const Shdr* stab_section =
@@ -573,13 +579,15 @@ bool LoadSymbols(const string& obj_file,
       found_debug_info_section = true;
       found_usable_info = true;
       info->LoadedSection(".debug_info");
-      if (!LoadDwarf<ElfClass>(obj_file, elf_header, big_endian, module))
+      if (!LoadDwarf<ElfClass>(obj_file, elf_header, big_endian,
+                               options.handle_inter_cu_refs, module)) {
         fprintf(stderr, "%s: \".debug_info\" section found, but failed to load "
                 "DWARF debugging information\n", obj_file.c_str());
+      }
     }
   }
 
-  if (symbol_data != NO_CFI) {
+  if (options.symbol_data != NO_CFI) {
     // Dwarf Call Frame Information (CFI) is actually independent from
     // the other DWARF debugging information, and can be used alone.
     const Shdr* dwarf_cfi_section =
@@ -655,7 +663,7 @@ bool LoadSymbols(const string& obj_file,
                 obj_file.c_str());
       }
     } else {
-      if (symbol_data != ONLY_CFI) {
+      if (options.symbol_data != ONLY_CFI) {
         // The caller doesn't want to consult .gnu_debuglink.
         // See if there are export symbols available.
         const Shdr* dynsym_section =
@@ -753,7 +761,7 @@ template<typename ElfClass>
 bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
                              const string& obj_filename,
                              const std::vector<string>& debug_dirs,
-                             SymbolData symbol_data,
+                             const DumpOptions& options,
                              Module** out_module) {
   typedef typename ElfClass::Ehdr Ehdr;
   typedef typename ElfClass::Shdr Shdr;
@@ -788,7 +796,7 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
   scoped_ptr<Module> module(new Module(name, os, architecture, id));
   if (!LoadSymbols<ElfClass>(obj_filename, big_endian, elf_header,
                              !debug_dirs.empty(), &info,
-                             symbol_data, module.get())) {
+                             options, module.get())) {
     const string debuglink_file = info.debuglink_file();
     if (debuglink_file.empty())
       return false;
@@ -827,7 +835,7 @@ bool ReadSymbolDataElfClass(const typename ElfClass::Ehdr* elf_header,
 
     if (!LoadSymbols<ElfClass>(debuglink_file, debug_big_endian,
                                debug_elf_header, false, &info,
-                               symbol_data, module.get())) {
+                               options, module.get())) {
       return false;
     }
   }
@@ -844,9 +852,8 @@ namespace google_breakpad {
 bool ReadSymbolDataInternal(const uint8_t* obj_file,
                             const string& obj_filename,
                             const std::vector<string>& debug_dirs,
-                            SymbolData symbol_data,
+                            const DumpOptions& options,
                             Module** module) {
-
   if (!IsValidElf(obj_file)) {
     fprintf(stderr, "Not a valid ELF file: %s\n", obj_filename.c_str());
     return false;
@@ -856,12 +863,12 @@ bool ReadSymbolDataInternal(const uint8_t* obj_file,
   if (elfclass == ELFCLASS32) {
     return ReadSymbolDataElfClass<ElfClass32>(
         reinterpret_cast<const Elf32_Ehdr*>(obj_file), obj_filename, debug_dirs,
-        symbol_data, module);
+        options, module);
   }
   if (elfclass == ELFCLASS64) {
     return ReadSymbolDataElfClass<ElfClass64>(
         reinterpret_cast<const Elf64_Ehdr*>(obj_file), obj_filename, debug_dirs,
-        symbol_data, module);
+        options, module);
   }
 
   return false;
@@ -869,20 +876,20 @@ bool ReadSymbolDataInternal(const uint8_t* obj_file,
 
 bool WriteSymbolFile(const string &obj_file,
                      const std::vector<string>& debug_dirs,
-                     SymbolData symbol_data,
+                     const DumpOptions& options,
                      std::ostream &sym_stream) {
   Module* module;
-  if (!ReadSymbolData(obj_file, debug_dirs, symbol_data, &module))
+  if (!ReadSymbolData(obj_file, debug_dirs, options, &module))
     return false;
 
-  bool result = module->Write(sym_stream, symbol_data);
+  bool result = module->Write(sym_stream, options.symbol_data);
   delete module;
   return result;
 }
 
 bool ReadSymbolData(const string& obj_file,
                     const std::vector<string>& debug_dirs,
-                    SymbolData symbol_data,
+                    const DumpOptions& options,
                     Module** module) {
   MmapWrapper map_wrapper;
   void* elf_header = NULL;
@@ -890,7 +897,7 @@ bool ReadSymbolData(const string& obj_file,
     return false;
 
   return ReadSymbolDataInternal(reinterpret_cast<uint8_t*>(elf_header),
-                                obj_file, debug_dirs, symbol_data, module);
+                                obj_file, debug_dirs, options, module);
 }
 
 }  // namespace google_breakpad

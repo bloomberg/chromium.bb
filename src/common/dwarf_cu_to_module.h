@@ -65,7 +65,6 @@ using dwarf2reader::DwarfTag;
 class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
   struct FilePrivate;
  public:
-
   // Information global to the DWARF-bearing file we are processing,
   // for use by DwarfCUToModule. Each DwarfCUToModule instance deals
   // with a single compilation unit within the file, but information
@@ -73,23 +72,52 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
   // for filling it in appropriately (except for the 'file_private'
   // field, which the constructor and destructor take care of), and
   // then providing it to the DwarfCUToModule instance for each
-  // compilation unit we process in that file.
-  struct FileContext {
-    FileContext(const string &filename_arg, Module *module_arg);
+  // compilation unit we process in that file. Set HANDLE_INTER_CU_REFS
+  // to true to handle debugging symbols with DW_FORM_ref_addr entries.
+  class FileContext {
+   public:
+    FileContext(const string &filename,
+                Module *module,
+                bool handle_inter_cu_refs);
     ~FileContext();
 
+    // Add CONTENTS of size LENGTH to the section map as NAME.
+    void AddSectionToSectionMap(const string& name,
+                                const char* contents,
+                                uint64 length);
+
+    // Clear the section map for testing.
+    void ClearSectionMapForTest();
+
+    const dwarf2reader::SectionMap& section_map() const;
+
+   private:
+    friend class DwarfCUToModule;
+
+    // Clears all the Specifications if HANDLE_INTER_CU_REFS_ is false.
+    void ClearSpecifications();
+
+    // Given an OFFSET and a CU that starts at COMPILATION_UNIT_START, returns
+    // true if this is an inter-compilation unit reference that is not being
+    // handled.
+    bool IsUnhandledInterCUReference(uint64 offset,
+                                     uint64 compilation_unit_start) const;
+
     // The name of this file, for use in error messages.
-    string filename;
+    const string filename_;
 
     // A map of this file's sections, used for finding other DWARF
     // sections that the .debug_info section may refer to.
-    dwarf2reader::SectionMap section_map;
+    dwarf2reader::SectionMap section_map_;
 
     // The Module to which we're contributing definitions.
-    Module *module;
+    Module *module_;
+
+    // True if we are handling references between compilation units.
+    const bool handle_inter_cu_refs_;
 
     // Inter-compilation unit data used internally by the handlers.
-    FilePrivate *file_private;
+    FilePrivate *file_private_;
   };
 
   // An abstract base class for handlers that handle DWARF line data
@@ -170,9 +198,17 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     // link.
     virtual void UnnamedFunction(uint64 offset);
 
+    // The DW_FORM_ref_addr at OFFSET to TARGET was not handled because
+    // FilePrivate did not retain the inter-CU specification data.
+    virtual void UnhandledInterCUReference(uint64 offset, uint64 target);
+
+    uint64 cu_offset() const {
+      return cu_offset_;
+    }
+
    protected:
-    string filename_;
-    uint64 cu_offset_;
+    const string filename_;
+    const uint64 cu_offset_;
     string cu_name_;
     bool printed_cu_header_;
     bool printed_unpaired_header_;
@@ -218,13 +254,11 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
   bool StartRootDIE(uint64 offset, enum DwarfTag tag);
 
  private:
-
   // Used internally by the handler. Full definitions are in
   // dwarf_cu_to_module.cc.
-  struct FilePrivate;
-  struct Specification;
   struct CUContext;
   struct DIEContext;
+  struct Specification;
   class GenericDIEHandler;
   class FuncHandler;
   class NamedScopeHandler;
@@ -234,7 +268,7 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
 
   // Set this compilation unit's source language to LANGUAGE.
   void SetLanguage(DwarfLanguage language);
-  
+
   // Read source line information at OFFSET in the .debug_line
   // section.  Record source files in module_, but record source lines
   // in lines_; we apportion them to functions in
@@ -275,6 +309,6 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
   vector<Module::Line> lines_;
 };
 
-} // namespace google_breakpad
+}  // namespace google_breakpad
 
 #endif  // COMMON_LINUX_DWARF_CU_TO_MODULE_H__
