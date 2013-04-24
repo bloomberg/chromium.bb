@@ -1179,6 +1179,8 @@
             'page/PointerLockController.h',
             'page/PopupOpeningObserver.h',
             'page/PrintContext.cpp',
+            'page/RuntimeEnabledFeatures.cpp',
+            'page/RuntimeEnabledFeatures.h',
             'page/Screen.cpp',
             'page/Screen.h',
             'page/SecurityOrigin.cpp',

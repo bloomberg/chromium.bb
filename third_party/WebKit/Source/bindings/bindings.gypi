@@ -36,8 +36,6 @@
             'v8/RetainedDOMInfo.cpp',
             'v8/RetainedDOMInfo.h',
             'v8/RetainedObjectInfo.h',
-            'v8/RuntimeEnabledFeatures.cpp',
-            'v8/RuntimeEnabledFeatures.h',
             'v8/ScheduledAction.cpp',
             'v8/ScheduledAction.h',
             'v8/ScopedPersistent.h',

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/v8/RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 
 #include "WebSocket.h"
 #include "core/platform/AsyncFileSystem.h"

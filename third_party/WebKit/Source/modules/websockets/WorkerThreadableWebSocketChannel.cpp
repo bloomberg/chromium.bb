@@ -32,11 +32,11 @@
 
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
 
-#include "bindings/v8/RuntimeEnabledFeatures.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
 #include "core/fileapi/Blob.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerRunLoop.h"

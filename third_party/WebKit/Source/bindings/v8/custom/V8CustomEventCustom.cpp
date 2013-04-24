@@ -34,7 +34,6 @@
 #include "V8Event.h"
 #include "bindings/v8/BindingState.h"
 #include "bindings/v8/Dictionary.h"
-#include "bindings/v8/RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptState.h"
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
@@ -43,6 +42,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

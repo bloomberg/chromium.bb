@@ -32,9 +32,9 @@
 
 #include "modules/websockets/WebSocketChannel.h"
 
-#include "bindings/v8/RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/workers/WorkerContext.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"

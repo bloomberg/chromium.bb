@@ -37,7 +37,6 @@
 #include "V8HTMLDocument.h"
 #include "bindings/v8/DOMWrapperWorld.h"
 #include "bindings/v8/DateExtension.h"
-#include "bindings/v8/RuntimeEnabledFeatures.h"
 #include "bindings/v8/ScriptController.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8GCForContextDispose.h"
@@ -54,6 +53,7 @@
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
 #include <algorithm>
 #include <utility>
