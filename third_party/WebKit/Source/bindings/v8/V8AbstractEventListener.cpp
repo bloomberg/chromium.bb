@@ -1,4 +1,3 @@
-#include "bindings/v8/ScriptCachedFrameData.h"
 /*
  * Copyright (C) 2006, 2007, 2008, 2009 Google Inc. All rights reserved.
  *
