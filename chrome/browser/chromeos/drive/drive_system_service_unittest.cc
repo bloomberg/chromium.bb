@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
 
 #include "base/message_loop.h"
-#include "chrome/browser/chromeos/drive/drive_test_util.h"
 #include "chrome/browser/chromeos/drive/mock_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/dummy_drive_service.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread.h"

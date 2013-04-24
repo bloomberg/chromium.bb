@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_TEST_UTIL_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_TEST_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
@@ -68,4 +68,4 @@ struct DestroyHelperForTests {
 }  // namespace test_util
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_TEST_UTIL_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_TEST_UTIL_H_
