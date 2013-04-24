@@ -29,8 +29,8 @@
 #ifndef Biquad_h
 #define Biquad_h
 
-#include "AudioArray.h"
 #include <sys/types.h>
+#include "core/platform/audio/AudioArray.h"
 #include <wtf/Complex.h>
  
 #if USE(WEBAUDIO_IPP)

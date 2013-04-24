@@ -34,9 +34,9 @@
 
 #if OS(DARWIN) && !USE(WEBAUDIO_FFMPEG)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
-#include "VectorMath.h"
+#include "core/platform/audio/VectorMath.h"
 
 namespace WebCore {
 

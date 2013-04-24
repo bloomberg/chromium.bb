@@ -30,13 +30,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "HRTFKernel.h"
+#include "core/platform/audio/HRTFKernel.h"
 
-#include "AudioChannel.h"
-#include "Biquad.h"
-#include "FFTFrame.h"
 #include "FloatConversion.h"
 #include "PlatformMemoryInstrumentation.h"
+#include "core/platform/audio/AudioChannel.h"
+#include "core/platform/audio/Biquad.h"
+#include "core/platform/audio/FFTFrame.h"
 #include <wtf/MathExtras.h>
 
 using namespace std;

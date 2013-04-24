@@ -22,8 +22,8 @@
 #if ENABLE(SVG)
 #include "SVGPathBlender.h"
 
-#include "AnimationUtilities.h"
 #include "SVGPathSeg.h"
+#include "core/platform/animation/AnimationUtilities.h"
 #include <wtf/TemporaryChange.h>
 
 namespace WebCore {

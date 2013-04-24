@@ -29,7 +29,7 @@
 #ifndef AudioFIFO_h
 #define AudioFIFO_h
 
-#include "AudioBus.h"
+#include "core/platform/audio/AudioBus.h"
 
 namespace WebCore {
 

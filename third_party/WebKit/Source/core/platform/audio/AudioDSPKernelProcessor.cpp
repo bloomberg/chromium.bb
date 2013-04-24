@@ -32,9 +32,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioDSPKernelProcessor.h"
+#include "core/platform/audio/AudioDSPKernelProcessor.h"
 
-#include "AudioDSPKernel.h"
+#include "core/platform/audio/AudioDSPKernel.h"
 
 namespace WebCore {
 

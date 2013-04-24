@@ -29,9 +29,9 @@
 #ifndef AudioPullFIFO_h
 #define AudioPullFIFO_h
 
-#include "AudioBus.h"
-#include "AudioFIFO.h"
-#include "AudioSourceProvider.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioFIFO.h"
+#include "core/platform/audio/AudioSourceProvider.h"
 
 namespace WebCore {
 

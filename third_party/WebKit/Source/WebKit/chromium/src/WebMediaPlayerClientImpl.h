@@ -31,7 +31,7 @@
 #ifndef WebMediaPlayerClientImpl_h
 #define WebMediaPlayerClientImpl_h
 
-#include "AudioSourceProvider.h"
+#include "core/platform/audio/AudioSourceProvider.h"
 #include "core/platform/graphics/MediaPlayerPrivate.h"
 #if defined(OS_ANDROID)
 #include "GrTexture.h"

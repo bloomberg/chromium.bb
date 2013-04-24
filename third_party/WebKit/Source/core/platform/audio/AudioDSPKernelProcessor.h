@@ -31,8 +31,8 @@
 #ifndef AudioDSPKernelProcessor_h
 #define AudioDSPKernelProcessor_h
 
-#include "AudioBus.h"
-#include "AudioProcessor.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioProcessor.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>

@@ -29,7 +29,7 @@
 #ifndef DirectConvolver_h
 #define DirectConvolver_h
 
-#include "AudioArray.h"
+#include "core/platform/audio/AudioArray.h"
 
 #if USE(WEBAUDIO_IPP)
 #include <ipps.h>

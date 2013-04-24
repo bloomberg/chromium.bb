@@ -98,8 +98,8 @@
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(WEB_AUDIO)
-#include "AudioSourceProvider.h"
 #include "MediaElementAudioSourceNode.h"
+#include "core/platform/audio/AudioSourceProvider.h"
 #endif
 
 #if ENABLE(MEDIA_STREAM)

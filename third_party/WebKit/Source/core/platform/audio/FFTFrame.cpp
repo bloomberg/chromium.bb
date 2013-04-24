@@ -30,7 +30,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

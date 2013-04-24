@@ -26,11 +26,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "EqualPowerPanner.h"
+#include "core/platform/audio/EqualPowerPanner.h"
 
-#include "AudioBus.h"
-#include "AudioUtilities.h"
 #include <algorithm>
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioUtilities.h"
 #include <wtf/MathExtras.h>
 
 // Use a 50ms smoothing / de-zippering time-constant.

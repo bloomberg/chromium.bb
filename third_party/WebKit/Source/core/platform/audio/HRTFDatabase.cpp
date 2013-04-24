@@ -30,10 +30,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "HRTFDatabase.h"
+#include "core/platform/audio/HRTFDatabase.h"
 
-#include "HRTFElevation.h"
 #include "PlatformMemoryInstrumentation.h"
+#include "core/platform/audio/HRTFElevation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 
 using namespace std;

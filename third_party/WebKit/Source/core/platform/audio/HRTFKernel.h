@@ -29,7 +29,7 @@
 #ifndef HRTFKernel_h
 #define HRTFKernel_h
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

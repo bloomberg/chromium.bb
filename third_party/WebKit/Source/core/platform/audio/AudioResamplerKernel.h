@@ -25,7 +25,7 @@
 #ifndef AudioResamplerKernel_h
 #define AudioResamplerKernel_h
 
-#include "AudioArray.h"
+#include "core/platform/audio/AudioArray.h"
 
 namespace WebCore {
 

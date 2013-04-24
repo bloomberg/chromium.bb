@@ -30,7 +30,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioFIFO.h"
+#include "core/platform/audio/AudioFIFO.h"
 
 namespace WebCore {
 

@@ -30,13 +30,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "DirectConvolver.h"
+#include "core/platform/audio/DirectConvolver.h"
 
 #if OS(DARWIN)
 #include <Accelerate/Accelerate.h>
 #endif
 
-#include "VectorMath.h"
+#include "core/platform/audio/VectorMath.h"
 
 namespace WebCore {
 

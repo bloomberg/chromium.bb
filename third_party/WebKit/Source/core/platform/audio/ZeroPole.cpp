@@ -30,9 +30,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "ZeroPole.h"
+#include "core/platform/audio/ZeroPole.h"
 
-#include "DenormalDisabler.h"
+#include "core/platform/audio/DenormalDisabler.h"
 
 namespace WebCore {
 

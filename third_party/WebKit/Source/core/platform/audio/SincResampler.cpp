@@ -30,9 +30,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "SincResampler.h"
+#include "core/platform/audio/SincResampler.h"
 
-#include "AudioBus.h"
+#include "core/platform/audio/AudioBus.h"
 #include <wtf/MathExtras.h>
 
 #ifdef __SSE2__

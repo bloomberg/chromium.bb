@@ -26,9 +26,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioBus.h"
+#include "core/platform/audio/AudioBus.h"
 
-#include "AudioFileReader.h"
+#include "core/platform/audio/AudioFileReader.h"
 #include <public/Platform.h>
 #include <public/WebAudioBus.h>
 

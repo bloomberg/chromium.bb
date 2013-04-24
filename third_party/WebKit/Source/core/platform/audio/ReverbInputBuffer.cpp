@@ -30,7 +30,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "ReverbInputBuffer.h"
+#include "core/platform/audio/ReverbInputBuffer.h"
 
 namespace WebCore {
 

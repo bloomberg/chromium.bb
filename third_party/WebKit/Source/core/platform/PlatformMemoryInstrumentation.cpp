@@ -32,7 +32,7 @@
 #include "PlatformMemoryInstrumentation.h"
 
 #if ENABLE(WEB_AUDIO)
-#include "HRTFDatabaseLoader.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
 #endif
 
 namespace WebCore {

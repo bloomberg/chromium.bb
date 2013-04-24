@@ -30,10 +30,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "Distance.h"
+#include "core/platform/audio/Distance.h"
 
-#include <algorithm>
 #include <math.h>
+#include <algorithm>
 
 using namespace std;
 

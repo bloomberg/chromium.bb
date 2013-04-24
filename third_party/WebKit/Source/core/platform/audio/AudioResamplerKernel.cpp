@@ -26,10 +26,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioResamplerKernel.h"
+#include "core/platform/audio/AudioResamplerKernel.h"
 
-#include "AudioResampler.h"
 #include <algorithm>
+#include "core/platform/audio/AudioResampler.h"
 
 using namespace std;
 

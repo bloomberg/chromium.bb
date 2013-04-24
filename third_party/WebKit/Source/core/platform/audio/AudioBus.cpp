@@ -30,15 +30,15 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioBus.h"
+#include "core/platform/audio/AudioBus.h"
 
-#include "DenormalDisabler.h"
+#include "core/platform/audio/DenormalDisabler.h"
 
-#include "SincResampler.h"
-#include "VectorMath.h"
-#include <algorithm>
 #include <assert.h>
 #include <math.h>
+#include <algorithm>
+#include "core/platform/audio/SincResampler.h"
+#include "core/platform/audio/VectorMath.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

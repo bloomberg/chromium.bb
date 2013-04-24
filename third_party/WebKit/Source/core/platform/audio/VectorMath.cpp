@@ -26,7 +26,7 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "VectorMath.h"
+#include "core/platform/audio/VectorMath.h"
 
 #if OS(DARWIN)
 #include <Accelerate/Accelerate.h>
@@ -40,8 +40,8 @@
 #include <arm_neon.h>
 #endif
 
-#include <algorithm>
 #include <math.h>
+#include <algorithm>
 
 namespace WebCore {
 

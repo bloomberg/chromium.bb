@@ -34,10 +34,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "AudioDestinationConsumer.h"
+#include "core/platform/audio/AudioDestinationConsumer.h"
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

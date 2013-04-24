@@ -29,7 +29,7 @@
 #ifndef AudioChannel_h
 #define AudioChannel_h
 
-#include "AudioArray.h"
+#include "core/platform/audio/AudioArray.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

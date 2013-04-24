@@ -30,11 +30,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioChannel.h"
+#include "core/platform/audio/AudioChannel.h"
 
-#include "VectorMath.h"
-#include <algorithm>
 #include <math.h>
+#include <algorithm>
+#include "core/platform/audio/VectorMath.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

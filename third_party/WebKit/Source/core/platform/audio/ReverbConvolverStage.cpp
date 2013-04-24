@@ -30,12 +30,12 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "ReverbConvolverStage.h"
+#include "core/platform/audio/ReverbConvolverStage.h"
 
-#include "VectorMath.h"
-#include "ReverbAccumulationBuffer.h"
-#include "ReverbConvolver.h"
-#include "ReverbInputBuffer.h"
+#include "core/platform/audio/ReverbAccumulationBuffer.h"
+#include "core/platform/audio/ReverbConvolver.h"
+#include "core/platform/audio/ReverbInputBuffer.h"
+#include "core/platform/audio/VectorMath.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

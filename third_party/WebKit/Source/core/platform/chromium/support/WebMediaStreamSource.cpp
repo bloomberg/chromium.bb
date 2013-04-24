@@ -34,8 +34,8 @@
 
 #include <public/WebMediaStreamSource.h>
 
-#include "AudioBus.h"
 #include "MediaStreamSource.h"
+#include "core/platform/audio/AudioBus.h"
 #include <public/WebAudioDestinationConsumer.h>
 #include <public/WebString.h>
 #include <wtf/MainThread.h>

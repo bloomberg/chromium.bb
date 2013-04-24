@@ -31,7 +31,7 @@
 
 #if !OS(DARWIN) && !USE(WEBAUDIO_MKL) && !USE(WEBAUDIO_FFMPEG) && !USE(WEBAUDIO_IPP) && !USE(WEBAUDIO_OPENMAX_DL_FFT)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
 namespace WebCore {
 

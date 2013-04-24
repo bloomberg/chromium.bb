@@ -27,7 +27,7 @@
 
 #include "CSSPropertyNames.h"
 #include "RenderStyleConstants.h"
-#include "TimingFunction.h"
+#include "core/platform/animation/TimingFunction.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

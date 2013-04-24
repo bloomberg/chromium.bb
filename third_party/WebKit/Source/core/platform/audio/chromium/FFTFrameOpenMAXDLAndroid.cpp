@@ -28,10 +28,10 @@
 
 #if OS(ANDROID) && USE(WEBAUDIO_OPENMAX_DL_FFT)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
-#include "AudioArray.h"
-#include "VectorMath.h"
+#include "core/platform/audio/AudioArray.h"
+#include "core/platform/audio/VectorMath.h"
 #include "dl/sp/api/armSP.h"
 #include "dl/sp/api/omxSP.h"
 

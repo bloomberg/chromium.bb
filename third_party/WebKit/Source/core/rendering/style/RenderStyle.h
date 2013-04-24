@@ -25,7 +25,6 @@
 #ifndef RenderStyle_h
 #define RenderStyle_h
 
-#include "AnimationList.h"
 #include "BorderValue.h"
 #include "CSSLineBoxContainValue.h"
 #include "CSSPrimitiveValue.h"
@@ -59,6 +58,7 @@
 #include "TextDirection.h"
 #include "ThemeTypes.h"
 #include "UnicodeBidi.h"
+#include "core/platform/animation/AnimationList.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/FontBaseline.h"

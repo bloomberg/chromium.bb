@@ -29,10 +29,10 @@
 #ifndef AudioDestinationChromium_h
 #define AudioDestinationChromium_h
 
-#include "AudioBus.h"
-#include "AudioDestination.h"
-#include "AudioIOCallback.h"
-#include "AudioSourceProvider.h"
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioDestination.h"
+#include "core/platform/audio/AudioIOCallback.h"
+#include "core/platform/audio/AudioSourceProvider.h"
 #include <public/WebAudioDevice.h>
 #include <public/WebVector.h>
 

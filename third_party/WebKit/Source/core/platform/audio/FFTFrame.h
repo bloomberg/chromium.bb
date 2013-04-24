@@ -29,7 +29,7 @@
 #ifndef FFTFrame_h
 #define FFTFrame_h
 
-#include "AudioArray.h"
+#include "core/platform/audio/AudioArray.h"
 
 #if OS(DARWIN) && !USE(WEBAUDIO_FFMPEG)
 #define USE_ACCELERATE_FFT 1

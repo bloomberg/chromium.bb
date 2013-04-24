@@ -30,11 +30,11 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "DynamicsCompressorKernel.h"
+#include "core/platform/audio/DynamicsCompressorKernel.h"
 
-#include "AudioUtilities.h"
-#include "DenormalDisabler.h"
 #include <algorithm>
+#include "core/platform/audio/AudioUtilities.h"
+#include "core/platform/audio/DenormalDisabler.h"
 #include <wtf/MathExtras.h>
 
 using namespace std;

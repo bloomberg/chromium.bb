@@ -32,7 +32,7 @@
 
 #if !OS(DARWIN) && USE(WEBAUDIO_MKL)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
 #include "mkl_vml.h"
 #include <wtf/MathExtras.h>

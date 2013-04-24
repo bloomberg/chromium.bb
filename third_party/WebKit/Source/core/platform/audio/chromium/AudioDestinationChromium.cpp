@@ -30,10 +30,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "AudioDestinationChromium.h"
+#include "core/platform/audio/chromium/AudioDestinationChromium.h"
 
-#include "AudioFIFO.h"
-#include "AudioPullFIFO.h"
+#include "core/platform/audio/AudioFIFO.h"
+#include "core/platform/audio/AudioPullFIFO.h"
 #include <public/Platform.h>
 
 namespace WebCore {

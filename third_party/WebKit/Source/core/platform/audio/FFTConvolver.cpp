@@ -30,9 +30,9 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "FFTConvolver.h"
+#include "core/platform/audio/FFTConvolver.h"
 
-#include "VectorMath.h"
+#include "core/platform/audio/VectorMath.h"
 
 namespace WebCore {
 

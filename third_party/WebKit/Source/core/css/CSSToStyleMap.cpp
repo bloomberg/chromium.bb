@@ -28,7 +28,6 @@
 #include "config.h"
 #include "CSSToStyleMap.h"
 
-#include "Animation.h"
 #include "CSSBorderImageSliceValue.h"
 #include "CSSPrimitiveValue.h"
 #include "CSSPrimitiveValueMappings.h"
@@ -38,6 +37,7 @@
 #include "Pair.h"
 #include "Rect.h"
 #include "StyleResolver.h"
+#include "core/platform/animation/Animation.h"
 
 namespace WebCore {
 

@@ -33,9 +33,9 @@
 
 #if USE(WEBAUDIO_IPP)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
-#include "VectorMath.h"
+#include "core/platform/audio/VectorMath.h"
 
 #include <wtf/MathExtras.h>
 

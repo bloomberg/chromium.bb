@@ -29,7 +29,7 @@
 #ifndef HRTFDatabase_h
 #define HRTFDatabase_h
 
-#include "HRTFElevation.h"
+#include "core/platform/audio/HRTFElevation.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>

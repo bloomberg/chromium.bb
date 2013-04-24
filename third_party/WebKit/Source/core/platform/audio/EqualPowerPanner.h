@@ -25,7 +25,7 @@
 #ifndef EqualPowerPanner_h
 #define EqualPowerPanner_h
 
-#include "Panner.h"
+#include "core/platform/audio/Panner.h"
 
 namespace WebCore {
 

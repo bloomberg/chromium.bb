@@ -30,13 +30,13 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "Reverb.h"
+#include "core/platform/audio/Reverb.h"
 
-#include "AudioBus.h"
-#include "AudioFileReader.h"
-#include "ReverbConvolver.h"
-#include "VectorMath.h"
 #include <math.h>
+#include "core/platform/audio/AudioBus.h"
+#include "core/platform/audio/AudioFileReader.h"
+#include "core/platform/audio/ReverbConvolver.h"
+#include "core/platform/audio/VectorMath.h"
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

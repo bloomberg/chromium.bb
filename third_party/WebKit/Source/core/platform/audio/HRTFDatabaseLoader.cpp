@@ -30,10 +30,10 @@
 
 #if ENABLE(WEB_AUDIO)
 
-#include "HRTFDatabaseLoader.h"
+#include "core/platform/audio/HRTFDatabaseLoader.h"
 
-#include "HRTFDatabase.h"
 #include "PlatformMemoryInstrumentation.h"
+#include "core/platform/audio/HRTFDatabase.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

@@ -32,10 +32,10 @@
 
 #if USE(WEBAUDIO_FFMPEG)
 
-#include "FFTFrame.h"
+#include "core/platform/audio/FFTFrame.h"
 
 #include "PlatformMemoryInstrumentation.h"
-#include "VectorMath.h"
+#include "core/platform/audio/VectorMath.h"
 
 extern "C" {
     #include <libavcodec/avfft.h>

@@ -26,7 +26,7 @@
 #include <public/WebAudioBus.h>
 
 #if ENABLE(WEB_AUDIO)
-#include "AudioBus.h"
+#include "core/platform/audio/AudioBus.h"
 #else
 #include <wtf/ThreadSafeRefCounted.h>
 

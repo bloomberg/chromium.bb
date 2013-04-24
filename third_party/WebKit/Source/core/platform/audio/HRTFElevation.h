@@ -29,7 +29,7 @@
 #ifndef HRTFElevation_h
 #define HRTFElevation_h
 
-#include "HRTFKernel.h"
+#include "core/platform/audio/HRTFKernel.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

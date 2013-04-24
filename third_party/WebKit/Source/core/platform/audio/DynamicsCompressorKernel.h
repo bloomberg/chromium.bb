@@ -29,7 +29,7 @@
 #ifndef DynamicsCompressorKernel_h
 #define DynamicsCompressorKernel_h
 
-#include "AudioArray.h"
+#include "core/platform/audio/AudioArray.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

@@ -29,7 +29,7 @@
 #ifndef MultiChannelResampler_h
 #define MultiChannelResampler_h
 
-#include "SincResampler.h"
+#include "core/platform/audio/SincResampler.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

@@ -26,7 +26,7 @@
 #ifndef GraphicsLayer_h
 #define GraphicsLayer_h
 
-#include "Animation.h"
+#include "core/platform/animation/Animation.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatPoint3D.h"
