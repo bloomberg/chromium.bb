@@ -210,8 +210,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateLocalMetadataSection(
       google_apis::DriveServiceInterface* drive_service);
   void UpdateDeltaUpdateStatusSection();
-  void UpdateInFlightOperationsSection(
-      google_apis::DriveServiceInterface* drive_service);
+  void UpdateInFlightOperationsSection(drive::JobListInterface* job_list);
   void UpdateGCacheContentsSection();
   void UpdateFileSystemContentsSection();
   void UpdateLocalStorageUsageSection();
@@ -372,7 +371,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   UpdateAppListSection(drive_service);
   UpdateLocalMetadataSection(drive_service);
   UpdateDeltaUpdateStatusSection();
-  UpdateInFlightOperationsSection(drive_service);
+  UpdateInFlightOperationsSection(system_service->job_list());
   UpdateGCacheContentsSection();
   UpdateCacheContentsSection(cache);
   UpdateLocalStorageUsageSection();
@@ -534,29 +533,20 @@ void DriveInternalsWebUIHandler::OnGetFilesystemMetadataForDeltaUpdate(
 }
 
 void DriveInternalsWebUIHandler::UpdateInFlightOperationsSection(
-    google_apis::DriveServiceInterface* drive_service) {
-  google_apis::OperationProgressStatusList
-      progress_status_list = drive_service->GetProgressStatusList();
+    drive::JobListInterface* job_list) {
+  std::vector<drive::JobInfo> info_list = job_list->GetJobInfoList();
 
   base::ListValue in_flight_operations;
-  for (size_t i = 0; i < progress_status_list.size(); ++i) {
-    const google_apis::OperationProgressStatus& status =
-        progress_status_list[i];
+  for (size_t i = 0; i < info_list.size(); ++i) {
+    const drive::JobInfo& info = info_list[i];
 
     base::DictionaryValue* dict = new DictionaryValue;
-    dict->SetInteger("operation_id", status.operation_id);
-    dict->SetString(
-        "operation_type",
-        google_apis::OperationTypeToString(status.operation_type));
-    dict->SetString("file_path", status.file_path.AsUTF8Unsafe());
-    dict->SetString(
-        "transfer_state",
-        google_apis::OperationTransferStateToString(status.transfer_state));
-    dict->SetString(
-        "start_time",
-        google_apis::util::FormatTimeAsStringLocaltime(status.start_time));
-    dict->SetDouble("progress_current", status.progress_current);
-    dict->SetDouble("progress_total", status.progress_total);
+    dict->SetInteger("id", info.job_id);
+    dict->SetString("type", drive::JobTypeToString(info.job_type));
+    dict->SetString("file_path", info.file_path.AsUTF8Unsafe());
+    dict->SetString("state", drive::JobStateToString(info.state));
+    dict->SetDouble("progress_current", info.num_completed_bytes);
+    dict->SetDouble("progress_total", info.num_total_bytes);
     in_flight_operations.Append(dict);
   }
   web_ui()->CallJavascriptFunction("updateInFlightOperations",
@@ -738,11 +728,7 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
   if (!system_service)
     return;
 
-  google_apis::DriveServiceInterface* drive_service =
-      system_service->drive_service();
-  DCHECK(drive_service);
-
-  UpdateInFlightOperationsSection(drive_service);
+  UpdateInFlightOperationsSection(system_service->job_list());
   UpdateEventLogSection(system_service->event_logger());
 }
 

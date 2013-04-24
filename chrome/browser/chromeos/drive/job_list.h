@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_LIST_INTERFACE_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_LIST_INTERFACE_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_LIST_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_LIST_H_
+
+#include <string>
 
 #include "base/basictypes.h"
 #include "base/files/file_path.h"
@@ -33,6 +35,9 @@ enum JobType {
   TYPE_UPLOAD_EXISTING_FILE,
 };
 
+// Returns the string representation of |type|.
+std::string JobTypeToString(JobType type);
+
 // Current state of the job.
 enum JobState {
   // The job is queued, but not yet executed.
@@ -44,6 +49,9 @@ enum JobState {
   // The job failed, but has been re-added to the queue.
   STATE_RETRY,
 };
+
+// Returns the string representation of |state|.
+std::string JobStateToString(JobState state);
 
 // Unique ID assigned to each job.
 typedef int32 JobID;
@@ -123,4 +131,4 @@ class JobListInterface {
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_JOB_LIST_INTERFACE_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_JOB_LIST_H_

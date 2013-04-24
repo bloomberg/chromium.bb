@@ -104,9 +104,10 @@ function updateLocalStorageUsage(localStorageSummary) {
 function updateInFlightOperations(inFlightOperations) {
   var container = $('in-flight-operations-contents');
 
-  // Reset the table.
+  // Reset the table. Remove children in reverse order. Otherwides each
+  // existingNodes[i] changes as a side effect of removeChild.
   var existingNodes = container.childNodes;
-  for (var i = 0; i < existingNodes.length; i++) {
+  for (var i = existingNodes.length - 1; i >= 0; i--) {
     var node = existingNodes[i];
     if (node.className == 'in-flight-operation')
       container.removeChild(node);
@@ -117,11 +118,10 @@ function updateInFlightOperations(inFlightOperations) {
     var operation = inFlightOperations[i];
     var tr = document.createElement('tr');
     tr.className = 'in-flight-operation';
-    tr.appendChild(createElementFromText('td', operation.operation_id));
-    tr.appendChild(createElementFromText('td', operation.operation_type));
+    tr.appendChild(createElementFromText('td', operation.id));
+    tr.appendChild(createElementFromText('td', operation.type));
     tr.appendChild(createElementFromText('td', operation.file_path));
-    tr.appendChild(createElementFromText('td', operation.transfer_state));
-    tr.appendChild(createElementFromText('td', operation.start_time));
+    tr.appendChild(createElementFromText('td', operation.state));
     var progress = operation.progress_current + '/' + operation.progress_total;
     if (operation.progress_total > 0) {
       progress += ' (' +
