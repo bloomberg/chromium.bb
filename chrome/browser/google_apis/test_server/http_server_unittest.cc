@@ -8,9 +8,6 @@
 #include "base/threading/thread.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
-#include "chrome/browser/google_apis/test_util.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -49,22 +46,23 @@ class HttpServerTest : public testing::Test,
   HttpServerTest()
       : num_responses_received_(0),
         num_responses_expected_(0),
-        ui_thread_(content::BrowserThread::UI, &message_loop_),
-        io_thread_(content::BrowserThread::IO) {
+        io_thread_("io_thread") {
   }
 
   virtual void SetUp() OVERRIDE {
-    io_thread_.StartIOThread();
+    base::Thread::Options thread_options;
+    thread_options.message_loop_type = MessageLoop::TYPE_IO;
+    ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
 
     request_context_getter_ = new net::TestURLRequestContextGetter(
-        content::BrowserThread::GetMessageLoopProxyForThread(
-            content::BrowserThread::IO));
+        io_thread_.message_loop_proxy());
 
-    ASSERT_TRUE(server_.InitializeAndWaitUntilReady());
+    server_.reset(new HttpServer(io_thread_.message_loop_proxy()));
+    ASSERT_TRUE(server_->InitializeAndWaitUntilReady());
   }
 
   virtual void TearDown() OVERRIDE {
-    server_.ShutdownAndWaitUntilComplete();
+    ASSERT_TRUE(server_->ShutdownAndWaitUntilComplete());
   }
 
   // net::URLFetcherDelegate override.
@@ -90,7 +88,7 @@ class HttpServerTest : public testing::Test,
                                          const HttpRequest& request) {
     request_relative_url_ = request.relative_url;
 
-    GURL absolute_url = server_.GetURL(request.relative_url);
+    GURL absolute_url = server_->GetURL(request.relative_url);
     if (absolute_url.path() == path) {
       scoped_ptr<HttpResponse> http_response(new HttpResponse);
       http_response->set_code(code);
@@ -106,26 +104,25 @@ class HttpServerTest : public testing::Test,
   int num_responses_received_;
   int num_responses_expected_;
   std::string request_relative_url_;
-  MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread io_thread_;
+  base::Thread io_thread_;
+  MessageLoop message_loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  HttpServer server_;
+  scoped_ptr<HttpServer> server_;
 };
 
 TEST_F(HttpServerTest, GetBaseURL) {
-  EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/", server_.port()),
-                               server_.base_url().spec());
+  EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/", server_->port()),
+                               server_->base_url().spec());
 }
 
 TEST_F(HttpServerTest, GetURL) {
   EXPECT_EQ(base::StringPrintf("http://127.0.0.1:%d/path?query=foo",
-                               server_.port()),
-            server_.GetURL("/path?query=foo").spec());
+                               server_->port()),
+            server_->GetURL("/path?query=foo").spec());
 }
 
 TEST_F(HttpServerTest, RegisterRequestHandler) {
-  server_.RegisterRequestHandler(base::Bind(&HttpServerTest::HandleRequest,
+  server_->RegisterRequestHandler(base::Bind(&HttpServerTest::HandleRequest,
                                             base::Unretained(this),
                                             "/test",
                                             "<b>Worked!</b>",
@@ -133,7 +130,7 @@ TEST_F(HttpServerTest, RegisterRequestHandler) {
                                             SUCCESS));
 
   scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_.GetURL("/test?q=foo"),
+      net::URLFetcher::Create(server_->GetURL("/test?q=foo"),
                               net::URLFetcher::GET,
                               this));
   fetcher->SetRequestContext(request_context_getter_.get());
@@ -150,7 +147,7 @@ TEST_F(HttpServerTest, RegisterRequestHandler) {
 
 TEST_F(HttpServerTest, DefaultNotFoundResponse) {
   scoped_ptr<net::URLFetcher> fetcher(
-      net::URLFetcher::Create(server_.GetURL("/non-existent"),
+      net::URLFetcher::Create(server_->GetURL("/non-existent"),
                               net::URLFetcher::GET,
                               this));
   fetcher->SetRequestContext(request_context_getter_.get());
@@ -162,21 +159,21 @@ TEST_F(HttpServerTest, DefaultNotFoundResponse) {
 }
 
 TEST_F(HttpServerTest, ConcurrentFetches) {
-  server_.RegisterRequestHandler(
+  server_->RegisterRequestHandler(
       base::Bind(&HttpServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test1",
                  "Raspberry chocolate",
                  "text/html",
                  SUCCESS));
-  server_.RegisterRequestHandler(
+  server_->RegisterRequestHandler(
       base::Bind(&HttpServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test2",
                  "Vanilla chocolate",
                  "text/html",
                  SUCCESS));
-  server_.RegisterRequestHandler(
+  server_->RegisterRequestHandler(
       base::Bind(&HttpServerTest::HandleRequest,
                  base::Unretained(this),
                  "/test3",
@@ -185,17 +182,17 @@ TEST_F(HttpServerTest, ConcurrentFetches) {
                  NOT_FOUND));
 
   scoped_ptr<net::URLFetcher> fetcher1 = scoped_ptr<net::URLFetcher>(
-      net::URLFetcher::Create(server_.GetURL("/test1"),
+      net::URLFetcher::Create(server_->GetURL("/test1"),
                               net::URLFetcher::GET,
                               this));
   fetcher1->SetRequestContext(request_context_getter_.get());
   scoped_ptr<net::URLFetcher> fetcher2 = scoped_ptr<net::URLFetcher>(
-      net::URLFetcher::Create(server_.GetURL("/test2"),
+      net::URLFetcher::Create(server_->GetURL("/test2"),
                               net::URLFetcher::GET,
                               this));
   fetcher2->SetRequestContext(request_context_getter_.get());
   scoped_ptr<net::URLFetcher> fetcher3 = scoped_ptr<net::URLFetcher>(
-      net::URLFetcher::Create(server_.GetURL("/test3"),
+      net::URLFetcher::Create(server_->GetURL("/test3"),
                               net::URLFetcher::GET,
                               this));
   fetcher3->SetRequestContext(request_context_getter_.get());

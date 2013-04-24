@@ -84,7 +84,10 @@ class GDataContactsServiceTest : public testing::Test {
         content::BrowserThread::GetMessageLoopProxyForThread(
             content::BrowserThread::IO));
 
-    test_server_.reset(new google_apis::test_server::HttpServer());
+    test_server_.reset(
+        new google_apis::test_server::HttpServer(
+            content::BrowserThread::GetMessageLoopProxyForThread(
+                content::BrowserThread::IO)));
     ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(
         base::Bind(&GDataContactsServiceTest::HandleDownloadRequest,
@@ -105,7 +108,7 @@ class GDataContactsServiceTest : public testing::Test {
   }
 
   virtual void TearDown() OVERRIDE {
-    test_server_->ShutdownAndWaitUntilComplete();
+    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
     request_context_getter_ = NULL;
     service_.reset();

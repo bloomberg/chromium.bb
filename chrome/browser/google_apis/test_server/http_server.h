@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "googleurl/src/gurl.h"
 #include "net/socket/tcp_listen_socket.h"
 
@@ -24,7 +25,7 @@ class HttpResponse;
 struct HttpRequest;
 
 // This class is required to be able to have composition instead of inheritance,
-class HttpListenSocket: public net::TCPListenSocket {
+class HttpListenSocket : public net::TCPListenSocket {
  public:
   HttpListenSocket(const SocketDescriptor socket_descriptor,
                    net::StreamListenSocket::Delegate* delegate);
@@ -32,6 +33,8 @@ class HttpListenSocket: public net::TCPListenSocket {
 
  private:
   virtual ~HttpListenSocket();
+
+  base::ThreadChecker thread_checker_;
 };
 
 // Class providing an HTTP server for testing purpose. This is a basic server
@@ -41,11 +44,16 @@ class HttpListenSocket: public net::TCPListenSocket {
 //
 // The common use case is below:
 //
+// base::Thread io_thread_;
 // scoped_ptr<HttpServer> test_server_;
 //
 // void SetUp() {
-//   test_server_.reset(new HttpServer());
-//   DCHECK(test_server_.InitializeAndWaitUntilReady());
+//   base::Thread::Options thread_options;
+//   thread_options.message_loop_type = MessageLoop::TYPE_IO;
+//   ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
+//
+//   test_server_.reset(new HttpServer(io_thread_.message_loop_proxy()));
+//   ASSERT_TRUE(test_server_.InitializeAndWaitUntilReady());
 //   test_server_->RegisterRequestHandler(
 //       base::Bind(&FooTest::HandleRequest, base::Unretained(this)));
 // }
@@ -67,16 +75,18 @@ class HttpServer : public net::StreamListenSocket::Delegate {
   typedef base::Callback<scoped_ptr<HttpResponse>(const HttpRequest& request)>
       HandleRequestCallback;
 
-  // Creates a http test server. InitializeAndWaitUntilReady() must be called
-  // to start the server.
-  HttpServer();
+  // Creates a http test server. |io_thread| is a task runner
+  // with IO message loop, used as a backend thread.
+  // InitializeAndWaitUntilReady() must be called to start the server.
+  explicit HttpServer(
+      const scoped_refptr<base::SingleThreadTaskRunner>& io_thread);
   virtual ~HttpServer();
 
   // Initializes and waits until the server is ready to accept requests.
-  bool InitializeAndWaitUntilReady();
+  bool InitializeAndWaitUntilReady() WARN_UNUSED_RESULT;
 
   // Shuts down the http server and waits until the shutdown is complete.
-  void ShutdownAndWaitUntilComplete();
+  bool ShutdownAndWaitUntilComplete() WARN_UNUSED_RESULT;
 
   // Checks if the server is started.
   bool Started() const {
@@ -124,6 +134,8 @@ class HttpServer : public net::StreamListenSocket::Delegate {
 
   HttpConnection* FindConnection(net::StreamListenSocket* socket);
 
+  scoped_refptr<base::SingleThreadTaskRunner> io_thread_;
+
   scoped_refptr<HttpListenSocket> listen_socket_;
   int port_;
   GURL base_url_;
@@ -137,6 +149,8 @@ class HttpServer : public net::StreamListenSocket::Delegate {
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
   base::WeakPtrFactory<HttpServer> weak_factory_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpServer);
 };

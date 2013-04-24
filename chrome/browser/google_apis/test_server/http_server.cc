@@ -5,20 +5,17 @@
 #include "chrome/browser/google_apis/test_server/http_server.h"
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/string_util.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/google_apis/test_server/http_connection.h"
 #include "chrome/browser/google_apis/test_server/http_request.h"
 #include "chrome/browser/google_apis/test_server/http_response.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_utils.h"
 #include "net/tools/fetch/http_listen_socket.h"
 
 namespace google_apis {
 namespace test_server {
-
-using content::BrowserThread;
 
 namespace {
 
@@ -42,58 +39,63 @@ scoped_ptr<HttpResponse> HandleDefaultRequest(const GURL& url,
 HttpListenSocket::HttpListenSocket(const SocketDescriptor socket_descriptor,
                                    net::StreamListenSocket::Delegate* delegate)
     : net::TCPListenSocket(socket_descriptor, delegate) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 void HttpListenSocket::Listen() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(thread_checker_.CalledOnValidThread());
   net::TCPListenSocket::Listen();
 }
 
 HttpListenSocket::~HttpListenSocket() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-HttpServer::HttpServer()
-    : port_(-1),
+HttpServer::HttpServer(
+    const scoped_refptr<base::SingleThreadTaskRunner>& io_thread)
+    : io_thread_(io_thread),
+      port_(-1),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(io_thread_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 HttpServer::~HttpServer() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 }
 
 bool HttpServer::InitializeAndWaitUntilReady() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&HttpServer::InitializeOnIOThread,
-                 base::Unretained(this)));
-
-  // Wait for the task completion.
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
+  base::RunLoop run_loop;
+  if (!io_thread_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&HttpServer::InitializeOnIOThread, base::Unretained(this)),
+          run_loop.QuitClosure())) {
+    return false;
+  }
+  run_loop.Run();
 
   return Started();
 }
 
-void HttpServer::ShutdownAndWaitUntilComplete() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+bool HttpServer::ShutdownAndWaitUntilComplete() {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  BrowserThread::PostTask(
-      BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&HttpServer::ShutdownOnIOThread,
-                 base::Unretained(this)));
+  base::RunLoop run_loop;
+  if (!io_thread_->PostTaskAndReply(
+          FROM_HERE,
+          base::Bind(&HttpServer::ShutdownOnIOThread, base::Unretained(this)),
+          run_loop.QuitClosure())) {
+    return false;
+  }
+  run_loop.Run();
 
-  // Wait for the task completion.
-  content::RunAllPendingInMessageLoop(BrowserThread::IO);
+  return true;
 }
 
 void HttpServer::InitializeOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
   DCHECK(!Started());
 
   int retries_left = kRetries + 1;
@@ -116,7 +118,7 @@ void HttpServer::InitializeOnIOThread() {
 }
 
 void HttpServer::ShutdownOnIOThread() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   listen_socket_ = NULL;  // Release the listen socket.
   STLDeleteContainerPairSecondPointers(connections_.begin(),
@@ -126,7 +128,7 @@ void HttpServer::ShutdownOnIOThread() {
 
 void HttpServer::HandleRequest(HttpConnection* connection,
                                scoped_ptr<HttpRequest> request) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   for (size_t i = 0; i < request_handlers_.size(); ++i) {
     scoped_ptr<HttpResponse> response =
@@ -162,7 +164,7 @@ void HttpServer::RegisterRequestHandler(
 
 void HttpServer::DidAccept(net::StreamListenSocket* server,
                            net::StreamListenSocket* connection) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   HttpConnection* http_connection = new HttpConnection(
       connection,
@@ -173,7 +175,7 @@ void HttpServer::DidAccept(net::StreamListenSocket* server,
 void HttpServer::DidRead(net::StreamListenSocket* connection,
                          const char* data,
                          int length) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
@@ -184,7 +186,7 @@ void HttpServer::DidRead(net::StreamListenSocket* connection,
 }
 
 void HttpServer::DidClose(net::StreamListenSocket* connection) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   HttpConnection* http_connection = FindConnection(connection);
   if (http_connection == NULL) {
@@ -197,7 +199,7 @@ void HttpServer::DidClose(net::StreamListenSocket* connection) {
 
 HttpConnection* HttpServer::FindConnection(
     net::StreamListenSocket* socket) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(io_thread_->BelongsToCurrentThread());
 
   std::map<net::StreamListenSocket*, HttpConnection*>::iterator it =
       connections_.find(socket);

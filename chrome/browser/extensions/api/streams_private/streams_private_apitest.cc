@@ -94,8 +94,10 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     // Init test server.
-    test_server_.reset(new HttpServer());
-    test_server_->InitializeAndWaitUntilReady();
+    test_server_.reset(new HttpServer(
+                           content::BrowserThread::GetMessageLoopProxyForThread(
+                               content::BrowserThread::IO)));
+    ASSERT_TRUE(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(base::Bind(&HandleRequest));
 
     ExtensionApiTest::SetUpOnMainThread();
@@ -103,7 +105,7 @@ class StreamsPrivateApiTest : public ExtensionApiTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     // Tear down the test server.
-    test_server_->ShutdownAndWaitUntilComplete();
+    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     test_server_.reset();
     ExtensionApiTest::CleanUpOnMainThread();
   }

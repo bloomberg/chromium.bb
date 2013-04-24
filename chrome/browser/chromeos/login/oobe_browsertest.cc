@@ -152,7 +152,9 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    test_server_ = new HttpServer();  // Constructor wants UI thread.
+    test_server_ = new HttpServer(
+        content::BrowserThread::GetMessageLoopProxyForThread(
+            content::BrowserThread::IO));
     CHECK(test_server_->InitializeAndWaitUntilReady());
     test_server_->RegisterRequestHandler(
         base::Bind(&OobeTest::HandleRequest, base::Unretained(this)));
@@ -168,7 +170,7 @@ class OobeTest : public chromeos::CrosInProcessBrowserTest {
 
   virtual void CleanUpOnMainThread() OVERRIDE {
     LOG(INFO) << "Stopping the http server.";
-    test_server_->ShutdownAndWaitUntilComplete();
+    EXPECT_TRUE(test_server_->ShutdownAndWaitUntilComplete());
     delete test_server_;  // Destructor wants UI thread.
   }
 
