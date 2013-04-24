@@ -32,6 +32,8 @@
     boolean isPreloaded(DOMString url);
     boolean isLoadingFromMemoryCache(DOMString url);
 
+    void crash();
+
     [RaisesException] unsigned long numberOfScopedHTMLStyleChildren(Node scope);
     [RaisesException] CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 

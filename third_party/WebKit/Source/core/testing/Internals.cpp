@@ -289,6 +289,11 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
     return resource && resource->status() == CachedResource::Cached;
 }
 
+void Internals::crash()
+{
+    CRASH();
+}
+
 PassRefPtr<Element> Internals::createContentElement(ExceptionCode& ec)
 {
     Document* document = contextDocument();
