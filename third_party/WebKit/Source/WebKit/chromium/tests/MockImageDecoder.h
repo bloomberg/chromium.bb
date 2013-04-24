@@ -26,6 +26,7 @@
 #ifndef MockImageDecoder_h
 
 #include "core/platform/image-decoders/ImageDecoder.h"
+#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
