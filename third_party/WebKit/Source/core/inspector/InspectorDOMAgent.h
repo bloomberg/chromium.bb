@@ -62,12 +62,12 @@ class InspectorFrontend;
 class InspectorHistory;
 class InspectorOverlay;
 class InspectorPageAgent;
-class HitTestResult;
 class HTMLElement;
 class InspectorState;
 class InstrumentingAgents;
 class NameNodeMap;
 class Node;
+class PlatformTouchEvent;
 class RevalidateStyleAttributeTask;
 class ScriptValue;
 class ShadowRoot;
@@ -187,7 +187,7 @@ public:
 
     PassRefPtr<TypeBuilder::Runtime::RemoteObject> resolveNode(Node*, const String& objectGroup);
     bool handleMousePress();
-    bool handleTouchEvent(Node*);
+    bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
     void handleMouseMove(Frame*, const PlatformMouseEvent&);
 
     InspectorHistory* history() { return m_history.get(); }

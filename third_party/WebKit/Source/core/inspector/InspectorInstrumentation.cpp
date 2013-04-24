@@ -278,30 +278,10 @@ void InspectorInstrumentation::didUpdateRegionLayoutImpl(InstrumentingAgents* in
         cssAgent->didUpdateRegionLayout(document, namedFlow);
 }
 
-void InspectorInstrumentation::handleMouseMoveImpl(InstrumentingAgents* instrumentingAgents, Frame* frame, const PlatformMouseEvent& event)
-{
-    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        domAgent->handleMouseMove(frame, event);
-}
-
 void InspectorInstrumentation::didScrollImpl(InstrumentingAgents* instrumentingAgents)
 {
     if (InspectorPageAgent* pageAgent = instrumentingAgents->inspectorPageAgent())
         pageAgent->didScroll();
-}
-
-bool InspectorInstrumentation::handleTouchEventImpl(InstrumentingAgents* instrumentingAgents, Node* node)
-{
-    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleTouchEvent(node);
-    return false;
-}
-
-bool InspectorInstrumentation::handleMousePressImpl(InstrumentingAgents* instrumentingAgents)
-{
-    if (InspectorDOMAgent* domAgent = instrumentingAgents->inspectorDOMAgent())
-        return domAgent->handleMousePress();
-    return false;
 }
 
 bool InspectorInstrumentation::forcePseudoStateImpl(InstrumentingAgents* instrumentingAgents, Element* element, CSSSelector::PseudoType pseudoState)
