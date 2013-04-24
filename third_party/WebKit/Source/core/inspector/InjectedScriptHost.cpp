@@ -47,7 +47,7 @@
 #include "InspectorFrontend.h"
 #include "InspectorValues.h"
 #include "Pasteboard.h"
-#include "Storage.h"
+#include "core/storage/Storage.h"
 
 
 #include "markup.h"

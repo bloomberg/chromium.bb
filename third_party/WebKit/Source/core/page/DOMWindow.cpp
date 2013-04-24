@@ -27,6 +27,7 @@
 #include "config.h"
 #include "DOMWindow.h"
 
+#include <algorithm>
 #include "BackForwardController.h"
 #include "BarInfo.h"
 #include "BeforeUnloadEvent.h"
@@ -92,15 +93,14 @@
 #include "SecurityPolicy.h"
 #include "SerializedScriptValue.h"
 #include "Settings.h"
-#include "Storage.h"
-#include "StorageArea.h"
-#include "StorageNamespace.h"
 #include "StyleMedia.h"
 #include "StyleResolver.h"
 #include "SuddenTermination.h"
 #include "WindowFeatures.h"
 #include "WindowFocusAllowedIndicator.h"
-#include <algorithm>
+#include "core/storage/Storage.h"
+#include "core/storage/StorageArea.h"
+#include "core/storage/StorageNamespace.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>
 #include <wtf/MathExtras.h>

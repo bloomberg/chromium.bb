@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Storage.h"
+#include "core/storage/Storage.h"
 
 #include "Frame.h"
 #include "Page.h"

@@ -28,7 +28,7 @@
 
 #include "DOMWindowProperty.h"
 #include "ScriptWrappable.h"
-#include "StorageArea.h"
+#include "core/storage/StorageArea.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

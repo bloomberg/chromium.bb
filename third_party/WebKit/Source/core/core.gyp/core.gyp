@@ -118,7 +118,6 @@
       '../rendering/mathml',
       '../rendering/style',
       '../rendering/svg',
-      '../storage',
       '../svg',
       '../svg/animation',
       '../svg/graphics',
@@ -396,6 +395,11 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit',
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         '<@(webcore_include_dirs)',
+
+        # FIXME: It's not clear if the bindings generation scripts should have
+        # a map from header name to absolute include path. For now, let the
+        # generated bindings files use relative paths.
+        '../storage',
       ],
       'sources': [
         # These files include all the .cpp files generated from the .idl files

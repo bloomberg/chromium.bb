@@ -29,16 +29,16 @@
 #include "Attr.h"
 #include "Attribute.h"
 #include "BeforeLoadEvent.h"
-#include "ChildListMutationScope.h"
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "CSSParser.h"
 #include "CSSRule.h"
 #include "CSSSelector.h"
 #include "CSSSelectorList.h"
 #include "CSSStyleRule.h"
 #include "CSSStyleSheet.h"
+#include "ChildListMutationScope.h"
 #include "ChildNodeList.h"
+#include "Chrome.h"
+#include "ChromeClient.h"
 #include "ClassNodeList.h"
 #include "ContainerNodeAlgorithms.h"
 #include "ContextMenuController.h"
@@ -97,7 +97,6 @@
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "StaticNodeList.h"
-#include "StorageEvent.h"
 #include "StyleResolver.h"
 #include "TagNodeList.h"
 #include "TemplateContentDocumentFragment.h"
@@ -112,14 +111,15 @@
 #include "WheelEvent.h"
 #include "WindowEventContext.h"
 #include "XMLNames.h"
+#include "core/storage/StorageEvent.h"
 #include "htmlediting.h"
 #include <wtf/HashSet.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>
-#include <wtf/UnusedParam.h>
-#include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/UnusedParam.h>
+#include <wtf/Vector.h>
 
 #ifndef NDEBUG
 #include "RenderLayer.h"

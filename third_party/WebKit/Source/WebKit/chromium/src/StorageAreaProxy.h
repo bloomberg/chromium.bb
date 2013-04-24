@@ -26,7 +26,7 @@
 #ifndef StorageAreaProxy_h
 #define StorageAreaProxy_h
 
-#include "StorageArea.h"
+#include "core/storage/StorageArea.h"
 
 namespace WebKit {
 class WebStorageArea;

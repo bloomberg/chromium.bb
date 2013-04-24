@@ -32,14 +32,14 @@
 #define WorkerStorageQuotaCallbacksBridge_h
 
 #include "ScriptExecutionContext.h"
-#include "StorageArea.h"
+#include "core/storage/StorageArea.h"
 #include <WebStorageQuotaError.h>
 #include <WebStorageQuotaType.h>
 #include <public/WebVector.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Threading.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Threading.h>
 
 namespace WebCore {
 class WorkerLoaderProxy;

@@ -26,8 +26,8 @@
 #ifndef StorageNamespaceProxy_h
 #define StorageNamespaceProxy_h
 
-#include "StorageArea.h"
-#include "StorageNamespace.h"
+#include "core/storage/StorageArea.h"
+#include "core/storage/StorageNamespace.h"
 
 namespace WebKit { class WebStorageNamespace; }
 

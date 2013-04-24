@@ -26,8 +26,8 @@
 #include "DNS.h"
 #include "DateTimeChooser.h"
 #include "Document.h"
-#include "FileIconLoader.h"
 #include "FileChooser.h"
+#include "FileIconLoader.h"
 #include "FileList.h"
 #include "FloatRect.h"
 #include "Frame.h"
@@ -46,12 +46,12 @@
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
-#include "StorageNamespace.h"
 #include "WindowFeatures.h"
+#include "core/storage/StorageNamespace.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooser.h"

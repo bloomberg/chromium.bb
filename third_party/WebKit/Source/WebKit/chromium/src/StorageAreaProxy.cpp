@@ -36,9 +36,9 @@
 #include "Page.h"
 #include "PageGroup.h"
 #include "SecurityOrigin.h"
-#include "Storage.h"
-#include "StorageEvent.h"
 #include "StorageNamespaceProxy.h"
+#include "core/storage/Storage.h"
+#include "core/storage/StorageEvent.h"
 
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"

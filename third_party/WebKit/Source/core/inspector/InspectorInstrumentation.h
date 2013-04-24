@@ -44,10 +44,10 @@
 #include "Page.h"
 #include "ScriptExecutionContext.h"
 #include "ScriptState.h"
-#include "StorageArea.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
+#include "core/storage/StorageArea.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

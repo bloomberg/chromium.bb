@@ -30,8 +30,8 @@
 #include "config.h"
 #include "InspectorDOMStorageAgent.h"
 
-#include "Database.h"
 #include "DOMWindow.h"
+#include "Database.h"
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "ExceptionCodeDescription.h"
@@ -44,11 +44,11 @@
 #include "Page.h"
 #include "PageGroup.h"
 #include "SecurityOrigin.h"
-#include "Storage.h"
-#include "StorageArea.h"
-#include "StorageNamespace.h"
 #include "VoidCallback.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/storage/Storage.h"
+#include "core/storage/StorageArea.h"
+#include "core/storage/StorageNamespace.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/Vector.h>

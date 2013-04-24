@@ -72,13 +72,13 @@
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "SharedBuffer.h"
-#include "StorageArea.h"
-#include "StorageNamespace.h"
 #include "TextResourceDecoder.h"
 #include "VisitedLinkState.h"
 #include "VoidCallback.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "Widget.h"
+#include "core/storage/StorageArea.h"
+#include "core/storage/StorageNamespace.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>

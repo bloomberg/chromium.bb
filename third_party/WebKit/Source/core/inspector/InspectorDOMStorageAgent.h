@@ -30,7 +30,7 @@
 #define InspectorDOMStorageAgent_h
 
 #include "InspectorBaseAgent.h"
-#include "StorageArea.h"
+#include "core/storage/StorageArea.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>

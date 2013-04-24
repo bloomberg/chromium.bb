@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "StorageEvent.h"
+#include "core/storage/StorageEvent.h"
 
 #include "EventNames.h"
-#include "Storage.h"
+#include "core/storage/Storage.h"
 
 namespace WebCore {
 

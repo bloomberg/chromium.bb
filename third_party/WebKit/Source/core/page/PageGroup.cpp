@@ -33,7 +33,7 @@
 #include "GroupSettings.h"
 #include "Page.h"
 #include "Settings.h"
-#include "StorageNamespace.h"
+#include "core/storage/StorageNamespace.h"
 
 namespace WebCore {
 
