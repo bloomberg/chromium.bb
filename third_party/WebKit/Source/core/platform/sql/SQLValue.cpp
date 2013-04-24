@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "SQLValue.h"
+#include "core/platform/sql/SQLValue.h"
 
 namespace WebCore {
 

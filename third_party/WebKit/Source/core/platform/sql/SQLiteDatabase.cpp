@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "SQLiteDatabase.h"
+#include "core/platform/sql/SQLiteDatabase.h"
 
+#include <sqlite3.h>
 #include "DatabaseAuthorizer.h"
 #include "Logging.h"
-#include "SQLiteFileSystem.h"
-#include "SQLiteStatement.h"
-#include <sqlite3.h>
-#include <wtf/Threading.h>
+#include "core/platform/sql/SQLiteFileSystem.h"
+#include "core/platform/sql/SQLiteStatement.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Threading.h>
 
 namespace WebCore {
 

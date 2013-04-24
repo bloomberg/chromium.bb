@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "SQLiteTransaction.h"
+#include "core/platform/sql/SQLiteTransaction.h"
 
-#include "SQLiteDatabase.h"
+#include "core/platform/sql/SQLiteDatabase.h"
 
 namespace WebCore {
 

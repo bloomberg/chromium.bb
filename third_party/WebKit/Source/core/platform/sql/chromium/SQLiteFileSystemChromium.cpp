@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "SQLiteFileSystem.h"
+#include "core/platform/sql/SQLiteFileSystem.h"
 
-#include "SQLiteDatabase.h"
-#include <public/Platform.h>
 #include <sqlite3.h>
+#include "core/platform/sql/SQLiteDatabase.h"
+#include <public/Platform.h>
 #include <wtf/text/CString.h>
 
 // SQLiteFileSystem::registerSQLiteVFS() is implemented in the

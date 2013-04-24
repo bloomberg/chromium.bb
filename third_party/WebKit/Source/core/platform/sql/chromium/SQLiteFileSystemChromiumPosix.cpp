@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "SQLiteFileSystem.h"
+#include "core/platform/sql/SQLiteFileSystem.h"
 
-#include <public/Platform.h>
 #include <sqlite3.h>
+#include <public/Platform.h>
 
 #include <fcntl.h>
 #include <string.h>

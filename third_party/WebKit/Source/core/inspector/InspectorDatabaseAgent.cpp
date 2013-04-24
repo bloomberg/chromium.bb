@@ -46,8 +46,8 @@
 #include "SQLTransaction.h"
 #include "SQLTransactionCallback.h"
 #include "SQLTransactionErrorCallback.h"
-#include "SQLValue.h"
 #include "VoidCallback.h"
+#include "core/platform/sql/SQLValue.h"
 
 #include <wtf/Vector.h>
 
