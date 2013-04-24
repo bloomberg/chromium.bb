@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "ui/aura/root_window_transformer.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/transform.h"
@@ -15,15 +16,17 @@ namespace aura {
 class RootWindow;
 }
 
+namespace gfx {
+class Display;
+}
+
 namespace ash {
 
 // RootWindowTransformer for ash environment.
 class ASH_EXPORT AshRootWindowTransformer : public aura::RootWindowTransformer {
  public:
   AshRootWindowTransformer(aura::RootWindow* root,
-                           const gfx::Transform& transform,
-                           const gfx::Insets& insets,
-                           float root_window_scale);
+                           const gfx::Display& display);
   // aura::RootWindowTransformer overrides:
   virtual gfx::Transform GetTransform() const OVERRIDE;
   virtual gfx::Transform GetInverseTransform() const OVERRIDE;
@@ -32,7 +35,7 @@ class ASH_EXPORT AshRootWindowTransformer : public aura::RootWindowTransformer {
   virtual gfx::Insets GetHostInsets() const OVERRIDE;
 
  private:
-  virtual ~AshRootWindowTransformer() {}
+  virtual ~AshRootWindowTransformer();
 
   aura::RootWindow* root_window_;
   gfx::Transform transform_;
@@ -42,11 +45,15 @@ class ASH_EXPORT AshRootWindowTransformer : public aura::RootWindowTransformer {
   // |gfx::Transform::GetInverse|.
   gfx::Transform invert_transform_;
 
+  // The transform of the root window bounds. This is used to calculate
+  // the size of root window.
+  gfx::Transform root_window_bounds_transform_;
+
   // The scale of the root window. This is used to expand the
   // area of the root window (useful in HighDPI display).
   // Note that this should not be confused with the device scale
   // factor, which specfies the pixel density of the display.
-  float root_window_scale_;
+  float root_window_ui_scale_;
 
   gfx::Insets host_insets_;
 

@@ -54,13 +54,8 @@
 #undef RootWindow
 #endif  // defined(OS_CHROMEOS)
 
-DECLARE_WINDOW_PROPERTY_TYPE(gfx::Display::Rotation);
-
 namespace ash {
 namespace {
-
-DEFINE_WINDOW_PROPERTY_KEY(gfx::Display::Rotation, kRotationPropertyKey,
-                           gfx::Display::ROTATE_0);
 
 // Primary display stored in global object as it can be
 // accessed after Shell is deleted. A separate display instance is created
@@ -129,62 +124,6 @@ internal::DisplayManager* GetDisplayManager() {
   return Shell::GetInstance()->display_manager();
 }
 
-// Round near zero value to zero.
-void RoundNearZero(gfx::Transform* transform) {
-  const float kEpsilon = 0.001f;
-  SkMatrix44& matrix = transform->matrix();
-  for (int x = 0; x < 4; ++x) {
-    for (int y = 0; y < 4; ++y) {
-      if (std::abs(SkMScalarToFloat(matrix.get(x, y))) < kEpsilon)
-        matrix.set(x, y, SkFloatToMScalar(0.0f));
-    }
-  }
-}
-
-void RotateRootWindow(aura::RootWindow* root_window,
-                      const gfx::Display& display,
-                      const internal::DisplayInfo& info) {
-  // TODO(oshima): Add animation. (crossfade+rotation, or just cross-fade)
-#if defined(OS_WIN)
-  // Windows 8 bots refused to resize the host window, and
-  // updating the transform results in incorrectly resizing
-  // the root window. Don't apply the transform unless
-  // necessary so that unit tests pass on win8 bots.
-  if (info.rotation() == root_window->GetProperty(kRotationPropertyKey))
-    return;
-  root_window->SetProperty(kRotationPropertyKey, info.rotation());
-#endif
-  gfx::Transform rotate;
-  // The origin is (0, 0), so the translate width/height must be reduced by
-  // 1 pixel.
-  float one_pixel = 1.0f / display.device_scale_factor();
-  switch (info.rotation()) {
-    case gfx::Display::ROTATE_0:
-      break;
-    case gfx::Display::ROTATE_90:
-      rotate.Translate(display.bounds().height() - one_pixel, 0);
-      rotate.Rotate(90);
-      break;
-    case gfx::Display::ROTATE_270:
-      rotate.Translate(0, display.bounds().width() - one_pixel);
-      rotate.Rotate(270);
-      break;
-    case gfx::Display::ROTATE_180:
-      rotate.Translate(display.bounds().width() - one_pixel,
-                       display.bounds().height() - one_pixel);
-      rotate.Rotate(180);
-      break;
-  }
-  RoundNearZero(&rotate);
-
-  scoped_ptr<aura::RootWindowTransformer> transformer(
-      new AshRootWindowTransformer(root_window,
-                                   rotate,
-                                   info.GetOverscanInsetsInPixel(),
-                                   info.ui_scale()));
-  root_window->SetRootWindowTransformer(transformer.Pass());
-}
-
 void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                                       const gfx::Display& display) {
   internal::DisplayInfo info =
@@ -226,7 +165,9 @@ void SetDisplayPropertiesOnHostWindow(aura::RootWindow* root,
                      kCARDINAL,
                      100 * display.device_scale_factor());
 #endif
-  RotateRootWindow(root, display, info);
+  scoped_ptr<aura::RootWindowTransformer> transformer(
+      new AshRootWindowTransformer(root, display));
+  root->SetRootWindowTransformer(transformer.Pass());
 }
 
 }  // namespace

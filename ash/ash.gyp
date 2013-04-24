@@ -616,6 +616,7 @@
         'accelerators/accelerator_filter_unittest.cc',
         'accelerators/accelerator_table_unittest.cc',
         'accelerators/nested_dispatcher_controller_unittest.cc',
+        'ash_root_window_transformer_unittest.cc',
         'desktop_background/desktop_background_controller_unittest.cc',
         'dip_unittest.cc',
         'display/display_controller_unittest.cc',
@@ -707,6 +708,7 @@
             ['exclude', 'accelerators/nested_dispatcher_controller_unittest.cc'],
             ['exclude', 'wm/drag_window_resizer_unittest.cc'],
             # Can't resize on Windows Ash. http://crbug.com/165962
+            ['exclude', 'ash_root_window_transformer_unittest.cc'],
             ['exclude', 'magnifier/magnification_controller_unittest.cc'],
             ['exclude', 'wm/workspace/workspace_window_resizer_unittest.cc'],
           ],

@@ -4,12 +4,15 @@
 
 #include "ash/magnifier/magnification_controller.h"
 
+#include "ash/ash_root_window_transformer.h"
 #include "ash/display/display_controller.h"
+#include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/system/tray/system_tray_delegate.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/root_window_transformer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/events/event.h"
@@ -18,6 +21,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/rect_conversions.h"
@@ -37,6 +41,14 @@ const float kScrollScaleChangeFactor = 0.05f;
 // Threadshold of panning. If the cursor moves to within pixels (in DIP) of
 // |kPanningMergin| from the edge, the view-port moves.
 const int kPanningMergin = 100;
+
+void MoveCursorTo(aura::RootWindow* root_window,
+                  const gfx::Point root_location) {
+  gfx::Point3F host_location_3f(root_location);
+  root_window->layer()->transform().TransformPoint(host_location_3f);
+  root_window->MoveCursorToHostLoation(
+      gfx::ToCeiledPoint(host_location_3f.AsPointF()));
+}
 
 }  // namespace
 
@@ -74,6 +86,9 @@ class MagnificationControllerImpl : virtual public MagnificationController,
 
   // aura::WindowObserver overrides:
   virtual void OnWindowDestroying(aura::Window* root_window) OVERRIDE;
+  virtual void OnWindowBoundsChanged(aura::Window* window,
+                                     const gfx::Rect& old_bounds,
+                                     const gfx::Rect& new_bounds) OVERRIDE;
 
   // Redraws the magnification window with the given origin position and the
   // given scale. Returns true if the window is changed; otherwise, false.
@@ -251,7 +266,11 @@ bool MagnificationControllerImpl::RedrawDIP(const gfx::PointF& position_in_dip,
   settings.SetTransitionDuration(
       base::TimeDelta::FromMilliseconds(animate ? 100 : 0));
 
-  root_window_->layer()->SetTransform(transform);
+  gfx::Display display =
+      Shell::GetScreen()->GetDisplayNearestWindow(root_window_);
+  scoped_ptr<aura::RootWindowTransformer> transformer(
+      new AshRootWindowTransformer(root_window_, display));
+  root_window_->SetRootWindowTransformer(transformer.Pass());
 
   if (animate)
     is_on_animation_ = true;
@@ -358,7 +377,7 @@ void MagnificationControllerImpl::OnMouseMove(const gfx::Point& location) {
     if (ret) {
       // If the magnified region is moved, hides the mouse cursor and moves it.
       if (x_diff != 0 || y_diff != 0)
-        root_window_->MoveCursorTo(mouse);
+        MoveCursorTo(root_window_, mouse);
     }
   }
 }
@@ -381,14 +400,11 @@ void MagnificationControllerImpl::AfterAnimationMoveCursorTo(
 }
 
 gfx::Size MagnificationControllerImpl::GetHostSizeDIP() const {
-  return ui::ConvertSizeToDIP(root_window_->layer(),
-                              root_window_->GetHostSize());
+  return root_window_->bounds().size();
 }
 
 gfx::RectF MagnificationControllerImpl::GetWindowRectDIP(float scale) const {
-  const gfx::Size size_in_dip =
-      ui::ConvertSizeToDIP(root_window_->layer(),
-                           root_window_->GetHostSize());
+  const gfx::Size size_in_dip = root_window_->bounds().size();
   const float width = size_in_dip.width() / scale;
   const float height = size_in_dip.height() / scale;
 
@@ -418,7 +434,7 @@ void MagnificationControllerImpl::OnImplicitAnimationsCompleted() {
     return;
 
   if (move_cursor_after_animation_) {
-    root_window_->MoveCursorTo(position_after_animation_);
+    MoveCursorTo(root_window_, position_after_animation_);
     move_cursor_after_animation_ = false;
 
     aura::client::CursorClient* cursor_client =
@@ -446,6 +462,13 @@ void MagnificationControllerImpl::OnWindowDestroying(
     SwitchTargetRootWindow(active_root_window, false);
     point_of_interest_ = active_root_window->bounds().CenterPoint();
   }
+}
+
+void MagnificationControllerImpl::OnWindowBoundsChanged(
+    aura::Window* window,
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  // TODO(yoshiki): implement here. crbug.com/230979
 }
 
 void MagnificationControllerImpl::SwitchTargetRootWindow(
@@ -526,9 +549,9 @@ void MagnificationControllerImpl::SetEnabled(bool enabled) {
     if (is_enabled_ && scale == scale_)
       return;
 
+    is_enabled_ = enabled;
     RedrawKeepingMousePosition(scale, true);
     ash::Shell::GetInstance()->delegate()->SaveScreenMagnifierScale(scale);
-    is_enabled_ = enabled;
   } else {
     // Do nothing, if already disabled.
     if (!is_enabled_)

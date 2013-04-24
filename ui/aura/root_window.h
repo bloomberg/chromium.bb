@@ -129,6 +129,9 @@ class AURA_EXPORT RootWindow : public ui::CompositorDelegate,
   // Moves the cursor to the specified location relative to the root window.
   virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
 
+  // Moves the cursor to the |host_location| given in host coordinates.
+  void MoveCursorToHostLoation(const gfx::Point& host_location);
+
   // Clips the cursor movement to the root_window.
   bool ConfineCursorToWindow();
 

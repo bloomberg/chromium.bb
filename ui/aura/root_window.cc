@@ -288,9 +288,9 @@ void RootWindow::OnMouseEventsEnableStateChanged(bool enabled) {
 }
 
 void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
-  gfx::Point3F point_3f(location_in_dip);
-  GetRootTransform().TransformPoint(point_3f);
-  host_->MoveCursorTo(gfx::ToFlooredPoint(point_3f.AsPointF()));
+  gfx::Point location(location_in_dip);
+  ConvertPointToHost(&location);
+  host_->MoveCursorTo(location);
   SetLastMouseLocation(this, location_in_dip);
   client::CursorClient* cursor_client = client::GetCursorClient(this);
   if (cursor_client) {
@@ -298,6 +298,21 @@ void RootWindow::MoveCursorTo(const gfx::Point& location_in_dip) {
         gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
     cursor_client->SetDisplay(display);
   }
+}
+
+void RootWindow::MoveCursorToHostLoation(const gfx::Point& host_location) {
+  host_->MoveCursorTo(host_location);
+  gfx::Point root_location(host_location);
+  ConvertPointFromHost(&root_location);
+  SetLastMouseLocation(this, root_location);
+  client::CursorClient* cursor_client = client::GetCursorClient(this);
+  if (cursor_client) {
+    const gfx::Display& display =
+        gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
+    cursor_client->SetDisplay(display);
+  }
+
+  synthesize_mouse_move_ = false;
 }
 
 bool RootWindow::ConfineCursorToWindow() {

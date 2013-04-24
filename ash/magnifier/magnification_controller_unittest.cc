@@ -107,7 +107,7 @@ TEST_F(MagnificationControllerTest, MagnifyAndUnmagnify) {
 
   GetMagnificationController()->SetScale(3.0f, false);
   EXPECT_EQ(3.0f, GetMagnificationController()->GetScale());
-  EXPECT_EQ("266,200 268x200", GetViewport().ToString());
+  EXPECT_EQ("266,200 267x200", GetViewport().ToString());
 }
 
 TEST_F(MagnificationControllerTest, MoveWindow) {
