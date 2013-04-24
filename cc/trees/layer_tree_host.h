@@ -153,6 +153,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
   int commit_number() const { return commit_number_; }
 
+  void SetNeedsDisplayOnAllLayers();
+
   void CollectRenderingStats(RenderingStats* stats) const;
 
   RenderingStatsInstrumentation* rendering_stats_instrumentation() const {

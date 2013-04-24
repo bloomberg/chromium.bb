@@ -34,6 +34,7 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   void SetSuppressScheduleComposite(bool suppress);
   void Animate(base::TimeTicks time);
   void Composite(base::TimeTicks frame_begin_time);
+  void SetNeedsDisplayOnAllLayers();
   void GetRenderingStats(cc::RenderingStats* stats);
   skia::RefPtr<SkPicture> CapturePicture();
   void UpdateTopControlsState(bool enable_hiding,
@@ -113,4 +114,3 @@ private:
 }  // namespace content
 
 #endif  // CONTENT_RENDERER_GPU_RENDER_WIDGET_COMPOSITOR_H_
-

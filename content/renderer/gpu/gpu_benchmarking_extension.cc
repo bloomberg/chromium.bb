@@ -14,6 +14,7 @@
 #include "content/common/gpu/gpu_rendering_stats.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/renderer/all_rendering_benchmarks.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/rendering_benchmark.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -133,6 +134,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
           "if (typeof(chrome.gpuBenchmarking) == 'undefined') {"
           "  chrome.gpuBenchmarking = {};"
           "};"
+          "chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers = function() {"
+          "  native function SetNeedsDisplayOnAllLayers();"
+          "  return SetNeedsDisplayOnAllLayers();"
+          "};"
           "chrome.gpuBenchmarking.renderingStats = function() {"
           "  native function GetRenderingStats();"
           "  return GetRenderingStats();"
@@ -168,6 +173,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
 
   virtual v8::Handle<v8::FunctionTemplate> GetNativeFunction(
       v8::Handle<v8::String> name) OVERRIDE {
+    if (name->Equals(v8::String::New("SetNeedsDisplayOnAllLayers")))
+      return v8::FunctionTemplate::New(SetNeedsDisplayOnAllLayers);
     if (name->Equals(v8::String::New("GetRenderingStats")))
       return v8::FunctionTemplate::New(GetRenderingStats);
     if (name->Equals(v8::String::New("PrintToSkPicture")))
@@ -180,6 +187,29 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return v8::FunctionTemplate::New(BeginWindowSnapshotPNG);
 
     return v8::Handle<v8::FunctionTemplate>();
+  }
+
+  static v8::Handle<v8::Value> SetNeedsDisplayOnAllLayers(
+      const v8::Arguments& args) {
+    WebFrame* web_frame = WebFrame::frameForCurrentContext();
+    if (!web_frame)
+      return v8::Undefined();
+
+    WebView* web_view = web_frame->view();
+    if (!web_view)
+      return v8::Undefined();
+
+    RenderViewImpl* render_view_impl = RenderViewImpl::FromWebView(web_view);
+    if (!render_view_impl)
+      return v8::Undefined();
+
+    RenderWidgetCompositor* compositor = render_view_impl->compositor();
+    if (!compositor)
+      return v8::Undefined();
+
+    compositor->SetNeedsDisplayOnAllLayers();
+
+    return v8::Undefined();
   }
 
   static v8::Handle<v8::Value> GetRenderingStats(const v8::Arguments& args) {

@@ -2266,6 +2266,10 @@ bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {
   return gpu_channel->CollectRenderingStatsForSurface(surface_id(), stats);
 }
 
+RenderWidgetCompositor* RenderWidget::compositor() const {
+  return compositor_.get();
+}
+
 void RenderWidget::BeginSmoothScroll(
     bool down,
     const SmoothScrollCompletionCallback& callback,

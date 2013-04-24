@@ -171,6 +171,8 @@ class CONTENT_EXPORT RenderWidget
   // This call is relatively expensive as it blocks on the GPU process
   bool GetGpuRenderingStats(GpuRenderingStats*) const;
 
+  RenderWidgetCompositor* compositor() const;
+
   virtual scoped_ptr<cc::OutputSurface> CreateOutputSurface();
 
   // Callback for use with BeginSmoothScroll.
