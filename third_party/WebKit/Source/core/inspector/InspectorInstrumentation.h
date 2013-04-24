@@ -31,7 +31,10 @@
 #ifndef InspectorInstrumentation_h
 #define InspectorInstrumentation_h
 
+#include "CSSImportRule.h"
+#include "CSSRule.h"
 #include "CSSSelector.h"
+#include "CSSStyleSheet.h"
 #include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
 #include "Element.h"
@@ -48,6 +51,7 @@
 #include "WebSocketHandshakeResponse.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 
@@ -88,6 +92,7 @@ class ShadowRoot;
 class StorageArea;
 class StyleResolver;
 class StyleRule;
+class StyleSheet;
 class ThreadableLoaderClient;
 class WorkerContext;
 class WorkerContextProxy;
@@ -126,6 +131,7 @@ public:
     static void didRemoveDOMAttr(Document*, Element*, const AtomicString& name);
     static void characterDataModified(Document*, CharacterData*);
     static void didInvalidateStyleAttr(Document*, Node*);
+    static void activeStyleSheetsUpdated(Document*, const Vector<RefPtr<StyleSheet> >&);
     static void frameWindowDiscarded(Frame*, DOMWindow*);
     static void mediaQueryResultChanged(Document*);
     static void didPushShadowRoot(Element* host, ShadowRoot*);
@@ -306,6 +312,7 @@ private:
     static void didRemoveDOMAttrImpl(InstrumentingAgents*, Element*, const AtomicString& name);
     static void characterDataModifiedImpl(InstrumentingAgents*, CharacterData*);
     static void didInvalidateStyleAttrImpl(InstrumentingAgents*, Node*);
+    static void activeStyleSheetsUpdatedImpl(InstrumentingAgents*, const Vector<RefPtr<StyleSheet> >&);
     static void frameWindowDiscardedImpl(InstrumentingAgents*, DOMWindow*);
     static void mediaQueryResultChangedImpl(InstrumentingAgents*);
     static void didPushShadowRootImpl(InstrumentingAgents*, Element* host, ShadowRoot*);
@@ -548,6 +555,13 @@ inline void InspectorInstrumentation::didInvalidateStyleAttr(Document* document,
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         didInvalidateStyleAttrImpl(instrumentingAgents, node);
+}
+
+inline void InspectorInstrumentation::activeStyleSheetsUpdated(Document* document, const Vector<RefPtr<StyleSheet> >& newSheets)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
+        activeStyleSheetsUpdatedImpl(instrumentingAgents, newSheets);
 }
 
 inline void InspectorInstrumentation::frameWindowDiscarded(Frame* frame, DOMWindow* domWindow)

@@ -230,6 +230,12 @@ void InspectorInstrumentation::didInvalidateStyleAttrImpl(InstrumentingAgents* i
         domDebuggerAgent->didInvalidateStyleAttr(node);
 }
 
+void InspectorInstrumentation::activeStyleSheetsUpdatedImpl(InstrumentingAgents* instrumentingAgents, const Vector<RefPtr<StyleSheet> >& newSheets)
+{
+    if (InspectorCSSAgent* cssAgent = instrumentingAgents->inspectorCSSAgent())
+        cssAgent->activeStyleSheetsUpdated(newSheets);
+}
+
 void InspectorInstrumentation::frameWindowDiscardedImpl(InstrumentingAgents* instrumentingAgents, DOMWindow* window)
 {
     if (InspectorConsoleAgent* consoleAgent = instrumentingAgents->inspectorConsoleAgent())

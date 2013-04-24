@@ -183,7 +183,9 @@ public:
 
     String id() const { return m_id; }
     String finalURL() const;
+    bool canBind() const { return m_origin != TypeBuilder::CSS::StyleSheetOrigin::User_agent && m_origin != TypeBuilder::CSS::StyleSheetOrigin::User; }
     CSSStyleSheet* pageStyleSheet() const { return m_pageStyleSheet.get(); }
+    bool isReparsing() const { return m_isReparsing; }
     void reparseStyleSheet(const String&);
     bool setText(const String&, ExceptionCode&);
     String ruleSelector(const InspectorCSSId&, ExceptionCode&);
@@ -209,7 +211,6 @@ public:
 protected:
     InspectorStyleSheet(InspectorPageAgent*, const String& id, PassRefPtr<CSSStyleSheet> pageStyleSheet, TypeBuilder::CSS::StyleSheetOrigin::Enum, const String& documentURL, Listener*);
 
-    bool canBind() const { return m_origin != TypeBuilder::CSS::StyleSheetOrigin::User_agent && m_origin != TypeBuilder::CSS::StyleSheetOrigin::User; }
     InspectorCSSId ruleOrStyleId(CSSStyleDeclaration* style) const;
     virtual Document* ownerDocument() const;
     virtual RefPtr<CSSRuleSourceData> ruleSourceDataFor(CSSStyleDeclaration* style) const;
@@ -246,6 +247,7 @@ private:
     TypeBuilder::CSS::StyleSheetOrigin::Enum m_origin;
     String m_documentURL;
     bool m_isRevalidating;
+    bool m_isReparsing;
     ParsedStyleSheet* m_parsedStyleSheet;
     InspectorStyleMap m_inspectorStyles;
     mutable CSSStyleRuleVector m_flatRules;

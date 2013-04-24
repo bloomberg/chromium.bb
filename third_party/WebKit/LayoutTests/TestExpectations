@@ -3090,3 +3090,5 @@ crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
+
+crbug.com/233588 [ Linux Win Mac ] inspector/styles/stylesheet-tracking.html [ Pass Failure ]

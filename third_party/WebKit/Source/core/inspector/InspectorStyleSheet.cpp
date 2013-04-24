@@ -991,6 +991,7 @@ InspectorStyleSheet::InspectorStyleSheet(InspectorPageAgent* pageAgent, const St
     , m_origin(origin)
     , m_documentURL(documentURL)
     , m_isRevalidating(false)
+    , m_isReparsing(false)
     , m_listener(listener)
 {
     m_parsedStyleSheet = new ParsedStyleSheet();
@@ -1013,13 +1014,15 @@ void InspectorStyleSheet::reparseStyleSheet(const String& text)
         // Have a separate scope for clearRules() (bug 95324).
         CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
         m_pageStyleSheet->contents()->clearRules();
+        m_pageStyleSheet->clearChildRuleCSSOMWrappers();
     }
     {
+        m_isReparsing = true;
         CSSStyleSheet::RuleMutationScope mutationScope(m_pageStyleSheet.get());
         m_pageStyleSheet->contents()->parseString(text);
-        m_pageStyleSheet->clearChildRuleCSSOMWrappers();
         m_inspectorStyles.clear();
         fireStyleSheetChanged();
+        m_isReparsing = false;
     }
 }
 
