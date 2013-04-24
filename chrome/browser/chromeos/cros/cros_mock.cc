@@ -7,7 +7,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -27,9 +26,7 @@ using ::testing::ReturnRef;
 using ::testing::StrictMock;
 using ::testing::_;
 
-CrosMock::CrosMock()
-    : mock_cryptohome_library_(NULL),
-      mock_network_library_(NULL) {
+CrosMock::CrosMock() : mock_network_library_(NULL) {
 }
 
 CrosMock::~CrosMock() {
@@ -43,13 +40,6 @@ void CrosMock::InitStatusAreaMocks() {
   InitMockNetworkLibrary();
 }
 
-void CrosMock::InitMockCryptohomeLibrary() {
-  if (mock_cryptohome_library_)
-    return;
-  mock_cryptohome_library_ = new StrictMock<MockCryptohomeLibrary>();
-  test_api()->SetCryptohomeLibrary(mock_cryptohome_library_, true);
-}
-
 void CrosMock::InitMockNetworkLibrary() {
   if (mock_network_library_)
     return;
@@ -58,10 +48,6 @@ void CrosMock::InitMockNetworkLibrary() {
 }
 
 // Initialization of mocks.
-MockCryptohomeLibrary* CrosMock::mock_cryptohome_library() {
-  return mock_cryptohome_library_;
-}
-
 MockNetworkLibrary* CrosMock::mock_network_library() {
   return mock_network_library_;
 }
@@ -204,8 +190,6 @@ void CrosMock::SetNetworkLibraryStatusAreaExpectations() {
 
 void CrosMock::TearDownMocks() {
   // Prevent bogus gMock leak check from firing.
-  if (mock_cryptohome_library_)
-    test_api()->SetCryptohomeLibrary(NULL, false);
   if (mock_network_library_)
     test_api()->SetNetworkLibrary(NULL, false);
 }

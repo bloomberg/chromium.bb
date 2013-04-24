@@ -6,10 +6,8 @@
 
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cert_library.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
@@ -34,8 +32,7 @@ void DeviceOAuth2TokenService::SetAndSaveRefreshToken(
     const std::string& refresh_token) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   std::string encrypted_refresh_token =
-      CrosLibrary::Get()->GetCertLibrary()->EncryptWithSystemSalt(
-          refresh_token);
+      CryptohomeLibrary::Get()->EncryptWithSystemSalt(refresh_token);
 
   local_state_->SetString(prefs::kDeviceRobotAnyApiRefreshToken,
                           encrypted_refresh_token);
@@ -46,9 +43,8 @@ std::string DeviceOAuth2TokenService::GetRefreshToken() {
     std::string encrypted_refresh_token =
         local_state_->GetString(prefs::kDeviceRobotAnyApiRefreshToken);
 
-    refresh_token_ =
-        CrosLibrary::Get()->GetCertLibrary()->DecryptWithSystemSalt(
-            encrypted_refresh_token);
+    refresh_token_ = CryptohomeLibrary::Get()->DecryptWithSystemSalt(
+        encrypted_refresh_token);
   }
   return refresh_token_;
 }

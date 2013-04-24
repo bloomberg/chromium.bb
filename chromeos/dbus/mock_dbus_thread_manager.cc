@@ -35,9 +35,25 @@
 using ::testing::AnyNumber;
 using ::testing::Return;
 using ::testing::ReturnNull;
+using ::testing::SetArgumentPointee;
 using ::testing::_;
 
 namespace chromeos {
+
+namespace {
+
+std::vector<uint8>* GetMockSystemSalt() {
+  static std::vector<uint8>* s_system_salt = NULL;
+  if (!s_system_salt) {
+    const char kStubSystemSalt[] = "stub_system_salt";
+    s_system_salt = new std::vector<uint8>();
+    s_system_salt->assign(kStubSystemSalt,
+                          kStubSystemSalt + arraysize(kStubSystemSalt) - 1);
+  }
+  return s_system_salt;
+}
+
+}  // namespace
 
 MockDBusThreadManager::MockDBusThreadManager()
     : mock_bluetooth_adapter_client_(new MockBluetoothAdapterClient),
@@ -197,6 +213,10 @@ MockDBusThreadManager::MockDBusThreadManager()
       .Times(AnyNumber());
   EXPECT_CALL(*mock_cryptohome_client_.get(), ResetAsyncCallStatusHandlers())
       .Times(AnyNumber());
+  // Called from various locations.
+  EXPECT_CALL(*mock_cryptohome_client_.get(), GetSystemSalt(_))
+      .WillRepeatedly(DoAll(SetArgumentPointee<0>(*GetMockSystemSalt()),
+                            Return(true)));
 
   // Called from BrightnessController::GetBrightnessPercent as part of ash tray
   // initialization.

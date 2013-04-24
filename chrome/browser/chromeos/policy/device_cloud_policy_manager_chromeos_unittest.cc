@@ -10,7 +10,6 @@
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
@@ -21,6 +20,7 @@
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
 #include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
 #include "chrome/browser/prefs/browser_prefs.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "policy/policy_constants.h"
@@ -50,7 +50,7 @@ class DeviceCloudPolicyManagerChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceCloudPolicyManagerChromeOSTest()
-      : cryptohome_library_(chromeos::CryptohomeLibrary::GetImpl(true)),
+      : cryptohome_library_(chromeos::CryptohomeLibrary::GetTestImpl()),
         stub_cryptohome_client_(chromeos::CryptohomeClient::Create(
             chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION, NULL)),
         install_attributes_(cryptohome_library_.get(),

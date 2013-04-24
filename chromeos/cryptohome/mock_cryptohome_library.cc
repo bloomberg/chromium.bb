@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
+#include "chromeos/cryptohome/mock_cryptohome_library.h"
 
 namespace chromeos {
 

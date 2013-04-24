@@ -14,7 +14,6 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/mock_cert_library.h"
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
 #include "chrome/browser/chromeos/login/mock_url_fetchers.h"
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "content/public/test/test_browser_thread.h"
@@ -80,8 +80,8 @@ class ParallelAuthenticatorTest : public testing::Test {
     chromeos::CrosLibrary::TestApi* test_api =
         chromeos::CrosLibrary::Get()->GetTestApi();
 
-    mock_cryptohome_library_ = new MockCryptohomeLibrary();
-    test_api->SetCryptohomeLibrary(mock_cryptohome_library_, true);
+    mock_cryptohome_library_ .reset(new MockCryptohomeLibrary());
+    CryptohomeLibrary::SetForTest(mock_cryptohome_library_.get());
 
     mock_cert_library_ = new MockCertLibrary();
     EXPECT_CALL(*mock_cert_library_, LoadKeyStore()).Times(AnyNumber());
@@ -103,10 +103,7 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   // Tears down the test fixture.
   virtual void TearDown() {
-    // Prevent bogus gMock leak check from firing.
-    chromeos::CrosLibrary::TestApi* test_api =
-        chromeos::CrosLibrary::Get()->GetTestApi();
-    test_api->SetCryptohomeLibrary(NULL, false);
+    CryptohomeLibrary::SetForTest(NULL);
 
     cryptohome::AsyncMethodCaller::Shutdown();
     mock_caller_ = NULL;
@@ -226,9 +223,9 @@ class ParallelAuthenticatorTest : public testing::Test {
 
   // Mocks, destroyed by CrosLibrary class.
   MockCertLibrary* mock_cert_library_;
-  MockCryptohomeLibrary* mock_cryptohome_library_;
-
   ScopedUserManagerEnabler user_manager_enabler_;
+
+  scoped_ptr<MockCryptohomeLibrary> mock_cryptohome_library_;
 
   cryptohome::MockAsyncMethodCaller* mock_caller_;
 

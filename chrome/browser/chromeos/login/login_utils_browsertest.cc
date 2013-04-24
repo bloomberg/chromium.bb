@@ -17,7 +17,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_manager.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
@@ -46,6 +45,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/mock_async_method_caller.h"
+#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
@@ -174,6 +174,7 @@ class LoginUtilsTest : public testing::Test,
         ui_thread_(BrowserThread::UI, &loop_),
         db_thread_(BrowserThread::DB, &loop_),
         file_thread_(BrowserThread::FILE, &loop_),
+        mock_input_method_manager_(NULL),
         mock_async_method_caller_(NULL),
         connector_(NULL),
         cryptohome_(NULL),
@@ -222,11 +223,12 @@ class LoginUtilsTest : public testing::Test,
     // which is part of io_thread_state_.
     DBusThreadManager::InitializeForTesting(&mock_dbus_thread_manager_);
 
+    CryptohomeLibrary::Initialize();
     LoginState::Initialize();
-    ConnectivityStateHelper::InitializeForTesting(
-        &mock_connectivity_state_helper_);
+    ConnectivityStateHelper::SetForTest(&mock_connectivity_state_helper_);
 
-    input_method::InitializeForTesting(&mock_input_method_manager_);
+    mock_input_method_manager_ = new input_method::MockInputMethodManager();
+    input_method::InitializeForTesting(mock_input_method_manager_);
     disks::DiskMountManager::InitializeForTesting(&mock_disk_mount_manager_);
     mock_disk_mount_manager_.SetupDefaultReplies();
 
@@ -249,10 +251,7 @@ class LoginUtilsTest : public testing::Test,
     cryptohome::AsyncMethodCaller::InitializeForTesting(
         mock_async_method_caller_);
 
-    CrosLibrary::TestApi* test_api = CrosLibrary::Get()->GetTestApi();
-    ASSERT_TRUE(test_api);
-
-    cryptohome_ = new MockCryptohomeLibrary();
+    cryptohome_.reset(new MockCryptohomeLibrary());
     EXPECT_CALL(*cryptohome_, InstallAttributesIsInvalid())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*cryptohome_, InstallAttributesIsFirstInstall())
@@ -290,7 +289,7 @@ class LoginUtilsTest : public testing::Test,
     EXPECT_CALL(*cryptohome_, InstallAttributesGet(kAttrEnterpriseDeviceId, _))
         .WillRepeatedly(DoAll(SetArgPointee<1>(kDeviceId),
                               Return(true)));
-    test_api->SetCryptohomeLibrary(cryptohome_, true);
+    CryptohomeLibrary::SetForTest(cryptohome_.get());
 
     cryptohome_client_ = mock_dbus_thread_manager_.mock_cryptohome_client();
     EXPECT_CALL(*cryptohome_client_, IsMounted(_));
@@ -331,7 +330,10 @@ class LoginUtilsTest : public testing::Test,
     // LoginUtils instance must not outlive Profile instances.
     LoginUtils::Set(NULL);
 
+    input_method::Shutdown();
+    ConnectivityStateHelper::SetForTest(NULL);
     LoginState::Shutdown();
+    CryptohomeLibrary::Shutdown();
 
     // These trigger some tasks that have to run while BrowserThread::UI
     // exists. Delete all the profiles before deleting the connector.
@@ -340,6 +342,8 @@ class LoginUtilsTest : public testing::Test,
     browser_process_->SetBrowserPolicyConnector(NULL);
     QuitIOLoop();
     RunUntilIdle();
+
+    CryptohomeLibrary::SetForTest(NULL);
   }
 
   void TearDownOnIO() {
@@ -535,7 +539,7 @@ class LoginUtilsTest : public testing::Test,
   scoped_ptr<IOThread> io_thread_state_;
 
   MockDBusThreadManager mock_dbus_thread_manager_;
-  input_method::MockInputMethodManager mock_input_method_manager_;
+  input_method::MockInputMethodManager* mock_input_method_manager_;
   disks::MockDiskMountManager mock_disk_mount_manager_;
   net::TestURLFetcherFactory test_url_fetcher_factory_;
   MockConnectivityStateHelper mock_connectivity_state_helper_;
@@ -543,7 +547,7 @@ class LoginUtilsTest : public testing::Test,
   cryptohome::MockAsyncMethodCaller* mock_async_method_caller_;
 
   policy::BrowserPolicyConnector* connector_;
-  MockCryptohomeLibrary* cryptohome_;
+  scoped_ptr<MockCryptohomeLibrary> cryptohome_;
   MockCryptohomeClient* cryptohome_client_;
 
   // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.

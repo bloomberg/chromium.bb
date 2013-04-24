@@ -70,6 +70,7 @@
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #else
@@ -128,12 +129,11 @@ BrowserPolicyConnector::BrowserPolicyConnector()
       new DeviceManagementService(GetDeviceManagementUrl()));
 
 #if defined(OS_CHROMEOS)
-  chromeos::CrosLibrary* cros_library = chromeos::CrosLibrary::Get();
-  // |cros_library| may be NULL on unit tests. DBusThreadManager may not be
-  // initialized on unit tests..
-  if (cros_library && chromeos::DBusThreadManager::IsInitialized()) {
+  // CryptohomeLibrary or DBusThreadManager may be uninitialized on unit tests.
+  if (chromeos::CryptohomeLibrary::IsInitialized() &&
+      chromeos::DBusThreadManager::IsInitialized()) {
     chromeos::CryptohomeLibrary* cryptohome =
-        cros_library->GetCryptohomeLibrary();
+        chromeos::CryptohomeLibrary::Get();
     chromeos::CryptohomeClient* cryptohome_client =
         chromeos::DBusThreadManager::Get()->GetCryptohomeClient();
     install_attributes_.reset(

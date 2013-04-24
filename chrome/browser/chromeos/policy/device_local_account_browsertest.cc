@@ -236,7 +236,10 @@ class FakeCryptohomeClient : public chromeos::CryptohomeClient {
   virtual void AsyncRemove(const std::string& username,
                            const AsyncMethodCallback& callback) OVERRIDE {}
   virtual bool GetSystemSalt(std::vector<uint8>* salt) OVERRIDE {
-    return false;
+    const char kFakeSystemSalt[] = "fake_system_salt";
+    salt->assign(kFakeSystemSalt,
+                 kFakeSystemSalt + arraysize(kFakeSystemSalt) - 1);
+    return true;
   }
   virtual void GetSanitizedUsername(
       const std::string& username,

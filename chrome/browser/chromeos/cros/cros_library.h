@@ -16,7 +16,6 @@ template <typename T> struct DefaultLazyInstanceTraits;
 namespace chromeos {
 
 class CertLibrary;
-class CryptohomeLibrary;
 class NetworkLibrary;
 
 // This class handles access to sub-parts of ChromeOS library. it provides
@@ -32,7 +31,6 @@ class CrosLibrary {
     // Passing true for own for these setters will cause them to be deleted
     // when the CrosLibrary is deleted (or other mocks are set).
     void SetCertLibrary(CertLibrary* library, bool own);
-    void SetCryptohomeLibrary(CryptohomeLibrary* library, bool own);
     void SetNetworkLibrary(NetworkLibrary* library, bool own);
 
    private:
@@ -53,7 +51,6 @@ class CrosLibrary {
   static CrosLibrary* Get();
 
   CertLibrary* GetCertLibrary();
-  CryptohomeLibrary* GetCryptohomeLibrary();
   NetworkLibrary* GetNetworkLibrary();
 
   // Getter for Test API that gives access to internal members of this class.
@@ -106,7 +103,6 @@ class CrosLibrary {
   };
 
   Library<CertLibrary> cert_lib_;
-  Library<CryptohomeLibrary> crypto_lib_;
   Library<NetworkLibrary> network_lib_;
 
   // Stub implementations of the libraries should be used.

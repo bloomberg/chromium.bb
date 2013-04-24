@@ -220,12 +220,6 @@ class ParallelAuthenticator : public Authenticator,
   // Used for testing to set the expected state of an owner check.
   void SetOwnerState(bool owner_check_finished, bool check_result);
 
-  // If we don't have the system salt yet, loads it from the CryptohomeLibrary.
-  void LoadSystemSalt();
-  // If we don't have supplemental_user_key_ yet, loads it from the NSS DB.
-  // Returns false if the key can not be loaded/created.
-  bool LoadSupplementalUserKey();
-
   // checks if the current mounted home contains the owner case and either
   // continues or fails the log-in. Used for policy lost mitigation "safe-mode".
   // Returns true if the owner check has been successful or if it is not needed.

@@ -9,8 +9,8 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/policy/proto/install_attributes.pb.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -34,7 +34,7 @@ static const char kTestDeviceId[] = "133750519";
 class EnterpriseInstallAttributesTest : public testing::Test {
  protected:
   EnterpriseInstallAttributesTest()
-      : cryptohome_(chromeos::CryptohomeLibrary::GetImpl(true)),
+      : cryptohome_(chromeos::CryptohomeLibrary::GetTestImpl()),
         stub_cryptohome_client_(chromeos::CryptohomeClient::Create(
             chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION, NULL)),
         install_attributes_(cryptohome_.get(), stub_cryptohome_client_.get()) {}

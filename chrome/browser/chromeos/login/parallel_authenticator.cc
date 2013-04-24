@@ -14,7 +14,6 @@
 #include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/cros/cert_library.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/authentication_notification_details.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -23,6 +22,7 @@
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -178,8 +178,7 @@ bool WasConnectionIssue(const LoginFailure& online_outcome) {
 std::string HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
   // of password, then end.
-  std::string ascii_salt =
-      CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
+  std::string ascii_salt = CryptohomeLibrary::Get()->GetSystemSalt();
   char passhash_buf[kPasswordHashLength];
 
   // Hash salt and password

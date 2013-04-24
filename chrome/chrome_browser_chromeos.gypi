@@ -169,8 +169,6 @@
         'browser/chromeos/cros/certificate_pattern_matcher.h',
         'browser/chromeos/cros/cros_library.cc',
         'browser/chromeos/cros/cros_library.h',
-        'browser/chromeos/cros/cryptohome_library.cc',
-        'browser/chromeos/cros/cryptohome_library.h',
         'browser/chromeos/cros/enum_mapper.h',
         'browser/chromeos/cros/native_network_constants.cc',
         'browser/chromeos/cros/native_network_constants.h',

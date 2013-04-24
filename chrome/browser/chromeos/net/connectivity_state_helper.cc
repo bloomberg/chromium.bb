@@ -16,6 +16,7 @@
 namespace chromeos {
 
 static ConnectivityStateHelper* g_connectivity_state_helper = NULL;
+static ConnectivityStateHelper* g_test_connectivity_state_helper = NULL;
 
 // Implementation of the connectivity state helper that uses the network
 // state handler for fetching connectivity state.
@@ -86,14 +87,6 @@ void ConnectivityStateHelper::Initialize() {
 }
 
 // static
-void ConnectivityStateHelper::InitializeForTesting(
-    ConnectivityStateHelper* connectivity_state_helper) {
-  CHECK(!g_connectivity_state_helper);
-  CHECK(connectivity_state_helper);
-  g_connectivity_state_helper = connectivity_state_helper;
-}
-
-// static
 bool ConnectivityStateHelper::IsInitialized() {
   return g_connectivity_state_helper != NULL;
 }
@@ -107,9 +100,17 @@ void ConnectivityStateHelper::Shutdown() {
 
 // static
 ConnectivityStateHelper* ConnectivityStateHelper::Get() {
-  CHECK(g_connectivity_state_helper)
+  CHECK(g_connectivity_state_helper || g_test_connectivity_state_helper)
       << "ConnectivityStateHelper: Get() called before Initialize()";
+  if (g_test_connectivity_state_helper)
+    return g_test_connectivity_state_helper;
   return g_connectivity_state_helper;
+}
+
+// static
+void ConnectivityStateHelper::SetForTest(ConnectivityStateHelper* impl) {
+  CHECK(!g_test_connectivity_state_helper || !impl);
+  g_test_connectivity_state_helper = impl;
 }
 
 void ConnectivityStateHelper::AddNetworkManagerObserver(

@@ -11,8 +11,6 @@
 
 namespace chromeos {
 
-class MockCryptohomeLibrary;
-class MockKeyboardLibrary;
 class MockLibraryLoader;
 class MockNetworkLibrary;
 
@@ -37,13 +35,9 @@ class CrosMock {
   void InitMockLibraryLoader();
 
   // Initialization of mocks.
-  void InitMockCryptohomeLibrary();
-  void InitMockKeyboardLibrary();
   void InitMockNetworkLibrary();
 
   // Get mocks.
-  MockCryptohomeLibrary* mock_cryptohome_library();
-  MockKeyboardLibrary* mock_keyboard_library();
   MockNetworkLibrary* mock_network_library();
 
   // This method sets up corresponding expectations for basic mocks that
@@ -55,7 +49,6 @@ class CrosMock {
   void SetStatusAreaMocksExpectations();
 
   // Methods to setup minimal mocks expectations for status area.
-  void SetKeyboardLibraryStatusAreaExpectations();
   void SetNetworkLibraryStatusAreaExpectations();
 
   void TearDownMocks();
@@ -66,8 +59,6 @@ class CrosMock {
  private:
   // Mocks, destroyed by CrosLibrary class.
   MockLibraryLoader* loader_;
-  MockCryptohomeLibrary* mock_cryptohome_library_;
-  MockKeyboardLibrary* mock_keyboard_library_;
   MockNetworkLibrary* mock_network_library_;
 
   WifiNetworkVector wifi_networks_;

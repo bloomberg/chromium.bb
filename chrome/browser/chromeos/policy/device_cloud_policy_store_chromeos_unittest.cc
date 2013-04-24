@@ -10,10 +10,10 @@
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
+#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +35,7 @@ class DeviceCloudPolicyStoreChromeOSTest
     : public chromeos::DeviceSettingsTestBase {
  protected:
   DeviceCloudPolicyStoreChromeOSTest()
-      : cryptohome_library_(chromeos::CryptohomeLibrary::GetImpl(true)),
+      : cryptohome_library_(chromeos::CryptohomeLibrary::GetTestImpl()),
         stub_cryptohome_client_(chromeos::CryptohomeClient::Create(
             chromeos::STUB_DBUS_CLIENT_IMPLEMENTATION, NULL)),
         install_attributes_(new EnterpriseInstallAttributes(

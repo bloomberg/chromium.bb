@@ -15,18 +15,13 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"  // g_browser_process
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/net/x509_certificate_model.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
-#include "crypto/encryptor.h"
 #include "crypto/nss_util.h"
-#include "crypto/sha2.h"
-#include "crypto/symmetric_key.h"
 #include "grit/generated_resources.h"
 #include "net/cert/cert_database.h"
 #include "net/cert/nss_cert_database.h"
@@ -45,8 +40,6 @@ const char kRootCertificateTokenName[] = "Builtin Object Token";
 
 // Delay between certificate requests while waiting for TPM/PKCS#11 init.
 const int kRequestDelayMs = 500;
-
-const size_t kKeySize = 16;
 
 string16 GetDisplayString(net::X509Certificate* cert, bool hardware_backed) {
   std::string org;
@@ -165,126 +158,6 @@ class CertLibraryImpl
   virtual const CertList& GetCACertificates() const OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     return server_ca_certs_;
-  }
-
-  virtual crypto::SymmetricKey* PassphraseToKey(const std::string& passprhase,
-                                                const std::string& salt) {
-    return crypto::SymmetricKey::DeriveKeyFromPassword(
-        crypto::SymmetricKey::AES, passprhase, salt, 1000, 256);
-  }
-
-  virtual std::string EncryptWithSystemSalt(const std::string& token) OVERRIDE {
-    // Don't care about token encryption while debugging.
-    if (!base::chromeos::IsRunningOnChromeOS())
-      return token;
-
-    if (!LoadSystemSaltKey()) {
-      LOG(WARNING) << "System salt key is not available for encrypt.";
-      return std::string();
-    }
-    return EncryptTokenWithKey(
-        system_salt_key_.get(),
-        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
-        token);
-  }
-
-  virtual std::string EncryptWithUserKey(const std::string& token) OVERRIDE {
-    // Don't care about token encryption while debugging.
-    if (!base::chromeos::IsRunningOnChromeOS())
-      return token;
-
-    if (!LoadSupplementalUserKey()) {
-      LOG(WARNING) << "Supplemental user key is not available for encrypt.";
-      return std::string();
-    }
-    return EncryptTokenWithKey(
-        supplemental_user_key_.get(),
-        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
-        token);
-  }
-
-  // Encrypts (AES) the token given |key| and |salt|.
-  virtual std::string EncryptTokenWithKey(crypto::SymmetricKey* key,
-                                          const std::string& salt,
-                                          const std::string& token) {
-    crypto::Encryptor encryptor;
-    if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string())) {
-      LOG(WARNING) << "Failed to initialize Encryptor.";
-      return std::string();
-    }
-    std::string nonce = salt.substr(0, kKeySize);
-    std::string encoded_token;
-    CHECK(encryptor.SetCounter(nonce));
-    if (!encryptor.Encrypt(token, &encoded_token)) {
-      LOG(WARNING) << "Failed to encrypt token.";
-      return std::string();
-    }
-
-    return StringToLowerASCII(base::HexEncode(
-        reinterpret_cast<const void*>(encoded_token.data()),
-        encoded_token.size()));
-  }
-
-  virtual std::string DecryptWithSystemSalt(
-      const std::string& encrypted_token_hex) OVERRIDE {
-    // Don't care about token encryption while debugging.
-    if (!base::chromeos::IsRunningOnChromeOS())
-      return encrypted_token_hex;
-
-    if (!LoadSystemSaltKey()) {
-      LOG(WARNING) << "System salt key is not available for decrypt.";
-      return std::string();
-    }
-    return DecryptTokenWithKey(
-        system_salt_key_.get(),
-        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
-        encrypted_token_hex);
-  }
-
-  virtual std::string DecryptWithUserKey(
-      const std::string& encrypted_token_hex) OVERRIDE {
-    // Don't care about token encryption while debugging.
-    if (!base::chromeos::IsRunningOnChromeOS())
-      return encrypted_token_hex;
-
-    if (!LoadSupplementalUserKey()) {
-      LOG(WARNING) << "Supplemental user key is not available for decrypt.";
-      return std::string();
-    }
-    return DecryptTokenWithKey(
-        supplemental_user_key_.get(),
-        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
-        encrypted_token_hex);
-  }
-
-  // Decrypts (AES) hex encoded encrypted token given |key| and |salt|.
-  virtual std::string DecryptTokenWithKey(
-      crypto::SymmetricKey* key,
-      const std::string& salt,
-      const std::string& encrypted_token_hex) {
-    std::vector<uint8> encrypted_token_bytes;
-    if (!base::HexStringToBytes(encrypted_token_hex, &encrypted_token_bytes)) {
-      LOG(WARNING) << "Corrupt encrypted token found.";
-      return std::string();
-    }
-
-    std::string encrypted_token(
-        reinterpret_cast<char*>(encrypted_token_bytes.data()),
-        encrypted_token_bytes.size());
-    crypto::Encryptor encryptor;
-    if (!encryptor.Init(key, crypto::Encryptor::CTR, std::string())) {
-      LOG(WARNING) << "Failed to initialize Encryptor.";
-      return std::string();
-    }
-
-    std::string nonce = salt.substr(0, kKeySize);
-    std::string token;
-    CHECK(encryptor.SetCounter(nonce));
-    if (!encryptor.Decrypt(encrypted_token, &token)) {
-      LOG(WARNING) << "Failed to decrypt token.";
-      return std::string();
-    }
-    return token;
   }
 
   // net::CertDatabase::Observer implementation. Observer added on UI thread.
@@ -423,30 +296,6 @@ class CertLibraryImpl
     }
   }
 
-  bool LoadSupplementalUserKey() {
-    if (!user_logged_in_) {
-      // If we are not logged in, we cannot load any certificates.
-      // Set 'loaded' to true for the UI, since we are not waiting on loading.
-      LOG(WARNING) << "Requesting supplemental use key before login.";
-      return false;
-    }
-    if (!supplemental_user_key_.get()) {
-      supplemental_user_key_.reset(crypto::GetSupplementalUserKey());
-    }
-    return supplemental_user_key_.get() != NULL;
-  }
-
-  // TODO: should this use the system salt for both the password and the salt
-  // value, or should this use a separate salt value?
-  bool LoadSystemSaltKey() {
-    if (!system_salt_key_.get()) {
-      system_salt_key_.reset(PassphraseToKey(
-        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt(),
-        CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt()));
-    }
-    return system_salt_key_.get() != NULL;
-  }
-
   // Call this to start the certificate list initialization process.
   // Must be called from the UI thread.
   void RequestCertificates() {
@@ -459,14 +308,12 @@ class CertLibraryImpl
       // Set 'loaded' to true for the UI, since we are not waiting on loading.
       LOG(WARNING) << "Requesting certificates before login.";
       certificates_loaded_ = true;
-      supplemental_user_key_.reset(NULL);
       return;
     }
 
     if (!user_logged_in_) {
       user_logged_in_ = true;
       certificates_loaded_ = false;
-      supplemental_user_key_.reset(NULL);
     }
 
     VLOG(1) << "Requesting Certificates.";
@@ -571,13 +418,6 @@ class CertLibraryImpl
   // Cached TPM user pin.
   std::string tpm_user_pin_;
 
-  // Supplemental user key.
-  scoped_ptr<crypto::SymmetricKey> supplemental_user_key_;
-
-  // A key based on the system salt.  Useful for encrypting device-level
-  // data for which we have no additional credentials.
-  scoped_ptr<crypto::SymmetricKey> system_salt_key_;
-
   // Local state.
   bool user_logged_in_;
   bool certificates_requested_;
@@ -634,20 +474,6 @@ class CertLibraryImplStub : public CertLibrary {
   }
   virtual const CertList& GetCACertificates() const {
     return cert_list_;
-  }
-  virtual std::string EncryptWithSystemSalt(const std::string& token) {
-    return token;
-  }
-  virtual std::string DecryptWithSystemSalt(
-      const std::string& encrypted_token_hex) {
-    return encrypted_token_hex;
-  }
-  virtual std::string EncryptWithUserKey(const std::string& token) {
-    return token;
-  }
-  virtual std::string DecryptWithUserKey(
-      const std::string& encrypted_token_hex) {
-    return encrypted_token_hex;
   }
 
  private:

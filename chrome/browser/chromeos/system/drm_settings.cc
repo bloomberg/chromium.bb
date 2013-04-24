@@ -12,12 +12,11 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "content/public/browser/browser_thread.h"
 #include "crypto/encryptor.h"
 #include "crypto/sha2.h"
@@ -62,8 +61,7 @@ void ManageDrmIdentifierOnFileThread(bool enable, const std::string& email) {
 
   // Build the identifier as follows:
   // SHA256(system-salt||service||SHA256(system-salt||service||email))
-  chromeos::CryptohomeLibrary* c_home =
-    chromeos::CrosLibrary::Get()->GetCryptohomeLibrary();
+  chromeos::CryptohomeLibrary* c_home = chromeos::CryptohomeLibrary::Get();
   std::string salt = c_home->GetSystemSalt();
   char id_buf[256 / 8];  // 256-bits for SHA256
   std::string input = salt;

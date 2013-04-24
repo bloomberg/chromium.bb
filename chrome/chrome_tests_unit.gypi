@@ -68,8 +68,6 @@
         'browser/chromeos/contacts/contact_test_util.h',
         'browser/chromeos/cros/mock_cert_library.cc',
         'browser/chromeos/cros/mock_cert_library.h',
-        'browser/chromeos/cros/mock_cryptohome_library.cc',
-        'browser/chromeos/cros/mock_cryptohome_library.h',
         'browser/chromeos/cros/mock_network_library.cc',
         'browser/chromeos/cros/mock_network_library.h',
         'browser/chromeos/input_method/mock_candidate_window_controller.cc',

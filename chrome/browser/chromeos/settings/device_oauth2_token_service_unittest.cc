@@ -6,10 +6,9 @@
 
 #include "base/message_loop.h"
 #include "base/prefs/testing_pref_service.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/mock_cert_library.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "net/url_request/url_request_test_util.h"
@@ -32,11 +31,9 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
   virtual ~DeviceOAuth2TokenServiceTest() {}
 
   virtual void SetUp() OVERRIDE {
-    chromeos::CrosLibrary::Initialize(true);
   }
 
   virtual void TearDown() OVERRIDE {
-    chromeos::CrosLibrary::Shutdown();
   }
 
  protected:
@@ -46,17 +43,18 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
 };
 
 TEST_F(DeviceOAuth2TokenServiceTest, SaveEncryptedToken) {
-  StrictMock<MockCertLibrary> mock_cert_library;
-  chromeos::CrosLibrary::Get()->GetTestApi()->SetCertLibrary(
-      &mock_cert_library, false);
+  StrictMock<MockCryptohomeLibrary> mock_cryptohome_library;
+  CryptohomeLibrary::SetForTest(&mock_cryptohome_library);
 
-  EXPECT_CALL(mock_cert_library, DecryptWithSystemSalt(StrEq("")))
+  EXPECT_CALL(mock_cryptohome_library, DecryptWithSystemSalt(StrEq("")))
       .Times(1)
       .WillOnce(Return(""));
-  EXPECT_CALL(mock_cert_library, EncryptWithSystemSalt(StrEq("test-token")))
+  EXPECT_CALL(mock_cryptohome_library,
+              EncryptWithSystemSalt(StrEq("test-token")))
       .Times(1)
       .WillOnce(Return("encrypted"));
-  EXPECT_CALL(mock_cert_library, DecryptWithSystemSalt(StrEq("encrypted")))
+  EXPECT_CALL(mock_cryptohome_library,
+              DecryptWithSystemSalt(StrEq("encrypted")))
       .Times(1)
       .WillOnce(Return("test-token"));
 

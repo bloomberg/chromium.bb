@@ -9,13 +9,12 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/app_mode/startup_app_launcher.h"
-#include "chrome/browser/chromeos/cros/cert_library.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -178,7 +177,7 @@ void KioskAppLauncher::ReportLaunchResult(KioskAppLaunchError::Error error) {
 
 void KioskAppLauncher::StartMount() {
   const std::string token =
-      CrosLibrary::Get()->GetCertLibrary()->EncryptWithSystemSalt(app_id_);
+      CryptohomeLibrary::Get()->EncryptWithSystemSalt(app_id_);
 
   cryptohome::AsyncMethodCaller::GetInstance()->AsyncMount(
       app_id_,

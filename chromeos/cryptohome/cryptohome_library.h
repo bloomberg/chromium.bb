@@ -2,18 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_CROS_CRYPTOHOME_LIBRARY_H_
-#define CHROME_BROWSER_CHROMEOS_CROS_CRYPTOHOME_LIBRARY_H_
+#ifndef CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
+#define CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_
 
 #include <string>
+
+#include "base/basictypes.h"
+#include "chromeos/chromeos_export.h"
 
 namespace chromeos {
 
 // This interface defines the interaction with the ChromeOS cryptohome library
 // APIs.
-class CryptohomeLibrary {
+class CHROMEOS_EXPORT CryptohomeLibrary {
  public:
-  CryptohomeLibrary();
+  // Manage an explicitly initialized global instance.
+  static void Initialize();
+  static bool IsInitialized();
+  static void Shutdown();
+  static CryptohomeLibrary* Get();
+
+  // Sets up Get() to return |impl| for testing (e.g. with a mock
+  // implementation). Call SetForTest(NULL) when |impl| is deleted.
+  static void SetForTest(CryptohomeLibrary* impl);
+
+  // Returns a CryptohomeLibrary instance for testing. Does not set or affect
+  // the global instance.
+  static CryptohomeLibrary* GetTestImpl();
+
+  // Public so that result of GetTestImpl can be destroyed.
   virtual ~CryptohomeLibrary();
 
   // Wrappers of the functions for working with Tpm.
@@ -45,11 +62,23 @@ class CryptohomeLibrary {
   // Returns system hash in hex encoded ascii format.
   virtual std::string GetSystemSalt() = 0;
 
-  // Factory function, creates a new instance and returns ownership.
-  // For normal usage, access the singleton via CrosLibrary::Get().
-  static CryptohomeLibrary* GetImpl(bool stub);
+  // Encrypts |token| with the system salt key (stable for the lifetime
+  // of the device).  Useful to avoid storing plain text in place like
+  // Local State.
+  virtual std::string EncryptWithSystemSalt(const std::string& token) = 0;
+
+  // Decrypts |token| with the system salt key (stable for the lifetime
+  // of the device).
+  virtual std::string DecryptWithSystemSalt(
+      const std::string& encrypted_token_hex) = 0;
+
+ protected:
+  CryptohomeLibrary();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CryptohomeLibrary);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_CROS_CRYPTOHOME_LIBRARY_H_
+#endif  // CHROMEOS_CRYPTOHOME_CRYPTOHOME_LIBRARY_H_

@@ -6,11 +6,10 @@
 
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/login/screens/screen_observer.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 
 namespace chromeos {
 
@@ -33,8 +32,7 @@ void EulaScreen::PrepareToShow() {
 
 void EulaScreen::Show() {
   // Command to own the TPM.
-  chromeos::CrosLibrary::Get()->
-      GetCryptohomeLibrary()->TpmCanAttemptOwnership();
+  CryptohomeLibrary::Get()->TpmCanAttemptOwnership();
   if (actor_)
     actor_->Show();
 }

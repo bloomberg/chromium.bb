@@ -26,12 +26,6 @@ class MockCertLibrary : public CertLibrary {
   MOCK_CONST_METHOD0(GetUserCertificates, const CertList&());
   MOCK_CONST_METHOD0(GetServerCertificates, const CertList&());
   MOCK_CONST_METHOD0(GetCACertificates, const CertList&());
-  MOCK_METHOD1(EncryptWithSystemSalt, std::string(const std::string& token));
-  MOCK_METHOD1(DecryptWithSystemSalt, std::string(
-      const std::string& encrypted_token));
-  MOCK_METHOD1(EncryptWithUserKey, std::string(const std::string& token));
-  MOCK_METHOD1(DecryptWithUserKey, std::string(
-      const std::string& encrypted_token));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCertLibrary);

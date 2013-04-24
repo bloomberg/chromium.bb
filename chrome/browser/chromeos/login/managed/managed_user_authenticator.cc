@@ -8,9 +8,8 @@
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -87,8 +86,7 @@ void Mount(ManagedUserAuthenticator::AuthAttempt* attempt,
 std::string HashPassword(const std::string& password) {
   // Get salt, ascii encode, update sha with that, then update with ascii
   // of password, then end.
-  std::string ascii_salt =
-      CrosLibrary::Get()->GetCryptohomeLibrary()->GetSystemSalt();
+  std::string ascii_salt = CryptohomeLibrary::Get()->GetSystemSalt();
   char passhash_buf[kPasswordHashLength];
 
   // Hash salt and password

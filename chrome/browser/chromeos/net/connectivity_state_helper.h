@@ -23,16 +23,13 @@ class ConnectivityStateHelper {
   // handler) implementation or the network library implementation based
   // on the value of command line flag.
   static void Initialize();
-
-  // Similar to initialize, but can be used to inject an alternative
-  // (say,a MockConnectivityStateHelper) implementation.
-  static void InitializeForTesting(ConnectivityStateHelper* csh);
-
-  // Returns true if the global instance has been initialized.
   static bool IsInitialized();
-
   static void Shutdown();
   static ConnectivityStateHelper* Get();
+
+  // Sets up Get() to return |impl| for testing (e.g. with a mock
+  // implementation). Call SetForTest(NUL) when |impl| is deleted.
+  static void SetForTest(ConnectivityStateHelper* impl);
 
   // Returns true if we are in a connected state.
   virtual bool IsConnected() = 0;

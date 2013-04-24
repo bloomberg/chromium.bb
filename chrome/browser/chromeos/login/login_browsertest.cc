@@ -8,7 +8,6 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
-#include "chrome/browser/chromeos/cros/mock_cryptohome_library.h"
 #include "chrome/browser/chromeos/cros/mock_network_library.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
@@ -18,10 +17,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_notification_types.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/mock_cryptohome_library.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -44,14 +44,13 @@ class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
 
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    mock_cryptohome_library_.reset(new chromeos::MockCryptohomeLibrary());
     cros_mock_->InitStatusAreaMocks();
     cros_mock_->SetStatusAreaMocksExpectations();
-    cros_mock_->InitMockCryptohomeLibrary();
-    mock_cryptohome_library_ = cros_mock_->mock_cryptohome_library();
     mock_network_library_ = cros_mock_->mock_network_library();
-    EXPECT_CALL(*mock_cryptohome_library_, GetSystemSalt())
+    EXPECT_CALL(*(mock_cryptohome_library_.get()), GetSystemSalt())
         .WillRepeatedly(Return(std::string("stub_system_salt")));
-    EXPECT_CALL(*mock_cryptohome_library_, InstallAttributesIsReady())
+    EXPECT_CALL(*(mock_cryptohome_library_.get()), InstallAttributesIsReady())
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
@@ -59,7 +58,7 @@ class LoginTestBase : public chromeos::CrosInProcessBrowserTest {
         .WillRepeatedly(Return(true));
   }
 
-  chromeos::MockCryptohomeLibrary* mock_cryptohome_library_;
+  scoped_ptr<chromeos::MockCryptohomeLibrary> mock_cryptohome_library_;
   chromeos::MockNetworkLibrary* mock_network_library_;
 
  private:

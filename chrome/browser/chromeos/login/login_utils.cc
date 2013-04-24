@@ -31,8 +31,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/boot_times_loader.h"
-#include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
@@ -75,6 +73,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "content/public/browser/browser_thread.h"
@@ -575,7 +574,7 @@ void LoginUtilsImpl::FinalizePrepareProfile(Profile* user_profile) {
   BootTimesLoader* btl = BootTimesLoader::Get();
   // Own TPM device if, for any reason, it has not been done in EULA
   // wizard screen.
-  CryptohomeLibrary* cryptohome = CrosLibrary::Get()->GetCryptohomeLibrary();
+  CryptohomeLibrary* cryptohome = CryptohomeLibrary::Get();
   btl->AddLoginTimeMarker("TPMOwn-Start", false);
   if (cryptohome->TpmIsEnabled() && !cryptohome->TpmIsBeingOwned()) {
     if (cryptohome->TpmIsOwned()) {

@@ -94,6 +94,7 @@
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
+#include "chromeos/cryptohome/cryptohome_library.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/dbus/session_manager_client.h"
@@ -293,6 +294,8 @@ class DBusServices {
     DBusThreadManager::Initialize();
     CrosDBusService::Initialize();
 
+    CryptohomeLibrary::Initialize();
+
     // This function and SystemKeyEventListener use InputMethodManager.
     chromeos::input_method::Initialize(
         content::BrowserThread::GetMessageLoopProxyForThread(
@@ -365,6 +368,7 @@ class DBusServices {
     cryptohome::AsyncMethodCaller::Shutdown();
     disks::DiskMountManager::Shutdown();
     input_method::Shutdown();
+    CryptohomeLibrary::Shutdown();
     CrosDBusService::Shutdown();
     // NOTE: This must only be called if Initialize() was called.
     DBusThreadManager::Shutdown();

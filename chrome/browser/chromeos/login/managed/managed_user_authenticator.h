@@ -11,7 +11,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/cros/cryptohome_library.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
