@@ -20,7 +20,6 @@ EXPERIMENTAL_TEST_SUITES = [
 # This list determines which suites are run by default, both for local
 # testing and on android trybots running on commit-queue.
 STABLE_TEST_SUITES = [
-    Apk('TestWebKitAPI'),
     Apk('android_webview_unittests'),
     Apk('base_unittests'),
     Apk('cc_unittests'),

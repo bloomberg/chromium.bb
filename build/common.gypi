@@ -2843,7 +2843,7 @@
                       # aggregates enabling subsequent optimizations) leads to
                       # invalid code generation when using the Android NDK's
                       # compiler (r5-r7). This can be verified using
-                      # TestWebKitAPI's WTF.Checked_int8_t test.
+                      # webkit_unit_tests' WTF.Checked_int8_t test.
                       '-fno-tree-sra',
                       '-fuse-ld=gold',
                       '-Wno-psabi',

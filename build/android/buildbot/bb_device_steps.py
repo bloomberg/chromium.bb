@@ -291,7 +291,6 @@ def MainTestWrapper(options):
   if 'webkit' in options.test_filter:
     RunTestSuites(options, [
         gtest_config.Apk('webkit_unit_tests'),
-        gtest_config.Apk('TestWebKitAPI'),
     ])
     RunWebkitLint(options.target)
   if 'webkit_layout' in options.test_filter:
