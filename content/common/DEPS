@@ -3,5 +3,4 @@ include_rules = [
   "+components/tracing",
   "+media/audio",
   "+media/base",
-  "+sandbox/linux/seccomp-legacy",
 ]

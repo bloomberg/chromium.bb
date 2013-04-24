@@ -53,8 +53,8 @@ class LinuxSandbox {
   void PreinitializeSandboxFinish(const std::string& process_type);
 
   // Initialize the sandbox with the given pre-built configuration. Currently
-  // seccomp-legacy, seccomp-bpf, address space limitations (the setuid sandbox
-  // works differently and is set-up in the Zygote). This will instantiate the
+  // seccomp-bpf and address space limitations (the setuid sandbox works
+  // differently and is set-up in the Zygote). This will instantiate the
   // LinuxSandbox singleton if it doesn't already exist.
   static bool InitializeSandbox();
 
@@ -76,8 +76,6 @@ class LinuxSandbox {
   // be used directly.
   sandbox::SetuidSandboxClient* setuid_sandbox_client() const;
 
-  // Check the policy and eventually start the seccomp-legacy sandbox.
-  bool StartSeccompLegacy(const std::string& process_type);
   // Check the policy and eventually start the seccomp-bpf sandbox. This should
   // never be called with threads started. If we detect that thread have
   // started we will crash.
@@ -90,15 +88,13 @@ class LinuxSandbox {
  private:
   friend struct DefaultSingletonTraits<LinuxSandbox>;
 
-  // We must have been pre_initialized_ before using either of these.
-  bool seccomp_legacy_supported() const;
+  // We must have been pre_initialized_ before using this.
   bool seccomp_bpf_supported() const;
 
   int proc_fd_;
   bool seccomp_bpf_started_;
   // Have we been through PreinitializeSandbox or PreinitializeSandboxBegin?
   bool pre_initialized_;
-  bool seccomp_legacy_supported_;  // Accurate if pre_initialized_.
   bool seccomp_bpf_supported_;  // Accurate if pre_initialized_.
   scoped_ptr<sandbox::SetuidSandboxClient> setuid_sandbox_client_;
 
