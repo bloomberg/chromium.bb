@@ -130,6 +130,15 @@ class CallbackPrinter(Printer):
 pp_set.add_printer('base::Callback', '^base::Callback<.*>$', CallbackPrinter)
 
 
+class LocationPrinter(Printer):
+    def to_string(self):
+        return '%s()@%s:%s' % (self.val['function_name_'].string(),
+                               self.val['file_name_'].string(),
+                               self.val['line_number_'])
+pp_set.add_printer('tracked_objects::Location', '^tracked_objects::Location$',
+                   LocationPrinter)
+
+
 class LockPrinter(Printer):
     def to_string(self):
         try:
