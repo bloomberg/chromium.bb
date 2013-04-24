@@ -53,9 +53,7 @@
     // Sources
     AudioBufferSourceNode createBufferSource();
 
-#if defined(ENABLE_VIDEO) && ENABLE_VIDEO
     [RaisesException] MediaElementAudioSourceNode createMediaElementSource(HTMLMediaElement mediaElement);
-#endif
 
 #if defined(ENABLE_MEDIA_STREAM) && ENABLE_MEDIA_STREAM
     [RaisesException] MediaStreamAudioSourceNode createMediaStreamSource(MediaStream mediaStream);

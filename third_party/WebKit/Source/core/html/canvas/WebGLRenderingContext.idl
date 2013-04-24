@@ -611,10 +611,8 @@ typedef /*unrestricted*/ float GLclampf;
                                                  GLenum format, GLenum type, HTMLImageElement? image);
     [StrictTypeChecking, RaisesException] void         texImage2D(GLenum target, GLint level, GLenum internalformat,
                                                  GLenum format, GLenum type, HTMLCanvasElement? canvas);
-#if defined(ENABLE_VIDEO) && ENABLE_VIDEO
     [StrictTypeChecking, RaisesException] void         texImage2D(GLenum target, GLint level, GLenum internalformat,
                                                  GLenum format, GLenum type, HTMLVideoElement? video);
-#endif
 
     [StrictTypeChecking, RaisesException] void         texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset, 
                                                     GLsizei width, GLsizei height, 
@@ -625,10 +623,8 @@ typedef /*unrestricted*/ float GLclampf;
                                                     GLenum format, GLenum type, HTMLImageElement? image);
     [StrictTypeChecking, RaisesException] void         texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
                                                     GLenum format, GLenum type, HTMLCanvasElement? canvas);
-#if defined(ENABLE_VIDEO) && ENABLE_VIDEO
     [StrictTypeChecking, RaisesException] void         texSubImage2D(GLenum target, GLint level, GLint xoffset, GLint yoffset,
                                                     GLenum format, GLenum type, HTMLVideoElement? video);
-#endif
 
     [StrictTypeChecking, RaisesException] void uniform1f(WebGLUniformLocation location, GLfloat x);
     [StrictTypeChecking, Custom, RaisesException] void uniform1fv(WebGLUniformLocation location, Float32Array v);

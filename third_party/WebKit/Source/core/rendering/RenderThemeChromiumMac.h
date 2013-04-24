@@ -134,9 +134,7 @@ protected:
     virtual void adjustSearchFieldResultsButtonStyle(StyleResolver*, RenderStyle*, Element*) const;
     virtual bool paintSearchFieldResultsButton(RenderObject*, const PaintInfo&, const IntRect&);
 
-#if ENABLE(VIDEO)
     virtual bool supportsClosedCaptioning() const { return true; }
-#endif
 
 private:
     virtual String fileListNameForWidth(const FileList*, const Font&, int width, bool multipleFilesAllowed) const OVERRIDE;

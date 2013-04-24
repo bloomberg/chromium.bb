@@ -1733,9 +1733,7 @@ void RenderThemeChromiumMac::adjustSliderThumbSize(RenderStyle* style, Element*)
         style->setHeight(Length(static_cast<int>(sliderThumbHeight * zoomLevel), Fixed));
     }
 
-#if ENABLE(VIDEO)
     adjustMediaSliderThumbSize(style);
-#endif
 }
 
 NSPopUpButtonCell* RenderThemeChromiumMac::popupButton() const
