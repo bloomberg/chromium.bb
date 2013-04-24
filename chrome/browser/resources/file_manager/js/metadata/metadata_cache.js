@@ -798,11 +798,14 @@ DriveProvider.prototype.callApi_ = function() {
   this.callbacks_ = [];
   var self = this;
 
-  chrome.fileBrowserPrivate.getDriveFileProperties(urls, function(props) {
-    for (var index = 0; index < urls.length; index++) {
-      callbacks[index](self.convert_(props[index], urls[index]));
-    }
-  });
+  var task = function(url, callback) {
+    chrome.fileBrowserPrivate.getDriveFileProperties(url, function(properties) {
+      callback(self.convert_(properties, url));
+    });
+  };
+
+  for (var i = 0; i < urls.length; i++)
+    task(urls[i], callbacks[i]);
 };
 
 /**

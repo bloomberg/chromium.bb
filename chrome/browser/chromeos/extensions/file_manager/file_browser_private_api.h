@@ -498,10 +498,9 @@ class FileDialogStringsFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-// Retrieve property information for multiple files, returning a list of the
-// same length as the input list of file URLs.  If a particular file has an
-// error, then return a dictionary with the key "error" set to the error number
-// (drive::FileError) for that entry in the returned list.
+// Retrieves property information for a file and returns it as a dictionary.
+// On error, returns a dictionary with the key "error" set to the error number
+// (drive::FileError).
 class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.getDriveFileProperties",
@@ -512,38 +511,20 @@ class GetDriveFilePropertiesFunction : public FileBrowserFunction {
  protected:
   virtual ~GetDriveFilePropertiesFunction();
 
-  void GetNextFileProperties();
-  void CompleteGetFileProperties();
-
-  // Does operations on each virtual file path and update its properties.
-  void DoOperation(const base::FilePath& file_path,
-                   base::DictionaryValue* properties,
-                   scoped_ptr<drive::DriveEntryProto> entry_proto);
-
-  void OnOperationComplete(const base::FilePath& file_path,
-                           base::DictionaryValue* properties,
-                           drive::FileError error,
-                           scoped_ptr<drive::DriveEntryProto> entry_proto);
-
   // AsyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;
 
-  // Builds list of file properies. Calls DoOperation for each file.
-  void PrepareResults();
-
  private:
-  void OnGetFileInfo(const base::FilePath& file_path,
-                     base::DictionaryValue* property_dict,
-                     drive::FileError error,
-                     scoped_ptr<drive::DriveEntryProto> entry_proto);
+  void OnGetFileInfo(drive::FileError error,
+                     scoped_ptr<drive::DriveEntryProto> entry);
 
-  void CacheStateReceived(base::DictionaryValue* property_dict,
-                          bool success,
+  void CacheStateReceived(bool success,
                           const drive::DriveCacheEntry& cache_entry);
 
-  size_t current_index_;
-  base::ListValue* path_list_;
-  scoped_ptr<base::ListValue> file_properties_;
+  void CompleteGetFileProperties(drive::FileError error);
+
+  base::FilePath file_path_;
+  scoped_ptr<base::DictionaryValue> properties_;
 };
 
 // Implements the chrome.fileBrowserPrivate.pinDriveFile method.

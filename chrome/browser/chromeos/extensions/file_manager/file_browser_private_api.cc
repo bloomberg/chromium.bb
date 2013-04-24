@@ -2312,154 +2312,76 @@ GetDriveFilePropertiesFunction::GetDriveFilePropertiesFunction() {
 GetDriveFilePropertiesFunction::~GetDriveFilePropertiesFunction() {
 }
 
-void GetDriveFilePropertiesFunction::DoOperation(
-    const base::FilePath& file_path,
-    base::DictionaryValue* property_dict,
-    scoped_ptr<drive::DriveEntryProto> entry_proto) {
-  DCHECK(property_dict);
-
-  // Nothing to do here so simply call OnOperationComplete().
-  OnOperationComplete(file_path,
-                      property_dict,
-                      drive::FILE_ERROR_OK,
-                      entry_proto.Pass());
-}
-
 bool GetDriveFilePropertiesFunction::RunImpl() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (args_->GetSize() != 1)
+
+  std::string file_url_str;
+  if (args_->GetSize() != 1 || !args_->GetString(0, &file_url_str))
     return false;
 
-  PrepareResults();
-  return true;
-}
+  GURL file_url = GURL(file_url_str);
+  file_path_ = drive::util::ExtractDrivePath(GetLocalPathFromURL(file_url));
 
-void GetDriveFilePropertiesFunction::PrepareResults() {
-  args_->GetList(0, &path_list_);
-  DCHECK(path_list_);
-
-  file_properties_.reset(new base::ListValue);
-
-  current_index_ = 0;
-  GetNextFileProperties();
-}
-
-void GetDriveFilePropertiesFunction::GetNextFileProperties() {
-  if (current_index_ >= path_list_->GetSize()) {
-    // Exit of asynchronous look and return the result.
-    SetResult(file_properties_.release());
-    SendResponse(true);
-    return;
-  }
-  // RenderViewHost may have gone while the task is posted asynchronously.
-  if (!render_view_host()) {
-    SendResponse(false);
-    return;
-  }
-
-  content::SiteInstance* site_instance = render_view_host()->GetSiteInstance();
-  scoped_refptr<fileapi::FileSystemContext> file_system_context =
-      BrowserContext::GetStoragePartition(profile(), site_instance)->
-          GetFileSystemContext();
-
-  std::string file_str;
-  path_list_->GetString(current_index_, &file_str);
-  GURL file_url = GURL(file_str);
-  base::FilePath file_path = GetVirtualPathFromURL(file_system_context,
-                                             file_url);
-
-  base::DictionaryValue* property_dict = new base::DictionaryValue;
-  property_dict->SetString("fileUrl", file_url.spec());
-  file_properties_->Append(property_dict);
+  properties_.reset(new base::DictionaryValue);
+  properties_->SetString("fileUrl", file_url.spec());
 
   // Start getting the file info.
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if Drive is disabled.
   if (!system_service) {
-    OnOperationComplete(file_path,
-                        property_dict,
-                        drive::FILE_ERROR_FAILED,
-                        scoped_ptr<drive::DriveEntryProto>());
-    return;
+    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
+    return true;
   }
 
   system_service->file_system()->GetEntryInfoByPath(
-      file_path,
-      base::Bind(&GetDriveFilePropertiesFunction::OnGetFileInfo,
-                 this,
-                 file_path,
-                 property_dict));
-}
-
-void GetDriveFilePropertiesFunction::CompleteGetFileProperties() {
-  current_index_++;
-
-  // Could be called from callback. Let finish operation.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      Bind(&GetDriveFilePropertiesFunction::GetNextFileProperties, this));
+      file_path_,
+      base::Bind(&GetDriveFilePropertiesFunction::OnGetFileInfo, this));
+  return true;
 }
 
 void GetDriveFilePropertiesFunction::OnGetFileInfo(
-    const base::FilePath& file_path,
-    base::DictionaryValue* property_dict,
     drive::FileError error,
-    scoped_ptr<drive::DriveEntryProto> entry_proto) {
-  DCHECK(property_dict);
+    scoped_ptr<drive::DriveEntryProto> entry) {
+  DCHECK(properties_);
 
-  if (entry_proto.get() && !entry_proto->has_file_specific_info())
-    error = drive::FILE_ERROR_NOT_FOUND;
-
-  if (error == drive::FILE_ERROR_OK)
-    DoOperation(file_path, property_dict, entry_proto.Pass());
-  else
-    OnOperationComplete(file_path, property_dict, error, entry_proto.Pass());
-}
-
-void GetDriveFilePropertiesFunction::OnOperationComplete(
-    const base::FilePath& file_path,
-    base::DictionaryValue* property_dict,
-    drive::FileError error,
-    scoped_ptr<drive::DriveEntryProto> entry_proto) {
-  if (entry_proto.get() && !entry_proto->has_file_specific_info())
+  if (entry.get() && !entry->has_file_specific_info())
     error = drive::FILE_ERROR_NOT_FOUND;
 
   if (error != drive::FILE_ERROR_OK) {
-    property_dict->SetInteger("errorCode", error);
-    CompleteGetFileProperties();
+    CompleteGetFileProperties(error);
     return;
   }
-  DCHECK(entry_proto.get());
+  DCHECK(entry);
 
   const drive::DriveFileSpecificInfo& file_specific_info =
-      entry_proto->file_specific_info();
+      entry->file_specific_info();
 
-  FillDriveFilePropertiesValue(*entry_proto.get(), property_dict);
+  FillDriveFilePropertiesValue(*entry, properties_.get());
 
   drive::DriveSystemService* system_service =
       drive::DriveSystemServiceFactory::GetForProfile(profile_);
   // |system_service| is NULL if Drive is disabled.
   if (!system_service) {
-    property_dict->SetInteger("errorCode", error);
-    CompleteGetFileProperties();
+    CompleteGetFileProperties(drive::FILE_ERROR_FAILED);
     return;
   }
 
   // Get drive WebApps that can accept this file.
   ScopedVector<drive::DriveWebAppInfo> web_apps;
   system_service->webapps_registry()->GetWebAppsForFile(
-          file_path, file_specific_info.content_mime_type(), &web_apps);
+      file_path_, file_specific_info.content_mime_type(), &web_apps);
   if (!web_apps.empty()) {
     std::string default_task_id = file_handler_util::GetDefaultTaskIdFromPrefs(
         profile_,
         file_specific_info.content_mime_type(),
-        file_path.Extension());
+        file_path_.Extension());
     std::string default_app_id;
     file_handler_util::CrackTaskID(
         default_task_id, &default_app_id, NULL, NULL);
 
     ListValue* apps = new ListValue();
-    property_dict->Set("driveApps", apps);
+    properties_->Set("driveApps", apps);
     for (ScopedVector<drive::DriveWebAppInfo>::const_iterator it =
              web_apps.begin();
          it != web_apps.end(); ++it) {
@@ -2481,35 +2403,30 @@ void GetDriveFilePropertiesFunction::OnOperationComplete(
     }
   }
 
-  if (VLOG_IS_ON(2)) {
-    std::string result_json;
-    base::JSONWriter::WriteWithOptions(
-        property_dict,
-        base::JSONWriter::OPTIONS_DO_NOT_ESCAPE |
-          base::JSONWriter::OPTIONS_PRETTY_PRINT,
-        &result_json);
-    VLOG(2) << "Drive File Properties:\n" << result_json;
-  }
-
   system_service->cache()->GetCacheEntry(
-      entry_proto->resource_id(),
+      entry->resource_id(),
       file_specific_info.file_md5(),
-      base::Bind(
-          &GetDriveFilePropertiesFunction::CacheStateReceived,
-          this, property_dict));
+      base::Bind(&GetDriveFilePropertiesFunction::CacheStateReceived, this));
 }
 
 void GetDriveFilePropertiesFunction::CacheStateReceived(
-    base::DictionaryValue* property_dict,
     bool /* success */,
     const drive::DriveCacheEntry& cache_entry) {
   // In case of an error (i.e. success is false), cache_entry.is_*() all
   // returns false.
-  property_dict->SetBoolean("isPinned", cache_entry.is_pinned());
-  property_dict->SetBoolean("isPresent", cache_entry.is_present());
-  property_dict->SetBoolean("isDirty", cache_entry.is_dirty());
+  properties_->SetBoolean("isPinned", cache_entry.is_pinned());
+  properties_->SetBoolean("isPresent", cache_entry.is_present());
+  properties_->SetBoolean("isDirty", cache_entry.is_dirty());
 
-  CompleteGetFileProperties();
+  CompleteGetFileProperties(drive::FILE_ERROR_OK);
+}
+
+void GetDriveFilePropertiesFunction::CompleteGetFileProperties(
+    drive::FileError error) {
+  if (error != drive::FILE_ERROR_OK)
+    properties_->SetInteger("errorCode", error);
+  SetResult(properties_.release());
+  SendResponse(true);
 }
 
 PinDriveFileFunction::PinDriveFileFunction() {

@@ -660,12 +660,12 @@
       },
       {
         "name": "getDriveFileProperties",
-        "description": "Requests Drive file properties for a list of files",
+        "description": "Requests Drive file properties for a file",
         "parameters": [
           {
-            "name": "fileUrls",
-            "type": "array",
-            "description": "Array of file URLs to fetch properties for."
+            "name": "fileUrl",
+            "type": "string",
+            "description": "URL of a file"
           },
           {
             "name": "callback",
@@ -673,9 +673,8 @@
             "parameters": [
               {
                 "name" : "fileProperties",
-                "type": "array",
-                "items": {"$ref": "DriveFileProperties"},
-                "description": "An array of the requested file properties, one entry for each file in fileUrls."
+                "$ref": "DriveFileProperties",
+                "description": "A dictionary containing properties of the requested file."
               }
             ]
           }
