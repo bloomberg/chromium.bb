@@ -5,6 +5,7 @@
 import json
 import logging
 import urlparse
+from sdk_update_common import Error
 
 SOURCE_WHITELIST = [
   'http://localhost/',  # For testing.
@@ -33,14 +34,26 @@ class Config(dict):
     else:
       self.sources = []
 
+  def LoadJson(self, json_data):
+    try:
+      self.update(json.loads(json_data))
+    except Exception as e:
+      raise Error('Error reading json config:\n%s' % str(e))
+
   def ToJson(self):
-    return json.dumps(self, sort_keys=False, indent=2)
+    try:
+      return json.dumps(self, sort_keys=False, indent=2)
+    except Exception as e:
+      raise Error('Json encoding error writing config:\n%s' % e)
 
   def __getattr__(self, name):
-    return self.__getitem__(name)
+    if name in self:
+      return self[name]
+    else:
+      raise AttributeError('Config does not contain: %s' % name)
 
   def __setattr__(self, name, value):
-    return self.__setitem__(name, value)
+    self[name] = value
 
   def AddSource(self, source):
     if not IsSourceValid(source):

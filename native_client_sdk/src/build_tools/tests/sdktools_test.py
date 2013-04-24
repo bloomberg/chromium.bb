@@ -40,6 +40,7 @@ class SdkToolsTestCase(unittest.TestCase):
 
   def SetupWithBaseDirPrefix(self, basedir_prefix, tmpdir=None):
     self.basedir = tempfile.mkdtemp(prefix=basedir_prefix, dir=tmpdir)
+    self.cache_dir = os.path.join(self.basedir, 'nacl_sdk', 'sdk_cache')
     # We have to make sure that we build our updaters with a version that is at
     # least as large as the version in the sdk_tools bundle. If not, update
     # tests may fail because the "current" version (according to the sdk_cache)
@@ -65,19 +66,22 @@ class SdkToolsTestCase(unittest.TestCase):
 
     This manifest should only contain the sdk_tools bundle.
     """
-    manifest_filename = os.path.join(self.basedir, 'nacl_sdk', 'sdk_cache',
-        MANIFEST_BASENAME)
+    manifest_filename = os.path.join(self.cache_dir, MANIFEST_BASENAME)
     self.manifest = manifest_util.SDKManifest()
     self.manifest.LoadDataFromString(open(manifest_filename).read())
     self.sdk_tools_bundle = self.manifest.GetBundle('sdk_tools')
+
+  def _WriteConfig(self, config_data):
+    config_filename = os.path.join(self.cache_dir, 'naclsdk_config.json')
+    with open(config_filename, 'w') as stream:
+      stream.write(config_data)
 
   def _WriteCacheManifest(self, manifest):
     """Write the manifest at nacl_sdk/sdk_cache.
 
     This is useful for faking having installed a bundle.
     """
-    manifest_filename = os.path.join(self.basedir, 'nacl_sdk', 'sdk_cache',
-        MANIFEST_BASENAME)
+    manifest_filename = os.path.join(self.cache_dir, MANIFEST_BASENAME)
     with open(manifest_filename, 'w') as stream:
       stream.write(manifest.GetDataAsString())
 

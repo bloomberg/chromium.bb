@@ -8,7 +8,6 @@
 import config
 import cStringIO
 import download
-import json
 import logging
 import optparse
 import os
@@ -56,23 +55,29 @@ def hide(fn):
 
 def LoadConfig(raise_on_error=False):
   path = os.path.join(USER_DATA_DIR, CONFIG_FILENAME)
+  cfg = config.Config()
   if not os.path.exists(path):
-    return config.Config()
+    return cfg
 
   try:
     try:
       with open(path) as f:
-        return config.Config(json.loads(f.read()))
+        file_data = f.read()
     except IOError as e:
       raise Error('Unable to read config from "%s".\n  %s' % (path, e))
-    except Exception as e:
+
+    try:
+      cfg.LoadJson(file_data)
+    except Error as e:
       raise Error('Parsing config file from "%s" failed.\n  %s' % (path, e))
+    return cfg
   except Error as e:
     if raise_on_error:
       raise
     else:
       logging.warn(str(e))
-  return config.Config()
+
+  return cfg
 
 
 def WriteConfig(cfg):
@@ -82,10 +87,7 @@ def WriteConfig(cfg):
   except Exception as e:
     raise Error('Unable to create directory "%s".\n  %s' % (USER_DATA_DIR, e))
 
-  try:
-    cfg_json = cfg.ToJson()
-  except Exception as e:
-    raise Error('Json encoding error writing config "%s".\n  %s' % (path, e))
+  cfg_json = cfg.ToJson()
 
   try:
     with open(path, 'w') as f:
@@ -210,7 +212,7 @@ def CMDupdate(parser, args):
 
   try:
     delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                 DEFAULT_SDK_ROOT)
+                                                 DEFAULT_SDK_ROOT, cfg)
     command.update.Update(delegate, remote_manifest, local_manifest, args,
                           options.force)
   finally:
@@ -260,9 +262,10 @@ def CMDreinstall(parser, args):
     parser.error('No bundles given')
     return 0
 
+  cfg = LoadConfig()
   try:
     delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                 DEFAULT_SDK_ROOT)
+                                                 DEFAULT_SDK_ROOT, cfg)
     command.update.Reinstall(delegate, local_manifest, args)
   finally:
     # Always write out the local manifest, we may have successfully updated one
@@ -348,7 +351,7 @@ def UpdateSDKTools(options, args):
 
   try:
     delegate = command.update.RealUpdateDelegate(USER_DATA_DIR,
-                                                 DEFAULT_SDK_ROOT)
+                                                 DEFAULT_SDK_ROOT, cfg)
     command.update.UpdateBundleIfNeeded(
         delegate,
         remote_manifest,

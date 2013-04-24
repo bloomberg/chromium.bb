@@ -2,9 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import hashlib
 import copy
 import logging
 import os
+import subprocess
 import sys
 import urlparse
 import urllib2
@@ -30,6 +32,7 @@ except ImportError:
 RECOMMENDED = 'recommended'
 SDK_TOOLS = 'sdk_tools'
 HTTP_CONTENT_LENGTH = 'Content-Length'  # HTTP Header field for content length
+DEFAULT_CACHE_SIZE = 512 * 1024 * 1024  # 1/2 Gb cache by default
 
 
 class UpdateDelegate(object):
@@ -45,18 +48,88 @@ class UpdateDelegate(object):
 
 
 class RealUpdateDelegate(UpdateDelegate):
-  def __init__(self, user_data_dir, install_dir):
+  def __init__(self, user_data_dir, install_dir, cfg):
     UpdateDelegate.__init__(self)
-    self.user_data_dir = user_data_dir
+    self.archive_cache = os.path.join(user_data_dir, 'archives')
     self.install_dir = install_dir
+    self.cache_max = getattr(cfg, 'cache_max', DEFAULT_CACHE_SIZE)
 
   def BundleDirectoryExists(self, bundle_name):
     bundle_path = os.path.join(self.install_dir, bundle_name)
     return os.path.isdir(bundle_path)
 
+  def VerifyDownload(self, filename, archive):
+    """Verify that a local filename in the cache matches the given
+    online archive.
+
+    Returns True if both size and sha1 match, False otherwise.
+    """
+    filename = os.path.join(self.archive_cache, filename)
+    if not os.path.exists(filename):
+      logging.info('File does not exist: %s.' % filename)
+      return False
+    size = os.path.getsize(filename)
+    if size != archive.size:
+      logging.info('File size does not match (%d vs %d): %s.' % (size,
+          archive.size, filename))
+      return False
+    sha1_hash = hashlib.sha1()
+    with open(filename) as f:
+      sha1_hash.update(f.read())
+    if sha1_hash.hexdigest() != archive.GetChecksum():
+      logging.info('File hash does not match: %s.' % filename)
+      return False
+    return True
+
+  def BytesUsedInCache(self):
+    """Determine number of bytes currently be in local archive cache."""
+    total = 0
+    for root, _, files in os.walk(self.archive_cache):
+      for filename in files:
+        total += os.path.getsize(os.path.join(root, filename))
+    return total
+
+  def CleanupCache(self):
+    """Remove archives from the local filesystem cache until the
+    total size is below cache_max.
+
+    This is done my deleting the oldest archive files until the
+    condition is satisfied.  If cache_max is zero then the entire
+    cache will be removed.
+    """
+    used = self.BytesUsedInCache()
+    logging.info('Cache usage: %d / %d' % (used, self.cache_max))
+    if used <= self.cache_max:
+      return
+    clean_bytes = used - self.cache_max
+
+    logging.info('Clearing %d bytes in archive cache' % clean_bytes)
+    file_timestamps = []
+    for root, _, files in os.walk(self.archive_cache):
+      for filename in files:
+        fullname = os.path.join(root, filename)
+        file_timestamps.append((os.path.getmtime(fullname), fullname))
+
+    file_timestamps.sort()
+    while clean_bytes > 0:
+      assert(file_timestamps)
+      filename_to_remove = file_timestamps[0][1]
+      clean_bytes -= os.path.getsize(filename_to_remove)
+      logging.info('Removing from cache: %s' % filename_to_remove)
+      os.remove(filename_to_remove)
+      # Also remove resulting empty parent directory structure
+      while True:
+        filename_to_remove = os.path.dirname(filename_to_remove)
+        if not os.listdir(filename_to_remove):
+          os.rmdir(filename_to_remove)
+        else:
+          break
+      file_timestamps = file_timestamps[1:]
+
   def DownloadToFile(self, url, dest_filename):
-    sdk_update_common.MakeDirs(self.user_data_dir)
-    dest_path = os.path.join(self.user_data_dir, dest_filename)
+    dest_path = os.path.join(self.archive_cache, dest_filename)
+    sdk_update_common.MakeDirs(os.path.dirname(dest_path))
+
     out_stream = None
     url_stream = None
     try:
@@ -101,28 +174,31 @@ class RealUpdateDelegate(UpdateDelegate):
         raise Error('Unable to chdir into "%s".\n  %s' % (extract_path, e))
 
       for i, archive in enumerate(archives):
-        archive_path = os.path.join(self.user_data_dir, archive)
+        archive_path = os.path.join(self.archive_cache, archive)
 
-        try:
-          logging.info('Opening file %s (%d/%d).' % (archive_path, i + 1,
-              len(archives)))
+        if len(archives) > 1:
+          print '(file %d/%d - "%s")' % (
+             i + 1, len(archives), os.path.basename(archive_path))
+        logging.info('Extracting to %s' % (extract_path,))
+
+        if sys.platform == 'win32':
           try:
-            tar_file = cygtar.CygTar(archive_path, 'r', verbose=True)
-          except Exception as e:
-            raise Error('Can\'t open archive "%s".\n  %s' % (archive_path, e))
+            logging.info('Opening file %s (%d/%d).' % (archive_path, i + 1,
+                len(archives)))
+            try:
+              tar_file = cygtar.CygTar(archive_path, 'r', verbose=True)
+            except Exception as e:
+              raise Error("Can't open archive '%s'.\n  %s" % (archive_path, e))
 
-          logging.info('Extracting to %s' % (extract_path,))
-          if len(archives) > 1:
-            print '(file %d/%d - "%s")' % (
-                 i + 1, len(archives), os.path.basename(archive_path))
-          tar_file.Extract()
-        finally:
-          if tar_file:
-            tar_file.Close()
-
-          # Remove the archive.
-          if os.path.exists(archive_path):
-            os.remove(archive_path)
+            tar_file.Extract()
+          finally:
+            if tar_file:
+              tar_file.Close()
+        else:
+          try:
+            subprocess.check_call(['tar', 'xf', archive_path])
+          except subprocess.CalledProcessError:
+            raise Error('Error extracting archive: %s' % archive_path)
 
       logging.info('Changing the directory to %s' % (curpath,))
       os.chdir(curpath)
@@ -236,15 +312,20 @@ def _UpdateBundle(delegate, bundle, local_manifest):
 
   archive_filenames = []
 
-  print 'Downloading bundle %s' % (bundle.name,)
+  shown_banner = False
   for i, archive in enumerate(archives):
-    if len(archives) > 1:
-      print '(file %d/%d - "%s")' % (
-          i + 1, len(archives), os.path.basename(archive.url))
-
     archive_filename = _GetFilenameFromURL(archive.url)
-    sha1, size = delegate.DownloadToFile(archive.url, archive_filename)
-    _ValidateArchive(archive, sha1, size)
+    archive_filename = os.path.join(bundle.name, archive_filename)
+
+    if not delegate.VerifyDownload(archive_filename, archive):
+      if not shown_banner:
+        shown_banner = True
+        print 'Downloading bundle %s' % (bundle.name,)
+      if len(archives) > 1:
+        print '(file %d/%d - "%s")' % (
+            i + 1, len(archives), os.path.basename(archive.url))
+      sha1, size = delegate.DownloadToFile(archive.url, archive_filename)
+      _ValidateArchive(archive, sha1, size)
 
     archive_filenames.append(archive_filename)
 
@@ -271,17 +352,18 @@ def _UpdateBundle(delegate, bundle, local_manifest):
 
   logging.info('Updating local manifest to include bundle %s' % (bundle.name))
   local_manifest.MergeBundle(bundle)
+  delegate.CleanupCache()
 
 
 def _GetFilenameFromURL(url):
-  _, _, path, _, _, _ = urlparse.urlparse(url)
-  return path.split('/')[-1]
+  path = urlparse.urlparse(url)[2]
+  return os.path.basename(path)
 
 
 def _ValidateArchive(archive, actual_sha1, actual_size):
-  if actual_sha1 != archive.GetChecksum():
-    raise Error('SHA1 checksum mismatch on "%s".  Expected %s but got %s' % (
-        archive.name, archive.GetChecksum(), actual_sha1))
   if actual_size != archive.size:
     raise Error('Size mismatch on "%s".  Expected %s but got %s bytes' % (
         archive.name, archive.size, actual_size))
+  if actual_sha1 != archive.GetChecksum():
+    raise Error('SHA1 checksum mismatch on "%s".  Expected %s but got %s' % (
+        archive.name, archive.GetChecksum(), actual_sha1))
