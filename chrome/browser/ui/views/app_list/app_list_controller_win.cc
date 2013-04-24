@@ -1006,8 +1006,8 @@ void AppListController::EnableAppList() {
     shortcut_locations.on_desktop = true;
     shortcut_locations.in_quick_launch_bar = true;
     shortcut_locations.in_applications_menu = true;
-    shortcut_locations.applications_menu_subdir =
-        l10n_util::GetStringUTF16(IDS_PRODUCT_NAME);
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    shortcut_locations.applications_menu_subdir = dist->GetAppShortCutName();
     base::FilePath user_data_dir(
         g_browser_process->profile_manager()->user_data_dir());
 
