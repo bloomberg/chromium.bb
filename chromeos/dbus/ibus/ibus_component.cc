@@ -53,7 +53,7 @@ bool PopIBusEngineDesc(dbus::MessageReader* reader,
                << "The 7th argument should be string.";
     return false;
   }
-  if (!ibus_object_reader.PopString(&engine_desc->layout)) {
+  if (!ibus_object_reader.PopString(&unused_string_field)) {
     LOG(ERROR) << "Invalid variant structure[IBusEngineDesc]: "
                << "The 8th argument should be string.";
     return false;
@@ -95,7 +95,7 @@ void AppendIBusEngineDesc(const IBusComponent::EngineDescription& engine_desc,
   ibus_object_writer.AppendString("");  // The license field is not used.
   ibus_object_writer.AppendString(engine_desc.author);
   ibus_object_writer.AppendString("");  // The icon path field is not used.
-  ibus_object_writer.AppendString(engine_desc.layout);
+  ibus_object_writer.AppendString("");  // The layout field is not used.
   ibus_object_writer.AppendUint32(0);  // The engine rank is not used.
   ibus_object_writer.AppendString("");  // The hotkey field is not used.
   ibus_object_writer.AppendString("");  // The symbol field is not used.
@@ -233,14 +233,12 @@ IBusComponent::EngineDescription::EngineDescription(
     const std::string& display_name,
     const std::string& description,
     const std::string& language_code,
-    const std::string& author,
-    const std::string& layout)
+    const std::string& author)
     : engine_id(engine_id),
       display_name(display_name),
       description(description),
       language_code(language_code),
-      author(author),
-      layout(layout) {
+      author(author) {
 }
 
 IBusComponent::EngineDescription::~EngineDescription() {

@@ -97,15 +97,13 @@ class CHROMEOS_EXPORT IBusComponent {
                       const std::string& display_name,
                       const std::string& description,
                       const std::string& language_code,
-                      const std::string& author,
-                      const std::string& layout);
+                      const std::string& author);
     ~EngineDescription();
     std::string engine_id;  // The engine id.
     std::string display_name;  // The display name.
     std::string description;  // The engine description.
     std::string language_code;  // The engine's language(ex. "en").
     std::string author;  // The author of engine.
-    std::string layout;  // The keyboard layout of engine.
   };
 
   IBusComponent();

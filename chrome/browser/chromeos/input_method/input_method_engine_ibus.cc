@@ -15,7 +15,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
 #include "chrome/browser/chromeos/input_method/input_method_manager.h"
-#include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_component.h"
@@ -96,18 +95,6 @@ void InputMethodEngineIBus::Initialize(
     ibus_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);
   }
 
-  std::string layout;
-  if (!layouts.empty()) {
-    layout = JoinString(layouts, ',');
-  } else {
-    const std::string fallback_id =
-        manager->GetInputMethodUtil()->GetHardwareInputMethodId();
-    const input_method::InputMethodDescriptor* fallback_desc =
-        manager->GetInputMethodUtil()->GetInputMethodDescriptorFromId(
-            fallback_id);
-    layout = fallback_desc->GetPreferredKeyboardLayout();
-  }
-
   component_.reset(new IBusComponent());
   component_->set_name(std::string(kEngineBusPrefix) + std::string(engine_id));
   component_->set_description(description);
@@ -119,7 +106,6 @@ void InputMethodEngineIBus::Initialize(
   engine_desc.description = description;
   engine_desc.language_code = language;
   engine_desc.author = ibus_id_;
-  engine_desc.layout = layout.c_str();
 
   component_->mutable_engine_description()->push_back(engine_desc);
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, language,

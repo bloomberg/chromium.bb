@@ -21,26 +21,22 @@ TEST(IBusComponentTest, WriteReadIBusComponentTest) {
   const std::string kEngineDescription1 = "Engine Description 1";
   const std::string kEngineLanguageCode1 = "en";
   const std::string kEngineAuthor1 = "Engine Author 1";
-  const std::string kEngineLayout1 = "us::eng";
   const IBusComponent::EngineDescription engine_desc1(kEngineId1,
                                                       kEngineDisplayName1,
                                                       kEngineDescription1,
                                                       kEngineLanguageCode1,
-                                                      kEngineAuthor1,
-                                                      kEngineLayout1);
+                                                      kEngineAuthor1);
 
   const std::string kEngineId2 = "Engine Id 2";
   const std::string kEngineDisplayName2 = "Engine Display Name 2";
   const std::string kEngineDescription2 = "Engine Description 2";
   const std::string kEngineLanguageCode2 = "ja";
   const std::string kEngineAuthor2 = "Engine Author 2";
-  const std::string kEngineLayout2 = "ja::jp";
   const IBusComponent::EngineDescription engine_desc2(kEngineId2,
                                                       kEngineDisplayName2,
                                                       kEngineDescription2,
                                                       kEngineLanguageCode2,
-                                                      kEngineAuthor2,
-                                                      kEngineLayout2);
+                                                      kEngineAuthor2);
 
   // Create a IBusComponent.
   IBusComponent ibus_component;
@@ -72,14 +68,12 @@ TEST(IBusComponentTest, WriteReadIBusComponentTest) {
   EXPECT_EQ(kEngineDescription1, engine_descriptions[0].description);
   EXPECT_EQ(kEngineLanguageCode1, engine_descriptions[0].language_code);
   EXPECT_EQ(kEngineAuthor1, engine_descriptions[0].author);
-  EXPECT_EQ(kEngineLayout1, engine_descriptions[0].layout);
 
   EXPECT_EQ(kEngineId2, engine_descriptions[1].engine_id);
   EXPECT_EQ(kEngineDisplayName2, engine_descriptions[1].display_name);
   EXPECT_EQ(kEngineDescription2, engine_descriptions[1].description);
   EXPECT_EQ(kEngineLanguageCode2, engine_descriptions[1].language_code);
   EXPECT_EQ(kEngineAuthor2, engine_descriptions[1].author);
-  EXPECT_EQ(kEngineLayout2, engine_descriptions[1].layout);
 }
 
 }  // namespace chromeos
