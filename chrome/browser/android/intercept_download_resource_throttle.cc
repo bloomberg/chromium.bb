@@ -38,6 +38,10 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
       request_->response_info().did_use_http_auth)
     return;
 
+  if (request_->url_chain().empty() ||
+      request_->url_chain().back().SchemeIsFileSystem())
+    return;
+
   content::DownloadControllerAndroid::Get()->CreateGETDownload(
       render_process_id_, render_view_id_, request_id_);
   controller()->Cancel();
