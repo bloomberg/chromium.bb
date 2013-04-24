@@ -77,12 +77,6 @@ bool WebFileUtilitiesImpl::makeAllDirectories(const WebString& path) {
   return file_util::CreateDirectory(file_path);
 }
 
-WebString WebFileUtilitiesImpl::getAbsolutePath(const WebString& path) {
-  base::FilePath file_path(base::MakeAbsoluteFilePath(
-      webkit_base::WebStringToFilePath(path)));
-  return webkit_base::FilePathStringToWebString(file_path.value());
-}
-
 bool WebFileUtilitiesImpl::isDirectory(const WebString& path) {
   base::FilePath file_path(webkit_base::WebStringToFilePath(path));
   return file_util::DirectoryExists(file_path);
