@@ -1,11 +1,10 @@
 include_rules = [
-  # Webdata is being made into a component (it will end up at
-  # //components/webdata and not depend on //chrome), so we have these basic
-  # rules followed by temporary exceptions.  Please don't add to the list of
-  # exceptions!
+  # Much of WebData is being broken off and moved into a component
+  # under //components/webdata, that does not depend on //chrome), so
+  # we have these basic rules followed by temporary exceptions.
+  # Please don't add to the list of exceptions!
   "-chrome/browser",
   "-chrome/common",
-  "+chrome/browser/api/webdata",
   "+chrome/browser/webdata",
   "+components/encryptor",
 
@@ -13,7 +12,6 @@ include_rules = [
   # Do not add to the list of temporarily-allowed dependencies below,
   # and please do not introduce more #includes of these files.
   "!chrome/browser/history/history_database.h",
-  "!chrome/browser/password_manager/ie7_password.h",
 
   # TODO(caitkp): Remove this, at slightly lower priority - this is
   # just a set of header-only enums, so we can live with it
@@ -23,16 +21,22 @@ include_rules = [
 
 specific_include_rules = {
   # These files are staying in //chrome, so no need to restrict.
+  r"((autocomplete|autofill_profile)_syncable_service|web_data_service(_win)?(_factory)?)(_unittest)?\.(cc|h)": [
+    "+chrome/browser",
+    "+chrome/common",
+  ],
 
-r'((autocomplete|autofill_profile)_syncable_service|web_data_service(_win)?(_factory)?)(_unittest)?\.(cc|h)':
-[
-    '+chrome/browser',
-    '+chrome/common',
+  # TODO(joi): Move sign-in related files to //components. For now,
+  # use these rules to prevent regressions.
+  r"^logins_.*": [
+    "-chrome/browser/webdata",
+    "+chrome/browser/webdata/logins_table.h",
+    "!chrome/browser/password_manager/ie7_password.h",
   ],
 
   # TODO(caitkp): Componentize all the different tables. For now, we
   # write these rules so they don't add bad dependencies.
-  r'^(?!autofill)[a-z_]+_table(_unittest)?\.(cc|h)': [
+  r"^[a-z_]+_table(_unittest|_win)?\.(cc|h)": [
     "!chrome/browser/history/history_database.h",
     "!chrome/browser/search_engines/search_terms_data.h",
     "!chrome/browser/search_engines/template_url.h",
@@ -42,7 +46,7 @@ r'((autocomplete|autofill_profile)_syncable_service|web_data_service(_win)?(_fac
 
   # TODO(caitkp): Extract unit tests from //chrome, at lower priority
   # than production code.
-  r'(.*_unittest|.*_test_util)\.(cc|h)': [
+  r"(.*_unittest|.*_test_util)\.(cc|h)": [
     "+chrome/browser/webdata/web_data_service.h",
     "+chrome/browser/webdata/web_data_service_factory.h",
   ],
