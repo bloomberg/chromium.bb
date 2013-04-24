@@ -240,7 +240,7 @@ class CleanUpStage(bs.BuilderStage):
         self._options.log_dir, '*.%s' % HWTestStage.PERF_RESULTS_EXTENSION)):
       os.remove(result)
 
-  def _PerformStage(self):
+  def PerformStage(self):
     if (not (self._options.buildbot or self._options.remote_trybot)
         and self._options.clobber):
       if not commands.ValidateClobber(self._build_root):
@@ -376,7 +376,7 @@ class PatchChangesStage(bs.BuilderStage):
       cros_build_lib.Die("Failed applying patches: %s",
                          "\n".join(map(str, failures)))
 
-  def _PerformStage(self):
+  def PerformStage(self):
     class NoisyPatchSeries(validation_pool.PatchSeries):
       """Custom PatchSeries that adds links to buildbot logs for remote trys."""
 
@@ -478,7 +478,7 @@ class BootstrapStage(PatchChangesStage):
 
   #pylint: disable=E1101
   @osutils.TempDirDecorator
-  def _PerformStage(self):
+  def PerformStage(self):
     # The plan for the builders is to use master branch to bootstrap other
     # branches. Now, if we wanted to test patches for both the bootstrap code
     # (on master) and the branched chromite (say, R20), we need to filter the
@@ -580,7 +580,7 @@ class SyncStage(bs.BuilderStage):
     print >> sys.stderr, self.repo.ExportManifest(
         mark_revision=self.output_manifest_sha1)
 
-  def _PerformStage(self):
+  def PerformStage(self):
     self.Initialize()
     with osutils.TempDir() as tempdir:
       # Save off the last manifest.
@@ -722,7 +722,7 @@ class ManifestVersionedSyncStage(SyncStage):
 
     return to_return
 
-  def _PerformStage(self):
+  def PerformStage(self):
     self.Initialize()
     if self._options.force_version:
       next_manifest = self.ForceVersion(self._options.force_version)
@@ -894,15 +894,12 @@ class CommitQueueSyncStage(LKGMCandidateSyncStage):
 
       return manifest
 
-  # Accessing a protected member.  TODO(sosa): Refactor PerformStage to not be
-  # a protected member as children override it.
-  # pylint: disable=W0212
-  def _PerformStage(self):
+  def PerformStage(self):
     """Performs normal stage and prints blamelist at end."""
     if self._options.force_version:
       self.HandleSkip()
     else:
-      ManifestVersionedSyncStage._PerformStage(self)
+      ManifestVersionedSyncStage.PerformStage(self)
 
 
 class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
@@ -919,7 +916,7 @@ class ManifestVersionedSyncCompletionStage(ForgivingBuilderStage):
     # UpdateStatus.
     self.message = None
 
-  def _PerformStage(self):
+  def PerformStage(self):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
           success=self.success, message=self.message)
@@ -987,7 +984,7 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
         ', '.join(sorted(inflight_statuses.keys())),
         'Please check the logs of these builders for details.']))
 
-  def _PerformStage(self):
+  def PerformStage(self):
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UploadStatus(
           success=self.success, message=self.message)
@@ -1041,13 +1038,13 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
         inflight_builders)
     self.sync_stage.pool.HandleValidationTimeout()
 
-  def _PerformStage(self):
+  def PerformStage(self):
     if not self.success and self._build_config['important']:
       # This message is sent along with the failed status to the master to
       # indicate a failure.
       self.message = self.sync_stage.pool.GetValidationFailedMessage()
 
-    super(CommitQueueCompletionStage, self)._PerformStage()
+    super(CommitQueueCompletionStage, self).PerformStage()
 
     if ManifestVersionedSyncStage.manifest_manager:
       ManifestVersionedSyncStage.manifest_manager.UpdateStatus(
@@ -1063,7 +1060,7 @@ class PreCQSyncStage(SyncStage):
     # The list of patches to test.
     self.patches = patches
 
-    # The ValidationPool of patches to test. Initialized in _PerformStage, and
+    # The ValidationPool of patches to test. Initialized in PerformStage, and
     # refreshed after bootstrapping by HandleSkip.
     self.pool = None
 
@@ -1074,8 +1071,8 @@ class PreCQSyncStage(SyncStage):
     if filename:
       self.pool = validation_pool.ValidationPool.Load(filename)
 
-  def _PerformStage(self):
-    super(PreCQSyncStage, self)._PerformStage()
+  def PerformStage(self):
+    super(PreCQSyncStage, self).PerformStage()
     self.pool = validation_pool.ValidationPool.AcquirePreCQPool(
         self._build_config['overlays'], self._build_root,
         self._options.buildnumber, self._build_config['name'],
@@ -1091,7 +1088,7 @@ class PreCQCompletionStage(bs.BuilderStage):
     self.sync_stage = sync_stage
     self.success = success
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Update Gerrit and Google Storage with the Pre-CQ status.
     if self.success:
       self.sync_stage.pool.HandlePreCQSuccess()
@@ -1206,9 +1203,9 @@ class PreCQLauncherStage(SyncStage):
     # its internal timeout.
     return [], []
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Setup and initialize the repo.
-    super(PreCQLauncherStage, self)._PerformStage()
+    super(PreCQLauncherStage, self).PerformStage()
 
     # Loop through all of the changes until we hit a timeout.
     validation_pool.ValidationPool.AcquirePool(
@@ -1221,7 +1218,7 @@ class PreCQLauncherStage(SyncStage):
 
 class RefreshPackageStatusStage(bs.BuilderStage):
   """Stage for refreshing Portage package status in online spreadsheet."""
-  def _PerformStage(self):
+  def PerformStage(self):
     commands.RefreshPackageStatus(buildroot=self._build_root,
                                   boards=self._boards,
                                   debug=self._options.debug)
@@ -1244,7 +1241,7 @@ class InitSDKStage(bs.BuilderStage):
       self._env['USE'] = 'git_gcc'
       self._env['GCC_GITHASH'] = self._build_config['gcc_githash']
 
-  def _PerformStage(self):
+  def PerformStage(self):
     chroot_path = os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR)
     replace = self._build_config['chroot_replace']
     if os.path.isdir(self._build_root) and not replace:
@@ -1275,7 +1272,7 @@ class SetupBoardStage(InitSDKStage):
     if boards is not None:
       self._boards = boards
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Calculate whether we should use binary packages.
     usepkg = (self._build_config['usepkg_setup_board'] and
               not self._latest_toolchain)
@@ -1318,7 +1315,7 @@ class UprevStage(bs.BuilderStage):
     if boards is not None:
       self._boards = boards
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Perform other uprevs.
     if self._build_config['uprev']:
       overlays, _ = self._ExtractOverlays()
@@ -1333,7 +1330,7 @@ class SyncChromeStage(bs.BuilderStage):
 
   option_name = 'managed_chrome'
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
     if self._chrome_rev:
@@ -1368,7 +1365,7 @@ class PatchChromeStage(bs.BuilderStage):
 
   option_name = 'rietveld_patches'
 
-  def _PerformStage(self):
+  def PerformStage(self):
     for patch in ' '.join(self._options.rietveld_patches).split():
       patch, colon, subdir = patch.partition(':')
       if not colon:
@@ -1412,7 +1409,7 @@ class BuildPackagesStage(ArchivingStage):
     """Get the list of architectures built by this builder."""
     return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Wait for PGO data to be ready if needed.
     if self._pgo_use:
       cpv = portage_utilities.BestVisible(constants.CHROME_CP,
@@ -1526,7 +1523,7 @@ class BuildImageStage(BuildPackagesStage):
                               test_suites_tarball, cwd=cwd)
         queue.put([test_suites_tarball])
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # Build images and autotest tarball in parallel.
     steps = []
     if (self._build_config['upload_hw_test_artifacts'] or
@@ -1549,7 +1546,7 @@ class SignerTestStage(ArchivingStage):
   # five minutes to run.
   SIGNER_TEST_TIMEOUT = 1800
 
-  def _PerformStage(self):
+  def PerformStage(self):
     if not self.archive_stage.WaitForRecoveryImage():
       raise InvalidTestConditionException('Missing recovery image.')
     with cros_build_lib.SubCommandTimeout(self.SIGNER_TEST_TIMEOUT):
@@ -1569,7 +1566,7 @@ class UnitTestStage(BoardSpecificBuilderStage):
   # minutes, so we picked 70 minutes because it gives us a little buffer time.
   UNIT_TEST_TIMEOUT = 70 * 60
 
-  def _PerformStage(self):
+  def PerformStage(self):
     with cros_build_lib.SubCommandTimeout(self.UNIT_TEST_TIMEOUT):
       commands.RunUnitTests(self._build_root,
                             self._current_board,
@@ -1602,7 +1599,7 @@ class VMTestStage(ArchivingStage):
         prefix = 'crash: ' if filename.endswith('.dmp.txt') else ''
         self.PrintDownloadLink(filename, prefix)
 
-  def _PerformStage(self):
+  def PerformStage(self):
     # These directories are used later to archive test artifacts.
     test_results_dir = commands.CreateTestRoot(self._build_root)
     try:
@@ -1693,7 +1690,7 @@ class HWTestStage(ArchivingStage):
 
     return super(HWTestStage, self)._HandleStageException(exception)
 
-  def _PerformStage(self):
+  def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
     if self._options.remote_trybot and self._options.hwtest:
       debug = self._options.debug_forced
@@ -1721,7 +1718,7 @@ class HWTestStage(ArchivingStage):
 class AUTestStage(HWTestStage):
   """Stage for au hw test suites that requires special pre-processing."""
 
-  def _PerformStage(self):
+  def PerformStage(self):
     """Wait for payloads to be staged and uploads its au control files."""
     with osutils.TempDir() as tempdir:
       tarball = commands.BuildAUTestTarball(
@@ -1729,7 +1726,7 @@ class AUTestStage(HWTestStage):
           self.version, self.upload_url)
       self.UploadArtifact(tarball)
 
-    super(AUTestStage, self)._PerformStage()
+    super(AUTestStage, self).PerformStage()
 
 
 class ASyncHWTestStage(HWTestStage, ForgivingBuilderStage):
@@ -1748,7 +1745,7 @@ class SDKPackageStage(bs.BuilderStage):
   MANIFEST_VERSION = '1'
   _EXCLUDED_PATHS = ('usr/lib/debug', 'usr/local/autotest', 'packages', 'tmp')
 
-  def _PerformStage(self):
+  def PerformStage(self):
     tarball_name = 'built-sdk.tar.xz'
     tarball_location = os.path.join(self._build_root, tarball_name)
     chroot_location = os.path.join(self._build_root,
@@ -1819,7 +1816,7 @@ class SDKTestStage(bs.BuilderStage):
 
   option_name = 'tests'
 
-  def _PerformStage(self):
+  def PerformStage(self):
     tarball_location = os.path.join(self._build_root, 'built-sdk.tar.xz')
     new_chroot_cmd = ['cros_sdk', '--chroot', 'new-sdk-chroot']
     # Build a new SDK using the provided tarball.
@@ -2016,7 +2013,7 @@ class ArchiveStage(ArchivingStage):
       cros_build_lib.CreateTarball(env_tar, tempdir)
       self._upload_queue.put([os.path.basename(env_tar)])
 
-  def _PerformStage(self):
+  def PerformStage(self):
     buildroot = self._build_root
     config = self._build_config
     board = self._current_board
@@ -2308,7 +2305,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 
     return args
 
-  def _PerformStage(self):
+  def PerformStage(self):
     """Uploads prebuilts for master and slave builders."""
     prebuilt_type = self._prebuilt_type
     board = self._current_board
@@ -2387,7 +2384,7 @@ class UploadPrebuiltsStage(BoardSpecificBuilderStage):
 class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
   config_name = 'dev_installer_prebuilts'
 
-  def _PerformStage(self):
+  def PerformStage(self):
     generated_args = generated_args = self.GenerateCommonArgs()
     commands.UploadDevInstallerPrebuilts(
         binhost_bucket=self._build_config['binhost_bucket'],
@@ -2400,7 +2397,7 @@ class DevInstallerPrebuiltsStage(UploadPrebuiltsStage):
 
 class PublishUprevChangesStage(NonHaltingBuilderStage):
   """Makes uprev changes from pfq live for developers."""
-  def _PerformStage(self):
+  def PerformStage(self):
     _, push_overlays = self._ExtractOverlays()
     if push_overlays:
       commands.UprevPush(self._build_root, push_overlays, self._options.debug)
@@ -2421,7 +2418,7 @@ class ReportStage(bs.BuilderStage):
     self._archive_stages = archive_stages
     self._version = version if version else ''
 
-  def _PerformStage(self):
+  def PerformStage(self):
     acl = None if self._build_config['internal'] else 'public-read'
     archive_urls = {}
 

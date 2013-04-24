@@ -795,7 +795,7 @@ class AUTestStageTest(AbstractStageTest,
   def testPerformStage(self):
     """Tests that we correctly generate a tarball and archive it."""
     stage = self.ConstructStage()
-    stage._PerformStage()
+    stage.PerformStage()
     cmd = ['site_utils/autoupdate/full_release_test.py', '--npo', '--dump',
            '--archive_url', self.archive_stage.upload_url,
            self.archive_stage.release_tag, self._current_board]
@@ -1190,7 +1190,7 @@ class FailStage(bs.BuilderStage):
 
   FAIL_EXCEPTION = results_lib.StepFailure("Fail stage needs to fail.")
 
-  def _PerformStage(self):
+  def PerformStage(self):
     """Throw the exception to make us fail."""
     raise self.FAIL_EXCEPTION
 
@@ -1203,7 +1203,7 @@ class SkipStage(bs.BuilderStage):
 class SneakyFailStage(bs.BuilderStage):
   """SneakyFailStage exits with an error."""
 
-  def _PerformStage(self):
+  def PerformStage(self):
     """Exit without reporting back."""
     os._exit(1)
 
@@ -1211,7 +1211,7 @@ class SneakyFailStage(bs.BuilderStage):
 class SuicideStage(bs.BuilderStage):
   """SuicideStage kills itself with kill -9."""
 
-  def _PerformStage(self):
+  def PerformStage(self):
     """Exit without reporting back."""
     os.kill(os.getpid(), signal.SIGKILL)
 

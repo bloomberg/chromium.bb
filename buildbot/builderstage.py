@@ -194,11 +194,10 @@ class BuilderStage(object):
     self._PrintLoudly('Finished Stage %s - %s' %
                       (self.name, time.strftime('%H:%M:%S')))
 
-  def _PerformStage(self):
+  def PerformStage(self):
     """Subclassed stages must override this function to perform what they want
     to be done.
     """
-    pass
 
   def _HandleExceptionAsSuccess(self, _exception):
     """Use instead of HandleStageException to ignore an exception."""
@@ -226,7 +225,7 @@ class BuilderStage(object):
     return results_lib.Results.FORGIVEN, None
 
   def _HandleStageException(self, exception):
-    """Called when _PerformStages throws an exception.  Can be overriden.
+    """Called when PerformStage throws an exception.  Can be overriden.
 
     Should return result, description.  Description should be None if result
     is not an exception.
@@ -270,7 +269,7 @@ class BuilderStage(object):
     sys.stderr.flush()
     self._Begin()
     try:
-      self._PerformStage()
+      self.PerformStage()
     except SystemExit as e:
       if e.code != 0:
         result, description = self._HandleStageException(e)
