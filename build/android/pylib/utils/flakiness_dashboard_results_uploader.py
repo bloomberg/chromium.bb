@@ -32,6 +32,7 @@ from webkitpy.layout_tests.layout_package import json_results_generator
 #TODO(craigdh): pylib/utils/ should not depend on pylib/.
 from pylib import cmd_helper
 from pylib import constants
+from pylib.utils import repo_utils
 
 
 # The JSONResultsGenerator gets the filesystem.join operation from the Port
@@ -91,21 +92,11 @@ class JSONResultsGenerator(json_results_generator.JSONResultsGeneratorBase):
         return False
       return _is_git_directory(parent)
 
-    def _get_git_revision(in_directory):
-      """Returns the git hash tag for the given directory.
-
-      Args:
-        in_directory: The directory where git is to be run.
-      """
-      command_line = ['git', 'log', '-1', '--pretty=format:%H']
-      output = cmd_helper.GetCmdOutput(command_line, cwd=in_directory)
-      return output[0:40]
-
     in_directory = os.path.join(constants.CHROME_DIR, in_directory)
 
     if not os.path.exists(os.path.join(in_directory, '.svn')):
       if _is_git_directory(in_directory):
-        return _get_git_revision(in_directory)
+        return repo_utils.GetGitHeadSHA1(in_directory)
       else:
         return ''
 
