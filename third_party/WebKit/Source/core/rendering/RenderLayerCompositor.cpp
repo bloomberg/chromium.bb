@@ -37,6 +37,7 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
+#include "HistogramSupport.h"
 #include "HitTestResult.h"
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
@@ -977,7 +978,17 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
     // Make the layer compositing if necessary, and set up clipping and content layers.
     // Note that we can only do work here that is independent of whether the descendant layers
     // have been processed. computeCompositingRequirements() will already have done the repaint if necessary.
-    
+
+    // Used for gathering UMA data about the effect on memory usage of promoting all layers
+    // that have a webkit-transition on opacity or transform.
+    static double pixelsWithoutPromotingAllTransitions = 0.0;
+    static double pixelsAddedByPromotingAllTransitions = 0.0;
+
+    if (!depth) {
+        pixelsWithoutPromotingAllTransitions = 0.0;
+        pixelsAddedByPromotingAllTransitions = 0.0;
+    }
+
     RenderLayerBacking* layerBacking = layer->backing();
     if (layerBacking) {
         // The compositing state of all our children has been updated already, so now
@@ -1004,6 +1015,12 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
 #endif
         if (layerBacking->hasUnpositionedOverflowControlsLayers())
             layer->positionNewlyCreatedOverflowControls();
+
+        pixelsWithoutPromotingAllTransitions += layer->size().height() * layer->size().width();
+    } else {
+        if (layer->renderer()->style()->transitionForProperty(CSSPropertyOpacity) ||
+            layer->renderer()->style()->transitionForProperty(CSSPropertyWebkitTransform))
+            pixelsAddedByPromotingAllTransitions += layer->size().height() * layer->size().width();
     }
 
     // If this layer has backing, then we are collecting its children, otherwise appending
@@ -1075,6 +1092,11 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         }
 
         childLayersOfEnclosingLayer.append(layerBacking->childForSuperlayers());
+    }
+
+    if (!depth) {
+        int percentageIncreaseInPixels = static_cast<int>(pixelsAddedByPromotingAllTransitions / pixelsWithoutPromotingAllTransitions * 100);
+        HistogramSupport::histogramCustomCounts("Renderer.PixelIncreaseFromTransitions", percentageIncreaseInPixels, 0, 1000, 50);
     }
 }
 
