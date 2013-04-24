@@ -269,6 +269,7 @@ void BluetoothDeviceExperimentalChromeOS::ConnectToService(
 
 void BluetoothDeviceExperimentalChromeOS::ConnectToProfile(
     device::BluetoothProfile* profile,
+    const base::Closure& callback,
     const ErrorCallback& error_callback) {
   // TODO(keybuk): implement
   error_callback.Run();

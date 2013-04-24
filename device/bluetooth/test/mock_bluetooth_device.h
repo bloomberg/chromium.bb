@@ -63,8 +63,9 @@ class MockBluetoothDevice : public BluetoothDevice {
   MOCK_METHOD2(ConnectToService,
                void(const std::string&,
                     const BluetoothDevice::SocketCallback&));
-  MOCK_METHOD2(ConnectToProfile,
+  MOCK_METHOD3(ConnectToProfile,
                void(BluetoothProfile*,
+                    const base::Closure&,
                     const BluetoothDevice::ErrorCallback&));
 
   MOCK_METHOD3(SetOutOfBandPairingData,

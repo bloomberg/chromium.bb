@@ -183,6 +183,7 @@ void BluetoothDeviceWin::ConnectToService(
 
 void BluetoothDeviceWin::ConnectToProfile(
     device::BluetoothProfile* profile,
+    const base::Closure& callback,
     const ErrorCallback& error_callback) {
   // TODO(keybuk): implement
 }

@@ -13,9 +13,11 @@
 #ifdef __OBJC__
 @class BluetoothRFCOMMChannelDelegate;
 @class IOBluetoothRFCOMMChannel;
+@class IOBluetoothSDPServiceRecord;
 #else
 class BluetoothRFCOMMChannelDelegate;
 class IOBluetoothRFCOMMChannel;
+class IOBluetoothSDPServiceRecord;
 #endif
 
 namespace net {
@@ -32,8 +34,13 @@ class BluetoothServiceRecord;
 // This class is an implementation of BluetoothSocket class for OSX platform.
 class BluetoothSocketMac : public BluetoothSocket {
  public:
+  // TODO(youngki): This method is deprecated; remove this method when
+  // BluetoothServiceRecord is removed.
   static scoped_refptr<BluetoothSocket> CreateBluetoothSocket(
       const BluetoothServiceRecord& service_record);
+
+  static scoped_refptr<BluetoothSocket> CreateBluetoothSocket(
+      IOBluetoothSDPServiceRecord* record);
 
   // BluetoothSocket override
   virtual bool Receive(net::GrowableIOBuffer* buffer) OVERRIDE;

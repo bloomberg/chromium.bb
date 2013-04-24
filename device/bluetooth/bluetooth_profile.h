@@ -12,6 +12,7 @@
 
 namespace device {
 
+class BluetoothProfileMac;
 class BluetoothSocket;
 
 // BluetoothProfile represents an implementation of either a client or server
@@ -95,6 +96,8 @@ class BluetoothProfile {
   virtual void SetConnectionCallback(const SocketCallback& callback) = 0;
 
  private:
+  friend class BluetoothProfileMac;
+
   BluetoothProfile();
   virtual ~BluetoothProfile();
 };

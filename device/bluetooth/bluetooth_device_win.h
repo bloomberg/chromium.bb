@@ -56,6 +56,7 @@ class BluetoothDeviceWin : public BluetoothDevice {
       const SocketCallback& callback) OVERRIDE;
   virtual void ConnectToProfile(
       device::BluetoothProfile* profile,
+      const base::Closure& callback,
       const ErrorCallback& error_callback) OVERRIDE;
   virtual void SetOutOfBandPairingData(
       const BluetoothOutOfBandPairingData& data,

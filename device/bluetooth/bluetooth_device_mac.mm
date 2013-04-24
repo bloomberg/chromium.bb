@@ -17,12 +17,13 @@
 #include "base/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_out_of_band_pairing_data.h"
+#include "device/bluetooth/bluetooth_profile_mac.h"
 #include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "device/bluetooth/bluetooth_socket_mac.h"
 
 // Replicate specific 10.7 SDK declarations for building with prior SDKs.
 #if !defined(MAC_OS_X_VERSION_10_7) || \
-MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
 
 @interface IOBluetoothDevice (LionSDKDeclarations)
 - (NSString*)addressString;
@@ -198,8 +199,12 @@ void BluetoothDeviceMac::ConnectToService(
 
 void BluetoothDeviceMac::ConnectToProfile(
     device::BluetoothProfile* profile,
+    const base::Closure& callback,
     const ErrorCallback& error_callback) {
-  // TODO(keybuk): implement
+  if (static_cast<BluetoothProfileMac*>(profile)->Connect(device_))
+    callback.Run();
+  else
+    error_callback.Run();
 }
 
 void BluetoothDeviceMac::SetOutOfBandPairingData(

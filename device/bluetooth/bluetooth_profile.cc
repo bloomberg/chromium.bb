@@ -4,6 +4,11 @@
 
 #include "device/bluetooth/bluetooth_profile.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#include "device/bluetooth/bluetooth_profile_mac.h"
+#endif
+
 #include <string>
 
 namespace device {
@@ -36,9 +41,14 @@ BluetoothProfile::~BluetoothProfile() {
 void BluetoothProfile::Register(const std::string& uuid,
                                 const Options& options,
                                 const ProfileCallback& callback) {
-  // TODO(keybuk): Implement selection of the appropriate BluetoothProfile
-  // subclass just like BluetoothAdapterFactory
-  callback.Run(NULL);
+  BluetoothProfile* profile = NULL;
+
+#if defined(OS_MACOSX)
+  if (base::mac::IsOSLionOrLater())
+    profile = new BluetoothProfileMac(uuid, options.name);
+#endif
+
+  callback.Run(profile);
 }
 
 }  // namespace device

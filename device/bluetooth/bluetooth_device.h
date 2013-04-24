@@ -321,8 +321,10 @@ class BluetoothDevice {
 
   // Attempts to initiate an outgoing connection to this device for the profile
   // identified by |profile|, on success the profile's connection callback
-  // wil be called; on failure |error_callback| will be called.
+  // will be called as well as |callback|; on failure |error_callback| will be
+  // called.
   virtual void ConnectToProfile(BluetoothProfile* profile,
+                                const base::Closure& callback,
                                 const ErrorCallback& error_callback) = 0;
 
   // Sets the Out Of Band pairing data for this device to |data|.  Exactly one

@@ -331,6 +331,7 @@ void BluetoothDeviceChromeOS::ConnectToService(const std::string& service_uuid,
 
 void BluetoothDeviceChromeOS::ConnectToProfile(
     device::BluetoothProfile* profile,
+    const base::Closure& callback,
     const ErrorCallback& error_callback) {
   // TODO(keybuk): implement
 }

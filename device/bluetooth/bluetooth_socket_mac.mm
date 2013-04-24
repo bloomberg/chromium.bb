@@ -6,15 +6,28 @@
 
 #import <IOBluetooth/objc/IOBluetoothDevice.h>
 #import <IOBluetooth/objc/IOBluetoothRFCOMMChannel.h>
+#import <IOBluetooth/objc/IOBluetoothSDPServiceRecord.h>
 
 #include <limits>
 #include <string>
 
+#include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/stringprintf.h"
+#include "base/strings/sys_string_conversions.h"
 #include "device/bluetooth/bluetooth_service_record.h"
 #include "device/bluetooth/bluetooth_service_record_mac.h"
 #include "net/base/io_buffer.h"
+
+// Replicate specific 10.7 SDK declarations for building with prior SDKs.
+#if !defined(MAC_OS_X_VERSION_10_7) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
+
+@interface IOBluetoothDevice (LionSDKDeclarations)
+- (NSString*)addressString;
+@end
+
+#endif  // MAC_OS_X_VERSION_10_7
 
 @interface BluetoothRFCOMMChannelDelegate
     : NSObject <IOBluetoothRFCOMMChannelDelegate> {
@@ -80,6 +93,32 @@ scoped_refptr<BluetoothSocket> BluetoothSocketMac::CreateBluetoothSocket(
     }
   }
   // TODO(youngki): add support for L2CAP sockets as well.
+
+  return scoped_refptr<BluetoothSocketMac>(bluetooth_socket);
+}
+
+// static
+scoped_refptr<BluetoothSocket> BluetoothSocketMac::CreateBluetoothSocket(
+    IOBluetoothSDPServiceRecord* record) {
+  BluetoothSocketMac* bluetooth_socket = NULL;
+  uint8 rfcomm_channel_id;
+  if ([record getRFCOMMChannelID:&rfcomm_channel_id] == kIOReturnSuccess) {
+    IOBluetoothDevice* device = [record device];
+    IOBluetoothRFCOMMChannel* rfcomm_channel;
+    IOReturn status =
+        [device openRFCOMMChannelAsync:&rfcomm_channel
+                         withChannelID:rfcomm_channel_id
+                              delegate:nil];
+    if (status == kIOReturnSuccess) {
+      bluetooth_socket = new BluetoothSocketMac(rfcomm_channel);
+    } else {
+      LOG(ERROR) << "Failed to connect bluetooth socket ("
+          << base::SysNSStringToUTF8([device addressString]) << "): (" << status
+          << ")";
+    }
+  }
+
+  // TODO(youngki): Add support for L2CAP sockets as well.
 
   return scoped_refptr<BluetoothSocketMac>(bluetooth_socket);
 }
