@@ -55,8 +55,7 @@ DesktopRootWindowHostWin::DesktopRootWindowHostWin(
     internal::NativeWidgetDelegate* native_widget_delegate,
     DesktopNativeWidgetAura* desktop_native_widget_aura,
     const gfx::Rect& initial_bounds)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          message_handler_(new HWNDMessageHandler(this))),
+    : message_handler_(new HWNDMessageHandler(this)),
       native_widget_delegate_(native_widget_delegate),
       desktop_native_widget_aura_(desktop_native_widget_aura),
       root_window_host_delegate_(NULL),

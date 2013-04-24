@@ -234,7 +234,7 @@ void ShadowController::Impl::CreateShadowForWindow(aura::Window* window) {
 }
 
 ShadowController::Impl::Impl()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+    : observer_manager_(this) {
   aura::Env::GetInstance()->AddObserver(this);
 }
 

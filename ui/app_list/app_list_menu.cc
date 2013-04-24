@@ -13,7 +13,7 @@
 namespace app_list {
 
 AppListMenu::AppListMenu(AppListViewDelegate* delegate)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(menu_model_(this)),
+    : menu_model_(this),
       delegate_(delegate) {
   InitMenu();
 }

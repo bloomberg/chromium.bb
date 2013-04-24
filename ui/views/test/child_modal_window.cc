@@ -108,8 +108,8 @@ ui::ModalType ChildModalWindow::GetModalType() const {
 }
 
 ChildModalParent::ChildModalParent(gfx::NativeView context)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(button_(new LabelButton(
-          this, ASCIIToUTF16("Show/Hide Child Modal Window")))),
+    : button_(new LabelButton(this,
+                              ASCIIToUTF16("Show/Hide Child Modal Window"))),
       textfield_(new Textfield),
       host_(new NativeViewHost),
       modal_parent_(NULL),

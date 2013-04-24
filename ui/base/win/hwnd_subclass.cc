@@ -122,7 +122,7 @@ void HWNDSubclass::RemoveFilter(HWNDMessageFilter* filter) {
 HWNDSubclass::HWNDSubclass(HWND target)
     : target_(target),
       original_wnd_proc_(GetCurrentWndProc(target)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(prop_(target, kHWNDSubclassKey, this)) {
+      prop_(target, kHWNDSubclassKey, this) {
   ui::SetWindowProc(target_, &WndProc);
 }
 

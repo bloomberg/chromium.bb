@@ -69,7 +69,7 @@ const int NativeTextfieldViews::kCursorBlinkCycleMs = 1000;
 
 NativeTextfieldViews::NativeTextfieldViews(Textfield* parent)
     : textfield_(parent),
-      ALLOW_THIS_IN_INITIALIZER_LIST(model_(new TextfieldViewsModel(this))),
+      model_(new TextfieldViewsModel(this)),
       text_border_(new FocusableBorder()),
       is_cursor_visible_(false),
       is_drop_cursor_visible_(false),

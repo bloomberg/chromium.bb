@@ -48,7 +48,7 @@ class TestCompositorHostLinux : public TestCompositorHost,
 
 TestCompositorHostLinux::TestCompositorHostLinux(const gfx::Rect& bounds)
     : bounds_(bounds),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      method_factory_(this) {
 }
 
 TestCompositorHostLinux::~TestCompositorHostLinux() {

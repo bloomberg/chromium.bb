@@ -71,7 +71,7 @@ void SimpleMenuModel::Delegate::MenuClosed(SimpleMenuModel* /*source*/) {
 SimpleMenuModel::SimpleMenuModel(Delegate* delegate)
     : delegate_(delegate),
       menu_model_delegate_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      method_factory_(this) {
 }
 
 SimpleMenuModel::~SimpleMenuModel() {

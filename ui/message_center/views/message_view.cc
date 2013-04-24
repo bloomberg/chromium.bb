@@ -225,7 +225,7 @@ MenuModel::MenuModel(message_center::MessageCenter* message_center,
                      const std::string& notification_id,
                      const string16& display_source,
                      const std::string& extension_id)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(ui::SimpleMenuModel(this)),
+    : ui::SimpleMenuModel(this),
       message_center_(message_center),
       notification_id_(notification_id) {
   // Add 'disable notifications' menu item.

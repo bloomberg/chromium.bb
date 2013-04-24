@@ -142,9 +142,9 @@ RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
 
 RootWindow::RootWindow(const CreateParams& params)
     : Window(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(host_(CreateHost(this, params))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(schedule_paint_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(event_factory_(this)),
+      host_(CreateHost(this, params)),
+      schedule_paint_factory_(this),
+      event_factory_(this),
       mouse_button_flags_(0),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
@@ -152,15 +152,14 @@ RootWindow::RootWindow(const CreateParams& params)
       mouse_moved_handler_(NULL),
       mouse_event_dispatch_target_(NULL),
       event_dispatch_target_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          gesture_recognizer_(ui::GestureRecognizer::Create(this))),
+      gesture_recognizer_(ui::GestureRecognizer::Create(this)),
       synthesize_mouse_move_(false),
       waiting_on_compositing_end_(false),
       draw_on_compositing_end_(false),
       defer_draw_scheduling_(false),
       mouse_move_hold_count_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(held_event_factory_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(repostable_event_factory_(this)) {
+      held_event_factory_(this),
+      repostable_event_factory_(this) {
   SetName("RootWindow");
 
   compositor_.reset(new ui::Compositor(this, host_->GetAcceleratedWidget()));

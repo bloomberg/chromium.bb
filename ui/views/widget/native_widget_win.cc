@@ -83,8 +83,7 @@ NativeWidgetWin::NativeWidgetWin(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       has_non_client_view_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          message_handler_(new HWNDMessageHandler(this))) {
+      message_handler_(new HWNDMessageHandler(this)) {
 }
 
 NativeWidgetWin::~NativeWidgetWin() {

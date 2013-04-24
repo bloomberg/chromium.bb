@@ -42,8 +42,8 @@ BaseScrollBar::BaseScrollBar(bool horizontal, BaseScrollBarThumb* thumb)
       contents_scroll_offset_(0),
       thumb_track_state_(CustomButton::STATE_NORMAL),
       last_scroll_amount_(SCROLL_NONE),
-      ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-          base::Bind(&BaseScrollBar::TrackClicked, base::Unretained(this)))),
+      repeater_(base::Bind(&BaseScrollBar::TrackClicked,
+                           base::Unretained(this))),
       context_menu_mouse_position_(0) {
   AddChildView(thumb_);
 

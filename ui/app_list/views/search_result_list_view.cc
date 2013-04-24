@@ -27,7 +27,7 @@ SearchResultListView::SearchResultListView(
       results_(NULL),
       last_visible_index_(0),
       selected_index_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(update_factory_(this)) {
+      update_factory_(this) {
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
 

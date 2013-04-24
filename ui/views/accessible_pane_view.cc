@@ -43,7 +43,7 @@ class AccessiblePaneViewFocusSearch : public FocusSearch {
 AccessiblePaneView::AccessiblePaneView()
     : pane_has_focus_(false),
       allow_deactivate_on_esc_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      method_factory_(this),
       focus_manager_(NULL),
       home_key_(ui::VKEY_HOME, ui::EF_NONE),
       end_key_(ui::VKEY_END, ui::EF_NONE),

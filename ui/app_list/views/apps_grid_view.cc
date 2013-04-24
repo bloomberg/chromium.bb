@@ -110,7 +110,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate,
       drag_pointer_(NONE),
       page_flip_target_(-1),
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
-      ALLOW_THIS_IN_INITIALIZER_LIST(bounds_animator_(this)) {
+      bounds_animator_(this) {
   pagination_model_->AddObserver(this);
   AddChildView(page_switcher_view_);
 }

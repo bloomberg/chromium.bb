@@ -66,9 +66,9 @@ void SetRestoreBounds(aura::Window* window, const gfx::Rect& bounds) {
 
 NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      window_(new aura::Window(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      close_widget_factory_(this),
       can_activate_(true),
       destroying_(false),
       cursor_(gfx::kNullCursor),

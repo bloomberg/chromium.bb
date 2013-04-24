@@ -50,9 +50,8 @@ class AutorepeatButton : public ImageButton {
  public:
   explicit AutorepeatButton(ButtonListener* listener)
       : ImageButton(listener),
-        ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-            base::Bind(&AutorepeatButton::NotifyClick,
-                       base::Unretained(this)))) {
+        repeater_(base::Bind(&AutorepeatButton::NotifyClick,
+                             base::Unretained(this))) {
   }
   virtual ~AutorepeatButton() {}
 
@@ -170,8 +169,8 @@ class BitmapScrollBarThumb : public BaseScrollBarThumb {
 
 BitmapScrollBar::BitmapScrollBar(bool horizontal, bool show_scroll_buttons)
     : BaseScrollBar(horizontal, new BitmapScrollBarThumb(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(prev_button_(new AutorepeatButton(this))),
-      ALLOW_THIS_IN_INITIALIZER_LIST(next_button_(new AutorepeatButton(this))),
+      prev_button_(new AutorepeatButton(this)),
+      next_button_(new AutorepeatButton(this)),
       show_scroll_buttons_(show_scroll_buttons) {
   if (!show_scroll_buttons_) {
     prev_button_->SetVisible(false);

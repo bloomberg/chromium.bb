@@ -60,7 +60,7 @@ FocusController::FocusController(FocusRules* rules)
       updating_focus_(false),
       updating_activation_(false),
       rules_(rules),
-      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+      observer_manager_(this) {
   DCHECK(rules);
 }
 

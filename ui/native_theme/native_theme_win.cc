@@ -350,7 +350,7 @@ NativeThemeWin::NativeThemeWin()
       set_theme_properties_(NULL),
       is_theme_active_(NULL),
       get_theme_int_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(color_change_listener_(this)) {
+      color_change_listener_(this) {
   if (theme_dll_) {
     draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
         GetProcAddress(theme_dll_, "DrawThemeBackground"));

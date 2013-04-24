@@ -12,9 +12,8 @@ namespace views {
 
 BaseScrollBarButton::BaseScrollBarButton(ButtonListener* listener)
     : CustomButton(listener),
-      ALLOW_THIS_IN_INITIALIZER_LIST(repeater_(
-          base::Bind(&BaseScrollBarButton::RepeaterNotifyClick,
-                     base::Unretained(this)))) {
+      repeater_(base::Bind(&BaseScrollBarButton::RepeaterNotifyClick,
+                           base::Unretained(this))) {
 }
 
 BaseScrollBarButton::~BaseScrollBarButton() {

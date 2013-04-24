@@ -66,7 +66,7 @@ RootView::RootView(Widget* widget)
       touch_pressed_handler_(NULL),
       gesture_handler_(NULL),
       scroll_gesture_handler_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(focus_search_(this, false, false)),
+      focus_search_(this, false, false),
       focus_traversable_parent_(NULL),
       focus_traversable_parent_view_(NULL),
       event_dispatch_target_(NULL) {

@@ -41,8 +41,7 @@ SubmenuView::SubmenuView(MenuItemView* parent)
       max_accelerator_width_(0),
       minimum_preferred_width_(0),
       resize_open_menu_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          scroll_animator_(new ScrollAnimator(this))) {
+      scroll_animator_(new ScrollAnimator(this)) {
   DCHECK(parent);
   // We'll delete ourselves, otherwise the ScrollView would delete us on close.
   set_owned_by_client();

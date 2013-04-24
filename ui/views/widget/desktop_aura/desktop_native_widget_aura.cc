@@ -159,10 +159,10 @@ class DesktopNativeWidgetAuraStackingClient :
 DesktopNativeWidgetAura::DesktopNativeWidgetAura(
     internal::NativeWidgetDelegate* delegate)
     : ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      close_widget_factory_(this),
       can_activate_(true),
       desktop_root_window_host_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(window_(new aura::Window(this))),
+      window_(new aura::Window(this)),
       native_widget_delegate_(delegate),
       last_drop_operation_(ui::DragDropTypes::DRAG_NONE),
       restore_focus_on_activate_(false) {

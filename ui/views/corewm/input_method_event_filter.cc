@@ -17,8 +17,7 @@ namespace corewm {
 // InputMethodEventFilter, public:
 
 InputMethodEventFilter::InputMethodEventFilter(gfx::AcceleratedWidget widget)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          input_method_(ui::CreateInputMethod(this, widget))),
+    : input_method_(ui::CreateInputMethod(this, widget)),
       target_root_window_(NULL) {
   // TODO(yusukes): Check if the root window is currently focused and pass the
   // result to Init().

@@ -370,9 +370,8 @@ class HWNDMessageHandler::ScopedRedrawLock {
 
 HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
     : delegate_(delegate),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          fullscreen_handler_(new FullscreenHandler)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(close_widget_factory_(this)),
+      fullscreen_handler_(new FullscreenHandler),
+      close_widget_factory_(this),
       remove_standard_frame_(false),
       use_system_default_icon_(false),
       restore_focus_when_enabled_(false),
@@ -383,11 +382,11 @@ HWNDMessageHandler::HWNDMessageHandler(HWNDMessageHandlerDelegate* delegate)
       lock_updates_count_(0),
       destroyed_(NULL),
       ignore_window_pos_changes_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(ignore_pos_changes_factory_(this)),
+      ignore_pos_changes_factory_(this),
       last_monitor_(NULL),
       use_layered_buffer_(false),
       layered_alpha_(255),
-      ALLOW_THIS_IN_INITIALIZER_LIST(paint_layered_window_factory_(this)),
+      paint_layered_window_factory_(this),
       can_update_layered_window_(true),
       is_first_nccalc_(true) {
 }

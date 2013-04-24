@@ -11,8 +11,7 @@ namespace views {
 
 Menu2::Menu2(ui::MenuModel* model)
     : model_(model),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          wrapper_(MenuWrapper::CreateWrapper(model))) {
+      wrapper_(MenuWrapper::CreateWrapper(model)) {
   Rebuild();
 }
 

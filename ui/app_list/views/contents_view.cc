@@ -49,8 +49,7 @@ ContentsView::ContentsView(AppListMainView* app_list_main_view,
     : show_state_(SHOW_APPS),
       pagination_model_(pagination_model),
       view_model_(new views::ViewModel),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          bounds_animator_(new views::BoundsAnimator(this))) {
+      bounds_animator_(new views::BoundsAnimator(this)) {
   pagination_model_->SetTransitionDurations(
       kPageTransitionDurationInMs,
       kOverscrollPageTransitionDurationMs);

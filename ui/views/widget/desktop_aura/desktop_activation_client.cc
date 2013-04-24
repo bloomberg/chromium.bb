@@ -28,7 +28,7 @@ DesktopActivationClient::DesktopActivationClient(aura::RootWindow* root_window)
     : root_window_(root_window),
       current_active_(NULL),
       updating_activation_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+      observer_manager_(this) {
   aura::client::GetFocusClient(root_window_)->AddObserver(this);
   aura::client::SetActivationClient(root_window_, this);
   root_window->AddPreTargetHandler(this);

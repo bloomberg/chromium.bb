@@ -98,9 +98,8 @@ NativeTextfieldWin::NativeTextfieldWin(Textfield* textfield)
       ime_composition_length_(0),
       container_view_(new NativeViewHost),
       bg_color_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          tsf_event_router_(base::win::IsTSFAwareRequired() ?
-              new ui::TSFEventRouter(this) : NULL)) {
+      tsf_event_router_(base::win::IsTSFAwareRequired() ?
+          new ui::TSFEventRouter(this) : NULL) {
   if (!loaded_libarary_module_) {
     // msftedit.dll is RichEdit ver 4.1.
     // This version is available from WinXP SP1 and has TSF support.

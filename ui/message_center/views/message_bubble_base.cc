@@ -25,7 +25,7 @@ const SkColor MessageBubbleBase::kBackgroundColor =
 MessageBubbleBase::MessageBubbleBase(MessageCenter* message_center)
     : message_center_(message_center),
       bubble_view_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       max_height_(kMessageBubbleBaseDefaultMaxHeight) {
 }
 

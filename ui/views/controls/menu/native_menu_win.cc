@@ -398,7 +398,7 @@ NativeMenuWin::NativeMenuWin(ui::MenuModel* model, HWND system_menu_for)
       menu_action_(MENU_ACTION_NONE),
       menu_to_select_(NULL),
       position_to_select_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(menu_to_select_factory_(this)),
+      menu_to_select_factory_(this),
       parent_(NULL),
       destroyed_flag_(NULL) {
 }

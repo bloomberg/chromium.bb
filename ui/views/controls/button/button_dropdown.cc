@@ -37,7 +37,7 @@ ButtonDropDown::ButtonDropDown(ButtonListener* listener, ui::MenuModel* model)
       model_(model),
       menu_showing_(false),
       y_position_on_lbuttondown_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_factory_(this)) {
+      show_menu_factory_(this) {
   set_context_menu_controller(this);
 }
 

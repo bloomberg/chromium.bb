@@ -21,7 +21,7 @@ static const int kTrackHoverDurationMs = 400;
 
 GlowHoverController::GlowHoverController(views::View* view)
     : view_(view),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
+      animation_(this),
       opacity_scale_(kTrackOpacityScale) {
   animation_.set_delegate(this);
 }

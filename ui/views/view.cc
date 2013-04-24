@@ -186,8 +186,7 @@ View::View()
       accessibility_focusable_(false),
       context_menu_controller_(NULL),
       drag_controller_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(post_dispatch_handler_(
-          new internal::PostEventDispatchHandler(this))),
+      post_dispatch_handler_(new internal::PostEventDispatchHandler(this)),
       native_view_accessibility_(NULL) {
   AddPostTargetHandler(post_dispatch_handler_.get());
 }

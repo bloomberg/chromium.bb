@@ -23,7 +23,7 @@ class MouseWatcher::Observer : public MessageLoopForUI::Observer {
  public:
   explicit Observer(MouseWatcher* mouse_watcher)
       : mouse_watcher_(mouse_watcher),
-        ALLOW_THIS_IN_INITIALIZER_LIST(notify_listener_factory_(this)) {
+        notify_listener_factory_(this) {
     MessageLoopForUI::current()->AddObserver(this);
   }
 
