@@ -209,8 +209,12 @@
     "description": "Performance on [spaceport.io's perfmarks benchmark](http://spaceport.io/community/perfmarks). This test performs 3 animations (rotate, translate, scale) using a variety of methods (css, webgl, canvas, etc) and reports the number of objects that can be simultaneously animated while still achieving 30FPS.",
     "code": ["chrome/src/tools/perf/perf_tools/spaceport.py"]
   },
+  "startup_benchmark": {
+    "description": "Measures startup time under various scenarios. This is a port of our old startup_test target to Telemetry.",
+    "code": ["chrome/src/tools/perf/perf_tools/startup_benchmark.py"]
+  },
   "startup_test": {
-    "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles.",
+    "description": "Measures startup and shutdown time for 1 tab, 5 tabs, and 10 tabs under a several different user profiles. These tests are in the process of being ported to Telemetry - see the startup_benchmark test.",
     "code": ["chrome/src/chrome/test/perf/startup_test.cc"]
   },
   "sunspider": {
