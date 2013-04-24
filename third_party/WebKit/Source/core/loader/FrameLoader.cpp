@@ -1139,7 +1139,6 @@ void FrameLoader::loadURL(const KURL& newURL, const String& referrer, const Stri
         RefPtr<SecurityOrigin> referrerOrigin = SecurityOrigin::createFromString(referrer);
         addHTTPOriginIfNeeded(request, referrerOrigin->toString());
     }
-    addExtraFieldsToRequest(request, newLoadType, true);
     if (newLoadType == FrameLoadTypeReload || newLoadType == FrameLoadTypeReloadFromOrigin)
         request.setCachePolicy(ReloadIgnoringCacheData);
 
@@ -1232,7 +1231,6 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
 void FrameLoader::load(DocumentLoader* newDocumentLoader)
 {
     ResourceRequest& r = newDocumentLoader->request();
-    addExtraFieldsToMainResourceRequest(r);
     FrameLoadType type;
 
     if (shouldTreatURLAsSameAsCurrent(newDocumentLoader->originalRequest().url())) {
@@ -2140,25 +2138,15 @@ void FrameLoader::detachViewsAndDocumentLoader()
     setDocumentLoader(0);
     m_client->detachedFromParent();
 }
-    
-void FrameLoader::addExtraFieldsToSubresourceRequest(ResourceRequest& request)
-{
-    addExtraFieldsToRequest(request, m_loadType, false);
-}
 
-void FrameLoader::addExtraFieldsToMainResourceRequest(ResourceRequest& request)
+void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request)
 {
-    // FIXME: Using m_loadType seems wrong for some callers.
-    // If we are only preparing to load the main resource, that is previous load's load type!
-    addExtraFieldsToRequest(request, m_loadType, true);
-}
+    bool isMainResource = (request.targetType() == ResourceRequest::TargetIsMainFrame) || (request.targetType() == ResourceRequest::TargetIsSubframe);
 
-void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request, FrameLoadType loadType, bool mainResource)
-{
     // Don't set the cookie policy URL if it's already been set.
     // But make sure to set it on all requests regardless of protocol, as it has significance beyond the cookie policy (<rdar://problem/6616664>).
     if (request.firstPartyForCookies().isEmpty()) {
-        if (mainResource && isLoadingMainFrame())
+        if (isMainResource && isLoadingMainFrame())
             request.setFirstPartyForCookies(request.url());
         else if (Document* document = m_frame->document())
             request.setFirstPartyForCookies(document->firstPartyForCookies());
@@ -2170,7 +2158,7 @@ void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request, FrameLoadTyp
 
     applyUserAgent(request);
 
-    if (!mainResource) {
+    if (!isMainResource) {
         if (request.isConditional())
             request.setCachePolicy(ReloadIgnoringCacheData);
         else if (documentLoader()->isLoadingInAPISense()) {
@@ -2191,19 +2179,19 @@ void FrameLoader::addExtraFieldsToRequest(ResourceRequest& request, FrameLoadTyp
 
     // FIXME: Other FrameLoader functions have duplicated code for setting cache policy of main request when reloading.
     // It seems better to manage it explicitly than to hide the logic inside addExtraFieldsToRequest().
-    } else if (loadType == FrameLoadTypeReload || loadType == FrameLoadTypeReloadFromOrigin || request.isConditional())
+    } else if (m_loadType == FrameLoadTypeReload || m_loadType == FrameLoadTypeReloadFromOrigin || request.isConditional())
         request.setCachePolicy(ReloadIgnoringCacheData);
 
     if (request.cachePolicy() == ReloadIgnoringCacheData) {
-        if (loadType == FrameLoadTypeReload)
+        if (m_loadType == FrameLoadTypeReload)
             request.setHTTPHeaderField("Cache-Control", "max-age=0");
-        else if (loadType == FrameLoadTypeReloadFromOrigin) {
+        else if (m_loadType == FrameLoadTypeReloadFromOrigin) {
             request.setHTTPHeaderField("Cache-Control", "no-cache");
             request.setHTTPHeaderField("Pragma", "no-cache");
         }
     }
     
-    if (mainResource)
+    if (isMainResource)
         request.setHTTPAccept(defaultAcceptHeader);
 
     // Make sure we send the Origin header.
@@ -2258,7 +2246,6 @@ void FrameLoader::loadPostRequest(const ResourceRequest& inRequest, const String
     workingResourceRequest.setHTTPMethod("POST");
     workingResourceRequest.setHTTPBody(formData);
     workingResourceRequest.setHTTPContentType(contentType);
-    addExtraFieldsToRequest(workingResourceRequest, loadType, true);
 
     NavigationAction action(workingResourceRequest, loadType, true, event);
 
@@ -2294,8 +2281,8 @@ unsigned long FrameLoader::loadResourceSynchronously(const ResourceRequest& requ
 
     if (Page* page = m_frame->page())
         initialRequest.setFirstPartyForCookies(page->mainFrame()->loader()->documentLoader()->request().url());
-    
-    addExtraFieldsToSubresourceRequest(initialRequest);
+
+    addExtraFieldsToRequest(initialRequest);
 
     unsigned long identifier = 0;    
     ResourceRequest newRequest(initialRequest);
@@ -2785,10 +2772,6 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
         request.setHTTPContentType(item->formContentType());
         RefPtr<SecurityOrigin> securityOrigin = SecurityOrigin::createFromString(item->referrer());
         addHTTPOriginIfNeeded(request, securityOrigin->toString());
-
-        // Make sure to add extra fields to the request after the Origin header is added for the FormData case.
-        // See https://bugs.webkit.org/show_bug.cgi?id=22194 for more discussion.
-        addExtraFieldsToRequest(request, loadType, true);
         
         // FIXME: Slight hack to test if the NSURL cache contains the page we're going to.
         // We want to know this before talking to the policy delegate, since it affects whether 
@@ -2826,8 +2809,6 @@ void FrameLoader::loadDifferentDocumentItem(HistoryItem* item, FrameLoadType loa
             default:
                 ASSERT_NOT_REACHED();
         }
-
-        addExtraFieldsToRequest(request, loadType, true);
 
         ResourceRequest requestForOriginalURL(request);
         requestForOriginalURL.setURL(itemOriginalURL);

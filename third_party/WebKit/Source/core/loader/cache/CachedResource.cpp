@@ -33,15 +33,11 @@
 #include "CrossOriginAccessControl.h"
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "InspectorInstrumentation.h"
 #include "KURL.h"
 #include "Logging.h"
 #include "PurgeableBuffer.h"
 #include "ResourceHandle.h"
-#include "SecurityOrigin.h"
-#include "SecurityPolicy.h"
 #include "SharedBuffer.h"
 #include "ResourceLoader.h"
 #include "WebCoreMemoryInstrumentation.h"
@@ -141,38 +137,6 @@ static ResourceLoadPriority defaultPriorityForResourceType(CachedResource::Type 
     return ResourceLoadPriorityLow;
 }
 
-static ResourceRequest::TargetType cachedResourceTypeToTargetType(CachedResource::Type type)
-{
-    switch (type) {
-    case CachedResource::MainResource:
-        return ResourceRequest::TargetIsMainFrame;
-    case CachedResource::CSSStyleSheet:
-    case CachedResource::XSLStyleSheet:
-        return ResourceRequest::TargetIsStyleSheet;
-    case CachedResource::Script: 
-        return ResourceRequest::TargetIsScript;
-    case CachedResource::FontResource:
-        return ResourceRequest::TargetIsFontResource;
-    case CachedResource::ImageResource:
-        return ResourceRequest::TargetIsImage;
-    case CachedResource::ShaderResource:
-    case CachedResource::RawResource:
-        return ResourceRequest::TargetIsSubresource;    
-    case CachedResource::LinkPrefetch:
-        return ResourceRequest::TargetIsPrefetch;
-    case CachedResource::LinkSubresource:
-        return ResourceRequest::TargetIsSubresource;
-    case CachedResource::TextTrackResource:
-        return ResourceRequest::TargetIsTextTrack;
-#if ENABLE(SVG)
-    case CachedResource::SVGDocumentResource:
-        return ResourceRequest::TargetIsImage;
-#endif
-    }
-    ASSERT_NOT_REACHED();
-    return ResourceRequest::TargetIsSubresource;
-}
-
 DEFINE_DEBUG_ONLY_GLOBAL(RefCountedLeakCounter, cachedResourceLeakCounter, ("CachedResource"));
 
 CachedResource::CachedResource(const ResourceRequest& request, Type type)
@@ -247,51 +211,10 @@ void CachedResource::failBeforeStarting()
     error(CachedResource::LoadError);
 }
 
-void CachedResource::addAdditionalRequestHeaders(CachedResourceLoader* cachedResourceLoader)
-{
-    // Note: We skip the Content-Security-Policy check here because we check
-    // the Content-Security-Policy at the CachedResourceLoader layer so we can
-    // handle different resource types differently.
-
-    FrameLoader* frameLoader = cachedResourceLoader->frame()->loader();
-    String outgoingReferrer;
-    String outgoingOrigin;
-    if (m_resourceRequest.httpReferrer().isNull()) {
-        outgoingReferrer = frameLoader->outgoingReferrer();
-        outgoingOrigin = frameLoader->outgoingOrigin();
-    } else {
-        outgoingReferrer = m_resourceRequest.httpReferrer();
-        outgoingOrigin = SecurityOrigin::createFromString(outgoingReferrer)->toString();
-    }
-
-    outgoingReferrer = SecurityPolicy::generateReferrerHeader(cachedResourceLoader->document()->referrerPolicy(), m_resourceRequest.url(), outgoingReferrer);
-    if (outgoingReferrer.isEmpty())
-        m_resourceRequest.clearHTTPReferrer();
-    else if (!m_resourceRequest.httpReferrer())
-        m_resourceRequest.setHTTPReferrer(outgoingReferrer);
-    FrameLoader::addHTTPOriginIfNeeded(m_resourceRequest, outgoingOrigin);
-
-    frameLoader->addExtraFieldsToSubresourceRequest(m_resourceRequest);
-}
-
 void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const ResourceLoaderOptions& options)
 {
-    if (!cachedResourceLoader->frame()) {
-        failBeforeStarting();
-        return;
-    }
-
-    FrameLoader* frameLoader = cachedResourceLoader->frame()->loader();
-    if (options.securityCheck == DoSecurityCheck && (frameLoader->state() == FrameStateProvisional || !frameLoader->activeDocumentLoader() || frameLoader->activeDocumentLoader()->isStopping())) {
-        failBeforeStarting();
-        return;
-    }
-
     m_options = options;
     m_loading = true;
-
-    if (m_resourceRequest.targetType() == ResourceRequest::TargetIsUnspecified)
-        m_resourceRequest.setTargetType(cachedResourceTypeToTargetType(type()));
 
     if (!accept().isEmpty())
         m_resourceRequest.setHTTPAccept(accept());
@@ -316,9 +239,6 @@ void CachedResource::load(CachedResourceLoader* cachedResourceLoader, const Reso
     if (type() == CachedResource::LinkPrefetch || type() == CachedResource::LinkSubresource)
         m_resourceRequest.setHTTPHeaderField("Purpose", "prefetch");
     m_resourceRequest.setPriority(loadPriority());
-
-    if (type() != MainResource)
-        addAdditionalRequestHeaders(cachedResourceLoader);
 
     // FIXME: It's unfortunate that the cache layer and below get to know anything about fragment identifiers.
     // We should look into removing the expectation of that knowledge from the platform network stacks.
