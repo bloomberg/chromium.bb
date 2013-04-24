@@ -443,6 +443,9 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyMaxWidth:
     case CSSPropertyMinHeight:
     case CSSPropertyMinWidth:
+#if ENABLE(CSS_COMPOSITING)
+    case CSSPropertyMixBlendMode:
+#endif
     case CSSPropertyOpacity:
     case CSSPropertyOutline:
     case CSSPropertyOutlineColor:
@@ -554,9 +557,6 @@ bool CSSProperty::isInheritedProperty(CSSPropertyID propertyID)
     case CSSPropertyWebkitColumnWidth:
     case CSSPropertyWebkitColumns:
     case CSSPropertyWebkitFilter:
-#if ENABLE(CSS_COMPOSITING)
-    case CSSPropertyWebkitBlendMode:
-#endif
     case CSSPropertyWebkitAlignContent:
     case CSSPropertyWebkitAlignItems:
     case CSSPropertyWebkitAlignSelf:

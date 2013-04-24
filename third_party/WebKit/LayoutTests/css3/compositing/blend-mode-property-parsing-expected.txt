@@ -1,4 +1,4 @@
-Test the parsing of the -webkit-blend-mode property.
+Test the parsing of the mix-blend-mode property.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
@@ -7,7 +7,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 Basic reference : normal
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be normal (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be normal (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -15,7 +15,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : multiply
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be multiply (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be multiply (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -23,7 +23,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : screen
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be screen (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be screen (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -31,7 +31,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : overlay
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be overlay (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be overlay (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -39,7 +39,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : darken
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be darken (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be darken (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -47,7 +47,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : lighten
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be lighten (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be lighten (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -55,7 +55,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : color-dodge
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be color-dodge (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be color-dodge (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -63,7 +63,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : color-burn
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be color-burn (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be color-burn (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -71,7 +71,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : hard-light
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be hard-light (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be hard-light (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -79,7 +79,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : soft-light
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be soft-light (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be soft-light (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -87,7 +87,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : difference
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be difference (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be difference (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -95,7 +95,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : exclusion
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be exclusion (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be exclusion (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -103,7 +103,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : hue
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be hue (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be hue (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -111,7 +111,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : saturation
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be saturation (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be saturation (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -119,7 +119,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : color
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be color (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be color (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null
@@ -127,7 +127,7 @@ FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstr
 Basic reference : luminosity
 PASS cssRule.type is 1
 FAIL declaration.length should be 1. Was 0.
-FAIL declaration.getPropertyValue('-webkit-blend-mode') should be luminosity (of type string). Was null (of type object).
+FAIL declaration.getPropertyValue('mix-blend-mode') should be luminosity (of type string). Was null (of type object).
 FAIL jsWrapperClass(blendModeRule) should be CSSPrimitiveValue. Was [null].
 FAIL jsWrapperClass(blendModeRule.__proto__) should be CSSPrimitiveValuePrototype. Threw exception TypeError: Cannot read property '__proto__' of null
 FAIL jsWrapperClass(blendModeRule.constructor) should be CSSPrimitiveValueConstructor. Threw exception TypeError: Cannot read property 'constructor' of null

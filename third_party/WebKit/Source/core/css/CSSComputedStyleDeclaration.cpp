@@ -154,6 +154,9 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyMaxWidth,
     CSSPropertyMinHeight,
     CSSPropertyMinWidth,
+#if ENABLE(CSS_COMPOSITING)
+    CSSPropertyMixBlendMode,
+#endif
     CSSPropertyOpacity,
     CSSPropertyOrphans,
     CSSPropertyOutlineColor,
@@ -222,9 +225,6 @@ static const CSSPropertyID computedProperties[] = {
     CSSPropertyWebkitBackgroundComposite,
     CSSPropertyWebkitBackgroundOrigin,
     CSSPropertyWebkitBackgroundSize,
-#if ENABLE(CSS_COMPOSITING)
-    CSSPropertyWebkitBlendMode,
-#endif
     CSSPropertyWebkitBorderFit,
     CSSPropertyWebkitBorderHorizontalSpacing,
     CSSPropertyWebkitBorderImage,
@@ -2594,7 +2594,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
         case CSSPropertyWebkitFilter:
             return valueForFilter(renderer, style.get());
 #if ENABLE(CSS_COMPOSITING)
-        case CSSPropertyWebkitBlendMode:
+        case CSSPropertyMixBlendMode:
             return cssValuePool().createValue(style->blendMode());
             
         case CSSPropertyBackgroundBlendMode: {
