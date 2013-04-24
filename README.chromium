@@ -3,7 +3,7 @@ URL: http://ffmpeg.org/
 License: LGPL 2.1
 License File: LICENSE
 Upstream Git: git://source.ffmpeg.org/ffmpeg.git
-Last Upstream Merge: 5b802cf567a0ee7a2990e08d08f8aa0abffbb7d2, Mar 1 2013
+Last Upstream Merge: 100184ccffbf8a25098a943b71b1cd2e599de2ec, Apr 24 2013
 
 This file documents the layout of the Chromium copy of FFmpeg git, some common
 tasks, how to produce the FFmpeg include directory, and how to create the
@@ -99,7 +99,8 @@ The upstream merge process follows the normal Git merge process:
   # If conflicts:
   git mergetool
 
-  <Follow rest of "Submitting changes to Chromium's FFmpeg git repository.">
+  <Except for a different push method, follow rest of "Submitting changes to
+  Chromium's FFmpeg git repository.">
 
   # Use git push for submission so commit history is kept.  Might require merge
   # approval on your Gerrit account.  Do not commit any other way.
@@ -250,8 +251,8 @@ Here is a list of gotchas that have shown up.
      and include it by default.  FFmpeg used by chromium does not depend on this
      library, and the lib may not exist on target despite existing in the build
      environment.  Hence, we need to change CONFIG_ICONV to 0 in the config.h
-     (and config.asm where appropriate.)  See munge_config_iconv.sh, which
-     is used by build_ffmpeg.sh to automate this.
+     (and config.asm where appropriate.)  build_ffmpeg.sh does this with
+     configure parameter --disable-iconv.  See http://crbug.com/223295
 
 
 Short Directions:
@@ -323,11 +324,8 @@ Detailed Directions:
      on config.h files for other platforms (in particular, for x64) will
      likely result in unecessarily slow code, or compile failures.
 
-  4) Handle gotcha #8 by munging the generated config.h (and config.asm)
-     file(s) to disable inclusion of external iconv library.  Call the
-     munge_config_iconv.sh script on the config.h (and on the config.asm)
-     for each variant. (This has been implemented in build_ffmpeg.sh.)
-     This is necessary on all variants.
+  4) Handle gotcha #8 by using --disable-iconv configure option.
+     This is implemented in build_ffmpeg.sh.
 
   5) Next, capture all the output from a build of libavcodec.so and
      libavformat.so.  We will use the build log as a reference for making

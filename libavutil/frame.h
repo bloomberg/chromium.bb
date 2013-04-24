@@ -144,7 +144,8 @@ typedef struct AVFrame {
     enum AVPictureType pict_type;
 
 #if FF_API_AVFRAME_LAVC
-    attribute_deprecated
+    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+    // attribute_deprecated
     uint8_t *base[AV_NUM_DATA_POINTERS];
 #endif
 
@@ -254,7 +255,8 @@ typedef struct AVFrame {
     uint64_t error[AV_NUM_DATA_POINTERS];
 
 #if FF_API_AVFRAME_LAVC
-    attribute_deprecated
+    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+    // attribute_deprecated
     int type;
 #endif
 

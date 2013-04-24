@@ -6,7 +6,7 @@
 # Functions from avcodec used in chromium code.
 #------------------------------------------------
 AVCodecContext *avcodec_alloc_context3(const AVCodec *codec);
-AVCodec *avcodec_find_decoder(enum CodecID id);
+AVCodec *avcodec_find_decoder(enum AVCodecID id);
 AVFrame *avcodec_alloc_frame(void);
 int av_new_packet(AVPacket *pkt, int size);
 int avcodec_decode_audio4(AVCodecContext *avctx, AVFrame *frame, int *got_frame_ptr, const AVPacket *avpkt);

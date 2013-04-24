@@ -1072,9 +1072,11 @@ typedef struct AVPacket {
      */
     int   duration;
 #if FF_API_DESTRUCT_PACKET
-    attribute_deprecated
+    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+    // attribute_deprecated
     void  (*destruct)(struct AVPacket *);
-    attribute_deprecated
+    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+    // attribute_deprecated
     void  *priv;
 #endif
     int64_t pos;                            ///< byte position in stream, -1 if unknown
@@ -2006,7 +2008,8 @@ typedef struct AVCodecContext {
      *
      * @deprecated use get_buffer2()
      */
-    attribute_deprecated
+    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+    // attribute_deprecated
     int (*get_buffer)(struct AVCodecContext *c, AVFrame *pic);
 
     /**
@@ -2020,7 +2023,8 @@ typedef struct AVCodecContext {
      *
      * @deprecated custom freeing callbacks should be set from get_buffer2()
      */
-    attribute_deprecated
+    // TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+    // attribute_deprecated
     void (*release_buffer)(struct AVCodecContext *c, AVFrame *pic);
 
     /**
@@ -3389,7 +3393,8 @@ void avsubtitle_free(AVSubtitle *sub);
  * Default packet destructor.
  * @deprecated use the AVBuffer API instead
  */
-attribute_deprecated
+// TODO(wolenetz) Switch to refcounted buffers. See http://crbug.com/236611
+// attribute_deprecated
 void av_destruct_packet(AVPacket *pkt);
 #endif
 

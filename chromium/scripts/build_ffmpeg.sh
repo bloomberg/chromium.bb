@@ -68,8 +68,8 @@ fi
 
 # If configure & make works but this script doesn't, make sure to grep for
 # these.
-LIBAVCODEC_VERSION_MAJOR=54
-LIBAVFORMAT_VERSION_MAJOR=54
+LIBAVCODEC_VERSION_MAJOR=55
+LIBAVFORMAT_VERSION_MAJOR=55
 LIBAVUTIL_VERSION_MAJOR=52
 
 case $(uname -sm) in
@@ -205,14 +205,6 @@ function build {
     fi
   fi
 
-  # Disable inclusion of external iconv library
-  echo "Forcing CONFIG_ICONV to 0 in config.h"
-  $FFMPEG_PATH/chromium/scripts/munge_config_iconv.sh config.h
-  if [[ "$TARGET_ARCH" = "ia32" || "$TARGET_ARCH" = "x64" ]]; then
-    echo "Forcing CONFIG_ICONV to 0 in config.asm"
-    $FFMPEG_PATH/chromium/scripts/munge_config_iconv.sh config.asm
-  fi
-
   if [[ "$HOST_OS" = "$TARGET_OS" && "$CONFIG_ONLY" = "" ]]; then
     # Build!
     LIBS="libavcodec/$(dso_name avcodec $LIBAVCODEC_VERSION_MAJOR)"
@@ -265,6 +257,7 @@ add_flag_common --disable-zlib
 add_flag_common --enable-fft
 add_flag_common --enable-rdft
 add_flag_common --enable-shared
+add_flag_common --disable-iconv
 
 # Disable hardware decoding options which will sometimes turn on via autodetect.
 add_flag_common --disable-dxva2
@@ -401,7 +394,9 @@ if [ "$TARGET_OS" = "mac" ]; then
 fi
 
 # Chromium & ChromiumOS specific configuration.
-# (nothing at the moment)
+# Though CONFIG_ERROR_RESILIENCE should already be disabled for Chromium[OS],
+# forcing disable here to help ensure it remains this way.
+add_flag_chromium --disable-error-resilience
 
 # Google Chrome & ChromeOS specific configuration.
 add_flag_chrome --enable-decoder=aac,h264,mp3
@@ -422,7 +417,6 @@ add_flag_chromiumos --enable-parser=flac
 add_flag_chromeos --enable-decoder=mpeg4
 add_flag_chromeos --enable-parser=h263,mpeg4video
 add_flag_chromeos --enable-demuxer=avi
-add_flag_chromeos --enable-bsf=mpeg4video_es
 # Enable playing Android 3gp files.
 add_flag_chromeos --enable-demuxer=amr
 add_flag_chromeos --enable-decoder=amrnb,amrwb
