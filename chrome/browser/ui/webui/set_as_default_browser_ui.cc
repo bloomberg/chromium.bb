@@ -206,7 +206,7 @@ void SetAsDefaultBrowserHandler::ConcludeInteraction(
 }
 
 bool SetAsDefaultBrowserHandler::ShouldAttemptImmersiveRestart() {
-  return (base::win::IsMachineATablet() &&
+  return (base::win::IsTouchEnabledDevice() &&
           !Profile::FromWebUI(web_ui())->GetPrefs()->GetBoolean(
               prefs::kSuppressSwitchToMetroModeOnSetDefault));
 }
@@ -398,7 +398,7 @@ void SetAsDefaultBrowserDialogImpl::
 
   // Do a straight-up restart rather than a mode-switch restart.
   // delegate_execute.exe will choose an immersive launch on the basis of the
-  // same IsMachineATablet check, but will not store this as the user's
+  // same IsTouchEnabledDevice check, but will not store this as the user's
   // choice.
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
                           base::Bind(&chrome::AttemptRestart));

@@ -181,10 +181,6 @@ bool ParseCommandLine(const COPYDATASTRUCT* cds,
 // Move this function to a common place as the Windows 8 delegate_execute
 // handler can possibly use this.
 bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
-#if defined(USE_AURA)
-  return false;
-#endif
-
   if (base::win::GetVersion() < base::win::VERSION_WIN8)
     return false;
 
@@ -193,6 +189,14 @@ bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
 
   if (ShellIntegration::GetDefaultBrowser() != ShellIntegration::IS_DEFAULT)
     return false;
+
+#if defined(USE_AURA)
+  // If we have viewer connection command line then we need to avoid
+  // launching in metro mode as it may create loop.
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kViewerConnection))
+    return false;
+#endif
 
   base::IntegrityLevel integrity_level = base::INTEGRITY_UNKNOWN;
   base::GetProcessIntegrityLevel(base::GetCurrentProcessHandle(),
@@ -215,7 +219,7 @@ bool ShouldLaunchInWindows8ImmersiveMode(const base::FilePath& user_data_dir) {
                           &reg_value) == ERROR_SUCCESS) {
     return reg_value == 1;
   }
-  return base::win::IsMachineATablet();
+  return base::win::IsTouchEnabledDevice();
 }
 
 }  // namespace

@@ -214,20 +214,13 @@ void SetAbortBehaviorForCrashReporting() {
   signal(SIGABRT, ForceCrashOnSigAbort);
 }
 
-bool IsMachineATablet() {
+bool IsTouchEnabledDevice() {
   if (base::win::GetVersion() < base::win::VERSION_WIN7)
     return false;
   const int kMultiTouch = NID_INTEGRATED_TOUCH | NID_MULTI_INPUT | NID_READY;
-  const int kMaxTabletScreenWidth = 1366;
-  const int kMaxTabletScreenHeight = 768;
   int sm = GetSystemMetrics(SM_DIGITIZER);
   if ((sm & kMultiTouch) == kMultiTouch) {
-    int cx = GetSystemMetrics(SM_CXSCREEN);
-    int cy = GetSystemMetrics(SM_CYSCREEN);
-    // Handle landscape and portrait modes.
-    return cx > cy ?
-        (cx <= kMaxTabletScreenWidth && cy <= kMaxTabletScreenHeight) :
-        (cy <= kMaxTabletScreenWidth && cx <= kMaxTabletScreenHeight);
+    return true;
   }
   return false;
 }
