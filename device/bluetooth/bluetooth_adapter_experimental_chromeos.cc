@@ -11,6 +11,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/experimental_bluetooth_input_client.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_device_experimental_chromeos.h"
 
@@ -24,6 +25,8 @@ BluetoothAdapterExperimentalChromeOS::BluetoothAdapterExperimentalChromeOS()
   DBusThreadManager::Get()->GetExperimentalBluetoothAdapterClient()->
       AddObserver(this);
   DBusThreadManager::Get()->GetExperimentalBluetoothDeviceClient()->
+      AddObserver(this);
+  DBusThreadManager::Get()->GetExperimentalBluetoothInputClient()->
       AddObserver(this);
 
   std::vector<dbus::ObjectPath> object_paths =
@@ -40,6 +43,8 @@ BluetoothAdapterExperimentalChromeOS::~BluetoothAdapterExperimentalChromeOS() {
   DBusThreadManager::Get()->GetExperimentalBluetoothAdapterClient()->
       RemoveObserver(this);
   DBusThreadManager::Get()->GetExperimentalBluetoothDeviceClient()->
+      RemoveObserver(this);
+  DBusThreadManager::Get()->GetExperimentalBluetoothInputClient()->
       RemoveObserver(this);
 }
 
@@ -241,10 +246,32 @@ void BluetoothAdapterExperimentalChromeOS::DevicePropertyChanged(
           GetProperties(object_path);
 
   if (property_name == properties->bluetooth_class.name() ||
+      property_name == properties->address.name() ||
       property_name == properties->alias.name() ||
       property_name == properties->paired.name() ||
+      property_name == properties->trusted.name() ||
       property_name == properties->connected.name() ||
       property_name == properties->uuids.name())
+    NotifyDeviceChanged(device_chromeos);
+}
+
+void BluetoothAdapterExperimentalChromeOS::InputPropertyChanged(
+    const dbus::ObjectPath& object_path,
+    const std::string& property_name) {
+  BluetoothDeviceExperimentalChromeOS* device_chromeos =
+      GetDeviceWithPath(object_path);
+  if (!device_chromeos)
+    return;
+
+  ExperimentalBluetoothInputClient::Properties* properties =
+      DBusThreadManager::Get()->GetExperimentalBluetoothInputClient()->
+          GetProperties(object_path);
+
+  // Properties structure can be removed, which triggers a change in the
+  // BluetoothDevice::IsConnectable() property, as does a change in the
+  // actual reconnect_mode property.
+  if (!properties ||
+      property_name == properties->reconnect_mode.name())
     NotifyDeviceChanged(device_chromeos);
 }
 

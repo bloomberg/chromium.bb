@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/dbus/experimental_bluetooth_adapter_client.h"
 #include "chromeos/dbus/experimental_bluetooth_device_client.h"
+#include "chromeos/dbus/experimental_bluetooth_input_client.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -31,7 +32,8 @@ class BluetoothExperimentalChromeOSTest;
 class BluetoothAdapterExperimentalChromeOS
     : public device::BluetoothAdapter,
       private chromeos::ExperimentalBluetoothAdapterClient::Observer,
-      private chromeos::ExperimentalBluetoothDeviceClient::Observer {
+      private chromeos::ExperimentalBluetoothDeviceClient::Observer,
+      private chromeos::ExperimentalBluetoothInputClient::Observer {
  public:
   // BluetoothAdapter override
   virtual void AddObserver(
@@ -79,6 +81,10 @@ class BluetoothAdapterExperimentalChromeOS
   virtual void DeviceRemoved(const dbus::ObjectPath& object_path) OVERRIDE;
   virtual void DevicePropertyChanged(const dbus::ObjectPath& object_path,
                                      const std::string& property_name) OVERRIDE;
+
+  // ExperimentalBluetoothInputClient::Observer override.
+  virtual void InputPropertyChanged(const dbus::ObjectPath& object_path,
+                                    const std::string& property_name) OVERRIDE;
 
   // Internal method used to locate the device object by object path
   // (the devices map and BluetoothDevice methods are by address)
