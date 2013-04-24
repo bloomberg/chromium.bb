@@ -24,7 +24,6 @@
         '../third_party/libxml/libxml.gyp:libxml',
         'ime/input_method.gyp:gencode',
         'power_manager_proto',
-        'power_supply_properties_proto',
         'video_activity_update_proto',
       ],
       'defines': [
@@ -503,25 +502,12 @@
         '../third_party/cros_system_api/dbus/power_manager/input_event.proto',
         '../third_party/cros_system_api/dbus/power_manager/peripheral_battery_status.proto',
         '../third_party/cros_system_api/dbus/power_manager/policy.proto',
+        '../third_party/cros_system_api/dbus/power_manager/power_supply_properties.proto',
         '../third_party/cros_system_api/dbus/power_manager/suspend.proto',
       ],
       'variables': {
         'proto_in_dir': '../third_party/cros_system_api/dbus/power_manager',
         'proto_out_dir': 'chromeos/dbus/power_manager',
-      },
-      'includes': ['../build/protoc.gypi'],
-    },
-    {
-      # Protobuf compiler / generator for the PowerSupplyProperties protocol
-      # buffer.
-      'target_name': 'power_supply_properties_proto',
-      'type': 'static_library',
-      'sources': [
-        '../third_party/cros_system_api/dbus/power_supply_properties.proto',
-      ],
-      'variables': {
-        'proto_in_dir': '../third_party/cros_system_api/dbus',
-        'proto_out_dir': 'chromeos/dbus',
       },
       'includes': ['../build/protoc.gypi'],
     },

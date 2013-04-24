@@ -20,8 +20,8 @@
 #include "chromeos/dbus/power_manager/input_event.pb.h"
 #include "chromeos/dbus/power_manager/peripheral_battery_status.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
+#include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "chromeos/dbus/power_supply_properties.pb.h"
 #include "chromeos/dbus/video_activity_update.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -388,7 +388,7 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
 
     dbus::MessageReader reader(response);
-    PowerSupplyProperties protobuf;
+    power_manager::PowerSupplyProperties protobuf;
     if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
       LOG(ERROR) << "Error calling "
                  << power_manager::kGetPowerSupplyPropertiesMethod
@@ -396,19 +396,21 @@ class PowerManagerClientImpl : public PowerManagerClient {
       return;
     }
 
+    // TODO(derat): Remove PowerSupplyStatus and just pass protocol buffers
+    // directly to Ash: http://crbug.com/234782
     PowerSupplyStatus status;
-    status.line_power_on = protobuf.line_power_on();
-    status.battery_seconds_to_empty = protobuf.battery_time_to_empty();
-    status.battery_seconds_to_full = protobuf.battery_time_to_full();
-    status.averaged_battery_time_to_empty =
-        protobuf.averaged_battery_time_to_empty();
-    status.averaged_battery_time_to_full =
-        protobuf.averaged_battery_time_to_full();
-    status.battery_percentage = protobuf.battery_percentage();
+    status.line_power_on = !protobuf.battery_is_present() ||
+        protobuf.battery_state() ==
+        power_manager::PowerSupplyProperties_BatteryState_CHARGING;
+    status.battery_seconds_to_empty = protobuf.battery_time_to_empty_sec();
+    status.battery_seconds_to_full = protobuf.battery_time_to_full_sec();
+    status.battery_percentage = protobuf.battery_percent();
     status.battery_is_present = protobuf.battery_is_present();
-    status.battery_is_full = protobuf.battery_is_charged();
+    status.battery_is_full = protobuf.battery_is_present() &&
+        protobuf.battery_state() ==
+        power_manager::PowerSupplyProperties_BatteryState_CHARGING &&
+        protobuf.battery_percent() >= 99.9999;
     status.is_calculating_battery_time = protobuf.is_calculating_battery_time();
-    status.battery_energy_rate = protobuf.battery_energy_rate();
 
     VLOG(1) << "Power status: " << status.ToString();
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status));
@@ -785,9 +787,6 @@ class PowerManagerClientStubImpl : public PowerManagerClient {
     status_.battery_seconds_to_full =
         std::max(static_cast<int64>(1),
                  kSecondsToEmptyFullBattery - status_.battery_seconds_to_empty);
-
-    status_.averaged_battery_time_to_empty = status_.battery_seconds_to_empty;
-    status_.averaged_battery_time_to_full = status_.battery_seconds_to_full;
 
     FOR_EACH_OBSERVER(Observer, observers_, PowerChanged(status_));
   }

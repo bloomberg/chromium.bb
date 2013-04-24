@@ -21,15 +21,10 @@ struct CHROMEOS_EXPORT PowerSupplyStatus {
   // Time in seconds until the battery is empty or full, 0 for unknown.
   int64 battery_seconds_to_empty;
   int64 battery_seconds_to_full;
-  int64 averaged_battery_time_to_empty;
-  int64 averaged_battery_time_to_full;
 
   double battery_percentage;
 
   bool is_calculating_battery_time;
-
-  // Rate of charge/discharge of the battery, in W.
-  double battery_energy_rate;
 
   PowerSupplyStatus();
   std::string ToString() const;
