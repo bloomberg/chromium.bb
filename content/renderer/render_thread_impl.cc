@@ -784,8 +784,9 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableSeamlessIFrames(
       command_line.HasSwitch(switches::kEnableExperimentalWebKitFeatures));
 
-  WebRuntimeFeatures::enableWebPInAcceptHeader(
-      command_line.HasSwitch(switches::kEnableWebPInAcceptHeader));
+  // Enabled by default for testing.
+  // TODO(urvang): Go back to using the command-line option after a few days.
+  WebRuntimeFeatures::enableWebPInAcceptHeader(true);
 
   WebRuntimeFeatures::enableExperimentalWebSocket(
       command_line.HasSwitch(switches::kEnableExperimentalWebSocket));
