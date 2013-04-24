@@ -49,9 +49,6 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
                void(RemoteChangeProcessor* processor));
   MOCK_METHOD0(GetLocalChangeProcessor, LocalChangeProcessor*());
   MOCK_METHOD1(IsConflicting, bool(const fileapi::FileSystemURL& url));
-  MOCK_METHOD2(GetRemoteFileMetadata,
-               void(const fileapi::FileSystemURL& url,
-                    const SyncFileMetadataCallback& callback));
   MOCK_CONST_METHOD0(GetCurrentState,
                      RemoteServiceState());
   MOCK_CONST_METHOD0(GetServiceName, const char*());
@@ -73,24 +70,7 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
       SyncAction action_taken,
       SyncDirection direction);
 
-  // Sets conflict file information.  The information is returned by
-  // the default action for GetRemoteConflictFileInfo.
-  void add_conflict_file(const fileapi::FileSystemURL& url,
-                         const SyncFileMetadata& metadata) {
-    conflict_file_urls_[url.origin()].insert(url);
-    conflict_file_metadata_[url] = metadata;
-  }
-
-  void reset_conflict_files() {
-    conflict_file_urls_.clear();
-    conflict_file_metadata_.clear();
-  }
-
  private:
-  typedef std::map<GURL, fileapi::FileSystemURLSet> OriginToURLSetMap;
-  typedef std::map<fileapi::FileSystemURL, SyncFileMetadata,
-                   fileapi::FileSystemURL::Comparator> FileMetadataMap;
-
   void AddServiceObserverStub(Observer* observer);
   void AddFileStatusObserverStub(FileStatusObserver* observer);
   void RegisterOriginForTrackingChangesStub(
@@ -100,15 +80,9 @@ class MockRemoteFileSyncService : public RemoteFileSyncService {
   void DeleteOriginDirectoryStub(
       const GURL& origin, const SyncStatusCallback& callback);
   void ProcessRemoteChangeStub(const SyncFileCallback& callback);
-  void GetRemoteFileMetadataStub(
-      const fileapi::FileSystemURL& url,
-      const SyncFileMetadataCallback& callback);
   SyncStatusCode SetConflictResolutionPolicyStub(
       ConflictResolutionPolicy policy);
   ConflictResolutionPolicy GetConflictResolutionPolicyStub() const;
-
-  OriginToURLSetMap conflict_file_urls_;
-  FileMetadataMap conflict_file_metadata_;
 
   // For default implementation.
   ::testing::NiceMock<MockLocalChangeProcessor> mock_local_change_processor_;

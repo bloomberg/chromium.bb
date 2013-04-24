@@ -92,9 +92,6 @@ class DriveFileSyncService
       RemoteChangeProcessor* processor) OVERRIDE;
   virtual LocalChangeProcessor* GetLocalChangeProcessor() OVERRIDE;
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) OVERRIDE;
-  virtual void GetRemoteFileMetadata(
-      const fileapi::FileSystemURL& url,
-      const SyncFileMetadataCallback& callback) OVERRIDE;
   virtual RemoteServiceState GetCurrentState() const OVERRIDE;
   virtual const char* GetServiceName() const OVERRIDE;
   virtual void SetSyncEnabled(bool enabled) OVERRIDE;

@@ -41,8 +41,6 @@ MockRemoteFileSyncService::MockRemoteFileSyncService()
       .WillByDefault(Return(&mock_local_change_processor_));
   ON_CALL(*this, IsConflicting(_))
       .WillByDefault(Return(false));
-  ON_CALL(*this, GetRemoteFileMetadata(_, _))
-      .WillByDefault(Invoke(this, &self::GetRemoteFileMetadataStub));
   ON_CALL(*this, GetCurrentState())
       .WillByDefault(Return(REMOTE_SERVICE_OK));
   ON_CALL(*this, GetServiceName())
@@ -118,21 +116,6 @@ void MockRemoteFileSyncService::ProcessRemoteChangeStub(
       FROM_HERE,
       base::Bind(callback, SYNC_STATUS_NO_CHANGE_TO_SYNC,
                  fileapi::FileSystemURL()));
-}
-
-void MockRemoteFileSyncService::GetRemoteFileMetadataStub(
-    const fileapi::FileSystemURL& url,
-    const SyncFileMetadataCallback& callback) {
-  FileMetadataMap::iterator iter = conflict_file_metadata_.find(url);
-  if (iter == conflict_file_metadata_.end()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_FILE_ERROR_NOT_FOUND,
-                   SyncFileMetadata()));
-    return;
-  }
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE, base::Bind(callback, SYNC_STATUS_OK, iter->second));
 }
 
 SyncStatusCode MockRemoteFileSyncService::SetConflictResolutionPolicyStub(

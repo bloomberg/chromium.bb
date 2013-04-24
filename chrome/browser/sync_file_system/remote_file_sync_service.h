@@ -132,11 +132,6 @@ class RemoteFileSyncService {
   // Returns true if the file |url| is marked conflicted in the remote service.
   virtual bool IsConflicting(const fileapi::FileSystemURL& url) = 0;
 
-  // Returns the metadata of a remote file pointed by |url|.
-  virtual void GetRemoteFileMetadata(
-      const fileapi::FileSystemURL& url,
-      const SyncFileMetadataCallback& callback) = 0;
-
   // Returns the current remote service state (should equal to the value
   // returned by the last OnRemoteServiceStateUpdated notification.
   virtual RemoteServiceState GetCurrentState() const = 0;
