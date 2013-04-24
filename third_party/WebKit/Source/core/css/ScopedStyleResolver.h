@@ -24,8 +24,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef StyleScopeResolver_h
-#define StyleScopeResolver_h
+#ifndef ScopedStyleResolver_h
+#define ScopedStyleResolver_h
 
 #include <wtf/Assertions.h>
 #include <wtf/Forward.h>
@@ -43,7 +43,7 @@ class ShadowRoot;
 class StyleRuleHost;
 struct RuleFeatureSet;
 
-class StyleScopeResolver {
+class ScopedStyleResolver {
 public:
     typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > ScopedRuleSetMap;
 
@@ -58,8 +58,8 @@ public:
         RuleSet* m_ruleSet;
     };
 
-    StyleScopeResolver();
-    ~StyleScopeResolver();
+    ScopedStyleResolver();
+    ~ScopedStyleResolver();
 
     static const ContainerNode* scopeFor(const CSSStyleSheet*);
 
@@ -99,7 +99,7 @@ private:
     ScopedRuleSetMap m_atHostRules;
 };
 
-inline bool StyleScopeResolver::ensureStackConsistency(ContainerNode* parent)
+inline bool ScopedStyleResolver::ensureStackConsistency(ContainerNode* parent)
 {
     // Match scoped author rules by traversing the scoped element stack (rebuild it if it got inconsistent).
     if (!stackIsConsistent(parent))
@@ -108,4 +108,4 @@ inline bool StyleScopeResolver::ensureStackConsistency(ContainerNode* parent)
 }
 } // namespace WebCore
 
-#endif // StyleScopeResolver_h
+#endif // ScopedStyleResolver_h

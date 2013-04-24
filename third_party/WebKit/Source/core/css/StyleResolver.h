@@ -38,7 +38,7 @@
 #include "SelectorFilter.h"
 #include "SiblingTraversalStrategies.h"
 #include "StyleInheritedData.h"
-#include "StyleScopeResolver.h"
+#include "ScopedStyleResolver.h"
 #include "ViewportStyleResolver.h"
 #if ENABLE(SVG)
 #include "WebKitCSSSVGDocumentValue.h"
@@ -196,7 +196,7 @@ public:
     RenderStyle* rootElementStyle() const { return m_state.rootElementStyle(); }
     Element* element() { return m_state.element(); }
     Document* document() { return m_document; }
-    StyleScopeResolver* scopeResolver() const { return m_scopeResolver.get(); }
+    ScopedStyleResolver* scopeResolver() const { return m_scopeResolver.get(); }
     bool hasParentNode() const { return m_state.parentNode(); }
 
     // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
@@ -207,11 +207,11 @@ public:
     const DocumentRuleSets& ruleSets() const { return m_ruleSets; }
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
-    StyleScopeResolver* ensureScopeResolver()
+    ScopedStyleResolver* ensureScopeResolver()
     {
         ASSERT(RuntimeEnabledFeatures::shadowDOMEnabled() || RuntimeEnabledFeatures::styleScopedEnabled());
         if (!m_scopeResolver)
-            m_scopeResolver = adoptPtr(new StyleScopeResolver());
+            m_scopeResolver = adoptPtr(new ScopedStyleResolver());
         return m_scopeResolver.get();
     }
 
@@ -601,7 +601,7 @@ private:
 
     const StyleBuilder& m_styleBuilder;
 
-    OwnPtr<StyleScopeResolver> m_scopeResolver;
+    OwnPtr<ScopedStyleResolver> m_scopeResolver;
     CSSToStyleMap m_styleMap;
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 

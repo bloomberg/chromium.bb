@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "StyleScopeResolver.h"
+#include "ScopedStyleResolver.h"
 
 #include "CSSStyleRule.h"
 #include "CSSStyleSheet.h"
@@ -44,17 +44,17 @@
 
 namespace WebCore {
 
-StyleScopeResolver::StyleScopeResolver()
+ScopedStyleResolver::ScopedStyleResolver()
     : m_stackParent(0)
     , m_stackParentBoundsIndex(0)
 {
 }
 
-StyleScopeResolver::~StyleScopeResolver()
+ScopedStyleResolver::~ScopedStyleResolver()
 {
 }
 
-const ContainerNode* StyleScopeResolver::scopeFor(const CSSStyleSheet* sheet)
+const ContainerNode* ScopedStyleResolver::scopeFor(const CSSStyleSheet* sheet)
 {
     ASSERT(sheet);
 
@@ -76,15 +76,15 @@ const ContainerNode* StyleScopeResolver::scopeFor(const CSSStyleSheet* sheet)
     return (parent->isElementNode() || parent->isShadowRoot()) ? parent : 0;
 }
 
-inline RuleSet* StyleScopeResolver::ruleSetFor(const ContainerNode* scope) const
+inline RuleSet* ScopedStyleResolver::ruleSetFor(const ContainerNode* scope) const
 {
     if (!scope->hasScopedHTMLStyleChild())
         return 0;
     ScopedRuleSetMap::const_iterator it = m_authorStyles.find(scope);
-    return it != m_authorStyles.end() ? it->value.get() : 0; 
+    return it != m_authorStyles.end() ? it->value.get() : 0;
 }
 
-RuleSet* StyleScopeResolver::ensureRuleSetFor(const ContainerNode* scope)
+RuleSet* ScopedStyleResolver::ensureRuleSetFor(const ContainerNode* scope)
 {
     ScopedRuleSetMap::AddResult addResult = m_authorStyles.add(scope, nullptr);
     if (addResult.isNewEntry)
@@ -92,7 +92,7 @@ RuleSet* StyleScopeResolver::ensureRuleSetFor(const ContainerNode* scope)
     return addResult.iterator->value.get();
 }
 
-void StyleScopeResolver::setupStack(const ContainerNode* parent)
+void ScopedStyleResolver::setupStack(const ContainerNode* parent)
 {
     // The scoping element stack shouldn't be used if <style scoped> isn't used anywhere.
     ASSERT(!m_authorStyles.isEmpty());
@@ -112,7 +112,7 @@ void StyleScopeResolver::setupStack(const ContainerNode* parent)
     m_stackParentBoundsIndex = 0;
 }
 
-void StyleScopeResolver::push(const ContainerNode* scope, const ContainerNode* scopeParent)
+void ScopedStyleResolver::push(const ContainerNode* scope, const ContainerNode* scopeParent)
 {
     // Shortcut: Don't bother with the scoping element stack if <style scoped> isn't used anywhere.
     if (m_authorStyles.isEmpty()) {
@@ -137,7 +137,7 @@ void StyleScopeResolver::push(const ContainerNode* scope, const ContainerNode* s
     m_stackParent = scope;
 }
 
-void StyleScopeResolver::pop(const ContainerNode* scope)
+void ScopedStyleResolver::pop(const ContainerNode* scope)
 {
     // Only bother to update the scoping element stack if it is consistent.
     if (stackIsConsistent(scope)) {
@@ -149,7 +149,7 @@ void StyleScopeResolver::pop(const ContainerNode* scope)
     }
 }
 
-void StyleScopeResolver::collectFeaturesTo(RuleFeatureSet& features)
+void ScopedStyleResolver::collectFeaturesTo(RuleFeatureSet& features)
 {
     for (ScopedRuleSetMap::iterator it = m_authorStyles.begin(); it != m_authorStyles.end(); ++it)
         features.add(it->value->features());
@@ -157,7 +157,7 @@ void StyleScopeResolver::collectFeaturesTo(RuleFeatureSet& features)
         features.add(it->value->features());
 }
 
-inline RuleSet* StyleScopeResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)
+inline RuleSet* ScopedStyleResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)
 {
     ScopedRuleSetMap::AddResult addResult = m_atHostRules.add(shadowRoot, nullptr);
     if (addResult.isNewEntry)
@@ -165,13 +165,13 @@ inline RuleSet* StyleScopeResolver::ensureAtHostRuleSetFor(const ShadowRoot* sha
     return addResult.iterator->value.get();
 }
 
-inline RuleSet* StyleScopeResolver::atHostRuleSetFor(const ShadowRoot* shadowRoot) const
+inline RuleSet* ScopedStyleResolver::atHostRuleSetFor(const ShadowRoot* shadowRoot) const
 {
     ScopedRuleSetMap::const_iterator it = m_atHostRules.find(shadowRoot);
     return it != m_atHostRules.end() ? it->value.get() : 0;
 }
 
-void StyleScopeResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentSecurityOrigin, const ContainerNode* scope)
+void ScopedStyleResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentSecurityOrigin, const ContainerNode* scope)
 {
     if (!scope || !scope->isInShadowTree())
         return;
@@ -192,7 +192,7 @@ void StyleScopeResolver::addHostRule(StyleRuleHost* hostRule, bool hasDocumentSe
     }
 }
 
-bool StyleScopeResolver::styleSharingCandidateMatchesHostRules(const Element* element)
+bool ScopedStyleResolver::styleSharingCandidateMatchesHostRules(const Element* element)
 {
     if (m_atHostRules.isEmpty())
         return false;
@@ -215,7 +215,7 @@ bool StyleScopeResolver::styleSharingCandidateMatchesHostRules(const Element* el
     return false;
 }
 
-void StyleScopeResolver::matchHostRules(const Element* element, Vector<RuleSet*>& matchedRules)
+void ScopedStyleResolver::matchHostRules(const Element* element, Vector<RuleSet*>& matchedRules)
 {
     if (m_atHostRules.isEmpty())
         return;
@@ -228,7 +228,7 @@ void StyleScopeResolver::matchHostRules(const Element* element, Vector<RuleSet*>
     // add a new flag to ElementShadow and cache whether any @host @-rules are
     // applied to the element or not. So we can quickly exit this method
     // by using the flag.
-    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) { 
+    for (ShadowRoot* shadowRoot = shadow->youngestShadowRoot(); shadowRoot; shadowRoot = shadowRoot->olderShadowRoot()) {
         if (RuleSet* ruleSet = atHostRuleSetFor(shadowRoot))
             matchedRules.append(ruleSet);
         if (!ScopeContentDistribution::hasShadowElement(shadowRoot))
@@ -236,7 +236,7 @@ void StyleScopeResolver::matchHostRules(const Element* element, Vector<RuleSet*>
     }
 }
 
-void StyleScopeResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
+void ScopedStyleResolver::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {
     MemoryClassInfo info(memoryObjectInfo, this, WebCoreMemoryTypes::CSS);
     info.addMember(m_authorStyles, "authorStyles");

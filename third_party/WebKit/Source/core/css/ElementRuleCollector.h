@@ -36,7 +36,7 @@ class RenderRegion;
 class RuleData;
 class RuleSet;
 class SelectorFilter;
-class StyleScopeResolver;
+class ScopedStyleResolver;
 class StaticCSSRuleList;
 
 class ElementRuleCollector {
@@ -98,7 +98,7 @@ private:
     DocumentRuleSets& m_ruleSets;
     SelectorFilter& m_selectorFilter;
     InspectorCSSOMWrappers& m_inspectorCSSOMWrappers;
-    StyleScopeResolver* m_scopeResolver;
+    ScopedStyleResolver* m_scopeResolver;
 
     bool m_isPrintStyle;
     RenderRegion* m_regionForStyling;

@@ -236,7 +236,7 @@ void ElementRuleCollector::matchScopedAuthorRules(bool includeEmptyRules)
             clearMatchedRules();
             m_result.ranges.lastAuthorRule = m_result.matchedProperties.size() - 1;
 
-            const StyleScopeResolver::StackFrame& frame = m_scopeResolver->stackFrameAt(i);
+            const ScopedStyleResolver::StackFrame& frame = m_scopeResolver->stackFrameAt(i);
             documentScope = documentScope && !frame.m_scope->isInShadowTree();
             if (documentScope) {
                 if (!applyAuthorStyles)

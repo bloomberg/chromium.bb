@@ -118,7 +118,7 @@ void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<R
         if (cssSheet->mediaQueries() && !medium->eval(cssSheet->mediaQueries(), resolver))
             continue;
         StyleSheetContents* sheet = cssSheet->contents();
-        if (const ContainerNode* scope = StyleScopeResolver::scopeFor(cssSheet)) {
+        if (const ContainerNode* scope = ScopedStyleResolver::scopeFor(cssSheet)) {
             // FIXME: Remove a dependency to calling a StyleResolver's member function.
             // If we can avoid calling resolver->ensureScopeResolver() here, we don't have to include "StyleResolver.h".
             // https://bugs.webkit.org/show_bug.cgi?id=108890
@@ -132,7 +132,7 @@ void DocumentRuleSets::appendAuthorStyleSheets(unsigned firstNew, const Vector<R
     collectFeatures(isViewSource, resolver->scopeResolver());
 }
 
-void DocumentRuleSets::collectFeatures(bool isViewSource, StyleScopeResolver* scopeResolver)
+void DocumentRuleSets::collectFeatures(bool isViewSource, ScopedStyleResolver* scopeResolver)
 {
     m_features.clear();
     // Collect all ids and rules using sibling selectors (:first-child and similar)

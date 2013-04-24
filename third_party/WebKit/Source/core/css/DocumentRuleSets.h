@@ -39,7 +39,7 @@ class InspectorCSSOMWrappers;
 class MatchRequest;
 class MediaQueryEvaluator;
 class RuleSet;
-class StyleScopeResolver;
+class ScopedStyleResolver;
 
 class ShadowDistributedRules {
 public:
@@ -68,7 +68,7 @@ public:
     void resetAuthorStyle();
     void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&, MediaQueryEvaluator*, InspectorCSSOMWrappers&, bool isViewSource, StyleResolver*);
 
-    void collectFeatures(bool isViewSource, StyleScopeResolver*);
+    void collectFeatures(bool isViewSource, ScopedStyleResolver*);
     void reportMemoryUsage(MemoryObjectInfo*) const;
     ShadowDistributedRules& shadowDistributedRules() { return m_shadowDistributedRules; }
 
