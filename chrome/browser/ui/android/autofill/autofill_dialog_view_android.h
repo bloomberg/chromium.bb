@@ -50,6 +50,7 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   void ValidateSection(JNIEnv* env, jobject obj, jint section);
   void DialogSubmit(JNIEnv* env, jobject obj);
   void DialogCancel(JNIEnv* env, jobject obj);
+  void DialogDismissed(JNIEnv* env, jobject obj);
   base::android::ScopedJavaLocalRef<jstring> GetLabelForSection(
       JNIEnv* env,
       jobject obj,
@@ -96,6 +97,9 @@ class AutofillDialogViewAndroid : public AutofillDialogView {
   // Updates the visibility of the checkbox to save the edited information
   // locally.
   void UpdateSaveLocallyCheckBox();
+
+  // Lets the Java side to clean up before the C++ side cleanup.
+  void DestroyFromNative();
 
   // The controller that drives this view. Weak pointer, always non-NULL.
   AutofillDialogController* const controller_;

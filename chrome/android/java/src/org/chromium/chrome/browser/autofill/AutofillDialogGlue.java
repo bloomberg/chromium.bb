@@ -18,9 +18,9 @@ import org.chromium.ui.WindowAndroid;
 public class AutofillDialogGlue implements AutofillDialogDelegate,
         AutofillDialogAccountHelper.SignInContinuation {
     @SuppressWarnings("unused")
-    private final int mNativeDialogPopup;
     private final AutofillDialog mAutofillDialog;
     private final AutofillDialogAccountHelper mAccountHelper;
+    private int mNativeDialogPopup;  // could be 0 after onDestroy().
 
     public AutofillDialogGlue(int nativeAutofillDialogViewAndroid, WindowAndroid windowAndroid) {
         mNativeDialogPopup = nativeAutofillDialogViewAndroid;
@@ -34,6 +34,14 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private static AutofillDialogGlue create(int nativeAutofillDialogViewAndroid,
             WindowAndroid windowAndroid) {
         return new AutofillDialogGlue(nativeAutofillDialogViewAndroid, windowAndroid);
+    }
+
+    @CalledByNative
+    private void onDestroy() {
+        if (mNativeDialogPopup == 0) return;
+
+        mNativeDialogPopup = 0;
+        mAutofillDialog.dismissAutofillDialog();
     }
 
     /**
@@ -185,12 +193,23 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
 
     @Override
     public void dialogSubmit() {
+        assert mNativeDialogPopup != 0;
+        if (mNativeDialogPopup == 0) return;
+
         nativeDialogSubmit(mNativeDialogPopup);
     }
 
     @Override
     public void dialogCancel() {
+        assert mNativeDialogPopup != 0;
+        if (mNativeDialogPopup == 0) return;
+
         nativeDialogCancel(mNativeDialogPopup);
+    }
+
+    @Override
+    public void dialogDismissed() {
+        if (mNativeDialogPopup != 0) nativeDialogDismissed(mNativeDialogPopup);
     }
 
     @Override
@@ -316,6 +335,7 @@ public class AutofillDialogGlue implements AutofillDialogDelegate,
     private native void nativeValidateSection(int nativeAutofillDialogViewAndroid, int section);
     private native void nativeDialogSubmit(int nativeAutofillDialogViewAndroid);
     private native void nativeDialogCancel(int nativeAutofillDialogViewAndroid);
+    private native void nativeDialogDismissed(int nativeAutofillDialogViewAndroid);
     private native String nativeGetLabelForSection(int nativeAutofillDialogViewAndroid,
             int section);
     private native String[] nativeGetListForField(int nativeAutofillDialogViewAndroid, int field);

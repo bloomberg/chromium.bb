@@ -52,7 +52,6 @@ public class AutofillDialog extends AlertDialog
             new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
     private final AutofillDialogMenuItem[][] mDefaultMenuItems =
             new AutofillDialogMenuItem[AutofillDialogConstants.NUM_SECTIONS][];
-    private boolean mWillDismiss = false;
 
     /**
      * An interface to handle the interaction with an AutofillDialog object.
@@ -124,6 +123,11 @@ public class AutofillDialog extends AlertDialog
          * Informs AutofillDialog controller that the user clicked on the cancel button.
          */
         public void dialogCancel();
+
+        /**
+         * Informs AutofillDialog controller that the user closed the dialog.
+         */
+        public void dialogDismissed();
 
         /**
          * Get the list associated with this field as a string array.
@@ -268,13 +272,23 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void dismiss() {
-        if (mWillDismiss) super.dismiss();
+        // Any calls coming from the Android View system are ignored.
+        // If the dialog should be dismissed, internalDismiss() should be used.
+        // TODO(yusufo): http://crbug.com/234477 Consider not using AlertDialog.
     }
 
     @Override
     public void show() {
         mContentView.createAdapters();
         super.show();
+    }
+
+    /**
+     * Dismisses the dialog.
+     **/
+    private void internalDismiss() {
+        mDelegate.dialogDismissed();
+        super.dismiss();
     }
 
     /**
@@ -288,10 +302,17 @@ public class AutofillDialog extends AlertDialog
 
     @Override
     public void onClick(DialogInterface dialog, int which) {
+        // Note that the dialog will NOT be dismissed automatically.
         if (!mContentView.isInEditingMode()) {
-            mWillDismiss = true;
-            if (which == AlertDialog.BUTTON_POSITIVE) mDelegate.dialogSubmit();
-            else mDelegate.dialogCancel();
+            if (which == AlertDialog.BUTTON_POSITIVE) {
+                // The controller will dismiss the dialog if the validation succeeds.
+                // Otherwise, the dialog should be in the operational state to show
+                // errors, challenges and notifications.
+                mDelegate.dialogSubmit();
+            } else {
+                // The dialog will be dismissed with a call to dismissAutofillDialog().
+                mDelegate.dialogCancel();
+            }
             return;
         }
 
@@ -305,7 +326,6 @@ public class AutofillDialog extends AlertDialog
             mDelegate.editingCancel(section);
         }
         changeLayoutTo(AutofillDialogContentView.LAYOUT_STEADY);
-        mWillDismiss = false;
     }
 
     @Override
@@ -637,6 +657,13 @@ public class AutofillDialog extends AlertDialog
      * @param value The current progress percentage value.
      */
     public void updateProgressBar(double value) {
+    }
+
+    /**
+     * Dismisses the Autofill dialog as if cancel was pressed.
+     */
+    public void dismissAutofillDialog() {
+        internalDismiss();
     }
 
     /**
