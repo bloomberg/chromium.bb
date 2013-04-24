@@ -6,6 +6,7 @@
       'TYPE' : 'lib',
       'SOURCES' : [
         "ppapi_instance.cc",
+        "ppapi_instance2d.cc",
         "ppapi_instance3d.cc",
         "ppapi_main.cc",
         "ppapi_queue.cc",
@@ -17,6 +18,7 @@
       'FILES': [
         "ppapi_event.h",
         "ppapi_instance.h",
+        "ppapi_instance2d.h",
         "ppapi_instance3d.h",
         "ppapi_main.h",
         "ppapi_queue.h",

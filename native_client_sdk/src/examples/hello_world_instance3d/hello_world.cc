@@ -210,7 +210,7 @@ void ProcessEvent(PPAPIEvent* event) {
   }
 }
 
-void PPAPIRender(uint32_t width, uint32_t height) {
+void PPAPIRender(PP_Resource ctx, uint32_t width, uint32_t height) {
   if (!g_Ready) {
     if (g_Loaded) {
       InitProgram();

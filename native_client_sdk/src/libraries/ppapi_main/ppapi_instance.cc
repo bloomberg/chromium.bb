@@ -40,31 +40,67 @@ struct StartInfo {
   const char** argv_;
 };
 
-void* PPAPIInstance::StartMain(void *info) {
+
+//
+// The starting point for 'main'.  We create this thread to hide the real
+// main pepper thread which must never be blocked.
+//
+void* PPAPIInstance::MainThreadThunk(void *info) {
   StartInfo* si = static_cast<StartInfo*>(info);
-  si->inst_->main_loop_.AttachToCurrentThread();
+  int ret = si->inst_->MainThread(si->argc_, si->argv_);
 
-  if (NULL != info) {
-    ppapi_main(si->argc_, si->argv_);
-
-    for (uint32_t i = 0; i < si->argc_; i++) {
-      delete[] si->argv_[i];
-    }
-    delete[] si->argv_;
-    delete si;
+  printf("Main thread returned with %d.\n", ret);
+  for (uint32_t i = 0; i < si->argc_; i++) {
+    delete[] si->argv_[i];
   }
-  else {
-    const char *argv[] = { "NEXE", NULL };
-    ppapi_main(1, argv);
-  }
+  delete[] si->argv_;
+  delete si;
 
   return NULL;
 }
 
+//
+// Enabled with pm_use_main=False this creates a second thread where we
+// send all input, view change, buffer swap, etc... messages.  This allows us
+// avoid blocking the main pepper thread which would otherwise recieves these
+// messages, and may need to lock to act on them.
+//
+void *PPAPIInstance::EventThreadThunk(void *this_ptr) {
+  PPAPIInstance *pInst = static_cast<PPAPIInstance*>(this_ptr);
+  return pInst->EventThread();
+}
+
+
+//
+// The default implementation supports running a 'C' main.
+//
+int PPAPIInstance::MainThread(int argc, const char *argv[]) {
+  return ppapi_main(argc, argv);
+}
+
+
+//
+// The default implementation just waits to processes forwarded events.
+//
+void* PPAPIInstance::EventThread() {
+  render_loop_.AttachToCurrentThread();
+  render_loop_.Run();
+  printf("Event thread exiting.\n");
+  return NULL;
+}
+
+
 PPAPIInstance::PPAPIInstance(PP_Instance instance, const char *args[])
     : pp::Instance(instance),
       main_loop_(this),
-      has_focus_(false) {
+      has_focus_(false),
+      fullscreen_(this),
+      is_context_bound_(false),
+      callback_factory_(this),
+      use_main_thread_(true),
+      render_loop_(this) {
+
+  // Place PPAPI_MAIN_USE arguments into properties map
   while (*args) {
     std::string key = *args++;
     std::string val = *args++;
@@ -77,20 +113,28 @@ PPAPIInstance::PPAPIInstance(PP_Instance instance, const char *args[])
                      PP_INPUTEVENT_CLASS_TOUCH);
 }
 
-PPAPIInstance::~PPAPIInstance() {
-}
+PPAPIInstance::~PPAPIInstance() {}
+
 
 bool PPAPIInstance::Init(uint32_t arg,
                          const char* argn[],
                          const char* argv[]) {
   StartInfo* si = new StartInfo;
 
+
   si->inst_ = this;
   si->argc_ = 1;
   si->argv_ = new const char *[arg*2+1];
   si->argv_[0] = NULL;
 
+  // Process arguments passed into Module INIT from JavaScript
   for (uint32_t i=0; i < arg; i++) {
+    if (argv[i]) {
+      printf("ARG %s=%s\n", argn[i], argv[i]);
+    } else {
+      printf("ARG %s\n", argn[i]);
+    }
+
     // If we start with PM prefix set the instance argument map
     if (0 == strncmp(argn[i], "pm_", 3)) {
       std::string key = argn[i];
@@ -128,9 +172,10 @@ bool PPAPIInstance::Init(uint32_t arg,
     si->argv_[0] = name;
   }
 
+
   if (ProcessProperties()) {
     pthread_t main_thread;
-    int ret = pthread_create(&main_thread, NULL, StartMain,
+    int ret = pthread_create(&main_thread, NULL, MainThreadThunk,
                              static_cast<void*>(si));
     return ret == 0;
   }
@@ -152,13 +197,13 @@ bool PPAPIInstance::ProcessProperties() {
   const char* stderr_path = GetProperty("pm_stderr", "/dev/console3");
   const char* queue_size = GetProperty("pm_queue_size", "1024");
 
-  // Force a minimum size of 4
+  // Build the event Queue with a minimum size of 4
   uint32_t queue_size_int = atoi(queue_size);
   if (queue_size_int < 4) queue_size_int = 4;
   event_queue_.SetSize(queue_size_int);
 
+  // Enable NaCl IO to map STDIN, STDOUT, and STDERR
   nacl_io_init_ppapi(PPAPI_GetInstanceId(), PPAPI_GetInterface);
-
   int fd0 = open(stdin_path, O_RDONLY);
   dup2(fd0, 0);
 
@@ -170,11 +215,23 @@ bool PPAPIInstance::ProcessProperties() {
 
   setvbuf(stderr, NULL, _IOLBF, 0);
   setvbuf(stdout, NULL, _IOLBF, 0);
+
+  const char *use_main_str = GetProperty("pm_use_main", "true");
+  use_main_thread_ = !strcasecmp(use_main_str, "true");
+
+  // Create seperate thread for processing events.
+  printf("Events on main thread = %s.\n", use_main_str);
+  if (!use_main_thread_) {
+    pthread_t event_thread;
+    int ret = pthread_create(&event_thread, NULL, EventThreadThunk,
+                             static_cast<void*>(this));
+    return ret == 0;
+  }
   return true;
 }
 
-void PPAPIInstance::HandleMessage(const pp::Var& message) {}
-
+void PPAPIInstance::HandleMessage(const pp::Var& message) {
+}
 
 bool PPAPIInstance::HandleInputEvent(const pp::InputEvent& event) {
   PPAPIEvent* event_ptr;
@@ -266,9 +323,53 @@ void PPAPIInstance::ReleaseInputEvent(PPAPIEvent* event) {
   event_queue_.ReleaseTopMessage(event);
 }
 
-void PPAPIInstance::DidChangeView(const pp::View&) {
+void PPAPIInstance::DidChangeView(const pp::View& view) {
+  pp::Size new_size = view.GetRect().size();
+  printf("View changed: %dx%d\n", new_size.width(), new_size.height());
+
+  // Build or update the 3D context when the view changes.
+  if (use_main_thread_) {
+    // If using the main thread, update the context immediately
+    BuildContext(0, new_size);
+  } else {
+    // If using a seperate thread, then post the message so we can build the
+    // context on the correct thread.
+    render_loop_.PostWork(callback_factory_.NewCallback(
+                          &PPAPIInstance::BuildContext, new_size));
+  }
 }
 
 void PPAPIInstance::DidChangeFocus(bool focus) {
   has_focus_ = focus;
+}
+
+bool PPAPIInstance::ToggleFullscreen() {
+  // Ignore switch if in transition
+  if (!is_context_bound_)
+    return false;
+
+  if (fullscreen_.IsFullscreen()) {
+    if (!fullscreen_.SetFullscreen(false)) {
+      printf("Could not leave fullscreen mode\n");
+      return false;
+    }
+  } else {
+    if (!fullscreen_.SetFullscreen(true)) {
+      printf("Could not enter fullscreen mode\n");
+      return false;
+    }
+  }
+  return true;
+}
+
+// The default implementation calls the 'C' render function.
+void PPAPIInstance::Render(PP_Resource ctx, uint32_t width, uint32_t height) {
+}
+
+void PPAPIInstance::Flushed(int32_t result) {
+}
+
+void PPAPIInstance::BuildContext(int32_t result, const pp::Size& new_size) {
+  size_ = new_size;
+  printf("Resized: %dx%d.\n", size_.width(), size_.height());
 }

@@ -33,20 +33,20 @@ void* PPAPI_CreateInstance3D(PP_Instance inst, const char *args[]);
 PPAPIEvent* PPAPI_AcquireEvent();
 void PPAPI_ReleaseEvent(PPAPIEvent* event);
 
-
-// Functions for 3D instances
+// Functions for Graphic Instances
 int32_t *PPAPIGet3DAttribs(uint32_t width, uint32_t height);
 void PPAPIBuildContext(uint32_t width, uint32_t height);
-void PPAPIRender(uint32_t width, uint32_t height);
+void PPAPIRender(PP_Resource ctx, uint32_t width, uint32_t height);
+
 
 EXTERN_C_END
 
 #define PPAPI_MAIN_DEFAULT_ARGS  NULL, NULL
 
-#define PPAPI_MAIN_USE(factory, ...)                          \
-void* UserCreateInstance(PP_Instance inst) {                  \
+#define PPAPI_MAIN_USE(factory, ...)              \
+void* UserCreateInstance(PP_Instance inst) {      \
   static const char *params[] = { __VA_ARGS__ };  \
-  return factory(inst, params);                               \
+  return factory(inst, params);                   \
 }
 
 #define PPAPI_MAIN_WITH_DEFAULT_ARGS \

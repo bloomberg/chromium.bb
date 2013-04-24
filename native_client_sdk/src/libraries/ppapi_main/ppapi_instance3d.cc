@@ -2,30 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <fcntl.h>
-#include <pthread.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
-#include <cstdlib>
-#include <cstring>
-#include <map>
-#include <string>
-#include <vector>
-
-#include "nacl_io/nacl_io.h"
-
-#include "ppapi/cpp/fullscreen.h"
 #include "ppapi/cpp/graphics_3d.h"
-#include "ppapi/cpp/input_event.h"
-#include "ppapi/cpp/message_loop.h"
-#include "ppapi/cpp/mouse_lock.h"
-#include "ppapi/cpp/rect.h"
 #include "ppapi/cpp/size.h"
-#include "ppapi/cpp/var.h"
 
 #include "ppapi/lib/gl/gles2/gl2ext_ppapi.h"
 #include "ppapi/lib/gl/include/GLES2/gl2.h"
@@ -35,9 +15,6 @@
 #include "ppapi_main/ppapi_instance.h"
 #include "ppapi_main/ppapi_instance3d.h"
 #include "ppapi_main/ppapi_main.h"
-
-
-static const uint32_t kReturnKeyCode = 13;
 
 
 void* PPAPI_CreateInstance3D(PP_Instance inst, const char *args[]) {
@@ -75,32 +52,27 @@ PPAPIInstance3D* PPAPIInstance3D::GetInstance3D() {
   return static_cast<PPAPIInstance3D*>(PPAPI_GetInstanceObject());
 }
 
-
-void *PPAPIInstance3D::RenderLoop(void *this_ptr) {
-  PPAPIInstance3D *pInst = static_cast<PPAPIInstance3D*>(this_ptr);
-  pInst->render_loop_.AttachToCurrentThread();
-  pInst->render_loop_.Run();
-  return NULL;
-}
-
-
-void PPAPIInstance3D::Swapped(int result) {
+void PPAPIInstance3D::Flushed(int result) {
   if (result != 0) {
     printf("Swapped result=%d.\n", result);
   }
 
   if (is_context_bound_) {
-    PPAPIRender(size_.width(), size_.height());
+    Render(device_context_.pp_resource(), size_.width(), size_.height());
+
     int result;
     result = device_context_.SwapBuffers(callback_factory_.NewCallback(
-                                         &PPAPIInstance3D::Swapped));
+                                         &PPAPIInstance::Flushed));
     if (result == PP_OK_COMPLETIONPENDING) return;
     printf("Failed swap with %d.\n", result);
   }
 
-  // Failed to draw, so add a callback for the future.
+  // Failed to draw, so add a callback for the future.  This could
+  // an application choice or the browser dealing with an event such as
+  // fullscreen toggle.  We add a delay of 100ms (to prevent burnning CPU
+  // in cases where the context will not be available for a while.
   pp::MessageLoop::GetCurrent().PostWork(callback_factory_.NewCallback(
-                                         &PPAPIInstance3D::Swapped), 100);
+                                         &PPAPIInstance::Flushed), 100);
 }
 
 void PPAPIInstance3D::BuildContext(int32_t result, const pp::Size& new_size) {
@@ -146,22 +118,21 @@ void PPAPIInstance3D::BuildContext(int32_t result, const pp::Size& new_size) {
   if (is_context_bound_) {
     PPAPIBuildContext(size_.width(), size_.height());
     device_context_.SwapBuffers(callback_factory_.NewCallback(
-                                &PPAPIInstance3D::Swapped));
+                                &PPAPIInstance::Flushed));
   } else {
     fprintf(stderr, "Failed to bind context for %dx%d.\n", size_.width(),
             size_.height());
   }
 }
 
+// The default implementation calls the 'C' render function.
+void PPAPIInstance3D::Render(PP_Resource ctx, uint32_t width,
+                             uint32_t height) {
+  PPAPIRender(ctx, width, height);
+}
+
 PPAPIInstance3D::PPAPIInstance3D(PP_Instance instance, const char *args[])
-    : PPAPIInstance(instance, args),
-      mouse_locked_(false),
-      callback_factory_(this),
-      fullscreen_(this),
-      is_context_bound_(false),
-      was_fullscreen_(false),
-      render_loop_(this),
-      main_thread_3d_(true) {
+    : PPAPIInstance(instance, args) {
   glInitializePPAPI(pp::Module::Get()->get_browser_interface());
 }
 
@@ -171,62 +142,4 @@ PPAPIInstance3D::~PPAPIInstance3D() {
     is_context_bound_ = false;
     // Cleanup code?
   }
-}
-
-bool PPAPIInstance3D::Init(uint32_t arg,
-                           const char* argn[],
-                           const char* argv[]) {
-  if (!PPAPIInstance::Init(arg, argn, argv)) {
-    return false;
-  }
-
-  for (uint32_t a=0; a < arg; a++) {
-    printf("%s=%s\n", argn[a], argv[a]);
-  }
-
-  const char *use_main = GetProperty("pm_main3d", "true");
-  main_thread_3d_ = !strcasecmp(use_main, "true");
-  printf("Using 3D on main thread = %s.\n", use_main);
-  if (!main_thread_3d_) {
-    pthread_t render_thread;
-    int ret = pthread_create(&render_thread, NULL, RenderLoop,
-                             static_cast<void*>(this));
-    return ret == 0;
-  }
-  return true;
-}
-
-void PPAPIInstance3D::DidChangeView(const pp::View& view) {
-  pp::Size new_size = view.GetRect().size();
-  printf("View changed: %dx%d\n", new_size.width(), new_size.height());
-
-  // Build or update the 3D context when the view changes.
-  if (main_thread_3d_) {
-    // If using the main thread, update the context immediately
-    BuildContext(0, new_size);
-  } else {
-    // If using a seperate thread, then post the message so we can build the
-    // context on the correct thread.
-    render_loop_.PostWork(callback_factory_.NewCallback(
-                          &PPAPIInstance3D::BuildContext, new_size));
-  }
-}
-
-bool PPAPIInstance3D::ToggleFullscreen() {
-  // Ignore switch if in transition
-  if (!is_context_bound_)
-    return false;
-
-  if (fullscreen_.IsFullscreen()) {
-    if (!fullscreen_.SetFullscreen(false)) {
-      printf("Could not leave fullscreen mode\n");
-      return false;
-    }
-  } else {
-    if (!fullscreen_.SetFullscreen(true)) {
-      printf("Could not enter fullscreen mode\n");
-      return false;
-    }
-  }
-  return true;
 }
