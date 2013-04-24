@@ -56,6 +56,7 @@
 #define RADEON_SURF_SBUFFER                     (1 << 18)
 #define RADEON_SURF_HAS_SBUFFER_MIPTREE         (1 << 19)
 #define RADEON_SURF_HAS_TILE_MODE_INDEX         (1 << 20)
+#define RADEON_SURF_FMASK                       (1 << 21)
 
 #define RADEON_SURF_GET(v, field)   (((v) >> RADEON_SURF_ ## field ## _SHIFT) & RADEON_SURF_ ## field ## _MASK)
 #define RADEON_SURF_SET(v, field)   (((v) & RADEON_SURF_ ## field ## _MASK) << RADEON_SURF_ ## field ## _SHIFT)

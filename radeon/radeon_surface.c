@@ -159,7 +159,8 @@ static void surf_minify(struct radeon_surface *surf,
     surflevel->nblk_x = (surflevel->npix_x + surf->blk_w - 1) / surf->blk_w;
     surflevel->nblk_y = (surflevel->npix_y + surf->blk_h - 1) / surf->blk_h;
     surflevel->nblk_z = (surflevel->npix_z + surf->blk_d - 1) / surf->blk_d;
-    if (surf->nsamples == 1 && surflevel->mode == RADEON_SURF_MODE_2D) {
+    if (surf->nsamples == 1 && surflevel->mode == RADEON_SURF_MODE_2D &&
+        !(surf->flags & RADEON_SURF_FMASK)) {
         if (surflevel->nblk_x < xalign || surflevel->nblk_y < yalign) {
             surflevel->mode = RADEON_SURF_MODE_1D;
             return;
@@ -565,7 +566,8 @@ static void eg_surf_minify(struct radeon_surface *surf,
     surflevel->nblk_x = (surflevel->npix_x + surf->blk_w - 1) / surf->blk_w;
     surflevel->nblk_y = (surflevel->npix_y + surf->blk_h - 1) / surf->blk_h;
     surflevel->nblk_z = (surflevel->npix_z + surf->blk_d - 1) / surf->blk_d;
-    if (surf->nsamples == 1 && surflevel->mode == RADEON_SURF_MODE_2D) {
+    if (surf->nsamples == 1 && surflevel->mode == RADEON_SURF_MODE_2D &&
+        !(surf->flags & RADEON_SURF_FMASK)) {
         if (surflevel->nblk_x < mtilew || surflevel->nblk_y < mtileh) {
             surflevel->mode = RADEON_SURF_MODE_1D;
             return;
@@ -1459,7 +1461,8 @@ static void si_surf_minify_2d(struct radeon_surface *surf,
         surflevel->nblk_z = (surflevel->npix_z + surf->blk_d - 1) / surf->blk_d;
     }
 
-    if (surf->nsamples == 1 && surflevel->mode == RADEON_SURF_MODE_2D) {
+    if (surf->nsamples == 1 && surflevel->mode == RADEON_SURF_MODE_2D &&
+        !(surf->flags & RADEON_SURF_FMASK)) {
         if (surflevel->nblk_x < xalign || surflevel->nblk_y < yalign) {
             surflevel->mode = RADEON_SURF_MODE_1D;
             return;
