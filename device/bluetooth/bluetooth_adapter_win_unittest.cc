@@ -31,17 +31,11 @@ void MakeDeviceState(const std::string& name,
 
 class AdapterObserver : public device::BluetoothAdapter::Observer {
  public:
-  AdapterObserver() {
-    Clear();
-  }
-
-  void Clear() {
-    num_present_changed_ = 0;
-    num_powered_changed_ = 0;
-    num_discovering_changed_ = 0;
-    num_device_added_ = 0;
-    num_device_changed_ = 0;
-    num_device_removed_ = 0;
+  AdapterObserver()
+      : num_present_changed_(0),
+        num_powered_changed_(0),
+        num_discovering_changed_(0),
+        num_device_added_(0) {
   }
 
   virtual void AdapterPresentChanged(
@@ -65,18 +59,6 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
     num_device_added_++;
   }
 
-  virtual void DeviceChanged(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothDevice* device) OVERRIDE {
-    num_device_changed_++;
-  }
-
-  virtual void DeviceRemoved(
-      device::BluetoothAdapter* adapter,
-      device::BluetoothDevice* device) OVERRIDE {
-    num_device_removed_++;
-  }
-
   int num_present_changed() const {
     return num_present_changed_;
   }
@@ -93,21 +75,11 @@ class AdapterObserver : public device::BluetoothAdapter::Observer {
     return num_device_added_;
   }
 
-  int num_device_changed() const {
-    return num_device_changed_;
-  }
-
-  int num_device_removed() const {
-    return num_device_removed_;
-  }
-
  private:
   int num_present_changed_;
   int num_powered_changed_;
   int num_discovering_changed_;
   int num_device_added_;
-  int num_device_changed_;
-  int num_device_removed_;
 };
 
 }  // namespace
@@ -520,28 +492,6 @@ TEST_F(BluetoothAdapterWinTest, DevicesDiscovered) {
 
   adapter_win_->DevicesDiscovered(devices);
   EXPECT_EQ(3, adapter_observer_.num_device_added());
-  adapter_observer_.Clear();
-
-  iphone_state->name = "apple phone";
-  adapter_win_->DevicesDiscovered(devices);
-  EXPECT_EQ(0, adapter_observer_.num_device_added());
-  EXPECT_EQ(1, adapter_observer_.num_device_changed());
-  EXPECT_EQ(0, adapter_observer_.num_device_removed());
-  adapter_observer_.Clear();
-
-  laptop_state->address = "notebook address";
-  laptop_state->connected = true;
-  adapter_win_->DevicesDiscovered(devices);
-  EXPECT_EQ(1, adapter_observer_.num_device_added());
-  EXPECT_EQ(0, adapter_observer_.num_device_changed());
-  EXPECT_EQ(1, adapter_observer_.num_device_removed());
-  adapter_observer_.Clear();
-
-  devices.clear();
-  adapter_win_->DevicesDiscovered(devices);
-
-  EXPECT_EQ(2, adapter_observer_.num_device_removed());
-  EXPECT_EQ(1, adapter_observer_.num_device_changed());
 }
 
 }  // namespace device

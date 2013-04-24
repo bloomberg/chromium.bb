@@ -14,8 +14,10 @@ namespace {
 
 class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
  public:
-  BluetoothTaskObserver() {
-    Clear();
+  BluetoothTaskObserver()
+      : num_adapter_state_changed_(0),
+        num_discovery_started_(0),
+        num_discovery_stopped_(0) {
   }
 
   virtual ~BluetoothTaskObserver() {
@@ -34,19 +36,6 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
     num_discovery_stopped_++;
   }
 
-  virtual void DevicesDiscovered(
-      const ScopedVector<device::BluetoothTaskManagerWin::DeviceState>&
-          devices) OVERRIDE {
-    num_devices_discovered_++;
-  }
-
-  void Clear() {
-    num_adapter_state_changed_ = 0;
-    num_discovery_started_ = 0;
-    num_discovery_stopped_ = 0;
-    num_devices_discovered_ = 0;
-  }
-
   int num_adapter_state_changed() const {
     return num_adapter_state_changed_;
   }
@@ -59,15 +48,10 @@ class BluetoothTaskObserver : public device::BluetoothTaskManagerWin::Observer {
     return num_discovery_stopped_;
   }
 
-  int num_devices_discovered() const {
-    return num_devices_discovered_;
-  }
-
  private:
    int num_adapter_state_changed_;
    int num_discovery_started_;
    int num_discovery_stopped_;
-   int num_devices_discovered_;
 };
 
 }  // namespace

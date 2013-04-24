@@ -63,6 +63,7 @@ class BluetoothTaskManagerWin
      virtual void AdapterStateChanged(const AdapterState& state) {}
      virtual void DiscoveryStarted(bool success) {}
      virtual void DiscoveryStopped() {}
+     virtual void DevicesUpdated(const ScopedVector<DeviceState>& devices) {}
      virtual void DevicesDiscovered(const ScopedVector<DeviceState>& devices) {}
   };
 
@@ -97,6 +98,7 @@ class BluetoothTaskManagerWin
   void OnAdapterStateChanged(const AdapterState* state);
   void OnDiscoveryStarted(bool success);
   void OnDiscoveryStopped();
+  void OnDevicesUpdated(const ScopedVector<DeviceState>* devices);
   void OnDevicesDiscovered(const ScopedVector<DeviceState>* devices);
 
   // Called on BluetoothTaskRunner.

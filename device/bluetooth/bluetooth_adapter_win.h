@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
@@ -66,6 +67,10 @@ class BluetoothAdapterWin : public BluetoothAdapter,
       const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices)
           OVERRIDE;
 
+  virtual void DevicesUpdated(
+      const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices)
+          OVERRIDE;
+
  private:
   friend class BluetoothAdapterFactory;
   friend class BluetoothAdapterWinTest;
@@ -94,6 +99,7 @@ class BluetoothAdapterWin : public BluetoothAdapter,
   bool initialized_;
   bool powered_;
   DiscoveryStatus discovery_status_;
+  base::hash_set<std::string> discovered_devices_;
 
   std::vector<std::pair<base::Closure, ErrorCallback> >
       on_start_discovery_callbacks_;

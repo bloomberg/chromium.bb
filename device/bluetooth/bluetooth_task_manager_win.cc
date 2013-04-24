@@ -188,6 +188,13 @@ void BluetoothTaskManagerWin::OnDiscoveryStopped() {
                     DiscoveryStopped());
 }
 
+void BluetoothTaskManagerWin::OnDevicesUpdated(
+    const ScopedVector<DeviceState>* devices) {
+  DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
+  FOR_EACH_OBSERVER(BluetoothTaskManagerWin::Observer, observers_,
+                    DevicesUpdated(*devices));
+}
+
 void BluetoothTaskManagerWin::OnDevicesDiscovered(
     const ScopedVector<DeviceState>* devices) {
   DCHECK(ui_task_runner_->RunsTasksOnCurrentThread());
@@ -321,7 +328,7 @@ void BluetoothTaskManagerWin::GetKnownDevices() {
   DiscoverServices(device_list);
   ui_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&BluetoothTaskManagerWin::OnDevicesDiscovered,
+      base::Bind(&BluetoothTaskManagerWin::OnDevicesUpdated,
                  this,
                  base::Owned(device_list)));
 }
@@ -333,7 +340,7 @@ void BluetoothTaskManagerWin::SearchDevices(
   BLUETOOTH_DEVICE_SEARCH_PARAMS device_search_params = {
       sizeof(BLUETOOTH_DEVICE_SEARCH_PARAMS),
       1,  // return authenticated devices
-      1,  // return remembered devices
+      1,  // return remembered devicess
       search_cached_devices_only ? 0 : 1,  // return unknown devices
       1,  // return connected devices
       search_cached_devices_only ? 0 : 1,  // issue a new inquiry

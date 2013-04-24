@@ -133,6 +133,7 @@ void BluetoothAdapterWin::DiscoveryStarted(bool success) {
 }
 
 void BluetoothAdapterWin::DiscoveryStopped() {
+  discovered_devices_.clear();
   bool was_discovering = IsDiscovering();
   discovery_status_ = NOT_DISCOVERING;
   for (std::vector<base::Closure>::const_iterator iter =
@@ -181,51 +182,29 @@ void BluetoothAdapterWin::AdapterStateChanged(
 
 void BluetoothAdapterWin::DevicesDiscovered(
     const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices) {
-  std::hash_set<std::string> device_address_list;
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (ScopedVector<BluetoothTaskManagerWin::DeviceState>::const_iterator iter =
            devices.begin();
        iter != devices.end();
        ++iter) {
-    device_address_list.insert((*iter)->address);
-    DevicesMap::iterator found_device_iter = devices_.find((*iter)->address);
-
-    if (found_device_iter == devices_.end()) {
-      devices_[(*iter)->address] = new BluetoothDeviceWin(**iter);
+    if (discovered_devices_.find((*iter)->address) ==
+        discovered_devices_.end()) {
+      BluetoothDeviceWin device_win(**iter);
       FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceAdded(this, devices_[(*iter)->address]));
-      continue;
-    }
-    BluetoothDeviceWin* device_win =
-        static_cast<BluetoothDeviceWin*>(found_device_iter->second);
-    if (device_win->device_fingerprint() !=
-        BluetoothDeviceWin::ComputeDeviceFingerprint(**iter)) {
-      devices_[(*iter)->address] = new BluetoothDeviceWin(**iter);
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceChanged(this, devices_[(*iter)->address]));
-      delete device_win;
+                        DeviceAdded(this, &device_win));
+      discovered_devices_.insert((*iter)->address);
     }
   }
+}
 
-  DevicesMap::iterator device_iter = devices_.begin();
-  while (device_iter != devices_.end()) {
-    if (device_address_list.find(device_iter->first) !=
-        device_address_list.end()) {
-      ++device_iter;
-      continue;
-    }
-    if (device_iter->second->IsConnected() || device_iter->second->IsPaired()) {
-      BluetoothDeviceWin* device_win =
-          static_cast<BluetoothDeviceWin*>(device_iter->second);
-      device_win->SetVisible(false);
-      FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                        DeviceChanged(this, device_win));
-      ++device_iter;
-      continue;
-    }
-    FOR_EACH_OBSERVER(BluetoothAdapter::Observer, observers_,
-                      DeviceRemoved(this, device_iter->second));
-    delete device_iter->second;
-    device_iter = devices_.erase(device_iter);
+void BluetoothAdapterWin::DevicesUpdated(
+    const ScopedVector<BluetoothTaskManagerWin::DeviceState>& devices) {
+  STLDeleteValues(&devices_);
+  for (ScopedVector<BluetoothTaskManagerWin::DeviceState>::const_iterator iter =
+           devices.begin();
+       iter != devices.end();
+       ++iter) {
+    devices_[(*iter)->address] = new BluetoothDeviceWin(**iter);
   }
 }
 
