@@ -471,6 +471,7 @@
         'browser/chromeos/login/screens/reset_screen.cc',
         'browser/chromeos/login/screens/reset_screen.h',
         'browser/chromeos/login/screens/reset_screen_actor.h',
+        'browser/chromeos/login/screens/screen_context.cc',
         'browser/chromeos/login/screens/screen_context.h',
         'browser/chromeos/login/screens/screen_factory.cc',
         'browser/chromeos/login/screens/screen_factory.h',

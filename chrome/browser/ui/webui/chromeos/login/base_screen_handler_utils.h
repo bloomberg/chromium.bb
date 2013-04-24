@@ -26,41 +26,41 @@ struct UnwrapConstRef<const T&> {
 };
 
 template<typename T>
-inline bool GetArg(const base::ListValue* args, size_t index, T* out_value);
+inline bool ParseValue(const Value* value, T* out_value);
 
 template<>
-inline bool GetArg<bool>(const base::ListValue* args,
-                         size_t index,
-                         bool* out_value) {
-  return args->GetBoolean(index, out_value);
+inline bool ParseValue<bool>(const Value* value, bool* out_value) {
+  return value->GetAsBoolean(out_value);
 }
 
 template<>
-inline bool GetArg<int>(const base::ListValue* args,
-                        size_t index,
-                        int* out_value) {
-  return args->GetInteger(index, out_value);
+inline bool ParseValue<int>(const Value* value, int* out_value) {
+  return value->GetAsInteger(out_value);
 }
 
 template<>
-inline bool GetArg<double>(const base::ListValue* args,
-                           size_t index,
-                           double* out_value) {
-  return args->GetDouble(index, out_value);
+inline bool ParseValue<double>(const Value* value, double* out_value) {
+  return value->GetAsDouble(out_value);
 }
 
 template<>
-inline bool GetArg<std::string>(const base::ListValue* args,
-                                size_t index,
-                                std::string* out_value) {
-  return args->GetString(index, out_value);
+inline bool ParseValue<std::string>(const Value* value,
+                                    std::string* out_value) {
+  return value->GetAsString(out_value);
 }
 
 template<>
-inline bool GetArg<string16>(const base::ListValue* args,
-                             size_t index,
-                             string16* out_value) {
-  return args->GetString(index, out_value);
+inline bool ParseValue<base::string16>(const Value* value,
+                                       base::string16* out_value) {
+  return value->GetAsString(out_value);
+}
+
+template<typename T>
+inline bool GetArg(const base::ListValue* args, size_t index, T* out_value) {
+  const Value* value;
+  if (!args->Get(index, &value))
+    return false;
+  return ParseValue(value, out_value);
 }
 
 inline base::FundamentalValue MakeValue(bool v) {
