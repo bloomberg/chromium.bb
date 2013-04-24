@@ -30,7 +30,7 @@
 namespace WebCore { class AudioBus; }
 
 #if WEBKIT_IMPLEMENTATION
-namespace WTF { template <typename T> class PassOwnPtr; }
+namespace WTF { template <typename T> class PassRefPtr; }
 #endif
 
 namespace WebKit {
@@ -63,7 +63,7 @@ public:
     WEBKIT_EXPORT float* channelData(unsigned channelIndex);
 
 #if WEBKIT_IMPLEMENTATION
-    WTF::PassOwnPtr<WebCore::AudioBus> release();    
+    WTF::PassRefPtr<WebCore::AudioBus> release();
 #endif
 
 private:

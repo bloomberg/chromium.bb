@@ -31,47 +31,46 @@
 #include "AudioFileReader.h"
 #include <public/Platform.h>
 #include <public/WebAudioBus.h>
-#include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
 
-PassOwnPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double sampleRate)
+PassRefPtr<AudioBus> decodeAudioFileData(const char* data, size_t size, double sampleRate)
 {
     WebKit::WebAudioBus webAudioBus;
     if (WebKit::Platform::current()->loadAudioResource(&webAudioBus, data, size, sampleRate))
         return webAudioBus.release();
-    return nullptr;
+    return 0;
 }
 
-PassOwnPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
+PassRefPtr<AudioBus> AudioBus::loadPlatformResource(const char* name, float sampleRate)
 {
     const WebKit::WebData& resource = WebKit::Platform::current()->loadResource(name);
     if (resource.isEmpty())
-        return nullptr;
+        return 0;
 
     // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
-    OwnPtr<AudioBus> audioBus = decodeAudioFileData(resource.data(), resource.size(), sampleRate);
+    RefPtr<AudioBus> audioBus = decodeAudioFileData(resource.data(), resource.size(), sampleRate);
 
     if (!audioBus.get())
-        return nullptr;
+        return 0;
 
     // If the bus is already at the requested sample-rate then return as is.
     if (audioBus->sampleRate() == sampleRate)
-        return audioBus.release();
+        return audioBus;
 
     return AudioBus::createBySampleRateConverting(audioBus.get(), false, sampleRate);
 }
 
-PassOwnPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
+PassRefPtr<AudioBus> createBusFromInMemoryAudioFile(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
 {
     // FIXME: the sampleRate parameter is ignored. It should be removed from the API.
-    OwnPtr<AudioBus> audioBus = decodeAudioFileData(static_cast<const char*>(data), dataSize, sampleRate);
+    RefPtr<AudioBus> audioBus = decodeAudioFileData(static_cast<const char*>(data), dataSize, sampleRate);
     if (!audioBus.get())
-        return nullptr;
+        return 0;
 
     // If the bus needs no conversion then return as is.
     if ((!mixToMono || audioBus->numberOfChannels() == 1) && audioBus->sampleRate() == sampleRate)
-        return audioBus.release();
+        return audioBus;
 
     return AudioBus::createBySampleRateConverting(audioBus.get(), mixToMono, sampleRate);
 }

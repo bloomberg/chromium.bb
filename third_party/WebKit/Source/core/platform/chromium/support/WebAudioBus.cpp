@@ -28,14 +28,16 @@
 #if ENABLE(WEB_AUDIO)
 #include "AudioBus.h"
 #else
+#include <wtf/ThreadSafeRefCounted.h>
+
 namespace WebCore {
-class AudioBus {
+class AudioBus : public ThreadSafeRefCounted<AudioBus> {
 };
 } // namespace WebCore
 #endif
 
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefPtr.h>
 
 using namespace WebCore;
 
@@ -130,15 +132,15 @@ float* WebAudioBus::channelData(unsigned channelIndex)
 #endif
 }
 
-PassOwnPtr<AudioBus> WebAudioBus::release()
+PassRefPtr<AudioBus> WebAudioBus::release()
 {
 #if ENABLE(WEB_AUDIO)
-    OwnPtr<AudioBus> audioBus(adoptPtr(static_cast<AudioBus*>(m_private)));
+    RefPtr<AudioBus> audioBus(adoptRef(static_cast<AudioBus*>(m_private)));
     m_private = 0;
-    return audioBus.release();
+    return audioBus;
 #else
     ASSERT_NOT_REACHED();
-    return nullptr;
+    return 0;
 #endif
 }
 

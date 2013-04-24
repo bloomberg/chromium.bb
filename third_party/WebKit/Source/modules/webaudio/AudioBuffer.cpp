@@ -36,7 +36,6 @@
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioFileReader.h"
 #include "modules/webaudio/AudioContext.h"
-#include "wtf/OwnPtr.h"
 
 namespace WebCore {
 
@@ -50,7 +49,7 @@ PassRefPtr<AudioBuffer> AudioBuffer::create(unsigned numberOfChannels, size_t nu
 
 PassRefPtr<AudioBuffer> AudioBuffer::createFromAudioFileData(const void* data, size_t dataSize, bool mixToMono, float sampleRate)
 {
-    OwnPtr<AudioBus> bus = createBusFromInMemoryAudioFile(data, dataSize, mixToMono, sampleRate);
+    RefPtr<AudioBus> bus = createBusFromInMemoryAudioFile(data, dataSize, mixToMono, sampleRate);
     if (bus.get())
         return adoptRef(new AudioBuffer(bus.get()));
 
