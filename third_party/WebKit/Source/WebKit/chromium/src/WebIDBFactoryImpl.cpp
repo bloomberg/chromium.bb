@@ -59,7 +59,12 @@ WebIDBFactoryImpl::~WebIDBFactoryImpl()
 
 void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks, const WebSecurityOrigin& origin, WebFrame*, const WebString& dataDir)
 {
-    m_idbFactoryBackend->getDatabaseNames(IDBCallbacksProxy::create(adoptPtr(callbacks)), origin, 0, dataDir);
+    m_idbFactoryBackend->getDatabaseNames(IDBCallbacksProxy::create(adoptPtr(callbacks)), origin.databaseIdentifier(), 0, dataDir);
+}
+
+void WebIDBFactoryImpl::getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir)
+{
+    m_idbFactoryBackend->getDatabaseNames(IDBCallbacksProxy::create(adoptPtr(callbacks)), databaseIdentifier, 0, dataDir);
 }
 
 void WebIDBFactoryImpl::open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebSecurityOrigin& origin, WebFrame*, const WebString& dataDir)
@@ -67,12 +72,25 @@ void WebIDBFactoryImpl::open(const WebString& name, long long version, long long
     RefPtr<IDBCallbacksProxy> callbacksProxy = IDBCallbacksProxy::create(adoptPtr(callbacks));
     RefPtr<IDBDatabaseCallbacksProxy> databaseCallbacksProxy = IDBDatabaseCallbacksProxy::create(adoptPtr(databaseCallbacks));
     callbacksProxy->setDatabaseCallbacks(databaseCallbacksProxy);
-    m_idbFactoryBackend->open(name, version, transactionId, callbacksProxy.get(), databaseCallbacksProxy.get(), origin, 0, dataDir);
+    m_idbFactoryBackend->open(name, version, transactionId, callbacksProxy.get(), databaseCallbacksProxy.get(), origin.databaseIdentifier(), 0, dataDir);
+}
+
+void WebIDBFactoryImpl::open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier, const WebString& dataDir)
+{
+    RefPtr<IDBCallbacksProxy> callbacksProxy = IDBCallbacksProxy::create(adoptPtr(callbacks));
+    RefPtr<IDBDatabaseCallbacksProxy> databaseCallbacksProxy = IDBDatabaseCallbacksProxy::create(adoptPtr(databaseCallbacks));
+    callbacksProxy->setDatabaseCallbacks(databaseCallbacksProxy);
+    m_idbFactoryBackend->open(name, version, transactionId, callbacksProxy.get(), databaseCallbacksProxy.get(), databaseIdentifier, 0, dataDir);
 }
 
 void WebIDBFactoryImpl::deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebSecurityOrigin& origin, WebFrame*, const WebString& dataDir)
 {
-    m_idbFactoryBackend->deleteDatabase(name, IDBCallbacksProxy::create(adoptPtr(callbacks)), origin, 0, dataDir);
+    m_idbFactoryBackend->deleteDatabase(name, IDBCallbacksProxy::create(adoptPtr(callbacks)), origin.databaseIdentifier(), 0, dataDir);
+}
+
+void WebIDBFactoryImpl::deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir)
+{
+    m_idbFactoryBackend->deleteDatabase(name, IDBCallbacksProxy::create(adoptPtr(callbacks)), databaseIdentifier, 0, dataDir);
 }
 
 } // namespace WebKit

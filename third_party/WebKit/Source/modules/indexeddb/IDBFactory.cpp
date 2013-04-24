@@ -102,7 +102,7 @@ PassRefPtr<IDBRequest> IDBFactory::getDatabaseNames(ScriptExecutionContext* cont
     }
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), 0);
-    m_backend->getDatabaseNames(request, context->securityOrigin(), context, getIndexedDBDatabasePath(context));
+    m_backend->getDatabaseNames(request, context->securityOrigin()->databaseIdentifier(), context, getIndexedDBDatabasePath(context));
     return request;
 }
 
@@ -134,7 +134,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::openInternal(ScriptExecutionContext* co
     RefPtr<IDBDatabaseCallbacksImpl> databaseCallbacks = IDBDatabaseCallbacksImpl::create();
     int64_t transactionId = IDBDatabase::nextTransactionId();
     RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, databaseCallbacks, transactionId, version);
-    m_backend->open(name, version, transactionId, request, databaseCallbacks, context->securityOrigin(), context, getIndexedDBDatabasePath(context));
+    m_backend->open(name, version, transactionId, request, databaseCallbacks, context->securityOrigin()->databaseIdentifier(), context, getIndexedDBDatabasePath(context));
     return request;
 }
 
@@ -160,7 +160,7 @@ PassRefPtr<IDBOpenDBRequest> IDBFactory::deleteDatabase(ScriptExecutionContext* 
     }
 
     RefPtr<IDBOpenDBRequest> request = IDBOpenDBRequest::create(context, 0, 0, IDBDatabaseMetadata::DefaultIntVersion);
-    m_backend->deleteDatabase(name, request, context->securityOrigin(), context, getIndexedDBDatabasePath(context));
+    m_backend->deleteDatabase(name, request, context->securityOrigin()->databaseIdentifier(), context, getIndexedDBDatabasePath(context));
     return request;
 }
 
