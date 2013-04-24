@@ -1532,6 +1532,40 @@ String Internals::layerTreeAsText(Document* document, ExceptionCode& ec) const
     return layerTreeAsText(document, 0, ec);
 }
 
+static PassRefPtr<NodeList> paintOrderList(Element* element, ExceptionCode& ec, RenderLayer::PaintOrderListType type)
+{
+    if (!element) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+
+    element->document()->updateLayout();
+
+    RenderObject* renderer = element->renderer();
+    if (!renderer || !renderer->isBox()) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+
+    RenderLayer* layer = toRenderBox(renderer)->layer();
+    if (!layer) {
+        ec = INVALID_ACCESS_ERR;
+        return 0;
+    }
+
+    return layer->paintOrderList(type);
+}
+
+PassRefPtr<NodeList> Internals::paintOrderListBeforePromote(Element* element, ExceptionCode& ec)
+{
+    return paintOrderList(element, ec, RenderLayer::BeforePromote);
+}
+
+PassRefPtr<NodeList> Internals::paintOrderListAfterPromote(Element* element, ExceptionCode& ec)
+{
+    return paintOrderList(element, ec, RenderLayer::AfterPromote);
+}
+
 String Internals::layerTreeAsText(Document* document, unsigned flags, ExceptionCode& ec) const
 {
     if (!document || !document->frame()) {

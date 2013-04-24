@@ -813,12 +813,19 @@ public:
 
     bool isOutOfFlowRenderFlowThread() const { return renderer()->isOutOfFlowRenderFlowThread(); }
 
+#ifndef NDEBUG
+    String paintOrderListsAsText();
+#endif
+    enum PaintOrderListType {BeforePromote, AfterPromote};
+    PassRefPtr<NodeList> paintOrderList(PaintOrderListType type);
+
 private:
     enum CollectLayersBehavior { StopAtStackingContexts, StopAtStackingContainers };
 
     void updateZOrderLists();
     void rebuildZOrderLists();
-    void rebuildZOrderLists(CollectLayersBehavior, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&);
+    // See the comment for collectLayers for information about the layerToForceAsStackingContainer parameter.
+    void rebuildZOrderLists(CollectLayersBehavior, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0);
     void clearZOrderLists();
 
     void updateNormalFlowList();
@@ -833,6 +840,8 @@ private:
     bool acceleratedCompositingForOverflowScrollEnabled() const;
     void updateDescendantsAreContiguousInStackingOrder();
     void updateDescendantsAreContiguousInStackingOrderRecursive(const HashMap<const RenderLayer*, int>&, int& minIndex, int& maxIndex, int& count, bool firstIteration);
+    void collectBeforePromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListBeforePromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListBeforePromote, size_t& posZOrderListSizeBeforePromote, size_t& negZOrderListSizeBeforePromote);
+    void collectAfterPromotionZOrderList(RenderLayer* ancestorStackingContext, OwnPtr<Vector<RenderLayer*> >& posZOrderListAfterPromote, OwnPtr<Vector<RenderLayer*> >& negZOrderListAfterPromote, size_t& posZOrderListSizeAfterPromote, size_t& negZOrderListSizeAfterPromote);
 
     void computeRepaintRects(const RenderLayerModelObject* repaintContainer, const RenderGeometryMap* = 0);
     void computeRepaintRectsIncludingDescendants();
@@ -889,7 +898,11 @@ private:
 
     LayoutPoint renderBoxLocation() const { return renderer()->isBox() ? toRenderBox(renderer())->location() : LayoutPoint(); }
 
-    void collectLayers(bool includeHiddenLayers, CollectLayersBehavior, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&);
+    // layerToForceAsStackingContainer allows us to build pre-promotion and
+    // post-promotion layer lists, by allowing us to treat a layer as if it is a
+    // stacking context, without adding a new member to RenderLayer or modifying
+    // the style (which could cause extra allocations).
+    void collectLayers(bool includeHiddenLayers, CollectLayersBehavior, OwnPtr<Vector<RenderLayer*> >&, OwnPtr<Vector<RenderLayer*> >&, const RenderLayer* layerToForceAsStackingContainer = 0);
 
     struct LayerPaintingInfo {
         LayerPaintingInfo(RenderLayer* inRootLayer, const LayoutRect& inDirtyRect, PaintBehavior inPaintBehavior, const LayoutSize& inSubPixelAccumulation, RenderObject* inPaintingRoot = 0, RenderRegion*inRegion = 0, OverlapTestRequestMap* inOverlapTestRequests = 0)

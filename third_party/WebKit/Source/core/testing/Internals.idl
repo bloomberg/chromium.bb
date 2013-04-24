@@ -172,6 +172,9 @@
     const unsigned short LAYER_TREE_INCLUDES_PAINTING_PHASES = 8;
     [RaisesException] DOMString layerTreeAsText(Document document, optional unsigned short flags);
 
+    [RaisesException] NodeList paintOrderListBeforePromote(Element element);
+    [RaisesException] NodeList paintOrderListAfterPromote(Element element);
+
     [RaisesException] DOMString scrollingStateTreeAsText(Document document);
     [RaisesException] DOMString mainThreadScrollingReasons(Document document);
     [RaisesException] ClientRectList nonFastScrollableRects(Document document);

@@ -217,6 +217,10 @@ public:
     };
     String layerTreeAsText(Document*, unsigned flags, ExceptionCode&) const;
     String layerTreeAsText(Document*, ExceptionCode&) const;
+
+    PassRefPtr<NodeList> paintOrderListBeforePromote(Element* element, ExceptionCode& ec);
+    PassRefPtr<NodeList> paintOrderListAfterPromote(Element* element, ExceptionCode& ec);
+
     String repaintRectsAsText(Document*, ExceptionCode&) const;
     String scrollingStateTreeAsText(Document*, ExceptionCode&) const;
     String mainThreadScrollingReasons(Document*, ExceptionCode&) const;
