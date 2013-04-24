@@ -321,10 +321,8 @@ NotificationList::Notifications::iterator
 }
 
 void NotificationList::EraseNotification(Notifications::iterator iter) {
-  if (!message_center_visible_ && !(*iter)->is_read() &&
-      (*iter)->priority() > MIN_PRIORITY) {
+  if (!(*iter)->is_read() && (*iter)->priority() > MIN_PRIORITY)
     --unread_count_;
-  }
   delete *iter;
   notifications_.erase(iter);
 }
