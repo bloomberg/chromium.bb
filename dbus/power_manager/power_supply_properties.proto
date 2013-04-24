@@ -10,16 +10,6 @@ package power_manager;
 
 // Power supply status sent from powerd to Chrome.
 message PowerSupplyProperties {
-  // TODO(derat): Delete these fields after Chrome isn't using them and
-  // powerd isn't setting them.
-  optional bool line_power_on = 1;
-  optional double battery_energy = 2;
-  optional double battery_energy_rate = 3;
-  optional double battery_voltage = 4;
-  optional bool battery_is_charged = 9;
-  optional int64 averaged_battery_time_to_empty = 10;
-  optional int64 averaged_battery_time_to_full = 11;
-
   enum BatteryState {
     // Line power is connected and the battery is full or being charged.
     CHARGING = 0;
