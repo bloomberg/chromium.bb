@@ -26,7 +26,7 @@
 #ifndef LevelDBIterator_h
 #define LevelDBIterator_h
 
-#include "LevelDBSlice.h"
+#include "core/platform/leveldb/LevelDBSlice.h"
 
 namespace WebCore {
 

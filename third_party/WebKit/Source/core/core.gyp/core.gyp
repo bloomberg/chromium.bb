@@ -103,13 +103,11 @@
       '../platform/image-decoders/skia',
       '../platform/image-decoders/webp',
       '../platform/image-encoders/skia',
-      '../platform/leveldb',
       '../platform/mediastream',
       '../platform/mediastream/chromium',
       '../platform/mock',
       '../platform/network',
       '../platform/network/chromium',
-      '../platform/sql',
       '../platform/text',
       '../platform/text/transcoder',
       '../plugins',
@@ -399,6 +397,8 @@
         # FIXME: It's not clear if the bindings generation scripts should have
         # a map from header name to absolute include path. For now, let the
         # generated bindings files use relative paths.
+        '../platform/leveldb',
+        '../platform/sql',
         '../storage',
       ],
       'sources': [

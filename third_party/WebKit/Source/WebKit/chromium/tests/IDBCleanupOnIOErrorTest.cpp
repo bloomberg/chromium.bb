@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "IDBBackingStore.h"
-#include "LevelDBDatabase.h"
-#include "SecurityOrigin.h"
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>
+#include "IDBBackingStore.h"
+#include "SecurityOrigin.h"
+#include "core/platform/leveldb/LevelDBDatabase.h"
 
 using namespace WebCore;
 

@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
-#include "LevelDBDatabase.h"
+#include "core/platform/leveldb/LevelDBDatabase.h"
 
-#include "HistogramSupport.h"
-#include "LevelDBComparator.h"
-#include "LevelDBIterator.h"
-#include "LevelDBSlice.h"
-#include "LevelDBWriteBatch.h"
-#include "Logging.h"
 #include <helpers/memenv/memenv.h>
 #include <leveldb/comparator.h>
 #include <leveldb/db.h>
 #include <leveldb/env.h>
 #include <leveldb/slice.h>
 #include <string>
+#include "HistogramSupport.h"
+#include "Logging.h"
+#include "core/platform/leveldb/LevelDBComparator.h"
+#include "core/platform/leveldb/LevelDBIterator.h"
+#include "core/platform/leveldb/LevelDBSlice.h"
+#include "core/platform/leveldb/LevelDBWriteBatch.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>

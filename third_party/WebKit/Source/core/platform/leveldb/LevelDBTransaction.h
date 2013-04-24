@@ -26,10 +26,10 @@
 #ifndef LevelDBTransaction_h
 #define LevelDBTransaction_h
 
-#include "LevelDBComparator.h"
-#include "LevelDBDatabase.h"
-#include "LevelDBIterator.h"
-#include "LevelDBSlice.h"
+#include "core/platform/leveldb/LevelDBComparator.h"
+#include "core/platform/leveldb/LevelDBDatabase.h"
+#include "core/platform/leveldb/LevelDBIterator.h"
+#include "core/platform/leveldb/LevelDBSlice.h"
 #include <wtf/AVLTree.h>
 #include <wtf/HashSet.h>
 #include <wtf/PassOwnPtr.h>

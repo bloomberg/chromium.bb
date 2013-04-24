@@ -26,10 +26,10 @@
 #include "config.h"
 #include "IDBLevelDBCoding.h"
 
+#include <gtest/gtest.h>
 #include "IDBKey.h"
 #include "IDBKeyPath.h"
-#include "LevelDBSlice.h"
-#include <gtest/gtest.h>
+#include "core/platform/leveldb/LevelDBSlice.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

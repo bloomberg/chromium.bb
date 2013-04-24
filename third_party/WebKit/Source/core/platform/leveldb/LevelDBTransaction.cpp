@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "LevelDBTransaction.h"
+#include "core/platform/leveldb/LevelDBTransaction.h"
 
-#include "LevelDBDatabase.h"
-#include "LevelDBSlice.h"
-#include "LevelDBWriteBatch.h"
 #include <leveldb/db.h>
+#include "core/platform/leveldb/LevelDBDatabase.h"
+#include "core/platform/leveldb/LevelDBSlice.h"
+#include "core/platform/leveldb/LevelDBWriteBatch.h"
 
 namespace WebCore {
 
