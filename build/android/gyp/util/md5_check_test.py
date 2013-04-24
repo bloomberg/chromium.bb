@@ -23,7 +23,7 @@ class TestMd5Check(unittest.TestCase):
 
     record_path = tempfile.NamedTemporaryFile(suffix='.stamp')
 
-    def CheckCallAndRecord(should_call, message):
+    def CheckCallAndRecord(should_call, message, force=False):
       self.called = False
       def MarkCalled():
         self.called = True
@@ -31,11 +31,13 @@ class TestMd5Check(unittest.TestCase):
           MarkCalled,
           record_path=record_path.name,
           input_paths=input_files,
-          input_strings=input_strings)
+          input_strings=input_strings,
+          force=force)
       self.failUnlessEqual(should_call, self.called, message)
 
     CheckCallAndRecord(True, 'should call when record doesn\'t exist')
     CheckCallAndRecord(False, 'should not call when nothing changed')
+    CheckCallAndRecord(True, force=True, message='should call when forced')
 
     input_file1.write('some more input')
     input_file1.flush()

@@ -7,18 +7,21 @@ import os
 
 
 def CallAndRecordIfStale(
-    function, record_path=None, input_paths=[], input_strings=[]):
+    function, record_path=None, input_paths=[], input_strings=[], force=False):
   """Calls function if the md5sum of the input paths/strings has changed.
 
   The md5sum of the inputs is compared with the one stored in record_path. If
   this has changed (or the record doesn't exist), function will be called and
   the new md5sum will be recorded.
+
+  If force is True, the function will be called regardless of whether the
+  md5sum is out of date.
   """
   md5_checker = _Md5Checker(
       record_path=record_path,
       input_paths=input_paths,
       input_strings=input_strings)
-  if md5_checker.IsStale():
+  if force or md5_checker.IsStale():
     function()
     md5_checker.Write()
 
