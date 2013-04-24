@@ -30,7 +30,13 @@ if cros_build_lib.IsInsideChroot():
 INCLUDE_PATTERNS_FILENAME = 'autotest-quickmerge-includepatterns'
 AUTOTEST_PROJECT_NAME = 'chromiumos/third_party/autotest'
 AUTOTEST_TESTS_EBUILD = 'chromeos-base/autotest-tests'
-
+DOWNGRADE_EBUILDS = ['chromeos-base/autotest',
+                     'chromeos-base/autotest-tests',
+                     'chromeos-base/autotest-chrome',
+                     'chromeos-base/autotest-factory',
+                     'chromeos-base/autotest-telemetry',
+                     'chromeos-base/autotest-tests-ltp',
+                     'chromeos-base/autotest-tests-ownershipapi']
 
 # Data structure describing a single rsync filesystem change.
 #
@@ -332,9 +338,10 @@ def main(argv):
   if not args.pretend:
     UpdatePackageContents(change_report, AUTOTEST_TESTS_EBUILD,
                           sysroot_path)
-    if DowngradePackageVersion(sysroot_path, AUTOTEST_TESTS_EBUILD) != 0:
-      logging.warning('Unable to downgrade package %s version number.',
-          AUTOTEST_TESTS_EBUILD)
+    for ebuild in DOWNGRADE_EBUILDS:
+      if DowngradePackageVersion(sysroot_path, ebuild) != 0:
+        logging.warning('Unable to downgrade package %s version number.',
+            ebuild)
     stale_packages = GetStalePackageNames(
         change_report.new_files + change_report.modified_files,
         sysroot_autotest_path)
