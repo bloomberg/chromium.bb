@@ -169,6 +169,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   uint64 high_watermark_;
   uint64 low_watermark_;
   bool eviction_in_progress_;
+  base::TimeTicks eviction_start_time_;
 
   // This stores all the hash_key of entries that are removed during
   // initialization.
