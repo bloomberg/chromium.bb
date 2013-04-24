@@ -2386,7 +2386,8 @@ bool EventHandler::handleGestureEvent(const PlatformGestureEvent& gestureEvent)
     case PlatformEvent::GestureScrollUpdateWithoutPropagation:
         return handleGestureScrollUpdate(gestureEvent);
     case PlatformEvent::GestureScrollEnd:
-        return handleGestureScrollEnd(gestureEvent);
+        clearGestureScrollNodes(); 
+        return true;
     case PlatformEvent::GestureTap:
         return handleGestureTap(gestureEvent);
     case PlatformEvent::GestureTapDown:
@@ -2522,16 +2523,6 @@ bool EventHandler::passGestureEventToWidgetIfPossible(const PlatformGestureEvent
     return false;
 }
 
-bool EventHandler::handleGestureScrollEnd(const PlatformGestureEvent& gestureEvent) {
-    Node* node = m_scrollGestureHandlingNode.get();
-    clearGestureScrollNodes();
-
-    if (node)
-        passGestureEventToWidgetIfPossible(gestureEvent, node->renderer());
-
-    return false;
-}
-
 bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureEvent)
 {
     Document* document = m_frame->document();
@@ -2547,9 +2538,6 @@ bool EventHandler::handleGestureScrollBegin(const PlatformGestureEvent& gestureE
     HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::DisallowShadowContent);
     HitTestResult result(viewPoint);
     document->renderView()->hitTest(request, result);
-
-    ASSERT(!m_scrollGestureHandlingNode);
-    ASSERT(!m_previousGestureScrolledNode);
 
     m_lastHitTestResultOverWidget = result.isOverWidget(); 
     m_scrollGestureHandlingNode = result.innerNode();
@@ -2582,17 +2570,12 @@ bool EventHandler::handleGestureScrollUpdate(const PlatformGestureEvent& gesture
 
     RefPtr<FrameView> protector(m_frame->view());
 
+    // Try to send the event to the correct view.
+    if (passGestureEventToWidgetIfPossible(gestureEvent, renderer))
+        return true;
+
     Node* stopNode = 0;
     bool scrollShouldNotPropagate = gestureEvent.type() == PlatformEvent::GestureScrollUpdateWithoutPropagation;
-
-    // Try to send the event to the correct view.
-    if (passGestureEventToWidgetIfPossible(gestureEvent, renderer)) {
-        if(scrollShouldNotPropagate)
-              m_previousGestureScrolledNode = m_scrollGestureHandlingNode;
-
-        return true;
-    }
-
     if (scrollShouldNotPropagate)
         stopNode = m_previousGestureScrolledNode.get();
 

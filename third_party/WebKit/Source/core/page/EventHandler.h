@@ -168,7 +168,6 @@ public:
     bool handleGestureTwoFingerTap(const PlatformGestureEvent&);
     bool handleGestureScrollUpdate(const PlatformGestureEvent&);
     bool handleGestureScrollBegin(const PlatformGestureEvent&);
-    bool handleGestureScrollEnd(const PlatformGestureEvent&);
     void clearGestureScrollNodes();
     bool isScrollbarHandlingGestures() const;
 

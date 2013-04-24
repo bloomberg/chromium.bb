@@ -19,6 +19,13 @@
   margin: 0px;
 }
 
+#container {
+    width: 150px;
+    height: 150px;
+    overflow-y: scroll;
+    overflow-x: scroll;
+}
+
 #outerdiv {
     width: 200px;
     height: 200px;
@@ -37,7 +44,9 @@ td {
 <div id="outerdiv">
   <table border="0" cellspacing="0px" >
     <tr><td>
-        <iframe frameBorder="0" style="display: block;" id="touchtargetiframe" src="resources/scroll-inside-editable-iframe.html"></iframe>
+      <div id="container">
+        <iframe id="touchtargetiframe" src="resources/scroll-inside-editable-iframe.html"></iframe>
+      </div>
     </td></tr>
     <tr><td>
       <div id="bluebox"></div>
@@ -51,14 +60,12 @@ td {
 
 var movedbox;
 var touchtarget;
-var iframe;
-var iframeBody;
-var expectedGesturesTotal = 1;
+var expectedGesturesTotal = 2;
 var gesturesOccurred = 0;
-var scrollAmountX = ['0'];
-var scrollAmountY = ['0'];
+var scrollAmountX = ['0', '0'];
+var scrollAmountY = ['0', '0'];
 var wheelEventsOccurred = 0;
-var expectedWheelEventsOccurred = ['0'];
+var expectedWheelEventsOccurred = ['0', '0'];
 var scrollEventsOccurred = 0;
 var scrolledElement = 'movedbox'
 var scrollEventsOccurred = 0;
@@ -66,19 +73,22 @@ var expectedScrollEventsOccurred = '1';
 
 function firstGestureScroll()
 {
-    iframe = touchtarget;
-    iframeBody = iframe.contentDocument.body;
-
     debug("first gesture");
     eventSender.gestureScrollBegin(10, 72);
     eventSender.gestureScrollUpdateWithoutPropagation(0, -700);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -100);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -70);
-    eventSender.gestureScrollUpdateWithoutPropagation(0, -10);
     eventSender.gestureScrollEnd(0, 0);
 
-    // Make sure the actual iframe got fully scrolled
-    shouldBe('iframeBody.scrollHeight - iframeBody.scrollTop', 'iframe.clientHeight');
+    // Wait for layout.
+    checkScrollOffset();
+}
+
+function secondGestureScroll()
+{
+    debug("second gesture");
+    eventSender.gestureScrollBegin(12, 40);
+    eventSender.gestureScrollUpdateWithoutPropagation(0, -10);
+    eventSender.gestureScrollUpdateWithoutPropagation(0, -50);
+    eventSender.gestureScrollEnd(0, 0);
 
     // Wait for layout.
     checkScrollOffset();
