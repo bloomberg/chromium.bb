@@ -136,9 +136,13 @@ private:
     void setRootEditableElementForSelectionOnMouseDown(Element*);
     void clearRootEditableElementForSelectionOnMouseDown();
 
+    class PrefetchEventHandler;
+    PrefetchEventHandler* prefetchEventHandler();
+
     bool m_hasRootEditableElementForSelectionOnMouseDown : 1;
     bool m_wasShiftKeyDownOnMouseDown : 1;
     uint32_t m_linkRelations : 30;
+    OwnPtr<PrefetchEventHandler> m_prefetchEventHandler;
     mutable LinkHash m_cachedVisitedLinkHash;
 };
 

@@ -33,6 +33,7 @@
 #include "FrameLoaderClient.h"
 #include "FrameLoaderTypes.h"
 #include "FrameSelection.h"
+#include "HistogramSupport.h"
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
@@ -48,6 +49,27 @@
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
+
+class HTMLAnchorElement::PrefetchEventHandler {
+public:
+    static PassOwnPtr<PrefetchEventHandler> create()
+    {
+        return adoptPtr(new HTMLAnchorElement::PrefetchEventHandler());
+    }
+
+    void handleEvent(Event* e);
+
+private:
+    PrefetchEventHandler();
+
+    void handleMouseOver(Event* event);
+    void handleMouseOut(Event* event);
+    void handleLeftMouseDown(Event* event);
+    void handleClick(Event* event);
+
+    double m_mouseOverTimestamp;
+    double m_mouseDownTimestamp;
+};
 
 using namespace HTMLNames;
 
@@ -161,6 +183,8 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
             dispatchSimulatedClick(event);
             return;
         }
+
+        prefetchEventHandler()->handleEvent(event);
 
         if (isLinkClick(event) && treatLinkAsLiveForEventType(eventType(event))) {
             handleClick(event);
@@ -611,6 +635,80 @@ void HTMLAnchorElement::setRootEditableElementForSelectionOnMouseDown(Element* e
 
     rootEditableElementMap().set(this, element);
     m_hasRootEditableElementForSelectionOnMouseDown = true;
+}
+
+HTMLAnchorElement::PrefetchEventHandler* HTMLAnchorElement::prefetchEventHandler()
+{
+    if (!m_prefetchEventHandler)
+        m_prefetchEventHandler = PrefetchEventHandler::create();
+
+    return m_prefetchEventHandler.get();
+}
+
+HTMLAnchorElement::PrefetchEventHandler::PrefetchEventHandler()
+    : m_mouseOverTimestamp(0.0)
+    , m_mouseDownTimestamp(0.0)
+{
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::handleEvent(Event* event)
+{
+    if (event->type() == eventNames().mouseoverEvent)
+        handleMouseOver(event);
+    else if (event->type() == eventNames().mouseoutEvent)
+        handleMouseOut(event);
+    else if (event->type() == eventNames().mousedownEvent && event->isMouseEvent() && static_cast<MouseEvent*>(event)->button() == LeftButton)
+        handleLeftMouseDown(event);
+    else if (isLinkClick(event))
+        handleClick(event);
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::handleMouseOver(Event* event)
+{
+    if (m_mouseOverTimestamp == 0.0) {
+        m_mouseOverTimestamp = event->timeStamp();
+
+        HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseOvers", 0, 2);
+    }
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::handleMouseOut(Event* event)
+{
+    if (m_mouseOverTimestamp > 0.0) {
+        double mouseOverDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseOverTimestamp);
+        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_NoClick", mouseOverDuration * 1000, 0, 10000, 100);
+
+        m_mouseOverTimestamp = 0.0;
+    }
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::handleLeftMouseDown(Event* event)
+{
+    m_mouseDownTimestamp = event->timeStamp();
+
+    HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseDowns", 0, 2);
+}
+
+void HTMLAnchorElement::PrefetchEventHandler::handleClick(Event* event)
+{
+    bool capturedMouseOver = (m_mouseOverTimestamp > 0.0);
+    if (capturedMouseOver) {
+        double mouseOverDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseOverTimestamp);
+
+        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseOverDuration_Click", mouseOverDuration * 1000, 0, 10000, 100);
+    }
+
+    bool capturedMouseDown = (m_mouseDownTimestamp > 0.0);
+    HistogramSupport::histogramEnumeration("MouseEventPrefetch.MouseDownFollowedByClick", capturedMouseDown, 2);
+
+    if (capturedMouseDown) {
+        double mouseDownDuration = convertDOMTimeStampToSeconds(event->timeStamp() - m_mouseDownTimestamp);
+
+        HistogramSupport::histogramCustomCounts("MouseEventPrefetch.MouseDownDuration_Click", mouseDownDuration * 1000, 0, 10000, 100);
+    }
+
+    m_mouseOverTimestamp = 0;
+    m_mouseDownTimestamp = 0;
 }
 
 }
