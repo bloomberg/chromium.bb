@@ -2461,10 +2461,6 @@ webkit.org/b/94492 [ Win ] css3/filters/custom/filter-repaint-custom-rotated.htm
 # Following test needs rebaseline
 webkit.org/b/106044 [ Win7 ] css3/filters/effect-invert.html [ ImageOnlyFailure Pass ]
 
-# These tests need rebaseline
-crbug.com/229678 css3/filters/effect-reference.html [ Failure ImageOnlyFailure ]
-crbug.com/229678 css3/filters/effect-reference-hw.html [ Failure ImageOnlyFailure ]
-
 webkit.org/b/95581 http/tests/xmlhttprequest/zero-length-response.html [ Pass Timeout ]
 webkit.org/b/95581 http/tests/misc/javascript-url-stop-loaders.html [ Pass Timeout ]
 
