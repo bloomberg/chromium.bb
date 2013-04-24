@@ -3092,3 +3092,9 @@ crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
 
 crbug.com/233588 [ Linux Win Mac ] inspector/styles/stylesheet-tracking.html [ Pass Failure ]
+
+crbug.com/169374 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
+crbug.com/169374 compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
+crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-coplanar.html [ ImageOnlyFailure ]
+crbug.com/169374 transforms/3d/point-mapping/3d-point-mapping-overlapping.html [ ImageOnlyFailure ]
+crbug.com/169374 transitions/default-timing-function.html [ ImageOnlyFailure ]
