@@ -36,10 +36,16 @@ using content::UserMetricsAction;
 namespace chromeos {
 namespace options {
 
-CrosLanguageOptionsHandler::CrosLanguageOptionsHandler() {
+CrosLanguageOptionsHandler::CrosLanguageOptionsHandler()
+    : composition_extension_appended_(false),
+      is_page_initialized_(false) {
+  input_method::GetInputMethodManager()->GetComponentExtensionIMEManager()->
+      AddObserver(this);
 }
 
 CrosLanguageOptionsHandler::~CrosLanguageOptionsHandler() {
+  input_method::GetInputMethodManager()->GetComponentExtensionIMEManager()->
+      RemoveObserver(this);
 }
 
 void CrosLanguageOptionsHandler::GetLocalizedValues(
@@ -87,8 +93,19 @@ void CrosLanguageOptionsHandler::GetLocalizedValues(
   localized_strings->Set("languageList", GetAcceptLanguageList(*descriptors));
   localized_strings->Set("inputMethodList", GetInputMethodList(*descriptors));
   localized_strings->Set("extensionImeList", GetExtensionImeList());
-  localized_strings->Set("componentExtensionImeList",
-                         GetComponentExtensionImeList());
+
+  ComponentExtensionIMEManager* component_extension_manager =
+      input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
+  if (component_extension_manager->IsInitialized()) {
+    localized_strings->Set("componentExtensionImeList",
+                           GetComponentExtensionImeList());
+    composition_extension_appended_ = true;
+  } else {
+    // If component extension IME manager is not ready for use, it will be
+    // added in |InitializePage()|.
+    localized_strings->Set("componentExtensionImeList",
+                           new ListValue());
+  }
 }
 
 void CrosLanguageOptionsHandler::RegisterMessages() {
@@ -278,13 +295,9 @@ base::ListValue* CrosLanguageOptionsHandler::GetExtensionImeList() {
 base::ListValue* CrosLanguageOptionsHandler::GetComponentExtensionImeList() {
   ComponentExtensionIMEManager* component_extension_manager =
       input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
-  scoped_ptr<ListValue> extension_ime_ids_list(new ListValue());
-  if (!component_extension_manager->IsInitialized()) {
-    // TODO(nona): Handle not initialized case.
-    DLOG(ERROR) << "Component Extension IME is not Initialized.";
-    return extension_ime_ids_list.release();
-  }
+  DCHECK(component_extension_manager->IsInitialized());
 
+  scoped_ptr<ListValue> extension_ime_ids_list(new ListValue());
   input_method::InputMethodDescriptors descriptors =
       component_extension_manager->GetAllIMEAsInputMethodDescriptor();
   for (size_t i = 0; i < descriptors.size(); ++i) {
@@ -339,6 +352,42 @@ void CrosLanguageOptionsHandler::InputMethodOptionsOpenCallback(
   const std::string action = base::StringPrintf(
       "InputMethodOptions_Open_%s", input_method_id.c_str());
   content::RecordComputedAction(action);
+}
+
+void CrosLanguageOptionsHandler::OnInitialized() {
+  if (composition_extension_appended_ || !is_page_initialized_) {
+    // If an option page is not ready to call JavaScript, appending component
+    // extension IMEs will be done in InitializePage function later.
+    return;
+  }
+
+  DCHECK(input_method::GetInputMethodManager()->
+         GetComponentExtensionIMEManager()->IsInitialized());
+  scoped_ptr<ListValue> ime_list(GetComponentExtensionImeList());
+  web_ui()->CallJavascriptFunction(
+      "options.LanguageOptions.onComponentManagerInitialized",
+      *ime_list);
+  composition_extension_appended_ = true;
+}
+
+void CrosLanguageOptionsHandler::InitializePage() {
+  is_page_initialized_ = true;
+  if (composition_extension_appended_)
+    return;
+
+  ComponentExtensionIMEManager* component_extension_manager =
+      input_method::GetInputMethodManager()->GetComponentExtensionIMEManager();
+  if (!component_extension_manager->IsInitialized()) {
+    // If the component extension IME manager is not available yet, append the
+    // component extension list in |OnInitialized()|.
+    return;
+  }
+
+  scoped_ptr<ListValue> ime_list(GetComponentExtensionImeList());
+  web_ui()->CallJavascriptFunction(
+      "options.LanguageOptions.onComponentManagerInitialized",
+      *ime_list);
+  composition_extension_appended_ = true;
 }
 
 }  // namespace options

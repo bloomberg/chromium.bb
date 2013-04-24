@@ -232,7 +232,8 @@ cr.define('options', function() {
         inputMethodList.appendChild(element);
       }
 
-      this.appendComponentExtensionIme_();
+      this.appendComponentExtensionIme_(
+          loadTimeData.getValue('componentExtensionImeList'));
 
       // Listen to pref change once the input method list is initialized.
       Preferences.getInstance().addEventListener(
@@ -245,12 +246,11 @@ cr.define('options', function() {
 
     /**
      * Appends input method lists based on component extension ime list.
+     * @param {!Array} componentExtensionImeList A list of input method
+     *     descriptors.
      * @private
      */
-    appendComponentExtensionIme_: function() {
-      var componentExtensionImeList =
-          loadTimeData.getValue('componentExtensionImeList');
-
+    appendComponentExtensionIme_: function(componentExtensionImeList) {
       this.appendInputMethodElement_(componentExtensionImeList);
 
       for (var i = 0; i < componentExtensionImeList.length; i++) {
@@ -1157,6 +1157,10 @@ cr.define('options', function() {
 
   LanguageOptions.onDictionaryDownloadFailure = function(languageCode) {
     LanguageOptions.getInstance().onDictionaryDownloadFailure_(languageCode);
+  };
+
+  LanguageOptions.onComponentManagerInitialized = function(componentImes) {
+    LanguageOptions.getInstance().appendComponentExtensionIme_(componentImes);
   };
 
   // Export
