@@ -55,6 +55,7 @@
 #include "core/page/Page.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/page/SecurityOrigin.h"
+#include "core/platform/HistogramSupport.h"
 #include <algorithm>
 #include <utility>
 #include <v8-debug.h>
@@ -267,6 +268,8 @@ void V8DOMWindowShell::createContext()
     if (globalTemplate.IsEmpty())
         return;
 
+    double contextCreationStartInSeconds = currentTime();
+
     // Used to avoid sleep calls in unload handlers.
     ScriptController::registerExtensionIfNeeded(DateExtension::get());
 
@@ -293,6 +296,12 @@ void V8DOMWindowShell::createContext()
     v8::ExtensionConfiguration extensionConfiguration(index, extensionNames.get());
 
     m_context.adopt(v8::Context::New(&extensionConfiguration, globalTemplate, m_global.get()));
+
+    double contextCreationDurationInMilliseconds = (currentTime() - contextCreationStartInSeconds) * 1000;
+    const char* histogramName = "WebCore.V8DOMWindowShell.createContext.MainWorld";
+    if (!m_world->isMainWorld())
+        histogramName = "WebCore.V8DOMWindowShell.createContext.IsolatedWorld";
+    HistogramSupport::histogramCustomCounts(histogramName, contextCreationDurationInMilliseconds, 0, 10000, 50);
 }
 
 bool V8DOMWindowShell::installDOMWindow()
