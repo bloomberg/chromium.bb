@@ -204,6 +204,14 @@ class DriveFileSystem : public DriveFileSystemInterface,
                           const base::FilePath& drive_file_path,
                           scoped_ptr<DriveEntryProto> entry_proto);
 
+  // Part of CreateDirectory(). Called after ChangeListLoader::LoadIfNeeded()
+  // is called and made sure that the resource metadata is loaded.
+  void CreateDirectoryAfterLoad(const base::FilePath& directory_path,
+                                bool is_exclusive,
+                                bool is_recursive,
+                                const FileOperationCallback& callback,
+                                FileError load_error);
+
   // Invoked during the process of CreateFile.
   // First, FindEntryByPathAsync is called and the result is returned
   // to OnGetEntryInfoForCreateFile. By using the information, CreateFile deals

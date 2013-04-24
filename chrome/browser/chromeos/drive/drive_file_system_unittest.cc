@@ -1485,6 +1485,24 @@ TEST_F(DriveFileSystemTest, CreateDirectory) {
   EXPECT_TRUE(EntryExists(subdir_path));
 }
 
+TEST_F(DriveFileSystemTest, CreateDirectoryByImplicitLoad) {
+  // Intentionally *not* calling LoadRootFeedDocument(), for testing that
+  // CreateDirectory ensures feed loading before it runs.
+
+  base::FilePath existing_directory(
+      FILE_PATH_LITERAL("drive/root/Directory 1"));
+  FileError error = FILE_ERROR_FAILED;
+  file_system_->CreateDirectory(
+      existing_directory,
+      true,  // is_exclusive
+      false,  // is_recursive
+      google_apis::test_util::CreateCopyResultCallback(&error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  // It should fail because is_exclusive is set to true.
+  EXPECT_EQ(FILE_ERROR_EXISTS, error);
+}
+
 TEST_F(DriveFileSystemTest, PinAndUnpin) {
   ASSERT_TRUE(LoadRootFeedDocument());
 

@@ -389,6 +389,27 @@ void DriveFileSystem::CreateDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
+  change_list_loader_->LoadIfNeeded(
+      DirectoryFetchInfo(),
+      base::Bind(&DriveFileSystem::CreateDirectoryAfterLoad,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 directory_path, is_exclusive, is_recursive, callback));
+}
+
+void DriveFileSystem::CreateDirectoryAfterLoad(
+    const base::FilePath& directory_path,
+    bool is_exclusive,
+    bool is_recursive,
+    const FileOperationCallback& callback,
+    FileError load_error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  DCHECK(!callback.is_null());
+
+  if (load_error != FILE_ERROR_OK) {
+    callback.Run(load_error);
+    return;
+  }
+
   drive_operations_.CreateDirectory(
       directory_path, is_exclusive, is_recursive, callback);
 }
