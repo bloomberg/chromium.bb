@@ -473,12 +473,13 @@ void CompositingIOSurfaceMac::DrawIOSurface(
 
   base::Closure copy_done_callback;
   if (frame_subscriber) {
+    const base::Time present_time = base::Time::Now();
     scoped_refptr<media::VideoFrame> frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-    if (frame_subscriber->ShouldCaptureFrame(&frame, &callback)) {
+    if (frame_subscriber->ShouldCaptureFrame(present_time, &frame, &callback)) {
       copy_done_callback = CopyToVideoFrameWithinContext(
           gfx::Rect(pixel_io_surface_size_), scale_factor, true, frame,
-          base::Bind(callback, base::Time::Now()));
+          base::Bind(callback, present_time));
     }
   }
 

@@ -44,8 +44,9 @@ class RenderWidgetHostViewFrameSubscriber {
       base::Time /* timestamp */,
       bool /* frame_captured */)> DeliverFrameCallback;
 
-  // Called when a new frame is going to be presented. Implementation can
-  // decide whether the current frame should be captured or not.
+  // Called when a new frame is going to be presented at time
+  // |present_time|. Implementation can decide whether the current frame should
+  // be captured or not.
   //
   // Return true if the current frame should be captured. If so, |storage|
   // should will be set to hold an appropriately sized and allocated buffer
@@ -61,6 +62,7 @@ class RenderWidgetHostViewFrameSubscriber {
   //
   // Return false if the current frame should not be captured.
   virtual bool ShouldCaptureFrame(
+      base::Time present_time,
       scoped_refptr<media::VideoFrame>* storage,
       DeliverFrameCallback* callback) = 0;
 };

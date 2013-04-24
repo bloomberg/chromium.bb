@@ -78,28 +78,34 @@ class CONTENT_EXPORT SmoothEventSampler {
                               int redundant_capture_goal);
 
   // Add a new event to the event history, and return whether it ought to be
-  // sampled per to the sampling frequency limit. Even if this method returns
-  // true, the event is not recorded as a sample until RecordSample() is called.
-  bool AddEventAndConsiderSampling(base::Time now);
+  // sampled based on the desired |capture_period|. The event is not recorded as
+  // a sample until RecordSample() is called.
+  bool AddEventAndConsiderSampling(base::Time event_time);
 
   // Operates on the last event added by AddEventAndConsiderSampling(), marking
   // it as sampled. After this point we are current in the stream of events, as
   // we have sampled the most recent event.
   void RecordSample();
 
-  // Returns true if, at time |now|, sampling should occur because too much time
-  // will have passed relative to the last event and/or sample.
-  bool IsOverdueForSamplingAt(base::Time now) const;
+  // Returns true if, at time |event_time|, sampling should occur because too
+  // much time will have passed relative to the last event and/or sample.
+  bool IsOverdueForSamplingAt(base::Time event_time) const;
 
-  base::Time GetLastSampledEvent();
+  // Returns true if AddEventAndConsiderSampling() has been called since the
+  // last call to RecordSample().
+  bool HasUnrecordedEvent() const;
 
  private:
   const bool events_are_reliable_;
   const base::TimeDelta capture_period_;
   const int redundant_capture_goal_;
+  const base::TimeDelta token_bucket_capacity_;
+
   base::Time current_event_;
   base::Time last_sample_;
-  int last_sample_count_;
+  int overdue_sample_count_;
+  base::TimeDelta token_bucket_;
+
   DISALLOW_COPY_AND_ASSIGN(SmoothEventSampler);
 };
 

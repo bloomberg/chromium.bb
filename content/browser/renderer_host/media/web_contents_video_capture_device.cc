@@ -168,6 +168,7 @@ class CaptureOracle : public base::RefCountedThreadSafe<CaptureOracle> {
   // capture should be done, and a callback to invoke once the frame is ready.
   bool ObserveEventAndDecideCapture(
       Event event,
+      base::Time event_time,
       scoped_refptr<media::VideoFrame>* storage,
       DeliverFrameCallback* callback);
 
@@ -224,6 +225,7 @@ class FrameSubscriber : public RenderWidgetHostViewFrameSubscriber {
         oracle_(oracle) {}
 
   virtual bool ShouldCaptureFrame(
+      base::Time present_time,
       scoped_refptr<media::VideoFrame>* storage,
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback*
           deliver_frame_cb) OVERRIDE;
@@ -435,6 +437,7 @@ CaptureOracle::CaptureOracle(media::VideoCaptureDevice::EventHandler* consumer,
 
 bool CaptureOracle::ObserveEventAndDecideCapture(
       Event event,
+      base::Time event_time,
       scoped_refptr<media::VideoFrame>* storage,
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback* callback) {
   base::AutoLock guard(lock_);
@@ -448,13 +451,12 @@ bool CaptureOracle::ObserveEventAndDecideCapture(
   // Record |event| and decide whether it's a good time to capture.
   const bool content_is_dirty = (event == COMPOSITOR_UPDATE ||
                                  event == SOFTWARE_PAINT);
-  base::Time now = base::Time::Now();
   bool should_sample;
   if (content_is_dirty) {
     frame_number_++;
-    should_sample = sampler_.AddEventAndConsiderSampling(now);
+    should_sample = sampler_.AddEventAndConsiderSampling(event_time);
   } else {
-    should_sample = sampler_.IsOverdueForSamplingAt(now);
+    should_sample = sampler_.IsOverdueForSamplingAt(event_time);
   }
 
   const char* event_name = (event == TIMER_POLL ? "poll" :
@@ -541,13 +543,14 @@ void CaptureOracle::DidCaptureFrame(
 }
 
 bool FrameSubscriber::ShouldCaptureFrame(
+    base::Time present_time,
     scoped_refptr<media::VideoFrame>* storage,
     DeliverFrameCallback* deliver_frame_cb) {
   TRACE_EVENT1("mirroring", "FrameSubscriber::ShouldCaptureFrame",
                "instance", this);
 
-  return oracle_->ObserveEventAndDecideCapture(event_type_, storage,
-                                               deliver_frame_cb);
+  return oracle_->ObserveEventAndDecideCapture(event_type_, present_time,
+                                               storage, deliver_frame_cb);
 }
 
 ContentCaptureSubscription::ContentCaptureSubscription(
@@ -620,7 +623,8 @@ void ContentCaptureSubscription::Observe(
   base::Closure copy_done_callback;
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
-  if (paint_subscriber_.ShouldCaptureFrame(&frame, &deliver_frame_cb)) {
+  if (paint_subscriber_.ShouldCaptureFrame(base::Time::Now(),
+                                           &frame, &deliver_frame_cb)) {
     // This message happens just before paint. If we post a task to do the copy,
     // it should run soon after the paint.
     BrowserThread::PostTask(
@@ -635,7 +639,8 @@ void ContentCaptureSubscription::OnTimer() {
 
   scoped_refptr<media::VideoFrame> frame;
   RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback deliver_frame_cb;
-  if (timer_subscriber_.ShouldCaptureFrame(&frame, &deliver_frame_cb)) {
+  if (timer_subscriber_.ShouldCaptureFrame(base::Time::Now(),
+                                           &frame, &deliver_frame_cb)) {
     capture_callback_.Run(frame, deliver_frame_cb);
   }
 }
@@ -1270,59 +1275,71 @@ SmoothEventSampler::SmoothEventSampler(base::TimeDelta capture_period,
     :  events_are_reliable_(events_are_reliable),
        capture_period_(capture_period),
        redundant_capture_goal_(redundant_capture_goal),
-       last_sample_count_(0) {}
+       token_bucket_capacity_(capture_period + capture_period / 2),
+       overdue_sample_count_(0),
+       token_bucket_(token_bucket_capacity_) {
+  DCHECK_GT(capture_period_.InMicroseconds(), 0);
+}
 
-bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time now) {
-  current_event_ = now;
+bool SmoothEventSampler::AddEventAndConsiderSampling(base::Time event_time) {
+  DCHECK(!event_time.is_null());
 
-  // If we've never sampled, then the choice is obvious.
-  if (last_sample_count_ == 0)
-    return true;
+  // Add tokens to the bucket based on advancement in time.  Then, re-bound the
+  // number of tokens in the bucket.  Overflow occurs when there is too much
+  // time between events (a common case), or when RecordSample() is not being
+  // called often enough (a bug).  On the other hand, if RecordSample() is being
+  // called too often (e.g., as a reaction to IsOverdueForSamplingAt()), the
+  // bucket will underflow.
+  if (!current_event_.is_null()) {
+    if (current_event_ < event_time) {
+      token_bucket_ += event_time - current_event_;
+      if (token_bucket_ > token_bucket_capacity_)
+        token_bucket_ = token_bucket_capacity_;
+    }
+    // Side note: If the system clock is reset, causing |current_event_| to be
+    // greater than |event_time|, everything here will simply gracefully adjust.
+    if (token_bucket_ < base::TimeDelta())
+      token_bucket_ = base::TimeDelta();
+  }
+  current_event_ = event_time;
 
-  // TODO(nick): Actually track the effective frame rate here, and use an
-  // uncertainty window based on that (half seems like a reasonable choice). E.g
-  // if content is updating every 16.6ms, and we're hoping to sampling every
-  // 100ms, then we might consider sampling events no sooner than (100ms -
-  // 8.3ms) from the last sample.
-  base::TimeDelta uncertainty_window = capture_period_ / 10;
-
-  base::TimeDelta interval = current_event_ - last_sample_;
-  return interval >= (capture_period_ - uncertainty_window);
+  // Return true if one capture period's worth of tokens are in the bucket.
+  return token_bucket_ >= capture_period_;
 }
 
 void SmoothEventSampler::RecordSample() {
-  if (!current_event_.is_null()) {
-    last_sample_count_ = 0;
+  token_bucket_ -= capture_period_;
+  if (HasUnrecordedEvent()) {
     last_sample_ = current_event_;
+    overdue_sample_count_ = 0;
+  } else {
+    ++overdue_sample_count_;
   }
-  last_sample_count_++;
-  current_event_ = base::Time();
 }
 
-bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time now) const {
-  if (last_sample_count_ == 0)
-    return true;  // Definitely old and dirty.
+bool SmoothEventSampler::IsOverdueForSamplingAt(base::Time event_time) const {
+  DCHECK(!event_time.is_null());
 
   // If we don't get events on compositor updates on this platform, then we
   // don't reliably know whether we're dirty.
   if (events_are_reliable_) {
-    if (current_event_.is_null() &&
-        last_sample_count_ >= redundant_capture_goal_) {
+    if (!HasUnrecordedEvent() &&
+        overdue_sample_count_ >= redundant_capture_goal_) {
       return false;  // Not dirty.
     }
   }
 
   // If we're dirty but not yet old, then we've recently gotten updates, so we
   // won't request a sample just yet.
-  base::TimeDelta dirty_interval = now - last_sample_;
+  base::TimeDelta dirty_interval = event_time - last_sample_;
   if (dirty_interval < capture_period_ * 2)
     return false;
   else
     return true;
 }
 
-base::Time SmoothEventSampler::GetLastSampledEvent() {
-  return last_sample_;
+bool SmoothEventSampler::HasUnrecordedEvent() const {
+  return !current_event_.is_null() && current_event_ != last_sample_;
 }
 
 }  // namespace content

@@ -964,13 +964,6 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
     return;
   }
 
-  scoped_refptr<media::VideoFrame> target_frame;
-  RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback copy_callback;
-  FrameSubscriberMap::iterator it = frame_subscribers_.find(params.surface_id);
-  bool should_copy = false;
-  if (it != frame_subscribers_.end() && it->second)
-    should_copy = it->second->ShouldCaptureFrame(&target_frame, &copy_callback);
-
   scoped_completion_runner.Release();
   presenter->AsyncPresentAndAcknowledge(
       params.size,
@@ -981,14 +974,19 @@ void GpuProcessHost::OnAcceleratedSurfaceBuffersSwapped(
                  params.surface_id,
                  params.surface_handle));
 
-  // It is a potential improvement to do the copy in present, but we use a
-  // simpler approach now.
-  if (should_copy) {
-    // The timestamp here is not the acutal presentation time but it is close
-    // enough.
-    presenter->AsyncCopyToVideoFrame(
-        gfx::Rect(params.size), target_frame,
-        base::Bind(copy_callback, base::Time::Now()));
+  FrameSubscriberMap::iterator it = frame_subscribers_.find(params.surface_id);
+  if (it != frame_subscribers_.end() && it->second) {
+    const base::Time present_time = base::Time::Now();
+    scoped_refptr<media::VideoFrame> target_frame;
+    RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback copy_callback;
+    if (it->second->ShouldCaptureFrame(present_time,
+                                       &target_frame, &copy_callback)) {
+      // It is a potential improvement to do the copy in present, but we use a
+      // simpler approach for now.
+      presenter->AsyncCopyToVideoFrame(
+          gfx::Rect(params.size), target_frame,
+          base::Bind(copy_callback, present_time));
+    }
   }
 }
 

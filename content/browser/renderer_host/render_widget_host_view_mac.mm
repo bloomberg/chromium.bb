@@ -1053,13 +1053,15 @@ bool RenderWidgetHostViewMac::CompositorSwapBuffers(uint64 surface_handle,
     // There is no window to present so capturing during present won't work.
     // We check if frame subscriber wants this frame and capture manually.
     if (compositing_iosurface_.get() && frame_subscriber_) {
+      const base::Time present_time = base::Time::Now();
       scoped_refptr<media::VideoFrame> frame;
       RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-      if (frame_subscriber_->ShouldCaptureFrame(&frame, &callback)) {
+      if (frame_subscriber_->ShouldCaptureFrame(present_time,
+                                                &frame, &callback)) {
         compositing_iosurface_->SetIOSurface(surface_handle, size);
         compositing_iosurface_->CopyToVideoFrame(
             gfx::Rect(size), ScaleFactor(cocoa_view_), frame,
-            base::Bind(callback, base::Time::Now()));
+            base::Bind(callback, present_time));
         return true;
       }
     }

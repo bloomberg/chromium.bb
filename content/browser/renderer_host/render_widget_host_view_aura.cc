@@ -1373,13 +1373,15 @@ void RenderWidgetHostViewAura::SwapBuffersCompleted(
   ui::Compositor* compositor = GetCompositor();
 
   if (frame_subscriber() && current_surface_ != NULL) {
+    const base::Time present_time = base::Time::Now();
     scoped_refptr<media::VideoFrame> frame;
     RenderWidgetHostViewFrameSubscriber::DeliverFrameCallback callback;
-    if (frame_subscriber()->ShouldCaptureFrame(&frame, &callback)) {
+    if (frame_subscriber()->ShouldCaptureFrame(present_time,
+                                               &frame, &callback)) {
       CopyFromCompositingSurfaceToVideoFrame(
           gfx::Rect(ConvertSizeToDIP(this, current_surface_->size())),
           frame,
-          base::Bind(callback, base::Time::Now()));
+          base::Bind(callback, present_time));
     }
   }
 
