@@ -8,8 +8,8 @@
 
 <script>
 if (window.testRunner) {
-    window.internals.settings.setSpatialNavigationEnabled(true);
     testRunner.overridePreference("WebKitTabToLinksPreferenceKey", 1);
+    window.internals.settings.setSpatialNavigationEnabled(true);
 }
 
 var multiselect = document.getElementById('multiselect');
