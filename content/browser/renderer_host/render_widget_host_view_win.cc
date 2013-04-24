@@ -571,6 +571,8 @@ void RenderWidgetHostViewWin::CleanupCompositorWindow() {
   if (!compositor_host_window_)
     return;
 
+  ui::SetWindowUserData(compositor_host_window_, NULL);
+
   // Hide the compositor and parent it to the desktop rather than destroying
   // it immediately. The GPU process has a grace period to stop accessing the
   // window. TODO(apatrick): the GPU process should acknowledge that it has
@@ -2409,9 +2411,6 @@ static LRESULT CALLBACK CompositorHostWindowProc(HWND hWnd, UINT message,
                                                  WPARAM wParam, LPARAM lParam) {
   switch (message) {
   case WM_ERASEBKGND:
-    return 0;
-  case WM_DESTROY:
-    ui::SetWindowUserData(hWnd, NULL);
     return 0;
   case WM_PAINT:
     PaintCompositorHostWindow(hWnd);
