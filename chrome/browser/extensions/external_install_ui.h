@@ -13,9 +13,11 @@ namespace extensions {
 class Extension;
 
 // Adds/Removes a global error informing the user that an external extension
-// was installed.
+// was installed. If |is_new_profile| is true, then this error is from the
+// first time our profile checked for new external extensions.
 bool AddExternalInstallError(ExtensionService* service,
-                             const Extension* extension);
+                             const Extension* extension,
+                             bool is_new_profile);
 void RemoveExternalInstallError(ExtensionService* service);
 
 // Used for testing.

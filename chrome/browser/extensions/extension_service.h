@@ -969,6 +969,11 @@ class ExtensionService
   // by extension installation and reinstallation.
   bool installs_delayed_;
 
+  // Set to true if this is the first time this ExtensionService has run.
+  // Used for specially handling external extensions that are installed the
+  // first time.
+  bool is_first_run_;
+
   NaClModuleInfoList nacl_module_list_;
 
   extensions::AppSyncBundle app_sync_bundle_;

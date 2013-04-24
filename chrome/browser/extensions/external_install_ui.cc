@@ -39,10 +39,8 @@ namespace extensions {
 namespace {
 
 // Whether the external extension can use the streamlined bubble install flow.
-bool UseBubbleInstall(const Extension* extension) {
-  // TODO(yoz): determine how to determine if it's a new profile,
-  // returning false in that case.
-  return extension->UpdatesFromGallery();
+bool UseBubbleInstall(const Extension* extension, bool is_new_profile) {
+  return extension->UpdatesFromGallery() && !is_new_profile;
 }
 
 }  // namespace
@@ -356,7 +354,8 @@ void ExternalInstallGlobalError::BubbleViewCancelButtonPressed(
 // Public interface ---------------------------------------------------------
 
 bool AddExternalInstallError(ExtensionService* service,
-                             const Extension* extension) {
+                             const Extension* extension,
+                             bool is_new_profile) {
   GlobalErrorService* error_service =
       GlobalErrorServiceFactory::GetForProfile(service->profile());
   GlobalError* error = error_service->GetGlobalErrorByMenuItemCommandID(
@@ -364,7 +363,7 @@ bool AddExternalInstallError(ExtensionService* service,
   if (error)
     return false;
 
-  if (UseBubbleInstall(extension)) {
+  if (UseBubbleInstall(extension, is_new_profile)) {
     error_service->AddGlobalError(
         new ExternalInstallGlobalError(service, extension));
   } else {

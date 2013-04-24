@@ -5899,9 +5899,10 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstore) {
       FeatureSwitch::prompt_for_external_extensions(), true);
 
   InitializeEmptyExtensionService();
+  // Check for external extensions here without any providers so that
+  // the profile is no longer new.
+  service_->CheckForExternalUpdates();
 
-  //base::ScopedTempDir temp_dir;
-  //ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath crx_path = temp_dir_.path().AppendASCII("webstore.crx");
   PackCRX(data_dir_.AppendASCII("update_from_webstore"),
           data_dir_.AppendASCII("update_from_webstore.pem"),
@@ -5910,11 +5911,35 @@ TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstore) {
   MockExtensionProvider* provider =
       new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
   AddMockExternalProvider(provider);
-
   provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
+
   service_->CheckForExternalUpdates();
   loop_.RunUntilIdle();
   EXPECT_TRUE(extensions::HasExternalInstallError(service_));
   EXPECT_TRUE(extensions::HasExternalInstallBubble(service_));
+  EXPECT_FALSE(service_->IsExtensionEnabled(updates_from_webstore));
+}
+
+// Test that there is no bubble for external extensions if the profile is new.
+TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreNewProfile) {
+  FeatureSwitch::ScopedOverride prompt(
+      FeatureSwitch::prompt_for_external_extensions(), true);
+
+  InitializeEmptyExtensionService();
+
+  base::FilePath crx_path = temp_dir_.path().AppendASCII("webstore.crx");
+  PackCRX(data_dir_.AppendASCII("update_from_webstore"),
+          data_dir_.AppendASCII("update_from_webstore.pem"),
+          crx_path);
+
+  MockExtensionProvider* provider =
+      new MockExtensionProvider(service_, Manifest::EXTERNAL_PREF);
+  AddMockExternalProvider(provider);
+  provider->UpdateOrAddExtension(updates_from_webstore, "1", crx_path);
+
+  service_->CheckForExternalUpdates();
+  loop_.RunUntilIdle();
+  EXPECT_TRUE(extensions::HasExternalInstallError(service_));
+  EXPECT_FALSE(extensions::HasExternalInstallBubble(service_));
   EXPECT_FALSE(service_->IsExtensionEnabled(updates_from_webstore));
 }

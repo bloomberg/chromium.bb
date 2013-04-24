@@ -356,6 +356,7 @@ ExtensionService::ExtensionService(Profile* profile,
       update_once_all_providers_are_ready_(false),
       browser_terminating_(false),
       installs_delayed_(false),
+      is_first_run_(false),
       app_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
       extension_sync_bundle_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -1760,9 +1761,10 @@ void ExtensionService::IdentifyAlertableExtensions() {
   // notification.
   extension_error_ui_.reset(ExtensionErrorUI::Create(this));
 
+  is_first_run_ = !extension_prefs_->SetAlertSystemFirstRun();
   bool did_show_alert = false;
   if (PopulateExtensionErrorUI(extension_error_ui_.get())) {
-    if (extension_prefs_->SetAlertSystemFirstRun()) {
+    if (!is_first_run_) {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
       did_show_alert = extension_error_ui_->ShowErrorInBubbleView();
     } else {
@@ -1875,7 +1877,7 @@ void ExtensionService::UpdateExternalExtensionAlert() {
                                   EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
         return;
       }
-      extensions::AddExternalInstallError(this, extension);
+      extensions::AddExternalInstallError(this, extension, is_first_run_);
     }
   } else {
     extensions::RemoveExternalInstallError(this);
