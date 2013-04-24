@@ -564,19 +564,6 @@ class TestAutofillManager : public AutofillManager {
     submitted_form_signature_ = submitted_form.FormSignature();
   }
 
-  virtual void SendPasswordGenerationStateToRenderer(
-      content::RenderViewHost* host, bool enabled) OVERRIDE {
-    sent_states_.push_back(enabled);
-  }
-
-  const std::vector<bool>& GetSentStates() {
-    return sent_states_;
-  }
-
-  void ClearSentStates() {
-    sent_states_.clear();
-  }
-
   const std::string GetSubmittedFormSignature() {
     return submitted_form_signature_;
   }
@@ -631,7 +618,6 @@ class TestAutofillManager : public AutofillManager {
   std::string autocheckout_url_prefix_;
   std::string submitted_form_signature_;
   std::vector<FieldTypeSet> expected_submitted_field_types_;
-  std::vector<bool> sent_states_;
 
   DISALLOW_COPY_AND_ASSIGN(TestAutofillManager);
 };
@@ -688,10 +674,6 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
 
   virtual TestingProfile* CreateProfile() {
     return new TestingProfile();
-  }
-
-  void UpdatePasswordGenerationState(bool new_renderer) {
-    autofill_manager_->UpdatePasswordGenerationState(NULL, new_renderer);
   }
 
   void GetAutofillSuggestions(int query_id,
@@ -806,20 +788,6 @@ class AutofillManagerTest : public ChromeRenderViewHostTestHarness {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AutofillManagerTest);
-};
-
-class IncognitoAutofillManagerTest : public AutofillManagerTest {
- public:
-  IncognitoAutofillManagerTest() {}
-  virtual ~IncognitoAutofillManagerTest() {}
-
-  virtual TestingProfile* CreateProfile() OVERRIDE {
-    // Create an incognito profile.
-    TestingProfile::Builder builder;
-    scoped_ptr<TestingProfile> profile = builder.Build();
-    profile->set_incognito(true);
-    return profile.release();
-  }
 };
 
 class TestFormStructure : public FormStructure {
@@ -3101,134 +3069,6 @@ TEST_F(AutofillManagerTest, DeterminePossibleFieldTypesForUpload) {
 
   autofill_manager_->set_expected_submitted_field_types(expected_types);
   FormSubmitted(form);
-}
-
-TEST_F(AutofillManagerTest, UpdatePasswordSyncState) {
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents(),
-      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
-
-  PrefService* prefs = components::UserPrefs::Get(profile());
-
-  // Allow this test to control what should get synced.
-  prefs->SetBoolean(::prefs::kSyncKeepEverythingSynced, false);
-  // Always set password generation enabled check box so we can test the
-  // behavior of password sync.
-  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
-
-  // Sync some things, but not passwords. Shouldn't send anything since
-  // password generation is disabled by default.
-  ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
-      profile());
-  sync_service->SetSyncSetupCompleted();
-  syncer::ModelTypeSet preferred_set;
-  preferred_set.Put(syncer::EXTENSIONS);
-  preferred_set.Put(syncer::PREFERENCES);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-  syncer::ModelTypeSet new_set = sync_service->GetPreferredDataTypes();
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
-
-  // Now sync passwords.
-  preferred_set.Put(syncer::PASSWORDS);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
-  autofill_manager_->ClearSentStates();
-
-  // Add some additional synced state. Nothing should be sent.
-  preferred_set.Put(syncer::THEMES);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
-
-  // Disable syncing. This should disable the feature.
-  sync_service->DisableForUser();
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
-  autofill_manager_->ClearSentStates();
-
-  // When a new render_view is created, we send the state even if it's the
-  // same.
-  UpdatePasswordGenerationState(true);
-  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
-  autofill_manager_->ClearSentStates();
-}
-
-TEST_F(IncognitoAutofillManagerTest, UpdatePasswordSyncStateIncognito) {
-  // Disable password manager by going incognito, and enable syncing. The
-  // feature should still be disabled, and nothing will be sent.
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents(),
-      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
-
-  PrefService* prefs = components::UserPrefs::Get(profile());
-
-  // Allow this test to control what should get synced.
-  prefs->SetBoolean(::prefs::kSyncKeepEverythingSynced, false);
-  // Always set password generation enabled check box so we can test the
-  // behavior of password sync.
-  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
-
-  browser_sync::SyncPrefs sync_prefs(profile()->GetPrefs());
-  sync_prefs.SetSyncSetupCompleted();
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
-}
-
-TEST_F(AutofillManagerTest, UpdatePasswordGenerationState) {
-  PasswordManagerDelegateImpl::CreateForWebContents(web_contents());
-  PasswordManager::CreateForWebContentsAndDelegate(
-      web_contents(),
-      PasswordManagerDelegateImpl::FromWebContents(web_contents()));
-
-  PrefService* prefs = components::UserPrefs::Get(profile());
-
-  // Always set password sync enabled so we can test the behavior of password
-  // generation.
-  prefs->SetBoolean(::prefs::kSyncKeepEverythingSynced, false);
-  ProfileSyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
-      profile());
-  sync_service->SetSyncSetupCompleted();
-  syncer::ModelTypeSet preferred_set;
-  preferred_set.Put(syncer::PASSWORDS);
-  sync_service->ChangePreferredDataTypes(preferred_set);
-
-  // Enabled state remains false, should not sent.
-  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, false);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
-
-  // Enabled state from false to true, should sent true.
-  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_TRUE(autofill_manager_->GetSentStates()[0]);
-  autofill_manager_->ClearSentStates();
-
-  // Enabled states remains true, should not sent.
-  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, true);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(0u, autofill_manager_->GetSentStates().size());
-
-  // Enabled states from true to false, should sent false.
-  prefs->SetBoolean(::autofill::prefs::kPasswordGenerationEnabled, false);
-  UpdatePasswordGenerationState(false);
-  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
-  autofill_manager_->ClearSentStates();
-
-  // When a new render_view is created, we send the state even if it's the
-  // same.
-  UpdatePasswordGenerationState(true);
-  EXPECT_EQ(1u, autofill_manager_->GetSentStates().size());
-  EXPECT_FALSE(autofill_manager_->GetSentStates()[0]);
-  autofill_manager_->ClearSentStates();
 }
 
 TEST_F(AutofillManagerTest, RemoveProfile) {

@@ -33,7 +33,6 @@
 #include "components/autofill/browser/autofill_type.h"
 #include "components/autofill/browser/credit_card.h"
 #include "components/autofill/browser/form_structure.h"
-#include "components/autofill/browser/password_generator.h"
 #include "components/autofill/browser/personal_data_manager.h"
 #include "components/autofill/browser/phone_number.h"
 #include "components/autofill/browser/phone_number_i18n.h"
@@ -215,16 +214,9 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
-      password_generation_enabled_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
-  RegisterWithSyncService();
-  registrar_.Init(manager_delegate_->GetPrefs());
-  registrar_.Add(
-      prefs::kPasswordGenerationEnabled,
-      base::Bind(&AutofillManager::OnPasswordGenerationEnabledChanged,
-                 base::Unretained(this)));
 }
 
 AutofillManager::~AutofillManager() {}
@@ -232,9 +224,6 @@ AutofillManager::~AutofillManager() {}
 // static
 void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(prefs::kAutofillEnabled,
-                                true,
-                                PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(prefs::kPasswordGenerationEnabled,
                                 true,
                                 PrefRegistrySyncable::SYNCABLE_PREF);
 #if defined(OS_MACOSX) || defined(OS_ANDROID)
@@ -252,63 +241,6 @@ void AutofillManager::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDoublePref(prefs::kAutofillNegativeUploadRate,
                                kAutofillNegativeUploadRateDefaultValue,
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-}
-
-void AutofillManager::RegisterWithSyncService() {
-  // TODO(joi): If/when SupportsWebData supports structured
-  // destruction ordering, we could use a base::Unretained here and
-  // just unsubscribe in our destructor. As is, we can't guarantee
-  // that the delegate doesn't get destroyed (by WebContent's
-  // SupportsUserData) right before the AutofillManager.
-  manager_delegate_->SetSyncStateChangedCallback(base::Bind(
-      &AutofillManager::OnSyncStateChanged, weak_ptr_factory_.GetWeakPtr()));
-}
-
-void AutofillManager::SendPasswordGenerationStateToRenderer(
-    content::RenderViewHost* host, bool enabled) {
-  host->Send(new AutofillMsg_PasswordGenerationEnabled(host->GetRoutingID(),
-                                                       enabled));
-}
-
-// In order for password generation to be enabled, we need to make sure:
-// (1) Password sync is enabled,
-// (2) Password manager is enabled, and
-// (3) Password generation preference check box is checked.
-void AutofillManager::UpdatePasswordGenerationState(
-    content::RenderViewHost* host,
-    bool new_renderer) {
-  bool saving_passwords_enabled = manager_delegate_->IsSavingPasswordsEnabled();
-  bool preference_checked = manager_delegate_->GetPrefs()->GetBoolean(
-      prefs::kPasswordGenerationEnabled);
-
-  bool new_password_generation_enabled =
-      manager_delegate_->IsPasswordSyncEnabled() &&
-      saving_passwords_enabled &&
-      preference_checked;
-
-  if (new_password_generation_enabled != password_generation_enabled_ ||
-      new_renderer) {
-    password_generation_enabled_ = new_password_generation_enabled;
-    SendPasswordGenerationStateToRenderer(host, password_generation_enabled_);
-  }
-}
-
-void AutofillManager::RenderViewCreated(content::RenderViewHost* host) {
-  UpdatePasswordGenerationState(host, true);
-}
-
-void AutofillManager::OnPasswordGenerationEnabledChanged() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(), false);
-}
-
-void AutofillManager::OnSyncStateChanged() {
-  // It is possible for sync state to change during tab contents destruction.
-  // In this case, we don't need to update the renderer since it's going away.
-  if (web_contents() && web_contents()->GetRenderViewHost()) {
-    UpdatePasswordGenerationState(web_contents()->GetRenderViewHost(),
-                                  false);
-  }
 }
 
 void AutofillManager::DidNavigateMainFrame(
@@ -352,8 +284,6 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
                         OnDidEndTextFieldEditing)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_HideAutofillUi,
                         OnHideAutofillUi)
-    IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordGenerationPopup,
-                        OnShowPasswordGenerationPopup)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_AddPasswordFormMapping,
                         OnAddPasswordFormMapping)
     IPC_MESSAGE_HANDLER(AutofillHostMsg_ShowPasswordSuggestions,
@@ -370,11 +300,6 @@ bool AutofillManager::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return handled;
-}
-
-void AutofillManager::WebContentsDestroyed(content::WebContents* web_contents) {
-  // Unsubscribe.
-  manager_delegate_->SetSyncStateChangedCallback(base::Closure());
 }
 
 bool AutofillManager::OnFormSubmitted(const FormData& form,
@@ -737,15 +662,6 @@ void AutofillManager::OnHideAutofillUi() {
   manager_delegate_->HideAutocheckoutBubble();
 }
 
-void AutofillManager::OnShowPasswordGenerationPopup(
-    const gfx::Rect& bounds,
-    int max_length,
-    const content::PasswordForm& form) {
-  password_generator_.reset(new autofill::PasswordGenerator(max_length));
-  manager_delegate_->ShowPasswordGenerationBubble(
-      bounds, form, password_generator_.get());
-}
-
 void AutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
   const AutofillDataModel* data_model = NULL;
   size_t variant = 0;
@@ -1037,14 +953,11 @@ AutofillManager::AutofillManager(content::WebContents* web_contents,
       user_did_type_(false),
       user_did_autofill_(false),
       user_did_edit_autofilled_field_(false),
-      password_generation_enabled_(false),
       external_delegate_(NULL),
       test_delegate_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
   DCHECK(web_contents);
   DCHECK(manager_delegate_);
-  RegisterWithSyncService();
-  // Test code doesn't need registrar_.
 }
 
 void AutofillManager::set_metric_logger(const AutofillMetrics* metric_logger) {

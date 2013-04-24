@@ -17,7 +17,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
-#include "base/prefs/pref_change_registrar.h"
 #include "base/string16.h"
 #include "base/supports_user_data.h"
 #include "base/time.h"
@@ -36,15 +35,12 @@
 
 class GURL;
 class PrefRegistrySyncable;
-class ProfileSyncService;
 
 struct ViewHostMsg_FrameNavigate_Params;
 
 namespace content {
 class RenderViewHost;
 class WebContents;
-
-struct PasswordForm;
 }
 
 namespace gfx {
@@ -67,7 +63,6 @@ class AutofillManagerTestDelegate;
 class AutofillMetrics;
 class CreditCard;
 class FormStructureBrowserTest;
-class PasswordGenerator;
 
 struct FormData;
 struct FormFieldData;
@@ -103,9 +98,6 @@ class AutofillManager : public content::WebContentsObserver,
   void OnDidFillAutofillFormData(const base::TimeTicks& timestamp);
   void OnShowAutofillDialog();
   void OnDidPreviewAutofillFormData();
-  void OnShowPasswordGenerationPopup(const gfx::Rect& bounds,
-                                     int max_length,
-                                     const content::PasswordForm& form);
 
   // Remove the credit card or Autofill profile that matches |unique_id|
   // from the database.
@@ -162,12 +154,6 @@ class AutofillManager : public content::WebContentsObserver,
   // Reset cache.
   void Reset();
 
-  // Informs the renderer of the current password generation state. This is a
-  // separate function to aid with testing.
-  virtual void SendPasswordGenerationStateToRenderer(
-      content::RenderViewHost* host,
-      bool enabled);
-
   // Logs quality metrics for the |submitted_form| and uploads the form data
   // to the crowdsourcing server, if appropriate.
   virtual void UploadFormDataAsyncCallback(
@@ -217,32 +203,14 @@ class AutofillManager : public content::WebContentsObserver,
 
  private:
   // content::WebContentsObserver:
-  virtual void RenderViewCreated(content::RenderViewHost* host) OVERRIDE;
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) OVERRIDE;
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void WebContentsDestroyed(
-      content::WebContents* web_contents) OVERRIDE;
 
   // AutofillDownloadManager::Observer:
   virtual void OnLoadedServerPredictions(
       const std::string& response_xml) OVERRIDE;
-
-  void OnSyncStateChanged();
-
-  // Register as an observer with the sync service.
-  void RegisterWithSyncService();
-
-  // Called when password generation preference state changes.
-  void OnPasswordGenerationEnabledChanged();
-
-  // Determines what the current state of password generation is, and if it has
-  // changed from |password_generation_enabled_|. If it has changed or if
-  // |new_renderer| is true, it notifies the renderer of this change via
-  // SendPasswordGenerationStateToRenderer.
-  void UpdatePasswordGenerationState(content::RenderViewHost* host,
-                                     bool new_renderer);
 
   void OnFormsSeen(const std::vector<FormData>& forms,
                    const base::TimeTicks& timestamp,
@@ -411,15 +379,6 @@ class AutofillManager : public content::WebContentsObserver,
   // When the user first interacted with a potentially fillable form on this
   // page.
   base::TimeTicks initial_interaction_timestamp_;
-  // If password generation is enabled. We cache this value so that we don't
-  // spam the renderer with messages during startup when the sync state
-  // is changing rapidly.
-  bool password_generation_enabled_;
-  // Listens for changes to the 'enabled' state for password generation.
-  PrefChangeRegistrar registrar_;
-
-  // To be passed to the password generation UI to generate the password.
-  scoped_ptr<autofill::PasswordGenerator> password_generator_;
 
   // Our copy of the form data.
   ScopedVector<FormStructure> form_structures_;

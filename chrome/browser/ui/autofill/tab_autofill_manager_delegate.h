@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/sync/profile_sync_service_observer.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_types.h"
 #include "components/autofill/browser/autofill_manager_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -30,7 +29,6 @@ struct FormData;
 // Chrome implementation of AutofillManagerDelegate.
 class TabAutofillManagerDelegate
     : public AutofillManagerDelegate,
-      public ProfileSyncServiceObserver,
       public content::WebContentsUserData<TabAutofillManagerDelegate>,
       public content::WebContentsObserver {
  public:
@@ -42,20 +40,12 @@ class TabAutofillManagerDelegate
   virtual autocheckout::WhitelistManager*
       GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
-  virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
-  virtual bool IsPasswordSyncEnabled() const OVERRIDE;
-  virtual void SetSyncStateChangedCallback(
-      const base::Closure& callback) OVERRIDE;
   virtual void OnAutocheckoutError() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
       const CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& bounds,
-      const content::PasswordForm& form,
-      PasswordGenerator* generator) OVERRIDE;
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounds,
       const base::Callback<void(bool)>& callback) OVERRIDE;
@@ -76,9 +66,6 @@ class TabAutofillManagerDelegate
   virtual void HideAutofillPopup() OVERRIDE;
   virtual void UpdateProgressBar(double value) OVERRIDE;
 
-  // ProfileSyncServiceObserver implementation.
-  virtual void OnStateChanged() OVERRIDE;
-
   // content::WebContentsObserver implementation.
   virtual void DidNavigateMainFrame(
       const content::LoadCommittedDetails& details,
@@ -88,7 +75,6 @@ class TabAutofillManagerDelegate
   explicit TabAutofillManagerDelegate(content::WebContents* web_contents);
   friend class content::WebContentsUserData<TabAutofillManagerDelegate>;
 
-  base::Closure sync_state_changed_callback_;
   content::WebContents* const web_contents_;
   base::WeakPtr<AutofillDialogControllerImpl> dialog_controller_;
   base::WeakPtr<AutocheckoutBubble> autocheckout_bubble_;

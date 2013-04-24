@@ -21,8 +21,5 @@ const char kAutofillNegativeUploadRate[] = "autofill.negative_upload_rate";
 // Double that indicates positive (for matched forms) upload rate.
 const char kAutofillPositiveUploadRate[] = "autofill.positive_upload_rate";
 
-// Boolean that is true when password generation is enabled.
-const char kPasswordGenerationEnabled[] = "password_generation.enabled";
-
 }  // namespace prefs
 }  // namespace autofill

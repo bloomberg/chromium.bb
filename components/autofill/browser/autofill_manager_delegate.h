@@ -24,7 +24,6 @@ class RectF;
 class GURL;
 class InfoBarService;
 class PrefService;
-class ProfileSyncServiceBase;
 
 namespace autofill {
 
@@ -73,20 +72,6 @@ class AutofillManagerDelegate {
   // Hides the associated request autocomplete dialog (if it exists).
   virtual void HideRequestAutocompleteDialog() = 0;
 
-  // Returns true if saving passwords is currently enabled for the
-  // delegate.
-  virtual bool IsSavingPasswordsEnabled() const = 0;
-
-  // Returns true if Sync is enabled for the passwords datatype.
-  virtual bool IsPasswordSyncEnabled() const = 0;
-
-  // Sets a callback that will be called when sync state changes.
-  //
-  // Set the callback to an object for which |is_null()| evaluates to
-  // true to stop receiving notifications
-  // (e.g. SetSyncStateChangedCallback(base::Closure())).
-  virtual void SetSyncStateChangedCallback(const base::Closure& callback) = 0;
-
   // Causes an error explaining that Autocheckout has failed to be displayed to
   // the user.
   virtual void OnAutocheckoutError() = 0;
@@ -100,13 +85,6 @@ class AutofillManagerDelegate {
       const AutofillMetrics& metric_logger,
       const CreditCard& credit_card,
       const base::Closure& save_card_callback) = 0;
-
-  // Causes the password generation bubble UI to be shown using the
-  // specified form with the given bounds.
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& bounds,
-      const content::PasswordForm& form,
-      autofill::PasswordGenerator* generator) = 0;
 
   // Causes the Autocheckout bubble UI to be displayed. |bounding_box| is the
   // anchor for the bubble. |native_view| is the parent view of the bubble.

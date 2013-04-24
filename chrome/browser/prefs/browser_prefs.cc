@@ -48,6 +48,7 @@
 #include "chrome/browser/net/ssl_config_service_manager.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notification_prefs_manager.h"
+#include "chrome/browser/password_manager/password_generation_manager.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/pepper_flash_settings_manager.h"
 #include "chrome/browser/plugins/plugin_finder.h"
@@ -293,6 +294,7 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
   MediaStreamDevicesController::RegisterUserPrefs(registry);
   NetPrefObserver::RegisterUserPrefs(registry);
   NewTabUI::RegisterUserPrefs(registry);
+  PasswordGenerationManager::RegisterUserPrefs(registry);
   PasswordManager::RegisterUserPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterUserPrefs(registry);
   PrefsTabHelper::RegisterUserPrefs(registry);

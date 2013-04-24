@@ -24,17 +24,6 @@ PrefService* TestAutofillManagerDelegate::GetPrefs() {
 
 void TestAutofillManagerDelegate::HideRequestAutocompleteDialog() {}
 
-bool TestAutofillManagerDelegate::IsSavingPasswordsEnabled() const {
-  return false;
-}
-
-bool TestAutofillManagerDelegate::IsPasswordSyncEnabled() const {
-  return false;
-}
-
-void TestAutofillManagerDelegate::SetSyncStateChangedCallback(
-    const base::Closure& callback) { }
-
 void TestAutofillManagerDelegate::OnAutocheckoutError() {}
 
 void TestAutofillManagerDelegate::ShowAutofillSettings() {}
@@ -43,11 +32,6 @@ void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
     const AutofillMetrics& metric_logger,
     const CreditCard& credit_card,
     const base::Closure& save_card_callback) {}
-
-void TestAutofillManagerDelegate::ShowPasswordGenerationBubble(
-    const gfx::Rect& bounds,
-    const content::PasswordForm& form,
-    autofill::PasswordGenerator* generator) {}
 
 void TestAutofillManagerDelegate::ShowAutocheckoutBubble(
     const gfx::RectF& bounding_box,

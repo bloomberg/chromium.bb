@@ -23,20 +23,12 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual autocheckout::WhitelistManager*
         GetAutocheckoutWhitelistManager() const OVERRIDE;
   virtual void HideRequestAutocompleteDialog() OVERRIDE;
-  virtual bool IsSavingPasswordsEnabled() const OVERRIDE;
-  virtual bool IsPasswordSyncEnabled() const OVERRIDE;
-  virtual void SetSyncStateChangedCallback(
-      const base::Closure& callback) OVERRIDE;
   virtual void OnAutocheckoutError() OVERRIDE;
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
       const CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
-  virtual void ShowPasswordGenerationBubble(
-      const gfx::Rect& bounds,
-      const content::PasswordForm& form,
-      autofill::PasswordGenerator* generator) OVERRIDE;
   virtual void ShowAutocheckoutBubble(
       const gfx::RectF& bounding_box,
       const base::Callback<void(bool)>& callback) OVERRIDE;

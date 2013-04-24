@@ -14,7 +14,6 @@ extern const char kAutofillAuxiliaryProfilesEnabled[];
 extern const char kAutofillEnabled[];
 extern const char kAutofillNegativeUploadRate[];
 extern const char kAutofillPositiveUploadRate[];
-extern const char kPasswordGenerationEnabled[];
 
 }  // namespace prefs
 }  // namespace autofill
