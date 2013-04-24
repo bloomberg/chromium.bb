@@ -91,7 +91,7 @@ cr.define('options', function() {
         else if (cr.isChromeOS)
           SyncSetupOverlay.showSetupUIWithoutLogin();
         else
-          SyncSetupOverlay.showSetupUI();
+          SyncSetupOverlay.startSignIn();
       };
       $('customize-sync').onclick = function(event) {
         if (cr.isChromeOS)

@@ -971,11 +971,20 @@ cr.define('options', function() {
 
     /**
      * Determines the appropriate page to show in the Sync Setup UI based on
-     * the state of the Sync backend.
+     * the state of the Sync backend. Does nothing if the user is not signed in.
      * @private
      */
     showSetupUI_: function() {
       chrome.send('SyncSetupShowSetupUI');
+    },
+
+    /**
+     * Starts the signin process for the user. Does nothing if the user is
+     * already signed in.
+     * @private
+     */
+    startSignIn_: function() {
+      chrome.send('SyncSetupStartSignIn');
     },
 
     /**
@@ -1024,6 +1033,10 @@ cr.define('options', function() {
 
   SyncSetupOverlay.showSetupUI = function() {
     SyncSetupOverlay.getInstance().showSetupUI_();
+  };
+
+  SyncSetupOverlay.startSignIn = function() {
+    SyncSetupOverlay.getInstance().startSignIn_();
   };
 
   SyncSetupOverlay.showSetupUIWithoutLogin = function() {

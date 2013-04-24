@@ -606,6 +606,9 @@ void SyncSetupHandler::RegisterMessages() {
       base::Bind(&SyncSetupHandler::HandleSubmitAuth,
                  base::Unretained(this)));
 #endif
+  web_ui()->RegisterMessageCallback("SyncSetupStartSignIn",
+      base::Bind(&SyncSetupHandler::HandleStartSignin,
+                 base::Unretained(this)));
 }
 
 void SyncSetupHandler::DisplayGaiaLogin(bool fatal_error) {
@@ -1046,11 +1049,24 @@ void SyncSetupHandler::HandleShowErrorUI(const ListValue* args) {
 
   // Bring up the existing wizard, or just display it on this page.
   if (!FocusExistingWizardIfPresent())
-    OpenSyncSetup(false);
+    OpenSyncSetup();
 }
 
 void SyncSetupHandler::HandleShowSetupUI(const ListValue* args) {
-  OpenSyncSetup(false);
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(GetProfile());
+  if (SyncPromoUI::UseWebBasedSigninFlow() &&
+      signin->GetAuthenticatedUsername().empty()) {
+    // For web-based signin, the signin page is not displayed in an overlay
+    // on the settings page. So if we get here, it must be due to the user
+    // cancelling signin (by reloading the sync settings page during initial
+    // signin) or by directly navigating to settings/syncSetup
+    // (http://crbug.com/229836). So just exit.
+    DLOG(WARNING) << "Cannot display sync setup UI when not signed in";
+    CloseOverlay();
+    return;
+  }
+  OpenSyncSetup();
 }
 
 // TODO(atwilson): Remove chrome-os-only API in favor of routing everything
@@ -1062,6 +1078,13 @@ void SyncSetupHandler::HandleShowSetupUIWithoutLogin(const ListValue* args) {
 void SyncSetupHandler::HandleDoSignOutOnAuthError(const ListValue* args) {
   DLOG(INFO) << "Signing out the user to fix a sync error.";
   chrome::AttemptUserExit();
+}
+
+void SyncSetupHandler::HandleStartSignin(const ListValue* args) {
+  // Should only be called if the user is not already signed in.
+  DCHECK(SigninManagerFactory::GetForProfile(GetProfile())->
+      GetAuthenticatedUsername().empty());
+  OpenSyncSetup();
 }
 
 void SyncSetupHandler::HandleStopSyncing(const ListValue* args) {
@@ -1143,34 +1166,31 @@ void SyncSetupHandler::CloseSyncSetup() {
   backend_start_timer_.reset();
 }
 
-void SyncSetupHandler::OpenSyncSetup(bool force_login) {
+void SyncSetupHandler::OpenSyncSetup() {
   if (!PrepareSyncSetup())
     return;
 
   // There are several different UI flows that can bring the user here:
-  // 1) Signin promo (passes force_login=true)
-  // 2) Normal signin through options page (GetAuthenticatedUsername() is
+  // 1) Signin promo.
+  // 2) Normal signin through settings page (GetAuthenticatedUsername() is
   //    empty).
   // 3) Previously working credentials have expired.
-  // 4) User is already signed in, but App Notifications needs to force another
-  //    login so it can fetch an oauth token (passes force_login=true)
-  // 5) User is signed in, but has stopped sync via the google dashboard, and
+  // 4) User is signed in, but has stopped sync via the google dashboard, and
   //    signout is prohibited by policy so we need to force a re-auth.
-  // 6) User clicks [Advanced Settings] button on options page while already
+  // 5) User clicks [Advanced Settings] button on options page while already
   //    logged in.
-  // 7) One-click signin (credentials are already available, so should display
+  // 6) One-click signin (credentials are already available, so should display
   //    sync configure UI, not login UI).
-  // 8) ChromeOS re-enable after disabling sync.
+  // 7) ChromeOS re-enable after disabling sync.
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(GetProfile());
-  if (force_login ||
-      signin->GetAuthenticatedUsername().empty() ||
+  if (signin->GetAuthenticatedUsername().empty() ||
 #if !defined(OS_CHROMEOS)
       (GetSyncService() && GetSyncService()->IsStartSuppressed()) ||
 #endif
       signin->signin_global_error()->HasMenuItem()) {
     // User is not logged in, or login has been specially requested - need to
-    // display login UI (cases 1-4).
+    // display login UI (cases 1-3).
     DisplayGaiaLogin(false);
   } else {
     if (!GetSyncService()) {
@@ -1181,7 +1201,7 @@ void SyncSetupHandler::OpenSyncSetup(bool force_login) {
     }
 
     // User is already logged in. They must have brought up the config wizard
-    // via the "Advanced..." button or through One-Click signin (cases 5/6), or
+    // via the "Advanced..." button or through One-Click signin (cases 4-6), or
     // they are re-enabling sync on Chrome OS.
     DisplayConfigureSync(true, false);
   }

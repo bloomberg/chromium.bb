@@ -55,11 +55,8 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
       base::DictionaryValue* localized_strings,
       content::WebUI* web_ui);
 
-  // Initializes the sync setup flow and shows the setup UI. If |force_login| is
-  // true, then the user is forced through the login flow even if they are
-  // already signed in (useful for when it is necessary to force the user to
-  // re-enter credentials so new tokens can be fetched).
-  void OpenSyncSetup(bool force_login);
+  // Initializes the sync setup flow and shows the setup UI.
+  void OpenSyncSetup();
 
   // Shows advanced configuration dialog without going through sign in dialog.
   // Kicks the sync backend if necessary with showing spinner dialog until it
@@ -70,7 +67,11 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void CloseSyncSetup();
 
  protected:
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, DisplayBasicLogin);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
+                           DisplayConfigureWithBackendDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SelectCustomEncryption);
+  FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SuccessfullySetPassphrase);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncEverything);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, TestSyncAllManually);
@@ -126,6 +127,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void HandleShowSetupUI(const base::ListValue* args);
   void HandleShowSetupUIWithoutLogin(const base::ListValue* args);
   void HandleDoSignOutOnAuthError(const base::ListValue* args);
+  void HandleStartSignin(const base::ListValue* args);
   void HandleStopSyncing(const base::ListValue* args);
   void HandleCloseTimeout(const base::ListValue* args);
 #if !defined(OS_CHROMEOS)

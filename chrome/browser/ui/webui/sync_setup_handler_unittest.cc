@@ -432,7 +432,7 @@ TEST_P(SyncSetupHandlerTest, DisplayBasicLogin) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
-  handler_->OpenSyncSetup(false);
+  handler_->HandleStartSignin(NULL);
   EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
                 profile_.get())->current_login_ui());
@@ -465,46 +465,30 @@ TEST_P(SyncSetupHandlerTest, DisplayBasicLogin) {
                 profile_.get())->current_login_ui());
 }
 
-TEST_P(SyncSetupHandlerTest, DisplayForceLogin) {
+TEST_P(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn) {
   EXPECT_CALL(*mock_pss_, IsSyncEnabledAndLoggedIn())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsSyncTokenAvailable())
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
-      .WillRepeatedly(Return(true));
-  // This should display the login UI even though sync setup has already
-  // completed.
-  handler_->OpenSyncSetup(true);
-  EXPECT_EQ(handler_.get(),
-            LoginUIServiceFactory::GetForProfile(
-                profile_.get())->current_login_ui());
+      .WillRepeatedly(Return(false));
+  handler_->HandleShowSetupUI(NULL);
 
-  if (!SyncPromoUI::UseWebBasedSigninFlow()) {
-    ASSERT_EQ(1U, web_ui_.call_data().size());
+  ASSERT_EQ(1U, web_ui_.call_data().size());
+  if (SyncPromoUI::UseWebBasedSigninFlow()) {
+    const TestWebUI::CallData& data = web_ui_.call_data()[0];
+    EXPECT_EQ("OptionsPage.closeOverlay", data.function_name);
+    ASSERT_FALSE(handler_->is_configuring_sync());
+    EXPECT_EQ(NULL,
+              LoginUIServiceFactory::GetForProfile(
+                  profile_.get())->current_login_ui());
+  } else {
     const TestWebUI::CallData& data = web_ui_.call_data()[0];
     EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
-    std::string page;
-    ASSERT_TRUE(data.arg1->GetAsString(&page));
-    EXPECT_EQ(page, "login");
-    // Now make sure that the appropriate params are being passed.
-    DictionaryValue* dictionary;
-    ASSERT_TRUE(data.arg2->GetAsDictionary(&dictionary));
-    CheckShowSyncSetupArgs(dictionary,
-                           std::string(),
-                           false,
-                           GoogleServiceAuthError::NONE,
-                           std::string(),
-                           true,
-                           std::string());
-  } else {
-    ASSERT_FALSE(handler_->is_configuring_sync());
-    ASSERT_TRUE(handler_->have_signin_tracker());
+    EXPECT_EQ(handler_.get(),
+              LoginUIServiceFactory::GetForProfile(
+                  profile_.get())->current_login_ui());
   }
-
-  handler_->CloseSyncSetup();
-  EXPECT_EQ(NULL,
-            LoginUIServiceFactory::GetForProfile(
-                profile_.get())->current_login_ui());
 }
 
 // Verifies that the handler correctly handles a cancellation when
@@ -526,7 +510,7 @@ TEST_P(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
   // backend will try to download control data types (e.g encryption info), but
   // that won't finish for this test as we're simulating cancelling while the
   // spinner is showing.
-  handler_->OpenSyncSetup(false);
+  handler_->HandleShowSetupUI(NULL);
 
   EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
@@ -566,7 +550,7 @@ TEST_P(SyncSetupHandlerTest,
       .WillRepeatedly(Return(false));
   SetDefaultExpectationsForConfigPage();
 
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   // We expect a call to SyncSetupOverlay.showSyncSetupPage. Some variations of
   // this test also include a call to OptionsPage.closeOverlay, that we ignore.
@@ -622,7 +606,7 @@ TEST_P(SyncSetupHandlerTest,
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   SetDefaultExpectationsForConfigPage();
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
   handler_->SigninSuccess();
 
   // It's important to tell sync the user cancelled the setup flow before we
@@ -650,7 +634,7 @@ TEST_P(SyncSetupHandlerTest,
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   EXPECT_CALL(*mock_pss_, sync_initialized()).WillRepeatedly(Return(false));
 
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
   EXPECT_EQ("SyncSetupOverlay.showSyncSetupPage", data.function_name);
   std::string page;
@@ -709,7 +693,7 @@ TEST_P(SyncSetupHandlerNonCrosTest, HandleGaiaAuthFailure) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   if (!SyncPromoUI::UseWebBasedSigninFlow()) {
     // Fake a failed signin attempt.
@@ -752,7 +736,7 @@ TEST_P(SyncSetupHandlerNonCrosTest, HandleCaptcha) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   if (!SyncPromoUI::UseWebBasedSigninFlow()) {
     // Fake a failed signin attempt that requires a captcha.
@@ -794,7 +778,7 @@ TEST_P(SyncSetupHandlerNonCrosTest, UnrecoverableErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   if (!SyncPromoUI::UseWebBasedSigninFlow()) {
     ASSERT_EQ(1U, web_ui_.call_data().size());
@@ -843,7 +827,7 @@ TEST_P(SyncSetupHandlerNonCrosTest, GaiaErrorInitializingSync) {
   EXPECT_CALL(*mock_pss_, HasSyncSetupCompleted())
       .WillRepeatedly(Return(false));
   // Open the web UI.
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   if (!SyncPromoUI::UseWebBasedSigninFlow()) {
     ASSERT_EQ(1U, web_ui_.call_data().size());
@@ -1141,7 +1125,7 @@ TEST_P(SyncSetupHandlerTest, ShowSyncSetup) {
   SetupInitializedProfileSyncService();
   // This should display the sync setup dialog (not login).
   SetDefaultExpectationsForConfigPage();
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   ExpectConfig();
 }
@@ -1164,7 +1148,7 @@ TEST_P(SyncSetupHandlerTest, ShowSyncSetupWithAuthError) {
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
   // This should display the login dialog (not login).
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   EXPECT_EQ(handler_.get(),
             LoginUIServiceFactory::GetForProfile(
@@ -1201,7 +1185,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupSyncEverything) {
   SetupInitializedProfileSyncService();
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
@@ -1235,7 +1219,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupManuallySyncAll) {
   sync_prefs.SetKeepEverythingSynced(false);
   SetDefaultExpectationsForConfigPage();
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
@@ -1262,7 +1246,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupSyncForAllTypesIndividually) {
         WillRepeatedly(Return(types));
 
     // This should display the sync setup dialog (not login).
-    handler_->OpenSyncSetup(false);
+    handler_->OpenSyncSetup();
 
     ExpectConfig();
     // Close the config overlay.
@@ -1287,7 +1271,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupGaiaPassphraseRequired) {
   SetDefaultExpectationsForConfigPage();
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
@@ -1309,7 +1293,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupCustomPassphraseRequired) {
   SetDefaultExpectationsForConfigPage();
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
@@ -1331,7 +1315,7 @@ TEST_P(SyncSetupHandlerTest, ShowSetupEncryptAll) {
       WillRepeatedly(Return(true));
 
   // This should display the sync setup dialog (not login).
-  handler_->OpenSyncSetup(false);
+  handler_->OpenSyncSetup();
 
   ExpectConfig();
   const TestWebUI::CallData& data = web_ui_.call_data()[0];
