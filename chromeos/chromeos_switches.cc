@@ -13,6 +13,9 @@ const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Disables fetching online CrOS EULA page, only static version is shown.
+const char kDisableOnlineEULA[] = "disable-cros-online-eula";
+
 // Disables portal detection and network error handling before auto
 // update.
 const char kDisableOOBEBlockingUpdate[] =

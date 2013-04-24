@@ -54,6 +54,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/escape.h"
+#include "net/base/load_flags.h"
 #include "net/base/net_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -80,6 +81,7 @@
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/webui/chromeos/about_network.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 #if defined(USE_ASH)
@@ -157,6 +159,9 @@ class ChromeOSOnlineTermsHandler : public net::URLFetcherDelegate {
     eula_fetcher_->SetRequestContext(
         g_browser_process->system_request_context());
     eula_fetcher_->AddExtraRequestHeader("Accept: text/html");
+    eula_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                                net::LOAD_DO_NOT_SAVE_COOKIES |
+                                net::LOAD_DISABLE_CACHE);
     eula_fetcher_->Start();
     // Abort the download attempt if it takes longer than one minute.
     download_timer_.Start(FROM_HERE,
@@ -241,6 +246,12 @@ class ChromeOSTermsHandler
       BrowserThread::PostTask(
           BrowserThread::FILE, FROM_HERE,
           base::Bind(&ChromeOSTermsHandler::LoadOemEulaFileOnFileThread, this));
+    } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+                   chromeos::switches::kDisableOnlineEULA)) {
+      // Fallback to the local file.
+      BrowserThread::PostTask(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(&ChromeOSTermsHandler::LoadEulaFileOnFileThread, this));
     } else {
       // Try to load online version of ChromeOS terms first.
       // ChromeOSOnlineTermsHandler object destroys itself.
