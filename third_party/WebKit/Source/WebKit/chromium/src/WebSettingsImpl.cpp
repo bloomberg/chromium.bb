@@ -258,9 +258,19 @@ void WebSettingsImpl::setAuthorAndUserStylesEnabled(bool enabled)
     m_settings->setAuthorAndUserStylesEnabled(enabled);
 }
 
+void WebSettingsImpl::setUsesPageCache(bool usesPageCache)
+{
+    m_settings->setUsesPageCache(usesPageCache);
+}
+
 void WebSettingsImpl::setUseWideViewport(bool useWideViewport)
 {
     m_useWideViewport = useWideViewport;
+}
+
+void WebSettingsImpl::setPageCacheSupportsPlugins(bool pageCacheSupportsPlugins)
+{
+    m_settings->setPageCacheSupportsPlugins(pageCacheSupportsPlugins);
 }
 
 void WebSettingsImpl::setDoubleTapToZoomEnabled(bool doubleTapToZoomEnabled)

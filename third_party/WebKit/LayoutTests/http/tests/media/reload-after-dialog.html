@@ -9,6 +9,7 @@
             if (window.testRunner) {
                 testRunner.dumpAsText();
                 testRunner.waitUntilDone();
+                testRunner.overridePreference("WebKitUsesPageCachePreferenceKey", 1);
             }
 
             function logEvent(event) 

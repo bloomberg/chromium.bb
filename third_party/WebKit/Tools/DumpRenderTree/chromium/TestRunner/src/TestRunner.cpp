@@ -1601,6 +1601,10 @@ void TestRunner::overridePreference(const CppArgumentList& arguments, CppVariant
         prefs->pluginsEnabled = cppVariantToBool(value);
     else if (key == "WebKitJavaEnabled")
         prefs->javaEnabled = cppVariantToBool(value);
+    else if (key == "WebKitUsesPageCachePreferenceKey")
+        prefs->usesPageCache = cppVariantToBool(value);
+    else if (key == "WebKitPageCacheSupportsPluginsPreferenceKey")
+        prefs->pageCacheSupportsPlugins = cppVariantToBool(value);
     else if (key == "WebKitOfflineWebApplicationCacheEnabled")
         prefs->offlineWebApplicationCacheEnabled = cppVariantToBool(value);
     else if (key == "WebKitTabToLinksPreferenceKey")

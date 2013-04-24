@@ -1585,7 +1585,7 @@ void FrameLoader::commitProvisionalLoad()
     RefPtr<DocumentLoader> pdl = m_provisionalDocumentLoader;
     RefPtr<Frame> protect(m_frame);
 
-    LOG(Loading, "WebCoreLoading %s: About to commit provisional load from previous URL '%s' to new URL '%s'", m_frame->tree()->uniqueName().string().utf8().data(),
+    LOG(PageCache, "WebCoreLoading %s: About to commit provisional load from previous URL '%s' to new URL '%s'", m_frame->tree()->uniqueName().string().utf8().data(),
         m_frame->document() ? m_frame->document()->url().elidedString().utf8().data() : "",
         pdl ? pdl->url().elidedString().utf8().data() : "<no provisional DocumentLoader>");
 
