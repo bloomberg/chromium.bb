@@ -26,15 +26,15 @@
  */
 
 #include "config.h"
-#include "Gradient.h"
+#include "core/platform/graphics/Gradient.h"
 
 #include "CSSParser.h"
-#include "Color.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
 #include "SkColorShader.h"
 #include "SkGradientShader.h"
 #include "SkiaUtils.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/HashFunctions.h>
 #include <wtf/StringHasher.h>
 #include <wtf/UnusedParam.h>

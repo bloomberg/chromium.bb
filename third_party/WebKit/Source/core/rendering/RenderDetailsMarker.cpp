@@ -22,9 +22,9 @@
 #include "RenderDetailsMarker.h"
 
 #include "Element.h"
-#include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "PaintInfo.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

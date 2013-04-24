@@ -31,7 +31,7 @@
 #define MediaControlElements_h
 
 #include "MediaControlElementTypes.h"
-#include "TextTrackRepresentation.h"
+#include "core/platform/graphics/TextTrackRepresentation.h"
 
 namespace WebCore {
 

@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "TextTrackRepresentation.h"
+#include "core/platform/graphics/TextTrackRepresentation.h"
 
 namespace WebCore {
 

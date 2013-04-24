@@ -26,13 +26,10 @@
 #include "config.h"
 #include "RenderBoxModelObject.h"
 
-#include "GraphicsContext.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "ImageBuffer.h"
 #include "ImageQualityController.h"
 #include "Page.h"
-#include "Path.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
 #include "RenderLayer.h"
@@ -42,6 +39,9 @@
 #include "ScrollingConstraints.h"
 #include "Settings.h"
 #include "TransformState.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/Path.h"
 #include <wtf/CurrentTime.h>
 
 using namespace std;

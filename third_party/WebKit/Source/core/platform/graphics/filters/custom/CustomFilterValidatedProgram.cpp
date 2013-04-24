@@ -31,15 +31,15 @@
 
 #include "CustomFilterValidatedProgram.h"
 
-#include "ANGLEWebKitBridge.h"
 #include "CustomFilterConstants.h"
 #include "CustomFilterGlobalContext.h"
 #include "CustomFilterProgramInfo.h"
 #include "NotImplemented.h"
+#include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include <wtf/HashMap.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

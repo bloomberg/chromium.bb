@@ -26,7 +26,7 @@
 #ifndef IntRect_h
 #define IntRect_h
 
-#include "IntPoint.h"
+#include "core/platform/graphics/IntPoint.h"
 #include <wtf/Vector.h>
 
 #if OS(DARWIN)

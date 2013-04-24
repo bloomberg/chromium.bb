@@ -20,7 +20,6 @@
 #include "config.h"
 #include "InlineBox.h"
 
-#include "FontMetrics.h"
 #include "Frame.h"
 #include "HitTestResult.h"
 #include "InlineFlowBox.h"
@@ -30,6 +29,7 @@
 #include "RenderBlock.h"
 #include "RootInlineBox.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/FontMetrics.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

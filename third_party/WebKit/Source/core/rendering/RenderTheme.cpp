@@ -28,10 +28,8 @@
 #include "FileSystem.h"
 #include "FloatConversion.h"
 #include "FocusController.h"
-#include "FontSelector.h"
 #include "Frame.h"
 #include "FrameSelection.h"
-#include "GraphicsContext.h"
 #include "HTMLInputElement.h"
 #include "HTMLMeterElement.h"
 #include "HTMLNames.h"
@@ -44,8 +42,10 @@
 #include "RenderView.h"
 #include "Settings.h"
 #include "SpinButtonElement.h"
-#include "StringTruncator.h"
 #include "TextControlInnerElements.h"
+#include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/StringTruncator.h"
 
 #if ENABLE(INPUT_SPEECH)
 #include "RenderInputSpeech.h"

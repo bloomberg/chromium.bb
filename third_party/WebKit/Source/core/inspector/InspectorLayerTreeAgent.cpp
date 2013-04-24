@@ -37,12 +37,12 @@
 #include "InspectorFrontend.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "IntRect.h"
 #include "PseudoElement.h"
 #include "RenderLayer.h"
 #include "RenderLayerBacking.h"
 #include "RenderLayerCompositor.h"
 #include "RenderView.h"
+#include "core/platform/graphics/IntRect.h"
 
 namespace WebCore {
 

@@ -32,14 +32,14 @@
 
 #include "ScrollAnimatorNone.h"
 
-#include "FloatPoint.h"
+#include <algorithm>
 #include "NotImplemented.h"
-#include <wtf/OwnArrayPtr.h>
 #include "PlatformGestureEvent.h"
 #include "ScrollableArea.h"
 #include "ScrollbarTheme.h"
-#include <algorithm>
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/CurrentTime.h>
+#include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnPtr.h>
 
 #include "TraceEvent.h"

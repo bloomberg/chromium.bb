@@ -24,10 +24,8 @@
 
 #if ENABLE(SVG)
 #include "FloatConversion.h"
-#include "FontCache.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "InlineFlowBox.h"
 #include "PointerEventsHitRules.h"
@@ -39,6 +37,8 @@
 #include "SVGResourcesCache.h"
 #include "SVGRootInlineBox.h"
 #include "SVGTextRunRenderingContext.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

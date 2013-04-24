@@ -29,9 +29,9 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Font.h"
 #include "KeyboardEvent.h"
 #include "PlatformLocale.h"
+#include "core/platform/graphics/Font.h"
 #include <wtf/text/StringBuilder.h>
 
 using namespace WTF::Unicode;

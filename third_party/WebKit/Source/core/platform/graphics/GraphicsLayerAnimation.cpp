@@ -19,10 +19,10 @@
 
 #include "config.h"
 
-#include "GraphicsLayerAnimation.h"
+#include "core/platform/graphics/GraphicsLayerAnimation.h"
 
-#include "LayoutSize.h"
-#include "UnitBezier.h"
+#include "core/platform/graphics/LayoutSize.h"
+#include "core/platform/graphics/UnitBezier.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

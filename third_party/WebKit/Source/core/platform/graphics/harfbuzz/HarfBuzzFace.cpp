@@ -31,7 +31,7 @@
 #include "config.h"
 #include "HarfBuzzFace.h"
 
-#include "FontPlatformData.h"
+#include "core/platform/graphics/FontPlatformData.h"
 #include "hb-ot.h"
 #include "hb.h"
 

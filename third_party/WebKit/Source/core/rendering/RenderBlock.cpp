@@ -28,11 +28,9 @@
 #include "Document.h"
 #include "Editor.h"
 #include "Element.h"
-#include "FloatQuad.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HitTestLocation.h"
@@ -65,6 +63,8 @@
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/StdLibExtras.h>
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"

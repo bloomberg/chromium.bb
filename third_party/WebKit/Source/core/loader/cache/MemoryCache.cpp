@@ -23,6 +23,7 @@
 #include "config.h"
 #include "MemoryCache.h"
 
+#include <stdio.h>
 #include "CachedResource.h"
 #include "CachedResourceHandle.h"
 #include "CrossThreadTask.h"
@@ -30,7 +31,6 @@
 #include "FrameLoader.h"
 #include "FrameLoaderTypes.h"
 #include "FrameView.h"
-#include "Image.h"
 #include "Logging.h"
 #include "ResourceHandle.h"
 #include "SecurityOrigin.h"
@@ -39,7 +39,7 @@
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
-#include <stdio.h>
+#include "core/platform/graphics/Image.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

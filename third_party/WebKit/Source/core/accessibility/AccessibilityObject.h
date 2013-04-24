@@ -30,11 +30,11 @@
 #ifndef AccessibilityObject_h
 #define AccessibilityObject_h
 
-#include "FloatQuad.h"
-#include "LayoutRect.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleSelection.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

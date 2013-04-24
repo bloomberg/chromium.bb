@@ -29,11 +29,11 @@
 
 #include "RenderMathMLFenced.h"
 
-#include "FontSelector.h"
 #include "MathMLNames.h"
 #include "RenderInline.h"
 #include "RenderMathMLOperator.h"
 #include "RenderText.h"
+#include "core/platform/graphics/FontSelector.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

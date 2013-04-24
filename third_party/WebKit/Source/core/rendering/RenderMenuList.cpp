@@ -28,7 +28,6 @@
 #include <math.h>
 #include "CSSFontSelector.h"
 #include "Chrome.h"
-#include "FontCache.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
@@ -43,9 +42,10 @@
 #include "RenderTheme.h"
 #include "Settings.h"
 #include "StyleResolver.h"
-#include "TextRun.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityMenuList.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/TextRun.h"
 
 using namespace std;
 

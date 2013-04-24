@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "FontFallbackList.h"
+#include "core/platform/graphics/FontFallbackList.h"
 
-#include "Font.h"
-#include "FontCache.h"
-#include "SegmentedFontData.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/SegmentedFontData.h"
 
 namespace WebCore {
 

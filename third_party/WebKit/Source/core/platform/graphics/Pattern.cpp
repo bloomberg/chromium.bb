@@ -26,13 +26,13 @@
  */
 
 #include "config.h"
-#include "Pattern.h"
+#include "core/platform/graphics/Pattern.h"
 
-#include "Image.h"
+#include <v8.h>
 #include "SkCanvas.h"
 #include "SkColorShader.h"
 #include "SkShader.h"
-#include <v8.h>
+#include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 

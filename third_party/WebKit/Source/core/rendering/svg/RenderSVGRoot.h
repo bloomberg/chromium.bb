@@ -24,8 +24,8 @@
 #define RenderSVGRoot_h
 
 #if ENABLE(SVG)
-#include "FloatRect.h"
 #include "RenderReplaced.h"
+#include "core/platform/graphics/FloatRect.h"
 
 #include "SVGRenderSupport.h"
 

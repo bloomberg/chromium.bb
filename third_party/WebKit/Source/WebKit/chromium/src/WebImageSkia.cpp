@@ -31,9 +31,9 @@
 #include "config.h"
 
 #include <algorithm>
-#include "Image.h"
 #include "NativeImageSkia.h"
 #include "SharedBuffer.h"
+#include "core/platform/graphics/Image.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include <public/WebData.h>
 #include <public/WebImage.h>

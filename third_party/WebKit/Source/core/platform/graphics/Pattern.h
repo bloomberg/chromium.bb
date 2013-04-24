@@ -30,8 +30,8 @@
 #define Pattern_h
 
 #include "AffineTransform.h"
-#include "Image.h"
 #include "SkShader.h"
+#include "core/platform/graphics/Image.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

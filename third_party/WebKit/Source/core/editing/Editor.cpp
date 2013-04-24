@@ -50,7 +50,6 @@
 #include "Frame.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLImageElement.h"
@@ -89,6 +88,7 @@
 #include "UserTypingGestureIndicator.h"
 #include "VisibleUnits.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include <wtf/unicode/CharacterNames.h>

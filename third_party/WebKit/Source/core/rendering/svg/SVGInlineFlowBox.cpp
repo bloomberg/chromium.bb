@@ -25,11 +25,11 @@
 
 #if ENABLE(SVG)
 #include "DocumentMarkerController.h"
-#include "GraphicsContext.h"
 #include "RenderSVGInlineText.h"
 #include "RenderedDocumentMarker.h"
 #include "SVGInlineTextBox.h"
 #include "SVGRenderingContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

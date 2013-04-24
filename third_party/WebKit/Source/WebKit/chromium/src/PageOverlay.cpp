@@ -29,15 +29,15 @@
 #include "config.h"
 #include "PageOverlay.h"
 
-#include "GraphicsLayer.h"
 #include "GraphicsLayerChromium.h"
-#include "GraphicsLayerClient.h"
 #include "Page.h"
 #include "PlatformContextSkia.h"
 #include "Settings.h"
 #include "WebPageOverlay.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/GraphicsLayerClient.h"
 #include <public/WebLayer.h>
 
 using namespace WebCore;

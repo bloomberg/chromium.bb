@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Color.h"
+#include "core/platform/graphics/Color.h"
 
 #include "HashTools.h"
 #include <wtf/Assertions.h>

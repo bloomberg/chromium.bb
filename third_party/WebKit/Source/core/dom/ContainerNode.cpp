@@ -29,7 +29,6 @@
 #include "ContainerNodeAlgorithms.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
@@ -47,6 +46,7 @@
 #include "RootInlineBox.h"
 #include "TemplateContentDocumentFragment.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 

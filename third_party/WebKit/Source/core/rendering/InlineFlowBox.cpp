@@ -20,14 +20,12 @@
 #include "config.h"
 #include "InlineFlowBox.h"
 
-#include "CachedImage.h"
 #include "CSSPropertyNames.h"
+#include "CachedImage.h"
 #include "Document.h"
 #include "EllipsisBox.h"
-#include "Font.h"
-#include "GraphicsContext.h"
-#include "InlineTextBox.h"
 #include "HitTestResult.h"
+#include "InlineTextBox.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
 #include "RenderLayer.h"
@@ -40,6 +38,8 @@
 #include "RootInlineBox.h"
 #include "Text.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include <math.h>
 

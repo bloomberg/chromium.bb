@@ -31,11 +31,11 @@
 #ifndef FontPlatformDataHarfBuzz_h
 #define FontPlatformDataHarfBuzz_h
 
-#include "FontOrientation.h"
 #include "FontRenderStyle.h"
 #include "OpenTypeVerticalData.h"
 #include "SharedBuffer.h"
 #include "SkPaint.h"
+#include "core/platform/graphics/FontOrientation.h"
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/CString.h>

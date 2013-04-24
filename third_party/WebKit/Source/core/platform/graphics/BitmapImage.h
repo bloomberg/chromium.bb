@@ -28,11 +28,11 @@
 #ifndef BitmapImage_h
 #define BitmapImage_h
 
-#include "Image.h"
-#include "Color.h"
-#include "ImageOrientation.h"
-#include "ImageSource.h"
-#include "IntSize.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageOrientation.h"
+#include "core/platform/graphics/ImageSource.h"
+#include "core/platform/graphics/IntSize.h"
 
 namespace WebCore {
     struct FrameData;

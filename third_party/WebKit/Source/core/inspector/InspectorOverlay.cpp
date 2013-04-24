@@ -34,7 +34,6 @@
 #include "EmptyClients.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "InspectorClient.h"
 #include "InspectorOverlayPage.h"
 #include "InspectorValues.h"
@@ -49,6 +48,7 @@
 #include "Settings.h"
 #include "StyledElement.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

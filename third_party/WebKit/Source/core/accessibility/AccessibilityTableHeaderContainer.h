@@ -29,9 +29,9 @@
 #ifndef AccessibilityTableHeaderContainer_h
 #define AccessibilityTableHeaderContainer_h
 
-#include "IntRect.h"
 #include "core/accessibility/AccessibilityMockObject.h"
 #include "core/accessibility/AccessibilityTable.h"
+#include "core/platform/graphics/IntRect.h"
 
 namespace WebCore {
 

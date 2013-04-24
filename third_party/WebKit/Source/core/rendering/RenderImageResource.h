@@ -28,9 +28,9 @@
 
 #include "CachedImage.h"
 #include "CachedResourceHandle.h"
-#include "Image.h"
-#include "LayoutSize.h"
 #include "StyleImage.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/LayoutSize.h"
 
 namespace WebCore {
 

@@ -26,10 +26,10 @@
 #ifndef ScrollbarThemeClient_h
 #define ScrollbarThemeClient_h
 
-#include "IntPoint.h"
-#include "IntRect.h"
-#include "IntSize.h"
 #include "ScrollTypes.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 

@@ -24,7 +24,7 @@
 
 #if ENABLE(SVG)
 #include "CSSValue.h"
-#include "Color.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

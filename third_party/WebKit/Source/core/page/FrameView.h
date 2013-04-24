@@ -26,12 +26,12 @@
 #define FrameView_h
 
 #include "AdjustViewSizeOrNot.h"
-#include "Color.h"
 #include "Frame.h"
-#include "LayoutRect.h"
 #include "Pagination.h"
 #include "PaintPhase.h"
 #include "ScrollView.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/text/WTFString.h>

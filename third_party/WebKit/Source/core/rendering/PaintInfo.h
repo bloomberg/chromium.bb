@@ -30,11 +30,11 @@
 #include "AffineTransform.h"
 #endif
 
-#include "GraphicsContext.h"
-#include "IntRect.h"
-#include "LayoutRect.h"
-#include "PaintPhase.h"
 #include <limits>
+#include "PaintPhase.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 

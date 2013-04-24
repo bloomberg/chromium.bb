@@ -26,11 +26,11 @@
 #if ENABLE(OPENTYPE_VERTICAL)
 #include "OpenTypeVerticalData.h"
 
-#include "FloatRect.h"
-#include "GlyphPage.h"
 #include "OpenTypeTypes.h"
 #include "SharedBuffer.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GlyphPage.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include <wtf/RefPtr.h>
 
 using namespace std;

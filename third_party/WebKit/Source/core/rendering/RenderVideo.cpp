@@ -30,14 +30,14 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "HTMLVideoElement.h"
-#include "MediaPlayer.h"
 #include "Page.h"
 #include "PaintInfo.h"
 #include "RenderFullScreen.h"
 #include "RenderView.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/MediaPlayer.h"
 
 namespace WebCore {
 

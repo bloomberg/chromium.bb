@@ -29,7 +29,6 @@
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "LayoutRepainter.h"
 #include "Page.h"
@@ -47,6 +46,7 @@
 #include "SVGStyledElement.h"
 #include "SVGViewSpec.h"
 #include "TransformState.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

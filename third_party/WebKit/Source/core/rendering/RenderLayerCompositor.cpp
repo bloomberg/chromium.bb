@@ -28,13 +28,12 @@
 #include "RenderLayerCompositor.h"
 
 #include "AnimationController.h"
-#include "CanvasRenderingContext.h"
 #include "CSSPropertyNames.h"
+#include "CanvasRenderingContext.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsLayer.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
@@ -59,6 +58,7 @@
 #include "TraceEvent.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/TemporaryChange.h>
 

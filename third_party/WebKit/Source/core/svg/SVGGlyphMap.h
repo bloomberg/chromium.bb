@@ -21,9 +21,9 @@
 #define SVGGlyphMap_h
 
 #if ENABLE(SVG_FONTS)
-#include "SurrogatePairAwareTextIterator.h"
-#include "SVGGlyph.h"
 #include "SVGGlyphElement.h"
+#include "core/platform/graphics/SVGGlyph.h"
+#include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>

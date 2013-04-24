@@ -26,12 +26,12 @@
 #ifndef Theme_h
 #define Theme_h
 
-#include "Color.h"
-#include "Font.h"
-#include "IntRect.h"
 #include "LengthBox.h"
 #include "LengthSize.h"
 #include "ThemeTypes.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

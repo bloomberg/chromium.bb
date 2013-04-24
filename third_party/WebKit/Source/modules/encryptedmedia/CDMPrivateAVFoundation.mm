@@ -28,14 +28,14 @@
 
 #if ENABLE(ENCRYPTED_MEDIA_V2) && __MAC_OS_X_VERSION_MIN_REQUIRED >= 1090
 
+#import <AVFoundation/AVFoundation.h>
+#import <objc/objc-runtime.h>
 #import "CDM.h"
 #import "ExceptionCode.h"
-#import "MediaPlayer.h"
 #import "MediaPlayerPrivateAVFoundationObjC.h"
 #import "SoftLinking.h"
 #import "UUID.h"
-#import <AVFoundation/AVFoundation.h>
-#import <objc/objc-runtime.h>
+#import "core/platform/graphics/MediaPlayer.h"
 #import <wtf/UnusedParam.h>
 
 namespace WebCore {

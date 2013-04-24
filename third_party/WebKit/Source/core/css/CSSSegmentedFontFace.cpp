@@ -30,10 +30,10 @@
 #include "CSSFontFaceSource.h"
 #include "CSSFontSelector.h"
 #include "Document.h"
-#include "FontDescription.h"
 #include "RuntimeEnabledFeatures.h"
-#include "SegmentedFontData.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/SegmentedFontData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {
 

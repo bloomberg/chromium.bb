@@ -31,16 +31,16 @@
 #include "config.h"
 #include "HarfBuzzFace.h"
 
-#include "FontPlatformData.h"
-#include "GlyphBuffer.h"
 #include "HarfBuzzShaper.h"
-#include "SimpleFontData.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkPoint.h"
 #include "SkRect.h"
 #include "SkTypeface.h"
 #include "SkUtils.h"
+#include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 #include "hb.h"
 #include <wtf/HashMap.h>

@@ -31,9 +31,9 @@
 #ifndef LayoutRect_h
 #define LayoutRect_h
 
-#include "IntRect.h"
-#include "LayoutBoxExtent.h"
-#include "LayoutPoint.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutBoxExtent.h"
+#include "core/platform/graphics/LayoutPoint.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

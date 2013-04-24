@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "Icon.h"
+#include "core/platform/graphics/Icon.h"
 
-#include "GraphicsContext.h"
 #include "NotImplemented.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

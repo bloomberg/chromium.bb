@@ -28,7 +28,6 @@
 #include "DatabaseDetails.h"
 #include "FocusDirection.h"
 #include "FrameLoader.h"
-#include "GraphicsContext.h"
 #include "HostWindow.h"
 #include "PopupMenu.h"
 #include "PopupMenuClient.h"
@@ -37,6 +36,7 @@
 #include "SearchPopupMenu.h"
 #include "WebCoreKeyboardUIMode.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>

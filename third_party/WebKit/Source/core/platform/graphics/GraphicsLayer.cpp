@@ -25,15 +25,15 @@
 
 #include "config.h"
 
-#include "GraphicsLayer.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 
-#include "FloatPoint.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
-#include "LayoutRect.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "RotateTransformOperation.h"
 #include "TextStream.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/HashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/CString.h>

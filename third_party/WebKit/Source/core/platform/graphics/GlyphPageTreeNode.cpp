@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "GlyphPageTreeNode.h"
+#include "core/platform/graphics/GlyphPageTreeNode.h"
 
-#include "OpenTypeVerticalData.h"
-#include "SegmentedFontData.h"
-#include "SimpleFontData.h"
 #include <stdio.h>
+#include "OpenTypeVerticalData.h"
+#include "core/platform/graphics/SegmentedFontData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/CharacterNames.h>

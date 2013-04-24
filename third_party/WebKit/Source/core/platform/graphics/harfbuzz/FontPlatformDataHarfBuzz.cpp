@@ -31,12 +31,12 @@
 #include "config.h"
 #include "FontPlatformDataHarfBuzz.h"
 
-#include "FontCache.h"
 #include "HarfBuzzFace.h"
 #include "NotImplemented.h"
 #include "SkAdvancedTypefaceMetrics.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
+#include "core/platform/graphics/FontCache.h"
 
 #include <public/linux/WebFontInfo.h>
 #include <public/linux/WebFontRenderStyle.h>

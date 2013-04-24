@@ -28,11 +28,11 @@
 #define Settings_h
 
 #include "EditingBehaviorTypes.h"
-#include "FontRenderingMode.h"
-#include "IntSize.h"
 #include "KURL.h"
 #include "SettingsMacros.h"
 #include "Timer.h"
+#include "core/platform/graphics/FontRenderingMode.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/AtomicStringHash.h>

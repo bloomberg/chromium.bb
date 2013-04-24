@@ -26,13 +26,13 @@
 #import "config.h"
 #import "ThemeMac.h"
 
+#import <Carbon/Carbon.h>
 #import "BlockExceptions.h"
-#import "GraphicsContext.h"
 #import "LocalCurrentGraphicsContext.h"
 #import "ScrollView.h"
 #import "WebCoreNSCellExtras.h"
 #import "WebCoreSystemInterface.h"
-#import <Carbon/Carbon.h>
+#import "core/platform/graphics/GraphicsContext.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

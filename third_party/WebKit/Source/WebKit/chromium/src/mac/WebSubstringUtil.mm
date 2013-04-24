@@ -37,7 +37,6 @@
 #include "ColorMac.h"
 #include "Document.h"
 #include "Element.h"
-#include "Font.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameView.h"
@@ -48,6 +47,7 @@
 #include "RenderStyle.h"
 #include "TextIterator.h"
 #include "WebFrameImpl.h"
+#include "core/platform/graphics/Font.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;

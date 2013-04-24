@@ -26,8 +26,8 @@
 #include "FilterEffect.h"
 
 #include "Filter.h"
-#include "ImageBuffer.h"
 #include "TextStream.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include <wtf/Uint8ClampedArray.h>
 
 #if HAVE(ARM_NEON_INTRINSICS)

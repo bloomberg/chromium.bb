@@ -29,7 +29,6 @@
 
 #include "BlockExceptions.h"
 #include "EmptyProtocolDefinitions.h"
-#include "FloatPoint.h"
 #include "NSScrollerImpDetails.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformWheelEvent.h"
@@ -38,6 +37,7 @@
 #include "ScrollbarTheme.h"
 #include "ScrollbarThemeMac.h"
 #include "WebCoreSystemInterface.h"
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>
 

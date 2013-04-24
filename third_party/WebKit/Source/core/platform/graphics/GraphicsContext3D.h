@@ -26,11 +26,11 @@
 #ifndef GraphicsContext3D_h
 #define GraphicsContext3D_h
 
-#include "GraphicsTypes3D.h"
-#include "Image.h"
-#include "IntRect.h"
 #include "KURL.h"
-#include "PlatformLayer.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/Noncopyable.h>

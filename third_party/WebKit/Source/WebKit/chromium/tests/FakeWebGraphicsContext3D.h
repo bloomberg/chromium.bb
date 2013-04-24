@@ -26,7 +26,7 @@
 #ifndef FakeWebGraphicsContext3D_h
 #define FakeWebGraphicsContext3D_h
 
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/WebGraphicsContext3D.h>
 
 namespace WebKit {

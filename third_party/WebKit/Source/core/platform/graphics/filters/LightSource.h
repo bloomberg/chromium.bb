@@ -24,7 +24,7 @@
 #ifndef LightSource_h
 #define LightSource_h
 
-#include "FloatPoint3D.h"
+#include "core/platform/graphics/FloatPoint3D.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

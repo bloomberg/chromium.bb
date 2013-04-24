@@ -36,12 +36,12 @@
 #ifndef FontUtilsChromiumWin_h
 #define FontUtilsChromiumWin_h
 
+#include <windows.h>
 #include <usp10.h>
 #include <wchar.h>
-#include <windows.h>
 
-#include "FontDescription.h"
 #include <unicode/uscript.h>
+#include "core/platform/graphics/FontDescription.h"
 
 namespace WebCore {
 

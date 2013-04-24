@@ -23,7 +23,7 @@
 #define CSSPrimitiveValue_h
 
 #include "CSSValue.h"
-#include "Color.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/Forward.h>
 #include <wtf/MathExtras.h>
 #include <wtf/PassRefPtr.h>

@@ -32,8 +32,8 @@
 #include "CSSImageSetValue.h"
 #endif
 #include "CSSImageValue.h"
-#include "Image.h"
 #include "StyleImage.h"
+#include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 

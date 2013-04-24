@@ -25,23 +25,23 @@
  */
 
 #import "config.h"
-#import "SimpleFontData.h"
+#import "core/platform/graphics/SimpleFontData.h"
 
-#import "BlockExceptions.h"
-#import "Color.h"
-#import "FloatRect.h"
-#import "Font.h"
-#import "FontCache.h"
-#import "FontDescription.h"
-#import "SharedBuffer.h"
-#import "WebCoreSystemInterface.h"
 #import <AppKit/AppKit.h>
 #import <ApplicationServices/ApplicationServices.h>
 #import <float.h>
 #import <unicode/uchar.h>
+#import "BlockExceptions.h"
+#import "SharedBuffer.h"
+#import "WebCoreSystemInterface.h"
+#import "core/platform/graphics/Color.h"
+#import "core/platform/graphics/FloatRect.h"
+#import "core/platform/graphics/Font.h"
+#import "core/platform/graphics/FontCache.h"
+#import "core/platform/graphics/FontDescription.h"
 #import <wtf/Assertions.h>
-#import <wtf/StdLibExtras.h>
 #import <wtf/RetainPtr.h>
+#import <wtf/StdLibExtras.h>
 #import <wtf/UnusedParam.h>
 
 @interface NSFont (WebAppKitSecretAPI)

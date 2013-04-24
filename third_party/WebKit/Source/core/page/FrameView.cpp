@@ -34,9 +34,7 @@
 #include "ChromeClient.h"
 #include "DocumentMarkerController.h"
 #include "EventHandler.h"
-#include "FloatRect.h"
 #include "FocusController.h"
-#include "FontCache.h"
 #include "FontLoader.h"
 #include "Frame.h"
 #include "FrameActionScheduler.h"
@@ -44,7 +42,6 @@
 #include "FrameLoaderClient.h"
 #include "FrameSelection.h"
 #include "FrameTree.h"
-#include "GraphicsContext.h"
 #include "HTMLDocument.h"
 #include "HTMLFrameElement.h"
 #include "HTMLFrameSetElement.h"
@@ -75,6 +72,9 @@
 #include "TextResourceDecoder.h"
 #include "TextStream.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/TemporaryChange.h>

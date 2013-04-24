@@ -30,10 +30,10 @@
 #import "config.h"
 #import "WebFontCache.h"
 
-#import "FontTraitsMask.h"
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>
 #import <math.h>
+#import "core/platform/graphics/FontTraitsMask.h"
 #import <wtf/UnusedParam.h>
 
 using namespace WebCore;

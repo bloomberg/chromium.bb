@@ -25,20 +25,18 @@
 #include "config.h"
 #include "RenderBox.h"
 
+#include <math.h>
+#include <algorithm>
 #include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
+#include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
-#include "HitTestResult.h"
-#include "htmlediting.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "ImageBuffer.h"
-#include "FloatQuad.h"
-#include "Frame.h"
+#include "HitTestResult.h"
 #include "Page.h"
 #include "PaintInfo.h"
 #include "RenderArena.h"
@@ -57,8 +55,10 @@
 #include "ScrollbarTheme.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include <algorithm>
-#include <math.h>
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "htmlediting.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 
 using namespace std;

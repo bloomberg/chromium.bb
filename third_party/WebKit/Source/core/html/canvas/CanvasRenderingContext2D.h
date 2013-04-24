@@ -29,17 +29,17 @@
 #include "AffineTransform.h"
 #include "CanvasPathMethods.h"
 #include "CanvasRenderingContext.h"
-#include "Color.h"
-#include "ColorSpace.h"
-#include "DashArray.h"
-#include "FloatSize.h"
-#include "Font.h"
-#include "GraphicsTypes.h"
-#include "ImageBuffer.h"
-#include "Path.h"
-#include "PlatformLayer.h"
-#include <wtf/Vector.h>
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/DashArray.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GraphicsTypes.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 
 namespace WebCore {

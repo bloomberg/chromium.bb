@@ -41,11 +41,11 @@
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "Image.h"
 #include "KURL.h"
 #include "NativeImageSkia.h"
 #include "Range.h"
 #include "RenderImage.h"
+#include "core/platform/graphics/Image.h"
 #include "markup.h"
 
 #if ENABLE(SVG)

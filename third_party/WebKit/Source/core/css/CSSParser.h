@@ -31,13 +31,13 @@
 #include "CSSPropertyNames.h"
 #include "CSSPropertySourceData.h"
 #include "CSSSelector.h"
-#include "Color.h"
 #include "MediaQuery.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/OwnArrayPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
+#include <wtf/Vector.h>
 
 #include "WebKitCSSFilterValue.h"
 

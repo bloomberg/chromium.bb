@@ -30,7 +30,7 @@
 #include "config.h"
 #include "FileIconLoader.h"
 
-#include "Icon.h"
+#include "core/platform/graphics/Icon.h"
 
 namespace WebCore {
 

@@ -32,10 +32,10 @@
 #include "TransparencyWin.h"
 
 #include "AffineTransform.h"
-#include "ImageBuffer.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
-#include <gtest/gtest.h>
 #include <windows.h>
+#include <gtest/gtest.h>
 
 namespace WebCore {
 

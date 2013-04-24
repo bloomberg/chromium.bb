@@ -26,8 +26,8 @@
 
 #include "AffineTransform.h"
 #include "ExceptionCode.h"
-#include "FloatRect.h"
 #include "SVGParserUtilities.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

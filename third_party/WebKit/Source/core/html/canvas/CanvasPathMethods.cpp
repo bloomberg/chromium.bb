@@ -36,7 +36,7 @@
 #include "CanvasPathMethods.h"
 
 #include "ExceptionCode.h"
-#include "FloatRect.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

@@ -21,9 +21,9 @@
 #define SVGImageCache_h
 
 #if ENABLE(SVG)
-#include "FloatSize.h"
-#include "Image.h"
-#include "IntSize.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>

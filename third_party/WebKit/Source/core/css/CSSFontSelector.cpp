@@ -27,7 +27,6 @@
 #include "config.h"
 #include "CSSFontSelector.h"
 
-#include "CachedFont.h"
 #include "CSSFontFace.h"
 #include "CSSFontFaceRule.h"
 #include "CSSFontFaceSource.h"
@@ -38,18 +37,19 @@
 #include "CSSUnicodeRangeValue.h"
 #include "CSSValueKeywords.h"
 #include "CSSValueList.h"
+#include "CachedFont.h"
 #include "CachedResourceLoader.h"
 #include "Document.h"
-#include "FontCache.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "RenderObject.h"
 #include "Settings.h"
-#include "SimpleFontData.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "StyleRule.h"
 #include "WebKitFontFamilyNames.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include <wtf/text/AtomicString.h>
 
 #if ENABLE(SVG)

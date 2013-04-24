@@ -25,13 +25,13 @@
 #include "Document.h"
 #include "HTMLElement.h"
 #include "InspectorInstrumentation.h"
-#include "IntSize.h"
 #include "RenderObject.h"
 #include "RenderStyle.h"
 #include "RenderText.h"
 #include "RenderView.h"
 #include "Settings.h"
 #include "StyleInheritedData.h"
+#include "core/platform/graphics/IntSize.h"
 
 #include <algorithm>
 #include <wtf/StdLibExtras.h>

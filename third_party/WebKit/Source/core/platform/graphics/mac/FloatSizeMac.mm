@@ -25,7 +25,7 @@
  */
  
 #include "config.h"
-#include "FloatSize.h"
+#include "core/platform/graphics/FloatSize.h"
 
 namespace WebCore {
 

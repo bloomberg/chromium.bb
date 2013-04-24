@@ -32,13 +32,13 @@
 
 #include "skia/ext/image_operations.h"
 
-#include "NativeImageSkia.h"
-#include "GraphicsContext3D.h"
 #include "MemoryInstrumentationSkia.h"
+#include "NativeImageSkia.h"
 #include "PlatformInstrumentation.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "SkPixelRef.h"
 #include "SkiaUtils.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 #include "DeferredImageDecoder.h"
 #include "TraceEvent.h"

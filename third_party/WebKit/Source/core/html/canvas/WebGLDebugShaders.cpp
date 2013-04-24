@@ -27,9 +27,9 @@
 
 #include "WebGLDebugShaders.h"
 
-#include "Extensions3D.h"
 #include "WebGLRenderingContext.h"
 #include "WebGLShader.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 #include <wtf/OwnArrayPtr.h>
 

@@ -29,9 +29,9 @@
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
-#include "Path.h"
 #include "RenderImage.h"
 #include "RenderView.h"
+#include "core/platform/graphics/Path.h"
 
 using namespace std;
 

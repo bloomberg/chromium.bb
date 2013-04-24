@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "IntRect.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include "SkRect.h"
 

@@ -29,22 +29,22 @@
 #ifndef ImageDecoder_h
 #define ImageDecoder_h
 
-#include "IntRect.h"
-#include "ImageSource.h"
 #include "NativeImageSkia.h"
 #include "PlatformScreen.h"
 #include "SharedBuffer.h"
 #include "SkColorPriv.h"
+#include "core/platform/graphics/ImageSource.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/Assertions.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 #if USE(QCMSLIB)
 #include "qcms.h"
 #if OS(DARWIN)
-#include "GraphicsContextCG.h"
 #include <ApplicationServices/ApplicationServices.h>
+#include "GraphicsContextCG.h"
 #include <wtf/RetainPtr.h>
 #endif
 #endif

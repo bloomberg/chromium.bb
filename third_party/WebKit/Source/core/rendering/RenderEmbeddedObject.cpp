@@ -29,11 +29,8 @@
 #include "ChromeClient.h"
 #include "Cursor.h"
 #include "EventHandler.h"
-#include "Font.h"
-#include "FontSelector.h"
 #include "Frame.h"
 #include "FrameLoaderClient.h"
-#include "GraphicsContext.h"
 #include "HTMLEmbedElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
@@ -46,7 +43,6 @@
 #include "MouseEvent.h"
 #include "Page.h"
 #include "PaintInfo.h"
-#include "Path.h"
 #include "PlatformMouseEvent.h"
 #include "PluginViewBase.h"
 #include "RenderTheme.h"
@@ -54,7 +50,11 @@
 #include "RenderWidgetProtector.h"
 #include "Settings.h"
 #include "Text.h"
-#include "TextRun.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/TextRun.h"
 
 namespace WebCore {
 

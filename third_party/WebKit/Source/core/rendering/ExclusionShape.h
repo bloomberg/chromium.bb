@@ -31,8 +31,8 @@
 #define ExclusionShape_h
 
 #include "BasicShapes.h"
-#include "FloatRect.h"
 #include "WritingMode.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 

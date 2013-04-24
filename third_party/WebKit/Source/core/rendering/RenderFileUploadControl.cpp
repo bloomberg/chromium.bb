@@ -21,22 +21,22 @@
 #include "config.h"
 #include "RenderFileUploadControl.h"
 
+#include <math.h>
 #include "ElementShadow.h"
 #include "FileList.h"
-#include "Font.h"
-#include "GraphicsContext.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "Icon.h"
 #include "LocalizedStrings.h"
 #include "PaintInfo.h"
 #include "RenderButton.h"
 #include "RenderText.h"
 #include "RenderTheme.h"
 #include "ShadowRoot.h"
-#include "TextRun.h"
 #include "VisiblePosition.h"
-#include <math.h>
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Icon.h"
+#include "core/platform/graphics/TextRun.h"
 
 using namespace std;
 

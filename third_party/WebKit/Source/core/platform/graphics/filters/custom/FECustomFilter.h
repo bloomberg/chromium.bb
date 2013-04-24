@@ -37,7 +37,7 @@
 #include "CustomFilterOperation.h"
 #include "Filter.h"
 #include "FilterEffect.h"
-#include "GraphicsTypes3D.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

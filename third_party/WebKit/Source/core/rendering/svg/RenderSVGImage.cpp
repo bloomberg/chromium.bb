@@ -30,8 +30,6 @@
 
 #include "Attr.h"
 #include "FloatConversion.h"
-#include "FloatQuad.h"
-#include "GraphicsContext.h"
 #include "LayoutRepainter.h"
 #include "PointerEventsHitRules.h"
 #include "RenderImageResource.h"
@@ -44,6 +42,8 @@
 #include "SVGRenderingContext.h"
 #include "SVGResources.h"
 #include "SVGResourcesCache.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

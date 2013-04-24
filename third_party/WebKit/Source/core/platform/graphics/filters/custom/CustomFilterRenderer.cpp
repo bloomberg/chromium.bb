@@ -41,8 +41,8 @@
 #include "CustomFilterNumberParameter.h"
 #include "CustomFilterParameter.h"
 #include "CustomFilterTransformParameter.h"
-#include "GraphicsContext3D.h"
 #include "TransformationMatrix.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {
 

@@ -25,7 +25,6 @@
 #include "config.h"
 #include "WebPluginScrollbarImpl.h"
 
-#include "GraphicsContext.h"
 #include "KeyboardCodes.h"
 #include "ScrollAnimator.h"
 #include "ScrollTypes.h"
@@ -37,6 +36,7 @@
 #include "WebPluginContainerImpl.h"
 #include "WebPluginScrollbarClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/WebCanvas.h>
 #include <public/WebRect.h>

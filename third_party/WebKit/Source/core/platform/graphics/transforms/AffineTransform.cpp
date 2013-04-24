@@ -29,10 +29,10 @@
 #include "AffineTransform.h"
 
 #include "FloatConversion.h"
-#include "FloatQuad.h"
-#include "FloatRect.h"
-#include "IntRect.h"
 #include "SkiaUtils.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include <wtf/MathExtras.h>
 

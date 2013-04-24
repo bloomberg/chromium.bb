@@ -45,10 +45,6 @@
 
 #include "AnimationTranslationUtil.h"
 #include "FloatConversion.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
-#include "GraphicsLayerFactory.h"
-#include "Image.h"
 #include "NativeImageSkia.h"
 #include "PlatformContextSkia.h"
 #include "PlatformMemoryInstrumentation.h"
@@ -57,6 +53,10 @@
 #include "SkMatrix44.h"
 #include "SkiaImageFilterBuilder.h"
 #include "TransformSkMatrix44Conversions.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayerFactory.h"
+#include "core/platform/graphics/Image.h"
 #include <public/Platform.h>
 #include <public/WebAnimation.h>
 #include <public/WebCompositorSupport.h>

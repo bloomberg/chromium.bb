@@ -35,7 +35,6 @@
 #include "EditorClient.h"
 #include "Event.h"
 #include "ExceptionCodePlaceholder.h"
-#include "FloatQuad.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "Page.h"
@@ -46,6 +45,7 @@
 #include "TextIterator.h"
 #include "VisibleSelection.h"
 #include "VisibleUnits.h"
+#include "core/platform/graphics/FloatQuad.h"
 #include "htmlediting.h"
 #include "markup.h"
 

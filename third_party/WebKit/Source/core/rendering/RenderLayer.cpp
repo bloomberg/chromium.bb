@@ -45,19 +45,16 @@
 #include "RenderLayer.h"
 
 #include "AnimationController.h"
-#include "ColumnInfo.h"
 #include "CSSPropertyNames.h"
 #include "Chrome.h"
+#include "ColumnInfo.h"
 #include "Document.h"
 #include "DocumentEventQueue.h"
 #include "EventHandler.h"
 #include "FEColorMatrix.h"
 #include "FEMerge.h"
 #include "FilterEffectRenderer.h"
-#include "UseCounter.h"
 #include "FloatConversion.h"
-#include "FloatPoint3D.h"
-#include "FloatRect.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -65,15 +62,13 @@
 #include "FrameSelection.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "Gradient.h"
-#include "GraphicsContext.h"
 #include "HTMLFrameElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "HistogramSupport.h"
-#include "HitTestingTransformState.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
+#include "HitTestingTransformState.h"
 #include "OverflowEvent.h"
 #include "OverlapTestRequestClient.h"
 #include "Page.h"
@@ -106,11 +101,16 @@
 #include "TextStream.h"
 #include "TransformationMatrix.h"
 #include "TranslateTransformOperation.h"
+#include "UseCounter.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/FloatPoint3D.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
+#include <wtf/UnusedParam.h>
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

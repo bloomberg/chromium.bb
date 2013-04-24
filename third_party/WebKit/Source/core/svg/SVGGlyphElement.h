@@ -23,8 +23,8 @@
 #define SVGGlyphElement_h
 
 #if ENABLE(SVG_FONTS)
-#include "SVGGlyph.h"
 #include "SVGStyledElement.h"
+#include "core/platform/graphics/SVGGlyph.h"
 
 namespace WebCore {
 

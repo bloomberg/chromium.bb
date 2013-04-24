@@ -27,12 +27,12 @@
 #include "config.h"
 #include "WebViewBenchmarkSupportImpl.h"
 
-#include "FloatSize.h"
 #include "FrameView.h"
-#include "GraphicsLayer.h"
-#include "IntRect.h"
-#include "IntSize.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/IntSize.h"
 #include "painting/GraphicsContextBuilder.h"
 
 #include <public/WebCanvas.h>

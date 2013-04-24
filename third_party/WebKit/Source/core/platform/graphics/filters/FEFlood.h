@@ -23,9 +23,9 @@
 #ifndef FEFlood_h
 #define FEFlood_h
 
-#include "Color.h"
 #include "Filter.h"
 #include "FilterEffect.h"
+#include "core/platform/graphics/Color.h"
 
 namespace WebCore {
 

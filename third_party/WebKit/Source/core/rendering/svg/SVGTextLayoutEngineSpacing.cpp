@@ -22,9 +22,9 @@
 #if ENABLE(SVG)
 #include "SVGTextLayoutEngineSpacing.h"
 
-#include "Font.h"
 #include "SVGLengthContext.h"
 #include "SVGRenderStyle.h"
+#include "core/platform/graphics/Font.h"
 
 #if ENABLE(SVG_FONTS)
 #include "SVGFontData.h"

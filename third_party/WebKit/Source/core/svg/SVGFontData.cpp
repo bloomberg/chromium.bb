@@ -25,12 +25,12 @@
 #include "RenderObject.h"
 #include "SVGAltGlyphElement.h"
 #include "SVGFontElement.h"
-#include "SVGGlyph.h"
 #include "SVGNames.h"
 #include "SVGTextRunRenderingContext.h"
-#include "TextRun.h"
-#include "WidthIterator.h"
 #include "XMLNames.h"
+#include "core/platform/graphics/SVGGlyph.h"
+#include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/WidthIterator.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>
 #include <wtf/unicode/Unicode.h>

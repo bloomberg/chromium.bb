@@ -32,11 +32,11 @@
 #define WebMediaPlayerClientImpl_h
 
 #include "AudioSourceProvider.h"
-#include "MediaPlayerPrivate.h"
+#include "core/platform/graphics/MediaPlayerPrivate.h"
 #if defined(OS_ANDROID)
 #include "GrTexture.h"
-#include "SkRefCnt.h"
 #include "SkBitmap.h"
+#include "SkRefCnt.h"
 #endif
 #include "WebAudioSourceProviderClient.h"
 #include "WebMediaPlayerClient.h"

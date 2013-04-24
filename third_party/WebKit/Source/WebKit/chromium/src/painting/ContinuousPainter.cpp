@@ -29,9 +29,9 @@
 #include "config.h"
 #include "ContinuousPainter.h"
 
-#include "GraphicsLayer.h"
 #include "PageOverlayList.h"
 #include "TraceEvent.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 
 using namespace WebCore;
 

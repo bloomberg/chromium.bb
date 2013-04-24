@@ -33,10 +33,10 @@
 #include "GraphicsContext3DPrivate.h"
 
 #include "DrawingBuffer.h"
-#include "Extensions3D.h"
 #include "GrContext.h"
 #include "GrGLInterface.h"
-#include "ImageBuffer.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include <public/WebGraphicsContext3D.h>
 #include <public/WebGraphicsMemoryAllocation.h>
 #include <wtf/text/CString.h>

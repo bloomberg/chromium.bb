@@ -32,15 +32,15 @@
 
 #include "DocumentLoader.h"
 #include "FrameView.h"
-#include "ImageBuffer.h"
-#include "ImageObserver.h"
-#include "IntRect.h"
 #include "RenderSVGRoot.h"
 #include "RenderStyle.h"
 #include "SVGDocument.h"
 #include "SVGImageChromeClient.h"
 #include "SVGSVGElement.h"
 #include "Settings.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/IntRect.h"
 
 namespace WebCore {
 

@@ -29,12 +29,10 @@
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Font.h"
 #include "Frame.h"
 #include "HTMLElement.h"
-#include "HTMLTextFormControlElement.h"
 #include "HTMLNames.h"
-#include "htmlediting.h"
+#include "HTMLTextFormControlElement.h"
 #include "InlineTextBox.h"
 #include "NodeTraversal.h"
 #include "Range.h"
@@ -48,12 +46,14 @@
 #include "TextBreakIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
+#include "core/platform/graphics/Font.h"
+#include "htmlediting.h"
 #include <wtf/text/CString.h>
 #include <wtf/unicode/CharacterNames.h>
 
 #if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
-#include "TextBreakIteratorInternalICU.h"
 #include <unicode/usearch.h>
+#include "TextBreakIteratorInternalICU.h"
 #endif
 
 using namespace WTF::Unicode;

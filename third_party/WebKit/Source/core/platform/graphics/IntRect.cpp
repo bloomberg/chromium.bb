@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "IntRect.h"
+#include "core/platform/graphics/IntRect.h"
 
-#include "FloatRect.h"
-#include "LayoutRect.h"
 #include <algorithm>
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 using std::max;
 using std::min;

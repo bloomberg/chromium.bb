@@ -21,14 +21,14 @@
 #include "EllipsisBox.h"
 
 #include "Document.h"
-#include "Font.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "InlineTextBox.h"
 #include "PaintInfo.h"
 #include "RenderBlock.h"
 #include "RootInlineBox.h"
-#include "TextRun.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/TextRun.h"
 
 namespace WebCore {
 

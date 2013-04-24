@@ -27,19 +27,19 @@
 #include "config.h"
 #include "ScrollbarThemeChromiumMac.h"
 
+#include <Carbon/Carbon.h>
 #include "FrameView.h"
-#include "Gradient.h"
-#include "ImageBuffer.h"
 #include "LocalCurrentGraphicsContext.h"
 #include "NSScrollerImpDetails.h"
 #include "PlatformContextSkia.h"
 #include "ScrollAnimatorMac.h"
 #include "ScrollView.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include "skia/ext/skia_utils_mac.h"
-#include <Carbon/Carbon.h>
+#include <public/mac/WebThemeEngine.h>
 #include <public/Platform.h>
 #include <public/WebRect.h>
-#include <public/mac/WebThemeEngine.h>
 
 namespace WebCore {
 

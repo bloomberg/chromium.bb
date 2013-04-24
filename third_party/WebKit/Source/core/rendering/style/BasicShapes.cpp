@@ -30,9 +30,9 @@
 #include "config.h"
 
 #include "BasicShapes.h"
-#include "FloatRect.h"
 #include "LengthFunctions.h"
-#include "Path.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Path.h"
 
 namespace WebCore {
 

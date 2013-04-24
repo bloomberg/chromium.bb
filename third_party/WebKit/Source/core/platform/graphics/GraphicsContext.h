@@ -27,15 +27,15 @@
 #ifndef GraphicsContext_h
 #define GraphicsContext_h
 
-#include "ColorSpace.h"
-#include "DashArray.h"
-#include "FloatRect.h"
-#include "Font.h"
-#include "Gradient.h"
-#include "Image.h"
-#include "ImageOrientation.h"
-#include "Path.h"
-#include "Pattern.h"
+#include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/DashArray.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageOrientation.h"
+#include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/Pattern.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 

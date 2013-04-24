@@ -22,12 +22,12 @@
 #include "RenderButton.h"
 
 #include "Document.h"
-#include "GraphicsContext.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "RenderTextFragment.h"
 #include "RenderTheme.h"
 #include "StyleInheritedData.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

@@ -31,14 +31,10 @@
  */
 
 #include "config.h"
-#include "ImageBuffer.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
-#include "BitmapImage.h"
 #include "Canvas2DLayerBridge.h"
-#include "Extensions3D.h"
 #include "GrContext.h"
-#include "GraphicsContext.h"
-#include "GraphicsContext3D.h"
 #include "ImageData.h"
 #include "MIMETypeRegistry.h"
 #include "MemoryInstrumentationSkia.h"
@@ -48,6 +44,10 @@
 #include "SkColorPriv.h"
 #include "SkGpuDevice.h"
 #include "SkiaUtils.h"
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
 #include "core/platform/image-encoders/skia/PNGImageEncoder.h"
 #include "core/platform/image-encoders/skia/WEBPImageEncoder.h"

@@ -26,7 +26,7 @@
 #ifndef WebGLObject_h
 #define WebGLObject_h
 
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

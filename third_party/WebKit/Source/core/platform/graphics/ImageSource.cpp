@@ -27,13 +27,13 @@
  */
 
 #include "config.h"
-#include "ImageSource.h"
+#include "core/platform/graphics/ImageSource.h"
 
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "ImageOrientation.h"
 #include "NotImplemented.h"
 #include "PlatformMemoryInstrumentation.h"
+#include "core/platform/graphics/ImageOrientation.h"
 
 #include "DeferredImageDecoder.h"
 

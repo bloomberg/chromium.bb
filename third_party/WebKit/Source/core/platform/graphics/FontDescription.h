@@ -25,16 +25,16 @@
 #ifndef FontDescription_h
 #define FontDescription_h
 
-#include "FontFamily.h"
-#include "FontFeatureSettings.h"
-#include "FontOrientation.h"
-#include "FontRenderingMode.h"
-#include "FontSmoothingMode.h"
-#include "FontTraitsMask.h"
-#include "FontWidthVariant.h"
 #include "NonCJKGlyphOrientation.h"
-#include "TextRenderingMode.h"
 #include "WebKitFontFamilyNames.h"
+#include "core/platform/graphics/FontFamily.h"
+#include "core/platform/graphics/FontFeatureSettings.h"
+#include "core/platform/graphics/FontOrientation.h"
+#include "core/platform/graphics/FontRenderingMode.h"
+#include "core/platform/graphics/FontSmoothingMode.h"
+#include "core/platform/graphics/FontTraitsMask.h"
+#include "core/platform/graphics/FontWidthVariant.h"
+#include "core/platform/graphics/TextRenderingMode.h"
 #include <wtf/MathExtras.h>
 
 #include <wtf/RefPtr.h>

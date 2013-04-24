@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "GlyphPageTreeNode.h"
+#include "core/platform/graphics/GlyphPageTreeNode.h"
 
-#include "Font.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
-#include "SkTemplates.h"
 #include "SkPaint.h"
+#include "SkTemplates.h"
 #include "SkUtils.h"
 
 namespace WebCore {

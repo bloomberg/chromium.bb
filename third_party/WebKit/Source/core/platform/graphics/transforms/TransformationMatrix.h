@@ -26,11 +26,11 @@
 #ifndef TransformationMatrix_h
 #define TransformationMatrix_h
 
-#include "FloatPoint.h"
-#include "FloatPoint3D.h"
-#include "IntPoint.h"
 #include <SkMatrix.h>
 #include <string.h> //for memcpy
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatPoint3D.h"
+#include "core/platform/graphics/IntPoint.h"
 #include <wtf/FastAllocBase.h>
 
 namespace WebCore {

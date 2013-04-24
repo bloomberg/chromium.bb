@@ -29,7 +29,6 @@
 #include "FileChooser.h"
 #include "FileIconLoader.h"
 #include "FileList.h"
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameTree.h"
 #include "Geolocation.h"
@@ -37,7 +36,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
-#include "Icon.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
 #include "PageGroupLoadDeferrer.h"
@@ -47,6 +45,8 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "WindowFeatures.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Icon.h"
 #include "core/storage/StorageNamespace.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

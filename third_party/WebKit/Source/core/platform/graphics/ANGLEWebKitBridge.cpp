@@ -27,7 +27,7 @@
 
 #if USE(3D_GRAPHICS)
 
-#include "ANGLEWebKitBridge.h"
+#include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {

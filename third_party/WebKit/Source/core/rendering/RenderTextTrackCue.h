@@ -26,10 +26,10 @@
 #ifndef RenderTextTrackCue_h
 #define RenderTextTrackCue_h
 
-#include "FloatPoint.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
 #include "RenderView.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {
 

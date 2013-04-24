@@ -24,13 +24,13 @@
 
 #include "Attr.h"
 #include "FilterEffect.h"
-#include "FloatPoint.h"
-#include "IntPoint.h"
-#include "IntSize.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntSize.h"
 
 namespace WebCore {
 

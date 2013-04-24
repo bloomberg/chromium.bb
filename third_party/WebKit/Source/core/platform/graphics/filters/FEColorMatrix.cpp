@@ -26,9 +26,9 @@
 #include "FEColorMatrix.h"
 
 #include "Filter.h"
-#include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/Uint8ClampedArray.h>

@@ -25,11 +25,11 @@
 #include "FEMerge.h"
 
 #include "Filter.h"
-#include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
 #include "SkMergeImageFilter.h"
 #include "SkiaImageFilterBuilder.h"
 #include "TextStream.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {

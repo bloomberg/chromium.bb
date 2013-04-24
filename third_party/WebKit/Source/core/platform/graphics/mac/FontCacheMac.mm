@@ -28,14 +28,14 @@
  */
 
 #import "config.h"
-#import "FontCache.h"
+#import "core/platform/graphics/FontCache.h"
 
-#import "Font.h"
-#import "SimpleFontData.h"
-#import "FontPlatformData.h"
+#import <AppKit/AppKit.h>
 #import "WebCoreSystemInterface.h"
 #import "WebFontCache.h"
-#import <AppKit/AppKit.h>
+#import "core/platform/graphics/Font.h"
+#import "core/platform/graphics/FontPlatformData.h"
+#import "core/platform/graphics/SimpleFontData.h"
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
 

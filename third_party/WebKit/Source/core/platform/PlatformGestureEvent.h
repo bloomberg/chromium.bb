@@ -26,10 +26,10 @@
 #ifndef PlatformGestureEvent_h
 #define PlatformGestureEvent_h
 
-#include "FloatPoint.h"
-#include "IntPoint.h"
-#include "IntSize.h"
 #include "PlatformEvent.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntSize.h"
 
 namespace WebCore {
 

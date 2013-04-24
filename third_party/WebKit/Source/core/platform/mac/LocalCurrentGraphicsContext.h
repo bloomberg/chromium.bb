@@ -17,7 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/Noncopyable.h>
 
 #include "skia/ext/skia_utils_mac.h"

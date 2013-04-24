@@ -22,7 +22,7 @@
 #include "config.h"
 #include "ShadowData.h"
 
-#include "LayoutRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 using namespace std;
 

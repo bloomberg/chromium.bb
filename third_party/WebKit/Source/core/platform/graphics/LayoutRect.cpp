@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "LayoutRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 
-#include "FloatRect.h"
-#include "LayoutUnit.h"
 #include <algorithm>
+#include "LayoutUnit.h"
+#include "core/platform/graphics/FloatRect.h"
 
 using std::max;
 using std::min;

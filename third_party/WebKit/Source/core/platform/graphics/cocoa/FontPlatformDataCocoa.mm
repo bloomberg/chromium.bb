@@ -22,10 +22,10 @@
  */
 
 #import "config.h"
-#import "FontPlatformData.h"
+#import "core/platform/graphics/FontPlatformData.h"
 
-#import "WebCoreSystemInterface.h"
 #import <AppKit/NSFont.h>
+#import "WebCoreSystemInterface.h"
 #import <wtf/text/WTFString.h>
 
 #if OS(DARWIN)

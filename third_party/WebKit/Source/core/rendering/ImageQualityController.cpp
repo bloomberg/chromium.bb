@@ -31,11 +31,11 @@
 #include "config.h"
 #include "ImageQualityController.h"
 
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "Page.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

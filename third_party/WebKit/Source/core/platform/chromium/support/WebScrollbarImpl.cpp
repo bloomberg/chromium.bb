@@ -26,8 +26,8 @@
 
 #include "WebScrollbarImpl.h"
 
-#include "IntRect.h"
 #include "Scrollbar.h"
+#include "core/platform/graphics/IntRect.h"
 
 namespace WebKit {
 

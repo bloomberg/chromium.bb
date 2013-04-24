@@ -24,10 +24,10 @@
 #ifndef RenderMenuList_h
 #define RenderMenuList_h
 
-#include "LayoutRect.h"
 #include "PopupMenu.h"
 #include "PopupMenuClient.h"
 #include "RenderFlexibleBox.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 namespace WebCore {
 

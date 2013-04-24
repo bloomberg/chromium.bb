@@ -33,7 +33,6 @@
 #include "DateTimeFormat.h"
 #include "DateTimeSymbolicFieldElement.h"
 #include "EventHandler.h"
-#include "FontCache.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
@@ -41,6 +40,7 @@
 #include "RenderStyle.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/platform/graphics/FontCache.h"
 #include <wtf/DateMath.h>
 #include <wtf/text/StringBuilder.h>
 

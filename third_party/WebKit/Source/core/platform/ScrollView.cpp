@@ -26,8 +26,6 @@
 #include "config.h"
 #include "ScrollView.h"
 
-#include "GraphicsContext.h"
-#include "GraphicsLayer.h"
 #include "HostWindow.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
@@ -35,6 +33,8 @@
 #include "Scrollbar.h"
 #include "ScrollbarTheme.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

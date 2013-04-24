@@ -31,8 +31,8 @@
 #define CustomFilterTransformParameter_h
 
 #include "CustomFilterParameter.h"
-#include "FloatSize.h"
 #include "TransformOperations.h"
+#include "core/platform/graphics/FloatSize.h"
 
 namespace WebCore {
 

@@ -30,18 +30,18 @@
  */
 
 #include "config.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
-#include "FloatRect.h"
-#include "Font.h"
-#include "FontCache.h"
-#include "FontDescription.h"
-#include "FontPlatformDataChromiumWin.h"
-#include "HWndDC.h"
 #include <mlang.h>
 #include <objidl.h>
 #include <unicode/uchar.h>
 #include <unicode/unorm.h>
+#include "FontPlatformDataChromiumWin.h"
+#include "HWndDC.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/FontDescription.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

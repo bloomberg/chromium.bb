@@ -43,12 +43,12 @@
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "Image.h"
 #include "MIMETypeRegistry.h"
 #include "NamedNodeMap.h"
 #include "Range.h"
 #include "RenderImage.h"
 #include "StringCallback.h"
+#include "core/platform/graphics/Image.h"
 #include "markup.h"
 
 #include <wtf/text/WTFString.h>

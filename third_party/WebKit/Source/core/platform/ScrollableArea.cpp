@@ -32,13 +32,13 @@
 #include "config.h"
 #include "ScrollableArea.h"
 
-#include "GraphicsContext.h"
-#include "GraphicsLayer.h"
-#include "FloatPoint.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "PlatformWheelEvent.h"
 #include "ScrollAnimator.h"
 #include "ScrollbarTheme.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/PassOwnPtr.h>
 
 #include "TraceEvent.h"

@@ -29,14 +29,14 @@
 
 #include "ScrollAnimatorNone.h"
 
-#include "FloatPoint.h"
-#include "IntRect.h"
+#include <gmock/gmock.h>
+#include <gtest/gtest.h>
 #include "Logging.h"
 #include "ScrollAnimator.h"
 #include "ScrollableArea.h"
 #include "TreeTestHelpers.h"
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/IntRect.h"
 
 using namespace std;
 using namespace WebCore;

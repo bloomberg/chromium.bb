@@ -34,9 +34,9 @@
 
 #include "ExclusionShape.h"
 #include "ExclusionShapeValue.h"
-#include "FloatRect.h"
 #include "LayoutUnit.h"
 #include "RenderStyle.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 

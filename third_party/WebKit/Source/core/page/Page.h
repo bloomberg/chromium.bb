@@ -25,14 +25,14 @@
 #include "FindOptions.h"
 #include "FrameLoaderTypes.h"
 #include "LayoutMilestones.h"
-#include "LayoutRect.h"
 #include "PageVisibilityState.h"
 #include "Pagination.h"
 #include "PlatformScreen.h"
-#include "Region.h"
 #include "Supplementable.h"
 #include "UseCounter.h"
 #include "ViewportArguments.h"
+#include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/Region.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "IntRect.h"
+#include "core/platform/graphics/IntRect.h"
 #else
 #include <cmath>
 #include <ui/gfx/rect.h>

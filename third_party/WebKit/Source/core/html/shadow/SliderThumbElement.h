@@ -32,11 +32,11 @@
 #ifndef SliderThumbElement_h
 #define SliderThumbElement_h
 
-#include "FloatPoint.h"
 #include "HTMLDivElement.h"
 #include "HTMLNames.h"
 #include "RenderBlock.h"
 #include "RenderStyleConstants.h"
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

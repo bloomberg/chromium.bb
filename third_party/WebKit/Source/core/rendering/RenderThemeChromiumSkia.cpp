@@ -25,11 +25,8 @@
 #include "RenderThemeChromiumSkia.h"
 
 #include "CSSValueKeywords.h"
-#include "Font.h"
-#include "GraphicsContext.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "Image.h"
 #include "LayoutTestSupport.h"
 #include "MediaControlElements.h"
 #include "PaintInfo.h"
@@ -44,11 +41,14 @@
 #include "TimeRanges.h"
 #include "TransformationMatrix.h"
 #include "UserAgentStyleSheets.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Image.h"
 
 #include <wtf/CurrentTime.h>
 
-#include "SkShader.h"
 #include "SkGradientShader.h"
+#include "SkShader.h"
 
 namespace WebCore {
 

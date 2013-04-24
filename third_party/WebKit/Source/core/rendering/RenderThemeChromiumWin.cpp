@@ -30,9 +30,7 @@
 #include <vssym32.h>
 
 #include "CSSValueKeywords.h"
-#include "FontSelector.h"
 #include "FontUtilsChromiumWin.h"
-#include "GraphicsContext.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "LayoutTestSupport.h"
@@ -46,6 +44,8 @@
 #include "ScrollbarTheme.h"
 #include "SystemInfo.h"
 #include "TransparencyWin.h"
+#include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <public/Platform.h>
 #include <public/WebColor.h>
 #include <public/WebRect.h>

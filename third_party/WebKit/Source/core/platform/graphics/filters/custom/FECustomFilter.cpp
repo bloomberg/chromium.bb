@@ -36,10 +36,10 @@
 
 #include "CustomFilterRenderer.h"
 #include "CustomFilterValidatedProgram.h"
-#include "Extensions3D.h"
-#include "GraphicsContext3D.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 #include <wtf/Uint8ClampedArray.h>
 

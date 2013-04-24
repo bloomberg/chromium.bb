@@ -25,13 +25,13 @@
 #include "SVGFontElement.h"
 
 #include "Document.h"
-#include "Font.h"
-#include "GlyphPageTreeNode.h"
 #include "SVGGlyphElement.h"
 #include "SVGHKernElement.h"
 #include "SVGMissingGlyphElement.h"
 #include "SVGNames.h"
 #include "SVGVKernElement.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GlyphPageTreeNode.h"
 #include <wtf/ASCIICType.h>
 
 namespace WebCore {

@@ -26,10 +26,10 @@
 #ifndef FilterOperation_h
 #define FilterOperation_h
 
-#include "Color.h"
 #include "FilterEffect.h"
-#include "LayoutSize.h"
 #include "Length.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/LayoutSize.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

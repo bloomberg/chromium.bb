@@ -26,10 +26,10 @@
 #ifndef DragData_h
 #define DragData_h
 
-#include "Color.h"
 #include "DragActions.h"
 #include "DragDataRef.h"
-#include "IntPoint.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/IntPoint.h"
 
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>

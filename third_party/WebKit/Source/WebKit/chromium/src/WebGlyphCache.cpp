@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebGlyphCache.h"
 
-#include "GlyphPageTreeNode.h"
+#include "core/platform/graphics/GlyphPageTreeNode.h"
 
 using namespace WebCore;
 

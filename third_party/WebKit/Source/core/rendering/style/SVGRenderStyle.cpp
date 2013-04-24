@@ -32,9 +32,9 @@
 
 #include "CSSPrimitiveValue.h"
 #include "CSSValueList.h"
-#include "IntRect.h"
 #include "NodeRenderStyle.h"
 #include "SVGStyledElement.h"
+#include "core/platform/graphics/IntRect.h"
 
 using namespace std;
 

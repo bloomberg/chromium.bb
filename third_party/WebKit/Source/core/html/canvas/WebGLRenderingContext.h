@@ -28,16 +28,16 @@
 
 #include "ActiveDOMObject.h"
 #include "CanvasRenderingContext.h"
-#include "GraphicsContext3D.h"
-#include "ImageBuffer.h"
 #include "Timer.h"
 #include "WebGLGetInfo.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 #include <wtf/Float32Array.h>
 #include <wtf/Int32Array.h>
 #include <wtf/OwnArrayPtr.h>
-#include <wtf/Uint8Array.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Uint8Array.h>
 
 namespace WebCore {
 

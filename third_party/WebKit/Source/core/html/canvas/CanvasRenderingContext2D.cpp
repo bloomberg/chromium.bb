@@ -46,9 +46,6 @@
 #include "ExceptionCode.h"
 #include "ExceptionCodePlaceholder.h"
 #include "FloatConversion.h"
-#include "FloatQuad.h"
-#include "FontCache.h"
-#include "GraphicsContext.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLMediaElement.h"
@@ -61,18 +58,21 @@
 #include "RenderLayer.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
-#include "StrokeStyleApplier.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "TextMetrics.h"
-#include "TextRun.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/StrokeStyleApplier.h"
+#include "core/platform/graphics/TextRun.h"
 
 #include <wtf/CheckedArithmetic.h>
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/text/StringBuilder.h>
 #include <wtf/Uint8ClampedArray.h>
 #include <wtf/UnusedParam.h>
-#include <wtf/text/StringBuilder.h>
 
 using namespace std;
 

@@ -25,9 +25,9 @@
 #ifndef PluginWidget_h
 #define PluginWidget_h
 
-#include "PlatformLayer.h"
 #include "ScrollTypes.h"
 #include "Widget.h"
+#include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/text/WTFString.h>
 
 struct NPObject;

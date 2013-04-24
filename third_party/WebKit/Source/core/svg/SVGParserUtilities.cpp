@@ -26,8 +26,8 @@
 #include "SVGParserUtilities.h"
 
 #include "Document.h"
-#include "FloatRect.h"
 #include "SVGPointList.h"
+#include "core/platform/graphics/FloatRect.h"
 
 #include <limits>
 #include <wtf/ASCIICType.h>

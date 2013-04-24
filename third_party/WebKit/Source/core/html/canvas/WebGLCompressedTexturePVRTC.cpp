@@ -27,8 +27,8 @@
 
 #include "WebGLCompressedTexturePVRTC.h"
 
-#include "Extensions3D.h"
 #include "WebGLRenderingContext.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 

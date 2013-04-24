@@ -29,15 +29,15 @@
 #ifndef InspectorOverlay_h
 #define InspectorOverlay_h
 
-#include "Color.h"
-#include "FloatQuad.h"
-#include "LayoutRect.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -27,10 +27,10 @@
 #include "OpaqueRectTrackingContentLayerDelegate.h"
 
 #include "AffineTransform.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
-#include "IntRect.h"
 #include "PlatformContextSkia.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>
 

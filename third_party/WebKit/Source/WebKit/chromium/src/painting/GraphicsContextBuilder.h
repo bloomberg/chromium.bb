@@ -31,7 +31,7 @@
 #ifndef GraphicsContextBuilder_h
 #define GraphicsContextBuilder_h
 
-#include "GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include "PlatformContextSkia.h"
 

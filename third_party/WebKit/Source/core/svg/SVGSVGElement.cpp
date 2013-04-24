@@ -31,7 +31,6 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "FloatConversion.h"
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameTree.h"
@@ -40,8 +39,8 @@
 #include "NodeTraversal.h"
 #include "RenderObject.h"
 #include "RenderPart.h"
-#include "RenderSVGResource.h"
 #include "RenderSVGModelObject.h"
+#include "RenderSVGResource.h"
 #include "RenderSVGRoot.h"
 #include "RenderSVGViewportContainer.h"
 #include "SMILTimeContainer.h"
@@ -57,6 +56,7 @@
 #include "SVGZoomEvent.h"
 #include "ScriptEventListener.h"
 #include "StaticNodeList.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

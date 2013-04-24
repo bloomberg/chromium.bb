@@ -56,7 +56,6 @@
 #include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
-#include "FloatRect.h"
 #include "FormState.h"
 #include "FormSubmission.h"
 #include "Frame.h"
@@ -102,6 +101,7 @@
 #include "XMLDocumentParser.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>

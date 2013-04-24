@@ -24,11 +24,9 @@
 #include "ColumnInfo.h"
 #include "Document.h"
 #include "Element.h"
-#include "FloatQuad.h"
 #include "FlowThreadController.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLIFrameElement.h"
 #include "HitTestResult.h"
@@ -44,6 +42,8 @@
 #include "StyleInheritedData.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #if USE(3D_GRAPHICS)
 #include "CustomFilterGlobalContext.h"

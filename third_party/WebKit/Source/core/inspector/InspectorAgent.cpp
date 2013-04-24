@@ -34,7 +34,6 @@
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "InjectedScriptHost.h"
 #include "InjectedScriptManager.h"
 #include "InspectorController.h"
@@ -50,6 +49,7 @@
 #include "ScriptObject.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

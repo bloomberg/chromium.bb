@@ -34,7 +34,7 @@
 #include <windows.h>
 
 #include "AffineTransform.h"
-#include "ImageBuffer.h"
+#include "core/platform/graphics/ImageBuffer.h"
  
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>

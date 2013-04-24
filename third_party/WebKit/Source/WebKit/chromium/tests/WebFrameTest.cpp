@@ -32,9 +32,9 @@
 
 #include "WebFrame.h"
 
+#include <gtest/gtest.h>
 #include "DocumentMarkerController.h"
 #include "EventHandler.h"
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameTestHelpers.h"
@@ -67,13 +67,13 @@
 #include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/FloatRect.h"
 #include "v8.h"
-#include <gtest/gtest.h>
 #include <public/Platform.h>
 #include <public/WebFloatRect.h>
 #include <public/WebThread.h>
-#include <public/WebURLResponse.h>
 #include <public/WebUnitTestSupport.h>
+#include <public/WebURLResponse.h>
 #include <wtf/dtoa/utils.h>
 #include <wtf/Forward.h>
 

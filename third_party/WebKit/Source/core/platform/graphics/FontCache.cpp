@@ -28,14 +28,14 @@
  */
 
 #include "config.h"
-#include "FontCache.h"
+#include "core/platform/graphics/FontCache.h"
 
-#include "Font.h"
-#include "FontFallbackList.h"
-#include "FontPlatformData.h"
-#include "FontSelector.h"
 #include "OpenTypeVerticalData.h"
 #include "WebKitFontFamilyNames.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontFallbackList.h"
+#include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/FontSelector.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/StdLibExtras.h>

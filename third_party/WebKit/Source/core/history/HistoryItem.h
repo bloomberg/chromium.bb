@@ -27,8 +27,8 @@
 #ifndef HistoryItem_h
 #define HistoryItem_h
 
-#include "IntPoint.h"
 #include "SerializedScriptValue.h"
+#include "core/platform/graphics/IntPoint.h"
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

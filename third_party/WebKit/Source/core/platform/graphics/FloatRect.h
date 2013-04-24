@@ -27,7 +27,7 @@
 #ifndef FloatRect_h
 #define FloatRect_h
 
-#include "FloatPoint.h"
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/Vector.h>
 
 #if OS(DARWIN)

@@ -23,9 +23,9 @@
 
 #if ENABLE(SVG)
 #include "AffineTransform.h"
-#include "FloatPoint.h"
-#include "FloatRect.h"
 #include "RenderSVGBlock.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {
 

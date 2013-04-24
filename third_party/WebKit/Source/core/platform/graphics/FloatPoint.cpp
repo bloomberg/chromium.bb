@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "FloatPoint.h"
+#include "core/platform/graphics/FloatPoint.h"
 
+#include <math.h>
+#include <limits>
 #include "AffineTransform.h"
 #include "FloatConversion.h"
-#include "IntPoint.h"
-#include "LayoutPoint.h"
-#include "LayoutSize.h"
 #include "TransformationMatrix.h"
-#include <limits>
-#include <math.h>
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/LayoutPoint.h"
+#include "core/platform/graphics/LayoutSize.h"
 
 namespace WebCore {
 

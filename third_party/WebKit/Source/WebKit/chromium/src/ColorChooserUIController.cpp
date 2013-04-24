@@ -28,9 +28,9 @@
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ChromeClientImpl.h"
-#include "Color.h"
 #include "ColorChooserClient.h"
 #include "WebColorChooser.h"
+#include "core/platform/graphics/Color.h"
 #include <public/WebColor.h>
 
 using namespace WebCore;

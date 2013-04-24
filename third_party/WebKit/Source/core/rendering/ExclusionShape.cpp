@@ -33,9 +33,9 @@
 #include "BasicShapeFunctions.h"
 #include "ExclusionPolygon.h"
 #include "ExclusionRectangle.h"
-#include "FloatSize.h"
 #include "LengthFunctions.h"
-#include "WindRule.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/WindRule.h"
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

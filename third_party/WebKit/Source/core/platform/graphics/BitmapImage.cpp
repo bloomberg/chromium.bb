@@ -25,19 +25,19 @@
  */
 
 #include "config.h"
-#include "BitmapImage.h"
+#include "core/platform/graphics/BitmapImage.h"
 
-#include "FloatRect.h"
-#include "ImageObserver.h"
-#include "IntRect.h"
 #include "MIMETypeRegistry.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "Timer.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

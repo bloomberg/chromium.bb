@@ -24,7 +24,7 @@
 #define HTMLPlugInElement_h
 
 #include "HTMLFrameOwnerElement.h"
-#include "Image.h"
+#include "core/platform/graphics/Image.h"
 
 #include "ScriptInstance.h"
 

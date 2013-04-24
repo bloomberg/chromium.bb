@@ -23,8 +23,8 @@
 #if ENABLE(SVG)
 #include "SVGPathStringSource.h"
 
-#include "FloatPoint.h"
 #include "SVGParserUtilities.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {
 

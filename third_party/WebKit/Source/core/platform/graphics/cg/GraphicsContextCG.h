@@ -26,7 +26,7 @@
 #ifndef GraphicsContextCG_h
 #define GraphicsContextCG_h
 
-#include "GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 typedef struct CGColorSpace *CGColorSpaceRef;
 

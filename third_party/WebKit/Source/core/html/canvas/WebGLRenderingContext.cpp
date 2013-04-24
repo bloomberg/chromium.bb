@@ -34,7 +34,6 @@
 #include "EXTDrawBuffers.h"
 #include "EXTTextureFilterAnisotropic.h"
 #include "ExceptionCode.h"
-#include "Extensions3D.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
@@ -42,9 +41,7 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLVideoElement.h"
-#include "ImageBuffer.h"
 #include "ImageData.h"
-#include "IntSize.h"
 #include "NotImplemented.h"
 #include "OESElementIndexUint.h"
 #include "OESStandardDerivatives.h"
@@ -73,12 +70,15 @@
 #include "WebGLShaderPrecisionFormat.h"
 #include "WebGLTexture.h"
 #include "WebGLUniformLocation.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntSize.h"
 
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnArrayPtr.h>
+#include <wtf/text/StringBuilder.h>
 #include <wtf/Uint16Array.h>
 #include <wtf/Uint32Array.h>
-#include <wtf/text/StringBuilder.h>
 
 namespace WebCore {
 

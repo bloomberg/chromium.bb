@@ -33,8 +33,8 @@
 #ifndef FontPlatformData_h
 #define FontPlatformData_h
 
-#include "FontOrientation.h"
-#include "FontWidthVariant.h"
+#include "core/platform/graphics/FontOrientation.h"
+#include "core/platform/graphics/FontWidthVariant.h"
 
 #if OS(DARWIN)
 OBJC_CLASS NSFont;

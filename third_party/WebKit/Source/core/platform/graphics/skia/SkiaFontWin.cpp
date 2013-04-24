@@ -33,15 +33,15 @@
 
 #include "AffineTransform.h"
 #include "FontPlatformDataChromiumWin.h"
-#include "Gradient.h"
-#include "Pattern.h"
 #include "PlatformContextSkia.h"
-#include "SimpleFontData.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPaint.h"
 #include "SkShader.h"
 #include "SkTemplates.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/Pattern.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {
 

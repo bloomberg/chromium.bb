@@ -26,12 +26,12 @@
 #ifndef RenderLayerBacking_h
 #define RenderLayerBacking_h
 
-#include "FloatPoint.h"
-#include "FloatPoint3D.h"
-#include "GraphicsLayer.h"
-#include "GraphicsLayerClient.h"
 #include "RenderLayer.h"
 #include "TransformationMatrix.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatPoint3D.h"
+#include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/GraphicsLayerClient.h"
 
 namespace WebCore {
 

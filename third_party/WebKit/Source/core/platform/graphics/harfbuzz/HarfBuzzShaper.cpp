@@ -31,16 +31,16 @@
 #include "config.h"
 #include "HarfBuzzShaper.h"
 
-#include "Font.h"
-#include "HarfBuzzFace.h"
-#include "SurrogatePairAwareTextIterator.h"
-#include "TextRun.h"
-#include "hb-icu.h"
 #include <unicode/normlzr.h>
 #include <unicode/uchar.h>
+#include "HarfBuzzFace.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
+#include "core/platform/graphics/TextRun.h"
+#include "hb-icu.h"
 #include <wtf/MathExtras.h>
-#include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

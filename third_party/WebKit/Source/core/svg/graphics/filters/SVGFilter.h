@@ -24,8 +24,8 @@
 #include "AffineTransform.h"
 #include "Filter.h"
 #include "FilterEffect.h"
-#include "FloatRect.h"
-#include "FloatSize.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FloatSize.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

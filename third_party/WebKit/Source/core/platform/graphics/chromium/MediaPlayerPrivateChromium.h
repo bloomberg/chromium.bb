@@ -31,7 +31,7 @@
 #ifndef MediaPlayerPrivateChromium_h
 #define MediaPlayerPrivateChromium_h
 
-#include "MediaPlayerPrivate.h"
+#include "core/platform/graphics/MediaPlayerPrivate.h"
 
 namespace WebCore {
 

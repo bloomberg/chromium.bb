@@ -24,10 +24,10 @@
 #ifndef FEConvolveMatrix_h
 #define FEConvolveMatrix_h
 
-#include "FilterEffect.h"
-#include "FloatPoint.h"
-#include "FloatSize.h"
 #include "Filter.h"
+#include "FilterEffect.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatSize.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

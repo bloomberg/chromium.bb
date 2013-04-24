@@ -25,7 +25,6 @@
 
 #include "Attribute.h"
 #include "ExceptionCode.h"
-#include "FloatPoint.h"
 #include "RenderSVGEllipse.h"
 #include "RenderSVGPath.h"
 #include "RenderSVGResource.h"
@@ -33,6 +32,7 @@
 #include "SVGException.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {
 

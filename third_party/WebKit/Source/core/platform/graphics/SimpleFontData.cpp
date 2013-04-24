@@ -28,11 +28,11 @@
  */
 
 #include "config.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
-#include "Font.h"
-#include "FontCache.h"
 #include "OpenTypeVerticalData.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/UnusedParam.h>

@@ -26,16 +26,17 @@
 #include "config.h"
 #include "HTMLMediaElement.h"
 
+#include <limits>
 #include "ApplicationCacheHost.h"
 #include "Attribute.h"
+#include "CSSPropertyNames.h"
+#include "CSSValueKeywords.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "ContentSecurityPolicy.h"
 #include "ContentType.h"
-#include "CSSPropertyNames.h"
-#include "CSSValueKeywords.h"
 #include "DiagnosticLoggingKeys.h"
 #include "DocumentLoader.h"
 #include "ElementShadow.h"
@@ -53,6 +54,7 @@
 #include "HTMLVideoElement.h"
 #include "Language.h"
 #include "Logging.h"
+#include "MIMETypeRegistry.h"
 #include "MediaController.h"
 #include "MediaControls.h"
 #include "MediaDocument.h"
@@ -61,12 +63,10 @@
 #include "MediaKeyError.h"
 #include "MediaKeyEvent.h"
 #include "MediaList.h"
-#include "MediaPlayer.h"
 #include "MediaQueryEvaluator.h"
 #include "MediaSource.h"
 #include "MediaSourceRegistry.h"
 #include "MouseEvent.h"
-#include "MIMETypeRegistry.h"
 #include "NodeRenderingContext.h"
 #include "Page.h"
 #include "PageGroup.h"
@@ -81,21 +81,21 @@
 #include "ShadowRoot.h"
 #include "TimeRanges.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include <limits>
+#include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/NonCopyingSort.h>
-#include <wtf/Uint8Array.h>
 #include <wtf/text/CString.h>
+#include <wtf/Uint8Array.h>
 
 #include "CaptionUserPreferences.h"
 #include "HTMLTrackElement.h"
 #include "InbandTextTrack.h"
-#include "InbandTextTrackPrivate.h"
 #include "RuntimeEnabledFeatures.h"
 #include "TextTrackCueList.h"
 #include "TextTrackList.h"
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(WEB_AUDIO)
 #include "AudioSourceProvider.h"
@@ -112,7 +112,7 @@
 #endif
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
-#include "PlatformTextTrack.h"
+#include "core/platform/graphics/PlatformTextTrack.h"
 #endif
 
 using namespace std;

@@ -26,7 +26,7 @@
 #ifndef SharedGraphicsContext3D_h
 #define SharedGraphicsContext3D_h
 
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 

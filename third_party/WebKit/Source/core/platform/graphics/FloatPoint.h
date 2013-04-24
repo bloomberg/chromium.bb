@@ -27,8 +27,8 @@
 #ifndef FloatPoint_h
 #define FloatPoint_h
 
-#include "FloatSize.h"
-#include "IntPoint.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/IntPoint.h"
 #include <wtf/MathExtras.h>
 
 #if OS(DARWIN)

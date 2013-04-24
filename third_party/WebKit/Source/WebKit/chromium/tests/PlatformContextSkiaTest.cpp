@@ -26,12 +26,12 @@
 
 #include "PlatformContextSkia.h"
 
-#include "BitmapImage.h"
-#include "GraphicsContext.h"
-#include "ImageBuffer.h"
+#include <gtest/gtest.h>
 #include "NativeImageSkia.h"
 #include "SkCanvas.h"
-#include <gtest/gtest.h>
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 using namespace WebCore;
 

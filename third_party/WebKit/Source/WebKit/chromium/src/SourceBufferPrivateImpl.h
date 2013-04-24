@@ -31,7 +31,7 @@
 #ifndef SourceBufferPrivateImpl_h
 #define SourceBufferPrivateImpl_h
 
-#include "SourceBufferPrivate.h"
+#include "core/platform/graphics/SourceBufferPrivate.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

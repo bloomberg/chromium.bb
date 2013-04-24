@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebPopupMenuImpl.h"
 
+#include <skia/ext/platform_canvas.h>
 #include "Cursor.h"
 #include "FrameView.h"
 #include "FramelessScrollView.h"
-#include "IntRect.h"
 #include "NotImplemented.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
@@ -48,9 +48,9 @@
 #include "WebRange.h"
 #include "WebViewClient.h"
 #include "WebWidgetClient.h"
+#include "core/platform/graphics/IntRect.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/WebRect.h>
-#include <skia/ext/platform_canvas.h>
 
 using namespace WebCore;
 

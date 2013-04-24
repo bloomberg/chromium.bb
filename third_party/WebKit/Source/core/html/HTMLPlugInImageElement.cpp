@@ -29,7 +29,6 @@
 #include "FrameView.h"
 #include "HTMLDivElement.h"
 #include "HTMLImageLoader.h"
-#include "Image.h"
 #include "LocalizedStrings.h"
 #include "Logging.h"
 #include "MouseEvent.h"
@@ -48,6 +47,7 @@
 #include "ShadowRoot.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/platform/graphics/Image.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

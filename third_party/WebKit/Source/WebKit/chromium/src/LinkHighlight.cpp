@@ -27,7 +27,6 @@
 
 #include "LinkHighlight.h"
 
-#include "Color.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "Node.h"
@@ -43,6 +42,7 @@
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/Color.h"
 #include <public/Platform.h>
 #include <public/WebAnimationCurve.h>
 #include <public/WebCompositorSupport.h>

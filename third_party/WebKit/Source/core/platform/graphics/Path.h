@@ -29,8 +29,8 @@
 #ifndef Path_h
 #define Path_h
 
-#include "RoundedRect.h"
-#include "WindRule.h"
+#include "core/platform/graphics/RoundedRect.h"
+#include "core/platform/graphics/WindRule.h"
 #include <wtf/FastAllocBase.h>
 #include <wtf/Forward.h>
 

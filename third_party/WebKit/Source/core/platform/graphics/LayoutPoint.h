@@ -31,8 +31,8 @@
 #ifndef LayoutPoint_h
 #define LayoutPoint_h
 
-#include "FloatPoint.h"
-#include "LayoutSize.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/LayoutSize.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

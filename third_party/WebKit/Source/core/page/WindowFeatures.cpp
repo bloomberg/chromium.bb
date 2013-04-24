@@ -23,7 +23,7 @@
 #include "config.h"
 #include "WindowFeatures.h"
 
-#include "FloatRect.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/Assertions.h>
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringHash.h>

@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "FloatSize.h"
+#include "core/platform/graphics/FloatSize.h"
 #else
 #include <cmath>
 #include <ui/gfx/size_f.h>

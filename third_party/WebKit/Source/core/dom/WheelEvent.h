@@ -25,8 +25,8 @@
 #define WheelEvent_h
 
 #include "EventDispatchMediator.h"
-#include "FloatPoint.h"
 #include "MouseEvent.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {
 

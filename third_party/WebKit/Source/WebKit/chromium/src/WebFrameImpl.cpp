@@ -71,6 +71,7 @@
 #include "config.h"
 #include "WebFrameImpl.h"
 
+#include <algorithm>
 #include "AssociatedURLLoader.h"
 #include "AsyncFileSystem.h"
 #include "AsyncFileSystemChromium.h"
@@ -94,7 +95,6 @@
 #include "FileSystemType.h"
 #include "FindInPageCoordinates.h"
 #include "FocusController.h"
-#include "FontCache.h"
 #include "FormState.h"
 #include "FrameLoadRequest.h"
 #include "FrameLoader.h"
@@ -175,10 +175,10 @@
 #include "WebSerializedScriptValue.h"
 #include "WebViewImpl.h"
 #include "XPathResult.h"
+#include "core/platform/graphics/FontCache.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include "painting/GraphicsContextBuilder.h"
-#include <algorithm>
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemType.h>

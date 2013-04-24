@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FloatPoint.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 #include "SkPoint.h"
 #include "SkiaUtils.h"

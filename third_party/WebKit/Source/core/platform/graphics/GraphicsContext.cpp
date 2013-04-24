@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include "BidiResolver.h"
-#include "BitmapImage.h"
-#include "Generator.h"
-#include "ImageBuffer.h"
-#include "IntRect.h"
-#include "RoundedRect.h"
-#include "TextRunIterator.h"
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Generator.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/RoundedRect.h"
+#include "core/platform/graphics/TextRunIterator.h"
 
 #include "stdio.h"
 

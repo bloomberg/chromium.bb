@@ -22,7 +22,6 @@
 #if ENABLE(SVG)
 #include "RenderSVGTextPath.h"
 
-#include "FloatQuad.h"
 #include "RenderBlock.h"
 #include "SVGInlineTextBox.h"
 #include "SVGNames.h"
@@ -31,6 +30,7 @@
 #include "SVGRootInlineBox.h"
 #include "SVGTextPathElement.h"
 #include "SVGTransformList.h"
+#include "core/platform/graphics/FloatQuad.h"
 
 namespace WebCore {
 

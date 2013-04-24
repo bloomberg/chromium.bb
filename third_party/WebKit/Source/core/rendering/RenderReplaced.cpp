@@ -25,7 +25,6 @@
 #include "RenderReplaced.h"
 
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "LayoutRepainter.h"
 #include "Page.h"
 #include "RenderBlock.h"
@@ -34,6 +33,7 @@
 #include "RenderView.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

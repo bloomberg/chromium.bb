@@ -26,10 +26,10 @@
 
 #if ENABLE(SVG)
 #include "AffineTransform.h"
-#include "FloatRect.h"
 #include "RenderSVGModelObject.h"
 #include "SVGPreserveAspectRatio.h"
 #include "SVGRenderSupport.h"
+#include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {
 

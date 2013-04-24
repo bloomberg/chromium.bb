@@ -27,12 +27,12 @@
 #define FrameSelection_h
 
 #include "EditingStyle.h"
-#include "IntRect.h"
-#include "LayoutRect.h"
 #include "Range.h"
 #include "ScrollBehavior.h"
 #include "Timer.h"
 #include "VisibleSelection.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {

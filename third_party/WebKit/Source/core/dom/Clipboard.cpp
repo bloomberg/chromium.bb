@@ -30,7 +30,7 @@
 #include "FileList.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "Image.h"
+#include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 

@@ -68,7 +68,6 @@
 #include "InspectorInstrumentation.h"
 #include "InspectorOverlay.h"
 #include "InstrumentingAgents.h"
-#include "IntRect.h"
 #include "InternalSettings.h"
 #include "Language.h"
 #include "MallocStatistics.h"
@@ -96,6 +95,7 @@
 #include "TypeConversions.h"
 #include "ViewportArguments.h"
 #include "WorkerThread.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/dtoa.h>
 #include <wtf/text/StringBuffer.h>
 
@@ -113,9 +113,9 @@
 
 #include "FilterOperation.h"
 #include "FilterOperations.h"
-#include "GraphicsLayer.h"
 #include "GraphicsLayerChromium.h"
 #include "RenderLayerBacking.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 #include "CDM.h"

@@ -39,7 +39,7 @@
 #include <cmath>
 
 #if WEBKIT_IMPLEMENTATION
-#include "FloatQuad.h"
+#include "core/platform/graphics/FloatQuad.h"
 #endif
 
 namespace WebKit {

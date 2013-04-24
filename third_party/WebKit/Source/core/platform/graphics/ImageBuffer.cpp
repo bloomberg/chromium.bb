@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "ImageBuffer.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
-#include "IntRect.h"
 #include "PlatformMemoryInstrumentation.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

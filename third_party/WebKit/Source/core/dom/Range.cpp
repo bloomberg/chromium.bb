@@ -25,11 +25,11 @@
 #include "config.h"
 #include "Range.h"
 
+#include <stdio.h>
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "DocumentFragment.h"
 #include "ExceptionCode.h"
-#include "FloatQuad.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLElement.h"
@@ -46,13 +46,13 @@
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
+#include "core/platform/graphics/FloatQuad.h"
 #include "htmlediting.h"
 #include "markup.h"
-#include <stdio.h>
 #include <wtf/RefCountedLeakCounter.h>
-#include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

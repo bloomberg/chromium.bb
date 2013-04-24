@@ -35,13 +35,13 @@
 #include "EventHandler.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "IntPoint.h"
-#include "IntRect.h"
-#include "IntSize.h"
 #include "Page.h"
 #include "PlatformEvent.h"
 #include "PlatformKeyboardEvent.h"
 #include "PlatformMouseEvent.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/IntSize.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/text/WTFString.h>

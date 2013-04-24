@@ -26,6 +26,8 @@
 #include "config.h"
 #include "FrameSelection.h"
 
+#include <limits.h>
+#include <stdio.h>
 #include "CharacterData.h"
 #include "DeleteSelectionCommand.h"
 #include "Document.h"
@@ -34,17 +36,15 @@
 #include "Element.h"
 #include "EventHandler.h"
 #include "ExceptionCode.h"
-#include "FloatQuad.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLInputElement.h"
-#include "HTMLSelectElement.h"
 #include "HTMLNames.h"
+#include "HTMLSelectElement.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "InlineTextBox.h"
@@ -64,9 +64,9 @@
 #include "TextIterator.h"
 #include "TypingCommand.h"
 #include "VisibleUnits.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include "htmlediting.h"
-#include <limits.h>
-#include <stdio.h>
 #include <wtf/text/CString.h>
 
 #define EDIT_DEBUG 0

@@ -24,18 +24,18 @@
 
 #include "AffineTransform.h"
 #include "Element.h"
-#include "FloatPoint.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
-#include "Image.h"
-#include "ImageBuffer.h"
-#include "IntRect.h"
 #include "RenderSVGResource.h"
 #include "SVGElement.h"
 #include "SVGMaskElement.h"
 #include "SVGRenderingContext.h"
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

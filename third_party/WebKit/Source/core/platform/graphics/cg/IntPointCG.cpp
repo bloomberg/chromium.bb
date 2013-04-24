@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "IntPoint.h"
+#include "core/platform/graphics/IntPoint.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

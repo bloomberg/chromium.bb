@@ -25,8 +25,8 @@
 #ifndef BorderValue_h
 #define BorderValue_h
 
-#include "Color.h"
 #include "RenderStyleConstants.h"
+#include "core/platform/graphics/Color.h"
 
 namespace WebCore {
 

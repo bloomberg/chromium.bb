@@ -20,13 +20,13 @@
  */
 
 #include "config.h"
-#include "WidthIterator.h"
+#include "core/platform/graphics/WidthIterator.h"
 
-#include "Font.h"
-#include "GlyphBuffer.h"
-#include "Latin1TextIterator.h"
-#include "SimpleFontData.h"
-#include "SurrogatePairAwareTextIterator.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/Latin1TextIterator.h"
+#include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
 #include <wtf/MathExtras.h>
 
 using namespace WTF;

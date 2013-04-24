@@ -27,7 +27,7 @@
 
 #include "EXTDrawBuffers.h"
 
-#include "Extensions3D.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 

@@ -31,10 +31,10 @@
 #ifndef DrawingBuffer_h
 #define DrawingBuffer_h
 
-#include "GraphicsContext3D.h"
-#include "GraphicsTypes3D.h"
-#include "IntSize.h"
-#include "PlatformLayer.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
+#include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/PlatformLayer.h"
 
 #include <public/WebExternalTextureLayerClient.h>
 #include <public/WebExternalTextureMailbox.h>

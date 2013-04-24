@@ -26,8 +26,6 @@
 
 #include "AnimationTranslationUtil.h"
 
-#include "FloatSize.h"
-#include "GraphicsLayer.h"
 #include "IdentityTransformOperation.h"
 #include "Length.h"
 #include "LengthFunctions.h"
@@ -41,6 +39,8 @@
 #include "TransformOperations.h"
 #include "TransformSkMatrix44Conversions.h"
 #include "TranslateTransformOperation.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 
 #include <public/Platform.h>
 #include <public/WebAnimation.h>

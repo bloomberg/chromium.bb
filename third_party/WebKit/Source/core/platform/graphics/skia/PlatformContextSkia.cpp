@@ -33,12 +33,12 @@
 #include "PlatformContextSkia.h"
 #include "PlatformContextSkiaState.h"
 
-#include "Extensions3D.h"
-#include "GraphicsContext.h"
-#include "GraphicsContext3D.h"
-#include "ImageBuffer.h"
 #include "NativeImageSkia.h"
 #include "SkiaUtils.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 #include "skia/ext/image_operations.h"
 #include "skia/ext/platform_canvas.h"

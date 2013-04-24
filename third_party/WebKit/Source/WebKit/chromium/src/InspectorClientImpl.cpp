@@ -32,7 +32,6 @@
 #include "InspectorClientImpl.h"
 
 #include "DOMWindow.h"
-#include "FloatRect.h"
 #include "InspectorInstrumentation.h"
 #include "NotImplemented.h"
 #include "Page.h"
@@ -40,6 +39,7 @@
 #include "WebDevToolsAgentImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <public/WebRect.h>
 #include <public/WebURL.h>
 #include <public/WebURLRequest.h>

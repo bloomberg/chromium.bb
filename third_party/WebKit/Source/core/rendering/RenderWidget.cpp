@@ -25,7 +25,6 @@
 
 #include "AnimationController.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "RenderCounter.h"
 #include "RenderLayer.h"
@@ -33,6 +32,7 @@
 #include "RenderView.h"
 #include "RenderWidgetProtector.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 
 using namespace std;

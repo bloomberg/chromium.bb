@@ -25,9 +25,9 @@
 #include "RenderFieldset.h"
 
 #include "CSSPropertyNames.h"
-#include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "PaintInfo.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using std::min;
 using std::max;

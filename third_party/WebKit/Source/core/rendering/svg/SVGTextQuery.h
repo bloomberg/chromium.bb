@@ -21,8 +21,8 @@
 #define SVGTextQuery_h
 
 #if ENABLE(SVG)
-#include "FloatRect.h"
 #include "SVGTextFragment.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

@@ -22,7 +22,7 @@
 
 #if ENABLE(SVG)
 #include "FloatConversion.h"
-#include "Path.h"
+#include "core/platform/graphics/Path.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

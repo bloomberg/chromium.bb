@@ -34,7 +34,6 @@
 
 #include "CSSPropertyNames.h"
 #include "Chrome.h"
-#include "Color.h"
 #include "ElementShadow.h"
 #include "HTMLDataListElement.h"
 #include "HTMLDivElement.h"
@@ -46,6 +45,7 @@
 #include "RenderView.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 

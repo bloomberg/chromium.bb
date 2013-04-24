@@ -27,7 +27,7 @@
 #ifndef ClientRectList_h
 #define ClientRectList_h
 
-#include "FloatQuad.h"
+#include "core/platform/graphics/FloatQuad.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

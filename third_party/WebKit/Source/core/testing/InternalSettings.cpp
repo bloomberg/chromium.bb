@@ -39,7 +39,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 #include "Supplementable.h"
-#include "TextRun.h"
+#include "core/platform/graphics/TextRun.h"
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooser.h"

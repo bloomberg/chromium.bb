@@ -30,22 +30,22 @@
  */
 
 #include "config.h"
-#include "FontCache.h"
+#include "core/platform/graphics/FontCache.h"
 
-#include "Font.h"
+#include <unicode/uniset.h>
 #include "FontPlatformDataChromiumWin.h"
 #include "FontUtilsChromiumWin.h"
 #include "HWndDC.h"
 #include "LayoutTestSupport.h"
-#include "SimpleFontData.h"
-#include <unicode/uniset.h>
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/text/StringHash.h>
 
 #include <windows.h>
-#include <objidl.h>
 #include <mlang.h>
+#include <objidl.h>
 
 using std::min;
 

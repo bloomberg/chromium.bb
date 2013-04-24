@@ -25,11 +25,11 @@
 
 #include "AffineTransform.h"
 #include "Filter.h"
-#include "GraphicsContext.h"
-#include "Pattern.h"
 #include "RenderTreeAsText.h"
 #include "SVGRenderingContext.h"
 #include "TextStream.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Pattern.h"
 
 namespace WebCore {
 

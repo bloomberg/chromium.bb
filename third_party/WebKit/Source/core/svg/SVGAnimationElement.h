@@ -33,7 +33,7 @@
 #include "SVGSMILElement.h"
 #include "SVGStringList.h"
 #include "SVGTests.h"
-#include "UnitBezier.h"
+#include "core/platform/graphics/UnitBezier.h"
 
 namespace WebCore {
 

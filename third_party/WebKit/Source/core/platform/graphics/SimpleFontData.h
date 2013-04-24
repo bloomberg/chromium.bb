@@ -24,22 +24,22 @@
 #ifndef SimpleFontData_h
 #define SimpleFontData_h
 
-#include "FontBaseline.h"
-#include "FontData.h"
-#include "FontMetrics.h"
-#include "FontPlatformData.h"
-#include "FloatRect.h"
-#include "GlyphBuffer.h"
-#include "GlyphMetricsMap.h"
-#include "GlyphPageTreeNode.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FontBaseline.h"
+#include "core/platform/graphics/FontData.h"
+#include "core/platform/graphics/FontMetrics.h"
+#include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/GlyphMetricsMap.h"
+#include "core/platform/graphics/GlyphPageTreeNode.h"
 #if ENABLE(OPENTYPE_VERTICAL)
 #include "OpenTypeVerticalData.h"
 #endif
-#include "TypesettingFeatures.h"
+#include "core/platform/graphics/TypesettingFeatures.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/UnusedParam.h>
 
 #if OS(DARWIN)
 #include <wtf/RetainPtr.h>

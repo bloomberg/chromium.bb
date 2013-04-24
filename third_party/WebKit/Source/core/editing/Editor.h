@@ -27,7 +27,6 @@
 #define Editor_h
 
 #include "ClipboardAccessPolicy.h"
-#include "Color.h"
 #include "DictationAlternative.h"
 #include "DocumentMarker.h"
 #include "EditAction.h"
@@ -41,6 +40,7 @@
 #include "TextIterator.h"
 #include "VisibleSelection.h"
 #include "WritingDirection.h"
+#include "core/platform/graphics/Color.h"
 
 namespace WebCore {
 

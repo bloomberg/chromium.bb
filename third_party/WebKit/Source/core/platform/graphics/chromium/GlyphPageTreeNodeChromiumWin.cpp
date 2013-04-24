@@ -28,17 +28,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
 #include <windows.h>
+#include "config.h"
 #include <vector>
 
-#include "Font.h"
 #include "FontPlatformDataChromiumWin.h"
-#include "GlyphPageTreeNode.h"
 #include "HWndDC.h"
-#include "SimpleFontData.h"
 #include "SystemInfo.h"
 #include "UniscribeHelperTextRun.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GlyphPageTreeNode.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {
 

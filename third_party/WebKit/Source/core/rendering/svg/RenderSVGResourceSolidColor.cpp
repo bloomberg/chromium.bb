@@ -24,11 +24,11 @@
 
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "PlatformContextSkia.h"
 #include "RenderSVGShape.h"
 #include "RenderStyle.h"
 #include "SVGRenderSupport.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

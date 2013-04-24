@@ -28,16 +28,16 @@
 
 #include "CSSFontSelector.h"
 #include "FloatConversion.h"
-#include "FloatQuad.h"
 #include "RenderBlock.h"
 #include "RenderSVGRoot.h"
 #include "RenderSVGText.h"
-#include "Settings.h"
 #include "SVGInlineTextBox.h"
 #include "SVGRenderingContext.h"
 #include "SVGRootInlineBox.h"
+#include "Settings.h"
 #include "StyleResolver.h"
 #include "VisiblePosition.h"
+#include "core/platform/graphics/FloatQuad.h"
 
 namespace WebCore {
 

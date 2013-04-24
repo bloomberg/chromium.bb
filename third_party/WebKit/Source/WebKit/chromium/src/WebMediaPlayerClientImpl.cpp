@@ -9,13 +9,10 @@
 #include "AudioSourceProvider.h"
 #include "AudioSourceProviderClient.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "GraphicsContext3DPrivate.h"
 #include "GraphicsLayerChromium.h"
 #include "HTMLMediaElement.h"
-#include "IntSize.h"
 #include "KURL.h"
-#include "MediaPlayer.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
 #include "RenderLayerCompositor.h"
@@ -29,10 +26,13 @@
 #include "WebMediaPlayer.h"
 #include "WebMediaSourceImpl.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/MediaPlayer.h"
 #include <public/Platform.h>
-#include <public/WebCString.h>
 #include <public/WebCanvas.h>
 #include <public/WebCompositorSupport.h>
+#include <public/WebCString.h>
 #include <public/WebMimeRegistry.h>
 #include <public/WebRect.h>
 #include <public/WebSize.h>
@@ -42,9 +42,9 @@
 #if defined(OS_ANDROID)
 #include "GrContext.h"
 #include "GrTypes.h"
+#include "SharedGraphicsContext3D.h"
 #include "SkCanvas.h"
 #include "SkGrPixelRef.h"
-#include "SharedGraphicsContext3D.h"
 #endif
 
 

@@ -52,13 +52,12 @@
 #include "FrameLoadRequest.h"
 #include "FrameView.h"
 #include "GestureEvent.h"
-#include "GraphicsContext.h"
 #include "GraphicsLayerChromium.h"
-#include "HitTestResult.h"
-#include "HostWindow.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
+#include "HitTestResult.h"
+#include "HostWindow.h"
 #include "IFrameShimSupport.h"
 #include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
@@ -75,6 +74,7 @@
 #include "UserGestureIndicator.h"
 #include "WebPrintParams.h"
 #include "WheelEvent.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <public/Platform.h>
 #include <public/WebClipboard.h>
 #include <public/WebCompositorSupport.h>

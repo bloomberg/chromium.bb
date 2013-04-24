@@ -29,13 +29,13 @@
 #include "Filter.h"
 #include "FilterEffect.h"
 #include "FilterOperations.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
-#include "ImageBuffer.h"
-#include "IntRectExtent.h"
-#include "LayoutRect.h"
 #include "SVGFilterBuilder.h"
 #include "SourceGraphic.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntRectExtent.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

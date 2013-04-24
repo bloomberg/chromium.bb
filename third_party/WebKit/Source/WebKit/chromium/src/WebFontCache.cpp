@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebFontCache.h"
 
-#include "FontCache.h"
+#include "core/platform/graphics/FontCache.h"
 
 using namespace WebCore;
 

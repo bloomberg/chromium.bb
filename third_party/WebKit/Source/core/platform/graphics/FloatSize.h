@@ -28,7 +28,7 @@
 #ifndef FloatSize_h
 #define FloatSize_h
 
-#include "IntPoint.h"
+#include "core/platform/graphics/IntPoint.h"
 #include <wtf/MathExtras.h>
 
 

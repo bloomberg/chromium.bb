@@ -21,7 +21,7 @@
 #if ENABLE(SVG)
 #include "ColorDistance.h"
 
-#include "Color.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

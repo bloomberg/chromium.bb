@@ -31,11 +31,11 @@
 #include "config.h"
 #include "PlatformScreen.h"
 
-#include "FloatRect.h"
 #include "HostWindow.h"
+#include "PageClientChromium.h"
 #include "ScrollView.h"
 #include "Widget.h"
-#include "PageClientChromium.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <public/Platform.h>
 #include <public/WebScreenInfo.h>
 

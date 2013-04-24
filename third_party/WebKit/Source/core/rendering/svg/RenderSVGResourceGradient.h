@@ -24,11 +24,11 @@
 
 #if ENABLE(SVG)
 #include "AffineTransform.h"
-#include "FloatRect.h"
-#include "Gradient.h"
-#include "ImageBuffer.h"
 #include "RenderSVGResourceContainer.h"
 #include "SVGGradientElement.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 #include <wtf/HashMap.h>
 

@@ -26,9 +26,9 @@
 #include "config.h"
 #include "CSSCanvasValue.h"
 
-#include "ImageBuffer.h"
 #include "RenderObject.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

@@ -27,8 +27,8 @@
 #include "config.h"
 #include "VisiblePosition.h"
 
+#include <stdio.h>
 #include "Document.h"
-#include "FloatQuad.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "InlineTextBox.h"
@@ -38,8 +38,8 @@
 #include "RootInlineBox.h"
 #include "Text.h"
 #include "VisibleUnits.h"
+#include "core/platform/graphics/FloatQuad.h"
 #include "htmlediting.h"
-#include <stdio.h>
 #include <wtf/text/CString.h>
 
 namespace WebCore {

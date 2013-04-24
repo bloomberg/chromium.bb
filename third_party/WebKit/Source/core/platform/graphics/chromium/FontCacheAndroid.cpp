@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "FontCache.h"
+#include "core/platform/graphics/FontCache.h"
 
-#include "Font.h"
-#include "FontDescription.h"
-#include "FontPlatformData.h"
 #include "NotImplemented.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 #include "SkPaint.h"
 #include "SkTypeface_android.h"

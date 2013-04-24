@@ -30,9 +30,6 @@
 #include "RenderSVGText.h"
 
 #include "FloatConversion.h"
-#include "FloatQuad.h"
-#include "FontCache.h"
-#include "GraphicsContext.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "LayoutRepainter.h"
@@ -49,9 +46,12 @@
 #include "SVGTextRunRenderingContext.h"
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
-#include "SimpleFontData.h"
 #include "TransformState.h"
 #include "VisiblePosition.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 namespace WebCore {
 

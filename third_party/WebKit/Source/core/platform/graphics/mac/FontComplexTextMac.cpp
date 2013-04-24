@@ -23,15 +23,15 @@
  */
 
 #include "config.h"
-#include "Font.h"
+#include "core/platform/graphics/Font.h"
 
 #include "ComplexTextController.h"
-#include "FontFallbackList.h"
-#include "GlyphBuffer.h"
-#include "GraphicsContext.h"
-#include "IntRect.h"
-#include "SimpleFontData.h"
-#include "TextRun.h"
+#include "core/platform/graphics/FontFallbackList.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/TextRun.h"
 #include <wtf/MathExtras.h>
 
 #include "HarfBuzzShaper.h"

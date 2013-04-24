@@ -31,8 +31,8 @@
 #define CustomFilterGlobalContext_h
 
 #if USE(3D_GRAPHICS)
-#include "ANGLEWebKitBridge.h"
 #include "CustomFilterProgramInfo.h"
+#include "core/platform/graphics/ANGLEWebKitBridge.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefPtr.h>
 

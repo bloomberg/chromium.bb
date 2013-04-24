@@ -31,10 +31,10 @@
 #include "config.h"
 #include "ScrollAnimator.h"
 
-#include "FloatPoint.h"
+#include <algorithm>
 #include "PlatformWheelEvent.h"
 #include "ScrollableArea.h"
-#include <algorithm>
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace std;

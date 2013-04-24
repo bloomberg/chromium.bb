@@ -31,11 +31,7 @@
 #include "config.h"
 #include "FindInPageCoordinates.h"
 
-#include "FloatPoint.h"
-#include "FloatQuad.h"
-#include "FloatRect.h"
 #include "Frame.h"
-#include "IntPoint.h"
 #include "Node.h"
 #include "Range.h"
 #include "RenderBlock.h"
@@ -44,6 +40,10 @@
 #include "RenderPart.h"
 #include "RenderStyle.h"
 #include "RenderView.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/IntPoint.h"
 
 using namespace WebCore;
 

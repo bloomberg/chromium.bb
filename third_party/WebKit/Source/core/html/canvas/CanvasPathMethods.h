@@ -29,7 +29,7 @@
 #ifndef CanvasPathMethods_h
 #define CanvasPathMethods_h
 
-#include "Path.h"
+#include "core/platform/graphics/Path.h"
 
 #include <wtf/Noncopyable.h>
 

@@ -24,12 +24,12 @@
 #define SVGGlyph_h
 
 #if ENABLE(SVG_FONTS)
-#include "Glyph.h"
-#include "Path.h"
+#include "core/platform/graphics/Glyph.h"
+#include "core/platform/graphics/Path.h"
 
 #include <limits>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

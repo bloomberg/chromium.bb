@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 

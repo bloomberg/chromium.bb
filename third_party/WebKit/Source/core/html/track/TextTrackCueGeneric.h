@@ -26,8 +26,8 @@
 #ifndef TextTrackCueGeneric_h
 #define TextTrackCueGeneric_h
 
-#include "Color.h"
 #include "TextTrackCue.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

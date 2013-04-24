@@ -31,7 +31,7 @@
 #define CustomFilterProgramInfo_h
 
 #include "CustomFilterConstants.h"
-#include "GraphicsTypes.h"
+#include "core/platform/graphics/GraphicsTypes.h"
 
 #include <wtf/HashTraits.h>
 #include <wtf/text/WTFString.h>

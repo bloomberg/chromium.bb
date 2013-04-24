@@ -31,8 +31,8 @@
 #ifndef PaintAggregator_h
 #define PaintAggregator_h
 
-#include "IntPoint.h"
-#include "IntRect.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/Vector.h>
 
 namespace WebKit {

@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "FloatPoint.h"
+#include "core/platform/graphics/FloatPoint.h"
 #else
 #include <ui/gfx/point_f.h>
 #endif

@@ -39,11 +39,11 @@
 #include "SkStream.h"
 #endif
 
-#include "FontPlatformData.h"
 #include "LayoutTestSupport.h"
 #include "NotImplemented.h"
 #include "OpenTypeSanitizer.h"
 #include "SharedBuffer.h"
+#include "core/platform/graphics/FontPlatformData.h"
 
 #if OS(WINDOWS)
 #include <objbase.h>

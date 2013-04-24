@@ -29,19 +29,19 @@
  */
 
 #include "config.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
-#include "FloatRect.h"
-#include "Font.h"
-#include "FontCache.h"
-#include "FontDescription.h"
+#include <unicode/normlzr.h>
 #include "Logging.h"
 #include "SkPaint.h"
 #include "SkTime.h"
 #include "SkTypeface.h"
 #include "SkTypes.h"
 #include "VDMXParser.h"
-#include <unicode/normlzr.h>
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/FontDescription.h"
 #include <wtf/unicode/Unicode.h>
 
 namespace WebCore {

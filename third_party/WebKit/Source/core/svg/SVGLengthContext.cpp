@@ -27,7 +27,6 @@
 
 #include "CSSHelper.h"
 #include "ExceptionCode.h"
-#include "FontMetrics.h"
 #include "Frame.h"
 #include "RenderPart.h"
 #include "RenderSVGRoot.h"
@@ -35,6 +34,7 @@
 #include "RenderView.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
+#include "core/platform/graphics/FontMetrics.h"
 
 namespace WebCore {
 

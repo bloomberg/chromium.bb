@@ -31,10 +31,10 @@
 #include "config.h"
 #include "UniscribeHelperTextRun.h"
 
-#include "Font.h"
 #include "FontPlatformDataChromiumWin.h"
-#include "SimpleFontData.h"
-#include "TextRun.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/TextRun.h"
 
 namespace WebCore {
 

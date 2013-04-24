@@ -35,13 +35,13 @@
 #include "DeviceOrientationClient.h"
 #include "DragClient.h"
 #include "EditorClient.h"
-#include "TextCheckerClient.h"
-#include "FloatRect.h"
 #include "FocusDirection.h"
 #include "FrameLoaderClient.h"
 #include "InspectorClient.h"
 #include "Page.h"
 #include "ResourceError.h"
+#include "TextCheckerClient.h"
+#include "core/platform/graphics/FloatRect.h"
 
 #include <v8.h>
 

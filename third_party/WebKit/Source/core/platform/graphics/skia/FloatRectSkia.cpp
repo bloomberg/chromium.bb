@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FloatRect.h"
+#include "core/platform/graphics/FloatRect.h"
 
 #include "SkRect.h"
 

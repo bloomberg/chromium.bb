@@ -29,8 +29,6 @@
 #include "CachedImageClient.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Element.h"
-#include "FloatQuad.h"
-#include "LayoutRect.h"
 #include "PaintPhase.h"
 #include "RenderObjectChildList.h"
 #include "RenderStyle.h"
@@ -38,6 +36,8 @@
 #include "StyleInheritedData.h"
 #include "TextAffinity.h"
 #include "TransformationMatrix.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/HashSet.h>
 #include <wtf/StackStats.h>
 #include <wtf/UnusedParam.h>

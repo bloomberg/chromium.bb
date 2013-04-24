@@ -30,8 +30,8 @@
 
 #include "CachedImageClient.h"
 #include "CachedResourceHandle.h"
-#include "LayoutSize.h"
 #include "StyleImage.h"
+#include "core/platform/graphics/LayoutSize.h"
 
 namespace WebCore {
 

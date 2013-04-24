@@ -31,9 +31,9 @@
 #ifndef GraphicsLayerChromium_h
 #define GraphicsLayerChromium_h
 
-#include "GraphicsContext.h"
-#include "GraphicsLayer.h"
 #include "OpaqueRectTrackingContentLayerDelegate.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 
 #include <public/WebAnimationDelegate.h>
 #include <public/WebLayerScrollClient.h>

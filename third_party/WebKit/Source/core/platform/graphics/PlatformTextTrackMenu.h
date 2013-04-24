@@ -28,7 +28,7 @@
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
 
-#include "PlatformTextTrack.h"
+#include "core/platform/graphics/PlatformTextTrack.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/RefCounted.h>
 

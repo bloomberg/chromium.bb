@@ -29,11 +29,11 @@
 #include "TransformationMatrix.h"
 
 #include "AffineTransform.h"
-#include "FloatRect.h"
-#include "FloatQuad.h"
-#include "IntRect.h"
-#include "LayoutRect.h"
 #include "SkiaUtils.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/MathExtras.h>

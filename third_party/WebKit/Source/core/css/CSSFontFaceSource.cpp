@@ -26,14 +26,14 @@
 #include "config.h"
 #include "CSSFontFaceSource.h"
 
-#include "CachedFont.h"
 #include "CSSFontFace.h"
 #include "CSSFontSelector.h"
+#include "CachedFont.h"
 #include "CachedResourceLoader.h"
 #include "Document.h"
-#include "FontCache.h"
-#include "FontDescription.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 #if ENABLE(SVG_FONTS)
 #include "FontCustomPlatformData.h"

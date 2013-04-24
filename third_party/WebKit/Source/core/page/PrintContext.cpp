@@ -21,11 +21,11 @@
 #include "config.h"
 #include "PrintContext.h"
 
-#include "GraphicsContext.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "RenderView.h"
 #include "StyleInheritedData.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

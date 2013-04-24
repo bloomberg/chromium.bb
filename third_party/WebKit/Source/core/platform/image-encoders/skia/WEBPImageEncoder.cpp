@@ -32,9 +32,9 @@
 #include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
 
 #include "ImageData.h"
-#include "IntSize.h"
 #include "SkBitmap.h"
 #include "SkColorPriv.h"
+#include "core/platform/graphics/IntSize.h"
 #include "webp/encode.h"
 
 typedef int (*WebPImporter)(WebPPicture* const, const uint8_t* const data, int rowStride);

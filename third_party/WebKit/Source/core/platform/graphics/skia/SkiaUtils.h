@@ -33,10 +33,10 @@
 #ifndef SkiaUtils_h
 #define SkiaUtils_h
 
-#include <wtf/MathExtras.h>
-#include "GraphicsContext.h"
 #include "SkPath.h"
 #include "SkXfermode.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include <wtf/MathExtras.h>
 
 class SkCanvas;
 class SkRegion;

@@ -28,14 +28,11 @@
 #include "RenderLayerBacking.h"
 
 #include "AnimationController.h"
-#include "CanvasRenderingContext.h"
 #include "CSSPropertyNames.h"
 #include "CachedImage.h"
+#include "CanvasRenderingContext.h"
 #include "Chrome.h"
-#include "FontCache.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
-#include "GraphicsLayer.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLMediaElement.h"
@@ -44,23 +41,26 @@
 #include "KeyframeList.h"
 #include "PluginViewBase.h"
 #include "RenderApplet.h"
+#include "RenderEmbeddedObject.h"
 #include "RenderIFrame.h"
 #include "RenderImage.h"
 #include "RenderLayerCompositor.h"
-#include "RenderEmbeddedObject.h"
 #include "RenderVideo.h"
 #include "RenderView.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/text/StringBuilder.h>
 
-#include "FilterEffectRenderer.h"
 #include "CustomFilterOperation.h"
+#include "FilterEffectRenderer.h"
 
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 using namespace std;
 

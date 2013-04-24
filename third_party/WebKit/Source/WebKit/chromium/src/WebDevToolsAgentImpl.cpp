@@ -34,7 +34,6 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "InjectedScriptHost.h"
 #include "InspectorBackendDispatcher.h"
 #include "InspectorController.h"
@@ -45,7 +44,6 @@
 #include "Page.h"
 #include "PageGroup.h"
 #include "PageScriptDebugServer.h"
-#include "painting/GraphicsContextBuilder.h"
 #include "RenderView.h"
 #include "ResourceError.h"
 #include "ResourceRequest.h"
@@ -59,6 +57,8 @@
 #include "WebMemoryUsageInfo.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebRect.h>
 #include <public/WebString.h>

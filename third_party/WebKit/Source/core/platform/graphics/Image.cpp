@@ -25,18 +25,18 @@
  */
 
 #include "config.h"
-#include "Image.h"
+#include "core/platform/graphics/Image.h"
 
+#include <math.h>
 #include "AffineTransform.h"
-#include "BitmapImage.h"
-#include "GraphicsContext.h"
-#include "ImageObserver.h"
-#include "IntRect.h"
 #include "Length.h"
 #include "MIMETypeRegistry.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "SharedBuffer.h"
-#include <math.h>
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/MainThread.h>
 #include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>

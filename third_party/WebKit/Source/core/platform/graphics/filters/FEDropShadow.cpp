@@ -22,13 +22,13 @@
 
 #include "FEDropShadow.h"
 
-#include "ColorSpace.h"
 #include "FEGaussianBlur.h"
 #include "Filter.h"
-#include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
-#include "ShadowBlur.h"
 #include "TextStream.h"
+#include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ShadowBlur.h"
 #include <wtf/MathExtras.h>
 #include <wtf/Uint8ClampedArray.h>
 

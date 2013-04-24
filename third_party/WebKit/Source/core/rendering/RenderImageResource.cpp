@@ -29,9 +29,9 @@
 #include "RenderImageResource.h"
 
 #include "CachedImage.h"
-#include "Image.h"
 #include "RenderImageResourceStyleImage.h"
 #include "RenderObject.h"
+#include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 

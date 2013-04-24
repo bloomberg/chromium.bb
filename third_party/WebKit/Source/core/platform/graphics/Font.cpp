@@ -22,15 +22,15 @@
  */
 
 #include "config.h"
-#include "Font.h"
+#include "core/platform/graphics/Font.h"
 
-#include "FloatRect.h"
-#include "FontCache.h"
 #include "FontTranscoder.h"
-#include "IntPoint.h"
-#include "GlyphBuffer.h"
-#include "TextRun.h"
-#include "WidthIterator.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/WidthIterator.h"
 #include <wtf/MainThread.h>
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>

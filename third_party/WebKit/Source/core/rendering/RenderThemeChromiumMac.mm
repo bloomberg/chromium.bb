@@ -21,7 +21,6 @@
 #import "config.h"
 #import "RenderThemeChromiumMac.h"
 
-#import "BitmapImage.h"
 #import "CSSValueKeywords.h"
 #import "CSSValueList.h"
 #import "ColorMac.h"
@@ -35,8 +34,6 @@
 #import "HTMLMeterElement.h"
 #import "HTMLNames.h"
 #import "HTMLPlugInImageElement.h"
-#import "Image.h"
-#import "ImageBuffer.h"
 #import "LayoutTestSupport.h"
 #import "LocalCurrentGraphicsContext.h"
 #import "LocalizedStrings.h"
@@ -51,19 +48,22 @@
 #import "RenderSlider.h"
 #import "RenderView.h"
 #import "SharedBuffer.h"
-#import "StringTruncator.h"
 #import "StyleResolver.h"
 #import "ThemeMac.h"
 #import "TimeRanges.h"
 #import "UserAgentStyleSheets.h"
 #import "WebCoreNSCellExtras.h"
 #import "WebCoreSystemInterface.h"
+#import "core/platform/graphics/BitmapImage.h"
+#import "core/platform/graphics/Image.h"
+#import "core/platform/graphics/ImageBuffer.h"
+#import "core/platform/graphics/StringTruncator.h"
 
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
+#import <math.h>
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>
-#import <math.h>
 
 using namespace std;
 

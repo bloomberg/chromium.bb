@@ -34,13 +34,13 @@
 #include "Frame.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "Icon.h"
 #include "InputTypeNames.h"
 #include "LocalizedStrings.h"
 #include "RenderFileUploadControl.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
+#include "core/platform/graphics/Icon.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

@@ -26,7 +26,7 @@
 #ifndef WebGLActiveInfo_h
 #define WebGLActiveInfo_h
 
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

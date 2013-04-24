@@ -21,11 +21,11 @@
 #include "config.h"
 #include "FontCustomPlatformData.h"
 
-#include "FontPlatformData.h"
+#include <ApplicationServices/ApplicationServices.h>
 #include "OpenTypeSanitizer.h"
 #include "SharedBuffer.h"
-#include "WOFFFileFormat.h"
-#include <ApplicationServices/ApplicationServices.h>
+#include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/WOFFFileFormat.h"
 
 #if USE(SKIA_ON_MAC_CHROMIUM)
 #include "SkStream.h"

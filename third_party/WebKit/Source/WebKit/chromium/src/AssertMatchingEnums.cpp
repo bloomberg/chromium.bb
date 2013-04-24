@@ -43,8 +43,6 @@
 #include "FileMetadata.h"
 #include "FileSystemType.h"
 #include "FilterOperation.h"
-#include "FontDescription.h"
-#include "FontSmoothingMode.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
 #include "HTMLFormElement.h"
@@ -57,8 +55,6 @@
 #include "IDBKeyPath.h"
 #include "IDBMetadata.h"
 #include "IconURL.h"
-#include "MediaPlayer.h"
-#include "MediaSourcePrivate.h"
 #include "MediaStreamSource.h"
 #include "NotificationClient.h"
 #include "PageVisibilityState.h"
@@ -110,6 +106,10 @@
 #include "WebView.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityObject.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/FontSmoothingMode.h"
+#include "core/platform/graphics/MediaPlayer.h"
+#include "core/platform/graphics/MediaSourcePrivate.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

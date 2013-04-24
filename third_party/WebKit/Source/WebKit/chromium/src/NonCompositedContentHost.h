@@ -26,8 +26,8 @@
 #ifndef NonCompositedContentHost_h
 #define NonCompositedContentHost_h
 
-#include "GraphicsLayerClient.h"
-#include "IntSize.h"
+#include "core/platform/graphics/GraphicsLayerClient.h"
+#include "core/platform/graphics/IntSize.h"
 
 #include <public/WebLayer.h>
 #include <wtf/Noncopyable.h>

@@ -30,9 +30,9 @@
 #include "RenderLineBoxList.h"
 #include "RootInlineBox.h"
 #include "TextBreakIterator.h"
-#include "TextRun.h"
-#include <wtf/OwnPtr.h>
+#include "core/platform/graphics/TextRun.h"
 #include <wtf/ListHashSet.h>
+#include <wtf/OwnPtr.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"

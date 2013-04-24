@@ -25,7 +25,6 @@
 
 #include "AffineTransform.h"
 #include "Attribute.h"
-#include "FloatRect.h"
 #include "NodeRenderingContext.h"
 #include "RenderSVGResource.h"
 #include "RenderSVGText.h"
@@ -33,6 +32,7 @@
 #include "SVGNames.h"
 #include "SVGRenderStyle.h"
 #include "SVGTSpanElement.h"
+#include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {
 

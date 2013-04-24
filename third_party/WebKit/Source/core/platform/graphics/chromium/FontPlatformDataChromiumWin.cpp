@@ -30,18 +30,18 @@
  */
 
 #include "config.h"
-#include "FontPlatformData.h"
+#include "core/platform/graphics/FontPlatformData.h"
 
-#include "FontCache.h"
+#include <windows.h>
+#include <mlang.h>
+#include <objidl.h>
 #include "HWndDC.h"
 #include "SharedBuffer.h"
 #include "SkTypeface_win.h"
 #include "SkiaFontWin.h"
-#include <mlang.h>
-#include <objidl.h>
+#include "core/platform/graphics/FontCache.h"
 #include <public/Platform.h>
 #include <public/win/WebSandboxSupport.h>
-#include <windows.h>
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

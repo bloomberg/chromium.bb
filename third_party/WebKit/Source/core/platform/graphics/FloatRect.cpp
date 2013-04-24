@@ -25,13 +25,13 @@
  */
 
 #include "config.h"
-#include "FloatRect.h"
+#include "core/platform/graphics/FloatRect.h"
 
-#include "FloatConversion.h"
-#include "IntRect.h"
-#include "LayoutRect.h"
-#include <algorithm>
 #include <math.h>
+#include <algorithm>
+#include "FloatConversion.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/MathExtras.h>
 
 using std::max;

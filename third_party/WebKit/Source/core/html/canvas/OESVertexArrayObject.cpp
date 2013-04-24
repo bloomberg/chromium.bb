@@ -27,9 +27,9 @@
 
 #include "OESVertexArrayObject.h"
 
-#include "Extensions3D.h"
 #include "WebGLRenderingContext.h"
 #include "WebGLVertexArrayObjectOES.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {
 

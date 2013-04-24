@@ -33,7 +33,7 @@
 #if ENABLE(CSS_EXCLUSIONS)
 
 #include "ExclusionShapeInfo.h"
-#include "LayoutSize.h"
+#include "core/platform/graphics/LayoutSize.h"
 
 namespace WebCore {
 

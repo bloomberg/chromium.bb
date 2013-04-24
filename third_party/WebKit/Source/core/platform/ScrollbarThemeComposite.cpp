@@ -30,11 +30,11 @@
 #include "ChromeClient.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "Page.h"
 #include "PlatformMouseEvent.h"
 #include "ScrollbarThemeClient.h"
 #include "Settings.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

@@ -28,13 +28,7 @@
 
 #include "AffineTransform.h"
 #include "FilterEffect.h"
-#include "FloatPoint.h"
-#include "FloatRect.h"
-#include "GraphicsContext.h"
-#include "Image.h"
-#include "ImageBuffer.h"
 #include "ImageData.h"
-#include "IntRect.h"
 #include "Page.h"
 #include "RenderSVGResource.h"
 #include "RenderSVGResourceFilterPrimitive.h"
@@ -49,6 +43,12 @@
 #include "Settings.h"
 #include "SourceAlpha.h"
 #include "SourceGraphic.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

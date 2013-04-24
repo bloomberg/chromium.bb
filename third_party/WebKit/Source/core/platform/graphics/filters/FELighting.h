@@ -28,12 +28,12 @@
 #ifndef FELighting_h
 #define FELighting_h
 
-#include "Color.h"
 #include "Filter.h"
 #include "FilterEffect.h"
 #include "LightSource.h"
 #include "PointLightSource.h"
 #include "SpotLightSource.h"
+#include "core/platform/graphics/Color.h"
 #include <wtf/Uint8ClampedArray.h>
 
 // Common base class for FEDiffuseLighting and FESpecularLighting

@@ -33,7 +33,7 @@
 #include "CustomFilterGlobalContext.h"
 
 #include "CustomFilterValidatedProgram.h"
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {
 

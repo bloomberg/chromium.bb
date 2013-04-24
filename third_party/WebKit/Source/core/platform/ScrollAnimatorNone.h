@@ -31,9 +31,9 @@
 #ifndef ScrollAnimatorNone_h
 #define ScrollAnimatorNone_h
 
-#include "FloatPoint.h"
 #include "ScrollAnimator.h"
 #include "Timer.h"
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/OwnPtr.h>
 
 class ScrollAnimatorNoneTest;

@@ -28,15 +28,15 @@
 
 #include "CSSCalculationValue.h"
 #include "CSSValueKeywords.h"
-#include "GeneratorGeneratedImage.h"
-#include "Gradient.h"
-#include "Image.h"
-#include "IntSize.h"
-#include "IntSizeHash.h"
 #include "NodeRenderStyle.h"
 #include "RenderObject.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/GeneratorGeneratedImage.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/IntSizeHash.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

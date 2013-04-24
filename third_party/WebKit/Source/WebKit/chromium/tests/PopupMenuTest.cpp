@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "Color.h"
+#include <gtest/gtest.h>
 #include "Element.h"
 #include "EventHandler.h"
 #include "FrameView.h"
@@ -55,14 +55,14 @@
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/Color.h"
 #include "v8.h"
-#include <gtest/gtest.h>
 #include <public/Platform.h>
 #include <public/WebString.h>
+#include <public/WebUnitTestSupport.h>
 #include <public/WebURL.h>
 #include <public/WebURLRequest.h>
 #include <public/WebURLResponse.h>
-#include <public/WebUnitTestSupport.h>
 
 using namespace WebCore;
 using namespace WebKit;

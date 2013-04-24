@@ -24,7 +24,6 @@
 #include "config.h"
 #include "CachedImage.h"
 
-#include "BitmapImage.h"
 #include "CachedImageClient.h"
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
@@ -38,6 +37,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 #include "SharedBuffer.h"
+#include "core/platform/graphics/BitmapImage.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryObjectInfo.h>

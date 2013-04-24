@@ -28,10 +28,8 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "CalculationValue.h"
-#include "Color.h"
 #include "Counter.h"
 #include "ExceptionCode.h"
-#include "Font.h"
 #include "LayoutUnit.h"
 #include "Node.h"
 #include "Pair.h"
@@ -40,6 +38,8 @@
 #include "RenderStyle.h"
 #include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/Font.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/DecimalNumber.h>
 #include <wtf/StdLibExtras.h>

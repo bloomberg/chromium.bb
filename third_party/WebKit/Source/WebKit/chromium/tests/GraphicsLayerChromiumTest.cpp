@@ -26,13 +26,13 @@
 
 #include "GraphicsLayerChromium.h"
 
+#include <gtest/gtest.h>
 #include "CompositorFakeWebGraphicsContext3D.h"
-#include "GraphicsLayer.h"
 #include "Matrix3DTransformOperation.h"
 #include "RotateTransformOperation.h"
 #include "ScrollableArea.h"
 #include "TranslateTransformOperation.h"
-#include <gtest/gtest.h>
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebFloatAnimationCurve.h>

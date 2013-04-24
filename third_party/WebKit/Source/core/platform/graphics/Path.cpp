@@ -27,17 +27,17 @@
  */
 
 #include "config.h"
-#include "Path.h"
+#include "core/platform/graphics/Path.h"
 
+#include <math.h>
 #include "AffineTransform.h"
-#include "FloatPoint.h"
-#include "FloatRect.h"
-#include "ImageBuffer.h"
-#include "PathTraversalState.h"
 #include "SkPath.h"
 #include "SkiaUtils.h"
-#include "StrokeStyleApplier.h"
-#include <math.h>
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/PathTraversalState.h"
+#include "core/platform/graphics/StrokeStyleApplier.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

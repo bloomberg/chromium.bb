@@ -28,10 +28,10 @@
 #include "FEBlendNEON.h"
 
 #include "Filter.h"
-#include "FloatPoint.h"
-#include "GraphicsContext.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include <wtf/Uint8ClampedArray.h>
 

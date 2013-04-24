@@ -21,7 +21,6 @@
 #include "SVGPathData.h"
 
 #if ENABLE(SVG)
-#include "Path.h"
 #include "SVGCircleElement.h"
 #include "SVGEllipseElement.h"
 #include "SVGLineElement.h"
@@ -31,6 +30,7 @@
 #include "SVGPolygonElement.h"
 #include "SVGPolylineElement.h"
 #include "SVGRectElement.h"
+#include "core/platform/graphics/Path.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

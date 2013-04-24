@@ -25,7 +25,6 @@
 #include "SVGRootInlineBox.h"
 
 #if ENABLE(SVG)
-#include "GraphicsContext.h"
 #include "RenderSVGInlineText.h"
 #include "RenderSVGText.h"
 #include "SVGInlineFlowBox.h"
@@ -33,6 +32,7 @@
 #include "SVGNames.h"
 #include "SVGRenderingContext.h"
 #include "SVGTextPositioningElement.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebIconLoadingCompletionImpl.h"
 
-#include "BitmapImage.h"
-#include "Icon.h"
 #include "SharedBuffer.h"
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Icon.h"
 
 using namespace WebCore;
 

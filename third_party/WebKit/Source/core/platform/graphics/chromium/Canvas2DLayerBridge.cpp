@@ -29,11 +29,11 @@
 
 #include "Canvas2DLayerManager.h"
 #include "GrContext.h"
-#include "GraphicsContext3D.h"
 #include "GraphicsContext3DPrivate.h"
 #include "GraphicsLayerChromium.h"
 #include "SkDevice.h"
 #include "TraceEvent.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebGraphicsContext3D.h>

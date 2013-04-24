@@ -33,8 +33,8 @@
 #if USE(3D_GRAPHICS)
 
 #include "CustomFilterOperation.h"
-#include "FloatRect.h"
-#include "GraphicsTypes3D.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

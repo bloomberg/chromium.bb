@@ -32,9 +32,9 @@
 #include "DragImage.h"
 #include "FrameLoader.h"
 #include "FrameTree.h"
-#include "IntRect.h"
 #include "NavigationScheduler.h"
 #include "ScrollTypes.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

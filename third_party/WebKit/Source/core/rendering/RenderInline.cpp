@@ -24,9 +24,7 @@
 #include "RenderInline.h"
 
 #include "Chrome.h"
-#include "FloatQuad.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "InlineTextBox.h"
 #include "Page.h"
@@ -41,6 +39,8 @@
 #include "TransformState.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

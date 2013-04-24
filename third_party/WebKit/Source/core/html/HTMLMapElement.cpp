@@ -29,9 +29,9 @@
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
-#include "IntSize.h"
 #include "NodeTraversal.h"
 #include "RenderObject.h"
+#include "core/platform/graphics/IntSize.h"
 
 using namespace std;
 

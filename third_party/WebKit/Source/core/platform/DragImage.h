@@ -27,9 +27,9 @@
 #define DragImage_h
 
 #include "DragImageRef.h"
-#include "ImageOrientation.h"
-#include "IntSize.h"
-#include "FloatSize.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/ImageOrientation.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/Forward.h>
 
 //We need to #define YOffset as it needs to be shared with WebKit

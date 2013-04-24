@@ -26,7 +26,7 @@
  */
 
 #include "config.h"
-#include "RoundedRect.h"
+#include "core/platform/graphics/RoundedRect.h"
 
 #include <algorithm>
 

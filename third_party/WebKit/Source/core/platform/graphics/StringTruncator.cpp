@@ -27,14 +27,14 @@
  */
 
 #include "config.h"
-#include "StringTruncator.h"
+#include "core/platform/graphics/StringTruncator.h"
 
-#include "Font.h"
 #include "TextBreakIterator.h"
-#include "TextRun.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/TextRun.h"
 #include <wtf/Assertions.h>
-#include <wtf/Vector.h>
 #include <wtf/unicode/CharacterNames.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

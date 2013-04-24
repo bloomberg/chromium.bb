@@ -27,13 +27,13 @@
 
 #include "NonCompositedContentHost.h"
 
-#include "FloatPoint.h"
-#include "FloatRect.h"
-#include "GraphicsLayer.h"
 #include "GraphicsLayerChromium.h"
 #include "PlatformContextSkia.h"
 #include "Settings.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include <public/WebContentLayer.h>
 #include <public/WebFloatPoint.h>
 

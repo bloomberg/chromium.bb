@@ -27,11 +27,11 @@
 #ifndef ScrollView_h
 #define ScrollView_h
 
-#include "IntRect.h"
-#include "Scrollbar.h"
-#include "ScrollableArea.h"
 #include "ScrollTypes.h"
+#include "ScrollableArea.h"
+#include "Scrollbar.h"
 #include "Widget.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include <wtf/HashSet.h>
 

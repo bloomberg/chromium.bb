@@ -24,10 +24,10 @@
 #include "SVGTransform.h"
 
 #include "FloatConversion.h"
-#include "FloatPoint.h"
-#include "FloatSize.h"
 #include "SVGAngle.h"
 #include "SVGSVGElement.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatSize.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

@@ -32,14 +32,14 @@
 #include "TimelineRecordFactory.h"
 
 #include "Event.h"
-#include "FloatQuad.h"
 #include "InspectorValues.h"
-#include "IntRect.h"
-#include "LayoutRect.h"
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

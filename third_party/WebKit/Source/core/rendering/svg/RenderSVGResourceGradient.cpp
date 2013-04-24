@@ -26,11 +26,11 @@
 #include "RenderSVGResourceGradient.h"
 
 #include "GradientAttributes.h"
-#include "GraphicsContext.h"
 #include "RenderSVGShape.h"
 #include "RenderSVGText.h"
 #include "SVGRenderSupport.h"
 #include "SVGRenderingContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

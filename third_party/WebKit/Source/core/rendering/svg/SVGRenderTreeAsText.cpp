@@ -31,12 +31,10 @@
 #if ENABLE(SVG)
 #include "SVGRenderTreeAsText.h"
 
-#include "GraphicsTypes.h"
 #include "HTMLNames.h"
 #include "InlineTextBox.h"
 #include "LinearGradientAttributes.h"
 #include "NodeRenderStyle.h"
-#include "Path.h"
 #include "PatternAttributes.h"
 #include "RadialGradientAttributes.h"
 #include "RenderImage.h"
@@ -74,6 +72,8 @@
 #include "SVGRootInlineBox.h"
 #include "SVGStopElement.h"
 #include "SVGStyledElement.h"
+#include "core/platform/graphics/GraphicsTypes.h"
+#include "core/platform/graphics/Path.h"
 
 #include <math.h>
 

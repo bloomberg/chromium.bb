@@ -21,10 +21,10 @@
 #ifndef FontCustomPlatformData_h
 #define FontCustomPlatformData_h
 
-#include "FontOrientation.h"
-#include "FontRenderingMode.h"
-#include "FontWidthVariant.h"
 #include <CoreFoundation/CFBase.h>
+#include "core/platform/graphics/FontOrientation.h"
+#include "core/platform/graphics/FontRenderingMode.h"
+#include "core/platform/graphics/FontWidthVariant.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 

@@ -28,8 +28,6 @@
 #include "Attribute.h"
 #include "Document.h"
 #include "FloatConversion.h"
-#include "GraphicsContext.h"
-#include "ImageBuffer.h"
 #include "PatternAttributes.h"
 #include "RenderSVGContainer.h"
 #include "RenderSVGResourcePattern.h"
@@ -40,6 +38,8 @@
 #include "SVGSVGElement.h"
 #include "SVGStyledTransformableElement.h"
 #include "SVGTransformable.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 namespace WebCore {
 

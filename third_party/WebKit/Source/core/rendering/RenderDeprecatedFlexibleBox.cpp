@@ -25,11 +25,11 @@
 #include "config.h"
 #include "RenderDeprecatedFlexibleBox.h"
 
-#include "UseCounter.h"
-#include "Font.h"
 #include "LayoutRepainter.h"
 #include "RenderLayer.h"
 #include "RenderView.h"
+#include "UseCounter.h"
+#include "core/platform/graphics/Font.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>
 

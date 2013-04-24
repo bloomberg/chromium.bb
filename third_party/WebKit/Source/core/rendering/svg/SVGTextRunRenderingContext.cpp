@@ -23,9 +23,6 @@
 #if ENABLE(SVG_FONTS)
 #include "SVGTextRunRenderingContext.h"
 
-#include "Font.h"
-#include "GlyphBuffer.h"
-#include "GraphicsContext.h"
 #include "RenderObject.h"
 #include "RenderSVGInlineText.h"
 #include "RenderSVGResourceSolidColor.h"
@@ -34,7 +31,10 @@
 #include "SVGFontFaceElement.h"
 #include "SVGGlyphElement.h"
 #include "SVGNames.h"
-#include "WidthIterator.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/WidthIterator.h"
 
 namespace WebCore {
 

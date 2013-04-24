@@ -34,7 +34,7 @@
 #include <wtf/text/WTFString.h>
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
-#include "PlatformTextTrack.h"
+#include "core/platform/graphics/PlatformTextTrack.h"
 #endif
 
 namespace WebCore {

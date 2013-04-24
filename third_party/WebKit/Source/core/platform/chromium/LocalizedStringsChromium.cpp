@@ -32,8 +32,8 @@
 #include "LocalizedStrings.h"
 
 #include "DateTimeFormat.h"
-#include "IntSize.h"
 #include "NotImplemented.h"
+#include "core/platform/graphics/IntSize.h"
 
 #include <public/Platform.h>
 #include <public/WebLocalizedString.h>

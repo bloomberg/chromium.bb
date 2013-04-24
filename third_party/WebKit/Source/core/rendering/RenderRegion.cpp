@@ -31,9 +31,7 @@
 #include "RenderRegion.h"
 
 #include "FlowThreadController.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
-#include "IntRect.h"
 #include "LayoutRepainter.h"
 #include "PaintInfo.h"
 #include "Range.h"
@@ -41,6 +39,8 @@
 #include "RenderNamedFlowThread.h"
 #include "RenderView.h"
 #include "StyleResolver.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
 
 using namespace std;
 

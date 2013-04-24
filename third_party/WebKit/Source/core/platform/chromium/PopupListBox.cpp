@@ -30,12 +30,10 @@
 #include "config.h"
 #include "PopupListBox.h"
 
+#include <ctype.h>
+#include <limits>
 #include "CSSValueKeywords.h"
-#include "Font.h"
-#include "FontSelector.h"
 #include "FramelessScrollViewClient.h"
-#include "GraphicsContext.h"
-#include "IntRect.h"
 #include "KeyboardCodes.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
@@ -49,10 +47,12 @@
 #include "RenderTheme.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScrollbarTheme.h"
-#include "StringTruncator.h"
-#include "TextRun.h"
-#include <ctype.h>
-#include <limits>
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/StringTruncator.h"
+#include "core/platform/graphics/TextRun.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

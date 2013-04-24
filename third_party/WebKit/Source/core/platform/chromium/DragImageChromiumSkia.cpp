@@ -32,14 +32,14 @@
 #include "DragImage.h"
 
 #include "AffineTransform.h"
-#include "BitmapImage.h"
-#include "FloatRect.h"
-#include "Image.h"
 #include "NativeImageSkia.h"
 #include "NotImplemented.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkMatrix.h"
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Image.h"
 
 #include "skia/ext/image_operations.h"
 

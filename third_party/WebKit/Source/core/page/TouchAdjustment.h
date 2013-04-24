@@ -20,10 +20,10 @@
 #ifndef TouchAdjustment_h
 #define TouchAdjustment_h
 
-#include "IntPoint.h"
-#include "IntRect.h"
 #include "Node.h"
 #include "NodeList.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

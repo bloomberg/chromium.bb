@@ -43,7 +43,6 @@
 #include "InspectorPageAgent.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "IntRect.h"
 #include "MemoryUsageSupport.h"
 #include "RenderObject.h"
 #include "RenderView.h"
@@ -51,6 +50,7 @@
 #include "ResourceResponse.h"
 #include "TimelineRecordFactory.h"
 #include "TimelineTraceEventProcessor.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include <wtf/CurrentTime.h>
 

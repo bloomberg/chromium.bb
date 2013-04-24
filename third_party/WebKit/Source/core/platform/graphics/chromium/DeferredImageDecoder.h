@@ -26,9 +26,9 @@
 #ifndef DeferredImageDecoder_h
 #define DeferredImageDecoder_h
 
-#include "ImageSource.h"
-#include "IntSize.h"
 #include "SkBitmap.h"
+#include "core/platform/graphics/ImageSource.h"
+#include "core/platform/graphics/IntSize.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/Forward.h>
 

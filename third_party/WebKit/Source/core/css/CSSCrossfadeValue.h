@@ -26,13 +26,13 @@
 #ifndef CSSCrossfadeValue_h
 #define CSSCrossfadeValue_h
 
+#include "CSSImageGeneratorValue.h"
+#include "CSSPrimitiveValue.h"
 #include "CachedImage.h"
 #include "CachedImageClient.h"
 #include "CachedResourceHandle.h"
-#include "CSSImageGeneratorValue.h"
-#include "CSSPrimitiveValue.h"
-#include "Image.h"
-#include "ImageObserver.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageObserver.h"
 
 namespace WebCore {
 

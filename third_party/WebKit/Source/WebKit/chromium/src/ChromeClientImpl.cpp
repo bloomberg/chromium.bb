@@ -53,7 +53,6 @@
 #include "ExternalPopupMenu.h"
 #include "FileChooser.h"
 #include "FileIconLoader.h"
-#include "FloatRect.h"
 #include "FrameLoadRequest.h"
 #include "FrameView.h"
 #include "Geolocation.h"
@@ -61,8 +60,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
-#include "Icon.h"
-#include "IntRect.h"
 #include "NavigationAction.h"
 #include "Node.h"
 #include "NotImplemented.h"
@@ -79,6 +76,9 @@
 #include "TextFieldDecorationElement.h"
 #include "WebAccessibilityObject.h"
 #include "WebAutofillClient.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Icon.h"
+#include "core/platform/graphics/IntRect.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif

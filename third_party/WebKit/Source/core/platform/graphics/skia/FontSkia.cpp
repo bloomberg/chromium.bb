@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "Font.h"
+#include "core/platform/graphics/Font.h"
 
-#include "FontSmoothingMode.h"
-#include "GlyphBuffer.h"
-#include "GraphicsContext.h"
 #include "LayoutTestSupport.h"
 #include "PlatformContextSkia.h"
-#include "SimpleFontData.h"
+#include "core/platform/graphics/FontSmoothingMode.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 #include "SkCanvas.h"
 #include "SkPaint.h"

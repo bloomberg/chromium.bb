@@ -28,9 +28,9 @@
 
 #if ENABLE(RUBBER_BANDING)
 
-#include "FloatPoint.h"
-#include "FloatSize.h"
 #include "ScrollTypes.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatSize.h"
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {

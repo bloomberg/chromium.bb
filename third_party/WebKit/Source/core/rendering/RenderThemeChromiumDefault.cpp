@@ -26,7 +26,6 @@
 #include "RenderThemeChromiumDefault.h"
 
 #include "CSSValueKeywords.h"
-#include "Color.h"
 #include "PaintInfo.h"
 #include "PlatformContextSkia.h"
 #include "RenderObject.h"
@@ -34,9 +33,10 @@
 #include "RenderSlider.h"
 #include "ScrollbarTheme.h"
 #include "UserAgentStyleSheets.h"
+#include "core/platform/graphics/Color.h"
+#include <public/default/WebThemeEngine.h>
 #include <public/Platform.h>
 #include <public/WebRect.h>
-#include <public/default/WebThemeEngine.h>
 
 namespace WebCore {
 

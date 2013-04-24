@@ -31,8 +31,8 @@
 #include "config.h"
 #include "MIMETypeRegistry.h"
 
-#include "MediaPlayer.h"
 #include "PluginData.h"
+#include "core/platform/graphics/MediaPlayer.h"
 
 #include <public/Platform.h>
 #include <public/WebMimeRegistry.h>

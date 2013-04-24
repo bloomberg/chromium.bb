@@ -25,13 +25,13 @@
 #include "config.h"
 #include "ComplexTextController.h"
 
-#include "FloatSize.h"
-#include "Font.h"
+#include <ApplicationServices/ApplicationServices.h>
 #include "RenderBlock.h"
 #include "RenderText.h"
 #include "TextBreakIterator.h"
-#include "TextRun.h"
-#include <ApplicationServices/ApplicationServices.h>
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/TextRun.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>
 

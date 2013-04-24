@@ -21,7 +21,6 @@
 #define SVGAnimatedType_h
 
 #if ENABLE(SVG)
-#include "FloatRect.h"
 #include "SVGAngle.h"
 #include "SVGColor.h"
 #include "SVGLength.h"
@@ -31,6 +30,7 @@
 #include "SVGPreserveAspectRatio.h"
 #include "SVGPropertyInfo.h"
 #include "SVGTransformList.h"
+#include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {
 

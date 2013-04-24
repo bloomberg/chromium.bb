@@ -32,7 +32,7 @@
 
 #include "ExclusionInterval.h"
 #include "ExclusionShape.h"
-#include "FloatPolygon.h"
+#include "core/platform/graphics/FloatPolygon.h"
 
 namespace WebCore {
 

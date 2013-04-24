@@ -29,18 +29,18 @@
  */
 
 #include "config.h"
-#include "GraphicsContext.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 #include "AffineTransform.h"
-#include "Color.h"
-#include "FloatRect.h"
-#include "Gradient.h"
-#include "ImageBuffer.h"
-#include "IntRect.h"
 #include "KURL.h"
 #include "NativeImageSkia.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Gradient.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include "SkAnnotation.h"
 #include "SkBitmap.h"

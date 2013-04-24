@@ -32,8 +32,8 @@
 #include "WebSettingsImpl.h"
 
 #include "DeferredImageDecoder.h"
-#include "FontRenderingMode.h"
 #include "Settings.h"
+#include "core/platform/graphics/FontRenderingMode.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <wtf/UnusedParam.h>

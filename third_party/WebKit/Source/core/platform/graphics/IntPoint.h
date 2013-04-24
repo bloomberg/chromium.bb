@@ -26,7 +26,7 @@
 #ifndef IntPoint_h
 #define IntPoint_h
 
-#include "IntSize.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/MathExtras.h>
 
 #if OS(DARWIN)

@@ -29,7 +29,7 @@
 
 #include "DragActions.h"
 #include "DragImage.h"
-#include "IntPoint.h"
+#include "core/platform/graphics/IntPoint.h"
 
 namespace WebCore {
     

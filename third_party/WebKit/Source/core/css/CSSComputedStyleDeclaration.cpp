@@ -46,7 +46,6 @@
 #include "CursorList.h"
 #include "Document.h"
 #include "ExceptionCode.h"
-#include "FontFeatureSettings.h"
 #include "FontFeatureValue.h"
 #include "FontValue.h"
 #include "HTMLFrameOwnerElement.h"
@@ -64,6 +63,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
+#include "core/platform/graphics/FontFeatureSettings.h"
 #include <wtf/text/StringBuilder.h>
 
 #if ENABLE(CSS_EXCLUSIONS)

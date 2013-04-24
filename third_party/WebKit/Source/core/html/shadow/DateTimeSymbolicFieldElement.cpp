@@ -27,9 +27,9 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeSymbolicFieldElement.h"
 
-#include "Font.h"
 #include "KeyboardEvent.h"
 #include "TextBreakIterator.h"
+#include "core/platform/graphics/Font.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/Unicode.h>
 

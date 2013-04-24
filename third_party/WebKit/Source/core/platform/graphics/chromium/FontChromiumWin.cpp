@@ -30,16 +30,16 @@
  */
 
 #include "config.h"
-#include "Font.h"
+#include "core/platform/graphics/Font.h"
 
-#include "FontFallbackList.h"
 #include "FontPlatformDataChromiumWin.h"
-#include "GlyphBuffer.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
-#include "SimpleFontData.h"
 #include "SkiaFontWin.h"
 #include "UniscribeHelperTextRun.h"
+#include "core/platform/graphics/FontFallbackList.h"
+#include "core/platform/graphics/GlyphBuffer.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 #include <windows.h>
 

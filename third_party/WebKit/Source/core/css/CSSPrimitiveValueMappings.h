@@ -33,24 +33,24 @@
 #include "CSSCalculationValue.h"
 #include "CSSPrimitiveValue.h"
 #include "CSSReflectionDirection.h"
-#include "ColorSpace.h"
 #include "CSSValueKeywords.h"
-#include "FontDescription.h"
-#include "FontSmoothingMode.h"
-#include "GraphicsTypes.h"
+#include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/FontSmoothingMode.h"
+#include "core/platform/graphics/GraphicsTypes.h"
 #if ENABLE(CSS_IMAGE_ORIENTATION)
-#include "ImageOrientation.h"
+#include "core/platform/graphics/ImageOrientation.h"
 #endif
 #include "Length.h"
 #include "LineClampValue.h"
-#include "Path.h"
 #include "RenderStyleConstants.h"
 #include "SVGRenderStyleDefs.h"
 #include "TextDirection.h"
-#include "TextRenderingMode.h"
 #include "ThemeTypes.h"
 #include "UnicodeBidi.h"
 #include "WritingMode.h"
+#include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/TextRenderingMode.h"
 
 #include <wtf/MathExtras.h>
 

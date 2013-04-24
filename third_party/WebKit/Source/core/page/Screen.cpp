@@ -30,13 +30,13 @@
 #include "config.h"
 #include "Screen.h"
 
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "InspectorInstrumentation.h"
 #include "PlatformScreen.h"
 #include "Settings.h"
 #include "Widget.h"
+#include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {
 

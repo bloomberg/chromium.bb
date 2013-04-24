@@ -31,7 +31,7 @@
 #define BasicShapes_h
 
 #include "Length.h"
-#include "WindRule.h"
+#include "core/platform/graphics/WindRule.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

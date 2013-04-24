@@ -28,7 +28,6 @@
 
 #include "Attribute.h"
 #include "FloatConversion.h"
-#include "FloatPoint.h"
 #include "RadialGradientAttributes.h"
 #include "RenderSVGResourceRadialGradient.h"
 #include "SVGElementInstance.h"
@@ -37,6 +36,7 @@
 #include "SVGTransform.h"
 #include "SVGTransformList.h"
 #include "SVGUnitTypes.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {
 

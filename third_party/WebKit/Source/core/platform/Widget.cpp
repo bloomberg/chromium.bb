@@ -26,8 +26,8 @@
 #include "config.h"
 #include "Widget.h"
 
-#include "IntRect.h"
 #include "ScrollView.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include <wtf/Assertions.h>
 

@@ -31,12 +31,12 @@
 #ifndef ImageQualityController_h
 #define ImageQualityController_h
 
-#include "Image.h"
-#include "ImageOrientation.h"
-#include "ImageSource.h"
-#include "IntSize.h"
-#include "LayoutSize.h"
 #include "RenderBoxModelObject.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageOrientation.h"
+#include "core/platform/graphics/ImageSource.h"
+#include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/LayoutSize.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

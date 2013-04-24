@@ -26,9 +26,9 @@
 #ifndef OESVertexArrayObject_h
 #define OESVertexArrayObject_h
 
-#include "GraphicsTypes3D.h"
 #include "WebGLExtension.h"
 #include "WebGLVertexArrayObjectOES.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>
 

@@ -31,13 +31,13 @@
 #include "config.h"
 #include "UniscribeHelper.h"
 
-#include "Font.h"
+#include <windows.h>
 #include "FontUtilsChromiumWin.h"
 #include "HWndDC.h"
 #include "PlatformContextSkia.h"
-#include "SkiaFontWin.h"
 #include "SkPoint.h"
-#include <windows.h>
+#include "SkiaFontWin.h"
+#include "core/platform/graphics/Font.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

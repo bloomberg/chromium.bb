@@ -75,7 +75,6 @@
 #include "InspectorPageAgent.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "IntRect.h"
 #include "MutationEvent.h"
 #include "Node.h"
 #include "NodeList.h"
@@ -94,15 +93,16 @@
 #include "StyleSheetList.h"
 #include "Text.h"
 #include "XPathResult.h"
+#include "core/platform/graphics/IntRect.h"
 
 #include "htmlediting.h"
 #include "markup.h"
 
-#include <wtf/text/CString.h>
-#include <wtf/text/WTFString.h>
 #include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
+#include <wtf/text/CString.h>
+#include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {

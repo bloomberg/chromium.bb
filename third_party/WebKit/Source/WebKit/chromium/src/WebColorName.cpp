@@ -32,10 +32,10 @@
 #include "WebColorName.h"
 
 #include "CSSValueKeywords.h"
-#include "Color.h"
 #include "RenderTheme.h"
-#include <wtf/UnusedParam.h>
+#include "core/platform/graphics/Color.h"
 #include <public/WebColor.h>
+#include <wtf/UnusedParam.h>
 
 using namespace::WebCore;
 

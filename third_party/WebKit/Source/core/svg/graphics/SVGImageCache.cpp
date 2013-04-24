@@ -24,12 +24,12 @@
 #if ENABLE(SVG)
 #include "CachedImage.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
-#include "ImageBuffer.h"
 #include "Page.h"
 #include "RenderSVGRoot.h"
 #include "SVGImage.h"
 #include "SVGImageForContainer.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 namespace WebCore {
 

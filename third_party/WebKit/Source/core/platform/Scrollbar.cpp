@@ -27,12 +27,12 @@
 #include "Scrollbar.h"
 
 #include <algorithm>
-#include "GraphicsContext.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformMouseEvent.h"
 #include "ScrollAnimator.h"
 #include "ScrollableArea.h"
 #include "ScrollbarTheme.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 // FIXME: The following #includes are a layering violation and should be removed.
 #include "Document.h"

@@ -26,10 +26,10 @@
 
 #include "OpaqueRectTrackingContentLayerDelegate.h"
 
-#include "Color.h"
-#include "GraphicsContext.h"
-#include "IntRect.h"
 #include "PlatformContextSkia.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
 #include "skia/ext/platform_canvas.h"
 #include <public/WebFloatRect.h>
 #include <public/WebRect.h>

@@ -26,10 +26,10 @@
 #define Range_h
 
 #include "ExceptionCodePlaceholder.h"
-#include "FloatRect.h"
 #include "FragmentScriptingPermission.h"
-#include "IntRect.h"
 #include "RangeBoundaryPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

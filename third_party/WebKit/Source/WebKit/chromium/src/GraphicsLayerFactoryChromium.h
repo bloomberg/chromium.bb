@@ -26,7 +26,7 @@
 #ifndef GraphicsLayerFactoryChromium_h
 #define GraphicsLayerFactoryChromium_h
 
-#include "GraphicsLayerFactory.h"
+#include "core/platform/graphics/GraphicsLayerFactory.h"
 
 namespace WebKit {
 class WebViewImpl;

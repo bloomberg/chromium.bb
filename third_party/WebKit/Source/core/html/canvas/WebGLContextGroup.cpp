@@ -27,9 +27,9 @@
 
 #include "WebGLContextGroup.h"
 
-#include "GraphicsContext3D.h"
 #include "WebGLRenderingContext.h"
 #include "WebGLSharedObject.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {
 

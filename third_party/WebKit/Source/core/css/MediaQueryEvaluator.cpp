@@ -36,10 +36,8 @@
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "DOMWindow.h"
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "IntRect.h"
 #include "MediaFeatureNames.h"
 #include "MediaList.h"
 #include "MediaQuery.h"
@@ -53,6 +51,8 @@
 #include "Screen.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

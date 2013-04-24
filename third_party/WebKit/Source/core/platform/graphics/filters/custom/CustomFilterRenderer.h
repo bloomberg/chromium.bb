@@ -36,8 +36,8 @@
 
 #include "CustomFilterConstants.h"
 #include "CustomFilterParameterList.h"
-#include "GraphicsTypes3D.h"
-#include "IntSize.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 

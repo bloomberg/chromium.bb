@@ -27,7 +27,6 @@
 
 #include "FilterEffectRenderer.h"
 
-#include "ColorSpace.h"
 #include "Document.h"
 #include "FEColorMatrix.h"
 #include "FEComponentTransfer.h"
@@ -36,6 +35,7 @@
 #include "FEMerge.h"
 #include "FloatConversion.h"
 #include "RenderLayer.h"
+#include "core/platform/graphics/ColorSpace.h"
 
 #include <algorithm>
 #include <wtf/MathExtras.h>

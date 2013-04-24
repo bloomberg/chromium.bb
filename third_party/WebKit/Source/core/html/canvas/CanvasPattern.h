@@ -26,7 +26,7 @@
 #ifndef CanvasPattern_h
 #define CanvasPattern_h
 
-#include "Pattern.h"
+#include "core/platform/graphics/Pattern.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

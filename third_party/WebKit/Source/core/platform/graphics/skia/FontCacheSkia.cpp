@@ -29,18 +29,18 @@
  */
 
 #include "config.h"
-#include "FontCache.h"
-#include "Font.h"
-#include "FontDescription.h"
-#include "FontFamily.h"
-#include "FontPlatformData.h"
+#include <unicode/locid.h>
 #include "Logging.h"
 #include "NotImplemented.h"
-#include "SimpleFontData.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "SkUtils.h"
-#include <unicode/locid.h>
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/FontDescription.h"
+#include "core/platform/graphics/FontFamily.h"
+#include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/SimpleFontData.h"
 #include <wtf/Assertions.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/CString.h>

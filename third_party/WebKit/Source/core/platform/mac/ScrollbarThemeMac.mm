@@ -26,16 +26,16 @@
 #include "config.h"
 #include "ScrollbarThemeMac.h"
 
+#include <Carbon/Carbon.h>
 #include "ColorMac.h"
-#include "ImageBuffer.h"
-#include "GraphicsLayer.h"
 #include "LocalCurrentGraphicsContext.h"
 #include "NSScrollerImpDetails.h"
 #include "PlatformMouseEvent.h"
 #include "ScrollAnimatorMac.h"
 #include "ScrollView.h"
 #include "WebCoreSystemInterface.h"
-#include <Carbon/Carbon.h>
+#include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/TemporaryChange.h>

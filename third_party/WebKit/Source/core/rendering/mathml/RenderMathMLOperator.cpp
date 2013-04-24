@@ -30,10 +30,10 @@
 
 #include "RenderMathMLOperator.h"
 
-#include "FontCache.h"
-#include "FontSelector.h"
 #include "MathMLNames.h"
 #include "RenderText.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/FontSelector.h"
 
 namespace WebCore {
     

@@ -36,12 +36,12 @@
 #include "HTMLImageElement.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
-#include "IntRect.h"
 #include "Node.h"
 #include "Page.h"
 #include "RenderInline.h"
 #include "RenderLayer.h"
 #include "Settings.h"
+#include "core/platform/graphics/IntRect.h"
 
 namespace WebCore {
 

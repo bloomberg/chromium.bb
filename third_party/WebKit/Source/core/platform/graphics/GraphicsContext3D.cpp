@@ -29,18 +29,18 @@
 
 #if USE(3D_GRAPHICS)
 
-#include "GraphicsContext3D.h"
 #include "GraphicsContext3DNEON.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 #include "CheckedInt.h"
 #include "DrawingBuffer.h"
-#include "Extensions3D.h"
 #include "GraphicsContext3DPrivate.h"
-#include "Image.h"
-#include "ImageBuffer.h"
 #include "ImageData.h"
-#include "ImageObserver.h"
 #include "SkTypes.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 #include <public/Platform.h>

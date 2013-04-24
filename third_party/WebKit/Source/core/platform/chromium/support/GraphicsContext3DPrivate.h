@@ -26,9 +26,9 @@
 #ifndef GraphicsContext3DPrivate_h
 #define GraphicsContext3DPrivate_h
 
-#include "Extensions3D.h"
-#include "GraphicsContext3D.h"
 #include "SkBitmap.h"
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <wtf/HashSet.h>
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/OwnPtr.h>

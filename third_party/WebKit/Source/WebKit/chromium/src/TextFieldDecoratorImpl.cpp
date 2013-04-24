@@ -33,9 +33,9 @@
 
 #include "CachedImage.h"
 #include "HTMLInputElement.h"
-#include "Image.h"
 #include "WebInputElement.h"
 #include "WebTextFieldDecoratorClient.h"
+#include "core/platform/graphics/Image.h"
 
 namespace WebKit {
 

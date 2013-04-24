@@ -30,7 +30,6 @@
 #include "EventNames.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLFrameSetElement.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
@@ -41,6 +40,7 @@
 #include "RenderView.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/MemoryInstrumentationVector.h>
 
 namespace WebCore {

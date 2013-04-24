@@ -26,9 +26,9 @@
 #ifndef Canvas2DLayerBridge_h
 #define Canvas2DLayerBridge_h
 
-#include "GraphicsContext3D.h"
-#include "IntSize.h"
 #include "SkDeferredCanvas.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/IntSize.h"
 #include <public/WebExternalTextureLayer.h>
 #include <public/WebExternalTextureLayerClient.h>
 #include <wtf/DoublyLinkedList.h>

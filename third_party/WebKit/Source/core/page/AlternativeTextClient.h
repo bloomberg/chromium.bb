@@ -26,10 +26,10 @@
 #ifndef AlternativeTextClient_h
 #define AlternativeTextClient_h
 
-#include "FloatRect.h"
 #include "TextChecking.h"
-#include <wtf/Vector.h>
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

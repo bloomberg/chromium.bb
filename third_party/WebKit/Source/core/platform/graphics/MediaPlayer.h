@@ -26,23 +26,23 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
-#include "GraphicsTypes3D.h"
-#include "InbandTextTrackPrivate.h"
-#include "IntRect.h"
 #include "KURL.h"
-#include "LayoutRect.h"
-#include "PlatformLayer.h"
 #include "Timer.h"
+#include "core/platform/graphics/GraphicsTypes3D.h"
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>
-#include <wtf/OwnPtr.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringHash.h>
 
 
 #if USE(PLATFORM_TEXT_TRACK_MENU)
-#include "PlatformTextTrackMenu.h"
+#include "core/platform/graphics/PlatformTextTrackMenu.h"
 #endif
 
 OBJC_CLASS AVPlayer;

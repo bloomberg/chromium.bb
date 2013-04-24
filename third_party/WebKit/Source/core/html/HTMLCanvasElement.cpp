@@ -28,6 +28,8 @@
 #include "config.h"
 #include "HTMLCanvasElement.h"
 
+#include <math.h>
+#include <stdio.h>
 #include "Attribute.h"
 #include "CanvasContextAttributes.h"
 #include "CanvasGradient.h"
@@ -38,9 +40,7 @@
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "HTMLNames.h"
-#include "ImageBuffer.h"
 #include "ImageData.h"
 #include "MIMETypeRegistry.h"
 #include "Page.h"
@@ -48,8 +48,8 @@
 #include "ScriptController.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include <math.h>
-#include <stdio.h>
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
 
 #include "WebGLContextAttributes.h"
 #include "WebGLRenderingContext.h"

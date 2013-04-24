@@ -79,7 +79,6 @@
       '../platform/audio/chromium',
       '../platform/chromium',
       '../platform/chromium/support',
-      '../platform/graphics',
       '../platform/graphics/chromium',
       '../platform/graphics/cpu/arm',
       '../platform/graphics/cpu/arm/filters',

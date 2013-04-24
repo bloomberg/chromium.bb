@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebFontRendering.h"
 
-#include "FontPlatformData.h"
+#include "core/platform/graphics/FontPlatformData.h"
 
 #if OS(LINUX) && !OS(ANDROID)
 #include "WebFontInfo.h"

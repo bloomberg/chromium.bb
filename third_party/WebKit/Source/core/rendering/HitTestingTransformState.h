@@ -27,10 +27,10 @@
 #define HitTestingTransformState_h
 
 #include "AffineTransform.h"
-#include "FloatPoint.h"
-#include "FloatQuad.h"
-#include "IntSize.h"
 #include "TransformationMatrix.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

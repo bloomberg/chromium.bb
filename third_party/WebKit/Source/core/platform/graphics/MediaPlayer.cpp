@@ -25,22 +25,22 @@
 
 #include "config.h"
 
-#include "MediaPlayer.h"
+#include "core/platform/graphics/MediaPlayer.h"
 
 #include "ContentType.h"
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "IntRect.h"
 #include "Logging.h"
 #include "MIMETypeRegistry.h"
-#include "MediaPlayerPrivate.h"
 #include "MediaSource.h"
 #include "Settings.h"
 #include "TimeRanges.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/MediaPlayerPrivate.h"
 #include <wtf/text/CString.h>
 
-#include "InbandTextTrackPrivate.h"
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 #if ENABLE(MEDIA_SOURCE)
 #include "MediaSource.h"

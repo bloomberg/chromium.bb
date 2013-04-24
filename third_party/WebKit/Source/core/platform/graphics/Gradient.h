@@ -30,10 +30,10 @@
 #define Gradient_h
 
 #include "AffineTransform.h"
-#include "FloatPoint.h"
-#include "Generator.h"
-#include "GraphicsTypes.h"
 #include "SkShader.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/Generator.h"
+#include "core/platform/graphics/GraphicsTypes.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>
 

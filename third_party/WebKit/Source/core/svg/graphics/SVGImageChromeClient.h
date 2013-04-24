@@ -32,6 +32,7 @@
 #if ENABLE(SVG)
 
 #include "EmptyClients.h"
+#include "core/platform/graphics/ImageObserver.h"
 
 namespace WebCore {
 

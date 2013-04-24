@@ -34,7 +34,7 @@
 #if ENABLE(PAGE_POPUP)
 
 #include "DocumentWriter.h"
-#include "IntRect.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

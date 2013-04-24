@@ -35,12 +35,7 @@
 #include "ContextMenuClientImpl.h"
 #include "DragClientImpl.h"
 #include "EditorClientImpl.h"
-#include "FloatSize.h"
-#include "GraphicsContext3D.h"
-#include "GraphicsLayer.h"
 #include "InspectorClientImpl.h"
-#include "IntPoint.h"
-#include "IntRect.h"
 #include "NotificationPresenterImpl.h"
 #include "PageOverlayList.h"
 #include "PagePopupDriver.h"
@@ -50,6 +45,11 @@
 #include "WebNavigationPolicy.h"
 #include "WebView.h"
 #include "WebViewBenchmarkSupportImpl.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntRect.h"
 #include <public/WebFloatQuad.h>
 #include <public/WebGestureCurveTarget.h>
 #include <public/WebLayer.h>

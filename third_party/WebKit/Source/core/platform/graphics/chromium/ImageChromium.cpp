@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "BitmapImage.h"
-#include "Image.h"
 #include "SharedBuffer.h"
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Image.h"
 
 #include <public/Platform.h>
 #include <public/WebData.h>

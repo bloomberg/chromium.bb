@@ -30,7 +30,6 @@
 #include "DragActions.h"
 #include "FocusDirection.h"
 #include "HitTestRequest.h"
-#include "LayoutPoint.h"
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
 #include "ScrollTypes.h"
@@ -38,6 +37,7 @@
 #include "TextGranularity.h"
 #include "Timer.h"
 #include "UserGestureIndicator.h"
+#include "core/platform/graphics/LayoutPoint.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

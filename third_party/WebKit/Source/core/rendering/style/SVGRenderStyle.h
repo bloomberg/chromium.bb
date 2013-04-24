@@ -27,11 +27,11 @@
 #include "CSSValueList.h"
 #include "DataRef.h"
 #include "ExceptionCodePlaceholder.h"
-#include "GraphicsTypes.h"
-#include "Path.h"
 #include "RenderStyleConstants.h"
 #include "SVGPaint.h"
 #include "SVGRenderStyleDefs.h"
+#include "core/platform/graphics/GraphicsTypes.h"
+#include "core/platform/graphics/Path.h"
 
 namespace WebCore {
 

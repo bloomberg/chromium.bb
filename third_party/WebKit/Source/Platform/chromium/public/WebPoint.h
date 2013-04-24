@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "IntPoint.h"
+#include "core/platform/graphics/IntPoint.h"
 #else
 #include <ui/gfx/point.h>
 #endif

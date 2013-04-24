@@ -31,7 +31,7 @@
 #define RenderLayerFilterInfo_h
 
 #include "FilterOperation.h"
-#include "LayoutRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

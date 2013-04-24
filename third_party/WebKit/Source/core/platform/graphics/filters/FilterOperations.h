@@ -27,7 +27,7 @@
 #define FilterOperations_h
 
 #include "FilterOperation.h"
-#include "IntRectExtent.h"
+#include "core/platform/graphics/IntRectExtent.h"
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 

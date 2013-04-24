@@ -26,8 +26,8 @@
 #ifndef PlatformMouseEvent_h
 #define PlatformMouseEvent_h
 
-#include "IntPoint.h"
 #include "PlatformEvent.h"
+#include "core/platform/graphics/IntPoint.h"
 
 namespace WebCore {
     

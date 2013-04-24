@@ -26,7 +26,7 @@
 #include "config.h"
 #include "Cursor.h"
 
-#include "Image.h"
+#include "core/platform/graphics/Image.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

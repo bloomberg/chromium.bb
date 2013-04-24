@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "PathTraversalState.h"
+#include "core/platform/graphics/PathTraversalState.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/Vector.h>

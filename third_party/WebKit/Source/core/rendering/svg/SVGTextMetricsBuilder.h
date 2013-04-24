@@ -23,8 +23,8 @@
 #if ENABLE(SVG)
 #include "SVGTextLayoutAttributes.h"
 #include "SVGTextMetrics.h"
-#include "TextRun.h"
-#include "WidthIterator.h"
+#include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/WidthIterator.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

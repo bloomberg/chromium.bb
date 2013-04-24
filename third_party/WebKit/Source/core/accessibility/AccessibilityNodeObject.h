@@ -29,8 +29,8 @@
 #ifndef AccessibilityNodeObject_h
 #define AccessibilityNodeObject_h
 
-#include "LayoutRect.h"
 #include "core/accessibility/AccessibilityObject.h"
+#include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

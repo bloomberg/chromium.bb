@@ -28,10 +28,10 @@
 #include "MediaFragmentURIParser.h"
 
 #include "HTMLElement.h"
-#include "MediaPlayer.h"
 #include "ProcessingInstruction.h"
 #include "SegmentedString.h"
 #include "Text.h"
+#include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

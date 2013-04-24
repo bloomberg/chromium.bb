@@ -23,15 +23,11 @@
 
 #include "ContainerNode.h"
 #include "Editor.h"
-#include "FloatPoint.h"
-#include "FloatQuad.h"
 #include "FrameView.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLLabelElement.h"
 #include "HTMLNames.h"
-#include "IntPoint.h"
-#include "IntSize.h"
 #include "Node.h"
 #include "NodeRenderStyle.h"
 #include "RenderBox.h"
@@ -41,6 +37,10 @@
 #include "ShadowRoot.h"
 #include "Text.h"
 #include "TextBreakIterator.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/IntPoint.h"
+#include "core/platform/graphics/IntSize.h"
 
 namespace WebCore {
 

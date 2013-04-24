@@ -28,10 +28,10 @@
 
 #if ENABLE(SVG)
 #include "AffineTransform.h"
-#include "FloatRect.h"
 #include "RenderSVGModelObject.h"
 #include "SVGMarkerData.h"
-#include "StrokeStyleApplier.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/StrokeStyleApplier.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 

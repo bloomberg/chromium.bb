@@ -30,9 +30,9 @@
 
 #include "RenderMathMLRoot.h"
 
-#include "GraphicsContext.h"
 #include "PaintInfo.h"
 #include "RenderMathMLRow.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

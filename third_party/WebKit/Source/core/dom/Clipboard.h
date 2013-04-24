@@ -28,8 +28,8 @@
 #include "ClipboardAccessPolicy.h"
 #include "DragActions.h"
 #include "DragImage.h"
-#include "IntPoint.h"
 #include "Node.h"
+#include "core/platform/graphics/IntPoint.h"
 
 namespace WebCore {
 

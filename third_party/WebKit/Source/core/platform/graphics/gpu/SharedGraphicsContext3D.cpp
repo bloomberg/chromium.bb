@@ -28,8 +28,8 @@
 
 #include "SharedGraphicsContext3D.h"
 
-#include "Extensions3D.h"
 #include "GraphicsContext3DPrivate.h"
+#include "core/platform/graphics/Extensions3D.h"
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>
 #include <wtf/MainThread.h>

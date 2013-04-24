@@ -22,10 +22,10 @@
 
 #if ENABLE(SVG)
 #include "AffineTransform.h"
-#include "FloatRect.h"
-#include "FloatSize.h"
-#include "Image.h"
 #include "SVGImage.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 

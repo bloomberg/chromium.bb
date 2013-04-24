@@ -32,7 +32,7 @@
 #if USE(3D_GRAPHICS)
 #include "CustomFilterMesh.h"
 #include "CustomFilterMeshGenerator.h"
-#include "GraphicsContext3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {
 

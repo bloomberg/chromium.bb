@@ -31,8 +31,8 @@
 #ifndef WebFontImpl_h
 #define WebFontImpl_h
 
-#include "Font.h"
 #include "WebFont.h"
+#include "core/platform/graphics/Font.h"
 
 namespace WebCore { class FontDescription; }
 

@@ -21,9 +21,9 @@
 #define SVGPathByteStreamSource_h
 
 #if ENABLE(SVG)
-#include "FloatPoint.h"
 #include "SVGPathByteStream.h"
 #include "SVGPathSource.h"
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

@@ -25,8 +25,8 @@
 #include "config.h"
 #include "DOMImplementation.h"
 
-#include "ContentType.h"
 #include "CSSStyleSheet.h"
+#include "ContentType.h"
 #include "ContextFeatures.h"
 #include "DocumentType.h"
 #include "Element.h"
@@ -37,12 +37,10 @@
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "HTMLViewSourceDocument.h"
-#include "Image.h"
 #include "ImageDocument.h"
+#include "MIMETypeRegistry.h"
 #include "MediaDocument.h"
 #include "MediaList.h"
-#include "MediaPlayer.h"
-#include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
@@ -51,11 +49,13 @@
 #include "StyleSheetContents.h"
 #include "TextDocument.h"
 #include "XMLNames.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/StdLibExtras.h>
 
 #if ENABLE(SVG)
-#include "SVGNames.h"
 #include "SVGDocument.h"
+#include "SVGNames.h"
 #endif
 
 namespace WebCore {

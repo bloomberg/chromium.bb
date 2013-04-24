@@ -30,9 +30,6 @@
 #if ENABLE(SVG)
 #include "RenderSVGShape.h"
 
-#include "FloatPoint.h"
-#include "FloatQuad.h"
-#include "GraphicsContext.h"
 #include "HitTestRequest.h"
 #include "LayoutRepainter.h"
 #include "PointerEventsHitRules.h"
@@ -46,7 +43,10 @@
 #include "SVGStyledTransformableElement.h"
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
-#include "StrokeStyleApplier.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/StrokeStyleApplier.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

@@ -28,8 +28,8 @@
 
 #include "FakeWebGraphicsContext3D.h"
 #include "GraphicsContext3DPrivate.h"
-#include "ImageBuffer.h"
 #include "WebCompositorInitializer.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>
 

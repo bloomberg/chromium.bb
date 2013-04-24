@@ -27,15 +27,15 @@
 
 #include "InbandTextTrack.h"
 
+#include <math.h>
 #include "Document.h"
 #include "Event.h"
 #include "ExceptionCodePlaceholder.h"
-#include "InbandTextTrackPrivate.h"
 #include "Logging.h"
-#include "MediaPlayer.h"
 #include "TextTrackCueGeneric.h"
 #include "TextTrackCueList.h"
-#include <math.h>
+#include "core/platform/graphics/InbandTextTrackPrivate.h"
+#include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

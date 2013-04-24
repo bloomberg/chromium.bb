@@ -20,9 +20,9 @@
 #ifndef Filter_h
 #define Filter_h
 
-#include "FloatRect.h"
-#include "FloatSize.h"
-#include "ImageBuffer.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/ImageBuffer.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

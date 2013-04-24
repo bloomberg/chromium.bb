@@ -24,8 +24,8 @@
  */
 
 #include "config.h"
-#include "WOFFFileFormat.h"
 #include <zlib.h>
+#include "core/platform/graphics/WOFFFileFormat.h"
 
 #if !USE(OPENTYPE_SANITIZER)
 

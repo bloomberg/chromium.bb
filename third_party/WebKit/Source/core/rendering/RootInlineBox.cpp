@@ -26,7 +26,6 @@
 #include "Document.h"
 #include "EllipsisBox.h"
 #include "Frame.h"
-#include "GraphicsContext.h"
 #include "HitTestResult.h"
 #include "InlineTextBox.h"
 #include "Page.h"
@@ -36,6 +35,7 @@
 #include "RenderFlowThread.h"
 #include "RenderView.h"
 #include "VerticalPositionCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/unicode/Unicode.h>
 
 using namespace std;

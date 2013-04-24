@@ -31,9 +31,9 @@
 #define ExclusionRectangle_h
 
 #include "ExclusionShape.h"
-#include "FloatPoint.h"
-#include "FloatRect.h"
-#include "FloatSize.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/FloatSize.h"
 #include <wtf/Assertions.h>
 #include <wtf/Vector.h>
 

@@ -24,7 +24,7 @@
 
 #include "RenderSVGInlineText.h"
 #include "SVGTextRunRenderingContext.h"
-#include "WidthIterator.h"
+#include "core/platform/graphics/WidthIterator.h"
 
 namespace WebCore {
 

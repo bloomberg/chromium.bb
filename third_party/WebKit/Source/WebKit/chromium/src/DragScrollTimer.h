@@ -31,8 +31,8 @@
 #ifndef DragScrollTimer_h
 #define DragScrollTimer_h
 
-#include "IntSize.h"
 #include "Timer.h"
+#include "core/platform/graphics/IntSize.h"
 #include <public/WebPoint.h>
 
 namespace WebCore { class FrameView; }

@@ -45,8 +45,6 @@
 #include "EventNames.h"
 #include "EventPathWalker.h"
 #include "ExceptionCodePlaceholder.h"
-#include "FloatPoint.h"
-#include "FloatRect.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -59,7 +57,6 @@
 #include "HTMLNames.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
-#include "Image.h"
 #include "InspectorInstrumentation.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
@@ -93,6 +90,9 @@
 #include "WheelEvent.h"
 #include "WindowsKeyboardCodes.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/FloatPoint.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/Image.h"
 #include "htmlediting.h"
 #include <wtf/Assertions.h>
 #include <wtf/CurrentTime.h>

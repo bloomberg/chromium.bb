@@ -28,10 +28,10 @@
 #define EditorClient_h
 
 #include "EditorInsertAction.h"
-#include "FloatRect.h"
 #include "TextAffinity.h"
 #include "TextChecking.h"
 #include "UndoStep.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 

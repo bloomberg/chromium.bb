@@ -24,12 +24,12 @@
 
 #include "config.h"
 
-#include "FontCache.h"
+#include "core/platform/graphics/FontCache.h"
 
-#include <public/Platform.h>
 #include <public/linux/WebFontFamily.h>
 #include <public/linux/WebFontInfo.h>
 #include <public/linux/WebSandboxSupport.h>
+#include <public/Platform.h>
 
 namespace WebCore {
 

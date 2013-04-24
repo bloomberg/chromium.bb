@@ -22,8 +22,6 @@
 #if ENABLE(SVG)
 #include "SVGPathUtilities.h"
 
-#include "Path.h"
-#include "PathTraversalState.h"
 #include "SVGPathBlender.h"
 #include "SVGPathBuilder.h"
 #include "SVGPathByteStreamBuilder.h"
@@ -35,6 +33,8 @@
 #include "SVGPathStringBuilder.h"
 #include "SVGPathStringSource.h"
 #include "SVGPathTraversalStateBuilder.h"
+#include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/PathTraversalState.h"
 
 namespace WebCore {
 

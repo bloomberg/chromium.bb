@@ -26,11 +26,11 @@
 #include "AffineTransform.h"
 #include "Attribute.h"
 #include "Document.h"
-#include "FloatRect.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGPreserveAspectRatio.h"
+#include "core/platform/graphics/FloatRect.h"
 #include <wtf/text/StringImpl.h>
 
 namespace WebCore {

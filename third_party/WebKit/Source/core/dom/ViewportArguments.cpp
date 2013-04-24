@@ -33,9 +33,9 @@
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Frame.h"
-#include "IntSize.h"
 #include "Page.h"
 #include "ScriptableDocumentParser.h"
+#include "core/platform/graphics/IntSize.h"
 #include <wtf/text/WTFString.h>
 
 using namespace std;

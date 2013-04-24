@@ -20,7 +20,7 @@
 #ifndef IntPointHash_h
 #define IntPointHash_h
 
-#include "IntPoint.h"
+#include "core/platform/graphics/IntPoint.h"
 #include <wtf/HashFunctions.h>
 #include <wtf/HashTraits.h>
 

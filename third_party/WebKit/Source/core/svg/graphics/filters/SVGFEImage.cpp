@@ -28,7 +28,6 @@
 
 #include "AffineTransform.h"
 #include "Filter.h"
-#include "GraphicsContext.h"
 #include "RenderObject.h"
 #include "RenderTreeAsText.h"
 #include "SVGFilter.h"
@@ -37,6 +36,7 @@
 #include "SVGStyledElement.h"
 #include "SVGURIReference.h"
 #include "TextStream.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

@@ -32,14 +32,14 @@
 
 #include "DrawingBuffer.h"
 
+#include <algorithm>
 #include "CanvasRenderingContext.h"
-#include "Extensions3D.h"
-#include "GraphicsContext3D.h"
 #include "GraphicsContext3DPrivate.h"
 #include "GraphicsLayerChromium.h"
 #include "ImageData.h"
 #include "TraceEvent.h"
-#include <algorithm>
+#include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GraphicsContext3D.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebExternalTextureLayer.h>

@@ -26,15 +26,15 @@
 
 #include "AnimationTranslationUtil.h"
 
+#include <gtest/gtest.h>
 #include "Animation.h"
-#include "GraphicsLayer.h" // For KeyframeValueList
-#include "IntSize.h"
 #include "Matrix3DTransformOperation.h"
 #include "RotateTransformOperation.h"
 #include "ScaleTransformOperation.h"
 #include "TransformOperations.h"
 #include "TranslateTransformOperation.h"
-#include <gtest/gtest.h>
+#include "core/platform/graphics/GraphicsLayer.h" // For KeyframeValueList
+#include "core/platform/graphics/IntSize.h"
 #include <public/WebAnimation.h>
 #include <wtf/RefPtr.h>
 

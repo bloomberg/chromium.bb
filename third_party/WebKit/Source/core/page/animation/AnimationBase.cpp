@@ -29,6 +29,7 @@
 #include "config.h"
 #include "AnimationBase.h"
 
+#include <algorithm>
 #include "AnimationControllerPrivate.h"
 #include "CSSPrimitiveValue.h"
 #include "CSSPropertyAnimation.h"
@@ -38,8 +39,7 @@
 #include "FloatConversion.h"
 #include "RenderBox.h"
 #include "RenderStyle.h"
-#include "UnitBezier.h"
-#include <algorithm>
+#include "core/platform/graphics/UnitBezier.h"
 #include <wtf/CurrentTime.h>
 
 using namespace std;

@@ -22,12 +22,12 @@
 #ifndef WidthIterator_h
 #define WidthIterator_h
 
-#include "Font.h"
-#include "SVGGlyph.h"
-#include "TextRun.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/SVGGlyph.h"
+#include "core/platform/graphics/TextRun.h"
 #include <wtf/HashSet.h>
-#include <wtf/Vector.h>
 #include <wtf/unicode/Unicode.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -26,8 +26,8 @@
 #ifndef TextTrackRepresentation_h
 #define TextTrackRepresentation_h
 
-#include "IntRect.h"
-#include "PlatformLayer.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

@@ -26,9 +26,9 @@
 #ifndef IntRectHash_h
 #define IntRectHash_h
 
-#include "IntPointHash.h"
-#include "IntRect.h"
-#include "IntSizeHash.h"
+#include "core/platform/graphics/IntPointHash.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/IntSizeHash.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 

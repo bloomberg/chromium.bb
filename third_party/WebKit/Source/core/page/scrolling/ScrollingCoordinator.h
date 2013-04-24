@@ -26,11 +26,11 @@
 #ifndef ScrollingCoordinator_h
 #define ScrollingCoordinator_h
 
-#include "IntRect.h"
-#include "LayoutRect.h"
 #include "PlatformWheelEvent.h"
 #include "RenderObject.h"
 #include "ScrollTypes.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 namespace WebKit {
 class WebLayer;

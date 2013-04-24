@@ -23,27 +23,27 @@
 #include "config.h"
 #include "RenderStyle.h"
 
+#include <algorithm>
+#include "CSSPropertyNames.h"
 #include "ContentData.h"
 #include "CursorList.h"
-#include "CSSPropertyNames.h"
-#include "Font.h"
-#include "FontSelector.h"
 #include "QuotesData.h"
 #include "RenderArena.h"
 #include "RenderObject.h"
+#include "RenderTheme.h"
 #include "ScaleTransformOperation.h"
 #include "ShadowData.h"
 #include "StyleImage.h"
 #include "StyleInheritedData.h"
 #include "StyleResolver.h"
-#include "RenderTheme.h"
 #include "TextAutosizer.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontSelector.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>
-#include <algorithm>
 
 using namespace std;
 

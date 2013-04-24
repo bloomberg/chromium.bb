@@ -26,14 +26,10 @@
 #include "RenderSVGResourceClipper.h"
 
 #include "AffineTransform.h"
-#include "FloatRect.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
-#include "ImageBuffer.h"
-#include "IntRect.h"
 #include "RenderObject.h"
 #include "RenderSVGResource.h"
 #include "RenderStyle.h"
@@ -48,6 +44,10 @@
 #include "SVGStyledTransformableElement.h"
 #include "SVGUnitTypes.h"
 #include "SVGUseElement.h"
+#include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/IntRect.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

@@ -31,6 +31,7 @@
 #include "config.h"
 #include "PopupContainer.h"
 
+#include <limits>
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
@@ -38,8 +39,6 @@
 #include "FrameView.h"
 #include "FramelessScrollView.h"
 #include "FramelessScrollViewClient.h"
-#include "GraphicsContext.h"
-#include "IntRect.h"
 #include "Page.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformKeyboardEvent.h"
@@ -50,7 +49,8 @@
 #include "PopupListBox.h"
 #include "PopupMenuClient.h"
 #include "UserGestureIndicator.h"
-#include <limits>
+#include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/IntRect.h"
 
 using namespace std;
 

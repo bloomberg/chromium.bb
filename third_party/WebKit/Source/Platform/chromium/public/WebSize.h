@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "IntSize.h"
+#include "core/platform/graphics/IntSize.h"
 #else
 #include <cmath>
 #include <ui/gfx/size.h>

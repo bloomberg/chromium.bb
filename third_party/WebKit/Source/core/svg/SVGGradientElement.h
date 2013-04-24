@@ -22,7 +22,6 @@
 #define SVGGradientElement_h
 
 #if ENABLE(SVG)
-#include "Gradient.h"
 #include "SVGAnimatedBoolean.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedTransformList.h"
@@ -30,6 +29,7 @@
 #include "SVGStyledElement.h"
 #include "SVGURIReference.h"
 #include "SVGUnitTypes.h"
+#include "core/platform/graphics/Gradient.h"
 
 namespace WebCore {
 

@@ -32,11 +32,11 @@
 #if ENABLE(INPUT_SPEECH)
 #include "RenderInputSpeech.h"
 
-#include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "PaintInfo.h"
 #include "RenderBox.h"
 #include "TextControlInnerElements.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {
 

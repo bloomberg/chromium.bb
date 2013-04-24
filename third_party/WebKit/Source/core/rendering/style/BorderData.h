@@ -26,9 +26,9 @@
 #define BorderData_h
 
 #include "BorderValue.h"
-#include "IntRect.h"
 #include "LengthSize.h"
 #include "NinePieceImage.h"
+#include "core/platform/graphics/IntRect.h"
 
 namespace WebCore {
 

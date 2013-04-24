@@ -22,12 +22,12 @@
 #if ENABLE(SVG)
 #include "SVGTextLayoutEngineBaseline.h"
 
-#include "Font.h"
 #include "RenderObject.h"
 #include "SVGLengthContext.h"
 #include "SVGRenderStyle.h"
 #include "SVGTextMetrics.h"
 #include "UnicodeRange.h"
+#include "core/platform/graphics/Font.h"
 
 namespace WebCore {
 

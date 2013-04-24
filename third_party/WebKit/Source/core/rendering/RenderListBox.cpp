@@ -36,11 +36,9 @@
 #include "DocumentEventQueue.h"
 #include "EventHandler.h"
 #include "FocusController.h"
-#include "FontCache.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameView.h"
-#include "GraphicsContext.h"
 #include "HTMLNames.h"
 #include "HTMLOptGroupElement.h"
 #include "HTMLOptionElement.h"
@@ -59,6 +57,8 @@
 #include "SpatialNavigation.h"
 #include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;
 

@@ -21,10 +21,10 @@
 #define SVGPathSegListSource_h
 
 #if ENABLE(SVG)
-#include "FloatPoint.h"
 #include "SVGPathSeg.h"
 #include "SVGPathSegList.h"
 #include "SVGPathSource.h"
+#include "core/platform/graphics/FloatPoint.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

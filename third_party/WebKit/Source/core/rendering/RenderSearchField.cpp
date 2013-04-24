@@ -41,9 +41,9 @@
 #include "RenderTheme.h"
 #include "SearchPopupMenu.h"
 #include "Settings.h"
-#include "SimpleFontData.h"
 #include "StyleResolver.h"
 #include "TextControlInnerElements.h"
+#include "core/platform/graphics/SimpleFontData.h"
 
 using namespace std;
 

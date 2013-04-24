@@ -21,13 +21,13 @@
 #ifndef Icon_h
 #define Icon_h
 
+#include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/Forward.h>
 #include <wtf/Vector.h>
 
-#include "Image.h"
 #include "PlatformIcon.h"
+#include "core/platform/graphics/Image.h"
 
 namespace WebCore {
 

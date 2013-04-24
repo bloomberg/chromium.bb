@@ -27,12 +27,12 @@
 #ifndef Image_h
 #define Image_h
 
-#include "Color.h"
-#include "ColorSpace.h"
-#include "GraphicsTypes.h"
-#include "ImageOrientation.h"
-#include "IntRect.h"
-#include "NativeImagePtr.h"
+#include "core/platform/graphics/Color.h"
+#include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/GraphicsTypes.h"
+#include "core/platform/graphics/ImageOrientation.h"
+#include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/NativeImagePtr.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

@@ -27,8 +27,8 @@
 #include "FilterOperations.h"
 
 #include "FEGaussianBlur.h"
-#include "IntSize.h"
 #include "LengthFunctions.h"
+#include "core/platform/graphics/IntSize.h"
 
 namespace WebCore {
 

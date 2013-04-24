@@ -21,9 +21,9 @@
 #ifndef FEDropShadow_h
 #define FEDropShadow_h
 
-#include "Color.h"
 #include "Filter.h"
 #include "FilterEffect.h"
+#include "core/platform/graphics/Color.h"
 
 namespace WebCore {
     

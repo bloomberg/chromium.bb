@@ -27,8 +27,8 @@
 
 #include "WebGLCompressedTextureS3TC.h"
 
-#include "Extensions3D.h"
 #include "WebGLRenderingContext.h"
+#include "core/platform/graphics/Extensions3D.h"
 
 #include <wtf/Int32Array.h>
 #include <wtf/OwnArrayPtr.h>

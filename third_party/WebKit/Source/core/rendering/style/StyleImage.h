@@ -25,9 +25,9 @@
 #define StyleImage_h
 
 #include "CSSValue.h"
-#include "Image.h"
-#include "IntSize.h"
-#include "LayoutSize.h"
+#include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/LayoutSize.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

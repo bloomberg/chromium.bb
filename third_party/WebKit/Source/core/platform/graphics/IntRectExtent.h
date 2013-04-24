@@ -30,7 +30,7 @@
 #ifndef IntRectExtent_h
 #define IntRectExtent_h
 
-#include "LayoutRect.h"
+#include "core/platform/graphics/LayoutRect.h"
 
 namespace WebCore {
 

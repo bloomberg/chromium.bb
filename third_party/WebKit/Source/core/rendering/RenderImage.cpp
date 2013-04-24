@@ -28,13 +28,9 @@
 #include "config.h"
 #include "RenderImage.h"
 
-#include "BitmapImage.h"
 #include "CachedImage.h"
-#include "Font.h"
-#include "FontCache.h"
 #include "Frame.h"
 #include "FrameSelection.h"
-#include "GraphicsContext.h"
 #include "HTMLAreaElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
@@ -45,6 +41,10 @@
 #include "PaintInfo.h"
 #include "RenderView.h"
 #include "SVGImage.h"
+#include "core/platform/graphics/BitmapImage.h"
+#include "core/platform/graphics/Font.h"
+#include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/UnusedParam.h>
 
 using namespace std;

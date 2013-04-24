@@ -22,8 +22,8 @@
 #define SVGTransform_h
 
 #if ENABLE(SVG)
-#include "FloatPoint.h"
 #include "SVGMatrix.h"
+#include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {
 

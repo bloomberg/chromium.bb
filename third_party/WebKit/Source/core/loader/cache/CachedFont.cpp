@@ -31,11 +31,11 @@
 #include "CachedResourceClientWalker.h"
 #include "CachedResourceLoader.h"
 #include "FontCustomPlatformData.h"
-#include "FontPlatformData.h"
 #include "MemoryCache.h"
 #include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/graphics/FontPlatformData.h"
 #include <wtf/Vector.h>
 
 #if ENABLE(SVG_FONTS)

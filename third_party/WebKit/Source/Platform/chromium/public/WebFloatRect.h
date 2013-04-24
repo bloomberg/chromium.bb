@@ -34,7 +34,7 @@
 #include "WebCommon.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "FloatRect.h"
+#include "core/platform/graphics/FloatRect.h"
 #else
 #include <cmath>
 #include <ui/gfx/rect_f.h>
