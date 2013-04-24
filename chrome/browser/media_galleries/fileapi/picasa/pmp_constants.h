@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_PICASA_PMP_CONSTANTS_H_
-#define WEBKIT_FILEAPI_MEDIA_PICASA_PMP_CONSTANTS_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_
 
 #include <string>
 
@@ -43,4 +43,4 @@ enum PmpFieldType {
 
 }  // namespace picasaimport
 
-#endif  // WEBKIT_FILEAPI_MEDIA_PICASA_PMP_CONSTANTS_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_CONSTANTS_H_

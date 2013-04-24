@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_MEDIA_PATH_FILTER_H_
-#define WEBKIT_FILEAPI_MEDIA_MEDIA_PATH_FILTER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_PATH_FILTER_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_PATH_FILTER_H_
 
 #include <vector>
 
 #include "base/files/file_path.h"
 #include "base/synchronization/lock.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace chrome {
 
 // This class holds the list of file path extensions that we should expose on
 // media filesystem.
-class WEBKIT_STORAGE_EXPORT MediaPathFilter {
+class MediaPathFilter {
  public:
   MediaPathFilter();
   ~MediaPathFilter();
@@ -37,6 +36,6 @@ class WEBKIT_STORAGE_EXPORT MediaPathFilter {
   DISALLOW_COPY_AND_ASSIGN(MediaPathFilter);
 };
 
-}  // namespace fileapi
+}  // namespace chrome
 
-#endif  // WEBKIT_FILEAPI_MEDIA_MEDIA_PATH_FILTER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MEDIA_PATH_FILTER_H_

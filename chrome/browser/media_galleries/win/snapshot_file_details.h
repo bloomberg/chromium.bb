@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
 #include "base/win/scoped_comptr.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
 namespace chrome {
 
@@ -17,9 +17,9 @@ struct SnapshotRequestInfo {
   SnapshotRequestInfo(
       const base::FilePath& device_file_path,
       const base::FilePath& snapshot_file_path,
-      const fileapi::MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
+      const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
-      const fileapi::MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
+      const MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
 
   // Device file path.
   base::FilePath device_file_path;
@@ -28,11 +28,11 @@ struct SnapshotRequestInfo {
   base::FilePath snapshot_file_path;
 
   // A callback to be called when CreateSnapshotFile() succeeds.
-  fileapi::MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
+  MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
       success_callback;
 
   // A callback to be called when CreateSnapshotFile() fails.
-  fileapi::MTPDeviceAsyncDelegate::ErrorCallback error_callback;
+  MTPDeviceAsyncDelegate::ErrorCallback error_callback;
 };
 
 // Provides the details for the the creation of snapshot file.

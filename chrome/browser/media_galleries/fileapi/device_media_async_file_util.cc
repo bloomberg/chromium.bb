@@ -2,23 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/device_media_async_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/single_thread_task_runner.h"
+#include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/fileapi/media/filtering_file_enumerator.h"
-#include "webkit/fileapi/media/media_file_system_mount_point_provider.h"
-#include "webkit/fileapi/media/media_path_filter.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
-#include "webkit/fileapi/media/mtp_device_map_service.h"
 
-namespace fileapi {
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemURL;
+
+namespace chrome {
 
 namespace {
 
@@ -310,7 +313,7 @@ void DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile(
     const base::FilePath& platform_path) {
   if (!callback.is_null())
     callback.Run(base::PLATFORM_FILE_OK, file_info, platform_path,
-                 kSnapshotFileTemporary);
+                 fileapi::kSnapshotFileTemporary);
 }
 
 void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
@@ -318,7 +321,7 @@ void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
     base::PlatformFileError error) {
   if (!callback.is_null())
     callback.Run(error, base::PlatformFileInfo(), base::FilePath(),
-                 kSnapshotFileTemporary);
+                 fileapi::kSnapshotFileTemporary);
 }
 
 void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
@@ -347,4 +350,4 @@ void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
                  callback));
 }
 
-}  // namespace fileapi
+}  // namespace chrome

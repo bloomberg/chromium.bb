@@ -4,15 +4,16 @@
 
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
 
-#include "webkit/fileapi/media/mtp_device_file_system_config.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_file_system_config.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
 #include "base/bind.h"
 #include "base/threading/sequenced_worker_pool.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "webkit/fileapi/file_system_task_runners.h"
-#include "webkit/fileapi/media/mtp_device_map_service.h"
+
 #endif
 
 namespace chrome {
@@ -37,7 +38,7 @@ scoped_refptr<base::SequencedTaskRunner> GetSequencedTaskRunner() {
 void OnDeviceAsyncDelegateDestroyed(
     const base::FilePath::StringType& device_location) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  fileapi::MTPDeviceMapService::GetInstance()->RemoveAsyncDelegate(
+  MTPDeviceMapService::GetInstance()->RemoveAsyncDelegate(
       device_location);
 }
 
@@ -82,10 +83,10 @@ ScopedMTPDeviceMapEntry::~ScopedMTPDeviceMapEntry() {
 }
 
 void ScopedMTPDeviceMapEntry::OnMTPDeviceAsyncDelegateCreated(
-    fileapi::MTPDeviceAsyncDelegate* delegate) {
+    MTPDeviceAsyncDelegate* delegate) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
-  fileapi::MTPDeviceMapService::GetInstance()->AddAsyncDelegate(
+  MTPDeviceMapService::GetInstance()->AddAsyncDelegate(
       device_location_, delegate);
 #endif
 }

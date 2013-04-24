@@ -2,24 +2,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_MAP_SERVICE_H_
-#define WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_MAP_SERVICE_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_MAP_SERVICE_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_MAP_SERVICE_H_
 
 #include <map>
 
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread_checker.h"
-#include "webkit/storage/webkit_storage_export.h"
 
-namespace fileapi {
+namespace chrome {
 
 class MTPDeviceAsyncDelegate;
 
 // This class provides media transfer protocol (MTP) device delegate to
 // complete media file system operations. ScopedMTPDeviceMapEntry class
 // manages the device map entries.
-class WEBKIT_STORAGE_EXPORT MTPDeviceMapService {
+class MTPDeviceMapService {
  public:
   static MTPDeviceMapService* GetInstance();
 
@@ -67,6 +66,6 @@ class WEBKIT_STORAGE_EXPORT MTPDeviceMapService {
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceMapService);
 };
 
-}  // namespace fileapi
+}  // namespace chrome
 
-#endif  // WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_MAP_SERVICE_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_MAP_SERVICE_H_

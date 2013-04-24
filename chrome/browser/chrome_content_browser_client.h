@@ -224,6 +224,10 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       content::WebContents* web_contents) OVERRIDE;
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) OVERRIDE;
+  virtual void GetAdditionalFileSystemMountPointProviders(
+      const base::FilePath& storage_partition_path,
+      ScopedVector<fileapi::FileSystemMountPointProvider>*
+          additional_providers) OVERRIDE;
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   virtual void GetAdditionalMappedFilesForChildProcess(

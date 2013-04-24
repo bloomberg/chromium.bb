@@ -14,9 +14,9 @@
 #include "base/platform_file.h"
 #include "base/string16.h"
 #include "base/win/scoped_comptr.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "webkit/fileapi/async_file_util.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
 
 namespace base {
 class FilePath;
@@ -36,7 +36,7 @@ struct SnapshotRequestInfo;
 // is instantiated per MTP device storage partition using
 // CreateMTPDeviceAsyncDelegate(). MTPDeviceDelegateImplWin lives on the IO
 // thread.
-class MTPDeviceDelegateImplWin : public fileapi::MTPDeviceAsyncDelegate {
+class MTPDeviceDelegateImplWin : public MTPDeviceAsyncDelegate {
  public:
   // Structure used to represent MTP device storage partition details.
   struct StorageDeviceInfo {

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_PICASA_PMP_TEST_HELPER_H_
-#define WEBKIT_FILEAPI_MEDIA_PICASA_PMP_TEST_HELPER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TEST_HELPER_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TEST_HELPER_H_
 
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/files/scoped_temp_dir.h"
-#include "webkit/fileapi/media/picasa/pmp_constants.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
 
 namespace base {
 class FilePath;
@@ -52,4 +52,4 @@ class PmpTestHelper {
 
 }  // namespace picasaimport
 
-#endif  // WEBKIT_FILEAPI_MEDIA_PICASA_PMP_TEST_HELPER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TEST_HELPER_H_

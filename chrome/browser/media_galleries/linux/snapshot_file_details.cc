@@ -15,9 +15,9 @@ namespace chrome {
 SnapshotRequestInfo::SnapshotRequestInfo(
     const std::string& device_file_path,
     const base::FilePath& snapshot_file_path,
-    const fileapi::MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
+    const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
         success_callback,
-    const fileapi::MTPDeviceAsyncDelegate::ErrorCallback& error_callback)
+    const MTPDeviceAsyncDelegate::ErrorCallback& error_callback)
     : device_file_path(device_file_path),
       snapshot_file_path(snapshot_file_path),
       success_callback(success_callback),

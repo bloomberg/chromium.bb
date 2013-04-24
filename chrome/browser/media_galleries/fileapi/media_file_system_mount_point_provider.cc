@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
 
 #include <string>
 
@@ -12,6 +12,8 @@
 #include "base/message_loop_proxy.h"
 #include "base/platform_file.h"
 #include "base/sequenced_task_runner.h"
+#include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
+#include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "webkit/blob/local_file_stream_reader.h"
 #include "webkit/fileapi/async_file_util_adapter.h"
 #include "webkit/fileapi/copy_or_move_file_validator.h"
@@ -26,15 +28,17 @@
 #include "webkit/fileapi/isolated_file_util.h"
 #include "webkit/fileapi/local_file_stream_writer.h"
 #include "webkit/fileapi/local_file_system_operation.h"
-#include "webkit/fileapi/media/media_path_filter.h"
-#include "webkit/fileapi/media/native_media_file_util.h"
 #include "webkit/fileapi/native_file_util.h"
 
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-#include "webkit/fileapi/media/device_media_async_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/device_media_async_file_util.h"
 #endif
 
-namespace fileapi {
+using fileapi::FileSystemContext;
+using fileapi::FileSystemType;
+using fileapi::FileSystemURL;
+
+namespace chrome {
 
 const char MediaFileSystemMountPointProvider::kMediaPathFilterKey[] =
     "MediaPathFilterKey";
@@ -46,7 +50,7 @@ MediaFileSystemMountPointProvider::MediaFileSystemMountPointProvider(
     : profile_path_(profile_path),
       media_path_filter_(new MediaPathFilter()),
       native_media_file_util_(
-          new AsyncFileUtilAdapter(new NativeMediaFileUtil())) {
+          new fileapi::AsyncFileUtilAdapter(new NativeMediaFileUtil())) {
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
   // TODO(kmadhusu): Initialize |device_media_file_util_| in
   // initialization list.
@@ -61,8 +65,8 @@ MediaFileSystemMountPointProvider::~MediaFileSystemMountPointProvider() {
 bool MediaFileSystemMountPointProvider::CanHandleType(
     FileSystemType type) const {
   switch (type) {
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeNativeMedia:
+    case fileapi::kFileSystemTypeDeviceMedia:
       return true;
     default:
       return false;
@@ -89,10 +93,10 @@ MediaFileSystemMountPointProvider::GetFileSystemRootPathOnFileThread(
   return base::FilePath();
 }
 
-FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
+fileapi::FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
     FileSystemType type) {
   switch (type) {
-    case kFileSystemTypeNativeMedia:
+    case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_->sync_file_util();
     default:
       NOTREACHED();
@@ -100,12 +104,12 @@ FileSystemFileUtil* MediaFileSystemMountPointProvider::GetFileUtil(
   return NULL;
 }
 
-AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
+fileapi::AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
     FileSystemType type) {
   switch (type) {
-    case kFileSystemTypeNativeMedia:
+    case fileapi::kFileSystemTypeNativeMedia:
       return native_media_file_util_.get();
-    case kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeDeviceMedia:
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
       return device_media_async_file_util_.get();
 #endif
@@ -115,14 +119,14 @@ AsyncFileUtil* MediaFileSystemMountPointProvider::GetAsyncFileUtil(
   return NULL;
 }
 
-CopyOrMoveFileValidatorFactory*
+fileapi::CopyOrMoveFileValidatorFactory*
 MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
     FileSystemType type, base::PlatformFileError* error_code) {
   DCHECK(error_code);
   *error_code = base::PLATFORM_FILE_OK;
   switch (type) {
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeNativeMedia:
+    case fileapi::kFileSystemTypeDeviceMedia:
       if (!media_copy_or_move_file_validator_factory_) {
         *error_code = base::PLATFORM_FILE_ERROR_SECURITY;
         return NULL;
@@ -137,10 +141,10 @@ MediaFileSystemMountPointProvider::GetCopyOrMoveFileValidatorFactory(
 void
 MediaFileSystemMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
     FileSystemType type,
-    scoped_ptr<CopyOrMoveFileValidatorFactory> factory) {
+    scoped_ptr<fileapi::CopyOrMoveFileValidatorFactory> factory) {
   switch (type) {
-    case kFileSystemTypeNativeMedia:
-    case kFileSystemTypeDeviceMedia:
+    case fileapi::kFileSystemTypeNativeMedia:
+    case fileapi::kFileSystemTypeDeviceMedia:
       if (!media_copy_or_move_file_validator_factory_)
         media_copy_or_move_file_validator_factory_.reset(factory.release());
       break;
@@ -149,32 +153,34 @@ MediaFileSystemMountPointProvider::InitializeCopyOrMoveFileValidatorFactory(
   }
 }
 
-FilePermissionPolicy MediaFileSystemMountPointProvider::GetPermissionPolicy(
+fileapi::FilePermissionPolicy
+MediaFileSystemMountPointProvider::GetPermissionPolicy(
     const FileSystemURL& url, int permissions) const {
   // Access to media file systems should be checked using per-filesystem
   // access permission.
-  return FILE_PERMISSION_USE_FILESYSTEM_PERMISSION;
+  return fileapi::FILE_PERMISSION_USE_FILESYSTEM_PERMISSION;
 }
 
-FileSystemOperation*
+fileapi::FileSystemOperation*
 MediaFileSystemMountPointProvider::CreateFileSystemOperation(
     const FileSystemURL& url,
     FileSystemContext* context,
     base::PlatformFileError* error_code) const {
-  scoped_ptr<FileSystemOperationContext> operation_context(
-      new FileSystemOperationContext(
+  scoped_ptr<fileapi::FileSystemOperationContext> operation_context(
+      new fileapi::FileSystemOperationContext(
           context, context->task_runners()->media_task_runner()));
 
   operation_context->SetUserValue(kMediaPathFilterKey,
                                   media_path_filter_.get());
 #if defined(SUPPORT_MTP_DEVICE_FILESYSTEM)
-  if (url.type() == kFileSystemTypeDeviceMedia) {
+  if (url.type() == fileapi::kFileSystemTypeDeviceMedia) {
     operation_context->SetUserValue(kMTPDeviceDelegateURLKey,
                                     url.filesystem_id());
   }
 #endif
 
-  return new LocalFileSystemOperation(context, operation_context.Pass());
+  return new fileapi::LocalFileSystemOperation(context,
+                                               operation_context.Pass());
 }
 
 scoped_ptr<webkit_blob::FileStreamReader>
@@ -189,16 +195,17 @@ MediaFileSystemMountPointProvider::CreateFileStreamReader(
           url.path(), offset, expected_modification_time));
 }
 
-scoped_ptr<FileStreamWriter>
+scoped_ptr<fileapi::FileStreamWriter>
 MediaFileSystemMountPointProvider::CreateFileStreamWriter(
     const FileSystemURL& url,
     int64 offset,
     FileSystemContext* context) const {
-  return scoped_ptr<FileStreamWriter>(
-      new LocalFileStreamWriter(url.path(), offset));
+  return scoped_ptr<fileapi::FileStreamWriter>(
+      new fileapi::LocalFileStreamWriter(url.path(), offset));
 }
 
-FileSystemQuotaUtil* MediaFileSystemMountPointProvider::GetQuotaUtil() {
+fileapi::FileSystemQuotaUtil*
+MediaFileSystemMountPointProvider::GetQuotaUtil() {
   // No quota support.
   return NULL;
 }
@@ -212,4 +219,4 @@ void MediaFileSystemMountPointProvider::DeleteFileSystem(
   callback.Run(base::PLATFORM_FILE_ERROR_INVALID_OPERATION);
 }
 
-}  // namespace fileapi
+}  // namespace chrome

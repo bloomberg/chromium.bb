@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/picasa/pmp_test_helper.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_test_helper.h"
 
 #include <algorithm>
 #include <iterator>
@@ -10,7 +10,7 @@
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "webkit/fileapi/media/picasa/pmp_column_reader.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 
 namespace picasaimport {
 
@@ -37,7 +37,7 @@ template<>
 std::vector<uint8> Flatten(const std::vector<std::string>& strings) {
   std::vector<uint8> totalchars;
 
-  for(std::vector<std::string>::const_iterator it = strings.begin();
+  for (std::vector<std::string>::const_iterator it = strings.begin();
       it != strings.end(); ++it) {
     std::copy(it->begin(), it->end(), std::back_inserter(totalchars));
     totalchars.push_back('\0'); // Add the null termination too.

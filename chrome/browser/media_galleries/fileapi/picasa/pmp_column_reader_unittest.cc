@@ -6,10 +6,10 @@
 #include <vector>
 
 #include "base/file_util.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "webkit/fileapi/media/picasa/pmp_column_reader.h"
-#include "webkit/fileapi/media/picasa/pmp_constants.h"
-#include "webkit/fileapi/media/picasa/pmp_test_helper.h"
 
 namespace {
 

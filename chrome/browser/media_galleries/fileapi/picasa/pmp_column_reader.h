@@ -2,16 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_PICASA_PMP_COLUMN_READER_H_
-#define WEBKIT_FILEAPI_MEDIA_PICASA_PMP_COLUMN_READER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_
 
 #include <string>
 #include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/fileapi/media/picasa/pmp_constants.h"
-#include "webkit/storage/webkit_storage_export.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
 
 namespace base {
 class FilePath;
@@ -20,7 +19,7 @@ class FilePath;
 namespace picasaimport {
 
 // Reads a single PMP column from a file.
-class WEBKIT_STORAGE_EXPORT_PRIVATE PmpColumnReader {
+class PmpColumnReader {
  public:
   PmpColumnReader();
   virtual ~PmpColumnReader();
@@ -64,4 +63,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE PmpColumnReader {
 
 }  // namespace picasaimport
 
-#endif  // WEBKIT_FILEAPI_MEDIA_PICASA_PMP_COLUMN_READER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_COLUMN_READER_H_

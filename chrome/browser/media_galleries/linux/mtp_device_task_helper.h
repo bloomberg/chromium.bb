@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "device/media_transfer_protocol/mtp_file_entry.pb.h"
 #include "webkit/fileapi/async_file_util.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
 
 namespace chrome {
 
@@ -31,13 +31,13 @@ class MTPDeviceTaskHelper {
  public:
   typedef base::Callback<void(bool succeeded)> OpenStorageCallback;
 
-  typedef fileapi::MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback
+  typedef MTPDeviceAsyncDelegate::GetFileInfoSuccessCallback
       GetFileInfoSuccessCallback;
 
   typedef base::Callback<void(const fileapi::AsyncFileUtil::EntryList&)>
       ReadDirectorySuccessCallback;
 
-  typedef fileapi::MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;
+  typedef MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;
 
   MTPDeviceTaskHelper();
   ~MTPDeviceTaskHelper();

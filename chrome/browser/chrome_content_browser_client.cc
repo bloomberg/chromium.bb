@@ -170,6 +170,10 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #endif
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#endif
+
 using base::FileDescriptor;
 using content::AccessTokenStore;
 using content::BrowserChildProcessHostIterator;
@@ -2106,6 +2110,15 @@ void ChromeContentBrowserClient::GetAdditionalAllowedSchemesForFileSystem(
       additional_allowed_schemes);
   additional_allowed_schemes->push_back(kChromeUIScheme);
   additional_allowed_schemes->push_back(extensions::kExtensionScheme);
+}
+
+void ChromeContentBrowserClient::GetAdditionalFileSystemMountPointProviders(
+    const base::FilePath& storage_partition_path,
+    ScopedVector<fileapi::FileSystemMountPointProvider>* additional_providers) {
+#if !defined(OS_ANDROID)
+  additional_providers->push_back(new MediaFileSystemMountPointProvider(
+      storage_partition_path));
+#endif
 }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)

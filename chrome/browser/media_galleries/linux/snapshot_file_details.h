@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
 namespace chrome {
 
@@ -20,9 +20,9 @@ struct SnapshotRequestInfo {
   SnapshotRequestInfo(
       const std::string& device_file_path,
       const base::FilePath& snapshot_file_path,
-      const fileapi::MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
+      const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback&
           success_callback,
-      const fileapi::MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
+      const MTPDeviceAsyncDelegate::ErrorCallback& error_callback);
   ~SnapshotRequestInfo();
 
   // MTP device file path.
@@ -32,11 +32,11 @@ struct SnapshotRequestInfo {
   const base::FilePath snapshot_file_path;
 
   // A callback to be called when CreateSnapshotFile() succeeds.
-  const fileapi::MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
+  const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
       success_callback;
 
   // A callback to be called when CreateSnapshotFile() fails.
-  const fileapi::MTPDeviceAsyncDelegate::ErrorCallback error_callback;
+  const MTPDeviceAsyncDelegate::ErrorCallback error_callback;
 };
 
 // SnapshotFileDetails tracks the current state of the snapshot file (e.g how
@@ -65,12 +65,12 @@ class SnapshotFileDetails {
     return file_info_;
   }
 
-  const fileapi::MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
+  const MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
       success_callback() const {
     return request_info_.success_callback;
   }
 
-  const fileapi::MTPDeviceAsyncDelegate::ErrorCallback error_callback() const {
+  const MTPDeviceAsyncDelegate::ErrorCallback error_callback() const {
     return request_info_.error_callback;
   }
 

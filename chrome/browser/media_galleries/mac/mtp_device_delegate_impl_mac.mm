@@ -19,7 +19,6 @@ namespace {
 
 int kReadDirectoryTimeLimitSeconds = 20;
 
-using fileapi::MTPDeviceAsyncDelegate;
 typedef MTPDeviceAsyncDelegate::CreateSnapshotFileSuccessCallback
     CreateSnapshotFileSuccessCallback;
 typedef MTPDeviceAsyncDelegate::ErrorCallback ErrorCallback;

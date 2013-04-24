@@ -12,9 +12,9 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/mtp_device_delegate_impl.h"
 #include "webkit/fileapi/async_file_util.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
 
 namespace base {
 class FilePath;
@@ -30,7 +30,7 @@ struct SnapshotRequestInfo;
 // MTPDeviceDelegateImplLinux lives on the IO thread.
 // MTPDeviceDelegateImplLinux does a call-and-reply to the UI thread
 // to dispatch the requests to MediaTransferProtocolManager.
-class MTPDeviceDelegateImplLinux : public fileapi::MTPDeviceAsyncDelegate {
+class MTPDeviceDelegateImplLinux : public MTPDeviceAsyncDelegate {
  private:
   friend void CreateMTPDeviceAsyncDelegate(
       const std::string&,

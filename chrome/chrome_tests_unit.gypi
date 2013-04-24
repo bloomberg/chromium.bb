@@ -133,6 +133,8 @@
         'browser/google_apis/test_server/http_server.h',
         'browser/google_apis/test_util.cc',
         'browser/google_apis/test_util.h',
+        'browser/media_galleries/fileapi/picasa/pmp_test_helper.cc',
+        'browser/media_galleries/fileapi/picasa/pmp_test_helper.h',
         'browser/media_galleries/media_galleries_test_util.cc',
         'browser/media_galleries/media_galleries_test_util.h',
         'browser/net/url_request_mock_util.cc',
@@ -527,8 +529,8 @@
         'browser/chrome_page_zoom_unittest.cc',
         'browser/chrome_process_singleton_win_unittest.cc',
         'browser/chromeos/accessibility/magnification_manager_unittest.cc',
-	'browser/chromeos/attestation/attestation_ca_client_unittest.cc',
-	'browser/chromeos/attestation/attestation_policy_observer_unittest.cc',
+        'browser/chromeos/attestation/attestation_ca_client_unittest.cc',
+        'browser/chromeos/attestation/attestation_policy_observer_unittest.cc',
         'browser/chromeos/contacts/contact_database_unittest.cc',
         'browser/chromeos/contacts/contact_manager_stub.cc',
         'browser/chromeos/contacts/contact_manager_stub.h',
@@ -881,6 +883,9 @@
         'browser/managed_mode/managed_mode_url_filter_unittest.cc',
         'browser/managed_mode/managed_user_passphrase_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
+        'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
+        'browser/media_galleries/fileapi/picasa/pmp_column_reader_unittest.cc',
+        'browser/media_galleries/fileapi/picasa/pmp_table_reader_unittest.cc',
         'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',
         'browser/media_galleries/mac/mtp_device_delegate_impl_mac_unittest.mm',
         'browser/media_galleries/media_file_system_registry_unittest.cc',
@@ -930,7 +935,7 @@
         'browser/password_manager/native_backend_gnome_x_unittest.cc',
         'browser/password_manager/native_backend_kwallet_x_unittest.cc',
         'browser/password_manager/password_form_manager_unittest.cc',
-	'browser/password_manager/password_generation_manager_unittest.cc',
+        'browser/password_manager/password_generation_manager_unittest.cc',
         'browser/password_manager/password_manager_unittest.cc',
         'browser/password_manager/password_store_unittest.cc',
         'browser/password_manager/password_store_default_unittest.cc',
@@ -1432,7 +1437,7 @@
         'browser/ui/search_engines/keyword_editor_controller_unittest.cc',
         'browser/ui/search/search_delegate_unittest.cc',
         'browser/ui/sync/one_click_signin_helper_unittest.cc',
-	'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
+        'browser/ui/sync/profile_signin_confirmation_helper_unittest.cc',
         'browser/ui/tab_contents/tab_contents_iterator_unittest.cc',
         'browser/ui/tabs/dock_info_unittest.cc',
         'browser/ui/tabs/pinned_tab_codec_unittest.cc',
@@ -2077,8 +2082,8 @@
           ],
         }],
         ['OS=="mac"', {
-           # The test fetches resources which means Mac need the app bundle to
-           # exist on disk so it can pull from it.
+          # The test fetches resources which means Mac need the app bundle to
+          # exist on disk so it can pull from it.
           'dependencies': [
             'chrome',
             '../third_party/ocmock/ocmock.gyp:ocmock',

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/picasa/pmp_column_reader.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
 
 #include <cstring>
 

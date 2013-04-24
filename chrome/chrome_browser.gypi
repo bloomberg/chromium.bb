@@ -924,6 +924,20 @@
         'browser/media/media_stream_devices_controller.h',
         'browser/media/media_stream_infobar_delegate.cc',
         'browser/media/media_stream_infobar_delegate.h',
+        'browser/media_galleries/fileapi/filtering_file_enumerator.cc',
+        'browser/media_galleries/fileapi/filtering_file_enumerator.h',
+        'browser/media_galleries/fileapi/media_file_system_mount_point_provider.cc',
+        'browser/media_galleries/fileapi/media_file_system_mount_point_provider.h',
+        'browser/media_galleries/fileapi/media_path_filter.cc',
+        'browser/media_galleries/fileapi/media_path_filter.h',
+        'browser/media_galleries/fileapi/mtp_device_file_system_config.h',
+        'browser/media_galleries/fileapi/native_media_file_util.cc',
+        'browser/media_galleries/fileapi/native_media_file_util.h',
+        'browser/media_galleries/fileapi/picasa/pmp_column_reader.cc',
+        'browser/media_galleries/fileapi/picasa/pmp_column_reader.h',
+        'browser/media_galleries/fileapi/picasa/pmp_constants.h',
+        'browser/media_galleries/fileapi/picasa/pmp_table_reader.cc',
+        'browser/media_galleries/fileapi/picasa/pmp_table_reader.h',
         'browser/media_galleries/linux/mtp_device_delegate_impl_linux.cc',
         'browser/media_galleries/linux/mtp_device_delegate_impl_linux.h',
         'browser/media_galleries/linux/mtp_device_object_enumerator.cc',
@@ -2228,6 +2242,15 @@
             # CoreImage is iOS 5+, but iOS 4.3 is still supported.
             'xcode_settings': {'OTHER_LDFLAGS': ['-weak_framework CoreImage']},
           },
+        }],
+        ['OS=="mac" or OS=="win" or OS=="linux" or chromeos==1', {
+          'sources': [
+            'browser/media_galleries/fileapi/device_media_async_file_util.cc',
+            'browser/media_galleries/fileapi/device_media_async_file_util.h',
+            'browser/media_galleries/fileapi/mtp_device_async_delegate.h',
+            'browser/media_galleries/fileapi/mtp_device_map_service.cc',
+            'browser/media_galleries/fileapi/mtp_device_map_service.h',
+          ],
         }],
         ['enable_extensions==1', {
           'sources': [

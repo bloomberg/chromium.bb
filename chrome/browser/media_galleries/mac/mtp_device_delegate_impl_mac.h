@@ -13,7 +13,7 @@
 #include "base/hash_tables.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
 namespace chrome {
 
@@ -26,7 +26,7 @@ namespace chrome {
 // on any thread, but then mutates all state on the UI thread. The async
 // delegate interface can be invoked on any thread, as it simply forwards calls
 // to the UI thread.
-class MTPDeviceDelegateImplMac : public fileapi::MTPDeviceAsyncDelegate {
+class MTPDeviceDelegateImplMac : public MTPDeviceAsyncDelegate {
  public:
   MTPDeviceDelegateImplMac(const std::string& device_id,
                            const base::FilePath::StringType& synthetic_path);

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/media_path_filter.h"
+#include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 
 #include <algorithm>
 #include <string>
@@ -10,7 +10,7 @@
 #include "base/string_util.h"
 #include "net/base/mime_util.h"
 
-namespace fileapi {
+namespace chrome {
 
 namespace {
 
@@ -79,4 +79,4 @@ void MediaPathFilter::EnsureInitialized() {
   initialized_ = true;
 }
 
-}  // namespace fileapi
+}  // namespace chrome

@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/mtp_device_map_service.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
 
 #include <string>
 #include <utility>
 
 #include "base/stl_util.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/fileapi/media/mtp_device_async_delegate.h"
 
-namespace fileapi {
+namespace chrome {
 
 namespace {
 
@@ -52,8 +52,8 @@ MTPDeviceAsyncDelegate* MTPDeviceMapService::GetMTPDeviceAsyncDelegate(
     const std::string& filesystem_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::FilePath device_path;
-  if (!IsolatedContext::GetInstance()->GetRegisteredPath(filesystem_id,
-                                                         &device_path)) {
+  if (!fileapi::IsolatedContext::GetInstance()->GetRegisteredPath(
+          filesystem_id, &device_path)) {
     return NULL;
   }
 
@@ -70,4 +70,4 @@ MTPDeviceMapService::MTPDeviceMapService() {
 
 MTPDeviceMapService::~MTPDeviceMapService() {}
 
-}  // namespace fileapi
+}  // namespace chrome

@@ -2,14 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_PICASA_PMP_TABLE_READER_H_
-#define WEBKIT_FILEAPI_MEDIA_PICASA_PMP_TABLE_READER_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TABLE_READER_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TABLE_READER_H_
 
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_vector.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class FilePath;
@@ -19,7 +18,7 @@ namespace picasaimport {
 
 class PmpColumnReader;
 
-class WEBKIT_STORAGE_EXPORT_PRIVATE PmpTableReader {
+class PmpTableReader {
  public:
   PmpTableReader();
 
@@ -45,4 +44,4 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE PmpTableReader {
 
 }  // namespace picasaimport
 
-#endif  // WEBKIT_FILEAPI_MEDIA_PICASA_PMP_TABLE_READER_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_PICASA_PMP_TABLE_READER_H_

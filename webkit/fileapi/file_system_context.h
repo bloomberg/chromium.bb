@@ -24,6 +24,10 @@ namespace base {
 class FilePath;
 }
 
+namespace chrome {
+class NativeMediaFileUtilTest;
+}
+
 namespace quota {
 class QuotaManagerProxy;
 class SpecialStoragePolicy;
@@ -55,7 +59,6 @@ class FileSystemTaskRunners;
 class FileSystemURL;
 class IsolatedMountPointProvider;
 class MountPoints;
-class MediaFileSystemMountPointProvider;
 class SandboxMountPointProvider;
 
 struct DefaultContextDeleter;
@@ -239,7 +242,7 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   friend class webkit_blob::BlobURLRequestJobTest;
   friend class FileSystemQuotaClientTest;
   friend class LocalFileSystemTestOriginHelper;
-  friend class NativeMediaFileUtilTest;
+  friend class chrome::NativeMediaFileUtilTest;
   friend class FileSystemURLRequestJobTest;
   friend class UploadFileSystemFileElementReaderTest;
 
@@ -278,10 +281,6 @@ class WEBKIT_STORAGE_EXPORT FileSystemContext
   scoped_ptr<SandboxMountPointProvider> sandbox_provider_;
   scoped_ptr<IsolatedMountPointProvider> isolated_provider_;
   scoped_ptr<ExternalFileSystemMountPointProvider> external_provider_;
-
-  // TODO(kinuko,vandebo): Move this out of webkit/fileapi layer and
-  // give this provider as additional_providers.
-  scoped_ptr<MediaFileSystemMountPointProvider> media_provider_;
 
   // Additional mount point providers.
   ScopedVector<FileSystemMountPointProvider> additional_providers_;

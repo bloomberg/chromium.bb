@@ -21,7 +21,6 @@
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/isolated_context.h"
 #include "webkit/fileapi/isolated_mount_point_provider.h"
-#include "webkit/fileapi/media/media_file_system_mount_point_provider.h"
 #include "webkit/fileapi/mount_points.h"
 #include "webkit/fileapi/sandbox_mount_point_provider.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
@@ -74,7 +73,6 @@ FileSystemContext::FileSystemContext(
               partition_path,
               options)),
       isolated_provider_(new IsolatedMountPointProvider()),
-      media_provider_(new MediaFileSystemMountPointProvider(partition_path)),
       additional_providers_(additional_providers.Pass()),
       external_mount_points_(external_mount_points),
       partition_path_(partition_path) {
@@ -87,7 +85,6 @@ FileSystemContext::FileSystemContext(
 
   RegisterMountPointProvider(sandbox_provider_.get());
   RegisterMountPointProvider(isolated_provider_.get());
-  RegisterMountPointProvider(media_provider_.get());
 
 #if defined(OS_CHROMEOS)
   // TODO(kinuko): Move this out of webkit/fileapi layer.

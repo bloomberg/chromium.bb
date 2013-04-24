@@ -2,26 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
-#define WEBKIT_FILEAPI_MEDIA_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
 
 #include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "base/platform_file.h"
 #include "webkit/fileapi/async_file_util.h"
-#include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class Time;
 }
 
 namespace fileapi {
-
 class FileSystemOperationContext;
 class FileSystemURL;
+}
 
-class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaAsyncFileUtil
-    : public AsyncFileUtil {
+namespace chrome {
+
+class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
  public:
   virtual ~DeviceMediaAsyncFileUtil();
 
@@ -32,65 +32,65 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaAsyncFileUtil
 
   // AsyncFileUtil overrides.
   virtual bool CreateOrOpen(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       int file_flags,
       const CreateOrOpenCallback& callback) OVERRIDE;
   virtual bool EnsureFileExists(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const EnsureFileExistsCallback& callback) OVERRIDE;
   virtual bool CreateDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       bool exclusive,
       bool recursive,
       const StatusCallback& callback) OVERRIDE;
   virtual bool GetFileInfo(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const GetFileInfoCallback& callback) OVERRIDE;
   virtual bool ReadDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual bool Touch(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const base::Time& last_access_time,
       const base::Time& last_modified_time,
       const StatusCallback& callback) OVERRIDE;
   virtual bool Truncate(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       int64 length,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyFileLocal(
-      FileSystemOperationContext* context,
-      const FileSystemURL& src_url,
-      const FileSystemURL& dest_url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& src_url,
+      const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool MoveFileLocal(
-      FileSystemOperationContext* context,
-      const FileSystemURL& src_url,
-      const FileSystemURL& dest_url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& src_url,
+      const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CopyInForeignFile(
-      FileSystemOperationContext* context,
+      fileapi::FileSystemOperationContext* context,
       const base::FilePath& src_file_path,
-      const FileSystemURL& dest_url,
+      const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool DeleteDirectory(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const StatusCallback& callback) OVERRIDE;
   virtual bool CreateSnapshotFile(
-      FileSystemOperationContext* context,
-      const FileSystemURL& url,
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url,
       const CreateSnapshotFileCallback& callback) OVERRIDE;
 
  private:
@@ -158,7 +158,7 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaAsyncFileUtil
   // path. Forwards the CreateSnapshot request to the delegate to copy the
   // contents of |device_file_path| to |snapshot_file_path|.
   void OnSnapshotFileCreatedRunTask(
-      FileSystemOperationContext* context,
+      fileapi::FileSystemOperationContext* context,
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
       const base::FilePath& device_file_path,
       base::FilePath* snapshot_file_path);
@@ -172,6 +172,6 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE DeviceMediaAsyncFileUtil
   DISALLOW_COPY_AND_ASSIGN(DeviceMediaAsyncFileUtil);
 };
 
-}  // namespace fileapi
+}  // namespace chrome
 
-#endif  // WEBKIT_FILEAPI_MEDIA_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_DEVICE_MEDIA_ASYNC_FILE_UTIL_H_

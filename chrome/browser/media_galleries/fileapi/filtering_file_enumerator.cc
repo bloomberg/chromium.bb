@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
+
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "webkit/fileapi/media/filtering_file_enumerator.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -15,7 +16,7 @@
 #include "base/string_util.h"
 #endif
 
-namespace fileapi {
+namespace chrome {
 
 namespace {
 
@@ -66,7 +67,8 @@ bool ShouldSkip(const base::FilePath& path) {
 }  // namespace
 
 FilteringFileEnumerator::FilteringFileEnumerator(
-    scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> base_enumerator,
+    scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
+        base_enumerator,
     MediaPathFilter* filter)
     : base_enumerator_(base_enumerator.Pass()),
       filter_(filter) {
@@ -102,4 +104,4 @@ bool FilteringFileEnumerator::IsDirectory() {
   return base_enumerator_->IsDirectory();
 }
 
-}  // namespace fileapi
+}  // namespace chrome

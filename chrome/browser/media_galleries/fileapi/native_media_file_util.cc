@@ -2,19 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/native_media_file_util.h"
+#include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 
+#include "chrome/browser/media_galleries/fileapi/filtering_file_enumerator.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "webkit/fileapi/file_system_operation_context.h"
-#include "webkit/fileapi/media/filtering_file_enumerator.h"
-#include "webkit/fileapi/media/media_file_system_mount_point_provider.h"
-#include "webkit/fileapi/media/media_path_filter.h"
 #include "webkit/fileapi/native_file_util.h"
 
 using base::PlatformFile;
 using base::PlatformFileError;
 using base::PlatformFileInfo;
+using fileapi::FileSystemOperationContext;
+using fileapi::FileSystemURL;
+using fileapi::NativeFileUtil;
 
-namespace fileapi {
+namespace chrome {
 
 namespace {
 
@@ -48,7 +51,7 @@ PlatformFileError NativeMediaFileUtil::EnsureFileExists(
   return NativeFileUtil::EnsureFileExists(file_path, created);
 }
 
-scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>
+scoped_ptr<fileapi::FileSystemFileUtil::AbstractFileEnumerator>
 NativeMediaFileUtil::CreateFileEnumerator(
     FileSystemOperationContext* context,
     const FileSystemURL& root_url) {
@@ -223,4 +226,4 @@ NativeMediaFileUtil::GetFilteredLocalFilePathForExistingFileOrDirectory(
   return base::PLATFORM_FILE_OK;
 }
 
-}  // namespace fileapi
+}  // namespace chrome

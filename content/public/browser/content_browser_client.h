@@ -13,9 +13,10 @@
 #include "base/callback_forward.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
 #include "content/public/browser/file_descriptor_info.h"
-#include "content/public/common/socket_permission_request.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/socket_permission_request.h"
 #include "content/public/common/window_container_type.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
@@ -59,6 +60,10 @@ class TargetPolicy;
 
 namespace ui {
 class SelectFilePolicy;
+}
+
+namespace fileapi {
+class FileSystemMountPointProvider;
 }
 
 namespace webkit_glue {
@@ -495,6 +500,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // FileSystem API.
   virtual void GetAdditionalAllowedSchemesForFileSystem(
       std::vector<std::string>* additional_schemes) {}
+
+  // Returns additional MountPointProviders for FileSystem API.
+  virtual void GetAdditionalFileSystemMountPointProviders(
+      const base::FilePath& storage_partition_path,
+      ScopedVector<fileapi::FileSystemMountPointProvider>*
+          additional_providers) {}
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Populates |mappings| with all files that need to be mapped before launching

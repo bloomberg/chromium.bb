@@ -11,6 +11,8 @@
 #include "base/message_loop.h"
 #include "base/stringprintf.h"
 #include "base/time.h"
+#include "chrome/browser/media_galleries/fileapi/media_file_system_mount_point_provider.h"
+#include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/fileapi/external_mount_points.h"
 #include "webkit/fileapi/file_system_context.h"
@@ -19,14 +21,16 @@
 #include "webkit/fileapi/file_system_task_runners.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/isolated_context.h"
-#include "webkit/fileapi/media/native_media_file_util.h"
 #include "webkit/fileapi/mock_file_system_options.h"
 #include "webkit/fileapi/native_file_util.h"
 #include "webkit/quota/mock_special_storage_policy.h"
 
 #define FPL(x) FILE_PATH_LITERAL(x)
 
-namespace fileapi {
+using fileapi::FileSystemOperation;
+using fileapi::FileSystemURL;
+
+namespace chrome {
 
 namespace {
 
@@ -91,7 +95,7 @@ void PopulateDirectoryWithTestCases(const base::FilePath& dir,
     } else {
       bool created = false;
       ASSERT_EQ(base::PLATFORM_FILE_OK,
-                NativeFileUtil::EnsureFileExists(path, &created));
+                fileapi::NativeFileUtil::EnsureFileExists(path, &created));
       ASSERT_TRUE(created);
     }
   }
@@ -112,20 +116,25 @@ class NativeMediaFileUtilTest : public testing::Test {
     scoped_refptr<quota::SpecialStoragePolicy> storage_policy =
         new quota::MockSpecialStoragePolicy();
 
+    ScopedVector<fileapi::FileSystemMountPointProvider> additional_providers;
+    additional_providers.push_back(new MediaFileSystemMountPointProvider(
+        data_dir_.path()));
+
     file_system_context_ =
-        new FileSystemContext(
-            FileSystemTaskRunners::CreateMockTaskRunners(),
-            ExternalMountPoints::CreateRefCounted().get(),
+        new fileapi::FileSystemContext(
+            fileapi::FileSystemTaskRunners::CreateMockTaskRunners(),
+            fileapi::ExternalMountPoints::CreateRefCounted().get(),
             storage_policy,
             NULL,
-            ScopedVector<FileSystemMountPointProvider>(),
+            additional_providers.Pass(),
             data_dir_.path(),
-            CreateAllowFileAccessOptions());
+            fileapi::CreateAllowFileAccessOptions());
 
-    file_util_ = file_system_context_->GetFileUtil(kFileSystemTypeNativeMedia);
+    file_util_ = file_system_context_->GetFileUtil(
+        fileapi::kFileSystemTypeNativeMedia);
 
     filesystem_id_ = isolated_context()->RegisterFileSystemForPath(
-        kFileSystemTypeNativeMedia, root_path(), NULL);
+        fileapi::kFileSystemTypeNativeMedia, root_path(), NULL);
 
     isolated_context()->AddReference(filesystem_id_);
   }
@@ -136,7 +145,7 @@ class NativeMediaFileUtilTest : public testing::Test {
   }
 
  protected:
-  FileSystemContext* file_system_context() {
+  fileapi::FileSystemContext* file_system_context() {
     return file_system_context_.get();
   }
 
@@ -147,21 +156,22 @@ class NativeMediaFileUtilTest : public testing::Test {
         GetVirtualPath(test_case_path));
   }
 
-  IsolatedContext* isolated_context() {
-    return IsolatedContext::GetInstance();
+  fileapi::IsolatedContext* isolated_context() {
+    return fileapi::IsolatedContext::GetInstance();
   }
 
   base::FilePath root_path() {
     return data_dir_.path().Append(FPL("Media Directory"));
   }
 
-  base::FilePath GetVirtualPath(const base::FilePath::CharType* test_case_path) {
+  base::FilePath GetVirtualPath(
+      const base::FilePath::CharType* test_case_path) {
     return base::FilePath::FromUTF8Unsafe(filesystem_id_).
                Append(FPL("Media Directory")).
                Append(base::FilePath(test_case_path));
   }
 
-  FileSystemFileUtil* file_util() {
+  fileapi::FileSystemFileUtil* file_util() {
     return file_util_;
   }
 
@@ -170,7 +180,7 @@ class NativeMediaFileUtilTest : public testing::Test {
   }
 
   fileapi::FileSystemType type() {
-    return kFileSystemTypeNativeMedia;
+    return fileapi::kFileSystemTypeNativeMedia;
   }
 
   FileSystemOperation* NewOperation(const FileSystemURL& url) {
@@ -181,9 +191,9 @@ class NativeMediaFileUtilTest : public testing::Test {
   MessageLoop message_loop_;
 
   base::ScopedTempDir data_dir_;
-  scoped_refptr<FileSystemContext> file_system_context_;
+  scoped_refptr<fileapi::FileSystemContext> file_system_context_;
 
-  FileSystemFileUtil* file_util_;
+  fileapi::FileSystemFileUtil* file_util_;
   std::string filesystem_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMediaFileUtilTest);
@@ -233,7 +243,8 @@ TEST_F(NativeMediaFileUtilTest, ReadDirectoryFiltering) {
   for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
     base::FilePath::StringType name =
         base::FilePath(kFilteringTestCases[i].path).BaseName().value();
-    std::set<base::FilePath::StringType>::const_iterator found = content.find(name);
+    std::set<base::FilePath::StringType>::const_iterator found =
+        content.find(name);
     EXPECT_EQ(kFilteringTestCases[i].visible, found != content.end());
   }
 }
@@ -600,4 +611,4 @@ TEST_F(NativeMediaFileUtilTest, TouchFileFiltering) {
   }
 }
 
-}  // namespace fileapi
+}  // namespace chrome

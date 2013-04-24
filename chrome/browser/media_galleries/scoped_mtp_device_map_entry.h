@@ -15,11 +15,9 @@
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/public/browser/browser_thread.h"
 
-namespace fileapi {
-class MTPDeviceAsyncDelegate;
-}
-
 namespace chrome {
+
+class MTPDeviceAsyncDelegate;
 
 class ScopedMTPDeviceMapEntry
     : public base::RefCountedThreadSafe<
@@ -50,8 +48,7 @@ class ScopedMTPDeviceMapEntry
 
   // Callback to add the managed MTPDeviceAsyncDelegate to the
   // MTPDeviceMapService on the IO thread.
-  void OnMTPDeviceAsyncDelegateCreated(
-      fileapi::MTPDeviceAsyncDelegate* delegate);
+  void OnMTPDeviceAsyncDelegateCreated(MTPDeviceAsyncDelegate* delegate);
 
   // The MTP or PTP device location.
   const base::FilePath::StringType device_location_;

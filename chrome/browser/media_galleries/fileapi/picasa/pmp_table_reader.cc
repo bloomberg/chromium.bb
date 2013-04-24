@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/fileapi/media/picasa/pmp_table_reader.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_table_reader.h"
 
 #include <algorithm>
 
@@ -10,8 +10,8 @@
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/utf_string_conversions.h"
-#include "webkit/fileapi/media/picasa/pmp_column_reader.h"
-#include "webkit/fileapi/media/picasa/pmp_constants.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_column_reader.h"
+#include "chrome/browser/media_galleries/fileapi/picasa/pmp_constants.h"
 
 namespace picasaimport {
 

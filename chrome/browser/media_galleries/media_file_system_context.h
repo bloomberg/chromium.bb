@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/media_galleries/fileapi/mtp_device_file_system_config.h"
 #include "chrome/browser/media_galleries/scoped_mtp_device_map_entry.h"
-#include "webkit/fileapi/media/mtp_device_file_system_config.h"
 
 namespace base {
 class FilePath;

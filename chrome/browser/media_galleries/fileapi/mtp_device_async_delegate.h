@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_ASYNC_DELEGATE_H_
-#define WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_ASYNC_DELEGATE_H_
+#ifndef CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_
+#define CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -14,7 +14,7 @@ namespace base {
 class FilePath;
 }
 
-namespace fileapi {
+namespace chrome {
 
 // Asynchronous delegate for media transfer protocol (MTP) device to perform
 // media device isolated file system operations. Class that implements this
@@ -30,7 +30,7 @@ class MTPDeviceAsyncDelegate {
 
   // A callback to be called when ReadDirectory method call succeeds.
   typedef base::Callback<
-      void(const AsyncFileUtil::EntryList& file_list,
+      void(const fileapi::AsyncFileUtil::EntryList& file_list,
            bool has_more)> ReadDirectorySuccessCallback;
 
   // A callback to be called when GetFileInfo/ReadDirectory/CreateSnapshot
@@ -80,6 +80,6 @@ class MTPDeviceAsyncDelegate {
   virtual ~MTPDeviceAsyncDelegate() {}
 };
 
-}  // namespace fileapi
+}  // namespace chrome
 
-#endif  // WEBKIT_FILEAPI_MEDIA_MTP_DEVICE_ASYNC_DELEGATE_H_
+#endif  // CHROME_BROWSER_MEDIA_GALLERIES_FILEAPI_MTP_DEVICE_ASYNC_DELEGATE_H_
