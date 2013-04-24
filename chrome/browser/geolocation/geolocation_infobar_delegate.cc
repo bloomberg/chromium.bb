@@ -87,7 +87,7 @@ string16 GeolocationInfoBarDelegate::GetButtonLabel(
 void GeolocationInfoBarDelegate::SetPermission(bool update_content_setting,
                                                bool allowed) {
   controller_->OnPermissionSet(id_, requesting_frame_,
-                               owner()->web_contents()->GetURL(),
+                               web_contents()->GetURL(),
                                update_content_setting, allowed);
 }
 
@@ -119,6 +119,6 @@ bool GeolocationInfoBarDelegate::LinkClicked(
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  web_contents()->OpenURL(params);
   return false;  // Do not dismiss the info bar.
 }

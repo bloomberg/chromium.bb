@@ -108,14 +108,10 @@ string16 AutofillCCInfoBarDelegate::GetLinkText() const {
 }
 
 bool AutofillCCInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->web_contents()->GetDelegate()->OpenURLFromTab(
-      owner()->web_contents(),
-      content::OpenURLParams(
-          GURL(autofill::kHelpURL),
-          content::Referrer(),
-          (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-          content::PAGE_TRANSITION_LINK,
-          false));
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL(autofill::kHelpURL), content::Referrer(),
+      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+      content::PAGE_TRANSITION_LINK, false));
   return false;
 }
 

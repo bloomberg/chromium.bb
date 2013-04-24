@@ -57,14 +57,13 @@ bool PluginInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK,
       false);
-  owner()->web_contents()->OpenURL(params);
+  web_contents()->OpenURL(params);
   return false;
 }
 
 void PluginInfoBarDelegate::LoadBlockedPlugins() {
-  content::WebContents* web_contents = owner()->web_contents();
-  if (web_contents) {
-    content::RenderViewHost* host = web_contents->GetRenderViewHost();
+  if (web_contents()) {
+    content::RenderViewHost* host = web_contents()->GetRenderViewHost();
     ChromePluginServiceFilter::GetInstance()->AuthorizeAllPlugins(
         host->GetProcess()->GetID());
     host->Send(new ChromeViewMsg_LoadBlockedPlugins(
@@ -149,8 +148,8 @@ bool UnauthorizedPluginInfoBarDelegate::Accept() {
 bool UnauthorizedPluginInfoBarDelegate::Cancel() {
   content::RecordAction(
       UserMetricsAction("BlockedPluginInfobar.AlwaysAllow"));
-  content_settings_->AddExceptionForURL(owner()->web_contents()->GetURL(),
-                                        owner()->web_contents()->GetURL(),
+  content_settings_->AddExceptionForURL(web_contents()->GetURL(),
+                                        web_contents()->GetURL(),
                                         CONTENT_SETTINGS_TYPE_PLUGINS,
                                         std::string(),
                                         CONTENT_SETTING_ALLOW);
@@ -252,17 +251,15 @@ bool OutdatedPluginInfoBarDelegate::Accept() {
     return false;
   }
 
-  content::WebContents* web_contents = owner()->web_contents();
   // A call to any of |OpenDownloadURL()| or |StartInstalling()| will
   // result in deleting ourselves. Accordingly, we make sure to
   // not pass a reference to an object that can go away.
   // http://crbug.com/54167
   GURL plugin_url(plugin_metadata_->plugin_url());
-  if (plugin_metadata_->url_for_display()) {
-    installer()->OpenDownloadURL(plugin_url, web_contents);
-  } else {
-    installer()->StartInstalling(plugin_url, web_contents);
-  }
+  if (plugin_metadata_->url_for_display())
+    installer()->OpenDownloadURL(plugin_url, web_contents());
+  else
+    installer()->StartInstalling(plugin_url, web_contents());
   return false;
 }
 
@@ -429,7 +426,7 @@ bool PluginInstallerInfoBarDelegate::LinkClicked(
       url, Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  web_contents()->OpenURL(params);
   return false;
 }
 
@@ -524,12 +521,11 @@ bool PluginMetroModeInfoBarDelegate::Accept() {
 
 bool PluginMetroModeInfoBarDelegate::Cancel() {
   DCHECK_EQ(DESKTOP_MODE_REQUIRED, mode_);
-  content::WebContents* web_contents = owner()->web_contents();
   Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   HostContentSettingsMap* content_settings =
       profile->GetHostContentSettingsMap();
-  GURL url = web_contents->GetURL();
+  GURL url = web_contents()->GetURL();
   content_settings->SetContentSetting(
       ContentSettingsPattern::FromURL(url),
       ContentSettingsPattern::Wildcard(),
@@ -552,7 +548,7 @@ bool PluginMetroModeInfoBarDelegate::LinkClicked(
       Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  web_contents()->OpenURL(params);
   return false;
 }
 #endif  // defined(OS_WIN)

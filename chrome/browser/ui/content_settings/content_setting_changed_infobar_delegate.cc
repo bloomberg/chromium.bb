@@ -59,6 +59,6 @@ string16 ContentSettingChangedInfoBarDelegate::GetButtonLabel(
 }
 
 bool ContentSettingChangedInfoBarDelegate::Accept() {
-  owner()->web_contents()->GetController().Reload(true);
+  web_contents()->GetController().Reload(true);
   return true;
 }

@@ -144,7 +144,7 @@ bool ThreeDAPIInfoBarDelegate::Cancel() {
                             THREE_D_INFOBAR_RELOADED,
                             THREE_D_INFOBAR_DISMISSAL_MAX);
   content::GpuDataManager::GetInstance()->UnblockDomainFrom3DAPIs(url_);
-  owner()->web_contents()->GetController().Reload(true);
+  web_contents()->GetController().Reload(true);
   return true;
 }
 
@@ -153,7 +153,7 @@ string16 ThreeDAPIInfoBarDelegate::GetLinkText() const {
 }
 
 bool ThreeDAPIInfoBarDelegate::LinkClicked(WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(content::OpenURLParams(
+  web_contents()->OpenURL(content::OpenURLParams(
       GURL("https://support.google.com/chrome/?p=ib_webgl"),
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,

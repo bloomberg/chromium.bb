@@ -74,12 +74,12 @@ void TranslateInfoBarDelegate::Create(InfoBarService* infobar_service,
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  if (!owner()->web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
     prefs_.ResetTranslationDeniedCount(original_language_code());
     prefs_.IncrementTranslationAcceptedCount(original_language_code());
   }
 
-  TranslateManager::GetInstance()->TranslatePage(owner()->web_contents(),
+  TranslateManager::GetInstance()->TranslatePage(web_contents(),
                                                  original_language_code(),
                                                  target_language_code());
 
@@ -87,17 +87,17 @@ void TranslateInfoBarDelegate::Translate() {
 }
 
 void TranslateInfoBarDelegate::RevertTranslation() {
-  TranslateManager::GetInstance()->RevertTranslation(owner()->web_contents());
+  TranslateManager::GetInstance()->RevertTranslation(web_contents());
   RemoveSelf();
 }
 
 void TranslateInfoBarDelegate::ReportLanguageDetectionError() {
   TranslateManager::GetInstance()->
-      ReportLanguageDetectionError(owner()->web_contents());
+      ReportLanguageDetectionError(web_contents());
 }
 
 void TranslateInfoBarDelegate::TranslationDeclined() {
-  if (!owner()->web_contents()->GetBrowserContext()->IsOffTheRecord()) {
+  if (!web_contents()->GetBrowserContext()->IsOffTheRecord()) {
     prefs_.ResetTranslationAcceptedCount(original_language_code());
     prefs_.IncrementTranslationDeniedCount(original_language_code());
   }
@@ -108,7 +108,7 @@ void TranslateInfoBarDelegate::TranslationDeclined() {
   // happens when a load stops. That could happen multiple times, including
   // after the user already declined the translation.)
   TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(owner()->web_contents());
+      TranslateTabHelper::FromWebContents(web_contents());
   translate_tab_helper->language_state().set_translation_declined(true);
 
   UMA_HISTOGRAM_COUNTS("Translate.DeclineTranslate", 1);
@@ -226,9 +226,8 @@ void TranslateInfoBarDelegate::MessageInfoBarButtonPressed() {
     return;
   }
   // This is the "Try again..." case.
-  TranslateManager::GetInstance()->TranslatePage(owner()->web_contents(),
-                                                 original_language_code(),
-                                                 target_language_code());
+  TranslateManager::GetInstance()->TranslatePage(
+      web_contents(), original_language_code(), target_language_code());
 }
 
 bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
@@ -237,13 +236,13 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
 
 bool TranslateInfoBarDelegate::ShouldShowNeverTranslateButton() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
-  return !owner()->web_contents()->GetBrowserContext()->IsOffTheRecord() &&
+  return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_.GetTranslationDeniedCount(original_language_code()) >= 3);
 }
 
 bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateButton() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
-  return !owner()->web_contents()->GetBrowserContext()->IsOffTheRecord() &&
+  return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
       (prefs_.GetTranslationAcceptedCount(original_language_code()) >= 3);
 }
 
@@ -374,7 +373,6 @@ TranslateInfoBarDelegate*
 }
 
 std::string TranslateInfoBarDelegate::GetPageHost() {
-  NavigationEntry* entry =
-      owner()->web_contents()->GetController().GetActiveEntry();
+  NavigationEntry* entry = web_contents()->GetController().GetActiveEntry();
   return entry ? entry->GetURL().HostNoBrackets() : std::string();
 }

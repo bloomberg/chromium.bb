@@ -552,16 +552,15 @@ string16 OneClickInfoBarDelegateImpl::GetButtonLabel(
 }
 
 bool OneClickInfoBarDelegateImpl::Accept() {
-  content::WebContents* web_contents = owner()->web_contents();
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
   Profile* profile = Profile::FromBrowserContext(
-      web_contents->GetBrowserContext());
+      web_contents()->GetBrowserContext());
 
   // User has accepted one-click sign-in for this account. Never ask again for
   // this profile.
   SigninManager::DisableOneClickSignIn(profile);
   RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
-  chrome::FindBrowserWithWebContents(web_contents)->window()->
+  chrome::FindBrowserWithWebContents(web_contents())->window()->
       ShowOneClickSigninBubble(
           BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
           UTF8ToUTF16(email_),
@@ -576,7 +575,7 @@ bool OneClickInfoBarDelegateImpl::Accept() {
 
 bool OneClickInfoBarDelegateImpl::Cancel() {
   AddEmailToOneClickRejectedList(Profile::FromBrowserContext(
-      owner()->web_contents()->GetBrowserContext()), email_);
+      web_contents()->GetBrowserContext()), email_);
   RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
   button_pressed_ = true;
   return true;
@@ -593,7 +592,7 @@ bool OneClickInfoBarDelegateImpl::LinkClicked(
       GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  web_contents()->OpenURL(params);
   return false;
 }
 

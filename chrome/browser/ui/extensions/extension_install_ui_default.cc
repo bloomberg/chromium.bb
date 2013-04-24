@@ -56,15 +56,12 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Creates an error delegate and adds it to |infobar_service|.
   static void Create(InfoBarService* infobar_service,
-                     Browser* browser,
                      const extensions::CrxInstallerError& error);
 
  private:
   ErrorInfobarDelegate(InfoBarService* infobar_service,
-                       Browser* browser,
                        const extensions::CrxInstallerError& error)
       : ConfirmInfoBarDelegate(infobar_service),
-        browser_(browser),
         error_(error) {
   }
 
@@ -82,25 +79,22 @@ class ErrorInfobarDelegate : public ConfirmInfoBarDelegate {
   }
 
   virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE {
-    chrome::NavigateParams params(
-        browser_,
+    web_contents()->OpenURL(content::OpenURLParams(
         GURL("http://support.google.com/chrome_webstore/?p=crx_warning"),
-        content::PAGE_TRANSITION_LINK);
-    params.disposition = NEW_FOREGROUND_TAB;
-    chrome::Navigate(&params);
+        content::Referrer(),
+        (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
+        content::PAGE_TRANSITION_LINK, false));
     return false;
   }
 
-  Browser* browser_;
   extensions::CrxInstallerError error_;
 };
 
 // static
 void ErrorInfobarDelegate::Create(InfoBarService* infobar_service,
-                                  Browser* browser,
                                   const extensions::CrxInstallerError& error) {
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new ErrorInfobarDelegate(infobar_service, browser, error)));
+      new ErrorInfobarDelegate(infobar_service, error)));
 }
 
 Browser* FindOrCreateVisibleBrowser(Profile* profile) {
@@ -219,7 +213,7 @@ void ExtensionInstallUIDefault::OnInstallFailure(
   if (!web_contents)
     return;
   ErrorInfobarDelegate::Create(InfoBarService::FromWebContents(web_contents),
-                               browser, error);
+                               error);
 }
 
 void ExtensionInstallUIDefault::SetSkipPostInstallUI(bool skip_ui) {

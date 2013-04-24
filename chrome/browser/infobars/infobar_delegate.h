@@ -7,19 +7,16 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "chrome/browser/infobars/infobar_service.h"
 #include "ui/base/window_open_disposition.h"
 
-class AlternateNavInfoBarDelegate;
 class AutoLoginInfoBarDelegate;
 class ConfirmInfoBarDelegate;
 class ExtensionInfoBarDelegate;
 class InfoBar;
-class InfoBarService;
 class InsecureContentInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
-class PluginInstallerInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
-class SavePasswordInfoBarDelegate;
 class ScreenCaptureInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
 class ThreeDAPIInfoBarDelegate;
@@ -27,9 +24,6 @@ class TranslateInfoBarDelegate;
 
 namespace gfx {
 class Image;
-}
-namespace content {
-struct LoadCommittedDetails;
 }
 
 // An interface implemented by objects wishing to control an InfoBar.
@@ -105,6 +99,10 @@ class InfoBarDelegate {
   virtual ThemeInstalledInfoBarDelegate* AsThemePreviewInfobarDelegate();
   virtual ThreeDAPIInfoBarDelegate* AsThreeDAPIInfoBarDelegate();
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate();
+
+  content::WebContents* web_contents() {
+    return owner_ ? owner_->web_contents() : NULL;
+  }
 
  protected:
   // If |contents| is non-NULL, its active entry's unique ID will be stored

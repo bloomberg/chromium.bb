@@ -138,7 +138,7 @@ string16 ManagedModeWarningInfobarDelegate::GetButtonLabel(
 }
 
 bool ManagedModeWarningInfobarDelegate::Accept() {
-  GoBackToSafety(owner()->web_contents());
+  GoBackToSafety(web_contents());
 
   return false;
 }
@@ -156,7 +156,7 @@ bool ManagedModeWarningInfobarDelegate::ShouldExpire(
 
 void ManagedModeWarningInfobarDelegate::InfoBarDismissed() {
   ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(owner()->web_contents());
+      ManagedModeNavigationObserver::FromWebContents(web_contents());
   observer->WarnInfobarDismissed();
 }
 
@@ -216,7 +216,7 @@ string16 ManagedModePreviewInfobarDelegate::GetButtonLabel(
 
 bool ManagedModePreviewInfobarDelegate::Accept() {
   ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(owner()->web_contents());
+      ManagedModeNavigationObserver::FromWebContents(web_contents());
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.PreviewInfobarCommand",
                             INFOBAR_ACCEPT,
                             INFOBAR_HISTOGRAM_BOUNDING_VALUE);
@@ -226,11 +226,11 @@ bool ManagedModePreviewInfobarDelegate::Accept() {
 
 bool ManagedModePreviewInfobarDelegate::Cancel() {
   ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(owner()->web_contents());
+      ManagedModeNavigationObserver::FromWebContents(web_contents());
   UMA_HISTOGRAM_ENUMERATION("ManagedMode.PreviewInfobarCommand",
                             INFOBAR_CANCEL,
                             INFOBAR_HISTOGRAM_BOUNDING_VALUE);
-  GoBackToSafety(owner()->web_contents());
+  GoBackToSafety(web_contents());
   observer->ClearObserverState();
   return false;
 }
@@ -243,7 +243,7 @@ bool ManagedModePreviewInfobarDelegate::ShouldExpire(
 
 void ManagedModePreviewInfobarDelegate::InfoBarDismissed() {
   ManagedModeNavigationObserver* observer =
-      ManagedModeNavigationObserver::FromWebContents(owner()->web_contents());
+      ManagedModeNavigationObserver::FromWebContents(web_contents());
   observer->PreviewInfobarDismissed();
 }
 

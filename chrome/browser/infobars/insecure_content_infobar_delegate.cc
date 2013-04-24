@@ -91,15 +91,13 @@ bool InsecureContentInfoBarDelegate::Cancel() {
       (type_ == DISPLAY) ? DISPLAY_USER_OVERRIDE : RUN_USER_OVERRIDE,
       NUM_EVENTS);
 
-  content::WebContents* web_contents = owner()->web_contents();
-  if (web_contents) {
-    int32 routing_id = web_contents->GetRoutingID();
-    web_contents->Send((type_ == DISPLAY) ?
-                       static_cast<IPC::Message*>(
-                           new ChromeViewMsg_SetAllowDisplayingInsecureContent(
-                               routing_id, true)) :
-                       new ChromeViewMsg_SetAllowRunningInsecureContent(
-                           routing_id, true));
+  if (web_contents()) {
+    int32 routing_id = web_contents()->GetRoutingID();
+    web_contents()->Send((type_ == DISPLAY) ?
+        static_cast<IPC::Message*>(
+            new ChromeViewMsg_SetAllowDisplayingInsecureContent(routing_id,
+                                                                true)) :
+        new ChromeViewMsg_SetAllowRunningInsecureContent(routing_id, true));
   }
   return true;
 }
@@ -110,7 +108,7 @@ string16 InsecureContentInfoBarDelegate::GetLinkText() const {
 
 bool InsecureContentInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
-  owner()->web_contents()->OpenURL(OpenURLParams(
+  web_contents()->OpenURL(OpenURLParams(
       google_util::AppendGoogleLocaleParam(GURL(
       "https://www.google.com/support/chrome/bin/answer.py?answer=1342714")),
       content::Referrer(),

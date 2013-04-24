@@ -81,10 +81,6 @@ string16 AppMetroInfoBarDelegateWin::GetMessageText() const {
       IDS_WIN8_INFOBAR_DESKTOP_RESTART_FOR_PACKAGED_APP);
 }
 
-int AppMetroInfoBarDelegateWin::GetButtons() const {
-  return BUTTON_OK | BUTTON_CANCEL;
-}
-
 string16 AppMetroInfoBarDelegateWin::GetButtonLabel(
     InfoBarButton button) const {
   return l10n_util::GetStringUTF16(button == BUTTON_CANCEL ?
@@ -94,22 +90,21 @@ string16 AppMetroInfoBarDelegateWin::GetButtonLabel(
 
 bool AppMetroInfoBarDelegateWin::Accept() {
   PrefService* prefs = g_browser_process->local_state();
-  content::WebContents* web_contents = owner()->web_contents();
   if (mode_ == SHOW_APP_LIST) {
     prefs->SetBoolean(prefs::kRestartWithAppList, true);
   } else {
     apps::SetAppLaunchForMetroRestart(
-        Profile::FromBrowserContext(web_contents->GetBrowserContext()),
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext()),
         extension_id_);
   }
 
-  web_contents->Close();  // Note: deletes |this|.
+  web_contents()->Close();  // Note: deletes |this|.
   chrome::AttemptRestartWithModeSwitch();
   return false;
 }
 
 bool AppMetroInfoBarDelegateWin::Cancel() {
-  owner()->web_contents()->Close();
+  web_contents()->Close();
   return false;
 }
 
@@ -124,7 +119,7 @@ bool AppMetroInfoBarDelegateWin::LinkClicked(
       content::Referrer(),
       (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
       content::PAGE_TRANSITION_LINK, false);
-  owner()->web_contents()->OpenURL(params);
+  web_contents()->OpenURL(params);
   return false;
 }
 
