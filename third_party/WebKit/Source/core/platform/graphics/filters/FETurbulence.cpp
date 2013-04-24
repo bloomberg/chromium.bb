@@ -29,6 +29,8 @@
 
 #include "Filter.h"
 #include "RenderTreeAsText.h"
+#include "SkPerlinNoiseShader.h"
+#include "SkRectShaderImageFilter.h"
 #include "TextStream.h"
 
 #include <wtf/MathExtras.h>
@@ -365,7 +367,14 @@ void FETurbulence::applySoftware()
         return;
     }
 
-    PaintingData paintingData(m_seed, roundedIntSize(filterPrimitiveSubregion().size()));
+    // FIXME : Ideally, filterPrimitiveSubregion() should do the trick for all cases, but since
+    //         it's currently not being set when an SVG filter is used in CSS, we have to use
+    //         absolutePaintRect() instead (which includes the zoom factor, unfortunately).
+    //         This code should be reverted to only use filterPrimitiveSubregion() directly
+    //         as soon as it works in all cases.
+    IntSize noiseSize = roundedIntSize(filterPrimitiveSubregion().size());
+    PaintingData paintingData(m_seed,
+        noiseSize.isEmpty() ? absolutePaintRect().size() : noiseSize);
     initPaint(paintingData);
 
     int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
@@ -400,6 +409,41 @@ void FETurbulence::applySoftware()
 
     // Fallback to single threaded mode if there is no room for a new thread or the paint area is too small.
     fillRegion(pixelArray, paintingData, 0, absolutePaintRect().height());
+}
+
+SkShader* FETurbulence::createShader(const IntRect& filterRegion) const
+{
+    const SkISize size = SkISize::Make(filterRegion.width(), filterRegion.height());
+    return (type() == FETURBULENCE_TYPE_FRACTALNOISE) ?
+        SkPerlinNoiseShader::CreateFractalNoise(SkFloatToScalar(baseFrequencyX()),
+            SkFloatToScalar(baseFrequencyY()), numOctaves(), SkFloatToScalar(seed()),
+            stitchTiles() ? &size : 0) :
+        SkPerlinNoiseShader::CreateTubulence(SkFloatToScalar(baseFrequencyX()),
+            SkFloatToScalar(baseFrequencyY()), numOctaves(), SkFloatToScalar(seed()),
+            stitchTiles() ? &size : 0);
+}
+
+bool FETurbulence::platformApplySkia()
+{
+    // For now, only use the skia implementation for accelerated rendering.
+    if (filter()->renderingMode() != Accelerated)
+        return false;
+
+    ImageBuffer* resultImage = createImageBufferResult();
+    if (!resultImage)
+        return false;
+
+    const IntRect filterRegion = absolutePaintRect();
+
+    SkPaint paint;
+    paint.setShader(createShader(filterRegion))->unref();
+    resultImage->context()->platformContext()->drawIRect(filterRegion, paint);
+    return true;
+}
+
+SkImageFilter* FETurbulence::createImageFilter(SkiaImageFilterBuilder* builder)
+{
+    return SkRectShaderImageFilter::Create(createShader(IntRect()), SkRect());
 }
 
 static TextStream& operator<<(TextStream& ts, const TurbulenceType& type)

@@ -49,7 +49,7 @@ public:
     virtual FloatRect sourceImageRect() const = 0;
     virtual FloatRect filterRegion() const = 0;
     
-    virtual FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint&) const { return FloatPoint(); }
+    virtual FloatPoint mapAbsolutePointToLocalPoint(const FloatPoint& point) const { return point; }
 
 private:
     OwnPtr<ImageBuffer> m_sourceImage;
