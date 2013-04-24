@@ -67,6 +67,8 @@ void SELinuxTransitionToTypeOrDie(const char* type) {
 
 }  // namespace
 
+const int Zygote::kMagicSandboxIPCDescriptor;
+
 Zygote::Zygote(int sandbox_flags,
                ZygoteForkDelegate* helper)
     : sandbox_flags_(sandbox_flags),
