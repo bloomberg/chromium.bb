@@ -58,6 +58,12 @@ void PanelFrameView::InitFramePainter() {
                        FramePainter::SIZE_BUTTON_MINIMIZES);
 }
 
+gfx::Size PanelFrameView::GetMinimumSize() {
+  if (!frame_painter_)
+    return gfx::Size();
+  return frame_painter_->GetMinimumSize(this);
+}
+
 void PanelFrameView::Layout() {
   if (!frame_painter_)
     return;
