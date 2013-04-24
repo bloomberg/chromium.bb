@@ -17,6 +17,7 @@
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "ui/base/window_open_disposition.h"
 
 class Profile;
 class TemplateURL;
@@ -56,7 +57,8 @@ class ExtensionOmniboxEventRouter {
   static void OnInputEntered(
       content::WebContents* web_contents,
       const std::string& extension_id,
-      const std::string& input);
+      const std::string& input,
+      WindowOpenDisposition disposition);
 
   // The user has cleared the keyword, or closed the omnibox popup. This is
   // sent at most once in a give input session, after any OnInputChanged events.

@@ -44,6 +44,9 @@ const char kSuggestionDescriptionStylesRaw[] = "descriptionStylesRaw";
 const char kDescriptionStylesType[] = "type";
 const char kDescriptionStylesOffset[] = "offset";
 const char kDescriptionStylesLength[] = "length";
+const char kCurrentTabDisposition[] = "currentTab";
+const char kForegroundTabDisposition[] = "newForegroundTab";
+const char kBackgroundTabDisposition[] = "newBackgroundTab";
 
 #if defined(OS_LINUX)
 static const int kOmniboxIconPaddingLeft = 2;
@@ -91,7 +94,8 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
 void ExtensionOmniboxEventRouter::OnInputEntered(
     content::WebContents* web_contents,
     const std::string& extension_id,
-    const std::string& input) {
+    const std::string& input,
+    WindowOpenDisposition disposition) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
@@ -104,6 +108,12 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Set(0, Value::CreateStringValue(input));
+  if (disposition == NEW_FOREGROUND_TAB)
+    args->Set(1, Value::CreateStringValue(kForegroundTabDisposition));
+  else if (disposition == NEW_BACKGROUND_TAB)
+    args->Set(1, Value::CreateStringValue(kBackgroundTabDisposition));
+  else
+    args->Set(1, Value::CreateStringValue(kCurrentTabDisposition));
 
   scoped_ptr<Event> event(new Event(events::kOnInputEntered, args.Pass()));
   event->restrict_to_profile = profile;

@@ -24,8 +24,10 @@ class OmniboxCurrentPageDelegateImpl : public OmniboxCurrentPageDelegate {
   virtual content::NavigationController&
       GetNavigationController() const OVERRIDE;
   virtual const SessionID& GetSessionID() const OVERRIDE;
-  virtual bool ProcessExtensionKeyword(TemplateURL* template_url,
-                                       const AutocompleteMatch& match) OVERRIDE;
+  virtual bool ProcessExtensionKeyword(
+      TemplateURL* template_url,
+      const AutocompleteMatch& match,
+      WindowOpenDisposition disposition) OVERRIDE;
   virtual void NotifySearchTabHelper(bool user_input_in_progress,
                                      bool cancelling) OVERRIDE;
   virtual void DoPrerender(const AutocompleteMatch& match) OVERRIDE;

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/string16.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autocomplete/autocomplete_controller.h"
 #include "chrome/browser/autocomplete/autocomplete_input.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/omnibox/omnibox_view.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "ui/base/window_open_disposition.h"
 
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
@@ -144,6 +146,49 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
   }
   */
+}
+
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
+  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+  ui_test_utils::WaitForTemplateURLServiceToLoad(
+      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
+
+  LocationBar* location_bar = GetLocationBar(browser());
+  OmniboxView* omnibox_view = location_bar->GetLocationEntry();
+  ResultCatcher catcher;
+  AutocompleteController* autocomplete_controller =
+      GetAutocompleteController(browser());
+  omnibox_view->OnBeforePossibleChange();
+  omnibox_view->SetUserText(string16());
+  omnibox_view->OnAfterPossibleChange();
+
+  autocomplete_controller->Start(
+      AutocompleteInput(ASCIIToUTF16("keyword command"), string16::npos,
+                        string16(), GURL(), true, false, true,
+                        AutocompleteInput::ALL_MATCHES));
+  location_bar->GetLocationEntry()->model()->AcceptInput(
+      CURRENT_TAB,
+      false); // Not for drop operation.
+  WaitForAutocompleteDone(autocomplete_controller);
+  EXPECT_TRUE(autocomplete_controller->done());
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+
+  omnibox_view->OnBeforePossibleChange();
+  omnibox_view->SetUserText(string16());
+  omnibox_view->OnAfterPossibleChange();
+  WaitForAutocompleteDone(autocomplete_controller);
+  EXPECT_TRUE(autocomplete_controller->done());
+
+  autocomplete_controller->Start(
+      AutocompleteInput(ASCIIToUTF16("keyword newtab"), string16::npos,
+                        string16(), GURL(), true, false, true,
+                        AutocompleteInput::ALL_MATCHES));
+  location_bar->GetLocationEntry()->model()->AcceptInput(
+      NEW_FOREGROUND_TAB,
+      false); // Not for drop operation.
+  WaitForAutocompleteDone(autocomplete_controller);
+  EXPECT_TRUE(autocomplete_controller->done());
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 // Tests that we get suggestions from and send input to the incognito context

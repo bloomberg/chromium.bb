@@ -17,6 +17,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "googleurl/src/gurl.h"
+#include "ui/base/window_open_disposition.h"
 
 OmniboxCurrentPageDelegateImpl::OmniboxCurrentPageDelegateImpl(
     OmniboxEditController* controller,
@@ -50,7 +51,8 @@ const SessionID& OmniboxCurrentPageDelegateImpl::GetSessionID() const {
 
 bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
     TemplateURL* template_url,
-    const AutocompleteMatch& match) {
+    const AutocompleteMatch& match,
+    WindowOpenDisposition disposition) {
   if (!template_url->IsExtensionKeyword())
     return false;
 
@@ -59,7 +61,8 @@ bool OmniboxCurrentPageDelegateImpl::ProcessExtensionKeyword(
   extensions::ExtensionOmniboxEventRouter::OnInputEntered(
       controller_->GetWebContents(),
       template_url->GetExtensionId(),
-      UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)));
+      UTF16ToUTF8(match.fill_into_edit.substr(prefix_length)),
+      disposition);
 
   return true;
 }

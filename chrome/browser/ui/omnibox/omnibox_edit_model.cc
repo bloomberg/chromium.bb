@@ -700,7 +700,8 @@ void OmniboxEditModel::OpenMatch(const AutocompleteMatch& match,
           current_match : result().match_at(index);
 
       // Don't increment usage count for extension keywords.
-      if (delegate_->ProcessExtensionKeyword(template_url, match)) {
+      if (delegate_->ProcessExtensionKeyword(template_url, match,
+                                             disposition)) {
         view_->RevertAll();
         return;
       }

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_OMNIBOX_OMNIBOX_CURRENT_PAGE_DELEGATE_H_
 
 #include "base/basictypes.h"
+#include "ui/base/window_open_disposition.h"
 
 class GURL;
 class SessionID;
@@ -44,7 +45,8 @@ class OmniboxCurrentPageDelegate {
   // ExtensionOmniboxEventRouter to process |match| for it and returns true.
   // Otherwise returns false.
   virtual bool ProcessExtensionKeyword(TemplateURL* template_url,
-                                       const AutocompleteMatch& match) = 0;
+                                       const AutocompleteMatch& match,
+                                       WindowOpenDisposition disposition) = 0;
 
   // Notifies the SearchTabHelper, if one exists, of relevant changes to the
   // omnibox state.
