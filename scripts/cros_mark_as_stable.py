@@ -236,11 +236,10 @@ def main(_argv):
       '%s/third_party/chromiumos-overlay' % options.srcroot: []
     }
 
-  if command == 'commit':
-    portage_utilities.BuildEBuildDictionary(
-      overlays, options.all, package_list)
-
   manifest = git.ManifestCheckout.Cached(options.srcroot)
+
+  if command == 'commit':
+    portage_utilities.BuildEBuildDictionary(overlays, options.all, package_list)
 
   # Contains the array of packages we actually revved.
   revved_packages = []
@@ -303,7 +302,7 @@ def main(_argv):
           if options.verbose:
             cros_build_lib.Info('Working on %s', ebuild.package)
           try:
-            new_package = ebuild.RevWorkOnEBuild(options.srcroot)
+            new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest)
             if new_package:
               revved_packages.append(ebuild.package)
               new_package_atoms.append('=%s' % new_package)

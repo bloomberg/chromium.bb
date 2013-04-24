@@ -1021,8 +1021,9 @@ class CommitQueueCompletionStage(LKGMCandidateSyncCompletionStage):
       self.sync_stage.pool.SubmitPool()
       # After submitting the pool, update the commit hashes for uprevved
       # ebuilds.
+      manifest = git.ManifestCheckout.Cached(self._build_root)
       portage_utilities.EBuild.UpdateCommitHashesForChanges(
-          self.sync_stage.pool.changes, self._build_root)
+          self.sync_stage.pool.changes, self._build_root, manifest)
       if cbuildbot_config.IsPFQType(self._build_config['build_type']):
         super(CommitQueueCompletionStage, self).HandleSuccess()
 
