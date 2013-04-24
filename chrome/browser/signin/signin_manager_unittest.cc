@@ -116,70 +116,6 @@ class SigninManagerTest : public TokenServiceTestHarness {
     fetcher->delegate()->OnURLFetchComplete(fetcher);
   }
 
-  void SimulateValidResponseSignInWithOAuth() {
-    // Simulate the correct StartClientOAuth response.  This involves
-    // separate fetches.
-    SetupFetcherAndComplete(GaiaUrls::GetInstance()->client_oauth_url(), 200,
-                            net::ResponseCookies(),
-                            "{"
-                            "  \"oauth2\": {"
-                            "    \"refresh_token\": \"rt1\","
-                            "    \"access_token\": \"at1\","
-                            "    \"expires_in\": 3600,"
-                            "    \"token_type\": \"Bearer\""
-                            "  }"
-                            "}");
-
-    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_url(), 200,
-                            net::ResponseCookies(),
-                            "SID=sid\nLSID=lsid\nAuth=auth_token");
-
-    SimulateValidResponseGetClientInfo(false);
-  }
-
-  void SimulateSignInWithOAuthChallengeCaptcha() {
-    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_scope(), 200,
-                            net::ResponseCookies(),
-                            "{"
-                            "  \"cause\" : \"NeedsAdditional\","
-                            "  \"fallback\" : {"
-                            "    \"name\" : \"Terminating\","
-                            "    \"url\" : \"https://www.terminating.com\""
-                            "  },"
-                            "  \"challenge\" : {"
-                            "    \"name\" : \"Captcha\","
-                            "    \"image_url\" : \"http://www.image.com/\","
-                            "    \"image_width\" : 640,"
-                            "    \"image_height\" : 480,"
-                            "    \"audio_url\" : \"http://www.audio.com/\","
-                            "    \"challenge_token\" : \"challengetokenblob\""
-                            "  }"
-                            "}");
-  }
-
-  void SimulateSignInWithOAuthChallengeOtp() {
-    SetupFetcherAndComplete(GaiaUrls::GetInstance()->oauth1_login_scope(), 200,
-                            net::ResponseCookies(),
-                            "{"
-                            "  \"cause\" : \"NeedsAdditional\","
-                            "  \"fallback\" : {"
-                            "    \"name\" : \"Terminating\","
-                            "    \"url\" : \"https://www.terminating.com\""
-                            "  },"
-                            "  \"challenge\" : {"
-                            "    \"name\" : \"TwoStep\","
-                            "    \"prompt_text\" : \"prompt_text\","
-                            "    \"alternate_text\" : \"alternate_text\","
-                            "    \"challenge_token\" : \"challengetokenblob\","
-                            "    \"field_length\" : 10"
-                            "  }"
-                            "}");
-  }
-
-  void SimulateProvideOAuthChallengeResponseValid() {
-    SimulateValidResponseSignInWithOAuth();
-  }
-
   void SimulateValidResponseSignInWithCredentials() {
     // Simulate the correct StartOAuthLoginTokenFetch response.  This involves
     // two separate fetches.
@@ -560,59 +496,6 @@ TEST_F(SigninManagerTest, SignOutMidConnect) {
 
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
   EXPECT_TRUE(manager_->GetUsernameForAuthInProgress().empty());
-}
-
-TEST_F(SigninManagerTest, SignInWithOAuth) {
-  manager_->Initialize(profile_.get());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  manager_->StartSignInWithOAuth("user@gmail.com", "password");
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  SimulateValidResponseSignInWithOAuth();
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
-
-  // Should go into token service and stop.
-  EXPECT_EQ(1U, google_login_success_.size());
-  EXPECT_EQ(0U, google_login_failure_.size());
-}
-
-TEST_F(SigninManagerTest, SignInWithOAuthChallengeCaptcha) {
-  manager_->Initialize(profile_.get());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  manager_->StartSignInWithOAuth("user@gmail.com", "password");
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  SimulateSignInWithOAuthChallengeCaptcha();
-
-  manager_->ProvideOAuthChallengeResponse(
-      GoogleServiceAuthError::CAPTCHA_REQUIRED, "token", "solution");
-
-  SimulateProvideOAuthChallengeResponseValid();
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
-
-  EXPECT_EQ(1U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
-}
-
-TEST_F(SigninManagerTest, SignInWithOAuthChallengeOtp) {
-  manager_->Initialize(profile_.get());
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  manager_->StartSignInWithOAuth("user@gmail.com", "password");
-  EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
-
-  SimulateSignInWithOAuthChallengeOtp();
-
-  manager_->ProvideOAuthChallengeResponse(
-      GoogleServiceAuthError::CAPTCHA_REQUIRED, "token", "solution");
-
-  SimulateProvideOAuthChallengeResponseValid();
-  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedUsername());
-
-  EXPECT_EQ(1U, google_login_success_.size());
-  EXPECT_EQ(1U, google_login_failure_.size());
 }
 
 TEST_F(SigninManagerTest, SignOutWhileProhibited) {

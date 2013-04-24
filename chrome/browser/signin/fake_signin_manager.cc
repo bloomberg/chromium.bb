@@ -71,11 +71,6 @@ void FakeSigninManager::StartSignInWithCredentials(
   SetAuthenticatedUsername(username);
 }
 
-void FakeSigninManager::StartSignInWithOAuth(const std::string& username,
-                                             const std::string& password) {
-  SetAuthenticatedUsername(username);
-}
-
 void FakeSigninManager::SignOut() {
   if (IsSignoutProhibited())
     return;

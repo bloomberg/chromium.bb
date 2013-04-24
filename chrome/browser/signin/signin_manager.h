@@ -92,20 +92,6 @@ class SigninManager : public SigninManagerBase,
                                           const std::string& username,
                                           const std::string& password);
 
-  // Attempt to sign in this user with ClientOAuth. If successful, set a
-  // preference indicating the signed in user and send out a notification,
-  // then start fetching tokens for the user.
-  virtual void StartSignInWithOAuth(const std::string& username,
-                                    const std::string& password);
-
-  // Provide a challenge solution to a failed signin attempt with
-  // StartSignInWithOAuth().  |type| and |token| come from the
-  // GoogleServiceAuthError of the failed attempt.
-  // |solution| is the answer typed by the user.
-  void ProvideOAuthChallengeResponse(GoogleServiceAuthError::State type,
-                                     const std::string& token,
-                                     const std::string& solution);
-
   // Sign a user out, removing the preference, erasing all keys
   // associated with the user, and canceling all auth in progress.
   virtual void SignOut() OVERRIDE;
@@ -176,7 +162,6 @@ class SigninManager : public SigninManagerBase,
     SIGNIN_TYPE_NONE,
     SIGNIN_TYPE_CLIENT_LOGIN,
     SIGNIN_TYPE_WITH_CREDENTIALS,
-    SIGNIN_TYPE_CLIENT_OAUTH,
   };
 
   std::string SigninTypeToString(SigninType type);

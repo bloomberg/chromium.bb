@@ -153,8 +153,6 @@ std::string SigninManager::SigninTypeToString(
       return "Client Login";
     case SIGNIN_TYPE_WITH_CREDENTIALS:
       return "Signin with credentials";
-    case SIGNIN_TYPE_CLIENT_OAUTH:
-      return "Client OAuth";
   }
 
   NOTREACHED();
@@ -305,43 +303,6 @@ void SigninManager::OnGaiaCookiesFetched(
   }
 }
 
-void SigninManager::StartSignInWithOAuth(const std::string& username,
-                                         const std::string& password) {
-  DCHECK(GetAuthenticatedUsername().empty());
-
-  if (!PrepareForSignin(SIGNIN_TYPE_CLIENT_OAUTH, username, password))
-    return;
-
-  std::vector<std::string> scopes;
-  scopes.push_back(GaiaUrls::GetInstance()->oauth1_login_scope());
-  const std::string& locale = g_browser_process->GetApplicationLocale();
-
-  client_login_->StartClientOAuth(
-      username, password, scopes, std::string(), locale);
-
-  // Register for token availability.  The signin manager will pre-login the
-  // user when the GAIA service token is ready for use.
-  if (AreSigninCookiesAllowed(profile_)) {
-    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TOKEN_AVAILABLE,
-                   content::Source<TokenService>(token_service));
-  }
-}
-
-void SigninManager::ProvideOAuthChallengeResponse(
-    GoogleServiceAuthError::State type,
-    const std::string& token,
-    const std::string& solution) {
-  DCHECK(!possibly_invalid_username_.empty() && !password_.empty());
-  DCHECK(type_ == SIGNIN_TYPE_CLIENT_OAUTH);
-
-  client_login_.reset(new GaiaAuthFetcher(this,
-                                          GaiaConstants::kChromeSource,
-                                          profile_->GetRequestContext()));
-  client_login_->StartClientOAuthChallengeResponse(type, token, solution);
-}
-
 void SigninManager::ClearTransientSigninData() {
   DCHECK(IsInitialized());
 
@@ -477,7 +438,6 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
   NotifyDiagnosticsObservers(OAUTH_LOGIN_STATUS, "Successful");
 
   switch (type_) {
-    case SIGNIN_TYPE_CLIENT_OAUTH:
     case SIGNIN_TYPE_WITH_CREDENTIALS:
       temp_oauth_login_tokens_ = result;
       client_login_->StartOAuthLogin(result.access_token,
@@ -492,14 +452,7 @@ void SigninManager::OnClientOAuthSuccess(const ClientOAuthResult& result) {
 void SigninManager::OnClientOAuthFailure(const GoogleServiceAuthError& error) {
   bool clear_transient_data = true;
   NotifyDiagnosticsObservers(OAUTH_LOGIN_STATUS, error.ToString());
-  if (type_ == SIGNIN_TYPE_CLIENT_OAUTH) {
-    // If the error is a challenge (captcha or 2-factor), then don't sign out.
-    clear_transient_data =
-        error.state() != GoogleServiceAuthError::TWO_FACTOR &&
-        error.state() != GoogleServiceAuthError::CAPTCHA_REQUIRED;
-  } else {
-    LOG(WARNING) << "SigninManager::OnClientOAuthFailure";
-  }
+  LOG(WARNING) << "SigninManager::OnClientOAuthFailure";
   HandleAuthError(error, clear_transient_data);
 }
 
