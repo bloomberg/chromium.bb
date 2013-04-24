@@ -297,6 +297,21 @@ if [ "$(uname -m)" = "x86_64" ]; then
     echo
     echo "Installation complete."
     exit 0
+  else
+    # This conditional statement has been added to deprecate and eventually
+    # remove support for 32bit libraries on 64bit systems. But for the time
+    # being, we still have to support a few legacy systems (e.g. bots), where
+    # this feature is needed.
+    # We only even give the user the option to install these libraries, if
+    # they explicitly requested doing so by setting the --lib32 command line
+    # flag.
+    # And even then, we interactively ask them one more time whether they are
+    # absolutely sure.
+    # In order for that to work, we must reset the ${do_inst_lib32} variable.
+    # There are other ways to achieve the same goal. But resetting the
+    # variable is the best way to document the intended behavior -- and to
+    # allow us to gradually deprecate and then remove the obsolete code.
+    do_inst_lib32=
   fi
 
   echo "WARNING"
