@@ -48,142 +48,16 @@ bool IsChildEntryKey(const leveldb::Slice& key) {
 
 }  // namespace
 
-DriveResourceMetadataStorageMemory::DriveResourceMetadataStorageMemory()
-    : largest_changestamp_(0) {
-}
-
-DriveResourceMetadataStorageMemory::~DriveResourceMetadataStorageMemory() {
-  base::ThreadRestrictions::AssertIOAllowed();
-}
-
-bool DriveResourceMetadataStorageMemory::Initialize() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  largest_changestamp_ = 0;
-  resource_map_.clear();
-  child_maps_.clear();
-  return true;
-}
-
-bool DriveResourceMetadataStorageMemory::IsPersistentStorage() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return false;
-}
-
-void DriveResourceMetadataStorageMemory::SetLargestChangestamp(
-    int64 largest_changestamp) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  largest_changestamp_ = largest_changestamp;
-}
-
-int64 DriveResourceMetadataStorageMemory::GetLargestChangestamp() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return largest_changestamp_;
-}
-
-void DriveResourceMetadataStorageMemory::PutEntry(
-    const DriveEntryProto& entry) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!entry.resource_id().empty());
-  resource_map_[entry.resource_id()] = entry;
-}
-
-scoped_ptr<DriveEntryProto> DriveResourceMetadataStorageMemory::GetEntry(
-    const std::string& resource_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!resource_id.empty());
-
-  ResourceMap::const_iterator iter = resource_map_.find(resource_id);
-  scoped_ptr<DriveEntryProto> entry;
-  if (iter != resource_map_.end())
-    entry.reset(new DriveEntryProto(iter->second));
-  return entry.Pass();
-}
-
-void DriveResourceMetadataStorageMemory::RemoveEntry(
-    const std::string& resource_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!resource_id.empty());
-
-  const size_t result = resource_map_.erase(resource_id);
-  DCHECK_EQ(1u, result);  // resource_id was found in the map.
-}
-
-void DriveResourceMetadataStorageMemory::Iterate(
-    const IterateCallback& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  DCHECK(!callback.is_null());
-
-  for (ResourceMap::const_iterator iter = resource_map_.begin();
-       iter != resource_map_.end(); ++iter) {
-    callback.Run(iter->second);
-  }
-}
-
-void DriveResourceMetadataStorageMemory::PutChild(
-    const std::string& parent_resource_id,
-    const std::string& child_name,
-    const std::string& child_resource_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
-  child_maps_[parent_resource_id][child_name] = child_resource_id;
-}
-
-std::string DriveResourceMetadataStorageMemory::GetChild(
-    const std::string& parent_resource_id,
-    const std::string& child_name) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  ChildMaps::const_iterator iter = child_maps_.find(parent_resource_id);
-  if (iter == child_maps_.end())
-    return std::string();
-  const ChildMap& child_map = iter->second;
-  ChildMap::const_iterator sub_iter = child_map.find(child_name);
-  if (sub_iter == child_map.end())
-    return std::string();
-  return sub_iter->second;
-}
-
-void DriveResourceMetadataStorageMemory::GetChildren(
-    const std::string& parent_resource_id,
-    std::vector<std::string>* children) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  ChildMaps::const_iterator iter = child_maps_.find(parent_resource_id);
-  if (iter == child_maps_.end())
-    return;
-
-  const ChildMap& child_map = iter->second;
-  for (ChildMap::const_iterator sub_iter = child_map.begin();
-       sub_iter != child_map.end(); ++sub_iter)
-    children->push_back(sub_iter->second);
-}
-
-void DriveResourceMetadataStorageMemory::RemoveChild(
-    const std::string& parent_resource_id,
-    const std::string& child_name) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  ChildMaps::iterator iter = child_maps_.find(parent_resource_id);
-  DCHECK(iter != child_maps_.end());
-
-  ChildMap* child_map = &iter->second;
-  const size_t result = child_map->erase(child_name);
-  DCHECK_EQ(1u, result);  // child_name was found in the map.
-
-  // Erase the map if it got empty.
-  if (child_map->empty())
-    child_maps_.erase(iter);
-}
-
-DriveResourceMetadataStorageDB::DriveResourceMetadataStorageDB(
+DriveResourceMetadataStorage::DriveResourceMetadataStorage(
     const base::FilePath& directory_path)
     : directory_path_(directory_path) {
 }
 
-DriveResourceMetadataStorageDB::~DriveResourceMetadataStorageDB() {
+DriveResourceMetadataStorage::~DriveResourceMetadataStorage() {
   base::ThreadRestrictions::AssertIOAllowed();
 }
 
-bool DriveResourceMetadataStorageDB::Initialize() {
+bool DriveResourceMetadataStorage::Initialize() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // Remove unused child map DB.
@@ -241,12 +115,7 @@ bool DriveResourceMetadataStorageDB::Initialize() {
   return true;
 }
 
-bool DriveResourceMetadataStorageDB::IsPersistentStorage() {
-  base::ThreadRestrictions::AssertIOAllowed();
-  return true;
-}
-
-void DriveResourceMetadataStorageDB::SetLargestChangestamp(
+void DriveResourceMetadataStorage::SetLargestChangestamp(
     int64 largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -256,15 +125,14 @@ void DriveResourceMetadataStorageDB::SetLargestChangestamp(
   PutHeader(*header);
 }
 
-int64 DriveResourceMetadataStorageDB::GetLargestChangestamp() {
+int64 DriveResourceMetadataStorage::GetLargestChangestamp() {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_ptr<DriveResourceMetadataHeader> header = GetHeader();
   DCHECK(header);
   return header->largest_changestamp();
 }
 
-void DriveResourceMetadataStorageDB::PutEntry(
-    const DriveEntryProto& entry) {
+void DriveResourceMetadataStorage::PutEntry(const DriveEntryProto& entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!entry.resource_id().empty());
 
@@ -281,7 +149,7 @@ void DriveResourceMetadataStorageDB::PutEntry(
   DCHECK(status.ok());
 }
 
-scoped_ptr<DriveEntryProto> DriveResourceMetadataStorageDB::GetEntry(
+scoped_ptr<DriveEntryProto> DriveResourceMetadataStorage::GetEntry(
     const std::string& resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
@@ -299,8 +167,7 @@ scoped_ptr<DriveEntryProto> DriveResourceMetadataStorageDB::GetEntry(
   return entry.Pass();
 }
 
-void DriveResourceMetadataStorageDB::RemoveEntry(
-    const std::string& resource_id) {
+void DriveResourceMetadataStorage::RemoveEntry(const std::string& resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
 
@@ -310,7 +177,7 @@ void DriveResourceMetadataStorageDB::RemoveEntry(
   DCHECK(status.ok());
 }
 
-void DriveResourceMetadataStorageDB::Iterate(const IterateCallback& callback) {
+void DriveResourceMetadataStorage::Iterate(const IterateCallback& callback) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!callback.is_null());
 
@@ -331,7 +198,7 @@ void DriveResourceMetadataStorageDB::Iterate(const IterateCallback& callback) {
   }
 }
 
-void DriveResourceMetadataStorageDB::PutChild(
+void DriveResourceMetadataStorage::PutChild(
     const std::string& parent_resource_id,
     const std::string& child_name,
     const std::string& child_resource_id) {
@@ -344,7 +211,7 @@ void DriveResourceMetadataStorageDB::PutChild(
   DCHECK(status.ok());
 }
 
-std::string DriveResourceMetadataStorageDB::GetChild(
+std::string DriveResourceMetadataStorage::GetChild(
     const std::string& parent_resource_id,
     const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -357,7 +224,7 @@ std::string DriveResourceMetadataStorageDB::GetChild(
   return child_resource_id;
 }
 
-void DriveResourceMetadataStorageDB::GetChildren(
+void DriveResourceMetadataStorage::GetChildren(
     const std::string& parent_resource_id,
     std::vector<std::string>* children) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -374,7 +241,7 @@ void DriveResourceMetadataStorageDB::GetChildren(
   DCHECK(it->status().ok());
 }
 
-void DriveResourceMetadataStorageDB::RemoveChild(
+void DriveResourceMetadataStorage::RemoveChild(
     const std::string& parent_resource_id,
     const std::string& child_name) {
   base::ThreadRestrictions::AssertIOAllowed();
@@ -385,7 +252,7 @@ void DriveResourceMetadataStorageDB::RemoveChild(
   DCHECK(status.ok());
 }
 
-void DriveResourceMetadataStorageDB::PutHeader(
+void DriveResourceMetadataStorage::PutHeader(
     const DriveResourceMetadataHeader& header) {
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -403,7 +270,7 @@ void DriveResourceMetadataStorageDB::PutHeader(
 }
 
 scoped_ptr<DriveResourceMetadataHeader>
-DriveResourceMetadataStorageDB::GetHeader() {
+DriveResourceMetadataStorage::GetHeader() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string serialized_header;
@@ -421,7 +288,7 @@ DriveResourceMetadataStorageDB::GetHeader() {
   return header.Pass();
 }
 
-bool DriveResourceMetadataStorageDB::CheckValidity() {
+bool DriveResourceMetadataStorage::CheckValidity() {
   base::ThreadRestrictions::AssertIOAllowed();
 
   // Perform read with checksums verification enalbed.

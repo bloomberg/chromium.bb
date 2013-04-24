@@ -29,7 +29,7 @@ class DriveResourceMetadataStorageTest : public testing::Test {
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 
-    storage_.reset(new DriveResourceMetadataStorageDB(temp_dir_.path()));
+    storage_.reset(new DriveResourceMetadataStorage(temp_dir_.path()));
     ASSERT_TRUE(storage_->Initialize());
   }
 
@@ -49,7 +49,7 @@ class DriveResourceMetadataStorageTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<DriveResourceMetadataStorageDB> storage_;
+  scoped_ptr<DriveResourceMetadataStorage> storage_;
 };
 
 TEST_F(DriveResourceMetadataStorageTest, LargestChangestamp) {
@@ -214,7 +214,7 @@ TEST_F(DriveResourceMetadataStorageTest, OpenExistingDB) {
   storage_->PutChild(parent_id1, child_name1, child_id1);
 
   // Close DB and reopen.
-  storage_.reset(new DriveResourceMetadataStorageDB(temp_dir_.path()));
+  storage_.reset(new DriveResourceMetadataStorage(temp_dir_.path()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Can read data.
@@ -245,8 +245,8 @@ TEST_F(DriveResourceMetadataStorageTest, IncompatibleDB) {
   EXPECT_TRUE(storage_->GetEntry(key1));
 
   // Set incompatible version and reopen DB.
-  SetDBVersion(DriveResourceMetadataStorageDB::kDBVersion - 1);
-  storage_.reset(new DriveResourceMetadataStorageDB(temp_dir_.path()));
+  SetDBVersion(DriveResourceMetadataStorage::kDBVersion - 1);
+  storage_.reset(new DriveResourceMetadataStorage(temp_dir_.path()));
   ASSERT_TRUE(storage_->Initialize());
 
   // Data is erased because of the incompatible version.
@@ -259,7 +259,7 @@ TEST_F(DriveResourceMetadataStorageTest, WrongPath) {
   base::FilePath path;
   ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &path));
 
-  storage_.reset(new DriveResourceMetadataStorageDB(path));
+  storage_.reset(new DriveResourceMetadataStorage(path));
   // Cannot initialize DB beacause the path does not point a directory.
   ASSERT_FALSE(storage_->Initialize());
 }
