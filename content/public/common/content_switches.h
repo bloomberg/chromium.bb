@@ -219,7 +219,6 @@ CONTENT_EXPORT extern const char kEnableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kEnableDeferredImageDecoding[];
 CONTENT_EXPORT extern const char kEnableVsyncNotification[];
-CONTENT_EXPORT extern const char kEnableOverscrollHistoryNavigation[];
 
 extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kUseMobileUserAgent[];
@@ -248,6 +247,8 @@ CONTENT_EXPORT extern const char kTestCompositor[];
 #endif
 
 extern const char kEnableWebPInAcceptHeader[];
+
+CONTENT_EXPORT extern const char kOverscrollHistoryNavigation[];
 
 }  // namespace switches
 

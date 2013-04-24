@@ -782,9 +782,11 @@ const char kEnableDeferredImageDecoding[] = "enable-deferred-image-decoding";
 // Use a vsync signal from the browser to the renderer to schedule rendering.
 const char kEnableVsyncNotification[] = "enable-vsync-notification";
 
-// Enables history navigation in response to horizontal overscroll.
-const char kEnableOverscrollHistoryNavigation[] =
-    "enable-overscroll-history-navigation";
+// Enables or disables history navigation in response to horizontal overscroll.
+// Set the value to '1' to enable the feature, and set to '0' to disable.
+// Defaults to enabled.
+const char kOverscrollHistoryNavigation[] =
+    "overscroll-history-navigation";
 
 // Enables 'image/webp' accept header for image requests.
 const char kEnableWebPInAcceptHeader[] = "enable-webp-in-accept-header";

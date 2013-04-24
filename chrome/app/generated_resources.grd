@@ -6547,11 +6547,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_WALLET_PRODUCTION_SERVICE_DESCRIPTION" desc="Description of the flag to enable using production Online Wallet.">
         Use the production service for any Online Wallet API calls. This flag is only meaningful if a feature that uses Online Wallet is enabled. Production Online Wallet is also not yet enabled for all users.
       </message>
-      <message name="IDS_FLAGS_DISABLE_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag to disable history navigation from horizontal overscroll.">
-        Disable overscroll history navigation
+      <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME" desc="Title for the flag for history navigation from horizontal overscroll.">
+        Overscroll history navigation
       </message>
-      <message name="IDS_FLAGS_DISABLE_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to disable history navigation from horizontal overscroll.">
-        Disables experimental history navigation in response to horizontal overscroll.
+      <message name="IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION" desc="Description for the flag to disable history navigation from horizontal overscroll.">
+        Experimental history navigation in response to horizontal overscroll.
       </message>
       <message name="IDS_FLAGS_ENABLE_SYNC_FAVICONS_NAME" desc="Title for the flag to enable the favicon sync datatype">
         Enable favicon sync.

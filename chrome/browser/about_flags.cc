@@ -1232,6 +1232,17 @@ const Experiment kExperiments[] = {
     kOsWin | kOsCrOS | kOsAndroid,
     SINGLE_VALUE_TYPE(switches::kEnableInteractiveAutocomplete)
   },
+#if defined(USE_AURA)
+  {
+    "overscroll-history-navigation",
+    IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_NAME,
+    IDS_FLAGS_OVERSCROLL_HISTORY_NAVIGATION_DESCRIPTION,
+    kOsAll,
+    ENABLE_DISABLE_VALUE_TYPE_AND_VALUE(
+        switches::kOverscrollHistoryNavigation, "1",
+        switches::kOverscrollHistoryNavigation, "0")
+  },
+#endif
   {
     "enable-touch-drag-drop",
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
