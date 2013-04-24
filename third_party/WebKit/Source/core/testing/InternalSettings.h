@@ -69,7 +69,6 @@ public:
         bool m_originalUsesOverlayScrollbars;
         bool m_langAttributeAwareFormControlUIEnabled;
         bool m_imagesEnabled;
-        double m_minimumTimerInterval;
         bool m_shouldDisplaySubtitles;
         bool m_shouldDisplayCaptions;
         bool m_shouldDisplayTextDescriptions;
@@ -115,7 +114,6 @@ public:
     bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
     void setLangAttributeAwareFormControlUIEnabled(bool);
     void setImagesEnabled(bool enabled, ExceptionCode&);
-    void setMinimumTimerInterval(double intervalInSeconds, ExceptionCode&);
     void setDefaultVideoPosterURL(const String& url, ExceptionCode&);
 
 private:

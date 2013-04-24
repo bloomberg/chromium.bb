@@ -325,13 +325,11 @@ public:
 
     PageConsole* console() { return m_console.get(); }
 
-#if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
-    void hiddenPageDOMTimerThrottlingStateChanged();
-#endif
-
     void reportMemoryUsage(MemoryObjectInfo*) const;
 
     void captionPreferencesChanged();
+
+    double timerAlignmentInterval() const;
 
 private:
     void initGroup();
@@ -344,11 +342,7 @@ private:
 
     MediaCanStartListener* takeAnyMediaCanStartListener();
 
-    void setMinimumTimerInterval(double);
-    double minimumTimerInterval() const;
-
     void setTimerAlignmentInterval(double);
-    double timerAlignmentInterval() const;
 
     void collectPluginViews(Vector<RefPtr<PluginViewBase>, 32>& pluginViewBases);
 
@@ -411,8 +405,6 @@ private:
     RefPtr<StorageNamespace> m_sessionStorage;
 
     ViewMode m_viewMode;
-
-    double m_minimumTimerInterval;
 
     double m_timerAlignmentInterval;
 

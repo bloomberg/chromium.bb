@@ -29,6 +29,7 @@
 #include "ClientRectList.h"
 #include "ContextMenuClient.h"
 #include "ContextMenuController.h"
+#include "DOMTimer.h"
 #include "DOMWindow.h"
 #include "DocumentMarkerController.h"
 #include "DocumentStyleSheetCollection.h"
@@ -153,8 +154,7 @@ Page::Page(PageClients& pageClients)
     , m_customHTMLTokenizerChunkSize(-1)
     , m_canStartMedia(true)
     , m_viewMode(ViewModeWindowed)
-    , m_minimumTimerInterval(Settings::defaultMinDOMTimerInterval())
-    , m_timerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval())
+    , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_isEditable(false)
     , m_isOnscreen(true)
     , m_isInWindow(true)
@@ -894,21 +894,6 @@ void Page::setMemoryCacheClientCallsEnabled(bool enabled)
         frame->loader()->tellClientAboutPastMemoryCacheLoads();
 }
 
-void Page::setMinimumTimerInterval(double minimumTimerInterval)
-{
-    double oldTimerInterval = m_minimumTimerInterval;
-    m_minimumTimerInterval = minimumTimerInterval;
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNextWithWrap(false)) {
-        if (frame->document())
-            frame->document()->adjustMinimumTimerInterval(oldTimerInterval);
-    }
-}
-
-double Page::minimumTimerInterval() const
-{
-    return m_minimumTimerInterval;
-}
-
 void Page::setTimerAlignmentInterval(double interval)
 {
     if (interval == m_timerAlignmentInterval)
@@ -973,15 +958,10 @@ void Page::setVisibilityState(PageVisibilityState visibilityState, bool isInitia
     if (!isInitialState && m_mainFrame)
         m_mainFrame->dispatchVisibilityStateChangeEvent();
 
-#if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
-    if (visibilityState == WebCore::PageVisibilityStateHidden) {
-        if (m_settings->hiddenPageDOMTimerThrottlingEnabled())
-            setTimerAlignmentInterval(Settings::hiddenPageDOMTimerAlignmentInterval());
-    } else {
-        if (m_settings->hiddenPageDOMTimerThrottlingEnabled())
-            setTimerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval());
-    }
-#endif
+    if (visibilityState == WebCore::PageVisibilityStateHidden)
+        setTimerAlignmentInterval(DOMTimer::hiddenPageAlignmentInterval());
+    else
+        setTimerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval());
 }
 
 PageVisibilityState Page::visibilityState() const
@@ -1160,17 +1140,6 @@ void Page::resetSeenMediaEngines()
 {
     m_seenMediaEngines.clear();
 }
-
-#if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
-void Page::hiddenPageDOMTimerThrottlingStateChanged()
-{
-    if (m_settings->hiddenPageDOMTimerThrottlingEnabled()) {
-        if (m_visibilityState == WebCore::PageVisibilityStateHidden)
-            setTimerAlignmentInterval(Settings::hiddenPageDOMTimerAlignmentInterval());
-    } else
-        setTimerAlignmentInterval(Settings::defaultDOMTimerAlignmentInterval());
-}
-#endif
 
 void Page::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
 {

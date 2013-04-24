@@ -28,7 +28,6 @@
 
 #include "BackForwardController.h"
 #include "CachedResourceLoader.h"
-#include "DOMTimer.h"
 #include "Database.h"
 #include "Document.h"
 #include "Frame.h"
@@ -81,10 +80,6 @@ static inline const AtomicString& getGenericFontFamilyForScript(const ScriptFont
         return getGenericFontFamilyForScript(fontMap, USCRIPT_COMMON);
     return emptyAtom;
 }
-
-double Settings::gDefaultMinDOMTimerInterval = 0.010; // 10 milliseconds
-double Settings::gDefaultDOMTimerAlignmentInterval = 0;
-double Settings::gHiddenPageDOMTimerAlignmentInterval = 1.0;
 
 bool Settings::gMockScrollbarsEnabled = false;
 bool Settings::gUsesOverlayScrollbars = false;
@@ -153,9 +148,6 @@ Settings::Settings(Page* page)
     , m_dnsPrefetchingEnabled(false)
     , m_touchEventEmulationEnabled(false)
     , m_setImageLoadingSettingsTimer(this, &Settings::imageLoadingSettingsTimerFired)
-#if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
-    , m_hiddenPageDOMTimerThrottlingEnabled(false)
-#endif
 {
     // A Frame may not have been created yet, so we initialize the AtomicString
     // hash before trying to use it.
@@ -170,16 +162,6 @@ PassOwnPtr<Settings> Settings::create(Page* page)
 } 
 
 SETTINGS_SETTER_BODIES
-
-void Settings::setHiddenPageDOMTimerAlignmentInterval(double hiddenPageDOMTimerAlignmentinterval)
-{
-    gHiddenPageDOMTimerAlignmentInterval = hiddenPageDOMTimerAlignmentinterval;
-}
-
-double Settings::hiddenPageDOMTimerAlignmentInterval()
-{
-    return gHiddenPageDOMTimerAlignmentInterval;
-}
 
 void Settings::initializeDefaultFontFamilies()
 {
@@ -363,46 +345,6 @@ void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)
     m_page->userStyleSheetLocationChanged();
 }
 
-void Settings::setDefaultMinDOMTimerInterval(double interval)
-{
-    gDefaultMinDOMTimerInterval = interval;
-}
-
-double Settings::defaultMinDOMTimerInterval()
-{
-    return gDefaultMinDOMTimerInterval;
-}
-
-void Settings::setMinDOMTimerInterval(double interval)
-{
-    m_page->setMinimumTimerInterval(interval);
-}
-
-double Settings::minDOMTimerInterval()
-{
-    return m_page->minimumTimerInterval();
-}
-
-void Settings::setDefaultDOMTimerAlignmentInterval(double interval)
-{
-    gDefaultDOMTimerAlignmentInterval = interval;
-}
-
-double Settings::defaultDOMTimerAlignmentInterval()
-{
-    return gDefaultDOMTimerAlignmentInterval;
-}
-
-void Settings::setDOMTimerAlignmentInterval(double interval)
-{
-    m_page->setTimerAlignmentInterval(interval);
-}
-
-double Settings::domTimerAlignmentInterval() const
-{
-    return m_page->timerAlignmentInterval();
-}
-
 void Settings::setUsesPageCache(bool usesPageCache)
 {
     if (m_usesPageCache == usesPageCache)
@@ -458,15 +400,5 @@ bool Settings::usesOverlayScrollbars()
 {
     return gUsesOverlayScrollbars;
 }
-
-#if ENABLE(HIDDEN_PAGE_DOM_TIMER_THROTTLING)
-void Settings::setHiddenPageDOMTimerThrottlingEnabled(bool flag)
-{
-    if (m_hiddenPageDOMTimerThrottlingEnabled == flag)
-        return;
-    m_hiddenPageDOMTimerThrottlingEnabled = flag;
-    m_page->hiddenPageDOMTimerThrottlingStateChanged();
-}
-#endif
 
 } // namespace WebCore

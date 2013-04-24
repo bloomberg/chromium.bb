@@ -136,10 +136,6 @@ public:
     void removeTimeout(int timeoutId) { m_timeouts.remove(timeoutId); }
     DOMTimer* findTimeout(int timeoutId) { return m_timeouts.get(timeoutId); }
 
-    // Interval is in seconds.
-    void adjustMinimumTimerInterval(double oldMinimumTimerInterval);
-    virtual double minimumTimerInterval() const;
-
     void didChangeTimerAlignmentInterval();
     virtual double timerAlignmentInterval() const;
 

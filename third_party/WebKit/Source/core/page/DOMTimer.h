@@ -48,18 +48,15 @@ namespace WebCore {
         virtual void contextDestroyed();
         virtual void stop();
 
-        // Adjust to a change in the ScriptExecutionContext's minimum timer interval.
-        // This allows the minimum allowable interval time to be changed in response
-        // to events like moving a tab to the background.
-        void adjustMinimumTimerInterval(double oldMinimumTimerInterval);
-
         virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
+
+        // The following are essentially constants. All intervals are in seconds.
+        static double hiddenPageAlignmentInterval();
+        static double visiblePageAlignmentInterval();
 
     private:
         DOMTimer(ScriptExecutionContext*, PassOwnPtr<ScheduledAction>, int interval, bool singleShot);
         virtual void fired();
-
-        double intervalClampedToMinimum(int timeout, double minimumTimerInterval) const;
 
         // Retuns timer fire time rounded to the next multiple of timer alignment interval.
         virtual double alignedFireTime(double) const;
@@ -67,7 +64,6 @@ namespace WebCore {
         int m_timeoutId;
         int m_nestingLevel;
         OwnPtr<ScheduledAction> m_action;
-        int m_originalInterval;
         RefPtr<UserGestureToken> m_userGestureToken;
     };
 

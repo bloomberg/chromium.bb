@@ -36,7 +36,6 @@
 #include "MessagePort.h"
 #include "PublicURLManager.h"
 #include "ScriptCallStack.h"
-#include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WorkerContext.h"
 #include "WorkerThread.h"
@@ -341,26 +340,6 @@ PublicURLManager& ScriptExecutionContext::publicURLManager()
     return *m_publicURLManager;
 }
 
-void ScriptExecutionContext::adjustMinimumTimerInterval(double oldMinimumTimerInterval)
-{
-    if (minimumTimerInterval() != oldMinimumTimerInterval) {
-        for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter) {
-            DOMTimer* timer = iter->value;
-            timer->adjustMinimumTimerInterval(oldMinimumTimerInterval);
-        }
-    }
-}
-
-double ScriptExecutionContext::minimumTimerInterval() const
-{
-    // The default implementation returns the DOMTimer's default
-    // minimum timer interval. FIXME: to make it work with dedicated
-    // workers, we will have to override it in the appropriate
-    // subclass, and provide a way to enumerate a Document's dedicated
-    // workers so we can update them all.
-    return Settings::defaultMinDOMTimerInterval();
-}
-
 void ScriptExecutionContext::didChangeTimerAlignmentInterval()
 {
     for (TimeoutMap::iterator iter = m_timeouts.begin(); iter != m_timeouts.end(); ++iter) {
@@ -371,7 +350,7 @@ void ScriptExecutionContext::didChangeTimerAlignmentInterval()
 
 double ScriptExecutionContext::timerAlignmentInterval() const
 {
-    return Settings::defaultDOMTimerAlignmentInterval();
+    return DOMTimer::visiblePageAlignmentInterval();
 }
 
 void ScriptExecutionContext::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const

@@ -84,7 +84,6 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->areImagesEnabled())
-    , m_minimumTimerInterval(settings->minDOMTimerInterval())
     , m_shouldDisplaySubtitles(settings->shouldDisplaySubtitles())
     , m_shouldDisplayCaptions(settings->shouldDisplayCaptions())
     , m_shouldDisplayTextDescriptions(settings->shouldDisplayTextDescriptions())
@@ -112,7 +111,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
-    settings->setMinDOMTimerInterval(m_minimumTimerInterval);
     settings->setShouldDisplaySubtitles(m_shouldDisplaySubtitles);
     settings->setShouldDisplayCaptions(m_shouldDisplayCaptions);
     settings->setShouldDisplayTextDescriptions(m_shouldDisplayTextDescriptions);
@@ -398,12 +396,6 @@ void InternalSettings::setImagesEnabled(bool enabled, ExceptionCode& ec)
 {
     InternalSettingsGuardForSettings();
     settings()->setImagesEnabled(enabled);
-}
-
-void InternalSettings::setMinimumTimerInterval(double intervalInSeconds, ExceptionCode& ec)
-{
-    InternalSettingsGuardForSettings();
-    settings()->setMinDOMTimerInterval(intervalInSeconds);
 }
 
 void InternalSettings::setDefaultVideoPosterURL(const String& url, ExceptionCode& ec)

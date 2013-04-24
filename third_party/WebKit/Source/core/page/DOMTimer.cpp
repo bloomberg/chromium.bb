@@ -42,6 +42,12 @@ namespace WebCore {
 static const int maxIntervalForUserGestureForwarding = 1000; // One second matches Gecko.
 static const int maxTimerNestingLevel = 5;
 static const double oneMillisecond = 0.001;
+// Chromium uses a minimum timer interval of 4ms. We'd like to go
+// lower; however, there are poorly coded websites out there which do
+// create CPU-spinning loops.  Using 4ms prevents the CPU from
+// spinning too busily and provides a balance between CPU spinning and
+// the smallest possible interval timer.
+static const double minimumInterval = 0.004;
 
 static int timerNestingLevel = 0;
     
@@ -52,11 +58,23 @@ static inline bool shouldForwardUserGesture(int interval, int nestingLevel)
         && nestingLevel == 1; // Gestures should not be forwarded to nested timers.
 }
 
+double DOMTimer::hiddenPageAlignmentInterval()
+{
+    // Timers on hidden pages are aligned so that they fire once per
+    // second at most.
+    return 1.0;
+}
+
+double DOMTimer::visiblePageAlignmentInterval()
+{
+    // Alignment does not apply to timers on visible pages.
+    return 0;
+}
+
 DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> action, int interval, bool singleShot)
     : SuspendableTimer(context)
     , m_nestingLevel(timerNestingLevel + 1)
     , m_action(action)
-    , m_originalInterval(interval)
 {
     if (shouldForwardUserGesture(interval, m_nestingLevel))
         m_userGestureToken = UserGestureIndicator::currentToken();
@@ -66,7 +84,9 @@ DOMTimer::DOMTimer(ScriptExecutionContext* context, PassOwnPtr<ScheduledAction> 
         m_timeoutId = context->circularSequentialID();
     } while (!context->addTimeout(m_timeoutId, this));
 
-    double intervalMilliseconds = intervalClampedToMinimum(interval, context->minimumTimerInterval());
+    double intervalMilliseconds = max(oneMillisecond, interval * oneMillisecond);
+    if (intervalMilliseconds < minimumInterval && m_nestingLevel >= maxTimerNestingLevel)
+        intervalMilliseconds = minimumInterval;
     if (singleShot)
         startOneShot(intervalMilliseconds);
     else
@@ -117,7 +137,6 @@ void DOMTimer::fired()
 
     // Simple case for non-one-shot timers.
     if (isActive()) {
-        double minimumInterval = context->minimumTimerInterval();
         if (repeatInterval() && repeatInterval() < minimumInterval) {
             m_nestingLevel++;
             if (m_nestingLevel >= maxTimerNestingLevel)
@@ -158,32 +177,6 @@ void DOMTimer::stop()
     // because they can form circular references back to the ScriptExecutionContext
     // which will cause a memory leak.
     m_action.clear();
-}
-
-void DOMTimer::adjustMinimumTimerInterval(double oldMinimumTimerInterval)
-{
-    if (m_nestingLevel < maxTimerNestingLevel)
-        return;
-
-    double newMinimumInterval = scriptExecutionContext()->minimumTimerInterval();
-    double newClampedInterval = intervalClampedToMinimum(m_originalInterval, newMinimumInterval);
-
-    if (repeatInterval()) {
-        augmentRepeatInterval(newClampedInterval - repeatInterval());
-        return;
-    }
-
-    double previousClampedInterval = intervalClampedToMinimum(m_originalInterval, oldMinimumTimerInterval);
-    augmentFireInterval(newClampedInterval - previousClampedInterval);
-}
-
-double DOMTimer::intervalClampedToMinimum(int timeout, double minimumTimerInterval) const
-{
-    double intervalMilliseconds = max(oneMillisecond, timeout * oneMillisecond);
-
-    if (intervalMilliseconds < minimumTimerInterval && m_nestingLevel >= maxTimerNestingLevel)
-        intervalMilliseconds = minimumTimerInterval;
-    return intervalMilliseconds;
 }
 
 double DOMTimer::alignedFireTime(double fireTime) const

@@ -54,8 +54,10 @@ public:
     double nextUnalignedFireInterval() const;
     double repeatInterval() const { return m_repeatInterval; }
 
-    void augmentFireInterval(double delta) { setNextFireTime(m_nextFireTime + delta); }
-    void augmentRepeatInterval(double delta) { augmentFireInterval(delta); m_repeatInterval += delta; }
+    void augmentRepeatInterval(double delta) {
+        setNextFireTime(m_nextFireTime + delta);
+        m_repeatInterval += delta;
+    }
 
     void didChangeAlignmentInterval();
 

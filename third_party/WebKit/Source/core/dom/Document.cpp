@@ -2484,20 +2484,12 @@ KURL Document::virtualCompleteURL(const String& url) const
     return completeURL(url);
 }
 
-double Document::minimumTimerInterval() const
-{
-    Page* p = page();
-    if (!p)
-        return ScriptExecutionContext::minimumTimerInterval();
-    return p->settings()->minDOMTimerInterval();
-}
-
 double Document::timerAlignmentInterval() const
 {
     Page* p = page();
     if (!p)
         return ScriptExecutionContext::timerAlignmentInterval();
-    return p->settings()->domTimerAlignmentInterval();
+    return p->timerAlignmentInterval();
 }
 
 EventTarget* Document::errorEventTarget()

@@ -297,9 +297,6 @@ crbug.com/233066 virtual/gpu/canvas/philip/tests/2d.drawImage.outsidesource.html
 webkit.org/b/98579 compositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 webkit.org/b/98579 virtual/softwarecompositing/repaint/requires-backing-repaint.html [ ImageOnlyFailure ]
 
-# Chromium does not enable HIDDEN_PAGE_DOM_TIMER_THROTTLING
-crbug.com/233066 fast/dom/timer-throttling-hidden-page.html [ Skip ]
-
 # Chromium disabled MATHML
 crbug.com/22554 mathml [ Skip ]
 

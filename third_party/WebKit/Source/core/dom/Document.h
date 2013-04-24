@@ -1169,8 +1169,6 @@ private:
 
     virtual void addMessage(MessageSource, MessageLevel, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack>, ScriptState* = 0, unsigned long requestIdentifier = 0);
 
-    virtual double minimumTimerInterval() const;
-
     virtual double timerAlignmentInterval() const;
 
     void updateTitle(const StringWithDirection&);
