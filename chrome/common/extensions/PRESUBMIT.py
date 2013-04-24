@@ -144,7 +144,6 @@ def _CheckChange(input_api, output_api):
                                     cwd=input_api.PresubmitLocalPath())
   except input_api.subprocess.CalledProcessError:
     results.append(output_api.PresubmitError('IntegrationTest failed!'))
-  _CheckVersions(input_api, output_api, results)
   _CheckLinks(input_api, output_api, results)
   return results
 
