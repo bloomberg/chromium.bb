@@ -21,6 +21,7 @@
 #include "base/metrics/histogram.h"
 #include "base/sequenced_task_runner.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time.h"
@@ -314,7 +315,12 @@ int SQLitePersistentCookieStore::Backend::KillDatabaseErrorDelegate::OnError(
   return error;
 }
 
+namespace {
+
 // Version number of the database.
+//
+// Version 6 adds cookie priorities. This allows developers to influence the
+// order in which cookies are evicted in order to meet domain cookie limits.
 //
 // Version 5 adds the columns has_expires and is_persistent, so that the
 // database can store session cookies as well as persistent cookies. Databases
@@ -329,10 +335,43 @@ int SQLitePersistentCookieStore::Backend::KillDatabaseErrorDelegate::OnError(
 // Version 3 updated the database to include the last access time, so we can
 // expire them in decreasing order of use when we've reached the maximum
 // number of cookies.
-static const int kCurrentVersionNumber = 5;
-static const int kCompatibleVersionNumber = 5;
+const int kCurrentVersionNumber = 6;
+const int kCompatibleVersionNumber = 5;
 
-namespace {
+// Possible values for the 'priority' column.
+enum DBCookiePriority {
+  kCookiePriorityLow = 0,
+  kCookiePriorityMedium = 1,
+  kCookiePriorityHigh = 2,
+};
+
+DBCookiePriority CookiePriorityToDBCookiePriority(net::CookiePriority value) {
+  switch (value) {
+    case net::COOKIE_PRIORITY_LOW:
+      return kCookiePriorityLow;
+    case net::COOKIE_PRIORITY_MEDIUM:
+      return kCookiePriorityMedium;
+    case net::COOKIE_PRIORITY_HIGH:
+      return kCookiePriorityHigh;
+  }
+
+  NOTREACHED();
+  return kCookiePriorityMedium;
+}
+
+net::CookiePriority DBCookiePriorityToCookiePriority(DBCookiePriority value) {
+  switch (value) {
+    case kCookiePriorityLow:
+      return net::COOKIE_PRIORITY_LOW;
+    case kCookiePriorityMedium:
+      return net::COOKIE_PRIORITY_MEDIUM;
+    case kCookiePriorityHigh:
+      return net::COOKIE_PRIORITY_HIGH;
+  }
+
+  NOTREACHED();
+  return net::COOKIE_PRIORITY_DEFAULT;
+}
 
 // Increments a specified TimeDelta by the duration between this object's
 // constructor and destructor. Not thread safe. Multiple instances may be
@@ -360,21 +399,23 @@ class IncrementTimeDelta {
 // Initializes the cookies table, returning true on success.
 bool InitTable(sql::Connection* db) {
   if (!db->DoesTableExist("cookies")) {
-    if (!db->Execute("CREATE TABLE cookies ("
-                     "creation_utc INTEGER NOT NULL UNIQUE PRIMARY KEY,"
-                     "host_key TEXT NOT NULL,"
-                     "name TEXT NOT NULL,"
-                     "value TEXT NOT NULL,"
-                     "path TEXT NOT NULL,"
-                     "expires_utc INTEGER NOT NULL,"
-                     "secure INTEGER NOT NULL,"
-                     "httponly INTEGER NOT NULL,"
-                     "last_access_utc INTEGER NOT NULL, "
-                     "has_expires INTEGER NOT NULL DEFAULT 1, "
-                     "persistent INTEGER NOT NULL DEFAULT 1)")) {
-      // TODO(rogerm): Add priority.
+    std::string stmt(base::StringPrintf(
+        "CREATE TABLE cookies ("
+            "creation_utc INTEGER NOT NULL UNIQUE PRIMARY KEY,"
+            "host_key TEXT NOT NULL,"
+            "name TEXT NOT NULL,"
+            "value TEXT NOT NULL,"
+            "path TEXT NOT NULL,"
+            "expires_utc INTEGER NOT NULL,"
+            "secure INTEGER NOT NULL,"
+            "httponly INTEGER NOT NULL,"
+            "last_access_utc INTEGER NOT NULL, "
+            "has_expires INTEGER NOT NULL DEFAULT 1, "
+            "persistent INTEGER NOT NULL DEFAULT 1,"
+            "priority INTEGER NOT NULL DEFAULT %d)",
+        CookiePriorityToDBCookiePriority(net::COOKIE_PRIORITY_DEFAULT)));
+    if (!db->Execute(stmt.c_str()))
       return false;
-    }
   }
 
   // Older code created an index on creation_utc, which is already
@@ -660,18 +701,16 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
   sql::Statement smt;
   if (restore_old_session_cookies_) {
     smt.Assign(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT creation_utc, host_key, name, value, path, expires_utc, "
-      "secure, httponly, last_access_utc, has_expires, persistent "
-      "FROM cookies WHERE host_key = ?"));
-    // TODO(rogerm): Add priority.
+        SQL_FROM_HERE,
+        "SELECT creation_utc, host_key, name, value, path, expires_utc, "
+        "secure, httponly, last_access_utc, has_expires, persistent, priority "
+        "FROM cookies WHERE host_key = ?"));
   } else {
     smt.Assign(db_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "SELECT creation_utc, host_key, name, value, path, expires_utc, "
-      "secure, httponly, last_access_utc, has_expires, persistent "
-      "FROM cookies WHERE host_key = ? AND persistent = 1"));
-    // TODO(rogerm): Add priority.
+        SQL_FROM_HERE,
+        "SELECT creation_utc, host_key, name, value, path, expires_utc, "
+        "secure, httponly, last_access_utc, has_expires, persistent, priority "
+        "FROM cookies WHERE host_key = ? AND persistent = 1"));
   }
   if (!smt.is_valid()) {
     smt.Clear();  // Disconnect smt_ref from db_.
@@ -685,22 +724,20 @@ bool SQLitePersistentCookieStore::Backend::LoadCookiesForDomains(
   for (; it != domains.end(); ++it) {
     smt.BindString(0, *it);
     while (smt.Step()) {
-      scoped_ptr<net::CanonicalCookie> cc(
-          new net::CanonicalCookie(
-              // The "source" URL is not used with persisted cookies.
-              GURL(),                                         // Source
-              smt.ColumnString(2),                            // name
-              smt.ColumnString(3),                            // value
-              smt.ColumnString(1),                            // domain
-              smt.ColumnString(4),                            // path
-              Time::FromInternalValue(smt.ColumnInt64(0)),    // creation_utc
-              Time::FromInternalValue(smt.ColumnInt64(5)),    // expires_utc
-              Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc
-              smt.ColumnInt(6) != 0,                          // secure
-              smt.ColumnInt(7) != 0,                          // httponly
-              net::COOKIE_PRIORITY_DEFAULT));                 // priority
-      // TODO(rogerm): Change net::COOKIE_PRIORITY_DEFAULT above to
-      // net::StringToCookiePriority(smt.ColumnString(9))?
+      scoped_ptr<net::CanonicalCookie> cc(new net::CanonicalCookie(
+          // The "source" URL is not used with persisted cookies.
+          GURL(),                                         // Source
+          smt.ColumnString(2),                            // name
+          smt.ColumnString(3),                            // value
+          smt.ColumnString(1),                            // domain
+          smt.ColumnString(4),                            // path
+          Time::FromInternalValue(smt.ColumnInt64(0)),    // creation_utc
+          Time::FromInternalValue(smt.ColumnInt64(5)),    // expires_utc
+          Time::FromInternalValue(smt.ColumnInt64(8)),    // last_access_utc
+          smt.ColumnInt(6) != 0,                          // secure
+          smt.ColumnInt(7) != 0,                          // httponly
+          DBCookiePriorityToCookiePriority(
+              static_cast<DBCookiePriority>(smt.ColumnInt(11)))));  // priority
       DLOG_IF(WARNING,
               cc->CreationDate() > Time::Now()) << L"CreationDate too recent";
       cookies_per_origin_[CookieOrigin(cc->Domain(), cc->IsSecure())]++;
@@ -801,6 +838,28 @@ bool SQLitePersistentCookieStore::Backend::EnsureDatabaseVersion() {
                         base::TimeTicks::Now() - start_time);
   }
 
+  if (cur_version == 5) {
+    const base::TimeTicks start_time = base::TimeTicks::Now();
+    sql::Transaction transaction(db_.get());
+    if (!transaction.Begin())
+      return false;
+    // Alter the table to add the priority column with a default value.
+    std::string stmt(base::StringPrintf(
+        "ALTER TABLE cookies ADD COLUMN priority INTEGER DEFAULT %d",
+        CookiePriorityToDBCookiePriority(net::COOKIE_PRIORITY_DEFAULT)));
+    if (!db_->Execute(stmt.c_str())) {
+      LOG(WARNING) << "Unable to update cookie database to version 6.";
+      return false;
+    }
+    ++cur_version;
+    meta_table_.SetVersionNumber(cur_version);
+    meta_table_.SetCompatibleVersionNumber(
+        std::min(cur_version, kCompatibleVersionNumber));
+    transaction.Commit();
+    UMA_HISTOGRAM_TIMES("Cookie.TimeDatabaseMigrationToV6",
+                        base::TimeTicks::Now() - start_time);
+  }
+
   // Put future migration cases here.
 
   if (cur_version < kCurrentVersionNumber) {
@@ -884,12 +943,11 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   if (!db_.get() || ops.empty())
     return;
 
-  // TODO(rogerm): Add priority.
   sql::Statement add_smt(db_->GetCachedStatement(SQL_FROM_HERE,
       "INSERT INTO cookies (creation_utc, host_key, name, value, path, "
       "expires_utc, secure, httponly, last_access_utc, has_expires, "
-      "persistent) "
-      "VALUES (?,?,?,?,?,?,?,?,?,?,?)"));
+      "persistent, priority) "
+      "VALUES (?,?,?,?,?,?,?,?,?,?,?,?)"));
   if (!add_smt.is_valid())
     return;
 
@@ -927,7 +985,8 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt64(8, po->cc().LastAccessDate().ToInternalValue());
         add_smt.BindInt(9, po->cc().IsPersistent());
         add_smt.BindInt(10, po->cc().IsPersistent());
-        // TODO(rogerm): Add priority.
+        add_smt.BindInt(
+            11, CookiePriorityToDBCookiePriority(po->cc().Priority()));
         if (!add_smt.Run())
           NOTREACHED() << "Could not add a cookie to the DB.";
         break;

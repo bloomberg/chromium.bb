@@ -331,6 +331,7 @@ TEST_F(SQLitePersistentCookieStoreTest, TestLoadOldSessionCookies) {
   ASSERT_STREQ("sessioncookie.com", cookies[0]->Domain().c_str());
   ASSERT_STREQ("C", cookies[0]->Name().c_str());
   ASSERT_STREQ("D", cookies[0]->Value().c_str());
+  ASSERT_EQ(net::COOKIE_PRIORITY_DEFAULT, cookies[0]->Priority());
 
   STLDeleteElements(&cookies);
 }
@@ -380,11 +381,15 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   store_->AddCookie(
       net::CanonicalCookie(
           GURL(), kPersistentName, "val", "sessioncookie.com", "/",
-          base::Time::Now() - base::TimeDelta::FromDays(1), base::Time::Now(),
+          base::Time::Now() - base::TimeDelta::FromDays(1),
+          base::Time::Now() + base::TimeDelta::FromDays(1),
           base::Time::Now(), false, false,
           net::COOKIE_PRIORITY_DEFAULT));
 
-  // Create a store that loads session cookie and test that the the IsPersistent
+  // Force the store to write its data to the disk.
+  DestroyStore();
+
+  // Create a store that loads session cookie and test that the IsPersistent
   // attribute is restored.
   CanonicalCookieVector cookies;
   CreateAndLoad(true, &cookies);
@@ -405,6 +410,77 @@ TEST_F(SQLitePersistentCookieStoreTest, PersistIsPersistent) {
   it = cookie_map.find(kPersistentName);
   ASSERT_TRUE(it != cookie_map.end());
   EXPECT_TRUE(cookie_map[kPersistentName]->IsPersistent());
+
+  STLDeleteElements(&cookies);
+}
+
+TEST_F(SQLitePersistentCookieStoreTest, PriorityIsPersistent) {
+  static const char kLowName[] = "low";
+  static const char kMediumName[] = "medium";
+  static const char kHighName[] = "high";
+  static const char kCookieDomain[] = "sessioncookie.com";
+  static const char kCookieValue[] = "value";
+  static const char kCookiePath[] = "/";
+
+  InitializeStore(true);
+
+  // Add a low-priority persistent cookie.
+  store_->AddCookie(
+      net::CanonicalCookie(
+          GURL(), kLowName, kCookieValue, kCookieDomain, kCookiePath,
+          base::Time::Now() - base::TimeDelta::FromMinutes(1),
+          base::Time::Now() + base::TimeDelta::FromDays(1),
+          base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_LOW));
+
+  // Add a medium-priority persistent cookie.
+  store_->AddCookie(
+      net::CanonicalCookie(
+          GURL(), kMediumName, kCookieValue, kCookieDomain, kCookiePath,
+          base::Time::Now() - base::TimeDelta::FromMinutes(2),
+          base::Time::Now() + base::TimeDelta::FromDays(1),
+          base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_MEDIUM));
+
+  // Add a high-priority peristent cookie.
+  store_->AddCookie(
+      net::CanonicalCookie(
+          GURL(), kHighName, kCookieValue, kCookieDomain, kCookiePath,
+          base::Time::Now() - base::TimeDelta::FromMinutes(3),
+          base::Time::Now() + base::TimeDelta::FromDays(1),
+          base::Time::Now(), false, false,
+          net::COOKIE_PRIORITY_HIGH));
+
+  // Force the store to write its data to the disk.
+  DestroyStore();
+
+  // Create a store that loads session cookie and test that the priority
+  // attribute values are restored.
+  CanonicalCookieVector cookies;
+  CreateAndLoad(true, &cookies);
+  ASSERT_EQ(3U, cookies.size());
+
+  // Put the cookies into a map, by name, so we can easily find them.
+  std::map<std::string, net::CanonicalCookie*> cookie_map;
+  for (CanonicalCookieVector::const_iterator it = cookies.begin();
+       it != cookies.end();
+       ++it) {
+    cookie_map[(*it)->Name()] = *it;
+  }
+
+  // Validate that each cookie has the correct priority.
+  std::map<std::string, net::CanonicalCookie*>::const_iterator it =
+      cookie_map.find(kLowName);
+  ASSERT_TRUE(it != cookie_map.end());
+  EXPECT_EQ(net::COOKIE_PRIORITY_LOW, cookie_map[kLowName]->Priority());
+
+  it = cookie_map.find(kMediumName);
+  ASSERT_TRUE(it != cookie_map.end());
+  EXPECT_EQ(net::COOKIE_PRIORITY_MEDIUM, cookie_map[kMediumName]->Priority());
+
+  it = cookie_map.find(kHighName);
+  ASSERT_TRUE(it != cookie_map.end());
+  EXPECT_EQ(net::COOKIE_PRIORITY_HIGH, cookie_map[kHighName]->Priority());
 
   STLDeleteElements(&cookies);
 }
