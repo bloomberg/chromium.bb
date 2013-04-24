@@ -1856,12 +1856,6 @@
    fun:cc::DelayBasedTimeSource::OnTimerFired
 }
 {
-   bug_233128
-   Heapcheck:Leak
-   ...
-   fun:extensions::WebstoreInlineInstallerTest_DomainVerification_Test::TestBody
-}
-{
    bug_233532
    Heapcheck:Leak
    ...

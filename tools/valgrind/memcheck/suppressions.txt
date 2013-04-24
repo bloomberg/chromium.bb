@@ -7077,12 +7077,6 @@
    fun:_ZN2cc11ThreadProxy30InitializeRendererOnImplThreadEPNS_15CompletionEventEPbPNS_20RendererCapabilitiesE
 }
 {
-   bug_233128
-   Memcheck:Leak
-   ...
-   fun:_ZN10extensions51WebstoreInlineInstallerTest_DomainVerification_Test8TestBodyEv
-}
-{
    bug_233541
    Memcheck:Leak
    fun:_Znw*
