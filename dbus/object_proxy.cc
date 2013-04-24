@@ -495,11 +495,14 @@ DBusHandlerResult ObjectProxy::HandleMessage(
 }
 
 void ObjectProxy::RunMethod(base::TimeTicks start_time,
-                            SignalCallback signal_callback,
+                            std::vector<SignalCallback> signal_callbacks,
                             Signal* signal) {
   bus_->AssertOnOriginThread();
 
-  signal_callback.Run(signal);
+  for (std::vector<SignalCallback>::iterator iter = signal_callbacks.begin();
+       iter != signal_callbacks.end(); ++iter)
+    iter->Run(signal);
+
   // Delete the message on the D-Bus thread. See comments in
   // RunResponseCallback().
   bus_->PostTaskToDBusThread(
@@ -568,12 +571,12 @@ bool ObjectProxy::AddMatchRuleWithCallback(
       // Store the match rule, so that we can remove this in Detach().
       match_rules_.insert(match_rule);
       // Add the signal callback to the method table.
-      method_table_[absolute_signal_name] = signal_callback;
+      method_table_[absolute_signal_name].push_back(signal_callback);
       return true;
     }
   } else {
     // We already have the match rule.
-    method_table_[absolute_signal_name] = signal_callback;
+    method_table_[absolute_signal_name].push_back(signal_callback);
     return true;
   }
 }
@@ -654,11 +657,13 @@ DBusHandlerResult ObjectProxy::HandleNameOwnerChanged(
       if (!name_owner_changed_callback_.is_null()) {
         const base::TimeTicks start_time = base::TimeTicks::Now();
         Signal* released_signal = signal.release();
+        std::vector<SignalCallback> callbacks;
+        callbacks.push_back(name_owner_changed_callback_);
         bus_->PostTaskToOriginThread(FROM_HERE,
                                      base::Bind(&ObjectProxy::RunMethod,
                                                 this,
                                                 start_time,
-                                                name_owner_changed_callback_,
+                                                callbacks,
                                                 released_signal));
       }
     }
