@@ -2205,16 +2205,24 @@ class SmartOutput:
             out_file.close()
 
 
+def output_file(file_name):
+    # For now, disable the incremental build optimisation in all cases.
+    if False:
+        return SmartOutput(file_name)
+    else:
+        return open(file_name, "w")
+
+
 Generator.go()
 
-backend_h_file = SmartOutput(output_header_dirname + "/InspectorBackendDispatcher.h")
-backend_cpp_file = SmartOutput(output_cpp_dirname + "/InspectorBackendDispatcher.cpp")
+backend_h_file = output_file(output_header_dirname + "/InspectorBackendDispatcher.h")
+backend_cpp_file = output_file(output_cpp_dirname + "/InspectorBackendDispatcher.cpp")
 
-frontend_h_file = SmartOutput(output_header_dirname + "/InspectorFrontend.h")
-frontend_cpp_file = SmartOutput(output_cpp_dirname + "/InspectorFrontend.cpp")
+frontend_h_file = output_file(output_header_dirname + "/InspectorFrontend.h")
+frontend_cpp_file = output_file(output_cpp_dirname + "/InspectorFrontend.cpp")
 
-typebuilder_h_file = SmartOutput(output_header_dirname + "/InspectorTypeBuilder.h")
-typebuilder_cpp_file = SmartOutput(output_cpp_dirname + "/InspectorTypeBuilder.cpp")
+typebuilder_h_file = output_file(output_header_dirname + "/InspectorTypeBuilder.h")
+typebuilder_cpp_file = output_file(output_cpp_dirname + "/InspectorTypeBuilder.cpp")
 
 
 backend_h_file.write(Templates.backend_h.substitute(None,
