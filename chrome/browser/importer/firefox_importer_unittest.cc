@@ -428,7 +428,7 @@ class FirefoxProfileImporterTest : public ImporterTest {
       items = items | importer::SEARCH_ENGINES;
     loop->PostTask(FROM_HERE, base::Bind(
         &ImporterHost::StartImportSettings, host.get(), source_profile,
-        profile_.get(), items, make_scoped_refptr(writer), true));
+        profile_.get(), items, make_scoped_refptr(writer)));
     loop->Run();
   }
 
@@ -473,8 +473,7 @@ TEST_F(FirefoxProfileImporterTest, MAYBE_IMPORTER(Firefox2Importer)) {
       profile_.get(),
       importer::HISTORY | importer::PASSWORDS |
       importer::FAVORITES | importer::SEARCH_ENGINES,
-      make_scoped_refptr(observer),
-      true));
+      make_scoped_refptr(observer)));
   loop->Run();
 }
 

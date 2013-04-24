@@ -30,8 +30,7 @@ void ExternalProcessImporterHost::StartImportSettings(
     const importer::SourceProfile& source_profile,
     Profile* target_profile,
     uint16 items,
-    ProfileWriter* writer,
-    bool first_run) {
+    ProfileWriter* writer) {
   // We really only support importing from one host at a time.
   DCHECK(!profile_);
   DCHECK(target_profile);
@@ -43,7 +42,7 @@ void ExternalProcessImporterHost::StartImportSettings(
 
   ImporterHost::AddRef();  // Balanced in ImporterHost::NotifyImportEnded.
 
-  CheckForFirefoxLock(source_profile, items, first_run);
+  CheckForFirefoxLock(source_profile, items);
   CheckForLoadedModels(items);
 
   InvokeTaskIfDone();

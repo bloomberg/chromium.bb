@@ -124,7 +124,7 @@ void ImportDataHandler::ImportData(const ListValue* args) {
     Profile* profile = Profile::FromWebUI(web_ui());
     importer_host_->StartImportSettings(source_profile, profile,
                                         import_services,
-                                        new ProfileWriter(profile), false);
+                                        new ProfileWriter(profile));
 
     importer::LogImporterUseToMetrics("ImportDataHandler",
                                       source_profile.importer_type);

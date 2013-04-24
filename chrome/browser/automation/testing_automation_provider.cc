@@ -332,8 +332,7 @@ void TestingAutomationProvider::OnSourceProfilesLoaded() {
   importer_host->StartImportSettings(source_profile,
                                      target_profile,
                                      import_settings_data_.import_items,
-                                     new ProfileWriter(target_profile),
-                                     import_settings_data_.first_run);
+                                     new ProfileWriter(target_profile));
 }
 
 void TestingAutomationProvider::Observe(
@@ -3265,7 +3264,6 @@ void TestingAutomationProvider::ImportSettings(Browser* browser,
 
   ListValue* import_items_list = NULL;
   if (!args->GetString("import_from", &import_settings_data_.browser_name) ||
-      !args->GetBoolean("first_run", &import_settings_data_.first_run) ||
       !args->GetList("import_items", &import_items_list)) {
     AutomationJSONReply(this, reply_message)
         .SendError("Incorrect type for one or more of the arguments.");

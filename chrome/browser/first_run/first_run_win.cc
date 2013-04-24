@@ -310,7 +310,7 @@ int ImportFromBrowser(Profile* profile,
   importer_host->SetObserver(&observer);
   importer_host->StartImportSettings(
       importer_list->GetSourceProfileForImporterType(importer_type), profile,
-      static_cast<uint16>(items_to_import), new ProfileWriter(profile), true);
+      static_cast<uint16>(items_to_import), new ProfileWriter(profile));
   // If the import process has not errored out, block on it.
   if (!observer.ended()) {
     observer.set_should_quit_message_loop();

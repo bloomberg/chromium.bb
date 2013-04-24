@@ -63,8 +63,7 @@ bool ImportSettings(Profile* profile,
   importer_host->StartImportSettings(source_profile,
                                      profile,
                                      items_to_import,
-                                     new ProfileWriter(profile),
-                                     true);
+                                     new ProfileWriter(profile));
   // If the import process has not errored out, block on it.
   if (!observer.ended()) {
     observer.set_should_quit_message_loop();

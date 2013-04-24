@@ -212,8 +212,7 @@ void ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   first_run::internal::ImportEndedObserver observer;
   importer_host->SetObserver(&observer);
   importer_host->StartImportSettings(
-      source_profile, profile, importer::FAVORITES, new ProfileWriter(profile),
-      true);
+      source_profile, profile, importer::FAVORITES, new ProfileWriter(profile));
   // If the import process has not errored out, block on it.
   if (!observer.ended()) {
     observer.set_should_quit_message_loop();

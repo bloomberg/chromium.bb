@@ -2992,8 +2992,7 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     finally:
       shutil.rmtree(tempdir, ignore_errors=True)
 
-  def ImportSettings(self, import_from, first_run,
-                    import_items, windex=0):
+  def ImportSettings(self, import_from, import_items, windex=0):
     """Import the specified import items from the specified browser.
 
     Implements the features available in the "Import Settings" part of the
@@ -3004,12 +3003,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
                    strings (depending on which browsers are installed on the
                    machine) are: 'Mozilla Firefox', 'Google Toolbar',
                    'Microsoft Internet Explorer', 'Safari'
-      first_run: A boolean indicating whether this is the first run of
-                 the browser.
-                 If it is not the first run then:
-                 1) Bookmarks are only imported to the bookmarks bar if there
-                    aren't already bookmarks.
-                 2) The bookmark bar is shown.
       import_items: A list of strings indicating which items to import.
                     Strings that can be in the list are:
                     HISTORY, FAVORITES, PASSWORDS, SEARCH_ENGINES, HOME_PAGE,
@@ -3022,7 +3015,6 @@ class PyUITest(pyautolib.PyUITestBase, unittest.TestCase):
     cmd_dict = {  # Prepare command for the json interface
       'command': 'ImportSettings',
       'import_from': import_from,
-      'first_run': first_run,
       'import_items': import_items
     }
     return self._GetResultFromJSONRequest(cmd_dict, windex=windex)

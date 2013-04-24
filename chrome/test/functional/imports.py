@@ -201,7 +201,7 @@ class ImportsTest(pyauto.PyUITest):
       logging.warn('Not running firefox import tests.')
       return
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, self._to_import, window_index)
+    self.ImportSettings('Mozilla Firefox', self._to_import, window_index)
     self._CheckDefaults(bookmarks, history, passwords, home_page,
                         search_engines, window_index)
 
@@ -231,24 +231,9 @@ class ImportsTest(pyauto.PyUITest):
     if self.IsWinVista():  # Broken on vista. crbug.com/89768
       return
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, self._to_import)
+    self.ImportSettings('Mozilla Firefox', self._to_import)
     self._CheckDefaults(bookmarks=True, history=True, passwords=True,
                         home_page=False, search_engines=True)
-
-  def testFirefoxFirstRun(self):
-    """Verify importing from Firefox on the first run.
-
-    For Win, only history and homepage will only be imported.
-    Mac and Linux can import history, homepage, and bookmarks.
-    """
-    if not self._CanRunFirefoxTests():
-      logging.warn('Not running firefox import tests.')
-      return
-    self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', True, self._to_import)
-    non_win = not self.IsWin()
-    self._CheckDefaults(bookmarks=non_win, history=True, passwords=True,
-                        home_page=non_win, search_engines=True)
 
   def testImportFirefoxDataTwice(self):
     """Verify importing Firefox data twice.
@@ -261,12 +246,12 @@ class ImportsTest(pyauto.PyUITest):
     if self.IsWinVista():  # Broken on vista. crbug.com/89768
       return
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, self._to_import)
+    self.ImportSettings('Mozilla Firefox', self._to_import)
     num_history_orig = len(self.GetHistoryInfo().History())
     num_passwords_orig = len(self.GetSavedPasswords())
 
     # Re-import and check for duplicates.
-    self.ImportSettings('Mozilla Firefox', False, self._to_import)
+    self.ImportSettings('Mozilla Firefox', self._to_import)
     self.assertTrue(self._BookmarkDuplicatesExist(
         self._bookmark_bar_items + self._bookmark_folder_items))
     self.assertEqual(num_history_orig, len(self.GetHistoryInfo().History()))
@@ -302,8 +287,8 @@ class ImportsTest(pyauto.PyUITest):
 
     self._SwapSafariProfile()
     self._SwapFirefoxProfile()
-    self.ImportSettings('Mozilla Firefox', False, self._to_import)
-    self.ImportSettings('Safari', False, self._to_import)
+    self.ImportSettings('Mozilla Firefox', self._to_import)
+    self.ImportSettings('Safari', self._to_import)
 
     self._CheckDefaults(bookmarks=True, history=True, passwords=True,
                         home_page=False, search_engines=True)
@@ -316,19 +301,9 @@ class ImportsTest(pyauto.PyUITest):
     if not self.IsMac():
       return
     self._SwapSafariProfile()
-    self.ImportSettings('Safari', False, self._to_import)
+    self.ImportSettings('Safari', self._to_import)
     self._CheckDefaults(bookmarks=True, history=True, passwords=False,
                         home_page=False, search_engines=True)
-
-  def testSafariFirstRun(self):
-    """Verify importing Safari data on the first run."""
-    # This test is Mac only.
-    if not self.IsMac():
-      return
-    self._SwapSafariProfile()
-    self.ImportSettings('Safari', False, self._to_import)
-    self._CheckDefaults(bookmarks=True, history=True, passwords=False,
-                        home_page=False, search_engines=False)
 
   def testImportSafariDataTwice(self):
     """Verify importing Safari data twice.
@@ -338,12 +313,12 @@ class ImportsTest(pyauto.PyUITest):
     if not self.IsMac():
       return
     self._SwapSafariProfile()
-    self.ImportSettings('Safari', False, self._to_import)
+    self.ImportSettings('Safari', self._to_import)
     num_history_orig = len(self.GetHistoryInfo().History())
     num_passwords_orig = len(self.GetSavedPasswords())
 
     # Re-import and check for duplicates.
-    self.ImportSettings('Safari', False, self._to_import)
+    self.ImportSettings('Safari', self._to_import)
     self.assertTrue(self._BookmarkDuplicatesExist(
         self._bookmark_bar_items + self._bookmark_folder_items))
     self.assertEqual(num_history_orig, len(self.GetHistoryInfo().History()))

@@ -69,7 +69,6 @@ class TestingAutomationProvider : public AutomationProvider,
   struct ImportSettingsData {
     string16 browser_name;
     int import_items;
-    bool first_run;
     Browser* browser;
     IPC::Message* reply_message;
   };

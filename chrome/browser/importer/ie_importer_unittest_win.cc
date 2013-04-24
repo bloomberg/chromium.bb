@@ -520,8 +520,7 @@ TEST_F(IEImporterTest, IEImporter) {
       source_profile,
       profile_.get(),
       importer::HISTORY | importer::PASSWORDS | importer::FAVORITES,
-      observer,
-      true));
+      observer));
   loop->Run();
 
   // Cleans up.
@@ -599,8 +598,7 @@ TEST_F(IEImporterTest, IEImporterMalformedFavoritesRegistry) {
         source_profile,
         profile_.get(),
         importer::FAVORITES,
-        observer,
-        true));
+        observer));
     loop->Run();
   }
 }

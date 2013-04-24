@@ -74,13 +74,11 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // |target_profile| - profile to import into.
   // |items| - specifies which data to import (bitmask of importer::ImportItem).
   // |writer| - called to actually write data back to the profile.
-  // |first_run| - true if this method is being called during first run.
   virtual void StartImportSettings(
       const importer::SourceProfile& source_profile,
       Profile* target_profile,
       uint16 items,
-      ProfileWriter* writer,
-      bool first_run);
+      ProfileWriter* writer);
 
   // Cancels the import process.
   virtual void Cancel();
@@ -93,10 +91,8 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   // prior to continue.
   // |source_profile| - importer profile to import.
   // |items| - specifies which data to import (bitmask of importer::ImportItem).
-  // |first_run| - true if this method is being called during first run.
   void CheckForFirefoxLock(const importer::SourceProfile& source_profile,
-                           uint16 items,
-                           bool first_run);
+                           uint16 items);
 
   // Make sure BookmarkModel and TemplateURLService are loaded before import
   // process starts, if bookmarks and/or search engines are among the items

@@ -107,8 +107,7 @@ void ImporterHost::StartImportSettings(
     const importer::SourceProfile& source_profile,
     Profile* target_profile,
     uint16 items,
-    ProfileWriter* writer,
-    bool first_run) {
+    ProfileWriter* writer) {
   // We really only support importing from one host at a time.
   DCHECK(!profile_);
   DCHECK(target_profile);
@@ -144,7 +143,7 @@ void ImporterHost::StartImportSettings(
   task_ = base::Bind(
       &Importer::StartImport, importer_, source_profile, items, bridge);
 
-  CheckForFirefoxLock(source_profile, items, first_run);
+  CheckForFirefoxLock(source_profile, items);
 
 #if defined(OS_WIN)
   // For google toolbar import, we need the user to log in and store their GAIA
@@ -202,8 +201,7 @@ ImporterHost::~ImporterHost() {
 
 void ImporterHost::CheckForFirefoxLock(
     const importer::SourceProfile& source_profile,
-    uint16 items,
-    bool first_run) {
+    uint16 items) {
   if (source_profile.importer_type == importer::TYPE_FIREFOX2 ||
       source_profile.importer_type == importer::TYPE_FIREFOX3) {
     DCHECK(!firefox_lock_.get());

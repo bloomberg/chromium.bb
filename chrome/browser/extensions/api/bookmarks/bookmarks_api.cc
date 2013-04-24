@@ -983,8 +983,7 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
   importer_host->StartImportSettings(source_profile,
                                      profile(),
                                      importer::FAVORITES,
-                                     new ProfileWriter(profile()),
-                                     true);
+                                     new ProfileWriter(profile()));
 
   importer::LogImporterUseToMetrics("BookmarksAPI",
                                     importer::TYPE_BOOKMARKS_FILE);

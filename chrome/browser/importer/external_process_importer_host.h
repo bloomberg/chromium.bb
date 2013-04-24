@@ -35,8 +35,7 @@ class ExternalProcessImporterHost : public ImporterHost {
       const importer::SourceProfile& source_profile,
       Profile* target_profile,
       uint16 items,
-      ProfileWriter* writer,
-      bool first_run) OVERRIDE;
+      ProfileWriter* writer) OVERRIDE;
   virtual void InvokeTaskIfDone() OVERRIDE;
   virtual void Loaded(BookmarkModel* model, bool ids_reassigned) OVERRIDE;
 
