@@ -27,103 +27,19 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#include <assert.h>
-
 #include "common/simple_string_dictionary.h"
 
 namespace google_breakpad {
 
-//==============================================================================
-const KeyValueEntry *SimpleStringDictionary::GetEntry(int i) const {
-  return (i >= 0 && i < MAX_NUM_ENTRIES) ? &entries_[i] : NULL;
-}
+namespace {
 
-//==============================================================================
-int SimpleStringDictionary::GetCount() const {
-  int count = 0;
-  for (int i = 0; i < MAX_NUM_ENTRIES; ++i) {
-    if (entries_[i].IsActive() ) {
-      ++count;
-    }
-  }
+// In C++98 (ISO 14882), section 9.5.1 says that a union cannot have a member
+// with a non-trivial ctor, copy ctor, dtor, or assignment operator. Use this
+// property to ensure that Entry remains POD.
+union Compile_Assert {
+  NonAllocatingMap<1, 1, 1>::Entry Compile_Assert__entry_must_be_pod;
+};
 
-  return count;
-}
-
-//==============================================================================
-const char *SimpleStringDictionary::GetValueForKey(const char *key) const {
-  assert(key);
-  if (!key)
-    return NULL;
-
-  for (int i = 0; i < MAX_NUM_ENTRIES; ++i) {
-    const KeyValueEntry &entry = entries_[i];
-    if (entry.IsActive() && !strcmp(entry.GetKey(), key)) {
-      return entry.GetValue();
-    }
-  }
-
-  return NULL;
-}
-
-//==============================================================================
-void SimpleStringDictionary::SetKeyValue(const char *key,
-                                         const char *value) {
-  if (!value) {
-    RemoveKey(key);
-    return;
-  }
-
-  // key must not be NULL
-  assert(key);
-  if (!key)
-    return;
-
-  // key must not be empty string
-  assert(key[0] != '\0');
-  if (key[0] == '\0')
-    return;
-
-  int free_index = -1;
-
-  // check if key already exists
-  for (int i = 0; i < MAX_NUM_ENTRIES; ++i) {
-    KeyValueEntry &entry = entries_[i];
-
-    if (entry.IsActive()) {
-      if (!strcmp(entry.GetKey(), key)) {
-        entry.SetValue(value);
-        return;
-      }
-    } else {
-      // Make a note of an empty slot
-      if (free_index == -1) {
-        free_index = i;
-      }
-    }
-  }
-
-  // check if we've run out of space
-  assert(free_index != -1);
-
-  // Put new key into an empty slot (if found)
-  if (free_index != -1) {
-    entries_[free_index].SetKeyValue(key, value);
-  }
-}
-
-//==============================================================================
-void SimpleStringDictionary::RemoveKey(const char *key) {
-  assert(key);
-  if (!key)
-    return;
-
-  for (int i = 0; i < MAX_NUM_ENTRIES; ++i) {
-    if (!strcmp(entries_[i].GetKey(), key)) {
-      entries_[i].Clear();
-      return;
-    }
-  }
 }
 
 }  // namespace google_breakpad

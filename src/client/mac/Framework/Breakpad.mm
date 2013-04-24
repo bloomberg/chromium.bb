@@ -66,13 +66,11 @@
 #define catch(X)  if (false)
 #endif  // __EXCEPTIONS
 
-using google_breakpad::KeyValueEntry;
 using google_breakpad::MachPortSender;
 using google_breakpad::MachReceiveMessage;
 using google_breakpad::MachSendMessage;
 using google_breakpad::ReceivePort;
 using google_breakpad::SimpleStringDictionary;
-using google_breakpad::SimpleStringDictionaryIterator;
 
 //=============================================================================
 // We want any memory allocations which are used by breakpad during the
@@ -697,8 +695,8 @@ bool Breakpad::HandleException(int exception_type,
 
   if (result == KERN_SUCCESS) {
     // Now, send a series of key-value pairs to the Inspector.
-    const KeyValueEntry *entry = NULL;
-    SimpleStringDictionaryIterator iter(*config_params_);
+    const SimpleStringDictionary::Entry *entry = NULL;
+    SimpleStringDictionary::Iterator iter(*config_params_);
 
     while ( (entry = iter.Next()) ) {
       KeyValueMessageData keyvalue_data(*entry);

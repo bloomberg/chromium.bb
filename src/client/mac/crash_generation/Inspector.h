@@ -65,13 +65,14 @@ struct InspectorInfo {
 struct KeyValueMessageData {
  public:
   KeyValueMessageData() {}
-  KeyValueMessageData(const google_breakpad::KeyValueEntry &inEntry) {
-    strlcpy(key, inEntry.GetKey(), sizeof(key) );
-    strlcpy(value, inEntry.GetValue(), sizeof(value) );
+  explicit KeyValueMessageData(
+      const google_breakpad::SimpleStringDictionary::Entry &inEntry) {
+    strlcpy(key, inEntry.key, sizeof(key) );
+    strlcpy(value, inEntry.value, sizeof(value) );
   }
 
-  char key[google_breakpad::KeyValueEntry::MAX_STRING_STORAGE_SIZE];
-  char value[google_breakpad::KeyValueEntry::MAX_STRING_STORAGE_SIZE];
+  char key[google_breakpad::SimpleStringDictionary::key_size];
+  char value[google_breakpad::SimpleStringDictionary::value_size];
 };
 
 using std::string;

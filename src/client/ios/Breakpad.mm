@@ -67,9 +67,7 @@
 
 using google_breakpad::ConfigFile;
 using google_breakpad::EnsureDirectoryPathExists;
-using google_breakpad::KeyValueEntry;
 using google_breakpad::SimpleStringDictionary;
-using google_breakpad::SimpleStringDictionaryIterator;
 
 //=============================================================================
 // We want any memory allocations which are used by breakpad during the
@@ -469,10 +467,10 @@ void Breakpad::UploadData(NSData *data, NSString *name,
                           NSDictionary *server_parameters) {
   NSMutableDictionary *config = [NSMutableDictionary dictionary];
 
-  SimpleStringDictionaryIterator it(*config_params_);
-  while (const KeyValueEntry *next = it.Next()) {
-    [config setValue:[NSString stringWithUTF8String:next->GetValue()]
-              forKey:[NSString stringWithUTF8String:next->GetKey()]];
+  SimpleStringDictionary::Iterator it(*config_params_);
+  while (const SimpleStringDictionary::Entry *next = it.Next()) {
+    [config setValue:[NSString stringWithUTF8String:next->value]
+              forKey:[NSString stringWithUTF8String:next->key]];
   }
 
   Uploader *uploader =

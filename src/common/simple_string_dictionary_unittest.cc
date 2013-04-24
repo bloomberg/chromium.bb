@@ -32,99 +32,106 @@
 
 namespace google_breakpad {
 
-//==============================================================================
-TEST(SimpleStringDictionaryTest, KeyValueEntry) {
-  KeyValueEntry entry;
+TEST(NonAllocatingMapTest, Entry) {
+  typedef NonAllocatingMap<5, 9, 15> TestMap;
+  TestMap map;
 
-  // Verify that initial state is correct
-  EXPECT_FALSE(entry.IsActive());
-  EXPECT_EQ(strlen(entry.GetKey()), 0u);
-  EXPECT_EQ(strlen(entry.GetValue()), 0u);
+  const TestMap::Entry* entry = TestMap::Iterator(map).Next();
+  EXPECT_FALSE(entry);
 
-  // Try setting a key/value and then verify
-  entry.SetKeyValue("key1", "value1");
-  EXPECT_STREQ(entry.GetKey(), "key1");
-  EXPECT_STREQ(entry.GetValue(), "value1");
+  // Try setting a key/value and then verify.
+  map.SetKeyValue("key1", "value1");
+  entry = TestMap::Iterator(map).Next();
+  ASSERT_TRUE(entry);
+  EXPECT_STREQ(entry->key, "key1");
+  EXPECT_STREQ(entry->value, "value1");
 
-  // Try setting a new value
-  entry.SetValue("value3");
+  // Try setting a new value.
+  map.SetKeyValue("key1", "value3");
+  EXPECT_STREQ(entry->value, "value3");
 
-  // Make sure the new value took
-  EXPECT_STREQ(entry.GetValue(), "value3");
+  // Make sure the key didn't change.
+  EXPECT_STREQ(entry->key, "key1");
 
-  // Make sure the key didn't change
-  EXPECT_STREQ(entry.GetKey(), "key1");
-
-  // Try setting a new key/value and then verify
-  entry.SetKeyValue("key2", "value2");
-  EXPECT_STREQ(entry.GetKey(), "key2");
-  EXPECT_STREQ(entry.GetValue(), "value2");
-
-  // Clear the entry and verify the key and value are empty strings
-  entry.Clear();
-  EXPECT_FALSE(entry.IsActive());
-  EXPECT_EQ(strlen(entry.GetKey()), 0u);
-  EXPECT_EQ(strlen(entry.GetValue()), 0u);
+  // Clear the entry and verify the key and value are empty strings.
+  map.RemoveKey("key1");
+  EXPECT_FALSE(entry->is_active());
+  EXPECT_EQ(strlen(entry->key), 0u);
+  EXPECT_EQ(strlen(entry->value), 0u);
 }
 
-TEST(SimpleStringDictionaryTest, EmptyKeyValueCombos) {
-  KeyValueEntry entry;
-  entry.SetKeyValue(NULL, NULL);
-  EXPECT_STREQ(entry.GetKey(), "");
-  EXPECT_STREQ(entry.GetValue(), "");
-}
-
-
-//==============================================================================
-TEST(SimpleStringDictionaryTest, SimpleStringDictionary) {
+TEST(NonAllocatingMapTest, SimpleStringDictionary) {
   // Make a new dictionary
-  SimpleStringDictionary *dict = new SimpleStringDictionary();
-  ASSERT_TRUE(dict);
+  SimpleStringDictionary dict;
 
   // Set three distinct values on three keys
-  dict->SetKeyValue("key1", "value1");
-  dict->SetKeyValue("key2", "value2");
-  dict->SetKeyValue("key3", "value3");
+  dict.SetKeyValue("key1", "value1");
+  dict.SetKeyValue("key2", "value2");
+  dict.SetKeyValue("key3", "value3");
 
-  EXPECT_NE(dict->GetValueForKey("key1"), "value1");
-  EXPECT_NE(dict->GetValueForKey("key2"), "value2");
-  EXPECT_NE(dict->GetValueForKey("key3"), "value3");
-  EXPECT_EQ(dict->GetCount(), 3);
+  EXPECT_NE(dict.GetValueForKey("key1"), "value1");
+  EXPECT_NE(dict.GetValueForKey("key2"), "value2");
+  EXPECT_NE(dict.GetValueForKey("key3"), "value3");
+  EXPECT_EQ(dict.GetCount(), 3u);
   // try an unknown key
-  EXPECT_FALSE(dict->GetValueForKey("key4"));
+  EXPECT_FALSE(dict.GetValueForKey("key4"));
 
   // Remove a key
-  dict->RemoveKey("key3");
+  dict.RemoveKey("key3");
 
   // Now make sure it's not there anymore
-  EXPECT_FALSE(dict->GetValueForKey("key3"));
+  EXPECT_FALSE(dict.GetValueForKey("key3"));
 
   // Remove by setting value to NULL
-  dict->SetKeyValue("key2", NULL);
+  dict.SetKeyValue("key2", NULL);
 
   // Now make sure it's not there anymore
-  EXPECT_FALSE(dict->GetValueForKey("key2"));
+  EXPECT_FALSE(dict.GetValueForKey("key2"));
 }
 
-//==============================================================================
-// The idea behind this test is to add a bunch of values to the dictionary,
-// remove some in the middle, then add a few more in.  We then create a
-// SimpleStringDictionaryIterator and iterate through the dictionary, taking
-// note of the key/value pairs we see.  We then verify that it iterates
-// through exactly the number of key/value pairs we expect, and that they
-// match one-for-one with what we would expect.  In all cases we're setting
-// key value pairs of the form:
-//
-// key<n>/value<n>   (like key0/value0, key17,value17, etc.)
-//
-TEST(SimpleStringDictionaryTest, SimpleStringDictionaryIterator) {
-  SimpleStringDictionary *dict = new SimpleStringDictionary();
+TEST(NonAllocatingMapTest, CopyAndAssign) {
+  NonAllocatingMap<10, 10, 10> map;
+  map.SetKeyValue("one", "a");
+  map.SetKeyValue("two", "b");
+  map.SetKeyValue("three", "c");
+  map.RemoveKey("two");
+  EXPECT_EQ(2u, map.GetCount());
+
+  // Test copy.
+  NonAllocatingMap<10, 10, 10> map_copy(map);
+  EXPECT_EQ(2u, map_copy.GetCount());
+  EXPECT_STREQ("a", map_copy.GetValueForKey("one"));
+  EXPECT_STREQ("c", map_copy.GetValueForKey("three"));
+  map_copy.SetKeyValue("four", "d");
+  EXPECT_STREQ("d", map_copy.GetValueForKey("four"));
+  EXPECT_FALSE(map.GetValueForKey("four"));
+
+  // Test assign.
+  NonAllocatingMap<10, 10, 10> map_assign;
+  map_assign = map;
+  EXPECT_EQ(2u, map_assign.GetCount());
+  EXPECT_STREQ("a", map_assign.GetValueForKey("one"));
+  EXPECT_STREQ("c", map_assign.GetValueForKey("three"));
+  map_assign.SetKeyValue("four", "d");
+  EXPECT_STREQ("d", map_assign.GetValueForKey("four"));
+  EXPECT_FALSE(map.GetValueForKey("four"));
+
+  map.RemoveKey("one");
+  EXPECT_FALSE(map.GetValueForKey("one"));
+  EXPECT_STREQ("a", map_copy.GetValueForKey("one"));
+  EXPECT_STREQ("a", map_assign.GetValueForKey("one"));
+}
+
+// Add a bunch of values to the dictionary, remove some entries in the middle,
+// and then add more.
+TEST(NonAllocatingMapTest, Iterator) {
+  SimpleStringDictionary* dict = new SimpleStringDictionary();
   ASSERT_TRUE(dict);
 
-  char key[KeyValueEntry::MAX_STRING_STORAGE_SIZE];
-  char value[KeyValueEntry::MAX_STRING_STORAGE_SIZE];
+  char key[SimpleStringDictionary::key_size];
+  char value[SimpleStringDictionary::value_size];
 
-  const int kDictionaryCapacity = SimpleStringDictionary::MAX_NUM_ENTRIES;
+  const int kDictionaryCapacity = SimpleStringDictionary::num_entries;
   const int kPartitionIndex = kDictionaryCapacity - 5;
 
   // We assume at least this size in the tests below
@@ -163,7 +170,7 @@ TEST(SimpleStringDictionaryTest, SimpleStringDictionaryIterator) {
   expectedDictionarySize += kDictionaryCapacity - kPartitionIndex;
 
   // Now create an iterator on the dictionary
-  SimpleStringDictionaryIterator iter(*dict);
+  SimpleStringDictionary::Iterator iter(*dict);
 
   // We then verify that it iterates through exactly the number of
   // key/value pairs we expect, and that they match one-for-one with what we
@@ -175,18 +182,17 @@ TEST(SimpleStringDictionaryTest, SimpleStringDictionaryIterator) {
 
   int totalCount = 0;
 
-  const KeyValueEntry *entry;
-
+  const SimpleStringDictionary::Entry* entry;
   while ((entry = iter.Next())) {
     totalCount++;
 
     // Extract keyNumber from a string of the form key<keyNumber>
     int keyNumber;
-    sscanf(entry->GetKey(), "key%d", &keyNumber);
+    sscanf(entry->key, "key%d", &keyNumber);
 
     // Extract valueNumber from a string of the form value<valueNumber>
     int valueNumber;
-    sscanf(entry->GetValue(), "value%d", &valueNumber);
+    sscanf(entry->value, "value%d", &valueNumber);
 
     // The value number should equal the key number since that's how we set them
     EXPECT_EQ(keyNumber, valueNumber);
@@ -207,7 +213,7 @@ TEST(SimpleStringDictionaryTest, SimpleStringDictionaryIterator) {
 
   // Make sure each of the key/value pairs showed up exactly one time, except
   // for the ones which we removed.
-  for (int i = 0; i < kDictionaryCapacity; ++i) {
+  for (size_t i = 0; i < kDictionaryCapacity; ++i) {
     // Skip over key7, key18, key23, and key31, since we removed them
     if (!(i == 7 || i == 18 || i == 23 || i == 31)) {
       EXPECT_EQ(count[i], 1);
@@ -217,5 +223,95 @@ TEST(SimpleStringDictionaryTest, SimpleStringDictionaryIterator) {
   // Make sure the number of iterations matches the expected dictionary size.
   EXPECT_EQ(totalCount, expectedDictionarySize);
 }
+
+
+TEST(NonAllocatingMapTest, AddRemove) {
+  NonAllocatingMap<5, 7, 6> map;
+  map.SetKeyValue("rob", "ert");
+  map.SetKeyValue("mike", "pink");
+  map.SetKeyValue("mark", "allays");
+
+  EXPECT_EQ(3u, map.GetCount());
+  EXPECT_STREQ("ert", map.GetValueForKey("rob"));
+  EXPECT_STREQ("pink", map.GetValueForKey("mike"));
+  EXPECT_STREQ("allays", map.GetValueForKey("mark"));
+
+  map.RemoveKey("mike");
+
+  EXPECT_EQ(2u, map.GetCount());
+  EXPECT_FALSE(map.GetValueForKey("mike"));
+
+  map.SetKeyValue("mark", "mal");
+  EXPECT_EQ(2u, map.GetCount());
+  EXPECT_STREQ("mal", map.GetValueForKey("mark"));
+
+  map.RemoveKey("mark");
+  EXPECT_EQ(1u, map.GetCount());
+  EXPECT_FALSE(map.GetValueForKey("mark"));
+}
+
+TEST(NonAllocatingMapTest, Serialize) {
+  typedef NonAllocatingMap<4, 5, 7> TestMap;
+  TestMap map;
+  map.SetKeyValue("one", "abc");
+  map.SetKeyValue("two", "def");
+  map.SetKeyValue("tre", "hig");
+
+  EXPECT_STREQ("abc", map.GetValueForKey("one"));
+  EXPECT_STREQ("def", map.GetValueForKey("two"));
+  EXPECT_STREQ("hig", map.GetValueForKey("tre"));
+
+  const SerializedNonAllocatingMap* serialized;
+  size_t size = map.Serialize(&serialized);
+
+  SerializedNonAllocatingMap* serialized_copy =
+      reinterpret_cast<SerializedNonAllocatingMap*>(malloc(size));
+  ASSERT_TRUE(serialized_copy);
+  memcpy(serialized_copy, serialized, size);
+
+  TestMap deserialized(serialized_copy, size);
+  free(serialized_copy);
+
+  EXPECT_EQ(3u, deserialized.GetCount());
+  EXPECT_STREQ("abc", deserialized.GetValueForKey("one"));
+  EXPECT_STREQ("def", deserialized.GetValueForKey("two"));
+  EXPECT_STREQ("hig", deserialized.GetValueForKey("tre"));
+}
+
+#ifndef NDEBUG
+
+TEST(NonAllocatingMapTest, OutOfSpace) {
+  NonAllocatingMap<3, 2, 2> map;
+  map.SetKeyValue("a", "1");
+  map.SetKeyValue("b", "2");
+  ASSERT_DEATH(map.SetKeyValue("c", "3"), "");
+}
+
+TEST(NonAllocatingMapTest, KeyTooLong) {
+  NonAllocatingMap<3, 10, 12> map;
+  map.SetKeyValue("ab", "cdefghi");
+  ASSERT_DEATH(map.SetKeyValue("abcdef", "1"), "");
+}
+
+TEST(NonAllocatingMapTest, ValueTooLong) {
+  NonAllocatingMap<9, 3, 8> map;
+  map.SetKeyValue("abcd", "ab");
+  ASSERT_DEATH(map.SetKeyValue("abcd", "abc"), "");
+}
+
+TEST(NonAllocatingMapTest, NullKey) {
+  NonAllocatingMap<4, 6, 6> map;
+  ASSERT_DEATH(map.SetKeyValue(NULL, "hello"), "");
+
+  map.SetKeyValue("hi", "there");
+  ASSERT_DEATH(map.GetValueForKey(NULL), "");
+  EXPECT_STREQ("there", map.GetValueForKey("hi"));
+
+  ASSERT_DEATH(map.GetValueForKey(NULL), "");
+  map.RemoveKey("hi");
+  EXPECT_EQ(0u, map.GetCount());
+}
+
+#endif  // !NDEBUG
 
 }  // namespace google_breakpad

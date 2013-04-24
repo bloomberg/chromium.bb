@@ -166,15 +166,15 @@ void ConfigFile::WriteFile(const char* directory,
   BOOL result = YES;
   const SimpleStringDictionary &dictionary = *configurationParameters;
 
-  const KeyValueEntry *entry = NULL;
-  SimpleStringDictionaryIterator iter(dictionary);
+  const SimpleStringDictionary::Entry *entry = NULL;
+  SimpleStringDictionary::Iterator iter(dictionary);
 
   while ((entry = iter.Next())) {
     DEBUGLOG(stderr,
              "config: (%s) -> (%s)\n",
-             entry->GetKey(),
-             entry->GetValue());
-    result = AppendConfigString(entry->GetKey(), entry->GetValue());
+             entry->key,
+             entry->value);
+    result = AppendConfigString(entry->key, entry->value);
 
     if (!result)
       break;

@@ -30,164 +30,231 @@
 #ifndef COMMON_SIMPLE_STRING_DICTIONARY_H_
 #define COMMON_SIMPLE_STRING_DICTIONARY_H_
 
+#include <assert.h>
 #include <string.h>
+
+#include "common/basictypes.h"
 
 namespace google_breakpad {
 
-//==============================================================================
-// SimpleStringDictionary (and associated class KeyValueEntry) implement a very
-// basic dictionary container class.  It has the property of not making any
-// memory allocations when getting and setting values.  But it is not very
-// efficient, with calls to get and set values operating in linear time.
-// It has the additional limitation of having a fairly small fixed capacity of
-// SimpleStringDictionary::MAX_NUM_ENTRIES entries.  An assert() will fire if
-// the client attempts to set more than this number of key/value pairs.
-// Ordinarilly a C++ programmer would use something like the std::map template
-// class, or on the Macintosh would often choose CFDictionary or NSDictionary.
-// But these dictionary classes may call malloc() during get and set operations.
-// Google Breakpad requires that no memory allocations be made in code running
-// in its exception handling thread, so it uses SimpleStringDictionary as the
-// underlying implementation for the GoogleBreakpad.framework APIs:
-// GoogleBreakpadSetKeyValue(),  GoogleBreakpadKeyValue(), and
-// GoogleBreakpadRemoveKeyValue()
-//
+// Opaque type for the serialized representation of a NonAllocatingMap. One is
+// created in NonAllocatingMap::Serialize and can be deserialized using one of
+// the constructors.
+struct SerializedNonAllocatingMap;
 
-//==============================================================================
-// KeyValueEntry
+// NonAllocatingMap is an implementation of a map/dictionary collection that
+// uses a fixed amount of storage, so that it does not perform any dynamic
+// allocations for its operations.
 //
-// A helper class used by SimpleStringDictionary representing a single
-// storage cell for a key/value pair.  Each key and value string are
-// limited to MAX_STRING_STORAGE_SIZE-1 bytes (not glyphs).  This class
-// performs no memory allocations.  It has methods for setting  and getting
-// key and value strings.
+// The actual map storage (the Entry) is guaranteed to be POD, so that it can
+// be transmitted over various IPC mechanisms.
 //
-class KeyValueEntry {
+// The template parameters control the amount of storage used for the key,
+// value, and map. The KeySize and ValueSize are measured in bytes, not glyphs,
+// and includes space for a \0 byte. This gives space for KeySize-1 and
+// ValueSize-1 characters in an entry. NumEntries is the total number of
+// entries that will fit in the map.
+template <size_t KeySize, size_t ValueSize, size_t NumEntries>
+class NonAllocatingMap {
  public:
-  KeyValueEntry() {
-    Clear();
-  }
+  // Constant and publicly accessible versions of the template parameters.
+  static const size_t key_size = KeySize;
+  static const size_t value_size = ValueSize;
+  static const size_t num_entries = NumEntries;
 
-  KeyValueEntry(const char *key, const char *value) {
-    SetKeyValue(key, value);
-  }
+  // An Entry object is a single entry in the map. If the key is a 0-length
+  // NUL-terminated string, the entry is empty.
+  struct Entry {
+    char key[KeySize];
+    char value[ValueSize];
 
-  void SetKeyValue(const char *key, const char *value) {
-    if (!key) {
-      key = "";
+    bool is_active() const {
+      return key[0] != '\0';
     }
-    if (!value) {
-      value = "";
-    }
-
-    strncpy(key_, key, sizeof(key_));
-    strncpy(value_, value, sizeof(value_));
-    key_[sizeof(key_) - 1] = '\0';
-    value_[sizeof(value_) - 1] = '\0';
-  }
-
-  void SetValue(const char *value) {
-    if (!value) {
-      value = "";
-    }
-    strncpy(value_, value, sizeof(value_));
-    value_[sizeof(value_) - 1] = '\0';
   };
 
-  // Removes the key/value
-  void Clear() {
-    memset(key_, 0, sizeof(key_));
-    memset(value_, 0, sizeof(value_));
-  }
-
-  bool IsActive() const { return key_[0] != '\0'; }
-  const char *GetKey() const { return key_; }
-  const char *GetValue() const { return value_; }
-
-  // Don't change this without considering the fixed size
-  // of MachMessage (in MachIPC.h)
-  // (see also struct KeyValueMessageData in Inspector.h)
-  enum {MAX_STRING_STORAGE_SIZE = 256};
-
- private:
-  char key_[MAX_STRING_STORAGE_SIZE];
-  char value_[MAX_STRING_STORAGE_SIZE];
-};
-
-//==============================================================================
-// This class is not an efficient dictionary, but for the purposes of breakpad
-// will be just fine.  We're just dealing with ten or so distinct
-// key/value pairs.  The idea is to avoid any malloc() or free() calls
-// in certain important methods to be called when a process is in a
-// crashed state.  Each key and value string are limited to
-// KeyValueEntry::MAX_STRING_STORAGE_SIZE-1 bytes (not glyphs).  Strings passed
-// in exceeding this length will be truncated.
-//
-class SimpleStringDictionary {
- public:
-  SimpleStringDictionary() {};  // entries will all be cleared
-
-  // Returns the number of active key/value pairs.  The upper limit for this
-  // is MAX_NUM_ENTRIES.
-  int GetCount() const;
-
-  // Given |key|, returns its corresponding |value|.
-  // If |key| is NULL, an assert will fire or NULL will be returned.  If |key|
-  // is not found or is an empty string, NULL is returned.
-  const char *GetValueForKey(const char *key) const;
-
-  // Stores a string |value| represented by |key|.  If |key| is NULL or an empty
-  // string, this will assert (or do nothing).  If |value| is NULL then
-  // the |key| will be removed.  An empty string is OK for |value|.
-  void SetKeyValue(const char *key, const char *value);
-
-  // Given |key|, removes any associated value.  It will assert (or do nothing)
-  // if NULL is passed in.  It will do nothing if |key| is not found.
-  void RemoveKey(const char *key);
-
-  // This is the maximum number of key/value pairs which may be set in the
-  // dictionary.  An assert may fire if more values than this are set.
-  // Don't change this without also changing comment in GoogleBreakpad.h
-  enum {MAX_NUM_ENTRIES = 64};
-
- private:
-  friend class SimpleStringDictionaryIterator;
-
-  const KeyValueEntry *GetEntry(int i) const;
-
-  KeyValueEntry entries_[MAX_NUM_ENTRIES];
-};
-
-//==============================================================================
-class SimpleStringDictionaryIterator {
- public:
-  SimpleStringDictionaryIterator(const SimpleStringDictionary &dict)
-    : dict_(dict), i_(0) {
+  // An Iterator can be used to iterate over all the active entries in a
+  // NonAllocatingMap.
+  class Iterator {
+   public:
+    explicit Iterator(const NonAllocatingMap& map)
+        : map_(map),
+          current_(0) {
     }
 
-  // Initializes iterator to the beginning (may later call Next() )
-  void Start() {
-    i_ = 0;
+    // Returns the next entry in the map, or NULL if at the end of the
+    // collection.
+    const Entry* Next() {
+      while (current_ < map_.num_entries) {
+        const Entry* entry = &map_.entries_[current_++];
+        if (entry->is_active()) {
+          return entry;
+        }
+      }
+      return NULL;
+    }
+
+   private:
+    const NonAllocatingMap& map_;
+    size_t current_;
+
+    DISALLOW_COPY_AND_ASSIGN(Iterator);
+  };
+
+  NonAllocatingMap() : entries_() {
   }
 
-  // like the nextObject method of NSEnumerator (in Cocoa)
-  // returns NULL when there are no more entries
-  //
-  const KeyValueEntry* Next() {
-    for (; i_ < SimpleStringDictionary::MAX_NUM_ENTRIES; ++i_) {
-      const KeyValueEntry *entry = dict_.GetEntry(i_);
-      if (entry->IsActive()) {
-        i_++;   // move to next entry for next time
-        return entry;
+  NonAllocatingMap(const NonAllocatingMap& other) {
+    *this = other;
+  }
+
+  NonAllocatingMap& operator=(const NonAllocatingMap& other) {
+    assert(other.key_size == key_size);
+    assert(other.value_size == value_size);
+    assert(other.num_entries == num_entries);
+    if (other.key_size == key_size && other.value_size == value_size &&
+        other.num_entries == num_entries) {
+      memcpy(entries_, other.entries_, sizeof(entries_));
+    }
+    return *this;
+  }
+
+  // Constructs a map from its serialized form. |map| should be the out
+  // parameter from Serialize() and |size| should be its return value.
+  NonAllocatingMap(const SerializedNonAllocatingMap* map, size_t size) {
+    assert(size == sizeof(entries_));
+    if (size == sizeof(entries_)) {
+      memcpy(entries_, map, size);
+    }
+  }
+
+  // Returns the number of active key/value pairs. The upper limit for this
+  // is NumEntries.
+  size_t GetCount() const {
+    size_t count = 0;
+    for (size_t i = 0; i < num_entries; ++i) {
+      if (entries_[i].is_active()) {
+        ++count;
+      }
+    }
+    return count;
+  }
+
+  // Given |key|, returns its corresponding |value|. |key| must not be NULL. If
+  // the key is not found, NULL is returned.
+  const char* GetValueForKey(const char* key) const {
+    assert(key);
+    if (!key)
+      return NULL;
+
+    const Entry* entry = GetConstEntryForKey(key);
+    if (!entry)
+      return NULL;
+
+    return entry->value;
+  }
+
+  // Stores |value| into |key|, replacing the existing value if |key| is
+  // already present. |key| must not be NULL. If |value| is NULL, the key is
+  // removed from the map.
+  void SetKeyValue(const char* key, const char* value) {
+    if (!value) {
+      RemoveKey(key);
+      return;
+    }
+
+    assert(key);
+    if (!key)
+      return;
+
+    // Key must not be an empty string.
+    assert(key[0] != '\0');
+    if (key[0] == '\0')
+      return;
+
+    Entry* entry = GetEntryForKey(key);
+
+    // If it does not yet exist, attempt to insert it.
+    if (!entry) {
+      for (size_t i = 0; i < num_entries; ++i) {
+        if (!entries_[i].is_active()) {
+          entry = &entries_[i];
+
+          assert(strlen(key) < key_size);
+
+          strncpy(entry->key, key, key_size);
+          entry->key[key_size - 1] = '\0';
+
+          break;
+        }
       }
     }
 
-    return NULL;  // reached end of array
+    // If the map is out of space, entry will be NULL.
+    assert(entry);
+
+#ifndef NDEBUG
+    // Sanity check that the key only appears once.
+    int count = 0;
+    for (size_t i = 0; i < num_entries; ++i) {
+      if (strncmp(entries_[i].key, key, key_size) == 0)
+        ++count;
+    }
+    assert(count == 1);
+#endif
+
+    assert(strlen(value) < value_size);
+    strncpy(entry->value, value, value_size);
+    entry->value[value_size - 1] = '\0';
+  }
+
+  // Given |key|, removes any associated value. |key| must not be NULL. If
+  // the key is not found, this is a noop.
+  void RemoveKey(const char* key) {
+    assert(key);
+    if (!key)
+      return;
+
+    Entry* entry = GetEntryForKey(key);
+    if (entry) {
+      entry->key[0] = '\0';
+      entry->value[0] = '\0';
+    }
+
+#ifndef NDEBUG
+    assert(GetEntryForKey(key) == NULL);
+#endif
+  }
+
+  // Places a serialized version of the map into |map| and returns the size.
+  // Both of these should be passed to the deserializing constructor. Note that
+  // the serialized |map| is scoped to the lifetime of the non-serialized
+  // instance of this class. The |map| can be copied across IPC boundaries.
+  size_t Serialize(const SerializedNonAllocatingMap** map) const {
+    *map = reinterpret_cast<const SerializedNonAllocatingMap*>(entries_);
+    return sizeof(entries_);
   }
 
  private:
-  const SimpleStringDictionary& dict_;
-  int i_;
+  const Entry* GetConstEntryForKey(const char* key) const {
+    for (size_t i = 0; i < num_entries; ++i) {
+      if (strncmp(key, entries_[i].key, key_size) == 0) {
+        return &entries_[i];
+      }
+    }
+    return NULL;
+  }
+
+  Entry* GetEntryForKey(const char* key) {
+    return const_cast<Entry*>(GetConstEntryForKey(key));
+  }
+
+  Entry entries_[NumEntries];
 };
+
+// For historical reasons this specialized version is available with the same
+// size factors as a previous implementation.
+typedef NonAllocatingMap<256, 256, 64> SimpleStringDictionary;
 
 }  // namespace google_breakpad
 
