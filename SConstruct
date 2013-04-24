@@ -3125,7 +3125,7 @@ def GetLinkerScriptBaseName(env):
 
 if (nacl_env.Bit('nacl_glibc') and
     nacl_env.Bit('nacl_static_link')):
-  if nacl_env.Bit('bitcode'):
+  if nacl_env.Bit('bitcode') or nacl_env.IsNewLinker():
     nacl_env.Append(LINKFLAGS=['-static'])
   else:
     # The "-lc" is necessary because libgcc_eh depends on libc but for
