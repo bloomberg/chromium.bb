@@ -293,8 +293,14 @@ bool RLZTracker::Init(bool first_run,
   }
   google_util::GetReactivationBrand(&reactivation_brand_);
 
-  rlz_lib::SetURLRequestContext(g_browser_process->system_request_context());
-  ScheduleDelayedInit(delay);
+  net::URLRequestContextGetter* context_getter =
+      g_browser_process->system_request_context();
+
+  // Could be NULL; don't run if so.  RLZ will try again next restart.
+  if (context_getter) {
+    rlz_lib::SetURLRequestContext(context_getter);
+    ScheduleDelayedInit(delay);
+  }
 
   return true;
 }
