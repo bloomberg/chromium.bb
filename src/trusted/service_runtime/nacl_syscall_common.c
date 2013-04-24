@@ -1240,6 +1240,23 @@ int32_t NaClSysMmapIntern(struct NaClApp        *nap,
     if (0 != map_result) {
       goto cleanup;
     }
+
+    /*
+     * Preemptively refuse to map anything that's not a regular file or
+     * shared memory segment.  Other types usually report st_size of zero,
+     * which the code below will handle by just doing a dummy PROT_NONE
+     * mapping for the requested size and never attempting the underlying
+     * NaClDesc Map operation.  So without this check, the host OS never
+     * gets the chance to refuse the mapping operation on an object that
+     * can't do it.
+     */
+    if (!NACL_ABI_S_ISREG(stbuf.nacl_abi_st_mode) &&
+        !NACL_ABI_S_ISSHM(stbuf.nacl_abi_st_mode) &&
+        !NACL_ABI_S_ISSHM_SYSV(stbuf.nacl_abi_st_mode)) {
+      map_result = -NACL_ABI_ENODEV;
+      goto cleanup;
+    }
+
     /*
      * BUG(bsy): there's a race between this fstat and the actual mmap
      * below.  It's probably insoluble.  Even if we fstat again after

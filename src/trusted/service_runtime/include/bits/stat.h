@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
@@ -90,5 +90,8 @@
                               (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSOCKADDR)
 #define NACL_ABI_S_ISCHR(m)   (0)
 #define NACL_ABI_S_ISFIFO(m)  (0)
+#define NACL_ABI_S_ISSHM(m)   (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM)
+#define NACL_ABI_S_ISSHM_SYSV(m) \
+  (((m) & NACL_ABI_S_IFMT) == NACL_ABI_S_IFSHM_SYSV)
 
 #endif

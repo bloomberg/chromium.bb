@@ -37,3 +37,9 @@ env.AddNodeToTestSuite(node,
                        ['small_tests', 'mmap_race_tests'],
                        'run_mmap_atomicity_test',
                        is_broken=is_broken)
+
+mmap_stdin_nexe = env.ComponentProgram('mmap_stdin', 'mmap_stdin.c',
+                                       EXTRA_LIBS=['${NONIRT_LIBS}'])
+node = env.CommandSelLdrTestNacl('mmap_stdin.out', mmap_stdin_nexe)
+env.AddNodeToTestSuite(node,
+                       ['small_tests', 'sel_ldr_tests'], 'run_mmap_stdin_test')
