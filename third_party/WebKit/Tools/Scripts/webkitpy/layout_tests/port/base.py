@@ -230,7 +230,7 @@ class Port(object):
         """This routine is used to ensure that the build is up to date
         and all the needed binaries are present."""
         # If we're using a pre-built copy of WebKit (--root), we assume it also includes a build of DRT.
-        if not self._root_was_set and self.get_option('build') and not self._build_driver():
+        if not self._root_was_set and self.get_option('build'):
             return False
         if not self._check_driver():
             return False
@@ -1392,26 +1392,6 @@ class Port(object):
         output = self._executive.run_command(run_script_command, cwd=self.webkit_base(), decode_output=decode_output, env=env)
         _log.debug('Output of %s:\n%s' % (run_script_command, output))
         return output
-
-    def _build_driver(self):
-        environment = self.host.copy_current_environment()
-        environment.disable_gcc_smartquotes()
-        env = environment.to_dictionary()
-
-        # FIXME: We build both DumpRenderTree and WebKitTestRunner for
-        # WebKitTestRunner runs because DumpRenderTree still includes
-        # the DumpRenderTreeSupport module and the TestNetscapePlugin.
-        # These two projects should be factored out into their own
-        # projects.
-        try:
-            self._run_script("build-dumprendertree", args=self._build_driver_flags(), env=env)
-        except ScriptError, e:
-            _log.error(e.message_with_output(output_limit=None))
-            return False
-        return True
-
-    def _build_driver_flags(self):
-        return []
 
     def _tests_for_other_platforms(self):
         # By default we will skip any directory under LayoutTests/platform

@@ -515,35 +515,6 @@ class PortTestCase(unittest.TestCase):
         port = TestWebKitPort(host=host)
         self.assertEqual(''.join(port.expectations_dict().values()), 'BUG_TESTEXPECTATIONS SKIP : fast/html/article-element.html = FAIL\n')
 
-    def test_build_driver(self):
-        output = OutputCapture()
-        port = TestWebKitPort()
-        # Delay setting _executive to avoid logging during construction
-        port._executive = MockExecutive(should_log=True)
-        port._options = MockOptions(configuration="Release")  # This should not be necessary, but I think TestWebKitPort is actually reading from disk (and thus detects the current configuration).
-        expected_logs = "MOCK run_command: ['Tools/Scripts/build-dumprendertree', '--release'], cwd=/mock-checkout, env={'LC_ALL': 'C', 'MOCK_ENVIRON_COPY': '1'}\n"
-        self.assertTrue(output.assert_outputs(self, port._build_driver, expected_logs=expected_logs))
-
-        # Make sure we show the build log when --verbose is passed, which we simulate by setting the logging level to DEBUG.
-        output.set_log_level(logging.DEBUG)
-        port._options = MockOptions(configuration="Release")
-        expected_logs = """MOCK run_command: ['Tools/Scripts/build-dumprendertree', '--release'], cwd=/mock-checkout, env={'LC_ALL': 'C', 'MOCK_ENVIRON_COPY': '1'}
-Output of ['Tools/Scripts/build-dumprendertree', '--release']:
-MOCK output of child process
-"""
-        self.assertTrue(output.assert_outputs(self, port._build_driver, expected_logs=expected_logs))
-        output.set_log_level(logging.INFO)
-
-        # Make sure that failure to build returns False.
-        port._executive = MockExecutive(should_log=True, should_throw=True)
-        # Because WK2 currently has to build both webkittestrunner and DRT, if DRT fails, that's the only one it tries.
-        expected_logs = """MOCK run_command: ['Tools/Scripts/build-dumprendertree', '--release'], cwd=/mock-checkout, env={'LC_ALL': 'C', 'MOCK_ENVIRON_COPY': '1'}
-MOCK ScriptError
-
-MOCK output of child process
-"""
-        self.assertFalse(output.assert_outputs(self, port._build_driver, expected_logs=expected_logs))
-
     def _assert_config_file_for_platform(self, port, platform, config_file):
         self.assertEqual(port._apache_config_file_name_for_platform(platform), config_file)
 
@@ -603,30 +574,6 @@ MOCK output of child process
             self.assertEqual(port._path_to_apache_config_file(), '/existing/httpd.conf')
         finally:
             os.environ = saved_environ.copy()
-
-    def test_check_build(self):
-        port = self.make_port(options=MockOptions(build=True))
-        self.build_called = False
-
-        def build_driver_called():
-            self.build_called = True
-            return True
-
-        port._build_driver = build_driver_called
-        port.check_build(False)
-        self.assertTrue(self.build_called)
-
-        port = self.make_port(options=MockOptions(root='/tmp', build=True))
-        self.build_called = False
-        port._build_driver = build_driver_called
-        port.check_build(False)
-        self.assertFalse(self.build_called, None)
-
-        port = self.make_port(options=MockOptions(build=False))
-        self.build_called = False
-        port._build_driver = build_driver_called
-        port.check_build(False)
-        self.assertFalse(self.build_called, None)
 
     def test_additional_platform_directory(self):
         port = self.make_port(options=MockOptions(additional_platform_directory=['/tmp/foo']))
