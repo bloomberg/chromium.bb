@@ -114,6 +114,10 @@ class TestingBrowserProcess : public BrowserProcess {
       const CommandLine& command_line) OVERRIDE;
   virtual bool created_local_state() const OVERRIDE;
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  virtual void OnMetroViewerProcessTerminated() OVERRIDE {}
+#endif
+
   // Set the local state for tests. Consumer is responsible for cleaning it up
   // afterwards (using ScopedTestingLocalState, for example).
   void SetLocalState(PrefService* local_state);

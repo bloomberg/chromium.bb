@@ -230,6 +230,11 @@ class BrowserProcess {
 
   virtual bool created_local_state() const = 0;
 
+#if defined(OS_WIN) && defined(USE_AURA)
+  // Invoked when the ASH metro viewer process on Windows 8 exits.
+  virtual void OnMetroViewerProcessTerminated() = 0;
+#endif
+
  private:
   DISALLOW_COPY_AND_ASSIGN(BrowserProcess);
 };

@@ -24,6 +24,7 @@ class MetroViewerProcessHost : public IPC::Listener,
   explicit MetroViewerProcessHost(const std::string& ipc_channel_name);
   virtual ~MetroViewerProcessHost();
 
+ private:
   // IPC::Sender implementation:
   virtual bool Send(IPC::Message* msg) OVERRIDE;
 
@@ -31,7 +32,6 @@ class MetroViewerProcessHost : public IPC::Listener,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void OnChannelError() OVERRIDE;
 
- private:
   void OnSetTargetSurface(gfx::NativeViewId target_surface);
 
   scoped_ptr<IPC::ChannelProxy> channel_;

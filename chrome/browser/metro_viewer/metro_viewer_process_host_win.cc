@@ -77,6 +77,9 @@ void  MetroViewerProcessHost::OnChannelError() {
   g_browser_process->ReleaseModule();
   CloseOpenAshBrowsers();
   chrome::CloseAsh();
+  // This will delete the MetroViewerProcessHost object. Don't access member
+  // variables/functions after this call.
+  g_browser_process->OnMetroViewerProcessTerminated();
 }
 
 void MetroViewerProcessHost::OnSetTargetSurface(

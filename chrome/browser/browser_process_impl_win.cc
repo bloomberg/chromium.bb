@@ -18,9 +18,14 @@ void BrowserProcessImpl::PlatformSpecificCommandLineProcessing(
 }
 
 #if defined(USE_AURA)
+void BrowserProcessImpl::OnMetroViewerProcessTerminated() {
+  metro_viewer_process_host_.reset(NULL);
+}
+
 void BrowserProcessImpl::PerformInitForWindowsAura(
     const CommandLine& command_line) {
-  if (command_line.HasSwitch(switches::kViewerConnection)) {
+  if (command_line.HasSwitch(switches::kViewerConnection) &&
+      !metro_viewer_process_host_.get()) {
     // Tell the metro viewer process host to connect to the given IPC channel.
     metro_viewer_process_host_.reset(
         new MetroViewerProcessHost(
