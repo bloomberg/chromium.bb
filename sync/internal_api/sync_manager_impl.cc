@@ -1366,16 +1366,6 @@ bool SyncManagerImpl::ReceivedExperiment(Experiments* experiments) {
     found_experiment = true;
   }
 
-  ReadNode full_history_sync_node(&trans);
-  if (full_history_sync_node.InitByClientTagLookup(
-          syncer::EXPERIMENTS,
-          syncer::kFullHistorySyncTag) == BaseNode::INIT_OK &&
-      full_history_sync_node.GetExperimentsSpecifics().
-          history_delete_directives().enabled()) {
-    experiments->full_history_sync = true;
-    found_experiment = true;
-  }
-
   ReadNode favicon_sync_node(&trans);
   if (favicon_sync_node.InitByClientTagLookup(
           syncer::EXPERIMENTS,
