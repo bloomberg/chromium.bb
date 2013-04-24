@@ -20,13 +20,11 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/first_run/first_run_dialog.h"
-#include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
-#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -197,12 +195,12 @@ void SetImportItem(PrefService* user_prefs,
 
 // Imports bookmarks from an html file. The path to the file is provided in
 // the command line.
-int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
+void ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   base::FilePath file_path =
       cmdline.GetSwitchValuePath(switches::kImportFromFile);
   if (file_path.empty()) {
     NOTREACHED();
-    return false;
+    return;
   }
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
   importer_host->set_headless();
@@ -211,16 +209,16 @@ int ImportFromFile(Profile* profile, const CommandLine& cmdline) {
   source_profile.importer_type = importer::TYPE_BOOKMARKS_FILE;
   source_profile.source_path = file_path;
 
-  FirstRunImportObserver importer_observer;
-  importer::ShowImportProgressDialog(importer::FAVORITES,
-                                     importer_host,
-                                     &importer_observer,
-                                     source_profile,
-                                     profile,
-                                     true);
-
-  importer_observer.RunLoop();
-  return importer_observer.import_result();
+  first_run::internal::ImportEndedObserver observer;
+  importer_host->SetObserver(&observer);
+  importer_host->StartImportSettings(
+      source_profile, profile, importer::FAVORITES, new ProfileWriter(profile),
+      true);
+  // If the import process has not errored out, block on it.
+  if (!observer.ended()) {
+    observer.set_should_quit_message_loop();
+    MessageLoop::current()->Run();
+  }
 }
 
 GURL UrlFromString(const std::string& in) {
@@ -243,6 +241,16 @@ FirstRunState first_run_ = FIRST_RUN_UNKNOWN;
 
 static base::LazyInstance<base::FilePath> master_prefs_path_for_testing
     = LAZY_INSTANCE_INITIALIZER;
+
+// TODO(gab): This will go back inline above when it is moved to first_run.cc
+// (see TODO above), but needs to be separate for now to satisfy clang error:
+// "[chromium-style] virtual methods with non-empty bodies shouldn't be declared
+// inline".
+void ImportEndedObserver::ImportEnded() {
+  ended_ = true;
+  if (should_quit_message_loop_)
+    MessageLoop::current()->Quit();
+}
 
 installer::MasterPreferences*
     LoadMasterPrefs(base::FilePath* master_prefs_path) {
@@ -389,13 +397,14 @@ bool IsOrganicFirstRun() {
 
 int ImportBookmarkFromFileIfNeeded(Profile* profile,
                                    const CommandLine& cmdline) {
-  int return_code = true;
   if (cmdline.HasSwitch(switches::kImportFromFile)) {
     // Silently import preset bookmarks from file.
     // This is an OEM scenario.
-    return_code = ImportFromFile(profile, cmdline);
+    ImportFromFile(profile, cmdline);
   }
-  return return_code;
+  // ImportBookmarkFromFileIfNeeded() will go away as part of
+  // http://crbug.com/219419, so it is fine to hardcode |true| for now.
+  return true;
 }
 
 }  // namespace internal

@@ -55,8 +55,10 @@ class ImporterHost : public base::RefCountedThreadSafe<ImporterHost>,
   void NotifyImportItemEnded(importer::ImportItem item);
   void NotifyImportEnded();
 
-  // When in headless mode, the importer will not show the warning dialog and
-  // the outcome is as if the user had canceled the import operation.
+  // When in headless mode, the importer will not show any warning dialog if
+  // a user action is required (e.g., Firefox profile is locked and user should
+  // close Firefox to continue) and the outcome is as if the user had canceled
+  // the import operation.
   void set_headless() { headless_ = true; }
   bool is_headless() const { return headless_; }
 

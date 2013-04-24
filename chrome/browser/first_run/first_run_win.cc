@@ -25,11 +25,9 @@
 #include "base/win/object_watcher.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/first_run/first_run_import_observer.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/importer/importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
-#include "chrome/browser/importer/importer_progress_dialog.h"
 #include "chrome/browser/process_singleton.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/shell_integration.h"
@@ -299,7 +297,6 @@ int ImportFromBrowser(Profile* profile,
     return false;
   }
   scoped_refptr<ImporterHost> importer_host(new ImporterHost);
-  FirstRunImportObserver importer_observer;
 
   scoped_refptr<ImporterList> importer_list(new ImporterList(NULL));
   importer_list->DetectSourceProfilesHack();
@@ -309,12 +306,19 @@ int ImportFromBrowser(Profile* profile,
   if (skip_first_run_ui)
     importer_host->set_headless();
 
-  importer::ShowImportProgressDialog(static_cast<uint16>(items_to_import),
-      importer_host, &importer_observer,
+  first_run::internal::ImportEndedObserver observer;
+  importer_host->SetObserver(&observer);
+  importer_host->StartImportSettings(
       importer_list->GetSourceProfileForImporterType(importer_type), profile,
-      true);
-  importer_observer.RunLoop();
-  return importer_observer.import_result();
+      static_cast<uint16>(items_to_import), new ProfileWriter(profile), true);
+  // If the import process has not errored out, block on it.
+  if (!observer.ended()) {
+    observer.set_should_quit_message_loop();
+    MessageLoop::current()->Run();
+  }
+  // TODO(gab): This method will be go away as part of http://crbug.com/219419/,
+  // so it is fine to hardcode |RESULT_CODE_NORMAL_EXIT| here for now.
+  return content::RESULT_CODE_NORMAL_EXIT;
 }
 #endif  // !defined(USE_AURA)
 

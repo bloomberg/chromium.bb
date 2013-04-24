@@ -163,8 +163,6 @@
         'browser/ui/cocoa/hyperlink_button_cell.mm',
         'browser/ui/cocoa/image_button_cell.h',
         'browser/ui/cocoa/image_button_cell.mm',
-        'browser/ui/cocoa/importer/import_progress_dialog_cocoa.h',
-        'browser/ui/cocoa/importer/import_progress_dialog_cocoa.mm',
         'browser/ui/cocoa/info_bubble_view.h',
         'browser/ui/cocoa/info_bubble_view.mm',
         'browser/ui/cocoa/info_bubble_window.h',
