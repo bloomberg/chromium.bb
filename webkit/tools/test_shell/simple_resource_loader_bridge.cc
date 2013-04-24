@@ -644,7 +644,7 @@ class RequestProxy
     OnCompletedRequest(failed_file_request_status_.get() ?
                        failed_file_request_status_->error() :
                        request_->status().error(),
-                       std::string(), base::TimeTicks());
+                       std::string(), base::TimeTicks::Now());
     request_.reset();  // destroy on the io thread
   }
 
