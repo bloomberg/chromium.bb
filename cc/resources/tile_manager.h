@@ -107,6 +107,9 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     ScheduleManageTiles();
   }
 
+  // Virtual for test
+  virtual void DispatchMoreTasks();
+
  private:
   // Data that is passed to raster tasks.
   struct RasterTaskMetadata {
@@ -129,7 +132,6 @@ class CC_EXPORT TileManager : public WorkerPoolClient {
     manage_tiles_pending_ = true;
   }
   void UpdateCheapTasksTimeLimit();
-  void DispatchMoreTasks();
   void AnalyzeTile(Tile* tile);
   void GatherPixelRefsForTile(Tile* tile);
   void DispatchImageDecodeTasksForTile(Tile* tile);

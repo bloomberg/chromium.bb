@@ -491,6 +491,8 @@ void TileManager::AssignGpuMemoryToTiles() {
       0;
   size_t bytes_that_exceeded_memory_budget_in_now_bin = 0;
   size_t bytes_left = bytes_allocatable;
+  size_t bytes_oom_in_now_bin_on_pending_tree = 0;
+  TileVector tiles_requiring_memory_but_oomed;
   for (TileVector::iterator it = live_or_allocated_tiles_.begin();
        it != live_or_allocated_tiles_.end();
        ++it) {
@@ -515,6 +517,10 @@ void TileManager::AssignGpuMemoryToTiles() {
           bytes_that_exceeded_memory_budget_in_now_bin += tile_bytes;
       FreeResourcesForTile(tile);
       tile->drawing_info().set_rasterize_on_demand();
+      if (mts.tree_bin[PENDING_TREE] == NOW_BIN) {
+        tiles_requiring_memory_but_oomed.push_back(tile);
+        bytes_oom_in_now_bin_on_pending_tree += tile_bytes;
+      }
       continue;
     }
     tile->drawing_info().set_use_resource();
@@ -523,6 +529,50 @@ void TileManager::AssignGpuMemoryToTiles() {
     if (!tile->drawing_info().resource_ &&
         !tile->drawing_info().resource_is_being_initialized_) {
       tiles_that_need_to_be_rasterized_.push_back(tile);
+    }
+  }
+
+  // In OOM situation, we iterate all_tiles_, remove the memory for active tree
+  // and not the now bin. And give them to bytes_oom_in_now_bin_on_pending_tree
+  if (!tiles_requiring_memory_but_oomed.empty()) {
+    size_t bytes_freed = 0;
+    for (TileSet::iterator it = all_tiles_.begin();
+         it != all_tiles_.end(); ++it) {
+      Tile* tile = *it;
+      ManagedTileState& mts = tile->managed_state();
+      if (mts.can_use_gpu_memory == true &&
+          mts.tree_bin[PENDING_TREE] == NEVER_BIN &&
+          mts.tree_bin[ACTIVE_TREE] != NOW_BIN &&
+          tile->drawing_info().can_be_freed_ ) {
+        mts.can_use_gpu_memory = false;
+        FreeResourcesForTile(tile);
+        bytes_freed += tile->bytes_consumed_if_allocated();
+        TileVector::iterator it = std::find(
+                tiles_that_need_to_be_rasterized_.begin(),
+                tiles_that_need_to_be_rasterized_.end(),
+                tile);
+        if (it != tiles_that_need_to_be_rasterized_.end())
+            tiles_that_need_to_be_rasterized_.erase(it);
+        if (bytes_oom_in_now_bin_on_pending_tree <= bytes_freed)
+          break;
+      }
+    }
+
+    for (TileVector::iterator it = tiles_requiring_memory_but_oomed.begin();
+         it != tiles_requiring_memory_but_oomed.end() && bytes_freed > 0;
+         ++it) {
+      Tile* tile = *it;
+      size_t bytes_needed = tile->bytes_consumed_if_allocated();
+      ManagedTileState& mts = tile->managed_state();
+      if (bytes_needed > bytes_freed)
+        continue;
+      tile->drawing_info().set_use_resource();
+      bytes_freed -= bytes_needed;
+      mts.can_use_gpu_memory = true;
+      if (!mts.drawing_info.resource_ &&
+          !mts.drawing_info.resource_is_being_initialized_) {
+        tiles_that_need_to_be_rasterized_.push_back(tile);
+      }
     }
   }
 
