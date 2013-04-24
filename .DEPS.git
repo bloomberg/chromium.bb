@@ -243,8 +243,6 @@ deps_os = {
             None,
         'src/third_party/WebKit/Tools/Scripts':
             None,
-        'src/third_party/WebKit/Tools/TestWebKitAPI':
-            None,
         'src/third_party/angle':
             None,
         'src/third_party/bidichecker':
