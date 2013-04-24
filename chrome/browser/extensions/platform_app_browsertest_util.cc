@@ -82,12 +82,12 @@ WebContents* PlatformAppBrowserTest::GetFirstShellWindowWebContents() {
 ShellWindow* PlatformAppBrowserTest::GetFirstShellWindow() {
   ShellWindowRegistry* app_registry =
       ShellWindowRegistry::Get(browser()->profile());
-  ShellWindowRegistry::const_iterator iter;
-  ShellWindowRegistry::ShellWindowSet shell_windows =
+  const ShellWindowRegistry::ShellWindowSet& shell_windows =
       app_registry->shell_windows();
-  for (iter = shell_windows.begin(); iter != shell_windows.end(); ++iter) {
+
+  ShellWindowRegistry::const_iterator iter = shell_windows.begin();
+  if (iter != shell_windows.end())
     return *iter;
-  }
 
   return NULL;
 }
