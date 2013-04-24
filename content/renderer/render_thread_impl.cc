@@ -750,8 +750,13 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 #if defined(OS_ANDROID)
   // Web Speech API Speech recognition is not implemented on Android yet.
   WebRuntimeFeatures::enableScriptedSpeech(false);
+
+  // Android does not support the Gamepad API.
+  WebRuntimeFeatures::enableGamepad(false);
 #else
   WebRuntimeFeatures::enableScriptedSpeech(true);
+
+  WebRuntimeFeatures::enableGamepad(true);
 #endif
 
 #if defined(OS_ANDROID)
@@ -764,8 +769,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   WebRuntimeFeatures::enableJavaScriptI18NAPI(
       !command_line.HasSwitch(switches::kDisableJavaScriptI18NAPI));
-
-  WebRuntimeFeatures::enableGamepad(true);
 
   WebRuntimeFeatures::enableQuota(true);
 
