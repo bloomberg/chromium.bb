@@ -921,18 +921,9 @@ def GenerateDebugTarball(buildroot, board, archive_path, gdb_symbols):
   else:
     inputs = ['debug/breakpad']
 
-  result = cros_build_lib.CreateTarball(
+  cros_build_lib.CreateTarball(
       debug_tgz, board_dir, sudo=True, compression=cros_build_lib.COMP_GZIP,
-      chroot=chroot, inputs=inputs, extra_args=extra_args, error_code_ok=True)
-
-  # Emerging the factory kernel while this is running installs different debug
-  # symbols. When tar spots this, it flags this and returns status code 1.
-  # The tarball is still OK, although the kernel debug symbols might be garbled.
-  # If tar fails in a different way, it'll return an error code other than 1.
-  # TODO(davidjames): Remove factory kernel emerge from archive_build.
-  if result.returncode not in (0, 1):
-    raise Exception('Debug tarball creation failed with exit code %s'
-                    % (result.returncode))
+      chroot=chroot, inputs=inputs, extra_args=extra_args)
 
   # Fix permissions and ownership on debug tarball.
   cros_build_lib.SudoRunCommand(['chown', str(os.getuid()), debug_tgz])
