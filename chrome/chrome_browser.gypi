@@ -1153,8 +1153,6 @@
         'browser/parsers/metadata_parser_jpeg_factory.h',
         'browser/parsers/metadata_parser_manager.cc',
         'browser/parsers/metadata_parser_manager.h',
-        'browser/password_manager/ie7_password.cc',
-        'browser/password_manager/ie7_password.h',
         'browser/password_manager/login_database.cc',
         'browser/password_manager/login_database.h',
         'browser/password_manager/login_database_mac.cc',
@@ -2805,9 +2803,6 @@
 
             # Exclude all of hang_monitor.
             ['exclude', '^browser/hang_monitor/'],
-
-            # Exclude parts of password_manager.
-            ['exclude', '^browser/password_manager/ie7_password\\.cc$'],
           ],
           'conditions': [
             ['use_aura==1',{

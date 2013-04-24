@@ -37,10 +37,10 @@
 #include "chrome/browser/importer/importer_progress_observer.h"
 #include "chrome/browser/importer/importer_unittest_utils.h"
 #include "chrome/browser/importer/pstore_declarations.h"
-#include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/webdata/encryptor/ie7_password.h"
 #include "content/public/common/password_form.h"
 
 namespace {

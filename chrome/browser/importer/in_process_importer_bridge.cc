@@ -13,7 +13,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/password_manager/ie7_password.h"
+#include "components/webdata/encryptor/ie7_password.h"
 #endif
 
 #include <iterator>

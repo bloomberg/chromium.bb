@@ -11,10 +11,10 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/password_manager/ie7_password.h"
 #include "chrome/browser/password_manager/password_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/webdata/web_data_service.h"
+#include "components/webdata/encryptor/ie7_password.h"
 
 using content::BrowserThread;
 using content::PasswordForm;

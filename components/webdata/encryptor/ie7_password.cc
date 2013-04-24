@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/password_manager/ie7_password.h"
+#include "components/webdata/encryptor/ie7_password.h"
 
 #include <wincrypt.h>
 #include <string>

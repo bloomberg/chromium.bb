@@ -31,7 +31,6 @@ specific_include_rules = {
   r"^logins_.*": [
     "-chrome/browser/webdata",
     "+chrome/browser/webdata/logins_table.h",
-    "!chrome/browser/password_manager/ie7_password.h",
   ],
 
   # TODO(caitkp): Componentize all the different tables. For now, we
