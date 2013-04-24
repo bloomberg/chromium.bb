@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2009 Google Inc.  All rights reserved.
+ * Copyright (C) 2009 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,56 +29,47 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SocketStreamErrorBase_h
-#define SocketStreamErrorBase_h
+#ifndef SocketStreamError_h
+#define SocketStreamError_h
 
+#include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
-    class SocketStreamError;
+class SocketStreamError : public RefCounted<SocketStreamError> {
+public:
+    static PassRefPtr<SocketStreamError> create(int errorCode, const String& errorMessage)
+    {
+        return adoptRef(new SocketStreamError(errorCode, errorMessage));
+    }
 
-    class SocketStreamErrorBase {
-    public:
+    bool isNull() const { return m_isNull; }
 
-        bool isNull() const { return m_isNull; }
+    int errorCode() const { return m_errorCode; }
+    const String& failingURL() const { return m_failingURL; }
+    const String& localizedDescription() const { return m_localizedDescription; }
 
-        int errorCode() const { return m_errorCode; }
-        const String& failingURL() const { return m_failingURL; }
-        const String& localizedDescription() const { return m_localizedDescription; }
+    static bool compare(const SocketStreamError&, const SocketStreamError&);
 
-        static bool compare(const SocketStreamError&, const SocketStreamError&);
+private:
+    explicit SocketStreamError(int errorCode, const String& errorMessage)
+        : m_errorCode(errorCode)
+        , m_localizedDescription(errorMessage)
+        , m_isNull(false)
+    {
+    }
 
-    protected:
-        SocketStreamErrorBase()
-            : m_errorCode(0)
-            , m_isNull(true)
-        {
-        }
+    int m_errorCode;
+    String m_failingURL; // FIXME: Can this be deleted since it is always empty?
+    String m_localizedDescription;
+    bool m_isNull;
+};
 
-        explicit SocketStreamErrorBase(int errorCode)
-            : m_errorCode(errorCode)
-            , m_isNull(false)
-        {
-        }
-
-        SocketStreamErrorBase(int errorCode, const String& failingURL, const String& localizedDescription)
-            : m_errorCode(errorCode)
-            , m_failingURL(failingURL)
-            , m_localizedDescription(localizedDescription)
-            , m_isNull(false)
-        {
-        }
-
-        int m_errorCode;
-        String m_failingURL;
-        String m_localizedDescription;
-        bool m_isNull;
-    };
-
-    inline bool operator==(const SocketStreamError& a, const SocketStreamError& b) { return SocketStreamErrorBase::compare(a, b); }
-    inline bool operator!=(const SocketStreamError& a, const SocketStreamError& b) { return !(a == b); }
+inline bool operator==(const SocketStreamError& a, const SocketStreamError& b) { return SocketStreamError::compare(a, b); }
+inline bool operator!=(const SocketStreamError& a, const SocketStreamError& b) { return !(a == b); }
 
 }  // namespace WebCore
 
-#endif  // SocketStreamErrorBase_h
+#endif  // SocketStreamError_h

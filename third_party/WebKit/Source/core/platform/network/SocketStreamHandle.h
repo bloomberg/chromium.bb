@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2009, 2011 Google Inc.  All rights reserved.
+ * Copyright (C) 2009, 2011, 2012 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -32,34 +32,50 @@
 #ifndef SocketStreamHandle_h
 #define SocketStreamHandle_h
 
-#include "SocketStreamHandleBase.h"
-
+#include "KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
+#include <wtf/StreamBuffer.h>
 
 namespace WebCore {
 
-    class SocketStreamHandleClient;
-    class SocketStreamHandleInternal;
+class SocketStreamHandleClient;
+class SocketStreamHandleInternal;
 
-    class SocketStreamHandle : public RefCounted<SocketStreamHandle>, public SocketStreamHandleBase {
-    public:
-        static PassRefPtr<SocketStreamHandle> create(const KURL& url, SocketStreamHandleClient* client) { return adoptRef(new SocketStreamHandle(url, client)); }
+class SocketStreamHandle : public RefCounted<SocketStreamHandle> {
+public:
+    enum SocketStreamState { Connecting, Open, Closing, Closed };
 
-        virtual ~SocketStreamHandle();
+    static PassRefPtr<SocketStreamHandle> create(const KURL& url, SocketStreamHandleClient* client) { return adoptRef(new SocketStreamHandle(url, client)); }
 
-    protected:
-        // SocketStreamHandleBase functions.
-        virtual int platformSend(const char* data, int length) OVERRIDE;
-        virtual void platformClose() OVERRIDE;
+    virtual ~SocketStreamHandle();
+    SocketStreamState state() const;
 
-    private:
-        SocketStreamHandle(const KURL&, SocketStreamHandleClient*);
+    bool send(const char* data, int length);
+    void close(); // Disconnect after all data in buffer are sent.
+    void disconnect();
+    size_t bufferedAmount() const { return m_buffer.size(); }
 
-        friend class SocketStreamHandleInternal;
-        OwnPtr<SocketStreamHandleInternal> m_internal;
-    };
+    SocketStreamHandleClient* client() const { return m_client; }
+    void setClient(SocketStreamHandleClient*);
 
-}  // namespace WebCore
+private:
+    SocketStreamHandle(const KURL&, SocketStreamHandleClient*);
+
+    bool sendPendingData();
+
+    int sendInternal(const char* data, int length);
+    void closeInternal();
+
+    KURL m_url;
+    SocketStreamHandleClient* m_client;
+    StreamBuffer<char, 1024 * 1024> m_buffer;
+    SocketStreamState m_state;
+
+    friend class SocketStreamHandleInternal;
+    OwnPtr<SocketStreamHandleInternal> m_internal;
+};
+
+} // namespace WebCore
 
 #endif  // SocketStreamHandle_h

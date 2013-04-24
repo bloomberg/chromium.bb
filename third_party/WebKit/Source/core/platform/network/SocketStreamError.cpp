@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2009 Apple Inc. All rights reserved.
- * Copyright (C) 2009, 2012 Google Inc.  All rights reserved.
+ * Copyright (C) 2009 Google Inc.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,45 +28,29 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef SocketStreamHandleBase_h
-#define SocketStreamHandleBase_h
-
-#include "KURL.h"
-
-#include <wtf/StreamBuffer.h>
+#include "config.h"
+#include "SocketStreamError.h"
 
 namespace WebCore {
 
-    class SocketStreamHandle;
-    class SocketStreamHandleClient;
+bool SocketStreamError::compare(const SocketStreamError& a, const SocketStreamError& b)
+{
+    if (a.isNull() && b.isNull())
+        return true;
 
-    class SocketStreamHandleBase {
-    public:
-        enum SocketStreamState { Connecting, Open, Closing, Closed };
-        virtual ~SocketStreamHandleBase() { }
-        SocketStreamState state() const;
+    if (a.isNull() || b.isNull())
+        return false;
 
-        bool send(const char* data, int length);
-        void close(); // Disconnect after all data in buffer are sent.
-        void disconnect();
-        size_t bufferedAmount() const { return m_buffer.size(); }
+    if (a.errorCode() != b.errorCode())
+        return false;
 
-        SocketStreamHandleClient* client() const { return m_client; }
-        void setClient(SocketStreamHandleClient*);
+    if (a.failingURL() != b.failingURL())
+        return false;
 
-    protected:
-        SocketStreamHandleBase(const KURL&, SocketStreamHandleClient*);
+    if (a.localizedDescription() != b.localizedDescription())
+        return false;
 
-        bool sendPendingData();
-        virtual int platformSend(const char* data, int length) = 0;
-        virtual void platformClose() = 0;
+    return true;
+}
 
-        KURL m_url;
-        SocketStreamHandleClient* m_client;
-        StreamBuffer<char, 1024 * 1024> m_buffer;
-        SocketStreamState m_state;
-    };
-
-}  // namespace WebCore
-
-#endif  // SocketStreamHandleBase_h
+} // namespace WebCore

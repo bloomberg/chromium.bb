@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009, 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2009, 2011, 2012 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,12 +30,12 @@
 
 #include "config.h"
 #include "SocketStreamHandle.h"
-#include "SocketStreamHandleInternal.h"
 
 #include "Logging.h"
 #include "NotImplemented.h"
 #include "SocketStreamError.h"
 #include "SocketStreamHandleClient.h"
+#include "SocketStreamHandleInternal.h"
 #include <public/Platform.h>
 #include <public/WebData.h>
 #include <public/WebSocketStreamError.h>
@@ -43,6 +43,8 @@
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {
+
+static const unsigned int bufferSize = 100 * 1024 * 1024;
 
 SocketStreamHandleInternal::SocketStreamHandleInternal(SocketStreamHandle* handle)
     : m_handle(handle)
@@ -106,7 +108,7 @@ void SocketStreamHandleInternal::didOpenStream(WebKit::WebSocketStreamHandle* so
     if (m_handle && m_socket) {
         ASSERT(socketHandle == m_socket.get());
         m_maxPendingSendAllowed = maxPendingSendAllowed;
-        m_handle->m_state = SocketStreamHandleBase::Open;
+        m_handle->m_state = SocketStreamHandle::Open;
         if (m_handle->m_client) {
             m_handle->m_client->didOpenSocketStream(m_handle);
             return;
@@ -160,12 +162,12 @@ void SocketStreamHandleInternal::didFail(WebKit::WebSocketStreamHandle* socketHa
     }
 }
 
-// FIXME: auth
-
 // SocketStreamHandle ----------------------------------------------------------
 
 SocketStreamHandle::SocketStreamHandle(const KURL& url, SocketStreamHandleClient* client)
-    : SocketStreamHandleBase(url, client)
+    : m_url(url)
+    , m_client(client)
+    , m_state(Connecting)
 {
     m_internal = SocketStreamHandleInternal::create(this);
     m_internal->connect(m_url);
@@ -177,14 +179,100 @@ SocketStreamHandle::~SocketStreamHandle()
     m_internal.clear();
 }
 
-int SocketStreamHandle::platformSend(const char* buf, int len)
+SocketStreamHandle::SocketStreamState SocketStreamHandle::state() const
+{
+    return m_state;
+}
+
+bool SocketStreamHandle::send(const char* data, int length)
+{
+    if (m_state == Connecting || m_state == Closing)
+        return false;
+    if (!m_buffer.isEmpty()) {
+        if (m_buffer.size() + length > bufferSize) {
+            // FIXME: report error to indicate that buffer has no more space.
+            return false;
+        }
+        m_buffer.append(data, length);
+        if (m_client)
+            m_client->didUpdateBufferedAmount(static_cast<SocketStreamHandle*>(this), bufferedAmount());
+        return true;
+    }
+    int bytesWritten = 0;
+    if (m_state == Open)
+        bytesWritten = sendInternal(data, length);
+    if (bytesWritten < 0)
+        return false;
+    if (m_buffer.size() + length - bytesWritten > bufferSize) {
+        // FIXME: report error to indicate that buffer has no more space.
+        return false;
+    }
+    if (bytesWritten < length) {
+        m_buffer.append(data + bytesWritten, length - bytesWritten);
+        if (m_client)
+            m_client->didUpdateBufferedAmount(static_cast<SocketStreamHandle*>(this), bufferedAmount());
+    }
+    return true;
+}
+
+void SocketStreamHandle::close()
+{
+    if (m_state == Closed)
+        return;
+    m_state = Closing;
+    if (!m_buffer.isEmpty())
+        return;
+    disconnect();
+}
+
+void SocketStreamHandle::disconnect()
+{
+    RefPtr<SocketStreamHandle> protect(static_cast<SocketStreamHandle*>(this)); // closeInternal calls the client, which may make the handle get deallocated immediately.
+
+    closeInternal();
+    m_state = Closed;
+}
+
+void SocketStreamHandle::setClient(SocketStreamHandleClient* client)
+{
+    ASSERT(!client || (!m_client && m_state == Connecting));
+    m_client = client;
+}
+
+bool SocketStreamHandle::sendPendingData()
+{
+    if (m_state != Open && m_state != Closing)
+        return false;
+    if (m_buffer.isEmpty()) {
+        if (m_state == Open)
+            return false;
+        if (m_state == Closing) {
+            disconnect();
+            return false;
+        }
+    }
+    bool pending;
+    do {
+        int bytesWritten = sendInternal(m_buffer.firstBlockData(), m_buffer.firstBlockSize());
+        pending = bytesWritten != static_cast<int>(m_buffer.firstBlockSize());
+        if (bytesWritten <= 0)
+            return false;
+        ASSERT(m_buffer.size() - bytesWritten <= bufferSize);
+        m_buffer.consume(bytesWritten);
+    } while (!pending && !m_buffer.isEmpty());
+    if (m_client)
+        m_client->didUpdateBufferedAmount(static_cast<SocketStreamHandle*>(this), bufferedAmount());
+    return true;
+}
+
+int SocketStreamHandle::sendInternal(const char* buf, int len)
 {
     if (!m_internal)
         return 0;
     return m_internal->send(buf, len);
 }
 
-void SocketStreamHandle::platformClose()
+void SocketStreamHandle::closeInternal()
 {
     if (m_internal)
         m_internal->close();
