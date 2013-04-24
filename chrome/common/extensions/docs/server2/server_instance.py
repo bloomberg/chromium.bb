@@ -11,10 +11,11 @@ from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from appengine_blobstore import AppEngineBlobstore
 from appengine_url_fetcher import AppEngineUrlFetcher
-from appengine_wrappers import GetAppVersion
+from appengine_wrappers import GetAppVersion, IsDevServer
 from branch_utility import BranchUtility
 from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
+from empty_dir_file_system import EmptyDirFileSystem
 from example_zipper import ExampleZipper
 from file_system import FileNotFoundError
 from github_file_system import GithubFileSystem
@@ -36,6 +37,9 @@ import url_constants
 def _IsBinaryMimetype(mimetype):
   return any(mimetype.startswith(prefix)
              for prefix in ['audio', 'image', 'video'])
+
+def _IsSamplesDisabled():
+  return IsDevServer()
 
 class ServerInstance(object):
   # Lazily create so we don't create github file systems unnecessarily in
@@ -119,10 +123,15 @@ class ServerInstance(object):
 
   @staticmethod
   def _GetOrCreateGithubFileSystem():
+    # Initialising github is pointless if samples are disabled, since it's only
+    # used for apps samples.
     if ServerInstance.github_file_system is None:
-      ServerInstance.github_file_system = GithubFileSystem(
-          AppEngineUrlFetcher(url_constants.GITHUB_URL),
-          AppEngineBlobstore())
+      if _IsSamplesDisabled():
+        ServerInstance.github_file_system = EmptyDirFileSystem()
+      else:
+        ServerInstance.github_file_system = GithubFileSystem(
+            AppEngineUrlFetcher(url_constants.GITHUB_URL),
+            AppEngineBlobstore())
     return ServerInstance.github_file_system
 
   def __init__(self,
@@ -155,10 +164,17 @@ class ServerInstance(object):
     self.api_data_source_factory.SetReferenceResolverFactory(
         self.ref_resolver_factory)
 
+    # Note: samples are super slow in the dev server because it doesn't support
+    # async fetch, so disable them. If you actually want to test samples, then
+    # good luck, and modify _IsSamplesDisabled at the top.
+    if _IsSamplesDisabled():
+      svn_fs_for_samples = EmptyDirFileSystem()
+    else:
+      svn_fs_for_samples = self.svn_file_system
     self.samples_data_source_factory = SamplesDataSource.Factory(
         channel,
-        self.svn_file_system,
-        ServerInstance.github_file_system,
+        svn_fs_for_samples,
+        self.github_file_system,
         self.ref_resolver_factory,
         object_store_creator_factory,
         svn_constants.EXAMPLES_PATH)

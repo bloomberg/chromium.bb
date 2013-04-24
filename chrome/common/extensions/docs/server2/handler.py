@@ -6,9 +6,7 @@ import logging
 import os
 from StringIO import StringIO
 
-from appengine_wrappers import webapp
-from appengine_wrappers import memcache
-from appengine_wrappers import urlfetch
+from appengine_wrappers import IsDevServer, memcache, urlfetch, webapp
 from branch_utility import BranchUtility
 from server_instance import ServerInstance
 import svn_constants
@@ -31,10 +29,10 @@ class Handler(webapp.RequestHandler):
   # out pretty soon, and it also means that legitimate 404s are caught before a
   # round trip to SVN.
   #
-  # However, we can't expect users of preview.py to run a cronjob first, so,
-  # this is a hack allow that to be online all of the time.
+  # However, we can't expect users of preview.py nor the dev server to run a
+  # cronjob first, so, this is a hack allow that to be online all of the time.
   # TODO(kalman): achieve this via proper dependency injection.
-  ALWAYS_ONLINE = False
+  ALWAYS_ONLINE = IsDevServer()
 
   def __init__(self, request, response):
     super(Handler, self).__init__(request, response)
