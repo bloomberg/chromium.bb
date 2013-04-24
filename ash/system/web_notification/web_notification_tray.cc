@@ -226,6 +226,11 @@ bool WebNotificationTray::ShowMessageCenter() {
   return true;
 }
 
+void WebNotificationTray::UpdateMessageCenter() {
+  if (message_center_bubble())
+    message_center_bubble()->bubble()->ScheduleUpdate();
+}
+
 void WebNotificationTray::HideMessageCenter() {
   if (!message_center_bubble())
     return;

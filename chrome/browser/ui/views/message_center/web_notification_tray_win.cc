@@ -195,6 +195,11 @@ void WebNotificationTrayWin::HideMessageCenter() {
   message_center_bubble_.reset();
 }
 
+void WebNotificationTrayWin::UpdateMessageCenter() {
+  if (message_center_bubble_.get())
+    message_center_bubble_->bubble()->ScheduleUpdate();
+}
+
 void WebNotificationTrayWin::UpdatePopups() {
   // |popup_collection_| receives notification add/remove events and updates
   // itself, so this method doesn't need to do anything.

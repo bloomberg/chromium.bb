@@ -71,8 +71,12 @@ void MessageCenterTray::ToggleMessageCenterBubble() {
 }
 
 void MessageCenterTray::ShowPopupBubble() {
-  if (message_center_visible_)
+  if (message_center_visible_) {
+    // We don't want to show popups if the user is already looking at the
+    // message center.  Instead, update it.
+    delegate_->UpdateMessageCenter();
     return;
+  }
 
   if (popups_visible_) {
     delegate_->UpdatePopups();
@@ -143,6 +147,8 @@ void MessageCenterTray::OnMessageCenterChanged() {
   if (message_center_visible_) {
     if (message_center_->NotificationCount() == 0)
       HideMessageCenterBubble();
+    else
+      delegate_->UpdateMessageCenter();
   }
   if (popups_visible_) {
     if (message_center_->HasPopupNotifications())

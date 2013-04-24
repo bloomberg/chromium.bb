@@ -47,6 +47,7 @@ class WebNotificationTrayWin
   virtual void HidePopups() OVERRIDE;
   virtual bool ShowMessageCenter() OVERRIDE;
   virtual void HideMessageCenter() OVERRIDE;
+  virtual void UpdateMessageCenter() OVERRIDE;
   virtual void UpdatePopups() OVERRIDE;
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
 

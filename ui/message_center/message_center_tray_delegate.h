@@ -35,6 +35,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterTrayDelegate {
 
   // Remove the message center from the UI.
   virtual void HideMessageCenter() = 0;
+
+  // Called when a change to the message center could cause a change to the
+  // message center widget that is currently being displayed.
+  virtual void UpdateMessageCenter() = 0;
 };
 
 }  // namespace message_center
