@@ -166,8 +166,7 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
     : root_window_(root_window),
       root_window_layout_(NULL),
       shelf_(NULL),
-      panel_layout_manager_(NULL),
-      touch_observer_hud_(NULL) {
+      panel_layout_manager_(NULL) {
   SetRootWindowController(root_window, this);
   screen_dimmer_.reset(new ScreenDimmer(root_window));
 
@@ -200,6 +199,9 @@ RootWindowController* RootWindowController::ForActiveRootWindow() {
 }
 
 void RootWindowController::Shutdown() {
+  // Remove touch observer HUD.
+  SetTouchObserverHUD(NULL);
+
   CloseChildWindows();
   if (Shell::GetActiveRootWindow() == root_window_) {
     Shell::GetInstance()->set_active_root_window(
@@ -297,8 +299,12 @@ void RootWindowController::CreateContainers() {
   // Create touch observer HUD if needed. HUD should be created after the
   // containers have been created, so that its widget can be added to them.
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (command_line->HasSwitch(switches::kAshTouchHud))
-    touch_observer_hud_ = new TouchObserverHUD(root_window_.get());
+  if (command_line->HasSwitch(switches::kAshTouchHud)) {
+    int64 id = root_window_->GetProperty(kDisplayIdKey);
+    const gfx::Display& display = Shell::GetInstance()->display_manager()->
+        GetDisplayForId(id);
+    SetTouchObserverHUD(new TouchObserverHUD(display));
+  }
 }
 
 void RootWindowController::CreateSystemBackground(
@@ -400,6 +406,14 @@ void RootWindowController::MoveWindowsTo(aura::RootWindow* dst) {
   // display info.
   workspace_controller_->SetShelf(NULL);
   ReparentAllWindows(root_window_.get(), dst);
+}
+
+void RootWindowController::SetTouchObserverHUD(TouchObserverHUD* hud) {
+  if (touch_observer_hud_)
+    root_window_->RemovePreTargetHandler(touch_observer_hud_.get());
+  if (hud)
+    root_window_->AddPreTargetHandler(hud);
+  touch_observer_hud_.reset(hud);
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {

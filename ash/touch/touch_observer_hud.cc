@@ -276,12 +276,8 @@ class TouchHudCanvas : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TouchHudCanvas);
 };
 
-TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
-    : display_id_(initial_root->GetProperty(kDisplayIdKey)),
-      root_window_(initial_root) {
-  const gfx::Display& display =
-      Shell::GetInstance()->display_manager()->GetDisplayForId(display_id_);
-
+TouchObserverHUD::TouchObserverHUD(const gfx::Display& display)
+    : display_id_(display.id()) {
   views::View* content = new views::View;
 
   canvas_ = new TouchHudCanvas(this);
@@ -318,34 +314,26 @@ TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
   params.accept_events = false;
   params.bounds = gfx::Rect(display_size);
   params.parent = Shell::GetContainer(
-      root_window_,
+      Shell::GetInstance()->display_controller()->GetRootWindowForDisplayId(
+          display_id_),
       internal::kShellWindowId_OverlayContainer);
   widget_->Init(params);
   widget_->SetContentsView(content);
   widget_->StackAtTop();
   widget_->Show();
 
+  // The TouchObserverHUD's lifetime is always more than |widget_|. The
+  // |widget_| is unset from the OnWidgetDestroying callback.
   widget_->AddObserver(this);
 
-  // Observe changes in display size and mode to update touch HUD.
+  // Observe display changes to handle changes in display size.
   Shell::GetScreen()->AddObserver(this);
-#if defined(OS_CHROMEOS)
-  Shell::GetInstance()->output_configurator()->AddObserver(this);
-#endif  // defined(OS_CHROMEOS)
-
-  Shell::GetInstance()->display_controller()->AddObserver(this);
-  root_window_->AddPreTargetHandler(this);
 }
 
 TouchObserverHUD::~TouchObserverHUD() {
-  Shell::GetInstance()->display_controller()->RemoveObserver(this);
-
-#if defined(OS_CHROMEOS)
-  Shell::GetInstance()->output_configurator()->RemoveObserver(this);
-#endif  // defined(OS_CHROMEOS)
+  // The widget should have already been destroyed.
+  DCHECK(!widget_);
   Shell::GetScreen()->RemoveObserver(this);
-
-  widget_->RemoveObserver(this);
 }
 
 // static
@@ -420,68 +408,20 @@ void TouchObserverHUD::OnTouchEvent(ui::TouchEvent* event) {
 
 void TouchObserverHUD::OnWidgetDestroying(views::Widget* widget) {
   DCHECK_EQ(widget, widget_);
-  delete this;
+  widget_ = NULL;
 }
 
 void TouchObserverHUD::OnDisplayBoundsChanged(const gfx::Display& display) {
-  if (display.id() != display_id_)
-    return;
   const gfx::Size& size = display.size();
-  widget_->SetSize(size);
-  canvas_->SetSize(size);
-  label_container_->SetY(size.height() / kReducedScale);
+  if (display.id() == display_id_) {
+    widget_->SetSize(size);
+    canvas_->SetSize(size);
+    label_container_->SetY(size.height() / kReducedScale);
+  }
 }
 
 void TouchObserverHUD::OnDisplayAdded(const gfx::Display& new_display) {}
-
-void TouchObserverHUD::OnDisplayRemoved(const gfx::Display& old_display) {
-  if (old_display.id() != display_id_)
-    return;
-  widget_->CloseNow();
-}
-
-#if defined(OS_CHROMEOS)
-void TouchObserverHUD::OnDisplayModeChanged() {
-  // Clear touch HUD for any change in display mode (single, dual extended, dual
-  // mirrored, ...).
-  Clear();
-}
-#endif  // defined(OS_CHROMEOS)
-
-void TouchObserverHUD::OnDisplayConfigurationChanging() {
-  if (!root_window_)
-    return;
-
-  root_window_->RemovePreTargetHandler(this);
-
-  RootWindowController* controller = GetRootWindowController(root_window_);
-  controller->set_touch_observer_hud(NULL);
-
-  views::Widget::ReparentNativeView(
-      widget_->GetNativeView(),
-      Shell::GetContainer(root_window_,
-                          internal::kShellWindowId_UnparentedControlContainer));
-
-  root_window_ = NULL;
-}
-
-void TouchObserverHUD::OnDisplayConfigurationChanged() {
-  if (root_window_)
-    return;
-
-  root_window_ = Shell::GetInstance()->display_controller()->
-      GetRootWindowForDisplayId(display_id_);
-
-  views::Widget::ReparentNativeView(
-      widget_->GetNativeView(),
-      Shell::GetContainer(root_window_,
-                          internal::kShellWindowId_OverlayContainer));
-
-  RootWindowController* controller = GetRootWindowController(root_window_);
-  controller->set_touch_observer_hud(this);
-
-  root_window_->AddPreTargetHandler(this);
-}
+void TouchObserverHUD::OnDisplayRemoved(const gfx::Display& old_display) {}
 
 }  // namespace internal
 }  // namespace ash

@@ -89,13 +89,13 @@ class ASH_EXPORT RootWindowController {
   // NULL if no such shelf exists.
   ShelfWidget* shelf() { return shelf_.get(); }
 
-  TouchObserverHUD* touch_observer_hud() { return touch_observer_hud_; }
+  TouchObserverHUD* touch_observer_hud() { return touch_observer_hud_.get(); }
 
-  // Sets the touch HUD. The RootWindowController will not own this HUD; its
-  // lifetime is managed by itself.
-  void set_touch_observer_hud(TouchObserverHUD* hud) {
-    touch_observer_hud_ = hud;
-  }
+  // Sets the touch HUD for this root window controller and adds it as a
+  // pre-target handler to the root window. Also, removes the previous touch
+  // HUD, if any, from pre-target handlers.
+  void SetTouchObserverHUD(TouchObserverHUD* hud);
+
   // Access the shelf layout manager associated with this root
   // window controller, NULL if no such shelf exists.
   ShelfLayoutManager* GetShelfLayoutManager();
@@ -200,9 +200,8 @@ class ASH_EXPORT RootWindowController {
   scoped_ptr<ScreenDimmer> screen_dimmer_;
   scoped_ptr<WorkspaceController> workspace_controller_;
 
-  // Heads-up display for touch events. The RootWindowController does not own
-  // this HUD; its lifetime is managed by itself.
-  TouchObserverHUD* touch_observer_hud_;
+  // Heads-up display for touch events.
+  scoped_ptr<TouchObserverHUD> touch_observer_hud_;
 
   // We need to own event handlers for various containers.
   scoped_ptr<ToplevelWindowEventHandler> default_container_handler_;

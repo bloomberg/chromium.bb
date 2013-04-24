@@ -664,7 +664,6 @@
         'system/web_notification/web_notification_tray_unittest.cc',
         'test/ash_unittests.cc',
         'tooltips/tooltip_controller_unittest.cc',
-        'touch/touch_observer_hud_unittest.cc',
         'wm/activation_controller_unittest.cc',
         'wm/ash_activation_controller_unittest.cc',
         'wm/ash_native_cursor_manager_unittest.cc',
