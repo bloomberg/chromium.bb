@@ -10,11 +10,15 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
+#include "components/autofill/browser/autofill_common_test.h"
 #include "components/autofill/common/form_data.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+// TODO(groby): This entire file can be removed once the dialog supports the
+// cross-platform tests at AutofillDialogControllerTest.*
 
 namespace autofill {
 
@@ -77,6 +81,9 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   virtual ~AutofillDialogCocoaBrowserTest() {}
 
   virtual void SetUpOnMainThread() OVERRIDE {
+    // Ensure OSX does not pop up a modal dialog for Address Book.
+    autofill::test::DisableSystemServices(NULL);
+
     FormFieldData field;
     field.autocomplete_attribute = "cc-number";
     FormData form_data;
@@ -103,15 +110,7 @@ class AutofillDialogCocoaBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogCocoaBrowserTest);
 };
 
-// The following test fails under ASAN. Disabling until root cause is found.
-// This can pop up a "browser_tests would like access to your Contacts" dialog.
-// See also http://crbug.com/234008.
-#if defined(ADDRESS_SANITIZER)
-#define MAYBE_DisplayUI DISABLED_DisplayUI
-#else
-#define MAYBE_DisplayUI DisplayUI
-#endif
-IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, MAYBE_DisplayUI) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogCocoaBrowserTest, DisplayUI) {
   controller()->Show();
   controller()->GetView()->PerformClose();
 
