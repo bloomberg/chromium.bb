@@ -51,14 +51,11 @@ namespace notifications {
     // epoch (e.g. <code>Date.now() + n</code>).
     double? eventTime;
 
-    // Smaller version of the icon.
-    DOMString? secondIconUrl;
-
     // Text and icons of notification action buttons.
     NotificationButton[]? buttons;
 
     // Secondary notification content.
-    DOMString? expandedMessage;
+    [nodoc] DOMString? expandedMessage;
 
     // Image thumbnail for image-type notifications.
     DOMString? imageUrl;
