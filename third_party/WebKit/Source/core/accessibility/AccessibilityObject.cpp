@@ -27,12 +27,10 @@
  */
 
 #include "config.h"
-#include "AccessibilityObject.h"
+#include "core/accessibility/AccessibilityObject.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityTable.h"
-#include "FrameSelection.h"
 #include "Editor.h"
+#include "FrameSelection.h"
 #include "LocalizedStrings.h"
 #include "NodeTraversal.h"
 #include "RenderListItem.h"
@@ -43,6 +41,8 @@
 #include "TextCheckingHelper.h"
 #include "UserGestureIndicator.h"
 #include "VisibleUnits.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityTable.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

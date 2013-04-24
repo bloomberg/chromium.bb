@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "AccessibilityMockObject.h"
+#include "core/accessibility/AccessibilityMockObject.h"
 
 namespace WebCore {
     

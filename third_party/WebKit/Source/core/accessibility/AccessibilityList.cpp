@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "AccessibilityList.h"
+#include "core/accessibility/AccessibilityList.h"
 
 #include "RenderObject.h"
 

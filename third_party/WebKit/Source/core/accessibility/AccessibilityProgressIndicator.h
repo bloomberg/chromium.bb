@@ -21,7 +21,7 @@
 #ifndef AccessibilityProgressIndicator_h
 #define AccessibilityProgressIndicator_h
 
-#include "AccessibilityRenderObject.h"
+#include "core/accessibility/AccessibilityRenderObject.h"
 
 namespace WebCore {
 

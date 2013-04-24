@@ -27,13 +27,8 @@
 */
 
 #include "config.h"
-#include "AccessibilityRenderObject.h"
+#include "core/accessibility/AccessibilityRenderObject.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityImageMapLink.h"
-#include "AccessibilitySVGRoot.h"
-#include "AccessibilitySpinButton.h"
-#include "AccessibilityTable.h"
 #include "FrameSelection.h"
 #include "HTMLFormElement.h"
 #include "HTMLImageElement.h"
@@ -62,6 +57,11 @@
 #include "SVGImageChromeClient.h"
 #include "SVGSVGElement.h"
 #include "VisibleUnits.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityImageMapLink.h"
+#include "core/accessibility/AccessibilitySVGRoot.h"
+#include "core/accessibility/AccessibilitySpinButton.h"
+#include "core/accessibility/AccessibilityTable.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

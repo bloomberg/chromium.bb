@@ -28,8 +28,8 @@
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
 
-#include "AXObjectCache.h"
 #include "Text.h"
+#include "core/accessibility/AXObjectCache.h"
 
 namespace WebCore {
 

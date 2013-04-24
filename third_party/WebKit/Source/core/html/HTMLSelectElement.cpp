@@ -28,7 +28,6 @@
 #include "config.h"
 #include "HTMLSelectElement.h"
 
-#include "AXObjectCache.h"
 #include "Attribute.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
@@ -55,6 +54,7 @@
 #include "RenderTheme.h"
 #include "ScriptEventListener.h"
 #include "SpatialNavigation.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/Unicode.h>
 

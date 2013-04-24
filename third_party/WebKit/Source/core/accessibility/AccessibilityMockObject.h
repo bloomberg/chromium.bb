@@ -26,7 +26,7 @@
 #ifndef AccessibilityMockObject_h
 #define AccessibilityMockObject_h
 
-#include "AccessibilityObject.h"
+#include "core/accessibility/AccessibilityObject.h"
 
 namespace WebCore {
     

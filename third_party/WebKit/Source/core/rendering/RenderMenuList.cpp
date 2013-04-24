@@ -25,16 +25,15 @@
 #include "config.h"
 #include "RenderMenuList.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityMenuList.h"
+#include <math.h>
 #include "CSSFontSelector.h"
 #include "Chrome.h"
 #include "FontCache.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
 #include "HTMLOptGroupElement.h"
+#include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
@@ -45,7 +44,8 @@
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "TextRun.h"
-#include <math.h>
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityMenuList.h"
 
 using namespace std;
 

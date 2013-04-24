@@ -35,7 +35,6 @@
 #include "config.h"
 #include "FrameLoader.h"
 
-#include "AXObjectCache.h"
 #include "ApplicationCacheHost.h"
 #include "BackForwardController.h"
 #include "BeforeUnloadEvent.h"
@@ -101,6 +100,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "WindowFeatures.h"
 #include "XMLDocumentParser.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/loader/UniqueIdentifier.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

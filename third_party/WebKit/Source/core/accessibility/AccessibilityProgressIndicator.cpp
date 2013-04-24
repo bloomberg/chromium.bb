@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "AccessibilityProgressIndicator.h"
+#include "core/accessibility/AccessibilityProgressIndicator.h"
 
 #include "FloatConversion.h"
 #include "HTMLProgressElement.h"

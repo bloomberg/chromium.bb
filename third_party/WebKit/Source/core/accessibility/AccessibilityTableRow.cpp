@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "AccessibilityTableRow.h"
+#include "core/accessibility/AccessibilityTableRow.h"
 
-#include "AccessibilityTableCell.h"
 #include "RenderTableRow.h"
+#include "core/accessibility/AccessibilityTableCell.h"
 
 using namespace std;
 

@@ -27,7 +27,7 @@
 #include "config.h"
 #include "FocusController.h"
 
-#include "AXObjectCache.h"
+#include <limits>
 #include "Chrome.h"
 #include "Document.h"
 #include "Editor.h"
@@ -58,8 +58,8 @@
 #include "ShadowRoot.h"
 #include "SpatialNavigation.h"
 #include "Widget.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "htmlediting.h" // For firstPositionInOrBeforeNode
-#include <limits>
 
 namespace WebCore {
 

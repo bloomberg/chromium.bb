@@ -26,7 +26,7 @@
 #ifndef AccessibilitySpinButton_h
 #define AccessibilitySpinButton_h
 
-#include "AccessibilityMockObject.h"
+#include "core/accessibility/AccessibilityMockObject.h"
 
 #include "SpinButtonElement.h"
 

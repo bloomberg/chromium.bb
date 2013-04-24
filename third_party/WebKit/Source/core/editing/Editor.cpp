@@ -27,7 +27,6 @@
 #include "config.h"
 #include "Editor.h"
 
-#include "AXObjectCache.h"
 #include "AlternativeTextController.h"
 #include "ApplyStyleCommand.h"
 #include "CSSComputedStyleDeclaration.h"
@@ -89,11 +88,12 @@
 #include "TypingCommand.h"
 #include "UserTypingGestureIndicator.h"
 #include "VisibleUnits.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "htmlediting.h"
 #include "markup.h"
-#include <wtf/UnusedParam.h>
 #include <wtf/unicode/CharacterNames.h>
 #include <wtf/unicode/Unicode.h>
+#include <wtf/UnusedParam.h>
 
 namespace WebCore {
 

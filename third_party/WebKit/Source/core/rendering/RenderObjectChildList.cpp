@@ -27,11 +27,11 @@
 #include "config.h"
 #include "RenderObjectChildList.h"
 
-#include "AXObjectCache.h"
 #include "RenderCounter.h"
 #include "RenderObject.h"
 #include "RenderStyle.h"
 #include "RenderView.h"
+#include "core/accessibility/AXObjectCache.h"
 
 namespace WebCore {
 

@@ -26,21 +26,21 @@
 #include "config.h"
 #include "Scrollbar.h"
 
+#include <algorithm>
 #include "GraphicsContext.h"
 #include "PlatformGestureEvent.h"
 #include "PlatformMouseEvent.h"
 #include "ScrollAnimator.h"
 #include "ScrollableArea.h"
 #include "ScrollbarTheme.h"
-#include <algorithm>
 
 // FIXME: The following #includes are a layering violation and should be removed.
-#include "AXObjectCache.h"
-#include "AccessibilityScrollbar.h"
 #include "Document.h"
 #include "EventHandler.h"
 #include "Frame.h"
 #include "FrameView.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityScrollbar.h"
 
 using namespace std;
 

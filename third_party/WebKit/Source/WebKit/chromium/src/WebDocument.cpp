@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebDocument.h"
 
-#include "AXObjectCache.h"
 #include "CSSParserMode.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -56,6 +55,7 @@
 #include "WebFrameImpl.h"
 #include "WebNodeCollection.h"
 #include "WebNodeList.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>
 

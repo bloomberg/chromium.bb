@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "AccessibilityImageMapLink.h"
+#include "core/accessibility/AccessibilityImageMapLink.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityRenderObject.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityRenderObject.h"
 
 namespace WebCore {
     

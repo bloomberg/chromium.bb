@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "AccessibilitySlider.h"
+#include "core/accessibility/AccessibilitySlider.h"
 
-#include "AXObjectCache.h"
 #include "HTMLInputElement.h"
 #include "SliderThumbElement.h"
+#include "core/accessibility/AXObjectCache.h"
 
 namespace WebCore {
     

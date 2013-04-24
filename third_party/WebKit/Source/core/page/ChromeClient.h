@@ -22,7 +22,6 @@
 #ifndef ChromeClient_h
 #define ChromeClient_h
 
-#include "AXObjectCache.h"
 #include "ConsoleAPITypes.h"
 #include "ConsoleTypes.h"
 #include "Cursor.h"
@@ -37,6 +36,7 @@
 #include "ScrollTypes.h"
 #include "SearchPopupMenu.h"
 #include "WebCoreKeyboardUIMode.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>

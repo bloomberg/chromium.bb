@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "AccessibilityScrollbar.h"
+#include "core/accessibility/AccessibilityScrollbar.h"
 
 #include "ScrollView.h"
 

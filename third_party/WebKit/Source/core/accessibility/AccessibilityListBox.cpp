@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "AccessibilityListBox.h"
+#include "core/accessibility/AccessibilityListBox.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityListBoxOption.h"
 #include "HTMLSelectElement.h"
 #include "RenderListBox.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityListBoxOption.h"
 
 using namespace std;
 

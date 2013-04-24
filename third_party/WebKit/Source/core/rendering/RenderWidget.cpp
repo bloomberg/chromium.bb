@@ -23,7 +23,6 @@
 #include "config.h"
 #include "RenderWidget.h"
 
-#include "AXObjectCache.h"
 #include "AnimationController.h"
 #include "Frame.h"
 #include "GraphicsContext.h"
@@ -33,6 +32,7 @@
 #include "RenderLayerBacking.h"
 #include "RenderView.h"
 #include "RenderWidgetProtector.h"
+#include "core/accessibility/AXObjectCache.h"
 
 
 using namespace std;

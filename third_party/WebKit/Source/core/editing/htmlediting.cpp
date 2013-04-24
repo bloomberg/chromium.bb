@@ -26,7 +26,6 @@
 #include "config.h"
 #include "htmlediting.h"
 
-#include "AXObjectCache.h"
 #include "Document.h"
 #include "Editor.h"
 #include "ExceptionCodePlaceholder.h"
@@ -52,6 +51,7 @@
 #include "VisiblePosition.h"
 #include "VisibleSelection.h"
 #include "VisibleUnits.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>

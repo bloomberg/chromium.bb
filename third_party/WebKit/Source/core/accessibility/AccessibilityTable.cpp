@@ -27,16 +27,16 @@
  */
 
 #include "config.h"
-#include "AccessibilityTable.h"
+#include "core/accessibility/AccessibilityTable.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityTableCell.h"
-#include "AccessibilityTableColumn.h"
-#include "AccessibilityTableRow.h"
 #include "HTMLTableCaptionElement.h"
 #include "HTMLTableCellElement.h"
 #include "HTMLTableElement.h"
 #include "RenderTableCell.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityTableCell.h"
+#include "core/accessibility/AccessibilityTableColumn.h"
+#include "core/accessibility/AccessibilityTableRow.h"
 
 namespace WebCore {
 

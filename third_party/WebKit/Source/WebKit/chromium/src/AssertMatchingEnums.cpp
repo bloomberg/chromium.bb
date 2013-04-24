@@ -33,8 +33,6 @@
 
 #include "config.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityObject.h"
 #include "ApplicationCacheHost.h"
 #include "ContentSecurityPolicy.h"
 #include "Cursor.h"
@@ -110,15 +108,17 @@
 #include "WebTextCheckingResult.h"
 #include "WebTextCheckingType.h"
 #include "WebView.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityObject.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFilterOperation.h>
 #include <public/WebMediaStreamSource.h>
+#include <public/WebReferrerPolicy.h>
 #include <public/WebRTCDataChannelHandlerClient.h>
 #include <public/WebRTCPeerConnectionHandlerClient.h>
-#include <public/WebReferrerPolicy.h>
 #include <public/WebScrollbar.h>
 #include <public/WebURLRequest.h>
 #include <public/WebURLResponse.h>

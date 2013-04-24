@@ -24,7 +24,6 @@
 #include "config.h"
 #include "RenderBlock.h"
 
-#include "AXObjectCache.h"
 #include "ColumnInfo.h"
 #include "Document.h"
 #include "Editor.h"
@@ -60,11 +59,12 @@
 #include "RenderTextFragment.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
-#include "Settings.h"
 #include "SVGTextRunRenderingContext.h"
+#include "Settings.h"
 #include "ShadowRoot.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/StdLibExtras.h>
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"

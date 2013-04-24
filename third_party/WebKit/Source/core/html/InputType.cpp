@@ -28,7 +28,7 @@
 #include "config.h"
 #include "InputType.h"
 
-#include "AXObjectCache.h"
+#include <limits>
 #include "BeforeTextInsertedEvent.h"
 #include "ButtonInputType.h"
 #include "CheckboxInputType.h"
@@ -75,7 +75,7 @@
 #include "TimeInputType.h"
 #include "URLInputType.h"
 #include "WeekInputType.h"
-#include <limits>
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>

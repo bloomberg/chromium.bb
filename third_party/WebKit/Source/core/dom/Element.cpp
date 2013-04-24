@@ -26,7 +26,6 @@
 #include "config.h"
 #include "Element.h"
 
-#include "AXObjectCache.h"
 #include "Attr.h"
 #include "CSSParser.h"
 #include "CSSSelectorList.h"
@@ -82,6 +81,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "htmlediting.h"
 #include <wtf/BitVector.h>
 #include <wtf/MemoryInstrumentationVector.h>

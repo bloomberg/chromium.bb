@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "AccessibilityARIAGrid.h"
+#include "core/accessibility/AccessibilityARIAGrid.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityTableColumn.h"
-#include "AccessibilityTableRow.h"
 #include "RenderObject.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityTableColumn.h"
+#include "core/accessibility/AccessibilityTableRow.h"
 
 using namespace std;
 

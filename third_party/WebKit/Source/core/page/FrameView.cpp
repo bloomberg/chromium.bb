@@ -27,7 +27,6 @@
 #include "config.h"
 #include "FrameView.h"
 
-#include "AXObjectCache.h"
 #include "AnimationController.h"
 #include "BackForwardController.h"
 #include "CachedResourceLoader.h"
@@ -75,6 +74,7 @@
 #include "TextAutosizer.h"
 #include "TextResourceDecoder.h"
 #include "TextStream.h"
+#include "core/accessibility/AXObjectCache.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/TemporaryChange.h>

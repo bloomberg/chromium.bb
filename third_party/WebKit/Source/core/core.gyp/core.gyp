@@ -48,8 +48,6 @@
       '../',
       '../..',
       '<@(modules_include_dirs)',
-      '../accessibility',
-      '../accessibility/chromium',
       '<(bindings_dir)',
       '<(bindings_dir)/v8',
       '<(bindings_dir)/v8/custom',

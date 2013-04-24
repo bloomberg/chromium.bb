@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "AccessibilityMediaControls.h"
+#include "core/accessibility/AccessibilityMediaControls.h"
 
 #include "LocalizedStrings.h"
 

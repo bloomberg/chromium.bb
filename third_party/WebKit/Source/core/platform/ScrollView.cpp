@@ -26,7 +26,6 @@
 #include "config.h"
 #include "ScrollView.h"
 
-#include "AXObjectCache.h"
 #include "GraphicsContext.h"
 #include "GraphicsLayer.h"
 #include "HostWindow.h"
@@ -35,6 +34,7 @@
 #include "ScrollAnimator.h"
 #include "Scrollbar.h"
 #include "ScrollbarTheme.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "AccessibilitySpinButton.h"
+#include "core/accessibility/AccessibilitySpinButton.h"
 
-#include "AXObjectCache.h"
 #include "RenderObject.h"
+#include "core/accessibility/AXObjectCache.h"
 
 namespace WebCore {
 

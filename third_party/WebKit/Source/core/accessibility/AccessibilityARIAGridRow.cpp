@@ -27,9 +27,9 @@
  */
 
 #include "config.h"
-#include "AccessibilityARIAGridRow.h"
+#include "core/accessibility/AccessibilityARIAGridRow.h"
 
-#include "AccessibilityTable.h"
+#include "core/accessibility/AccessibilityTable.h"
 
 using namespace std;
 

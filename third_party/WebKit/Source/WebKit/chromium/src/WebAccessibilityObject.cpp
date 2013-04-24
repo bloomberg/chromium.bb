@@ -31,12 +31,6 @@
 #include "config.h"
 #include "WebAccessibilityObject.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityObject.h"
-#include "AccessibilityTable.h"
-#include "AccessibilityTableCell.h"
-#include "AccessibilityTableColumn.h"
-#include "AccessibilityTableRow.h"
 #include "CSSPrimitiveValueMappings.h"
 #include "Document.h"
 #include "EventHandler.h"
@@ -47,6 +41,12 @@
 #include "RenderStyle.h"
 #include "WebDocument.h"
 #include "WebNode.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityObject.h"
+#include "core/accessibility/AccessibilityTable.h"
+#include "core/accessibility/AccessibilityTableCell.h"
+#include "core/accessibility/AccessibilityTableColumn.h"
+#include "core/accessibility/AccessibilityTableRow.h"
 #include <public/WebPoint.h>
 #include <public/WebRect.h>
 #include <public/WebString.h>

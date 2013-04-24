@@ -28,7 +28,6 @@
 #include "config.h"
 #include "Document.h"
 
-#include "AXObjectCache.h"
 #include "AnimationController.h"
 #include "Attr.h"
 #include "Attribute.h"
@@ -83,9 +82,6 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "GeolocationController.h"
-#include "HashChangeEvent.h"
-#include "HistogramSupport.h"
-#include "History.h"
 #include "HTMLAllCollection.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLBodyElement.h"
@@ -104,6 +100,9 @@
 #include "HTMLStyleElement.h"
 #include "HTMLTitleElement.h"
 #include "HTTPParsers.h"
+#include "HashChangeEvent.h"
+#include "HistogramSupport.h"
+#include "History.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "ImageLoader.h"
@@ -186,6 +185,7 @@
 #include "XPathNSResolver.h"
 #include "XPathResult.h"
 #include "XSLTProcessor.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>

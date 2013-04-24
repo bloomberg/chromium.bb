@@ -26,9 +26,9 @@
 #ifndef AXObjectCache_h
 #define AXObjectCache_h
 
-#include "AccessibilityObject.h"
-#include "Timer.h"
 #include <limits.h>
+#include "Timer.h"
+#include "core/accessibility/AccessibilityObject.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

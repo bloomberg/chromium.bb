@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "AccessibilityMenuListOption.h"
+#include "core/accessibility/AccessibilityMenuListOption.h"
 
 #include "HTMLOptionElement.h"
 

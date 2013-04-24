@@ -32,8 +32,8 @@
 #include "config.h"
 #include "ChromeClientImpl.h"
 
-#include "AXObjectCache.h"
-#include "AccessibilityObject.h"
+#include "core/accessibility/AXObjectCache.h"
+#include "core/accessibility/AccessibilityObject.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooser.h"
 #include "ColorChooserClient.h"

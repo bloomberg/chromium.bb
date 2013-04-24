@@ -25,7 +25,6 @@
 #include "config.h"
 #include "Node.h"
 
-#include "AXObjectCache.h"
 #include "Attr.h"
 #include "Attribute.h"
 #include "BeforeLoadEvent.h"
@@ -111,6 +110,7 @@
 #include "WheelEvent.h"
 #include "WindowEventContext.h"
 #include "XMLNames.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/storage/StorageEvent.h"
 #include "htmlediting.h"
 #include <wtf/HashSet.h>

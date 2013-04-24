@@ -29,7 +29,6 @@
 #include "config.h"
 #include "HTMLInputElement.h"
 
-#include "AXObjectCache.h"
 #include "BeforeTextInsertedEvent.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -39,7 +38,6 @@
 #include "ElementShadow.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "UseCounter.h"
 #include "FileInputType.h"
 #include "FileList.h"
 #include "FormController.h"
@@ -66,11 +64,13 @@
 #include "RenderTheme.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScopedEventQueue.h"
+#include "ScriptEventListener.h"
 #include "SearchInputType.h"
 #include "ShadowRoot.h"
-#include "ScriptEventListener.h"
 #include "StyleResolver.h"
 #include "TouchEvent.h"
+#include "UseCounter.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

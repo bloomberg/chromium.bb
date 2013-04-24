@@ -23,7 +23,6 @@
 #include "config.h"
 #include "ContainerNode.h"
 
-#include "AXObjectCache.h"
 #include "ChildListMutationScope.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
@@ -47,6 +46,7 @@
 #include "RenderWidget.h"
 #include "RootInlineBox.h"
 #include "TemplateContentDocumentFragment.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 

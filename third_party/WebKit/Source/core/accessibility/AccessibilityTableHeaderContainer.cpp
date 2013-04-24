@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "AccessibilityTableHeaderContainer.h"
+#include "core/accessibility/AccessibilityTableHeaderContainer.h"
 
 
 using namespace std;

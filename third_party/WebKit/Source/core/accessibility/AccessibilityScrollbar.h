@@ -29,7 +29,7 @@
 #ifndef AccessibilityScrollbar_h
 #define AccessibilityScrollbar_h
 
-#include "AccessibilityMockObject.h"
+#include "core/accessibility/AccessibilityMockObject.h"
 
 namespace WebCore {
 

@@ -30,7 +30,7 @@
 #include "config.h"
 #include "RenderListBox.h"
 
-#include "AXObjectCache.h"
+#include <math.h>
 #include "CSSFontSelector.h"
 #include "Document.h"
 #include "DocumentEventQueue.h"
@@ -42,8 +42,8 @@
 #include "FrameView.h"
 #include "GraphicsContext.h"
 #include "HTMLNames.h"
-#include "HTMLOptionElement.h"
 #include "HTMLOptGroupElement.h"
+#include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "HitTestResult.h"
 #include "NodeRenderStyle.h"
@@ -58,7 +58,7 @@
 #include "ScrollbarTheme.h"
 #include "SpatialNavigation.h"
 #include "StyleResolver.h"
-#include <math.h>
+#include "core/accessibility/AXObjectCache.h"
 
 using namespace std;
 

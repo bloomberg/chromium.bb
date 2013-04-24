@@ -32,7 +32,7 @@
 #include "config.h"
 #include "RangeInputType.h"
 
-#include "AXObjectCache.h"
+#include <limits>
 #include "ElementShadow.h"
 #include "ExceptionCodePlaceholder.h"
 #include "HTMLDivElement.h"
@@ -51,7 +51,7 @@
 #include "Touch.h"
 #include "TouchEvent.h"
 #include "TouchList.h"
-#include <limits>
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/MathExtras.h>
 #include <wtf/PassOwnPtr.h>
 

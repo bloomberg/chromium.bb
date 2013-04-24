@@ -26,12 +26,12 @@
 #include "config.h"
 #include "InsertIntoTextNodeCommand.h"
 
-#include "AXObjectCache.h"
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
 #include "RenderText.h"
 #include "Settings.h"
 #include "Text.h"
+#include "core/accessibility/AXObjectCache.h"
 
 namespace WebCore {
 

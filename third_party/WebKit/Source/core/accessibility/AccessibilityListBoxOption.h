@@ -29,8 +29,8 @@
 #ifndef AccessibilityListBoxOption_h
 #define AccessibilityListBoxOption_h
 
-#include "AccessibilityObject.h"
 #include "HTMLElement.h"
+#include "core/accessibility/AccessibilityObject.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

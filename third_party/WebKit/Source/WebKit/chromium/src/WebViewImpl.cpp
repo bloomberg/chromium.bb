@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebViewImpl.h"
 
-#include "AXObjectCache.h"
 #include "AutofillPopupMenuClient.h"
 #include "BackForwardListChromium.h"
 #include "BatteryClientImpl.h"
@@ -142,6 +141,7 @@
 #include "WebTextInputInfo.h"
 #include "WebViewClient.h"
 #include "WheelEvent.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "painting/ContinuousPainter.h"
 #include "painting/GraphicsContextBuilder.h"

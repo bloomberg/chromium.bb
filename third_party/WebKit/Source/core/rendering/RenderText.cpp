@@ -25,7 +25,6 @@
 #include "config.h"
 #include "RenderText.h"
 
-#include "AXObjectCache.h"
 #include "EllipsisBox.h"
 #include "FloatQuad.h"
 #include "FontTranscoder.h"
@@ -45,6 +44,7 @@
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "break_lines.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/text/StringBuffer.h>
 #include <wtf/unicode/CharacterNames.h>
 

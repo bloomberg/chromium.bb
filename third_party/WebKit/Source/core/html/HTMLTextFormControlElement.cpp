@@ -25,13 +25,11 @@
 #include "config.h"
 #include "HTMLTextFormControlElement.h"
 
-#include "AXObjectCache.h"
 #include "Attribute.h"
 #include "ChromeClient.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventNames.h"
-#include "UseCounter.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "HTMLBRElement.h"
@@ -46,6 +44,8 @@
 #include "ScriptEventListener.h"
 #include "Text.h"
 #include "TextIterator.h"
+#include "UseCounter.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

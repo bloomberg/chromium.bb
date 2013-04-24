@@ -26,7 +26,7 @@
 #ifndef AccessibilityMenuListOption_h
 #define AccessibilityMenuListOption_h
 
-#include "AccessibilityMockObject.h"
+#include "core/accessibility/AccessibilityMockObject.h"
 
 namespace WebCore {
 

@@ -29,9 +29,9 @@
 #ifndef AccessibilityImageMapLink_h
 #define AccessibilityImageMapLink_h
 
-#include "AccessibilityMockObject.h"
 #include "HTMLAreaElement.h"
 #include "HTMLMapElement.h"
+#include "core/accessibility/AccessibilityMockObject.h"
 
 namespace WebCore {
     

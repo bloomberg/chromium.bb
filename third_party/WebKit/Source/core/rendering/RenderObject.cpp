@@ -27,7 +27,8 @@
 #include "config.h"
 #include "RenderObject.h"
 
-#include "AXObjectCache.h"
+#include <stdio.h>
+#include <algorithm>
 #include "AnimationController.h"
 #include "Chrome.h"
 #include "ContentData.h"
@@ -74,9 +75,8 @@
 #include "StyleResolver.h"
 #include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "htmlediting.h"
-#include <algorithm>
-#include <stdio.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/UnusedParam.h>
 

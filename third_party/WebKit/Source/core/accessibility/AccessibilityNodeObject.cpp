@@ -27,9 +27,8 @@
 */
 
 #include "config.h"
-#include "AccessibilityNodeObject.h"
+#include "core/accessibility/AccessibilityNodeObject.h"
 
-#include "AXObjectCache.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLInputElement.h"
@@ -39,6 +38,7 @@
 #include "NodeTraversal.h"
 #include "Text.h"
 #include "UserGestureIndicator.h"
+#include "core/accessibility/AXObjectCache.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>
