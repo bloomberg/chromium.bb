@@ -63,7 +63,7 @@ ProxyDecryptor::ProxyDecryptor(
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb),
       need_key_cb_(need_key_cb),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 ProxyDecryptor::~ProxyDecryptor() {

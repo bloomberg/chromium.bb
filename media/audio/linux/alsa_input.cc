@@ -41,7 +41,7 @@ AlsaPcmInputStream::AlsaPcmInputStream(AudioManagerLinux* audio_manager,
       device_handle_(NULL),
       mixer_handle_(NULL),
       mixer_element_handle_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      weak_factory_(this),
       read_callback_behind_schedule_(false) {
 }
 

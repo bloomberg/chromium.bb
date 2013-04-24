@@ -24,7 +24,7 @@ VideoDecoderSelector::VideoDecoderSelector(
     : message_loop_(message_loop),
       decoders_(decoders.Pass()),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 VideoDecoderSelector::~VideoDecoderSelector() {}

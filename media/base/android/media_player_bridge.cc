@@ -66,7 +66,7 @@ MediaPlayerBridge::MediaPlayerBridge(
       can_seek_backward_(true),
       manager_(manager),
       resource_getter_(resource_getter),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
+      weak_this_(this),
       listener_(base::MessageLoopProxy::current(),
                 weak_this_.GetWeakPtr()) {
   Initialize();

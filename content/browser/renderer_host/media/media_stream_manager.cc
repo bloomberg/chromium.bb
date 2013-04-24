@@ -147,8 +147,7 @@ MediaStreamManager::EnumerationCache::~EnumerationCache() {
 }
 
 MediaStreamManager::MediaStreamManager(media::AudioManager* audio_manager)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          ui_controller_(new MediaStreamUIController(this))),
+    : ui_controller_(new MediaStreamUIController(this)),
       audio_manager_(audio_manager),
       monitoring_started_(false),
       io_loop_(NULL),

@@ -25,7 +25,7 @@ AudioOutputDispatcherImpl::AudioOutputDispatcherImpl(
           2 * params.frames_per_buffer() * base::Time::kMicrosecondsPerSecond /
           static_cast<float>(params.sample_rate()))),
       paused_proxies_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)),
+      weak_this_(this),
       close_timer_(FROM_HERE,
                    close_delay,
                    weak_this_.GetWeakPtr(),

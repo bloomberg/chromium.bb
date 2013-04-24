@@ -36,7 +36,7 @@ PpapiDecryptor::PpapiDecryptor(
       need_key_cb_(need_key_cb),
       plugin_cdm_delegate_(NULL),
       render_loop_proxy_(base::MessageLoopProxy::current()),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      weak_ptr_factory_(this),
       weak_this_(weak_ptr_factory_.GetWeakPtr()) {
   DCHECK(plugin_instance_);
 }

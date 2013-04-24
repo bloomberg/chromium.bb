@@ -49,7 +49,7 @@ AudioOutputController::AudioOutputController(AudioManager* audio_manager,
       sync_reader_(sync_reader),
       message_loop_(audio_manager->GetMessageLoop()),
       number_polling_attempts_left_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_this_(this)) {
+      weak_this_(this) {
   DCHECK(audio_manager);
   DCHECK(handler_);
   DCHECK(sync_reader_);

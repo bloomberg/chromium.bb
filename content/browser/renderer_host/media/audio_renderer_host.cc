@@ -89,9 +89,8 @@ AudioRendererHost::AudioEntry::AudioEntry(
     : host_(host),
       stream_id_(stream_id),
       render_view_id_(render_view_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(media::AudioOutputController::Create(
-              host->audio_manager_, this, params, reader.get()))),
+      controller_(media::AudioOutputController::Create(
+          host->audio_manager_, this, params, reader.get())),
       shared_memory_(shared_memory.Pass()),
       reader_(reader.Pass()) {
   DCHECK(controller_);
