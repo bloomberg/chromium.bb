@@ -23,6 +23,9 @@ class AppListTestModel : public AppListModel {
   // Populate the model with |n| items titled "Item #".
   void PopulateApps(int n);
 
+  // Populate the model with an item titled "Item |id|".
+  void PopulateAppWithId(int id);
+
   // Get a string of all apps in |model| joined with ','.
   std::string GetModelContent();
 

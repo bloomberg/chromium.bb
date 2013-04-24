@@ -15,6 +15,10 @@ void AppListTestModel::PopulateApps(int n) {
     AddItem(base::StringPrintf("Item %d", i));
 }
 
+void AppListTestModel::PopulateAppWithId(int id) {
+  AddItem(base::StringPrintf("Item %d", id));
+}
+
 std::string AppListTestModel::GetModelContent() {
   std::string content;
   for (size_t i = 0; i < apps()->item_count(); ++i) {

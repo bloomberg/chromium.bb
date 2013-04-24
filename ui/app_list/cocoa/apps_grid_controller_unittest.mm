@@ -5,12 +5,14 @@
 #include "base/memory/scoped_nsobject.h"
 #import "testing/gtest_mac.h"
 #include "ui/app_list/app_list_item_model.h"
+#import "ui/app_list/cocoa/apps_collection_view_drag_manager.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
 #import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
 #include "ui/app_list/test/app_list_test_model.h"
 #include "ui/app_list/test/app_list_test_view_delegate.h"
+#import "ui/base/test/cocoa_test_event_utils.h"
 
 @interface TestPaginationObserver : NSObject<AppsPaginationModelObserver> {
  @private
@@ -288,6 +290,7 @@ TEST_F(AppsGridControllerTest, PaginationObserverPagesChanged) {
 
 // Test AppsGridPaginationObserver selectedPageChanged().
 TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
+  [AppsGridController setScrollAnimationDuration:0.0];
   scoped_nsobject<TestPaginationObserver> observer(
       [[TestPaginationObserver alloc] init]);
   [apps_grid_controller_ setPaginationObserver:observer];
@@ -315,6 +318,199 @@ TEST_F(AppsGridControllerTest, PaginationObserverSelectedPageChanged) {
   EXPECT_EQ(3, [observer lastNewSelectedPage]);
 
   [apps_grid_controller_ setPaginationObserver:nil];
+}
+
+namespace {
+
+// Generate a mouse event at the centre of the view in |page| with the given
+// |index_in_page| that can be used to initiate, update and complete drag
+// operations.
+NSEvent* MouseEventInCell(NSCollectionView* page, size_t index_in_page) {
+  NSRect cell_rect = [page frameForItemAtIndex:index_in_page];
+  NSPoint point_in_view = NSMakePoint(NSMidX(cell_rect), NSMidY(cell_rect));
+  NSPoint point_in_window = [page convertPoint:point_in_view
+                                        toView:nil];
+  return cocoa_test_event_utils::LeftMouseDownAtPoint(point_in_window);
+}
+
+}  // namespace
+
+// Test basic item moves with two items; swapping them around, dragging outside
+// of the view bounds, and dragging on the background.
+TEST_F(AppsGridControllerTest, DragAndDropSimple) {
+  model()->PopulateApps(2);
+  NSCollectionView* page = [apps_grid_controller_ collectionViewAtPageIndex:0];
+  NSEvent* mouse_at_cell_0 = MouseEventInCell(page, 0);
+  NSEvent* mouse_at_cell_1 = MouseEventInCell(page, 1);
+  NSEvent* mouse_at_page_centre = MouseEventInCell(page, 6);
+  NSEvent* mouse_off_page = MouseEventInCell(page, kItemsPerPage * 2);
+
+  const std::string kOrdered = "Item 0,Item 1";
+  const std::string kSwapped = "Item 1,Item 0";
+  const std::string kOrderedView = "|Item 0,Item 1|";
+  const std::string kSwappedView = "|Item 1,Item 0|";
+
+  EXPECT_EQ(kOrdered, model()->GetModelContent());
+  EXPECT_EQ(kOrderedView, GetViewContent());
+  AppsCollectionViewDragManager* drag_manager =
+      [apps_grid_controller_ dragManager];
+
+  // Drag first item over the second item and release.
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_0];
+  [drag_manager onMouseDragged:mouse_at_cell_1];
+  EXPECT_EQ(kOrdered, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());  // View swaps first.
+  [drag_manager onMouseUp:mouse_at_cell_1];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+
+  // Drag item back.
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_1];
+  [drag_manager onMouseDragged:mouse_at_cell_0];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kOrderedView, GetViewContent());
+  [drag_manager onMouseUp:mouse_at_cell_0];
+  EXPECT_EQ(kOrdered, model()->GetModelContent());
+  EXPECT_EQ(kOrderedView, GetViewContent());
+
+  // Drag first item to centre of view (should put in last place).
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_0];
+  [drag_manager onMouseDragged:mouse_at_page_centre];
+  EXPECT_EQ(kOrdered, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+  [drag_manager onMouseUp:mouse_at_page_centre];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+
+  // Drag item to centre again (should leave it in the last place).
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_1];
+  [drag_manager onMouseDragged:mouse_at_page_centre];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+  [drag_manager onMouseUp:mouse_at_page_centre];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+
+  // Drag starting in the centre of the view, should do nothing.
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_page_centre];
+  [drag_manager onMouseDragged:mouse_at_cell_0];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+  [drag_manager onMouseUp:mouse_at_cell_0];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+
+  // Click off page.
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_off_page];
+  [drag_manager onMouseDragged:mouse_at_cell_0];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+  [drag_manager onMouseUp:mouse_at_cell_0];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kSwappedView, GetViewContent());
+
+  // Drag to first over second item, then off page.
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_0];
+  [drag_manager onMouseDragged:mouse_at_cell_1];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kOrderedView, GetViewContent());
+  [drag_manager onMouseDragged:mouse_off_page];
+  EXPECT_EQ(kSwapped, model()->GetModelContent());
+  EXPECT_EQ(kOrderedView, GetViewContent());
+  [drag_manager onMouseUp:mouse_off_page];
+  EXPECT_EQ(kOrdered, model()->GetModelContent());
+  EXPECT_EQ(kOrderedView, GetViewContent());
+
+  // Replace with an empty model, and ensure we do not break.
+  ReplaceTestModel(0);
+  EXPECT_EQ(std::string(), model()->GetModelContent());
+  EXPECT_EQ(std::string("||"), GetViewContent());
+  [drag_manager onMouseDownInPage:page
+                        withEvent:mouse_at_cell_0];
+  [drag_manager onMouseDragged:mouse_at_cell_1];
+  [drag_manager onMouseUp:mouse_at_cell_1];
+  EXPECT_EQ(std::string(), model()->GetModelContent());
+  EXPECT_EQ(std::string("||"), GetViewContent());
+}
+
+// Test item moves between pages.
+TEST_F(AppsGridControllerTest, DragAndDropMultiPage) {
+  [AppsGridController setScrollAnimationDuration:0.0];
+  const size_t kPagesToTest = 3;
+  // Put one item on the last page to hit more edge cases.
+  ReplaceTestModel(kItemsPerPage * (kPagesToTest - 1) + 1);
+  NSCollectionView* page[kPagesToTest];
+  for (size_t i = 0; i < kPagesToTest; ++i)
+    page[i] = [apps_grid_controller_ collectionViewAtPageIndex:i];
+
+  const std::string kSecondItemMovedToSecondPage =
+      "|Item 0,Item 2,Item 3,Item 4,Item 5,Item 6,Item 7,Item 8,"
+      "Item 9,Item 10,Item 11,Item 12,Item 13,Item 14,Item 15,Item 16|"
+      "|Item 17,Item 1,Item 18,Item 19,Item 20,Item 21,Item 22,Item 23,"
+      "Item 24,Item 25,Item 26,Item 27,Item 28,Item 29,Item 30,Item 31|"
+      "|Item 32|";
+
+  NSEvent* mouse_at_cell_0 = MouseEventInCell(page[0], 0);
+  NSEvent* mouse_at_cell_1 = MouseEventInCell(page[0], 1);
+  AppsCollectionViewDragManager* drag_manager =
+      [apps_grid_controller_ dragManager];
+  [drag_manager onMouseDownInPage:page[0]
+                        withEvent:mouse_at_cell_1];
+
+  // Initiate dragging before changing pages.
+  [drag_manager onMouseDragged:mouse_at_cell_0];
+
+  // Scroll to the second page.
+  [apps_grid_controller_ scrollToPage:1];
+  [drag_manager onMouseDragged:mouse_at_cell_1];
+
+  // Do one exhaustive check, and then spot-check corner cases.
+  EXPECT_EQ(kSecondItemMovedToSecondPage, GetViewContent());
+  EXPECT_EQ(0u, GetPageIndexForItem(0));
+  EXPECT_EQ(1u, GetPageIndexForItem(1));
+  EXPECT_EQ(0u, GetPageIndexForItem(2));
+  EXPECT_EQ(0u, GetPageIndexForItem(16));
+  EXPECT_EQ(1u, GetPageIndexForItem(17));
+  EXPECT_EQ(1u, GetPageIndexForItem(31));
+  EXPECT_EQ(2u, GetPageIndexForItem(32));
+
+  // Scroll to the third page and drag some more.
+  [apps_grid_controller_ scrollToPage:2];
+  [drag_manager onMouseDragged:mouse_at_cell_1];
+  EXPECT_EQ(2u, GetPageIndexForItem(1));
+  EXPECT_EQ(1u, GetPageIndexForItem(31));
+  EXPECT_EQ(1u, GetPageIndexForItem(32));
+
+  // Scroll backwards.
+  [apps_grid_controller_ scrollToPage:1];
+  [drag_manager onMouseDragged:mouse_at_cell_1];
+  EXPECT_EQ(kSecondItemMovedToSecondPage, GetViewContent());
+  EXPECT_EQ(1u, GetPageIndexForItem(1));
+  EXPECT_EQ(1u, GetPageIndexForItem(31));
+  EXPECT_EQ(2u, GetPageIndexForItem(32));
+
+  // Simulate installing an item while dragging (or have it appear during sync).
+  model()->PopulateAppWithId(33);
+  // Item should go back to its position before the drag.
+  EXPECT_EQ(0u, GetPageIndexForItem(1));
+  EXPECT_EQ(1u, GetPageIndexForItem(31));
+  EXPECT_EQ(2u, GetPageIndexForItem(32));
+  // New item should appear at end.
+  EXPECT_EQ(2u, GetPageIndexForItem(33));
+
+  // Scroll to end again, and keep dragging (should be ignored).
+  [apps_grid_controller_ scrollToPage:2];
+  [drag_manager onMouseDragged:mouse_at_cell_0];
+  EXPECT_EQ(0u, GetPageIndexForItem(1));
+  [drag_manager onMouseUp:mouse_at_cell_0];
+  EXPECT_EQ(0u, GetPageIndexForItem(1));
 }
 
 }  // namespace test

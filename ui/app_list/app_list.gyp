@@ -42,11 +42,15 @@
         'cocoa/app_list_view_controller.mm',
         'cocoa/app_list_window_controller.h',
         'cocoa/app_list_window_controller.mm',
+        'cocoa/apps_collection_view_drag_manager.h',
+        'cocoa/apps_collection_view_drag_manager.mm',
         'cocoa/apps_grid_controller.h',
         'cocoa/apps_grid_controller.mm',
         'cocoa/apps_grid_view_item.h',
         'cocoa/apps_grid_view_item.mm',
         'cocoa/apps_pagination_model_observer.h',
+        'cocoa/item_drag_controller.h',
+        'cocoa/item_drag_controller.mm',
         'cocoa/scroll_view_with_no_scrollbars.h',
         'cocoa/scroll_view_with_no_scrollbars.mm',
         'pagination_model.cc',
@@ -114,6 +118,11 @@
           'include_dirs': [
             '../../third_party/GTM',
           ],
+          'link_settings': {
+            'libraries': [
+              '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+            ],
+          },
         }, {  # OS!="mac"
           'sources/': [
             ['exclude', 'cocoa/'],

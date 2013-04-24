@@ -8,7 +8,8 @@
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_model_observer.h"
 #include "ui/app_list/app_list_view_delegate.h"
-#include "ui/app_list/cocoa/apps_grid_view_item.h"
+#import "ui/app_list/cocoa/apps_collection_view_drag_manager.h"
+#import "ui/app_list/cocoa/apps_grid_view_item.h"
 #import "ui/app_list/cocoa/apps_pagination_model_observer.h"
 #include "ui/base/models/list_model_observer.h"
 
@@ -23,7 +24,8 @@ const int kItemsPerPage = kFixedRows * kFixedColumns;
 const CGFloat kLeftRightPadding = 16;
 const CGFloat kTopPadding = 30;
 
-// Preferred tile size when showing in fixed layout.
+// Preferred tile size when showing in fixed layout. These should be even
+// numbers to ensure that if they are grown 50% they remain integers.
 const CGFloat kPreferredTileWidth = 88;
 const CGFloat kPreferredTileHeight = 98;
 
@@ -42,9 +44,6 @@ NSTimeInterval g_scroll_duration = 0.18;
 
 // Index of the page with the most content currently visible.
 - (size_t)nearestPageIndex;
-
-// Make an empty NSCollectionView positioned horizontally for |pageIndex|.
-- (NSCollectionView*)makePageForIndex:(size_t)pageIndex;
 
 // Bootstrap the views this class controls.
 - (void)loadAndSetView;
@@ -70,6 +69,9 @@ NSTimeInterval g_scroll_duration = 0.18;
 
 // Create any new pages after updating |items_|.
 - (void)updatePages:(size_t)startItemIndex;
+
+- (void)updatePageContent:(size_t)pageIndex
+               resetModel:(BOOL)resetModel;
 
 // Bridged method for ui::ListModelObserver.
 - (void)listItemsAdded:(size_t)start
@@ -112,6 +114,12 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 - (id)init {
   if ((self = [super init])) {
     bridge_.reset(new app_list::AppsGridDelegateBridge(self));
+    NSSize cellSize = NSMakeSize(kPreferredTileWidth, kPreferredTileHeight);
+    dragManager_.reset(
+        [[AppsCollectionViewDragManager alloc] initWithCellSize:cellSize
+                                                           rows:kFixedRows
+                                                        columns:kFixedColumns
+                                                 gridController:self]);
     pages_.reset([[NSMutableArray alloc] init]);
     items_.reset([[NSMutableArray alloc] init]);
     [self loadAndSetView];
@@ -128,6 +136,14 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
 
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex {
   return [pages_ objectAtIndex:pageIndex];
+}
+
+- (size_t)pageIndexForCollectionView:(NSCollectionView*)page {
+  for (size_t pageIndex = 0; pageIndex < [pages_ count]; ++pageIndex) {
+    if (page == [self collectionViewAtPageIndex:pageIndex])
+      return pageIndex;
+  }
+  return NSNotFound;
 }
 
 - (app_list::AppListModel*)model {
@@ -172,6 +188,10 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   return [pages_ count];
 }
 
+- (size_t)itemCount {
+  return [items_ count];
+}
+
 - (void)scrollToPage:(size_t)pageIndex {
   NSClipView* clipView = [[self gridScrollView] contentView];
   NSPoint newOrigin = [clipView bounds].origin;
@@ -213,30 +233,6 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   } else {
     [self scrollToPage:[self nearestPageIndex]];
   }
-}
-
-- (NSCollectionView*)makePageForIndex:(size_t)pageIndex {
-  NSRect pageFrame = NSMakeRect(
-      kLeftRightPadding + kViewWidth * pageIndex, 0,
-      kViewWidth, kViewHeight);
-  NSSize itemSize = NSMakeSize(kPreferredTileWidth, kPreferredTileHeight);
-  scoped_nsobject<NSCollectionView> itemCollectionView(
-      [[NSCollectionView alloc] initWithFrame:pageFrame]);
-  [itemCollectionView setMaxNumberOfRows:kFixedRows];
-  [itemCollectionView setMinItemSize:itemSize];
-  [itemCollectionView setMaxItemSize:itemSize];
-  [itemCollectionView setSelectable:YES];
-  [itemCollectionView setFocusRingType:NSFocusRingTypeNone];
-  [itemCollectionView setBackgroundColors:
-      [NSArray arrayWithObject:[NSColor clearColor]]];
-
-  scoped_nsobject<AppsGridViewItem> itemPrototype(
-      [[AppsGridViewItem alloc] initWithSize:itemSize]);
-  [[itemPrototype button] setTarget:self];
-  [[itemPrototype button] setAction:@selector(onItemClicked:)];
-
-  [itemCollectionView setItemPrototype:itemPrototype];
-  return itemCollectionView.autorelease();
 }
 
 - (void)loadAndSetView {
@@ -344,8 +340,12 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
                                                currentPages - targetPages)];
     } else {
       // Pages need to be added.
-      for (size_t i = currentPages; i < targetPages; ++i)
-        [pages_ addObject:[self makePageForIndex:i]];
+      for (size_t i = currentPages; i < targetPages; ++i) {
+        NSRect pageFrame = NSMakeRect(
+            kLeftRightPadding + kViewWidth * i, 0,
+            kViewWidth, kViewHeight);
+        [pages_ addObject:[dragManager_ makePageWithFrame:pageFrame]];
+      }
     }
 
     [[self pagesContainerView] setSubviews:pages_];
@@ -357,23 +357,86 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   const size_t startPage = startItemIndex / kItemsPerPage;
   // All pages on or after |startPage| may need items added or removed.
   for (size_t pageIndex = startPage; pageIndex < targetPages; ++pageIndex) {
-    size_t startIndex = pageIndex * kItemsPerPage;
-    size_t length = kItemsPerPage;
-    // Check if it's the last page, and it's not full.
-    if (startIndex + length > [items_ count])
-      length = [items_ count] - startIndex;
-
-    [[self collectionViewAtPageIndex:pageIndex]
-        setContent:[items_ subarrayWithRange:NSMakeRange(startIndex, length)]];
+    [self updatePageContent:pageIndex
+                 resetModel:YES];
   }
+}
+
+- (void)updatePageContent:(size_t)pageIndex
+               resetModel:(BOOL)resetModel {
+  NSCollectionView* pageView = [self collectionViewAtPageIndex:pageIndex];
+  if (resetModel) {
+    // Clear the models first, otherwise removed items could be autoreleased at
+    // an unknown point in the future, when the model owner may have gone away.
+    for (size_t i = 0; i < [[pageView content] count]; ++i) {
+      AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
+          [pageView itemAtIndex:i]);
+      [item setModel:NULL];
+    }
+  }
+
+  NSRange inPageRange = NSIntersectionRange(
+      NSMakeRange(pageIndex * kItemsPerPage, kItemsPerPage),
+      NSMakeRange(0, [items_ count]));
+  NSArray* pageContent = [items_ subarrayWithRange:inPageRange];
+  [pageView setContent:pageContent];
+  if (!resetModel)
+    return;
+
+  for (size_t i = 0; i < [pageContent count]; ++i) {
+    AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
+        [pageView itemAtIndex:i]);
+    [item setModel:static_cast<app_list::AppListItemModel*>(
+        [[pageContent objectAtIndex:i] pointerValue])];
+  }
+}
+
+- (void)moveItemForDrag:(size_t)fromIndex
+            toItemIndex:(size_t)toIndex {
+  scoped_nsobject<NSValue> item([[items_ objectAtIndex:fromIndex] retain]);
+  [items_ removeObjectAtIndex:fromIndex];
+  [items_ insertObject:item
+               atIndex:toIndex];
+
+  size_t fromPageIndex = fromIndex / kItemsPerPage;
+  size_t toPageIndex = toIndex / kItemsPerPage;
+  if (fromPageIndex == toPageIndex) {
+    [self updatePageContent:fromPageIndex
+                 resetModel:NO];  // Just reorder items.
+    return;
+  }
+
+  if (fromPageIndex > toPageIndex)
+    std::swap(fromPageIndex, toPageIndex);
+
+  for (size_t i = fromPageIndex; i <= toPageIndex; ++i) {
+    [self updatePageContent:i
+                 resetModel:YES];
+  }
+  [[[self itemAtIndex:toIndex] button] setHidden:YES];
+}
+
+// Compare with views implementation in AppsGridView::MoveItemInModel().
+- (void)moveItemWithIndex:(size_t)itemIndex
+             toModelIndex:(size_t)modelIndex {
+  // Ingore no-op moves. Note that this is always the case when canceled.
+  if (itemIndex == modelIndex)
+    return;
+
+  model_->apps()->RemoveObserver(bridge_.get());
+  model_->apps()->Move(itemIndex, modelIndex);
+  model_->apps()->AddObserver(bridge_.get());
+}
+
+- (AppsCollectionViewDragManager*)dragManager {
+  return dragManager_;
 }
 
 - (void)listItemsAdded:(size_t)start
                  count:(size_t)count {
-  // NSCollectionView animates objects based on how the content array changes
-  // between calls to setContent. The pointer to the AppListItemModel gives a
-  // unique identifier to use, even though the pointer is never actually used
-  // for the object it points to.
+  // Cancel any drag, to ensure the model stays consistent.
+  [dragManager_ cancelDrag];
+
   for (size_t i = start; i < start + count; ++i) {
     app_list::AppListItemModel* itemModel = model_->apps()->GetItemAt(i);
     [items_ insertObject:[NSValue valueWithPointer:itemModel]
@@ -381,8 +444,6 @@ class AppsGridDelegateBridge : public ui::ListModelObserver {
   }
 
   [self updatePages:start];
-  for (size_t i = start; i < start + count; ++i)
-    [[self itemAtIndex:i] setModel:model_->apps()->GetItemAt(i)];
 }
 
 @end

@@ -104,6 +104,11 @@ void ItemModelObserverBridge::ItemPercentDownloadedChanged() {
   [self setNeedsDisplay:YES];
 }
 
+// Ignore all hit tests. The grid controller needs to be the owner of any drags.
+- (NSView*)hitTest:(NSPoint)aPoint {
+  return nil;
+}
+
 - (void)drawRect:(NSRect)dirtyRect {
   if (!selected_)
     return;

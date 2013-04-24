@@ -20,6 +20,7 @@ class AppsGridDelegateBridge;
 
 @class AppsGridViewItem;
 @protocol AppsPaginationModelObserver;
+@class AppsCollectionViewDragManager;
 
 // Controls a grid of views, representing AppListModel::Apps sub models.
 APP_LIST_EXPORT
@@ -29,6 +30,7 @@ APP_LIST_EXPORT
   app_list::AppListViewDelegate* delegate_;  // Weak. Owned by view controller.
   scoped_ptr<app_list::AppsGridDelegateBridge> bridge_;
 
+  scoped_nsobject<AppsCollectionViewDragManager> dragManager_;
   scoped_nsobject<NSMutableArray> pages_;
   scoped_nsobject<NSMutableArray> items_;
 
@@ -46,6 +48,7 @@ APP_LIST_EXPORT
 + (void)setScrollAnimationDuration:(NSTimeInterval)duration;
 
 - (NSCollectionView*)collectionViewAtPageIndex:(size_t)pageIndex;
+- (size_t)pageIndexForCollectionView:(NSCollectionView*)page;
 
 - (AppsGridViewItem*)itemAtIndex:(size_t)itemIndex;
 
@@ -64,8 +67,25 @@ APP_LIST_EXPORT
 // Return the number of pages of icons in the grid.
 - (size_t)pageCount;
 
+// Return the number of items over all pages in the grid.
+- (size_t)itemCount;
+
 // Scroll to a page in the grid view with an animation.
 - (void)scrollToPage:(size_t)pageIndex;
+
+// Moves an item within the view only, whilst dragging is in progress.
+- (void)moveItemForDrag:(size_t)fromIndex
+            toItemIndex:(size_t)toIndex;
+
+// Moves an item in the item model. Does not adjust the view.
+- (void)moveItemWithIndex:(size_t)itemIndex
+             toModelIndex:(size_t)modelIndex;
+
+@end
+
+@interface AppsGridController(TestingAPI)
+
+- (AppsCollectionViewDragManager*)dragManager;
 
 @end
 

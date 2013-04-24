@@ -5,6 +5,8 @@
 #import "ui/app_list/cocoa/test/apps_grid_controller_test_helper.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/stringprintf.h"
+#include "ui/app_list/app_list_item_model.h"
 #import "ui/app_list/cocoa/apps_grid_controller.h"
 #import "ui/app_list/cocoa/apps_grid_view_item.h"
 #include "ui/app_list/test/app_list_test_model.h"
@@ -56,6 +58,45 @@ void AppsGridControllerTestHelper::ReplaceTestModel(int item_count) {
   scoped_ptr<AppListTestModel> new_model(new AppListTestModel);
   new_model->PopulateApps(item_count);
   [apps_grid_controller_ setModel:new_model.PassAs<AppListModel>()];
+}
+
+std::string AppsGridControllerTestHelper::GetViewContent() const {
+  std::string s;
+  for (size_t page_index = 0; page_index < [apps_grid_controller_ pageCount];
+       ++page_index) {
+    s += '|';
+    NSCollectionView* page_view =
+        [apps_grid_controller_ collectionViewAtPageIndex:page_index];
+    for (size_t i = 0; i < [[page_view content] count]; ++i) {
+      AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
+          [page_view itemAtIndex:i]);
+      if (i != 0)
+        s += ',';
+      s += [item model]->title();
+    }
+    s += '|';
+  }
+  return s;
+}
+
+size_t AppsGridControllerTestHelper::GetPageIndexForItem(int item_id) const {
+  const std::string search = base::StringPrintf("Item %d", item_id);
+  size_t page_index = 0;
+  NSUInteger found_at_page_index = NSNotFound;
+  for (; page_index < [apps_grid_controller_ pageCount]; ++page_index) {
+    NSCollectionView* page_view =
+        [apps_grid_controller_ collectionViewAtPageIndex:page_index];
+    for (NSUInteger i = 0; i < [[page_view content] count]; ++i) {
+      AppsGridViewItem* item = base::mac::ObjCCastStrict<AppsGridViewItem>(
+          [page_view itemAtIndex:i]);
+      if ([item model]->title() == search) {
+        if (found_at_page_index != NSNotFound)
+          return NSNotFound;  // Duplicate.
+        found_at_page_index = page_index;
+      }
+    }
+  }
+  return found_at_page_index;
 }
 
 void AppsGridControllerTestHelper::DelayForCollectionView() {
