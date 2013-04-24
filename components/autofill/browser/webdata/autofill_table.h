@@ -65,6 +65,8 @@ struct FormFieldData;
 //   country_code
 //   date_modified      The date on which this profile was last modified.
 //                      Added in version 30.
+//   origin             The domain of origin for this profile.
+//                      Added in version 50.
 //
 // autofill_profile_names
 //                      This table contains the multi-valued name fields
@@ -115,6 +117,8 @@ struct FormFieldData;
 //   card_number_encrypted Stores encrypted credit card number.
 //   date_modified      The date on which this entry was last modified.
 //                      Added in version 30.
+//   origin             The domain of origin for this profile.
+//                      Added in version 50.
 //
 class AutofillTable : public WebDatabaseTable {
  public:
@@ -304,6 +308,7 @@ class AutofillTable : public WebDatabaseTable {
   bool MigrateToVersion34ProfilesBasedOnCountryCode();
   bool MigrateToVersion35GreatBritainCountryCodes();
   bool MigrateToVersion37MergeAndCullOlderProfiles();
+  bool MigrateToVersion50AddOriginColumn();
 
   // Max data length saved in the table;
   static const size_t kMaxDataLength;

@@ -240,7 +240,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 49;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 50;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -1985,5 +1985,38 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion48ToCurrent) {
     // A new column should have been created.
     EXPECT_TRUE(connection.DoesColumnExist("keywords",
                                            "search_terms_replacement_key"));
+  }
+}
+
+// Tests that the |origin| column is added to the autofill_profiles and
+// credit_cards table schemas for a version 50 database.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion49ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_49.sql")));
+
+  // Verify pre-conditions.  These are expectations for version 49 of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+
+    ASSERT_FALSE(connection.DoesColumnExist("autofill_profiles", "origin"));
+    ASSERT_FALSE(connection.DoesColumnExist("credit_cards", "origin"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.  These are expectations for current version of the
+  // database.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    // A new column should have been created in both tables.
+    EXPECT_TRUE(connection.DoesColumnExist("autofill_profiles", "origin"));
+    EXPECT_TRUE(connection.DoesColumnExist("credit_cards", "origin"));
   }
 }

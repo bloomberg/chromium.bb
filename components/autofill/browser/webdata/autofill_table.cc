@@ -28,6 +28,7 @@
 #include "components/webdata/common/web_database.h"
 #include "components/webdata/encryptor/encryptor.h"
 #include "sql/statement.h"
+#include "sql/transaction.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using base::Time;
@@ -404,6 +405,9 @@ bool AutofillTable::MigrateToVersion(int version,
     case 37:
       *update_compatible_version = true;
       return MigrateToVersion37MergeAndCullOlderProfiles();
+
+    case 50:
+      return MigrateToVersion50AddOriginColumn();
   }
   return true;
 }
@@ -2050,6 +2054,25 @@ bool AutofillTable::MigrateToVersion37MergeAndCullOlderProfiles() {
   }
 
   return true;
+}
+
+bool AutofillTable::MigrateToVersion50AddOriginColumn() {
+  sql::Transaction transaction(db_);
+
+  // Add origin to autofill_profiles.
+  if (!transaction.Begin() ||
+      !db_->Execute("ALTER TABLE autofill_profiles "
+                    "ADD COLUMN origin VARCHAR DEFAULT ''")) {
+    return false;
+  }
+
+  // Add origin to credit_cards.
+  if (!db_->Execute("ALTER TABLE credit_cards "
+                    "ADD COLUMN origin VARCHAR DEFAULT ''")) {
+      return false;
+  }
+
+  return transaction.Commit();
 }
 
 }  // namespace autofill
