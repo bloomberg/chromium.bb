@@ -15,7 +15,6 @@
 #include "content/renderer/media/media_stream_extra_data.h"
 #include "content/renderer/media/media_stream_source_extra_data.h"
 #include "content/renderer/media/rtc_video_renderer.h"
-#include "content/renderer/media/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_audio_renderer.h"
 #include "content/renderer/media/webrtc_local_audio_renderer.h"
@@ -110,12 +109,10 @@ webrtc::MediaStreamInterface* GetNativeMediaStream(
 MediaStreamImpl::MediaStreamImpl(
     RenderView* render_view,
     MediaStreamDispatcher* media_stream_dispatcher,
-    VideoCaptureImplManager* vc_manager,
     MediaStreamDependencyFactory* dependency_factory)
     : RenderViewObserver(render_view),
       dependency_factory_(dependency_factory),
-      media_stream_dispatcher_(media_stream_dispatcher),
-      vc_manager_(vc_manager) {
+      media_stream_dispatcher_(media_stream_dispatcher) {
 }
 
 MediaStreamImpl::~MediaStreamImpl() {

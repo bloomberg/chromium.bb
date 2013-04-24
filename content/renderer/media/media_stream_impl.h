@@ -31,7 +31,6 @@ class MediaStreamAudioRenderer;
 namespace content {
 class MediaStreamDependencyFactory;
 class MediaStreamDispatcher;
-class VideoCaptureImplManager;
 class WebRtcAudioRenderer;
 class WebRtcLocalAudioRenderer;
 
@@ -52,7 +51,6 @@ class CONTENT_EXPORT MediaStreamImpl
   MediaStreamImpl(
       RenderView* render_view,
       MediaStreamDispatcher* media_stream_dispatcher,
-      VideoCaptureImplManager* vc_manager,
       MediaStreamDependencyFactory* dependency_factory);
   virtual ~MediaStreamImpl();
 
@@ -174,8 +172,6 @@ class CONTENT_EXPORT MediaStreamImpl
   // media_stream_dispatcher_ is a weak reference, owned by RenderView. It's
   // valid for the lifetime of RenderView.
   MediaStreamDispatcher* media_stream_dispatcher_;
-
-  scoped_refptr<VideoCaptureImplManager> vc_manager_;
 
   UserMediaRequests user_media_requests_;
 

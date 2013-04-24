@@ -4042,7 +4042,6 @@ void RenderViewImpl::EnsureMediaStreamImpl() {
     media_stream_impl_ = new MediaStreamImpl(
         this,
         media_stream_dispatcher_,
-        RenderThreadImpl::current()->video_capture_impl_manager(),
         RenderThreadImpl::current()->GetMediaStreamDependencyFactory());
   }
 #endif

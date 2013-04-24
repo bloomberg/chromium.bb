@@ -28,10 +28,8 @@ class MediaStreamImplUnderTest : public MediaStreamImpl {
   };
 
   MediaStreamImplUnderTest(MediaStreamDispatcher* media_stream_dispatcher,
-                           VideoCaptureImplManager* vc_manager,
                            MediaStreamDependencyFactory* dependency_factory)
-      : MediaStreamImpl(NULL, media_stream_dispatcher, vc_manager,
-                        dependency_factory),
+      : MediaStreamImpl(NULL, media_stream_dispatcher, dependency_factory),
         state_(REQUEST_NOT_STARTED) {
   }
 
@@ -77,11 +75,8 @@ class MediaStreamImplTest : public ::testing::Test {
   virtual void SetUp() {
     // Create our test object.
     ms_dispatcher_.reset(new MockMediaStreamDispatcher());
-    scoped_refptr<VideoCaptureImplManager> vc_manager(
-        new VideoCaptureImplManager());
     dependency_factory_.reset(new MockMediaStreamDependencyFactory());
     ms_impl_.reset(new MediaStreamImplUnderTest(ms_dispatcher_.get(),
-                                                vc_manager.get(),
                                                 dependency_factory_.get()));
   }
 
