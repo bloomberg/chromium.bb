@@ -459,6 +459,12 @@ class DriveFileSystemInterface {
       const std::string& md5,
       const GetCacheEntryCallback& callback) = 0;
 
+  // Iterates all files in the cache and calls |iteration_callback| for each
+  // file. |completion_callback| is run upon completion.
+  // Neither |iteration_callback| nor |completion_callback| must be null.
+  virtual void IterateCache(const CacheIterateCallback& iteration_callback,
+                            const base::Closure& completion_callback) = 0;
+
   // Reloads the file system feeds from the server.
   virtual void Reload() = 0;
 };

@@ -136,6 +136,8 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
       const std::string& resource_id,
       const std::string& md5,
       const GetCacheEntryCallback& callback) OVERRIDE;
+  virtual void IterateCache(const CacheIterateCallback& iteration_callback,
+                            const base::Closure& completion_callback) OVERRIDE;
   virtual void Reload() OVERRIDE;
 
  private:

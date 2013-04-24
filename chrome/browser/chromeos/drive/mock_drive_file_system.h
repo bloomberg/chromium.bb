@@ -118,6 +118,9 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
                void(const std::string& resource_id,
                     const std::string& md5,
                     const GetCacheEntryCallback& callback));
+  MOCK_METHOD2(IterateCache,
+               void(const CacheIterateCallback& iteration_callback,
+                    const base::Closure& completion_callback));
   MOCK_METHOD0(Reload, void());
 };
 

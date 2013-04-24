@@ -256,6 +256,12 @@ void FakeDriveFileSystem::GetCacheEntryByResourceId(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
+void FakeDriveFileSystem::IterateCache(
+    const CacheIterateCallback& iteration_callback,
+    const base::Closure& completion_callback) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+}
+
 void FakeDriveFileSystem::Reload() {
 }
 
