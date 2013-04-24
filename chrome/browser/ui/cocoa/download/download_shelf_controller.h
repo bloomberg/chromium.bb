@@ -120,7 +120,8 @@ class PageNavigator;
 // Called by individual item controllers when their downloads are opened.
 - (void)downloadWasOpened:(DownloadItemController*)download;
 
-// Notification that we are closing and should release our downloads.
+// Notification that the download shelf is going to be destroyed and should
+// release the downloads.
 - (void)exiting;
 
 // Return the height of the download shelf.

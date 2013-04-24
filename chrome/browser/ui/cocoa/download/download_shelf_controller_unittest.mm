@@ -100,8 +100,10 @@ class DownloadShelfControllerTest : public CocoaProfileTest {
   }
 
   virtual void TearDown() OVERRIDE {
-    [shelf_ exiting];
-    shelf_.reset();
+    if (shelf_.get()) {
+      [shelf_ exiting];
+      shelf_.reset();
+    }
     CocoaProfileTest::TearDown();
   }
 
@@ -212,6 +214,10 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
                isUserAction:NO];
   EXPECT_TRUE([shelf_ isVisible]);
   [shelf_ add:item.get()];
+  // Expect 2 cancelAutoClose calls: From the showDownloadShelf: call and the
+  // add: call.
+  EXPECT_EQ(2, shelf_.get()->cancelAutoCloseCount_);
+  shelf_.get()->cancelAutoCloseCount_ = 0;
 
   // The mouse enters the shelf.
   [shelf_ mouseEntered:nil];
@@ -222,10 +228,10 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseInShelf) {
       .WillRepeatedly(Return(true));
   [shelf_ downloadWasOpened:item.get()];
 
-  // The shelf should now be waiting for the mouse to exit. autoClose should not
-  // be scheduled yet.
+  // The shelf should now be waiting for the mouse to exit.
   EXPECT_TRUE([shelf_ isVisible]);
   EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
 
   // The mouse exits the shelf. autoClose should be scheduled now.
   [shelf_ mouseExited:nil];
@@ -254,6 +260,104 @@ TEST_F(DownloadShelfControllerTest, AutoCloseAfterOpenWithMouseOffShelf) {
   // The shelf should be closed immediately since the mouse is not over the
   // shelf.
   EXPECT_FALSE([shelf_ isVisible]);
+}
+
+// Test that if the shelf is closed while an autoClose is pending, the pending
+// autoClose is cancelled.
+TEST_F(DownloadShelfControllerTest, CloseWithPendingAutoClose) {
+  scoped_nsobject<DownloadItemController> item(CreateItemController());
+  [shelf_ showDownloadShelf:YES
+               isUserAction:NO];
+  EXPECT_TRUE([shelf_ isVisible]);
+  [shelf_ add:item.get()];
+  // Expect 2 cancelAutoClose calls: From the showDownloadShelf: call and the
+  // add: call.
+  EXPECT_EQ(2, shelf_.get()->cancelAutoCloseCount_);
+  shelf_.get()->cancelAutoCloseCount_ = 0;
+
+  // The mouse enters the shelf.
+  [shelf_ mouseEntered:nil];
+  EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+
+  // The download opens.
+  EXPECT_CALL(*[[item wrappedMockDownload] mockDownload], GetOpened())
+      .WillRepeatedly(Return(true));
+  [shelf_ downloadWasOpened:item.get()];
+
+  // The shelf should now be waiting for the mouse to exit. autoClose should not
+  // be scheduled yet.
+  EXPECT_TRUE([shelf_ isVisible]);
+  EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
+
+  // The mouse exits the shelf. autoClose should be scheduled now.
+  [shelf_ mouseExited:nil];
+  EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
+
+  // Remove the download item. This should cause the download shelf to be hidden
+  // immediately. The pending autoClose should be cancelled.
+  [shelf_ remove:item];
+  EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(1, shelf_.get()->cancelAutoCloseCount_);
+  EXPECT_FALSE([shelf_ isVisible]);
+}
+
+// That that the shelf cancels a pending autoClose if a new download item is
+// added to it.
+TEST_F(DownloadShelfControllerTest, AddItemWithPendingAutoClose) {
+  scoped_nsobject<DownloadItemController> item(CreateItemController());
+  [shelf_ showDownloadShelf:YES
+               isUserAction:NO];
+  EXPECT_TRUE([shelf_ isVisible]);
+  [shelf_ add:item.get()];
+  // Expect 2 cancelAutoClose calls: From the showDownloadShelf: call and the
+  // add: call.
+  EXPECT_EQ(2, shelf_.get()->cancelAutoCloseCount_);
+  shelf_.get()->cancelAutoCloseCount_ = 0;
+
+  // The mouse enters the shelf.
+  [shelf_ mouseEntered:nil];
+  EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+
+  // The download opens.
+  EXPECT_CALL(*[[item wrappedMockDownload] mockDownload], GetOpened())
+      .WillRepeatedly(Return(true));
+  [shelf_ downloadWasOpened:item.get()];
+
+  // The shelf should now be waiting for the mouse to exit. autoClose should not
+  // be scheduled yet.
+  EXPECT_TRUE([shelf_ isVisible]);
+  EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
+
+  // The mouse exits the shelf. autoClose should be scheduled now.
+  [shelf_ mouseExited:nil];
+  EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(0, shelf_.get()->cancelAutoCloseCount_);
+
+  // Add a new download item. The pending autoClose should be cancelled.
+  scoped_nsobject<DownloadItemController> item2(CreateItemController());
+  [shelf_ add:item.get()];
+  EXPECT_EQ(1, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(1, shelf_.get()->cancelAutoCloseCount_);
+  EXPECT_TRUE([shelf_ isVisible]);
+}
+
+// Test that pending autoClose calls are cancelled when exiting.
+TEST_F(DownloadShelfControllerTest, CancelAutoCloseOnExit) {
+  scoped_nsobject<DownloadItemController> item(CreateItemController());
+  [shelf_ showDownloadShelf:YES
+               isUserAction:NO];
+  EXPECT_TRUE([shelf_ isVisible]);
+  [shelf_ add:item.get()];
+  EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(2, shelf_.get()->cancelAutoCloseCount_);
+
+  [shelf_ exiting];
+  EXPECT_EQ(0, shelf_.get()->scheduleAutoCloseCount_);
+  EXPECT_EQ(3, shelf_.get()->cancelAutoCloseCount_);
+  shelf_.reset();
 }
 
 }  // namespace

@@ -145,6 +145,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self cancelAutoClose];
   [self removeTrackingArea];
 
   // The controllers will unregister themselves as observers when they are
@@ -219,6 +220,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 - (void)exiting {
   [[self animatableView] stopAnimation];
   [self removeTrackingArea];
+  [self cancelAutoClose];
   while ([downloadItemControllers_ count] > 0) {
     [self removeDownload:[downloadItemControllers_ lastObject]
           isShelfClosing:YES];
@@ -228,6 +230,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 
 - (void)showDownloadShelf:(BOOL)show
              isUserAction:(BOOL)isUserAction {
+  [self cancelAutoClose];
   shouldCloseOnMouseExit_ = NO;
 
   if ([self isVisible] == show)
@@ -305,6 +308,7 @@ const NSSize kHoverCloseButtonDefaultSize = { 18, 18 };
 
 - (void)add:(DownloadItemController*)controller {
   DCHECK([NSThread isMainThread]);
+  [self cancelAutoClose];
   shouldCloseOnMouseExit_ = NO;
 
   // Insert new item at the left.
