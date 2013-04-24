@@ -197,7 +197,9 @@ class wasteful_vector {
   void Realloc(unsigned new_size) {
     T *new_array =
         reinterpret_cast<T*>(allocator_->Alloc(sizeof(T) * new_size));
-    memcpy(new_array, a_, used_ * sizeof(T));
+    if (new_size > 0) {
+      memcpy(new_array, a_, used_ * sizeof(T));
+    }
     a_ = new_array;
     allocated_ = new_size;
   }
