@@ -47,6 +47,9 @@ public:
     static PassRefPtr<MediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
     virtual ~MediaStream();
 
+    // DEPRECATED
+    String label() const { return m_descriptor->id(); }
+
     String id() const { return m_descriptor->id(); }
 
     void addTrack(PassRefPtr<MediaStreamTrack>, ExceptionCode&);
@@ -57,7 +60,6 @@ public:
     MediaStreamTrackVector getVideoTracks() const { return m_videoTracks; }
 
     bool ended() const;
-    void stop();
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(ended);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(addtrack);
@@ -66,6 +68,8 @@ public:
     // MediaStreamDescriptorClient
     virtual void trackEnded() OVERRIDE;
     virtual void streamEnded() OVERRIDE;
+
+    virtual bool isLocal() const { return false; }
 
     MediaStreamDescriptor* descriptor() const { return m_descriptor.get(); }
 

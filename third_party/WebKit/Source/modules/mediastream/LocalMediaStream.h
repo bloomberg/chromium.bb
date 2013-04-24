@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Ericsson AB. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,40 +23,35 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM,
-    EventTarget,
-    Constructor,
-    Constructor(MediaStream stream),
-    Constructor(MediaStreamTrack[] tracks),
-    CallWith=ScriptExecutionContext,
-    SkipVTableValidation
-] interface MediaStream {
-    // DEPRECATED
-    readonly attribute DOMString label;
+#ifndef LocalMediaStream_h
+#define LocalMediaStream_h
 
-    readonly attribute DOMString id;
+#if ENABLE(MEDIA_STREAM)
 
-    sequence<MediaStreamTrack> getAudioTracks();
-    sequence<MediaStreamTrack> getVideoTracks();
+#include "modules/mediastream/MediaStream.h"
 
-    [RaisesException] void addTrack(MediaStreamTrack track);
-    [RaisesException] void removeTrack(MediaStreamTrack track);
-    MediaStreamTrack getTrackById(DOMString trackId);
+namespace WebCore {
 
-    readonly attribute boolean ended;
+class LocalMediaStream : public MediaStream {
+public:
+    static PassRefPtr<LocalMediaStream> create(ScriptExecutionContext*, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources);
+    static PassRefPtr<LocalMediaStream> create(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
+    virtual ~LocalMediaStream();
 
-    attribute EventListener onended;
-    attribute EventListener onaddtrack;
-    attribute EventListener onremovetrack;
+    void stop();
 
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
+    // MediaStream
+    virtual bool isLocal() const OVERRIDE { return true; }
+
+    // EventTarget
+    virtual const AtomicString& interfaceName() const OVERRIDE;
+
+private:
+    LocalMediaStream(ScriptExecutionContext*, PassRefPtr<MediaStreamDescriptor>);
 };
 
+} // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)
+
+#endif // LocalMediaStream_h

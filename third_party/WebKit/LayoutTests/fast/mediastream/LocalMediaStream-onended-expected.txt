@@ -1,4 +1,4 @@
-Tests MediaStream::onended callback.
+Tests LocalMediaStream::onended callback.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 

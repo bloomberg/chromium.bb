@@ -24,38 +24,8 @@
 
 [
     Conditional=MEDIA_STREAM,
-    EventTarget,
-    Constructor,
-    Constructor(MediaStream stream),
-    Constructor(MediaStreamTrack[] tracks),
-    CallWith=ScriptExecutionContext,
-    SkipVTableValidation
-] interface MediaStream {
-    // DEPRECATED
-    readonly attribute DOMString label;
-
-    readonly attribute DOMString id;
-
-    sequence<MediaStreamTrack> getAudioTracks();
-    sequence<MediaStreamTrack> getVideoTracks();
-
-    [RaisesException] void addTrack(MediaStreamTrack track);
-    [RaisesException] void removeTrack(MediaStreamTrack track);
-    MediaStreamTrack getTrackById(DOMString trackId);
-
-    readonly attribute boolean ended;
-
-    attribute EventListener onended;
-    attribute EventListener onaddtrack;
-    attribute EventListener onremovetrack;
-
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
+    EventTarget
+] interface LocalMediaStream : MediaStream {
+    void stop();
 };
 

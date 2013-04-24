@@ -8,7 +8,7 @@
 <p id="description"></p>
 <div id="console"></div>
 <script>
-description("Tests MediaStream::onended callback.");
+description("Tests LocalMediaStream::onended callback.");
 
 function error() {
     testFailed('Stream generation failed.');
@@ -33,11 +33,11 @@ function streamEnded() {
 }
 
 function gotStream(s) {
-    stream = new webkitMediaStream(s);
+    stream = s;
     shouldBeFalse('stream.ended');
     try {
         stream.onended = streamEnded;
-        s.stop();
+        stream.stop();
     } catch (e) {
         testFailed('LocalMediaStream threw exception :' + e);
         finishJSTest();

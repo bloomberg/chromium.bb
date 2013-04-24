@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2011 Ericsson AB. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -22,40 +23,50 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Conditional=MEDIA_STREAM,
-    EventTarget,
-    Constructor,
-    Constructor(MediaStream stream),
-    Constructor(MediaStreamTrack[] tracks),
-    CallWith=ScriptExecutionContext,
-    SkipVTableValidation
-] interface MediaStream {
-    // DEPRECATED
-    readonly attribute DOMString label;
+#include "config.h"
+#include "modules/mediastream/LocalMediaStream.h"
 
-    readonly attribute DOMString id;
+#if ENABLE(MEDIA_STREAM)
 
-    sequence<MediaStreamTrack> getAudioTracks();
-    sequence<MediaStreamTrack> getVideoTracks();
+#include "core/platform/UUID.h"
+#include "core/platform/mediastream/MediaStreamCenter.h"
 
-    [RaisesException] void addTrack(MediaStreamTrack track);
-    [RaisesException] void removeTrack(MediaStreamTrack track);
-    MediaStreamTrack getTrackById(DOMString trackId);
+namespace WebCore {
 
-    readonly attribute boolean ended;
+PassRefPtr<LocalMediaStream> LocalMediaStream::create(ScriptExecutionContext* context, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+{
+    return adoptRef(new LocalMediaStream(context, MediaStreamDescriptor::create(createCanonicalUUIDString(), audioSources, videoSources)));
+}
 
-    attribute EventListener onended;
-    attribute EventListener onaddtrack;
-    attribute EventListener onremovetrack;
+PassRefPtr<LocalMediaStream> LocalMediaStream::create(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+{
+    return adoptRef(new LocalMediaStream(context, streamDescriptor));
+}
 
-    // EventTarget interface
-    void addEventListener(DOMString type,
-                          EventListener listener,
-                          optional boolean useCapture);
-    void removeEventListener(DOMString type,
-                             EventListener listener,
-                             optional boolean useCapture);
-    [RaisesException] boolean dispatchEvent(Event event);
-};
+LocalMediaStream::LocalMediaStream(ScriptExecutionContext* context, PassRefPtr<MediaStreamDescriptor> streamDescriptor)
+    : MediaStream(context, streamDescriptor)
+{
+}
 
+void LocalMediaStream::stop()
+{
+    if (ended())
+        return;
+
+    MediaStreamCenter::instance().didStopLocalMediaStream(descriptor());
+
+    streamEnded();
+}
+
+LocalMediaStream::~LocalMediaStream()
+{
+}
+
+const AtomicString& LocalMediaStream::interfaceName() const
+{
+    return eventNames().interfaceForLocalMediaStream;
+}
+
+} // namespace WebCore
+
+#endif // ENABLE(MEDIA_STREAM)

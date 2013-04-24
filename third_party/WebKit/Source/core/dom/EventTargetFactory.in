@@ -14,6 +14,7 @@ IDBOpenDBRequest
 IDBRequest
 IDBTransaction
 ScriptProcessorNode conditional=WEB_AUDIO
+LocalMediaStream conditional=MEDIA_STREAM
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2
 MediaController
 MediaSource
