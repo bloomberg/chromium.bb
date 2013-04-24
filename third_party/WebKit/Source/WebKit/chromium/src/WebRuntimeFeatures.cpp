@@ -566,4 +566,14 @@ bool WebRuntimeFeatures::isWebMIDIEnabled()
     return RuntimeEnabledFeatures::webMIDIEnabled();
 }
 
+void WebRuntimeFeatures::enableIMEAPI(bool enable)
+{
+    RuntimeEnabledFeatures::setIMEAPIEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isIMEAPIEnabled()
+{
+    return RuntimeEnabledFeatures::imeAPIEnabled();
+}
+
 } // namespace WebKit

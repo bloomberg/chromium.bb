@@ -246,6 +246,9 @@ public:
     static void setExperimentalWebSocketEnabled(bool isEnabled) { isExperimentalWebSocketEnabled = isEnabled; }
     static bool experimentalWebSocketEnabled() { return isExperimentalWebSocketEnabled; }
 
+    static bool imeAPIEnabled() { return isIMEAPIEnabled; }
+    static void setIMEAPIEnabled(bool isEnabled) { isIMEAPIEnabled = isEnabled; }
+
 private:
     // Never instantiate.
     RuntimeEnabledFeatures() { }
@@ -330,6 +333,8 @@ private:
     static bool isDirectoryUploadEnabled;
 
     static bool isExperimentalWebSocketEnabled;
+
+    static bool isIMEAPIEnabled;
 };
 
 } // namespace WebCore

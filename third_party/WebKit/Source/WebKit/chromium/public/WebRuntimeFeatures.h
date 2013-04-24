@@ -173,6 +173,9 @@ public:
     WEBKIT_EXPORT static void enableWebMIDI(bool);
     WEBKIT_EXPORT static bool isWebMIDIEnabled();
 
+    WEBKIT_EXPORT static void enableIMEAPI(bool);
+    WEBKIT_EXPORT static bool isIMEAPIEnabled();
+
 private:
     WebRuntimeFeatures();
 };

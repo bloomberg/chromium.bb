@@ -190,4 +190,6 @@ bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
 
 bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
 
+bool RuntimeEnabledFeatures::isIMEAPIEnabled = false;
+
 } // namespace WebCore
