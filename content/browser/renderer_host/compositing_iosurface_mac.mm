@@ -762,9 +762,7 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
   DCHECK_NE(bitmap_output != NULL, video_frame_output != NULL);
   DCHECK(!done_callback.is_null());
 
-  // TODO(miu): Forcing synchronous copy for M27.  Will work on fixing the
-  // desired asynchronous method for M28.  http://crbug.com/223326
-  const bool async_copy = false;
+  const bool async_copy = IsAsynchronousReadbackSupported();
   TRACE_EVENT2(
       "browser", "CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext",
       "output", bitmap_output ? "SkBitmap (ARGB)" : "VideoFrame (YV12)",
@@ -772,9 +770,14 @@ base::Closure CompositingIOSurfaceMac::CopyToSelectedOutputWithinContext(
 
   CopyContext* copy_context;
   if (copy_context_pool_.empty()) {
-    // TODO(miu): Determine appropriate limit once new async copy approach is
-    // put in place.
-    if (copy_requests_.size() >= 3)
+    // Limit the maximum number of simultaneous copies to two.  Rationale:
+    // Really, only one should ever be in-progress at a time, as we should
+    // depend on the speed of the hardware to rate-limit the copying naturally.
+    // In the asynchronous read-back case, the one currently in-flight copy is
+    // highly likely to have finished by this point (i.e., it's just waiting for
+    // us to make a glMapBuffer() call).  Therefore, we allow a second copy to
+    // be started here.
+    if (copy_requests_.size() >= 2)
       return base::Bind(done_callback, false);
     copy_context = new CopyContext(context_);
   } else {
@@ -915,7 +918,7 @@ void CompositingIOSurfaceMac::FinishAllCopiesWithinContext(
     bool success = true;
     for (int i = 0; success && i < copy_context->num_outputs; ++i) {
       TRACE_EVENT1(
-        "browser", "CompositingIOSurfaceMac::FinishAllCopyWithinContext",
+        "browser", "CompositingIOSurfaceMac::FinishAllCopiesWithinContext",
         "plane", i);
 
       glBindBufferARB(GL_PIXEL_PACK_BUFFER_ARB, copy_context->pixel_buffers[i]);
