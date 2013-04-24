@@ -137,8 +137,7 @@ const char* kAllRegularFiles[] = {
 class DrivePrefetcherTest : public testing::Test {
  public:
   DrivePrefetcherTest()
-      : dummy_event_logger_(0),
-        ui_thread_(content::BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {}
 
   virtual void SetUp() OVERRIDE {
     mock_file_system_.reset(new StrictMock<MockDriveFileSystem>);

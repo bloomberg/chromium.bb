@@ -14,8 +14,8 @@ EventLogger::Event::Event(int id, const std::string& what)
       what(what) {
 }
 
-EventLogger::EventLogger(size_t history_size)
-    : history_size_(history_size),
+EventLogger::EventLogger()
+    : history_size_(kDefaultHistorySize),
       next_event_id_(0) {
 }
 
@@ -30,10 +30,25 @@ void EventLogger::Log(const char* format, ...) {
   base::StringAppendV(&what, format, args);
   va_end(args);
 
+  base::AutoLock auto_lock(lock_);
   history_.push_back(Event(next_event_id_, what));
   ++next_event_id_;
   if (history_.size() > history_size_)
     history_.pop_front();
 }
+
+void EventLogger::SetHistorySize(size_t history_size) {
+  base::AutoLock auto_lock(lock_);
+  history_.clear();
+  history_size_ = history_size;
+}
+
+std::vector<EventLogger::Event> EventLogger::GetHistory() {
+  base::AutoLock auto_lock(lock_);
+  std::vector<Event> output;
+  output.assign(history_.begin(), history_.end());
+  return output;
+}
+
 
 }  // namespace google_apis

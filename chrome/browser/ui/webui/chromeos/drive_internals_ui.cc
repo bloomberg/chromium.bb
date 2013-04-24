@@ -631,8 +631,8 @@ void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
 
 void DriveInternalsWebUIHandler::UpdateEventLogSection(
     google_apis::EventLogger* event_logger) {
-  const std::deque<google_apis::EventLogger::Event>& log =
-      event_logger->history();
+  const std::vector<google_apis::EventLogger::Event> log =
+      event_logger->GetHistory();
 
   base::ListValue list;
   for (size_t i = 0; i < log.size(); ++i) {

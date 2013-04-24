@@ -47,8 +47,6 @@ using content::BrowserThread;
 namespace drive {
 namespace {
 
-static const size_t kEventLogHistorySize = 100;
-
 // The sync invalidation object ID for Google Drive.
 const char kDriveInvalidationObjectId[] = "CHANGELOG";
 
@@ -113,7 +111,7 @@ DriveSystemService::DriveSystemService(
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
 
-  event_logger_.reset(new google_apis::EventLogger(kEventLogHistorySize));
+  event_logger_.reset(new google_apis::EventLogger);
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
   } else if (google_apis::util::IsDriveV2ApiEnabled()) {
