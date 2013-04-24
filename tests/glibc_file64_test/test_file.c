@@ -19,6 +19,16 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+/*
+ * The type of the arguments to the comparison function changed
+ * after glibc-2.9 to match the POSIX.1-2008 specification.
+ */
+#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 10
+typedef const void *scandir_cmp_arg_t;
+#else
+typedef const struct dirent **scandir_cmp_arg_t;
+#endif
+
 int ftw_stub(const char* fpath, const struct stat* sb, int typeflag) {
     return 0;
 }
@@ -31,8 +41,8 @@ int nftw_stub(const char* fpath, const struct stat* sb, int typeflag,
 int scandir_filter_stub(const struct dirent* pdirent) {
     return 0;
 }
-int scandir_compare_stub(const void* pvoid1,
-                         const void* pvoid2) {
+int scandir_compare_stub(scandir_cmp_arg_t entry1,
+                         scandir_cmp_arg_t entry2) {
     return 0;
 }
 
@@ -57,8 +67,9 @@ int main(void) {
     struct dirent direntry;
     struct dirent* pdirentry;
     struct dirent** ppdirentry;
+    const struct dirent *pconstdirentry;
     dir = 0;
-    result = alphasort(path, path);
+    result = alphasort(&pconstdirentry, &pconstdirentry);
     creat(path, 0);
     fgetpos(0, &fpos);
     fopen(path, mode);
@@ -100,6 +111,6 @@ int main(void) {
     statvfs(path, &stvfs);
     tmpfile();
     truncate(path, 0);
-    result = versionsort(path, path);
-    return 0;
+    result = versionsort(&pconstdirentry, &pconstdirentry);
+    return result;
 }
