@@ -426,11 +426,7 @@ int32_t PepperFileIOHost::OnHostMsgWillSetLength(
 int32_t PepperFileIOHost::OnHostMsgRequestOSFileHandle(
     ppapi::host::HostMessageContext* context) {
   if (!is_running_in_process_ &&
-      quota_policy_ != quota::kQuotaLimitTypeUnlimited &&
-      // TODO(hamaji): Remove the whitelist once it turned out the
-      // quota check is sufficient. http://crbug.com/226386
-      !GetContentClient()->renderer()->IsRequestOSFileHandleAllowedForURL(
-          file_system_url_))
+      quota_policy_ != quota::kQuotaLimitTypeUnlimited)
     return PP_ERROR_FAILED;
 
   RendererPpapiHost* renderer_ppapi_host =

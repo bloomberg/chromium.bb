@@ -1206,7 +1206,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
     // Please keep this in alphabetical order.
     static const char* const kSwitchNames[] = {
       autofill::switches::kEnableExperimentalFormFilling,
-      switches::kAllowRequestOSFileHandleAPI,
       switches::kAllowHTTPBackgroundPage,
       switches::kAllowLegacyExtensionManifests,
       switches::kAllowScriptingGallery,

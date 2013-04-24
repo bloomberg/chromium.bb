@@ -120,8 +120,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
       WebKit::WebPluginContainer* container) const OVERRIDE;
   virtual void RegisterPPAPIInterfaceFactories(
       webkit::ppapi::PpapiInterfaceFactoryManager* factory_manager) OVERRIDE;
-  virtual bool IsRequestOSFileHandleAllowedForURL(
-      const GURL& url) const OVERRIDE;
 
   // For testing.
   void SetExtensionDispatcher(extensions::Dispatcher* extension_dispatcher);
@@ -150,8 +148,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest, NaClRestriction);
-  FRIEND_TEST_ALL_PREFIXES(ChromeContentRendererClientTest,
-                           IsRequestOSFileHandleAllowedForURL);
 
   const extensions::Extension* GetExtension(
       const WebKit::WebSecurityOrigin& origin) const;
@@ -172,9 +168,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
                             const extensions::Extension* extension,
                             WebKit::WebPluginParams* params);
 
-  void RegisterRequestOSFileHandleAllowedHosts(
-      const std::string& allowed_list);
-
   scoped_ptr<ChromeRenderProcessObserver> chrome_observer_;
   scoped_ptr<extensions::Dispatcher> extension_dispatcher_;
   scoped_ptr<RendererNetPredictor> net_predictor_;
@@ -182,8 +175,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_ptr<components::VisitedLinkSlave> visited_link_slave_;
   scoped_ptr<safe_browsing::PhishingClassifierFilter> phishing_classifier_;
   scoped_ptr<prerender::PrerenderDispatcher> prerender_dispatcher_;
-  // The whitelist for RequestOSFileHandle specified by commandline.
-  std::vector<std::string> request_os_file_handle_allowed_hosts_;
 };
 
 }  // namespace chrome

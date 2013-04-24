@@ -44,11 +44,6 @@ const char kAllowNaClSocketAPI[]            = "allow-nacl-socket-api";
 // Don't block outdated plugins.
 const char kAllowOutdatedPlugins[]          = "allow-outdated-plugins";
 
-// Specifies command-separated list of extension ids or hosts to grant
-// access to RequestOSFileHandle private API.
-const char kAllowRequestOSFileHandleAPI[]   =
-    "allow-request-os-file-handle-api";
-
 // By default, an https page cannot run JavaScript, CSS or plug-ins from http
 // URLs. This provides an override to get the old insecure behavior.
 const char kAllowRunningInsecureContent[]   = "allow-running-insecure-content";
