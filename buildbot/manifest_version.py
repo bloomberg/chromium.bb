@@ -649,25 +649,18 @@ class BuildSpecsManager(object):
       message: Additional message explaining the status.
       fail_if_exists: If set, fail if the status already exists.
     """
-    cmd = [gs.GSUTIL_BIN]
-    if fail_if_exists:
-      # This HTTP header tells Google Storage toreturn the PreconditionFailed
-      # error message if the file already exists.
-      cmd += ['-h', 'x-goog-if-generation-match: 0']
     url = BuildSpecsManager._GetStatusUrl(self.build_name, version)
-    cmd += ['cp', '-', url]
 
-    # Create a BuilderStatus object and pickle it.
+    # Pickle the dictionary needed to create a BuilderStatus object.
     data = cPickle.dumps(dict(status=status, message=message))
 
-    if self.dry_run:
-      if gs.GSUTIL_BIN is None:
-        cmd[0] = 'gsutil'
-      logging.info('Would have run: %s', ' '.join(cmd))
-    else:
-      # TODO(davidjames): Use chromite.lib.gs here.
-      cros_build_lib.RunCommandWithRetries(
-          3, cmd, redirect_stdout=True, redirect_stderr=True, input=data)
+    # This HTTP header tells Google Storage to return the PreconditionFailed
+    # error message if the file already exists.
+    gs_version = 0 if fail_if_exists else None
+
+    # Do the actual upload.
+    ctx = gs.GSContext(dry_run=self.dry_run)
+    ctx.Copy('-', url, input=data, version=gs_version)
 
   def UploadStatus(self, success, message=None):
     """Uploads the status of the build for the current build spec.
