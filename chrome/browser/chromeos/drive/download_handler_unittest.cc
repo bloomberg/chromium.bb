@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_download_handler.h"
+#include "chrome/browser/chromeos/drive/download_handler.h"
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop.h"
@@ -38,9 +38,9 @@ void CopyCheckForFileExistenceResult(bool* out, bool value) {
 
 }  // namespace
 
-class DriveDownloadHandlerTest : public testing::Test {
+class DownloadHandlerTest : public testing::Test {
  public:
-  DriveDownloadHandlerTest()
+  DownloadHandlerTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         download_manager_(new content::MockDownloadManager) {}
 
@@ -59,7 +59,7 @@ class DriveDownloadHandlerTest : public testing::Test {
 
     file_write_helper_.reset(new FileWriteHelper(&file_system_));
     download_handler_.reset(
-        new DriveDownloadHandler(file_write_helper_.get(), &file_system_));
+        new DownloadHandler(file_write_helper_.get(), &file_system_));
     download_handler_->Initialize(download_manager_, temp_dir_.path());
   }
 
@@ -73,7 +73,7 @@ class DriveDownloadHandlerTest : public testing::Test {
   scoped_refptr<content::MockDownloadManager> download_manager_;
   MockDriveFileSystem file_system_;
   scoped_ptr<FileWriteHelper> file_write_helper_;
-  scoped_ptr<DriveDownloadHandler> download_handler_;
+  scoped_ptr<DownloadHandler> download_handler_;
   content::MockDownloadItem download_item_;
 
   // Argument callbacks passed to the file system.
@@ -81,7 +81,7 @@ class DriveDownloadHandlerTest : public testing::Test {
   FileOperationCallback create_directory_callback_;
 };
 
-TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
+TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
   const base::FilePath non_drive_path(FILE_PATH_LITERAL("/foo/bar"));
   ASSERT_FALSE(util::IsUnderDriveMountPoint(non_drive_path));
 
@@ -98,7 +98,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathNonDrivePath) {
   EXPECT_FALSE(download_handler_->IsDriveDownload(&download_item_));
 }
 
-TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPath) {
+TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPath) {
   const base::FilePath drive_path =
       util::GetDriveMountPointPath().AppendASCII("test.dat");
 
@@ -122,7 +122,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPath) {
   EXPECT_EQ(drive_path, download_handler_->GetTargetPath(&download_item_));
 }
 
-TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
+TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
   const base::FilePath drive_path =
       util::GetDriveMountPointPath().AppendASCII("test.dat");
 
@@ -144,7 +144,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathGetEntryFailure) {
   EXPECT_TRUE(substituted_path.empty());
 }
 
-TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
+TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
   const base::FilePath drive_path =
       util::GetDriveMountPointPath().AppendASCII("test.dat");
 
@@ -173,7 +173,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathCreateDirectory) {
   EXPECT_EQ(drive_path, download_handler_->GetTargetPath(&download_item_));
 }
 
-TEST_F(DriveDownloadHandlerTest,
+TEST_F(DownloadHandlerTest,
        SubstituteDriveDownloadPathCreateDirectoryFailure) {
   const base::FilePath drive_path =
       util::GetDriveMountPointPath().AppendASCII("test.dat");
@@ -203,7 +203,7 @@ TEST_F(DriveDownloadHandlerTest,
 
 // content::SavePackage calls SubstituteDriveDownloadPath before creating
 // DownloadItem.
-TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
+TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   const base::FilePath drive_path =
       util::GetDriveMountPointPath().AppendASCII("test.dat");
 
@@ -235,7 +235,7 @@ TEST_F(DriveDownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   EXPECT_EQ(drive_path, download_handler_->GetTargetPath(&download_item_));
 }
 
-TEST_F(DriveDownloadHandlerTest, CheckForFileExistence) {
+TEST_F(DownloadHandlerTest, CheckForFileExistence) {
   const base::FilePath drive_path =
       util::GetDriveMountPointPath().AppendASCII("test.dat");
 

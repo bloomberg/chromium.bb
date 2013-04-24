@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/i18n/file_util_icu.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "chrome/browser/chromeos/drive/drive_download_handler.h"
+#include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -39,9 +39,9 @@ void ContinueSettingUpDriveDownload(
       (is_html ?
        content::SAVE_PAGE_TYPE_AS_MHTML :
        content::SAVE_PAGE_TYPE_AS_ONLY_HTML),
-      base::Bind(&drive::DriveDownloadHandler::SetDownloadParams,
+      base::Bind(&drive::DownloadHandler::SetDownloadParams,
                  base::Unretained(
-                     drive::DriveDownloadHandler::GetForProfile(profile)),
+                     drive::DownloadHandler::GetForProfile(profile)),
                  drive_path));
 }
 
@@ -114,8 +114,8 @@ void SavePackageFilePickerChromeOS::FileSelectedWithExtraInfo(
     //   ContinueSettingUpDriveDownload ->
     //     callback_ = SavePackage::OnPathPicked ->
     //       download_created_callback = OnSavePackageDownloadCreated
-    drive::DriveDownloadHandler* drive_download_handler =
-        drive::DriveDownloadHandler::GetForProfile(profile);
+    drive::DownloadHandler* drive_download_handler =
+        drive::DownloadHandler::GetForProfile(profile);
     DCHECK(drive_download_handler);
     drive_download_handler->
         SubstituteDriveDownloadPath(selected_path, NULL,

@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/file_util_icu.h"
-#include "chrome/browser/chromeos/drive/drive_download_handler.h"
+#include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
@@ -27,8 +27,8 @@ void DownloadFilePickerChromeOS::InitSuggestedPath(DownloadItem* item,
   // file path.
   Profile* profile =
       Profile::FromBrowserContext(download_manager_->GetBrowserContext());
-  drive::DriveDownloadHandler* drive_download_handler =
-      drive::DriveDownloadHandler::GetForProfile(profile);
+  drive::DownloadHandler* drive_download_handler =
+      drive::DownloadHandler::GetForProfile(profile);
   base::FilePath suggested_path = path;
   if (drive_download_handler && drive_download_handler->IsDriveDownload(item))
     suggested_path = drive_download_handler->GetTargetPath(item);
@@ -60,8 +60,8 @@ void DownloadFilePickerChromeOS::FileSelectedWithExtraInfo(
   if (download_manager_) {
     Profile* profile =
         Profile::FromBrowserContext(download_manager_->GetBrowserContext());
-    drive::DriveDownloadHandler* drive_download_handler =
-        drive::DriveDownloadHandler::GetForProfile(profile);
+    drive::DownloadHandler* drive_download_handler =
+        drive::DownloadHandler::GetForProfile(profile);
     if (drive_download_handler) {
       DownloadItem* download = download_manager_->GetDownload(download_id_);
       drive_download_handler->SubstituteDriveDownloadPath(

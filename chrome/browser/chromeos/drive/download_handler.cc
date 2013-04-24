@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_download_handler.h"
+#include "chrome/browser/chromeos/drive/download_handler.h"
 
 #include "base/bind.h"
 #include "base/file_util.h"
@@ -94,7 +94,7 @@ bool IsPersistedDriveDownload(const base::FilePath& drive_tmp_download_path,
 
 }  // namespace
 
-DriveDownloadHandler::DriveDownloadHandler(
+DownloadHandler::DownloadHandler(
     FileWriteHelper* file_write_helper,
     DriveFileSystemInterface* file_system)
     : file_write_helper_(file_write_helper),
@@ -102,17 +102,17 @@ DriveDownloadHandler::DriveDownloadHandler(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
 }
 
-DriveDownloadHandler::~DriveDownloadHandler() {
+DownloadHandler::~DownloadHandler() {
 }
 
 // static
-DriveDownloadHandler* DriveDownloadHandler::GetForProfile(Profile* profile) {
+DownloadHandler* DownloadHandler::GetForProfile(Profile* profile) {
   DriveSystemService* system_service =
       DriveSystemServiceFactory::FindForProfile(profile);
   return system_service ? system_service->download_handler() : NULL;
 }
 
-void DriveDownloadHandler::Initialize(
+void DownloadHandler::Initialize(
     DownloadManager* download_manager,
     const base::FilePath& drive_tmp_download_path) {
   DCHECK(!drive_tmp_download_path.empty());
@@ -131,7 +131,7 @@ void DriveDownloadHandler::Initialize(
   }
 }
 
-void DriveDownloadHandler::SubstituteDriveDownloadPath(
+void DownloadHandler::SubstituteDriveDownloadPath(
     const base::FilePath& drive_path,
     content::DownloadItem* download,
     const SubstituteDriveDownloadPathCallback& callback) {
@@ -151,7 +151,7 @@ void DriveDownloadHandler::SubstituteDriveDownloadPath(
     // initialize DriveRootDirectory.
     file_system_->GetEntryInfoByPath(
         drive_dir_path,
-        base::Bind(&DriveDownloadHandler::OnEntryFound,
+        base::Bind(&DownloadHandler::OnEntryFound,
                    weak_ptr_factory_.GetWeakPtr(),
                    drive_dir_path,
                    callback));
@@ -160,8 +160,8 @@ void DriveDownloadHandler::SubstituteDriveDownloadPath(
   }
 }
 
-void DriveDownloadHandler::SetDownloadParams(const base::FilePath& drive_path,
-                                             DownloadItem* download) {
+void DownloadHandler::SetDownloadParams(const base::FilePath& drive_path,
+                                        DownloadItem* download) {
   if (!download || (download->GetState() != DownloadItem::IN_PROGRESS))
     return;
 
@@ -177,7 +177,7 @@ void DriveDownloadHandler::SetDownloadParams(const base::FilePath& drive_path,
   }
 }
 
-base::FilePath DriveDownloadHandler::GetTargetPath(
+base::FilePath DownloadHandler::GetTargetPath(
     const DownloadItem* download) {
   const DriveUserData* data = GetDriveUserData(download);
   // If data is NULL, we've somehow lost the drive path selected by the file
@@ -186,13 +186,13 @@ base::FilePath DriveDownloadHandler::GetTargetPath(
   return data ? data->file_path() : base::FilePath();
 }
 
-bool DriveDownloadHandler::IsDriveDownload(const DownloadItem* download) {
+bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
   // We use the existence of the DriveUserData object in download as a
   // signal that this is a DriveDownload.
   return GetDriveUserData(download) != NULL;
 }
 
-void DriveDownloadHandler::CheckForFileExistence(
+void DownloadHandler::CheckForFileExistence(
     const DownloadItem* download,
     const content::CheckForFileExistenceCallback& callback) {
   file_system_->GetEntryInfoByPath(
@@ -201,20 +201,20 @@ void DriveDownloadHandler::CheckForFileExistence(
                  callback));
 }
 
-void DriveDownloadHandler::OnDownloadCreated(DownloadManager* manager,
-                                             DownloadItem* download) {
+void DownloadHandler::OnDownloadCreated(DownloadManager* manager,
+                                        DownloadItem* download) {
   // Remove any persisted Drive DownloadItem. crbug.com/171384
   if (IsPersistedDriveDownload(drive_tmp_download_path_, download)) {
     // Remove download later, since doing it here results in a crash.
     BrowserThread::PostTask(BrowserThread::UI,
                             FROM_HERE,
-                            base::Bind(&DriveDownloadHandler::RemoveDownload,
+                            base::Bind(&DownloadHandler::RemoveDownload,
                                        weak_ptr_factory_.GetWeakPtr(),
                                        download->GetId()));
   }
 }
 
-void DriveDownloadHandler::RemoveDownload(int id) {
+void DownloadHandler::RemoveDownload(int id) {
   DownloadManager* manager = notifier_->GetManager();
   if (!manager)
     return;
@@ -224,7 +224,7 @@ void DriveDownloadHandler::RemoveDownload(int id) {
   download->Remove();
 }
 
-void DriveDownloadHandler::OnDownloadUpdated(
+void DownloadHandler::OnDownloadUpdated(
     DownloadManager* manager, DownloadItem* download) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -254,7 +254,7 @@ void DriveDownloadHandler::OnDownloadUpdated(
   }
 }
 
-void DriveDownloadHandler::OnEntryFound(
+void DownloadHandler::OnEntryFound(
     const base::FilePath& drive_dir_path,
     const SubstituteDriveDownloadPathCallback& callback,
     FileError error,
@@ -264,7 +264,7 @@ void DriveDownloadHandler::OnEntryFound(
     const bool is_exclusive = false, is_recursive = true;
     file_system_->CreateDirectory(
         drive_dir_path, is_exclusive, is_recursive,
-        base::Bind(&DriveDownloadHandler::OnCreateDirectory,
+        base::Bind(&DownloadHandler::OnCreateDirectory,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback));
   } else if (error == FILE_ERROR_OK) {
@@ -278,7 +278,7 @@ void DriveDownloadHandler::OnEntryFound(
   }
 }
 
-void DriveDownloadHandler::OnCreateDirectory(
+void DownloadHandler::OnCreateDirectory(
     const SubstituteDriveDownloadPathCallback& callback,
     FileError error) {
   DVLOG(1) << "OnCreateDirectory " << FileErrorToString(error);
@@ -295,7 +295,7 @@ void DriveDownloadHandler::OnCreateDirectory(
   }
 }
 
-void DriveDownloadHandler::UploadDownloadItem(DownloadItem* download) {
+void DownloadHandler::UploadDownloadItem(DownloadItem* download) {
   DCHECK(download->IsComplete());
   file_write_helper_->PrepareWritableFileAndRun(
       util::ExtractDrivePath(GetTargetPath(download)),

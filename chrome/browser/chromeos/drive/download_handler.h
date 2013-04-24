@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_HANDLER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_HANDLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DOWNLOAD_HANDLER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_DOWNLOAD_HANDLER_H_
 
 #include "base/callback_forward.h"
 #include "base/memory/weak_ptr.h"
@@ -26,14 +26,14 @@ class FileWriteHelper;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.
-class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
+class DownloadHandler : public AllDownloadItemNotifier::Observer {
  public:
-  DriveDownloadHandler(FileWriteHelper* file_write_helper,
-                       DriveFileSystemInterface* file_system);
-  virtual ~DriveDownloadHandler();
+  DownloadHandler(FileWriteHelper* file_write_helper,
+                  DriveFileSystemInterface* file_system);
+  virtual ~DownloadHandler();
 
-  // Utility method to get DriveDownloadHandler with profile.
-  static DriveDownloadHandler* GetForProfile(Profile* profile);
+  // Utility method to get DownloadHandler with profile.
+  static DownloadHandler* GetForProfile(Profile* profile);
 
   // Become an observer of DownloadManager.
   void Initialize(content::DownloadManager* download_manager,
@@ -102,11 +102,11 @@ class DriveDownloadHandler : public AllDownloadItemNotifier::Observer {
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveDownloadHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<DownloadHandler> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveDownloadHandler);
+  DISALLOW_COPY_AND_ASSIGN(DownloadHandler);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_DOWNLOAD_HANDLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DOWNLOAD_HANDLER_H_

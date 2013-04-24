@@ -55,7 +55,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/drive/drive_download_handler.h"
+#include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/download/download_file_picker_chromeos.h"
 #include "chrome/browser/download/save_package_file_picker_chromeos.h"
@@ -172,8 +172,8 @@ base::FilePath GetIntermediatePath(const base::FilePath& target_path,
 base::FilePath GetPlatformDownloadPath(Profile* profile,
                                        const DownloadItem* download) {
 #if defined(OS_CHROMEOS)
-  drive::DriveDownloadHandler* drive_download_handler =
-      drive::DriveDownloadHandler::GetForProfile(profile);
+  drive::DownloadHandler* drive_download_handler =
+      drive::DownloadHandler::GetForProfile(profile);
   if (drive_download_handler &&
       drive_download_handler->IsDriveDownload(download))
     return drive_download_handler->GetTargetPath(download);
@@ -437,8 +437,8 @@ void ChromeDownloadManagerDelegate::CheckForFileExistence(
     DownloadItem* download,
     const content::CheckForFileExistenceCallback& callback) {
 #if defined(OS_CHROMEOS)
-  drive::DriveDownloadHandler* drive_download_handler =
-      drive::DriveDownloadHandler::GetForProfile(profile_);
+  drive::DownloadHandler* drive_download_handler =
+      drive::DownloadHandler::GetForProfile(profile_);
   if (drive_download_handler &&
       drive_download_handler->IsDriveDownload(download)) {
     drive_download_handler->CheckForFileExistence(download, callback);
@@ -788,8 +788,8 @@ void ChromeDownloadManagerDelegate::ContinueDeterminingFilename(
   }
 
 #if defined (OS_CHROMEOS)
-  drive::DriveDownloadHandler* drive_download_handler =
-      drive::DriveDownloadHandler::GetForProfile(profile_);
+  drive::DownloadHandler* drive_download_handler =
+      drive::DownloadHandler::GetForProfile(profile_);
   if (drive_download_handler) {
     drive_download_handler->SubstituteDriveDownloadPath(
         suggested_path, download,
