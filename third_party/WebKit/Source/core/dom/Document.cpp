@@ -211,9 +211,9 @@
 #endif
 
 #if ENABLE(MATHML)
-#include "MathMLElement.h"
 #include "MathMLElementFactory.h"
 #include "MathMLNames.h"
+#include "core/mathml/MathMLElement.h"
 #endif
 
 #include "CaptionUserPreferences.h"

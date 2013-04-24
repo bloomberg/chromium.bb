@@ -28,7 +28,7 @@
 
 #if ENABLE(MATHML)
 
-#include "MathMLInlineContainerElement.h"
+#include "core/mathml/MathMLInlineContainerElement.h"
 
 #include "MathMLNames.h"
 #include "RenderMathMLBlock.h"

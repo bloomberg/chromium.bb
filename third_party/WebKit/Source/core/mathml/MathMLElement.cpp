@@ -29,7 +29,7 @@
 
 #if ENABLE(MATHML)
 
-#include "MathMLElement.h"
+#include "core/mathml/MathMLElement.h"
 
 #include "MathMLNames.h"
 #include "RenderObject.h"

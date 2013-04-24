@@ -37,8 +37,8 @@
 #include "TransformState.h"
 
 #if ENABLE(MATHML)
-#include "MathMLElement.h"
 #include "MathMLNames.h"
+#include "core/mathml/MathMLElement.h"
 #endif
 
 using namespace std;

@@ -28,7 +28,7 @@
 
 #if ENABLE(MATHML)
 
-#include "MathMLTextElement.h"
+#include "core/mathml/MathMLTextElement.h"
 
 #include "MathMLNames.h"
 #include "RenderMathMLOperator.h"

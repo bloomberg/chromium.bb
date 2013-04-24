@@ -70,7 +70,6 @@
       '../loader/archive/mhtml',
       '../loader/cache',
       '../loader/icon',
-      '../mathml',
       '../page',
       '../page/animation',
       '../page/scrolling',

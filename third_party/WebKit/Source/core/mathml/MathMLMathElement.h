@@ -28,7 +28,7 @@
 #define MathMLMathElement_h
 
 #if ENABLE(MATHML)
-#include "MathMLInlineContainerElement.h"
+#include "core/mathml/MathMLInlineContainerElement.h"
 
 namespace WebCore {
 

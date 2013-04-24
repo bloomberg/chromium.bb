@@ -28,7 +28,7 @@
 #define MathMLTextElement_h
 
 #if ENABLE(MATHML)
-#include "MathMLElement.h"
+#include "core/mathml/MathMLElement.h"
 
 namespace WebCore {
     
