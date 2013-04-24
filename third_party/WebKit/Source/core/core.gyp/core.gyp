@@ -352,7 +352,6 @@
         'injected_canvas_script_source',
         'injected_script_source',
         'debugger_script_source',
-        '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
         '<(DEPTH)/skia/skia.gyp:skia',
@@ -484,7 +483,6 @@
         'core_derived_sources.gyp:make_derived_sources',
         '../../bindings/derived_sources.gyp:bindings_derived_sources',
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
-        '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
         '../../config.gyp:config',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
@@ -507,7 +505,6 @@
       ],
       'export_dependent_settings': [
         '../../Platform/Platform.gyp/Platform.gyp:webkit_platform',
-        '../../yarr/yarr.gyp:yarr',
         '../../wtf/wtf.gyp:wtf',
         '../../config.gyp:config',
         '<(DEPTH)/build/temp_gyp/googleurl.gyp:googleurl',
