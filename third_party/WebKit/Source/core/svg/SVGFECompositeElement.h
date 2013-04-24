@@ -22,10 +22,10 @@
 #define SVGFECompositeElement_h
 
 #if ENABLE(SVG)
-#include "FEComposite.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEComposite.h"
 
 namespace WebCore {
 

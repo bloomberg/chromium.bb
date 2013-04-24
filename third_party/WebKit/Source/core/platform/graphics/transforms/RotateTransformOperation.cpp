@@ -20,10 +20,10 @@
  */
 
 #include "config.h"
-#include "RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
 
-#include "AnimationUtilities.h"
 #include <algorithm>
+#include "AnimationUtilities.h"
 #include <wtf/MathExtras.h>
 
 using namespace std;

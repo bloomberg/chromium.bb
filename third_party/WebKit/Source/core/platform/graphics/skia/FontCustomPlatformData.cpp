@@ -34,16 +34,16 @@
 #include "FontCustomPlatformData.h"
 
 #if OS(WINDOWS)
-#include "OpenTypeUtilities.h"
+#include "core/platform/graphics/opentype/OpenTypeUtilities.h"
 #elif OS(UNIX)
 #include "SkStream.h"
 #endif
 
 #include "LayoutTestSupport.h"
 #include "NotImplemented.h"
-#include "OpenTypeSanitizer.h"
 #include "SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
+#include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
 #if OS(WINDOWS)
 #include <objbase.h>

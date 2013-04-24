@@ -24,15 +24,15 @@
 
 #include "config.h"
 
-#include "GraphicsLayerChromium.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 
 #include <gtest/gtest.h>
 #include "CompositorFakeWebGraphicsContext3D.h"
-#include "Matrix3DTransformOperation.h"
-#include "RotateTransformOperation.h"
 #include "ScrollableArea.h"
-#include "TranslateTransformOperation.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebFloatAnimationCurve.h>

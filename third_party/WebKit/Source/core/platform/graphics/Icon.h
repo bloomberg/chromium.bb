@@ -26,8 +26,8 @@
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 
-#include "PlatformIcon.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/chromium/PlatformIcon.h"
 
 namespace WebCore {
 

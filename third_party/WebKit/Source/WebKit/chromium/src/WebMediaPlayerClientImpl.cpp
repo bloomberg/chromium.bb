@@ -10,7 +10,6 @@
 #include "AudioSourceProviderClient.h"
 #include "Frame.h"
 #include "GraphicsContext3DPrivate.h"
-#include "GraphicsLayerChromium.h"
 #include "HTMLMediaElement.h"
 #include "KURL.h"
 #include "NotImplemented.h"
@@ -29,6 +28,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/Platform.h>
 #include <public/WebCanvas.h>
 #include <public/WebCompositorSupport.h>
@@ -42,9 +42,9 @@
 #if defined(OS_ANDROID)
 #include "GrContext.h"
 #include "GrTypes.h"
-#include "SharedGraphicsContext3D.h"
 #include "SkCanvas.h"
 #include "SkGrPixelRef.h"
+#include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #endif
 
 

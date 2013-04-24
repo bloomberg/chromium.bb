@@ -23,7 +23,6 @@
 #include "SVGFEConvolveMatrixElement.h"
 
 #include "Attr.h"
-#include "FilterEffect.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
@@ -31,6 +30,7 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

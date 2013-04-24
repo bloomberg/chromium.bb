@@ -29,9 +29,9 @@
 
 #include "config.h"
 
-#include "CustomFilterParameterList.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
 
-#include "CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include <wtf/text/StringHash.h>
 
 namespace WebCore {

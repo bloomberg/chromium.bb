@@ -29,8 +29,8 @@
 
 #if HAVE(ARM_NEON_INTRINSICS)
 
-#include "FEBlend.h"
 #include <arm_neon.h>
+#include "core/platform/graphics/filters/FEBlend.h"
 
 namespace WebCore {
 

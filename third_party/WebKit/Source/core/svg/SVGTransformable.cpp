@@ -24,12 +24,12 @@
 #if ENABLE(SVG)
 #include "SVGTransformable.h"
 
-#include "AffineTransform.h"
 #include "FloatConversion.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGStyledElement.h"
 #include "SVGTransformList.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

@@ -24,13 +24,13 @@
 #include "SVGFEComponentTransferElement.h"
 
 #include "Attr.h"
-#include "FilterEffect.h"
 #include "SVGFEFuncAElement.h"
 #include "SVGFEFuncBElement.h"
 #include "SVGFEFuncGElement.h"
 #include "SVGFEFuncRElement.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

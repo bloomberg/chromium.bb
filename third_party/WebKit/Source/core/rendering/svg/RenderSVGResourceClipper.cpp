@@ -25,7 +25,6 @@
 #if ENABLE(SVG)
 #include "RenderSVGResourceClipper.h"
 
-#include "AffineTransform.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HitTestRequest.h"
@@ -48,6 +47,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

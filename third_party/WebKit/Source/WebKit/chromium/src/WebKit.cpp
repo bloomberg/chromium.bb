@@ -35,10 +35,8 @@
 #include "EventTracer.h"
 #include "Frame.h"
 #include "IDBFactoryBackendProxy.h"
-#include "ImageDecodingStore.h"
 #include "LayoutTestSupport.h"
 #include "Logging.h"
-#include "MediaPlayerPrivateChromium.h"
 #include "MutationObserver.h"
 #include "Page.h"
 #include "RuntimeEnabledFeatures.h"
@@ -50,15 +48,17 @@
 #include "WebSocket.h"
 #include "WebWorkerClientImpl.h"
 #include "WorkerContextProxyChromium.h"
+#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 #include "v8.h"
 #include <public/Platform.h>
 #include <public/WebPrerenderingSupport.h>
 #include <public/WebThread.h>
 #include <wtf/Assertions.h>
 #include <wtf/MainThread.h>
+#include <wtf/text/AtomicString.h>
 #include <wtf/Threading.h>
 #include <wtf/UnusedParam.h>
-#include <wtf/text/AtomicString.h>
 
 namespace WebKit {
 

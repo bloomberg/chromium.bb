@@ -32,14 +32,14 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "FontPlatformDataChromiumWin.h"
 #include "NotImplemented.h"
 #include "PlatformContextSkia.h"
 #include "SkiaFontWin.h"
-#include "UniscribeHelperTextRun.h"
 #include "core/platform/graphics/FontFallbackList.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/chromium/UniscribeHelperTextRun.h"
 
 #include <windows.h>
 

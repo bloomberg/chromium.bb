@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "ScaledImageFragment.h"
+#include "core/platform/graphics/chromium/ScaledImageFragment.h"
 
 namespace WebCore {
 

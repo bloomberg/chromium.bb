@@ -29,12 +29,12 @@
 
 #include <math.h>
 #include <limits>
-#include "AffineTransform.h"
 #include "FloatConversion.h"
-#include "TransformationMatrix.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/LayoutPoint.h"
 #include "core/platform/graphics/LayoutSize.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 

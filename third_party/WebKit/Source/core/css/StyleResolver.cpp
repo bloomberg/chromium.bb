@@ -78,8 +78,6 @@
 #include "LinkHash.h"
 #include "LocaleToScriptMapping.h"
 #include "MathMLNames.h"
-#include "Matrix3DTransformOperation.h"
-#include "MatrixTransformOperation.h"
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"
 #include "NodeRenderStyle.h"
@@ -87,7 +85,6 @@
 #include "Page.h"
 #include "PageRuleCollector.h"
 #include "Pair.h"
-#include "PerspectiveTransformOperation.h"
 #include "QuotesData.h"
 #include "Rect.h"
 #include "RenderRegion.h"
@@ -96,18 +93,15 @@
 #include "RenderStyleConstants.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
-#include "RotateTransformOperation.h"
 #include "RuleSet.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGFontFaceElement.h"
-#include "ScaleTransformOperation.h"
 #include "SecurityOrigin.h"
 #include "SelectorCheckerFastPath.h"
 #include "Settings.h"
 #include "ShadowData.h"
 #include "ShadowRoot.h"
 #include "ShadowValue.h"
-#include "SkewTransformOperation.h"
 #include "StyleBuilder.h"
 #include "StyleCachedImage.h"
 #include "StyleGeneratedImage.h"
@@ -119,8 +113,6 @@
 #include "StyleSheetContents.h"
 #include "StyleSheetList.h"
 #include "Text.h"
-#include "TransformationMatrix.h"
-#include "TranslateTransformOperation.h"
 #include "UserAgentStyleSheets.h"
 #include "ViewportStyleResolver.h"
 #include "VisitedLinkState.h"
@@ -131,14 +123,22 @@
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNames.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/MatrixTransformOperation.h"
+#include "core/platform/graphics/transforms/PerspectiveTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
+#include "core/platform/graphics/transforms/SkewTransformOperation.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
 
-#include "FilterOperation.h"
 #include "WebKitCSSFilterValue.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
 
 #if ENABLE(SVG)
 #include "CachedSVGDocument.h"
@@ -150,13 +150,6 @@
 #include "WebKitCSSSVGDocumentValue.h"
 #endif
 
-#include "CustomFilterArrayParameter.h"
-#include "CustomFilterConstants.h"
-#include "CustomFilterNumberParameter.h"
-#include "CustomFilterOperation.h"
-#include "CustomFilterParameter.h"
-#include "CustomFilterProgramInfo.h"
-#include "CustomFilterTransformParameter.h"
 #include "StyleCachedShader.h"
 #include "StyleCustomFilterProgram.h"
 #include "StyleCustomFilterProgramCache.h"
@@ -164,6 +157,13 @@
 #include "StyleShader.h"
 #include "WebKitCSSMixFunctionValue.h"
 #include "WebKitCSSShaderValue.h"
+#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
+#include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 
 #if ENABLE(CSS_IMAGE_SET)
 #include "CSSImageSetValue.h"

@@ -24,17 +24,17 @@
 
 #include "config.h"
 
-#include "AnimationTranslationUtil.h"
+#include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 
 #include <gtest/gtest.h>
 #include "Animation.h"
-#include "Matrix3DTransformOperation.h"
-#include "RotateTransformOperation.h"
-#include "ScaleTransformOperation.h"
-#include "TransformOperations.h"
-#include "TranslateTransformOperation.h"
 #include "core/platform/graphics/GraphicsLayer.h" // For KeyframeValueList
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
+#include "core/platform/graphics/transforms/TransformOperations.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include <public/WebAnimation.h>
 #include <wtf/RefPtr.h>
 

@@ -26,10 +26,10 @@
 #ifndef LinkHighlight_h
 #define LinkHighlight_h
 
-#include "GraphicsLayerChromium.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/WebAnimationDelegate.h>
 #include <public/WebContentLayer.h>
 #include <public/WebContentLayerClient.h>

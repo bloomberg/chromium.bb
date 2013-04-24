@@ -29,8 +29,8 @@
 
 #if HAVE(ARM_NEON_INTRINSICS)
 
-#include "FEGaussianBlur.h"
-#include "NEONHelpers.h"
+#include "core/platform/graphics/cpu/arm/filters/NEONHelpers.h"
+#include "core/platform/graphics/filters/FEGaussianBlur.h"
 
 namespace WebCore {
 

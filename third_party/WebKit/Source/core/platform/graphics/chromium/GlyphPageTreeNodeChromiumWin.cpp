@@ -32,13 +32,13 @@
 #include "config.h"
 #include <vector>
 
-#include "FontPlatformDataChromiumWin.h"
 #include "HWndDC.h"
 #include "SystemInfo.h"
-#include "UniscribeHelperTextRun.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/chromium/UniscribeHelperTextRun.h"
 
 namespace WebCore {
 

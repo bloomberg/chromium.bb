@@ -20,8 +20,8 @@
  */
 
 #include "config.h"
-#include "TranslateTransformOperation.h"
 #include "FloatConversion.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 
 namespace WebCore {
 

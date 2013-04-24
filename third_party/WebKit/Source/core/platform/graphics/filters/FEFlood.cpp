@@ -23,14 +23,14 @@
 
 #include "config.h"
 
-#include "FEFlood.h"
+#include "core/platform/graphics/filters/FEFlood.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "SkFlattenableBuffers.h"
 #include "SkImageFilter.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 namespace {
 

@@ -29,11 +29,11 @@
 #include "config.h"
 #include "core/platform/graphics/ShadowBlur.h"
 
-#include "AffineTransform.h"
 #include "Timer.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/MathExtras.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/UnusedParam.h>

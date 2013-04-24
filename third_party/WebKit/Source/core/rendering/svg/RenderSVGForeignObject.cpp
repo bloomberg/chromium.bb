@@ -33,8 +33,8 @@
 #include "SVGRenderingContext.h"
 #include "SVGResourcesCache.h"
 #include "SVGSVGElement.h"
-#include "TransformState.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/transforms/TransformState.h"
 
 namespace WebCore {
 

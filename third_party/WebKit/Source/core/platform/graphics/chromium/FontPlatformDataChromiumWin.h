@@ -34,10 +34,10 @@
 
 #include "config.h"
 
-#include "OpenTypeVerticalData.h"
 #include "SharedBuffer.h"
 #include "SkTypeface.h"
 #include "core/platform/graphics/FontOrientation.h"
+#include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

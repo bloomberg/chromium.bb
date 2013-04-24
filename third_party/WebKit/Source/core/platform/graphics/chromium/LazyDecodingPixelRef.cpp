@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "LazyDecodingPixelRef.h"
+#include "core/platform/graphics/chromium/LazyDecodingPixelRef.h"
 
-#include "ImageDecodingStore.h"
-#include "ImageFrameGenerator.h"
 #include "SkData.h"
 #include "TraceEvent.h"
+#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/MainThread.h>
 

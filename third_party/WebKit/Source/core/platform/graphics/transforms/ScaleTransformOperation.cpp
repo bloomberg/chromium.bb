@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "ScaleTransformOperation.h"
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
 
 #include "AnimationUtilities.h"
 

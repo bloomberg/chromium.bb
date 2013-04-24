@@ -24,12 +24,12 @@
 
 #include "config.h"
 
-#include "Canvas2DLayerManager.h"
+#include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
 
-#include "FakeWebGraphicsContext3D.h"
-#include "GraphicsContext3DPrivate.h"
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
+#include "FakeWebGraphicsContext3D.h"
+#include "GraphicsContext3DPrivate.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>
 

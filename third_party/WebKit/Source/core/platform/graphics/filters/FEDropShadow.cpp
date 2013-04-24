@@ -20,15 +20,15 @@
 
 #include "config.h"
 
-#include "FEDropShadow.h"
+#include "core/platform/graphics/filters/FEDropShadow.h"
 
-#include "FEGaussianBlur.h"
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ShadowBlur.h"
+#include "core/platform/graphics/filters/FEGaussianBlur.h"
+#include "core/platform/graphics/filters/Filter.h"
 #include <wtf/MathExtras.h>
 #include <wtf/Uint8ClampedArray.h>
 

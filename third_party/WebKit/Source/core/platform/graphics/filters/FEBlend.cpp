@@ -24,21 +24,21 @@
 
 #include "config.h"
 
-#include "FEBlend.h"
-#include "FEBlendNEON.h"
+#include "core/platform/graphics/cpu/arm/filters/FEBlendNEON.h"
+#include "core/platform/graphics/filters/FEBlend.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include <wtf/Uint8ClampedArray.h>
 
 #include "NativeImageSkia.h"
 #include "SkBitmapSource.h"
 #include "SkBlendImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 typedef unsigned char (*BlendType)(unsigned char colorA, unsigned char colorB, unsigned char alphaA, unsigned char alphaB);
 

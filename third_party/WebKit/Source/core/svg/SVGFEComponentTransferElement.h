@@ -22,8 +22,8 @@
 #define SVGFEComponentTransferElement_h
 
 #if ENABLE(SVG)
-#include "FEComponentTransfer.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEComponentTransfer.h"
 
 namespace WebCore {
 

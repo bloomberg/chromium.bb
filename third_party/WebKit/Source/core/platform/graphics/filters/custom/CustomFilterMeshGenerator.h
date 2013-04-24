@@ -32,9 +32,9 @@
 
 #if USE(3D_GRAPHICS)
 
-#include "CustomFilterConstants.h"
-#include "CustomFilterOperation.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 
 namespace WebCore {
 

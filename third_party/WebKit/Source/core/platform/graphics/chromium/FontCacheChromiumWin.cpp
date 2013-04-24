@@ -33,12 +33,12 @@
 #include "core/platform/graphics/FontCache.h"
 
 #include <unicode/uniset.h>
-#include "FontPlatformDataChromiumWin.h"
-#include "FontUtilsChromiumWin.h"
 #include "HWndDC.h"
 #include "LayoutTestSupport.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
+#include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/text/StringHash.h>

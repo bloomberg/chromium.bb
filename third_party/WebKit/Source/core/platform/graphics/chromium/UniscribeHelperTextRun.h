@@ -31,7 +31,7 @@
 #ifndef UniscribeHelperTextRun_h
 #define UniscribeHelperTextRun_h
 
-#include "UniscribeHelper.h"
+#include "core/platform/graphics/chromium/UniscribeHelper.h"
 
 namespace WebCore {
 

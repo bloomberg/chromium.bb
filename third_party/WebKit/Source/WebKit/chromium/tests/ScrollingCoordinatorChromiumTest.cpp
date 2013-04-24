@@ -26,8 +26,8 @@
 
 #include "ScrollingCoordinator.h"
 
+#include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "GraphicsLayerChromium.h"
 #include "RenderLayerBacking.h"
 #include "RenderLayerCompositor.h"
 #include "RenderView.h"
@@ -38,7 +38,7 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include <gtest/gtest.h>
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/Platform.h>
 #include <public/WebLayer.h>
 #include <public/WebLayerTreeView.h>

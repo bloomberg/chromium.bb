@@ -23,6 +23,7 @@
 #if ENABLE(SVG)
 #include "SVGLength.h"
 #include "SVGPreserveAspectRatio.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

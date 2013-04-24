@@ -30,7 +30,6 @@
 #include "CachedImage.h"
 #include "CheckedInt.h"
 #include "DOMWindow.h"
-#include "DrawingBuffer.h"
 #include "EXTDrawBuffers.h"
 #include "EXTTextureFilterAnisotropic.h"
 #include "ExceptionCode.h"
@@ -73,6 +72,7 @@
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/gpu/DrawingBuffer.h"
 
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnArrayPtr.h>

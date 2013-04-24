@@ -23,11 +23,11 @@
 
 #include "config.h"
 
-#include "FilterEffect.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
-#include "Filter.h"
 #include "TextStream.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/filters/Filter.h"
 #include <wtf/Uint8ClampedArray.h>
 
 #if HAVE(ARM_NEON_INTRINSICS)

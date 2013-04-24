@@ -23,8 +23,6 @@
 #include "SVGFEDiffuseLightingElement.h"
 
 #include "Attr.h"
-#include "FEDiffuseLighting.h"
-#include "FilterEffect.h"
 #include "RenderStyle.h"
 #include "SVGColor.h"
 #include "SVGElementInstance.h"
@@ -32,6 +30,8 @@
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/platform/graphics/filters/FEDiffuseLighting.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

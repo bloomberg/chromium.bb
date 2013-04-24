@@ -46,12 +46,12 @@
 #include "SVGTextRunRenderingContext.h"
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
-#include "TransformState.h"
 #include "VisiblePosition.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/transforms/TransformState.h"
 
 namespace WebCore {
 

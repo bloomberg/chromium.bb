@@ -46,7 +46,7 @@
 #include "MediaSource.h"
 #endif
 
-#include "MediaPlayerPrivateChromium.h"
+#include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 #define PlatformMediaEngineClassName MediaPlayerPrivate
 
 namespace WebCore {

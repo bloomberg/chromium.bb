@@ -24,10 +24,10 @@
 #if ENABLE(SVG)
 #include "SVGPreserveAspectRatio.h"
 
-#include "AffineTransform.h"
 #include "ExceptionCode.h"
 #include "SVGParserUtilities.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

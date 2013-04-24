@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "TransparencyWin.h"
+#include "core/platform/graphics/chromium/TransparencyWin.h"
 
-#include "AffineTransform.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <windows.h>
 #include <gtest/gtest.h>

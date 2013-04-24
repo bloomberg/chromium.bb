@@ -30,10 +30,10 @@
 #include "config.h"
 
 #if USE(3D_GRAPHICS)
-#include "CustomFilterGlobalContext.h"
+#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 
-#include "CustomFilterValidatedProgram.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 
 namespace WebCore {
 

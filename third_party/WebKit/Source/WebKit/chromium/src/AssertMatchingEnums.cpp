@@ -42,7 +42,6 @@
 #include "FileError.h"
 #include "FileMetadata.h"
 #include "FileSystemType.h"
-#include "FilterOperation.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
 #include "HTMLFormElement.h"
@@ -110,6 +109,7 @@
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/MediaSourcePrivate.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

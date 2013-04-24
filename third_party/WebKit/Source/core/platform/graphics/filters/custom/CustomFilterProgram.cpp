@@ -29,11 +29,11 @@
 
 #include "config.h"
 
-#include "CustomFilterProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 
-#include "CustomFilterCompiledProgram.h"
-#include "CustomFilterProgramClient.h"
-#include "CustomFilterProgramInfo.h"
+#include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 
 namespace WebCore {
 

@@ -25,8 +25,8 @@
 #ifndef MatrixTransformOperation_h
 #define MatrixTransformOperation_h
 
-#include "TransformOperation.h"
-#include "TransformationMatrix.h"
+#include "core/platform/graphics/transforms/TransformOperation.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 

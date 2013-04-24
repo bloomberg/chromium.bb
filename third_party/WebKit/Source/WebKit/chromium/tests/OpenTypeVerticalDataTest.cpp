@@ -26,9 +26,9 @@
 
 #if ENABLE(OPENTYPE_VERTICAL)
 
-#include "OpenTypeTypes.h"
-#include "SharedBuffer.h"
 #include <gtest/gtest.h>
+#include "SharedBuffer.h"
+#include "core/platform/graphics/opentype/OpenTypeTypes.h"
 #include <wtf/RefPtr.h>
 
 using namespace WebCore;

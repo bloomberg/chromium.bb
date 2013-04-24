@@ -24,18 +24,18 @@
 
 #include "config.h"
 
-#include "FEConvolveMatrix.h"
+#include "core/platform/graphics/filters/FEConvolveMatrix.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>
 
 #include "SkMatrixConvolutionImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 

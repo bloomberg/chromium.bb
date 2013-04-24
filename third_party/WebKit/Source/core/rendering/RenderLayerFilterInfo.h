@@ -30,13 +30,13 @@
 #ifndef RenderLayerFilterInfo_h
 #define RenderLayerFilterInfo_h
 
-#include "FilterOperation.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 
-#include "CustomFilterProgramClient.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
 
 #if ENABLE(SVG)
 #include "CachedSVGDocument.h"

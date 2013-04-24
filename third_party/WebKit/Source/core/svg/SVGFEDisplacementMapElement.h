@@ -21,10 +21,10 @@
 #define SVGFEDisplacementMapElement_h
 
 #if ENABLE(SVG)
-#include "FEDisplacementMap.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEDisplacementMap.h"
 
 namespace WebCore {
  

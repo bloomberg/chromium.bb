@@ -30,9 +30,9 @@
 #include "config.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
-#include "OpenTypeVerticalData.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/UnusedParam.h>

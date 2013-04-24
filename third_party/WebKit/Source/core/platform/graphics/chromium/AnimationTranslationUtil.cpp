@@ -24,23 +24,23 @@
 
 #include "config.h"
 
-#include "AnimationTranslationUtil.h"
+#include "core/platform/graphics/chromium/AnimationTranslationUtil.h"
 
-#include "IdentityTransformOperation.h"
 #include "Length.h"
 #include "LengthFunctions.h"
-#include "Matrix3DTransformOperation.h"
-#include "MatrixTransformOperation.h"
-#include "PerspectiveTransformOperation.h"
-#include "RotateTransformOperation.h"
-#include "ScaleTransformOperation.h"
 #include "SkMatrix44.h"
-#include "SkewTransformOperation.h"
-#include "TransformOperations.h"
-#include "TransformSkMatrix44Conversions.h"
-#include "TranslateTransformOperation.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/chromium/TransformSkMatrix44Conversions.h"
+#include "core/platform/graphics/transforms/IdentityTransformOperation.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/MatrixTransformOperation.h"
+#include "core/platform/graphics/transforms/PerspectiveTransformOperation.h"
+#include "core/platform/graphics/transforms/RotateTransformOperation.h"
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
+#include "core/platform/graphics/transforms/SkewTransformOperation.h"
+#include "core/platform/graphics/transforms/TransformOperations.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 
 #include <public/Platform.h>
 #include <public/WebAnimation.h>

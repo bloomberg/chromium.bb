@@ -24,13 +24,13 @@
 
 #include "config.h"
 #if ENABLE(OPENTYPE_VERTICAL)
-#include "OpenTypeVerticalData.h"
+#include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 
-#include "OpenTypeTypes.h"
 #include "SharedBuffer.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GlyphPage.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/opentype/OpenTypeTypes.h"
 #include <wtf/RefPtr.h>
 
 using namespace std;

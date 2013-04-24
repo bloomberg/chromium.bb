@@ -23,10 +23,10 @@
 #if ENABLE(SVG)
 #include "SVGTransformList.h"
 
-#include "AffineTransform.h"
 #include "SVGSVGElement.h"
 #include "SVGTransform.h"
 #include "SVGTransformable.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

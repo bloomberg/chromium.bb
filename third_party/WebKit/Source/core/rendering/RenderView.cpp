@@ -40,13 +40,13 @@
 #include "RenderWidget.h"
 #include "RenderWidgetProtector.h"
 #include "StyleInheritedData.h"
-#include "TransformState.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/transforms/TransformState.h"
 
 #if USE(3D_GRAPHICS)
-#include "CustomFilterGlobalContext.h"
+#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
 #endif
 
 namespace WebCore {

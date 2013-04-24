@@ -23,7 +23,7 @@
 #ifndef FESpecularLighting_h
 #define FESpecularLighting_h
 
-#include "FELighting.h"
+#include "core/platform/graphics/filters/FELighting.h"
 
 namespace WebCore {
 

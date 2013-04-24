@@ -26,8 +26,8 @@
 #include "config.h"
 #include "GraphicsLayerFactoryChromium.h"
 
-#include "GraphicsLayerChromium.h"
 #include "WebViewImpl.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 
 using namespace WebCore;
 

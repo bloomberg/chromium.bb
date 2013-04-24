@@ -30,10 +30,10 @@
 #ifndef ValidatedCustomFilterOperation_h
 #define ValidatedCustomFilterOperation_h
 
-#include "CustomFilterConstants.h"
-#include "CustomFilterParameterList.h"
-#include "FilterOperation.h"
 #include "core/platform/graphics/LayoutSize.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
 
 namespace WebCore {
 

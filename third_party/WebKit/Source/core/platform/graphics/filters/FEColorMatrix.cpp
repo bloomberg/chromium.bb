@@ -23,12 +23,12 @@
 
 #include "config.h"
 
-#include "FEColorMatrix.h"
+#include "core/platform/graphics/filters/FEColorMatrix.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/Uint8ClampedArray.h>
@@ -36,7 +36,7 @@
 #include "NativeImageSkia.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 

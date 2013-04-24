@@ -33,8 +33,8 @@
 
 #include <windows.h>
 
-#include "AffineTransform.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
  
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>

@@ -31,8 +31,8 @@
 
 #include "StyleCustomFilterProgramCache.h"
 
-#include "CustomFilterProgramInfo.h"
 #include "StyleCustomFilterProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 
 namespace WebCore {
 

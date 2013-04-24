@@ -45,8 +45,8 @@
 #include "SVGSVGElement.h"
 #include "SVGStyledElement.h"
 #include "SVGViewSpec.h"
-#include "TransformState.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/transforms/TransformState.h"
 
 using namespace std;
 

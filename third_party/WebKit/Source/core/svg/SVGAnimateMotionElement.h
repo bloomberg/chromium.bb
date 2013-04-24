@@ -21,9 +21,9 @@
 #ifndef SVGAnimateMotionElement_h
 #define SVGAnimateMotionElement_h
 #if ENABLE(SVG)
-#include "AffineTransform.h"
 #include "SVGAnimationElement.h"
 #include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
             

@@ -30,6 +30,7 @@
 #include "config.h"
 #include "CSSPropertyAnimation.h"
 
+#include <algorithm>
 #include "AnimationBase.h"
 #include "CSSCrossfadeValue.h"
 #include "CSSImageGeneratorValue.h"
@@ -39,16 +40,15 @@
 #include "CachedImage.h"
 #include "ClipPathOperation.h"
 #include "FloatConversion.h"
-#include "IdentityTransformOperation.h"
-#include "Matrix3DTransformOperation.h"
-#include "MatrixTransformOperation.h"
 #include "RenderBox.h"
 #include "RenderStyle.h"
 #include "StyleCachedImage.h"
 #include "StyleGeneratedImage.h"
 #include "StylePropertyShorthand.h"
 #include "StyleResolver.h"
-#include <algorithm>
+#include "core/platform/graphics/transforms/IdentityTransformOperation.h"
+#include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
+#include "core/platform/graphics/transforms/MatrixTransformOperation.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/RefCounted.h>
 

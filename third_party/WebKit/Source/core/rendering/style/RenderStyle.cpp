@@ -31,7 +31,6 @@
 #include "RenderArena.h"
 #include "RenderObject.h"
 #include "RenderTheme.h"
-#include "ScaleTransformOperation.h"
 #include "ShadowData.h"
 #include "StyleImage.h"
 #include "StyleInheritedData.h"
@@ -40,6 +39,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>

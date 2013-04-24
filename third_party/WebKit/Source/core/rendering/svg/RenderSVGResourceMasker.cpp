@@ -22,7 +22,6 @@
 #if ENABLE(SVG)
 #include "RenderSVGResourceMasker.h"
 
-#include "AffineTransform.h"
 #include "Element.h"
 #include "RenderSVGResource.h"
 #include "SVGElement.h"
@@ -36,6 +35,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

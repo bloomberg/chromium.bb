@@ -22,7 +22,6 @@
 #include "config.h"
 #include "HTMLAreaElement.h"
 
-#include "AffineTransform.h"
 #include "Attribute.h"
 #include "Frame.h"
 #include "HTMLImageElement.h"
@@ -32,6 +31,7 @@
 #include "RenderImage.h"
 #include "RenderView.h"
 #include "core/platform/graphics/Path.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 using namespace std;
 

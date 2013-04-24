@@ -24,18 +24,18 @@
 
 #include "config.h"
 
-#include "FEMorphology.h"
+#include "core/platform/graphics/filters/FEMorphology.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>
 #include <wtf/Vector.h>
 
 #include "SkMorphologyImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 using std::min;
 using std::max;

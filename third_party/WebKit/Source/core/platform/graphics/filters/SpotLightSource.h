@@ -23,7 +23,7 @@
 #ifndef SpotLightSource_h
 #define SpotLightSource_h
 
-#include "LightSource.h"
+#include "core/platform/graphics/filters/LightSource.h"
 
 namespace WebCore {
 

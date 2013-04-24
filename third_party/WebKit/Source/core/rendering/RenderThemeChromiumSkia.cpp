@@ -39,11 +39,11 @@
 #include "RenderThemeChromiumFontProvider.h"
 #include "ScrollbarTheme.h"
 #include "TimeRanges.h"
-#include "TransformationMatrix.h"
 #include "UserAgentStyleSheets.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
 
 #include <wtf/CurrentTime.h>
 

@@ -24,15 +24,15 @@
 
 #include "config.h"
 
-#include "FEOffset.h"
+#include "core/platform/graphics/filters/FEOffset.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include "SkOffsetImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 

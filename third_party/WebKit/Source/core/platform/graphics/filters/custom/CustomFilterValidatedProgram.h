@@ -30,8 +30,8 @@
 #ifndef CustomFilterValidatedProgram_h
 #define CustomFilterValidatedProgram_h
 
-#include "CustomFilterCompiledProgram.h"
-#include "CustomFilterProgramInfo.h"
+#include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgramInfo.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

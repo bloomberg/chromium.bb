@@ -34,10 +34,10 @@
 
 #if USE(3D_GRAPHICS)
 
-#include "CustomFilterConstants.h"
-#include "CustomFilterParameterList.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameterList.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 

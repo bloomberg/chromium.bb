@@ -26,7 +26,7 @@
 #include "config.h"
 #include "StyleFilterData.h"
 
-#include "FEGaussianBlur.h"
+#include "core/platform/graphics/filters/FEGaussianBlur.h"
 
 #include "RenderStyle.h"
 

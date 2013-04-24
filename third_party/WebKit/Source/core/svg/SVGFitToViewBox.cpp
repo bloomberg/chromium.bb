@@ -23,7 +23,6 @@
 #if ENABLE(SVG)
 #include "SVGFitToViewBox.h"
 
-#include "AffineTransform.h"
 #include "Attribute.h"
 #include "Document.h"
 #include "SVGDocumentExtensions.h"
@@ -31,6 +30,7 @@
 #include "SVGParserUtilities.h"
 #include "SVGPreserveAspectRatio.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/StringImpl.h>
 
 namespace WebCore {

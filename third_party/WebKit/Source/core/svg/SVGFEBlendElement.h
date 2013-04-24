@@ -22,9 +22,9 @@
 #define SVGFEBlendElement_h
 
 #if ENABLE(SVG)
-#include "FEBlend.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEBlend.h"
 
 namespace WebCore {
 

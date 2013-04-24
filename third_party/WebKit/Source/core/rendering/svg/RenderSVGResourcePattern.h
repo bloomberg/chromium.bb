@@ -22,7 +22,6 @@
 #define RenderSVGResourcePattern_h
 
 #if ENABLE(SVG)
-#include "AffineTransform.h"
 #include "PatternAttributes.h"
 #include "RenderSVGResourceContainer.h"
 #include "SVGPatternElement.h"
@@ -30,6 +29,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Pattern.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

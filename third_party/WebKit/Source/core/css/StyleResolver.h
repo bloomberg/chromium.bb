@@ -33,23 +33,23 @@
 #include "RuleFeature.h"
 #include "RuleSet.h"
 #include "RuntimeEnabledFeatures.h"
+#include "ScopedStyleResolver.h"
 #include "ScrollTypes.h"
 #include "SelectorChecker.h"
 #include "SelectorFilter.h"
 #include "SiblingTraversalStrategies.h"
 #include "StyleInheritedData.h"
-#include "ScopedStyleResolver.h"
 #include "ViewportStyleResolver.h"
 #if ENABLE(SVG)
 #include "WebKitCSSSVGDocumentValue.h"
 #endif
-#include "CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicStringHash.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

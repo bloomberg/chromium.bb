@@ -23,8 +23,8 @@
 #ifndef FEDisplacementMap_h
 #define FEDisplacementMap_h
 
-#include "FilterEffect.h"
-#include "Filter.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

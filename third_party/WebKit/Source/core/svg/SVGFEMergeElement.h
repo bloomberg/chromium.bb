@@ -22,8 +22,8 @@
 #define SVGFEMergeElement_h
 
 #if ENABLE(SVG)
-#include "FEMerge.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEMerge.h"
 
 namespace WebCore {
 

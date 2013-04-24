@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "SharedGraphicsContext3D.h"
+#include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 
 #include "GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Extensions3D.h"

@@ -30,9 +30,9 @@
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 
 #include <stdio.h>
-#include "OpenTypeVerticalData.h"
 #include "core/platform/graphics/SegmentedFontData.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/CharacterNames.h>

@@ -26,17 +26,17 @@
 #ifndef ImageFrameGenerator_h
 #define ImageFrameGenerator_h
 
-#include "DiscardablePixelRef.h"
-#include "SkTypes.h"
 #include "SkBitmap.h"
 #include "SkSize.h"
-#include "ThreadSafeDataTransport.h"
+#include "SkTypes.h"
+#include "core/platform/graphics/chromium/DiscardablePixelRef.h"
+#include "core/platform/graphics/chromium/ThreadSafeDataTransport.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
 #include <wtf/ThreadingPrimitives.h>
+#include <wtf/ThreadSafeRefCounted.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {

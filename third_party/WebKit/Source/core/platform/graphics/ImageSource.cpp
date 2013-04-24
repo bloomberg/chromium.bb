@@ -35,7 +35,7 @@
 #include "PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageOrientation.h"
 
-#include "DeferredImageDecoder.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
 namespace WebCore {
 

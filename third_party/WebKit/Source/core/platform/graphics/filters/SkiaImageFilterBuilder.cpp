@@ -24,15 +24,15 @@
  */
 #include "config.h"
 
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
-#include "DropShadowImageFilter.h"
-#include "FilterEffect.h"
-#include "FilterOperations.h"
 #include "SkBlurImageFilter.h"
 #include "SkColorFilterImageFilter.h"
 #include "SkColorMatrixFilter.h"
 #include "SkMatrix.h"
+#include "core/platform/graphics/filters/DropShadowImageFilter.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 
 namespace {
 

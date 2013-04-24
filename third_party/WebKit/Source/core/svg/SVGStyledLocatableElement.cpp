@@ -23,9 +23,9 @@
 #if ENABLE(SVG)
 #include "SVGStyledLocatableElement.h"
 
-#include "AffineTransform.h"
 #include "SVGElement.h"
 #include "SVGSVGElement.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

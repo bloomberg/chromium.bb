@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "MediaPlayerPrivateChromium.h"
+#include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
 
 namespace WebCore {
 

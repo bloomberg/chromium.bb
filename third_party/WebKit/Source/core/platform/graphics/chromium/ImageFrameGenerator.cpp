@@ -25,12 +25,12 @@
 
 #include "config.h"
 
-#include "ImageFrameGenerator.h"
+#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 
-#include "ImageDecodingStore.h"
-#include "ScaledImageFragment.h"
 #include "SharedBuffer.h"
 #include "TraceEvent.h"
+#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/chromium/ScaledImageFragment.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "skia/ext/image_operations.h"

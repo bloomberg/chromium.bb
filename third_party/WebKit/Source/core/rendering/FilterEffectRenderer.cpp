@@ -28,26 +28,26 @@
 #include "FilterEffectRenderer.h"
 
 #include "Document.h"
-#include "FEColorMatrix.h"
-#include "FEComponentTransfer.h"
-#include "FEDropShadow.h"
-#include "FEGaussianBlur.h"
-#include "FEMerge.h"
 #include "FloatConversion.h"
 #include "RenderLayer.h"
 #include "core/platform/graphics/ColorSpace.h"
+#include "core/platform/graphics/filters/FEColorMatrix.h"
+#include "core/platform/graphics/filters/FEComponentTransfer.h"
+#include "core/platform/graphics/filters/FEDropShadow.h"
+#include "core/platform/graphics/filters/FEGaussianBlur.h"
+#include "core/platform/graphics/filters/FEMerge.h"
 
 #include <algorithm>
 #include <wtf/MathExtras.h>
 
 #if USE(3D_GRAPHICS)
-#include "CustomFilterGlobalContext.h"
-#include "CustomFilterOperation.h"
-#include "CustomFilterProgram.h"
-#include "CustomFilterValidatedProgram.h"
-#include "FECustomFilter.h"
 #include "RenderView.h"
-#include "ValidatedCustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
+#include "core/platform/graphics/filters/custom/FECustomFilter.h"
+#include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #endif
 
 #if ENABLE(SVG)
@@ -55,7 +55,7 @@
 #include "CachedSVGDocumentReference.h"
 #include "SVGElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
-#include "SourceAlpha.h"
+#include "core/platform/graphics/filters/SourceAlpha.h"
 #endif
 
 namespace WebCore {

@@ -26,7 +26,6 @@
 #ifndef CanvasRenderingContext2D_h
 #define CanvasRenderingContext2D_h
 
-#include "AffineTransform.h"
 #include "CanvasPathMethods.h"
 #include "CanvasRenderingContext.h"
 #include "core/platform/graphics/Color.h"
@@ -38,6 +37,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/PlatformLayer.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>
 

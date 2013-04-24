@@ -23,7 +23,7 @@
 #include "SVGFEPointLightElement.h"
 #include "SVGNames.h"
 
-#include "PointLightSource.h"
+#include "core/platform/graphics/filters/PointLightSource.h"
 
 namespace WebCore {
 

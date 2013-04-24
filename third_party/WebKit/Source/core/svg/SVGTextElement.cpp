@@ -23,7 +23,6 @@
 #if ENABLE(SVG)
 #include "SVGTextElement.h"
 
-#include "AffineTransform.h"
 #include "Attribute.h"
 #include "NodeRenderingContext.h"
 #include "RenderSVGResource.h"
@@ -33,6 +32,7 @@
 #include "SVGRenderStyle.h"
 #include "SVGTSpanElement.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebSettingsImpl.h"
 
-#include "DeferredImageDecoder.h"
 #include "Settings.h"
 #include "core/platform/graphics/FontRenderingMode.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <wtf/UnusedParam.h>

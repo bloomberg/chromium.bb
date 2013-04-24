@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "UniscribeHelperTextRun.h"
+#include "core/platform/graphics/chromium/UniscribeHelperTextRun.h"
 
-#include "FontPlatformDataChromiumWin.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"
 
 namespace WebCore {
 

@@ -56,7 +56,6 @@
 #include "FrameLoadRequest.h"
 #include "FrameView.h"
 #include "Geolocation.h"
-#include "GraphicsLayerChromium.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
@@ -79,6 +78,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif

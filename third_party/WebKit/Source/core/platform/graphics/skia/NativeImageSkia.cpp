@@ -40,8 +40,8 @@
 #include "SkiaUtils.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 
-#include "DeferredImageDecoder.h"
 #include "TraceEvent.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
 namespace WebCore {
 

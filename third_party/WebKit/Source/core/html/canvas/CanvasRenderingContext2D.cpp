@@ -33,7 +33,6 @@
 #include "config.h"
 #include "CanvasRenderingContext2D.h"
 
-#include "AffineTransform.h"
 #include "CSSFontSelector.h"
 #include "CSSParser.h"
 #include "CSSPropertyNames.h"
@@ -66,6 +65,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <wtf/CheckedArithmetic.h>
 #include <wtf/MathExtras.h>

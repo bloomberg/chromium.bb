@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "OpaqueRectTrackingContentLayerDelegate.h"
+#include "core/platform/graphics/chromium/OpaqueRectTrackingContentLayerDelegate.h"
 
 #include "PlatformContextSkia.h"
 #include "core/platform/graphics/Color.h"

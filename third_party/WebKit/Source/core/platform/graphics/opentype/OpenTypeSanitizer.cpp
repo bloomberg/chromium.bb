@@ -30,7 +30,7 @@
 
 #include "config.h"
 #if USE(OPENTYPE_SANITIZER)
-#include "OpenTypeSanitizer.h"
+#include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
 #include "SharedBuffer.h"
 #include "opentype-sanitiser.h"

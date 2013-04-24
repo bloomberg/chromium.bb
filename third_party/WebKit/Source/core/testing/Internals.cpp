@@ -111,11 +111,11 @@
 #include "PagePopupController.h"
 #endif
 
-#include "FilterOperation.h"
-#include "FilterOperations.h"
-#include "GraphicsLayerChromium.h"
 #include "RenderLayerBacking.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 #include "CDM.h"

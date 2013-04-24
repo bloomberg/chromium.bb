@@ -25,8 +25,8 @@
 #ifndef FETurbulence_h
 #define FETurbulence_h
 
-#include "FilterEffect.h"
-#include "Filter.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

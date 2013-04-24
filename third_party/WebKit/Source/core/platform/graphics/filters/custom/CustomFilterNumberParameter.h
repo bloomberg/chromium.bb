@@ -31,7 +31,7 @@
 #define CustomFilterNumberParameter_h
 
 #include "AnimationUtilities.h"
-#include "CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

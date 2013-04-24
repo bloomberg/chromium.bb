@@ -23,7 +23,7 @@
 #include "SVGFESpotLightElement.h"
 #include "SVGNames.h"
 
-#include "SpotLightSource.h"
+#include "core/platform/graphics/filters/SpotLightSource.h"
 
 namespace WebCore {
 

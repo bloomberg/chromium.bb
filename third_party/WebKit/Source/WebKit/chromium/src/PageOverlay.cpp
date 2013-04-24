@@ -29,7 +29,6 @@
 #include "config.h"
 #include "PageOverlay.h"
 
-#include "GraphicsLayerChromium.h"
 #include "Page.h"
 #include "PlatformContextSkia.h"
 #include "Settings.h"
@@ -38,6 +37,7 @@
 #include "WebViewImpl.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/WebLayer.h>
 
 using namespace WebCore;

@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "ImageDecodingStore.h"
+#include "core/platform/graphics/chromium/ImageDecodingStore.h"
 
-#include "ImageFrameGenerator.h"
-#include "ScaledImageFragment.h"
 #include "SharedBuffer.h"
 #include "TraceEvent.h"
+#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/chromium/ScaledImageFragment.h"
 
 namespace WebCore {
 

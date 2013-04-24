@@ -32,17 +32,17 @@
 #include "config.h"
 
 #if USE(3D_GRAPHICS)
-#include "CustomFilterRenderer.h"
+#include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
 
-#include "CustomFilterArrayParameter.h"
-#include "CustomFilterCompiledProgram.h"
-#include "CustomFilterConstants.h"
-#include "CustomFilterMesh.h"
-#include "CustomFilterNumberParameter.h"
-#include "CustomFilterParameter.h"
-#include "CustomFilterTransformParameter.h"
-#include "TransformationMatrix.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterCompiledProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterConstants.h"
+#include "core/platform/graphics/filters/custom/CustomFilterMesh.h"
+#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
 
 namespace WebCore {
 

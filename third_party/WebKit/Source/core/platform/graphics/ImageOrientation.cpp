@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/graphics/ImageOrientation.h"
 
-#include "AffineTransform.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

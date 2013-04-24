@@ -27,11 +27,11 @@
 #define RenderSVGShape_h
 
 #if ENABLE(SVG)
-#include "AffineTransform.h"
 #include "RenderSVGModelObject.h"
 #include "SVGMarkerData.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 

@@ -25,16 +25,16 @@
 
 #include "config.h"
 
-#include "DeferredImageDecoder.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
-#include "ImageDecodingStore.h"
+#include <gtest/gtest.h>
 #include "MockImageDecoder.h"
 #include "NativeImageSkia.h"
 #include "SharedBuffer.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPicture.h"
-#include <gtest/gtest.h>
+#include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Threading.h>

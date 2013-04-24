@@ -32,14 +32,14 @@
 #include "config.h"
 
 #if USE(3D_GRAPHICS)
-#include "FECustomFilter.h"
+#include "core/platform/graphics/filters/custom/FECustomFilter.h"
 
-#include "CustomFilterRenderer.h"
-#include "CustomFilterValidatedProgram.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
+#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 
 #include <wtf/Uint8ClampedArray.h>
 

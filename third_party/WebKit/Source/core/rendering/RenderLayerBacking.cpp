@@ -57,8 +57,8 @@
 #include <wtf/CurrentTime.h>
 #include <wtf/text/StringBuilder.h>
 
-#include "CustomFilterOperation.h"
 #include "FilterEffectRenderer.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 

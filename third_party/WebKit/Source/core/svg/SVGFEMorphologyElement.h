@@ -21,10 +21,10 @@
 #define SVGFEMorphologyElement_h
 
 #if ENABLE(SVG)
-#include "FEMorphology.h"
 #include "SVGAnimatedEnumeration.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEMorphology.h"
 
 namespace WebCore {
 

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "PointLightSource.h"
+#include "core/platform/graphics/filters/PointLightSource.h"
 
 #include "TextStream.h"
 

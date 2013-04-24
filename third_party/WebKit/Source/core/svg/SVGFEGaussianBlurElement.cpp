@@ -24,11 +24,11 @@
 #include "SVGFEGaussianBlurElement.h"
 
 #include "Attribute.h"
-#include "FilterEffect.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

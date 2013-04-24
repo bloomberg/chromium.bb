@@ -28,8 +28,6 @@
 #ifndef ImageBuffer_h
 #define ImageBuffer_h
 
-#include "AffineTransform.h"
-#include "ImageBufferDataSkia.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -37,6 +35,8 @@
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/PlatformLayer.h"
+#include "core/platform/graphics/chromium/ImageBufferDataSkia.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

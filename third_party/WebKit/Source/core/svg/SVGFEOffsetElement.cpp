@@ -24,10 +24,10 @@
 #include "SVGFEOffsetElement.h"
 
 #include "Attribute.h"
-#include "FilterEffect.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

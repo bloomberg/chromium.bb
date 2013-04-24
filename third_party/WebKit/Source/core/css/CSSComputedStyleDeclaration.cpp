@@ -70,13 +70,13 @@
 #include "ExclusionShapeValue.h"
 #endif
 
-#include "CustomFilterArrayParameter.h"
-#include "CustomFilterNumberParameter.h"
-#include "CustomFilterOperation.h"
-#include "CustomFilterParameter.h"
-#include "CustomFilterTransformParameter.h"
 #include "WebKitCSSArrayFunctionValue.h"
 #include "WebKitCSSMixFunctionValue.h"
+#include "core/platform/graphics/filters/custom/CustomFilterArrayParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterNumberParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 
 #include "StyleCustomFilterProgram.h"
 #include "WebKitCSSFilterValue.h"

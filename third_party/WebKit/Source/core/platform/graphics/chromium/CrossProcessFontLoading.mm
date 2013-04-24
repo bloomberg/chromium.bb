@@ -27,13 +27,13 @@
 // do the loading of in-memory fonts and keep track of them.
 
 #import "config.h"
-#import "CrossProcessFontLoading.h"
+#import "core/platform/graphics/chromium/CrossProcessFontLoading.h"
 
+#import <AppKit/NSFont.h>
 #import "../graphics/FontPlatformData.h"
 #include "LinkHash.h"
-#import <AppKit/NSFont.h>
-#import <public/Platform.h>
 #import <public/mac/WebSandboxSupport.h>
+#import <public/Platform.h>
 #import <wtf/HashMap.h>
 
 namespace WebCore {

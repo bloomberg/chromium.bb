@@ -26,11 +26,11 @@
 #ifndef ImageDecodingStore_h
 #define ImageDecodingStore_h
 
-#include "DiscardablePixelRef.h"
-#include "ScaledImageFragment.h"
 #include "SkSize.h"
-#include "SkSizeHash.h"
 #include "SkTypes.h"
+#include "core/platform/graphics/chromium/DiscardablePixelRef.h"
+#include "core/platform/graphics/chromium/ScaledImageFragment.h"
+#include "core/platform/graphics/chromium/SkSizeHash.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 #include <wtf/DoublyLinkedList.h>

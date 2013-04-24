@@ -33,7 +33,7 @@
 #include "core/platform/graphics/GlyphMetricsMap.h"
 #include "core/platform/graphics/GlyphPageTreeNode.h"
 #if ENABLE(OPENTYPE_VERTICAL)
-#include "OpenTypeVerticalData.h"
+#include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #endif
 #include "core/platform/graphics/TypesettingFeatures.h"
 #include <wtf/OwnPtr.h>

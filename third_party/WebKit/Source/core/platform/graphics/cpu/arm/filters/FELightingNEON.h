@@ -29,7 +29,7 @@
 
 #if CPU(ARM_NEON) && CPU(ARM_TRADITIONAL) && COMPILER(GCC)
 
-#include "FELighting.h"
+#include "core/platform/graphics/filters/FELighting.h"
 #include <wtf/Alignment.h>
 #include <wtf/ParallelJobs.h>
 

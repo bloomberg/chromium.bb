@@ -21,8 +21,8 @@
 #ifndef SourceAlpha_h
 #define SourceAlpha_h
 
-#include "FilterEffect.h"
-#include "Filter.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

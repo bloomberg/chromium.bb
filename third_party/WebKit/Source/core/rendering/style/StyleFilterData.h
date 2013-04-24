@@ -26,7 +26,7 @@
 #ifndef StyleFilterData_h
 #define StyleFilterData_h
 
-#include "FilterOperations.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

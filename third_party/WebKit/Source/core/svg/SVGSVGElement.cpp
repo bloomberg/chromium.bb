@@ -24,7 +24,6 @@
 #if ENABLE(SVG)
 #include "SVGSVGElement.h"
 
-#include "AffineTransform.h"
 #include "Attribute.h"
 #include "CSSHelper.h"
 #include "Document.h"
@@ -57,6 +56,7 @@
 #include "ScriptEventListener.h"
 #include "StaticNodeList.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

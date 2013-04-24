@@ -29,11 +29,11 @@
 
 #include "config.h"
 
-#include "ValidatedCustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 
-#include "CustomFilterParameter.h"
-#include "CustomFilterValidatedProgram.h"
 #include "core/platform/graphics/LayoutSize.h"
+#include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
+#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

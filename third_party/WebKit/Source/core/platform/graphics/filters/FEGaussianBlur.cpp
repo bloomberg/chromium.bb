@@ -25,20 +25,20 @@
 
 #include "config.h"
 
-#include "FEGaussianBlur.h"
+#include "core/platform/graphics/filters/FEGaussianBlur.h"
 
-#include "FEGaussianBlurNEON.h"
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/cpu/arm/filters/FEGaussianBlurNEON.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>
 
 #include "SkBlurImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 using namespace std;
 

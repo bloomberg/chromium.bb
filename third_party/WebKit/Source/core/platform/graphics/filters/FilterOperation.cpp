@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "FilterOperation.h"
+#include "core/platform/graphics/filters/FilterOperation.h"
 
 #include "AnimationUtilities.h"
 

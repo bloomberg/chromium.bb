@@ -27,17 +27,17 @@
 
 #include "config.h"
 
-#include "FELighting.h"
+#include "core/platform/graphics/filters/FELighting.h"
 
-#include "FELightingNEON.h"
+#include "core/platform/graphics/cpu/arm/filters/FELightingNEON.h"
 #include <wtf/ParallelJobs.h>
 
-#include "DistantLightSource.h"
 #include "NativeImageSkia.h"
-#include "PointLightSource.h"
 #include "SkLightingImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
-#include "SpotLightSource.h"
+#include "core/platform/graphics/filters/DistantLightSource.h"
+#include "core/platform/graphics/filters/PointLightSource.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SpotLightSource.h"
 
 namespace WebCore {
 

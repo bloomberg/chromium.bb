@@ -23,9 +23,9 @@
 #ifndef FEColorMatrix_h
 #define FEColorMatrix_h
 
-#include "FilterEffect.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
-#include "Filter.h"
+#include "core/platform/graphics/filters/Filter.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

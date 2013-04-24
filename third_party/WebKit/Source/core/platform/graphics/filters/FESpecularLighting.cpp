@@ -22,11 +22,11 @@
 
 #include "config.h"
 
-#include "FESpecularLighting.h"
+#include "core/platform/graphics/filters/FESpecularLighting.h"
 
-#include "LightSource.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
+#include "core/platform/graphics/filters/LightSource.h"
 
 namespace WebCore {
 

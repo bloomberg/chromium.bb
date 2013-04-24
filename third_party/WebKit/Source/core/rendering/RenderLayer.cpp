@@ -51,8 +51,6 @@
 #include "Document.h"
 #include "DocumentEventQueue.h"
 #include "EventHandler.h"
-#include "FEColorMatrix.h"
-#include "FEMerge.h"
 #include "FilterEffectRenderer.h"
 #include "FloatConversion.h"
 #include "FocusController.h"
@@ -87,26 +85,28 @@
 #include "RenderTheme.h"
 #include "RenderTreeAsText.h"
 #include "RenderView.h"
-#include "ScaleTransformOperation.h"
 #include "ScrollAnimator.h"
 #include "Scrollbar.h"
 #include "ScrollbarTheme.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
-#include "SourceGraphic.h"
 #include "StaticHashSetNodeList.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "TextStream.h"
-#include "TransformationMatrix.h"
-#include "TranslateTransformOperation.h"
 #include "UseCounter.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatPoint3D.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/FEColorMatrix.h"
+#include "core/platform/graphics/filters/FEMerge.h"
+#include "core/platform/graphics/filters/SourceGraphic.h"
+#include "core/platform/graphics/transforms/ScaleTransformOperation.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
@@ -117,10 +117,10 @@
 #endif
 
 #if USE(3D_GRAPHICS)
-#include "CustomFilterGlobalContext.h"
-#include "CustomFilterOperation.h"
-#include "CustomFilterValidatedProgram.h"
-#include "ValidatedCustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
+#include "core/platform/graphics/filters/custom/ValidatedCustomFilterOperation.h"
 #endif
 
 #define MIN_INTERSECT_FOR_REVEAL 32

@@ -22,14 +22,14 @@
 
 #include "config.h"
 
-#include "FEMerge.h"
+#include "core/platform/graphics/filters/FEMerge.h"
 
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "SkMergeImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {

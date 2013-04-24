@@ -25,10 +25,10 @@
 #include "config.h"
 
 #include <gtest/gtest.h>
-#include "GraphicsLayerChromium.h"
 #include "NativeImageSkia.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/WebImageLayer.h>
 #include <wtf/PassOwnPtr.h>
 

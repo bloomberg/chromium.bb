@@ -26,8 +26,6 @@
 #if ENABLE(SVG)
 #include "RenderSVGResourceFilter.h"
 
-#include "AffineTransform.h"
-#include "FilterEffect.h"
 #include "ImageData.h"
 #include "Page.h"
 #include "RenderSVGResource.h"
@@ -41,14 +39,16 @@
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
 #include "Settings.h"
-#include "SourceAlpha.h"
-#include "SourceGraphic.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/platform/graphics/filters/SourceAlpha.h"
+#include "core/platform/graphics/filters/SourceGraphic.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

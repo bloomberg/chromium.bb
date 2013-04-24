@@ -26,16 +26,16 @@
 #ifndef FilterEffectRenderer_h
 #define FilterEffectRenderer_h
 
-#include "Filter.h"
-#include "FilterEffect.h"
-#include "FilterOperations.h"
 #include "SVGFilterBuilder.h"
-#include "SourceGraphic.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRectExtent.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
+#include "core/platform/graphics/filters/SourceGraphic.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

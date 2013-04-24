@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "FilterOperations.h"
+#include "core/platform/graphics/filters/FilterOperations.h"
 
-#include "FEGaussianBlur.h"
 #include "LengthFunctions.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/graphics/filters/FEGaussianBlur.h"
 
 namespace WebCore {
 

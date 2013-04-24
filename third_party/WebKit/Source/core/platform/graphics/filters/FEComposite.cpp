@@ -24,19 +24,19 @@
 
 #include "config.h"
 
-#include "FEComposite.h"
+#include "core/platform/graphics/filters/FEComposite.h"
 
-#include "FECompositeArithmeticNEON.h"
-#include "Filter.h"
 #include "RenderTreeAsText.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/cpu/arm/filters/FECompositeArithmeticNEON.h"
+#include "core/platform/graphics/filters/Filter.h"
 
 #include <wtf/Uint8ClampedArray.h>
 
 #include "SkFlattenableBuffers.h"
 #include "SkMorphologyImageFilter.h"
-#include "SkiaImageFilterBuilder.h"
+#include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 
 namespace WebCore {
 

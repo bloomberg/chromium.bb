@@ -23,13 +23,13 @@
 #if ENABLE(SVG)
 #include "SVGStyledTransformableElement.h"
 
-#include "AffineTransform.h"
 #include "Attribute.h"
 #include "RenderSVGPath.h"
 #include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGPathData.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

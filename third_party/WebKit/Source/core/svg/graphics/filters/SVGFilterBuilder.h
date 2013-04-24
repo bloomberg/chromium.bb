@@ -22,7 +22,7 @@
 #define SVGFilterBuilder_h
 
 #if ENABLE(SVG)
-#include "FilterEffect.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

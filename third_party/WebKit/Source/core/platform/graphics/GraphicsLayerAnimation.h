@@ -20,8 +20,8 @@
 #ifndef GraphicsLayerAnimation_h
 #define GraphicsLayerAnimation_h
 
-#include "TransformationMatrix.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

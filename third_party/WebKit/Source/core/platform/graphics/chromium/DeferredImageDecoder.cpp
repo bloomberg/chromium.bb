@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "DeferredImageDecoder.h"
+#include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 
-#include "ImageDecodingStore.h"
-#include "ImageFrameGenerator.h"
-#include "LazyDecodingPixelRef.h"
+#include "core/platform/graphics/chromium/ImageDecodingStore.h"
+#include "core/platform/graphics/chromium/ImageFrameGenerator.h"
+#include "core/platform/graphics/chromium/LazyDecodingPixelRef.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

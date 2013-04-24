@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
-#include "AffineTransform.h"
 #include "KURL.h"
 #include "NativeImageSkia.h"
 #include "NotImplemented.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include "SkAnnotation.h"
 #include "SkBitmap.h"

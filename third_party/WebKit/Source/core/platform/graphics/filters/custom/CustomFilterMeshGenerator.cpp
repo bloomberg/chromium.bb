@@ -30,7 +30,7 @@
 #include "config.h"
 
 #if USE(3D_GRAPHICS)
-#include "CustomFilterMeshGenerator.h"
+#include "core/platform/graphics/filters/custom/CustomFilterMeshGenerator.h"
 
 #ifndef NDEBUG
 #include <stdio.h> // Needed for printf used in dumpBuffers.

@@ -53,7 +53,7 @@ typedef const struct __CTFont* CTFontRef;
 #include <wtf/text/StringImpl.h>
 
 #if OS(DARWIN)
-#include "CrossProcessFontLoading.h"  
+#include "core/platform/graphics/chromium/CrossProcessFontLoading.h"
 #endif
 
 #if USE(SKIA_ON_MAC_CHROMIUM)

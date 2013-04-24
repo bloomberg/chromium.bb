@@ -22,9 +22,9 @@
 #define SVGFEOffsetElement_h
 
 #if ENABLE(SVG)
-#include "FEOffset.h"
 #include "SVGAnimatedNumber.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/platform/graphics/filters/FEOffset.h"
 
 namespace WebCore {
 

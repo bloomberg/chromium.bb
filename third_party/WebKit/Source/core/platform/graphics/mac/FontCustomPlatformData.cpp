@@ -22,10 +22,10 @@
 #include "FontCustomPlatformData.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include "OpenTypeSanitizer.h"
 #include "SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/WOFFFileFormat.h"
+#include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
 #if USE(SKIA_ON_MAC_CHROMIUM)
 #include "SkStream.h"

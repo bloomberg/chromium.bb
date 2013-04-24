@@ -26,8 +26,6 @@
 #if ENABLE(SVG)
 #include "SVGFEImage.h"
 
-#include "AffineTransform.h"
-#include "Filter.h"
 #include "RenderObject.h"
 #include "RenderTreeAsText.h"
 #include "SVGFilter.h"
@@ -37,6 +35,8 @@
 #include "SVGURIReference.h"
 #include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 namespace WebCore {
 

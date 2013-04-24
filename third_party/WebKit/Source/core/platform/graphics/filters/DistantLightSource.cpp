@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "DistantLightSource.h"
+#include "core/platform/graphics/filters/DistantLightSource.h"
 
 #include "RenderTreeAsText.h"
 

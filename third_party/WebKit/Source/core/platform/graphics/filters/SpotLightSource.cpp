@@ -31,7 +31,7 @@
 
 #include "config.h"
 
-#include "SpotLightSource.h"
+#include "core/platform/graphics/filters/SpotLightSource.h"
 
 #include "TextStream.h"
 

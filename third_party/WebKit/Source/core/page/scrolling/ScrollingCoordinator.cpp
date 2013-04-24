@@ -30,7 +30,6 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "GraphicsLayerChromium.h"
 #include "Page.h"
 #include "PlatformWheelEvent.h"
 #include "PluginViewBase.h"
@@ -44,6 +43,7 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/Region.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebLayerPositionConstraint.h>

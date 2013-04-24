@@ -42,8 +42,8 @@
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #endif
 
-#include "CustomFilterOperation.h"
-#include "CustomFilterProgram.h"
+#include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 
 namespace WebCore {
 

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "OpenTypeUtilities.h"
+#include "core/platform/graphics/opentype/OpenTypeUtilities.h"
 
 #include "SharedBuffer.h"
 

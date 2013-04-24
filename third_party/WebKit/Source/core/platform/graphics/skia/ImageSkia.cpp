@@ -30,7 +30,6 @@
 
 #include "config.h"
 
-#include "AffineTransform.h"
 #include "FloatConversion.h"
 #include "Logging.h"
 #include "NativeImageSkia.h"
@@ -44,6 +43,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageObserver.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>
 
 #include "skia/ext/image_operations.h"

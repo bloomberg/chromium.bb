@@ -21,11 +21,11 @@
 #define SVGFilter_h
 
 #if ENABLE(SVG)
-#include "AffineTransform.h"
-#include "Filter.h"
-#include "FilterEffect.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FloatSize.h"
+#include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

@@ -30,16 +30,16 @@
 
 #include "config.h"
 
-#include "DrawingBuffer.h"
+#include "core/platform/graphics/gpu/DrawingBuffer.h"
 
 #include <algorithm>
 #include "CanvasRenderingContext.h"
 #include "GraphicsContext3DPrivate.h"
-#include "GraphicsLayerChromium.h"
 #include "ImageData.h"
 #include "TraceEvent.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
+#include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebExternalTextureLayer.h>

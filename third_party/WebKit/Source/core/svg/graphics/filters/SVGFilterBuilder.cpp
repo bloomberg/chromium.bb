@@ -22,9 +22,9 @@
 #if ENABLE(SVG)
 #include "SVGFilterBuilder.h"
 
-#include "FilterEffect.h"
-#include "SourceAlpha.h"
-#include "SourceGraphic.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/platform/graphics/filters/SourceAlpha.h"
+#include "core/platform/graphics/filters/SourceGraphic.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

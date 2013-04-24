@@ -28,7 +28,6 @@
 #include "core/platform/graphics/Image.h"
 
 #include <math.h>
-#include "AffineTransform.h"
 #include "Length.h"
 #include "MIMETypeRegistry.h"
 #include "PlatformMemoryInstrumentation.h"
@@ -37,6 +36,7 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/MainThread.h>
 #include <wtf/MemoryObjectInfo.h>
 #include <wtf/StdLibExtras.h>

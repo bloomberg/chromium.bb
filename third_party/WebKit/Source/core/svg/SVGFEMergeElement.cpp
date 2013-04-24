@@ -23,10 +23,10 @@
 #if ENABLE(SVG)
 #include "SVGFEMergeElement.h"
 
-#include "FilterEffect.h"
 #include "SVGFEMergeNodeElement.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
+#include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {
 

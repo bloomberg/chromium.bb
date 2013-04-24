@@ -24,7 +24,7 @@
  */
 #include "config.h"
 
-#include "DropShadowImageFilter.h"
+#include "core/platform/graphics/filters/DropShadowImageFilter.h"
 
 #include "SkBitmap.h"
 #include "SkBlurImageFilter.h"
