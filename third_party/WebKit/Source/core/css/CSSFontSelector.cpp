@@ -342,7 +342,7 @@ void CSSFontSelector::dispatchInvalidationCallbacks()
         return;
     if (StyleResolver* styleResolver = m_document->styleResolverIfExists())
         styleResolver->invalidateMatchedPropertiesCache();
-    if (m_document->inPageCache() || !m_document->renderer())
+    if (!m_document->renderer())
         return;
     m_document->scheduleForcedStyleRecalc();
 }

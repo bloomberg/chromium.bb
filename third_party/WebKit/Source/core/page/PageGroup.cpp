@@ -32,7 +32,6 @@
 #include "Frame.h"
 #include "GroupSettings.h"
 #include "Page.h"
-#include "PageCache.h"
 #include "Settings.h"
 #include "StorageNamespace.h"
 
@@ -110,7 +109,6 @@ void PageGroup::captionPreferencesChanged()
 {
     for (HashSet<Page*>::iterator i = m_pages.begin(); i != m_pages.end(); ++i)
         (*i)->captionPreferencesChanged();
-    pageCache()->markPagesForCaptionPreferencesChanged();
 }
 
 CaptionUserPreferences* PageGroup::captionPreferences()

@@ -161,9 +161,6 @@ void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot*)
 
 HTMLInputElement::~HTMLInputElement()
 {
-    if (needsSuspensionCallback())
-        document()->unregisterForPageCacheSuspensionCallbacks(this);
-
     // Need to remove form association while this is still an HTMLInputElement
     // so that virtual functions are called correctly.
     setForm(0);
@@ -467,7 +464,6 @@ void HTMLInputElement::updateType()
     removeFromRadioButtonGroup();
 
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();
-    bool neededSuspensionCallback = needsSuspensionCallback();
     bool didRespectHeightAndWidth = m_inputType->shouldRespectHeightAndWidthAttributes();
 
     m_inputType->destroyShadowSubtree();
@@ -506,11 +502,6 @@ void HTMLInputElement::updateType()
     m_inputType->updateInnerTextValue();
 
     m_wasModifiedByUser = false;
-
-    if (neededSuspensionCallback)
-        unregisterForSuspensionCallbackIfNeeded();
-    else
-        registerForSuspensionCallbackIfNeeded();
 
     if (didRespectHeightAndWidth != m_inputType->shouldRespectHeightAndWidthAttributes()) {
         ASSERT(elementData());
@@ -624,29 +615,17 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
         addToRadioButtonGroup();
         HTMLTextFormControlElement::parseAttribute(name, value);
     } else if (name == autocompleteAttr) {
-        if (equalIgnoringCase(value, "off")) {
+        if (equalIgnoringCase(value, "off"))
             m_autocomplete = Off;
-            registerForSuspensionCallbackIfNeeded();
-        } else {
-            bool needsToUnregister = m_autocomplete == Off;
-
+        else {
             if (value.isEmpty())
                 m_autocomplete = Uninitialized;
             else
                 m_autocomplete = On;
-
-            if (needsToUnregister)
-                unregisterForSuspensionCallbackIfNeeded();
         }
     } else if (name == typeAttr)
         updateType();
     else if (name == valueAttr) {
-        // Changes to the value attribute may change whether or not this element has a default value.
-        // If this field is autocomplete=off that might affect the return value of needsSuspensionCallback.
-        if (m_autocomplete == Off) {
-            unregisterForSuspensionCallbackIfNeeded();
-            registerForSuspensionCallbackIfNeeded();
-        }
         // We only need to setChanged if the form is looking at the default value right now.
         if (!hasDirtyValue()) {
             updatePlaceholderVisibility(false);
@@ -1406,33 +1385,6 @@ bool HTMLInputElement::isOutOfRange() const
     return m_inputType->isOutOfRange(value());
 }
 
-bool HTMLInputElement::needsSuspensionCallback()
-{
-    if (m_inputType->shouldResetOnDocumentActivation())
-        return true;
-
-    // Sensitive input elements are marked with autocomplete=off, and we want to wipe them out
-    // when going back; returning true here arranges for us to call reset at the time
-    // the page is restored. Non-empty textual default values indicate that the field
-    // is not really sensitive -- there's no default value for an account number --
-    // and we would see unexpected results if we reset to something other than blank.
-    bool isSensitive = m_autocomplete == Off && !(m_inputType->isTextType() && !defaultValue().isEmpty());
-
-    return isSensitive;
-}
-
-void HTMLInputElement::registerForSuspensionCallbackIfNeeded()
-{
-    if (needsSuspensionCallback())
-        document()->registerForPageCacheSuspensionCallbacks(this);
-}
-
-void HTMLInputElement::unregisterForSuspensionCallbackIfNeeded()
-{
-    if (!needsSuspensionCallback())
-        document()->unregisterForPageCacheSuspensionCallbacks(this);
-}
-
 bool HTMLInputElement::isRequiredFormControl() const
 {
     return m_inputType->supportsRequired() && isRequired();
@@ -1464,12 +1416,6 @@ void HTMLInputElement::onSearch()
 void HTMLInputElement::updateClearButtonVisibility()
 {
     m_inputType->updateClearButtonVisibility();
-}
-
-void HTMLInputElement::documentDidResumeFromPageCache()
-{
-    ASSERT(needsSuspensionCallback());
-    reset();
 }
 
 void HTMLInputElement::willChangeForm()
@@ -1511,19 +1457,12 @@ void HTMLInputElement::didMoveToNewDocument(Document* oldDocument)
     if (hasImageLoader())
         imageLoader()->elementDidMoveToNewDocument();
 
-    bool needsSuspensionCallback = this->needsSuspensionCallback();
     if (oldDocument) {
-        // Always unregister for cache callbacks when leaving a document, even if we would otherwise like to be registered
-        if (needsSuspensionCallback)
-            oldDocument->unregisterForPageCacheSuspensionCallbacks(this);
         if (isRadioButton())
             oldDocument->formController()->checkedRadioButtons().removeButton(this);
         if (m_hasTouchEventHandler)
             oldDocument->didRemoveEventTargetNode(this);
     }
-
-    if (needsSuspensionCallback)
-        document()->registerForPageCacheSuspensionCallbacks(this);
 
     if (m_hasTouchEventHandler)
         document()->didAddTouchEventHandler(this);

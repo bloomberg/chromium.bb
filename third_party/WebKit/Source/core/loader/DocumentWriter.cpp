@@ -133,9 +133,6 @@ void DocumentWriter::begin(const KURL& urlReference, bool dispatch, Document* ow
     m_frame->loader()->clear(!shouldReuseDefaultView, !shouldReuseDefaultView);
     clear();
 
-    if (!shouldReuseDefaultView)
-        m_frame->script()->updatePlatformScriptObjects();
-
     m_frame->loader()->setOutgoingReferrer(url);
     m_frame->setDocument(document);
 

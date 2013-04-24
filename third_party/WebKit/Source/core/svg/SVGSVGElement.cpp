@@ -95,7 +95,6 @@ inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document* doc)
     ASSERT(hasTagName(SVGNames::svgTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSVGElement();
-    doc->registerForPageCacheSuspensionCallbacks(this);
 }
 
 PassRefPtr<SVGSVGElement> SVGSVGElement::create(const QualifiedName& tagName, Document* document)
@@ -107,18 +106,9 @@ SVGSVGElement::~SVGSVGElement()
 {
     if (m_viewSpec)
         m_viewSpec->resetContextElement();
-    document()->unregisterForPageCacheSuspensionCallbacks(this);
     // There are cases where removedFromDocument() is not called.
     // see ContainerNode::removeAllChildren, called by its destructor.
     document()->accessSVGExtensions()->removeTimeContainer(this);
-}
-
-void SVGSVGElement::didMoveToNewDocument(Document* oldDocument)
-{
-    if (oldDocument)
-        oldDocument->unregisterForPageCacheSuspensionCallbacks(this);
-    document()->registerForPageCacheSuspensionCallbacks(this);
-    SVGStyledTransformableElement::didMoveToNewDocument(oldDocument);
 }
 
 const AtomicString& SVGSVGElement::contentScriptType() const
@@ -768,16 +758,6 @@ void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement)
         view->setZoomAndPanBaseValue(viewElement->zoomAndPan());
     else
         view->setZoomAndPanBaseValue(zoomAndPan());
-}
-
-void SVGSVGElement::documentWillSuspendForPageCache()
-{
-    pauseAnimations();
-}
-
-void SVGSVGElement::documentDidResumeFromPageCache()
-{
-    unpauseAnimations();
 }
 
 // getElementById on SVGSVGElement is restricted to only the child subtree defined by the <svg> element.

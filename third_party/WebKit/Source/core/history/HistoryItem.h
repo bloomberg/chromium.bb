@@ -37,7 +37,6 @@
 
 namespace WebCore {
 
-class CachedPage;
 class Document;
 class FormData;
 class HistoryItem;
@@ -55,8 +54,6 @@ enum VisitCountBehavior {
 };
 
 class HistoryItem : public RefCounted<HistoryItem> {
-    friend class PageCache;
-
 public: 
     static PassRefPtr<HistoryItem> create() { return adoptRef(new HistoryItem); }
     static PassRefPtr<HistoryItem> create(const String& urlString, const String& title, double lastVisited)
@@ -85,9 +82,6 @@ public:
     const String& originalURLString() const;
     const String& urlString() const;
     const String& title() const;
-    
-    bool isInPageCache() const { return m_cachedPage; }
-    bool hasCachedPageExpired() const;
     
     double lastVisitedTime() const;
     
@@ -243,10 +237,6 @@ private:
     RefPtr<FormData> m_formData;
     String m_formContentType;
 
-    // PageCache controls these fields.
-    HistoryItem* m_next;
-    HistoryItem* m_prev;
-    RefPtr<CachedPage> m_cachedPage;
 }; //class HistoryItem
 
 } //namespace WebCore

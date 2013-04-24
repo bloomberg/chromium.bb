@@ -67,24 +67,6 @@ NotificationCenter* DOMWindowNotifications::webkitNotifications(DOMWindow* windo
     return DOMWindowNotifications::from(window)->webkitNotifications();
 }
 
-void DOMWindowNotifications::disconnectFrameForPageCache()
-{
-    m_suspendedNotificationCenter = m_notificationCenter.release();
-    DOMWindowProperty::disconnectFrameForPageCache();
-}
-
-void DOMWindowNotifications::reconnectFrameFromPageCache(Frame* frame)
-{
-    DOMWindowProperty::reconnectFrameFromPageCache(frame);
-    m_notificationCenter = m_suspendedNotificationCenter.release();
-}
-
-void DOMWindowNotifications::willDestroyGlobalObjectInCachedFrame()
-{
-    m_suspendedNotificationCenter = nullptr;
-    DOMWindowProperty::willDestroyGlobalObjectInCachedFrame();
-}
-
 void DOMWindowNotifications::willDestroyGlobalObjectInFrame()
 {
     m_notificationCenter = nullptr;

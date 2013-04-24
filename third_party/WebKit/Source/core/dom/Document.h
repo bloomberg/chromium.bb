@@ -909,17 +909,7 @@ public:
     
     virtual void finishedParsing();
 
-    bool inPageCache() const { return m_inPageCache; }
-    void setInPageCache(bool flag);
-
-    // Elements can register themselves for the "documentWillSuspendForPageCache()" and  
-    // "documentDidResumeFromPageCache()" callbacks
-    void registerForPageCacheSuspensionCallbacks(Element*);
-    void unregisterForPageCacheSuspensionCallbacks(Element*);
-
     void documentWillBecomeInactive();
-    void documentWillSuspendForPageCache();
-    void documentDidResumeFromPageCache();
 
     void registerForMediaVolumeCallbacks(Element*);
     void unregisterForMediaVolumeCallbacks(Element*);
@@ -1353,8 +1343,6 @@ private:
 
     String m_contentLanguage;
 
-    RenderObject* m_savedRenderer;
-    
     RefPtr<TextResourceDecoder> m_decoder;
 
     InheritedBool m_designMode;
@@ -1375,10 +1363,8 @@ private:
     HashMap<String, RefPtr<HTMLCanvasElement> > m_cssCanvasElements;
 
     bool m_createRenderers;
-    bool m_inPageCache;
     Vector<IconURL> m_iconURLs;
 
-    HashSet<Element*> m_documentSuspensionCallbackElements;
     HashSet<Element*> m_mediaVolumeCallbackElements;
     HashSet<Element*> m_captionPreferencesChangedElements;
 

@@ -2880,9 +2880,9 @@ bool RenderObject::willRenderImage(CachedImage*)
     if (document()->activeDOMObjectsAreSuspended())
         return false;
 
-    // If we're not in a window (i.e., we're dormant from being put in the b/f cache or in a background tab)
+    // If we're not in a window (i.e., we're dormant from being in a background tab)
     // then we don't want to render either.
-    return !document()->inPageCache() && !document()->view()->isOffscreen();
+    return !document()->view()->isOffscreen();
 }
 
 int RenderObject::maximalOutlineSize(PaintPhase p) const

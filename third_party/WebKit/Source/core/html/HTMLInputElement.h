@@ -362,13 +362,7 @@ private:
     virtual bool isInRange() const;
     virtual bool isOutOfRange() const;
 
-    virtual void documentDidResumeFromPageCache();
-
     virtual void addSubresourceAttributeURLs(ListHashSet<KURL>&) const;
-
-    bool needsSuspensionCallback();
-    void registerForSuspensionCallbackIfNeeded();
-    void unregisterForSuspensionCallbackIfNeeded();
 
     bool supportsMaxLength() const { return isTextType(); }
     bool isTextType() const;

@@ -37,7 +37,6 @@
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
-#include "PageCache.h"
 #include "ResourceHandle.h"
 #include "TextAutosizer.h"
 #include <limits>
@@ -140,7 +139,6 @@ Settings::Settings(Page* page)
     , m_areImagesEnabled(true)
     , m_arePluginsEnabled(false)
     , m_isScriptEnabled(false)
-    , m_usesPageCache(false)
     , m_fontRenderingMode(0)
     , m_isCSSCustomFilterEnabled(false)
     , m_cssStickyPositionEnabled(true)
@@ -343,20 +341,6 @@ void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)
     m_userStyleSheetLocation = userStyleSheetLocation;
 
     m_page->userStyleSheetLocationChanged();
-}
-
-void Settings::setUsesPageCache(bool usesPageCache)
-{
-    if (m_usesPageCache == usesPageCache)
-        return;
-        
-    m_usesPageCache = usesPageCache;
-    if (!m_usesPageCache) {
-        int first = -m_page->backForward()->backCount();
-        int last = m_page->backForward()->forwardCount();
-        for (int i = first; i <= last; i++)
-            pageCache()->remove(m_page->backForward()->itemAtIndex(i));
-    }
 }
 
 void Settings::setFontRenderingMode(FontRenderingMode mode)

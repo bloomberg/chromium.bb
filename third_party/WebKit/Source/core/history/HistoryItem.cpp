@@ -26,9 +26,7 @@
 #include "config.h"
 #include "HistoryItem.h"
 
-#include "CachedPage.h"
 #include "Document.h"
-#include "PageCache.h"
 #include "ResourceRequest.h"
 #include "SerializedScriptValue.h"
 #include "SharedBuffer.h"
@@ -66,8 +64,6 @@ HistoryItem::HistoryItem()
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-    , m_next(0)
-    , m_prev(0)
 {
 }
 
@@ -83,8 +79,6 @@ HistoryItem::HistoryItem(const String& urlString, const String& title, double ti
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-    , m_next(0)
-    , m_prev(0)
 {    
 }
 
@@ -101,8 +95,6 @@ HistoryItem::HistoryItem(const String& urlString, const String& title, const Str
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-    , m_next(0)
-    , m_prev(0)
 {
 }
 
@@ -120,14 +112,11 @@ HistoryItem::HistoryItem(const KURL& url, const String& target, const String& pa
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
     , m_documentSequenceNumber(generateSequenceNumber())
-    , m_next(0)
-    , m_prev(0)
 {    
 }
 
 HistoryItem::~HistoryItem()
 {
-    ASSERT(!m_cachedPage);
 }
 
 inline HistoryItem::HistoryItem(const HistoryItem& item)
@@ -223,11 +212,6 @@ const String& HistoryItem::alternateTitle() const
     return m_displayTitle;
 }
 
-bool HistoryItem::hasCachedPageExpired() const
-{
-    return m_cachedPage ? m_cachedPage->hasExpired() : false;
-}
-
 double HistoryItem::lastVisitedTime() const
 {
     return m_lastVisitedTime;
@@ -273,7 +257,6 @@ void HistoryItem::setURLString(const String& urlString)
 
 void HistoryItem::setURL(const KURL& url)
 {
-    pageCache()->remove(this);
     setURLString(url.string());
     clearDocumentState();
 }

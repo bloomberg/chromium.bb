@@ -395,7 +395,6 @@ DOMWindow::DOMWindow(Document* document)
     : ContextDestructionObserver(document)
     , FrameDestructionObserver(document->frame())
     , m_shouldPrintWhenFinishedLoading(false)
-    , m_suspendedForPageCache(false)
 {
     ASSERT(frame());
     ASSERT(DOMWindow::document());
@@ -408,32 +407,25 @@ void DOMWindow::didSecureTransitionTo(Document* document)
 
 DOMWindow::~DOMWindow()
 {
-#ifndef NDEBUG
-    if (!m_suspendedForPageCache) {
-        ASSERT(!m_screen);
-        ASSERT(!m_history);
-        ASSERT(!m_crypto);
-        ASSERT(!m_locationbar);
-        ASSERT(!m_menubar);
-        ASSERT(!m_personalbar);
-        ASSERT(!m_scrollbars);
-        ASSERT(!m_statusbar);
-        ASSERT(!m_toolbar);
-        ASSERT(!m_console);
-        ASSERT(!m_navigator);
-        ASSERT(!m_performance);
-        ASSERT(!m_location);
-        ASSERT(!m_media);
-        ASSERT(!m_sessionStorage);
-        ASSERT(!m_localStorage);
-        ASSERT(!m_applicationCache);
-    }
-#endif
+    ASSERT(!m_screen);
+    ASSERT(!m_history);
+    ASSERT(!m_crypto);
+    ASSERT(!m_locationbar);
+    ASSERT(!m_menubar);
+    ASSERT(!m_personalbar);
+    ASSERT(!m_scrollbars);
+    ASSERT(!m_statusbar);
+    ASSERT(!m_toolbar);
+    ASSERT(!m_console);
+    ASSERT(!m_navigator);
+    ASSERT(!m_performance);
+    ASSERT(!m_location);
+    ASSERT(!m_media);
+    ASSERT(!m_sessionStorage);
+    ASSERT(!m_localStorage);
+    ASSERT(!m_applicationCache);
 
-    if (m_suspendedForPageCache)
-        willDestroyCachedFrame();
-    else
-        willDestroyDocumentInFrame();
+    willDestroyDocumentInFrame();
 
     // As the ASSERTs above indicate, this reset should only be necessary if this DOMWindow is suspended for the page cache.
     // But we don't want to risk any of these objects hanging around after we've been destroyed.
@@ -480,16 +472,6 @@ void DOMWindow::willDetachPage()
     InspectorInstrumentation::frameWindowDiscarded(m_frame, this);
 }
 
-void DOMWindow::willDestroyCachedFrame()
-{
-    // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
-    // unregister themselves from the DOMWindow as a result of the call to willDestroyGlobalObjectInCachedFrame.
-    Vector<DOMWindowProperty*> properties;
-    copyToVector(m_properties, properties);
-    for (size_t i = 0; i < properties.size(); ++i)
-        properties[i]->willDestroyGlobalObjectInCachedFrame();
-}
-
 void DOMWindow::willDestroyDocumentInFrame()
 {
     // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
@@ -520,45 +502,10 @@ void DOMWindow::unregisterProperty(DOMWindowProperty* property)
     m_properties.remove(property);
 }
 
-void DOMWindow::resetUnlessSuspendedForPageCache()
+void DOMWindow::reset()
 {
-    if (m_suspendedForPageCache)
-        return;
     willDestroyDocumentInFrame();
     resetDOMWindowProperties();
-}
-
-void DOMWindow::suspendForPageCache()
-{
-    disconnectDOMWindowProperties();
-    m_suspendedForPageCache = true;
-}
-
-void DOMWindow::resumeFromPageCache()
-{
-    reconnectDOMWindowProperties();
-    m_suspendedForPageCache = false;
-}
-
-void DOMWindow::disconnectDOMWindowProperties()
-{
-    // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
-    // unregister themselves from the DOMWindow as a result of the call to disconnectFrameForPageCache.
-    Vector<DOMWindowProperty*> properties;
-    copyToVector(m_properties, properties);
-    for (size_t i = 0; i < properties.size(); ++i)
-        properties[i]->disconnectFrameForPageCache();
-}
-
-void DOMWindow::reconnectDOMWindowProperties()
-{
-    ASSERT(m_suspendedForPageCache);
-    // It is necessary to copy m_properties to a separate vector because the DOMWindowProperties may
-    // unregister themselves from the DOMWindow as a result of the call to reconnectFromPageCache.
-    Vector<DOMWindowProperty*> properties;
-    copyToVector(m_properties, properties);
-    for (size_t i = 0; i < properties.size(); ++i)
-        properties[i]->reconnectFrameFromPageCache(m_frame);
 }
 
 void DOMWindow::resetDOMWindowProperties()

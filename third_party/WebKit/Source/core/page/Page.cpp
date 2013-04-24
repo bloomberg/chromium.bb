@@ -23,7 +23,6 @@
 #include "AlternativeTextClient.h"
 #include "AnimationController.h"
 #include "BackForwardController.h"
-#include "BackForwardList.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "ClientRectList.h"
@@ -56,7 +55,6 @@
 #include "MediaCanStartListener.h"
 #include "Navigator.h"
 #include "NetworkStateNotifier.h"
-#include "PageCache.h"
 #include "PageConsole.h"
 #include "PageGroup.h"
 #include "PlugInClient.h"
@@ -320,11 +318,6 @@ bool Page::openedByDOM() const
 void Page::setOpenedByDOM()
 {
     m_openedByDOM = true;
-}
-
-BackForwardList* Page::backForwardList() const
-{
-    return m_backForwardController->client();
 }
 
 bool Page::goBack()
@@ -662,8 +655,6 @@ void Page::setDeviceScaleFactor(float scaleFactor)
 
     if (mainFrame())
         mainFrame()->deviceOrPageScaleFactorChanged();
-
-    pageCache()->markPagesForFullStyleRecalc(this);
 }
 
 void Page::setShouldSuppressScrollbarAnimations(bool suppressAnimations)
@@ -714,7 +705,6 @@ void Page::setPagination(const Pagination& pagination)
     m_pagination = pagination;
 
     setNeedsRecalcStyleInAllFrames();
-    pageCache()->markPagesForFullStyleRecalc(this);
 }
 
 unsigned Page::pageCount() const

@@ -50,8 +50,6 @@
 
 namespace WebCore {
 
-class CachedFrameBase;
-class CachedPage;
 class CachedResource;
 class Chrome;
 class DOMWrapperWorld;
@@ -115,7 +113,6 @@ public:
     void reloadWithOverrideEncoding(const String& overrideEncoding);
     void reloadWithOverrideURL(const KURL& overrideUrl, bool endToEndReload = false);
 
-    void open(CachedFrameBase&);
     void loadItem(HistoryItem*, FrameLoadType);
     HistoryItem* requestedHistoryItem() const { return m_requestedHistoryItem.get(); }
 
@@ -289,15 +286,13 @@ private:
     void loadSameDocumentItem(HistoryItem*);
     void loadDifferentDocumentItem(HistoryItem*, FrameLoadType, FormSubmissionCacheLoadPolicy);
     
-    void loadProvisionalItemFromCachedPage();
-
     void updateFirstPartyForCookies();
     void setFirstPartyForCookies(const KURL&);
     
     void addExtraFieldsToRequest(ResourceRequest&, FrameLoadType, bool isMainResource);
 
     void clearProvisionalLoad();
-    void transitionToCommitted(PassRefPtr<CachedPage>);
+    void transitionToCommitted();
     void frameLoadCompleted();
 
     SubstituteData defaultSubstituteDataForURL(const KURL&);
@@ -320,7 +315,6 @@ private:
     void setState(FrameState);
 
     void closeOldDataSources();
-    void prepareForCachedPageRestore();
 
     bool shouldReloadToHandleUnreachableURL(DocumentLoader*);
 
@@ -418,7 +412,6 @@ private:
 
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
-    bool m_loadingFromCachedPage;
     bool m_suppressOpenerInNewFrame;
 
     SandboxFlags m_forcedSandboxFlags;

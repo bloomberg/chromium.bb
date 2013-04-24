@@ -59,24 +59,6 @@ DOMWindowIndexedDatabase* DOMWindowIndexedDatabase::from(DOMWindow* window)
     return supplement;
 }
 
-void DOMWindowIndexedDatabase::disconnectFrameForPageCache()
-{
-    m_suspendedIDBFactory = m_idbFactory.release();
-    DOMWindowProperty::disconnectFrameForPageCache();
-}
-
-void DOMWindowIndexedDatabase::reconnectFrameFromPageCache(Frame* frame)
-{
-    DOMWindowProperty::reconnectFrameFromPageCache(frame);
-    m_idbFactory = m_suspendedIDBFactory.release();
-}
-
-void DOMWindowIndexedDatabase::willDestroyGlobalObjectInCachedFrame()
-{
-    m_suspendedIDBFactory = nullptr;
-    DOMWindowProperty::willDestroyGlobalObjectInCachedFrame();
-}
-
 void DOMWindowIndexedDatabase::willDestroyGlobalObjectInFrame()
 {
     m_idbFactory = nullptr;

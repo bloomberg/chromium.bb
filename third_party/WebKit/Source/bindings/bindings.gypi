@@ -39,8 +39,6 @@
             'v8/ScheduledAction.cpp',
             'v8/ScheduledAction.h',
             'v8/ScopedPersistent.h',
-            'v8/ScriptCachedFrameData.cpp',
-            'v8/ScriptCachedFrameData.h',
             'v8/ScriptCallStackFactory.cpp',
             'v8/ScriptCallStackFactory.h',
             'v8/ScriptController.cpp',

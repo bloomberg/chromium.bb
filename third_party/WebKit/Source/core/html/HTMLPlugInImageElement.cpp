@@ -71,7 +71,6 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
     // the same codepath in this class.
     , m_needsWidgetUpdate(!createdByParser)
     , m_shouldPreferPlugInsForImages(preferPlugInsForImagesOption == ShouldPreferPlugInsForImages)
-    , m_needsDocumentActivationCallbacks(false)
     , m_createdDuringUserGesture(ScriptController::processingUserGesture())
 {
     setHasCustomStyleCallbacks();
@@ -79,8 +78,6 @@ HTMLPlugInImageElement::HTMLPlugInImageElement(const QualifiedName& tagName, Doc
 
 HTMLPlugInImageElement::~HTMLPlugInImageElement()
 {
-    if (m_needsDocumentActivationCallbacks)
-        document()->unregisterForPageCacheSuspensionCallbacks(this);
 }
 
 void HTMLPlugInImageElement::setDisplayState(DisplayState state)
@@ -142,13 +139,6 @@ bool HTMLPlugInImageElement::wouldLoadAsNetscapePlugin(const String& url, const 
 
 RenderObject* HTMLPlugInImageElement::createRenderer(RenderArena* arena, RenderStyle* style)
 {
-    // Once a PlugIn Element creates its renderer, it needs to be told when the Document goes
-    // inactive or reactivates so it can clear the renderer before going into the page cache.
-    if (!m_needsDocumentActivationCallbacks) {
-        m_needsDocumentActivationCallbacks = true;
-        document()->registerForPageCacheSuspensionCallbacks(this);
-    }
-
     // Fallback content breaks the DOM->Renderer class relationship of this
     // class and all superclasses because createObject won't necessarily
     // return a RenderEmbeddedObject, RenderPart or even RenderWidget.
@@ -227,43 +217,9 @@ void HTMLPlugInImageElement::finishParsingChildren()
 
 void HTMLPlugInImageElement::didMoveToNewDocument(Document* oldDocument)
 {
-    if (m_needsDocumentActivationCallbacks) {
-        if (oldDocument)
-            oldDocument->unregisterForPageCacheSuspensionCallbacks(this);
-        document()->registerForPageCacheSuspensionCallbacks(this);
-    }
-
     if (m_imageLoader)
         m_imageLoader->elementDidMoveToNewDocument();
     HTMLPlugInElement::didMoveToNewDocument(oldDocument);
-}
-
-void HTMLPlugInImageElement::documentWillSuspendForPageCache()
-{
-    if (RenderStyle* renderStyle = this->renderStyle()) {
-        m_customStyleForPageCache = RenderStyle::clone(renderStyle);
-        m_customStyleForPageCache->setDisplay(NONE);
-        recalcStyle(Force);
-    }
-
-    HTMLPlugInElement::documentWillSuspendForPageCache();
-}
-
-void HTMLPlugInImageElement::documentDidResumeFromPageCache()
-{
-    if (m_customStyleForPageCache) {
-        m_customStyleForPageCache = 0;
-        recalcStyle(Force);
-    }
-    
-    HTMLPlugInElement::documentDidResumeFromPageCache();
-}
-
-PassRefPtr<RenderStyle> HTMLPlugInImageElement::customStyleForRenderer()
-{
-    if (!m_customStyleForPageCache)
-        return document()->styleResolver()->styleForElement(this);
-    return m_customStyleForPageCache;
 }
 
 void HTMLPlugInImageElement::updateWidgetCallback(Node* n, unsigned)

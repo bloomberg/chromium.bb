@@ -91,8 +91,6 @@ PassRefPtr<HTMLFormElement> HTMLFormElement::create(const QualifiedName& tagName
 HTMLFormElement::~HTMLFormElement()
 {
     document()->formController()->willDeleteForm(this);
-    if (!shouldAutocomplete())
-        document()->unregisterForPageCacheSuspensionCallbacks(this);
 
     for (unsigned i = 0; i < m_associatedElements.size(); ++i)
         m_associatedElements[i]->formWillBeDestroyed();
@@ -444,12 +442,6 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name, const AtomicStri
         m_attributes.updateEncodingType(value);
     else if (name == accept_charsetAttr)
         m_attributes.setAcceptCharset(value);
-    else if (name == autocompleteAttr) {
-        if (!shouldAutocomplete())
-            document()->registerForPageCacheSuspensionCallbacks(this);
-        else
-            document()->unregisterForPageCacheSuspensionCallbacks(this);
-    }
     else if (name == onautocompleteAttr)
         setAttributeEventListener(eventNames().autocompleteEvent, createAttributeEventListener(this, name, value));
     else if (name == onautocompleteerrorAttr)
@@ -697,27 +689,6 @@ void HTMLFormElement::getNamedElements(const AtomicString& name, Vector<RefPtr<N
     }
     if (namedItems.size() && namedItems.first() != aliasElement)
         addElementAlias(static_cast<HTMLFormControlElement*>(namedItems.first().get()), name);
-}
-
-void HTMLFormElement::documentDidResumeFromPageCache()
-{
-    ASSERT(!shouldAutocomplete());
-
-    for (unsigned i = 0; i < m_associatedElements.size(); ++i) {
-        if (m_associatedElements[i]->isFormControlElement())
-            static_cast<HTMLFormControlElement*>(m_associatedElements[i])->reset();
-    }
-}
-
-void HTMLFormElement::didMoveToNewDocument(Document* oldDocument)
-{
-    if (!shouldAutocomplete()) {
-        if (oldDocument)
-            oldDocument->unregisterForPageCacheSuspensionCallbacks(this);
-        document()->registerForPageCacheSuspensionCallbacks(this);
-    }
-
-    HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
 bool HTMLFormElement::shouldAutocomplete() const

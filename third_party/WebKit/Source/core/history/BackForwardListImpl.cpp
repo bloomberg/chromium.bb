@@ -33,7 +33,6 @@
 #include "HistoryItem.h"
 #include "Logging.h"
 #include "Page.h"
-#include "PageCache.h"
 #include "SerializedScriptValue.h"
 
 using namespace std;
@@ -70,7 +69,6 @@ void BackForwardListImpl::addItem(PassRefPtr<HistoryItem> prpItem)
             RefPtr<HistoryItem> item = m_entries.last();
             m_entries.removeLast();
             m_entryHash.remove(item);
-            pageCache()->remove(item.get());
         }
     }
 
@@ -80,7 +78,6 @@ void BackForwardListImpl::addItem(PassRefPtr<HistoryItem> prpItem)
         RefPtr<HistoryItem> item = m_entries[0];
         m_entries.remove(0);
         m_entryHash.remove(item);
-        pageCache()->remove(item.get());
         m_current--;
     }
 
@@ -177,7 +174,6 @@ void BackForwardListImpl::setCapacity(int size)
         RefPtr<HistoryItem> item = m_entries.last();
         m_entries.removeLast();
         m_entryHash.remove(item);
-        pageCache()->remove(item.get());
     }
 
     if (!size)
@@ -232,9 +228,6 @@ HistoryItemVector& BackForwardListImpl::entries()
 
 void BackForwardListImpl::close()
 {
-    int size = m_entries.size();
-    for (int i = 0; i < size; ++i)
-        pageCache()->remove(m_entries[i].get());
     m_entries.clear();
     m_entryHash.clear();
     m_page = 0;

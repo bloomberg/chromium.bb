@@ -32,7 +32,6 @@
 
 #include "AnimationController.h"
 #include "ApplyStyleCommand.h"
-#include "BackForwardController.h"
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSPropertyNames.h"
 #include "CachedCSSStyleSheet.h"
@@ -70,7 +69,6 @@
 #include "NodeList.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "PageCache.h"
 #include "PageGroup.h"
 #include "RenderLayerCompositor.h"
 #include "RenderPart.h"
@@ -246,7 +244,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
     // Prepare for destruction now, so any unload event handlers get run and the DOMWindow is
     // notified. If we wait until the view is destroyed, then things won't be hooked up enough for
     // these calls to work.
-    if (!view && m_doc && m_doc->attached() && !m_doc->inPageCache()) {
+    if (!view && m_doc && m_doc->attached()) {
         // FIXME: We don't call willRemove here. Why is that OK?
         m_doc->prepareForDestruction();
     }
@@ -270,7 +268,7 @@ void Frame::setView(PassRefPtr<FrameView> view)
 void Frame::setDocument(PassRefPtr<Document> newDoc)
 {
     ASSERT(!newDoc || newDoc->frame() == this);
-    if (m_doc && m_doc->attached() && !m_doc->inPageCache()) {
+    if (m_doc && m_doc->attached()) {
         // FIXME: We don't call willRemove here. Why is that OK?
         m_doc->detach();
     }
@@ -462,7 +460,6 @@ void Frame::willDetachPage()
         page()->scrollingCoordinator()->willDestroyScrollableArea(m_view.get());
 
     script()->clearScriptObjects();
-    script()->updatePlatformScriptObjects();
 }
 
 void Frame::disconnectOwnerElement()
@@ -655,9 +652,6 @@ void Frame::setPageAndTextZoomFactors(float pageZoomFactor, float textZoomFactor
         if (document->renderer() && document->renderer()->needsLayout() && view->didFirstLayout())
             view->layout();
     }
-
-    if (page->mainFrame() == this)
-        pageCache()->markPagesForFullStyleRecalc(page);
 }
 
 void Frame::deviceOrPageScaleFactorChanged()

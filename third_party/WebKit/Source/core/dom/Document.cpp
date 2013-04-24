@@ -413,12 +413,10 @@ Document::Document(Frame* frame, const KURL& url, bool isXHTML, bool isHTML)
     , m_xmlVersion("1.0")
     , m_xmlStandalone(StandaloneUnspecified)
     , m_hasXMLDeclaration(0)
-    , m_savedRenderer(0)
     , m_designMode(inherit)
     , m_hasAnnotatedRegions(false)
     , m_annotatedRegionsDirty(false)
     , m_createRenderers(true)
-    , m_inPageCache(false)
     , m_accessKeyMapValid(false)
     , m_useSecureKeyboardEntryWhenActive(false)
     , m_isXHTML(isXHTML)
@@ -542,8 +540,6 @@ static bool isAttributeOnAllOwners(const WebCore::QualifiedName& attribute, cons
 Document::~Document()
 {
     ASSERT(!renderer());
-    ASSERT(!m_inPageCache);
-    ASSERT(!m_savedRenderer);
     ASSERT(m_ranges.isEmpty());
     ASSERT(!m_styleRecalcTimer.isActive());
     ASSERT(!m_parentTreeScope);
@@ -556,7 +552,7 @@ Document::~Document()
         ownerDocument->didRemoveEventTargetNode(this);
     // FIXME: Should we reset m_domWindow when we detach from the Frame?
     if (m_domWindow)
-        m_domWindow->resetUnlessSuspendedForPageCache();
+        m_domWindow->reset();
 
     m_scriptRunner.clear();
 
@@ -1641,7 +1637,7 @@ void Document::scheduleStyleRecalc()
         return;
     }
 
-    if (m_styleRecalcTimer.isActive() || inPageCache())
+    if (m_styleRecalcTimer.isActive())
         return;
 
     ASSERT(childNeedsStyleRecalc() || m_pendingStyleRecalcShouldForce);
@@ -1780,7 +1776,7 @@ void Document::updateStyleIfNeeded()
     ASSERT(isMainThread());
     ASSERT(!view() || (!view()->isInLayout() && !view()->isPainting()));
     
-    if ((!m_pendingStyleRecalcShouldForce && !childNeedsStyleRecalc()) || inPageCache())
+    if (!m_pendingStyleRecalcShouldForce && !childNeedsStyleRecalc())
         return;
 
     AnimationUpdateBlock animationUpdateBlock(m_frame ? m_frame->animation() : 0);
@@ -1933,7 +1929,6 @@ void Document::clearStyleResolver()
 void Document::attach()
 {
     ASSERT(!attached());
-    ASSERT(!m_inPageCache);
     ASSERT(!m_axObjectCache || this != topDocument());
 
     if (!m_renderArena)
@@ -1956,7 +1951,6 @@ void Document::attach()
 void Document::detach()
 {
     ASSERT(attached());
-    ASSERT(!m_inPageCache);
 
     if (page())
         page()->pointerLockController()->documentDetached(this);
@@ -3141,7 +3135,7 @@ void Document::focusedNodeRemoved()
 
 void Document::removeFocusedNodeOfSubtree(Node* node, bool amongChildrenOnly)
 {
-    if (!m_focusedNode || this->inPageCache()) // If the document is in the page cache, then we don't need to clear out the focused node.
+    if (!m_focusedNode)
         return;
 
     Node* focusedNode = node->treeScope()->focusedNode();
@@ -3201,9 +3195,6 @@ bool Document::setFocusedNode(PassRefPtr<Node> prpNewFocusedNode, FocusDirection
 
     if (m_focusedNode == newFocusedNode)
         return true;
-
-    if (m_inPageCache)
-        return false;
 
     bool focusChangeBlocked = false;
     RefPtr<Node> oldFocusedNode = m_focusedNode;
@@ -3510,8 +3501,6 @@ void Document::takeDOMWindowFrom(Document* document)
     ASSERT(m_frame);
     ASSERT(!m_domWindow);
     ASSERT(document->domWindow());
-    // A valid DOMWindow is needed by CachedFrame for its documents.
-    ASSERT(!document->inPageCache());
 
     m_domWindow = document->m_domWindow.release();
     m_domWindow->didSecureTransitionTo(this);
@@ -3906,89 +3895,10 @@ KURL Document::completeURL(const String& url) const
     return completeURL(url, m_baseURL);
 }
 
-void Document::setInPageCache(bool flag)
-{
-    if (m_inPageCache == flag)
-        return;
-
-    m_inPageCache = flag;
-
-    FrameView* v = view();
-    Page* page = this->page();
-
-    if (flag) {
-        ASSERT(!m_savedRenderer);
-        m_savedRenderer = renderer();
-        if (v) {
-            // FIXME: There is some scrolling related work that needs to happen whenever a page goes into the
-            // page cache and similar work that needs to occur when it comes out. This is where we do the work
-            // that needs to happen when we enter, and the work that needs to happen when we exit is in
-            // HistoryController::restoreScrollPositionAndViewState(). It can't be here because this function is
-            // called too early on in the process of a page exiting the cache for that work to be possible in this
-            // function. It would be nice if there was more symmetry here.
-            // https://bugs.webkit.org/show_bug.cgi?id=98698
-            v->cacheCurrentScrollPosition();
-            if (page && page->mainFrame() == m_frame)
-                v->resetScrollbarsAndClearContentsSize();
-            else
-                v->resetScrollbars();
-        }
-        m_styleRecalcTimer.stop();
-    } else {
-        ASSERT(!renderer() || renderer() == m_savedRenderer);
-        ASSERT(m_renderArena);
-        setRenderer(m_savedRenderer);
-        m_savedRenderer = 0;
-
-        if (childNeedsStyleRecalc())
-            scheduleStyleRecalc();
-    }
-}
-
 void Document::documentWillBecomeInactive()
 {
     if (renderer())
         renderView()->setIsInWindow(false);
-}
-
-void Document::documentWillSuspendForPageCache()
-{
-    documentWillBecomeInactive();
-
-    HashSet<Element*>::iterator end = m_documentSuspensionCallbackElements.end();
-    for (HashSet<Element*>::iterator i = m_documentSuspensionCallbackElements.begin(); i != end; ++i)
-        (*i)->documentWillSuspendForPageCache();
-
-#ifndef NDEBUG
-    // Clear the update flag to be able to check if the viewport arguments update
-    // is dispatched, after the document is restored from the page cache.
-    m_didDispatchViewportPropertiesChanged = false;
-#endif
-}
-
-void Document::documentDidResumeFromPageCache() 
-{
-    Vector<Element*> elements;
-    copyToVector(m_documentSuspensionCallbackElements, elements);
-    Vector<Element*>::iterator end = elements.end();
-    for (Vector<Element*>::iterator i = elements.begin(); i != end; ++i)
-        (*i)->documentDidResumeFromPageCache();
-
-    if (renderer())
-        renderView()->setIsInWindow(true);
-
-    if (FrameView* frameView = view())
-        frameView->setAnimatorsAreActive();
-}
-
-void Document::registerForPageCacheSuspensionCallbacks(Element* e)
-{
-    m_documentSuspensionCallbackElements.add(e);
-}
-
-void Document::unregisterForPageCacheSuspensionCallbacks(Element* e)
-{
-    m_documentSuspensionCallbackElements.remove(e);
 }
 
 void Document::mediaVolumeDidChange() 
@@ -5059,7 +4969,7 @@ bool Document::webkitFullscreenEnabled() const
 
 void Document::webkitWillEnterFullScreenForElement(Element* element)
 {
-    if (!attached() || inPageCache())
+    if (!attached())
         return;
 
     ASSERT(element);
@@ -5104,7 +5014,7 @@ void Document::webkitDidEnterFullScreenForElement(Element*)
     if (!m_fullScreenElement)
         return;
 
-    if (!attached() || inPageCache())
+    if (!attached())
         return;
 
     m_fullScreenElement->didBecomeFullscreenElement();
@@ -5117,7 +5027,7 @@ void Document::webkitWillExitFullScreenForElement(Element*)
     if (!m_fullScreenElement)
         return;
 
-    if (!attached() || inPageCache())
+    if (!attached())
         return;
 
     m_fullScreenElement->willStopBeingFullscreenElement();
@@ -5128,7 +5038,7 @@ void Document::webkitDidExitFullScreenForElement(Element*)
     if (!m_fullScreenElement)
         return;
 
-    if (!attached() || inPageCache())
+    if (!attached())
         return;
 
     m_fullScreenElement->setContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
@@ -5765,7 +5675,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_annotatedRegions, "annotatedRegions");
     info.addMember(m_cssCanvasElements, "cssCanvasElements");
     info.addMember(m_iconURLs, "iconURLs");
-    info.addMember(m_documentSuspensionCallbackElements, "documentSuspensionCallbackElements");
     info.addMember(m_mediaVolumeCallbackElements, "mediaVolumeCallbackElements");
     info.addMember(m_elementsByAccessKey, "elementsByAccessKey");
     info.addMember(m_eventQueue, "eventQueue");
@@ -5792,7 +5701,6 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_scriptRunner, "scriptRunner");
     info.addMember(m_transformSource, "transformSource");
     info.addMember(m_transformSourceDocument, "transformSourceDocument");
-    info.addMember(m_savedRenderer, "savedRenderer");
     info.addMember(m_decoder, "decoder");
     info.addMember(m_xpathEvaluator, "xpathEvaluator");
 #if ENABLE(SVG)

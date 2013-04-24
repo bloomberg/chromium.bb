@@ -45,9 +45,6 @@ public:
     static NotificationCenter* webkitNotifications(DOMWindow*);
     static DOMWindowNotifications* from(DOMWindow*);
 
-    virtual void disconnectFrameForPageCache() OVERRIDE;
-    virtual void reconnectFrameFromPageCache(Frame*) OVERRIDE;
-    virtual void willDestroyGlobalObjectInCachedFrame() OVERRIDE;
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
@@ -59,7 +56,6 @@ private:
 
     DOMWindow* m_window;
     RefPtr<NotificationCenter> m_notificationCenter;
-    RefPtr<NotificationCenter> m_suspendedNotificationCenter;
 };
 
 } // namespace WebCore

@@ -193,14 +193,6 @@ void ApplicationCacheHost::maybeLoadFallbackSynchronously(const ResourceRequest&
     // N/A to the chromium port
 }
 
-bool ApplicationCacheHost::canCacheInPageCache()
-{
-    // Chromium doesn't use the page cache, however, that's controlled by WebCore::Settings, which has usesPageCache() return
-    // false. So we return an hyptothetical here: Chromium won't end up using the PageCache, but the statistics in PageCache.cpp
-    // will be reported correctly for re-evaluating that decision.
-    return !isApplicationCacheEnabled() || status() == UNCACHED;
-}
-
 void ApplicationCacheHost::setDOMApplicationCache(DOMApplicationCache* domApplicationCache)
 {
     ASSERT(!m_domApplicationCache || !domApplicationCache);

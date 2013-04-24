@@ -939,7 +939,6 @@ void FrameView::layout(bool allowSubtree)
     ASSERT(m_frame->view() == this);
 
     Document* document = m_frame->document();
-    ASSERT(!document->inPageCache());
     bool subtree;
     RenderObject* root;
 
@@ -2632,10 +2631,7 @@ bool FrameView::scrollbarsCanBeActive() const
             return false;
     }
 
-    if (Document* document = m_frame->document())
-        return !document->inPageCache();
-
-    return false;
+    return !!m_frame->document();
 }
 
 ScrollableArea* FrameView::enclosingScrollableArea() const

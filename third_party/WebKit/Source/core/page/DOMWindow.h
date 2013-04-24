@@ -108,9 +108,7 @@ namespace WebCore {
         void registerProperty(DOMWindowProperty*);
         void unregisterProperty(DOMWindowProperty*);
 
-        void resetUnlessSuspendedForPageCache();
-        void suspendForPageCache();
-        void resumeFromPageCache();
+        void reset();
 
         PassRefPtr<MediaQueryList> matchMedia(const String&);
 
@@ -391,7 +389,6 @@ namespace WebCore {
         bool isCurrentlyDisplayedInFrame() const;
 
         void willDetachDocumentFromFrame();
-        void willDestroyCachedFrame();
 
     private:
         explicit DOMWindow(Document*);
@@ -412,12 +409,9 @@ namespace WebCore {
         bool isInsecureScriptAccess(DOMWindow* activeWindow, const String& urlString);
 
         void resetDOMWindowProperties();
-        void disconnectDOMWindowProperties();
-        void reconnectDOMWindowProperties();
         void willDestroyDocumentInFrame();
 
         bool m_shouldPrintWhenFinishedLoading;
-        bool m_suspendedForPageCache;
 
         HashSet<DOMWindowProperty*> m_properties;
 

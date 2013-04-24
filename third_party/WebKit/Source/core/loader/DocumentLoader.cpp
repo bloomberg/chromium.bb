@@ -32,7 +32,6 @@
 
 #include "ApplicationCacheHost.h"
 #include "ArchiveResourceCollection.h"
-#include "CachedPage.h"
 #include "CachedResourceLoader.h"
 #include "DOMWindow.h"
 #include "Document.h"

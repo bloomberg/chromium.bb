@@ -127,8 +127,6 @@ namespace WebCore {
         bool maybeLoadSynchronously(ResourceRequest&, ResourceError&, ResourceResponse&, Vector<char>& data);
         void maybeLoadFallbackSynchronously(const ResourceRequest&, ResourceError&, ResourceResponse&, Vector<char>& data);
 
-        bool canCacheInPageCache();
-
         Status status() const;  
         bool update();
         bool swapCache();

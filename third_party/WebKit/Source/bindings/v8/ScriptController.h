@@ -150,7 +150,6 @@ public:
 
     void updateSecurityOrigin();
     void clearScriptObjects();
-    void updatePlatformScriptObjects();
     void cleanupScriptObjectsForPlugin(Widget*);
 
     void clearForClose();

@@ -21,7 +21,7 @@
 #ifndef Page_h
 #define Page_h
 
-#include "UseCounter.h"
+#include "BackForwardList.h"
 #include "FindOptions.h"
 #include "FrameLoaderTypes.h"
 #include "LayoutMilestones.h"
@@ -31,6 +31,7 @@
 #include "PlatformScreen.h"
 #include "Region.h"
 #include "Supplementable.h"
+#include "UseCounter.h"
 #include "ViewportArguments.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
@@ -46,7 +47,6 @@ namespace WebCore {
 
 class AlternativeTextClient;
 class BackForwardController;
-class BackForwardList;
 class Chrome;
 class ChromeClient;
 class ClientRectList;
@@ -148,8 +148,7 @@ public:
     bool openedByDOM() const;
     void setOpenedByDOM();
 
-    // DEPRECATED. Use backForward() instead of the following 6 functions.
-    BackForwardList* backForwardList() const;
+    // DEPRECATED. Use backForward() instead of the following 5 functions.
     bool goBack();
     bool goForward();
     bool canGoBackOrForward(int distance) const;

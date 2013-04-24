@@ -165,11 +165,6 @@ void ScriptController::updateSecurityOrigin()
     m_windowShell->updateSecurityOrigin();
 }
 
-void ScriptController::updatePlatformScriptObjects()
-{
-    notImplemented();
-}
-
 bool ScriptController::processingUserGesture()
 {
     return UserGestureIndicator::processingUserGesture();

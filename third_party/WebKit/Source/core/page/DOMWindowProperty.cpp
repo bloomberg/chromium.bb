@@ -55,42 +55,6 @@ DOMWindowProperty::~DOMWindowProperty()
     m_frame = 0;
 }
 
-void DOMWindowProperty::disconnectFrameForPageCache()
-{
-    // If this property is being disconnected from its Frame to enter the PageCache, it must have
-    // been created with a Frame in the first place.
-    ASSERT(m_frame);
-    ASSERT(m_associatedDOMWindow);
-
-    m_frame = 0;
-}
-
-void DOMWindowProperty::reconnectFrameFromPageCache(Frame* frame)
-{
-    // If this property is being reconnected to its Frame to enter the PageCache, it must have
-    // been disconnected from its Frame in the first place and it should still have an associated DOMWindow.
-    ASSERT(frame);
-    ASSERT(!m_frame);
-    ASSERT(frame->document()->domWindow() == m_associatedDOMWindow);
-
-    m_frame = frame;
-}
-
-void DOMWindowProperty::willDestroyGlobalObjectInCachedFrame()
-{
-    // If the property has been disconnected from its Frame for the page cache, then it must have originally had a Frame
-    // and therefore should still have an associated DOMWindow.
-    ASSERT(!m_frame);
-    ASSERT(m_associatedDOMWindow);
-
-    // DOMWindowProperty lifetime isn't tied directly to the DOMWindow itself so it is important that it unregister
-    // itself from any DOMWindow it is associated with if that DOMWindow is going away.
-    if (m_associatedDOMWindow)
-        m_associatedDOMWindow->unregisterProperty(this);
-    m_associatedDOMWindow = 0;
-    m_frame = 0;
-}
-
 void DOMWindowProperty::willDestroyGlobalObjectInFrame()
 {
     // If the property is getting this callback it must have been created with a Frame/DOMWindow and it should still have them.

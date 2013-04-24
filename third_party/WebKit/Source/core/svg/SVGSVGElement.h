@@ -137,9 +137,6 @@ public:
 
     bool hasEmptyViewBox() { return hasAttribute(SVGNames::viewBoxAttr) && viewBoxIsValid() && viewBox().isEmpty(); }
 
-protected:
-    virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
-
 private:
     SVGSVGElement(const QualifiedName&, Document*);
     virtual ~SVGSVGElement();
@@ -181,9 +178,6 @@ private:
     virtual void synchronizeRequiredFeatures() { SVGTests::synchronizeRequiredFeatures(this); }
     virtual void synchronizeRequiredExtensions() { SVGTests::synchronizeRequiredExtensions(this); }
     virtual void synchronizeSystemLanguage() { SVGTests::synchronizeSystemLanguage(this); }
-
-    virtual void documentWillSuspendForPageCache();
-    virtual void documentDidResumeFromPageCache();
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const;
 

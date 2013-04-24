@@ -32,7 +32,6 @@
 #include "HistoryController.h"
 
 #include "BackForwardController.h"
-#include "CachedPage.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
@@ -44,7 +43,6 @@
 #include "HistoryItem.h"
 #include "Logging.h"
 #include "Page.h"
-#include "PageCache.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include <wtf/text/CString.h>
@@ -67,10 +65,7 @@ void HistoryController::saveScrollPositionAndViewStateToItem(HistoryItem* item)
     if (!item || !m_frame->view())
         return;
 
-    if (m_frame->document()->inPageCache())
-        item->setScrollPoint(m_frame->view()->cachedScrollPosition());
-    else
-        item->setScrollPoint(m_frame->view()->scrollPosition());
+    item->setScrollPoint(m_frame->view()->scrollPosition());
 
     Page* page = m_frame->page();
     if (page && page->mainFrame() == m_frame)
@@ -223,25 +218,6 @@ void HistoryController::restoreDocumentState()
     }
 }
 
-void HistoryController::invalidateCurrentItemCachedPage()
-{
-    // When we are pre-commit, the currentItem is where the pageCache data resides    
-    CachedPage* cachedPage = pageCache()->get(currentItem());
-
-    // FIXME: This is a grotesque hack to fix <rdar://problem/4059059> Crash in RenderFlow::detach
-    // Somehow the PageState object is not properly updated, and is holding onto a stale document.
-    // Both Xcode and FileMaker see this crash, Safari does not.
-    
-    ASSERT(!cachedPage || cachedPage->document() == m_frame->document());
-    if (cachedPage && cachedPage->document() == m_frame->document()) {
-        cachedPage->document()->setInPageCache(false);
-        cachedPage->clear();
-    }
-    
-    if (cachedPage)
-        pageCache()->remove(currentItem());
-}
-
 bool HistoryController::shouldStopLoadingForHistoryItem(HistoryItem* targetItem) const
 {
     if (!m_currentItem)
@@ -323,8 +299,6 @@ void HistoryController::updateForReload()
 #endif
 
     if (m_currentItem) {
-        pageCache()->remove(m_currentItem.get());
-    
         if (m_frame->loader()->loadType() == FrameLoadTypeReload || m_frame->loader()->loadType() == FrameLoadTypeReloadFromOrigin)
             saveScrollPositionAndViewStateToItem(m_currentItem.get());
     }

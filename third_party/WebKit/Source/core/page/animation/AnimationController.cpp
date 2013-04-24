@@ -100,7 +100,6 @@ double AnimationControllerPrivate::updateAnimations(SetChanged callSetChanged/* 
             if (!timeToNextService) {
                 if (callSetChanged == CallSetChanged) {
                     Node* node = it->key->node();
-                    ASSERT(!node || (node->document() && !node->document()->inPageCache()));
                     node->setNeedsStyleRecalc(SyntheticStyleChange);
                     calledSetChanged = true;
                 }
@@ -207,7 +206,6 @@ void AnimationControllerPrivate::addEventToDispatch(PassRefPtr<Element> element,
 
 void AnimationControllerPrivate::addNodeChangeToDispatch(PassRefPtr<Node> node)
 {
-    ASSERT(!node || (node->document() && !node->document()->inPageCache()));
     if (!node)
         return;
 
@@ -486,17 +484,14 @@ void AnimationController::cancelAnimations(RenderObject* renderer)
         return;
 
     if (m_data->clear(renderer)) {
-        Node* node = renderer->node();
-        ASSERT(!node || (node->document() && !node->document()->inPageCache()));
-        if (node)
+        if (Node* node = renderer->node())
             node->setNeedsStyleRecalc(SyntheticStyleChange);
     }
 }
 
 PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject* renderer, RenderStyle* newStyle)
 {
-    // Don't do anything if we're in the cache
-    if (!renderer->document() || renderer->document()->inPageCache())
+    if (!renderer->document())
         return newStyle;
 
     RenderStyle* oldStyle = renderer->style();

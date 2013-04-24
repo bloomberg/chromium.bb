@@ -41,9 +41,6 @@ public:
 
     static IDBFactory* indexedDB(DOMWindow*);
 
-    virtual void disconnectFrameForPageCache() OVERRIDE;
-    virtual void reconnectFrameFromPageCache(Frame*) OVERRIDE;
-    virtual void willDestroyGlobalObjectInCachedFrame() OVERRIDE;
     virtual void willDestroyGlobalObjectInFrame() OVERRIDE;
     virtual void willDetachGlobalObjectFromFrame() OVERRIDE;
 
@@ -55,7 +52,6 @@ private:
 
     DOMWindow* m_window;
     RefPtr<IDBFactory> m_idbFactory;
-    RefPtr<IDBFactory> m_suspendedIDBFactory;
 };
 
 } // namespace WebCore

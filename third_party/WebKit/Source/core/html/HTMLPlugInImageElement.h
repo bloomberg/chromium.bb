@@ -96,11 +96,6 @@ protected:
     bool wouldLoadAsNetscapePlugin(const String& url, const String& serviceType);
 
     virtual void didMoveToNewDocument(Document* oldDocument) OVERRIDE;
-    
-    virtual void documentWillSuspendForPageCache() OVERRIDE;
-    virtual void documentDidResumeFromPageCache() OVERRIDE;
-
-    virtual PassRefPtr<RenderStyle> customStyleForRenderer() OVERRIDE;
 
 private:
     virtual RenderObject* createRenderer(RenderArena*, RenderStyle*);
@@ -118,8 +113,6 @@ private:
 
     bool m_needsWidgetUpdate;
     bool m_shouldPreferPlugInsForImages;
-    bool m_needsDocumentActivationCallbacks;
-    RefPtr<RenderStyle> m_customStyleForPageCache;
     bool m_createdDuringUserGesture;
 };
 

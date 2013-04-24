@@ -48,20 +48,6 @@ DOMApplicationCache::DOMApplicationCache(Frame* frame)
         cacheHost->setDOMApplicationCache(this);
 }
 
-void DOMApplicationCache::disconnectFrameForPageCache()
-{
-    if (ApplicationCacheHost* cacheHost = applicationCacheHost())
-        cacheHost->setDOMApplicationCache(0);
-    DOMWindowProperty::disconnectFrameForPageCache();
-}
-
-void DOMApplicationCache::reconnectFrameFromPageCache(Frame* frame)
-{
-    DOMWindowProperty::reconnectFrameFromPageCache(frame);
-    if (ApplicationCacheHost* cacheHost = applicationCacheHost())
-        cacheHost->setDOMApplicationCache(this);
-}
-
 void DOMApplicationCache::willDestroyGlobalObjectInFrame()
 {
     if (ApplicationCacheHost* cacheHost = applicationCacheHost())

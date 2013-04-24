@@ -61,8 +61,6 @@ public:
     void saveDocumentAndScrollState();
     void restoreDocumentState();
 
-    void invalidateCurrentItemCachedPage();
-
     void updateForBackForwardNavigation();
     void updateForReload();
     void updateForStandardLoad(HistoryUpdateType updateType = UpdateAll);

@@ -139,8 +139,9 @@ namespace WebCore {
         void setUserStyleSheetLocation(const KURL&);
         const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
 
-        void setUsesPageCache(bool);
-        bool usesPageCache() const { return m_usesPageCache; }
+        // FIXME: Remove these, PageCache is dead.
+        void setUsesPageCache(bool) { }
+        bool usesPageCache() const { return false; }
         
         void setFontRenderingMode(FontRenderingMode mode);
         FontRenderingMode fontRenderingMode() const;
@@ -191,7 +192,6 @@ namespace WebCore {
         bool m_areImagesEnabled : 1;
         bool m_arePluginsEnabled : 1;
         bool m_isScriptEnabled : 1;
-        bool m_usesPageCache : 1;
         unsigned m_fontRenderingMode : 1;
         bool m_isCSSCustomFilterEnabled : 1;
         bool m_cssStickyPositionEnabled : 1;
