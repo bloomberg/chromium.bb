@@ -33,7 +33,7 @@ END_MSG_MAP()
     MSG msg = {0};
     PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
 
-    SendMnemonic(VK_F22, NONE, false, false);
+    SendMnemonic(VK_F22, NONE, false, false, KEY_DOWN);
     // There are scenarios where the WM_HOTKEY is not dispatched by the
     // the corresponding foreground thread. To prevent us from indefinitely
     // waiting for the hotkey, we set a timer and exit the loop.
@@ -111,7 +111,7 @@ bool EnsureProcessInForeground(base::ProcessId process_id) {
   return ret;
 }
 
-void SendScanCode(short scan_code, Modifier modifiers) {
+void SendScanCode(short scan_code, uint32 modifiers) {
   DCHECK(-1 != scan_code);
 
   // High order byte in |scan_code| is SHIFT/CTRL/ALT key state.
@@ -119,22 +119,26 @@ void SendScanCode(short scan_code, Modifier modifiers) {
   DCHECK(modifiers <= ALT);
 
   // Low order byte in |scan_code| is the actual scan code.
-  SendMnemonic(LOBYTE(scan_code), modifiers, false, true);
+  SendMnemonic(LOBYTE(scan_code), modifiers, false, true, KEY_DOWN);
 }
 
-void SendCharA(char c, Modifier modifiers) {
+void SendCharA(char c, uint32 modifiers) {
   SendScanCode(VkKeyScanA(c), modifiers);
 }
 
-void SendCharW(wchar_t c, Modifier modifiers) {
+void SendCharW(wchar_t c, uint32 modifiers) {
   SendScanCode(VkKeyScanW(c), modifiers);
 }
 
 // Sends a keystroke to the currently active application with optional
 // modifiers set.
-void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
-                  bool unicode) {
-  INPUT keys[4] = {0};  // Keyboard events
+void SendMnemonic(WORD mnemonic_char,
+                  uint32 modifiers,
+                  bool extended,
+                  bool unicode,
+                  KeyMode key_mode) {
+  const int kMaxInputs = 4;
+  INPUT keys[kMaxInputs] = {0};  // Keyboard events
   int key_count = 0;  // Number of generated events
 
   if (modifiers & SHIFT) {
@@ -158,34 +162,28 @@ void SendMnemonic(WORD mnemonic_char, Modifier modifiers, bool extended,
     key_count++;
   }
 
-  keys[key_count].type = INPUT_KEYBOARD;
-  keys[key_count].ki.wVk = mnemonic_char;
-  keys[key_count].ki.wScan = MapVirtualKey(mnemonic_char, 0);
+  if (mnemonic_char) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = mnemonic_char;
+    keys[key_count].ki.wScan = MapVirtualKey(mnemonic_char, 0);
 
-  if (extended)
-    keys[key_count].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
-  if (unicode)
-    keys[key_count].ki.dwFlags |= KEYEVENTF_UNICODE;
-  key_count++;
+    if (extended)
+      keys[key_count].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
+    if (unicode)
+      keys[key_count].ki.dwFlags |= KEYEVENTF_UNICODE;
+    key_count++;
+  }
 
-  bool should_sleep = key_count > 1;
+  DCHECK_LE(key_count, kMaxInputs);
 
-  // Send key downs
-  for (int i = 0; i < key_count; i++) {
-    SendInput(1, &keys[ i ], sizeof(keys[0]));
-    keys[i].ki.dwFlags |= KEYEVENTF_KEYUP;
-    if (should_sleep) {
-      Sleep(10);
+  // Add the key up bit if needed.
+  if (key_mode == KEY_UP) {
+    for (int i = 0; i < key_count; i++) {
+      keys[i].ki.dwFlags |= KEYEVENTF_KEYUP;
     }
   }
 
-  // Now send key ups in reverse order
-  for (int i = key_count; i; i--) {
-    SendInput(1, &keys[ i - 1 ], sizeof(keys[0]));
-    if (should_sleep) {
-      Sleep(10);
-    }
-  }
+  SendInput(key_count, &keys[0], sizeof(keys[0]));
 }
 
 void SetKeyboardFocusToWindow(HWND window) {
@@ -240,8 +238,8 @@ void SendMouseClick(HWND window, int x, int y, MouseButton button) {
   SendMouseClick(cursor_position.x, cursor_position.y, button);
 }
 
-void SendExtendedKey(WORD key, Modifier modifiers) {
-  SendMnemonic(key, modifiers, true, false);
+void SendExtendedKey(WORD key, uint32 modifiers) {
+  SendMnemonic(key, modifiers, true, false, KEY_UP);
 }
 
 void SendStringW(const std::wstring& s) {

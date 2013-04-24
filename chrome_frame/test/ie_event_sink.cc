@@ -389,7 +389,12 @@ HWND IEEventSink::GetRendererWindow() {
            first_child = ::GetWindow(first_child, GW_CHILD)) {
         child_window = first_child;
         GetClassName(child_window, class_name, arraysize(class_name));
-        if (!_wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND")) {
+#if defined(USE_AURA)
+        static const wchar_t kWndClassPrefix[] = L"Chrome_WidgetWin_";
+#else
+        static const wchar_t kWndClassPrefix[] = L"Chrome_RenderWidgetHostHWND";
+#endif
+        if (!_wcsnicmp(class_name, kWndClassPrefix, wcslen(kWndClassPrefix))) {
           renderer_window = child_window;
           break;
         }
