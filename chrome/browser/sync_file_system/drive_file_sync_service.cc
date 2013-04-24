@@ -1954,6 +1954,17 @@ bool DriveFileSyncService::AppendRemoteChangeInternal(
 
   FileChange file_change(CreateFileChange(is_deleted));
 
+  if (is_deleted) {
+    // Determine a file type of the deleted change by local metadata.
+    if (!remote_resource_id.empty() &&
+        !local_resource_id.empty() &&
+        remote_resource_id == local_resource_id) {
+      DCHECK_EQ(DriveMetadata::RESOURCE_TYPE_FILE, metadata.type());
+      file_change = FileChange(FileChange::FILE_CHANGE_DELETE,
+                               SYNC_FILE_TYPE_FILE);
+    }
+  }
+
   if (is_deleted && has_db_entry) {
     metadata.set_resource_id(std::string());
     metadata_store_->UpdateEntry(url, metadata,
