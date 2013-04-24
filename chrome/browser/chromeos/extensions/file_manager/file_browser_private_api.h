@@ -13,7 +13,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/chromeos/extensions/file_manager/file_manager_event_router.h"

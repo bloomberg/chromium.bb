@@ -25,7 +25,6 @@
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
@@ -2403,7 +2402,7 @@ void GetDriveFilePropertiesFunction::OnGetFileInfo(
     }
   }
 
-  system_service->cache()->GetCacheEntry(
+  system_service->file_system()->GetCacheEntryByResourceId(
       entry->resource_id(),
       file_specific_info.file_md5(),
       base::Bind(&GetDriveFilePropertiesFunction::CacheStateReceived, this));
