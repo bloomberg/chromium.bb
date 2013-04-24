@@ -709,11 +709,27 @@ TEST_F(DriveResourceMetadataTest, RefreshEntry) {
   ASSERT_TRUE(!entry_proto->file_info().is_directory());
   EXPECT_EQ("md5:file9", entry_proto->file_specific_info().file_md5());
 
-  // Rename it and change the file size.
+  // Rename it.
   DriveEntryProto file_entry_proto(*entry_proto);
-  const std::string updated_md5("md5:updated");
-  file_entry_proto.mutable_file_specific_info()->set_file_md5(updated_md5);
   file_entry_proto.set_title("file100");
+  entry_proto.reset();
+  resource_metadata_->RefreshEntry(
+      file_entry_proto,
+      google_apis::test_util::CreateCopyResultCallback(
+          &error, &drive_file_path, &entry_proto));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
+  EXPECT_EQ(base::FilePath::FromUTF8Unsafe("drive/root/dir1/dir3/file100"),
+            drive_file_path);
+  ASSERT_TRUE(entry_proto.get());
+  EXPECT_EQ("file100", entry_proto->base_name());
+  ASSERT_TRUE(!entry_proto->file_info().is_directory());
+  EXPECT_EQ("md5:file9", entry_proto->file_specific_info().file_md5());
+
+  // Update the file md5.
+  const std::string updated_md5("md5:updated");
+  file_entry_proto = *entry_proto;
+  file_entry_proto.mutable_file_specific_info()->set_file_md5(updated_md5);
   entry_proto.reset();
   resource_metadata_->RefreshEntry(
       file_entry_proto,

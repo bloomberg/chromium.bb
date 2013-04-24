@@ -340,20 +340,14 @@ class DriveResourceMetadata {
   void GetDescendantDirectoryPaths(const std::string& resource_id,
                                    std::set<base::FilePath>* child_directories);
 
-  // Adds a child entry to its parent directory.
-  // The method will also do name de-duplication to ensure that the
-  // exposed presentation path does not have naming conflicts. Two files with
-  // the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
-  void AddEntryToDirectory(const DriveEntryProto& entry);
+  // Puts an entry under its parent directory. Removes the child from the old
+  // parent if there is. This method will also do name de-duplication to ensure
+  // that the exposed presentation path does not have naming conflicts. Two
+  // files with the same name "Foo" will be renames to "Foo (1)" and "Foo (2)".
+  bool PutEntryUnderDirectory(const DriveEntryProto& entry);
 
-  // Removes the entry from its parent directory.
-  void RemoveDirectoryChild(const std::string& child_resource_id);
-
-  // Detaches the entry from its parent directory.
-  void DetachEntryFromDirectory(const std::string& child_resource_id);
-
-  // Removes child elements of directory.
-  void RemoveDirectoryChildren(const std::string& directory_resource_id);
+  // Removes the entry and its descendants.
+  bool RemoveEntryRecursively(const std::string& resource_id);
 
   // Converts the children as a vector of DriveEntryProto.
   scoped_ptr<DriveEntryProtoVector> DirectoryChildrenToProtoVector(

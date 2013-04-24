@@ -10,6 +10,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
+#include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace drive {
 
@@ -28,16 +29,6 @@ std::string GetHeaderDBKey() {
   std::string key;
   key.push_back(kDBKeyDelimeter);
   key.append("HEADER");
-  return key;
-}
-
-// Returns a string to be used as a key for child entry.
-std::string GetChildEntryKey(const std::string& parent_resource_id,
-                             const std::string& child_name) {
-  std::string key = parent_resource_id;
-  key.push_back(kDBKeyDelimeter);
-  key.append(child_name);
-  key.push_back(kDBKeyDelimeter);
   return key;
 }
 
@@ -132,21 +123,37 @@ int64 DriveResourceMetadataStorage::GetLargestChangestamp() {
   return header->largest_changestamp();
 }
 
-void DriveResourceMetadataStorage::PutEntry(const DriveEntryProto& entry) {
+bool DriveResourceMetadataStorage::PutEntry(const DriveEntryProto& entry) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!entry.resource_id().empty());
 
   std::string serialized_entry;
   if (!entry.SerializeToString(&serialized_entry)) {
     DLOG(ERROR) << "Failed to serialize the entry: " << entry.resource_id();
-    return;
+    return false;
   }
 
-  const leveldb::Status status = resource_map_->Put(
-      leveldb::WriteOptions(),
-      leveldb::Slice(entry.resource_id()),
-      leveldb::Slice(serialized_entry));
-  DCHECK(status.ok());
+  leveldb::WriteBatch batch;
+
+  // Remove from the old parent.
+  scoped_ptr<DriveEntryProto> old_entry = GetEntry(entry.resource_id());
+  if (old_entry && !old_entry->parent_resource_id().empty()) {
+    batch.Delete(GetChildEntryKey(old_entry->parent_resource_id(),
+                                  old_entry->base_name()));
+  }
+
+  // Add to the new parent.
+  if (!entry.parent_resource_id().empty()) {
+    batch.Put(GetChildEntryKey(entry.parent_resource_id(), entry.base_name()),
+              entry.resource_id());
+  }
+
+  // Put the entry itself.
+  batch.Put(entry.resource_id(), serialized_entry);
+
+  const leveldb::Status status = resource_map_->Write(leveldb::WriteOptions(),
+                                                      &batch);
+  return status.ok();
 }
 
 scoped_ptr<DriveEntryProto> DriveResourceMetadataStorage::GetEntry(
@@ -167,14 +174,27 @@ scoped_ptr<DriveEntryProto> DriveResourceMetadataStorage::GetEntry(
   return entry.Pass();
 }
 
-void DriveResourceMetadataStorage::RemoveEntry(const std::string& resource_id) {
+bool DriveResourceMetadataStorage::RemoveEntry(const std::string& resource_id) {
   base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!resource_id.empty());
 
-  const leveldb::Status status = resource_map_->Delete(
-      leveldb::WriteOptions(),
-      leveldb::Slice(resource_id));
-  DCHECK(status.ok());
+  scoped_ptr<DriveEntryProto> entry = GetEntry(resource_id);
+  if (!entry)
+    return false;
+
+  leveldb::WriteBatch batch;
+
+  // Remove from the parent.
+  if (!entry->parent_resource_id().empty()) {
+    batch.Delete(GetChildEntryKey(entry->parent_resource_id(),
+                                  entry->base_name()));
+  }
+  // Remove the entry itself.
+  batch.Delete(resource_id);
+
+  const leveldb::Status status = resource_map_->Write(leveldb::WriteOptions(),
+                                                      &batch);
+  return status.ok();
 }
 
 void DriveResourceMetadataStorage::Iterate(const IterateCallback& callback) {
@@ -196,19 +216,6 @@ void DriveResourceMetadataStorage::Iterate(const IterateCallback& callback) {
         entry.ParseFromArray(it->value().data(), it->value().size()))
       callback.Run(entry);
   }
-}
-
-void DriveResourceMetadataStorage::PutChild(
-    const std::string& parent_resource_id,
-    const std::string& child_name,
-    const std::string& child_resource_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  const leveldb::Status status = resource_map_->Put(
-      leveldb::WriteOptions(),
-      leveldb::Slice(GetChildEntryKey(parent_resource_id, child_name)),
-      leveldb::Slice(child_resource_id));
-  DCHECK(status.ok());
 }
 
 std::string DriveResourceMetadataStorage::GetChild(
@@ -241,15 +248,15 @@ void DriveResourceMetadataStorage::GetChildren(
   DCHECK(it->status().ok());
 }
 
-void DriveResourceMetadataStorage::RemoveChild(
+// static
+std::string DriveResourceMetadataStorage::GetChildEntryKey(
     const std::string& parent_resource_id,
     const std::string& child_name) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
-  const leveldb::Status status = resource_map_->Delete(
-      leveldb::WriteOptions(),
-      leveldb::Slice(GetChildEntryKey(parent_resource_id, child_name)));
-  DCHECK(status.ok());
+  std::string key = parent_resource_id;
+  key.push_back(kDBKeyDelimeter);
+  key.append(child_name);
+  key.push_back(kDBKeyDelimeter);
+  return key;
 }
 
 void DriveResourceMetadataStorage::PutHeader(

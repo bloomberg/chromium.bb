@@ -222,7 +222,7 @@ void DriveResourceMetadata::SetUpDefaultEntries() {
     storage_->PutEntry(CreateEntryWithProperBaseName(root));
   }
   if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId)) {
-    AddEntryToDirectory(util::CreateOtherDirEntry());
+    PutEntryUnderDirectory(util::CreateOtherDirEntry());
   }
 }
 
@@ -547,7 +547,9 @@ DriveResourceMetadata::RemoveEntryOnBlockingPool(
   if (!entry)
     return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
-  RemoveDirectoryChild(entry->resource_id());
+  if (!RemoveEntryRecursively(entry->resource_id()))
+    return FileMoveResult(FILE_ERROR_FAILED);
+
   return FileMoveResult(FILE_ERROR_OK,
                         GetFilePath(entry->parent_resource_id()));
 }
@@ -679,8 +681,8 @@ FileError DriveResourceMetadata::RefreshEntryOnBlockingPool(
     return FILE_ERROR_NOT_FOUND;
 
   // Remove from the old parent and add it to the new parent with the new data.
-  DetachEntryFromDirectory(old_entry->resource_id());
-  AddEntryToDirectory(CreateEntryWithProperBaseName(entry));
+  if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry)))
+    return FILE_ERROR_FAILED;
 
   if (out_file_path)
     *out_file_path = GetFilePath(entry.resource_id());
@@ -739,12 +741,8 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
       continue;
     }
 
-    scoped_ptr<DriveEntryProto> existing_entry =
-        storage_->GetEntry(entry_proto.resource_id());
-    if (existing_entry)
-      DetachEntryFromDirectory(entry_proto.resource_id());
-
-    AddEntryToDirectory(CreateEntryWithProperBaseName(entry_proto));
+    if (!PutEntryUnderDirectory(CreateEntryWithProperBaseName(entry_proto)))
+      return FileMoveResult(FILE_ERROR_FAILED);
   }
 
   // Go through the existing entries and remove deleted entries.
@@ -755,8 +753,10 @@ DriveResourceMetadata::RefreshDirectoryOnBlockingPool(
       return FileMoveResult(FILE_ERROR_NO_SPACE);
 
     const DriveEntryProto& entry_proto = entries->at(i);
-    if (entry_proto_map.count(entry_proto.resource_id()) == 0)
-      RemoveDirectoryChild(entry_proto.resource_id());
+    if (entry_proto_map.count(entry_proto.resource_id()) == 0) {
+      if (!RemoveEntryRecursively(entry_proto.resource_id()))
+        return FileMoveResult(FILE_ERROR_FAILED);
+    }
   }
 
   return FileMoveResult(FILE_ERROR_OK, GetFilePath(directory->resource_id()));
@@ -780,7 +780,9 @@ DriveResourceMetadata::AddEntryOnBlockingPool(
   if (!parent)
     return FileMoveResult(FILE_ERROR_NOT_FOUND);
 
-  AddEntryToDirectory(entry_proto);
+  if (!PutEntryUnderDirectory(entry_proto))
+    return FileMoveResult(FILE_ERROR_FAILED);
+
   return FileMoveResult(FILE_ERROR_OK, GetFilePath(entry_proto.resource_id()));
 }
 
@@ -847,7 +849,7 @@ void DriveResourceMetadata::RemoveAllOnBlockingPool() {
     return;
   }
 
-  RemoveDirectoryChildren(util::kDriveGrandRootSpecialResourceId);
+  RemoveEntryRecursively(util::kDriveGrandRootSpecialResourceId);
   SetUpDefaultEntries();
 }
 
@@ -906,7 +908,8 @@ void DriveResourceMetadata::GetEntryInfoPairByPathsAfterGetSecond(
   callback.Run(result.Pass());
 }
 
-void DriveResourceMetadata::AddEntryToDirectory(const DriveEntryProto& entry) {
+bool DriveResourceMetadata::PutEntryUnderDirectory(
+    const DriveEntryProto& entry) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   DriveEntryProto updated_entry(entry);
@@ -916,12 +919,16 @@ void DriveResourceMetadata::AddEntryToDirectory(const DriveEntryProto& entry) {
   // through name de-duplication again when it is added to another directory.
   SetBaseNameFromTitle(&updated_entry);
 
-  // Do file name de-duplication - find files with the same name and
-  // append a name modifier to the name.
+  // Do file name de-duplication - Keep changing |entry|'s name until there is
+  // no other entry with the same name under the parent.
   int modifier = 1;
   std::string new_base_name = updated_entry.base_name();
-  while (!storage_->GetChild(entry.parent_resource_id(),
-                             new_base_name).empty()) {
+  while (true) {
+    const std::string existing_entry_id =
+        storage_->GetChild(entry.parent_resource_id(), new_base_name);
+    if (existing_entry_id.empty() || existing_entry_id == entry.resource_id())
+      break;
+
     base::FilePath new_path =
         base::FilePath::FromUTF8Unsafe(updated_entry.base_name());
     new_path =
@@ -930,50 +937,26 @@ void DriveResourceMetadata::AddEntryToDirectory(const DriveEntryProto& entry) {
   }
   updated_entry.set_base_name(new_base_name);
 
-  // Setup child and parent links.
-  storage_->PutChild(entry.parent_resource_id(),
-                     updated_entry.base_name(),
-                     updated_entry.resource_id());
-
   // Add the entry to resource map.
-  storage_->PutEntry(updated_entry);
+  return storage_->PutEntry(updated_entry);
 }
 
-void DriveResourceMetadata::RemoveDirectoryChild(
-    const std::string& child_resource_id) {
+bool DriveResourceMetadata::RemoveEntryRecursively(
+    const std::string& resource_id) {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(child_resource_id);
-  DCHECK(entry);
-  DetachEntryFromDirectory(child_resource_id);
-  storage_->RemoveEntry(entry->resource_id());
-  if (entry->file_info().is_directory())
-    RemoveDirectoryChildren(child_resource_id);
-}
-
-void DriveResourceMetadata::DetachEntryFromDirectory(
-    const std::string& child_resource_id) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(child_resource_id);
+  scoped_ptr<DriveEntryProto> entry = storage_->GetEntry(resource_id);
   DCHECK(entry);
 
-  // entry must be present in this directory.
-  DCHECK_EQ(entry->resource_id(),
-            storage_->GetChild(entry->parent_resource_id(),
-                               entry->base_name()));
-
-  storage_->RemoveChild(entry->parent_resource_id(), entry->base_name());
-}
-
-void DriveResourceMetadata::RemoveDirectoryChildren(
-    const std::string& directory_resource_id) {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  std::vector<std::string> children;
-  storage_->GetChildren(directory_resource_id, &children);
-  for (size_t i = 0; i < children.size(); ++i)
-    RemoveDirectoryChild(children[i]);
+  if (entry->file_info().is_directory()) {
+    std::vector<std::string> children;
+    storage_->GetChildren(resource_id, &children);
+    for (size_t i = 0; i < children.size(); ++i) {
+      if (!RemoveEntryRecursively(children[i]))
+        return false;
+    }
+  }
+  return storage_->RemoveEntry(resource_id);
 }
 
 scoped_ptr<DriveEntryProtoVector>

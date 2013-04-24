@@ -45,21 +45,16 @@ class DriveResourceMetadataStorage {
   int64 GetLargestChangestamp();
 
   // Puts the entry to this storage.
-  void PutEntry(const DriveEntryProto& entry);
+  bool PutEntry(const DriveEntryProto& entry);
 
   // Returns an entry stored in this storage.
   scoped_ptr<DriveEntryProto> GetEntry(const std::string& resource_id);
 
   // Removes an entry from this storage.
-  void RemoveEntry(const std::string& resource_id);
+  bool RemoveEntry(const std::string& resource_id);
 
   // Iterates over entries stored in this storage.
   void Iterate(const IterateCallback& callback);
-
-  // Puts child under the parent.
-  void PutChild(const std::string& parent_resource_id,
-                const std::string& child_name,
-                const std::string& child_resource_id);
 
   // Returns resource ID of the parent's child.
   std::string GetChild(const std::string& parent_resource_id,
@@ -69,12 +64,12 @@ class DriveResourceMetadataStorage {
   void GetChildren(const std::string& parent_resource_id,
                    std::vector<std::string>* children);
 
-  // Removes child from the parent.
-  void RemoveChild(const std::string& parent_resource_id,
-                   const std::string& child_name);
-
  private:
   friend class DriveResourceMetadataStorageTest;
+
+  // Returns a string to be used as a key for child entry.
+  static std::string GetChildEntryKey(const std::string& parent_resource_id,
+                                      const std::string& child_name);
 
   // Puts header.
   void PutHeader(const DriveResourceMetadataHeader& header);
