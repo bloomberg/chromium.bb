@@ -1445,8 +1445,6 @@
             'rendering/RenderThemeChromiumSkia.h',
             'rendering/RenderThemeChromiumWin.cpp',
             'rendering/RenderThemeChromiumWin.h',
-            'rendering/RenderThemeMacShared.h',
-            'rendering/RenderThemeMacShared.mm',
             'rendering/RenderTreeAsText.cpp',
             'rendering/RenderVideo.cpp',
             'rendering/RenderVideo.h',
