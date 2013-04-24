@@ -253,6 +253,12 @@ void RequestTextCheck(int document_tag,
                                 NSInteger) {
           std::vector<SpellCheckResult> check_results;
           for (NSTextCheckingResult* result in results) {
+            // Deliberately ignore non-spelling results. OSX at the very least
+            // delivers a result of NSTextCheckingTypeOrthography for the
+            // whole fragment, which underlines the entire checked range.
+            if ([result resultType] != NSTextCheckingTypeSpelling)
+              continue;
+
             // In this use case, the spell checker should never
             // return anything but a single range per result.
             check_results.push_back(SpellCheckResult(
