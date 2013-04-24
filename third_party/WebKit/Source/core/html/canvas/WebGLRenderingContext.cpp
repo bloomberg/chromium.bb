@@ -3455,14 +3455,6 @@ void WebGLRenderingContext::readPixels(GC3Dint x, GC3Dint y, GC3Dsizei width, GC
     cleanupAfterGraphicsCall(false);
 }
 
-void WebGLRenderingContext::releaseShaderCompiler()
-{
-    if (isContextLost())
-        return;
-    m_context->releaseShaderCompiler();
-    cleanupAfterGraphicsCall(false);
-}
-
 void WebGLRenderingContext::renderbufferStorage(GC3Denum target, GC3Denum internalformat, GC3Dsizei width, GC3Dsizei height)
 {
     if (isContextLost())

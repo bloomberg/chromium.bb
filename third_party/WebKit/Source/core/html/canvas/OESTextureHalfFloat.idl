@@ -23,7 +23,11 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+typedef unsigned long GLenum;
+
 [
     Conditional=WEBGL,
+    DoNotCheckConstants
 ] interface OESTextureHalfFloat {
+    const GLenum HALF_FLOAT_OES                 = 0x8D61;
 };
