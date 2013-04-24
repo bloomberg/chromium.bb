@@ -34,6 +34,7 @@ class TestShellDelegate : public ShellDelegate {
   virtual void Exit() OVERRIDE;
   virtual void NewTab() OVERRIDE;
   virtual void NewWindow(bool incognito) OVERRIDE;
+  virtual void ToggleFullscreen() OVERRIDE;
   virtual void ToggleMaximized() OVERRIDE;
   virtual void OpenFileManager(bool as_dialog) OVERRIDE;
   virtual void OpenCrosh() OVERRIDE;

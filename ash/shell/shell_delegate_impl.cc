@@ -97,6 +97,10 @@ void ShellDelegateImpl::NewWindow(bool incognito) {
   ash::shell::ToplevelWindow::CreateToplevelWindow(create_params);
 }
 
+void ShellDelegateImpl::ToggleFullscreen() {
+  ToggleMaximized();
+}
+
 void ShellDelegateImpl::ToggleMaximized() {
   aura::Window* window = ash::wm::GetActiveWindow();
   if (window)

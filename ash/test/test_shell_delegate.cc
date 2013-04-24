@@ -67,6 +67,9 @@ void TestShellDelegate::ToggleMaximized() {
     ash::wm::ToggleMaximizedWindow(window);
 }
 
+void TestShellDelegate::ToggleFullscreen() {
+}
+
 void TestShellDelegate::OpenFileManager(bool as_dialog) {
 }
 

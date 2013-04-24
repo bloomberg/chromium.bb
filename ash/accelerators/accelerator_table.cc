@@ -124,6 +124,7 @@ const AcceleratorData kAcceleratorData[] = {
   { false, ui::VKEY_LWIN, ui::EF_NONE, TOGGLE_APP_LIST },
   { false, ui::VKEY_LWIN, ui::EF_ALT_DOWN, TOGGLE_CAPS_LOCK },
   { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_NONE, TOGGLE_MAXIMIZED },
+  { true, ui::VKEY_MEDIA_LAUNCH_APP2, ui::EF_SHIFT_DOWN, TOGGLE_FULLSCREEN },
   { true, ui::VKEY_VOLUME_MUTE, ui::EF_NONE, VOLUME_MUTE },
   { true, ui::VKEY_VOLUME_DOWN, ui::EF_NONE, VOLUME_DOWN },
   { true, ui::VKEY_VOLUME_UP, ui::EF_NONE, VOLUME_UP },
@@ -313,6 +314,7 @@ const AcceleratorAction kNonrepeatableActions[] = {
   SCALE_UI_UP,
   SCALE_UI_DOWN,
   SCALE_UI_RESET,
+  TOGGLE_FULLSCREEN,
   TOGGLE_MAXIMIZED,
   WINDOW_MINIMIZE,
 };

@@ -55,6 +55,7 @@ enum UserMetricsAction {
   UMA_ACCEL_LOCK_SCREEN_L,
   UMA_ACCEL_LOCK_SCREEN_LOCK_BUTTON,
   UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON,
+  UMA_ACCEL_FULLSCREEN_F4,
   UMA_ACCEL_MAXIMIZE_RESTORE_F4,
   UMA_ACCEL_NEWTAB_T,
   UMA_ACCEL_NEXTWINDOW_F5,
@@ -125,6 +126,9 @@ class ASH_EXPORT ShellDelegate {
 
   // Invoked when the user uses Ctrl-N or Ctrl-Shift-N to open a new window.
   virtual void NewWindow(bool incognito) = 0;
+
+  // Invoked when the user uses Shift+F4 to toggle the window fullscreen state.
+  virtual void ToggleFullscreen() = 0;
 
   // Invoked when the user uses F4 to toggle window maximized state.
   virtual void ToggleMaximized() = 0;

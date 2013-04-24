@@ -2505,10 +2505,6 @@ void BrowserView::UpdateAcceleratorMetrics(
       else if (key_code == ui::VKEY_BROWSER_REFRESH)
         content::RecordAction(UserMetricsAction("Accel_Reload_F3"));
       break;
-    case IDC_FULLSCREEN:
-      if (key_code == ui::VKEY_MEDIA_LAUNCH_APP2)
-        content::RecordAction(UserMetricsAction("Accel_Fullscreen_F4"));
-      break;
     case IDC_FOCUS_LOCATION:
       if (key_code == ui::VKEY_D)
         content::RecordAction(UserMetricsAction("Accel_FocusLocation_D"));

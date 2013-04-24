@@ -18,6 +18,7 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/extensions/shell_window_registry.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
@@ -34,6 +35,8 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/extensions/native_app_window.h"
+#include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/frame/immersive_mode_controller.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -92,22 +95,51 @@ void ChromeShellDelegate::NewWindow(bool is_incognito) {
       chrome::HOST_DESKTOP_TYPE_ASH);
 }
 
+void ChromeShellDelegate::ToggleFullscreen() {
+  // Only toggle if the user has a window open.
+  aura::Window* window = ash::wm::GetActiveWindow();
+  if (!window)
+    return;
+
+  bool is_fullscreen = ash::wm::IsWindowFullscreen(window);
+
+  // Windows which cannot be maximized should not be fullscreened.
+  if (is_fullscreen && !ash::wm::CanMaximizeWindow(window))
+    return;
+
+  Browser* browser = chrome::FindBrowserWithWindow(window);
+  if (browser) {
+    chrome::ToggleFullscreenMode(browser);
+    return;
+  }
+
+  // |window| may belong to a shell window.
+  ShellWindow* shell_window = extensions::ShellWindowRegistry::
+      GetShellWindowForNativeWindowAnyProfile(window);
+  if (shell_window) {
+    if (is_fullscreen)
+      shell_window->Restore();
+    else
+      shell_window->Fullscreen();
+  }
+}
+
 void ChromeShellDelegate::ToggleMaximized() {
   // Only toggle if the user has a window open.
   aura::Window* window = ash::wm::GetActiveWindow();
   if (!window)
     return;
 
-  // TODO(jamescook): If immersive mode replaces fullscreen, rename this
-  // function and the interface to ToggleFullscreen.
+  // TODO(pkotwicz): If immersive mode replaces fullscreen, bind fullscreen to
+  // F4 and find a different key binding for maximize.
   if (chrome::UseImmersiveFullscreen()) {
-    chrome::ToggleFullscreenMode(GetTargetBrowser());
+    ToggleFullscreen();
     return;
   }
 
   // Get out of fullscreen when in fullscreen mode.
   if (ash::wm::IsWindowFullscreen(window)) {
-    chrome::ToggleFullscreenMode(GetTargetBrowser());
+    ToggleFullscreen();
     return;
   }
   ash::wm::ToggleMaximizedWindow(window);
@@ -219,6 +251,9 @@ void ChromeShellDelegate::RecordUserMetricsAction(
     case ash::UMA_ACCEL_LOCK_SCREEN_POWER_BUTTON:
       content::RecordAction(
           content::UserMetricsAction("Accel_LockScreen_PowerButton"));
+      break;
+    case ash::UMA_ACCEL_FULLSCREEN_F4:
+      content::RecordAction(content::UserMetricsAction("Accel_Fullscreen_F4"));
       break;
     case ash::UMA_ACCEL_MAXIMIZE_RESTORE_F4:
       content::RecordAction(
