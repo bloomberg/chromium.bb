@@ -283,7 +283,7 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
     BrowsingHistoryHandler::HistoryEntry::EntryType entry_type,
     const GURL& url, const string16& title, base::Time time,
     const std::string& client_id, bool is_search_result,
-    const string16& snippet) {
+    const string16& snippet, bool blocked_visit) {
   this->entry_type = entry_type;
   this->url = url;
   this->title = title;
@@ -292,10 +292,11 @@ BrowsingHistoryHandler::HistoryEntry::HistoryEntry(
   all_timestamps.insert(time.ToInternalValue());
   this->is_search_result = is_search_result;
   this->snippet = snippet;
+  this->blocked_visit = blocked_visit;
 }
 
 BrowsingHistoryHandler::HistoryEntry::HistoryEntry()
-    : entry_type(EMPTY_ENTRY), is_search_result(false) {
+    : entry_type(EMPTY_ENTRY), is_search_result(false), blocked_visit(false) {
 }
 
 BrowsingHistoryHandler::HistoryEntry::~HistoryEntry() {
@@ -391,6 +392,8 @@ scoped_ptr<DictionaryValue> BrowsingHistoryHandler::HistoryEntry::ToValue(
     managed_user_service->GetURLFilterForUIThread()->GetSites(
         url.GetWithEmptyPath(), &sites);
     result->SetBoolean("hostInContentPack", !sites.empty());
+
+    result->SetBoolean("blockedVisit", blocked_visit);
   }
 #endif
 
@@ -952,7 +955,8 @@ void BrowsingHistoryHandler::QueryComplete(
             page.visit_time(),
             std::string(),
             !search_text.empty(),
-            page.snippet().text()));
+            page.snippet().text(),
+            page.blocked_visit()));
   }
 
   results_info_value_.SetString("term", search_text);
@@ -1048,7 +1052,8 @@ void BrowsingHistoryHandler::WebHistoryQueryComplete(
                 time,
                 client_id,
                 !search_text.empty(),
-                string16()));
+                string16(),
+                /* blocked_visit */ false));
       }
     }
   } else if (results_value) {

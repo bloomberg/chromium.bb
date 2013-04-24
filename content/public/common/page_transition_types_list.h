@@ -100,6 +100,9 @@ PAGE_TRANSITION(CORE_MASK, 0xFF)
 // Any of the core values above can be augmented by one or more qualifiers.
 // These qualifiers further define the transition.
 
+// A managed user attempted to visit a URL but was blocked.
+PAGE_TRANSITION(BLOCKED, 0x00800000)
+
 // User used the Forward or Back button to navigate among browsing history.
 PAGE_TRANSITION(FORWARD_BACK, 0x01000000)
 

@@ -4,12 +4,17 @@
 
 #include "chrome/browser/managed_mode/managed_mode_resource_throttle.h"
 
+#include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "chrome/browser/managed_mode/managed_mode.h"
 #include "chrome/browser/managed_mode/managed_mode_interstitial.h"
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
 #include "chrome/browser/managed_mode/managed_mode_url_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "net/url_request/url_request.h"
+
+using content::BrowserThread;
 
 namespace {
 
@@ -100,10 +105,11 @@ void ManagedModeResourceThrottle::ShowInterstitialIfNeeded(bool is_redirect,
   }
 
   *defer = true;
-  ManagedModeInterstitial::ShowInterstitial(
-      render_process_host_id_, render_view_id_, url,
-      base::Bind(&ManagedModeResourceThrottle::OnInterstitialResult,
-                 weak_ptr_factory_.GetWeakPtr()));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+      base::Bind(&ManagedModeNavigationObserver::OnRequestBlocked,
+                 render_process_host_id_, render_view_id_, url,
+                 base::Bind(&ManagedModeResourceThrottle::OnInterstitialResult,
+                            weak_ptr_factory_.GetWeakPtr())));
 }
 
 void ManagedModeResourceThrottle::WillStartRequest(bool* defer) {

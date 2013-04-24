@@ -1433,6 +1433,11 @@ void HistoryBackend::QueryHistoryBasic(URLDatabase* url_db,
 
     url_result.set_visit_time(visit.visit_time);
 
+    // Set whether the visit was blocked for a managed user by looking at the
+    // transition type.
+    url_result.set_blocked_visit(
+        (visit.transition & content::PAGE_TRANSITION_BLOCKED) != 0);
+
     // We don't set any of the query-specific parts of the URLResult, since
     // snippets and stuff don't apply to basic querying.
     result->AppendURLBySwapping(&url_result);

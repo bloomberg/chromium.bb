@@ -96,6 +96,7 @@ function Visit(result, continued, model) {
                             ManagedModeManualBehavior.NONE;
   this.urlInContentPack = result.urlInContentPack || false;
   this.hostInContentPack = result.hostInContentPack || false;
+  this.blockedVisit = result.blockedVisit || false;
 
   // Whether this is the continuation of a previous day.
   this.continued = continued;
@@ -202,7 +203,9 @@ Visit.prototype.getResultDOM = function(propertyBag) {
   if (!isSearchResult && this.model_.isManagedProfile &&
       this.model_.getGroupByDomain()) {
     entryBoxContainer.appendChild(
-        getManagedStatusDOM(this.urlManualBehavior, this.urlInContentPack));
+        getManagedStatusDOM(this.urlManualBehavior,
+                            this.urlInContentPack,
+                            this.blockedVisit));
   }
 
   if (isSearchResult) {
@@ -1046,8 +1049,11 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   siteDomainWrapper.addEventListener('click', toggleHandler);
 
   if (this.model_.isManagedProfile) {
+    // Visit attempts don't make sense for domains so set the last parameter to
+    // false.
     siteDomainWrapper.appendChild(getManagedStatusDOM(
-        domainVisits[0].hostManualBehavior, domainVisits[0].hostInContentPack));
+        domainVisits[0].hostManualBehavior, domainVisits[0].hostInContentPack,
+        false));
   }
 
   siteResults.appendChild(siteDomainWrapper);
@@ -1553,6 +1559,7 @@ function processManagedList(allow) {
 function updateHostStatus(statusElement, newStatus) {
   var inContentPackDiv = statusElement.querySelector('.in-content-pack');
   inContentPackDiv.className = 'in-content-pack';
+
   if (newStatus['inContentPack']) {
     if (newStatus['manualBehavior'] != ManagedModeManualBehavior.NONE)
       inContentPackDiv.classList.add('in-content-pack-passive');
@@ -1560,20 +1567,32 @@ function updateHostStatus(statusElement, newStatus) {
       inContentPackDiv.classList.add('in-content-pack-active');
   }
 
-  var manualBehaviorDiv = statusElement.querySelector('.manual-behavior');
-  manualBehaviorDiv.className = 'manual-behavior';
-  switch (newStatus['manualBehavior']) {
-  case ManagedModeManualBehavior.NONE:
-    manualBehaviorDiv.textContent = '';
-    break;
-  case ManagedModeManualBehavior.ALLOW:
-    manualBehaviorDiv.textContent = loadTimeData.getString('filterAllowed');
-    manualBehaviorDiv.classList.add('filter-allowed');
-    break;
-  case ManagedModeManualBehavior.BLOCK:
-    manualBehaviorDiv.textContent = loadTimeData.getString('filterBlocked');
-    manualBehaviorDiv.classList.add('filter-blocked');
-    break;
+  if ('blockedVisit' in newStatus) {
+    var blockedVisitDiv = statusElement.querySelector('.blocked-visit');
+    // Reset the class to .blocked-visit first, then set it to active if
+    // needed.
+    blockedVisitDiv.className = 'blocked-visit';
+    if (newStatus['blockedVisit'])
+      blockedVisitDiv.classList.add('blocked-visit-active');
+  }
+
+  if ('manualBehavior' in newStatus) {
+    var manualBehaviorDiv = statusElement.querySelector('.manual-behavior');
+    // Reset to the base class first, then add modifier classes if needed.
+    manualBehaviorDiv.className = 'manual-behavior';
+    switch (newStatus['manualBehavior']) {
+    case ManagedModeManualBehavior.NONE:
+      manualBehaviorDiv.textContent = '';
+      break;
+    case ManagedModeManualBehavior.ALLOW:
+      manualBehaviorDiv.textContent = loadTimeData.getString('filterAllowed');
+      manualBehaviorDiv.classList.add('filter-allowed');
+      break;
+    case ManagedModeManualBehavior.BLOCK:
+      manualBehaviorDiv.textContent = loadTimeData.getString('filterBlocked');
+      manualBehaviorDiv.classList.add('filter-blocked');
+      break;
+    }
   }
 }
 
@@ -1809,19 +1828,24 @@ function toggleHandler(e) {
  *     this item.
  * @param {boolean} inContentPack Whether this element is in a content pack or
  *     not.
+ * @param {boolean} blockedVisit Whether this visit was an attempted visit.
  * @return {Element} Returns the DOM elements which show the status.
  */
-function getManagedStatusDOM(manualBehavior, inContentPack) {
+function getManagedStatusDOM(manualBehavior, inContentPack, blockedVisit) {
   var filterStatusDiv = createElementWithClassName('div', 'filter-status');
   var inContentPackDiv = createElementWithClassName('div', 'in-content-pack');
+  var blockedVisitDiv = createElementWithClassName('div', 'blocked-visit');
   inContentPackDiv.textContent = loadTimeData.getString('inContentPack');
+  blockedVisitDiv.textContent = loadTimeData.getString('filterBlocked');
   var manualBehaviorDiv = createElementWithClassName('div', 'manual-behavior');
   filterStatusDiv.appendChild(inContentPackDiv);
   filterStatusDiv.appendChild(manualBehaviorDiv);
+  filterStatusDiv.appendChild(blockedVisitDiv);
 
   updateHostStatus(filterStatusDiv, {
     'inContentPack' : inContentPack,
-    'manualBehavior' : manualBehavior
+    'manualBehavior' : manualBehavior,
+    'blockedVisit' : blockedVisit
   });
   return filterStatusDiv;
 }

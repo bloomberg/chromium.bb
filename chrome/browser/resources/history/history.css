@@ -289,20 +289,21 @@ html[dir='rtl'] .site-domain {
   -webkit-flex: 0 0 auto;
   -webkit-transition: background-color 500ms ease-in-out;
   border-radius: 3px;
+  display: none;
   font-size: 11px;
   height: 14px;
   line-height: 12px;
-  visibility: hidden;
   white-space: nowrap;
 }
 
 .filter-status > div.filter-allowed,
 .filter-status > div.filter-blocked,
 .filter-status > div.in-content-pack-active,
-.filter-status > div.in-content-pack-passive {
+.filter-status > div.in-content-pack-passive,
+.filter-status > div.blocked-visit-active {
+  display: block;
   margin: 3px 3px 3px 0;
   padding: 0 4px;
-  visibility: visible;
 }
 
 .filter-allowed,
@@ -322,6 +323,12 @@ html[dir='rtl'] .site-domain {
   border: 1px solid rgb(155, 224, 163);
   background-color: rgb(225, 255, 205);
   color: rgb(148, 148, 148);
+}
+
+.blocked-visit {
+  border: 1px solid rgb(211, 0, 0);
+  background-color: rgb(255, 197, 105);
+  color: rgb(54, 54, 54);
 }
 </if>
 

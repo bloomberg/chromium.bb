@@ -301,6 +301,11 @@ class URLResult : public URLRow {
 
   const Snippet& snippet() const { return snippet_; }
 
+  bool blocked_visit() const { return blocked_visit_; }
+  void set_blocked_visit(bool blocked_visit) {
+    blocked_visit_ = blocked_visit;
+  }
+
   // If this is a title match, title_match_positions contains an entry for
   // every word in the title that matched one of the query parameters. Each
   // entry contains the start and end of the match.
@@ -319,6 +324,9 @@ class URLResult : public URLRow {
   // These values are typically set by HistoryBackend.
   Snippet snippet_;
   Snippet::MatchPositions title_match_positions_;
+
+  // Whether a managed user was blocked when attempting to visit this URL.
+  bool blocked_visit_;
 
   // We support the implicit copy constructor and operator=.
 };

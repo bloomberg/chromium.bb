@@ -92,12 +92,14 @@ VisitRow::~VisitRow() {
 
 // URLResult -------------------------------------------------------------------
 
-URLResult::URLResult() {
+URLResult::URLResult()
+    : blocked_visit_(false) {
 }
 
 URLResult::URLResult(const GURL& url, base::Time visit_time)
     : URLRow(url),
-      visit_time_(visit_time) {
+      visit_time_(visit_time),
+      blocked_visit_(false) {
 }
 
 URLResult::URLResult(const GURL& url,
@@ -114,6 +116,7 @@ void URLResult::SwapResult(URLResult* other) {
   std::swap(visit_time_, other->visit_time_);
   snippet_.Swap(&other->snippet_);
   title_match_positions_.swap(other->title_match_positions_);
+  std::swap(blocked_visit_, other->blocked_visit_);
 }
 
 // QueryResults ----------------------------------------------------------------

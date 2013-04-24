@@ -39,7 +39,8 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
     HistoryEntry(EntryType type, const GURL& url, const string16& title,
                  base::Time time, const std::string& client_id,
-                 bool is_search_result, const string16& snippet);
+                 bool is_search_result, const string16& snippet,
+                 bool blocked_visit);
     HistoryEntry();
     virtual ~HistoryEntry();
 
@@ -77,6 +78,9 @@ class BrowsingHistoryHandler : public content::WebUIMessageHandler,
 
     // The entry's search snippet, if this entry is a search result.
     string16 snippet;
+
+    // Whether this entry was blocked when it was attempted.
+    bool blocked_visit;
   };
 
   BrowsingHistoryHandler();

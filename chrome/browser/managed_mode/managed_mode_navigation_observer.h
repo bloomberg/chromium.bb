@@ -46,6 +46,13 @@ class ManagedModeNavigationObserver
   // Set the elevation state for the corresponding WebContents.
   void set_elevated(bool is_elevated);
 
+  // Adds a special history entry for the visit attempt and shows the
+  // interstitial.
+  static void OnRequestBlocked(int render_process_host_id,
+                               int render_view_id,
+                               const GURL& url,
+                               const base::Callback<void(bool)>& callback);
+
  private:
   // An observer can be in one of the following states:
   // - RECORDING_URLS_BEFORE_PREVIEW: This is the initial state when the user

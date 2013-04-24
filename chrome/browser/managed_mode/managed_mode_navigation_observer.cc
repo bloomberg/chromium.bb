@@ -10,6 +10,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/string_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/simple_alert_infobar_delegate.h"
@@ -20,6 +23,7 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -529,4 +533,44 @@ void ManagedModeNavigationObserver::DidCommitProvisionalLoadForFrame(
           InfoBarService::FromWebContents(web_contents()));
     }
   }
+}
+
+// static
+void ManagedModeNavigationObserver::OnRequestBlocked(
+    int render_process_host_id,
+    int render_view_id,
+    const GURL& url,
+    const base::Callback<void(bool)>& callback) {
+  content::WebContents* web_contents =
+      tab_util::GetWebContentsByID(render_process_host_id, render_view_id);
+  if (!web_contents) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE, base::Bind(callback, true));
+    return;
+  }
+
+  ManagedModeNavigationObserver* navigation_observer =
+      ManagedModeNavigationObserver::FromWebContents(web_contents);
+  if (navigation_observer)
+    navigation_observer->SetStateToRecordingAfterPreview();
+
+  // Create a history entry for the attempt and mark it as such.
+  history::HistoryAddPageArgs add_page_args(
+        web_contents->GetURL(), base::Time::Now(), web_contents, 0,
+        web_contents->GetURL(), history::RedirectList(),
+        content::PAGE_TRANSITION_BLOCKED, history::SOURCE_BROWSED,
+        false);
+
+  // Add the entry to the history database.
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  HistoryService* history_service =
+     HistoryServiceFactory::GetForProfile(profile, Profile::IMPLICIT_ACCESS);
+
+  // |history_service| is null if saving history is disabled.
+  if (history_service)
+    history_service->AddPage(add_page_args);
+
+  // Show the interstitial.
+  new ManagedModeInterstitial(web_contents, url, callback);
 }
