@@ -1768,8 +1768,6 @@
         'browser/speech/chrome_speech_recognition_preferences.h',
         'browser/speech/extension_api/tts_extension_api_constants.cc',
         'browser/speech/extension_api/tts_extension_api_constants.h',
-        'browser/speech/speech_input_extension_manager.cc',
-        'browser/speech/speech_input_extension_manager.h',
         'browser/speech/speech_recognition_bubble.cc',
         'browser/speech/speech_recognition_bubble.h',
         'browser/speech/speech_recognition_bubble_controller.cc',
@@ -2248,8 +2246,6 @@
             'browser/speech/extension_api/tts_extension_api.h',
             'browser/speech/extension_api/tts_engine_extension_api.cc',
             'browser/speech/extension_api/tts_engine_extension_api.h',
-            'browser/speech/speech_input_extension_api.cc',
-            'browser/speech/speech_input_extension_api.h',
           ],
         }, {
           'sources!': [

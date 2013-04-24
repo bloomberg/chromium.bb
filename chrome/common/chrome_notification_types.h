@@ -650,15 +650,6 @@ enum NotificationType {
   // source is the profile.
   NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
 
-  // Sent when a recording session for speech input has started.
-  NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STARTED,
-
-  // Sent when a recording session for speech input has stopped.
-  NOTIFICATION_EXTENSION_SPEECH_INPUT_RECORDING_STOPPED,
-
-  // Sent when a recording session for speech input has failed.
-  NOTIFICATION_EXTENSION_SPEECH_INPUT_FAILED,
-
   // Sent when the extension updater starts checking for updates to installed
   // extensions. The source is a Profile, and there are no details.
   NOTIFICATION_EXTENSION_UPDATING_STARTED,

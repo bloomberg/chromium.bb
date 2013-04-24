@@ -1471,7 +1471,6 @@
         'browser/sessions/tab_restore_browsertest.cc',
         'browser/signin/signin_browsertest.cc',
         'browser/speech/extension_api/tts_extension_apitest.cc',
-        'browser/speech/speech_input_extension_apitest.cc',
         'browser/speech/speech_recognition_bubble_browsertest.cc',
         'browser/spellchecker/spellcheck_service_browsertest.cc',
         'browser/ssl/ssl_browser_tests.cc',

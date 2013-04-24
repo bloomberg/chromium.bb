@@ -4571,7 +4571,7 @@ other types of suffix sets.
   <int value="25" label="TTS_SPEAK"/>
   <int value="26" label="WALLPAPERPRIVATE_RESTOREMINIMIZEDWINDOWS"/>
   <int value="27" label="BROWSINGDATA_REMOVEHISTORY"/>
-  <int value="28" label="FILEBROWSERPRIVATE_ISFULLSCREEN"/>
+  <int value="28" label="DELETED_FILEBROWSERPRIVATE_ISFULLSCREEN"/>
   <int value="29" label="AUTOTESTPRIVATE_LOGOUT"/>
   <int value="30" label="EXPERIMENTAL_HISTORY_GETMOSTVISITED"/>
   <int value="31" label="BLUETOOTH_DISCONNECT"/>
@@ -4623,7 +4623,7 @@ other types of suffix sets.
   <int value="77" label="FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES"/>
   <int value="78" label="USB_FINDDEVICES"/>
   <int value="79" label="BOOKMARKMANAGERPRIVATE_DROP"/>
-  <int value="80" label="FILEBROWSERPRIVATE_GETFILETRANSFERS"/>
+  <int value="80" label="DELETED_FILEBROWSERPRIVATE_GETFILETRANSFERS"/>
   <int value="81" label="INPUT_IME_SETMENUITEMS"/>
   <int value="82" label="BOOKMARKS_EXPORT"/>
   <int value="83" label="HISTORY_SEARCH"/>
@@ -4726,7 +4726,7 @@ other types of suffix sets.
   <int value="180" label="RUNTIME_GETBACKGROUNDPAGE"/>
   <int value="181" label="EXPERIMENTAL_RECORD_REPLAYURLS"/>
   <int value="182" label="WEBSTOREPRIVATE_COMPLETEINSTALL"/>
-  <int value="183" label="EXPERIMENTAL_SPEECHINPUT_START"/>
+  <int value="183" label="DELETED_EXPERIMENTAL_SPEECHINPUT_START"/>
   <int value="184" label="COOKIES_GETALL"/>
   <int value="185" label="DOWNLOADS_GETFILEICON"/>
   <int value="186" label="PAGEACTION_GETTITLE"/>
@@ -4753,7 +4753,7 @@ other types of suffix sets.
   <int value="207" label="WEBSTOREPRIVATE_BEGININSTALLWITHMANIFEST3"/>
   <int value="208" label="WALLPAPERPRIVATE_SETWALLPAPER"/>
   <int value="209" label="USB_CONTROLTRANSFER"/>
-  <int value="210" label="EXPERIMENTAL_SPEECHINPUT_STOP"/>
+  <int value="210" label="DELETED_EXPERIMENTAL_SPEECHINPUT_STOP"/>
   <int value="211" label="USB_BULKTRANSFER"/>
   <int value="212" label="FILEBROWSERPRIVATE_GETVOLUMEMETADATA"/>
   <int value="213" label="PAGECAPTURE_SAVEASMHTML"/>
@@ -4918,7 +4918,7 @@ other types of suffix sets.
   <int value="372" label="BROWSINGDATA_REMOVECACHE"/>
   <int value="373" label="BOOKMARKMANAGERPRIVATE_RECORDLAUNCH"/>
   <int value="374" label="BROWSERACTION_DISABLE"/>
-  <int value="375" label="EXPERIMENTAL_SPEECHINPUT_ISRECORDING"/>
+  <int value="375" label="DELETED_EXPERIMENTAL_SPEECHINPUT_ISRECORDING"/>
   <int value="376" label="APP_WINDOW_CREATE"/>
   <int value="377" label="RUNTIME_RELOAD"/>
   <int value="378" label="EXPERIMENTAL_POWER_REQUESTKEEPAWAKE"/>
@@ -4928,7 +4928,7 @@ other types of suffix sets.
   <int value="382" label="EVENTS_REMOVERULES"/>
   <int value="383" label="DOWNLOADS_DOWNLOAD"/>
   <int value="384" label="WINDOWS_GETALL"/>
-  <int value="385" label="FILEBROWSERPRIVATE_TOGGLEFULLSCREEN"/>
+  <int value="385" label="DELETED_FILEBROWSERPRIVATE_TOGGLEFULLSCREEN"/>
   <int value="386" label="APP_CURRENTWINDOWINTERNAL_RESTORE"/>
   <int value="387" label="WEBSOCKETPROXYPRIVATE_GETPASSPORTFORTCP"/>
   <int value="388" label="PAGEACTION_HIDE"/>
@@ -4982,7 +4982,28 @@ other types of suffix sets.
   <int value="436" label="SYNCFILESYSTEM_GETFILESYNCSTATUSES"/>
   <int value="437" label="MEDIAGALLERIESPRIVATE_GETHANDLERS"/>
   <int value="438" label="WALLPAPERPRIVATE_RESETWALLPAPER"/>
-  <int value="439" label="EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN"/>
+  <int value="439" label="DEVELOPERPRIVATE_PERMISSIONS"/>
+  <int value="440" label="WEBSTOREPRIVATE_ENABLEAPPLAUNCHER"/>
+  <int value="441" label="APP_CURRENTWINDOWINTERNAL_FULLSCREEN"/>
+  <int value="442" label="DEVELOPERPRIVATE_LOADUNPACKEDCROS"/>
+  <int value="443" label="NETWORKINGPRIVATE_REQUESTNETWORKSCAN"/>
+  <int value="444" label="ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEMACHINEKEY"/>
+  <int value="445" label="ENTERPRISE_PLATFORMKEYSPRIVATE_CHALLENGEUSERKEY"/>
+  <int value="446" label="DEVELOPERPRIVATE_LOADPROJECTTOSYNCFS"/>
+  <int value="447" label="DEVELOPERPRIVATE_GETPROJECTSINFO"/>
+  <int value="448" label="DEVELOPERPRIVATE_LOADPROJECT"/>
+  <int value="449" label="COMMANDLINEPRIVATE_HASSWITCH"/>
+  <int value="450" label="NETWORKINGPRIVATE_GETMANAGEDPROPERTIES"/>
+  <int value="451" label="LOCATION_WATCHLOCATION"/>
+  <int value="452" label="LOCATION_CLEARWATCH"/>
+  <int value="453" label="BLUETOOTH_ADDPROFILE"/>
+  <int value="454" label="BLUETOOTH_REMOVEPROFILE"/>
+  <int value="455" label="BLUETOOTH_GETPROFILES"/>
+  <int value="456" label="EXPERIMENTAL_IDENTITY_REMOVECACHEDAUTHTOKEN"/>
+  <int value="457" label="AUDIO_GETINFO"/>
+  <int value="458" label="AUDIO_SETACTIVEDEVICES"/>
+  <int value="459" label="AUDIO_SETPROPERTIES"/>
+  <int value="460" label="USB_RESETDEVICE"/>
 </enum>
 
 <enum name="FallbackSSLVersion" type="int">

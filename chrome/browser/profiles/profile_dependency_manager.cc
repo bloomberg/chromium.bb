@@ -83,7 +83,6 @@
 #include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/speech/chrome_speech_recognition_preferences.h"
 #include "chrome/browser/speech/extension_api/tts_extension_api.h"
-#include "chrome/browser/speech/speech_input_extension_manager.h"
 #include "chrome/browser/spellchecker/spellcheck_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -307,9 +306,6 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   extensions::ProcessesAPI::GetFactoryInstance();
   extensions::PushMessagingAPI::GetFactoryInstance();
   extensions::SessionRestoreAPI::GetFactoryInstance();
-#if defined(ENABLE_INPUT_SPEECH)
-  extensions::SpeechInputAPI::GetFactoryInstance();
-#endif
   extensions::StreamsPrivateAPI::GetFactoryInstance();
   extensions::SystemIndicatorAPI::GetFactoryInstance();
   extensions::SystemInfoAPI::GetFactoryInstance();

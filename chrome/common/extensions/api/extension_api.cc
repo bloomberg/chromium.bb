@@ -362,8 +362,6 @@ void ExtensionAPI::InitDefaultConfiguration() {
       IDR_EXTENSION_API_JSON_EXPERIMENTAL_RLZ));
   RegisterSchema("runtime", ReadFromResource(
       IDR_EXTENSION_API_JSON_RUNTIME));
-  RegisterSchema("experimental.speechInput", ReadFromResource(
-      IDR_EXTENSION_API_JSON_EXPERIMENTAL_SPEECHINPUT));
   RegisterSchema("fileBrowserHandler", ReadFromResource(
       IDR_EXTENSION_API_JSON_FILEBROWSERHANDLER));
   RegisterSchema("fileBrowserPrivate", ReadFromResource(
