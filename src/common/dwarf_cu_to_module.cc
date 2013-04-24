@@ -133,12 +133,11 @@ DwarfCUToModule::FileContext::FileContext(const string &filename,
                                           bool handle_inter_cu_refs)
     : filename_(filename),
       module_(module),
-      handle_inter_cu_refs_(handle_inter_cu_refs) {
-  file_private_ = new FilePrivate();
+      handle_inter_cu_refs_(handle_inter_cu_refs),
+      file_private_(new FilePrivate()) {
 }
 
 DwarfCUToModule::FileContext::~FileContext() {
-  delete file_private_;
 }
 
 void DwarfCUToModule::FileContext::AddSectionToSectionMap(
@@ -675,14 +674,13 @@ void DwarfCUToModule::WarningReporter::UnhandledInterCUReference(
 DwarfCUToModule::DwarfCUToModule(FileContext *file_context,
                                  LineToModuleHandler *line_reader,
                                  WarningReporter *reporter)
-    : line_reader_(line_reader), has_source_line_info_(false) {
-  cu_context_ = new CUContext(file_context, reporter);
-  child_context_ = new DIEContext();
+    : line_reader_(line_reader),
+      cu_context_(new CUContext(file_context, reporter)),
+      child_context_(new DIEContext()),
+      has_source_line_info_(false) {
 }
 
 DwarfCUToModule::~DwarfCUToModule() {
-  delete cu_context_;
-  delete child_context_;
 }
 
 void DwarfCUToModule::ProcessAttributeSigned(enum DwarfAttribute attr,
@@ -737,12 +735,13 @@ dwarf2reader::DIEHandler *DwarfCUToModule::FindChildHandler(
     enum DwarfTag tag) {
   switch (tag) {
     case dwarf2reader::DW_TAG_subprogram:
-      return new FuncHandler(cu_context_, child_context_, offset);
+      return new FuncHandler(cu_context_.get(), child_context_.get(), offset);
     case dwarf2reader::DW_TAG_namespace:
     case dwarf2reader::DW_TAG_class_type:
     case dwarf2reader::DW_TAG_structure_type:
     case dwarf2reader::DW_TAG_union_type:
-      return new NamedScopeHandler(cu_context_, child_context_, offset);
+      return new NamedScopeHandler(cu_context_.get(), child_context_.get(),
+                                   offset);
     default:
       return NULL;
   }

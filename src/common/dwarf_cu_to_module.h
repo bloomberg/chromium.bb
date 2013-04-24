@@ -46,6 +46,7 @@
 #include "common/dwarf/bytereader.h"
 #include "common/dwarf/dwarf2diehandler.h"
 #include "common/dwarf/dwarf2reader.h"
+#include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 
 namespace google_breakpad {
@@ -117,7 +118,7 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     const bool handle_inter_cu_refs_;
 
     // Inter-compilation unit data used internally by the handlers.
-    FilePrivate *file_private_;
+    scoped_ptr<FilePrivate> file_private_;
   };
 
   // An abstract base class for handlers that handle DWARF line data
@@ -291,10 +292,10 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
   LineToModuleHandler *line_reader_;
 
   // This compilation unit's context.
-  CUContext *cu_context_;
+  scoped_ptr<CUContext> cu_context_;
 
   // A context for our children.
-  DIEContext *child_context_;
+  scoped_ptr<DIEContext> child_context_;
 
   // True if this compilation unit has source line information.
   bool has_source_line_info_;
