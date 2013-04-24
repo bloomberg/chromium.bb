@@ -57,16 +57,18 @@ var parseHtmlSubset = (function() {
     }
   }
 
-  function assertElement(tags, node) {
+  function assertElement(tags, node, errors) {
     if (tags.indexOf(node.tagName) == -1)
-      throw Error(node.tagName + ' is not supported');
+      errors.push(node.tagName + ' is not supported');
   }
 
-  function assertAttribute(attrs, attrNode, node) {
+  function assertAttribute(attrs, attrNode, node, errors) {
     var n = attrNode.nodeName;
     var v = attrNode.nodeValue;
-    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v))
-      throw Error(node.tagName + '[' + n + '="' + v + '"] is not supported');
+    if (!attrs.hasOwnProperty(n) || !attrs[n](node, v)) {
+      errors.push(node.tagName + '[' + n + '="' + v + '"] is not supported');
+      node.removeAttribute(n);
+    }
   }
 
   return function(s, opt_extraTags, opt_extraAttrs) {
@@ -79,13 +81,14 @@ var parseHtmlSubset = (function() {
     r.selectNode(document.body);
     // This does not execute any scripts.
     var df = r.createContextualFragment(s);
+    var errors = [];
     walk(df, function(node) {
       switch (node.nodeType) {
         case Node.ELEMENT_NODE:
-          assertElement(tags, node);
+          assertElement(tags, node, errors);
           var nodeAttrs = node.attributes;
-          for (var i = 0; i < nodeAttrs.length; ++i) {
-            assertAttribute(attrs, nodeAttrs[i], node);
+          for (var i = nodeAttrs.length - 1; i >= 0; i--) {
+            assertAttribute(attrs, nodeAttrs[i], node, errors);
           }
           break;
 
@@ -98,6 +101,8 @@ var parseHtmlSubset = (function() {
           throw Error('Node type ' + node.nodeType + ' is not supported');
       }
     });
+    if (errors.length)
+      throw new Error(errors.join('\n'));
     return df;
   };
 })();

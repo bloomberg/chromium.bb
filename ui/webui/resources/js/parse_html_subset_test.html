@@ -6,6 +6,7 @@
 <script src="parse_html_subset.js"></script>
 <script>
 
+goog.require('goog.testing.AsyncTestCase');
 goog.require('goog.testing.jsunit');
 
 </script>
@@ -13,6 +14,8 @@ goog.require('goog.testing.jsunit');
 </head>
 <body>
 <script>
+
+var asyncTestCase = goog.testing.AsyncTestCase.createAndInstall();
 
 function parseAndAssertThrows() {
   var args = arguments;
@@ -108,6 +111,20 @@ function testInvalidCustomAttributes() {
   parseAndAssertThrows('<a class="fancy">I\'m fancy!</a>', null,
       {class: returnsFalsey});
   parseAndAssertThrows('<a class="fancy">I\'m fancy!</a>');
+}
+
+function testOnError() {
+  window.called = false;
+
+  asyncTestCase.waitForAsync('Waiting for image error callbacks');
+
+  parseAndAssertThrows('<img onerror="window.called = true" src="_.png">');
+  parseAndAssertThrows('<img src="_.png" onerror="window.called = true">');
+
+  window.setTimeout(function() {
+    asyncTestCase.continueTesting();
+    assertFalse(window.called);
+  });
 }
 
 </script>
