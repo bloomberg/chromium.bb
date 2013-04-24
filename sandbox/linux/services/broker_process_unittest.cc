@@ -280,21 +280,13 @@ TEST(BrokerProcess, OpenCpuinfoNoClientCheck) {
   // expected.
 }
 
-// Disabled until we implement a mkstemp that doesn't require JNI.
-TEST(BrokerProcess, DISABLE_ON_ANDROID(OpenFileRW)) {
+TEST(BrokerProcess, OpenFileRW) {
   const char basename[] = "BrokerProcessXXXXXX";
   char template_name[2048];
-#if defined(OS_ANDROID)
-  base::FilePath cache_directory;
-  ASSERT_TRUE(base::android::GetCacheDirectory(&cache_directory));
-  ssize_t length = snprintf(template_name, sizeof(template_name),
-                            "%s%s",
-                            cache_directory.value().c_str(), basename);
-  ASSERT_LT(length, static_cast<ssize_t>(sizeof(template_name)));
-#else
+  // On Android, this file will end up in
+  // /data/local/tmp/BrokerProcessXXXXXX, which is OK.
   strncpy(template_name, basename, sizeof(basename) - 1);
   template_name[sizeof(basename) - 1] = '\0';
-#endif
   int tempfile = mkstemp(template_name);
   ASSERT_GE(tempfile, 0);
   char tempfile_name[2048];
