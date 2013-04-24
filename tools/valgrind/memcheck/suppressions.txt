@@ -7122,4 +7122,16 @@
    ...
    fun:_ZN7content*ResourceDispatcherHostTest_*_Test8TestBodyEv
 }
-
+{
+   bug_234845
+   Memcheck:Leak
+   fun:malloc
+   fun:PORT_Alloc_Util
+   fun:pk11_CreateSymKey
+   fun:PK11_KeyGenWithTemplate
+   fun:pk11_TokenKeyGenWithFlagsAndKeyType
+   fun:pk11_RawPBEKeyGenWithKeyType
+   fun:PK11_PBEKeyGen
+   fun:PK11_ExportEncryptedPrivKeyInfo
+   fun:_ZN6crypto12ECPrivateKey25ExportEncryptedPrivateKeyERKSsiPSt6vectorIhSaIhEE
+}
