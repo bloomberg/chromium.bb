@@ -4,11 +4,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Unittests for commands.  Needs to be run inside of chroot for mox."""
+"""Unittests for chromite.lib.patch."""
 
 import copy
 import itertools
-import mox
 import os
 import shutil
 import sys
@@ -19,11 +18,14 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(
 
 from chromite.buildbot import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
 from chromite.lib import gerrit
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import patch as cros_patch
+
+import mock
 
 _GetNumber = iter(itertools.count()).next
 
@@ -52,7 +54,7 @@ GERRIT_ABANDONED_CHANGEID = '2'
 
 class TestGitRepoPatch(cros_test_lib.TempDirTestCase):
 
-  # No pymox bits are to be used in this class's tests.
+  # No mock bits are to be used in this class's tests.
   # This needs to actually validate git output, and git behaviour, rather
   # than test our assumptions about git's behaviour/output.
 
@@ -656,60 +658,37 @@ class PrepareRemotePatchesTest(cros_test_lib.TestCase):
                       ':'.join(chunks + [':']))
 
 
-class PrepareLocalPatchesTests(cros_test_lib.MoxTestCase):
+class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
 
   def setUp(self):
-    self.patches = ['my/project:mybranch']
+    self.path, self.project, self.branch = 'mydir', 'my/project', 'mybranch'
+    self.tracking_branch = 'kernel'
+    self.patches = ['%s:%s' % (self.project, self.branch)]
+    self.manifest = mock.MagicMock()
+    self.PatchObject(self.manifest, 'GetProjectPath', return_value=self.path)
+    self.PatchObject(self.manifest, 'GetProjectsLocalRevision',
+                     return_value=self.tracking_branch)
+    self.PatchObject(self.manifest, 'GetAttributeForProject',
+                     return_value='cros')
 
-    self.mox.StubOutWithMock(git, 'GetProjectDir')
-    self.mox.StubOutWithMock(git, 'GetCurrentBranch')
-    self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
-    self.mox.StubOutWithMock(git, 'RunGit')
-    self.manifest = self.mox.CreateMock(git.ManifestCheckout)
-
-  def VerifyPatchInfo(self, patch_info, project, branch, tracking_branch):
+  def PrepareLocalPatches(self, output):
     """Check the returned GitRepoPatchInfo against golden values."""
-    self.assertEquals(patch_info.project, project)
-    self.assertEquals(patch_info.ref, branch)
-    self.assertEquals(patch_info.tracking_branch, tracking_branch)
+    output_obj = mock.MagicMock()
+    output_obj.output = output
+    self.PatchObject(cros_patch.LocalPatch, 'Fetch', return_value=output_obj)
+    self.PatchObject(git, 'RunGit', return_value=output_obj)
+    patch_info, = cros_patch.PrepareLocalPatches(self.manifest, self.patches)
+    self.assertEquals(patch_info.project, self.project)
+    self.assertEquals(patch_info.ref, self.branch)
+    self.assertEquals(patch_info.tracking_branch, self.tracking_branch)
 
   def testBranchSpecifiedSuccessRun(self):
     """Test success with branch specified by user."""
-    output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    output_obj.output = '12345'.rjust(40, '0')
-    self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
-    self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/kernel')
-    self.manifest.GetAttributeForProject('my/project',
-                                         'remote').AndReturn('cros')
-    git.RunGit(
-        'mydir', mox.In('m/kernel..mybranch')).AndReturn(output_obj)
-
-    # Suppress the normal parse machinery.
-    self.mox.StubOutWithMock(cros_patch.LocalPatch, 'Fetch')
-    # pylint: disable=E1120
-    cros_patch.LocalPatch.Fetch('mydir/.git').AndReturn(output_obj)
-    self.mox.ReplayAll()
-
-    patch_info = cros_patch.PrepareLocalPatches(self.manifest, self.patches)
-    self.VerifyPatchInfo(patch_info[0], 'my/project', 'mybranch', 'kernel')
-    self.mox.VerifyAll()
+    self.PrepareLocalPatches('12345'.rjust(40, '0'))
 
   def testBranchSpecifiedNoChanges(self):
     """Test when no changes on the branch specified by user."""
-    output_obj = self.mox.CreateMock(cros_build_lib.CommandResult)
-    output_obj.output = ''
-    self.manifest.GetProjectPath('my/project', True).AndReturn('mydir')
-    self.manifest.GetProjectsLocalRevision('my/project').AndReturn('m/master')
-    self.manifest.GetAttributeForProject('my/project',
-                                         'remote').AndReturn('cros')
-    git.RunGit(
-        'mydir', mox.In('m/master..mybranch')).AndReturn(output_obj)
-    self.mox.ReplayAll()
-
-    self.assertRaises(
-        SystemExit,
-        cros_patch.PrepareLocalPatches,
-        self.manifest, self.patches)
+    self.assertRaises(SystemExit, self.PrepareLocalPatches, '')
 
 
 class TestFormatting(cros_test_lib.TestCase):
