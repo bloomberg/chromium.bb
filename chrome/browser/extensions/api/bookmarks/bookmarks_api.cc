@@ -32,6 +32,7 @@
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/importer/importer_data_types.h"
 #include "chrome/browser/importer/importer_host.h"
+#include "chrome/browser/importer/importer_type.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -984,6 +985,9 @@ void BookmarksImportFunction::FileSelected(const base::FilePath& path,
                                      importer::FAVORITES,
                                      new ProfileWriter(profile()),
                                      true);
+
+  importer::LogImporterUseToMetrics("BookmarksAPI",
+                                    importer::TYPE_BOOKMARKS_FILE);
 #endif
   Release();  // Balanced in BookmarksIOFunction::SelectFile()
 }

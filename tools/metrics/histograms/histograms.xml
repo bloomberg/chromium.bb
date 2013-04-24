@@ -408,8 +408,18 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="Import.ImporterType" enum="ImporterType">
-  <summary>The importer used for an import session.</summary>
+<histogram name="Import.ImporterType.AutoImport" enum="ImporterType">
+  <summary>The importer used on first run Auto Import.</summary>
+</histogram>
+
+<histogram name="Import.ImporterType.BookmarksAPI" enum="ImporterType">
+  <summary>The importer used on import from the bookmarks file API.</summary>
+</histogram>
+
+<histogram name="Import.ImporterType.ImportDataHandler" enum="ImporterType">
+  <summary>
+    The importer used on import from the chrome://settings/importData UI.
+  </summary>
 </histogram>
 
 <histogram name="LevelDBEnv.IDB.IOError" enum="LevelDBIOErrorMethods">

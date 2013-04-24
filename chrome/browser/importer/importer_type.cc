@@ -71,7 +71,8 @@ Importer* CreateImporterByType(ImporterType type) {
   return NULL;
 }
 
-void LogImporterUseToMetrics(ImporterType type) {
+void LogImporterUseToMetrics(const std::string& metric_postfix,
+                             ImporterType type) {
   ImporterTypeMetrics metrics_type;
   switch (type) {
     case TYPE_UNKNOWN:
@@ -94,9 +95,16 @@ void LogImporterUseToMetrics(ImporterType type) {
       metrics_type = IMPORTER_METRICS_BOOKMARKS_FILE;
   }
 
-  UMA_HISTOGRAM_ENUMERATION("Import.ImporterType",
-                            metrics_type,
-                            IMPORTER_METRICS_SIZE);
+  // Note: This leaks memory, which is the expected behavior as the factory
+  // creates and owns the histogram.
+  base::HistogramBase* histogram =
+      base::LinearHistogram::FactoryGet(
+          "Import.ImporterType." + metric_postfix,
+          1,
+          IMPORTER_METRICS_SIZE,
+          IMPORTER_METRICS_SIZE + 1,
+          base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->Add(metrics_type);
 }
 
 }  // namespace importer

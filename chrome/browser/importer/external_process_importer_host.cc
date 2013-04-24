@@ -36,8 +36,6 @@ void ExternalProcessImporterHost::StartImportSettings(
   DCHECK(!profile_);
   DCHECK(target_profile);
 
-  importer::LogImporterUseToMetrics(source_profile.importer_type);
-
   profile_ = target_profile;
   writer_ = writer;
   source_profile_ = &source_profile;
