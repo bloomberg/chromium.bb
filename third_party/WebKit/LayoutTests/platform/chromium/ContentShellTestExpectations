@@ -86,7 +86,7 @@ crbug.com/233886 http/tests/inspector/indexeddb/resources-panel.html [ Failure ]
 crbug.com/233887 plugins/call-as-function.html [ Failure ]
 crbug.com/233888 virtual/softwarecompositing/reflections/nested-reflection-animated.html [ ImageOnlyFailure ]
 crbug.com/233889 plugins/reentrant-update-widget-positions.html [ Timeout ]
-crbug.com/235110 [ Mac ] virtual/softwarecompositing [ CRASH ]
+crbug.com/235110 [ Mac ] virtual/softwarecompositing [ Crash ]
 
 # -----------------------------------------------------------------
 # To be rebaselined
