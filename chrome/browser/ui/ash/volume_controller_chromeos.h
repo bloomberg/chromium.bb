@@ -8,13 +8,15 @@
 #include "ash/volume_control_delegate.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "chromeos/audio/cras_audio_handler.h"
 
 // A class which controls volume when F8-10 or a multimedia key for volume is
 // pressed.
-class VolumeController : public ash::VolumeControlDelegate {
+class VolumeController : public ash::VolumeControlDelegate,
+                         public chromeos::CrasAudioHandler::AudioObserver {
  public:
-  VolumeController() {}
-  virtual ~VolumeController() {}
+  VolumeController();
+  virtual ~VolumeController();
 
   // Overridden from ash::VolumeControlDelegate:
   virtual bool HandleVolumeMute(const ui::Accelerator& accelerator) OVERRIDE;
@@ -26,7 +28,13 @@ class VolumeController : public ash::VolumeControlDelegate {
   virtual void SetVolumeLevel(float level) OVERRIDE;
   virtual void SetVolumePercent(double percent) OVERRIDE;
 
+  // Overridden from chromeos::CrasAudioHandler::AudioObserver.
+  virtual void OnOutputVolumeChanged() OVERRIDE;
+  virtual void OnOutputMuteChanged() OVERRIDE;
+
  private:
+  bool UseNewAudioHandler() const;
+
   DISALLOW_COPY_AND_ASSIGN(VolumeController);
 };
 

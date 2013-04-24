@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -90,6 +91,7 @@
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/audio_pref_handler.h"
+#include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -464,8 +466,14 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopStart() {
 // Threads are initialized between MainMessageLoopStart and MainMessageLoopRun.
 // about_flags settings are applied in ChromeBrowserMainParts::PreCreateThreads.
 void ChromeBrowserMainPartsChromeos::PreMainMessageLoopRun() {
-  AudioHandler::Initialize(
-      AudioPrefHandler::Create(g_browser_process->local_state()));
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshEnableNewAudioHandler)) {
+   CrasAudioHandler::Initialize(
+       AudioPrefHandler::Create(g_browser_process->local_state()));
+  } else {
+   AudioHandler::Initialize(
+       AudioPrefHandler::Create(g_browser_process->local_state()));
+  }
 
   base::FilePath downloads_directory;
   CHECK(PathService::Get(chrome::DIR_DEFAULT_DOWNLOADS, &downloads_directory));
@@ -776,7 +784,12 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   // even if Initialize() wasn't called.
   SystemKeyEventListener::Shutdown();
   imageburner::BurnManager::Shutdown();
-  AudioHandler::Shutdown();
+  if (CommandLine::ForCurrentProcess()->
+          HasSwitch(ash::switches::kAshEnableNewAudioHandler)) {
+    CrasAudioHandler::Shutdown();
+  } else {
+    AudioHandler::Shutdown();
+  }
 
   WebSocketProxyController::Shutdown();
 

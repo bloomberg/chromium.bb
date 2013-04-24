@@ -384,25 +384,54 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   CrasAudioClientStubImpl() {
     VLOG(1) << "CrasAudioClientStubImpl is created";
 
-    // Fake audio nodes.
+    // Fake audio output nodes.
     AudioNode node_1;
     node_1.is_input = false;
     node_1.id = 10001;
-    node_1.device_name = "Fake Audio Output";
+    node_1.device_name = "Fake Speaker";
     node_1.type = "INTERNAL_SPEAKER";
-    node_1.name = "Internal Speaker";
-    node_1.active = true;
+    node_1.name = "Speaker";
+    node_1.active = false;
+    node_list_.push_back(node_1);
 
     AudioNode node_2;
-    node_2.is_input = true;
+    node_2.is_input = false;
     node_2.id = 10002;
-    node_2.device_name = "Fake Audio Input";
-    node_2.type = "INTERNAL_MIC";
-    node_2.name = "Internal Mic";
+    node_2.device_name = "Fake Headphone";
+    node_2.type = "HEADPHONE";
+    node_2.name = "Headphone";
     node_2.active = true;
-
-    node_list_.push_back(node_1);
     node_list_.push_back(node_2);
+    active_output_node_id_ = node_2.id;
+
+    AudioNode node_3;
+    node_3.is_input = false;
+    node_3.id = 10003;
+    node_3.device_name = "Fake Audio Output";
+    node_3.type = "BLUETOOTH";
+    node_3.name = "Bluetooth Headphone";
+    node_3.active = false;
+    node_list_.push_back(node_3);
+
+    // Fake audio input ndoes
+    AudioNode node_4;
+    node_4.is_input = true;
+    node_4.id = 10004;
+    node_4.device_name = "Fake Internal Mic";
+    node_4.type = "INTERNAL_MIC";
+    node_4.name = "Internal Mic";
+    node_4.active = false;
+    node_list_.push_back(node_4);
+
+    AudioNode node_5;
+    node_5.is_input = true;
+    node_5.id = 10005;
+    node_5.device_name = "Fake Internal Mic";
+    node_5.type = "USB";
+    node_5.name = "USB Mic";
+    node_5.active = true;
+    node_list_.push_back(node_5);
+    active_input_node_id_ = node_5.id;
   }
   virtual ~CrasAudioClientStubImpl() {
   }
@@ -459,6 +488,15 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   }
 
   virtual void SetActiveOutputNode(uint64 node_id) OVERRIDE {
+    if (active_output_node_id_ == node_id)
+      return;
+
+    for (size_t i = 0; i < node_list_.size(); ++i) {
+      if (node_list_[i].id == active_output_node_id_)
+        node_list_[i].active = false;
+      else if (node_list_[i].id == node_id)
+        node_list_[i].active = true;
+    }
     active_output_node_id_ = node_id;
     FOR_EACH_OBSERVER(Observer,
                       observers_,
@@ -466,6 +504,15 @@ class CrasAudioClientStubImpl : public CrasAudioClient {
   }
 
   virtual void SetActiveInputNode(uint64 node_id) OVERRIDE {
+    if (active_input_node_id_ == node_id)
+      return;
+
+    for (size_t i = 0; i < node_list_.size(); ++i) {
+      if (node_list_[i].id == active_input_node_id_)
+        node_list_[i].active = false;
+      else if (node_list_[i].id == node_id)
+        node_list_[i].active = true;
+    }
     active_input_node_id_ = node_id;
     FOR_EACH_OBSERVER(Observer,
                       observers_,

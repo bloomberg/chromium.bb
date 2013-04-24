@@ -9,6 +9,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "chromeos/audio/audio_device.h"
 #include "chromeos/audio/audio_pref_observer.h"
 #include "chromeos/dbus/audio_node.h"
 #include "chromeos/dbus/cras_audio_client.h"
@@ -83,6 +84,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   // Returns the node_id of the active input node.
   uint64 GetActiveInputNode() const;
 
+  // Gets the audio devices back in |device_list|.
+  void GetAudioDevices(AudioDeviceList* device_list) const;
+
+  bool GetActiveOutputDevice(AudioDevice* device) const;
+
+  // Whether there is alternative input/output audio device.
+  bool has_alternative_input() const { return has_alternative_input_; }
+  bool has_alternative_output() const { return has_alternative_output_; }
+
   // Sets volume level from 0-100%. If less than kMuteThresholdPercent, then
   // mutes the sound. If it was muted, and |volume_percent| is larger than
   // the threshold, then the sound is unmuted.
@@ -141,13 +151,15 @@ class CHROMEOS_EXPORT CrasAudioHandler : public CrasAudioClient::Observer,
   ObserverList<AudioObserver> observers_;
 
   // Audio data and state.
-  AudioNodeList audio_nodes_;
+  AudioDeviceList audio_devices_;
   VolumeState volume_state_;
   bool output_mute_on_;
   bool input_mute_on_;
   int output_volume_;
   uint64 active_output_node_id_;
   uint64 active_input_node_id_;
+  bool has_alternative_input_;
+  bool has_alternative_output_;
 
   bool output_mute_locked_;
   bool input_mute_locked_;

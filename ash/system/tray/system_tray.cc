@@ -50,7 +50,7 @@
 #include "ui/views/view.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/system/chromeos/audio/tray_volume.h"
+#include "ash/system/chromeos/audio/tray_audio.h"
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/network/tray_network.h"
 #include "ash/system/chromeos/network/tray_sms.h"
@@ -162,7 +162,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayDisplay(this));
   AddTrayItem(new internal::TrayScreenCapture(this));
-  AddTrayItem(new internal::TrayVolume(this));
+  AddTrayItem(new internal::TrayAudio(this));
 #endif
 #if !defined(OS_WIN)
   AddTrayItem(new internal::TrayBrightness(this));

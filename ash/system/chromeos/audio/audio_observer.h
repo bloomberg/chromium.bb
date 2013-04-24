@@ -9,6 +9,8 @@
 
 namespace ash {
 
+// TODO(jennyz): crbug.com/233310. Remove this file when new audio handler
+// stabilized.
 class ASH_EXPORT AudioObserver {
  public:
   virtual ~AudioObserver() {}

@@ -272,7 +272,10 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void Initialize() OVERRIDE {
-    AudioHandler::GetInstance()->AddVolumeObserver(this);
+    if (!CommandLine::ForCurrentProcess()->
+            HasSwitch(ash::switches::kAshEnableNewAudioHandler)) {
+      AudioHandler::GetInstance()->AddVolumeObserver(this);
+    }
     DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate(
         PowerManagerClient::UPDATE_INITIAL);
@@ -333,9 +336,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual ~SystemTrayDelegate() {
-    AudioHandler* audiohandler = AudioHandler::GetInstance();
-    if (audiohandler)
-      audiohandler->RemoveVolumeObserver(this);
+    if (!CommandLine::ForCurrentProcess()->
+            HasSwitch(ash::switches::kAshEnableNewAudioHandler) &&
+         AudioHandler::GetInstance()) {
+      AudioHandler::GetInstance()->RemoveVolumeObserver(this);
+    }
+
     DBusThreadManager::Get()->GetSessionManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
     DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(this);

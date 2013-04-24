@@ -2,24 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_VOLUME_H_
-#define ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_VOLUME_H_
+#ifndef ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
+#define ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_
 
 #include "ash/system/chromeos/audio/audio_observer.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "chromeos/audio/cras_audio_handler.h"
 
 namespace ash {
 namespace internal {
 
 namespace tray {
 class VolumeView;
+class AudioDetailedView;
 }
 
-class TrayVolume : public TrayImageItem,
-                   public AudioObserver {
+class TrayAudio : public TrayImageItem,
+                  public chromeos::CrasAudioHandler::AudioObserver,
+                  public AudioObserver {
  public:
-  explicit TrayVolume(SystemTray* system_tray);
-  virtual ~TrayVolume();
+  explicit TrayAudio(SystemTray* system_tray);
+  virtual ~TrayAudio();
 
  private:
   // Overridden from TrayImageItem.
@@ -37,17 +40,26 @@ class TrayVolume : public TrayImageItem,
   virtual void OnVolumeChanged(float percent) OVERRIDE;
   virtual void OnMuteToggled() OVERRIDE;
 
+  // Overridden from chromeos::CrasAudioHandler::AudioObserver.
+  virtual void OnOutputVolumeChanged() OVERRIDE;
+  virtual void OnOutputMuteChanged() OVERRIDE;
+  virtual void OnAudioNodesChanged() OVERRIDE;
+  virtual void OnActiveOutputNodeChanged() OVERRIDE;
+  virtual void OnActiveInputNodeChanged() OVERRIDE;
+
+  void Update();
+
   tray::VolumeView* volume_view_;
+  tray::AudioDetailedView* audio_detail_;
 
-  // Was |volume_view_| created for CreateDefaultView() rather than
-  // CreateDetailedView()?  Used to avoid resetting |volume_view_|
-  // inappropriately in DestroyDefaultView() or DestroyDetailedView().
-  bool is_default_view_;
+  // True if VolumeView should be created for accelerator pop up;
+  // Otherwise, it should be created for detailed view in ash tray bubble.
+  bool pop_up_volume_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(TrayVolume);
+  DISALLOW_COPY_AND_ASSIGN(TrayAudio);
 };
 
 }  // namespace internal
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_VOLUME_H_
+#endif  // ASH_SYSTEM_CHROMEOS_AUDIO_TRAY_AUDIO_H_

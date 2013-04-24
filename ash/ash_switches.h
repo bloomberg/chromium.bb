@@ -36,6 +36,7 @@ ASH_EXPORT extern const char kAshDisableUIScaling[];
 ASH_EXPORT extern const char kAshDisableDisplayRotation[];
 ASH_EXPORT extern const char kAshEnableAdvancedGestures[];
 ASH_EXPORT extern const char kAshEnableBrightnessControl[];
+ASH_EXPORT extern const char kAshEnableNewAudioHandler[];
 #if defined(OS_LINUX)
 ASH_EXPORT extern const char kAshEnableMemoryMonitor[];
 #endif

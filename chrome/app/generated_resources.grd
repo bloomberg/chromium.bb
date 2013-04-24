@@ -6780,6 +6780,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ASH_DISABLE_NEW_NETWORK_STATUS_AREA_DESCRIPTION" desc="Title for the flag to enable using the new Network State Handler.">
         Disables the new network handlers which handle Shill communication without using NetworkLibrary for the status area.
       </message>
+      <message name="IDS_FLAGS_ASH_ENABLE_NEW_AUDIO_HANDLER_NAME" desc="Title for the flag to enable using the new audio handler.">
+        Enables new audio handler
+      </message>
+      <message name="IDS_FLAGS_ASH_ENABLE_NEW_AUDIO_HANDLER_DESCRIPTION" desc="Description for the flag to enable using the new audio handler.">
+        Enable the new audio handler which uses the new cras audio dbus apis.
+      </message>
       <message name="IDS_FLAGS_ENABLE_LOCALLY_MANAGED_USERS_NAME" desc="Title for the flag to enable locally managed users.">
         Enable locally managed users
       </message>

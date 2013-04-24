@@ -78,6 +78,9 @@ const char kAshEnableAdvancedGestures[] = "ash-enable-advanced-gestures";
 // main monitor as internal.
 const char kAshEnableBrightnessControl[] = "ash-enable-brightness-control";
 
+// Enable the new audio handler.
+const char kAshEnableNewAudioHandler[] = "ash-enable-new-audio-handler";
+
 // Enable immersive fullscreen mode, regardless of default setting.
 const char kAshEnableImmersiveFullscreen[] = "ash-enable-immersive-fullscreen";
 
