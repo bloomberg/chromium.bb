@@ -35,7 +35,7 @@
 #include "GraphicsTypes.h"
 #include "GraphicsTypes3D.h"
 #include "IntSize.h"
-#include "ImageBufferData.h"
+#include "ImageBufferDataSkia.h"
 #include "PlatformLayer.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
