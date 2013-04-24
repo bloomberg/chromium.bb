@@ -344,7 +344,7 @@ deps = {
 deps_os = {
   "win": {
     "src/chrome/tools/test/reference_build/chrome_win":
-      "/trunk/deps/reference_builds/chrome_win@137747",
+      "/trunk/deps/reference_builds/chrome_win@195861",
 
     "src/third_party/cygwin":
       "/trunk/deps/third_party/cygwin@133786",
@@ -492,7 +492,7 @@ deps_os = {
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":
-      "/trunk/deps/reference_builds/chrome_mac@137727",
+      "/trunk/deps/reference_builds/chrome_mac@195861",
 
     "src/third_party/GTM":
       (Var("googlecode_url") % "google-toolbox-for-mac") + "/trunk@" +
@@ -515,7 +515,7 @@ deps_os = {
   "unix": {
     # Linux, really.
     "src/chrome/tools/test/reference_build/chrome_linux":
-      "/trunk/deps/reference_builds/chrome_linux@137712",
+      "/trunk/deps/reference_builds/chrome_linux@195861",
 
     "src/third_party/xdg-utils":
       "/trunk/deps/third_party/xdg-utils@149334",
