@@ -34,8 +34,8 @@
 
 #include <public/WebRTCSessionDescriptionRequest.h>
 
-#include "RTCSessionDescriptionDescriptor.h"
-#include "RTCSessionDescriptionRequest.h"
+#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
+#include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
 #include <public/WebRTCSessionDescription.h>
 #include <wtf/PassOwnPtr.h>
 

@@ -27,8 +27,8 @@
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 
 #include "FakeWebGraphicsContext3D.h"
-#include "GraphicsContext3DPrivate.h"
 #include "WebCompositorInitializer.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>

@@ -54,11 +54,8 @@
 #include "IDBKeyPath.h"
 #include "IDBMetadata.h"
 #include "IconURL.h"
-#include "MediaStreamSource.h"
 #include "NotificationClient.h"
 #include "PageVisibilityState.h"
-#include "RTCDataChannelHandlerClient.h"
-#include "RTCPeerConnectionHandlerClient.h"
 #include "ReferrerPolicy.h"
 #include "ResourceLoadPriority.h"
 #include "ResourceResponse.h"
@@ -110,6 +107,9 @@
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/MediaSourcePrivate.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
+#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

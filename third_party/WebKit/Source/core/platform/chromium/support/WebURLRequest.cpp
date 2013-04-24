@@ -32,7 +32,7 @@
 #include <public/WebURLRequest.h>
 
 #include "ResourceRequest.h"
-#include "WebURLRequestPrivate.h"
+#include "core/platform/chromium/support/WebURLRequestPrivate.h"
 #include <public/WebHTTPBody.h>
 #include <public/WebHTTPHeaderVisitor.h>
 #include <public/WebURL.h>

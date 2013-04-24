@@ -34,7 +34,7 @@
 
 #include <public/WebRTCVoidRequest.h>
 
-#include "RTCVoidRequest.h"
+#include "core/platform/mediastream/RTCVoidRequest.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

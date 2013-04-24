@@ -32,7 +32,7 @@
 #include <public/WebPrerender.h>
 #include <wtf/PassRefPtr.h>
 
-#include "Prerender.h"
+#include "core/platform/chromium/Prerender.h"
 
 namespace WebKit {
 

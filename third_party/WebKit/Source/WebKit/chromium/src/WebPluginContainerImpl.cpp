@@ -33,7 +33,6 @@
 
 #include "Chrome.h"
 #include "ChromeClientImpl.h"
-#include "ClipboardChromium.h"
 #include "EventHandler.h"
 #include "ScrollbarGroup.h"
 #include "WebCursorInfo.h"
@@ -43,7 +42,8 @@
 #include "WebInputEventConversion.h"
 #include "WebPlugin.h"
 #include "WebViewImpl.h"
-#include "WrappedResourceResponse.h"
+#include "core/platform/chromium/ClipboardChromium.h"
+#include "core/platform/chromium/support/WrappedResourceResponse.h"
 
 #include "EventNames.h"
 #include "FocusController.h"
@@ -58,7 +58,6 @@
 #include "HitTestResult.h"
 #include "HostWindow.h"
 #include "IFrameShimSupport.h"
-#include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "Page.h"
@@ -73,6 +72,7 @@
 #include "UserGestureIndicator.h"
 #include "WebPrintParams.h"
 #include "WheelEvent.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include <public/Platform.h>

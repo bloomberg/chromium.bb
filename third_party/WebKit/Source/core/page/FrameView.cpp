@@ -86,7 +86,7 @@
 #include "SVGSVGElement.h"
 #endif
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

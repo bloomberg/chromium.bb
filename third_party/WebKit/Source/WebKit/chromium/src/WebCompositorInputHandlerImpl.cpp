@@ -27,9 +27,9 @@
 
 #include "WebCompositorInputHandlerImpl.h"
 
-#include "TraceEvent.h"
 #include "WebCompositorInputHandlerClient.h"
 #include "WebInputEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include <public/Platform.h>
 #include <public/WebInputHandlerClient.h>
 #include <wtf/PassOwnPtr.h>

@@ -32,28 +32,28 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCPeerConnectionHandlerChromium.h"
+#include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 
-#include "MediaConstraints.h"
-#include "MediaStreamComponent.h"
-#include "RTCConfiguration.h"
-#include "RTCDTMFSenderHandler.h"
-#include "RTCDTMFSenderHandlerChromium.h"
-#include "RTCDataChannelHandlerChromium.h"
-#include "RTCDataChannelHandlerClient.h"
-#include "RTCIceCandidateDescriptor.h"
-#include "RTCPeerConnectionHandlerClient.h"
-#include "RTCSessionDescriptionDescriptor.h"
-#include "RTCSessionDescriptionRequest.h"
-#include "RTCStatsRequest.h"
-#include "RTCVoidRequest.h"
+#include "core/platform/mediastream/MediaConstraints.h"
+#include "core/platform/mediastream/MediaStreamComponent.h"
+#include "core/platform/mediastream/RTCConfiguration.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
+#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
+#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
+#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
+#include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
+#include "core/platform/mediastream/RTCStatsRequest.h"
+#include "core/platform/mediastream/RTCVoidRequest.h"
+#include "core/platform/mediastream/chromium/RTCDTMFSenderHandlerChromium.h"
+#include "core/platform/mediastream/chromium/RTCDataChannelHandlerChromium.h"
 #include <public/Platform.h>
 #include <public/WebMediaConstraints.h>
 #include <public/WebMediaStream.h>
 #include <public/WebMediaStreamTrack.h>
 #include <public/WebRTCConfiguration.h>
-#include <public/WebRTCDTMFSenderHandler.h>
 #include <public/WebRTCDataChannelHandler.h>
+#include <public/WebRTCDTMFSenderHandler.h>
 #include <public/WebRTCICECandidate.h>
 #include <public/WebRTCSessionDescription.h>
 #include <public/WebRTCSessionDescriptionRequest.h>

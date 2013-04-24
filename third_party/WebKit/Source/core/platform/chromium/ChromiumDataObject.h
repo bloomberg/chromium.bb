@@ -31,14 +31,14 @@
 #ifndef ChromiumDataObject_h
 #define ChromiumDataObject_h
 
-#include "ChromiumDataObjectItem.h"
 #include "Supplementable.h"
+#include "core/platform/chromium/ChromiumDataObjectItem.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

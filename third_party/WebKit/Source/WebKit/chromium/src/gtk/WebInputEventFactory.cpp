@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebInputEventFactory.h"
 
-#include "KeyboardCodes.h"
-#include "KeyCodeConversion.h"
+#include "core/platform/chromium/KeyCodeConversion.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 
 #include "WebInputEvent.h"
 

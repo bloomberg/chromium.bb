@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeChromiumWin.h"
+#include "core/platform/chromium/ScrollbarThemeChromiumWin.h"
 
 #include <windows.h>
 #include <vsstyle.h>

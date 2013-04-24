@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebSpeechSynthesizerClientImpl.h"
+#include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
 
 #include "PlatformSpeechSynthesisUtterance.h"
 

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeChromiumMac.h"
+#include "core/platform/chromium/ScrollbarThemeChromiumMac.h"
 
 #include <Carbon/Carbon.h>
 #include "FrameView.h"

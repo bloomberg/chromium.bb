@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "WebScrollbarThemeGeometryNative.h"
+#include "core/platform/chromium/support/WebScrollbarThemeGeometryNative.h"
 
 #include "ScrollbarThemeComposite.h"
 #include "WebScrollbarThemeClientImpl.h"

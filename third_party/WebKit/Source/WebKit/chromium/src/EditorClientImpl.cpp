@@ -34,7 +34,6 @@
 #include "Frame.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
 #include "NotImplemented.h"
 #include "Page.h"
@@ -60,6 +59,7 @@
 #include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 #include <wtf/text/WTFString.h>
 
 using namespace WebCore;

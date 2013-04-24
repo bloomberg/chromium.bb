@@ -33,7 +33,7 @@
 
 #include "CachedResourceRequest.h"
 #include "Element.h"
-#include "WrappedResourceRequest.h"
+#include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include <public/WebURLRequest.h>
 
 using namespace WebCore;

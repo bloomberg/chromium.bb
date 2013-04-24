@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "KeyCodeConversion.h"
+#include "core/platform/chromium/KeyCodeConversion.h"
 
-#include "KeyboardCodes.h"
 #include <gdk/gdkkeysyms.h>
 #include <gtest/gtest.h>
+#include "core/platform/chromium/KeyboardCodes.h"
 
 using namespace WebCore;
 

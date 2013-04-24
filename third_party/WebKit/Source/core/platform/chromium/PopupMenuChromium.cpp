@@ -30,13 +30,13 @@
  */
 
 #include "config.h"
-#include "PopupMenuChromium.h"
+#include "core/platform/chromium/PopupMenuChromium.h"
 
 #include "Frame.h"
 #include "FrameView.h"
 #include "Page.h"
-#include "PopupContainer.h"
 #include "Settings.h"
+#include "core/platform/chromium/PopupContainer.h"
 
 namespace WebCore {
 

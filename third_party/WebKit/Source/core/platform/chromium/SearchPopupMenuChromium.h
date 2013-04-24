@@ -21,8 +21,8 @@
 #ifndef SearchPopupMenuChromium_h
 #define SearchPopupMenuChromium_h
 
-#include "PopupMenuChromium.h"
 #include "SearchPopupMenu.h"
+#include "core/platform/chromium/PopupMenuChromium.h"
 
 namespace WebCore {
 

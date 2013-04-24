@@ -52,7 +52,7 @@
 #include <math.h>
 #include <limits>
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

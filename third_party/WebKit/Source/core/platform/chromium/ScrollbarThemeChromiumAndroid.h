@@ -26,7 +26,7 @@
 #ifndef ScrollbarThemeChromiumAndroid_h
 #define ScrollbarThemeChromiumAndroid_h
 
-#include "ScrollbarThemeChromium.h"
+#include "core/platform/chromium/ScrollbarThemeChromium.h"
 
 namespace WebCore {
 

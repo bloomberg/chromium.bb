@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "GeolocationClientMock.h"
+#include "core/platform/mock/GeolocationClientMock.h"
 
 #include "GeolocationController.h"
 #include "GeolocationError.h"

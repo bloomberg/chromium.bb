@@ -34,7 +34,7 @@
 
 #include <public/WebRTCConfiguration.h>
 
-#include "RTCConfiguration.h"
+#include "core/platform/mediastream/RTCConfiguration.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <public/WebVector.h>

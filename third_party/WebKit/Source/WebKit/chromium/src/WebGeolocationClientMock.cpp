@@ -31,9 +31,7 @@
 #include "config.h"
 #include "WebGeolocationClientMock.h"
 
-#include <wtf/CurrentTime.h>
 #include "Geolocation.h"
-#include "GeolocationClientMock.h"
 #include "GeolocationError.h"
 #include "GeolocationPosition.h"
 #include "PositionError.h"
@@ -41,7 +39,9 @@
 #include "WebGeolocationError.h"
 #include "WebGeolocationPermissionRequest.h"
 #include "WebGeolocationPosition.h"
+#include "core/platform/mock/GeolocationClientMock.h"
 #include <public/WebString.h>
+#include <wtf/CurrentTime.h>
 
 using namespace WebCore;
 

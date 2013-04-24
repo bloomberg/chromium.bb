@@ -41,7 +41,7 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/PassOwnPtr.h>
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

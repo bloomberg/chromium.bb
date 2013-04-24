@@ -34,7 +34,7 @@
 #include <wtf/MainThread.h>
 #include <wtf/text/WTFString.h>
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

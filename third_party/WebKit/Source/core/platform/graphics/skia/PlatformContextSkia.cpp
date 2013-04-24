@@ -50,7 +50,7 @@
 #include <wtf/MathExtras.h>
 #include <wtf/Vector.h>
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

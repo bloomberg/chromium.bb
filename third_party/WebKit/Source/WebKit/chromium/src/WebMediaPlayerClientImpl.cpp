@@ -6,7 +6,6 @@
 #include "WebMediaPlayerClientImpl.h"
 
 #include "Frame.h"
-#include "GraphicsContext3DPrivate.h"
 #include "HTMLMediaElement.h"
 #include "KURL.h"
 #include "NotImplemented.h"
@@ -25,6 +24,7 @@
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioSourceProvider.h"
 #include "core/platform/audio/AudioSourceProviderClient.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"

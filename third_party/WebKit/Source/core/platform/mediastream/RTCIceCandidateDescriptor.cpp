@@ -32,7 +32,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCIceCandidateDescriptor.h"
+#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
 
 namespace WebCore {
 

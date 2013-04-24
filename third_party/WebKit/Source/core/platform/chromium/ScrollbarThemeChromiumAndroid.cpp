@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeChromiumAndroid.h"
+#include "core/platform/chromium/ScrollbarThemeChromiumAndroid.h"
 
 #include "PlatformContextSkia.h"
 #include "PlatformMouseEvent.h"

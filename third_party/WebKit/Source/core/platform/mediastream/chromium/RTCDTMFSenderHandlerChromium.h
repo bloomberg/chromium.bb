@@ -28,8 +28,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCDTMFSenderHandler.h"
-#include "RTCDTMFSenderHandlerClient.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
 #include <public/WebRTCDTMFSenderHandler.h>
 #include <public/WebRTCDTMFSenderHandlerClient.h>
 #include <wtf/OwnPtr.h>

@@ -34,10 +34,10 @@
 
 #include "Document.h"
 #include "Frame.h"
-#include "Prerender.h"
 #include "PrerenderHandle.h"
 #include "WebPrerendererClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/chromium/Prerender.h"
 #include <public/WebPrerender.h>
 #include <wtf/PassRefPtr.h>
 

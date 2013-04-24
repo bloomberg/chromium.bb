@@ -26,7 +26,7 @@
 #ifndef DragImage_h
 #define DragImage_h
 
-#include "DragImageRef.h"
+#include "core/platform/chromium/DragImageRef.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/IntSize.h"

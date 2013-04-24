@@ -127,8 +127,8 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 #include "DOMWindowSpeechSynthesis.h"
-#include "PlatformSpeechSynthesizerMock.h"
 #include "SpeechSynthesis.h"
+#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 #endif
 
 namespace WebCore {

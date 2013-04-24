@@ -34,8 +34,8 @@
 
 #include <public/WebMediaStreamSourcesRequest.h>
 
-#include "MediaStreamSource.h"
-#include "MediaStreamSourcesQueryClient.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
+#include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include <public/WebMediaStreamSource.h>
 #include <public/WebVector.h>
 #include <wtf/Vector.h>

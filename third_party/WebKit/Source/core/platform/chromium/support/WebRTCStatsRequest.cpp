@@ -34,8 +34,8 @@
 
 #include <public/WebRTCStatsRequest.h>
 
-#include "RTCStatsRequest.h"
 #include "RTCStatsResponse.h"
+#include "core/platform/mediastream/RTCStatsRequest.h"
 #include <public/WebMediaStream.h>
 #include <public/WebMediaStreamTrack.h>
 #include <public/WebRTCStatsResponse.h>

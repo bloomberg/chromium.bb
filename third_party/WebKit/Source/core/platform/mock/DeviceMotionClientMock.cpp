@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DeviceMotionClientMock.h"
+#include "core/platform/mock/DeviceMotionClientMock.h"
 
 #include "DeviceMotionController.h"
 

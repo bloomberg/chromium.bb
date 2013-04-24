@@ -28,9 +28,9 @@
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
 
 #include "GrContext.h"
-#include "GraphicsContext3DPrivate.h"
 #include "SkDevice.h"
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerManager.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"

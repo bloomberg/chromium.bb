@@ -169,7 +169,6 @@
 #include "TextResourceDecoder.h"
 #include "Timer.h"
 #include "TouchList.h"
-#include "TraceEvent.h"
 #include "TransformSource.h"
 #include "TreeWalker.h"
 #include "UserActionElementSet.h"
@@ -186,6 +185,7 @@
 #include "XPathResult.h"
 #include "XSLTProcessor.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>

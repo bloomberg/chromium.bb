@@ -33,7 +33,7 @@
 
 #include "PlatformSpeechSynthesisUtterance.h"
 #include "PlatformSpeechSynthesisVoice.h"
-#include "WebSpeechSynthesizerClientImpl.h"
+#include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
 #include <public/Platform.h>
 #include <public/WebSpeechSynthesisUtterance.h>
 #include <public/WebSpeechSynthesizer.h>

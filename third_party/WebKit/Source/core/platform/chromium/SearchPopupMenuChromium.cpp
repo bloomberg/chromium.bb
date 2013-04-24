@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "SearchPopupMenuChromium.h"
+#include "core/platform/chromium/SearchPopupMenuChromium.h"
 
 #include "NotImplemented.h"
 #include <wtf/text/AtomicString.h>

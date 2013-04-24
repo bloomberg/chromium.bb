@@ -27,9 +27,9 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCDTMFSenderHandlerChromium.h"
+#include "core/platform/mediastream/chromium/RTCDTMFSenderHandlerChromium.h"
 
-#include "RTCDTMFSenderHandlerClient.h"
+#include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
 #include <public/WebRTCDTMFSenderHandler.h>
 #include <wtf/PassOwnPtr.h>
 

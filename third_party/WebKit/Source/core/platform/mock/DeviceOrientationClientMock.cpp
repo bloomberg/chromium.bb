@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DeviceOrientationClientMock.h"
+#include "core/platform/mock/DeviceOrientationClientMock.h"
 
 #include "DeviceOrientationController.h"
 

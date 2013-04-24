@@ -32,9 +32,9 @@
 #include "PlatformScreen.h"
 
 #include "HostWindow.h"
-#include "PageClientChromium.h"
 #include "ScrollView.h"
 #include "Widget.h"
+#include "core/platform/chromium/PageClientChromium.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <public/Platform.h>
 #include <public/WebScreenInfo.h>

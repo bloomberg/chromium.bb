@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeChromiumDefault.h"
+#include "core/platform/chromium/ScrollbarThemeChromiumDefault.h"
 
 #include "PlatformContextSkia.h"
 #include "PlatformMouseEvent.h"
 #include "Scrollbar.h"
+#include <public/default/WebThemeEngine.h>
 #include <public/Platform.h>
 #include <public/WebRect.h>
-#include <public/default/WebThemeEngine.h>
 
 namespace WebCore {
 

@@ -29,6 +29,7 @@
 #include "config.h"
 #include "PageConsole.h"
 
+#include <stdio.h>
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "ConsoleAPITypes.h"
@@ -44,12 +45,11 @@
 #include "ScriptValue.h"
 #include "ScriptableDocumentParser.h"
 #include "Settings.h"
-#include <stdio.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/UnusedParam.h>
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 namespace WebCore {
 

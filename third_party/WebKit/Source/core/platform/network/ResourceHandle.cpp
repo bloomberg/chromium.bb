@@ -38,8 +38,8 @@
 #include "ResourceRequest.h"
 #include "ResourceResponse.h"
 #include "SharedBuffer.h"
-#include "WrappedResourceRequest.h"
-#include "WrappedResourceResponse.h"
+#include "core/platform/chromium/support/WrappedResourceRequest.h"
+#include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <public/Platform.h>
 #include <public/WebURLError.h>
 #include <public/WebURLLoader.h>

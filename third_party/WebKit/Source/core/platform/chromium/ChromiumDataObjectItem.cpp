@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "ChromiumDataObjectItem.h"
+#include "core/platform/chromium/ChromiumDataObjectItem.h"
 
 #include "Blob.h"
 #include "Clipboard.h"
-#include "ClipboardChromium.h"
-#include "ClipboardMimeTypes.h"
-#include "ClipboardUtilitiesChromium.h"
 #include "DataTransferItem.h"
 #include "File.h"
 #include "SharedBuffer.h"
 #include "StringCallback.h"
+#include "core/platform/chromium/ClipboardChromium.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
 #include <public/Platform.h>
 #include <public/WebClipboard.h>

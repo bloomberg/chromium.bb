@@ -24,8 +24,8 @@
  */
 
 #include "config.h"
-#include "PlatformSpeechSynthesizerMock.h"
 #include "PlatformSpeechSynthesisUtterance.h"
+#include "core/platform/mock/PlatformSpeechSynthesizerMock.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 

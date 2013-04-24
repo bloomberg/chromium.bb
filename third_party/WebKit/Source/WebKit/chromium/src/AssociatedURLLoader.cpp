@@ -41,9 +41,9 @@
 #include "WebApplicationCacheHost.h"
 #include "WebDataSource.h"
 #include "WebFrameImpl.h"
-#include "WrappedResourceRequest.h"
-#include "WrappedResourceResponse.h"
 #include "XMLHttpRequest.h"
+#include "core/platform/chromium/support/WrappedResourceRequest.h"
+#include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <public/WebHTTPHeaderVisitor.h>
 #include <public/WebString.h>
 #include <public/WebURLError.h>

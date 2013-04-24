@@ -34,7 +34,7 @@
 
 #include <public/WebMediaConstraints.h>
 
-#include "MediaConstraints.h"
+#include "core/platform/mediastream/MediaConstraints.h"
 
 using namespace WebCore;
 

@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebInputEventFactory.h"
 
-#include "KeyCodeConversion.h"
-#include "KeyboardCodes.h"
 #include "WebInputEvent.h"
+#include "core/platform/chromium/KeyCodeConversion.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 #include <wtf/Assertions.h>
 
 namespace WebKit {

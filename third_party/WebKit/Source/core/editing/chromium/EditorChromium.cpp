@@ -31,9 +31,9 @@
 #include "config.h"
 #include "Editor.h"
 
-#include "ChromiumDataObject.h"
-#include "ClipboardChromium.h"
 #include "Frame.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ClipboardChromium.h"
 
 namespace WebCore {
 

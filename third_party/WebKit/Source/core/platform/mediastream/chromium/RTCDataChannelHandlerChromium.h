@@ -27,8 +27,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "RTCDataChannelHandler.h"
-#include "RTCDataChannelHandlerClient.h"
+#include "core/platform/mediastream/RTCDataChannelHandler.h"
+#include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include <public/WebRTCDataChannelHandler.h>
 #include <public/WebRTCDataChannelHandlerClient.h>
 #include <wtf/OwnPtr.h>

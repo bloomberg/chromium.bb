@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ClipboardUtilitiesChromium.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
 #include "KURL.h"
 #include "Pasteboard.h"

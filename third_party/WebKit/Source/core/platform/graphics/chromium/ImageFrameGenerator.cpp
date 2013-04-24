@@ -28,7 +28,7 @@
 #include "core/platform/graphics/chromium/ImageFrameGenerator.h"
 
 #include "SharedBuffer.h"
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/ScaledImageFragment.h"
 #include "core/platform/image-decoders/ImageDecoder.h"

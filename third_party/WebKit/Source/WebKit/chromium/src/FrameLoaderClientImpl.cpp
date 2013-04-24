@@ -57,8 +57,9 @@
 #include "ResourceHandleInternal.h"
 #include "ResourceLoader.h"
 #if ENABLE(MEDIA_STREAM)
-#include "RTCPeerConnectionHandlerChromium.h"
+#include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 #endif
+#include <v8.h>
 #include "ScriptController.h"
 #include "Settings.h"
 #include "SocketStreamHandleInternal.h"
@@ -82,15 +83,14 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WindowFeatures.h"
-#include "WrappedResourceRequest.h"
-#include "WrappedResourceResponse.h"
+#include "core/platform/chromium/support/WrappedResourceRequest.h"
+#include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <public/Platform.h>
 #include <public/WebMimeRegistry.h>
 #include <public/WebSocketStreamHandle.h>
 #include <public/WebURL.h>
 #include <public/WebURLError.h>
 #include <public/WebVector.h>
-#include <v8.h>
 #include <wtf/StringExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>

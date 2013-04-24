@@ -33,8 +33,8 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamDescriptor.h"
-#include "RTCPeerConnectionHandler.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include <public/WebRTCPeerConnectionHandler.h>
 #include <public/WebRTCPeerConnectionHandlerClient.h>
 #include <wtf/OwnPtr.h>

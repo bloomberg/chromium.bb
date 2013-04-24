@@ -32,7 +32,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamSource.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

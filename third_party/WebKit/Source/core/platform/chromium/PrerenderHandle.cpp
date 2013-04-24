@@ -33,8 +33,8 @@
 #include "PrerenderHandle.h"
 
 #include "KURL.h"
-#include "Prerender.h"
 #include "ReferrerPolicy.h"
+#include "core/platform/chromium/Prerender.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

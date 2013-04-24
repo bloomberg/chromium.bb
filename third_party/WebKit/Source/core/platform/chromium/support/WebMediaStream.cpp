@@ -28,10 +28,10 @@
 
 #include <public/WebMediaStream.h>
 
-#include "MediaStreamComponent.h"
-#include "MediaStreamDescriptor.h"
-#include "MediaStreamSource.h"
 #include "UUID.h"
+#include "core/platform/mediastream/MediaStreamComponent.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/mediastream/MediaStreamSource.h"
 #include <public/WebMediaStreamSource.h>
 #include <public/WebMediaStreamTrack.h>
 #include <public/WebString.h>

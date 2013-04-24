@@ -32,8 +32,6 @@
 #include "Pasteboard.h"
 
 #include "CachedImage.h"
-#include "ClipboardChromium.h"
-#include "ClipboardUtilitiesChromium.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "Editor.h"
@@ -45,6 +43,8 @@
 #include "NativeImageSkia.h"
 #include "Range.h"
 #include "RenderImage.h"
+#include "core/platform/chromium/ClipboardChromium.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
 #include "markup.h"
 

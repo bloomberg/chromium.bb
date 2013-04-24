@@ -33,7 +33,6 @@
 
 #include "EventNames.h"
 #include "GestureEvent.h"
-#include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "PlatformKeyboardEvent.h"
@@ -47,6 +46,7 @@
 #include "WebInputEvent.h"
 #include "WheelEvent.h"
 #include "Widget.h"
+#include "core/platform/chromium/KeyboardCodes.h"
 
 using namespace WebCore;
 

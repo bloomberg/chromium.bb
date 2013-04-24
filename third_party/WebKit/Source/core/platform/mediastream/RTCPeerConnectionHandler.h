@@ -33,7 +33,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamDescriptor.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 

@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "GraphicsContext3DPrivate.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 
 #include "GrContext.h"
 #include "GrGLInterface.h"

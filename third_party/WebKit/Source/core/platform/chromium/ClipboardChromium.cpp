@@ -25,13 +25,9 @@
  */
 
 #include "config.h"
-#include "ClipboardChromium.h"
+#include "core/platform/chromium/ClipboardChromium.h"
 
 #include "CachedImage.h"
-#include "ChromiumDataObject.h"
-#include "ChromiumDataObjectItem.h"
-#include "ClipboardMimeTypes.h"
-#include "ClipboardUtilitiesChromium.h"
 #include "DataTransferItemList.h"
 #include "Document.h"
 #include "DragData.h"
@@ -48,6 +44,10 @@
 #include "Range.h"
 #include "RenderImage.h"
 #include "StringCallback.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ChromiumDataObjectItem.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
 #include "markup.h"
 

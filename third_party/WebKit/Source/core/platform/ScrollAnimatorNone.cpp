@@ -42,7 +42,7 @@
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnPtr.h>
 
-#include "TraceEvent.h"
+#include "core/platform/chromium/TraceEvent.h"
 
 using namespace std;
 

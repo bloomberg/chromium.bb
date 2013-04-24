@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ClipboardMimeTypes.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
 
 namespace WebCore {
 

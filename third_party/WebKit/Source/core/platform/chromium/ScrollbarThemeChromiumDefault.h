@@ -31,7 +31,7 @@
 #ifndef ScrollbarThemeChromiumDefault_h
 #define ScrollbarThemeChromiumDefault_h
 
-#include "ScrollbarThemeChromium.h"
+#include "core/platform/chromium/ScrollbarThemeChromium.h"
 
 namespace WebCore {
 

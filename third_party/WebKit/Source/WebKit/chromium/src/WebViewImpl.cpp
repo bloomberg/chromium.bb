@@ -59,7 +59,6 @@
 #include "FrameView.h"
 #include "GeolocationClientProxy.h"
 #include "GeolocationController.h"
-#include "GraphicsContext3DPrivate.h"
 #include "GraphicsLayerFactoryChromium.h"
 #include "HTMLInputElement.h"
 #include "HTMLMediaElement.h"
@@ -67,7 +66,6 @@
 #include "HTMLTextAreaElement.h"
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
-#include "KeyboardCodes.h"
 #include "KeyboardEvent.h"
 #include "LinkHighlight.h"
 #include "MIMETypeRegistry.h"
@@ -85,7 +83,6 @@
 #include "PlatformMouseEvent.h"
 #include "PlatformWheelEvent.h"
 #include "PointerLockController.h"
-#include "PopupContainer.h"
 #include "PopupMenuClient.h"
 #include "PrerendererClientImpl.h"
 #include "RenderLayerCompositor.h"
@@ -104,7 +101,6 @@
 #include "TextIterator.h"
 #include "Timer.h"
 #include "TouchDisambiguation.h"
-#include "TraceEvent.h"
 #include "ValidationMessageClientImpl.h"
 #include "ViewportAnchor.h"
 #include "WebAccessibilityObject.h"
@@ -133,6 +129,10 @@
 #include "WheelEvent.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/platform/chromium/KeyboardCodes.h"
+#include "core/platform/chromium/PopupContainer.h"
+#include "core/platform/chromium/TraceEvent.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/Extensions3D.h"
@@ -166,8 +166,8 @@
 #include <wtf/Uint8ClampedArray.h>
 
 #if ENABLE(DEFAULT_RENDER_THEME)
-#include "PlatformThemeChromiumDefault.h"
 #include "RenderThemeChromiumDefault.h"
+#include "core/platform/chromium/PlatformThemeChromiumDefault.h"
 #endif
 
 #if OS(WINDOWS)

@@ -35,8 +35,8 @@
 #include "KURL.h"
 #include "WebDataSource.h"
 #include "WebPluginLoadObserver.h"
-#include "WrappedResourceRequest.h"
-#include "WrappedResourceResponse.h"
+#include "core/platform/chromium/support/WrappedResourceRequest.h"
+#include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>

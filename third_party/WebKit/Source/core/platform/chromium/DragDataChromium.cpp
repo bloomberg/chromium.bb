@@ -30,8 +30,6 @@
 #include "config.h"
 #include "DragData.h"
 
-#include "ChromiumDataObject.h"
-#include "ClipboardMimeTypes.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DraggedIsolatedFileSystem.h"
@@ -39,8 +37,10 @@
 #include "Frame.h"
 #include "KURL.h"
 #include "NotImplemented.h"
-#include "markup.h"
 #include "Range.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
+#include "markup.h"
 #include <wtf/text/WTFString.h>
 
 #include <public/Platform.h>

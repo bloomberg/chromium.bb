@@ -32,10 +32,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamCenterChromium.h"
+#include "core/platform/mediastream/chromium/MediaStreamCenterChromium.h"
 
-#include "MediaStreamDescriptor.h"
-#include "MediaStreamSourcesQueryClient.h"
+#include "core/platform/mediastream/MediaStreamDescriptor.h"
+#include "core/platform/mediastream/MediaStreamSourcesQueryClient.h"
 #include <public/Platform.h>
 #include <public/WebMediaStream.h>
 #include <public/WebMediaStreamCenter.h>

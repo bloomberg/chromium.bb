@@ -34,7 +34,7 @@
 
 #include <public/WebRTCICECandidate.h>
 
-#include "RTCIceCandidateDescriptor.h"
+#include "core/platform/mediastream/RTCIceCandidateDescriptor.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

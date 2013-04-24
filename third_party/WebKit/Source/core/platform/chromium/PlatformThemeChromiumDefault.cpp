@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PlatformThemeChromiumDefault.h"
+#include "core/platform/chromium/PlatformThemeChromiumDefault.h"
 
 namespace WebCore {
 

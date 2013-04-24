@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "ClipboardChromium.h"
+#include "core/platform/chromium/ClipboardChromium.h"
 
 #include <gtest/gtest.h>
 

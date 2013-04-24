@@ -34,7 +34,7 @@
 
 #include <public/WebRTCSessionDescription.h>
 
-#include "RTCSessionDescriptionDescriptor.h"
+#include "core/platform/mediastream/RTCSessionDescriptionDescriptor.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

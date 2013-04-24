@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeChromium.h"
+#include "core/platform/chromium/ScrollbarThemeChromium.h"
 
 #include "PlatformMouseEvent.h"
 #include "ScrollableArea.h"

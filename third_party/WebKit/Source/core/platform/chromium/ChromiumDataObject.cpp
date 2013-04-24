@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "ChromiumDataObject.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
 
-#include "ClipboardMimeTypes.h"
-#include "ClipboardUtilitiesChromium.h"
 #include "DataTransferItem.h"
 #include "ExceptionCode.h"
 #include "ExceptionCodePlaceholder.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
+#include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
 #include <public/Platform.h>
 #include <public/WebClipboard.h>

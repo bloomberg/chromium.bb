@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include "ChromiumDataObject.h"
-#include "ClipboardMimeTypes.h"
 #include "DataTransferItem.h"
 #include "DraggedIsolatedFileSystem.h"
+#include "core/platform/chromium/ChromiumDataObject.h"
+#include "core/platform/chromium/ClipboardMimeTypes.h"
 #include <public/WebData.h>
 #include <public/WebDragData.h>
 #include <public/WebString.h>

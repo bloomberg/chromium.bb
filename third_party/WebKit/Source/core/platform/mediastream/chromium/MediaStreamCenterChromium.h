@@ -33,7 +33,7 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamCenter.h"
+#include "core/platform/mediastream/MediaStreamCenter.h"
 
 #include <public/WebMediaStreamCenterClient.h>
 #include <wtf/OwnPtr.h>

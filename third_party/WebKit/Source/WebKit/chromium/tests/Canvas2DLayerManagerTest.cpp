@@ -29,7 +29,7 @@
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
 #include "FakeWebGraphicsContext3D.h"
-#include "GraphicsContext3DPrivate.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>
 

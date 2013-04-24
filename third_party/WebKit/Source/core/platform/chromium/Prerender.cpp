@@ -30,8 +30,8 @@
  */
 
 #include "config.h"
-#include "Prerender.h"
 #include "PrerenderClient.h"
+#include "core/platform/chromium/Prerender.h"
 
 #include <public/Platform.h>
 #include <public/WebPrerender.h>

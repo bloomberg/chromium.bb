@@ -55,8 +55,8 @@
 #include "ScrollingConstraints.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
-#include "TraceEvent.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include <wtf/MemoryInstrumentationHashMap.h>

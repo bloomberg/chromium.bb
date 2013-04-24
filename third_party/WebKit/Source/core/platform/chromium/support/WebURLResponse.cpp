@@ -33,7 +33,7 @@
 
 #include "ResourceLoadTiming.h"
 #include "ResourceResponse.h"
-#include "WebURLResponsePrivate.h"
+#include "core/platform/chromium/support/WebURLResponsePrivate.h"
 #include <public/WebHTTPHeaderVisitor.h>
 #include <public/WebHTTPLoadInfo.h>
 #include <public/WebString.h>

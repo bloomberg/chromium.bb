@@ -28,7 +28,7 @@
 
 #include <public/WebRTCStatsResponse.h>
 
-#include "RTCStatsResponseBase.h"
+#include "core/platform/mediastream/RTCStatsResponseBase.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

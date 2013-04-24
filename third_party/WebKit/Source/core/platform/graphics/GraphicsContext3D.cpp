@@ -33,9 +33,9 @@
 #include "core/platform/graphics/cpu/arm/GraphicsContext3DNEON.h"
 
 #include "CheckedInt.h"
-#include "GraphicsContext3DPrivate.h"
 #include "ImageData.h"
 #include "SkTypes.h"
+#include "core/platform/chromium/support/GraphicsContext3DPrivate.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
