@@ -2041,7 +2041,7 @@ bool AutofillDialogControllerImpl::SectionIsValid(
     return true;
 
   DetailOutputMap detail_outputs;
-  view_->GetUserInput(SECTION_EMAIL, &detail_outputs);
+  view_->GetUserInput(section, &detail_outputs);
   return InputsAreValid(detail_outputs, VALIDATE_EDIT).empty();
 }
 
