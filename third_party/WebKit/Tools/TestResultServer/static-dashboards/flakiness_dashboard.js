@@ -1265,14 +1265,8 @@ function htmlForTestResults(test)
             innerHTML = currentTime || '&nbsp;';
         }
 
-        var extraClassNames = '';
-        var webkitRevision = g_resultsByBuilder[builder].webkitRevision;
-        var isWebkitMerge = webkitRevision[i + 1] && webkitRevision[i] != webkitRevision[i + 1];
-        if (isWebkitMerge)
-            extraClassNames += ' merge';
-
         html += '<td title="' + (resultString || 'NO DATA') + '. Click for more info." class="results ' + currentResult +
-          extraClassNames + '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i + ',"' + test.test + '")\'>' + innerHTML;
+          '" onclick=\'showPopupForBuild(event, "' + builder + '",' + i + ',"' + test.test + '")\'>' + innerHTML;
     }
     return html;
 }
@@ -2470,7 +2464,6 @@ function showLegend()
     for (var expectation in expectationsMap())
         html += '<div class=' + expectation + '>' + expectationsMap()[expectation] + '</div>';
 
-    html += '<div class=merge>WEBKIT MERGE</div>';
     if (g_history.isLayoutTestResults()) {
       html += '</div><br style="clear:both">' +
           '</div><h3>Test expectatons fallback order.</h3>';

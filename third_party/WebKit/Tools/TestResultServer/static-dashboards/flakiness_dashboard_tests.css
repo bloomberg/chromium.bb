@@ -133,14 +133,6 @@
 .Z {
     background-color: #96f;
 }
-#legend .merge {
-    background-color: black;
-    color: white;
-}
-.test-table .merge {
-    border-right: solid 2px #000;
-    padding-right: 0;
-}
 .separator {
     border: 1px solid lightgray;
     height: 0px;
