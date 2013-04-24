@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/url_request_mock_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -16,10 +17,14 @@
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
 #include "net/base/net_errors.h"
+#include "net/url_request/url_request_filter.h"
+#include "net/url_request/url_request_job_factory.h"
 
 using content::BrowserThread;
 using content::NavigationController;
 using content::URLRequestFailedJob;
+
+namespace {
 
 class ErrorPageTest : public InProcessBrowserTest {
  public:
@@ -47,7 +52,7 @@ class ErrorPageTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
         browser(), url, num_navigations);
 
-    EXPECT_EQ(title_watcher.WaitAndGetTitle(), ASCIIToUTF16(expected_title));
+    EXPECT_EQ(ASCIIToUTF16(expected_title), title_watcher.WaitAndGetTitle());
   }
 
   // Navigates back in the history and waits for |num_navigations| to occur, and
@@ -244,3 +249,87 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, Page404) {
       "SUCCESS",
       1);
 }
+
+// Protocol handler that fails all requests with net::ERR_ADDRESS_UNREACHABLE.
+class AddressUnreachableProtocolHandler
+    : public net::URLRequestJobFactory::ProtocolHandler {
+ public:
+  AddressUnreachableProtocolHandler() {}
+  ~AddressUnreachableProtocolHandler() {}
+
+  // net::URLRequestJobFactory::ProtocolHandler:
+  virtual net::URLRequestJob* MaybeCreateJob(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const OVERRIDE {
+    return new URLRequestFailedJob(request,
+                                   network_delegate,
+                                   net::ERR_ADDRESS_UNREACHABLE);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AddressUnreachableProtocolHandler);
+};
+
+// A test fixture that returns ERR_ADDRESS_UNREACHABLE for all Link Doctor
+// requests.  ERR_NAME_NOT_RESOLVED is more typical, but need to use a different
+// error for the Link Doctor and the original page to validate the right page
+// is being displayed.
+class ErrorPageLinkDoctorFailTest : public InProcessBrowserTest {
+ public:
+  // InProcessBrowserTest:
+  virtual void SetUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ErrorPageLinkDoctorFailTest::AddFilters));
+  }
+
+  virtual void CleanUpOnMainThread() OVERRIDE {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ErrorPageLinkDoctorFailTest::RemoveFilters));
+  }
+
+ private:
+  // Adds a filter that causes all requests for the Link Doctor's scheme and
+  // host to fail with ERR_ADDRESS_UNREACHABLE.  Since the Link Doctor adds
+  // query strings, it's not enough to just fail exact matches.
+  //
+  // Also adds the content::URLRequestFailedJob filter.
+  static void AddFilters() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    content::URLRequestFailedJob::AddUrlHandler();
+
+    net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
+        google_util::LinkDoctorBaseURL().scheme(),
+        google_util::LinkDoctorBaseURL().host(),
+        scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(
+            new AddressUnreachableProtocolHandler()));
+  }
+
+  static void RemoveFilters() {
+    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+    net::URLRequestFilter::GetInstance()->ClearHandlers();
+  }
+};
+
+// Make sure that when the Link Doctor fails to load, the network error page is
+// successfully loaded.
+IN_PROC_BROWSER_TEST_F(ErrorPageLinkDoctorFailTest, LinkDoctorFail) {
+  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(
+      browser(),
+      URLRequestFailedJob::GetMockHttpUrl(net::ERR_NAME_NOT_RESOLVED),
+      2);
+
+  // Verify that the expected error page is being displayed.  Do this by making
+  // sure the original error code (ERR_NAME_NOT_RESOLVED) is displayed.
+  bool result = false;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      browser()->tab_strip_model()->GetActiveWebContents(),
+      "var textContent = document.body.textContent;"
+      "var hasError = textContent.indexOf('ERR_NAME_NOT_RESOLVED') >= 0;"
+      "domAutomationController.send(hasError);",
+      &result));
+  EXPECT_TRUE(result);
+}
+
+}  // namespace
