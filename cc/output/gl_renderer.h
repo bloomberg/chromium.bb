@@ -259,12 +259,14 @@ class CC_EXPORT GLRenderer
   typedef ProgramBinding<VertexShaderQuad, FragmentShaderColorAA>
       SolidColorProgramAA;
 
-  const TileProgram* GetTileProgram();
-  const TileProgramOpaque* GetTileProgramOpaque();
-  const TileProgramAA* GetTileProgramAA();
-  const TileProgramSwizzle* GetTileProgramSwizzle();
-  const TileProgramSwizzleOpaque* GetTileProgramSwizzleOpaque();
-  const TileProgramSwizzleAA* GetTileProgramSwizzleAA();
+  const TileProgram* GetTileProgram(TexCoordPrecision precision);
+  const TileProgramOpaque* GetTileProgramOpaque(TexCoordPrecision precision);
+  const TileProgramAA* GetTileProgramAA(TexCoordPrecision precision);
+  const TileProgramSwizzle* GetTileProgramSwizzle(TexCoordPrecision precision);
+  const TileProgramSwizzleOpaque* GetTileProgramSwizzleOpaque(
+      TexCoordPrecision precision);
+  const TileProgramSwizzleAA* GetTileProgramSwizzleAA(
+      TexCoordPrecision precision);
   const TileCheckerboardProgram* GetTileCheckerboardProgram();
 
   const RenderPassProgram* GetRenderPassProgram(
@@ -307,6 +309,13 @@ class CC_EXPORT GLRenderer
   scoped_ptr<TileProgramSwizzleOpaque> tile_program_swizzle_opaque_;
   scoped_ptr<TileProgramSwizzleAA> tile_program_swizzle_aa_;
   scoped_ptr<TileCheckerboardProgram> tile_checkerboard_program_;
+
+  scoped_ptr<TileProgram> tile_program_highp_;
+  scoped_ptr<TileProgramOpaque> tile_program_opaque_highp_;
+  scoped_ptr<TileProgramAA> tile_program_aa_highp_;
+  scoped_ptr<TileProgramSwizzle> tile_program_swizzle_highp_;
+  scoped_ptr<TileProgramSwizzleOpaque> tile_program_swizzle_opaque_highp_;
+  scoped_ptr<TileProgramSwizzleAA> tile_program_swizzle_aa_highp_;
 
   scoped_ptr<TextureProgram> texture_program_;
   scoped_ptr<TextureProgramFlip> texture_program_flip_;

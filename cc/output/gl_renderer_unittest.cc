@@ -59,22 +59,22 @@ class GLRendererShaderPixelTest : public PixelTest {
  public:
   void TestShaders() {
     ASSERT_FALSE(renderer_->IsContextLost());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgram());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramOpaque());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramAA());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzle());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleOpaque());
-    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleAA());
     EXPECT_PROGRAM_VALID(renderer_->GetTileCheckerboardProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetDebugBorderProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgram());
     EXPECT_PROGRAM_VALID(renderer_->GetSolidColorProgramAA());
-    // TestShadersWithTexCoordPrecision(TexCoordPrecisionMedium);
+    TestShadersWithTexCoordPrecision(TexCoordPrecisionMedium);
     TestShadersWithTexCoordPrecision(TexCoordPrecisionHigh);
     ASSERT_FALSE(renderer_->IsContextLost());
   }
 
   void TestShadersWithTexCoordPrecision(TexCoordPrecision precision) {
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgram(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramOpaque(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramAA(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzle(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleOpaque(precision));
+    EXPECT_PROGRAM_VALID(renderer_->GetTileProgramSwizzleAA(precision));
     EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgram(precision));
     EXPECT_PROGRAM_VALID(renderer_->GetRenderPassProgramAA(precision));
     EXPECT_PROGRAM_VALID(renderer_->GetRenderPassMaskProgram(precision));

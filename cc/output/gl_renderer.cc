@@ -745,7 +745,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
                                               GL_LINEAR));
   }
 
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
@@ -763,7 +763,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   if (use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgramAA* program =
-        GetRenderPassMaskProgramAA(texCoordPrecision);
+        GetRenderPassMaskProgramAA(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -781,7 +781,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     shader_tex_scale_location = program->vertex_shader().tex_scale_location();
   } else if (!use_aa && mask_texture_id && !use_color_matrix) {
     const RenderPassMaskProgram* program =
-        GetRenderPassMaskProgram(texCoordPrecision);
+        GetRenderPassMaskProgram(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -798,7 +798,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         program->vertex_shader().tex_transform_location();
   } else if (use_aa && !mask_texture_id && !use_color_matrix) {
     const RenderPassProgramAA* program =
-        GetRenderPassProgramAA(texCoordPrecision);
+        GetRenderPassProgramAA(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -810,7 +810,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
     shader_tex_scale_location = program->vertex_shader().tex_scale_location();
   } else if (use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgramAA* program =
-        GetRenderPassMaskColorMatrixProgramAA(texCoordPrecision);
+        GetRenderPassMaskColorMatrixProgramAA(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -832,7 +832,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         program->fragment_shader().color_offset_location();
   } else if (use_aa && !mask_texture_id && use_color_matrix) {
     const RenderPassColorMatrixProgramAA* program =
-        GetRenderPassColorMatrixProgramAA(texCoordPrecision);
+        GetRenderPassColorMatrixProgramAA(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -848,7 +848,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         program->fragment_shader().color_offset_location();
   } else if (!use_aa && mask_texture_id && use_color_matrix) {
     const RenderPassMaskColorMatrixProgram* program =
-        GetRenderPassMaskColorMatrixProgram(texCoordPrecision);
+        GetRenderPassMaskColorMatrixProgram(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -869,7 +869,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         program->fragment_shader().color_offset_location();
   } else if (!use_aa && !mask_texture_id && use_color_matrix) {
     const RenderPassColorMatrixProgram* program =
-        GetRenderPassColorMatrixProgram(texCoordPrecision);
+        GetRenderPassColorMatrixProgram(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -884,7 +884,7 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
         program->fragment_shader().color_offset_location();
   } else {
     const RenderPassProgram* program =
-        GetRenderPassProgram(texCoordPrecision);
+        GetRenderPassProgram(tex_coord_precision);
     SetUseProgram(program->program());
     GLC(Context(),
         Context()->uniform1i(program->fragment_shader().sampler_location(), 0));
@@ -1217,10 +1217,8 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   float vertex_tex_scale_x = tile_rect.width() / clamp_geom_rect.width();
   float vertex_tex_scale_y = tile_rect.height() / clamp_geom_rect.height();
 
-  // We assume we do not need highp texture coordinates for tiles.
-  // Make sure that assumption is correct here.
-  DCHECK_EQ(TexCoordPrecisionMedium, TexCoordPrecisionRequired(
-      context_, highp_threshold_min_, quad->texture_size));
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
+      context_, highp_threshold_min_, quad->texture_size);
 
   // Map to normalized texture coordinates.
   gfx::Size texture_size = quad->texture_size;
@@ -1242,21 +1240,28 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
 
   TileProgramUniforms uniforms;
   if (use_aa) {
-    if (quad->swizzle_contents)
-      TileUniformLocation(GetTileProgramSwizzleAA(), &uniforms);
-    else
-      TileUniformLocation(GetTileProgramAA(), &uniforms);
+    if (quad->swizzle_contents) {
+      TileUniformLocation(GetTileProgramSwizzleAA(tex_coord_precision),
+                          &uniforms);
+    } else {
+      TileUniformLocation(GetTileProgramAA(tex_coord_precision), &uniforms);
+    }
   } else {
     if (quad->ShouldDrawWithBlending()) {
-      if (quad->swizzle_contents)
-        TileUniformLocation(GetTileProgramSwizzle(), &uniforms);
-      else
-        TileUniformLocation(GetTileProgram(), &uniforms);
+      if (quad->swizzle_contents) {
+        TileUniformLocation(GetTileProgramSwizzle(tex_coord_precision),
+                            &uniforms);
+      } else {
+        TileUniformLocation(GetTileProgram(tex_coord_precision), &uniforms);
+      }
     } else {
-      if (quad->swizzle_contents)
-        TileUniformLocation(GetTileProgramSwizzleOpaque(), &uniforms);
-      else
-        TileUniformLocation(GetTileProgramOpaque(), &uniforms);
+      if (quad->swizzle_contents) {
+        TileUniformLocation(GetTileProgramSwizzleOpaque(tex_coord_precision),
+                            &uniforms);
+      } else {
+        TileUniformLocation(GetTileProgramOpaque(tex_coord_precision),
+                            &uniforms);
+      }
     }
   }
 
@@ -1330,11 +1335,11 @@ void GLRenderer::DrawYUVVideoQuad(const DrawingFrame* frame,
                                   const YUVVideoDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
-  const VideoYUVProgram* program = GetVideoYUVProgram(texCoordPrecision);
+  const VideoYUVProgram* program = GetVideoYUVProgram(tex_coord_precision);
   DCHECK(program && (program->initialized() || IsContextLost()));
 
   GLC(Context(), Context()->activeTexture(GL_TEXTURE1));
@@ -1402,12 +1407,12 @@ void GLRenderer::DrawStreamVideoQuad(const DrawingFrame* frame,
 
   DCHECK(capabilities_.using_egl_image);
 
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   const VideoStreamTextureProgram* program =
-      GetVideoStreamTextureProgram(texCoordPrecision);
+      GetVideoStreamTextureProgram(tex_coord_precision);
   SetUseProgram(program->program());
 
   ToGLMatrix(&gl_matrix[0], quad->matrix);
@@ -1575,16 +1580,16 @@ void GLRenderer::FlushTextureQuadCache() {
 
 void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
                                     const TextureDrawQuad* quad) {
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   // Choose the correct texture program binding
   TexTransformTextureProgramBinding binding;
   if (quad->flipped)
-    binding.Set(GetTextureProgramFlip(texCoordPrecision), Context());
+    binding.Set(GetTextureProgramFlip(tex_coord_precision), Context());
   else
-    binding.Set(GetTextureProgram(texCoordPrecision), Context());
+    binding.Set(GetTextureProgram(tex_coord_precision), Context());
 
   int resource_id = quad->resource_id;
 
@@ -1630,15 +1635,15 @@ void GLRenderer::EnqueueTextureQuad(const DrawingFrame* frame,
 
 void GLRenderer::DrawTextureQuad(const DrawingFrame* frame,
                                  const TextureDrawQuad* quad) {
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
   if (quad->flipped)
-    binding.Set(GetTextureProgramFlip(texCoordPrecision), Context());
+    binding.Set(GetTextureProgramFlip(tex_coord_precision), Context());
   else
-    binding.Set(GetTextureProgram(texCoordPrecision), Context());
+    binding.Set(GetTextureProgram(tex_coord_precision), Context());
   SetUseProgram(binding.program_id);
   GLC(Context(), Context()->uniform1i(binding.sampler_location, 0));
   gfx::PointF uv0 = quad->uv_top_left;
@@ -1684,12 +1689,12 @@ void GLRenderer::DrawIOSurfaceQuad(const DrawingFrame* frame,
                                    const IOSurfaceDrawQuad* quad) {
   SetBlendEnabled(quad->ShouldDrawWithBlending());
 
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_,
       quad->shared_quad_state->visible_content_rect.bottom_right());
 
   TexTransformTextureProgramBinding binding;
-  binding.Set(GetTextureIOSurfaceProgram(texCoordPrecision), Context());
+  binding.Set(GetTextureIOSurfaceProgram(tex_coord_precision), Context());
 
   SetUseProgram(binding.program_id);
   GLC(Context(), Context()->uniform1i(binding.sampler_location, 0));
@@ -1824,9 +1829,9 @@ void GLRenderer::CopyTextureToFramebuffer(const DrawingFrame* frame,
                                           int texture_id,
                                           gfx::Rect rect,
                                           const gfx::Transform& draw_matrix) {
-  TexCoordPrecision texCoordPrecision = TexCoordPrecisionRequired(
+  TexCoordPrecision tex_coord_precision = TexCoordPrecisionRequired(
       context_, highp_threshold_min_, rect.bottom_right());
-  const RenderPassProgram* program = GetRenderPassProgram(texCoordPrecision);
+  const RenderPassProgram* program = GetRenderPassProgram(tex_coord_precision);
 
   GLC(Context(), Context()->bindTexture(GL_TEXTURE_2D, texture_id));
 
@@ -2166,6 +2171,10 @@ bool GLRenderer::InitializeSharedObjects() {
       new TileProgram(context_, TexCoordPrecisionMedium));
   tile_program_opaque_ = make_scoped_ptr(
       new TileProgramOpaque(context_, TexCoordPrecisionMedium));
+  tile_program_highp_ = make_scoped_ptr(
+      new TileProgram(context_, TexCoordPrecisionHigh));
+  tile_program_opaque_highp_ = make_scoped_ptr(
+      new TileProgramOpaque(context_, TexCoordPrecisionHigh));
 
   GLC(context_, context_->flush());
 
@@ -2220,7 +2229,7 @@ const GLRenderer::SolidColorProgramAA* GLRenderer::GetSolidColorProgramAA() {
 
 const GLRenderer::RenderPassProgram* GLRenderer::GetRenderPassProgram(
       TexCoordPrecision precision) {
-  scoped_ptr<RenderPassProgram> &program =
+  scoped_ptr<RenderPassProgram>& program =
       (precision == TexCoordPrecisionHigh) ? render_pass_program_highp_
                                            : render_pass_program_;
   DCHECK(program);
@@ -2233,7 +2242,7 @@ const GLRenderer::RenderPassProgram* GLRenderer::GetRenderPassProgram(
 
 const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA(
       TexCoordPrecision precision) {
-  scoped_ptr<RenderPassProgramAA> &program =
+  scoped_ptr<RenderPassProgramAA>& program =
       (precision == TexCoordPrecisionHigh) ? render_pass_program_aa_highp_
                                            : render_pass_program_aa_;
   if (!program)
@@ -2248,7 +2257,7 @@ const GLRenderer::RenderPassProgramAA* GLRenderer::GetRenderPassProgramAA(
 
 const GLRenderer::RenderPassMaskProgram*
 GLRenderer::GetRenderPassMaskProgram(TexCoordPrecision precision) {
-  scoped_ptr<RenderPassMaskProgram> &program =
+  scoped_ptr<RenderPassMaskProgram>& program =
       (precision == TexCoordPrecisionHigh) ? render_pass_mask_program_highp_
                                            : render_pass_mask_program_;
   if (!program)
@@ -2262,7 +2271,7 @@ GLRenderer::GetRenderPassMaskProgram(TexCoordPrecision precision) {
 
 const GLRenderer::RenderPassMaskProgramAA*
 GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision) {
-  scoped_ptr<RenderPassMaskProgramAA> &program =
+  scoped_ptr<RenderPassMaskProgramAA>& program =
       (precision == TexCoordPrecisionHigh) ? render_pass_mask_program_aa_highp_
                                            : render_pass_mask_program_aa_;
   if (!program)
@@ -2277,7 +2286,7 @@ GLRenderer::GetRenderPassMaskProgramAA(TexCoordPrecision precision) {
 
 const GLRenderer::RenderPassColorMatrixProgram*
 GLRenderer::GetRenderPassColorMatrixProgram(TexCoordPrecision precision) {
-  scoped_ptr<RenderPassColorMatrixProgram> &program =
+  scoped_ptr<RenderPassColorMatrixProgram>& program =
       (precision == TexCoordPrecisionHigh) ?
           render_pass_color_matrix_program_highp_ :
           render_pass_color_matrix_program_;
@@ -2293,7 +2302,7 @@ GLRenderer::GetRenderPassColorMatrixProgram(TexCoordPrecision precision) {
 
 const GLRenderer::RenderPassColorMatrixProgramAA*
 GLRenderer::GetRenderPassColorMatrixProgramAA(TexCoordPrecision precision) {
-  scoped_ptr<RenderPassColorMatrixProgramAA> &program =
+  scoped_ptr<RenderPassColorMatrixProgramAA>& program =
       (precision == TexCoordPrecisionHigh) ?
           render_pass_color_matrix_program_aa_highp_ :
           render_pass_color_matrix_program_aa_;
@@ -2310,7 +2319,7 @@ GLRenderer::GetRenderPassColorMatrixProgramAA(TexCoordPrecision precision) {
 
 const GLRenderer::RenderPassMaskColorMatrixProgram*
 GLRenderer::GetRenderPassMaskColorMatrixProgram(TexCoordPrecision precision) {
-  scoped_ptr<RenderPassMaskColorMatrixProgram> &program =
+  scoped_ptr<RenderPassMaskColorMatrixProgram>& program =
       (precision == TexCoordPrecisionHigh) ?
           render_pass_mask_color_matrix_program_highp_ :
           render_pass_mask_color_matrix_program_;
@@ -2327,7 +2336,7 @@ GLRenderer::GetRenderPassMaskColorMatrixProgram(TexCoordPrecision precision) {
 
 const GLRenderer::RenderPassMaskColorMatrixProgramAA*
 GLRenderer::GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision) {
-  scoped_ptr<RenderPassMaskColorMatrixProgramAA> &program =
+  scoped_ptr<RenderPassMaskColorMatrixProgramAA>& program =
       (precision == TexCoordPrecisionHigh) ?
           render_pass_mask_color_matrix_program_aa_highp_ :
           render_pass_mask_color_matrix_program_aa_;
@@ -2342,72 +2351,92 @@ GLRenderer::GetRenderPassMaskColorMatrixProgramAA(TexCoordPrecision precision) {
   return program.get();
 }
 
-const GLRenderer::TileProgram* GLRenderer::GetTileProgram() {
-  DCHECK(tile_program_);
-  if (!tile_program_->initialized()) {
+const GLRenderer::TileProgram* GLRenderer::GetTileProgram(
+    TexCoordPrecision precision) {
+  scoped_ptr<TileProgram>& program =
+      (precision == TexCoordPrecisionHigh) ? tile_program_highp_
+                                           : tile_program_;
+  DCHECK(program);
+  if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgram::initialize");
-    tile_program_->Initialize(context_, is_using_bind_uniform_);
+    program->Initialize(context_, is_using_bind_uniform_);
   }
-  return tile_program_.get();
+  return program.get();
 }
 
-const GLRenderer::TileProgramOpaque* GLRenderer::GetTileProgramOpaque() {
-  DCHECK(tile_program_opaque_);
-  if (!tile_program_opaque_->initialized()) {
+const GLRenderer::TileProgramOpaque* GLRenderer::GetTileProgramOpaque(
+    TexCoordPrecision precision) {
+  scoped_ptr<TileProgramOpaque>& program =
+      (precision == TexCoordPrecisionHigh) ? tile_program_opaque_highp_
+                                           : tile_program_opaque_;
+  DCHECK(program);
+  if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramOpaque::initialize");
-    tile_program_opaque_->Initialize(context_, is_using_bind_uniform_);
+    program->Initialize(context_, is_using_bind_uniform_);
   }
-  return tile_program_opaque_.get();
+  return program.get();
 }
 
-const GLRenderer::TileProgramAA* GLRenderer::GetTileProgramAA() {
-  if (!tile_program_aa_)
-    tile_program_aa_ = make_scoped_ptr(
-        new TileProgramAA(context_, TexCoordPrecisionMedium));
-  if (!tile_program_aa_->initialized()) {
+const GLRenderer::TileProgramAA* GLRenderer::GetTileProgramAA(
+    TexCoordPrecision precision) {
+  scoped_ptr<TileProgramAA>& program =
+      (precision == TexCoordPrecisionHigh) ? tile_program_aa_highp_
+                                           : tile_program_aa_;
+  if (!program)
+    program = make_scoped_ptr(new TileProgramAA(context_, precision));
+  if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramAA::initialize");
-    tile_program_aa_->Initialize(context_, is_using_bind_uniform_);
+    program->Initialize(context_, is_using_bind_uniform_);
   }
-  return tile_program_aa_.get();
+  return program.get();
 }
 
-const GLRenderer::TileProgramSwizzle* GLRenderer::GetTileProgramSwizzle() {
-  if (!tile_program_swizzle_)
-    tile_program_swizzle_ = make_scoped_ptr(
-        new TileProgramSwizzle(context_, TexCoordPrecisionMedium));
-  if (!tile_program_swizzle_->initialized()) {
+const GLRenderer::TileProgramSwizzle* GLRenderer::GetTileProgramSwizzle(
+    TexCoordPrecision precision) {
+  scoped_ptr<TileProgramSwizzle>& program =
+      (precision == TexCoordPrecisionHigh) ? tile_program_swizzle_highp_
+                                           : tile_program_swizzle_;
+  if (!program)
+    program = make_scoped_ptr(new TileProgramSwizzle(context_, precision));
+  if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzle::initialize");
-    tile_program_swizzle_->Initialize(context_, is_using_bind_uniform_);
+    program->Initialize(context_, is_using_bind_uniform_);
   }
-  return tile_program_swizzle_.get();
+  return program.get();
 }
 
 const GLRenderer::TileProgramSwizzleOpaque*
-GLRenderer::GetTileProgramSwizzleOpaque() {
-  if (!tile_program_swizzle_opaque_)
-    tile_program_swizzle_opaque_ = make_scoped_ptr(
-        new TileProgramSwizzleOpaque(context_, TexCoordPrecisionMedium));
-  if (!tile_program_swizzle_opaque_->initialized()) {
+GLRenderer::GetTileProgramSwizzleOpaque(TexCoordPrecision precision) {
+  scoped_ptr<TileProgramSwizzleOpaque>& program =
+      (precision == TexCoordPrecisionHigh) ? tile_program_swizzle_opaque_highp_
+                                           : tile_program_swizzle_opaque_;
+  if (!program)
+    program = make_scoped_ptr(
+        new TileProgramSwizzleOpaque(context_, precision));
+  if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleOpaque::initialize");
-    tile_program_swizzle_opaque_->Initialize(context_, is_using_bind_uniform_);
+    program->Initialize(context_, is_using_bind_uniform_);
   }
-  return tile_program_swizzle_opaque_.get();
+  return program.get();
 }
 
-const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA() {
-  if (!tile_program_swizzle_aa_)
-    tile_program_swizzle_aa_ = make_scoped_ptr(
-        new TileProgramSwizzleAA(context_, TexCoordPrecisionMedium));
-  if (!tile_program_swizzle_aa_->initialized()) {
+const GLRenderer::TileProgramSwizzleAA* GLRenderer::GetTileProgramSwizzleAA(
+    TexCoordPrecision precision) {
+  scoped_ptr<TileProgramSwizzleAA>& program =
+      (precision == TexCoordPrecisionHigh) ? tile_program_swizzle_aa_highp_
+                                           : tile_program_swizzle_aa_;
+  if (!program)
+    program = make_scoped_ptr(new TileProgramSwizzleAA(context_, precision));
+  if (!program->initialized()) {
     TRACE_EVENT0("cc", "GLRenderer::tileProgramSwizzleAA::initialize");
-    tile_program_swizzle_aa_->Initialize(context_, is_using_bind_uniform_);
+    program->Initialize(context_, is_using_bind_uniform_);
   }
-  return tile_program_swizzle_aa_.get();
+  return program.get();
 }
 
 const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
     TexCoordPrecision precision) {
-  scoped_ptr<TextureProgram> &program =
+  scoped_ptr<TextureProgram>& program =
       (precision == TexCoordPrecisionHigh) ? texture_program_highp_
                                            : texture_program_;
   if (!program)
@@ -2421,7 +2450,7 @@ const GLRenderer::TextureProgram* GLRenderer::GetTextureProgram(
 
 const GLRenderer::TextureProgramFlip* GLRenderer::GetTextureProgramFlip(
     TexCoordPrecision precision) {
-  scoped_ptr<TextureProgramFlip> &program =
+  scoped_ptr<TextureProgramFlip>& program =
       (precision == TexCoordPrecisionHigh) ? texture_program_flip_highp_
                                            : texture_program_flip_;
   if (!program)
@@ -2435,7 +2464,7 @@ const GLRenderer::TextureProgramFlip* GLRenderer::GetTextureProgramFlip(
 
 const GLRenderer::TextureIOSurfaceProgram*
 GLRenderer::GetTextureIOSurfaceProgram(TexCoordPrecision precision) {
-  scoped_ptr<TextureIOSurfaceProgram> &program =
+  scoped_ptr<TextureIOSurfaceProgram>& program =
       (precision == TexCoordPrecisionHigh) ? texture_io_surface_program_highp_
                                            : texture_io_surface_program_;
   if (!program)
@@ -2450,7 +2479,7 @@ GLRenderer::GetTextureIOSurfaceProgram(TexCoordPrecision precision) {
 
 const GLRenderer::VideoYUVProgram* GLRenderer::GetVideoYUVProgram(
     TexCoordPrecision precision) {
-  scoped_ptr<VideoYUVProgram> &program =
+  scoped_ptr<VideoYUVProgram>& program =
       (precision == TexCoordPrecisionHigh) ? video_yuv_program_highp_
                                            : video_yuv_program_;
   if (!program)
@@ -2466,7 +2495,7 @@ const GLRenderer::VideoStreamTextureProgram*
 GLRenderer::GetVideoStreamTextureProgram(TexCoordPrecision precision) {
   if (!Capabilities().using_egl_image)
     return NULL;
-  scoped_ptr<VideoStreamTextureProgram> &program =
+  scoped_ptr<VideoStreamTextureProgram>& program =
       (precision == TexCoordPrecisionHigh) ? video_stream_texture_program_highp_
                                            : video_stream_texture_program_;
   if (!program)
@@ -2498,6 +2527,19 @@ void GLRenderer::CleanupSharedObjects() {
     tile_program_swizzle_aa_->Cleanup(context_);
   if (tile_checkerboard_program_)
     tile_checkerboard_program_->Cleanup(context_);
+
+  if (tile_program_highp_)
+    tile_program_highp_->Cleanup(context_);
+  if (tile_program_opaque_highp_)
+    tile_program_opaque_highp_->Cleanup(context_);
+  if (tile_program_swizzle_highp_)
+    tile_program_swizzle_highp_->Cleanup(context_);
+  if (tile_program_swizzle_opaque_highp_)
+    tile_program_swizzle_opaque_highp_->Cleanup(context_);
+  if (tile_program_aa_highp_)
+    tile_program_aa_highp_->Cleanup(context_);
+  if (tile_program_swizzle_aa_highp_)
+    tile_program_swizzle_aa_highp_->Cleanup(context_);
 
   if (render_pass_mask_program_)
     render_pass_mask_program_->Cleanup(context_);
