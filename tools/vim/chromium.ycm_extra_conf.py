@@ -50,6 +50,10 @@ flags = [
 ]
 
 
+def PathExists(*args):
+  return os.path.exists(os.path.join(*args))
+
+
 def FindChromeSrcFromFilename(filename):
   """Searches for the root of the Chromium checkout.
 
@@ -62,8 +66,9 @@ def FindChromeSrcFromFilename(filename):
     (String) Path of 'src/', or None if unable to find.
   """
   curdir = os.path.normpath(os.path.dirname(filename))
-  while not (os.path.exists(os.path.join(curdir, '.gclient'))
-             and os.path.exists(os.path.join(curdir, 'src'))):
+  while not (PathExists(curdir, 'src')
+             and (PathExists(curdir, '.gclient')
+                  or PathExists(curdir, 'src', '.git'))):
     nextdir = os.path.normpath(os.path.join(curdir, '..'))
     if nextdir == curdir:
       return None
