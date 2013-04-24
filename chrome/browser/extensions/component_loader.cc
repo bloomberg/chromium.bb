@@ -11,7 +11,6 @@
 #include "base/prefs/pref_change_registrar.h"
 #include "base/prefs/pref_notifier.h"
 #include "base/prefs/pref_service.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_notification_types.h"
@@ -32,13 +31,20 @@
 #include "grit/keyboard_resources.h"
 #endif
 
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
 #include "chrome/browser/defaults.h"
 #endif
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/chromeos_switches.h"
+#include "content/public/browser/storage_partition.h"
+#include "webkit/fileapi/file_system_context.h"
+#include "webkit/fileapi/sandbox_mount_point_provider.h"
 #endif
 
 #if defined(ENABLE_APP_LIST)
@@ -359,7 +365,7 @@ void ComponentLoader::AddDefaultComponentExtensions(
   if (skip_session_components)
     AddGaiaAuthExtension();
 
-#if defined(OFFICIAL_BUILD)
+#if defined(GOOGLE_CHROME_BUILD)
   if (browser_defaults::enable_help_app) {
     Add(IDR_HELP_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
                                "/usr/share/chromeos-assets/helpapp")));
@@ -435,15 +441,26 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
     Add(IDR_WALLPAPERMANAGER_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
 
+#if defined(GOOGLE_CHROME_BUILD)
     if (browser_defaults::enable_component_quick_office) {
-      // Don't load Quickoffice component extension in Guest mode because
-      // it doesn't work in Incognito mode due to disabled temp fs.
-      // TODO(dpolukhin): enable Quickoffice in Guest mode.
-      if (!command_line->HasSwitch(chromeos::switches::kGuestSession)) {
-        Add(IDR_QUICK_OFFICE_MANIFEST, base::FilePath(FILE_PATH_LITERAL(
-                                  "/usr/share/chromeos-assets/quick_office")));
+      std::string id = Add(IDR_QUICK_OFFICE_MANIFEST, base::FilePath(
+          FILE_PATH_LITERAL("/usr/share/chromeos-assets/quick_office")));
+      if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {
+        // TODO(dpolukhin): Hack to enable HTML5 temporary file system for
+        // Quickoffice. It doesn't work without temporary file system access.
+        Profile* profile = ProfileManager::GetDefaultProfileOrOffTheRecord();
+        ExtensionService* service =
+            extensions::ExtensionSystem::Get(profile)->extension_service();
+        GURL site = service->GetSiteForExtensionId(id);
+        fileapi::FileSystemContext* context =
+            content::BrowserContext::GetStoragePartitionForSite(profile, site)->
+                GetFileSystemContext();
+        fileapi::SandboxMountPointProvider* provider =
+            context->sandbox_provider();
+        provider->set_enable_temporary_file_system_in_incognito(true);
       }
     }
+#endif  // defined(GOOGLE_CHROME_BUILD)
 
     base::FilePath echo_extension_path(FILE_PATH_LITERAL(
         "/usr/share/chromeos-assets/echo"));

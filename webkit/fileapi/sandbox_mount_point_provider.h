@@ -173,6 +173,10 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   LocalFileSystemOperation* CreateFileSystemOperationForSync(
       FileSystemContext* file_system_context);
 
+  void set_enable_temporary_file_system_in_incognito(bool enable) {
+    enable_temporary_file_system_in_incognito_ = enable;
+  }
+
  private:
   friend class SandboxQuotaObserver;
   friend class LocalFileSystemTestOriginHelper;
@@ -212,6 +216,7 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   const base::FilePath profile_path_;
 
   FileSystemOptions file_system_options_;
+  bool enable_temporary_file_system_in_incognito_;
 
   scoped_ptr<AsyncFileUtilAdapter> sandbox_file_util_;
 

@@ -145,6 +145,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
     : file_task_runner_(file_task_runner),
       profile_path_(profile_path),
       file_system_options_(file_system_options),
+      enable_temporary_file_system_in_incognito_(false),
       sandbox_file_util_(
           new AsyncFileUtilAdapter(
               new ObfuscatedFileUtil(
@@ -195,7 +196,9 @@ bool SandboxMountPointProvider::CanHandleType(FileSystemType type) const {
 void SandboxMountPointProvider::ValidateFileSystemRoot(
     const GURL& origin_url, fileapi::FileSystemType type, bool create,
     const ValidateFileSystemCallback& callback) {
-  if (file_system_options_.is_incognito()) {
+  if (file_system_options_.is_incognito() &&
+      !(type == kFileSystemTypeTemporary &&
+        enable_temporary_file_system_in_incognito_)) {
     // TODO(kinuko): return an isolated temporary directory.
     callback.Run(base::PLATFORM_FILE_ERROR_SECURITY);
     UMA_HISTOGRAM_ENUMERATION(kOpenFileSystemLabel,
@@ -239,9 +242,12 @@ base::FilePath
 SandboxMountPointProvider::GetFileSystemRootPathOnFileThread(
     const FileSystemURL& url,
     bool create) {
-  if (file_system_options_.is_incognito())
+  if (file_system_options_.is_incognito() &&
+      !(enable_temporary_file_system_in_incognito_ &&
+        url.type() == kFileSystemTypeTemporary)) {
     // TODO(kinuko): return an isolated temporary directory.
     return base::FilePath();
+  }
 
   if (!IsAllowedScheme(url.origin()))
     return base::FilePath();
