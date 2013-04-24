@@ -45,7 +45,6 @@ class ProfileSyncComponentsFactoryImplTest : public testing::Test {
 #endif
     datatypes.push_back(syncer::EXTENSIONS);
     datatypes.push_back(syncer::EXTENSION_SETTINGS);
-    datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);
     datatypes.push_back(syncer::PASSWORDS);
     datatypes.push_back(syncer::PREFERENCES);
     datatypes.push_back(syncer::PRIORITY_PREFERENCES);

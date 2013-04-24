@@ -24,6 +24,8 @@ using ::testing::StrictMock;
 class SyncPrefsTest : public testing::Test {
  protected:
   virtual void SetUp() OVERRIDE {
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kHistoryEnableFullHistorySync);
     SyncPrefs::RegisterUserPrefs(pref_service_.registry());
   }
 

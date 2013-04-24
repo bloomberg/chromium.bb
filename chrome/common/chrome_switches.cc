@@ -396,6 +396,10 @@ const char kDisableSyncExtensionSettings[]  = "disable-sync-extension-settings";
 // Disables syncing of extensions.
 const char kDisableSyncExtensions[]         = "disable-sync-extensions";
 
+// Disables syncing of history delete directives.
+const char kDisableSyncHistoryDeleteDirectives[] =
+    "disable-sync-history-delete-directives";
+
 // Disables syncing browser passwords.
 const char kDisableSyncPasswords[]          = "disable-sync-passwords";
 
@@ -752,6 +756,9 @@ const char kHideIcons[]                     = "hide-icons";
 
 // Disables full history sync.
 const char kHistoryDisableFullHistorySync[] = "disable-full-history-sync";
+
+// Enables full history sync (not just typed URLs) for signed-in users.
+const char kHistoryEnableFullHistorySync[]  = "enable-full-history-sync";
 
 // Enables grouping websites by domain and filtering them by period.
 const char kHistoryEnableGroupByDomain[]    = "enable-grouped-history";

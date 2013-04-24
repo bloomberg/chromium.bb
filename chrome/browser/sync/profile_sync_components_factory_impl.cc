@@ -146,9 +146,11 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
         new TypedUrlDataTypeController(this, profile_, pss));
   }
 
-  // Delete directive sync is enabled by default.  Register unless full history
-  // sync is disabled.
-  if (!command_line_->HasSwitch(switches::kHistoryDisableFullHistorySync)) {
+  // Unless it is explicitly disabled, history delete directive sync is
+  // enabled whenever full history sync is enabled.
+  if (command_line_->HasSwitch(switches::kHistoryEnableFullHistorySync) &&
+      !command_line_->HasSwitch(
+          switches::kDisableSyncHistoryDeleteDirectives)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(
             syncer::HISTORY_DELETE_DIRECTIVES, this, profile_, pss));

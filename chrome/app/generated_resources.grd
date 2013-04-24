@@ -7041,11 +7041,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Enable experimental Bluetooth features.
         </message>
       </if>
-      <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to disable full history sync.">
-        Disable full history sync
+      <message name="IDS_FLAGS_FULL_HISTORY_SYNC_NAME" desc="Name of the flag to enable full history sync.">
+        Enable full history sync.
       </message>
-      <message name="IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION" desc="Description for the flag to disable full history sync.">
-        Allows you to see and delete history entries from your signed-in devices at chrome://history.
+      <message name="IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION" desc="Description for the flag to enable full history sync.">
+        If tab sync is enabled, this feature allows you to see and delete history entries from your synced devices at chrome://history.
       </message>
       <message name="IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME" desc="Name of the flag to disable accelerated video decode where available.">
         Disable hardware-accelerated video decode.
