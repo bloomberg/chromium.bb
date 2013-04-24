@@ -26,7 +26,11 @@ class _AsyncFetchFuture(object):
 
   def Get(self):
     for path, future in self._fetches:
-      result = future.Get()
+      try:
+        result = future.Get()
+      except Exception as e:
+        raise FileNotFoundError(
+            'Error when fetching %s for Get: %s' % (path, e))
       if result.status_code == 404:
         raise FileNotFoundError('Got 404 when fetching %s for Get' % path)
       elif path.endswith('/'):

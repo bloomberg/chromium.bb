@@ -142,6 +142,10 @@ class CacheChainObjectStoreTest(unittest.TestCase):
     self.assertTrue(*self._first.CheckAndReset())
     self.assertTrue(*self._second.CheckAndReset())
     self.assertTrue(*self._third.CheckAndReset())
+    # Should have the new content.
+    self.assertEqual('hello', self._first.Get('hello.html').Get())
+    self.assertEqual('hello', self._second.Get('hello.html').Get())
+    self.assertEqual('hello', self._third.Get('hello.html').Get())
 
   def testDel(self):
     # Cache it.
@@ -157,6 +161,24 @@ class CacheChainObjectStoreTest(unittest.TestCase):
     self.assertTrue(*self._first.CheckAndReset(get_count=1))
     self.assertTrue(*self._second.CheckAndReset(get_count=1))
     self.assertTrue(*self._third.CheckAndReset(get_count=1))
+
+  def testStartEmpty(self):
+    store = CacheChainObjectStore((self._first, self._second, self._third),
+                                  start_empty=True)
+    # Won't query delegate file systems because it starts empty.
+    self.assertEqual(None, store.Get('storage.html').Get())
+    self.assertTrue(*self._first.CheckAndReset())
+    self.assertTrue(*self._second.CheckAndReset())
+    self.assertTrue(*self._third.CheckAndReset())
+    # Setting values will set on all delegates, though.
+    store.Set('storage.html', 'new content')
+    self.assertEqual('new content', store.Get('storage.html').Get())
+    self.assertTrue(*self._first.CheckAndReset(set_count=1))
+    self.assertTrue(*self._second.CheckAndReset(set_count=1))
+    self.assertTrue(*self._third.CheckAndReset(set_count=1))
+    self.assertEqual('new content', self._first.Get('storage.html').Get())
+    self.assertEqual('new content', self._second.Get('storage.html').Get())
+    self.assertEqual('new content', self._third.Get('storage.html').Get())
 
 if __name__ == '__main__':
   unittest.main()

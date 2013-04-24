@@ -63,12 +63,17 @@ class CacheChainObjectStore(ObjectStore):
   The rules for the object store chain are:
     - When setting (or deleting) items, all object stores in the hierarcy will
       have that item set.
-    - When getting items, each object store is tried in order. The first object
-      store to find the item will trickle back up, setting it on all object
-      stores higher in the hierarchy.
+    - When getting items, the behaviour depends on |start_empty|.
+      - If false, each object store is tried in order. The first object
+        store to find the item will trickle back up, setting it on all object
+        stores higher in the hierarchy.
+      - If true, only the first in-memory cache is checked, as though the store
+        had been initialized with no content as opposed to the union of its
+        delegate stores.
   '''
-  def __init__(self, object_stores):
+  def __init__(self, object_stores, start_empty=False):
     self._object_stores = object_stores
+    self._start_empty = start_empty
     self._cache = {}
 
   def SetMulti(self, mapping):
@@ -83,7 +88,7 @@ class CacheChainObjectStore(ObjectStore):
       if key in self._cache:
         cached_items[key] = self._cache.get(key)
         missing_keys.remove(key)
-    if len(missing_keys) == 0:
+    if len(missing_keys) == 0 or self._start_empty:
       return Future(value=cached_items)
     object_store_futures = [(object_store, object_store.GetMulti(missing_keys))
                             for object_store in self._object_stores]

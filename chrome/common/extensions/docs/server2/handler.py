@@ -57,7 +57,7 @@ class Handler(webapp.RequestHandler):
       real_path = 'extensions/index.html'
 
     constructor = (
-        ServerInstance.GetOrCreateOnline if Handler.ALWAYS_ONLINE else
+        ServerInstance.CreateOnline if Handler.ALWAYS_ONLINE else
         ServerInstance.GetOrCreateOffline)
     server_instance = constructor(channel_name)
 
@@ -94,7 +94,7 @@ class Handler(webapp.RequestHandler):
     channel = path.split('/')[-1]
     logging.info('cron/%s: starting' % channel)
 
-    server_instance = ServerInstance.GetOrCreateOnline(channel)
+    server_instance = ServerInstance.CreateOnline(channel)
 
     def run_cron_for_dir(d, path_prefix=''):
       success = True

@@ -68,8 +68,7 @@ class ServerInstance(object):
         ServerInstance._GetOrCreateGithubFileSystem())
 
   @staticmethod
-  @memoize
-  def GetOrCreateOnline(channel):
+  def CreateOnline(channel):
     '''Creates/creates an online server instance, meaning that both local and
     subversion/github resources are queried.
     '''
@@ -90,7 +89,8 @@ class ServerInstance(object):
                                  url_constants.VIEWVC_URL)
 
     object_store_creator_factory = ObjectStoreCreator.Factory(GetAppVersion(),
-                                                              branch)
+                                                              branch,
+                                                              start_empty=True)
 
     svn_file_system = CachingFileSystem(
         SubversionFileSystem(AppEngineUrlFetcher(svn_url),
