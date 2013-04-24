@@ -1892,28 +1892,6 @@ void SpdySession::SendStreamWindowUpdate(SpdyStreamId stream_id,
   SendWindowUpdateFrame(stream_id, delta_window_size, stream->priority());
 }
 
-// Given a cwnd that we would have sent to the server, modify it based on the
-// field trial policy.
-uint32 ApplyCwndFieldTrialPolicy(int cwnd) {
-  base::FieldTrial* trial = base::FieldTrialList::Find("SpdyCwnd");
-  if (!trial) {
-      LOG(WARNING) << "Could not find \"SpdyCwnd\" in FieldTrialList";
-      return cwnd;
-  }
-  if (trial->group_name() == "cwnd10")
-    return 10;
-  else if (trial->group_name() == "cwnd16")
-    return 16;
-  else if (trial->group_name() == "cwndMin16")
-    return std::max(cwnd, 16);
-  else if (trial->group_name() == "cwndMin10")
-    return std::max(cwnd, 10);
-  else if (trial->group_name() == "cwndDynamic")
-    return cwnd;
-  NOTREACHED();
-  return cwnd;
-}
-
 void SpdySession::SendInitialSettings() {
   // First notify the server about the settings they should use when
   // communicating with us.
@@ -1939,18 +1917,12 @@ void SpdySession::SendInitialSettings() {
   if (settings_map.empty())
     return;
 
-  // Record Histogram Data and Apply the SpdyCwnd FieldTrial if applicable.
   const SpdySettingsIds id = SETTINGS_CURRENT_CWND;
   SettingsMap::const_iterator it = settings_map.find(id);
   uint32 value = 0;
   if (it != settings_map.end())
     value = it->second.second;
-  uint32 cwnd = ApplyCwndFieldTrialPolicy(value);
-  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", cwnd, 1, 200, 100);
-  if (cwnd != value) {
-    http_server_properties_->SetSpdySetting(
-        host_port_pair(), id, SETTINGS_FLAG_PLEASE_PERSIST, cwnd);
-  }
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Net.SpdySettingsCwndSent", value, 1, 200, 100);
 
   const SettingsMap& settings_map_new =
       http_server_properties_->GetSpdySettings(host_port_pair());

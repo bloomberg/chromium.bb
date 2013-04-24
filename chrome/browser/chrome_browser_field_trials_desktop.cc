@@ -41,33 +41,6 @@ void SetupAppLauncherFieldTrial(PrefService* local_state) {
   }
 }
 
-// When --use-spdy not set, users will be in A/B test for spdy.
-// group A (npn_with_spdy): this means npn and spdy are enabled. In case server
-//                          supports spdy, browser will use spdy.
-// group B (npn_with_http): this means npn is enabled but spdy won't be used.
-//                          Http is still used for all requests.
-//           default group: no npn or spdy is involved. The "old" non-spdy
-//                          chrome behavior.
-void SpdyFieldTrial() {
-  // Setup SPDY CWND Field trial.
-  const base::FieldTrial::Probability kSpdyCwndDivisor = 100;
-  const base::FieldTrial::Probability kSpdyCwnd16 = 20;     // fixed at 16
-  const base::FieldTrial::Probability kSpdyCwnd10 = 20;     // fixed at 10
-  const base::FieldTrial::Probability kSpdyCwndMin16 = 20;  // no less than 16
-  const base::FieldTrial::Probability kSpdyCwndMin10 = 20;  // no less than 10
-
-  // After June 30, 2013 builds, it will always be in default group
-  // (cwndDynamic).
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial(
-          "SpdyCwnd", kSpdyCwndDivisor, "cwndDynamic", 2013, 6, 30, NULL));
-
-  trial->AppendGroup("cwnd10", kSpdyCwnd10);
-  trial->AppendGroup("cwnd16", kSpdyCwnd16);
-  trial->AppendGroup("cwndMin16", kSpdyCwndMin16);
-  trial->AppendGroup("cwndMin10", kSpdyCwndMin10);
-}
-
 void AutoLaunchChromeFieldTrial() {
   std::string brand;
   google_util::GetBrand(&brand);
@@ -174,7 +147,6 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
                              const base::Time& install_time,
                              PrefService* local_state) {
   prerender::ConfigurePrefetchAndPrerender(parsed_command_line);
-  SpdyFieldTrial();
   AutoLaunchChromeFieldTrial();
   gpu_util::InitializeCompositingFieldTrial();
   OmniboxFieldTrial::ActivateStaticTrials();

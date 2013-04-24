@@ -554,30 +554,24 @@ void PageLoadHistograms::Dump(WebFrame* frame) {
     }
   }
 
-  // Record SpdyCwnd field trial results.
+  // Record SpdyCwnd results.
   if (document_state->was_fetched_via_spdy()) {
     switch (load_type) {
       case DocumentState::LINK_LOAD_NORMAL:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_LinkLoadNormal", "SpdyCwnd"),
-            begin_to_finish_all_loads);
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToFinish_LinkLoadNormal", "SpdyCwnd"),
-            start_to_finish_all_loads);
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToCommit_LinkLoadNormal", "SpdyCwnd"),
-            start_to_commit);
+        PLT_HISTOGRAM("PLT.BeginToFinish_LinkLoadNormal_cwndDynamic",
+                      begin_to_finish_all_loads);
+        PLT_HISTOGRAM("PLT.StartToFinish_LinkLoadNormal_cwndDynamic",
+                      start_to_finish_all_loads);
+        PLT_HISTOGRAM("PLT.StartToCommit_LinkLoadNormal_cwndDynamic",
+                      start_to_commit);
         break;
       case DocumentState::NORMAL_LOAD:
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.BeginToFinish_NormalLoad", "SpdyCwnd"),
-            begin_to_finish_all_loads);
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToFinish_NormalLoad", "SpdyCwnd"),
-            start_to_finish_all_loads);
-        PLT_HISTOGRAM(base::FieldTrial::MakeName(
-            "PLT.StartToCommit_NormalLoad", "SpdyCwnd"),
-            start_to_commit);
+        PLT_HISTOGRAM("PLT.BeginToFinish_NormalLoad_cwndDynamic",
+                      begin_to_finish_all_loads);
+        PLT_HISTOGRAM("PLT.StartToFinish_NormalLoad_cwndDynamic",
+                      start_to_finish_all_loads);
+        PLT_HISTOGRAM("PLT.StartToCommit_NormalLoad_cwndDynamic",
+                      start_to_commit);
         break;
       default:
         break;
