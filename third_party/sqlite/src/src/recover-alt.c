@@ -491,6 +491,56 @@ static int getRootPage(sqlite3 *db, const char *zDb, const char *zTable,
   return rc;
 }
 
+static int getEncoding(sqlite3 *db, const char *zDb, int* piEncoding){
+  char *zSql = sqlite3_mprintf("PRAGMA %s.encoding", zDb);
+  if( !zSql ){
+    return SQLITE_NOMEM;
+  }
+
+  sqlite3_stmt *pStmt = 0;
+  int rc = sqlite3_prepare_v2(db, zSql, -1, &pStmt, 0);
+  sqlite3_free(zSql);
+  if( rc!=SQLITE_OK ){
+    return rc;
+  }
+
+  /* Require a result. */
+  rc = sqlite3_step(pStmt);
+  if( rc==SQLITE_DONE ){
+    /* This case should not be possible. */
+    rc = SQLITE_CORRUPT;
+  }else if( rc==SQLITE_ROW ){
+    if( sqlite3_column_type(pStmt, 0)==SQLITE_TEXT ){
+      const char* z = sqlite3_column_text(pStmt, 0);
+      /* These strings match the literals in pragma.c. */
+      if( !strcmp(z, "UTF-16le") ){
+        *piEncoding = SQLITE_UTF16LE;
+      }else if( !strcmp(z, "UTF-16be") ){
+        *piEncoding = SQLITE_UTF16BE;
+      }else if( !strcmp(z, "UTF-8") ){
+        *piEncoding = SQLITE_UTF8;
+      }else{
+        /* This case should not be possible. */
+        *piEncoding = SQLITE_UTF8;
+      }
+    }else{
+      /* This case should not be possible. */
+      *piEncoding = SQLITE_UTF8;
+    }
+
+    /* Require only one result. */
+    rc = sqlite3_step(pStmt);
+    if( rc==SQLITE_DONE ){
+      rc = SQLITE_OK;
+    }else if( rc==SQLITE_ROW ){
+      /* This case should not be possible. */
+      rc = SQLITE_CORRUPT;
+    }
+  }
+  sqlite3_finalize(pStmt);
+  return rc;
+}
+
 /* Cursor for iterating interior nodes.  Interior page cells contain a
  * child page number and a rowid.  The child page contains items left
  * of the rowid (less than).  The rightmost page of the subtree is
@@ -1451,6 +1501,7 @@ typedef struct RecoverCursor RecoverCursor;
 struct RecoverCursor {
   sqlite3_vtab_cursor base;
   RecoverLeafCursor *pLeafCursor;
+  int iEncoding;
   int bEOF;
 };
 
@@ -1462,6 +1513,12 @@ static int recoverOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
   u32 iRootPage = 0;
   int rc = getRootPage(pRecover->db, pRecover->zDb, pRecover->zTable,
                        &iRootPage);
+  if( rc!=SQLITE_OK ){
+    return rc;
+  }
+
+  int iEncoding = 0;
+  rc = getEncoding(pRecover->db, pRecover->zDb, &iEncoding);
   if( rc!=SQLITE_OK ){
     return rc;
   }
@@ -1487,6 +1544,7 @@ static int recoverOpen(sqlite3_vtab *pVTab, sqlite3_vtab_cursor **ppCursor){
   memset(pCursor, 0, sizeof(*pCursor));
   pCursor->base.pVtab = pVTab;
   pCursor->pLeafCursor = pLeafCursor;
+  pCursor->iEncoding = iEncoding;
 
   *ppCursor = (sqlite3_vtab_cursor*)pCursor;
   return SQLITE_OK;
@@ -1645,7 +1703,13 @@ static int recoverColumn(sqlite3_vtab_cursor *cur, sqlite3_context *ctx, int i){
       if( SerialTypeIsBlob(iColType) ){
         sqlite3_result_blob(ctx, pColData, l, pFn);
       }else{
-        sqlite3_result_text(ctx, (const char*)pColData, l, pFn);
+        if( pCursor->iEncoding==SQLITE_UTF16LE ){
+          sqlite3_result_text16le(ctx, (const void*)pColData, l, pFn);
+        }else if( pCursor->iEncoding==SQLITE_UTF16BE ){
+          sqlite3_result_text16be(ctx, (const void*)pColData, l, pFn);
+        }else{
+          sqlite3_result_text(ctx, (const char*)pColData, l, pFn);
+        }
       }
     } break;
   }
