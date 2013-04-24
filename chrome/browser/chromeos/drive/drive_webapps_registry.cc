@@ -131,20 +131,6 @@ void DriveWebAppsRegistry::GetWebAppsForFile(
   }
 }
 
-std::set<std::string> DriveWebAppsRegistry::GetExtensionsForWebStoreApp(
-    const std::string& web_store_id) {
-  std::set<std::string> extensions;
-  // Iterate over all the registered filename extensions, looking for the given
-  // web_store_id.
-  for (WebAppFileSelectorMap::iterator iter = webapp_extension_map_.begin();
-      iter != webapp_extension_map_.end(); ++iter) {
-    std::string id = GetWebStoreIdFromUrl(iter->second->product_link);
-    if (id == web_store_id)
-      extensions.insert(iter->first);
-  }
-  return extensions;
-}
-
 void DriveWebAppsRegistry::UpdateFromFeed(
     const google_apis::AccountMetadata& metadata) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -182,8 +168,7 @@ void DriveWebAppsRegistry::UpdateFromFeed(
               << JoinString(extensions, ',');
     }
 
-    url_to_name_map_.insert(
-        std::make_pair(product_url, app.app_name()));
+    url_to_name_map_.insert(std::make_pair(product_url, app.app_name()));
     AddAppSelectorList(product_url,
                        app_icons,
                        document_icons,

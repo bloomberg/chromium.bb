@@ -56,17 +56,19 @@ struct DriveWebAppInfo {
 class DriveWebAppsRegistry {
  public:
   DriveWebAppsRegistry();
-  virtual ~DriveWebAppsRegistry();
+  ~DriveWebAppsRegistry();
 
-  // DriveWebAppsRegistry overrides.
-  virtual void GetWebAppsForFile(const base::FilePath& file,
-                                 const std::string& mime_type,
-                                 ScopedVector<DriveWebAppInfo>* apps);
-  virtual std::set<std::string> GetExtensionsForWebStoreApp(
-      const std::string& web_store_id);
-  virtual void UpdateFromFeed(
-      const google_apis::AccountMetadata& metadata);
-  virtual void UpdateFromAppList(const google_apis::AppList& applist);
+  // Returns a list of web app information for the |file| with |mime_type|.
+  void GetWebAppsForFile(const base::FilePath& file,
+                         const std::string& mime_type,
+                         ScopedVector<DriveWebAppInfo>* apps);
+
+  // Updates this registry based on the |metadata| fetched from the server.
+  // This is deprecated.
+  void UpdateFromFeed(const google_apis::AccountMetadata& metadata);
+
+  // Updates this registry based on the |applist| fetched from the server.
+  void UpdateFromAppList(const google_apis::AppList& applist);
 
  private:
   // Defines WebApp application details that are associated with a given
