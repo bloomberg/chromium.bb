@@ -68,18 +68,12 @@ const DataResource kDataResources[] = {
 }  // namespace
 
 // static
-WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::GetOrCreate(
+WeakPtr<AutofillPopupControllerImpl> AutofillPopupControllerImpl::Create(
     WeakPtr<AutofillPopupControllerImpl> previous,
     WeakPtr<AutofillPopupDelegate> delegate,
     gfx::NativeView container_view,
     const gfx::RectF& element_bounds) {
   DCHECK(!previous || previous->delegate_ == delegate);
-
-  if (previous &&
-      previous->container_view() == container_view &&
-      previous->element_bounds() == element_bounds) {
-    return previous;
-  }
 
   if (previous)
     previous->Hide();
@@ -363,7 +357,7 @@ void AutofillPopupControllerImpl::SelectNextLine() {
     ++new_selected_line;
   }
 
-  if (new_selected_line == static_cast<int>(names_.size()))
+  if (new_selected_line >= static_cast<int>(names_.size()))
     new_selected_line = 0;
 
   SetSelectedLine(new_selected_line);

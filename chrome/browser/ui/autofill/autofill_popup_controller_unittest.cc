@@ -40,7 +40,6 @@ class MockAutofillExternalDelegate : public AutofillExternalDelegate {
   virtual void RemoveSuggestion(const string16& value, int identifier) OVERRIDE
       {}
   virtual void ClearPreviewedForm() OVERRIDE {}
-
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr() {
     return AutofillExternalDelegate::GetWeakPtr();
   }
@@ -324,52 +323,6 @@ TEST_F(AutofillPopupControllerUnitTest, RowWidthWithoutText) {
             autofill_popup_controller_->RowWidthWithoutText(2));
   EXPECT_EQ(base_size + subtext_increase + icon_increase,
             autofill_popup_controller_->RowWidthWithoutText(3));
-}
-
-TEST_F(AutofillPopupControllerUnitTest, GetOrCreate) {
-  MockAutofillExternalDelegate delegate(
-      web_contents(), AutofillManager::FromWebContents(web_contents()));
-
-  WeakPtr<AutofillPopupControllerImpl> controller =
-      AutofillPopupControllerImpl::GetOrCreate(
-          WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-          gfx::Rect());
-  EXPECT_TRUE(controller);
-
-  controller->Hide();
-
-  controller = AutofillPopupControllerImpl::GetOrCreate(
-      WeakPtr<AutofillPopupControllerImpl>(), delegate.GetWeakPtr(), NULL,
-      gfx::Rect());
-  EXPECT_TRUE(controller);
-
-  WeakPtr<AutofillPopupControllerImpl> controller2 =
-      AutofillPopupControllerImpl::GetOrCreate(controller,
-                                               delegate.GetWeakPtr(),
-                                               NULL,
-                                               gfx::Rect());
-  EXPECT_EQ(controller.get(), controller2.get());
-  controller->Hide();
-
-  testing::NiceMock<TestAutofillPopupController>* test_controller =
-      new testing::NiceMock<TestAutofillPopupController>(delegate.GetWeakPtr(),
-                                                         gfx::Rect());
-  EXPECT_CALL(*test_controller, Hide());
-
-  gfx::RectF bounds(0.f, 0.f, 1.f, 2.f);
-  AutofillPopupControllerImpl* controller3 =
-      AutofillPopupControllerImpl::GetOrCreate(
-          test_controller->GetWeakPtr(),
-          delegate.GetWeakPtr(),
-          NULL,
-          bounds);
-  EXPECT_EQ(
-      bounds,
-      static_cast<AutofillPopupController*>(controller3)->element_bounds());
-  controller3->Hide();
-
-  // Hide the test_controller to delete it.
-  test_controller->DoHide();
 }
 
 #if !defined(OS_ANDROID)

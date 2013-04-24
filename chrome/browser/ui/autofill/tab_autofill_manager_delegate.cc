@@ -143,7 +143,7 @@ void TabAutofillManagerDelegate::ShowAutofillPopup(
       element_bounds + client_area.OffsetFromOrigin();
 
   // Will delete or reuse the old |popup_controller_|.
-  popup_controller_ = AutofillPopupControllerImpl::GetOrCreate(
+  popup_controller_ = AutofillPopupControllerImpl::Create(
       popup_controller_,
       delegate,
       web_contents()->GetView()->GetNativeView(),

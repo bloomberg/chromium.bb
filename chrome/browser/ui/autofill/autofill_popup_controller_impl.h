@@ -33,10 +33,9 @@ class AutofillPopupView;
 class AutofillPopupControllerImpl : public AutofillPopupController,
                                     public content::KeyboardListener {
  public:
-  // Creates a new |AutofillPopupControllerImpl|, or reuses |previous| if
-  // the construction arguments are the same. |previous| may be invalidated by
-  // this call.
-  static base::WeakPtr<AutofillPopupControllerImpl> GetOrCreate(
+  // Creates a new |AutofillPopupControllerImpl|. |previous| will be invalidated
+  // by this call.
+  static base::WeakPtr<AutofillPopupControllerImpl> Create(
       base::WeakPtr<AutofillPopupControllerImpl> previous,
       base::WeakPtr<AutofillPopupDelegate> delegate,
       gfx::NativeView container_view,
