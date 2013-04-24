@@ -20,21 +20,33 @@ namespace base {
 
 namespace internal {
 
-// Helper function to run the block contained in the parameter.
-template<typename ReturnType>
-ReturnType RunBlock(base::mac::ScopedBlock<ReturnType(^)()> block) {
-  ReturnType(^extracted_block)() = block.get();
+// Helper functions to run the block contained in the parameter.
+template<typename R>
+R RunBlock(base::mac::ScopedBlock<R(^)()> block) {
+  R(^extracted_block)() = block.get();
   return extracted_block();
+}
+
+template<typename R, typename A1>
+R RunBlock(base::mac::ScopedBlock<R(^)(A1)> block, A1 a) {
+  R(^extracted_block)(A1) = block.get();
+  return extracted_block(a);
 }
 
 }  // namespace internal
 
-// Construct a callback from an objective-C block.
-template<typename ReturnType>
-base::Callback<ReturnType(void)> BindBlock(ReturnType(^block)()) {
-  return base::Bind(&base::internal::RunBlock<ReturnType>,
-                    base::mac::ScopedBlock<ReturnType(^)()>(
-                        Block_copy(block)));
+// Construct a callback with no argument from an objective-C block.
+template<typename R>
+base::Callback<R(void)> BindBlock(R(^block)()) {
+  return base::Bind(&base::internal::RunBlock<R>,
+                    base::mac::ScopedBlock<R(^)()>(Block_copy(block)));
+}
+
+// Construct a callback with one argument from an objective-C block.
+template<typename R, typename A1>
+base::Callback<R(A1)> BindBlock(R(^block)(A1)) {
+  return base::Bind(&base::internal::RunBlock<R, A1>,
+                    base::mac::ScopedBlock<R(^)(A1)>(Block_copy(block)));
 }
 
 }  // namespace base

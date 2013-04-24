@@ -45,4 +45,10 @@ TEST(BindObjcBlockTest, TestReturnValue) {
   EXPECT_EQ(kReturnValue, c.Run());
 }
 
+TEST(BindObjcBlockTest, TestArgument) {
+  const int kArgument = 42;
+  base::Callback<int(int)> c = base::BindBlock(^(int a){return a + 1;});
+  EXPECT_EQ(kArgument + 1, c.Run(kArgument));
+}
+
 }  // namespace
