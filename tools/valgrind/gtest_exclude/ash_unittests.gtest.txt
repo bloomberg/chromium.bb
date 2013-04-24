@@ -1,2 +1,5 @@
 # Hangs that should go away with a new sharding framework, according to maruel@.
 LauncherViewTest.*
+
+# crbug.com/234854
+PanelLayoutManagerTest.PanelAlignmentSecondDisplay 
