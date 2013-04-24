@@ -92,10 +92,11 @@ void V8AbstractEventListener::handleEvent(ScriptExecutionContext* context, Event
     v8::Context::Scope scope(v8Context);
 
     // Get the V8 wrapper for the event object.
-    v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Isolate* isolate = v8Context->GetIsolate();
+    v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
     if (jsEvent.IsEmpty())
         return;
-    invokeEventHandler(context, event, jsEvent);
+    invokeEventHandler(context, event, v8::Local<v8::Value>::New(isolate, jsEvent));
 }
 
 void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
@@ -104,7 +105,7 @@ void V8AbstractEventListener::setListenerObject(v8::Handle<v8::Object> listener)
     WeakHandleListener<V8AbstractEventListener>::makeWeak(m_isolate, m_listener.get(), this);
 }
 
-void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context, Event* event, v8::Handle<v8::Value> jsEvent)
+void V8AbstractEventListener::invokeEventHandler(ScriptExecutionContext* context, Event* event, v8::Local<v8::Value> jsEvent)
 {
     // If jsEvent is empty, attempt to set it as a hidden value would crash v8.
     if (jsEvent.IsEmpty())

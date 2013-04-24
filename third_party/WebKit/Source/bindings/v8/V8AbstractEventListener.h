@@ -114,7 +114,7 @@ namespace WebCore {
 
         void setListenerObject(v8::Handle<v8::Object> listener);
 
-        void invokeEventHandler(ScriptExecutionContext*, Event*, v8::Handle<v8::Value> jsEvent);
+        void invokeEventHandler(ScriptExecutionContext*, Event*, v8::Local<v8::Value> jsEvent);
 
         // Get the receiver object to use for event listener call.
         v8::Local<v8::Object> getReceiverObject(ScriptExecutionContext*, Event*);

@@ -73,9 +73,10 @@ void V8WorkerContextEventListener::handleEvent(ScriptExecutionContext* context, 
     v8::Context::Scope scope(v8Context);
 
     // Get the V8 wrapper for the event object.
-    v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Isolate* isolate = v8Context->GetIsolate();
+    v8::Handle<v8::Value> jsEvent = toV8(event, v8::Handle<v8::Object>(), isolate);
 
-    invokeEventHandler(context, event, jsEvent);
+    invokeEventHandler(context, event, v8::Local<v8::Value>::New(isolate, jsEvent));
 }
 
 v8::Local<v8::Value> V8WorkerContextEventListener::callListenerFunction(ScriptExecutionContext* context, v8::Handle<v8::Value> jsEvent, Event* event)
