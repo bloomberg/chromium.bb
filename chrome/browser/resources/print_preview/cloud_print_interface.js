@@ -295,9 +295,9 @@ cr.define('cloudprint', function() {
       if (pts.copies.isCapabilityAvailable() && pts.copies.isUserEdited()) {
         cjt.print.copies = {copies: pts.copies.getValueAsNumber()};
       }
-      if (pts.hasDuplexCapability()) {
+      if (pts.duplex.isCapabilityAvailable() && pts.duplex.isUserEdited()) {
         cjt.print.duplex =
-            {type: pts.isDuplexEnabled() ? 'LONG_EDGE' : 'NO_DUPLEX'};
+            {type: pts.duplex.getValue() ? 'LONG_EDGE' : 'NO_DUPLEX'};
       }
       if (pts.hasOrientationCapability()) {
         cjt.print.page_orientation =

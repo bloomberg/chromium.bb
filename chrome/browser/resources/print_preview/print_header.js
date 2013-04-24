@@ -148,7 +148,7 @@ cr.define('print_preview', function() {
 
       var numPages = this.printTicketStore_.getPageNumberSet().size;
       var numSheets = numPages;
-      if (!saveToPdf && this.printTicketStore_.isDuplexEnabled()) {
+      if (!saveToPdf && this.printTicketStore_.duplex.getValue()) {
         numSheets = Math.ceil(numPages / 2);
       }
 

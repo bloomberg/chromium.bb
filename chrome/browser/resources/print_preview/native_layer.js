@@ -171,7 +171,7 @@ cr.define('print_preview', function() {
 
         // NOTE: Even though the following fields don't directly relate to the
         // preview, they still need to be included.
-        'duplex': printTicketStore.isDuplexEnabled() ?
+        'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),
@@ -229,7 +229,7 @@ cr.define('print_preview', function() {
         'headerFooterEnabled': printTicketStore.isHeaderFooterEnabled(),
         'marginsType': printTicketStore.getMarginsType(),
         'generateDraftData': true, // TODO(rltoscano): What should this be?
-        'duplex': printTicketStore.isDuplexEnabled() ?
+        'duplex': printTicketStore.duplex.getValue() ?
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),

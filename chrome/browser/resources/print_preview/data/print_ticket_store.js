@@ -100,8 +100,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.ticket_items.Duplex}
      * @private
      */
-    this.duplex_ =
-        new print_preview.ticket_items.Duplex(this.capabilitiesHolder_);
+    this.duplex_ = new print_preview.ticket_items.Duplex(
+        this.appState_, this.destinationStore_);
 
     /**
      * Landscape ticket item.
@@ -201,6 +201,10 @@ cr.define('print_preview', function() {
 
     get copies() {
       return this.copies_;
+    },
+
+    get duplex() {
+      return this.duplex_;
     },
 
     /** @return {boolean} Whether the document is modifiable. */
@@ -325,7 +329,11 @@ cr.define('print_preview', function() {
         this.color_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_COLOR_ENABLED));
       }
-      this.duplex_.updateValue(this.appState_.isDuplexEnabled);
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_DUPLEX_ENABLED)) {
+        this.duplex_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_DUPLEX_ENABLED));
+      }
       this.headerFooter_.updateValue(this.appState_.isHeaderFooterEnabled);
       this.landscape_.updateValue(this.appState_.isLandscapeEnabled);
       if (this.appState_.hasField(
@@ -391,30 +399,6 @@ cr.define('print_preview', function() {
             print_preview.ticket_items.MarginsType.Value.DEFAULT);
         this.appState_.persistCustomMargins(null);
         this.appState_.persistIsLandscapeEnabled(isLandscapeEnabled);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /** @return {boolean} Whether the duplexing capability is available. */
-    hasDuplexCapability: function() {
-      return this.duplex_.isCapabilityAvailable();
-    },
-
-    /** @return {boolean} Whether the document should be printed in duplex. */
-    isDuplexEnabled: function() {
-      return this.duplex_.getValue();
-    },
-
-    /**
-     * Updates the duplexing setting. Dispatches a TICKET_CHANGE event if the
-     * value changes.
-     * @param {boolean} isDuplexEnabled Whether the document should be printed
-     *     in duplex.
-     */
-    updateDuplex: function(isDuplexEnabled) {
-      if (this.duplex_.getValue() != isDuplexEnabled) {
-        this.duplex_.updateValue(isDuplexEnabled);
-        this.appState_.persistIsDuplexEnabled(isDuplexEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },

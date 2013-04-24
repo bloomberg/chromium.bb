@@ -94,11 +94,6 @@ cr.define('print_preview', function() {
           null;
     },
 
-    /** @return {?boolean} Whether duplex printing is enabled. */
-    get isDuplexEnabled() {
-      return this.state_[AppState.Field.IS_DUPLEX_ENABLED];
-    },
-
     /** @return {?boolean} Whether the header-footer option is enabled. */
     get isHeaderFooterEnabled() {
       return this.state_[AppState.Field.IS_HEADER_FOOTER_ENABLED];
@@ -107,11 +102,6 @@ cr.define('print_preview', function() {
     /** @return {?boolean} Whether landscape page orientation is selected. */
     get isLandscapeEnabled() {
       return this.state_[AppState.Field.IS_LANDSCAPE_ENABLED];
-    },
-
-    /** @return {?boolean} Whether printing collation is enabled. */
-    get isCollateEnabled() {
-      return this.state_[AppState.Field.IS_COLLATE_ENABLED];
     },
 
     /** @return {?boolean} Whether printing CSS backgrounds is enabled. */
@@ -214,15 +204,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Persists whether duplexing is enabled.
-     * @param {?boolean} isDuplexEnabled Whether duplex printing is enabled.
-     */
-    persistIsDuplexEnabled: function(isDuplexEnabled) {
-      this.state_[AppState.Field.IS_DUPLEX_ENABLED] = isDuplexEnabled;
-      this.persist_();
-    },
-
-    /**
      * Persists whether header-footer is enabled.
      * @param {?boolean} Whether header-footer is enabled.
      */
@@ -238,15 +219,6 @@ cr.define('print_preview', function() {
      */
     persistIsLandscapeEnabled: function(isLandscapeEnabled) {
       this.state_[AppState.Field.IS_LANDSCAPE_ENABLED] = isLandscapeEnabled;
-      this.persist_();
-    },
-
-    /**
-     * Persists whether printing collation is enabled.
-     * @param {?boolean} isCollateEnabled Whether printing collation is enabled.
-     */
-    persistIsCollateEnabled: function(isCollateEnabled) {
-      this.state_[AppState.Field.IS_COLLATE_ENABLED] = isCollateEnabled;
       this.persist_();
     },
 
