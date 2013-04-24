@@ -785,13 +785,15 @@ class TestGypMSVS(TestGypOnMSToolchain):
     super(TestGypMSVS, self).initialize_build_tool()
     self.build_tool = self.devenv_path
 
-  def build(self, gyp_file, target=None, rebuild=False, **kw):
+  def build(self, gyp_file, target=None, rebuild=False, clean=False, **kw):
     """
     Runs a Visual Studio build using the configuration generated
     from the specified gyp_file.
     """
     configuration = self.configuration_buildname()
-    if rebuild:
+    if clean:
+      build = '/Clean'
+    elif rebuild:
       build = '/Rebuild'
     else:
       build = '/Build'
