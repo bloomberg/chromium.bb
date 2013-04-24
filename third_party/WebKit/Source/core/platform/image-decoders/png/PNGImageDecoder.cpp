@@ -38,7 +38,7 @@
  */
 
 #include "config.h"
-#include "PNGImageDecoder.h"
+#include "core/platform/image-decoders/png/PNGImageDecoder.h"
 
 #include "PlatformInstrumentation.h"
 #include "png.h"

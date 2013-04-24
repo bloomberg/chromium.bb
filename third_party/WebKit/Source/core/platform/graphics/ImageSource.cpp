@@ -29,7 +29,7 @@
 #include "config.h"
 #include "ImageSource.h"
 
-#include "ImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "ImageOrientation.h"
 #include "NotImplemented.h"

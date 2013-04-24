@@ -31,7 +31,7 @@
 #ifndef ICOImageDecoder_h
 #define ICOImageDecoder_h
 
-#include "BMPImageReader.h"
+#include "core/platform/image-decoders/bmp/BMPImageReader.h"
 
 namespace WebCore {
 

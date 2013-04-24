@@ -73,11 +73,11 @@ mailing address.
 */
 
 #include "config.h"
-#include "GIFImageReader.h"
+#include "core/platform/image-decoders/gif/GIFImageReader.h"
 
 #include <string.h>
-#include "GIFImageDecoder.h"
 #include "ImageSource.h"
+#include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
 using WebCore::GIFImageDecoder;
 

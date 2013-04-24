@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PNGImageEncoder.h"
+#include "core/platform/image-encoders/skia/PNGImageEncoder.h"
 
 #include "ImageData.h"
 #include "IntSize.h"

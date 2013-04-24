@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WEBPImageEncoder.h"
+#include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
 
 #include "ImageData.h"
 #include "IntSize.h"

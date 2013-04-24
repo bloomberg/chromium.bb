@@ -27,11 +27,11 @@
 #define ImageDecodingStore_h
 
 #include "DiscardablePixelRef.h"
-#include "ImageDecoder.h"
 #include "ScaledImageFragment.h"
-#include "SkTypes.h"
 #include "SkSize.h"
 #include "SkSizeHash.h"
+#include "SkTypes.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 #include <wtf/DoublyLinkedList.h>
 #include <wtf/HashSet.h>

@@ -20,16 +20,16 @@
  */
 
 #include "config.h"
-#include "ImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "BMPImageDecoder.h"
-#include "GIFImageDecoder.h"
-#include "ICOImageDecoder.h"
-#include "JPEGImageDecoder.h"
-#include "PNGImageDecoder.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "SharedBuffer.h"
-#include "WEBPImageDecoder.h"
+#include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
+#include "core/platform/image-decoders/gif/GIFImageDecoder.h"
+#include "core/platform/image-decoders/ico/ICOImageDecoder.h"
+#include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
+#include "core/platform/image-decoders/png/PNGImageDecoder.h"
+#include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
 
 #include <algorithm>
 #include <cmath>

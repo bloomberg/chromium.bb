@@ -30,11 +30,11 @@
 
 #include "config.h"
 
+#include <algorithm>
 #include "Image.h"
-#include "ImageDecoder.h"
 #include "NativeImageSkia.h"
 #include "SharedBuffer.h"
-#include <algorithm>
+#include "core/platform/image-decoders/ImageDecoder.h"
 #include <public/WebData.h>
 #include <public/WebImage.h>
 #include <public/WebSize.h>

@@ -27,11 +27,11 @@
 
 #include "ImageFrameGenerator.h"
 
-#include "ImageDecoder.h"
 #include "ImageDecodingStore.h"
 #include "ScaledImageFragment.h"
 #include "SharedBuffer.h"
 #include "TraceEvent.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "skia/ext/image_operations.h"
 

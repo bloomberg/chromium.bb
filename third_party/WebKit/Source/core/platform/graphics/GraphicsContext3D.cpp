@@ -39,9 +39,9 @@
 #include "Image.h"
 #include "ImageBuffer.h"
 #include "ImageData.h"
-#include "ImageDecoder.h"
 #include "ImageObserver.h"
 #include "SkTypes.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 #include <public/Platform.h>
 #include <public/WebGraphicsContext3D.h>

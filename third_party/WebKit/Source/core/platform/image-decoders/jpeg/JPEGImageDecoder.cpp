@@ -38,8 +38,8 @@
  */
 
 #include "config.h"
-#include "JPEGImageDecoder.h"
 #include "PlatformInstrumentation.h"
+#include "core/platform/image-decoders/jpeg/JPEGImageDecoder.h"
 #include <wtf/PassOwnPtr.h>
 
 extern "C" {

@@ -26,11 +26,11 @@
 #include "config.h"
 #include "LazyDecodingPixelRef.h"
 
-#include "ImageDecoder.h"
 #include "ImageDecodingStore.h"
 #include "ImageFrameGenerator.h"
 #include "SkData.h"
 #include "TraceEvent.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

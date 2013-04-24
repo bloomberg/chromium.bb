@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "ImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "NativeImageSkia.h"
 #include "PlatformMemoryInstrumentation.h"

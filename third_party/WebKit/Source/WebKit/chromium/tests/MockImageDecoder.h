@@ -25,7 +25,7 @@
 
 #ifndef MockImageDecoder_h
 
-#include "ImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 namespace WebCore {
 

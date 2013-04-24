@@ -29,16 +29,16 @@
  */
 
 #include "config.h"
-#include "JPEGImageEncoder.h"
+#include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
 
 #include "ImageData.h"
 #include "IntSize.h"
 #include "SkBitmap.h"
 #include "SkColorPriv.h"
 extern "C" {
+#include <setjmp.h>
 #include <stdio.h> // jpeglib.h needs stdio.h FILE
 #include "jpeglib.h"
-#include <setjmp.h>
 }
 
 namespace WebCore {

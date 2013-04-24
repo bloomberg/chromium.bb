@@ -26,10 +26,10 @@
 #ifndef DeferredImageDecoder_h
 #define DeferredImageDecoder_h
 
-#include "ImageDecoder.h"
 #include "ImageSource.h"
 #include "IntSize.h"
 #include "SkBitmap.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

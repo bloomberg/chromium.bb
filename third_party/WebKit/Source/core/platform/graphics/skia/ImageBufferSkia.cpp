@@ -40,17 +40,17 @@
 #include "GraphicsContext.h"
 #include "GraphicsContext3D.h"
 #include "ImageData.h"
-#include "JPEGImageEncoder.h"
 #include "MIMETypeRegistry.h"
 #include "MemoryInstrumentationSkia.h"
 #include "NativeImageSkia.h"
-#include "PNGImageEncoder.h"
 #include "PlatformContextSkia.h"
 #include "SharedGraphicsContext3D.h"
 #include "SkColorPriv.h"
 #include "SkGpuDevice.h"
 #include "SkiaUtils.h"
-#include "WEBPImageEncoder.h"
+#include "core/platform/image-encoders/skia/JPEGImageEncoder.h"
+#include "core/platform/image-encoders/skia/PNGImageEncoder.h"
+#include "core/platform/image-encoders/skia/WEBPImageEncoder.h"
 #include <public/Platform.h>
 
 #include <wtf/text/Base64.h>

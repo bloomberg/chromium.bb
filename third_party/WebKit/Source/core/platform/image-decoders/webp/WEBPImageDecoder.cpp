@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "WEBPImageDecoder.h"
+#include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
 
 #include "PlatformInstrumentation.h"
 

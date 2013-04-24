@@ -26,7 +26,7 @@
 #ifndef GIFImageDecoder_h
 #define GIFImageDecoder_h
 
-#include "ImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/OwnPtr.h>
 
 class GIFImageReader;

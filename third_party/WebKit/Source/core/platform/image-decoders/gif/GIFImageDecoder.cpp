@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "GIFImageDecoder.h"
+#include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
-#include "GIFImageReader.h"
-#include "PlatformInstrumentation.h"
 #include <limits>
+#include "PlatformInstrumentation.h"
+#include "core/platform/image-decoders/gif/GIFImageReader.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

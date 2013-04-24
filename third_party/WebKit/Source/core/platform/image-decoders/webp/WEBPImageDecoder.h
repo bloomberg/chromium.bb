@@ -29,7 +29,7 @@
 #ifndef WEBPImageDecoder_h
 #define WEBPImageDecoder_h
 
-#include "ImageDecoder.h"
+#include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "webp/decode.h"
 #if USE(QCMSLIB) && (WEBP_DECODER_ABI_VERSION > 0x200)

@@ -27,8 +27,8 @@
 #ifndef JPEGImageDecoder_h
 #define JPEGImageDecoder_h
 
-#include "ImageDecoder.h"
 #include <stdio.h> // Needed by jpeglib.h for FILE.
+#include "core/platform/image-decoders/ImageDecoder.h"
 #include <wtf/OwnPtr.h>
 
 extern "C" {

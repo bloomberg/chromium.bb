@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "GIFImageDecoder.h"
+#include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
+#include <gtest/gtest.h>
 #include "FileSystem.h"
 #include "SharedBuffer.h"
-#include <gtest/gtest.h>
 #include <public/Platform.h>
 #include <public/WebData.h>
 #include <public/WebSize.h>
