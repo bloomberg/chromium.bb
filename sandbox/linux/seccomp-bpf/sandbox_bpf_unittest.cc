@@ -693,6 +693,9 @@ intptr_t BrokerOpenTrapHandler(const struct arch_seccomp_data& args,
   BPF_ASSERT(aux);
   BrokerProcess* broker_process = static_cast<BrokerProcess*>(aux);
   switch(args.nr) {
+    case __NR_access:
+      return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
+          static_cast<int>(args.args[1]));
     case __NR_open:
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
           static_cast<int>(args.args[1]));
@@ -715,6 +718,7 @@ ErrorCode DenyOpenPolicy(Sandbox *sandbox, int sysno, void *aux) {
   }
 
   switch (sysno) {
+    case __NR_access:
     case __NR_open:
     case __NR_openat:
       // We get a InitializedOpenBroker class, but our trap handler wants
@@ -736,7 +740,9 @@ BPF_TEST(SandboxBpf, UseOpenBroker, DenyOpenPolicy,
 
   // First, use the broker "manually"
   BPF_ASSERT(broker_process->Open("/proc/denied", O_RDONLY) == -EPERM);
+  BPF_ASSERT(broker_process->Access("/proc/denied", R_OK) == -EPERM);
   BPF_ASSERT(broker_process->Open("/proc/allowed", O_RDONLY) == -ENOENT);
+  BPF_ASSERT(broker_process->Access("/proc/allowed", R_OK) == -ENOENT);
 
   // Now use glibc's open() as an external library would.
   BPF_ASSERT(open("/proc/denied", O_RDONLY) == -1);
@@ -753,8 +759,16 @@ BPF_TEST(SandboxBpf, UseOpenBroker, DenyOpenPolicy,
   BPF_ASSERT(openat(AT_FDCWD, "/proc/allowed", O_RDONLY) == -1);
   BPF_ASSERT(errno == ENOENT);
 
+  // And test glibc's access().
+  BPF_ASSERT(access("/proc/denied", R_OK) == -1);
+  BPF_ASSERT(errno == EPERM);
+
+  BPF_ASSERT(access("/proc/allowed", R_OK) == -1);
+  BPF_ASSERT(errno == ENOENT);
 
   // This is also white listed and does exist.
+  int cpu_info_access = access("/proc/cpuinfo", R_OK);
+  BPF_ASSERT(cpu_info_access == 0);
   int cpu_info_fd = open("/proc/cpuinfo", O_RDONLY);
   BPF_ASSERT(cpu_info_fd >= 0);
   char buf[1024];

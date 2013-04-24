@@ -41,6 +41,11 @@ class BrokerProcess {
   // sandbox in the broker.
   bool Init(bool (*sandbox_callback)(void));
 
+  // Can be used in place of access(). Will be async signal safe.
+  // X_OK will always EPERM in practice since the broker process doesn't support
+  // execute permissions.
+  // It's similar to the access() system call and will return -errno on errors.
+  int Access(const char* pathname, int mode) const;
   // Can be used in place of open(). Will be async signal safe.
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
@@ -50,10 +55,24 @@ class BrokerProcess {
   int broker_pid() const { return broker_pid_; }
 
  private:
+  enum IPCCommands {
+    kCommandInvalid = 0,
+    kCommandOpen,
+    kCommandAccess,
+  };
+  int PathAndFlagsSyscall(enum IPCCommands command_type,
+                          const char* pathname, int flags) const;
   bool HandleRequest() const;
-  bool HandleOpenRequest(int reply_ipc, const Pickle& read_pickle,
-                         PickleIterator iter) const;
-  bool GetFileNameIfAllowedAccess(const char*, int, const char**) const;
+  bool HandleRemoteCommand(IPCCommands command_type, int reply_ipc,
+      const Pickle& read_pickle, PickleIterator iter) const;
+
+  void AccessFileForIPC(const std::string& requested_filename,
+                        int mode, Pickle* write_pickle) const;
+  void OpenFileForIPC(const std::string& requested_filename,
+                      int flags, Pickle* write_pickle,
+                      std::vector<int>* opened_files) const;
+  bool GetFileNameIfAllowedToAccess(const char*, int, const char**) const;
+  bool GetFileNameIfAllowedToOpen(const char*, int, const char**) const;
   bool initialized_;  // Whether we've been through Init() yet.
   bool is_child_;  // Whether we're the child (broker process).
   bool fast_check_in_client_;  // Whether to forward a request that we know
