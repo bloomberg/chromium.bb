@@ -64,8 +64,6 @@ class InspectorState;
 class InstrumentingAgents;
 class IntSize;
 class Page;
-class PlatformMouseEvent;
-class PlatformTouchEvent;
 class PostWorkerNotificationToFrontendTask;
 class Node;
 
@@ -101,9 +99,6 @@ public:
     void getHighlight(Highlight*) const;
     void hideHighlight();
     Node* highlightedNode() const;
-
-    bool handleMouseEvent(Frame*, const PlatformMouseEvent&);
-    bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
 
     bool isUnderTest();
     void evaluateForTestInFrontend(long callId, const String& script);

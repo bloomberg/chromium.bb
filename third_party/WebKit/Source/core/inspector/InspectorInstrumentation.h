@@ -41,6 +41,7 @@
 #include "EventContext.h"
 #include "FormData.h"
 #include "Frame.h"
+#include "HitTestResult.h"
 #include "Page.h"
 #include "ScriptExecutionContext.h"
 #include "ScriptState.h"
@@ -139,6 +140,9 @@ public:
     static void willRemoveNamedFlow(Document*, NamedFlow*);
     static void didUpdateRegionLayout(Document*, NamedFlow*);
 
+    static void handleMouseMove(Frame*, const PlatformMouseEvent&);
+    static bool handleMousePress(Page*);
+    static bool handleTouchEvent(Page*, Node*);
     static bool forcePseudoState(Element*, CSSSelector::PseudoType);
 
     static void willSendXMLHttpRequest(ScriptExecutionContext*, const String& url);
@@ -317,6 +321,9 @@ private:
     static void willRemoveNamedFlowImpl(InstrumentingAgents*, Document*, NamedFlow*);
     static void didUpdateRegionLayoutImpl(InstrumentingAgents*, Document*, NamedFlow*);
 
+    static void handleMouseMoveImpl(InstrumentingAgents*, Frame*, const PlatformMouseEvent&);
+    static bool handleTouchEventImpl(InstrumentingAgents*, Node*);
+    static bool handleMousePressImpl(InstrumentingAgents*);
     static bool forcePseudoStateImpl(InstrumentingAgents*, Element*, CSSSelector::PseudoType);
 
     static void willSendXMLHttpRequestImpl(InstrumentingAgents*, const String& url);
@@ -603,6 +610,29 @@ inline void InspectorInstrumentation::didUpdateRegionLayout(Document* document, 
     FAST_RETURN_IF_NO_FRONTENDS(void());
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document))
         didUpdateRegionLayoutImpl(instrumentingAgents, document, namedFlow);
+}
+
+inline void InspectorInstrumentation::handleMouseMove(Frame* frame, const PlatformMouseEvent& event)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(void());
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(frame->page()))
+        handleMouseMoveImpl(instrumentingAgents, frame, event);
+}
+
+inline bool InspectorInstrumentation::handleTouchEvent(Page* page, Node* node)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(false);
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        return handleTouchEventImpl(instrumentingAgents, node);
+    return false;
+}
+
+inline bool InspectorInstrumentation::handleMousePress(Page* page)
+{
+    FAST_RETURN_IF_NO_FRONTENDS(false);
+    if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForPage(page))
+        return handleMousePressImpl(instrumentingAgents);
+    return false;
 }
 
 inline bool InspectorInstrumentation::forcePseudoState(Element* element, CSSSelector::PseudoType pseudoState)

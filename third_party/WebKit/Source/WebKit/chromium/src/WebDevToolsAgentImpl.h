@@ -79,7 +79,6 @@ public:
     virtual void mainFrameViewCreated(WebFrameImpl*);
     virtual bool metricsOverridden();
     virtual void webViewResized(const WebSize&);
-    virtual bool handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent);
 
     // WebDevToolsAgent implementation.
     virtual void attach();

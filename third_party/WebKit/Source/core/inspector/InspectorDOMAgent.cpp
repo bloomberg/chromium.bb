@@ -83,7 +83,6 @@
 #include "Page.h"
 #include "Pasteboard.h"
 #include "PlatformMouseEvent.h"
-#include "PlatformTouchEvent.h"
 #include "RenderStyle.h"
 #include "RenderStyleConstants.h"
 #include "RenderView.h"
@@ -171,32 +170,19 @@ static bool parseQuad(const RefPtr<InspectorArray>& quadArray, FloatQuad* quad)
     return true;
 }
 
-static Node* hoveredNodeForPoint(Frame* frame, const IntPoint& point, bool ignorePointerEventsNone)
+static Node* hoveredNodeForEvent(Frame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
 {
     HitTestRequest::HitTestRequestType hitType = HitTestRequest::Move | HitTestRequest::ReadOnly | HitTestRequest::AllowChildFrameContent;
     if (ignorePointerEventsNone)
         hitType |= HitTestRequest::IgnorePointerEventsNone;
     HitTestRequest request(hitType);
-    HitTestResult result(frame->view()->windowToContents(point));
+    HitTestResult result(frame->view()->windowToContents(event.position()));
     frame->contentRenderer()->hitTest(request, result);
     result.setToNonShadowAncestor();
     Node* node = result.innerNode();
     while (node && node->nodeType() == Node::TEXT_NODE)
         node = node->parentNode();
     return node;
-}
-
-static Node* hoveredNodeForEvent(Frame* frame, const PlatformMouseEvent& event, bool ignorePointerEventsNone)
-{
-    return hoveredNodeForPoint(frame, event.position(), ignorePointerEventsNone);
-}
-
-static Node* hoveredNodeForEvent(Frame* frame, const PlatformTouchEvent& event, bool ignorePointerEventsNone)
-{
-    const Vector<PlatformTouchPoint>& points = event.touchPoints();
-    if (points.size() == 0)
-        return 0;
-    return hoveredNodeForPoint(frame, points[0].pos(), ignorePointerEventsNone);
 }
 
 class RevalidateStyleAttributeTask {
@@ -1079,11 +1065,10 @@ bool InspectorDOMAgent::handleMousePress()
     return false;
 }
 
-bool InspectorDOMAgent::handleTouchEvent(Frame* frame, const PlatformTouchEvent& event)
+bool InspectorDOMAgent::handleTouchEvent(Node* node)
 {
     if (!m_searchingForNode)
         return false;
-    Node* node = hoveredNodeForEvent(frame, event, false);
     if (node && m_inspectModeHighlightConfig) {
         m_overlay->highlightNode(node, 0 /* eventTarget */, *m_inspectModeHighlightConfig);
         inspect(node);

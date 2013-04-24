@@ -35,7 +35,6 @@
 
 namespace WebKit {
 class WebFrameImpl;
-class WebInputEvent;
 struct WebSize;
 
 class WebDevToolsAgentPrivate : public WebDevToolsAgent {
@@ -56,9 +55,6 @@ public:
 
     // WebViewImpl has been resized.
     virtual void webViewResized(const WebSize&) = 0;
-
-    // DevTools may handle input event from WebViewImpl.
-    virtual bool handleInputEvent(WebCore::Page* page, const WebInputEvent& inputEvent) = 0;
 };
 
 } // namespace WebKit
