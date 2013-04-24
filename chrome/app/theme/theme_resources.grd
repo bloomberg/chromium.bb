@@ -47,8 +47,8 @@
         <structure type="chrome_scaled_image" name="IDR_APP_LIST" file="google_chrome/app_list_48.png" />
         <structure type="chrome_scaled_image" name="IDR_APP_LIST_SXS" file="google_chrome/app_list_sxs_48.png" />
       </if>
-      <if expr="pp_ifdef('enable_app_list') and not pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="win/app_list_v1_overlay.png" />
+      <if expr="pp_ifdef('enable_app_list')">
+        <structure type="chrome_scaled_image" name="IDR_APP_LIST_TAB_OVERLAY" file="common/app_list_v1_overlay.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_ASK_MEDIA" file="ask_media.png" />
       <if expr="pp_ifdef('toolkit_views')">

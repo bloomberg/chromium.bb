@@ -198,11 +198,7 @@ ExtensionAppItem::~ExtensionAppItem() {
 }
 
 bool ExtensionAppItem::HasOverlay() const {
-#if defined(OS_CHROMEOS)
-  return false;
-#else
   return !is_platform_app_ && extension_id_ != extension_misc::kChromeAppId;
-#endif
 }
 
 void ExtensionAppItem::Reload() {
