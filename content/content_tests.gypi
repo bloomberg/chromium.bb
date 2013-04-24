@@ -765,6 +765,7 @@
             'browser/fileapi/blob_layout_browsertest.cc',
             'browser/fileapi/file_system_browsertest.cc',
             'browser/gpu/gpu_crash_browsertest.cc',
+            'browser/gpu/gpu_functional_browsertest.cc',
             'browser/gpu/gpu_memory_test.cc',
             'browser/gpu/gpu_pixel_browsertest.cc',
             'browser/gpu/webgl_conformance_test.cc',

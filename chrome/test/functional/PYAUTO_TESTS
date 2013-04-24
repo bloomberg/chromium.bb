@@ -139,7 +139,6 @@
 
     'win': [
       'gpu',
-
       # ===========================
       # Permanently-disabled tests.
       # ===========================
@@ -153,8 +152,6 @@
       '-extensions.ExtensionsTest.testAllowAccessFileURLs',
       # crbug.com/113090
       '-extensions.ExtensionsTest.testAllowIncognitoExtension',
-      # crbug.com/94682
-      '-gpu.GpuTest.test2dCanvas',
       # Disabled on vista in the actual test. crbug.com/89767
       # -imports.ImportsTest.testImportFirefoxDataTwice
       # Disabled on vista in the actual test. crbug.com/89767

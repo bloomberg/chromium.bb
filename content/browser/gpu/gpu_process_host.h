@@ -68,7 +68,8 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // is not safe to store the pointer once control has returned to the message
   // loop as it can be destroyed. Instead store the associated GPU host ID.
   // This could return NULL if GPU access is not allowed (blacklisted).
-  static GpuProcessHost* Get(GpuProcessKind kind, CauseForGpuLaunch cause);
+  CONTENT_EXPORT static GpuProcessHost* Get(GpuProcessKind kind,
+                                            CauseForGpuLaunch cause);
 
   // Retrieves a list of process handles for all gpu processes.
   static void GetProcessHandles(
