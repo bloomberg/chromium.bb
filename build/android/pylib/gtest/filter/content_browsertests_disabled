@@ -9,11 +9,6 @@ MediaTest.*
 WebGLConformanceTest.*
 MessagePortTest.Tests
 EncryptedMediaTest.InvalidKeySystem
-IndexedDBBrowserTest.DoesntHangTest
-IndexedDBBrowserTest.NullKeyPathPersistence
-IndexedDBBrowserTest.VersionChangeCrashResilience
-IndexedDBBrowserTest.ValueSizeTest
-IndexedDBBrowserTest.ConnectionsClosedOnTabClose
 CrossPlatformAccessibilityBrowserTest.*
 DatabaseTest.*
 
@@ -28,7 +23,6 @@ AudioLayoutTest.AudioConstructor
 AudioLayoutTest.AudioConstructorPreload
 AudioLayoutTest.AudioConstructorSrc
 AudioLayoutTest.AudioOnlyVideoIntrinsicSize
-FileSystemLayoutTest.WorkersFileWriterEventsSharedWorker
 MediaLayoutTest.VideoNoAutoplayTest
 MediaLayoutTest.VideoAutoplayTest
 MediaLayoutTest.VideoLoopTest
@@ -92,19 +86,10 @@ WebrtcBrowserTest.CallWithNewVideoMediaStream
 WebrtcBrowserTest.GetAudioAndVideoStreamAndClone
 WebrtcBrowserTest.GetAudioAndVideoStreamAndStop
 WebrtcBrowserTest.GetVideoStreamAndStop
-WebRTCInternalsBrowserTest.AddStats
-WebRTCInternalsBrowserTest.BweCompoundGraph
-WebRTCInternalsBrowserTest.ConvertedGraphs
-WebRTCInternalsBrowserTest.UpdateAllPeerConnections
-WebRTCInternalsBrowserTest.UpdatePeerConnection
 WebRTCInternalsBrowserTest.withRealPeerConnectionCall
 
 # http://crbug.com/224134
 RenderWidgetHostBrowserTest.GetSnapshotFromRendererTest
-
-# http://crbug.com/232997
-IndexedDBLayoutTest.BasicTests
-IndexedDBLayoutTest.IndexTests
 
 # http://crbug.com/233118
 FileSystemLayoutTest.*
