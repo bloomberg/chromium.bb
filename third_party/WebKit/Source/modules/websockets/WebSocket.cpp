@@ -500,10 +500,8 @@ void WebSocket::stop()
 void WebSocket::didConnect()
 {
     LOG(Network, "WebSocket %p didConnect()", this);
-    if (m_state != CONNECTING) {
-        didClose(0, ClosingHandshakeIncomplete, WebSocketChannel::CloseEventCodeAbnormalClosure, "");
+    if (m_state != CONNECTING)
         return;
-    }
     ASSERT(scriptExecutionContext());
     m_state = OPEN;
     m_subprotocol = m_channel->subprotocol();
