@@ -16,14 +16,26 @@ class CrOSAutoTest(unittest.TestCase):
     options = options_for_unittests.GetCopy()
     self._cri = cros_interface.CrOSInterface(options.cros_remote,
                                              options.cros_ssh_identity)
+    self._is_guest = options.browser_type == 'cros-chrome-guest'
+    self._email = '' if self._is_guest else 'test@test.test'
 
   def _IsCryptohomeMounted(self):
-    """Returns true if cryptohome is mounted"""
+    """Returns True if cryptohome is mounted"""
     cryptohomeJSON, _ = self._cri.RunCmdOnDevice(['/usr/sbin/cryptohome',
                                                  '--action=status'])
     cryptohomeStatus = json.loads(cryptohomeJSON)
     return (cryptohomeStatus['mounts'] and
             cryptohomeStatus['mounts'][0]['mounted'])
+
+  def _FilesystemMountedAt(self, path):
+    """Returns the filesystem mounted at |path|"""
+    df_out, _ = self._cri.RunCmdOnDevice(['/bin/df', path])
+    df_ary = df_out.split('\n')
+    if (len(df_ary) == 3):
+      chronos_ary = df_ary[1].split()
+      if chronos_ary:
+        return chronos_ary[0]
+    return None
 
   def testCryptohomeMounted(self):
     options = options_for_unittests.GetCopy()
@@ -35,7 +47,19 @@ class CrOSAutoTest(unittest.TestCase):
       self.assertTrue(b.tabs[0].url)
       self.assertTrue(self._IsCryptohomeMounted())
 
+      chronos_fs = self._FilesystemMountedAt('/home/chronos/user')
+      self.assertTrue(chronos_fs)
+      if self._is_guest:
+        self.assertEquals(chronos_fs, 'guestfs')
+      else:
+        home, _ = self._cri.RunCmdOnDevice(['/usr/sbin/cryptohome-path',
+                                            'user', self._email])
+        self.assertEquals(self._FilesystemMountedAt(home.rstrip()),
+                          chronos_fs)
+
     self.assertFalse(self._IsCryptohomeMounted())
+    self.assertEquals(self._FilesystemMountedAt('/home/chronos/user'),
+                      '/dev/mapper/encstateful')
 
   def testLoginStatus(self):
     extension_path = os.path.join(os.path.dirname(__file__),
@@ -56,7 +80,10 @@ class CrOSAutoTest(unittest.TestCase):
       ''')
       login_status = extension.EvaluateJavaScript('window.__autotest_result')
       self.assertEquals(type(login_status), dict)
-      self.assertTrue(login_status['isRegularUser'])
-      self.assertFalse(login_status['isGuest'])
-      self.assertEquals(login_status['email'], 'test@test.test')
+
+      self.assertEquals(not self._is_guest, login_status['isRegularUser'])
+      self.assertEquals(self._is_guest, login_status['isGuest'])
+      self.assertEquals(login_status['email'], self._email)
+      self.assertFalse(login_status['isScreenLocked'])
+
 
