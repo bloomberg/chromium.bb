@@ -8,6 +8,7 @@
 #include "ui/views/view.h"
 
 #include "ui/message_center/message_center_export.h"
+#include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/notification_list.h"
 
 namespace views {
@@ -47,7 +48,8 @@ class MessageCenterButtonBar : public views::View {
 
 // MessageCenterView ///////////////////////////////////////////////////////////
 
-class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View {
+class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
+                                                public MessageCenterObserver {
  public:
   MessageCenterView(MessageCenter* message_center, int max_height);
   virtual ~MessageCenterView();
@@ -61,14 +63,20 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View {
   virtual void Layout() OVERRIDE;
   virtual bool OnMouseWheel(const ui::MouseWheelEvent& event) OVERRIDE;
 
+  // Overridden from MessageCenterObserver:
+  virtual void OnNotificationAdded(const std::string& id) OVERRIDE;
+  virtual void OnNotificationRemoved(const std::string& id,
+                                     bool by_user) OVERRIDE;
+  virtual void OnNotificationUpdated(const std::string& id) OVERRIDE;
+
  private:
   friend class MessageCenterViewTest;
 
-  void RemoveAllNotifications();
-  void AddNotification(const Notification& notification);
+  void AddNotificationAt(const Notification& notification, int index);
+  void NotificationsChanged();
 
   MessageCenter* message_center_;  // Weak reference.
-  std::map<std::string,MessageView*> message_views_;
+  std::vector<MessageView*> message_views_;
   views::ScrollView* scroller_;
   views::View* message_list_view_;
   MessageCenterButtonBar* button_bar_;

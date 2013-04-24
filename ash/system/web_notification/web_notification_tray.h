@@ -100,7 +100,6 @@ class ASH_EXPORT WebNotificationTray
   // Overridden from MessageCenterTrayDelegate.
   virtual void OnMessageCenterTrayChanged() OVERRIDE;
   virtual bool ShowMessageCenter() OVERRIDE;
-  virtual void UpdateMessageCenter() OVERRIDE;
   virtual void HideMessageCenter() OVERRIDE;
   virtual bool ShowPopups() OVERRIDE;
   virtual void UpdatePopups() OVERRIDE;

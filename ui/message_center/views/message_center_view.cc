@@ -356,6 +356,7 @@ void MessageCenterButtonBar::SetCloseAllVisible(bool visible) {
 MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      int max_height)
     : message_center_(message_center) {
+  message_center_->AddObserver(this);
   int between_child = IsRichNotificationEnabled() ? 0 : 1;
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, between_child));
@@ -384,34 +385,22 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
 }
 
 MessageCenterView::~MessageCenterView() {
+  message_center_->RemoveObserver(this);
 }
 
 void MessageCenterView::SetNotifications(
     const NotificationList::Notifications& notifications)  {
-  RemoveAllNotifications();
+  message_views_.clear();
+  message_list_view_->RemoveAllChildViews(true);
+  int index = 0;
   for (NotificationList::Notifications::const_iterator iter =
-           notifications.begin(); iter != notifications.end(); ++iter) {
-    AddNotification(*(*iter));
+           notifications.begin(); iter != notifications.end();
+       ++iter, ++index) {
+    AddNotificationAt(*(*iter), index);
     if (message_views_.size() >= kMaxVisibleMessageCenterNotifications)
       break;
   }
-  if (message_views_.empty()) {
-    views::Label* label = new views::Label(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_NO_MESSAGES));
-    label->SetFont(label->font().DeriveFont(1));
-    label->SetEnabledColor(SK_ColorGRAY);
-    // Set transparent background to ensure that subpixel rendering
-    // is disabled. See crbug.com/169056
-    label->SetBackgroundColor(kTransparentColor);
-    message_list_view_->AddChildView(label);
-    button_bar_->SetCloseAllVisible(false);
-    scroller_->set_focusable(false);
-  } else {
-    button_bar_->SetCloseAllVisible(true);
-    scroller_->set_focusable(true);
-    scroller_->RequestFocus();
-  }
-  Layout();
+  NotificationsChanged();
 }
 
 size_t MessageCenterView::NumMessageViewsForTest() const {
@@ -435,21 +424,90 @@ bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
   return views::View::OnMouseWheel(event);
 }
 
-void MessageCenterView::RemoveAllNotifications() {
-  message_views_.clear();
-  message_list_view_->RemoveAllChildViews(true);
-  scroller_->InvalidateLayout();
+void MessageCenterView::OnNotificationAdded(const std::string& id) {
+  if (message_views_.empty())
+    message_list_view_->RemoveAllChildViews(true);
+
+  int index = 0;
+  const NotificationList::Notifications& notifications =
+      message_center_->GetNotifications();
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin(); iter != notifications.end();
+       ++iter, ++index) {
+    if ((*iter)->id() == id) {
+      AddNotificationAt(*(*iter), index);
+      break;
+    }
+    if (message_views_.size() >= kMaxVisibleMessageCenterNotifications)
+      break;
+  }
+  NotificationsChanged();
 }
 
-void MessageCenterView::AddNotification(const Notification& notification) {
+void MessageCenterView::OnNotificationRemoved(const std::string& id,
+                                              bool by_user) {
+  for (size_t i = 0; i < message_views_.size(); ++i) {
+    if (message_views_[i]->notification_id() == id) {
+      // TODO(mukai): introduce reposition handling here.
+      delete message_views_[i];
+      message_views_.erase(message_views_.begin() + i);
+      NotificationsChanged();
+      break;
+    }
+  }
+}
+
+void MessageCenterView::OnNotificationUpdated(const std::string& id) {
+  const NotificationList::Notifications& notifications =
+      message_center_->GetNotifications();
+  size_t index = 0;
+  for (NotificationList::Notifications::const_iterator iter =
+           notifications.begin();
+       iter != notifications.end() && index < message_views_.size();
+       ++iter, ++index) {
+    DCHECK((*iter)->id() == message_views_[index]->notification_id());
+    if ((*iter)->id() == id) {
+      delete *iter;
+      message_views_.erase(message_views_.begin() + index);
+      AddNotificationAt(*(*iter), index);
+      NotificationsChanged();
+      break;
+    }
+  }
+}
+
+void MessageCenterView::AddNotificationAt(const Notification& notification,
+                                          int index) {
   // NotificationViews are expanded by default here until
   // http://crbug.com/217902 is fixed. TODO(dharcourt): Fix.
   MessageView* view = NotificationView::Create(
       notification, message_center_, true);
   view->set_scroller(scroller_);
-  message_views_[notification.id()] = view;
-  message_list_view_->AddChildView(view);
+  message_views_.insert(message_views_.begin() + index, view);
+  message_list_view_->AddChildViewAt(view, index);
   message_center_->DisplayedNotification(notification.id());
+}
+
+void MessageCenterView::NotificationsChanged() {
+  if (message_views_.empty()) {
+    views::Label* label = new views::Label(l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_NO_MESSAGES));
+    label->SetFont(label->font().DeriveFont(1));
+    label->SetEnabledColor(SK_ColorGRAY);
+    // Set transparent background to ensure that subpixel rendering
+    // is disabled. See crbug.com/169056
+    label->SetBackgroundColor(kTransparentColor);
+    message_list_view_->AddChildView(label);
+    button_bar_->SetCloseAllVisible(false);
+    scroller_->set_focusable(false);
+  } else {
+    button_bar_->SetCloseAllVisible(true);
+    scroller_->set_focusable(true);
+    scroller_->RequestFocus();
+  }
+  scroller_->InvalidateLayout();
+  PreferredSizeChanged();
+  Layout();
 }
 
 }  // namespace message_center
