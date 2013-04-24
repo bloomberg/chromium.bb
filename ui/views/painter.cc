@@ -73,11 +73,6 @@ class GradientPainter : public Painter {
   DISALLOW_COPY_AND_ASSIGN(GradientPainter);
 };
 
-// A helper fuction to stretch the given image over the specified canvas area.
-void Fill(gfx::Canvas* c, const gfx::ImageSkia& i, int x, int y, int w, int h) {
-  c->DrawImageInt(i, 0, 0, i.width(), i.height(), x, y, w, h, false);
-}
-
 // ImagePainter stores and paints nine images as a scalable grid.
 class VIEWS_EXPORT ImagePainter : public Painter {
  public:
@@ -152,13 +147,15 @@ void ImagePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
                     rect.bottom() - images_[6].height(), rect.bottom() };
 
   canvas->DrawImageInt(images_[0], x[0], y[0]);
-  Fill(canvas, images_[1], x[1], y[0], x[2] - x[1], y[1] - y[0]);
+  canvas->TileImageInt(images_[1], x[1], y[0], x[2] - x[1], y[1] - y[0]);
   canvas->DrawImageInt(images_[2], x[2], y[0]);
-  Fill(canvas, images_[3], x[0], y[1], x[1] - x[0], y[2] - y[1]);
-  Fill(canvas, images_[4], x[1], y[1], x[2] - x[1], y[2] - y[1]);
-  Fill(canvas, images_[5], x[2], y[1], x[3] - x[2], y[2] - y[1]);
+  canvas->TileImageInt(images_[3], x[0], y[1], x[1] - x[0], y[2] - y[1]);
+  canvas->DrawImageInt(
+      images_[4], 0, 0, images_[4].width(), images_[4].height(),
+      x[1], y[1], x[2] - x[1], y[2] - y[1], false);
+  canvas->TileImageInt(images_[5], x[2], y[1], x[3] - x[2], y[2] - y[1]);
   canvas->DrawImageInt(images_[6], 0, y[2]);
-  Fill(canvas, images_[7], x[1], y[2], x[2] - x[1], y[3] - y[2]);
+  canvas->TileImageInt(images_[7], x[1], y[2], x[2] - x[1], y[3] - y[2]);
   canvas->DrawImageInt(images_[8], x[2], y[2]);
 }
 
