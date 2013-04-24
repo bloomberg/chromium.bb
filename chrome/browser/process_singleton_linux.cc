@@ -59,6 +59,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/debug/leak_annotations.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -688,6 +689,12 @@ ProcessSingleton::ProcessSingleton(
     : notification_callback_(notification_callback),
       current_pid_(base::GetCurrentProcId()),
       ALLOW_THIS_IN_INITIALIZER_LIST(watcher_(new LinuxWatcher(this))) {
+
+  // ProcessSingleton::LinuxWatcher is marked DeleteOnIOThread.  Sometimes it
+  // leaks on shutdown instead of getting deleted.  The destructor doesn't do
+  // anything important, so this shouldn't be a big deal.
+  // crbug.com/104578
+  ANNOTATE_LEAKING_OBJECT_PTR(watcher_.get());
   socket_path_ = user_data_dir.Append(chrome::kSingletonSocketFilename);
   lock_path_ = user_data_dir.Append(chrome::kSingletonLockFilename);
   cookie_path_ = user_data_dir.Append(chrome::kSingletonCookieFilename);
