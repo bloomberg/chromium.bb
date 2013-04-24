@@ -189,7 +189,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionDisabledGlobalErrorTest,
   InstallIncreasingPermissionExtensionV1();
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
   interceptor.SetResponseIgnoreQuery(
       GURL("http://localhost/autoupdate/updates.xml"),

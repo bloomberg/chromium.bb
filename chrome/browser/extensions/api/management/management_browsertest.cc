@@ -250,7 +250,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_AutoUpdate) {
   NotificationListener notification_listener;
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -336,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   NotificationListener notification_listener;
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
   // Note: This interceptor gets requests on the IO thread.
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -412,7 +412,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_ExternalUrlUpdate) {
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -498,7 +498,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, ExternalPolicyRefresh) {
   base::FilePath basedir = test_data_dir_.AppendASCII("autoupdate");
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(
@@ -573,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest,
   ASSERT_TRUE(service->disabled_extensions()->is_empty());
 
   // Note: This interceptor gets requests on the IO thread.
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
   net::URLFetcher::SetEnableInterceptionForTests(true);
 
   interceptor.SetResponseIgnoreQuery(

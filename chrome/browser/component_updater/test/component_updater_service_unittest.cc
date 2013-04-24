@@ -294,7 +294,7 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com;
   EXPECT_EQ(ComponentUpdateService::kOk,
@@ -373,7 +373,7 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));
@@ -438,7 +438,7 @@ TEST_F(ComponentUpdaterTest, InstallCrxTwoSources) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com1;
   RegisterComponent(&com1, kTestComponent_abag, Version("2.2"));
@@ -510,7 +510,7 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com;
   RegisterComponent(&com, kTestComponent_jebg, Version("0.9"));
@@ -550,7 +550,7 @@ TEST_F(ComponentUpdaterTest, CheckForUpdateSoon) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com1;
   RegisterComponent(&com1, kTestComponent_abag, Version("2.2"));
@@ -666,7 +666,7 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   io_thread.StartIOThread();
   file_thread.Start();
 
-  content::URLRequestPrepackagedInterceptor interceptor;
+  content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   CrxComponent com1;
   RegisterComponent(&com1, kTestComponent_jebg, Version("0.9"));

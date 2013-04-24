@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_INTERCEPTOR_H_
 #define CHROME_BROWSER_COMPONENT_UPDATER_COMPONENT_UPDATER_INTERCEPTOR_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 
 class GURL;
@@ -20,12 +22,15 @@ namespace content {
 // occurs while the URLRequestPrepackagedInterceptor is alive.
 class URLRequestPrepackagedInterceptor {
  public:
-  URLRequestPrepackagedInterceptor();
+  // Registers an interceptor for urls using |scheme| and |hostname|. Urls
+  // passed to "SetResponse" are required to use |scheme| and |hostname|.
+  URLRequestPrepackagedInterceptor(const std::string& scheme,
+                                   const std::string& hostname);
   virtual ~URLRequestPrepackagedInterceptor();
 
   // When requests for |url| arrive, respond with the contents of |path|. The
-  // hostname of |url| must be "localhost" to avoid DNS lookups, and the scheme
-  // must be "http".
+  // hostname and scheme of |url| must match the corresponding parameters
+  // passed as constructor arguments.
   void SetResponse(const GURL& url, const base::FilePath& path);
 
   // Identical to SetResponse except that query parameters are ignored on
@@ -38,11 +43,25 @@ class URLRequestPrepackagedInterceptor {
  private:
   class Delegate;
 
+  const std::string scheme_;
+  const std::string hostname_;
+
   // After creation, |delegate_| lives on the IO thread, and a task to delete
   // it is posted from ~URLRequestPrepackagedInterceptor().
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestPrepackagedInterceptor);
+};
+
+// Specialization of URLRequestPrepackagedInterceptor where scheme is "http" and
+// hostname is "localhost".
+class URLLocalHostRequestPrepackagedInterceptor
+    : public URLRequestPrepackagedInterceptor {
+ public:
+  URLLocalHostRequestPrepackagedInterceptor();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(URLLocalHostRequestPrepackagedInterceptor);
 };
 
 }  // namespace content

@@ -38,23 +38,26 @@ class URLRequestPrepackagedJob : public net::URLRequestFileJob {
 class URLRequestPrepackagedInterceptor::Delegate
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
-  Delegate() : hit_count_(0) {}
+  Delegate(const std::string& scheme, const std::string& hostname)
+    : scheme_(scheme), hostname_(hostname), hit_count_(0) {}
   virtual ~Delegate() {}
 
   void Register() {
     net::URLRequestFilter::GetInstance()->AddHostnameProtocolHandler(
-        "http", "localhost",
+        scheme_, hostname_,
         scoped_ptr<net::URLRequestJobFactory::ProtocolHandler>(this));
   }
 
-  static void Unregister() {
-    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http",
-                                                                "localhost");
+  static void Unregister(
+      const std::string& scheme,
+      const std::string& hostname) {
+    net::URLRequestFilter::GetInstance()->RemoveHostnameHandler(scheme,
+                                                                hostname);
   }
 
   // When requests for |url| arrive, respond with the contents of |path|. The
-  // hostname of |url| must be "localhost" to avoid DNS lookups, and the scheme
-  // must be "http".
+  // hostname and scheme of |url| must match the corresponding parameters
+  // passed as constructor arguments.
   void SetResponse(const GURL& url,
                    const base::FilePath& path,
                    bool ignore_query) {
@@ -84,8 +87,8 @@ class URLRequestPrepackagedInterceptor::Delegate
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const OVERRIDE {
     CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-    if (request->url().scheme() != "http" ||
-        request->url().host() != "localhost") {
+    if (request->url().scheme() != scheme_ ||
+        request->url().host() != hostname_) {
       return NULL;
     }
 
@@ -112,6 +115,9 @@ class URLRequestPrepackagedInterceptor::Delegate
                                         it->second);
   }
 
+  const std::string scheme_;
+  const std::string hostname_;
+
   ResponseMap responses_;
   ResponseMap ignore_query_responses_;
 
@@ -122,8 +128,12 @@ class URLRequestPrepackagedInterceptor::Delegate
 };
 
 
-URLRequestPrepackagedInterceptor::URLRequestPrepackagedInterceptor()
-    : delegate_(new Delegate) {
+URLRequestPrepackagedInterceptor::URLRequestPrepackagedInterceptor(
+    const std::string& scheme,
+    const std::string& hostname)
+    : scheme_(scheme),
+      hostname_(hostname),
+      delegate_(new Delegate(scheme, hostname)) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&Delegate::Register,
                                      base::Unretained(delegate_)));
@@ -131,13 +141,16 @@ URLRequestPrepackagedInterceptor::URLRequestPrepackagedInterceptor()
 
 URLRequestPrepackagedInterceptor::~URLRequestPrepackagedInterceptor() {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(&Delegate::Unregister));
+                          base::Bind(&Delegate::Unregister,
+                                     scheme_,
+                                     hostname_));
 }
 
-void URLRequestPrepackagedInterceptor::SetResponse(const GURL& url,
-                                                   const base::FilePath& path) {
-  CHECK_EQ("http", url.scheme());
-  CHECK_EQ("localhost", url.host());
+void URLRequestPrepackagedInterceptor::SetResponse(
+    const GURL& url,
+    const base::FilePath& path) {
+  CHECK_EQ(scheme_, url.scheme());
+  CHECK_EQ(hostname_, url.host());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&Delegate::SetResponse,
                                      base::Unretained(delegate_), url, path,
@@ -147,8 +160,8 @@ void URLRequestPrepackagedInterceptor::SetResponse(const GURL& url,
 void URLRequestPrepackagedInterceptor::SetResponseIgnoreQuery(
     const GURL& url,
     const base::FilePath& path) {
-  CHECK_EQ("http", url.scheme());
-  CHECK_EQ("localhost", url.host());
+  CHECK_EQ(scheme_, url.scheme());
+  CHECK_EQ(hostname_, url.host());
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::Bind(&Delegate::SetResponse,
                                      base::Unretained(delegate_), url, path,
@@ -157,6 +170,12 @@ void URLRequestPrepackagedInterceptor::SetResponseIgnoreQuery(
 
 int URLRequestPrepackagedInterceptor::GetHitCount() {
   return delegate_->GetHitCount();
+}
+
+
+URLLocalHostRequestPrepackagedInterceptor
+  ::URLLocalHostRequestPrepackagedInterceptor()
+    : URLRequestPrepackagedInterceptor("http", "localhost") {
 }
 
 }  // namespace content

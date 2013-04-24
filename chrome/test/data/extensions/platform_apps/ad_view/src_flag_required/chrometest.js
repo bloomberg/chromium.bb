@@ -2,29 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This test checks the page running inside an <adview> has the ability to load
-// and display an image inside an <iframe>.
+// This test checks the "src" attribute is ignored when the
+// "kEnableAdviewSrcAttribute" is missing.
 
 function runTests(guestURL) {
   chrome.test.runTests([
     function test() {
       var adview = document.getElementsByTagName("adview")[0];
 
-      adview.addEventListener("loadcommit", function() {
-        adview.contentWindow.postMessage({
-          message: "display-first-ad",
-          publisherData: "data"
-        }, "*");
-      })
-
-      window.addEventListener("message", function(event) {
-        if (event.data.message == "ad-displayed") {
-          console.log("ad-displayed: " + event.data.data.adSize.height);
-          chrome.test.succeed();
-        }
-      })
-
       adview.setAttribute("src", guestURL);
+
+      // Timeout is necessary to give the mutation observers a chance to fire.
+      // http://lists.w3.org/Archives/Public/public-webapps/2011JulSep/1622.html
+      setTimeout(function() {
+        chrome.test.assertEq("", adview.getAttribute("src"));
+        chrome.test.assertEq(undefined, adview['src']);
+        chrome.test.assertEq(undefined, adview.src);
+        console.log("Properties and attributes are inactive.");
+        chrome.test.succeed();
+      }, 0);
     }
   ]);
 }

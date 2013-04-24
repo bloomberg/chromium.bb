@@ -2,8 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// This test checks the page running inside an <adview> has the ability to load
-// and display an image inside an <iframe>.
+// This test checks the page loaded inside an <adview> has the ability to
+// 1) receive "message" events from the application, and 2) use
+// "window.postMessage" to post back a message to the application.
 
 function runTests(guestURL) {
   chrome.test.runTests([
@@ -12,17 +13,17 @@ function runTests(guestURL) {
 
       adview.addEventListener("loadcommit", function() {
         adview.contentWindow.postMessage({
-          message: "display-first-ad",
-          publisherData: "data"
+          message: "onloadcommit",
+          data: "data"
         }, "*");
-      })
+      });
 
       window.addEventListener("message", function(event) {
-        if (event.data.message == "ad-displayed") {
-          console.log("ad-displayed: " + event.data.data.adSize.height);
+        if (event.data.message == "onloadcommit-ack") {
+          console.log("onloadcommit-ack message received.");
           chrome.test.succeed();
         }
-      })
+      });
 
       adview.setAttribute("src", guestURL);
     }
