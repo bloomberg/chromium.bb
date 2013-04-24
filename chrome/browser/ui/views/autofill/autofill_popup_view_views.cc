@@ -50,17 +50,20 @@ void AutofillPopupViewViews::Hide() {
   HideInternal();
 
   if (GetWidget()) {
-    // Call CloseNow() rather than Close() so that no further pending events are
-    // routed to the popup. Once the |controller_| is gone, the view is not
-    // prepared to handle these events. http://crbug.com/229224
+    // Don't call CloseNow() because some of the functions higher up the stack
+    // assume the the widget is still valid after this point.
+    // http://crbug.com/229224
     // NOTE: This deletes |this|.
-    GetWidget()->CloseNow();
+    GetWidget()->Close();
   } else {
     delete this;
   }
 }
 
 void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
+  if (!controller_)
+    return;
+
   canvas->DrawColor(kPopupBackground);
   OnPaintBorder(canvas);
 
@@ -77,10 +80,14 @@ void AutofillPopupViewViews::OnPaint(gfx::Canvas* canvas) {
 }
 
 void AutofillPopupViewViews::OnMouseCaptureLost() {
-  controller_->MouseExitedPopup();
+  if (controller_)
+    controller_->MouseExitedPopup();
 }
 
 bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
+  if (!controller_)
+    return false;
+
   if (HitTestPoint(event.location())) {
     controller_->MouseHovered(event.x(), event.y());
 
@@ -95,11 +102,13 @@ bool AutofillPopupViewViews::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupViewViews::OnMouseExited(const ui::MouseEvent& event) {
-  controller_->MouseExitedPopup();
+  if (controller_)
+    controller_->MouseExitedPopup();
 }
 
 void AutofillPopupViewViews::OnMouseMoved(const ui::MouseEvent& event) {
-  controller_->MouseHovered(event.x(), event.y());
+  if (controller_)
+    controller_->MouseHovered(event.x(), event.y());
 }
 
 bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
@@ -108,6 +117,9 @@ bool AutofillPopupViewViews::OnMousePressed(const ui::MouseEvent& event) {
 }
 
 void AutofillPopupViewViews::OnMouseReleased(const ui::MouseEvent& event) {
+  if (!controller_)
+    return;
+
   // We only care about the left click.
   if (event.IsOnlyLeftMouseButton() &&
       HitTestPoint(event.location()))
