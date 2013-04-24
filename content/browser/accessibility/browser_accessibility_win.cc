@@ -857,6 +857,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_groupPosition(
 //
 
 STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
+  // No need to check |instance_active_| because this interface is
+  // global, and doesn't depend on any local state.
+
+  if (!app_name)
+    return E_INVALIDARG;
+
   std::string product_name = GetContentClient()->GetProduct();
   *app_name = SysAllocString(UTF8ToUTF16(product_name).c_str());
   DCHECK(*app_name);
@@ -864,6 +870,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_appName(BSTR* app_name) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
+  // No need to check |instance_active_| because this interface is
+  // global, and doesn't depend on any local state.
+
+  if (!app_version)
+    return E_INVALIDARG;
+
   std::string user_agent = GetContentClient()->GetUserAgent();
   *app_version = SysAllocString(UTF8ToUTF16(user_agent).c_str());
   DCHECK(*app_version);
@@ -871,6 +883,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_appVersion(BSTR* app_version) {
 }
 
 STDMETHODIMP BrowserAccessibilityWin::get_toolkitName(BSTR* toolkit_name) {
+  // No need to check |instance_active_| because this interface is
+  // global, and doesn't depend on any local state.
+
+  if (!toolkit_name)
+    return E_INVALIDARG;
+
   // This is hard-coded; all products based on the Chromium engine
   // will have the same toolkit name, so that assistive technology can
   // detect any Chrome-based product.
@@ -881,6 +899,12 @@ STDMETHODIMP BrowserAccessibilityWin::get_toolkitName(BSTR* toolkit_name) {
 
 STDMETHODIMP BrowserAccessibilityWin::get_toolkitVersion(
     BSTR* toolkit_version) {
+  // No need to check |instance_active_| because this interface is
+  // global, and doesn't depend on any local state.
+
+  if (!toolkit_version)
+    return E_INVALIDARG;
+
   std::string user_agent = GetContentClient()->GetUserAgent();
   *toolkit_version = SysAllocString(UTF8ToUTF16(user_agent).c_str());
   DCHECK(*toolkit_version);
