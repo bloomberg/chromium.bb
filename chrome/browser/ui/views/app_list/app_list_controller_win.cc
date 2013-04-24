@@ -973,6 +973,14 @@ void AppListController::Init(Profile* initial_profile) {
       FROM_HERE,
       base::Bind(&::InitView, initial_profile),
       base::TimeDelta::FromSeconds(kInitWindowDelay));
+
+  // Migrate chrome::kAppLauncherIsEnabled pref to
+  // chrome::kAppLauncherHasBeenEnabled pref.
+  if (prefs->FindPreference(apps::prefs::kAppLauncherIsEnabled)) {
+    prefs->SetBoolean(apps::prefs::kAppLauncherHasBeenEnabled,
+                      prefs->GetBoolean(apps::prefs::kAppLauncherIsEnabled));
+    prefs->ClearPref(apps::prefs::kAppLauncherIsEnabled);
+  }
 }
 
 Profile* AppListController::GetCurrentAppListProfile() {
