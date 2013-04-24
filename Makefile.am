@@ -338,12 +338,14 @@ src_client_linux_linux_dumper_unittest_helper_CC=$(PTHREAD_CC)
 src_client_linux_linux_client_unittest_shlib_SOURCES = \
 	src/client/linux/handler/exception_handler_unittest.cc \
 	src/client/linux/minidump_writer/directory_reader_unittest.cc \
+	src/client/linux/minidump_writer/cpu_set_unittest.cc \
 	src/client/linux/minidump_writer/line_reader_unittest.cc \
 	src/client/linux/minidump_writer/linux_core_dumper.cc \
 	src/client/linux/minidump_writer/linux_core_dumper_unittest.cc \
 	src/client/linux/minidump_writer/linux_ptrace_dumper_unittest.cc \
 	src/client/linux/minidump_writer/minidump_writer_unittest.cc \
 	src/client/linux/minidump_writer/minidump_writer_unittest_utils.cc \
+	src/client/linux/minidump_writer/proc_cpuinfo_reader_unittest.cc \
 	src/common/linux/elf_core_dump.cc \
 	src/common/linux/linux_libc_support_unittest.cc \
 	src/common/linux/tests/crash_generator.cc \

@@ -77,6 +77,9 @@ SystemInfo::SystemInfo(const Dump &dump,
     D32(system_info.cpu.x86_cpu_info.version_information);
     D32(system_info.cpu.x86_cpu_info.feature_information);
     D32(system_info.cpu.x86_cpu_info.amd_extended_cpu_features);
+  } else if (system_info.processor_architecture == MD_CPU_ARCHITECTURE_ARM) {
+    D32(system_info.cpu.arm_cpu_info.cpuid);
+    D32(system_info.cpu.arm_cpu_info.elf_hwcaps);
   } else {
     D64(system_info.cpu.other_cpu_info.processor_features[0]);
     D64(system_info.cpu.other_cpu_info.processor_features[1]);

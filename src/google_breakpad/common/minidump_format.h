@@ -552,18 +552,47 @@ typedef union {
     uint32_t amd_extended_cpu_features;  /* cpuid 0x80000001, ebx */
   } x86_cpu_info;
   struct {
+    uint32_t cpuid;
+    uint32_t elf_hwcaps;    /* linux specific, 0 otherwise */
+  } arm_cpu_info;
+  struct {
     uint64_t processor_features[2];
   } other_cpu_info;
 } MDCPUInformation;  /* CPU_INFORMATION */
 
+/* For (MDCPUInformation).arm_cpu_info.elf_hwcaps.
+ * This matches the Linux kernel definitions from <asm/hwcaps.h> */
+typedef enum {
+  MD_CPU_ARM_ELF_HWCAP_SWP       = (1 << 0),
+  MD_CPU_ARM_ELF_HWCAP_HALF      = (1 << 1),
+  MD_CPU_ARM_ELF_HWCAP_THUMB     = (1 << 2),
+  MD_CPU_ARM_ELF_HWCAP_26BIT     = (1 << 3),
+  MD_CPU_ARM_ELF_HWCAP_FAST_MULT = (1 << 4),
+  MD_CPU_ARM_ELF_HWCAP_FPA       = (1 << 5),
+  MD_CPU_ARM_ELF_HWCAP_VFP       = (1 << 6),
+  MD_CPU_ARM_ELF_HWCAP_EDSP      = (1 << 7),
+  MD_CPU_ARM_ELF_HWCAP_JAVA      = (1 << 8),
+  MD_CPU_ARM_ELF_HWCAP_IWMMXT    = (1 << 9),
+  MD_CPU_ARM_ELF_HWCAP_CRUNCH    = (1 << 10),
+  MD_CPU_ARM_ELF_HWCAP_THUMBEE   = (1 << 11),
+  MD_CPU_ARM_ELF_HWCAP_NEON      = (1 << 12),
+  MD_CPU_ARM_ELF_HWCAP_VFPv3     = (1 << 13),
+  MD_CPU_ARM_ELF_HWCAP_VFPv3D16  = (1 << 14),
+  MD_CPU_ARM_ELF_HWCAP_TLS       = (1 << 15),
+  MD_CPU_ARM_ELF_HWCAP_VFPv4     = (1 << 16),
+  MD_CPU_ARM_ELF_HWCAP_IDIVA     = (1 << 17),
+  MD_CPU_ARM_ELF_HWCAP_IDIVT     = (1 << 18),
+} MDCPUInformationARMElfHwCaps;
 
 typedef struct {
   /* The next 3 fields and numberOfProcessors are from the SYSTEM_INFO
    * structure as returned by GetSystemInfo */
   uint16_t         processor_architecture;
   uint16_t         processor_level;         /* x86: 5 = 586, 6 = 686, ... */
+                                            /* ARM: 6 = ARMv6, 7 = ARMv7 ... */
   uint16_t         processor_revision;      /* x86: 0xMMSS, where MM=model,
                                              *      SS=stepping */
+                                            /* ARM: 0 */
 
   uint8_t          number_of_processors;
   uint8_t          product_type;            /* Windows: VER_NT_* from WinNT.h */
@@ -625,7 +654,6 @@ typedef enum {
   MD_OS_SOLARIS       = 0x8202,  /* Solaris */
   MD_OS_ANDROID       = 0x8203   /* Android */
 } MDOSPlatform;
-
 
 typedef struct {
   uint32_t size_of_info;  /* Length of entire MDRawMiscInfo structure. */
