@@ -422,6 +422,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
 
+  // Opens the given URL in a new foreground tab.
+  void OpenTabWithUrl(const GURL& url);
+
   // The |profile| for |contents_|.
   Profile* const profile_;
 

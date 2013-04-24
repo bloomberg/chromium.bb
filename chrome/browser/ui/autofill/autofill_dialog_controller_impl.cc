@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/extensions/shell_window.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "components/autofill/browser/autofill_data_model.h"
 #include "components/autofill/browser/autofill_manager.h"
 #include "components/autofill/browser/autofill_type.h"
@@ -1238,23 +1239,14 @@ void AutofillDialogControllerImpl::NotificationCheckboxStateChanged(
 
 void AutofillDialogControllerImpl::LegalDocumentLinkClicked(
     const ui::Range& range) {
-#if !defined(OS_ANDROID)
   for (size_t i = 0; i < legal_document_link_ranges_.size(); ++i) {
     if (legal_document_link_ranges_[i] == range) {
-      chrome::NavigateParams params(
-          chrome::FindBrowserWithWebContents(web_contents()),
-          wallet_items_->legal_documents()[i]->url(),
-          content::PAGE_TRANSITION_AUTO_BOOKMARK);
-      params.disposition = NEW_BACKGROUND_TAB;
-      chrome::Navigate(&params);
+      OpenTabWithUrl(wallet_items_->legal_documents()[i]->url());
       return;
     }
   }
 
   NOTREACHED();
-#else
-  // TODO(estade): use TabModelList?
-#endif
 }
 
 void AutofillDialogControllerImpl::OnCancel() {
@@ -1379,7 +1371,14 @@ void AutofillDialogControllerImpl::SuggestionItemSelected(
     SuggestionsMenuModel* model,
     size_t index) {
   if (model->GetItemKeyAt(index) == kManageItemsKey) {
-    // TODO(estade): show chrome://settings or a wallet URL.
+    if (!IsPayingWithWallet()) {
+      OpenTabWithUrl(GURL(std::string(chrome::kChromeUISettingsURL) +
+          chrome::kAutofillSubPage));
+    } else {
+      // TODO(estade): show a wallet URL.
+      NOTIMPLEMENTED();
+    }
+
     return;
   }
 
@@ -2311,6 +2310,19 @@ AutofillMetrics::DialogInitialUserStateMetric
   return has_autofill_profiles ?
       AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_HAS_AUTOFILL :
       AutofillMetrics::DIALOG_USER_SIGNED_IN_HAS_WALLET_NO_AUTOFILL;
+}
+
+void AutofillDialogControllerImpl::OpenTabWithUrl(const GURL& url) {
+#if !defined(OS_ANDROID)
+  chrome::NavigateParams params(
+      chrome::FindBrowserWithWebContents(web_contents()),
+      url,
+      content::PAGE_TRANSITION_AUTO_BOOKMARK);
+  params.disposition = NEW_FOREGROUND_TAB;
+  chrome::Navigate(&params);
+#else
+  // TODO(estade): use TabModelList?
+#endif
 }
 
 }  // namespace autofill
