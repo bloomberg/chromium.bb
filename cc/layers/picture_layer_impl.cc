@@ -547,6 +547,9 @@ bool PictureLayerImpl::AreVisibleResourcesReady() const {
   DCHECK(layer_tree_impl()->IsPendingTree());
   DCHECK(ideal_contents_scale_);
 
+  if (!tilings_->num_tilings())
+    return true;
+
   gfx::Rect rect(visible_content_rect());
 
   float min_acceptable_scale =
