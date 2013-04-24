@@ -31,7 +31,7 @@
 #include "core/platform/UUID.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
-#include "modules/mediastream/LocalMediaStream.h"
+#include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "wtf/Locker.h"
@@ -53,7 +53,7 @@ MediaStreamAudioDestinationNode::MediaStreamAudioDestinationNode(AudioContext* c
     MediaStreamSourceVector audioSources;
     audioSources.append(m_source);
     MediaStreamSourceVector videoSources;
-    m_stream = LocalMediaStream::create(context->scriptExecutionContext(), audioSources, videoSources);
+    m_stream = MediaStream::create(context->scriptExecutionContext(), MediaStreamDescriptor::create(audioSources, videoSources));
     MediaStreamCenter::instance().didCreateMediaStream(m_stream->descriptor());
 
     m_source->setAudioFormat(numberOfChannels, context->sampleRate());

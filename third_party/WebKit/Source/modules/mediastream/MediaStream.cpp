@@ -30,7 +30,6 @@
 
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
-#include "core/platform/UUID.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/MediaStreamTrackEvent.h"
@@ -58,7 +57,7 @@ static void processTrack(MediaStreamTrack* track, MediaStreamSourceVector& sourc
 
 static PassRefPtr<MediaStream> createFromSourceVectors(ScriptExecutionContext* context, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
 {
-    RefPtr<MediaStreamDescriptor> descriptor = MediaStreamDescriptor::create(createCanonicalUUIDString(), audioSources, videoSources);
+    RefPtr<MediaStreamDescriptor> descriptor = MediaStreamDescriptor::create(audioSources, videoSources);
     MediaStreamCenter::instance().didCreateMediaStream(descriptor.get());
 
     return MediaStream::create(context, descriptor.release());
@@ -219,6 +218,16 @@ MediaStreamTrack* MediaStream::getTrackById(String id)
     }
 
     return 0;
+}
+
+void MediaStream::stop()
+{
+    if (ended())
+        return;
+
+    MediaStreamCenter::instance().didStopLocalMediaStream(descriptor());
+
+    streamEnded();
 }
 
 void MediaStream::trackEnded()

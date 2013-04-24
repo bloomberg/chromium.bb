@@ -34,9 +34,10 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "MediaStreamComponent.h"
-#include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
+#include "core/platform/UUID.h"
+#include "core/platform/mediastream/MediaStreamComponent.h"
+#include "wtf/RefCounted.h"
+#include "wtf/Vector.h"
 
 namespace WebCore {
 
@@ -57,9 +58,9 @@ public:
         virtual ~ExtraData() { }
     };
 
-    static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
+    static PassRefPtr<MediaStreamDescriptor> create(const MediaStreamSourceVector& audioSources, const MediaStreamSourceVector& videoSources)
     {
-        return adoptRef(new MediaStreamDescriptor(id, audioSources, videoSources));
+        return adoptRef(new MediaStreamDescriptor(createCanonicalUUIDString(), audioSources, videoSources));
     }
 
     static PassRefPtr<MediaStreamDescriptor> create(const String& id, const MediaStreamComponentVector& audioComponents, const MediaStreamComponentVector& videoComponents)
