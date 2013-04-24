@@ -7,7 +7,6 @@ package org.chromium.content.browser;
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
