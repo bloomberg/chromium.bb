@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/metrics/histogram.h"
 #include "base/stl_util.h"
 #include "content/common/gpu/gl_scoped_binders.h"
 #include "content/common/gpu/media/vaapi_h264_decoder.h"
@@ -16,19 +17,43 @@
 #include "third_party/libva/va/va_x11.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace {
+
+enum VAVDAH264DecoderFailure {
+  FRAME_MBS_ONLY_FLAG_NOT_ONE = 0,
+  GAPS_IN_FRAME_NUM = 1,
+  MID_STREAM_RESOLUTION_CHANGE = 2,
+  INTERLACED_STREAM = 3,
+  VAAPI_ERROR = 4,
+  VAVDA_H264_DECODER_FAILURES_MAX,
+};
+
+static void ReportToUMA(VAVDAH264DecoderFailure failure) {
+  UMA_HISTOGRAM_ENUMERATION("Media.VAVDAH264.DecoderFailure",
+                            failure,
+                            VAVDA_H264_DECODER_FAILURES_MAX);
+}
+
+}  // namespace
+
+#define LOG_VA_ERROR_AND_RECORD_UMA(va_res, err_msg)       \
+  do {                                                     \
+      DVLOG(1) << err_msg                                  \
+               << " VA error: " << VAAPI_ErrorStr(va_res); \
+      ReportToUMA(VAAPI_ERROR);                            \
+  } while (0)
+
 #define VA_LOG_ON_ERROR(va_res, err_msg)                   \
   do {                                                     \
     if ((va_res) != VA_STATUS_SUCCESS) {                   \
-      DVLOG(1) << err_msg                                  \
-               << " VA error: " << VAAPI_ErrorStr(va_res); \
+      LOG_VA_ERROR_AND_RECORD_UMA(va_res, err_msg);        \
     }                                                      \
   } while (0)
 
 #define VA_SUCCESS_OR_RETURN(va_res, err_msg, ret)         \
   do {                                                     \
     if ((va_res) != VA_STATUS_SUCCESS) {                   \
-      DVLOG(1) << err_msg                                  \
-               << " VA error: " << VAAPI_ErrorStr(va_res); \
+      LOG_VA_ERROR_AND_RECORD_UMA(va_res, err_msg);        \
       return (ret);                                        \
     }                                                      \
   } while (0)
@@ -1940,6 +1965,7 @@ void VaapiH264Decoder::ReferencePictureMarking() {
       } else {
         // Shouldn't get here.
         DVLOG(1) << "Interlaced video not supported.";
+        ReportToUMA(INTERLACED_STREAM);
       }
     } else {
       // Stream has instructions how to discard pictures from DPB and how
@@ -1950,6 +1976,7 @@ void VaapiH264Decoder::ReferencePictureMarking() {
       } else {
         // Shouldn't get here.
         DVLOG(1) << "Interlaced video not supported.";
+        ReportToUMA(INTERLACED_STREAM);
       }
     }
   }
@@ -2071,13 +2098,14 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
   DCHECK(sps);
 
   if (sps->frame_mbs_only_flag == 0) {
-    // Fields/interlaced video not supported.
     DVLOG(1) << "frame_mbs_only_flag != 1 not supported";
+    ReportToUMA(FRAME_MBS_ONLY_FLAG_NOT_ONE);
     return false;
   }
 
   if (sps->gaps_in_frame_num_value_allowed_flag) {
     DVLOG(1) << "Gaps in frame numbers not supported";
+    ReportToUMA(GAPS_IN_FRAME_NUM);
     return false;
   }
 
@@ -2101,6 +2129,7 @@ bool VaapiH264Decoder::ProcessSPS(int sps_id) {
   if ((pic_width_ != -1 || pic_height_ != -1) &&
       (width != pic_width_ || height != pic_height_)) {
     DVLOG(1) << "Picture size changed mid-stream";
+    ReportToUMA(MID_STREAM_RESOLUTION_CHANGE);
     return false;
   }
 
@@ -2150,6 +2179,7 @@ bool VaapiH264Decoder::ProcessSlice(H264SliceHeader* slice_hdr) {
 
   if (prev_frame_num_ > 0 && prev_frame_num_ < frame_num_ - 1) {
     DVLOG(1) << "Gap in frame_num!";
+    ReportToUMA(GAPS_IN_FRAME_NUM);
     return false;
   }
 

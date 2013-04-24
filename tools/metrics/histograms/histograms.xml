@@ -522,6 +522,12 @@ other types of suffix sets.
   <summary>Video codec used in HTML5 media.</summary>
 </histogram>
 
+<histogram name="Media.VAVDAH264.DecoderFailure" enum="VAVDAH264DecoderFailure">
+  <summary>
+    Error codes reported by video decode using VA-API hardware video decoder.
+  </summary>
+</histogram>
+
 <histogram name="Navigation.MainFrameScheme" enum="NavigationScheme">
   <summary>The scheme of the URL for each main-frame navigation.</summary>
 </histogram>
@@ -6291,6 +6297,14 @@ other types of suffix sets.
   <int value="1" label="Group not reported"/>
   <int value="2" label="Trial was disabled"/>
   <int value="3" label="Group not reported and trial was disabled"/>
+</enum>
+
+<enum name="VAVDAH264DecoderFailure" type="int">
+  <int value="0" label="FRAME_MBS_ONLY_FLAG_NOT_ONE"/>
+  <int value="1" label="GAPS_IN_FRAME_NUM"/>
+  <int value="2" label="MID_STREAM_RESOLUTION_CHANGE"/>
+  <int value="3" label="INTERLACED_STREAM"/>
+  <int value="4" label="VAAPI_ERROR"/>
 </enum>
 
 <enum name="WalletErrors" type="int">
