@@ -23,79 +23,10 @@ using content::PAGE_TRANSITION_TYPED;
 class FullscreenControllerStateInteractiveTest
     : public InProcessBrowserTest,
       public FullscreenControllerStateTest {
- public:
-  // FullscreenControllerStateTest:
-  virtual void ChangeWindowFullscreenState() OVERRIDE;
-  virtual bool InvokeEvent(Event event) OVERRIDE;
-
- protected:
-  // FullscreenControllerStateTest:
-  virtual bool ShouldSkipTest(State state,
-                              Event event,
-                              bool reentrant) OVERRIDE;
+ private:
+  // FullscreenControllerStateTest override:
   virtual Browser* GetBrowser() OVERRIDE;
-
-  scoped_ptr<FullscreenNotificationObserver> fullscreen_observer_;
 };
-
-void FullscreenControllerStateInteractiveTest::ChangeWindowFullscreenState() {
-  if (fullscreen_observer_) {
-    // If tests are stuck here, use the following log command to see progress.
-    // LOG(INFO) << GetAndClearDebugLog();
-    fullscreen_observer_->Wait();
-    fullscreen_observer_.reset(NULL);
-  }
-}
-
-bool FullscreenControllerStateInteractiveTest::InvokeEvent(Event event) {
-  switch (event) {
-    case TOGGLE_FULLSCREEN:
-    case TOGGLE_FULLSCREEN_CHROME:
-    case TAB_FULLSCREEN_TRUE:
-    case TAB_FULLSCREEN_FALSE:
-#if defined(OS_WIN)
-    case METRO_SNAP_TRUE:
-    case METRO_SNAP_FALSE:
-#endif
-    case BUBBLE_EXIT_LINK:
-    case BUBBLE_ALLOW:
-    case BUBBLE_DENY:
-      fullscreen_observer_.reset(new FullscreenNotificationObserver());
-      break;
-    case WINDOW_CHANGE:
-      // ChangeWindowFullscreenState() will be called and then wait on
-      // fullscreen_observer_ if needed.
-      break;
-    default:
-      NOTREACHED() << "InvokeEvent needs a handler for event "
-          << GetEventString(event) << GetAndClearDebugLog();
-      return false;
-  }
-
-  return FullscreenControllerStateTest::InvokeEvent(event);
-}
-
-bool FullscreenControllerStateInteractiveTest::ShouldSkipTest(State state,
-                                                              Event event,
-                                                              bool reentrant) {
-  // Interactive tests run reentrant or not based on the platform
-  // implementation, so limit our test runs to match.
-#if defined(OS_WIN)
-  if (!reentrant) {
-    debugging_log_ << "\nSkipping non-reentrant test on Windows.\n";
-    return true;
-  }
-#else
-  if (reentrant) {
-    debugging_log_ << "\nSkipping reentrant test on non-Windows.\n";
-    return true;
-  }
-#endif
-
-  return FullscreenControllerStateTest::ShouldSkipTest(state,
-                                                       event,
-                                                       reentrant);
-}
 
 Browser* FullscreenControllerStateInteractiveTest::GetBrowser() {
   return InProcessBrowserTest::browser();
@@ -124,19 +55,21 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest,
 
 // Individual tests for each pair of state and event:
 
-#define TEST_EVENT_INNER(state, event, reentrant, reentrant_id) \
+// An "empty" test is included as part of each "TEST_EVENT" because it makes
+// running the entire test suite less flaky on MacOS. All of the tests pass
+// when run individually.
+#define TEST_EVENT(state, event) \
     IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest, \
-                           DISABLED_##state##__##event##reentrant_id) { \
+                           DISABLED_##state##__##event##__Empty) { \
+    } \
+    IN_PROC_BROWSER_TEST_F(FullscreenControllerStateInteractiveTest, \
+                           DISABLED_##state##__##event) { \
       AddTabAtIndex(0, GURL(kAboutBlankURL), PAGE_TRANSITION_TYPED); \
-      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event, reentrant)) \
+      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event)) \
           << GetAndClearDebugLog(); \
     }
     // Progress of tests can be examined by inserting the following line:
     // LOG(INFO) << GetAndClearDebugLog(); }
-
-#define TEST_EVENT(state, event) \
-    TEST_EVENT_INNER(state, event, false, ); \
-    TEST_EVENT_INNER(state, event, true, _Reentrant);
 
 TEST_EVENT(STATE_NORMAL, TOGGLE_FULLSCREEN);
 TEST_EVENT(STATE_NORMAL, TOGGLE_FULLSCREEN_CHROME);

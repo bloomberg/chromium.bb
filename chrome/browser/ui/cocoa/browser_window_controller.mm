@@ -2059,6 +2059,13 @@ willAnimateFromState:(BookmarkBar::State)oldState
     // Exiting presentation mode does not exit system fullscreen; it merely
     // switches from presentation mode to normal fullscreen.
     [self setPresentationModeInternal:NO forceDropdown:NO];
+
+    // Since -windowDidExitFullScreen: won't be called in the
+    // presentation mode --> normal fullscreen case, manually show the exit
+    // bubble and notify the change happened with
+    // WindowFullscreenStateChanged().
+    [self showFullscreenExitBubbleIfNecessary];
+    browser_->WindowFullscreenStateChanged();
   }
 }
 

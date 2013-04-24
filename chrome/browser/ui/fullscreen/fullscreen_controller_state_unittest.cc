@@ -43,7 +43,6 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   // BrowserWindow Interface:
   virtual void EnterFullscreen(const GURL& url,
                                FullscreenExitBubbleType type) OVERRIDE;
-  virtual void EnterFullscreen();
   virtual void ExitFullscreen() OVERRIDE;
   virtual bool ShouldHideUIForFullscreen() const OVERRIDE;
   virtual bool IsFullscreen() const OVERRIDE;
@@ -60,50 +59,42 @@ class FullscreenControllerTestWindow : public TestBrowserWindow {
   static const char* GetWindowStateString(WindowState state);
   WindowState state() const { return state_; }
   void set_browser(Browser* browser) { browser_ = browser; }
-  void set_reentrant(bool value) { reentrant_ = value; }
-  bool reentrant() const { return reentrant_; }
 
   // Simulates the window changing state.
   void ChangeWindowFullscreenState();
-  // Calls ChangeWindowFullscreenState() if |reentrant_| is true.
-  void ChangeWindowFullscreenStateIfReentrant();
 
  private:
+  // Enters fullscreen with |new_mac_with_chrome_mode|.
+  void EnterFullscreen(bool new_mac_with_chrome_mode);
+
+  // Returns true if ChangeWindowFullscreenState() should be called as a result
+  // of updating the current fullscreen state to the passed in state.
+  bool IsTransitionReentrant(bool new_fullscreen,
+                             bool new_mac_with_chrome_mode);
+
   WindowState state_;
   bool mac_with_chrome_mode_;
   Browser* browser_;
-
-  // Causes reentrant calls to be made by calling
-  // browser_->WindowFullscreenStateChanged() from the BrowserWindow
-  // interface methods.
-  bool reentrant_;
 };
 
 FullscreenControllerTestWindow::FullscreenControllerTestWindow()
     : state_(NORMAL),
       mac_with_chrome_mode_(false),
-      browser_(NULL),
-      reentrant_(false) {
+      browser_(NULL) {
 }
 
 void FullscreenControllerTestWindow::EnterFullscreen(
     const GURL& url, FullscreenExitBubbleType type) {
-  EnterFullscreen();
-}
-
-void FullscreenControllerTestWindow::EnterFullscreen() {
-  mac_with_chrome_mode_ = false;
-  if (!IsFullscreen()) {
-    state_ = TO_FULLSCREEN;
-    ChangeWindowFullscreenStateIfReentrant();
-  }
+  EnterFullscreen(false);
 }
 
 void FullscreenControllerTestWindow::ExitFullscreen() {
   if (IsFullscreen()) {
     state_ = TO_NORMAL;
     mac_with_chrome_mode_ = false;
-    ChangeWindowFullscreenStateIfReentrant();
+
+    if (IsTransitionReentrant(false, false))
+      ChangeWindowFullscreenState();
   }
 }
 
@@ -127,7 +118,8 @@ void FullscreenControllerTestWindow::SetMetroSnapMode(bool enable) {
     else
       state_ = NORMAL;
   }
-  ChangeWindowFullscreenStateIfReentrant();
+  if (FullscreenControllerStateTest::IsReentrant())
+    ChangeWindowFullscreenState();
 }
 
 bool FullscreenControllerTestWindow::IsInMetroSnapMode() const {
@@ -137,8 +129,7 @@ bool FullscreenControllerTestWindow::IsInMetroSnapMode() const {
 
 #if defined(OS_MACOSX)
 void FullscreenControllerTestWindow::EnterFullscreenWithChrome() {
-  EnterFullscreen();
-  mac_with_chrome_mode_ = true;
+  EnterFullscreen(true);
 }
 
 bool FullscreenControllerTestWindow::IsFullscreenWithChrome() {
@@ -195,9 +186,41 @@ void FullscreenControllerTestWindow::ChangeWindowFullscreenState() {
   browser_->WindowFullscreenStateChanged();
 }
 
-void FullscreenControllerTestWindow::ChangeWindowFullscreenStateIfReentrant() {
-  if (reentrant_)
+void FullscreenControllerTestWindow::EnterFullscreen(
+    bool new_mac_with_chrome_mode) {
+  bool reentrant = IsTransitionReentrant(true, new_mac_with_chrome_mode);
+
+  mac_with_chrome_mode_ = new_mac_with_chrome_mode;
+  if (!IsFullscreen())
+    state_ = TO_FULLSCREEN;
+
+  if (reentrant)
     ChangeWindowFullscreenState();
+}
+
+bool FullscreenControllerTestWindow::IsTransitionReentrant(
+    bool new_fullscreen,
+    bool new_mac_with_chrome_mode) {
+#if defined(OS_MACOSX)
+  bool mac_with_chrome_mode_changed = new_mac_with_chrome_mode ?
+      IsFullscreenWithoutChrome() : IsFullscreenWithChrome();
+#else
+  bool mac_with_chrome_mode_changed = false;
+#endif
+  bool fullscreen_changed = (new_fullscreen != IsFullscreen());
+
+  if (!fullscreen_changed && !mac_with_chrome_mode_changed)
+    return false;
+
+  if (FullscreenControllerStateTest::IsReentrant())
+    return true;
+
+  // BrowserWindowCocoa::EnterFullscreen() and
+  // BrowserWindowCocoa::EnterFullscreenWithChrome() are reentrant when
+  // switching between fullscreen with chrome and fullscreen without chrome.
+  return state_ == FULLSCREEN &&
+      !fullscreen_changed &&
+      mac_with_chrome_mode_changed;
 }
 
 // Unit test fixture testing Fullscreen Controller through its states. ---------
@@ -215,9 +238,6 @@ class FullscreenControllerStateUnitTest : public BrowserWithTestWindowTest,
  protected:
   // FullscreenControllerStateTest:
   virtual bool ShouldSkipStateAndEventPair(State state, Event event) OVERRIDE;
-  virtual void TestStateAndEvent(State state,
-                                 Event event,
-                                 bool reentrant) OVERRIDE;
   virtual Browser* GetBrowser() OVERRIDE;
   FullscreenControllerTestWindow* window_;
 };
@@ -315,32 +335,20 @@ bool FullscreenControllerStateUnitTest::ShouldSkipStateAndEventPair(
                                                                     event);
 }
 
-void FullscreenControllerStateUnitTest::TestStateAndEvent(State state,
-                                                          Event event,
-                                                          bool reentrant) {
-  window_->set_reentrant(reentrant);
-  FullscreenControllerStateTest::TestStateAndEvent(state, event, reentrant);
-}
-
 Browser* FullscreenControllerStateUnitTest::GetBrowser() {
   return BrowserWithTestWindowTest::browser();
 }
 
 // Tests -----------------------------------------------------------------------
 
-#define TEST_EVENT_INNER(state, event, reentrant, reentrant_id) \
-    TEST_F(FullscreenControllerStateUnitTest, \
-           state##__##event##reentrant_id) { \
+#define TEST_EVENT(state, event) \
+    TEST_F(FullscreenControllerStateUnitTest, state##__##event) { \
       AddTab(browser(), GURL(chrome::kAboutBlankURL)); \
-      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event, reentrant)) \
+      ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event)) \
           << GetAndClearDebugLog(); \
     }
     // Progress of tests can be examined by inserting the following line:
     // LOG(INFO) << GetAndClearDebugLog(); }
-
-#define TEST_EVENT(state, event) \
-    TEST_EVENT_INNER(state, event, false, ); \
-    TEST_EVENT_INNER(state, event, true, _Reentrant);
 
 // Soak tests:
 

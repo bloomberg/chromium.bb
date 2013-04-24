@@ -9,10 +9,12 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "build/build_config.h"
 
 class Browser;
 class FullscreenController;
+class FullscreenNotificationObserver;
 
 // Test fixture testing Fullscreen Controller through its states. --------------
 class FullscreenControllerStateTest {
@@ -78,6 +80,14 @@ class FullscreenControllerStateTest {
   static const char* GetStateString(State state);
   static const char* GetEventString(Event event);
 
+  // Returns true if WindowFullscreenStateChanged() is called synchronously as a
+  // result of calling BrowserWindow's fullscreen related modifiers.
+  static bool IsReentrant();
+
+  // Returns true if |state| can be persistent. This is true for all of the
+  // states without "_TO_" in their name.
+  static bool IsPersistentState(State state);
+
   // Causes Fullscreen Controller to transition to an arbitrary state.
   void TransitionToState(State state);
   // Makes one state change to approach |destination_state| via shortest path.
@@ -93,6 +103,10 @@ class FullscreenControllerStateTest {
 
   // Checks that window state matches the expected controller state.
   virtual void VerifyWindowState();
+
+  // Wait for NOTIFICATION_FULLSCREEN_CHANGED if a notification should have been
+  // sent in transitioning to |state_| from the previous persistent state.
+  void MaybeWaitForNotification();
 
   // Tests all states with all permutations of multiple events to detect
   // lingering state issues that would bleed over to other states.
@@ -128,19 +142,26 @@ class FullscreenControllerStateTest {
 
   std::string GetAndClearDebugLog();
 
-  // Avoids currently broken cases in the fullscreen controller.
+  // Returns true if the |state| & |event| pair should be skipped.
   virtual bool ShouldSkipStateAndEventPair(State state, Event event);
-  // Skips reentrant situations and calls ShouldSkipStateAndEventPair.
-  virtual bool ShouldSkipTest(State state, Event event, bool reentrant);
+
+  // Returns true if a test should be skipped entirely, e.g. due to platform.
+  virtual bool ShouldSkipTest(State state, Event event);
 
   // Runs one test of transitioning to a state and invoking an event.
-  virtual void TestStateAndEvent(State state, Event event, bool reentrant);
+  virtual void TestStateAndEvent(State state, Event event);
 
   virtual Browser* GetBrowser() = 0;
   FullscreenController* GetFullscreenController();
 
   State state_;
-  bool reentrant_;
+
+  // The state when the previous NOTIFICATION_FULLSCREEN_CHANGED notification
+  // was received.
+  State last_notification_received_state_;
+
+  // Listens for the NOTIFICATION_FULLSCREEN_CHANGED notification.
+  scoped_ptr<FullscreenNotificationObserver> fullscreen_notification_observer_;
 
   // Human defined |State| that results given each [state][event] pair.
   State transition_table_[NUM_STATES][NUM_EVENTS];

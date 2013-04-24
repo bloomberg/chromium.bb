@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/fullscreen/fullscreen_controller.h"
+#include "chrome/browser/ui/fullscreen/fullscreen_controller_test.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/common/url_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +35,7 @@ bool IsMacOSLionOrLater() {
 
 FullscreenControllerStateTest::FullscreenControllerStateTest()
     : state_(STATE_NORMAL),
-      reentrant_(false) {
+      last_notification_received_state_(STATE_NORMAL) {
   // Human specified state machine data.
   // For each state, for each event, define the resulting state.
   State transition_table_data[][NUM_EVENTS] = {
@@ -290,6 +291,37 @@ const char* FullscreenControllerStateTest::GetEventString(Event event) {
   }
 }
 
+// static
+bool FullscreenControllerStateTest::IsReentrant() {
+#if defined(TOOLKIT_VIEWS)
+  return true;
+#else
+  return false;
+#endif
+}
+
+// static
+bool FullscreenControllerStateTest::IsPersistentState(State state) {
+  switch (state) {
+    case STATE_NORMAL:
+    case STATE_BROWSER_FULLSCREEN_NO_CHROME:
+    case STATE_BROWSER_FULLSCREEN_WITH_CHROME:
+    case STATE_METRO_SNAP:
+    case STATE_TAB_FULLSCREEN:
+    case STATE_TAB_BROWSER_FULLSCREEN:
+    case STATE_TAB_BROWSER_FULLSCREEN_CHROME:
+      return true;
+    case STATE_TO_NORMAL:
+    case STATE_TO_BROWSER_FULLSCREEN_NO_CHROME:
+    case STATE_TO_BROWSER_FULLSCREEN_WITH_CHROME:
+    case STATE_TO_TAB_FULLSCREEN:
+      return false;
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+
 void FullscreenControllerStateTest::TransitionToState(State final_state) {
   int max_steps = NUM_STATES;
   while (max_steps-- && TransitionAStepTowardState(final_state))
@@ -328,6 +360,15 @@ const char* FullscreenControllerStateTest::GetWindowStateString() {
 }
 
 bool FullscreenControllerStateTest::InvokeEvent(Event event) {
+  if (!fullscreen_notification_observer_.get()) {
+    // Start observing NOTIFICATION_FULLSCREEN_CHANGED. Construct the
+    // notification observer here instead of in
+    // FullscreenControllerStateTest::FullscreenControllerStateTest() so that we
+    // listen to notifications on the proper thread.
+    fullscreen_notification_observer_.reset(
+        new FullscreenNotificationObserver());
+  }
+
   State source_state = state_;
   State next_state = transition_table_[source_state][event];
 
@@ -336,7 +377,7 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
 
   // When simulating reentrant window change calls, expect the next state
   // automatically.
-  if (reentrant_)
+  if (IsReentrant())
     next_state = transition_table_[next_state][WINDOW_CHANGE];
 
   debugging_log_ << "  InvokeEvent(" << std::left
@@ -404,6 +445,7 @@ bool FullscreenControllerStateTest::InvokeEvent(Event event) {
   else
     debugging_log_ << "\n";
 
+  MaybeWaitForNotification();
   VerifyWindowState();
 
   return true;
@@ -581,38 +623,47 @@ void FullscreenControllerStateTest::VerifyWindowState() {
   }
 }
 
+void FullscreenControllerStateTest::MaybeWaitForNotification() {
+  // We should get a fullscreen notification each time we get to a new
+  // persistent state. If we don't get a notification, the test will
+  // fail by timing out.
+  if (state_ != last_notification_received_state_ &&
+      IsPersistentState(state_)) {
+    fullscreen_notification_observer_->Wait();
+    last_notification_received_state_ = state_;
+    fullscreen_notification_observer_.reset(
+        new FullscreenNotificationObserver());
+  }
+}
+
 void FullscreenControllerStateTest::TestTransitionsForEachState() {
-  for (int reentrant = 0; reentrant <= 1; reentrant++) {
-    for (int source_int = 0; source_int < NUM_STATES; source_int++) {
-      for (int event1_int = 0; event1_int < NUM_EVENTS; event1_int++) {
-        State state = static_cast<State>(source_int);
-        Event event1 = static_cast<Event>(event1_int);
+  for (int source_int = 0; source_int < NUM_STATES; source_int++) {
+    for (int event1_int = 0; event1_int < NUM_EVENTS; event1_int++) {
+      State state = static_cast<State>(source_int);
+      Event event1 = static_cast<Event>(event1_int);
 
-        // Early out if skipping all tests for this state, reduces log noise.
-        if (ShouldSkipTest(state, event1, !!reentrant))
-          continue;
+      // Early out if skipping all tests for this state, reduces log noise.
+      if (ShouldSkipTest(state, event1))
+        continue;
 
-        for (int event2_int = 0; event2_int < NUM_EVENTS; event2_int++) {
-          for (int event3_int = 0; event3_int < NUM_EVENTS; event3_int++) {
-            Event event2 = static_cast<Event>(event2_int);
-            Event event3 = static_cast<Event>(event3_int);
+      for (int event2_int = 0; event2_int < NUM_EVENTS; event2_int++) {
+        for (int event3_int = 0; event3_int < NUM_EVENTS; event3_int++) {
+          Event event2 = static_cast<Event>(event2_int);
+          Event event3 = static_cast<Event>(event3_int);
 
-            // Test each state and each event.
-            ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state,
-                                                      event1,
-                                                      !!reentrant))
-                << GetAndClearDebugLog();
+          // Test each state and each event.
+          ASSERT_NO_FATAL_FAILURE(TestStateAndEvent(state, event1))
+              << GetAndClearDebugLog();
 
-            // Then, add an additional event to the sequence.
-            if (ShouldSkipStateAndEventPair(state_, event2))
-              continue;
-            ASSERT_TRUE(InvokeEvent(event2)) << GetAndClearDebugLog();
+          // Then, add an additional event to the sequence.
+          if (ShouldSkipStateAndEventPair(state_, event2))
+            continue;
+          ASSERT_TRUE(InvokeEvent(event2)) << GetAndClearDebugLog();
 
-            // Then, add an additional event to the sequence.
-            if (ShouldSkipStateAndEventPair(state_, event3))
-              continue;
-            ASSERT_TRUE(InvokeEvent(event3)) << GetAndClearDebugLog();
-          }
+          // Then, add an additional event to the sequence.
+          if (ShouldSkipStateAndEventPair(state_, event3))
+            continue;
+          ASSERT_TRUE(InvokeEvent(event3)) << GetAndClearDebugLog();
         }
       }
     }
@@ -695,23 +746,7 @@ bool FullscreenControllerStateTest::ShouldSkipStateAndEventPair(State state,
   return false;
 }
 
-bool FullscreenControllerStateTest::ShouldSkipTest(State state,
-                                                  Event event,
-                                                  bool reentrant) {
-  // FullscreenController verifies that WindowFullscreenStateChanged is
-  // always reentrant on Windows. It will fail if we mock asynchronous calls.
-#if defined(OS_WIN)
-  if (!reentrant) {
-    debugging_log_ << "\nSkipping non-reentrant test on Windows.\n";
-    return true;
-  }
-#else
-  if (reentrant) {
-    debugging_log_ << "\nSkipping reentrant test on non-Windows.\n";
-    return true;
-  }
-#endif
-
+bool FullscreenControllerStateTest::ShouldSkipTest(State state, Event event) {
   // Quietly skip metro snap tests when not on windows.
 #if !defined(OS_WIN)
   if (state == STATE_METRO_SNAP ||
@@ -735,7 +770,7 @@ bool FullscreenControllerStateTest::ShouldSkipTest(State state,
   // will be unable to remain in, as they will progress due to the
   // reentrant window change call. Skip states that will be instantly
   // exited by the reentrant call.
-  if (reentrant && (transition_table_[state][WINDOW_CHANGE] != state)) {
+  if (IsReentrant() && (transition_table_[state][WINDOW_CHANGE] != state)) {
     debugging_log_ << "\nSkipping reentrant test for transitory source state "
         << GetStateString(state) << ".\n";
     return true;
@@ -755,15 +790,13 @@ bool FullscreenControllerStateTest::ShouldSkipTest(State state,
 }
 
 void FullscreenControllerStateTest::TestStateAndEvent(State state,
-                                                     Event event,
-                                                     bool reentrant) {
-  if (ShouldSkipTest(state, event, reentrant))
+                                                      Event event) {
+  if (ShouldSkipTest(state, event))
     return;
 
   debugging_log_ << "\nTest transition from state "
       << GetStateString(state)
-      << (reentrant ? " with reentrant calls.\n" : ".\n");
-  reentrant_ = reentrant;
+      << (IsReentrant() ? " with reentrant calls.\n" : ".\n");
 
   debugging_log_ << "First,                               from"
       << GetStateString(state_) << "\n";

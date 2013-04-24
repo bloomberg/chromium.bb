@@ -606,13 +606,7 @@ void FullscreenController::SetMouseLockTab(WebContents* tab) {
 }
 
 void FullscreenController::ExitTabFullscreenOrMouseLockIfNecessary() {
-  bool exit_tab_fullscreen = IsFullscreenCausedByTab();
-#if defined(OS_MACOSX)
-  if (state_prior_to_tab_fullscreen_ == STATE_BROWSER_FULLSCREEN_WITH_CHROME)
-    exit_tab_fullscreen = true;
-#endif
-
-  if (exit_tab_fullscreen)
+  if (IsFullscreenForTabOrPending())
     ToggleFullscreenModeForTab(fullscreened_tab_, false);
   else
     NotifyTabOfExitIfNecessary();
