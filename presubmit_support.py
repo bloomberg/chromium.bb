@@ -1332,6 +1332,8 @@ def Main(argv):
   parser.add_option("--rietveld_url", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_email", help=optparse.SUPPRESS_HELP)
   parser.add_option("--rietveld_password", help=optparse.SUPPRESS_HELP)
+  parser.add_option("--rietveld_fetch", action='store_true', default=False,
+                    help=optparse.SUPPRESS_HELP)
   options, args = parser.parse_args(argv)
   if options.verbose >= 2:
     logging.basicConfig(level=logging.DEBUG)
@@ -1349,6 +1351,13 @@ def Main(argv):
         options.rietveld_url,
         options.rietveld_email,
         options.rietveld_password)
+    if options.rietveld_fetch:
+      assert options.issue
+      props = rietveld_obj.get_issue_properties(options.issue, False)
+      options.author = props['owner_email']
+      options.description = props['description']
+      logging.info('Got author: "%s"', options.author)
+      logging.info('Got description: """\n%s\n"""', options.description)
   try:
     with canned_check_filter(options.skip_canned):
       results = DoPresubmitChecks(
