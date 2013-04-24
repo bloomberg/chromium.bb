@@ -206,9 +206,9 @@ class BrowserProcessImpl : public BrowserProcess,
 
   // Bookmark prompt controller displays the prompt for frequently visited URL.
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
-#endif
 
   scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
+#endif
 
   scoped_refptr<printing::PrintPreviewDialogController>
       print_preview_dialog_controller_;

@@ -1742,8 +1742,8 @@
         'browser/signin/signin_global_error.h',
         'browser/signin/signin_internals_util.cc',
         'browser/signin/signin_internals_util.h',
-	    'browser/signin/signin_manager_base.cc',
-	    'browser/signin/signin_manager_base.h',
+        'browser/signin/signin_manager_base.cc',
+        'browser/signin/signin_manager_base.h',
         'browser/signin/signin_manager.cc',
         'browser/signin/signin_manager.h',
         'browser/signin/signin_manager_cookie_helper.cc',
@@ -2712,6 +2712,7 @@
             ['exclude', '^browser/first_run/'],
             ['include', '^browser/first_run/first_run.cc'], # For ctor/dtor of a struct.
             ['exclude', '^browser/importer/'],
+            ['exclude', '^browser/media_galleries/'],
             ['exclude', '^browser/service/'],
             ['exclude', '^browser/speech/'],
             ['exclude', '^browser/sync/glue/app_'],

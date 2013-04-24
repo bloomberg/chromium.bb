@@ -145,7 +145,9 @@ class TestingBrowserProcess : public BrowserProcess {
   scoped_ptr<RenderWidgetSnapshotTaker> render_widget_snapshot_taker_;
   scoped_refptr<SafeBrowsingService> sb_service_;
   scoped_ptr<BookmarkPromptController> bookmark_prompt_controller_;
+#if !defined(OS_ANDROID)
   scoped_ptr<chrome::MediaFileSystemRegistry> media_file_system_registry_;
+#endif
 #endif  // !defined(OS_IOS)
 
   // The following objects are not owned by TestingBrowserProcess:

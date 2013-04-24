@@ -316,7 +316,7 @@ BookmarkPromptController* TestingBrowserProcess::bookmark_prompt_controller() {
 
 chrome::MediaFileSystemRegistry*
 TestingBrowserProcess::media_file_system_registry() {
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined (OS_ANDROID)
   NOTIMPLEMENTED();
   return NULL;
 #else

@@ -2251,6 +2251,7 @@
             ['exclude', '^browser/first_run/'],
             ['exclude', '^browser/importer/'],
             ['exclude', '^browser/lifetime/'],
+            ['exclude', '^browser/media_galleries/'],
             ['exclude', '^browser/speech/'],
             ['exclude', '^browser/sync/glue/app_'],
             ['exclude', '^browser/sync/glue/extension_'],

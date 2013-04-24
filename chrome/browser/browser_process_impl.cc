@@ -42,7 +42,6 @@
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/media_galleries/media_file_system_registry.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/thread_watcher.h"
 #include "chrome/browser/metrics/variations/variations_service.h"
@@ -117,6 +116,10 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #endif  // defined(OS_CHROMEOS)
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media_galleries/media_file_system_registry.h"
+#endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
 #include "chrome/browser/plugins/plugins_resource_service.h"
@@ -630,9 +633,13 @@ BookmarkPromptController* BrowserProcessImpl::bookmark_prompt_controller() {
 
 chrome::MediaFileSystemRegistry*
 BrowserProcessImpl::media_file_system_registry() {
+#if defined(OS_ANDROID)
+    return NULL;
+#else
   if (!media_file_system_registry_)
     media_file_system_registry_.reset(new chrome::MediaFileSystemRegistry());
   return media_file_system_registry_.get();
+#endif
 }
 
 #if !defined(OS_WIN)

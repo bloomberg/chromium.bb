@@ -61,11 +61,7 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
-#include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
-#if !defined(OS_ANDROID)
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
-#endif
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
@@ -119,6 +115,11 @@
 
 #if defined(USE_AURA)
 #include "chrome/browser/ui/gesture_prefs_observer_factory_aura.h"
+#endif
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_service_factory.h"
 #endif
 
 #ifndef NDEBUG
@@ -333,8 +334,8 @@ void ProfileDependencyManager::AssertFactoriesBuilt() {
   HistoryServiceFactory::GetInstance();
 #if !defined(OS_ANDROID)
   notifier::ChromeNotifierServiceFactory::GetInstance();
-#endif
   MediaGalleriesPreferencesFactory::GetInstance();
+#endif
 #if defined(OS_CHROMEOS)
   chromeos::NetworkingPrivateEventRouterFactory::GetInstance();
 #endif
