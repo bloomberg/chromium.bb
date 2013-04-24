@@ -1442,7 +1442,7 @@ void RenderWidgetHostViewMac::GotSoftwareFrame() {
     // Forget IOSurface since we are drawing a software frame now.
     if (compositing_iosurface_.get() &&
         compositing_iosurface_->HasIOSurface()) {
-      compositing_iosurface_->UnrefIOSurface();
+      compositing_iosurface_->ClearDrawable();
     }
   }
 }
