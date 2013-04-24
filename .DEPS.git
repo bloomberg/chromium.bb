@@ -317,7 +317,7 @@ deps_os = {
         'src/chrome/installer/mac/third_party/xz/xz':
             Var('git_url') + '/chromium/deps/xz.git@dd8415469606fe7bfdc2ebc12b8457b912ede326',
         'src/chrome/tools/test/reference_build/chrome_mac':
-            Var('git_url') + '/chromium/reference_builds/chrome_mac.git@b43b0539e14bf908e771dbbf0b080f7dc9b75219',
+            Var('git_url') + '/chromium/reference_builds/chrome_mac.git@fc81b2f6c3854189fe67d388daab67a0383b78aa',
         'src/third_party/GTM':
             Var('git_url') + '/external/google-toolbox-for-mac.git@1f3578bb9c3cfdf1293f106f07e5b0b3e19ae543',
         'src/third_party/lighttpd':
@@ -332,7 +332,7 @@ deps_os = {
     'unix':
     {
         'src/chrome/tools/test/reference_build/chrome_linux':
-            Var('git_url') + '/chromium/reference_builds/chrome_linux.git@53d4cfaf7032086779f2f4f40a9b6f21b7dbc3bf',
+            Var('git_url') + '/chromium/reference_builds/chrome_linux.git@b4f1f61dfee5efbf9577ffade74767a6659eeb2a',
         'src/third_party/chromite':
             Var('git_url') + '/chromiumos/chromite.git@848d591953f69426080f8a5f29130897bd6fc73d',
         'src/third_party/cros_dbus_cplusplus/source':
@@ -361,7 +361,7 @@ deps_os = {
     'win':
     {
         'src/chrome/tools/test/reference_build/chrome_win':
-            Var('git_url') + '/chromium/reference_builds/chrome_win.git@fc239c7dcabcd2a225c281963eedb6a5441fb13b',
+            Var('git_url') + '/chromium/reference_builds/chrome_win.git@f4b7e74a777e85405b284a55ce6e3d798bca7159',
         'src/chrome_frame/tools/test/reference_build/chrome_win':
             Var('git_url') + '/chromium/reference_builds/chrome_win.git@b9f52667918a74977cb85eefd4e967150f852fbc',
         'src/third_party/bison':
