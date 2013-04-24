@@ -19,12 +19,21 @@ import git_cl
 
 def get_branches():
   """Get list of all local git branches."""
-  return [Branch(l[2:]) for l in git_cl.RunGit(["branch"]).splitlines()]
+  branches = [l.split() for l in git_cl.RunGit(
+      ["for-each-ref",
+      "--format=%(refname:short) %(upstream:short)",
+      "refs/heads"]).splitlines()]
+  return [Branch(*b) for b in branches] 
+
+def get_change_count(start, end):
+  return int(git_cl.RunGit(["rev-list", "%s..%s" % (start, end), "--count" ]))
 
 
 class Branch(git_cl.Changelist):
-  def __init__(self, name):
+  def __init__(self, name, upstream):
     git_cl.Changelist.__init__(self, branchref=name)
+    self._upstream = upstream
+    self._distance = None
     self._issue_status = None
 
   def GetStatus(self):
@@ -42,8 +51,23 @@ class Branch(git_cl.Changelist):
             self._issue_status = 'abandoned'
       else:
         self._issue_status = 'no-issue'
+      if (self._issue_status != 'pending'
+         and not self.GetDistance()[0]
+         and not self._upstream.startswith("origin/")):
+        self._issue_status = 'empty'
     return self._issue_status
+    
+  def GetDistance(self):
+    if not self._distance:
+      self._distance = [get_change_count(self._upstream, self.GetBranch()),
+          get_change_count(self.GetBranch(), self._upstream)]
+    return self._distance
 
+  def GetDistanceInfo(self):
+    formatted_dist = ", ".join(["%s %d" % (x,y)
+        for (x,y) in zip(["ahead","behind"], self.GetDistance()) if y])
+    return "[%s%s]" % (
+        self._upstream, ": " + formatted_dist if formatted_dist else "")
 
 def main():
   parser = optparse.OptionParser(usage=sys.modules['__main__'].__doc__)
@@ -53,6 +77,7 @@ def main():
 
   branches = get_branches()
   filtered = { 'closed' : [],
+               'empty' : [],
                'pending' : [],
                'abandoned' : [],
                'no-issue' : []}
@@ -65,18 +90,23 @@ def main():
     print "git branch -D %s # Issue %s is closed." % (branch.GetBranch(),
                                                         branch.GetIssue())
 
+  print "# Empty branches"
+  for branch in filtered['empty']:
+    print "git branch -D %s # Empty." % (branch.GetBranch())
+
   print "\n# Pending Branches"
   for branch in filtered['pending']:
-    print "# Branch %s - Issue %s" % (branch.GetBranch(), branch.GetIssue())
+    print "# Branch %s - Issue %s - %s" % (
+        branch.GetBranch(), branch.GetIssue(), branch.GetDistanceInfo())
 
   print "\n# Branches with abandoned issues"
   for branch in filtered['abandoned']:
-    print "# Branch %s - was issue %s" % (
-        branch.GetBranch(), branch.GetIssue())
+    print "# Branch %s - was issue %s - %s" % (
+        branch.GetBranch(), branch.GetIssue(), branch.GetDistanceInfo())
 
   print "\n# Branches without associated issues"
   for branch in filtered['no-issue']:
-    print "# Branch %s" % (branch.GetBranch())
+    print "# Branch %s - %s" % (branch.GetBranch(), branch.GetDistanceInfo())
 
   return 0
 
