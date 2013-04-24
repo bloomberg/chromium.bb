@@ -356,9 +356,6 @@ void SigninScreenHandler::DeclareLocalizedValues(
                IDS_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME);
   builder->Add("signedIn", IDS_SCREEN_LOCK_ACTIVE_USER);
   builder->Add("signinButton", IDS_LOGIN_BUTTON);
-  builder->Add("enterGuestButton", IDS_ENTER_GUEST_SESSION_BUTTON);
-  builder->Add("enterGuestButtonAccessibleName",
-               IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME);
   builder->Add("shutDown", IDS_SHUTDOWN_BUTTON);
   builder->Add("addUser", IDS_ADD_USER_BUTTON);
   builder->Add("browseAsGuest", IDS_GO_INCOGNITO_BUTTON);

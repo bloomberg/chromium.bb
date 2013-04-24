@@ -11337,7 +11337,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <if expr="pp_ifdef('android')">
         <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
             desc="Mobile: Used when a person enters Guest Session">
-            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the mobile device after you sign out. Files you download and bookmarks you create won't be preserved.
+            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this tab won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the mobile device after you sign out. Files you download and bookmarks you create won't be preserved.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
         </message>
@@ -11345,7 +11345,7 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <if expr="not pp_ifdef('android')">
         <message name="IDS_NEW_TAB_GUEST_SESSION_MESSAGE"
             desc="Used when a person enters Guest Session">
-            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
+            <ph name="BEGIN_BOLD">&lt;strong&gt;</ph>You're browsing as a Guest<ph name="END_BOLD">&lt;/strong&gt;</ph>. Pages you view in this window won't appear in the browser history or search history, and they won't leave other traces, like cookies, on the computer after you sign out. Files you download and bookmarks you create won't be preserved.
           <ph name="LINE_BREAK">&lt;br /&gt;&lt;br /&gt;<ex>&lt;br /&gt;&lt;br /&gt;</ex></ph>
           <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph> about Guest browsing.
         </message>

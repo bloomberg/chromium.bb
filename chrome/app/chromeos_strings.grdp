@@ -323,12 +323,6 @@ Press any key to continue exploring.
   <message name="IDS_LOGIN_BUTTON">
     Sign in
   </message>
-  <message name="IDS_ENTER_GUEST_SESSION_BUTTON">
-    Enter
-  </message>
-  <message name="IDS_ENTER_GUEST_SESSION_BUTTON_ACCESSIBLE_NAME">
-    Browse as guest
-  </message>
   <message name="IDS_DISABLED_ADD_USER_TOOLTIP" desc="Tooltip over disabled Add user button">
     The owner of this device has disabled new users from being added
   </message>
@@ -427,10 +421,10 @@ Press any key to continue exploring.
     Browse as Guest
   </message>
   <message name="IDS_CREATE_ACCOUNT_HTML" desc="Text shown on side of Google sign-in UI.">
-    If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.
+    If you don't have a Google Account you can <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>create a Google Account<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph> now.
   </message>
   <message name="IDS_BROWSE_WITHOUT_SIGNING_IN_HTML" desc="Text shown on side of Google sign-in UI.">
-    You may also skip signing in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
+    You may also skip signing in and <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>browse as Guest<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
   <message name="IDS_CREATE_LOCALLY_MANAGED_USER_HTML" desc="Text shown on side of Google sign-in UI to create a locally managed user.">
     <ph name="LINK_START">$1<ex>&gt;a&lt;</ex></ph>Create managed user<ph name="LINK_END">$2<ex>&gt;/a&lt;</ex></ph>
@@ -925,7 +919,7 @@ Press any key to continue exploring.
     Disable mobile data roaming
   </message>
   <message name="IDS_OPTIONS_ACCOUNTS_ALLOW_BWSI_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to allow browse without signing in.">
-    Enable guest browsing
+    Enable Guest browsing
   </message>
   <message name="IDS_OPTIONS_ACCOUNTS_USE_WHITELIST_DESCRIPTION" desc="In the Accounts settings tab, the text on the checkbox to restrict allowed user to a whitelist.">
     Restrict sign-in to the following users:
@@ -3508,9 +3502,6 @@ Battery full
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON" desc="Label on button that restarts device.">
     Restart
   </message>
-  <message name="IDS_LOGIN_FIX_CAPTIVE_PORTAL" desc="An link text to fix Internet connection (captive portal) in guest mode.">
-    Enter as Guest
-  </message>
   <message name="IDS_LOGIN_PROXY_ERROR_TITLE" desc="A title of screen containing a message about proxy error.">
     Oops, something went wrong with signing in
   </message>
@@ -3553,9 +3544,6 @@ Battery full
   <message name="IDS_UPDATE_PROXY_ERROR_MESSAGE" desc="An offline message that shows up when a proxy error has appeared in the OOBE update screen.">
     The update check failed using the current proxy settings. Please adjust your <ph name="PROXY_SETTINGS_LINK_START">$1<ex>&gt;a&lt;</ex></ph>proxy settings<ph name="PROXY_SETTINGS_LINK_END">$2<ex>&gt;/a&lt;</ex></ph>.
   </message>
-  <message name="IDS_GUEST" desc="Shown in login panel for users that would like to browse without signing in.">
-    Guest
-  </message>
   <message name="IDS_ADD_USER" desc="Shown in login panel for adding new user to login screen.">
     Add a user
   </message>
@@ -3584,10 +3572,10 @@ Battery full
     <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> <ph name="PRODUCT_VERSION">$2<ex>15.0.0.0</ex></ph> (Platform <ph name="PLATFORM_VERSION">$3<ex>900.0-11.09.01</ex></ph>)
   </message>
   <message name="IDS_DEVICE_OWNED_BY_NOTICE" desc="Text for notifications showing that this is managed device.">
-    This device is owned by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
+    This device is managed by <ph name="DOMAIN">$1<ex>acmecorp.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_INFO_FORMAT" desc="Template for text shown in the public account user pod, informing the user that this is a public, managed account.">
-    This device is owned by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
+    This device is managed by <ph name="DOMAIN">$1<ex>yourdomain.com</ex></ph>.
   </message>
   <message name="IDS_LOGIN_PUBLIC_ACCOUNT_SIGNOUT_REMINDER" desc="Text shown in the public account user pod, reminding the user to log out.">
     Your information will be removed when you sign out.
