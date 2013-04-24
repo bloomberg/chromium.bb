@@ -11,6 +11,7 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button_border.h"
 #include "ui/views/focus_border.h"
+#include "ui/views/window/dialog_delegate.h"
 
 #if defined(OS_WIN)
 #include "ui/gfx/color_utils.h"
@@ -132,7 +133,7 @@ void LabelButton::SetIsDefault(bool is_default) {
 void LabelButton::SetStyle(ButtonStyle style) {
   // Use the new button style instead of the native button style.
   // TODO(msw): Officialy deprecate and remove STYLE_NATIVE_TEXTBUTTON.
-  if (style == STYLE_NATIVE_TEXTBUTTON)
+  if (DialogDelegate::UseNewStyle() && style == STYLE_NATIVE_TEXTBUTTON)
     style = STYLE_BUTTON;
 
   style_ = style;
