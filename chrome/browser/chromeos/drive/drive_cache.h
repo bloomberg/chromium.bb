@@ -13,7 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
+#include "chrome/browser/chromeos/drive/cache_metadata.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
 
 class Profile;
@@ -26,8 +26,8 @@ class SequencedTaskRunner;
 
 namespace drive {
 
+class CacheMetadata;
 class DriveCacheEntry;
-class DriveCacheMetadata;
 class DriveCacheObserver;
 
 // Callback for GetFileFromCache.
@@ -383,7 +383,7 @@ class DriveCache {
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   // The cache state data. This member must be access only on the blocking pool.
-  scoped_ptr<DriveCacheMetadata> metadata_;
+  scoped_ptr<CacheMetadata> metadata_;
 
   // List of observers, this member must be accessed on UI thread.
   ObserverList<DriveCacheObserver> observers_;

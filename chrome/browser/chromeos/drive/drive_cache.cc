@@ -8,12 +8,12 @@
 
 #include "base/file_util.h"
 #include "base/logging.h"
-#include "base/stringprintf.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "base/sys_info.h"
 #include "base/task_runner_util.h"
+#include "chrome/browser/chromeos/drive/cache_metadata.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/google_apis/task_util.h"
@@ -491,7 +491,7 @@ bool DriveCache::InitializeOnBlockingPool() {
   if (!InitCachePaths(cache_paths_))
     return false;
 
-  metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(
+  metadata_ = CacheMetadata::CreateCacheMetadata(
       blocking_task_runner_);
   return metadata_->Initialize(cache_paths_);
 }
@@ -500,7 +500,7 @@ void DriveCache::InitializeOnBlockingPoolForTesting() {
   AssertOnSequencedWorkerPool();
 
   InitCachePaths(cache_paths_);
-  metadata_ = DriveCacheMetadata::CreateDriveCacheMetadataForTesting(
+  metadata_ = CacheMetadata::CreateCacheMetadataForTesting(
       blocking_task_runner_);
   metadata_->Initialize(cache_paths_);
 }

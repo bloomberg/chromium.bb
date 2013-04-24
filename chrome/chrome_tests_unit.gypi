@@ -556,7 +556,7 @@
         'browser/chromeos/dbus/service_provider_test_helper.cc',
         'browser/chromeos/dbus/service_provider_test_helper.h',
         'browser/chromeos/display/display_preferences_unittest.cc',
-        'browser/chromeos/drive/drive_cache_metadata_unittest.cc',
+        'browser/chromeos/drive/cache_metadata_unittest.cc',
         'browser/chromeos/drive/drive_cache_unittest.cc',
         'browser/chromeos/drive/drive_download_handler_unittest.cc',
         'browser/chromeos/drive/drive_file_stream_reader_unittest.cc',

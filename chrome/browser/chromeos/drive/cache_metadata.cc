@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
+#include "chrome/browser/chromeos/drive/cache_metadata.h"
 
 #include "base/callback.h"
 #include "base/file_util.h"
@@ -64,7 +64,7 @@ bool IsValidSymbolicLink(const base::FilePath& file_path,
 void ScanCacheDirectory(
     const std::vector<base::FilePath>& cache_paths,
     DriveCache::CacheSubDirectoryType sub_dir_type,
-    DriveCacheMetadata::CacheMap* cache_map,
+    CacheMetadata::CacheMap* cache_map,
     ResourceIdToFilePathMap* processed_file_map) {
   DCHECK(cache_map);
   DCHECK(processed_file_map);
@@ -97,7 +97,7 @@ void ScanCacheDirectory(
       // If we're scanning outgoing directory, entry must exist and be dirty.
       // Otherwise, it's a logic error from previous execution, remove this
       // outgoing symlink and move on.
-      DriveCacheMetadata::CacheMap::iterator iter =
+      CacheMetadata::CacheMap::iterator iter =
           cache_map->find(resource_id);
       if (iter == cache_map->end() || !iter->second.is_dirty()) {
         LOG(WARNING) << "Removing an symlink to a non-dirty file: "
@@ -153,7 +153,7 @@ void ScanCacheDirectory(
 }
 
 void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
-                    DriveCacheMetadata::CacheMap* cache_map) {
+                    CacheMetadata::CacheMap* cache_map) {
   DVLOG(1) << "Scanning directories";
 
   // Scan cache persistent and tmp directories to enumerate all files and create
@@ -185,7 +185,7 @@ void ScanCachePaths(const std::vector<base::FilePath>& cache_paths,
     const std::string& resource_id = iter->first;
     const base::FilePath& file_path = iter->second;
 
-    DriveCacheMetadata::CacheMap::iterator cache_map_iter =
+    CacheMetadata::CacheMap::iterator cache_map_iter =
         cache_map->find(resource_id);
     if (cache_map_iter != cache_map->end()) {
       DriveCacheEntry* cache_entry = &cache_map_iter->second;
@@ -237,18 +237,18 @@ bool CheckIfMd5Matches(
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DriveCacheMetadata implementation with std::map.
+// CacheMetadata implementation with std::map.
 // Used for testing.
 
-class FakeDriveCacheMetadata : public DriveCacheMetadata {
+class FakeCacheMetadata : public CacheMetadata {
  public:
-  explicit FakeDriveCacheMetadata(
+  explicit FakeCacheMetadata(
       base::SequencedTaskRunner* blocking_task_runner);
 
  private:
-  virtual ~FakeDriveCacheMetadata();
+  virtual ~FakeCacheMetadata();
 
-  // DriveCacheMetadata overrides:
+  // CacheMetadata overrides:
   virtual bool Initialize(
       const std::vector<base::FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
@@ -263,20 +263,20 @@ class FakeDriveCacheMetadata : public DriveCacheMetadata {
 
   CacheMap cache_map_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeDriveCacheMetadata);
+  DISALLOW_COPY_AND_ASSIGN(FakeCacheMetadata);
 };
 
-FakeDriveCacheMetadata::FakeDriveCacheMetadata(
+FakeCacheMetadata::FakeCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner)
-    : DriveCacheMetadata(blocking_task_runner) {
+    : CacheMetadata(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-FakeDriveCacheMetadata::~FakeDriveCacheMetadata() {
+FakeCacheMetadata::~FakeCacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
-bool FakeDriveCacheMetadata::Initialize(
+bool FakeCacheMetadata::Initialize(
     const std::vector<base::FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
@@ -284,7 +284,7 @@ bool FakeDriveCacheMetadata::Initialize(
   return true;
 }
 
-void FakeDriveCacheMetadata::AddOrUpdateCacheEntry(
+void FakeCacheMetadata::AddOrUpdateCacheEntry(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
@@ -297,7 +297,7 @@ void FakeDriveCacheMetadata::AddOrUpdateCacheEntry(
   }
 }
 
-void FakeDriveCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
+void FakeCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.find(resource_id);
@@ -307,7 +307,7 @@ void FakeDriveCacheMetadata::RemoveCacheEntry(const std::string& resource_id) {
   }
 }
 
-bool FakeDriveCacheMetadata::GetCacheEntry(const std::string& resource_id,
+bool FakeCacheMetadata::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
                                           DriveCacheEntry* entry) {
   DCHECK(entry);
@@ -329,7 +329,7 @@ bool FakeDriveCacheMetadata::GetCacheEntry(const std::string& resource_id,
   return true;
 }
 
-void FakeDriveCacheMetadata::RemoveTemporaryFiles() {
+void FakeCacheMetadata::RemoveTemporaryFiles() {
   AssertOnSequencedWorkerPool();
 
   CacheMap::iterator iter = cache_map_.begin();
@@ -343,7 +343,7 @@ void FakeDriveCacheMetadata::RemoveTemporaryFiles() {
   }
 }
 
-void FakeDriveCacheMetadata::Iterate(const CacheIterateCallback& callback) {
+void FakeCacheMetadata::Iterate(const CacheIterateCallback& callback) {
   AssertOnSequencedWorkerPool();
 
   for (CacheMap::const_iterator iter = cache_map_.begin();
@@ -353,17 +353,17 @@ void FakeDriveCacheMetadata::Iterate(const CacheIterateCallback& callback) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DriveCacheMetadata implementation with level::db.
+// CacheMetadata implementation with level::db.
 
-class DriveCacheMetadataDB : public DriveCacheMetadata {
+class CacheMetadataDB : public CacheMetadata {
  public:
-  explicit DriveCacheMetadataDB(
+  explicit CacheMetadataDB(
       base::SequencedTaskRunner* blocking_task_runner);
 
  private:
-  virtual ~DriveCacheMetadataDB();
+  virtual ~CacheMetadataDB();
 
-  // DriveCacheMetadata overrides:
+  // CacheMetadata overrides:
   virtual bool Initialize(
       const std::vector<base::FilePath>& cache_paths) OVERRIDE;
   virtual void AddOrUpdateCacheEntry(
@@ -381,26 +381,26 @@ class DriveCacheMetadataDB : public DriveCacheMetadata {
 
   scoped_ptr<leveldb::DB> level_db_;
 
-  DISALLOW_COPY_AND_ASSIGN(DriveCacheMetadataDB);
+  DISALLOW_COPY_AND_ASSIGN(CacheMetadataDB);
 };
 
-DriveCacheMetadataDB::DriveCacheMetadataDB(
+CacheMetadataDB::CacheMetadataDB(
     base::SequencedTaskRunner* blocking_task_runner)
-    : DriveCacheMetadata(blocking_task_runner) {
+    : CacheMetadata(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-DriveCacheMetadataDB::~DriveCacheMetadataDB() {
+CacheMetadataDB::~CacheMetadataDB() {
   AssertOnSequencedWorkerPool();
 }
 
-bool DriveCacheMetadataDB::Initialize(
+bool CacheMetadataDB::Initialize(
     const std::vector<base::FilePath>& cache_paths) {
   AssertOnSequencedWorkerPool();
 
   const base::FilePath db_path =
       cache_paths[DriveCache::CACHE_TYPE_META].Append(
-          kDriveCacheMetadataDBPath);
+          kCacheMetadataDBPath);
   DVLOG(1) << "db path=" << db_path.value();
 
   bool scan_cache = !file_util::PathExists(db_path);
@@ -448,7 +448,7 @@ bool DriveCacheMetadataDB::Initialize(
   return true;
 }
 
-void DriveCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
+void CacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
   DVLOG(1) << "InsertMapIntoDB";
   for (CacheMap::const_iterator it = cache_map.begin();
        it != cache_map.end(); ++it) {
@@ -456,7 +456,7 @@ void DriveCacheMetadataDB::InsertMapIntoDB(const CacheMap& cache_map) {
   }
 }
 
-void DriveCacheMetadataDB::AddOrUpdateCacheEntry(
+void CacheMetadataDB::AddOrUpdateCacheEntry(
     const std::string& resource_id,
     const DriveCacheEntry& cache_entry) {
   AssertOnSequencedWorkerPool();
@@ -470,14 +470,14 @@ void DriveCacheMetadataDB::AddOrUpdateCacheEntry(
                    leveldb::Slice(serialized));
 }
 
-void DriveCacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
+void CacheMetadataDB::RemoveCacheEntry(const std::string& resource_id) {
   AssertOnSequencedWorkerPool();
 
   DVLOG(1) << "RemoveCacheEntry, resource_id=" << resource_id;
   level_db_->Delete(leveldb::WriteOptions(), leveldb::Slice(resource_id));
 }
 
-bool DriveCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
+bool CacheMetadataDB::GetCacheEntry(const std::string& resource_id,
                                           const std::string& md5,
                                           DriveCacheEntry* entry) {
   DCHECK(entry);
@@ -506,7 +506,7 @@ bool DriveCacheMetadataDB::GetCacheEntry(const std::string& resource_id,
   return true;
 }
 
-void DriveCacheMetadataDB::RemoveTemporaryFiles() {
+void CacheMetadataDB::RemoveTemporaryFiles() {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
@@ -520,7 +520,7 @@ void DriveCacheMetadataDB::RemoveTemporaryFiles() {
   }
 }
 
-void DriveCacheMetadataDB::Iterate(const CacheIterateCallback& callback) {
+void CacheMetadataDB::Iterate(const CacheIterateCallback& callback) {
   AssertOnSequencedWorkerPool();
 
   scoped_ptr<leveldb::Iterator> iter(level_db_->NewIterator(
@@ -537,36 +537,36 @@ void DriveCacheMetadataDB::Iterate(const CacheIterateCallback& callback) {
 }  // namespace
 
 // static
-const base::FilePath::CharType* DriveCacheMetadata::kDriveCacheMetadataDBPath =
+const base::FilePath::CharType* CacheMetadata::kCacheMetadataDBPath =
     FILE_PATH_LITERAL("cache_metadata.db");
 
 
-DriveCacheMetadata::DriveCacheMetadata(
+CacheMetadata::CacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner)
     : blocking_task_runner_(blocking_task_runner) {
   AssertOnSequencedWorkerPool();
 }
 
-DriveCacheMetadata::~DriveCacheMetadata() {
+CacheMetadata::~CacheMetadata() {
   AssertOnSequencedWorkerPool();
 }
 
 // static
-scoped_ptr<DriveCacheMetadata> DriveCacheMetadata::CreateDriveCacheMetadata(
+scoped_ptr<CacheMetadata> CacheMetadata::CreateCacheMetadata(
     base::SequencedTaskRunner* blocking_task_runner) {
-  return scoped_ptr<DriveCacheMetadata>(
-      new DriveCacheMetadataDB(blocking_task_runner));
+  return scoped_ptr<CacheMetadata>(
+      new CacheMetadataDB(blocking_task_runner));
 }
 
 // static
-scoped_ptr<DriveCacheMetadata>
-DriveCacheMetadata::CreateDriveCacheMetadataForTesting(
+scoped_ptr<CacheMetadata>
+CacheMetadata::CreateCacheMetadataForTesting(
     base::SequencedTaskRunner* blocking_task_runner) {
-  return scoped_ptr<DriveCacheMetadata>(
-      new FakeDriveCacheMetadata(blocking_task_runner));
+  return scoped_ptr<CacheMetadata>(
+      new FakeCacheMetadata(blocking_task_runner));
 }
 
-void DriveCacheMetadata::AssertOnSequencedWorkerPool() {
+void CacheMetadata::AssertOnSequencedWorkerPool() {
   DCHECK(!blocking_task_runner_ ||
          blocking_task_runner_->RunsTasksOnCurrentThread());
 }

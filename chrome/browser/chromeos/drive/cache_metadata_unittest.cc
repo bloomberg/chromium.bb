@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_cache_metadata.h"
+#include "chrome/browser/chromeos/drive/cache_metadata.h"
 
 #include "base/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -14,9 +14,9 @@
 
 namespace drive {
 
-class DriveCacheMetadataTest : public testing::Test {
+class CacheMetadataTest : public testing::Test {
  public:
-  DriveCacheMetadataTest() {}
+  CacheMetadataTest() {}
 
   virtual void SetUp() OVERRIDE {
     // Create cache directories.
@@ -33,9 +33,9 @@ class DriveCacheMetadataTest : public testing::Test {
     metadata_.reset();
   }
 
-  // Sets up the DriveCacheMetadata object.
+  // Sets up the CacheMetadata object.
   void SetUpCacheMetadata() {
-    metadata_ = DriveCacheMetadata::CreateDriveCacheMetadata(NULL);
+    metadata_ = CacheMetadata::CreateCacheMetadata(NULL);
     ASSERT_TRUE(metadata_->Initialize(cache_paths_));
   }
 
@@ -91,7 +91,7 @@ class DriveCacheMetadataTest : public testing::Test {
  protected:
   // Helper function to insert an item with key |resource_id| into |cache_map|.
   // |md5| and |cache_state| are used to create the value CacheEntry.
-  void InsertIntoMap(DriveCacheMetadata::CacheMap* cache_map,
+  void InsertIntoMap(CacheMetadata::CacheMap* cache_map,
                      const std::string& resource_id,
                      const DriveCacheEntry& cache_entry) {
     cache_map->insert(std::make_pair(
@@ -99,24 +99,24 @@ class DriveCacheMetadataTest : public testing::Test {
   }
 
   // Adds all entries in |cache_map| to the metadata storage.
-  void AddAllMapEntries(const DriveCacheMetadata::CacheMap& cache_map) {
-    for (DriveCacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
+  void AddAllMapEntries(const CacheMetadata::CacheMap& cache_map) {
+    for (CacheMetadata::CacheMap::const_iterator iter = cache_map.begin();
          iter != cache_map.end(); ++iter) {
       metadata_->AddOrUpdateCacheEntry(iter->first, iter->second);
     }
   }
 
   base::ScopedTempDir temp_dir_;
-  scoped_ptr<DriveCacheMetadata> metadata_;
+  scoped_ptr<CacheMetadata> metadata_;
   std::vector<base::FilePath> cache_paths_;
   base::FilePath persistent_directory_;
   base::FilePath tmp_directory_;
   base::FilePath outgoing_directory_;
 };
 
-// Test all the methods of DriveCacheMetadata except for
+// Test all the methods of CacheMetadata except for
 // RemoveTemporaryFiles.
-TEST_F(DriveCacheMetadataTest, CacheTest) {
+TEST_F(CacheMetadataTest, CacheTest) {
   SetUpCacheMetadata();
 
   // Save an initial entry.
@@ -218,14 +218,14 @@ TEST_F(DriveCacheMetadataTest, CacheTest) {
   EXPECT_TRUE(cache_entry.is_present());
 }
 
-TEST_F(DriveCacheMetadataTest, CorruptDB) {
+TEST_F(CacheMetadataTest, CorruptDB) {
   using file_util::PathExists;
   using file_util::IsLink;
   SetUpCacheWithVariousFiles();
 
   const base::FilePath db_path =
       cache_paths_[DriveCache::CACHE_TYPE_META].Append(
-          DriveCacheMetadata::kDriveCacheMetadataDBPath);
+          CacheMetadata::kCacheMetadataDBPath);
 
   // Write a bogus file.
   std::string text("Hello world");
@@ -303,11 +303,11 @@ TEST_F(DriveCacheMetadataTest, CorruptDB) {
   EXPECT_FALSE(metadata_->GetCacheEntry("id_not_symlink", "", &cache_entry));
 }
 
-// Test DriveCacheMetadata::RemoveTemporaryFiles.
-TEST_F(DriveCacheMetadataTest, RemoveTemporaryFiles) {
+// Test CacheMetadata::RemoveTemporaryFiles.
+TEST_F(CacheMetadataTest, RemoveTemporaryFiles) {
   SetUpCacheMetadata();
 
-  DriveCacheMetadata::CacheMap cache_map;
+  CacheMetadata::CacheMap cache_map;
   {
     DriveCacheEntry cache_entry;
     cache_entry.set_md5("<md5>");
@@ -346,15 +346,15 @@ TEST_F(DriveCacheMetadataTest, RemoveTemporaryFiles) {
 }
 
 // Don't use TEST_F, as we don't want SetUp() and TearDown() for this test.
-TEST(DriveCacheMetadataExtraTest, CannotOpenDB) {
+TEST(CacheMetadataExtraTest, CannotOpenDB) {
   // Create nonexistent cache paths, so the initialization fails due to the
   // failure of opening the DB.
   std::vector<base::FilePath> cache_paths =
       DriveCache::GetCachePaths(
           base::FilePath::FromUTF8Unsafe("/somewhere/nonexistent"));
 
-  scoped_ptr<DriveCacheMetadata> metadata =
-      DriveCacheMetadata::CreateDriveCacheMetadata(NULL);
+  scoped_ptr<CacheMetadata> metadata =
+      CacheMetadata::CreateCacheMetadata(NULL);
   EXPECT_FALSE(metadata->Initialize(cache_paths));
 }
 
