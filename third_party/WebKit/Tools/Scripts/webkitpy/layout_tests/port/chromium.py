@@ -130,7 +130,7 @@ class ChromiumPort(Port):
         default_count = super(ChromiumPort, self).default_child_processes()
         # Since content_shell spawns multiple subprocesses, we need to reduce
         # the number of running processes.
-        if self.driver_name() == 'content_shell' or self.driver_name() == 'Content Shell':
+        if self.driver_name() == self.CONTENT_SHELL_NAME:
             default_count = int(.75 * default_count)
 
         return default_count

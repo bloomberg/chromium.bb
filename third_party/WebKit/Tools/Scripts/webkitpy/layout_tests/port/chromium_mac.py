@@ -47,6 +47,8 @@ class ChromiumMacPort(chromium.ChromiumPort):
 
     DEFAULT_BUILD_DIRECTORIES = ('xcodebuild', 'out')
 
+    CONTENT_SHELL_NAME = 'Content Shell'
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         if port_name.endswith('-mac'):

@@ -84,6 +84,8 @@ class Port(object):
 
     ALL_BUILD_TYPES = ('debug', 'release')
 
+    CONTENT_SHELL_NAME = 'content_shell'
+
     @classmethod
     def determine_full_port_name(cls, host, options, port_name):
         """Return a fully-specified port name that can be used to construct objects."""
@@ -146,6 +148,8 @@ class Port(object):
         self._root_was_set = hasattr(options, 'root') and options.root
 
     def additional_drt_flag(self):
+        if self.driver_name() == self.CONTENT_SHELL_NAME:
+            return ['--dump-render-tree']
         return []
 
     def supports_per_test_timeout(self):
@@ -386,6 +390,8 @@ class Port(object):
     def driver_name(self):
         if self.get_option('driver_name'):
             return self.get_option('driver_name')
+        if self.get_option('content_shell'):
+            return self.CONTENT_SHELL_NAME
         return 'DumpRenderTree'
 
     def expected_baselines_by_extension(self, test_name):

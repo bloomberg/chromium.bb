@@ -127,6 +127,8 @@ class PerfTestsRunner(object):
                      "Specify multiple times to add multiple flags."),
             optparse.make_option("--driver-name", type="string",
                 help="Alternative DumpRenderTree binary to use"),
+            optparse.make_option("--content-shell", action="store_true",
+                help="Use Content Shell instead of DumpRenderTree"),
             optparse.make_option("--repeat", default=1, type="int",
                 help="Specify number of times to run test set (default: 1)."),
             optparse.make_option("--test-runner-count", default=DEFAULT_TEST_RUNNER_COUNT, type="int",
