@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.test.InstrumentationTestCase;
@@ -93,7 +94,8 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public boolean sendGesture(int type, long timeMs, int x, int y, Bundle extraParams) {
+        public boolean sendGesture(int type, long timeMs, int x, int y,
+                boolean lastInputEventForVSync, Bundle extraParams) {
             Log.i(TAG,"Gesture event received with type id " + type);
             return true;
         }
@@ -641,6 +643,7 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             }
         };
         private GestureEvent mMostRecentGestureEvent;
+        private boolean mMostRecentGestureEventWasLastForVSync;
         private final ArrayList<Integer> mGestureTypeList = new ArrayList<Integer>();
 
         @Override
@@ -650,8 +653,10 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
-        public boolean sendGesture(int type, long timeMs, int x, int y, Bundle extraParams) {
+        public boolean sendGesture(int type, long timeMs, int x, int y,
+                boolean lastInputEventForVSync, Bundle extraParams) {
             mMostRecentGestureEvent = new GestureEvent(type, timeMs, x, y, extraParams);
+            mMostRecentGestureEventWasLastForVSync = lastInputEventForVSync;
             mGestureTypeList.add(mMostRecentGestureEvent.mType);
             return true;
         }
@@ -674,6 +679,10 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
 
         public GestureEvent getMostRecentGestureEvent() {
             return mMostRecentGestureEvent;
+        }
+
+        public boolean mostRecentGestureEventForLastForVSync() {
+            return mMostRecentGestureEventWasLastForVSync;
         }
     }
 
@@ -888,5 +897,61 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         Bundle extraParams = gestureEvent.getExtraParams();
         assertEquals(0, extraParams.getInt(ContentViewGestureHandler.DISTANCE_X));
         assertEquals(-scrollDelta, extraParams.getInt(ContentViewGestureHandler.DISTANCE_Y));
+    }
+
+    /**
+     * Verify that certain gesture events are sent with the "last for this vsync" flag set.
+     * @throws Exception
+     */
+    @SmallTest
+    @Feature({"Gestures"})
+    public void testFinalInputEventsForVSyncInterval() throws Exception {
+        Context context = getInstrumentation().getTargetContext();
+        final long downTime = SystemClock.uptimeMillis();
+        final long eventTime = SystemClock.uptimeMillis();
+        final boolean inputEventsDeliveredAtVSync =
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN;
+
+        GestureRecordingMotionEventDelegate mockDelegate =
+                new GestureRecordingMotionEventDelegate();
+        mGestureHandler = new ContentViewGestureHandler(
+                context, mockDelegate,
+                new MockZoomManager(context, null));
+
+        MotionEvent event = motionEvent(MotionEvent.ACTION_DOWN, downTime, downTime);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        event = MotionEvent.obtain(
+                downTime, eventTime + 10, MotionEvent.ACTION_MOVE,
+                FAKE_COORD_X, FAKE_COORD_Y + 30, 0);
+        assertTrue(mGestureHandler.onTouchEvent(event));
+        assertEquals("We should have started scrolling",
+                ContentViewGestureHandler.GESTURE_SCROLL_BY,
+                mockDelegate.mMostRecentGestureEvent.mType);
+
+        if (inputEventsDeliveredAtVSync) {
+            assertEquals("Gesture should be last for vsync",
+                    true,
+                    mockDelegate.mostRecentGestureEventForLastForVSync());
+        } else {
+            assertEquals("Gesture should not be last for vsync",
+                    false,
+                    mockDelegate.mostRecentGestureEventForLastForVSync());
+        }
+
+        mGestureHandler.pinchBegin(downTime, FAKE_COORD_X, FAKE_COORD_Y);
+        mGestureHandler.pinchBy(eventTime + 10, FAKE_COORD_X, FAKE_COORD_Y, 2);
+        assertEquals("We should have started pinch-zooming",
+                ContentViewGestureHandler.GESTURE_PINCH_BY,
+                mockDelegate.mMostRecentGestureEvent.mType);
+
+        if (inputEventsDeliveredAtVSync) {
+            assertEquals("Gesture should be last for vsync",
+                    true,
+                    mockDelegate.mostRecentGestureEventForLastForVSync());
+        } else {
+            assertEquals("Gesture should not be last for vsync",
+                    false,
+                    mockDelegate.mostRecentGestureEventForLastForVSync());
+        }
     }
 }

@@ -42,7 +42,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   ContentViewCoreImpl(JNIEnv* env,
                       jobject obj,
                       bool hardware_accelerated,
-                      bool input_events_delivered_at_vsync,
                       WebContents* web_contents,
                       ui::ViewAndroid* view_android,
                       ui::WindowAndroid* window_android);
@@ -118,7 +117,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms, jfloat x, jfloat y);
   void ScrollEnd(JNIEnv* env, jobject obj, jlong time_ms);
   void ScrollBy(JNIEnv* env, jobject obj, jlong time_ms,
-                jfloat x, jfloat y, jfloat dx, jfloat dy);
+                jfloat x, jfloat y, jfloat dx, jfloat dy,
+                jboolean last_input_event_for_vsync);
   void FlingStart(JNIEnv* env, jobject obj, jlong time_ms,
                   jfloat x, jfloat y, jfloat vx, jfloat vy);
   void FlingCancel(JNIEnv* env, jobject obj, jlong time_ms);
@@ -140,8 +140,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void PinchBegin(JNIEnv* env, jobject obj, jlong time_ms, jfloat x, jfloat y);
   void PinchEnd(JNIEnv* env, jobject obj, jlong time_ms);
   void PinchBy(JNIEnv* env, jobject obj, jlong time_ms,
-               jfloat x, jfloat y,
-               jfloat delta);
+               jfloat x, jfloat y, jfloat delta,
+               jboolean last_input_event_for_vsync);
   void SelectBetweenCoordinates(JNIEnv* env, jobject obj,
                                 jfloat x1, jfloat y1,
                                 jfloat x2, jfloat y2);
@@ -291,6 +291,11 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SetVSyncNotificationEnabled(bool enabled);
 
  private:
+  enum InputEventVSyncStatus {
+      NOT_LAST_INPUT_EVENT_FOR_VSYNC,
+      LAST_INPUT_EVENT_FOR_VSYNC
+  };
+
   class ContentViewUserData;
 
   friend class ContentViewUserData;
@@ -313,12 +318,10 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   WebKit::WebGestureEvent MakeGestureEvent(
       WebKit::WebInputEvent::Type type, long time_ms,
-      float xPix, float yPix) const;
+      float x, float y, InputEventVSyncStatus vsync_status) const;
 
   gfx::Size GetViewportSizePix() const;
   gfx::Size GetViewportSizeOffsetPix() const;
-
-  void UpdateVSyncFlagOnInputEvent(WebKit::WebInputEvent* event) const;
 
   void DeleteScaledSnapshotTexture();
 
@@ -338,9 +341,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Whether the renderer backing this ContentViewCore has crashed.
   bool tab_crashed_;
-
-  // Whether input events will be consistently delivered at vsync time.
-  bool input_events_delivered_at_vsync_;
 
   // Device scale factor.
   float dpi_scale_;

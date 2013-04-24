@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import android.content.Context;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.util.Log;
@@ -125,6 +126,9 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private float mAccumulatedScrollErrorX = 0;
     private float mAccumulatedScrollErrorY = 0;
 
+    // Whether input events are delivered right before vsync.
+    private boolean mInputEventsDeliveredAtVSync = false;
+
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
     static final int GESTURE_SINGLE_TAP_UP = 2;
@@ -172,12 +176,15 @@ class ContentViewGestureHandler implements LongPressDelegate {
          * @param timeMs The time the gesture event occurred at.
          * @param x The x location for the gesture event.
          * @param y The y location for the gesture event.
+         * @param lastInputEventForVSync Indicates that this gesture event is the last input
+         * to be event sent during the current vsync interval.
          * @param extraParams A bundle that holds specific extra parameters for certain gestures.
          * Refer to gesture type definition for more information.
          * @return Whether the gesture was sent successfully.
          */
         boolean sendGesture(
-                int type, long timeMs, int x, int y, Bundle extraParams);
+                int type, long timeMs, int x, int y, boolean lastInputEventForVSync,
+                Bundle extraParams);
 
         /**
          * Gives the UI the chance to override each scroll event.
@@ -205,6 +212,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mMotionEventDelegate = delegate;
         mZoomManager = zoomManager;
         mSnapScrollController = new SnapScrollController(context, mZoomManager);
+
+        // Input events are delivered at vsync time on JB+.
+        mInputEventsDeliveredAtVSync = (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
+
         initGestureDetectors(context);
     }
 
@@ -278,9 +289,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         if (didUIStealScroll) return true;
                         if (!mNativeScrolling) {
                             sendShowPressCancelIfNecessary(e1);
-                            if (mMotionEventDelegate.sendGesture(
-                                    GESTURE_SCROLL_START, e1.getEventTime(),
-                                            (int) e1.getX(), (int) e1.getY(), null)) {
+                            if (sendMotionEventAsGesture(GESTURE_SCROLL_START, e1, null)) {
                                 mNativeScrolling = true;
                             }
                         }
@@ -299,7 +308,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         mExtraParamBundle.putInt(DISTANCE_X, dx);
                         mExtraParamBundle.putInt(DISTANCE_Y, dy);
                         if ((dx | dy) != 0) {
-                            mMotionEventDelegate.sendGesture(GESTURE_SCROLL_BY,
+                            sendLastGestureForVSync(GESTURE_SCROLL_BY,
                                     e2.getEventTime(), x, y, mExtraParamBundle);
                         }
 
@@ -327,8 +336,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public void onShowPress(MotionEvent e) {
                         mShowPressIsCalled = true;
-                        mMotionEventDelegate.sendGesture(GESTURE_SHOW_PRESSED_STATE,
-                                e.getEventTime(), (int) e.getX(), (int) e.getY(), null);
+                        sendMotionEventAsGesture(GESTURE_SHOW_PRESSED_STATE, e, null);
                     }
 
                     @Override
@@ -347,8 +355,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                             if (e.getEventTime() - e.getDownTime() > DOUBLE_TAP_TIMEOUT) {
                                 float x = e.getX();
                                 float y = e.getY();
-                                if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_UP,
-                                        e.getEventTime(), (int) x, (int) y, null)) {
+                                if (sendMotionEventAsGesture(GESTURE_SINGLE_TAP_UP, e, null)) {
                                     mIgnoreSingleTap = true;
                                 }
                                 setClickXAndY((int) x, (int) y);
@@ -360,8 +367,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                 float y = e.getY();
                                 mExtraParamBundle.clear();
                                 mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
-                                if (mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_CONFIRMED,
-                                        e.getEventTime(), (int) x, (int) y, mExtraParamBundle)) {
+                                if (sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
+                                        mExtraParamBundle)) {
                                     mIgnoreSingleTap = true;
                                 }
                                 setClickXAndY((int) x, (int) y);
@@ -383,8 +390,8 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         int y = (int) e.getY();
                         mExtraParamBundle.clear();
                         mExtraParamBundle.putBoolean(SHOW_PRESS, mShowPressIsCalled);
-                        mMotionEventDelegate.sendGesture(GESTURE_SINGLE_TAP_CONFIRMED,
-                                e.getEventTime(), x, y, mExtraParamBundle);
+                        sendMotionEventAsGesture(GESTURE_SINGLE_TAP_CONFIRMED, e,
+                            mExtraParamBundle);
                         setClickXAndY(x, y);
                         return true;
                     }
@@ -392,8 +399,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     @Override
                     public boolean onDoubleTap(MotionEvent e) {
                         sendShowPressCancelIfNecessary(e);
-                        mMotionEventDelegate.sendGesture(GESTURE_DOUBLE_TAP,
-                                e.getEventTime(), (int) e.getX(), (int) e.getY(), null);
+                        sendMotionEventAsGesture(GESTURE_DOUBLE_TAP, e, null);
                         return true;
                     }
 
@@ -401,8 +407,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     public void onLongPress(MotionEvent e) {
                         if (!mZoomManager.isScaleGestureDetectionInProgress()) {
                             sendShowPressCancelIfNecessary(e);
-                            mMotionEventDelegate.sendGesture(GESTURE_LONG_PRESS,
-                                    e.getEventTime(), (int) e.getX(), (int) e.getY(), null);
+                            sendMotionEventAsGesture(GESTURE_LONG_PRESS, e, null);
                         }
                     }
 
@@ -467,8 +472,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         mExtraParamBundle.clear();
         mExtraParamBundle.putInt(VELOCITY_X, velocityX);
         mExtraParamBundle.putInt(VELOCITY_Y, velocityY);
-        mMotionEventDelegate.sendGesture(GESTURE_FLING_START,
-                timeMs, x, y, mExtraParamBundle);
+        sendGesture(GESTURE_FLING_START, timeMs, x, y, mExtraParamBundle);
     }
 
     /**
@@ -476,7 +480,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param timeMs The time in ms for the event initiating this gesture.
      */
     void endFling(long timeMs) {
-        mMotionEventDelegate.sendGesture(GESTURE_FLING_CANCEL, timeMs, 0, 0, null);
+        sendGesture(GESTURE_FLING_CANCEL, timeMs, 0, 0, null);
         tellNativeScrollingHasEnded(timeMs);
     }
 
@@ -485,7 +489,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     private void tellNativeScrollingHasEnded(long timeMs) {
         if (mNativeScrolling) {
             mNativeScrolling = false;
-            mMotionEventDelegate.sendGesture(GESTURE_SCROLL_END, timeMs, 0, 0, null);
+            sendGesture(GESTURE_SCROLL_END, timeMs, 0, 0, null);
         }
     }
 
@@ -512,7 +516,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param y The x coordinate for the event initiating this gesture.
      */
     void pinchBegin(long timeMs, int x, int y) {
-        mMotionEventDelegate.sendGesture(GESTURE_PINCH_BEGIN, timeMs, x, y, null);
+        sendGesture(GESTURE_PINCH_BEGIN, timeMs, x, y, null);
     }
 
     /**
@@ -525,8 +529,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     void pinchBy(long timeMs, int anchorX, int anchorY, float delta) {
         mExtraParamBundle.clear();
         mExtraParamBundle.putFloat(DELTA, delta);
-        mMotionEventDelegate.sendGesture(GESTURE_PINCH_BY,
-                timeMs, anchorX, anchorY, mExtraParamBundle);
+        sendLastGestureForVSync(GESTURE_PINCH_BY, timeMs, anchorX, anchorY, mExtraParamBundle);
         mPinchInProgress = true;
     }
 
@@ -535,7 +538,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
      * @param timeMs The time in ms for the event initiating this gesture.
      */
     void pinchEnd(long timeMs) {
-        mMotionEventDelegate.sendGesture(GESTURE_PINCH_END, timeMs, 0, 0, null);
+        sendGesture(GESTURE_PINCH_END, timeMs, 0, 0, null);
         mPinchInProgress = false;
     }
 
@@ -827,11 +830,27 @@ class ContentViewGestureHandler implements LongPressDelegate {
         trySendNextEventToNative(nextEvent);
     }
 
+    private boolean sendMotionEventAsGesture(
+            int type, MotionEvent event, Bundle extraParams) {
+        return mMotionEventDelegate.sendGesture(type, event.getEventTime(),
+            (int) event.getX(), (int) event.getY(), false, extraParams);
+    }
+
+    private boolean sendGesture(
+            int type, long timeMs, int x, int y, Bundle extraParams) {
+        return mMotionEventDelegate.sendGesture(type, timeMs, x, y, false, extraParams);
+    }
+
+    private boolean sendLastGestureForVSync(
+            int type, long timeMs, int x, int y, Bundle extraParams) {
+        return mMotionEventDelegate.sendGesture(
+            type, timeMs, x, y, mInputEventsDeliveredAtVSync, extraParams);
+    }
+
     void sendShowPressCancelIfNecessary(MotionEvent e) {
         if (!mShowPressIsCalled) return;
 
-        if (mMotionEventDelegate.sendGesture(GESTURE_SHOW_PRESS_CANCEL,
-                e.getEventTime(), (int) e.getX(), (int) e.getY(), null)) {
+        if (sendMotionEventAsGesture(GESTURE_SHOW_PRESS_CANCEL, e, null)) {
             mShowPressIsCalled = false;
         }
     }
@@ -853,8 +872,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         if (mLongPressDetector.isInLongPress() && ev.getAction() == MotionEvent.ACTION_UP &&
                 !mZoomManager.isScaleGestureDetectionInProgress()) {
             sendShowPressCancelIfNecessary(ev);
-            mMotionEventDelegate.sendGesture(GESTURE_LONG_TAP,
-                ev.getEventTime(), (int) ev.getX(), (int) ev.getY(), null);
+            sendMotionEventAsGesture(GESTURE_LONG_TAP, ev, null);
             return true;
         }
         return false;

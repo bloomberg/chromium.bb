@@ -183,6 +183,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private VSyncManager.Listener mVSyncListener;
     private int mVSyncSubscriberCount;
 
+    // To avoid IPC delay we use input events to directly trigger a vsync signal in the renderer.
+    // When we do this, we also need to avoid sending the real vsync signal for the current
+    // frame to avoid double-ticking. This flag is used to inhibit the next vsync notification.
+    private boolean mDidSignalVSyncUsingInputEvent;
+
     public VSyncManager.Listener getVSyncListener(VSyncManager.Provider vsyncProvider) {
         mVSyncProvider = vsyncProvider;
         mVSyncListener = new VSyncManager.Listener() {
@@ -196,6 +201,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
             @Override
             public void onVSync(long frameTimeMicros) {
+                if (mDidSignalVSyncUsingInputEvent) {
+                    TraceEvent.instant("ContentViewCore::onVSync ignored");
+                    mDidSignalVSyncUsingInputEvent = false;
+                    return;
+                }
                 if (mNativeContentViewCore != 0) {
                     nativeOnVSync(mNativeContentViewCore, frameTimeMicros);
                 }
@@ -206,6 +216,9 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @CalledByNative
     void setVSyncNotificationEnabled(boolean enabled) {
+        if (!isVSyncNotificationEnabled() && enabled) {
+            mDidSignalVSyncUsingInputEvent = false;
+        }
         mVSyncSubscriberCount += enabled ? 1 : -1;
         assert mVSyncSubscriberCount >= 0;
         if (mVSyncProvider != null) {
@@ -215,7 +228,11 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
     @CalledByNative
     private void resetVSyncNotification() {
-        while (mVSyncSubscriberCount > 0) setVSyncNotificationEnabled(false);
+        while (isVSyncNotificationEnabled()) setVSyncNotificationEnabled(false);
+    }
+
+    private boolean isVSyncNotificationEnabled() {
+        return mVSyncSubscriberCount > 0;
     }
 
     private final Context mContext;
@@ -531,10 +548,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         // HW support directly.
         mHardwareAccelerated = hasHardwareAcceleration(mContext);
 
-        // Input events are delivered at vsync time on JB+.
-        boolean inputEventsDeliveredAtVSync =
-                (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN);
-
         mContainerView = containerView;
 
         int windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
@@ -545,7 +558,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             viewAndroidNativePointer = mViewAndroid.getNativePointer();
         }
 
-        mNativeContentViewCore = nativeInit(mHardwareAccelerated, inputEventsDeliveredAtVSync,
+        mNativeContentViewCore = nativeInit(mHardwareAccelerated,
                 nativeWebContents, viewAndroidNativePointer, windowNativePointer);
         mContentSettings = new ContentSettings(
                 this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
@@ -1105,10 +1118,16 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     }
 
     @Override
-    public boolean sendGesture(int type, long timeMs, int x, int y, Bundle b) {
+    public boolean sendGesture(int type, long timeMs, int x, int y, boolean lastInputEventForVSync,
+                               Bundle b) {
         if (mNativeContentViewCore == 0) return false;
         updateTextHandlesForGesture(type);
         updatePinchGestureStateListener(type);
+        if (lastInputEventForVSync && isVSyncNotificationEnabled()) {
+            assert type == ContentViewGestureHandler.GESTURE_SCROLL_BY ||
+                    type == ContentViewGestureHandler.GESTURE_PINCH_BY;
+            mDidSignalVSyncUsingInputEvent = true;
+        }
         switch (type) {
             case ContentViewGestureHandler.GESTURE_SHOW_PRESSED_STATE:
                 nativeShowPressState(mNativeContentViewCore, timeMs, x, y);
@@ -1138,7 +1157,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             case ContentViewGestureHandler.GESTURE_SCROLL_BY: {
                 int dx = b.getInt(ContentViewGestureHandler.DISTANCE_X);
                 int dy = b.getInt(ContentViewGestureHandler.DISTANCE_Y);
-                nativeScrollBy(mNativeContentViewCore, timeMs, x, y, dx, dy);
+                nativeScrollBy(mNativeContentViewCore, timeMs, x, y, dx, dy,
+                        lastInputEventForVSync);
                 return true;
             }
             case ContentViewGestureHandler.GESTURE_SCROLL_END:
@@ -1157,7 +1177,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 return true;
             case ContentViewGestureHandler.GESTURE_PINCH_BY:
                 nativePinchBy(mNativeContentViewCore, timeMs, x, y,
-                        b.getFloat(ContentViewGestureHandler.DELTA, 0));
+                        b.getFloat(ContentViewGestureHandler.DELTA, 0),
+                        lastInputEventForVSync);
                 return true;
             case ContentViewGestureHandler.GESTURE_PINCH_END:
                 nativePinchEnd(mNativeContentViewCore, timeMs);
@@ -1596,7 +1617,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     public void scrollBy(int xPix, int yPix) {
         if (mNativeContentViewCore != 0) {
             nativeScrollBy(mNativeContentViewCore,
-                    System.currentTimeMillis(), 0, 0, xPix, yPix);
+                    System.currentTimeMillis(), 0, 0, xPix, yPix, false);
         }
     }
 
@@ -1612,7 +1633,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
         if (dxPix != 0 || dyPix != 0) {
             long time = System.currentTimeMillis();
             nativeScrollBegin(mNativeContentViewCore, time, xCurrentPix, yCurrentPix);
-            nativeScrollBy(mNativeContentViewCore, time, xCurrentPix, yCurrentPix, dxPix, dyPix);
+            nativeScrollBy(mNativeContentViewCore,
+                    time, xCurrentPix, yCurrentPix, dxPix, dyPix, false);
             nativeScrollEnd(mNativeContentViewCore, time);
         }
     }
@@ -2717,8 +2739,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 bottomRight.getYPix() - topLeft.getYPix());
     }
 
-    private native int nativeInit(boolean hardwareAccelerated, boolean inputEventsDeliveredAtVSync,
-            int webContentsPtr, int viewAndroidPtr, int windowAndroidPtr);
+    private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
+            int viewAndroidPtr, int windowAndroidPtr);
 
     private native void nativeOnJavaContentViewCoreDestroyed(int nativeContentViewCoreImpl);
 
@@ -2771,8 +2793,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native void nativeScrollEnd(int nativeContentViewCoreImpl, long timeMs);
 
     private native void nativeScrollBy(
-            int nativeContentViewCoreImpl, long timeMs,
-            float x, float y, float deltaX, float deltaY);
+            int nativeContentViewCoreImpl, long timeMs, float x, float y,
+            float deltaX, float deltaY, boolean lastInputEventForVSync);
 
     private native void nativeFlingStart(
             int nativeContentViewCoreImpl, long timeMs, float x, float y, float vx, float vy);
@@ -2803,7 +2825,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     private native void nativePinchEnd(int nativeContentViewCoreImpl, long timeMs);
 
     private native void nativePinchBy(int nativeContentViewCoreImpl, long timeMs,
-            float anchorX, float anchorY, float deltaScale);
+            float anchorX, float anchorY, float deltaScale, boolean lastInputEventForVSync);
 
     private native void nativeSelectBetweenCoordinates(
             int nativeContentViewCoreImpl, float x1, float y1, float x2, float y2);
