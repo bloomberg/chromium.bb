@@ -43,7 +43,7 @@ class RegularExpression {
     WTF_MAKE_FAST_ALLOCATED; WTF_MAKE_NONCOPYABLE(RegularExpression);
 public:
     RegularExpression(const String&, TextCaseSensitivity, MultilineMode = MultilineDisabled);
-
+    bool isValid() const { return m_regExpByteCode; }
     int match(const String&, int startFrom = 0, int* matchLength = 0) const;
 
 private:
