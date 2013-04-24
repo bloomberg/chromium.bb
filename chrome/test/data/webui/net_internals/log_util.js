@@ -293,8 +293,9 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
   taskQueue.addFunctionTask(checkActiveView.bind(null, ExportView.TAB_ID));
   taskQueue.run();
 
-  // Simulate a click on the stop capturing button.
-  $(CaptureStatusView.STOP_BUTTON_ID).click();
+  // Simulate clicking the stop capturing action.
+  $(CaptureStatusView.ACTIONS_DROPDOWN_ID).value = 'stop';
+  $(CaptureStatusView.ACTIONS_DROPDOWN_ID).onchange();
 });
 
 /**
@@ -315,8 +316,9 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturingExportImport', function() {
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.run();
 
-  // Simulate a click on the stop capturing button.
-  $(CaptureStatusView.STOP_BUTTON_ID).click();
+  // Simulate clicking the stop capturing action.
+  $(CaptureStatusView.ACTIONS_DROPDOWN_ID).value = 'stop';
+  $(CaptureStatusView.ACTIONS_DROPDOWN_ID).onchange();
 });
 
 })();  // Anonymous namespace

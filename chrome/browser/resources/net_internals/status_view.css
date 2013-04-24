@@ -15,15 +15,12 @@
   background: rgb(136, 136, 204);
 }
 
-#capture-status-view-toggle-extras {
-  -webkit-filter: invert();  /* Make it white! */
-  cursor: pointer;
-}
-
-.capture-status-view-rotateleft {
-  -webkit-transform: rotate(90deg);
-}
-
-.capture-status-view-rotateright {
-  -webkit-transform: rotate(270deg);
+/* Only want the SELECT's arrow to show */
+#capture-status-view-actions {
+  background: none;
+  border: none;
+  float: right;
+  outline: none;
+  padding-right: 2ex;
+  width: 2ex;
 }

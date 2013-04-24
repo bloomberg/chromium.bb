@@ -6,50 +6,27 @@ found in the LICENSE file.
 
 <!-- Status bar at top of screen when in capture mode. -->
 <div id=capture-status-view style="display:none">
-  <table width=100%><tr>
-    <td>
-      Capturing network events
-      (<span id=capture-status-view-captured-events-count
-             title='Number of events captured to this window'></span>)
-      <button id=capture-status-view-stop>Stop</button>
-      <button id=capture-status-view-reset>Reset</button>
-    </td>
-    <td align=right>
-      <img id=capture-status-view-toggle-extras
-          class=capture-status-view-rotateleft
-          src="chrome://resources/images/select.png">
-      <span id=capture-status-view-extras style="display:none">
-        <button id=capture-status-view-clear-cache class=warning-text>
-          Clear cache</button>
-        <button id=capture-status-view-flush-sockets class=warning-text>
-          Flush sockets</button>
-      </span>
-    </td>
-  </tr></table>
+  Capturing network events
+  (<span id=capture-status-view-captured-events-count
+         title='Number of events captured to this window'></span>)
+  <select id=capture-status-view-actions>
+    <optgroup label="Capture">
+      <option value=stop>Stop</option>
+      <option value=reset>Reset</option>
+    </optgroup>
+    <optgroup label="Tools">
+      <option value=clear-cache>Clear cache</option>
+      <option value=flush-sockets>Flush sockets</option>
+    </optgroup>
+  </select>
 </div>
 
 <!-- Status bar at top of screen when capturing is stopped -->
 <div id=halted-status-view style="display:none">
-  <!-- The use of a table here is to get things to center vertically.
-       We need this since the CSS adds padding to our DIV to make the
-       various status bars have similar heights.  -->
-  <table height=100%>
-    <tr valign=middle>
-      <td>Capturing halted</td>
-    </tr>
-  </table>
+  Capturing halted
 </div>
 
 <!-- Status bar at top of screen when displaying a loaded dump file -->
 <div id=loaded-status-view style="display:none">
-  <!-- The use of a table here is to get things to center vertically.
-       We need this since the CSS adds padding to our DIV to make the
-       various status bars have similar heights.  -->
-  <table height=100%>
-    <tr valign=middle>
-      <td>
-        Displaying log file (<span id=loaded-status-view-dump-file-name></span>)
-      </td>
-    </tr>
-  </table>
+  Displaying log file (<span id=loaded-status-view-dump-file-name></span>)
 </div>
