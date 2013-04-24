@@ -5,8 +5,8 @@
 #include "chromeos/dbus/power_policy_controller.h"
 
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
-#include "chromeos/dbus/mock_power_manager_client.h"
+#include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,12 +21,11 @@ class PowerPolicyControllerTest : public testing::Test {
   virtual ~PowerPolicyControllerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    dbus_manager_ = new MockDBusThreadManager;
+    dbus_manager_ = new MockDBusThreadManagerWithoutGMock;
     DBusThreadManager::InitializeForTesting(dbus_manager_);  // Takes ownership.
-    power_client_ = dbus_manager_->mock_power_manager_client();
-    EXPECT_CALL(*power_client_, SetPolicy(_))
-        .WillRepeatedly(SaveArg<0>(&last_policy_));
-    policy_controller_ = dbus_manager_->GetPowerPolicyController();
+
+    policy_controller_ =
+        new PowerPolicyController(dbus_manager_, &fake_power_client_);
   }
 
   virtual void TearDown() OVERRIDE {
@@ -34,11 +33,9 @@ class PowerPolicyControllerTest : public testing::Test {
   }
 
  protected:
-  MockDBusThreadManager* dbus_manager_;  // Not owned.
-  MockPowerManagerClient* power_client_;  // Not owned.
+  MockDBusThreadManagerWithoutGMock* dbus_manager_;  // Not owned.
+  FakePowerManagerClient fake_power_client_;
   PowerPolicyController* policy_controller_;  // Not owned.
-
-  power_manager::PowerManagementPolicy last_policy_;
 };
 
 TEST_F(PowerPolicyControllerTest, Prefs) {
@@ -77,7 +74,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_presentation_idle_delay_factor(2.0);
   expected_policy.set_reason("Prefs");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 
   // Change some prefs and check that an updated policy is sent.
   prefs.ac_idle_warning_delay_ms = 700000;
@@ -89,7 +87,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.set_lid_closed_action(
       power_manager::PowerManagementPolicy_Action_SUSPEND);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 
   // The enable-screen-lock pref should force the screen-lock delays to
   // match the screen-off delays.
@@ -98,7 +97,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.mutable_ac_delays()->set_screen_lock_ms(660000);
   expected_policy.mutable_battery_delays()->set_screen_lock_ms(360000);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 
   // If the screen-lock-delay prefs are set to lower values than the
   // screen-off delays, the lock prefs should take precedence.
@@ -108,7 +108,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   expected_policy.mutable_ac_delays()->set_screen_lock_ms(70000);
   expected_policy.mutable_battery_delays()->set_screen_lock_ms(60000);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 }
 
 TEST_F(PowerPolicyControllerTest, Blocks) {
@@ -120,7 +121,8 @@ TEST_F(PowerPolicyControllerTest, Blocks) {
       power_manager::PowerManagementPolicy_Action_DO_NOTHING);
   expected_policy.set_reason(kSuspendBlockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 
   const char kScreenBlockReason[] = "screen";
   const int screen_id = policy_controller_->AddScreenBlock(kScreenBlockReason);
@@ -131,17 +133,20 @@ TEST_F(PowerPolicyControllerTest, Blocks) {
   expected_policy.set_reason(
       std::string(kScreenBlockReason) + ", " + kSuspendBlockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 
   policy_controller_->RemoveBlock(suspend_id);
   expected_policy.set_reason(kScreenBlockReason);
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 
   policy_controller_->RemoveBlock(screen_id);
   expected_policy.Clear();
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
-            PowerPolicyController::GetPolicyDebugString(last_policy_));
+            PowerPolicyController::GetPolicyDebugString(
+                fake_power_client_.get_policy()));
 }
 
 }  // namespace chromeos

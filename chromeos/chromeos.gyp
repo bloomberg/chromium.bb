@@ -376,10 +376,13 @@
       'dependencies': [
         '../build/linux/system.gyp:dbus',
         'chromeos',
+        'power_manager_proto',
       ],
       'sources': [
         'dbus/fake_cros_disks_client.cc',
         'dbus/fake_cros_disks_client.h',
+        'dbus/fake_power_manager_client.cc',
+        'dbus/fake_power_manager_client.h',
         'dbus/mock_dbus_thread_manager_without_gmock.cc',
         'dbus/mock_dbus_thread_manager_without_gmock.h',
         'dbus/ibus/mock_ibus_client.cc',
