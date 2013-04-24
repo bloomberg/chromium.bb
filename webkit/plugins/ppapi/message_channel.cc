@@ -342,13 +342,18 @@ MessageChannel::MessageChannel(PluginInstance* instance)
 }
 
 void MessageChannel::PostMessageToJavaScript(PP_Var message_data) {
-  // Serialize the message data.
   v8::HandleScope scope;
+
   // Because V8 is probably not on the stack for Native->JS calls, we need to
   // enter the appropriate context for the plugin.
+  WebPluginContainer* container = instance_->container();
+  // It's possible that container() is NULL if the plugin has been removed from
+  // the DOM (but the PluginInstance is not destroyed yet).
+  if (!container)
+    return;
+
   v8::Local<v8::Context> context =
-      instance_->container()->element().document().frame()->
-          mainWorldScriptContext();
+      container->element().document().frame()->mainWorldScriptContext();
   v8::Context::Scope context_scope(context);
 
   v8::Local<v8::Value> v8_val;
