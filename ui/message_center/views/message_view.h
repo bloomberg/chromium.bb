@@ -48,6 +48,7 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  const std::string& notification_id() { return notification_id_; }
   void set_scroller(views::ScrollView* scroller) { scroller_ = scroller; }
 
  protected:
@@ -60,7 +61,6 @@ class MESSAGE_CENTER_EXPORT MessageView : public views::SlideOutView,
   virtual void OnSlideOut() OVERRIDE;
 
   MessageCenter* message_center() { return message_center_; }
-  const std::string& notification_id() { return notification_id_; }
   const string16& display_source() const { return display_source_; }
   const std::string& extension_id() const { return extension_id_; }
   views::ImageButton* close_button() { return close_button_.get(); }

@@ -28,13 +28,13 @@ class ContentsView : public views::View {
   virtual void ChildPreferredSizeChanged(View* child) OVERRIDE;
 
  private:
-  MessageCenterBubble* bubble_;  // Weak reference.
+  base::WeakPtr<MessageCenterBubble> bubble_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);
 };
 
 ContentsView::ContentsView(MessageCenterBubble* bubble, views::View* contents)
-    : bubble_(bubble) {
+    : bubble_(bubble->AsWeakPtr()) {
   SetLayoutManager(new views::FillLayout());
   AddChildView(contents);
 }
@@ -51,7 +51,8 @@ int ContentsView::GetHeightForWidth(int width) {
 
 void ContentsView::ChildPreferredSizeChanged(View* child) {
   // TODO(dharcourt): Reduce the amount of updating this requires.
-  bubble_->bubble_view()->UpdateBubble();
+  if (bubble_.get())
+    bubble_->bubble_view()->UpdateBubble();
 }
 
 // MessageCenterBubble /////////////////////////////////////////////////////////

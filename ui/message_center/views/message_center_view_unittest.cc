@@ -98,6 +98,7 @@ class MessageCenterViewTest : public testing::Test,
   virtual ~MessageCenterViewTest();
 
   virtual void SetUp() OVERRIDE;
+  virtual void TearDown() OVERRIDE;
 
   MessageCenterView* GetMessageCenterView();
   int GetNotificationCount();
@@ -148,9 +149,13 @@ void MessageCenterViewTest::SetUp() {
   // that will become owned by the MessageListView.
   MockNotificationView* mock;
   mock = new MockNotificationView(notification, &message_center_, this, 42);
-  message_center_view_->message_views_[notification.id()] = mock;
+  message_center_view_->message_views_.push_back(mock);
   message_center_view_->message_list_view_->RemoveAllChildViews(true);
   message_center_view_->message_list_view_->AddChildView(mock);
+}
+
+void MessageCenterViewTest::TearDown() {
+  message_center_view_.reset();
 }
 
 MessageCenterView* MessageCenterViewTest::GetMessageCenterView() {
