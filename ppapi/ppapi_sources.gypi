@@ -308,6 +308,8 @@
       'cpp/private/network_list_private.h',
       'cpp/private/network_monitor_private.cc',
       'cpp/private/network_monitor_private.h',
+      'cpp/private/pass_file_handle.cc',
+      'cpp/private/pass_file_handle.h',
       'cpp/private/pdf.cc',
       'cpp/private/pdf.h',
       'cpp/private/tcp_server_socket_private.cc',

@@ -23,6 +23,7 @@
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
 #include "ppapi/cpp/private/file_io_private.h"
+#include "ppapi/cpp/private/pass_file_handle.h"
 #include "ppapi/tests/test_utils.h"
 #include "ppapi/tests/testing_instance.h"
 
@@ -1029,8 +1030,7 @@ std::string TestFileIO::TestRequestOSFileHandle() {
   pp::FileRef file_ref(file_system, "/file_os_fd");
 
   callback.WaitForResult(file_system.Open(1024, callback.GetCallback()));
-  if (callback.result() != PP_OK)
-    return ReportError("FileSystem::Open", callback.result());
+  ASSERT_EQ(PP_OK, callback.result());
 
   pp::FileIO_Private file_io(instance_);
   callback.WaitForResult(file_io.Open(file_ref,
@@ -1039,14 +1039,14 @@ std::string TestFileIO::TestRequestOSFileHandle() {
                                       PP_FILEOPENFLAG_READ |
                                       PP_FILEOPENFLAG_WRITE,
                                       callback.GetCallback()));
-  if (callback.result() != PP_OK)
-    return ReportError("FileIO::Open", callback.result());
+  ASSERT_EQ(PP_OK, callback.result());
 
-  PP_FileHandle handle = PP_kInvalidFileHandle;
-  callback.WaitForResult(
-      file_io.RequestOSFileHandle(&handle, callback.GetCallback()));
-  if (callback.result() != PP_OK)
-    return ReportError("FileIO::RequestOSFileHandle", callback.result());
+  TestCompletionCallbackWithOutput<pp::PassFileHandle> output_callback(
+      instance_->pp_instance(), callback_type());
+  output_callback.WaitForResult(
+      file_io.RequestOSFileHandle(output_callback.GetCallback()));
+  PP_FileHandle handle = output_callback.output().Release();
+  ASSERT_EQ(PP_OK, output_callback.result());
 
   if (handle == PP_kInvalidFileHandle)
     return "FileIO::RequestOSFileHandle() returned a bad file handle.";

@@ -27,12 +27,13 @@ FileIO_Private::FileIO_Private(const InstanceHandle& instance)
     : FileIO(instance) {
 }
 
-int32_t FileIO_Private::RequestOSFileHandle(PP_FileHandle* result_handle,
-                                            const CompletionCallback& cc) {
-  *result_handle = PP_kInvalidFileHandle;
+int32_t FileIO_Private::RequestOSFileHandle(
+    const CompletionCallbackWithOutput<PassFileHandle>& cc) {
   if (has_interface<PPB_FileIO_Private>())
     return get_interface<PPB_FileIO_Private>()->RequestOSFileHandle(
-        pp_resource(), result_handle, cc.pp_completion_callback());
+        pp_resource(),
+        cc.output(),
+        cc.pp_completion_callback());
   return cc.MayForce(PP_ERROR_NOINTERFACE);
 }
 
