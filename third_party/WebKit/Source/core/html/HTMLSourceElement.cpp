@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if ENABLE(VIDEO)
 #include "HTMLSourceElement.h"
 
 #include "Event.h"
@@ -125,5 +124,3 @@ bool HTMLSourceElement::isURLAttribute(const Attribute& attribute) const
 }
 
 }
-
-#endif

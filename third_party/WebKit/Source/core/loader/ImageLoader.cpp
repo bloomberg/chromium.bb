@@ -35,15 +35,13 @@
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
 #include "RenderImage.h"
+#include "RenderVideo.h"
 #include "ScriptCallStack.h"
 #include "SecurityOrigin.h"
 #include "WebCoreMemoryInstrumentation.h"
 
 #if ENABLE(SVG)
 #include "RenderSVGImage.h"
-#endif
-#if ENABLE(VIDEO)
-#include "RenderVideo.h"
 #endif
 
 #if !ASSERT_DISABLED
@@ -334,10 +332,8 @@ RenderImageResource* ImageLoader::renderImageResource()
         return toRenderSVGImage(renderer)->imageResource();
 #endif
 
-#if ENABLE(VIDEO)
     if (renderer->isVideo())
         return toRenderVideo(renderer)->imageResource();
-#endif
 
     return 0;
 }

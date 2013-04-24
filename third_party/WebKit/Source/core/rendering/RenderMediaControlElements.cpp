@@ -27,7 +27,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "RenderMediaControlElements.h"
 
 #include "RenderTheme.h"
@@ -54,6 +53,4 @@ void RenderTextTrackContainerElement::layout()
 
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)
 

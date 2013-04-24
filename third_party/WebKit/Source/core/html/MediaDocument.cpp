@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaDocument.h"
 
 #include "DocumentLoader.h"
@@ -222,4 +221,3 @@ void MediaDocument::replaceMediaElementTimerFired(Timer<MediaDocument>*)
 }
 
 }
-#endif

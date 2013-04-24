@@ -92,14 +92,7 @@ void RenderThemeChromiumAndroid::adjustInnerSpinButtonStyle(StyleResolver*, Rend
 
 bool RenderThemeChromiumAndroid::paintMediaOverlayPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaOverlayPlayButton, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 int RenderThemeChromiumAndroid::menuListArrowPadding() const

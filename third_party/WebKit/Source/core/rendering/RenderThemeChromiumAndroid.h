@@ -43,9 +43,7 @@ public:
 
     virtual bool paintMediaOverlayPlayButton(RenderObject*, const PaintInfo&, const IntRect&) OVERRIDE;
 
-#if ENABLE(VIDEO)
     virtual String extraMediaControlsStyleSheet() OVERRIDE;
-#endif
 
     virtual Color platformTapHighlightColor() const OVERRIDE
     {

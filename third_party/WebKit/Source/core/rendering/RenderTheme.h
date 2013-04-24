@@ -84,9 +84,7 @@ public:
     // adjust the default CSS rules in html.css, quirks.css or mediaControls.css.
     virtual String extraDefaultStyleSheet() { return String(); }
     virtual String extraQuirksStyleSheet() { return String(); }
-#if ENABLE(VIDEO)
     virtual String extraMediaControlsStyleSheet() { return String(); }
-#endif
     virtual String extraFullScreenStyleSheet() { return String(); }
 
     // A method to obtain the baseline position for a "leaf" control.  This will only be used if a baseline
@@ -184,7 +182,6 @@ public:
     // Returns the duration of the animation for the progress bar.
     virtual double animationDurationForProgressBar(RenderProgress*) const;
 
-#if ENABLE(VIDEO)
     // Media controls
     virtual bool supportsClosedCaptioning() const { return false; }
     virtual bool hasOwnDisabledStateHandlingFor(ControlPart) const { return false; }
@@ -196,7 +193,6 @@ public:
     virtual String formatMediaControlsTime(float time) const;
     virtual String formatMediaControlsCurrentTime(float currentTime, float duration) const;
     virtual String formatMediaControlsRemainingTime(float currentTime, float duration) const;
-#endif
 
     virtual IntSize meterSizeForBounds(const RenderMeter*, const IntRect&) const;
     virtual bool supportsMeter(ControlPart) const;

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
-
 #include "RenderMediaControls.h"
 
 #include "GraphicsContext.h"
@@ -41,5 +39,3 @@ using namespace std;
  
 namespace WebCore {
 }
-
-#endif

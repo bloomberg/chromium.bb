@@ -54,9 +54,7 @@
 #include "FrameView.h"
 #include "HTMLContentElement.h"
 #include "HTMLInputElement.h"
-#if ENABLE(VIDEO)
 #include "HTMLMediaElement.h"
-#endif
 #include "HTMLNames.h"
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"

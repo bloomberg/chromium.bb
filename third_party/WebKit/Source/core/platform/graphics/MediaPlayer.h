@@ -26,7 +26,6 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
-#if ENABLE(VIDEO)
 #include "GraphicsTypes3D.h"
 #include "InbandTextTrackPrivate.h"
 #include "IntRect.h"
@@ -466,7 +465,5 @@ typedef void (*MediaEngineRegistrar)(CreateMediaEnginePlayer, MediaEngineSupport
     MediaEngineGetSitesInMediaCache, MediaEngineClearMediaCache, MediaEngineClearMediaCacheForSite);
 
 }
-
-#endif // ENABLE(VIDEO)
 
 #endif

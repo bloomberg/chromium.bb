@@ -348,26 +348,17 @@ KURL HitTestResult::absolutePDFURL() const
 
 KURL HitTestResult::absoluteMediaURL() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->currentSrc();
     return KURL();
-#else
-    return KURL();
-#endif
 }
 
 bool HitTestResult::mediaSupportsFullscreen() const
 {
-#if ENABLE(VIDEO)
     HTMLMediaElement* mediaElt(mediaElement());
     return (mediaElt && mediaElt->hasTagName(HTMLNames::videoTag) && mediaElt->supportsFullscreen());
-#else
-    return false;
-#endif
 }
 
-#if ENABLE(VIDEO)
 HTMLMediaElement* HitTestResult::mediaElement() const
 {
     if (!(m_innerNonSharedNode && m_innerNonSharedNode->document()))
@@ -380,104 +371,81 @@ HTMLMediaElement* HitTestResult::mediaElement() const
         return static_cast<HTMLMediaElement*>(m_innerNonSharedNode.get());
     return 0;
 }
-#endif
 
 void HitTestResult::toggleMediaControlsDisplay() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         mediaElt->setControls(!mediaElt->controls());
-#endif
 }
 
 void HitTestResult::toggleMediaLoopPlayback() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         mediaElt->setLoop(!mediaElt->loop());
-#endif
 }
 
 void HitTestResult::enterFullscreenForVideo() const
 {
-#if ENABLE(VIDEO)
     HTMLMediaElement* mediaElt(mediaElement());
     if (mediaElt && mediaElt->hasTagName(HTMLNames::videoTag)) {
         HTMLVideoElement* videoElt = static_cast<HTMLVideoElement*>(mediaElt);
         if (!videoElt->isFullscreen() && mediaElt->supportsFullscreen())
             videoElt->enterFullscreen();
     }
-#endif
 }
 
 bool HitTestResult::mediaControlsEnabled() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->controls();
-#endif
     return false;
 }
 
 bool HitTestResult::mediaLoopEnabled() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->loop();
-#endif
     return false;
 }
 
 bool HitTestResult::mediaPlaying() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return !mediaElt->paused();
-#endif
     return false;
 }
 
 void HitTestResult::toggleMediaPlayState() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         mediaElt->togglePlayState();
-#endif
 }
 
 bool HitTestResult::mediaHasAudio() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->hasAudio();
-#endif
     return false;
 }
 
 bool HitTestResult::mediaIsVideo() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->hasTagName(HTMLNames::videoTag);
-#endif
     return false;
 }
 
 bool HitTestResult::mediaMuted() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         return mediaElt->muted();
-#endif
     return false;
 }
 
 void HitTestResult::toggleMediaMuteState() const
 {
-#if ENABLE(VIDEO)
     if (HTMLMediaElement* mediaElt = mediaElement())
         mediaElt->setMuted(!mediaElt->muted());
-#endif
 }
 
 KURL HitTestResult::absoluteLinkURL() const

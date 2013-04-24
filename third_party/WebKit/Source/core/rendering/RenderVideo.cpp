@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "RenderVideo.h"
 
 #include "Document.h"
@@ -330,5 +329,3 @@ LayoutUnit RenderVideo::offsetHeight() const
 }
 
 } // namespace WebCore
-
-#endif

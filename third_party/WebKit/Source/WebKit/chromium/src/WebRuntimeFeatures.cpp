@@ -78,18 +78,12 @@ bool WebRuntimeFeatures::isSessionStorageEnabled()
 
 void WebRuntimeFeatures::enableMediaPlayer(bool enable)
 {
-#if ENABLE(VIDEO)
     WebMediaPlayerClientImpl::setIsEnabled(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isMediaPlayerEnabled()
 {
-#if ENABLE(VIDEO)
     return WebMediaPlayerClientImpl::isEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableNotifications(bool enable)

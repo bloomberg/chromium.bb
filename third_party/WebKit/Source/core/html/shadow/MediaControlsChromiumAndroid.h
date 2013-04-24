@@ -26,7 +26,6 @@
 #ifndef MediaControlsChromiumAndroid_h
 #define MediaControlsChromiumAndroid_h
 
-#if ENABLE(VIDEO)
 #include "MediaControls.h"
 #include "MediaControlsChromium.h"
 
@@ -50,7 +49,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

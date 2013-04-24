@@ -37,8 +37,6 @@
 
 namespace WebCore {
 
-#if ENABLE(VIDEO)
-
 typedef WTF::HashMap<const char*, Image*> MediaControlImageMap;
 static MediaControlImageMap* gMediaControlImageMap = 0;
 
@@ -457,7 +455,5 @@ String RenderMediaControlsChromium::formatMediaControlsRemainingTime(float curre
 {
     return formatChromiumMediaControlsTime(currentTime - duration, duration);
 }
-
-#endif  // #if ENABLE(VIDEO)
 
 } // namespace WebCore

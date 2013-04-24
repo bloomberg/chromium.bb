@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if ENABLE(VIDEO)
 #include "HTMLMediaElement.h"
 
 #include "ApplicationCacheHost.h"
@@ -4458,4 +4457,3 @@ void HTMLMediaElement::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) con
 }
 
 }
-#endif

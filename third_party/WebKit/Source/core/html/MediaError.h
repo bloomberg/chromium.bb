@@ -26,8 +26,6 @@
 #ifndef MediaError_h
 #define MediaError_h
 
-#if ENABLE(VIDEO)
-
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 
@@ -57,5 +55,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

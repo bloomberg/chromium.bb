@@ -26,7 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaControlsChromium.h"
 
 #include "ExceptionCodePlaceholder.h"
@@ -224,5 +223,3 @@ void MediaControlsChromium::insertTextTrackContainer(PassRefPtr<MediaControlText
 
 
 }
-
-#endif

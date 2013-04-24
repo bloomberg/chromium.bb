@@ -16,7 +16,7 @@ IDBTransaction
 ScriptProcessorNode conditional=WEB_AUDIO
 LocalMediaStream conditional=MEDIA_STREAM
 MediaKeySession conditional=ENCRYPTED_MEDIA_V2
-MediaController conditional=VIDEO
+MediaController
 MediaSource
 MediaStream conditional=MEDIA_STREAM
 MediaStreamTrack conditional=MEDIA_STREAM

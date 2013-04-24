@@ -30,8 +30,6 @@
 #ifndef MediaControlElementTypes_h
 #define MediaControlElementTypes_h
 
-#if ENABLE(VIDEO)
-
 #include "HTMLDivElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLMediaElement.h"
@@ -205,7 +203,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)
 
 #endif // MediaControlElementTypes_h

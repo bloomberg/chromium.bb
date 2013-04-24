@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=VIDEO,
     ActiveDOMObject
 ] interface HTMLMediaElement : HTMLElement {
 

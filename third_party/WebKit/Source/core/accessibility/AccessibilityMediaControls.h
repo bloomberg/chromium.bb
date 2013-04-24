@@ -30,8 +30,6 @@
 #ifndef AccessibilityMediaControls_h
 #define AccessibilityMediaControls_h
 
-#if ENABLE(VIDEO)
-
 #include "AccessibilitySlider.h"
 #include "MediaControlElements.h"
 
@@ -113,7 +111,5 @@ private:
 
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)
 
 #endif // AccessibilityMediaControls_h

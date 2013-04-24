@@ -1887,8 +1887,6 @@ bool RenderThemeChromiumMac::shouldShowPlaceholderWhenFocused() const
     return true;
 }
 
-#if ENABLE(VIDEO)
-
 void RenderThemeChromiumMac::adjustMediaSliderThumbSize(RenderStyle* style) const
 {
     RenderMediaControlsChromium::adjustMediaSliderThumbSize(style);
@@ -1984,6 +1982,5 @@ bool RenderThemeChromiumMac::paintMediaToggleClosedCaptionsButton(RenderObject* 
 {
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaShowClosedCaptionsButton, object, paintInfo, rect);
 }
-#endif
 
 } // namespace WebCore

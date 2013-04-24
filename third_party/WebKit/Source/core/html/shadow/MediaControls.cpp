@@ -26,7 +26,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaControls.h"
 
 #include "ExceptionCodePlaceholder.h"
@@ -412,5 +411,3 @@ void MediaControls::textTrackPreferencesChanged()
 }
 
 }
-
-#endif

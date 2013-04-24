@@ -854,16 +854,13 @@ printConditionalElementIncludes($F);
 print F <<END
 
 #include "ContextFeatures.h"
+#include "Document.h"
 #include "RuntimeEnabledFeatures.h"
+#include "Settings.h"
 
 #if ENABLE(CUSTOM_ELEMENTS)
 #include "CustomElementConstructor.h"
 #include "CustomElementRegistry.h"
-#endif
-
-#if ENABLE(VIDEO)
-#include "Document.h"
-#include "Settings.h"
 #endif
 
 namespace WebCore {
@@ -1187,12 +1184,9 @@ sub printWrapperFactoryCppFile
     print F <<END
 
 #include "ContextFeatures.h"
-#include "RuntimeEnabledFeatures.h"
-
-#if ENABLE(VIDEO)
 #include "Document.h"
+#include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
-#endif
 
 END
 ;

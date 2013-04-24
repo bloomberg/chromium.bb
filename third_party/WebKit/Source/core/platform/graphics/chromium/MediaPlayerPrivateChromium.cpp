@@ -31,8 +31,6 @@
 #include "config.h"
 #include "MediaPlayerPrivateChromium.h"
 
-#if ENABLE(VIDEO)
-
 namespace WebCore {
 
 static MediaEngineRegisterSelf* s_registerSelfFunction = 0;
@@ -49,5 +47,3 @@ void MediaPlayerPrivate::setMediaEngineRegisterSelfFunction(MediaEngineRegisterS
 }
 
 } // namespace WebCore
-
-#endif

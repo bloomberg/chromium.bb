@@ -27,7 +27,6 @@
 #ifndef HTMLAudioElement_h
 #define HTMLAudioElement_h
 
-#if ENABLE(VIDEO)
 #include "HTMLMediaElement.h"
 
 namespace WebCore {
@@ -47,5 +46,4 @@ private:
 
 } //namespace
 
-#endif
 #endif

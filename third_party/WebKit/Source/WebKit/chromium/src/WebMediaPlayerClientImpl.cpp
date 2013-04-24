@@ -5,8 +5,6 @@
 #include "config.h"
 #include "WebMediaPlayerClientImpl.h"
 
-#if ENABLE(VIDEO)
-
 #include "AudioBus.h"
 #include "AudioSourceProvider.h"
 #include "AudioSourceProviderClient.h"
@@ -887,5 +885,3 @@ void WebMediaPlayerClientImpl::AudioClientImpl::setFormat(size_t numberOfChannel
 #endif
 
 } // namespace WebKit
-
-#endif  // ENABLE(VIDEO)

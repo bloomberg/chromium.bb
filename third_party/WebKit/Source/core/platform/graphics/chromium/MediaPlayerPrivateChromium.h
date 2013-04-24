@@ -31,8 +31,6 @@
 #ifndef MediaPlayerPrivateChromium_h
 #define MediaPlayerPrivateChromium_h
 
-#if ENABLE(VIDEO)
-
 #include "MediaPlayerPrivate.h"
 
 namespace WebCore {
@@ -46,7 +44,5 @@ public:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)
 
 #endif // MediaPlayerPrivateChromium_h

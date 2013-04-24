@@ -26,8 +26,6 @@
 #ifndef MediaFragmentURIParser_h
 #define MediaFragmentURIParser_h
 
-#if ENABLE(VIDEO)
-
 #include "KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
@@ -64,5 +62,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

@@ -26,7 +26,6 @@
 #ifndef HTMLMediaElement_h
 #define HTMLMediaElement_h
 
-#if ENABLE(VIDEO)
 #include "HTMLElement.h"
 #include "ActiveDOMObject.h"
 #include "GenericEventQueue.h"
@@ -690,5 +689,4 @@ inline HTMLMediaElement* toMediaElement(Node* node)
 
 } //namespace
 
-#endif
 #endif

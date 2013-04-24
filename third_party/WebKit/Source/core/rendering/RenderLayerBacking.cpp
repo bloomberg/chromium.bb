@@ -434,14 +434,10 @@ bool RenderLayerBacking::updateGraphicsLayerConfiguration()
     if (renderer->isEmbeddedObject() && toRenderEmbeddedObject(renderer)->allowsAcceleratedCompositing()) {
         PluginViewBase* pluginViewBase = toPluginViewBase(toRenderWidget(renderer)->widget());
         m_graphicsLayer->setContentsToMedia(pluginViewBase->platformLayer());
-    }
-#if ENABLE(VIDEO)
-    else if (renderer->isVideo()) {
+    } else if (renderer->isVideo()) {
         HTMLMediaElement* mediaElement = toMediaElement(renderer->node());
         m_graphicsLayer->setContentsToMedia(mediaElement->platformLayer());
-    }
-#endif
-    else if (isAcceleratedCanvas(renderer)) {
+    } else if (isAcceleratedCanvas(renderer)) {
         HTMLCanvasElement* canvas = static_cast<HTMLCanvasElement*>(renderer->node());
         if (CanvasRenderingContext* context = canvas->renderingContext())
             m_graphicsLayer->setContentsToCanvas(context->platformLayer());
@@ -1340,10 +1336,9 @@ bool RenderLayerBacking::containsPaintedContent() const
 
     // FIXME: we could optimize cases where the image, video or canvas is known to fill the border box entirely,
     // and set background color on the layer in that case, instead of allocating backing store and painting.
-#if ENABLE(VIDEO)
     if (renderer()->isVideo() && toRenderVideo(renderer())->shouldDisplayVideo())
         return m_owningLayer->hasBoxDecorationsOrBackground();
-#endif
+
     if (isAcceleratedCanvas(renderer()))
         return m_owningLayer->hasBoxDecorationsOrBackground();
 
@@ -1459,12 +1454,10 @@ IntRect RenderLayerBacking::contentsBox() const
         return IntRect();
 
     IntRect contentsRect;
-#if ENABLE(VIDEO)
     if (renderer()->isVideo()) {
         RenderVideo* videoRenderer = toRenderVideo(renderer());
         contentsRect = videoRenderer->videoBox();
     } else
-#endif
         contentsRect = pixelSnappedIntRect(toRenderBox(renderer())->contentBoxRect());
 
     contentsRect.move(contentOffsetInCompostingLayer());

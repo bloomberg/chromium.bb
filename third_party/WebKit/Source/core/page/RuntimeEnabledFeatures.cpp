@@ -85,8 +85,6 @@ bool RuntimeEnabledFeatures::javaScriptI18NAPIEnabled()
 }
 #endif
 
-#if ENABLE(VIDEO)
-
 bool RuntimeEnabledFeatures::audioEnabled()
 {
     return MediaPlayer::isAvailable();
@@ -126,8 +124,6 @@ bool RuntimeEnabledFeatures::timeRangesEnabled()
 {
     return MediaPlayer::isAvailable();
 }
-
-#endif
 
 #if ENABLE(SHARED_WORKERS)
 bool RuntimeEnabledFeatures::sharedWorkerEnabled()

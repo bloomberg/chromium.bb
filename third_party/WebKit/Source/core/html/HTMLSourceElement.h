@@ -26,7 +26,6 @@
 #ifndef HTMLSourceElement_h
 #define HTMLSourceElement_h
 
-#if ENABLE(VIDEO)
 #include "HTMLElement.h"
 #include "Timer.h"
 
@@ -59,5 +58,4 @@ private:
 
 } //namespace
 
-#endif
 #endif

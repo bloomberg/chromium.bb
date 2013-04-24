@@ -515,14 +515,12 @@ bool RenderLayerCompositor::updateBacking(RenderLayer* layer, CompositingChangeR
                 repaintOnCompositingChange(layer);
         }
     }
-    
-#if ENABLE(VIDEO)
+
     if (layerChanged && layer->renderer()->isVideo()) {
         // If it's a video, give the media player a chance to hook up to the layer.
         RenderVideo* video = toRenderVideo(layer->renderer());
         video->acceleratedRenderingStateChanged();
     }
-#endif
 
     if (layerChanged && layer->renderer()->isRenderPart()) {
         RenderLayerCompositor* innerCompositor = frameContentsCompositor(toRenderPart(layer->renderer()));
@@ -742,14 +740,12 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         compositingReason = overlapMap->overlapsLayers(absBounds) ? RenderLayer::IndirectCompositingForOverlap : RenderLayer::NoIndirectCompositingReason;
     }
 
-#if ENABLE(VIDEO)
     // Video is special. It's the only RenderLayer type that can both have
     // RenderLayer children and whose children can't use its backing to render
     // into. These children (the controls) always need to be promoted into their
     // own layers to draw on top of the accelerated video.
     if (compositingState.m_compositingAncestor && compositingState.m_compositingAncestor->renderer()->isVideo())
         compositingReason = RenderLayer::IndirectCompositingForOverlap;
-#endif
 
     layer->setIndirectCompositingReason(compositingReason);
 
@@ -939,7 +935,6 @@ void RenderLayerCompositor::removeCompositedChildren(RenderLayer* layer)
     hostingLayer->removeAllChildren();
 }
 
-#if ENABLE(VIDEO)
 bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
 {
     if (!m_hasAcceleratedCompositing)
@@ -947,7 +942,6 @@ bool RenderLayerCompositor::canAccelerateVideoRendering(RenderVideo* o) const
 
     return o->supportsAcceleratedRendering();
 }
-#endif
 
 void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vector<GraphicsLayer*>& childLayersOfEnclosingLayer, int depth)
 {
@@ -1748,14 +1742,11 @@ bool RenderLayerCompositor::requiresCompositingForVideo(RenderObject* renderer) 
 {
     if (!(m_compositingTriggers & ChromeClient::VideoTrigger))
         return false;
-#if ENABLE(VIDEO)
+
     if (renderer->isVideo()) {
         RenderVideo* video = toRenderVideo(renderer);
         return video->shouldDisplayVideo() && canAccelerateVideoRendering(video);
     }
-#else
-    UNUSED_PARAM(renderer);
-#endif
     return false;
 }
 

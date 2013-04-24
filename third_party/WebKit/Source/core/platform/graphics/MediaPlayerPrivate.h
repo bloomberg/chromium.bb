@@ -26,8 +26,6 @@
 #ifndef MediaPlayerPrivate_h
 #define MediaPlayerPrivate_h
 
-#if ENABLE(VIDEO)
-
 #include "MediaPlayer.h"
 #include "TimeRanges.h"
 #include <wtf/Forward.h>
@@ -178,5 +176,4 @@ public:
 
 }
 
-#endif
 #endif

@@ -27,8 +27,6 @@
 #ifndef MediaControlsChromium_h
 #define MediaControlsChromium_h
 
-#if ENABLE(VIDEO)
-
 #include "MediaControls.h"
 
 namespace WebCore {
@@ -63,7 +61,5 @@ private:
 };
 
 }
-
-#endif
 
 #endif

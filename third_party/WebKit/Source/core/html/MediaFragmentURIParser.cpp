@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
-
 #include "MediaFragmentURIParser.h"
 
 #include "HTMLElement.h"
@@ -325,4 +323,3 @@ bool MediaFragmentURIParser::parseNPTTime(const LChar* timeString, unsigned leng
 }
 
 }
-#endif

@@ -25,8 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
-
 #include "V8HTMLMediaElement.h"
 
 #include "V8MediaController.h"
@@ -53,5 +51,3 @@ void V8HTMLMediaElement::controllerAttrSetterCustom(v8::Local<v8::String>, v8::L
 }
 
 }
-
-#endif

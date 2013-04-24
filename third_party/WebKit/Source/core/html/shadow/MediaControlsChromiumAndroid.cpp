@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaControlsChromiumAndroid.h"
 
 namespace WebCore {
@@ -96,5 +95,3 @@ void MediaControlsChromiumAndroid::insertTextTrackContainer(PassRefPtr<MediaCont
     m_overlayEnclosure->insertBefore(textTrackContainer, m_overlayPlayButton, ASSERT_NO_EXCEPTION, AttachLazily);
 }
 }
-
-#endif

@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "RenderMedia.h"
 
 #include "HTMLMediaElement.h"
@@ -100,5 +99,3 @@ void RenderMedia::paintReplaced(PaintInfo&, const LayoutPoint&)
 }
 
 } // namespace WebCore
-
-#endif

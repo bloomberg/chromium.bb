@@ -26,8 +26,6 @@
 #ifndef MediaDocument_h
 #define MediaDocument_h
 
-#if ENABLE(VIDEO)
-
 #include "HTMLDocument.h"
 
 namespace WebCore {
@@ -72,5 +70,4 @@ void toMediaDocument(const MediaDocument*);
 
 }
 
-#endif
 #endif

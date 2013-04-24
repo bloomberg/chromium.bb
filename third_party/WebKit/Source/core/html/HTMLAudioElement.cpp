@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if ENABLE(VIDEO)
 #include "HTMLAudioElement.h"
 
 #include "HTMLNames.h"
@@ -60,4 +59,3 @@ PassRefPtr<HTMLAudioElement> HTMLAudioElement::createForJSConstructor(Document* 
 }
 
 }
-#endif

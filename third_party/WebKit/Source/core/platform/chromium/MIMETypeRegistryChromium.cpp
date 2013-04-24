@@ -122,9 +122,7 @@ bool MIMETypeRegistry::isSupportedNonImageMIMEType(const String& mimeType)
 bool MIMETypeRegistry::isSupportedMediaMIMEType(const String& mimeType)
 {
     HashSet<String> supportedMediaMIMETypes;
-#if ENABLE(VIDEO)
     MediaPlayer::getSupportedTypes(supportedMediaMIMETypes);
-#endif
     return !mimeType.isEmpty() && supportedMediaMIMETypes.contains(mimeType);
 }
 

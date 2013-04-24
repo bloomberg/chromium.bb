@@ -27,8 +27,6 @@
 #ifndef MediaControls_h
 #define MediaControls_h
 
-#if ENABLE(VIDEO)
-
 #include "Chrome.h"
 #include "HTMLDivElement.h"
 #include "HTMLMediaElement.h"
@@ -149,7 +147,5 @@ inline MediaControls* toMediaControls(Node* node)
 void toMediaControls(const MediaControls*);
 
 }
-
-#endif
 
 #endif

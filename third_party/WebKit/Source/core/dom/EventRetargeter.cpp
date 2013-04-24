@@ -43,7 +43,6 @@ static inline bool inTheSameScope(ShadowRoot* shadowRoot, EventTarget* target)
 
 static inline EventDispatchBehavior determineDispatchBehavior(Event* event, ShadowRoot* shadowRoot, EventTarget* target)
 {
-#if ENABLE(VIDEO)
     // Video-only full screen is a mode where we use the shadow DOM as an implementation
     // detail that should not be detectable by the web content.
     if (Element* element = target->toNode()->document()->webkitCurrentFullScreenElement()) {
@@ -52,9 +51,6 @@ static inline EventDispatchBehavior determineDispatchBehavior(Event* event, Shad
         if (element->isMediaElement() && shadowRoot && shadowRoot->host() == element)
             return StayInsideShadowDOM;
     }
-#else
-    UNUSED_PARAM(shadowRoot);
-#endif
 
     // WebKit never allowed selectstart event to cross the the shadow DOM boundary.
     // Changing this breaks existing sites.

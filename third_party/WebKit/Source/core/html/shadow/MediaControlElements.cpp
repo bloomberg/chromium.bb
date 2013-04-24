@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaControlElements.h"
 
 #include "CaptionUserPreferences.h"
@@ -1051,5 +1050,3 @@ void MediaControlTextTrackContainerElement::textTrackRepresentationBoundsChanged
 // ----------------------------
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)

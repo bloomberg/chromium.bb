@@ -37,9 +37,6 @@ namespace WebCore {
 
 class Element;
 class Frame;
-#if ENABLE(VIDEO)
-class HTMLMediaElement;
-#endif
 class Image;
 class KURL;
 class Node;

@@ -220,10 +220,8 @@ public:
                     GC3Denum format, GC3Denum type, HTMLImageElement*, ExceptionCode&);
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
                     GC3Denum format, GC3Denum type, HTMLCanvasElement*, ExceptionCode&);
-#if ENABLE(VIDEO)
     void texImage2D(GC3Denum target, GC3Dint level, GC3Denum internalformat,
                     GC3Denum format, GC3Denum type, HTMLVideoElement*, ExceptionCode&);
-#endif
 
     void texParameterf(GC3Denum target, GC3Denum pname, GC3Dfloat param);
     void texParameteri(GC3Denum target, GC3Denum pname, GC3Dint param);
@@ -237,10 +235,8 @@ public:
                        GC3Denum format, GC3Denum type, HTMLImageElement*, ExceptionCode&);
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
                        GC3Denum format, GC3Denum type, HTMLCanvasElement*, ExceptionCode&);
-#if ENABLE(VIDEO)
     void texSubImage2D(GC3Denum target, GC3Dint level, GC3Dint xoffset, GC3Dint yoffset,
                        GC3Denum format, GC3Denum type, HTMLVideoElement*, ExceptionCode&);
-#endif
 
     void uniform1f(const WebGLUniformLocation* location, GC3Dfloat x, ExceptionCode&);
     void uniform1fv(const WebGLUniformLocation* location, Float32Array* v, ExceptionCode&);
@@ -383,9 +379,7 @@ public:
     // Adds a compressed texture format.
     void addCompressedTextureFormat(GC3Denum);
 
-#if ENABLE(VIDEO)
     PassRefPtr<Image> videoFrameToImage(HTMLVideoElement*, BackingStoreCopy, ExceptionCode&);
-#endif
 
     RefPtr<GraphicsContext3D> m_context;
     RefPtr<WebGLContextGroup> m_contextGroup;
@@ -715,10 +709,8 @@ public:
     // Helper function for tex{Sub}Image2D to make sure canvas is ready and wouldn't taint Origin.
     bool validateHTMLCanvasElement(const char* functionName, HTMLCanvasElement*, ExceptionCode&);
 
-#if ENABLE(VIDEO)
     // Helper function for tex{Sub}Image2D to make sure video is ready wouldn't taint Origin.
     bool validateHTMLVideoElement(const char* functionName, HTMLVideoElement*, ExceptionCode&);
-#endif
 
     // Helper functions for vertexAttribNf{v}.
     void vertexAttribfImpl(const char* functionName, GC3Duint index, GC3Dsizei expectedSize, GC3Dfloat, GC3Dfloat, GC3Dfloat, GC3Dfloat);

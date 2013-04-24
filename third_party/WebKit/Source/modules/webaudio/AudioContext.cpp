@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/platform/audio/FFTFrame.h"
 #include "core/platform/audio/HRTFDatabaseLoader.h"
@@ -51,6 +52,7 @@
 #include "modules/webaudio/DelayNode.h"
 #include "modules/webaudio/DynamicsCompressorNode.h"
 #include "modules/webaudio/GainNode.h"
+#include "modules/webaudio/MediaElementAudioSourceNode.h"
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 #include "modules/webaudio/OfflineAudioDestinationNode.h"
 #include "modules/webaudio/OscillatorNode.h"
@@ -65,11 +67,6 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/MediaStreamAudioDestinationNode.h"
 #include "modules/webaudio/MediaStreamAudioSourceNode.h"
-#endif
-
-#if ENABLE(VIDEO)
-#include "core/html/HTMLMediaElement.h"
-#include "modules/webaudio/MediaElementAudioSourceNode.h"
 #endif
 
 #if DEBUG_AUDIONODE_REFERENCES
@@ -348,7 +345,6 @@ PassRefPtr<AudioBufferSourceNode> AudioContext::createBufferSource()
     return node;
 }
 
-#if ENABLE(VIDEO)
 PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(HTMLMediaElement* mediaElement, ExceptionCode& ec)
 {
     ASSERT(mediaElement);
@@ -373,7 +369,6 @@ PassRefPtr<MediaElementAudioSourceNode> AudioContext::createMediaElementSource(H
     refNode(node.get()); // context keeps reference until node is disconnected
     return node;
 }
-#endif
 
 #if ENABLE(MEDIA_STREAM)
 PassRefPtr<MediaStreamAudioSourceNode> AudioContext::createMediaStreamSource(MediaStream* mediaStream, ExceptionCode& ec)

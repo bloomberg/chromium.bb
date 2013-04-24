@@ -26,8 +26,6 @@
 #ifndef RenderVideo_h
 #define RenderVideo_h
 
-#if ENABLE(VIDEO)
-
 #include "RenderMedia.h"
 
 namespace WebCore {
@@ -93,5 +91,4 @@ void toRenderVideo(const RenderVideo*);
 
 } // namespace WebCore
 
-#endif
 #endif // RenderVideo_h

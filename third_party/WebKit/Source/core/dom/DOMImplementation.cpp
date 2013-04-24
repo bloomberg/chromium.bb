@@ -67,7 +67,6 @@ static void addString(FeatureSet& set, const char* string)
     set.add(string);
 }
 
-#if ENABLE(VIDEO)
 class DOMImplementationSupportsTypeClient : public MediaPlayerSupportsTypeClient {
 public:
     DOMImplementationSupportsTypeClient(bool needsHacks, const String& host)
@@ -83,7 +82,6 @@ private:
     bool m_needsHacks;
     String m_host;
 };
-#endif
 
 #if ENABLE(SVG)
 
@@ -435,13 +433,11 @@ PassRefPtr<Document> DOMImplementation::createDocument(const String& type, Frame
     if (Image::supportsType(type))
         return ImageDocument::create(frame, url);
 
-#if ENABLE(VIDEO)
      // Check to see if the type can be played by our MediaPlayer, if so create a MediaDocument
     // Key system is not applicable here.
     DOMImplementationSupportsTypeClient client(frame && frame->settings() && frame->settings()->needsSiteSpecificQuirks(), url.host());
     if (MediaPlayer::supportsType(ContentType(type), String(), url, &client))
          return MediaDocument::create(frame, url);
-#endif
 
     // Everything else except text/plain can be overridden by plugins. In particular, Adobe SVG Viewer should be used for SVG, if installed.
     // Disallowing plug-ins to use text/plain prevents plug-ins from hijacking a fundamental type that the browser is expected to handle,

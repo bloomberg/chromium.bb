@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if ENABLE(VIDEO)
 #include "HTMLVideoElement.h"
 
 #include "Attribute.h"
@@ -313,5 +312,3 @@ KURL HTMLVideoElement::posterImageURL() const
 }
 
 }
-
-#endif

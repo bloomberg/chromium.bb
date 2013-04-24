@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaController.h"
 
 #include "Clock.h"
@@ -683,5 +682,3 @@ void MediaController::scheduleTimeupdateEvent()
     scheduleEvent(eventNames().timeupdateEvent);
     m_previousTimeupdateTime = now;
 }
-
-#endif

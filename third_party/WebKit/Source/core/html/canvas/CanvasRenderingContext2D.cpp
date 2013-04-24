@@ -1206,14 +1206,12 @@ static LayoutSize size(HTMLImageElement* image)
     return IntSize();
 }
 
-#if ENABLE(VIDEO)
 static IntSize size(HTMLVideoElement* video)
 {
     if (MediaPlayer* player = video->player())
         return player->naturalSize();
     return IntSize();
 }
-#endif
 
 static inline FloatRect normalizeRect(const FloatRect& rect)
 {
@@ -1401,7 +1399,6 @@ void CanvasRenderingContext2D::drawImage(HTMLCanvasElement* sourceCanvas, const 
     }
 }
 
-#if ENABLE(VIDEO)
 void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, float x, float y, ExceptionCode& ec)
 {
     if (!video) {
@@ -1469,7 +1466,6 @@ void CanvasRenderingContext2D::drawImage(HTMLVideoElement* video, const FloatRec
     stateSaver.restore();
     didDraw(dstRect);
 }
-#endif
 
 void CanvasRenderingContext2D::drawImageFromRect(HTMLImageElement* image,
     float sx, float sy, float sw, float sh,

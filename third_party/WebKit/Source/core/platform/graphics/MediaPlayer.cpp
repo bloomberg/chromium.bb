@@ -25,7 +25,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaPlayer.h"
 
 #include "ContentType.h"
@@ -1008,5 +1007,3 @@ void MediaPlayer::resetMediaEngines()
 }
 
 }
-
-#endif

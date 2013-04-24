@@ -28,8 +28,6 @@
 #ifndef RenderMediaControlElements_h
 #define RenderMediaControlElements_h
 
-#if ENABLE(VIDEO)
-
 #include "MediaControlElements.h"
 #include "RenderBlock.h"
 #include "RenderFlexibleBox.h"
@@ -46,8 +44,6 @@ private:
 
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)
 
 #endif // RenderMediaControlElements_h
 

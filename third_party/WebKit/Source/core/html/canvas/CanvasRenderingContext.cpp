@@ -70,7 +70,6 @@ bool CanvasRenderingContext::wouldTaintOrigin(const HTMLImageElement* image)
 
 bool CanvasRenderingContext::wouldTaintOrigin(const HTMLVideoElement* video)
 {
-#if ENABLE(VIDEO)
     // FIXME: This check is likely wrong when a redirect is involved. We need
     // to test the finalURL. Please be careful when fixing this issue not to
     // make currentSrc be the final URL because then the
@@ -83,10 +82,6 @@ bool CanvasRenderingContext::wouldTaintOrigin(const HTMLVideoElement* video)
 
     if (!(video->player() && video->player()->didPassCORSAccessCheck()) && wouldTaintOrigin(video->currentSrc()))
         return true;
-
-#else
-    UNUSED_PARAM(video);
-#endif
 
     return false;
 }

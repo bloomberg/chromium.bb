@@ -42,9 +42,7 @@ public:
 
     virtual String extraDefaultStyleSheet();
     virtual String extraQuirksStyleSheet();
-#if ENABLE(VIDEO)
     virtual String extraMediaControlsStyleSheet();
-#endif
 
     virtual Color platformTapHighlightColor() const OVERRIDE
     {
@@ -132,11 +130,9 @@ public:
     virtual int popupInternalPaddingTop(RenderStyle*) const;
     virtual int popupInternalPaddingBottom(RenderStyle*) const;
 
-#if ENABLE(VIDEO)
     // Media controls
     virtual bool hasOwnDisabledStateHandlingFor(ControlPart) const { return true; }
     virtual bool usesVerticalVolumeSlider() const { return false; }
-#endif
 
     // Provide a way to pass the default font size from the Settings object
     // to the render theme. FIXME: http://b/1129186 A cleaner way would be

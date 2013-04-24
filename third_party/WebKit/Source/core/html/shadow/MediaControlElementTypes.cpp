@@ -29,7 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
 #include "MediaControlElementTypes.h"
 
 #include "CSSValueKeywords.h"
@@ -320,5 +319,3 @@ void MediaControlVolumeSliderElement::setClearMutedOnUserInteraction(bool clearM
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)

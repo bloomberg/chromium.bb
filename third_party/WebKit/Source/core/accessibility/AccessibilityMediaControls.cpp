@@ -29,8 +29,6 @@
 
 #include "config.h"
 
-#if ENABLE(VIDEO)
-
 #include "AccessibilityMediaControls.h"
 
 #include "LocalizedStrings.h"
@@ -330,5 +328,3 @@ String AccessibilityMediaTimeDisplay::stringValue() const
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)

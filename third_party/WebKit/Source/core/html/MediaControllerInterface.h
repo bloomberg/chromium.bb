@@ -26,8 +26,6 @@
 #ifndef MediaControllerInterface_h
 #define MediaControllerInterface_h
 
-#if ENABLE(VIDEO)
-
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {
@@ -95,5 +93,4 @@ public:
 
 }
 
-#endif
 #endif

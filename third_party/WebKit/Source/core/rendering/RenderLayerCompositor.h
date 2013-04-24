@@ -38,11 +38,10 @@ class FixedPositionViewportConstraints;
 class GraphicsLayer;
 class RenderEmbeddedObject;
 class RenderPart;
+class RenderVideo;
 class ScrollingCoordinator;
 class StickyPositionViewportConstraints;
-#if ENABLE(VIDEO)
-class RenderVideo;
-#endif
+
 
 enum CompositingUpdateType {
     CompositingUpdateAfterStyleChange,
@@ -182,11 +181,9 @@ public:
     
     void layerBecameComposited(const RenderLayer*) { ++m_compositedLayerCount; }
     void layerBecameNonComposited(const RenderLayer*);
-    
-#if ENABLE(VIDEO)
+
     // Use by RenderVideo to ask if it should try to use accelerated compositing.
     bool canAccelerateVideoRendering(RenderVideo*) const;
-#endif
 
     // Walk the tree looking for layers with 3d transforms. Useful in case you need
     // to know if there is non-affine content, e.g. for drawing into an image.

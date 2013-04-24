@@ -30,7 +30,6 @@
 #ifndef MediaControlElements_h
 #define MediaControlElements_h
 
-#if ENABLE(VIDEO)
 #include "MediaControlElementTypes.h"
 #include "TextTrackRepresentation.h"
 
@@ -313,7 +312,5 @@ private:
 
 
 } // namespace WebCore
-
-#endif // ENABLE(VIDEO)
 
 #endif // MediaControlElements_h

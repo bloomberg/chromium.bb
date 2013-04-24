@@ -66,10 +66,8 @@ inline static bool hasVerticalAppearance(HTMLInputElement* input)
     ASSERT(input->renderer());
     RenderStyle* sliderStyle = input->renderer()->style();
 
-#if ENABLE(VIDEO)
     if (sliderStyle->appearance() == MediaVolumeSliderPart && input->renderer()->theme()->usesVerticalVolumeSlider())
         return true;
-#endif
 
     return sliderStyle->appearance() == SliderVerticalPart;
 }

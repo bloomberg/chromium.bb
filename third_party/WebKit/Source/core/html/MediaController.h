@@ -26,8 +26,6 @@
 #ifndef MediaController_h
 #define MediaController_h
 
-#if ENABLE(VIDEO)
-
 #include "ActiveDOMObject.h"
 #include "Event.h"
 #include "EventListener.h"
@@ -162,5 +160,4 @@ private:
 
 } // namespace WebCore
 
-#endif
 #endif

@@ -92,12 +92,10 @@ String RenderThemeChromiumSkia::extraQuirksStyleSheet()
     return String(themeWinQuirksUserAgentStyleSheet, sizeof(themeWinQuirksUserAgentStyleSheet));
 }
 
-#if ENABLE(VIDEO)
 String RenderThemeChromiumSkia::extraMediaControlsStyleSheet()
 {
     return String(mediaControlsChromiumUserAgentStyleSheet, sizeof(mediaControlsChromiumUserAgentStyleSheet));
 }
-#endif
 
 bool RenderThemeChromiumSkia::supportsHover(const RenderStyle* style) const
 {
@@ -360,47 +358,22 @@ bool RenderThemeChromiumSkia::paintSearchFieldResultsButton(RenderObject* magnif
 
 bool RenderThemeChromiumSkia::paintMediaSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaSlider, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaVolumeSliderTrack(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaVolumeSlider, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 void RenderThemeChromiumSkia::adjustSliderThumbSize(RenderStyle* style, Element*) const
 {
-#if ENABLE(VIDEO)
     RenderMediaControlsChromium::adjustMediaSliderThumbSize(style);
-#else
-    UNUSED_PARAM(style);
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaSliderThumb, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(RenderObject* o, const PaintInfo& paintInfo, const IntRect& r)
@@ -410,82 +383,37 @@ bool RenderThemeChromiumSkia::paintMediaToggleClosedCaptionsButton(RenderObject*
 
 bool RenderThemeChromiumSkia::paintMediaVolumeSliderThumb(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaVolumeSliderThumb, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaPlayButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaPlayButton, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaMuteButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaMuteButton, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 String RenderThemeChromiumSkia::formatMediaControlsTime(float time) const
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::formatMediaControlsTime(time);
-#else
-    UNUSED_PARAM(time);
-    return 0;
-#endif
 }
 
 String RenderThemeChromiumSkia::formatMediaControlsCurrentTime(float currentTime, float duration) const
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::formatMediaControlsCurrentTime(currentTime, duration);
-#else
-    UNUSED_PARAM(currentTime);
-    UNUSED_PARAM(duration);
-    return 0;
-#endif
 }
 
 String RenderThemeChromiumSkia::formatMediaControlsRemainingTime(float currentTime, float duration) const
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::formatMediaControlsRemainingTime(currentTime, duration);
-#else
-    UNUSED_PARAM(currentTime);
-    UNUSED_PARAM(duration);
-    return 0;
-#endif
 }
 
 bool RenderThemeChromiumSkia::paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
-#if ENABLE(VIDEO)
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);
-#else
-    UNUSED_PARAM(object);
-    UNUSED_PARAM(paintInfo);
-    UNUSED_PARAM(rect);
-    return false;
-#endif
 }
 
 void RenderThemeChromiumSkia::adjustMenuListStyle(StyleResolver*, RenderStyle* style, WebCore::Element*) const

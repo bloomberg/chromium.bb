@@ -31,8 +31,6 @@
 #ifndef WebMediaPlayerClientImpl_h
 #define WebMediaPlayerClientImpl_h
 
-#if ENABLE(VIDEO)
-
 #include "AudioSourceProvider.h"
 #include "MediaPlayerPrivate.h"
 #if defined(OS_ANDROID)
@@ -241,7 +239,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif
 
 #endif

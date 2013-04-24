@@ -467,8 +467,6 @@ bool RenderTheme::paintDecorations(RenderObject* o, const PaintInfo& paintInfo, 
     return false;
 }
 
-#if ENABLE(VIDEO)
-
 String RenderTheme::formatMediaControlsTime(float time) const
 {
     if (!std::isfinite(time))
@@ -496,8 +494,6 @@ String RenderTheme::formatMediaControlsRemainingTime(float currentTime, float du
 {
     return formatMediaControlsTime(currentTime - duration);
 }
-
-#endif
 
 Color RenderTheme::activeSelectionBackgroundColor() const
 {

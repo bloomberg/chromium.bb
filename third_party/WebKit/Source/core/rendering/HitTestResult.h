@@ -37,9 +37,7 @@ namespace WebCore {
 
 class Element;
 class Frame;
-#if ENABLE(VIDEO)
 class HTMLMediaElement;
-#endif
 class Image;
 class KURL;
 class Node;
@@ -139,10 +137,8 @@ public:
 
 private:
     NodeSet& mutableRectBasedTestResult(); // See above.
-
-#if ENABLE(VIDEO)
     HTMLMediaElement* mediaElement() const;
-#endif
+
     HitTestLocation m_hitTestLocation;
 
     RefPtr<Node> m_innerNode;
