@@ -11,11 +11,12 @@
 #include <string>
 #include <vector>
 
-#include "base/callback.h"
+#include "base/callback_forward.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/threading/non_thread_safe.h"
+#include "base/timer.h"
 #include "chrome/browser/google_apis/drive_notification_observer.h"
 #include "chrome/browser/sync_file_system/drive_file_sync_client_interface.h"
 #include "chrome/browser/sync_file_system/drive_metadata_store.h"
@@ -114,7 +115,7 @@ class DriveFileSyncService
   virtual void OnNetworkConnected() OVERRIDE;
 
   // google_apis::DriveNotificationObserver implementation.
-  virtual void OnNotificationReceived() OVERRIDE;
+  virtual void CheckForUpdates() OVERRIDE;
 
  private:
   friend class DriveFileSyncServiceMockTest;
@@ -444,6 +445,9 @@ class DriveFileSyncService
       google_apis::GDataErrorCode error,
       scoped_ptr<google_apis::ResourceList> changes);
   bool GetOriginForEntry(const google_apis::ResourceEntry& entry, GURL* origin);
+  void SchedulePolling();
+  void OnPollingTimerFired();
+  void UpdatePollingDelay(int64 new_delay_sec);
   void NotifyObserversFileStatusChanged(const fileapi::FileSystemURL& url,
                                         SyncFileStatus sync_status,
                                         SyncAction action_taken,
@@ -504,6 +508,11 @@ class DriveFileSyncService
   // until it finished. And the task must return the instance through
   // NotifyTaskDone when the task finished.
   scoped_ptr<TaskToken> token_;
+
+  // Timer to trigger fetching changes for incremental sync.
+  base::OneShotTimer<DriveFileSyncService> polling_timer_;
+  // If polling_delay_seconds_ is negative (<0) the timer won't start.
+  int64 polling_delay_seconds_;
 
   // Is set to true when there's a fair possibility that we have some
   // remote changes that haven't been fetched yet.
