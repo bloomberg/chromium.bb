@@ -102,8 +102,10 @@ void PanelWindowResizer::Drag(const gfx::Point& location, int event_flags) {
   if (destroyed)
     return;
   destroyed_ = NULL;
-  if (should_attach_)
+  if (should_attach_ &&
+      !(details_.bounds_change & WindowResizer::kBoundsChange_Resizes)) {
     UpdateLauncherPosition();
+  }
 }
 
 void PanelWindowResizer::CompleteDrag(int event_flags) {

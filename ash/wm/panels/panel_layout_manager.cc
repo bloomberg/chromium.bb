@@ -151,6 +151,13 @@ void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
   }
 }
 
+bool BoundsAdjacent(const gfx::Rect& bounds1, const gfx::Rect& bounds2) {
+  return bounds1.x() == bounds2.right() ||
+         bounds1.y() == bounds2.bottom() ||
+         bounds1.right() == bounds2.x() ||
+         bounds1.bottom() == bounds2.y();
+}
+
 }  // namespace
 
 class PanelCalloutWidget : public views::Widget {
@@ -435,8 +442,14 @@ void PanelLayoutManager::Relayout() {
        iter != panel_windows_.end(); ++iter) {
     aura::Window* panel = iter->window;
     iter->callout_widget->SetAlignment(alignment);
-    if (!panel->IsVisible() || panel == dragged_panel_)
+
+    // Consider the dragged panel as part of the layout as long as it is
+    // touching the launcher.
+    if (!panel->IsVisible() ||
+        (panel == dragged_panel_ &&
+         !BoundsAdjacent(panel->bounds(), launcher_bounds))) {
       continue;
+    }
 
     gfx::Rect icon_bounds =
         launcher_->GetScreenBoundsOfItemIconForWindow(panel);
@@ -494,6 +507,8 @@ void PanelLayoutManager::Relayout() {
                visible_panels.end());
 
   for (size_t i = 0; i < visible_panels.size(); ++i) {
+    if (visible_panels[i].window == dragged_panel_)
+      continue;
     gfx::Rect bounds = visible_panels[i].window->bounds();
     if (horizontal)
       bounds.set_x(visible_panels[i].major_pos -
