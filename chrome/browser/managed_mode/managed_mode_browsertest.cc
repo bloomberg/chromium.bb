@@ -6,6 +6,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "chrome/browser/common/cancelable_request.h"
+#include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
@@ -233,6 +235,33 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
         "MAP *.example.com " + host_port + "," +
         "MAP *.new-example.com " + host_port + "," +
         "MAP *.a.com " + host_port);
+  }
+
+  // Acts like a synchronous call to history's QueryHistory. Modified from
+  // history_querying_unittest.cc.
+  void QueryHistory(HistoryService* history_service,
+                    const std::string& text_query,
+                    const history::QueryOptions& options,
+                    history::QueryResults* results) {
+    CancelableRequestConsumer history_request_consumer;
+    base::RunLoop run_loop;
+    history_service->QueryHistory(
+        UTF8ToUTF16(text_query),
+        options,
+        &history_request_consumer,
+        base::Bind(&ManagedModeBlockModeTest::QueryHistoryComplete,
+                   base::Unretained(this),
+                   results,
+                   &run_loop));
+    run_loop.Run();  // Will go until ...Complete calls Quit.
+  }
+
+  void QueryHistoryComplete(history::QueryResults* new_results,
+                            base::RunLoop* run_loop,
+                            HistoryService::Handle /* handle */,
+                            history::QueryResults* results) {
+    results->Swap(new_results);
+    run_loop->Quit();  // Will return out to QueryHistory.
   }
 
   ManagedUserService* managed_user_service_;
@@ -598,7 +627,62 @@ IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
                 "www.new-example.com"));
 }
 
+// Tests whether a visit attempt adds a special history entry.
+IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
+                       HistoryVisitRecorded) {
+  GURL allowed_url("http://www.example.com/files/simple.html");
+  std::vector<std::string> hosts;
+
+  // Set the host as allowed.
+  hosts.push_back(allowed_url.host());
+  managed_user_service_->SetManualBehaviorForHosts(
+      hosts, ManagedUserService::MANUAL_ALLOW);
+  EXPECT_EQ(
+      ManagedUserService::MANUAL_ALLOW,
+      managed_user_service_->GetManualBehaviorForHost(allowed_url.host()));
+
+  ui_test_utils::NavigateToURL(browser(), allowed_url);
+
+  // Navigate to it and check that we don't get an interstitial.
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  CheckShownPageIsNotInterstitial(tab);
+
+  // Navigate to a blocked page and go back on the interstitial.
+  GURL blocked_url("http://www.new-example.com/files/simple.html");
+  ui_test_utils::NavigateToURL(browser(), blocked_url);
+
+  tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  CheckShownPageIsInterstitial(tab);
+  ActOnInterstitialAndInfobar(tab, INTERSTITIAL_DONTPROCEED,
+                                   INFOBAR_NOT_USED);
+
+  // Check that we went back to the first URL and that the manual behaviors
+  // have not changed.
+  EXPECT_EQ(allowed_url.spec(), tab->GetURL().spec());
+  EXPECT_EQ(ManagedUserService::MANUAL_ALLOW,
+            managed_user_service_->GetManualBehaviorForHost("www.example.com"));
+  EXPECT_EQ(
+      ManagedUserService::MANUAL_NONE,
+      managed_user_service_->GetManualBehaviorForHost("www.new-example.com"));
+
+  // Query the history entry.
+  HistoryService* history_service = HistoryServiceFactory::GetForProfile(
+      browser()->profile(), Profile::EXPLICIT_ACCESS);
+  history::QueryOptions options;
+  history::QueryResults results;
+  QueryHistory(history_service, "", options, &results);
+
+  // Check that the entries have the correct blocked_visit value.
+  EXPECT_EQ(2u, results.size());
+  EXPECT_EQ(blocked_url.spec(), results[0].url().spec());
+  EXPECT_TRUE(results[0].blocked_visit());
+  EXPECT_EQ(allowed_url.spec(), results[1].url().spec());
+  EXPECT_FALSE(results[1].blocked_visit());
+}
+
 #if !defined(OS_CHROMEOS)
+
 // Now check that the passphrase dialog is shown when a passphrase is specified
 // and the user clicks on the preview button.
 IN_PROC_BROWSER_TEST_F(ManagedModeBlockModeTest,
