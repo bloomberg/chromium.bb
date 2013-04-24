@@ -48,8 +48,9 @@ var DnsView = (function() {
     g_browser.addHostResolverInfoObserver(this, false);
   }
 
-  // ID for special HTML element in category_tabs.html
-  DnsView.TAB_HANDLE_ID = 'tab-handle-dns';
+  DnsView.TAB_ID = 'tab-handle-dns';
+  DnsView.TAB_NAME = 'DNS';
+  DnsView.TAB_HASH = '#dns';
 
   // IDs for special HTML elements in dns_view.html
   DnsView.MAIN_BOX_ID = 'dns-view-tab-content';

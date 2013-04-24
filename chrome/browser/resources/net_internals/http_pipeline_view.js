@@ -32,8 +32,9 @@ var HttpPipelineView = (function() {
     this.httpPipelineKnownHostsDiv_ = $(HttpPipelineView.KNOWN_HOSTS_DIV_ID);
   }
 
-  // ID for special HTML element in category_tabs.html
-  HttpPipelineView.TAB_HANDLE_ID = 'tab-handle-http-pipeline';
+  HttpPipelineView.TAB_ID = 'tab-handle-http-pipeline';
+  HttpPipelineView.TAB_NAME = 'Pipelining';
+  HttpPipelineView.TAB_HASH = '#httpPipeline';
 
   // IDs for special HTML elements in http_pipeline_view.html
   HttpPipelineView.MAIN_BOX_ID = 'http-pipeline-view-tab-content';

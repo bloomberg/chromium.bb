@@ -184,15 +184,23 @@ var NetInternalsTest = (function() {
   };
 
   /**
-   * Returns the TabEntry with the given id.  Asserts if the tab can't be found.
-   * @param {string}: tabId Id of the TabEntry to get.
-   * @return {TabEntry} The specified TabEntry.
+   * Returns the view and menu item node for the tab with given id.
+   * Asserts if the tab can't be found.
+   * @param {string}: tabId Id of the tab to lookup.
+   * @return {Object}
    */
   NetInternalsTest.getTab = function(tabId) {
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tab = categoryTabSwitcher.findTabById(tabId);
-    assertNotEquals(tab, undefined, tabId + ' does not exist.');
-    return tab;
+    var tabSwitcher = MainView.getInstance().tabSwitcher();
+    var view = tabSwitcher.getTabView(tabId);
+    var menuItem = tabSwitcher.getMenuItemNode_(tabId);
+
+    assertNotEquals(view, undefined, tabId + ' does not exist.');
+    assertNotEquals(menuItem, undefined, tabId + ' does not exist.');
+
+    return {
+      view: view,
+      menuItem: menuItem,
+    };
   };
 
   /**
@@ -211,7 +219,7 @@ var NetInternalsTest = (function() {
    * @return {bool} Whether or not the tab's handle is visible.
    */
   NetInternalsTest.tabHandleIsVisible = function(tabId) {
-    var tabHandleNode = NetInternalsTest.getTab(tabId).getTabHandleNode();
+    var tabHandleNode = NetInternalsTest.getTab(tabId).menuItem;
     return NetInternalsTest.nodeIsVisible(tabHandleNode);
   };
 
@@ -220,7 +228,7 @@ var NetInternalsTest = (function() {
    * @return {string} ID of the active tab.
    */
   NetInternalsTest.getActiveTabId = function() {
-    return MainView.getInstance().categoryTabSwitcher().findActiveTab().id;
+    return MainView.getInstance().tabSwitcher().getActiveTabId();
   };
 
   /**
@@ -238,25 +246,25 @@ var NetInternalsTest = (function() {
      * @type {object.<string, string>}
      */
     var hashToTabHandleIdMap = {
-      capture: CaptureView.TAB_HANDLE_ID,
-      export: ExportView.TAB_HANDLE_ID,
-      import: ImportView.TAB_HANDLE_ID,
-      proxy: ProxyView.TAB_HANDLE_ID,
-      events: EventsView.TAB_HANDLE_ID,
-      timeline: TimelineView.TAB_HANDLE_ID,
-      dns: DnsView.TAB_HANDLE_ID,
-      sockets: SocketsView.TAB_HANDLE_ID,
-      spdy: SpdyView.TAB_HANDLE_ID,
-      quic: QuicView.TAB_HANDLE_ID,
-      httpPipeline: HttpPipelineView.TAB_HANDLE_ID,
-      httpCache: HttpCacheView.TAB_HANDLE_ID,
-      serviceProviders: ServiceProvidersView.TAB_HANDLE_ID,
-      tests: TestView.TAB_HANDLE_ID,
-      hsts: HSTSView.TAB_HANDLE_ID,
-      logs: LogsView.TAB_HANDLE_ID,
-      prerender: PrerenderView.TAB_HANDLE_ID,
-      bandwidth: BandwidthView.TAB_HANDLE_ID,
-      chromeos: CrosView.TAB_HANDLE_ID
+      capture: CaptureView.TAB_ID,
+      export: ExportView.TAB_ID,
+      import: ImportView.TAB_ID,
+      proxy: ProxyView.TAB_ID,
+      events: EventsView.TAB_ID,
+      timeline: TimelineView.TAB_ID,
+      dns: DnsView.TAB_ID,
+      sockets: SocketsView.TAB_ID,
+      spdy: SpdyView.TAB_ID,
+      quic: QuicView.TAB_ID,
+      httpPipeline: HttpPipelineView.TAB_ID,
+      httpCache: HttpCacheView.TAB_ID,
+      serviceProviders: ServiceProvidersView.TAB_ID,
+      tests: TestView.TAB_ID,
+      hsts: HSTSView.TAB_ID,
+      logs: LogsView.TAB_ID,
+      prerender: PrerenderView.TAB_ID,
+      bandwidth: BandwidthView.TAB_ID,
+      chromeos: CrosView.TAB_ID
     };
 
     assertEquals(typeof hashToTabHandleIdMap[hash], 'string',
@@ -277,29 +285,22 @@ var NetInternalsTest = (function() {
     // Make sure the tab handle is visible, as we only simulate normal usage.
     expectTrue(NetInternalsTest.tabHandleIsVisible(tabId),
                tabId + ' does not have a visible tab handle.');
-    var tabHandleNode = NetInternalsTest.getTab(tabId).getTabHandleNode();
+    var tabHandleNode = NetInternalsTest.getTab(tabId).menuItem;
 
-    // Simulate a left click.
-    var mouseEvent = document.createEvent('MouseEvents');
-    mouseEvent.initMouseEvent('click', true, true, window,
-                              1, 0, 0, 0, 0,
-                              false, false, false, false, 0, null);
-    $(tabId).dispatchEvent(mouseEvent);
+    // Simulate selecting the menuitem.
+    tabHandleNode.selected = true;
+    tabHandleNode.parentNode.onchange();
 
     // Make sure the hash changed.
     assertEquals('#' + hash, document.location.hash);
 
-    // Run the onhashchange function, so we can test the resulting state.
-    // Otherwise, won't trigger until after we return.
-    window.onhashchange();
-
     // Make sure only the specified tab is visible.
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tabIds = categoryTabSwitcher.getAllTabIds();
-    for (var i = 0; i < tabIds.length; ++i) {
-      expectEquals(tabIds[i] == tabId,
-                   NetInternalsTest.getTab(tabIds[i]).contentView.isVisible(),
-                   tabIds[i] + ': Unexpected visibility state.');
+    var tabSwitcher = MainView.getInstance().tabSwitcher();
+    var tabIdToView = tabSwitcher.getAllTabViews();
+    for (var curTabId in tabIdToView) {
+      expectEquals(curTabId == tabId,
+                   tabSwitcher.getTabView(curTabId).isVisible(),
+                   curTabId + ': Unexpected visibility state.');
     }
   };
 
@@ -332,9 +333,12 @@ var NetInternalsTest = (function() {
     }
 
     // Check that every tab was listed.
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tabIds = categoryTabSwitcher.getAllTabIds();
-    expectEquals(tabCount, tabIds.length);
+    var tabSwitcher = MainView.getInstance().tabSwitcher();
+    var tabIdToView = tabSwitcher.getAllTabViews();
+    var expectedTabCount = 0;
+    for (tabId in tabIdToView)
+      expectedTabCount++;
+    expectEquals(tabCount, expectedTabCount);
   };
 
   /**

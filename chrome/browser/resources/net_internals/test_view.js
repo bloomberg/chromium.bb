@@ -35,8 +35,9 @@ var TestView = (function() {
     g_browser.addConnectionTestsObserver(this);
   }
 
-  // ID for special HTML element in category_tabs.html
-  TestView.TAB_HANDLE_ID = 'tab-handle-tests';
+  TestView.TAB_ID = 'tab-handle-tests';
+  TestView.TAB_NAME = 'Tests';
+  TestView.TAB_HASH = '#tests';
 
   // IDs for special HTML elements in test_view.html
   TestView.MAIN_BOX_ID = 'test-view-tab-content';

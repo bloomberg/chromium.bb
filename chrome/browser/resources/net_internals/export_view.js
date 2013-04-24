@@ -38,8 +38,9 @@ var ExportView = (function() {
     this.loadedLogDump_ = null;
   }
 
-  // ID for special HTML element in category_tabs.html
-  ExportView.TAB_HANDLE_ID = 'tab-handle-export';
+  ExportView.TAB_ID = 'tab-handle-export';
+  ExportView.TAB_NAME = 'Export';
+  ExportView.TAB_HASH = '#export';
 
   // IDs for special HTML elements in export_view.html
   ExportView.MAIN_BOX_ID = 'export-view-tab-content';

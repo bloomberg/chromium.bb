@@ -23,7 +23,7 @@
 <include src="capture_status_view.js"/>
 <include src="loaded_status_view.js"/>
 <include src="halted_status_view.js"/>
-<include src="status_view.js"/>
+<include src="top_bar_view.js"/>
 <include src="dns_view.js"/>
 <include src="source_filter_parser.js"/>
 <include src="source_row.js"/>

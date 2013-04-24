@@ -81,8 +81,9 @@ var EventsView = (function() {
     this.initializeSourceList_();
   }
 
-  // ID for special HTML element in category_tabs.html
-  EventsView.TAB_HANDLE_ID = 'tab-handle-events';
+  EventsView.TAB_ID = 'tab-handle-events';
+  EventsView.TAB_NAME = 'Events';
+  EventsView.TAB_HASH = '#events';
 
   // IDs for special HTML elements in events_view.html
   EventsView.TBODY_ID = 'events-view-source-list-tbody';

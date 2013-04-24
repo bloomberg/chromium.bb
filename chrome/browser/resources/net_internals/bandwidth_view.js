@@ -26,8 +26,9 @@ var BandwidthView = (function() {
     this.historicNetworkStats_ = null;
   }
 
-  // ID for special HTML element in category_tabs.html
-  BandwidthView.TAB_HANDLE_ID = 'tab-handle-bandwidth';
+  BandwidthView.TAB_ID = 'tab-handle-bandwidth';
+  BandwidthView.TAB_NAME = 'Bandwidth';
+  BandwidthView.TAB_HASH = '#bandwidth';
 
   // IDs for special HTML elements in bandwidth_view.html
   BandwidthView.MAIN_BOX_ID = 'bandwidth-view-tab-content';

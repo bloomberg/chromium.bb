@@ -38,8 +38,8 @@ var g_browser = null;
 var MainView = (function() {
   'use strict';
 
-  // We inherit from HorizontalSplitView
-  var superClass = HorizontalSplitView;
+  // We inherit from WindowView
+  var superClass = WindowView;
 
   /**
    * Main entry point. Called once the page has loaded.
@@ -60,88 +60,31 @@ var MainView = (function() {
     // the constants themselves.
     g_browser.addConstantsObserver(new ConstantsObserver());
 
-    // This view is a left navigation bar.
-    this.categoryTabSwitcher_ = new TabSwitcherView();
-    var tabs = this.categoryTabSwitcher_;
-
-    // Call superclass's constructor, initializing the view which lets you tab
-    // between the different sub-views.
-    superClass.call(this,
-                    new DivView(MainView.CATEGORY_TAB_HANDLES_ID),
-                    tabs);
-
-    // Populate the main tabs.  Even tabs that don't contain information for the
-    // running OS should be created, so they can load log dumps from other
-    // OSes.
-    tabs.addTab(CaptureView.TAB_HANDLE_ID, CaptureView.getInstance(),
-                false, true);
-    tabs.addTab(ExportView.TAB_HANDLE_ID, ExportView.getInstance(),
-                false, true);
-    tabs.addTab(ImportView.TAB_HANDLE_ID, ImportView.getInstance(),
-                false, true);
-    tabs.addTab(ProxyView.TAB_HANDLE_ID, ProxyView.getInstance(),
-                false, true);
-    tabs.addTab(EventsView.TAB_HANDLE_ID, EventsView.getInstance(),
-                false, true);
-    tabs.addTab(TimelineView.TAB_HANDLE_ID, TimelineView.getInstance(),
-                false, true);
-    tabs.addTab(DnsView.TAB_HANDLE_ID, DnsView.getInstance(),
-                false, true);
-    tabs.addTab(SocketsView.TAB_HANDLE_ID, SocketsView.getInstance(),
-                false, true);
-    tabs.addTab(SpdyView.TAB_HANDLE_ID, SpdyView.getInstance(), false, true);
-    tabs.addTab(QuicView.TAB_HANDLE_ID, QuicView.getInstance(), false, true);
-    tabs.addTab(HttpPipelineView.TAB_HANDLE_ID, HttpPipelineView.getInstance(),
-                false, true);
-    tabs.addTab(HttpCacheView.TAB_HANDLE_ID, HttpCacheView.getInstance(),
-                false, true);
-    tabs.addTab(ServiceProvidersView.TAB_HANDLE_ID,
-                ServiceProvidersView.getInstance(), false, cr.isWindows);
-    tabs.addTab(TestView.TAB_HANDLE_ID, TestView.getInstance(), false, true);
-    tabs.addTab(HSTSView.TAB_HANDLE_ID, HSTSView.getInstance(), false, true);
-    tabs.addTab(LogsView.TAB_HANDLE_ID, LogsView.getInstance(),
-                false, cr.isChromeOS);
-    tabs.addTab(BandwidthView.TAB_HANDLE_ID, BandwidthView.getInstance(),
-                false, true);
-    tabs.addTab(PrerenderView.TAB_HANDLE_ID, PrerenderView.getInstance(),
-                false, true);
-    tabs.addTab(CrosView.TAB_HANDLE_ID, CrosView.getInstance(),
-                false, cr.isChromeOS);
-
-    // Build a map from the anchor name of each tab handle to its "tab ID".
-    // We will consider navigations to the #hash as a switch tab request.
-    var anchorMap = {};
-    var tabIds = tabs.getAllTabIds();
-    for (var i = 0; i < tabIds.length; ++i) {
-      var aNode = $(tabIds[i]);
-      anchorMap[aNode.hash] = tabIds[i];
-    }
-    // Default the empty hash to the data tab.
-    anchorMap['#'] = anchorMap[''] = ExportView.TAB_HANDLE_ID;
-
-    window.onhashchange = onUrlHashChange.bind(null, tabs, anchorMap);
+    // Create the tab switcher.
+    this.initTabs_();
 
     // Cut out a small vertical strip at the top of the window, to display
     // a high level status (i.e. if we are capturing events, or displaying a
     // log file). Below it we will position the main tabs and their content
     // area.
-    this.statusView_ = StatusView.getInstance(this);
-    var verticalSplitView = new VerticalSplitView(this.statusView_, this);
-    this.statusView_.setLayoutParent(verticalSplitView);
-    var windowView = new WindowView(verticalSplitView);
+    this.topBarView_ = TopBarView.getInstance(this);
+    var verticalSplitView = new VerticalSplitView(
+        this.topBarView_, this.tabSwitcher_);
+
+    superClass.call(this, verticalSplitView);
 
     // Trigger initial layout.
-    windowView.resetGeometry();
+    this.resetGeometry();
+
+    window.onhashchange = this.onUrlHashChange_.bind(this);
 
     // Select the initial view based on the current URL.
     window.onhashchange();
 
     // Tell the browser that we are ready to start receiving log events.
+    this.topBarView_.switchToSubView('capture');
     g_browser.sendReady();
   }
-
-  // IDs for special HTML elements in index.html
-  MainView.CATEGORY_TAB_HANDLES_ID = 'category-tab-handles';
 
   cr.addSingletonGetter(MainView);
 
@@ -159,8 +102,8 @@ var MainView = (function() {
 
     // This is exposed both so the log import/export code can enumerate all the
     // tabs, and for testing.
-    categoryTabSwitcher: function() {
-      return this.categoryTabSwitcher_;
+    tabSwitcher: function() {
+      return this.tabSwitcher_;
     },
 
     /**
@@ -181,14 +124,14 @@ var MainView = (function() {
         // If there's a file name, a log file was loaded, so swap out the status
         // bar to indicate we're no longer capturing events.  Also disable
         // hiding cookies, so if the log dump has them, they'll be displayed.
-        this.statusView_.switchToSubView('loaded').setFileName(opt_fileName);
+        this.topBarView_.switchToSubView('loaded').setFileName(opt_fileName);
         $(ExportView.PRIVACY_STRIPPING_CHECKBOX_ID).checked = false;
         SourceTracker.getInstance().setPrivacyStripping(false);
       } else {
         // Otherwise, the "Stop Capturing" button was presumably pressed.
         // Don't disable hiding cookies, so created log dumps won't have them,
         // unless the user toggles the option.
-        this.statusView_.switchToSubView('halted');
+        this.topBarView_.switchToSubView('halted');
       }
     },
 
@@ -202,23 +145,121 @@ var MainView = (function() {
       g_browser.disable();
       document.styleSheets[0].insertRule(
           '.hide-when-not-capturing { display: none; }');
-    }
+    },
+
+    initTabs_: function() {
+      this.tabIdToHash_ = {};
+      this.hashToTabId_ = {};
+
+      this.tabSwitcher_ = new TabSwitcherView(
+          $(TopBarView.TAB_DROPDOWN_MENU_ID),
+          this.onTabSwitched_.bind(this));
+
+      // Helper function to add a tab given the class for a view singleton.
+      var addTab = function(viewClass) {
+        var tabId = viewClass.TAB_ID;
+        var tabHash = viewClass.TAB_HASH;
+        var tabName = viewClass.TAB_NAME;
+        var view = viewClass.getInstance();
+
+        if (!tabId || !view || !tabHash || !tabName) {
+          throw Error('Invalid view class for tab');
+        }
+
+        if (tabHash.charAt(0) != '#') {
+          throw Error('Tab hashes must start with a #');
+        }
+
+        this.tabSwitcher_.addTab(tabId, view, tabName);
+        this.tabIdToHash_[tabId] = tabHash;
+        this.hashToTabId_[tabHash] = tabId;
+      }.bind(this);
+
+      // Populate the main tabs.  Even tabs that don't contain information for
+      // the running OS should be created, so they can load log dumps from other
+      // OSes.
+      addTab(CaptureView);
+      addTab(ExportView);
+      addTab(ImportView);
+      addTab(ProxyView);
+      addTab(EventsView);
+      addTab(TimelineView);
+      addTab(DnsView);
+      addTab(SocketsView);
+      addTab(SpdyView);
+      addTab(QuicView);
+      addTab(HttpPipelineView);
+      addTab(HttpCacheView);
+      addTab(ServiceProvidersView);
+      addTab(TestView);
+      addTab(HSTSView);
+      addTab(LogsView);
+      addTab(BandwidthView);
+      addTab(PrerenderView);
+      addTab(CrosView);
+
+      this.tabSwitcher_.showMenuItem(ServiceProvidersView.TAB_ID, cr.isWindows);
+      this.tabSwitcher_.showMenuItem(LogsView.TAB_ID, cr.isChromeOS);
+      this.tabSwitcher_.showMenuItem(CrosView.TAB_ID, cr.isChromeOS);
+    },
+
+    /**
+     * This function is called by the tab switcher when the current tab has been
+     * changed. It will update the current URL to reflect the new active tab,
+     * so the back can be used to return to previous view.
+     */
+    onTabSwitched_: function(oldTabId, newTabId) {
+      // Update data needed by newly active tab, as it may be
+      // significantly out of date.
+      if (g_browser)
+        g_browser.checkForUpdatedInfo();
+
+      // Change the URL to match the new tab.
+
+      var newTabHash = this.tabIdToHash_[newTabId];
+      var parsed = parseUrlHash_(window.location.hash);
+      if (parsed.tabHash != newTabHash) {
+        window.location.hash = newTabHash;
+      }
+    },
+
+    onUrlHashChange_: function() {
+      var parsed = parseUrlHash_(window.location.hash);
+
+      if (!parsed)
+        return;
+
+      if (!parsed.tabHash) {
+        // Default to the export tab.
+        parsed.tabHash = ExportView.TAB_HASH;
+      }
+
+      var tabId = this.hashToTabId_[parsed.tabHash];
+
+      if (tabId) {
+        this.tabSwitcher_.switchToTab(tabId);
+        if (parsed.parameters) {
+          var view = this.tabSwitcher_.getTabView(tabId);
+          view.setParameters(parsed.parameters);
+        }
+      }
+    },
+
   };
 
   /**
-   * Takes the current hash in form of "#tab&param1=value1&param2=value2&...".
-   * Puts the parameters in an object, and passes the resulting object to
-   * |categoryTabSwitcher|.  Uses tab and |anchorMap| to find a tab ID,
-   * which it also passes to the tab switcher.
+   * Takes the current hash in form of "#tab&param1=value1&param2=value2&..."
+   * and parses it into a dictionary.
    *
    * Parameters and values are decoded with decodeURIComponent().
    */
-  function onUrlHashChange(categoryTabSwitcher, anchorMap) {
-    var parameters = window.location.hash.split('&');
+  function parseUrlHash_(hash) {
+    var parameters = hash.split('&');
 
-    var tabId = anchorMap[parameters[0]];
-    if (!tabId)
-      return;
+    var tabHash = parameters[0];
+    if (tabHash == '' || tabHash == '#') {
+      tabHash = undefined;
+    }
 
     // Split each string except the first around the '='.
     var paramDict = null;
@@ -233,7 +274,7 @@ var MainView = (function() {
       paramDict[key] = value;
     }
 
-    categoryTabSwitcher.switchToTab(tabId, paramDict);
+    return {tabHash: tabHash, parameters: paramDict};
   }
 
   return MainView;

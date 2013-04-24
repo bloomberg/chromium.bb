@@ -55,8 +55,9 @@ var TimelineView = (function() {
     this.graphRangeInitialized_ = false;
   }
 
-  // ID for special HTML element in category_tabs.html
-  TimelineView.TAB_HANDLE_ID = 'tab-handle-timeline';
+  TimelineView.TAB_ID = 'tab-handle-timeline';
+  TimelineView.TAB_NAME = 'Timeline';
+  TimelineView.TAB_HASH = '#timeline';
 
   // IDs for special HTML elements in timeline_view.html
   TimelineView.GRAPH_DIV_ID = 'timeline-view-graph-div';

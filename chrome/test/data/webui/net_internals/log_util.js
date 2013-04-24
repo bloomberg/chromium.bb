@@ -290,8 +290,7 @@ TEST_F('NetInternalsTest', 'netInternalsStopCapturing', function() {
           null, HaltedStatusView.MAIN_BOX_ID));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
   taskQueue.addFunctionTask(checkPrivacyStripping.bind(null, true));
-  taskQueue.addFunctionTask(checkActiveView.bind(null,
-                                                 ExportView.TAB_HANDLE_ID));
+  taskQueue.addFunctionTask(checkActiveView.bind(null, ExportView.TAB_ID));
   taskQueue.run();
 
   // Simulate a click on the stop capturing button.

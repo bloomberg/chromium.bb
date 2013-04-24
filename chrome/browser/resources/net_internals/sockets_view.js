@@ -35,8 +35,9 @@ var SocketsView = (function() {
     flushSocketsButton.onclick = this.flushSocketPools.bind(this);
   }
 
-  // ID for special HTML element in category_tabs.html
-  SocketsView.TAB_HANDLE_ID = 'tab-handle-sockets';
+  SocketsView.TAB_ID = 'tab-handle-sockets';
+  SocketsView.TAB_NAME = 'Sockets';
+  SocketsView.TAB_HASH = '#sockets';
 
   // IDs for special HTML elements in sockets_view.html
   SocketsView.MAIN_BOX_ID = 'sockets-view-tab-content';

@@ -1,0 +1,41 @@
+<!--
+Copyright (c) 2013 The Chromium Authors. All rights reserved.
+Use of this source code is governed by a BSD-style license that can be
+found in the LICENSE file.
+-->
+
+<!-- Status bar at top of screen -->
+
+<style>
+#top-bar-view-tab-selecter {
+  background: white;
+  border: 1px solid #aaa;
+  border-radius: 6px;
+  outline: none;
+  padding: 2px 2px 2px 8px;
+  margin-left: 5px;
+}
+
+#top-bar-view-tab-selecter:focus {
+  box-shadow: 0 0 3px 4px rgba(255, 238, 0, 0.50);
+}
+
+#top-bar-view {
+  color: #eee;
+  border-bottom: 1px solid gray;
+  padding-top: 2px;
+  padding-bottom: 6px;
+}
+</style>
+
+<div id=top-bar-view>
+  <!-- TODO(eroman): Use flexbox instead of funky table -->
+  <table width=100% cellpadding=0 cellspacing=0><tr>
+    <td width="0.1%">
+      <select id=top-bar-view-tab-selecter></select>
+    </td>
+    <td id=top-bar-view-status width=100%>
+      <include src="status_view.html"/>
+    </td>
+  </tr></table>
+</div>

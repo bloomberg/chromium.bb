@@ -217,8 +217,9 @@ var CrosView = (function() {
     addEventListeners_();
   }
 
-  // ID for special HTML element in category_tabs.html
-  CrosView.TAB_HANDLE_ID = 'tab-handle-chromeos';
+  CrosView.TAB_ID = 'tab-handle-chromeos';
+  CrosView.TAB_NAME = 'ChromeOS';
+  CrosView.TAB_HASH = '#chromeos';
 
   CrosView.MAIN_BOX_ID = 'chromeos-view-tab-content';
   CrosView.IMPORT_DIV_ID = 'chromeos-view-import-div';

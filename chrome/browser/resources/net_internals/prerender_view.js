@@ -28,8 +28,9 @@ var PrerenderView = (function() {
     this.prerenderActiveDiv_ = $(PrerenderView.ACTIVE_DIV_ID);
   }
 
-  // ID for special HTML element in category_tabs.html
-  PrerenderView.TAB_HANDLE_ID = 'tab-handle-prerender';
+  PrerenderView.TAB_ID = 'tab-handle-prerender';
+  PrerenderView.TAB_NAME = 'Prerender';
+  PrerenderView.TAB_HASH = '#prerender';
 
   // IDs for special HTML elements in prerender_view.html
   PrerenderView.MAIN_BOX_ID = 'prerender-view-tab-content';

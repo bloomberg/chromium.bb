@@ -33,8 +33,9 @@ var ServiceProvidersView = (function() {
     g_browser.addServiceProvidersObserver(this, true);
   }
 
-  // ID for special HTML element in category_tabs.html
-  ServiceProvidersView.TAB_HANDLE_ID = 'tab-handle-service-providers';
+  ServiceProvidersView.TAB_ID = 'tab-handle-service-providers';
+  ServiceProvidersView.TAB_NAME = 'SPIs';
+  ServiceProvidersView.TAB_HASH = '#serviceProviders';
 
   // IDs for special HTML elements in service_providers_view.html
   ServiceProvidersView.MAIN_BOX_ID = 'service-providers-view-tab-content';

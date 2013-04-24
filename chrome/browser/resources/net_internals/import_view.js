@@ -42,7 +42,9 @@ var ImportView = (function() {
     this.loadedInfoUserComments_ = $(ImportView.LOADED_INFO_USER_COMMENTS_ID);
   }
 
-  ImportView.TAB_HANDLE_ID = 'tab-handle-import';
+  ImportView.TAB_ID = 'tab-handle-import';
+  ImportView.TAB_NAME = 'Import';
+  ImportView.TAB_HASH = '#import';
 
   // IDs for special HTML elements in import_view.html
   ImportView.MAIN_BOX_ID = 'import-view-tab-content';

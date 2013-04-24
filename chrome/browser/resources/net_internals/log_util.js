@@ -107,12 +107,12 @@ log_util = (function() {
    */
   function getTabData_() {
     var tabData = {};
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tabIds = categoryTabSwitcher.getAllTabIds();
-    for (var i = 0; i < tabIds.length; ++i) {
-      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
+    var tabSwitcher = MainView.getInstance().tabSwitcher();
+    var tabIdToView = tabSwitcher.getAllTabViews();
+    for (var tabId in tabIdToView) {
+      var view = tabIdToView[tabId];
       if (view.saveState)
-        tabData[tabIds[i]] = view.saveState();
+        tabData[tabId] = view.saveState();
     }
   }
 
@@ -221,11 +221,11 @@ log_util = (function() {
 
     // Inform all the views that a log file is being loaded, and pass in
     // view-specific saved state, if any.
-    var categoryTabSwitcher = MainView.getInstance().categoryTabSwitcher();
-    var tabIds = categoryTabSwitcher.getAllTabIds();
-    for (var i = 0; i < tabIds.length; ++i) {
-      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
-      view.onLoadLogStart(logDump.polledData, logDump.tabData[tabIds[i]]);
+    var tabSwitcher = MainView.getInstance().tabSwitcher();
+    var tabIdToView = tabSwitcher.getAllTabViews();
+    for (var tabId in tabIdToView) {
+      var view = tabIdToView[tabId];
+      view.onLoadLogStart(logDump.polledData, logDump.tabData[tabId]);
     }
     EventsTracker.getInstance().addLogEntries(validEvents);
 
@@ -244,14 +244,14 @@ log_util = (function() {
 
     // Update all views with data from the file.  Show only those views which
     // successfully load the data.
-    for (var i = 0; i < tabIds.length; ++i) {
-      var view = categoryTabSwitcher.findTabById(tabIds[i]).contentView;
+    for (var tabId in tabIdToView) {
+      var view = tabIdToView[tabId];
       var showView = false;
       // The try block eliminates the need for checking every single value
       // before trying to access it.
       try {
         if (view.onLoadLogFinish(logDump.polledData,
-                                 logDump.tabData[tabIds[i]],
+                                 logDump.tabData[tabId],
                                  logDump)) {
           showView = true;
         }
@@ -259,7 +259,7 @@ log_util = (function() {
         errorString += 'Caught error while calling onLoadLogFinish: ' +
                        error + '\n\n';
       }
-      categoryTabSwitcher.showTabHandleNode(tabIds[i], showView);
+      tabSwitcher.showMenuItem(tabId, showView);
     }
 
     return errorString + 'Log loaded.';

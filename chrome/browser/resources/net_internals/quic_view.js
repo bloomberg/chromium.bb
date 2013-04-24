@@ -32,8 +32,9 @@ var QuicView = (function() {
     this.quicSessionDiv_ = $(QuicView.SESSION_DIV_ID);
   }
 
-  // ID for special HTML element in category_tabs.html
-  QuicView.TAB_HANDLE_ID = 'tab-handle-quic';
+  QuicView.TAB_ID = 'tab-handle-quic';
+  QuicView.TAB_NAME = 'QUIC';
+  QuicView.TAB_HASH = '#quic';
 
   // IDs for special HTML elements in quic_view.html
   QuicView.MAIN_BOX_ID = 'quic-view-tab-content';

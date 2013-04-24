@@ -2,6 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+/**
+ * Controller and View for switching between tabs.
+ *
+ * The View part of TabSwitcherView displays the contents of the currently
+ * selected tab (only one tab can be active at a time).
+ *
+ * The controller part of TabSwitcherView hooks up a dropdown menu (i.e. HTML
+ * SELECT) to control switching between tabs.
+ */
 var TabSwitcherView = (function() {
   'use strict';
 
@@ -9,164 +18,154 @@ var TabSwitcherView = (function() {
   var superClass = View;
 
   /**
-   * TabSwitcherView is an implementation of View that handles tab switching.
-   *
-   * It is comprised of many views (tabs), only one of which is visible at a
-   * time.
-   *
-   * This view represents solely the selected tab's content area -- a separate
-   * view needs to be maintained for the tab handles.
-   *
    * @constructor
+   *
+   * @param {DOMSelectNode} dropdownMenu The menu for switching between tabs.
+   *                        The TabSwitcherView will attach an onchange event to
+   *                        the dropdown menu, and control the selected index.
+   * @param {?Function} opt_onTabSwitched Optional callback to run when the
+   *                    active tab changes. Called as
+   *                    opt_onTabSwitched(oldTabId, newTabId).
    */
-  function TabSwitcherView() {
+  function TabSwitcherView(dropdownMenu, opt_onTabSwitched) {
+    assertFirstConstructorCall(TabSwitcherView);
+
+    this.tabIdToView_ = {};
+    this.activeTabId_ = null;
+
+    this.dropdownMenu_ = dropdownMenu;
+    this.dropdownMenu_.onchange = this.onMenuSelectionChanged_.bind(this);
+
+    this.onTabSwitched_ = opt_onTabSwitched;
+
     superClass.call(this);
-    this.tabs_ = [];
   }
 
   TabSwitcherView.prototype = {
     // Inherit the superclass's methods.
     __proto__: superClass.prototype,
 
+    // ---------------------------------------------
+    // Override methods in View
+    // ---------------------------------------------
+
     setGeometry: function(left, top, width, height) {
       superClass.prototype.setGeometry.call(this, left, top, width, height);
 
       // Position each of the tabs content areas.
-      for (var i = 0; i < this.tabs_.length; ++i) {
-        var tab = this.tabs_[i];
-        tab.contentView.setGeometry(left, top, width, height);
+      for (var tabId in this.tabIdToView_) {
+        var view = this.tabIdToView_[tabId];
+        view.setGeometry(left, top, width, height);
       }
     },
 
     show: function(isVisible) {
       superClass.prototype.show.call(this, isVisible);
-
-      var activeTab = this.findActiveTab();
-      if (activeTab)
-        activeTab.contentView.show(isVisible);
+      var activeView = this.getActiveTabView();
+      if (activeView)
+        activeView.show(isVisible);
     },
+
+    // ---------------------------------------------
 
     /**
      * Adds a new tab (initially hidden).
      *
-     * @param {string} id The ID for DOM node that will be made clickable to
-     *                    select this tab. This is also the ID we use to
-     *                    identify the "tab".
+     * @param {string} tabId The ID to refer to the tab by.
      * @param {!View} view The tab's actual contents.
+     * @param {string} name The name for the menu item that selects the tab.
      */
-    addTab: function(id, contentView, switchOnClick, visible) {
-      var tab = new TabEntry(id, contentView);
-      this.tabs_.push(tab);
-
-      if (switchOnClick) {
-        // Attach a click handler, used to switch to the tab.
-        var self = this;
-        tab.getTabHandleNode().onclick = function() {
-          self.switchToTab(id, null);
-        };
+    addTab: function(tabId, view, name) {
+      if (!tabId) {
+        throw Error('Must specify a non-false tabId');
       }
 
-      // Start tabs off as hidden.
-      tab.contentView.show(false);
+      this.tabIdToView_[tabId] = view;
 
-      this.showTabHandleNode(id, visible);
+      // Tab content views start off hidden.
+      view.show(false);
+
+      // Add it to the dropdown menu.
+      var menuItem = addNode(this.dropdownMenu_, 'option');
+      menuItem.value = tabId;
+      menuItem.textContent = name;
     },
 
-    /**
-     * @return {?TabEntry} The currently selected tab, or null if there is none.
-     */
-    findActiveTab: function() {
-      for (var i = 0; i < this.tabs_.length; ++i) {
-        var tab = this.tabs_[i];
-        if (tab.active)
-          return tab;
-      }
-      return null;
-    },
+    showMenuItem: function(tabId, isVisible) {
+      var wasActive = this.activeTabId_ == tabId;
+      setNodeDisplay(this.getMenuItemNode_(tabId), isVisible);
 
-    /**
-     * @return {?TabEntry} The tab with ID |id|, or null if there is none.
-     */
-    findTabById: function(id) {
-      for (var i = 0; i < this.tabs_.length; ++i) {
-        var tab = this.tabs_[i];
-        if (tab.id == id)
-          return tab;
-      }
-      return null;
-    },
-
-    /**
-     * Focuses on tab with ID |id|.  |params| is a dictionary that will be
-     * passed to the tab's setParameters function, if it's non-null.
-     */
-    switchToTab: function(id, params) {
-      var oldTab = this.findActiveTab();
-      if (oldTab)
-        oldTab.setSelected(false);
-
-      var newTab = this.findTabById(id);
-      newTab.setSelected(true);
-      if (params)
-        newTab.contentView.setParameters(params);
-
-      // Update data needed by newly active tab, as it may be
-      // significantly out of date.
-      if (typeof g_browser != 'undefined' && g_browser.checkForUpdatedInfo)
-        g_browser.checkForUpdatedInfo();
-    },
-
-    getAllTabIds: function() {
-      var ids = [];
-      for (var i = 0; i < this.tabs_.length; ++i)
-        ids.push(this.tabs_[i].id);
-      return ids;
-    },
-
-    /**
-     * Shows/hides the DOM node that is used to select the tab.  If the
-     * specified tab is the active tab, switches the active tab to the first
-     * still visible tab in the tab list.
-     */
-    showTabHandleNode: function(id, isVisible) {
-      var tab = this.findTabById(id);
-      if (!isVisible && tab == this.findActiveTab()) {
-        for (var i = 0; i < this.tabs_.length; ++i) {
-          if (this.tabs_[i].id != id &&
-              this.tabs_[i].getTabHandleNode().style.display != 'none') {
-            this.switchToTab(this.tabs_[i].id, null);
+      if (wasActive && !isVisible) {
+        // If the active tab is being hidden in the dropdown menu, then
+        // switch to the first tab which is still visible.
+        for (var i = 0; i < this.dropdownMenu_.options.length; ++i) {
+          var option = this.dropdownMenu_.options[i];
+          if (option.style.display != 'none') {
+            this.switchToTab(option.value);
             break;
           }
         }
       }
-      setNodeDisplay(tab.getTabHandleNode(), isVisible);
-    }
-  };
+    },
 
-  //---------------------------------------------------------------------------
+    getAllTabViews: function() {
+      return this.tabIdToView_;
+    },
 
-  /**
-   * @constructor
-   */
-  function TabEntry(id, contentView) {
-    this.id = id;
-    this.contentView = contentView;
-  }
+    getTabView: function(tabId) {
+      return this.tabIdToView_[tabId];
+    },
 
-  TabEntry.prototype.setSelected = function(isSelected) {
-    this.active = isSelected;
-    if (isSelected)
-      this.getTabHandleNode().classList.add('selected');
-    else
-      this.getTabHandleNode().classList.remove('selected');
-    this.contentView.show(isSelected);
-  };
+    getActiveTabView: function() {
+      return this.tabIdToView_[this.activeTabId_];
+    },
 
-  /**
-   * Returns the DOM node that is used to select the tab.
-   */
-  TabEntry.prototype.getTabHandleNode = function() {
-    return $(this.id);
+    getActiveTabId: function() {
+      return this.activeTabId_;
+    },
+
+    /**
+     * Changes the currently active tab to |tabId|. This has several effects:
+     *   (1) Replace the tab contents view with that of the new tab.
+     *   (2) Update the dropdown menu's current selection.
+     *   (3) Invoke the optional onTabSwitched callback.
+     */
+    switchToTab: function(tabId) {
+      var newView = this.getTabView(tabId);
+
+      if (!newView) {
+        throw Error('Invalid tabId');
+      }
+
+      var oldTabId = this.activeTabId_;
+      this.activeTabId_ = tabId;
+
+      this.dropdownMenu_.value = tabId;
+
+      // Hide the previously visible tab contents.
+      if (oldTabId)
+        this.getTabView(oldTabId).show(false);
+
+      newView.show(this.isVisible());
+
+      if (this.onTabSwitched_)
+        this.onTabSwitched_(oldTabId, tabId);
+    },
+
+    getMenuItemNode_: function(tabId) {
+      for (var i = 0; i < this.dropdownMenu_.options.length; ++i) {
+        var option = this.dropdownMenu_.options[i];
+        if (option.value == tabId) {
+          return option;
+        }
+      }
+      return null;
+    },
+
+    onMenuSelectionChanged_: function(event) {
+      var tabId = this.dropdownMenu_.value;
+      this.switchToTab(tabId);
+    },
   };
 
   return TabSwitcherView;

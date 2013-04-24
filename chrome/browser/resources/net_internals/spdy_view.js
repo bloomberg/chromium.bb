@@ -39,8 +39,9 @@ var SpdyView = (function() {
     this.spdySessionDiv_ = $(SpdyView.SESSION_DIV_ID);
   }
 
-  // ID for special HTML element in category_tabs.html
-  SpdyView.TAB_HANDLE_ID = 'tab-handle-spdy';
+  SpdyView.TAB_ID = 'tab-handle-spdy';
+  SpdyView.TAB_NAME = 'SPDY';
+  SpdyView.TAB_HASH = '#spdy';
 
   // IDs for special HTML elements in spdy_view.html
   SpdyView.MAIN_BOX_ID = 'spdy-view-tab-content';

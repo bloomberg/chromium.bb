@@ -41,8 +41,9 @@ var LogsView = (function() {
         this.onLogsRefresh_.bind(this));
   }
 
-  // ID for special HTML element in category_tabs.html
-  LogsView.TAB_HANDLE_ID = 'tab-handle-logs';
+  LogsView.TAB_ID = 'tab-handle-logs';
+  LogsView.TAB_NAME = 'Logs';
+  LogsView.TAB_HASH = '#logs';
 
   // IDs for special HTML elements in logs_view.html
   LogsView.MAIN_BOX_ID = 'logs-view-tab-content';

@@ -14,7 +14,6 @@ found in the LICENSE file.
     <link rel="stylesheet" href="events_view.css">
     <link rel="stylesheet" href="timeline_view.css">
     <link rel="stylesheet" href="logs_view.css">
-    <link rel="stylesheet" href="tab_switcher_view.css">
     <link rel="stylesheet" href="chromeos_view.css">
     <script src="chrome://resources/js/util.js"></script>
     <script src="chrome://resources/js/cr.js"></script>
@@ -22,27 +21,29 @@ found in the LICENSE file.
     <script src="chrome://net-internals/strings.js"></script>
   </head>
   <body id=import-view-drop-target>
-    <include src="status_view.html"/>
-    <include src="category_tabs.html"/>
-    <include src="proxy_view.html"/>
-    <include src="dns_view.html"/>
-    <include src="sockets_view.html"/>
-    <include src="spdy_view.html"/>
-    <include src="quic_view.html"/>
-    <include src="http_pipeline_view.html"/>
-    <include src="http_cache_view.html"/>
-    <include src="bandwidth_view.html"/>
-    <include src="prerender_view.html"/>
-    <include src="service_providers_view.html"/>
-    <include src="import_view.html"/>
-    <include src="export_view.html"/>
-    <include src="capture_view.html"/>
-    <include src="test_view.html"/>
-    <include src="hsts_view.html"/>
-    <include src="events_view.html"/>
-    <include src="timeline_view.html"/>
-    <include src="logs_view.html"/>
-    <include src="chromeos_view.html"/>
+    <include src="top_bar_view.html"/>
+
+    <div id=main-tab-contents>
+      <include src="proxy_view.html"/>
+      <include src="dns_view.html"/>
+      <include src="sockets_view.html"/>
+      <include src="spdy_view.html"/>
+      <include src="quic_view.html"/>
+      <include src="http_pipeline_view.html"/>
+      <include src="http_cache_view.html"/>
+      <include src="bandwidth_view.html"/>
+      <include src="prerender_view.html"/>
+      <include src="service_providers_view.html"/>
+      <include src="import_view.html"/>
+      <include src="export_view.html"/>
+      <include src="capture_view.html"/>
+      <include src="test_view.html"/>
+      <include src="hsts_view.html"/>
+      <include src="events_view.html"/>
+      <include src="timeline_view.html"/>
+      <include src="logs_view.html"/>
+      <include src="chromeos_view.html"/>
+    </div>
 
     <script src="chrome://resources/js/i18n_template.js"></script>
     <script src="chrome://resources/js/i18n_process.js"></script>

@@ -36,8 +36,9 @@ var ProxyView = (function() {
     g_browser.addBadProxiesObserver(this, true);
   }
 
-  // ID for special HTML element in category_tabs.html
-  ProxyView.TAB_HANDLE_ID = 'tab-handle-proxy';
+  ProxyView.TAB_ID = 'tab-handle-proxy';
+  ProxyView.TAB_NAME = 'Proxy';
+  ProxyView.TAB_HASH = '#proxy';
 
   // IDs for special HTML elements in proxy_view.html
   ProxyView.MAIN_BOX_ID = 'proxy-view-tab-content';

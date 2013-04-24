@@ -38,8 +38,9 @@ var CaptureView = (function() {
     this.onChangeLimit_();
   }
 
-  // ID for special HTML element in category_tabs.html
-  CaptureView.TAB_HANDLE_ID = 'tab-handle-capture';
+  CaptureView.TAB_ID = 'tab-handle-capture';
+  CaptureView.TAB_NAME = 'Capture';
+  CaptureView.TAB_HASH = '#capture';
 
   // IDs for special HTML elements in capture_view.html
   CaptureView.MAIN_BOX_ID = 'capture-view-tab-content';
