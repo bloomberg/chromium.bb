@@ -1674,6 +1674,8 @@
         'browser/ui/views/infobars/infobar_button_border.h',
         'browser/ui/views/infobars/infobar_container_view.cc',
         'browser/ui/views/infobars/infobar_container_view.h',
+        'browser/ui/views/infobars/infobar_label_button_border.cc',
+        'browser/ui/views/infobars/infobar_label_button_border.h',
         'browser/ui/views/infobars/infobar_view.cc',
         'browser/ui/views/infobars/infobar_view.h',
         'browser/ui/views/infobars/one_click_signin_infobar.cc',

@@ -15,7 +15,7 @@
 #include "ui/gfx/skia_util.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/custom_button.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 
 namespace {
 
@@ -139,6 +139,8 @@ void OneClickSigninInfoBar::ViewHierarchyChanged(bool is_add,
   ok_button()->set_border(new InfoBarColoredButtonBorder(
       alt_colors.button_background_color,
       alt_colors.button_border_color));
-  ok_button()->SetEnabledColor(alt_colors.button_text_color);
-  ok_button()->SetHoverColor(alt_colors.button_text_color);
+  ok_button()->SetTextColor(views::Button::STATE_NORMAL,
+                            alt_colors.button_text_color);
+  ok_button()->SetTextColor(views::Button::STATE_HOVERED,
+                            alt_colors.button_text_color);
 }

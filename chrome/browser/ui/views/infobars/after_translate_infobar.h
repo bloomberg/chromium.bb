@@ -47,7 +47,7 @@ class AfterTranslateInfoBar : public TranslateInfoBarBase,
 
   views::MenuButton* original_language_menu_button_;
   views::MenuButton* target_language_menu_button_;
-  views::TextButton* revert_button_;
+  views::LabelButton* revert_button_;
   views::MenuButton* options_menu_button_;
 
   scoped_ptr<TranslateLanguageMenuModel> original_language_menu_model_;

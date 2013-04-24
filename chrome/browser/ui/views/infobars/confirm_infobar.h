@@ -14,7 +14,6 @@ class ConfirmInfoBarDelegate;
 
 namespace views {
 class Label;
-class TextButton;
 }
 
 // An infobar that shows a message, up to two optional buttons, and an optional,
@@ -31,7 +30,7 @@ class ConfirmInfoBar : public InfoBarView,
   // removed.
   virtual ~ConfirmInfoBar();
 
-  views::TextButton* ok_button() { return ok_button_; }
+  views::LabelButton* ok_button() { return ok_button_; }
 
   // InfoBarView:
   virtual void Layout() OVERRIDE;
@@ -49,8 +48,8 @@ class ConfirmInfoBar : public InfoBarView,
   ConfirmInfoBarDelegate* GetDelegate();
 
   views::Label* label_;
-  views::TextButton* ok_button_;
-  views::TextButton* cancel_button_;
+  views::LabelButton* ok_button_;
+  views::LabelButton* cancel_button_;
   views::Link* link_;
 
   DISALLOW_COPY_AND_ASSIGN(ConfirmInfoBar);

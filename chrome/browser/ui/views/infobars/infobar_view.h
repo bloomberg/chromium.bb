@@ -22,12 +22,12 @@ class ExternalFocusTracker;
 class ImageButton;
 class ImageView;
 class Label;
+class LabelButton;
 class Link;
 class LinkListener;
 class MenuButton;
-class MenuRunner;
-class TextButton;
 class MenuButtonListener;
+class MenuRunner;
 }
 
 class InfoBarView : public InfoBar,
@@ -60,11 +60,11 @@ class InfoBarView : public InfoBar,
       const string16& text,
       views::MenuButtonListener* menu_button_listener);
 
-  // Creates a text button with an infobar-specific appearance.
+  // Creates a button with an infobar-specific appearance.
   // NOTE: Subclasses must ignore button presses if we're unowned.
-  static views::TextButton* CreateTextButton(views::ButtonListener* listener,
-                                             const string16& text,
-                                             bool needs_elevation);
+  static views::LabelButton* CreateLabelButton(views::ButtonListener* listener,
+                                               const string16& text,
+                                               bool needs_elevation);
 
   // views::View:
   virtual void Layout() OVERRIDE;

@@ -15,6 +15,7 @@
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 #include "chrome/browser/ui/views/infobars/infobar_button_border.h"
+#include "chrome/browser/ui/views/infobars/infobar_label_button_border.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_resources.h"
@@ -25,8 +26,8 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/controls/button/image_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/menu_button.h"
-#include "ui/views/controls/button/text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/link.h"
@@ -114,17 +115,17 @@ views::MenuButton* InfoBarView::CreateMenuButton(
 }
 
 // static
-views::TextButton* InfoBarView::CreateTextButton(
+views::LabelButton* InfoBarView::CreateLabelButton(
     views::ButtonListener* listener,
     const string16& text,
     bool needs_elevation) {
-  views::TextButton* text_button = new views::TextButton(listener, text);
-  text_button->set_border(new InfoBarButtonBorder);
-  text_button->set_animate_on_state_change(false);
-  text_button->SetEnabledColor(SK_ColorBLACK);
-  text_button->SetHoverColor(SK_ColorBLACK);
+  views::LabelButton* label_button = new views::LabelButton(listener, text);
+  label_button->set_border(new InfoBarLabelButtonBorder);
+  label_button->set_animate_on_state_change(false);
+  label_button->SetTextColor(views::Button::STATE_NORMAL, SK_ColorBLACK);
+  label_button->SetTextColor(views::Button::STATE_HOVERED, SK_ColorBLACK);
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  text_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
+  label_button->SetFont(rb.GetFont(ui::ResourceBundle::MediumFont));
 #if defined(OS_WIN)
   if (needs_elevation &&
       (base::win::GetVersion() >= base::win::VERSION_VISTA) &&
@@ -142,14 +143,16 @@ views::TextButton* InfoBarView::CreateTextButton(
       scoped_ptr<SkBitmap> icon(IconUtil::CreateSkBitmapFromHICON(
           icon_info.hIcon, gfx::Size(GetSystemMetrics(SM_CXSMICON),
                                      GetSystemMetrics(SM_CYSMICON))));
-      if (icon.get())
-        text_button->SetIcon(gfx::ImageSkia::CreateFrom1xBitmap(*icon));
+      if (icon.get()) {
+        label_button->SetImage(views::Button::STATE_NORMAL,
+                               gfx::ImageSkia::CreateFrom1xBitmap(*icon));
+      }
       DestroyIcon(icon_info.hIcon);
     }
   }
 #endif
-  text_button->set_focusable(true);
-  return text_button;
+  label_button->set_focusable(true);
+  return label_button;
 }
 
 void InfoBarView::Layout() {

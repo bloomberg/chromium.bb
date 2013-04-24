@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/views/infobars/translate_message_infobar.h"
 
 #include "chrome/browser/translate/translate_infobar_delegate.h"
-#include "ui/views/controls/button/text_button.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
 
 TranslateMessageInfoBar::TranslateMessageInfoBar(
@@ -45,7 +45,7 @@ void TranslateMessageInfoBar::ViewHierarchyChanged(bool is_add,
 
     string16 button_text(delegate->GetMessageInfoBarButtonText());
     if (!button_text.empty()) {
-      button_ = CreateTextButton(this, button_text, false);
+      button_ = CreateLabelButton(this, button_text, false);
       AddChildView(button_);
     }
   }

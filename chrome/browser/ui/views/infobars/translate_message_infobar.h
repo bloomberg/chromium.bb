@@ -25,7 +25,7 @@ class TranslateMessageInfoBar : public TranslateInfoBarBase {
   virtual int ContentMinimumWidth() const OVERRIDE;
 
   views::Label* label_;
-  views::TextButton* button_;
+  views::LabelButton* button_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateMessageInfoBar);
 };
