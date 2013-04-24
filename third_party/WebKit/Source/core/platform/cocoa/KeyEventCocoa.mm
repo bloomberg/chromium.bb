@@ -24,7 +24,7 @@
  */
 
 #import "config.h"
-#import "KeyEventCocoa.h"
+#import "core/platform/cocoa/KeyEventCocoa.h"
 
 #import "Logging.h"
 #import "WindowsKeyboardCodes.h"

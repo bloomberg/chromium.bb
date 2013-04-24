@@ -34,7 +34,7 @@
 #include "core/platform/graphics/TextRun.h"
 #include <wtf/MathExtras.h>
 
-#include "HarfBuzzShaper.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
 using namespace std;
 

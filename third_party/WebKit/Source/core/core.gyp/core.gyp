@@ -103,13 +103,10 @@
           # related directories.
           # platform/graphics/cg may need to stick around, though.
           '../platform/audio/mac',
-          '../platform/cocoa',
-          '../platform/graphics/cg',
           '../platform/graphics/cocoa',
           '../platform/graphics/mac',
           '../platform/mac',
           '../platform/text/mac',
-          '../platform/graphics/harfbuzz',
           '../platform/graphics/harfbuzz/ng',
         ],
       }],
@@ -122,7 +119,6 @@
       }],
       ['OS=="linux" or OS=="android"', {
         'webcore_include_dirs': [
-          '../platform/graphics/harfbuzz',
           '../platform/graphics/harfbuzz/ng',
         ],
       }],

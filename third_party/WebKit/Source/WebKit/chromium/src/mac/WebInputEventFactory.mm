@@ -30,8 +30,8 @@
 #include <ApplicationServices/ApplicationServices.h>
 #import <Cocoa/Cocoa.h>
 
-#import "KeyEventCocoa.h"
 #include "WebInputEvent.h"
+#import "core/platform/cocoa/KeyEventCocoa.h"
 #include <wtf/ASCIICType.h>
 
 #if __MAC_OS_X_VERSION_MAX_ALLOWED < 1070

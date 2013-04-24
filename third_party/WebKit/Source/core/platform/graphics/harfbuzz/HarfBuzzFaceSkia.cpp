@@ -29,9 +29,8 @@
  */
 
 #include "config.h"
-#include "HarfBuzzFace.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 
-#include "HarfBuzzShaper.h"
 #include "SkPaint.h"
 #include "SkPath.h"
 #include "SkPoint.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
 #include "hb.h"
 #include <wtf/HashMap.h>

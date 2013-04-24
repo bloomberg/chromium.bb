@@ -44,7 +44,7 @@
 #include "qcms.h"
 #if OS(DARWIN)
 #include <ApplicationServices/ApplicationServices.h>
-#include "GraphicsContextCG.h"
+#include "core/platform/graphics/cg/GraphicsContextCG.h"
 #include <wtf/RetainPtr.h>
 #endif
 #endif

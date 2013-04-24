@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "HarfBuzzFace.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 
 #include "core/platform/graphics/FontPlatformData.h"
 #include "hb-ot.h"

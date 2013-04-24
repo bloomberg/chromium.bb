@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "FontPlatformDataHarfBuzz.h"
+#include "core/platform/graphics/harfbuzz/FontPlatformDataHarfBuzz.h"
 
-#include "HarfBuzzFace.h"
 #include "NotImplemented.h"
 #include "SkAdvancedTypefaceMetrics.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 
 #include <public/linux/WebFontInfo.h>
 #include <public/linux/WebFontRenderStyle.h>

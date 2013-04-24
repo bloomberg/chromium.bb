@@ -28,7 +28,7 @@
 #include <wtf/Vector.h>
 
 #if OS(DARWIN)
-#include "HarfBuzzFace.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 #endif
 
 using namespace std;

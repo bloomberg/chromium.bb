@@ -29,7 +29,7 @@
 #import <wtf/text/WTFString.h>
 
 #if OS(DARWIN)
-#import "HarfBuzzFace.h"
+#import "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 #endif
 
 namespace WebCore {

@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "HarfBuzzShaper.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
 #include <unicode/normlzr.h>
 #include <unicode/uchar.h>
-#include "HarfBuzzFace.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 #include "hb-icu.h"
 #include <wtf/MathExtras.h>
 #include <wtf/unicode/Unicode.h>

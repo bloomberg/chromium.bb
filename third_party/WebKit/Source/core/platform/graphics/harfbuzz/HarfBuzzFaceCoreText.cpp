@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "HarfBuzzFace.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzFace.h"
 
-#include "HarfBuzzShaper.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/platform/graphics/harfbuzz/HarfBuzzShaper.h"
 
 #include <ApplicationServices/ApplicationServices.h>
 #include "hb.h"

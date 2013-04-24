@@ -28,7 +28,6 @@
 #import "Element.h"
 #import "FileList.h"
 #import "FrameView.h"
-#import "GraphicsContextCG.h"
 #import "HTMLInputElement.h"
 #import "HTMLMediaElement.h"
 #import "HTMLMeterElement.h"
@@ -58,6 +57,7 @@
 #import "core/platform/graphics/Image.h"
 #import "core/platform/graphics/ImageBuffer.h"
 #import "core/platform/graphics/StringTruncator.h"
+#import "core/platform/graphics/cg/GraphicsContextCG.h"
 
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
