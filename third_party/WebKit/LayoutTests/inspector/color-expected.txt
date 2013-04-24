@@ -19,7 +19,7 @@ Dumping 'green' in different formats:
  - hsv(120, 100%, 50%)
  - hsva(120, 100%, 50%, 1)
  - #008000
- - #080
+ - null
  - green
  - default: green
 Dumping 'blue' in different formats:
@@ -96,18 +96,18 @@ Dumping 'rgb(94, 126, 91)' in different formats:
  - hsv(115, 28%, 49%)
  - hsva(115, 28%, 49%, 1)
  - #5E7E5B
- - #575
+ - null
  - undefined
  - default: rgb(94, 126, 91)
 Dumping 'rgba(94, 126, 91, 0.5)' in different formats:
- - rgb(94, 126, 91)
+ - null
  - rgba(94, 126, 91, 0.5)
- - hsl(115, 16%, 43%)
+ - null
  - hsla(115, 16%, 43%, 0.5)
  - hsv(115, 28%, 49%)
  - hsva(115, 28%, 49%, 0.5)
- - #5E7E5B
- - #575
+ - null
+ - null
  - undefined
  - default: rgba(94, 126, 91, 0.5)
 Dumping 'hsl(212, 55%, 32%)' in different formats:
@@ -118,18 +118,18 @@ Dumping 'hsl(212, 55%, 32%)' in different formats:
  - hsv(212, 71%, 50%)
  - hsva(212, 71%, 50%, 1)
  - #254F7E
- - #247
+ - null
  - undefined
  - default: hsl(212, 55%, 32%)
 Dumping 'hsla(212, 55%, 32%, 0.5)' in different formats:
- - rgb(37, 79, 126)
+ - null
  - rgba(37, 79, 126, 0.5)
- - hsl(212, 55%, 32%)
+ - null
  - hsla(212, 55%, 32%, 0.5)
  - hsv(212, 71%, 50%)
  - hsva(212, 71%, 50%, 0.5)
- - #254F7E
- - #247
+ - null
+ - null
  - undefined
  - default: hsla(212, 55%, 32%, 0.5)
 Dumping '#00FFFF' in different formats:

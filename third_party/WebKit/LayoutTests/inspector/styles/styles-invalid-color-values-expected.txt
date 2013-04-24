@@ -60,19 +60,19 @@ color: rgb(110%, 0%, 0%)
 color: rgba(255, 0, 0, -5)
   simple: false
   original: rgba(255, 0, 0, -5)
-  rgb: rgb(255, 0, 0)
+  rgb: null
   rgba: rgba(255, 0, 0, 0)
-  hsl: hsl(0, 100%, 50%)
+  hsl: null
   hsla: hsla(0, 100%, 50%, 0)
 
 color: rgba(255, 0, 0, 5)
-  simple: false
+  simple: true
   original: rgba(255, 0, 0, 5)
   nickname: red
+  hex: #FF0000
+  shorthex: #F00
   rgb: rgb(255, 0, 0)
-  rgba: rgba(255, 0, 0, 1)
   hsl: hsl(0, 100%, 50%)
-  hsla: hsla(0, 100%, 50%, 1)
 
 Running: testInvalidColors
 
