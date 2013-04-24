@@ -251,10 +251,6 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   scoped_ptr<WebIDBDatabaseCallbacks>
       database_callbacks(database_callbacks_ptr);
 
-  if (!CurrentWorkerId() &&
-      !ChildThread::current()->IsWebFrameValid(web_frame))
-    return;
-
   IndexedDBHostMsg_FactoryOpen_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
@@ -280,10 +276,6 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   scoped_ptr<WebIDBDatabaseCallbacks>
       database_callbacks(database_callbacks_ptr);
 
-  if (!CurrentWorkerId() &&
-      !ChildThread::current()->IsWebFrameValid(web_frame))
-    return;
-
   IndexedDBHostMsg_FactoryOpen_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
@@ -303,10 +295,6 @@ void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
-  if (!CurrentWorkerId() &&
-      !ChildThread::current()->IsWebFrameValid(web_frame))
-    return;
-
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
@@ -321,10 +309,6 @@ void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     WebFrame* web_frame) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-
-  if (!CurrentWorkerId() &&
-      !ChildThread::current()->IsWebFrameValid(web_frame))
-    return;
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
   params.ipc_thread_id = CurrentWorkerId();
