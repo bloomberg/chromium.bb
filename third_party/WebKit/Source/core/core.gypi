@@ -2097,8 +2097,6 @@
             'html/HTMLParagraphElement.h',
             'html/HTMLParamElement.cpp',
             'html/HTMLParamElement.h',
-            'html/HTMLParserErrorCodes.cpp',
-            'html/HTMLParserErrorCodes.h',
             'html/HTMLPlugInElement.cpp',
             'html/HTMLPlugInImageElement.cpp',
             'html/HTMLPreElement.cpp',
