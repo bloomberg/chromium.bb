@@ -63,6 +63,10 @@ public:
     // direction.
     virtual bool scrollVerticallyByPageIfPossible(WebPoint origin, WebScrollbar::ScrollDirection) = 0;
 
+    // Returns ScrollStarted if a layer was being actively being scrolled,
+    // ScrollIgnored if not.
+    virtual ScrollStatus flingScrollBegin() = 0;
+
     // Stop scrolling the selected layer. Should only be called if scrollBegin()
     // returned ScrollStarted.
     virtual void scrollEnd() = 0;
