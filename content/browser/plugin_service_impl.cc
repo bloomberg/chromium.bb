@@ -16,13 +16,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "base/utf_string_conversions.h"
-#include "base/values.h"
 #include "content/browser/ppapi_plugin_process_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/pepper_plugin_registry.h"
-#include "content/common/plugin_messages.h"
-#include "content/common/utility_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -743,10 +740,7 @@ bool PluginServiceImpl::IsPluginUnstable(const base::FilePath& path) {
     return false;
   }
   base::TimeDelta delta = base::Time::Now() - i->second[0];
-  if (delta.InSeconds() <= kCrashesInterval) {
-    return true;
-  }
-  return false;
+  return delta.InSeconds() <= kCrashesInterval;
 }
 
 void PluginServiceImpl::RefreshPlugins() {

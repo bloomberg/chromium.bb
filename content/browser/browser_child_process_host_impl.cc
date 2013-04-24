@@ -300,7 +300,8 @@ bool BrowserChildProcessHostImpl::Send(IPC::Message* message) {
 }
 
 void BrowserChildProcessHostImpl::OnProcessLaunched() {
-  if (!child_process_->GetHandle()) {
+  base::ProcessHandle handle = child_process_->GetHandle();
+  if (!handle) {
     delete delegate_;  // Will delete us
     return;
   }
@@ -312,12 +313,12 @@ void BrowserChildProcessHostImpl::OnProcessLaunched() {
   // IPC channel thereafter.
   DCHECK(!early_exit_watcher_.GetWatchedEvent());
   early_exit_watcher_.StartWatching(
-      new base::WaitableEvent(child_process_->GetHandle()),
+      new base::WaitableEvent(handle),
       base::Bind(&BrowserChildProcessHostImpl::OnProcessExitedEarly,
                  base::Unretained(this)));
 #endif
 
-  data_.handle = child_process_->GetHandle();
+  data_.handle = handle;
   delegate_->OnProcessLaunched();
 }
 

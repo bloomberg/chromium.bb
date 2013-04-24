@@ -361,8 +361,7 @@ bool BrowserThread::CurrentlyOn(ID identifier) {
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
   return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop() ==
-             MessageLoop::current();
+         globals.threads[identifier]->message_loop() == MessageLoop::current();
 }
 
 // static
@@ -450,9 +449,7 @@ bool BrowserThread::GetCurrentThreadIdentifier(ID* identifier) {
 // static
 scoped_refptr<base::MessageLoopProxy>
 BrowserThread::GetMessageLoopProxyForThread(ID identifier) {
-  scoped_refptr<base::MessageLoopProxy> proxy(
-      new BrowserThreadMessageLoopProxy(identifier));
-  return proxy;
+  return make_scoped_refptr(new BrowserThreadMessageLoopProxy(identifier));
 }
 
 // static
