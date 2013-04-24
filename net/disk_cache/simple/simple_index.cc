@@ -13,12 +13,10 @@
 #include "base/message_loop.h"
 #include "base/metrics/histogram.h"
 #include "base/pickle.h"
-#include "base/sys_info.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
-#include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
@@ -35,9 +33,6 @@ namespace {
 // operation has happened.
 const int kWriteToDiskDelayMSecs = 20000;
 const int kWriteToDiskOnBackgroundDelayMSecs = 100;
-
-// Cache size when all other size heuristics failed.
-const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
 
 // Divides the cache space into this amount of parts to evict when only one part
 // is left.
@@ -159,10 +154,9 @@ void EntryMetadata::MergeWith(const EntryMetadata& from) {
 SimpleIndex::SimpleIndex(
     base::SingleThreadTaskRunner* cache_thread,
     base::SingleThreadTaskRunner* io_thread,
-    const base::FilePath& path,
-    int max_size)
+    const base::FilePath& path)
     : cache_size_(0),
-      max_size_(max_size),
+      max_size_(0),
       high_watermark_(0),
       low_watermark_(0),
       eviction_in_progress_(false),
@@ -189,18 +183,6 @@ SimpleIndex::~SimpleIndex() {
 
 void SimpleIndex::Initialize() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-
-  if (!max_size_) {
-    int64 available = base::SysInfo::AmountOfFreeDiskSpace(index_filename_);
-    if (available < 0)
-      max_size_ = kDefaultCacheSize;
-    else
-      // TODO(pasko): Move PreferedCacheSize() to cache_util.h. Also fix the
-      // spelling.
-      max_size_ = PreferedCacheSize(available);
-  }
-  DCHECK(max_size_);
-  SetMaxSize(max_size_);
 
   IndexCompletionCallback merge_callback =
       base::Bind(&SimpleIndex::MergeInitializingSet, AsWeakPtr());

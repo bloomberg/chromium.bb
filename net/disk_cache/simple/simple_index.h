@@ -78,11 +78,9 @@ class NET_EXPORT_PRIVATE EntryMetadata {
 class NET_EXPORT_PRIVATE SimpleIndex
     : public base::SupportsWeakPtr<SimpleIndex> {
  public:
-  SimpleIndex(
-      base::SingleThreadTaskRunner* cache_thread,
-      base::SingleThreadTaskRunner* io_thread,
-      const base::FilePath& path,
-      int max_size);
+  SimpleIndex(base::SingleThreadTaskRunner* cache_thread,
+              base::SingleThreadTaskRunner* io_thread,
+              const base::FilePath& path);
 
   virtual ~SimpleIndex();
 

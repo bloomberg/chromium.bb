@@ -9,8 +9,10 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
+#include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
 #include "net/base/net_errors.h"
+#include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -26,6 +28,9 @@ using file_util::DirectoryExists;
 using file_util::CreateDirectory;
 
 namespace {
+
+// Cache size when all other size heuristics failed.
+const uint64 kDefaultCacheSize = 80 * 1024 * 1024;
 
 // Must run on IO Thread.
 void DeleteBackendImpl(disk_cache::Backend** backend,
@@ -121,9 +126,10 @@ SimpleBackendImpl::SimpleBackendImpl(
   : path_(path),
     index_(new SimpleIndex(cache_thread,
                            MessageLoopProxy::current(),  // io_thread
-                           path,
-                           max_bytes)),
-    cache_thread_(cache_thread) {}
+                           path)),
+    cache_thread_(cache_thread),
+    orig_max_size_(max_bytes) {
+}
 
 SimpleBackendImpl::~SimpleBackendImpl() {
   index_->WriteToDisk();
@@ -134,15 +140,18 @@ int SimpleBackendImpl::Init(const CompletionCallback& completion_callback) {
       base::Bind(&SimpleBackendImpl::InitializeIndex,
                  base::Unretained(this),
                  completion_callback);
-  cache_thread_->PostTask(FROM_HERE,
-                          base::Bind(&SimpleBackendImpl::ProvideDirectory,
-                                     MessageLoopProxy::current(),  // io_thread
-                                     path_,
-                                     initialize_index_callback));
+  cache_thread_->PostTask(
+      FROM_HERE,
+      base::Bind(&SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize,
+                 MessageLoopProxy::current(),  // io_thread
+                 path_,
+                 initialize_index_callback,
+                 orig_max_size_));
   return net::ERR_IO_PENDING;
 }
 
 bool SimpleBackendImpl::SetMaxSize(int max_bytes) {
+  orig_max_size_ = max_bytes;
   return index_->SetMaxSize(max_bytes);
 }
 
@@ -231,24 +240,40 @@ void SimpleBackendImpl::OnExternalCacheHit(const std::string& key) {
 }
 
 void SimpleBackendImpl::InitializeIndex(
-    const CompletionCallback& callback, int result) {
-  if (result == net::OK)
+    const CompletionCallback& callback, uint64 suggested_max_size, int result) {
+  if (result == net::OK) {
+    index_->SetMaxSize(suggested_max_size);
     index_->Initialize();
+  }
   callback.Run(result);
 }
 
 // static
-void SimpleBackendImpl::ProvideDirectory(
+void SimpleBackendImpl::ProvideDirectorySuggestBetterCacheSize(
     SingleThreadTaskRunner* io_thread,
     const base::FilePath& path,
-    const InitializeIndexCallback& initialize_index_callback) {
+    const InitializeIndexCallback& initialize_index_callback,
+    uint64 suggested_max_size) {
   int rv = net::OK;
+  uint64 max_size = suggested_max_size;
   if (!FileStructureConsistent(path)) {
     LOG(ERROR) << "Simple Cache Backend: wrong file structure on disk: "
                << path.LossyDisplayName();
     rv = net::ERR_FAILED;
+  } else {
+    if (!max_size) {
+      int64 available = base::SysInfo::AmountOfFreeDiskSpace(path);
+      if (available < 0)
+        max_size = kDefaultCacheSize;
+      else
+        // TODO(pasko): Move PreferedCacheSize() to cache_util.h. Also fix the
+        // spelling.
+        max_size = PreferedCacheSize(available);
+    }
+    DCHECK(max_size);
   }
-  io_thread->PostTask(FROM_HERE, base::Bind(initialize_index_callback, rv));
+  io_thread->PostTask(FROM_HERE,
+                      base::Bind(initialize_index_callback, max_size, rv));
 }
 
 }  // namespace disk_cache

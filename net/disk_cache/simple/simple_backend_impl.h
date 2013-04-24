@@ -72,10 +72,13 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   virtual void OnExternalCacheHit(const std::string& key) OVERRIDE;
 
  private:
-  typedef base::Callback<void(int result)> InitializeIndexCallback;
+  typedef base::Callback<void(uint64 max_size, int result)>
+      InitializeIndexCallback;
 
   // Must run on IO Thread.
-  void InitializeIndex(const CompletionCallback& callback, int result);
+  void InitializeIndex(const CompletionCallback& callback,
+                       uint64 suggested_max_size,
+                       int result);
 
   // Dooms all entries previously accessed between |initial_time| and
   // |end_time|. Invoked when the index is ready.
@@ -84,16 +87,18 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                          const CompletionCallback& callback,
                          int result);
 
-  // Try to create the directory if it doesn't exist.
-  // Must run on Cache Thread.
-  static void ProvideDirectory(
+  // Try to create the directory if it doesn't exist. Replies with maximum cache
+  // size adjustment. Must run on Cache Thread.
+  static void ProvideDirectorySuggestBetterCacheSize(
       base::SingleThreadTaskRunner* io_thread,
       const base::FilePath& path,
-      const InitializeIndexCallback& initialize_index_callback);
+      const InitializeIndexCallback& initialize_index_callback,
+      uint64 suggested_max_size);
 
   const base::FilePath path_;
   scoped_ptr<SimpleIndex> index_;
   const scoped_refptr<base::SingleThreadTaskRunner> cache_thread_;
+  int orig_max_size_;
 };
 
 }  // namespace disk_cache
