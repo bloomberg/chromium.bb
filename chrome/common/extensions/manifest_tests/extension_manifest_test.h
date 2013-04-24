@@ -112,7 +112,7 @@ class ExtensionManifestTest : public extensions::ExtensionTest {
 
   // used to differentiate between calls to LoadAndExpectError,
   // LoadAndExpectWarning and LoadAndExpectSuccess via function RunTestcases.
-  enum EXPECT_TYPE {
+  enum ExpectType {
     EXPECT_TYPE_ERROR,
     EXPECT_TYPE_WARNING,
     EXPECT_TYPE_SUCCESS
@@ -136,8 +136,11 @@ class ExtensionManifestTest : public extensions::ExtensionTest {
              int flags);
   };
 
-  void RunTestcases(const Testcase* testcases, size_t num_testcases,
-      EXPECT_TYPE type);
+  void RunTestcases(const Testcase* testcases,
+                    size_t num_testcases,
+                    ExpectType type);
+
+  void RunTestcase(const Testcase& testcase, ExpectType type);
 
   bool enable_apps_;
 

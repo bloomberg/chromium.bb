@@ -40,6 +40,7 @@ namespace extension_manifest_keys {
   extern const char kEventName[];
   extern const char kExcludeGlobs[];
   extern const char kExcludeMatches[];
+  extern const char kExternallyConnectable[];
   extern const char kFileAccessList[];
   extern const char kFileHandlers[];
   extern const char kFileHandlerTitle[];

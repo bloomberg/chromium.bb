@@ -143,6 +143,12 @@
       ]
     }
   ],
+  "externally_connectable": {
+    "channel": "stable",
+    "extension_types": [
+      "extension", "hosted_app", "packaged_app", "platform_app"
+    ]
+  },
   "file_browser_handlers": {
     "channel": "stable",
     "extension_types": ["extension", "packaged_app"]

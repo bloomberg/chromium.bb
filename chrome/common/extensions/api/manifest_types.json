@@ -1,0 +1,31 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// The type schemas for structured manifest items. Not actually a callable API.
+// TODO(kalman): Expose these in the docs somewhere.
+
+[
+  {
+    "namespace": "manifestTypes",
+    "types": [
+      {
+        "id": "ExternallyConnectable",
+        "type": "object",
+        "description": "The schema of the <code>externally_connectable</code> manifest property",
+        "properties": {
+          "matches": {
+            "optional": true,
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "ids": {
+            "optional": true,
+            "type": "array",
+            "items": {"type": "string"}
+          }
+        }
+      }
+    ]
+  }
+]

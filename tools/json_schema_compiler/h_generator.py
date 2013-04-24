@@ -230,6 +230,13 @@ class _Generator(object):
           .Append('static bool Populate(const base::Value& value, '
                   '%(classname)s* out);')
         )
+        if is_toplevel:
+          (c.Append()
+            .Comment('Creates a %s object from a base::Value, or NULL on '
+                     'failure.' % classname)
+            .Append('static scoped_ptr<%(classname)s> '
+                        'FromValue(const base::Value& value);')
+          )
       if type_.origin.from_client:
         (c.Append()
           .Comment('Returns a new base::DictionaryValue representing the'

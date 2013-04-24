@@ -251,6 +251,8 @@
         'common/extensions/manifest_handlers/app_isolation_info.h',
         'common/extensions/manifest_handlers/content_scripts_handler.cc',
         'common/extensions/manifest_handlers/content_scripts_handler.h',
+        'common/extensions/manifest_handlers/externally_connectable.cc',
+        'common/extensions/manifest_handlers/externally_connectable.h',
         'common/extensions/manifest_handlers/icons_handler.cc',
         'common/extensions/manifest_handlers/icons_handler.h',
         'common/extensions/manifest_handlers/kiosk_enabled_info.cc',

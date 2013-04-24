@@ -230,30 +230,30 @@ ExtensionManifestTest::Testcase::Testcase(
 
 void ExtensionManifestTest::RunTestcases(const Testcase* testcases,
                                          size_t num_testcases,
-                                         EXPECT_TYPE type) {
+                                         ExpectType type) {
+  for (size_t i = 0; i < num_testcases; ++i)
+    RunTestcase(testcases[i], type);
+}
+
+void ExtensionManifestTest::RunTestcase(const Testcase& testcase,
+                                        ExpectType type) {
   switch (type) {
     case EXPECT_TYPE_ERROR:
-      for (size_t i = 0; i < num_testcases; ++i) {
-        LoadAndExpectError(testcases[i].manifest_filename_.c_str(),
-                           testcases[i].expected_error_,
-                           testcases[i].location_,
-                           testcases[i].flags_);
-      }
+      LoadAndExpectError(testcase.manifest_filename_.c_str(),
+                         testcase.expected_error_,
+                         testcase.location_,
+                         testcase.flags_);
       break;
     case EXPECT_TYPE_WARNING:
-      for (size_t i = 0; i < num_testcases; ++i) {
-        LoadAndExpectWarning(testcases[i].manifest_filename_.c_str(),
-                             testcases[i].expected_error_,
-                             testcases[i].location_,
-                             testcases[i].flags_);
-      }
+      LoadAndExpectWarning(testcase.manifest_filename_.c_str(),
+                           testcase.expected_error_,
+                           testcase.location_,
+                           testcase.flags_);
       break;
     case EXPECT_TYPE_SUCCESS:
-      for (size_t i = 0; i < num_testcases; ++i) {
-        LoadAndExpectSuccess(testcases[i].manifest_filename_.c_str(),
-                             testcases[i].location_,
-                             testcases[i].flags_);
-      }
+      LoadAndExpectSuccess(testcase.manifest_filename_.c_str(),
+                           testcase.location_,
+                           testcase.flags_);
       break;
    }
 }
