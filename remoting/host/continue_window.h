@@ -5,30 +5,56 @@
 #ifndef REMOTING_HOST_CONTINUE_WINDOW_H_
 #define REMOTING_HOST_CONTINUE_WINDOW_H_
 
-#include "base/callback.h"
+#include "base/basictypes.h"
+#include "base/memory/weak_ptr.h"
+#include "base/timer.h"
+#include "remoting/host/host_window.h"
+#include "remoting/host/ui_strings.h"
 
 namespace remoting {
 
-struct UiStrings;
-
-class ContinueWindow {
+class ContinueWindow : public HostWindow {
  public:
-  // ContinueSessionCallback is called when the user clicks on the
-  // Continue button to resume the session, or dismisses the window to
-  // terminate the session.  This callback is provided as a parameter to the
-  // Show() method, and will be triggered on the UI thread.
-  typedef base::Callback<void(bool)> ContinueSessionCallback;
+  virtual ~ContinueWindow();
 
-  virtual ~ContinueWindow() {}
+  // HostWindow override.
+  virtual void Start(
+      const base::WeakPtr<ClientSessionControl>& client_session_control)
+      OVERRIDE;
 
-  // Show the continuation window requesting that the user approve continuing
-  // the session.
-  virtual void Show(const ContinueSessionCallback& callback) = 0;
+  // Resumes paused client session.
+  void ContinueSession();
 
-  // Hide the continuation window if it is visible.
-  virtual void Hide() = 0;
+  // Disconnects the client session.
+  void DisconnectSession();
 
-  static scoped_ptr<ContinueWindow> Create(const UiStrings* ui_strings);
+ protected:
+  explicit ContinueWindow(const UiStrings& ui_strings);
+
+  // Shows and hides the UI.
+  virtual void ShowUi() = 0;
+  virtual void HideUi() = 0;
+
+  const UiStrings& ui_strings() const { return ui_strings_; }
+
+ private:
+  // Invoked periodically to ask for the local user whether the session should
+  // be continued.
+  void OnSessionExpired();
+
+  // Used to disconnect the client session.
+  base::WeakPtr<ClientSessionControl> client_session_control_;
+
+  // Used to disconnect the client session when timeout expires.
+  base::OneShotTimer<ContinueWindow> disconnect_timer_;
+
+  // Used to ask the local user whether the session should be continued.
+  base::OneShotTimer<ContinueWindow> session_expired_timer_;
+
+  // Localized UI strings.
+  UiStrings ui_strings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContinueWindow);
 };
 
 }  // namespace remoting

@@ -13,7 +13,6 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_mock_objects.h"
-#include "remoting/host/it2me_host_user_interface.h"
 #include "remoting/jingle_glue/mock_objects.h"
 #include "remoting/proto/video.pb.h"
 #include "remoting/protocol/errors.h"
@@ -63,42 +62,6 @@ ACTION(RunDoneTask) {
 
 }  // namespace
 
-class MockIt2MeHostUserInterface : public It2MeHostUserInterface {
- public:
-  MockIt2MeHostUserInterface(
-      scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-
-  void InitFrom(scoped_ptr<ContinueWindow> continue_window);
-
-  // A test-only version of Start that does not register a HostStatusObserver.
-  // TODO(rmsousa): Make the unit tests work with the regular Start().
-  virtual void Start(ChromotingHost* host,
-                     const base::Closure& disconnect_callback) OVERRIDE;
-};
-
-MockIt2MeHostUserInterface::MockIt2MeHostUserInterface(
-    scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
-    : It2MeHostUserInterface(network_task_runner, ui_task_runner, UiStrings()) {
-}
-
-void MockIt2MeHostUserInterface::InitFrom(
-    scoped_ptr<ContinueWindow> continue_window) {
-  DCHECK(ui_task_runner()->BelongsToCurrentThread());
-
-  continue_window_ = continue_window.Pass();
-}
-
-void MockIt2MeHostUserInterface::Start(
-    ChromotingHost* host, const base::Closure& disconnect_callback) {
-  DCHECK(network_task_runner()->BelongsToCurrentThread());
-  DCHECK(host_ == NULL);
-
-  host_ = host;
-  disconnect_callback_ = disconnect_callback;
-}
-
 class ChromotingHostTest : public testing::Test {
  public:
   ChromotingHostTest() {
@@ -132,15 +95,6 @@ class ChromotingHostTest : public testing::Test {
         ui_task_runner_,  // Network
         ui_task_runner_); // UI
     host_->AddStatusObserver(&host_status_observer_);
-
-    continue_window_ = new MockContinueWindow();
-    it2me_host_user_interface_.reset(
-        new MockIt2MeHostUserInterface(ui_task_runner_, ui_task_runner_));
-    it2me_host_user_interface_->InitFrom(
-        scoped_ptr<ContinueWindow>(continue_window_));
-
-    it2me_host_user_interface_->Start(
-        host_, base::Bind(&ChromotingHost::Shutdown, host_, base::Closure()));
 
     xmpp_login_ = "host@domain";
     session1_ = new MockSession();
@@ -358,7 +312,6 @@ class ChromotingHostTest : public testing::Test {
   }
 
   void ReleaseUiTaskRunner() {
-    it2me_host_user_interface_.reset();
     ui_task_runner_ = NULL;
     host_ = NULL;
     desktop_environment_factory_.reset();
@@ -368,15 +321,9 @@ class ChromotingHostTest : public testing::Test {
     PostQuitTask(&message_loop_);
   }
 
-  // Expect the host to start.
-  void ExpectHostStart() {
-    EXPECT_CALL(*continue_window_, Hide());
-  }
-
   // Expect the host and session manager to start, and return the expectation
   // that the session manager has started.
   Expectation ExpectHostAndSessionManagerStart() {
-    ExpectHostStart();
     EXPECT_CALL(host_status_observer_, OnStart(xmpp_login_));
     return EXPECT_CALL(*session_manager_, Init(_, host_.get()));
   }
@@ -456,7 +403,6 @@ class ChromotingHostTest : public testing::Test {
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;
-  scoped_ptr<MockIt2MeHostUserInterface> it2me_host_user_interface_;
   scoped_refptr<ChromotingHost> host_;
   MockHostStatusObserver host_status_observer_;
   protocol::MockSessionManager* session_manager_;
@@ -488,9 +434,6 @@ class ChromotingHostTest : public testing::Test {
   protocol::Session::EventHandler* session_event_handler_;
   scoped_ptr<protocol::CandidateSessionConfig> empty_candidate_config_;
   scoped_ptr<protocol::CandidateSessionConfig> default_candidate_config_;
-
-  // Owned by |host_|.
-  MockContinueWindow* continue_window_;
 
   MockConnectionToClient*& get_connection(int connection_index) {
     return (connection_index == 0) ? connection1_ : connection2_;
@@ -610,7 +553,6 @@ TEST_F(ChromotingHostTest, ConnectWhenAnotherClientIsConnected) {
 }
 
 TEST_F(ChromotingHostTest, IncomingSessionDeclined) {
-  ExpectHostStart();
   protocol::SessionManager::IncomingSessionResponse response =
       protocol::SessionManager::ACCEPT;
   host_->OnIncomingSession(session1_, &response);

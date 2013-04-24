@@ -2,31 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/continue_window.h"
-
 #include <windows.h>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "base/single_thread_task_runner.h"
 #include "base/utf_string_conversions.h"
-#include "remoting/host/ui_strings.h"
+#include "remoting/host/continue_window.h"
 #include "remoting/host/win/core_resource.h"
-
-// TODO(garykac): Lots of duplicated code in this file and
-// disconnect_window_win.cc. These global floating windows are temporary so
-// they should be deleted soon. If we need to expand this then we should
-// create a class with the shared code.
 
 namespace remoting {
 
+namespace {
+
 class ContinueWindowWin : public ContinueWindow {
  public:
-  explicit ContinueWindowWin(const UiStrings* ui_strings);
+  explicit ContinueWindowWin(const UiStrings& ui_strings);
   virtual ~ContinueWindowWin();
 
-  virtual void Show(const ContinueSessionCallback& callback) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+ protected:
+  // ContinueWindow overrides.
+  virtual void ShowUi() OVERRIDE;
+  virtual void HideUi() OVERRIDE;
 
  private:
   static BOOL CALLBACK DialogProc(HWND hwmd, UINT msg, WPARAM wParam,
@@ -37,21 +38,39 @@ class ContinueWindowWin : public ContinueWindow {
   void EndDialog();
   void SetStrings();
 
-  ContinueSessionCallback callback_;
   HWND hwnd_;
-
-  // Points to the localized strings.
-  const UiStrings* ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowWin);
 };
 
-ContinueWindowWin::ContinueWindowWin(const UiStrings* ui_strings)
-    : hwnd_(NULL),
-      ui_strings_(ui_strings) {
+ContinueWindowWin::ContinueWindowWin(const UiStrings& ui_strings)
+    : ContinueWindow(ui_strings),
+      hwnd_(NULL) {
 }
 
 ContinueWindowWin::~ContinueWindowWin() {
+  EndDialog();
+}
+
+void ContinueWindowWin::ShowUi() {
+  DCHECK(CalledOnValidThread());
+  DCHECK(!hwnd_);
+
+  HMODULE instance = base::GetModuleFromAddress(&DialogProc);
+  hwnd_ = CreateDialogParam(instance, MAKEINTRESOURCE(IDD_CONTINUE), NULL,
+                            (DLGPROC)DialogProc, (LPARAM)this);
+  if (!hwnd_) {
+    LOG(ERROR) << "Unable to create Disconnect dialog for remoting.";
+    return;
+  }
+
+  SetStrings();
+  ShowWindow(hwnd_, SW_SHOW);
+}
+
+void ContinueWindowWin::HideUi() {
+  DCHECK(CalledOnValidThread());
+
   EndDialog();
 }
 
@@ -73,6 +92,8 @@ BOOL CALLBACK ContinueWindowWin::DialogProc(HWND hwnd, UINT msg,
 
 BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
                                         WPARAM wParam, LPARAM lParam) {
+  DCHECK(CalledOnValidThread());
+
   switch (msg) {
     case WM_CLOSE:
       // Ignore close messages.
@@ -84,12 +105,12 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
     case WM_COMMAND:
       switch (LOWORD(wParam)) {
         case IDC_CONTINUE_DEFAULT:
-          callback_.Run(true);
+          ContinueSession();
           ::EndDialog(hwnd, LOWORD(wParam));
           hwnd_ = NULL;
           return TRUE;
         case IDC_CONTINUE_CANCEL:
-          callback_.Run(false);
+          DisconnectSession();
           ::EndDialog(hwnd, LOWORD(wParam));
           hwnd_ = NULL;
           return TRUE;
@@ -98,28 +119,9 @@ BOOL ContinueWindowWin::OnDialogMessage(HWND hwnd, UINT msg,
   return FALSE;
 }
 
-void ContinueWindowWin::Show(const ContinueSessionCallback& callback) {
-  callback_ = callback;
-
-  HMODULE instance = base::GetModuleFromAddress(&DialogProc);
-
-  CHECK(!hwnd_);
-  hwnd_ = CreateDialogParam(instance, MAKEINTRESOURCE(IDD_CONTINUE), NULL,
-      (DLGPROC)DialogProc, (LPARAM)this);
-  if (!hwnd_) {
-    LOG(ERROR) << "Unable to create Disconnect dialog for remoting.";
-    return;
-  }
-
-  SetStrings();
-  ShowWindow(hwnd_, SW_SHOW);
-}
-
-void ContinueWindowWin::Hide() {
-  EndDialog();
-}
-
 void ContinueWindowWin::EndDialog() {
+  DCHECK(CalledOnValidThread());
+
   if (hwnd_) {
     ::DestroyWindow(hwnd_);
     hwnd_ = NULL;
@@ -127,23 +129,29 @@ void ContinueWindowWin::EndDialog() {
 }
 
 void ContinueWindowWin::SetStrings() {
-  SetWindowText(hwnd_, ui_strings_->product_name.c_str());
+  DCHECK(CalledOnValidThread());
+
+  SetWindowText(hwnd_, ui_strings().product_name.c_str());
 
   HWND hwndMessage = GetDlgItem(hwnd_, IDC_CONTINUE_MESSAGE);
   CHECK(hwndMessage);
-  SetWindowText(hwndMessage, ui_strings_->continue_prompt.c_str());
+  SetWindowText(hwndMessage, ui_strings().continue_prompt.c_str());
 
   HWND hwndDefault = GetDlgItem(hwnd_, IDC_CONTINUE_DEFAULT);
   CHECK(hwndDefault);
-  SetWindowText(hwndDefault, ui_strings_->continue_button_text.c_str());
+  SetWindowText(hwndDefault, ui_strings().continue_button_text.c_str());
 
   HWND hwndCancel = GetDlgItem(hwnd_, IDC_CONTINUE_CANCEL);
   CHECK(hwndCancel);
-  SetWindowText(hwndCancel, ui_strings_->stop_sharing_button_text.c_str());
+  SetWindowText(hwndCancel, ui_strings().stop_sharing_button_text.c_str());
 }
 
-scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
-  return scoped_ptr<ContinueWindow>(new ContinueWindowWin(ui_strings));
+}  // namespace
+
+// static
+scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new ContinueWindowWin(ui_strings));
 }
 
 }  // namespace remoting

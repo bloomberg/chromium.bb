@@ -134,10 +134,6 @@ class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
   // Sets desired configuration for the protocol. Must be called before Start().
   void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
 
-  // Pause or unpause the session. While the session is paused, remote input
-  // is ignored. Can be called from any thread.
-  void PauseSession(bool pause);
-
   // Disconnects all active clients. Clients are disconnected
   // asynchronously when this method is called on a thread other than
   // the network thread. Potentically this may cause disconnection of

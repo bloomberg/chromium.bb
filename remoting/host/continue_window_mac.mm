@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "remoting/host/continue_window.h"
-
 #import <Cocoa/Cocoa.h>
 
 #include "base/compiler_specific.h"
@@ -11,22 +9,19 @@
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
-#include "remoting/host/ui_strings.h"
-
-typedef remoting::ContinueWindow::ContinueSessionCallback
-    ContinueSessionCallback;
+#include "remoting/host/continue_window.h"
 
 // Handles the ContinueWindow.
 @interface ContinueWindowMacController : NSObject {
  @private
   scoped_nsobject<NSMutableArray> shades_;
   scoped_nsobject<NSAlert> continue_alert_;
-  ContinueSessionCallback callback_;
+  remoting::ContinueWindow* continue_window_;
   const remoting::UiStrings* ui_strings_;
 }
 
 - (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
-               callback:(const ContinueSessionCallback&)callback;
+        continue_window:(remoting::ContinueWindow*)continue_window;
 - (void)show;
 - (void)hide;
 - (void)onCancel:(id)sender;
@@ -37,45 +32,51 @@ namespace remoting {
 
 // A bridge between C++ and ObjC implementations of ContinueWindow.
 // Everything important occurs in ContinueWindowMacController.
-class ContinueWindowMac : public remoting::ContinueWindow {
+class ContinueWindowMac : public ContinueWindow {
  public:
-  explicit ContinueWindowMac(const UiStrings* ui_strings);
+  explicit ContinueWindowMac(const UiStrings& ui_strings);
   virtual ~ContinueWindowMac();
 
-  virtual void Show(const ContinueSessionCallback& callback) OVERRIDE;
-  virtual void Hide() OVERRIDE;
+ protected:
+  // ContinueWindow overrides.
+  virtual void ShowUi() OVERRIDE;
+  virtual void HideUi() OVERRIDE;
 
  private:
   scoped_nsobject<ContinueWindowMacController> controller_;
-  ContinueSessionCallback callback_;
-
-  // Points to the localized strings.
-  const UiStrings* ui_strings_;
 
   DISALLOW_COPY_AND_ASSIGN(ContinueWindowMac);
 };
 
-ContinueWindowMac::ContinueWindowMac(const UiStrings* ui_strings)
-    : ui_strings_(ui_strings) {
+ContinueWindowMac::ContinueWindowMac(const UiStrings& ui_strings)
+    : ContinueWindow(ui_strings) {
 }
 
-ContinueWindowMac::~ContinueWindowMac() {}
+ContinueWindowMac::~ContinueWindowMac() {
+  DCHECK(CalledOnValidThread());
+}
 
-void ContinueWindowMac::Show(const ContinueSessionCallback& callback) {
+void ContinueWindowMac::ShowUi() {
+  DCHECK(CalledOnValidThread());
+
   base::mac::ScopedNSAutoreleasePool pool;
   controller_.reset(
-      [[ContinueWindowMacController alloc] initWithUiStrings:ui_strings_
-                                                    callback:callback]);
+      [[ContinueWindowMacController alloc] initWithUiStrings:&ui_strings()
+                                             continue_window:this]);
   [controller_ show];
 }
 
-void ContinueWindowMac::Hide() {
+void ContinueWindowMac::HideUi() {
+  DCHECK(CalledOnValidThread());
+
   base::mac::ScopedNSAutoreleasePool pool;
   [controller_ hide];
 }
 
-scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
-  return scoped_ptr<ContinueWindow>(new ContinueWindowMac(ui_strings));
+// static
+scoped_ptr<HostWindow> HostWindow::CreateContinueWindow(
+    const UiStrings& ui_strings) {
+  return scoped_ptr<HostWindow>(new ContinueWindowMac(ui_strings));
 }
 
 }  // namespace remoting
@@ -83,9 +84,9 @@ scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
 @implementation ContinueWindowMacController
 
 - (id)initWithUiStrings:(const remoting::UiStrings*)ui_strings
-               callback:(const ContinueSessionCallback&)callback {
+        continue_window:(remoting::ContinueWindow*)continue_window {
   if ((self = [super init])) {
-    callback_ = callback;
+    continue_window_ = continue_window;
     ui_strings_ = ui_strings;
   }
   return self;
@@ -160,12 +161,12 @@ scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
 
 - (void)onCancel:(id)sender {
   [self hide];
-  callback_.Run(false);
+  continue_window_->DisconnectSession();
 }
 
 - (void)onContinue:(id)sender {
   [self hide];
-  callback_.Run(true);
+  continue_window_->ContinueSession();
 }
 
 @end

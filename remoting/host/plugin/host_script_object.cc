@@ -19,14 +19,13 @@
 #include "remoting/base/auth_token_util.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/rsa_key_pair.h"
-#include "remoting/host/basic_desktop_environment.h"
 #include "remoting/host/chromoting_host.h"
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_event_logger.h"
 #include "remoting/host/host_secret.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/it2me_host_user_interface.h"
+#include "remoting/host/it2me_desktop_environment.h"
 #include "remoting/host/network_settings.h"
 #include "remoting/host/pin_hash.h"
 #include "remoting/host/plugin/host_log_handler.h"
@@ -167,7 +166,6 @@ class HostNPScriptObject::It2MeImpl
   scoped_ptr<RegisterSupportHostRequest> register_request_;
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
-  scoped_ptr<It2MeHostUserInterface> it2me_host_user_interface_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
   scoped_refptr<ChromotingHost> host_;
@@ -227,7 +225,7 @@ void HostNPScriptObject::It2MeImpl::Connect(
     return;
   }
 
-  desktop_environment_factory_.reset(new BasicDesktopEnvironmentFactory(
+  desktop_environment_factory_.reset(new It2MeDesktopEnvironmentFactory(
       host_context_->network_task_runner(),
       host_context_->input_task_runner(),
       host_context_->ui_task_runner(),
@@ -238,12 +236,6 @@ void HostNPScriptObject::It2MeImpl::Connect(
       policy_hack::PolicyWatcher::Create(host_context_->network_task_runner()));
   policy_watcher_->StartWatching(
       base::Bind(&It2MeImpl::OnPolicyUpdate, this));
-
-  // The UserInterface object needs to be created on the UI thread.
-  it2me_host_user_interface_.reset(
-      new It2MeHostUserInterface(host_context_->network_task_runner(),
-                                 host_context_->ui_task_runner(), ui_strings));
-  it2me_host_user_interface_->Init();
 
   // Switch to the network thread to start the actual connection.
   host_context_->network_task_runner()->PostTask(
@@ -400,10 +392,6 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
   protocol::CandidateSessionConfig::DisableAudioChannel(protocol_config.get());
   host_->set_protocol_config(protocol_config.Pass());
 
-  // Create user interface.
-  it2me_host_user_interface_->Start(host_.get(),
-                                    base::Bind(&It2MeImpl::Disconnect, this));
-
   // Create event logger.
   host_event_logger_ =
       HostEventLogger::Create(host_->AsWeakPtr(), kApplicationName);
@@ -424,13 +412,6 @@ void HostNPScriptObject::It2MeImpl::OnShutdownFinished() {
   }
 
   // Note that OnShutdownFinished() may be called more than once.
-
-  // UI needs to be shut down on the UI thread before we destroy the
-  // host context (because it depends on the context object), but
-  // only after the host has been shut down (becase the UI object is
-  // registered as status observer for the host, and we can't
-  // unregister it from this thread).
-  it2me_host_user_interface_.reset();
 
   // Destroy the DesktopEnvironmentFactory, to free thread references.
   desktop_environment_factory_.reset();
@@ -571,7 +552,6 @@ void HostNPScriptObject::It2MeImpl::UpdateHostDomainPolicy(
 
 HostNPScriptObject::It2MeImpl::~It2MeImpl() {
   // Check that resources that need to be torn down on the UI thread are gone.
-  DCHECK(!it2me_host_user_interface_.get());
   DCHECK(!desktop_environment_factory_.get());
   DCHECK(!policy_watcher_.get());
 }
@@ -678,6 +658,24 @@ HostNPScriptObject::HostNPScriptObject(
       ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
       weak_ptr_(weak_factory_.GetWeakPtr()) {
   DCHECK(plugin_task_runner_->BelongsToCurrentThread());
+
+  // Set the thread task runner for the plugin thread so that timers and other
+  // code using |base::ThreadTaskRunnerHandle| could be used on the plugin
+  // thread.
+  //
+  // If component build is used, Chrome and the plugin may end up sharing base
+  // binary. This means that the instance of |base::ThreadTaskRunnerHandle|
+  // created by Chrome for the current thread is shared as well. This routinely
+  // happens in the development setting so the below check for
+  // |!base::ThreadTaskRunnerHandle::IsSet()| is a hack/workaround allowing this
+  // configuration to work. It lets the plugin to access Chrome's message loop
+  // directly via |base::ThreadTaskRunnerHandle|. This is safe as long as both
+  // Chrome and the plugin are built from the same version of the sources.
+  if (!base::ThreadTaskRunnerHandle::IsSet()) {
+    plugin_task_runner_handle_.reset(
+        new base::ThreadTaskRunnerHandle(plugin_task_runner_));
+  }
+
   ServiceUrls* service_urls = ServiceUrls::GetInstance();
   bool xmpp_server_valid = net::ParseHostAndPort(
       service_urls->xmpp_server_address(),

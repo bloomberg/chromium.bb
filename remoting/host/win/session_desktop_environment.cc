@@ -34,7 +34,7 @@ SessionDesktopEnvironment::SessionDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
-    const UiStrings* ui_strings,
+    const UiStrings& ui_strings,
     const base::Closure& inject_sas)
     : Me2MeDesktopEnvironment(caller_task_runner,
                               input_task_runner,
@@ -70,7 +70,7 @@ scoped_ptr<DesktopEnvironment> SessionDesktopEnvironmentFactory::Create(
                                     input_task_runner(),
                                     ui_task_runner(),
                                     client_session_control,
-                                    &ui_strings(),
+                                    ui_strings(),
                                     inject_sas_));
 }
 

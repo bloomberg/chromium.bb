@@ -329,19 +329,6 @@ void ChromotingHost::set_protocol_config(
   protocol_config_ = config.Pass();
 }
 
-void ChromotingHost::PauseSession(bool pause) {
-  if (!network_task_runner_->BelongsToCurrentThread()) {
-    network_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHost::PauseSession, this, pause));
-    return;
-  }
-
-  ClientList::iterator client;
-  for (client = clients_.begin(); client != clients_.end(); ++client) {
-    (*client)->SetDisableInputs(pause);
-  }
-}
-
 void ChromotingHost::DisconnectAllClients() {
   if (!network_task_runner_->BelongsToCurrentThread()) {
     network_task_runner_->PostTask(

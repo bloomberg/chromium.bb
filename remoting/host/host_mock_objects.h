@@ -9,10 +9,8 @@
 #include "remoting/host/chromoting_host_context.h"
 #include "remoting/host/client_session.h"
 #include "remoting/host/client_session_control.h"
-#include "remoting/host/continue_window.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/host_status_observer.h"
-#include "remoting/host/host_window.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -42,16 +40,6 @@ class MockDesktopEnvironment : public DesktopEnvironment {
   virtual scoped_ptr<InputInjector> CreateInputInjector() OVERRIDE;
   virtual scoped_ptr<ScreenControls> CreateScreenControls() OVERRIDE;
   virtual scoped_ptr<media::ScreenCapturer> CreateVideoCapturer() OVERRIDE;
-};
-
-class MockContinueWindow : public ContinueWindow {
- public:
-  MockContinueWindow();
-  virtual ~MockContinueWindow();
-
-  MOCK_METHOD1(Show, void(
-      const remoting::ContinueWindow::ContinueSessionCallback& callback));
-  MOCK_METHOD0(Hide, void());
 };
 
 class MockClientSessionControl : public ClientSessionControl {

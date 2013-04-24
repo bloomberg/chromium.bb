@@ -9,13 +9,14 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/memory/scoped_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/string16.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/string16.h"
+#include "base/thread_task_runner_handle.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/thread.h"
 #include "base/time.h"
@@ -257,6 +258,7 @@ class HostNPScriptObject {
   NPP plugin_;
   NPObject* parent_;
   scoped_refptr<AutoThreadTaskRunner> plugin_task_runner_;
+  scoped_ptr<base::ThreadTaskRunnerHandle> plugin_task_runner_handle_;
 
   // True if we're in the middle of handling a log message.
   bool am_currently_logging_;

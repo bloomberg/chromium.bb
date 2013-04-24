@@ -13,6 +13,8 @@
 
 namespace remoting {
 
+struct UiStrings;
+
 // Used to create audio/video capturers and event executor that are compatible
 // with Windows sessions.
 class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
@@ -29,7 +31,7 @@ class SessionDesktopEnvironment : public Me2MeDesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> input_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
-      const UiStrings* ui_strings,
+      const UiStrings& ui_strings,
       const base::Closure& inject_sas);
 
   // Used to ask the daemon to inject Secure Attention Sequence.

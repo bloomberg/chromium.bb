@@ -24,6 +24,11 @@ scoped_refptr<SingleThreadTaskRunner> ThreadTaskRunnerHandle::Get() {
   return current->task_runner_;
 }
 
+// static
+bool ThreadTaskRunnerHandle::IsSet() {
+  return lazy_tls_ptr.Pointer()->Get() != NULL;
+}
+
 ThreadTaskRunnerHandle::ThreadTaskRunnerHandle(
     const scoped_refptr<SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner) {

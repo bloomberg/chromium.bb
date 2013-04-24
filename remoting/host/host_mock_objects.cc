@@ -57,14 +57,6 @@ void MockInputInjector::Start(
   StartPtr(client_clipboard.get());
 }
 
-MockContinueWindow::MockContinueWindow() {}
-
-MockContinueWindow::~MockContinueWindow() {}
-
-scoped_ptr<ContinueWindow> ContinueWindow::Create(const UiStrings* ui_strings) {
-  return scoped_ptr<ContinueWindow>(new MockContinueWindow());
-}
-
 MockClientSessionControl::MockClientSessionControl() {}
 
 MockClientSessionControl::~MockClientSessionControl() {}
