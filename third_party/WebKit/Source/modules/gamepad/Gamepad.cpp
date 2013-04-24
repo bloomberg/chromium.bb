@@ -25,9 +25,6 @@
 
 #include "config.h"
 #include "modules/gamepad/Gamepad.h"
-
-#if ENABLE(GAMEPAD)
-
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
@@ -57,5 +54,3 @@ Gamepad::~Gamepad()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(GAMEPAD)

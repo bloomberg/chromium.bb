@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=GAMEPAD,
     ImplementationLacksVTable
 ] interface Gamepad {
     readonly attribute DOMString id;

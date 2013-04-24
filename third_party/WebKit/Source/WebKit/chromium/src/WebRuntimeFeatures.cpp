@@ -329,20 +329,12 @@ bool WebRuntimeFeatures::isVideoTrackEnabled()
 
 void WebRuntimeFeatures::enableGamepad(bool enable)
 {
-#if ENABLE(GAMEPAD)
     RuntimeEnabledFeatures::setWebkitGetGamepadsEnabled(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isGamepadEnabled()
 {
-#if ENABLE(GAMEPAD)
     return RuntimeEnabledFeatures::webkitGetGamepadsEnabled();
-#else
-    return false;
-#endif
 }
 
 void WebRuntimeFeatures::enableShadowDOM(bool enable)

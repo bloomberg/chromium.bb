@@ -173,10 +173,8 @@ public:
     static bool webkitRTCPeerConnectionEnabled() { return peerConnectionEnabled(); }
 #endif
 
-#if ENABLE(GAMEPAD)
     static void setWebkitGetGamepadsEnabled(bool isEnabled) { isGamepadEnabled = isEnabled; }
     static bool webkitGetGamepadsEnabled() { return isGamepadEnabled; }
-#endif
 
     static bool quotaEnabled() { return isQuotaEnabled; }
     static void setQuotaEnabled(bool isEnabled) { isQuotaEnabled = isEnabled; }
@@ -280,9 +278,7 @@ private:
     static bool isPeerConnectionEnabled;
 #endif
 
-#if ENABLE(GAMEPAD)
     static bool isGamepadEnabled;
-#endif
 
     static bool isQuotaEnabled;
 

@@ -65,10 +65,7 @@ bool RuntimeEnabledFeatures::isMediaStreamEnabled = true;
 bool RuntimeEnabledFeatures::isPeerConnectionEnabled = true;
 #endif
 
-#if ENABLE(GAMEPAD)
 bool RuntimeEnabledFeatures::isGamepadEnabled = false;
-#endif
-
 bool RuntimeEnabledFeatures::isFileSystemEnabled = false;
 
 bool RuntimeEnabledFeatures::fileSystemEnabled()

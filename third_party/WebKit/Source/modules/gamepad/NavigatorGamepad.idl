@@ -18,7 +18,6 @@
  */
 
 [
-    Conditional=GAMEPAD,
     Supplemental=Navigator
 ] interface NavigatorGamepad {
     [EnabledAtRuntime] GamepadList webkitGetGamepads();

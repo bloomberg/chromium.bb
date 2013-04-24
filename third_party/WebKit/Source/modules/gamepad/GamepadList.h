@@ -26,8 +26,6 @@
 #ifndef GamepadList_h
 #define GamepadList_h
 
-#if ENABLE(GAMEPAD)
-
 #include "modules/gamepad/Gamepad.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -53,7 +51,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif // ENABLE(GAMEPAD)
 
 #endif // GamepadList_h

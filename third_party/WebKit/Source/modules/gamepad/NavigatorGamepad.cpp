@@ -26,8 +26,6 @@
 #include "config.h"
 #include "modules/gamepad/NavigatorGamepad.h"
 
-#if ENABLE(GAMEPAD)
-
 #include "core/page/Navigator.h"
 #include "core/platform/Gamepads.h"
 #include "modules/gamepad/GamepadList.h"
@@ -72,5 +70,3 @@ GamepadList* NavigatorGamepad::gamepads()
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(GAMEPAD)

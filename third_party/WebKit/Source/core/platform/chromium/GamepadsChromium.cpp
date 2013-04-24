@@ -26,10 +26,7 @@
 #include "config.h"
 #include "Gamepads.h"
 
-#if ENABLE(GAMEPAD)
-
 #include "GamepadList.h"
-
 #include <public/Platform.h>
 
 namespace WebCore {
@@ -60,5 +57,3 @@ void sampleGamepads(GamepadList* into)
 }
 
 }
-
-#endif

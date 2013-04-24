@@ -28,8 +28,6 @@
 
 #include "modules/gamepad/Gamepad.h"
 
-#if ENABLE(GAMEPAD)
-
 namespace WebCore {
 
 GamepadList::~GamepadList()
@@ -54,5 +52,3 @@ Gamepad* GamepadList::item(unsigned index)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(GAMEPAD)
