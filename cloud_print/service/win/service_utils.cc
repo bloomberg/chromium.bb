@@ -7,7 +7,9 @@
 #include <windows.h>
 #include <security.h>  // NOLINT
 
+#include "base/command_line.h"
 #include "base/string_util.h"
+#include "chrome/common/chrome_switches.h"
 
 string16 GetLocalComputerName() {
   DWORD size = 0;
@@ -44,4 +46,13 @@ string16 GetCurrentUserName() {
   return result;
 }
 
+void CopyChromeSwitchesFromCurrentProcess(CommandLine* destination) {
+  static const char* const kSwitchesToCopy[] = {
+    switches::kEnableLogging,
+    switches::kV,
+  };
+  destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
+                                kSwitchesToCopy,
+                                arraysize(kSwitchesToCopy));
+}
 

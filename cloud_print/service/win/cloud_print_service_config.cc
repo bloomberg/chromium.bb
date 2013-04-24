@@ -17,7 +17,6 @@
 #include "cloud_print/resources.h"
 #include "cloud_print/service/service_state.h"
 #include "cloud_print/service/win/chrome_launcher.h"
-#include "cloud_print/service/win/installer.h"
 #include "cloud_print/service/win/service_controller.h"
 #include "cloud_print/service/win/service_utils.h"
 #include "cloud_print/service/win/setup_listener.h"
@@ -427,10 +426,6 @@ int WINAPI WinMain(__in  HINSTANCE hInstance,
                    __in  int nCmdShow) {
   base::AtExitManager at_exit;
   CommandLine::Init(0, NULL);
-
-  HRESULT result = ProcessInstallerSwitches();
-  if (result != S_FALSE)
-    return result;
 
   MessageLoopForUI loop;
   scoped_refptr<SetupDialog> dialog(new SetupDialog());

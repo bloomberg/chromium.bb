@@ -22,6 +22,7 @@
 #include "chrome/installer/launcher_support/chrome_launcher_support.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/service/service_constants.h"
+#include "cloud_print/service/win/service_utils.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/url_util.h"
@@ -183,7 +184,7 @@ void ChromeLauncher::Run() {
 
     if (!chrome_path.empty()) {
       CommandLine cmd(chrome_path);
-      CopySwitchesFromCurrent(&cmd);
+      CopyChromeSwitchesFromCurrentProcess(&cmd);
 
       // Required switches.
       cmd.AppendSwitchASCII(switches::kProcessType, switches::kServiceProcess);
@@ -231,16 +232,6 @@ void ChromeLauncher::Run() {
   }
 }
 
-void ChromeLauncher::CopySwitchesFromCurrent(CommandLine* destination) {
-  static const char* const kSwitchesToCopy[] = {
-    switches::kEnableLogging,
-    switches::kV,
-  };
-  destination->CopySwitchesFrom(*CommandLine::ForCurrentProcess(),
-                                kSwitchesToCopy,
-                                arraysize(kSwitchesToCopy));
-}
-
 std::string ChromeLauncher::CreateServiceStateFile(
     const std::string& proxy_id,
     const std::vector<std::string>& printers) {
@@ -274,7 +265,7 @@ std::string ChromeLauncher::CreateServiceStateFile(
   }
 
   CommandLine cmd(chrome_path);
-  CopySwitchesFromCurrent(&cmd);
+  CopyChromeSwitchesFromCurrentProcess(&cmd);
   cmd.AppendSwitchPath(switches::kUserDataDir, temp_user_data.path());
   cmd.AppendSwitchPath(switches::kCloudPrintSetupProxy, printers_file);
   cmd.AppendSwitch(switches::kNoServiceAutorun);

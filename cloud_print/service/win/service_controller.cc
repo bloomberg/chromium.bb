@@ -19,6 +19,7 @@
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/chrome_launcher.h"
 #include "cloud_print/service/win/local_security_policy.h"
+#include "cloud_print/service/win/service_utils.h"
 
 namespace {
 
@@ -170,7 +171,8 @@ HRESULT ServiceController::InstallService(const string16& user,
     command_line.AppendSwitch(switches::kEnableLogging);
     command_line.AppendSwitchASCII(switches::kV, "1");
   }
-  ChromeLauncher::CopySwitchesFromCurrent(&command_line);
+
+  CopyChromeSwitchesFromCurrentProcess(&command_line);
 
   LocalSecurityPolicy local_security_policy;
   if (local_security_policy.Open()) {

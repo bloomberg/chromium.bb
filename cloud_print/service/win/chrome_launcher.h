@@ -26,9 +26,6 @@ class ChromeLauncher : public base::DelegateSimpleThread::Delegate {
 
   virtual void Run() OVERRIDE;
 
-  // Copy additional chrome switches.
-  static void CopySwitchesFromCurrent(CommandLine* destination);
-
   static std::string CreateServiceStateFile(
       const std::string& proxy_id,
       const std::vector<std::string>& printers);

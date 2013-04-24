@@ -6,6 +6,7 @@
 
 #include <winerror.h>
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -13,6 +14,7 @@
 #include "base/win/shortcut.h"
 #include "cloud_print/common/win/cloud_print_utils.h"
 #include "cloud_print/common/win/install_utils.h"
+#include "cloud_print/resources.h"
 #include "cloud_print/service/service_constants.h"
 #include "cloud_print/service/service_switches.h"
 #include "cloud_print/service/win/service_controller.h"
@@ -123,3 +125,8 @@ HRESULT ProcessInstallerSwitches() {
   return S_FALSE;
 }
 
+int main(int argc, char** argv) {
+  CommandLine::Init(argc, argv);
+  base::AtExitManager at_exit;
+  return ProcessInstallerSwitches();
+}

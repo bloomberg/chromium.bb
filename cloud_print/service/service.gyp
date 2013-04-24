@@ -124,8 +124,6 @@
       'sources': [
         '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_config_exe_version.rc',
         'win/cloud_print_service_config.cc',
-        'win/installer.cc',
-        'win/installer.h',
       ],
       'includes': [
         'win/service_resources.gypi'
@@ -147,6 +145,31 @@
                 "version='6.0.0.0' "
                 "processorArchitecture='*' "
                 "publicKeyToken='6595b64144ccf1df' language='*'\"",
+          ],
+        },
+      },
+    },
+    {
+      'target_name': 'cloud_print_service_setup',
+      'type': 'executable',
+      'sources': [
+        '<(SHARED_INTERMEDIATE_DIR)/cloud_print/cloud_print_service_setup_exe_version.rc',
+        'win/installer.cc',
+        'win/installer.h',
+      ],
+      'includes': [
+        'win/service_resources.gypi'
+      ],
+      'dependencies': [
+        '<(DEPTH)/cloud_print/common/common.gyp:cloud_print_install_lib',
+        'cloud_print_service_lib',
+      ],
+      'msvs_settings': {
+        'VCLinkerTool': {
+          'SubSystem': '1',         # Set /SUBSYSTEM:CONSOLE
+          'UACExecutionLevel': '2', # /level='requireAdministrator'
+          'AdditionalDependencies': [
+              'secur32.lib',
           ],
         },
       },
