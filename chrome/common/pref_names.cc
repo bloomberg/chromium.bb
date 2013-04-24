@@ -247,6 +247,20 @@ const char kWebKitSansSerifFontFamilyKorean[] =
     "webkit.webprefs.fonts.sansserif.Hang";
 const char kWebKitCursiveFontFamilyKorean[] =
     "webkit.webprefs.fonts.cursive.Hang";
+const char kWebKitStandardFontFamilyLatin[] =
+    "webkit.webprefs.fonts.standard.Latn";
+const char kWebKitFixedFontFamilyLatin[] =
+    "webkit.webprefs.fonts.fixed.Latn";
+const char kWebKitSerifFontFamilyLatin[] =
+    "webkit.webprefs.fonts.serif.Latn";
+const char kWebKitSansSerifFontFamilyLatin[] =
+    "webkit.webprefs.fonts.sansserif.Latn";
+const char kWebKitCursiveFontFamilyLatin[] =
+    "webkit.webprefs.fonts.cursive.Latn";
+const char kWebKitFantasyFontFamilyLatin[] =
+    "webkit.webprefs.fonts.fantasy.Latn";
+const char kWebKitPictographFontFamilyLatin[] =
+    "webkit.webprefs.fonts.pictograph.Latn";
 const char kWebKitStandardFontFamilySimplifiedHan[] =
     "webkit.webprefs.fonts.standard.Hans";
 const char kWebKitFixedFontFamilySimplifiedHan[] =

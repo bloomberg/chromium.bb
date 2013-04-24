@@ -192,6 +192,13 @@ const FontDefault kFontDefaults[] = {
   { prefs::kWebKitCursiveFontFamily, IDS_CURSIVE_FONT_FAMILY },
   { prefs::kWebKitFantasyFontFamily, IDS_FANTASY_FONT_FAMILY },
   { prefs::kWebKitPictographFontFamily, IDS_PICTOGRAPH_FONT_FAMILY },
+  { prefs::kWebKitStandardFontFamilyLatin, IDS_STANDARD_FONT_FAMILY_LATIN },
+  { prefs::kWebKitFixedFontFamilyLatin, IDS_FIXED_FONT_FAMILY_LATIN },
+  { prefs::kWebKitSerifFontFamilyLatin, IDS_SERIF_FONT_FAMILY_LATIN },
+  { prefs::kWebKitSansSerifFontFamilyLatin, IDS_SANS_SERIF_FONT_FAMILY_LATIN },
+  { prefs::kWebKitCursiveFontFamilyLatin, IDS_CURSIVE_FONT_FAMILY_LATIN },
+  { prefs::kWebKitFantasyFontFamilyLatin, IDS_FANTASY_FONT_FAMILY_LATIN },
+  { prefs::kWebKitPictographFontFamilyLatin, IDS_PICTOGRAPH_FONT_FAMILY_LATIN },
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX) || defined(OS_WIN)
   { prefs::kWebKitStandardFontFamilyJapanese,
     IDS_STANDARD_FONT_FAMILY_JAPANESE },

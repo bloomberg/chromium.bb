@@ -187,6 +187,48 @@
         Times New Roman
       </message>
 
+      <!-- The default value for |WebPreference::standard_font_family| for Latin
+           script. -->
+      <message name="IDS_STANDARD_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Times New Roman
+      </message>
+
+      <!-- The default value for |WebPreference::fixed_font_family| for Latin
+           script. -->
+      <message name="IDS_FIXED_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Monospace
+      </message>
+
+      <!-- The default value for |WebPreference::serif_font_family| for Latin
+           script. -->
+      <message name="IDS_SERIF_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Times New Roman
+      </message>
+
+      <!-- The default value for |WebPreference::sans_serif_font_family| for
+           Latin script. -->
+      <message name="IDS_SANS_SERIF_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Arial
+      </message>
+
+      <!-- The default value for |WebPreference::cursive_font_family| for Latin
+           script. -->
+      <message name="IDS_CURSIVE_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Comic Sans MS
+      </message>
+
+      <!-- The default value for |WebPreference::fantasy_font_family| for Latin
+           script. -->
+      <message name="IDS_FANTASY_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Impact
+      </message>
+
+      <!-- The default value for |WebPreference::pictograph_font_family| for
+           Latin script. -->
+      <message name="IDS_PICTOGRAPH_FONT_FAMILY_LATIN" use_name_for_id="true">
+        Times New Roman
+      </message>
+
       <!-- The default value for |WebPreference::default_font_size| -->
       <message name="IDS_DEFAULT_FONT_SIZE" use_name_for_id="true">
         16
