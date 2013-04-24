@@ -8,6 +8,7 @@
 
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/aura/root_window.h"
@@ -28,20 +29,38 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
  public:
   FocusNotificationObserver()
       : activation_changed_count_(0),
-        focus_changed_count_(0) {}
+        focus_changed_count_(0),
+        reactivation_count_(0),
+        reactivation_requested_window_(NULL),
+        reactivation_actual_window_(NULL) {}
   virtual ~FocusNotificationObserver() {}
 
   void ExpectCounts(int activation_changed_count, int focus_changed_count) {
     EXPECT_EQ(activation_changed_count, activation_changed_count_);
     EXPECT_EQ(focus_changed_count, focus_changed_count_);
   }
-
+  int reactivation_count() const {
+    return reactivation_count_;
+  }
+  aura::Window* reactivation_requested_window() const {
+    return reactivation_requested_window_;
+  }
+  aura::Window* reactivation_actual_window() const {
+    return reactivation_actual_window_;
+  }
 
  private:
   // Overridden from aura::client::ActivationChangeObserver:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE {
     ++activation_changed_count_;
+  }
+  virtual void OnAttemptToReactivateWindow(
+      aura::Window* request_active,
+      aura::Window* actual_active) OVERRIDE {
+    ++reactivation_count_;
+    reactivation_requested_window_ = request_active;
+    reactivation_actual_window_ = actual_active;
   }
 
   // Overridden from aura::client::FocusChangeObserver:
@@ -52,6 +71,9 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
 
   int activation_changed_count_;
   int focus_changed_count_;
+  int reactivation_count_;
+  aura::Window* reactivation_requested_window_;
+  aura::Window* reactivation_actual_window_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusNotificationObserver);
 };
@@ -270,6 +292,7 @@ class FocusControllerTestBase : public aura::test::AuraTestBase {
   virtual void FocusEvents() = 0;
   virtual void DuplicateFocusEvents() {}
   virtual void ActivationEvents() = 0;
+  virtual void ReactivationEvents() {}
   virtual void DuplicateActivationEvents() {}
   virtual void ShiftFocusWithinActiveWindow() {}
   virtual void ShiftFocusToChildOfInactiveWindow() {}
@@ -383,6 +406,20 @@ class FocusControllerDirectTestBase : public FocusControllerTestBase {
     root_observer.ExpectCounts(1, 1);
     observer1.ExpectCounts(1, 1);
     observer2.ExpectCounts(1, 1);
+  }
+  virtual void ReactivationEvents() OVERRIDE {
+    ActivateWindowById(1);
+    ScopedFocusNotificationObserver root_observer(root_window());
+    EXPECT_EQ(0, root_observer.reactivation_count());
+    root_window()->GetChildById(2)->Hide();
+    // When we attempt to activate "2", which cannot be activated because it
+    // is not visible, "1" will be reactivated.
+    ActivateWindowById(2);
+    EXPECT_EQ(1, root_observer.reactivation_count());
+    EXPECT_EQ(root_window()->GetChildById(2),
+              root_observer.reactivation_requested_window());
+    EXPECT_EQ(root_window()->GetChildById(1),
+              root_observer.reactivation_actual_window());
   }
   virtual void DuplicateActivationEvents() OVERRIDE {
     // Activating an existing active window should not resend activation events.
@@ -927,6 +964,10 @@ DIRECT_FOCUS_CHANGE_TESTS(DuplicateActivationEvents);
 
 // - Activates a window, verifies that activation events were dispatched.
 TARGET_FOCUS_TESTS(ActivationEvents);
+
+// - Attempts to active a hidden window, verifies that current window is
+//   attempted to be reactivated and the appropriate event dispatched.
+FOCUS_CONTROLLER_TEST(FocusControllerApiTest, ReactivationEvents);
 
 // - Input events/API calls shift focus between focusable windows within the
 //   active window.

@@ -4,6 +4,7 @@
 
 #include "ash/wm/workspace_controller.h"
 
+#include "ash/shell.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/workspace/workspace_manager.h"
 #include "ui/aura/client/activation_client.h"
@@ -55,6 +56,20 @@ void WorkspaceController::OnWindowActivated(aura::Window* gained_active,
   if (!gained_active ||
       gained_active->GetRootWindow() == viewport_->GetRootWindow()) {
     workspace_manager_->SetActiveWorkspaceByWindow(gained_active);
+  }
+}
+
+void WorkspaceController::OnAttemptToReactivateWindow(
+    aura::Window* request_active,
+    aura::Window* actual_active) {
+  if (ash::Shell::GetInstance()->IsSystemModalWindowOpen()) {
+    // While a system model dialog is showing requests to activate a window
+    // other than that of the modal dialog fail. Outside of this function we
+    // only switch the active workspace when activation changes. That prevents
+    // the active workspace from changing while a system modal dialog is
+    // showing. This code ensures the active workspace changes even though
+    // activation doesn't change away from the system model dialog.
+    workspace_manager_->SetActiveWorkspaceByWindow(request_active);
   }
 }
 

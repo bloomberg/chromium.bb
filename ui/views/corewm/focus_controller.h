@@ -84,11 +84,18 @@ class VIEWS_EXPORT FocusController : public aura::client::ActivationClient,
   virtual void OnWindowHierarchyChanged(
       const HierarchyChangeParams& params) OVERRIDE;
 
-  // Internal implementations that set the focused/active windows, fire events
-  // etc. These functions must be called with valid focusable/activatable
-  // windows.
+  // Internal implementation that sets the focused window, fires events etc.
+  // This function must be called with a valid focusable window.
   void SetFocusedWindow(aura::Window* window);
-  void SetActiveWindow(aura::Window* window);
+
+  // Internal implementation that sets the active window, fires events etc.
+  // This function must be called with a valid |activatable_window|.
+  // |requested window| refers to the window that was passed in to an external
+  // request (e.g. FocusWindow or ActivateWindow). It may be NULL, e.g. if
+  // SetActiveWindow was not called by an external request. |activatable_window|
+  // refers to the actual window to be activated, which may be different.
+  void SetActiveWindow(aura::Window* requested_window,
+                       aura::Window* activatable_window);
 
   // Called when a window's disposition changed such that it and its hierarchy
   // are no longer focusable/activatable. |next| is a valid window that is used

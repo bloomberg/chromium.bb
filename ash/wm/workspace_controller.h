@@ -51,6 +51,9 @@ class ASH_EXPORT WorkspaceController
   // aura::client::ActivationChangeObserver overrides:
   virtual void OnWindowActivated(aura::Window* gained_active,
                                  aura::Window* lost_active) OVERRIDE;
+  virtual void OnAttemptToReactivateWindow(
+      aura::Window* request_active,
+      aura::Window* actual_active) OVERRIDE;
 
  private:
   friend class WorkspaceControllerTestHelper;

@@ -1692,5 +1692,24 @@ TEST_F(WorkspaceManagerTest, DragMaximizedNonTrackedWindow) {
   w1->parent()->parent()->RemoveObserver(&observer);
 }
 
+// Verifies that a new maximized window becomes visible after its activation
+// is requested, even though it does not become activated because a system
+// modal window is active.
+TEST_F(WorkspaceManagerTest, SwitchFromModal) {
+  scoped_ptr<Window> modal_window(CreateTestWindowUnparented());
+  modal_window->SetBounds(gfx::Rect(10, 11, 21, 22));
+  modal_window->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_SYSTEM);
+  SetDefaultParentByPrimaryRootWindow(modal_window.get());
+  modal_window->Show();
+  wm::ActivateWindow(modal_window.get());
+
+  scoped_ptr<Window> maximized_window(CreateTestWindow());
+  maximized_window->SetProperty(
+      aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  maximized_window->Show();
+  wm::ActivateWindow(maximized_window.get());
+  EXPECT_TRUE(maximized_window->IsVisible());
+}
+
 }  // namespace internal
 }  // namespace ash

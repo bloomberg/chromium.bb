@@ -21,6 +21,12 @@ class AURA_EXPORT ActivationChangeObserver {
   virtual void OnWindowActivated(Window* gained_active,
                                  Window* lost_active) = 0;
 
+  // Called when during window activation the currently active window is
+  // selected for activation. This can happen when a window requested for
+  // activation cannot be activated because a system modal window is active.
+  virtual void OnAttemptToReactivateWindow(aura::Window* request_active,
+                                           aura::Window* actual_active) {}
+
  protected:
   virtual ~ActivationChangeObserver() {}
 };
