@@ -206,8 +206,10 @@ class CONTENT_EXPORT OmxVideoDecodeAccelerator :
   std::vector<int> queued_picture_buffer_ids_;
 
   // To expose client callbacks from VideoDecodeAccelerator.
-  // NOTE: all calls to this object *MUST* be executed in message_loop_.
-  Client* client_;
+  // NOTE: all calls to these objects *MUST* be executed on
+  // message_loop_.
+  base::WeakPtrFactory<Client> client_ptr_factory_;
+  base::WeakPtr<Client> client_;
 
   scoped_ptr<Gles2TextureToEglImageTranslator> texture_to_egl_image_translator_;
 

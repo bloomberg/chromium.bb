@@ -150,7 +150,8 @@ OmxVideoDecodeAccelerator::OmxVideoDecodeAccelerator(
       egl_display_(egl_display),
       egl_context_(egl_context),
       make_context_current_(make_context_current),
-      client_(client),
+      client_ptr_factory_(client),
+      client_(client_ptr_factory_.GetWeakPtr()),
       codec_(UNKNOWN),
       h264_profile_(OMX_VIDEO_AVCProfileMax),
       component_name_is_nvidia_(false) {
@@ -547,6 +548,7 @@ void OmxVideoDecodeAccelerator::Destroy() {
   DCHECK_EQ(message_loop_, base::MessageLoop::current());
 
   scoped_ptr<OmxVideoDecodeAccelerator> deleter(this);
+  client_ptr_factory_.InvalidateWeakPtrs();
 
   if (current_state_change_ == ERRORING ||
       current_state_change_ == DESTROYING) {
@@ -569,7 +571,6 @@ void OmxVideoDecodeAccelerator::Destroy() {
          client_state_ == OMX_StateIdle ||
          client_state_ == OMX_StatePause);
   current_state_change_ = DESTROYING;
-  client_ = NULL;
   BeginTransitionToState(OMX_StateIdle);
   BusyLoopInDestroying(deleter.Pass());
 }
@@ -748,7 +749,7 @@ void OmxVideoDecodeAccelerator::StopOnError(
 
   if (client_ && init_begun_)
     client_->NotifyError(error);
-  client_ = NULL;
+  client_ptr_factory_.InvalidateWeakPtrs();
 
   if (client_state_ == OMX_StateInvalid || client_state_ == OMX_StateMax)
       return;
@@ -865,8 +866,10 @@ void OmxVideoDecodeAccelerator::FreeOMXBuffers() {
   fake_output_buffers_.clear();
 
   // Dequeue pending queued_picture_buffer_ids_
-  for (size_t i = 0; i < queued_picture_buffer_ids_.size(); ++i)
-    client_->DismissPictureBuffer(queued_picture_buffer_ids_[i]);
+  if (client_) {
+    for (size_t i = 0; i < queued_picture_buffer_ids_.size(); ++i)
+      client_->DismissPictureBuffer(queued_picture_buffer_ids_[i]);
+  }
   queued_picture_buffer_ids_.clear();
 
   RETURN_ON_FAILURE(!failure_seen, "OMX_FreeBuffer", PLATFORM_FAILURE,);
