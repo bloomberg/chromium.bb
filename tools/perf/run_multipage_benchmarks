@@ -55,5 +55,7 @@ if __name__ == '__main__':
     sys.exit(0)
 
   from telemetry.page import page_benchmark_runner
+  import page_sets
   benchmark_dir = os.path.dirname(perf_tools.__file__)
-  sys.exit(page_benchmark_runner.Main(benchmark_dir))
+  page_set_filenames = page_sets.GetAllPageSetFilenames()
+  sys.exit(page_benchmark_runner.Main(benchmark_dir, page_set_filenames))
