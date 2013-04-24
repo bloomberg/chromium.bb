@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From dev/ppb_printing_dev.idl modified Thu Jul 26 12:15:07 2012. */
+/* From dev/ppb_printing_dev.idl modified Fri Apr 19 10:45:09 2013. */
 
 #ifndef PPAPI_C_DEV_PPB_PRINTING_DEV_H_
 #define PPAPI_C_DEV_PPB_PRINTING_DEV_H_
@@ -19,7 +19,6 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/c/pp_stdint.h"
 
-#define PPB_PRINTING_DEV_INTERFACE_0_6 "PPB_Printing(Dev);0.6"
 #define PPB_PRINTING_DEV_INTERFACE_0_7 "PPB_Printing(Dev);0.7"
 #define PPB_PRINTING_DEV_INTERFACE PPB_PRINTING_DEV_INTERFACE_0_7
 
@@ -63,12 +62,6 @@ struct PPB_Printing_Dev_0_7 {
 };
 
 typedef struct PPB_Printing_Dev_0_7 PPB_Printing_Dev;
-
-struct PPB_Printing_Dev_0_6 {
-  PP_Bool (*GetDefaultPrintSettings)(
-      PP_Instance instance,
-      struct PP_PrintSettings_Dev* print_settings);
-};
 /**
  * @}
  */

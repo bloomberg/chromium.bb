@@ -218,7 +218,7 @@
           'thunk/ppb_pdf_api.h',
           'thunk/ppb_pdf_thunk.cc',
           'thunk/ppb_printing_api.h',
-          'thunk/ppb_printing_thunk.cc',
+          'thunk/ppb_printing_dev_thunk.cc',
           'thunk/ppb_resource_array_api.h',
           'thunk/ppb_resource_array_dev_thunk.cc',
           'thunk/ppb_scrollbar_api.h',
