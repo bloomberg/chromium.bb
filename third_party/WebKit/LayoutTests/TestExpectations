@@ -3086,6 +3086,8 @@ crbug.com/234069 [ Mac Release ] fast/events/touch/gesture/long-press-drag-drop-
 
 crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
 
+crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
+
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
