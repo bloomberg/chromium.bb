@@ -15,9 +15,6 @@ from third_party.handlebar import Handlebar
 # TODO(kalman): rename this HTMLDataSource or other, then have separate intro
 # article data sources created as instances of it.
 
-# Increment this if the data model changes for IntroDataSource.
-_VERSION = 5
-
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
 class _IntroParser(HTMLParser):
@@ -69,8 +66,7 @@ class IntroDataSource(object):
   class Factory(object):
     def __init__(self, compiled_fs_factory, ref_resolver_factory, base_paths):
       self._cache = compiled_fs_factory.Create(self._MakeIntroDict,
-                                               IntroDataSource,
-                                               version=_VERSION)
+                                               IntroDataSource)
       self._ref_resolver = ref_resolver_factory.Create()
       self._base_paths = base_paths
 

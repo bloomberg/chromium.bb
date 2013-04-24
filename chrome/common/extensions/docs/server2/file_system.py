@@ -69,10 +69,3 @@ class FileSystem(object):
     their caches. It is unlikely that this needs to be overridden.
     '''
     return cls.__name__
-
-  @classmethod
-  def GetVersion(cls):
-    '''The version of the file system, exposed for caching classes backed to
-    file systems. It is unlikely that this needs to be overridden.
-    '''
-    return None

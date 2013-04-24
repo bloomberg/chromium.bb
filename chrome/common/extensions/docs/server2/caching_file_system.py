@@ -33,8 +33,7 @@ class CachingFileSystem(FileSystem):
     self._file_system = file_system
     def create_object_store(category):
       return (object_store_creator_factory.Create(CachingFileSystem)
-          .Create(category='%s/%s' % (file_system.GetName(), category),
-                  version=file_system.GetVersion()))
+          .Create(category='%s/%s' % (file_system.GetName(), category)))
     self._stat_object_store = create_object_store('stat')
     self._read_object_store = create_object_store('read')
     self._read_binary_object_store = create_object_store('read-binary')

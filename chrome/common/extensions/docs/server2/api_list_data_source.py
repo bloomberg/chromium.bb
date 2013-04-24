@@ -8,14 +8,6 @@ import os
 import third_party.json_schema_compiler.model as model
 import docs_server_utils as utils
 
-# Increment this if the data model changes for APIDataSource.
-_VERSION = 1
-
-# These files are special cases that shouldn't be in the API list.
-IGNORED_FILES = [
-  'devtools'
-]
-
 class APIListDataSource(object):
   """ This class creates a list of chrome.* APIs and chrome.experimental.* APIs
   for extensions and apps that are used in the api_index.html and
@@ -28,8 +20,8 @@ class APIListDataSource(object):
   """
   class Factory(object):
     def __init__(self, compiled_fs_factory, api_path, public_path):
-      self._compiled_fs = compiled_fs_factory.Create(
-          self._ListAPIs, APIListDataSource, version=_VERSION)
+      self._compiled_fs = compiled_fs_factory.Create(self._ListAPIs,
+                                                     APIListDataSource)
       self._identity_fs = compiled_fs_factory.GetOrCreateIdentity()
       def Normalize(string):
         return string if string.endswith('/') else (string + '/')
@@ -44,15 +36,13 @@ class APIListDataSource(object):
       experimental_apis = []
       chrome_apis = []
       for template_name in sorted(template_names):
-        if template_name in IGNORED_FILES:
+        if model.UnixName(template_name) not in api_names:
           continue
-        if model.UnixName(template_name) in api_names:
-          if template_name.startswith('experimental'):
-            experimental_apis.append({
-              'name': template_name.replace('_', '.')
-            })
-          else:
-            chrome_apis.append({ 'name': template_name.replace('_', '.') })
+        entry = {'name': template_name.replace('_', '.')}
+        if template_name.startswith('experimental'):
+          experimental_apis.append(entry)
+        else:
+          chrome_apis.append(entry)
       if len(chrome_apis):
         chrome_apis[-1]['last'] = True
       if len(experimental_apis):

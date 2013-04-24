@@ -6,6 +6,7 @@ import json
 import logging
 import operator
 
+from appengine_wrappers import GetAppVersion
 from object_store_creator import ObjectStoreCreator
 
 class BranchUtility(object):
@@ -13,7 +14,8 @@ class BranchUtility(object):
     self._fetch_url = fetch_url
     self._fetcher = fetcher
     if object_store is None:
-      object_store = ObjectStoreCreator(BranchUtility).Create()
+      object_store = (ObjectStoreCreator.SharedFactory(GetAppVersion())
+          .Create(BranchUtility).Create())
     self._object_store = object_store
 
   @staticmethod

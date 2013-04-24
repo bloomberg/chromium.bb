@@ -7,7 +7,7 @@ import logging
 import os
 
 import appengine_blobstore as blobstore
-from appengine_wrappers import urlfetch
+from appengine_wrappers import GetAppVersion, urlfetch
 from file_system import FileSystem, StatInfo
 from future import Future
 from object_store_creator import ObjectStoreCreator
@@ -63,7 +63,8 @@ class GithubFileSystem(FileSystem):
   """
   def __init__(self, fetcher, blobstore):
     self._fetcher = fetcher
-    self._stat_object_store = ObjectStoreCreator(GithubFileSystem).Create()
+    self._stat_object_store = (ObjectStoreCreator.SharedFactory(GetAppVersion())
+        .Create(GithubFileSystem).Create())
     self._blobstore = blobstore
     self._version = None
     self._GetZip(self.Stat(ZIP_KEY).version)

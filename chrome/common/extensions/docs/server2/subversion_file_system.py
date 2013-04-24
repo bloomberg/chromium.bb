@@ -9,14 +9,6 @@ import re
 import xml.dom.minidom as xml
 from xml.parsers.expat import ExpatError
 
-# Sometimes we get bad data and end up caching it. Increment this so that
-# CachingFileSystem (if one is attached) knows to re-fetch.
-#
-# WARNING: This is a VERY EXPENSIVE number to bump. ONLY do so if the data
-# returned by these operations changes, DESPITE WHAT THE PRESUBMIT WARNING
-# MIGHT TELL YOU!
-_VERSION = 1
-
 class _AsyncFetchFuture(object):
   def __init__(self, paths, fetcher, binary):
     # A list of tuples of the form (path, Future).
@@ -134,7 +126,3 @@ class SubversionFileSystem(FileSystem):
         raise FileNotFoundError('%s was not in child versions' % filename)
       stat_info.version = stat_info.child_versions[filename]
     return stat_info
-
-  @classmethod
-  def GetVersion(cls):
-    return _VERSION

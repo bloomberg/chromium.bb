@@ -26,7 +26,7 @@ class PathCanonicalizerTest(unittest.TestCase):
     test_fs = TestFileSystem(_TEST_DATA)
     compiled_fs_factory = CompiledFileSystem.Factory(
         test_fs,
-        ObjectStoreCreator.Factory())
+        ObjectStoreCreator.TestFactory())
     self._path_canonicalizer = PathCanonicalizer('stable', compiled_fs_factory)
 
   def _assertIdentity(self, path):

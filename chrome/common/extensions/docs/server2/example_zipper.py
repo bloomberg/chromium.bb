@@ -9,9 +9,6 @@ from zipfile import ZipFile
 
 import compiled_file_system as compiled_fs
 
-# Increment this if the data model changes for ExampleZipper.
-_VERSION = 1
-
 class ExampleZipper(object):
   """This class creates a zip file given a samples directory.
   """
@@ -21,8 +18,7 @@ class ExampleZipper(object):
     # data source. Otherwise we'd need to fetch the zip files from the cron job.
     self._file_cache = compiled_fs_factory.GetOrCreateIdentity()
     self._zip_cache = compiled_fs_factory.Create(self._MakeZipFile,
-                                                 ExampleZipper,
-                                                 version=_VERSION)
+                                                 ExampleZipper)
 
   def _MakeZipFile(self, base_dir, files):
     if 'manifest.json' not in files:

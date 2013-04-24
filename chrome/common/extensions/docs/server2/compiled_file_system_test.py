@@ -28,17 +28,17 @@ _TEST_DATA = {
 
 def _CreateFactory():
   return CompiledFileSystem.Factory(TestFileSystem(deepcopy(_TEST_DATA)),
-                                    ObjectStoreCreator.Factory(),
+                                    ObjectStoreCreator.Factory('3-0', 'test'),
                                     store_type=TestObjectStore)
 
 class CompiledFileSystemTest(unittest.TestCase):
   def testIdentityNamespace(self):
     factory = _CreateFactory()
     compiled_fs = factory.GetOrCreateIdentity()
-    self.assertEqual('CompiledFileSystem/id/file',
+    self.assertEqual('3-0/CompiledFileSystem@test/id/file',
                      compiled_fs._file_object_store.namespace)
     compiled_fs = factory.GetOrCreateIdentity()  # should be the same
-    self.assertEqual('CompiledFileSystem/id/list',
+    self.assertEqual('3-0/CompiledFileSystem@test/id/list',
                      compiled_fs._list_object_store.namespace)
 
   def testIdentityFromFile(self):
@@ -69,19 +69,14 @@ class CompiledFileSystemTest(unittest.TestCase):
       self.assertEqual(expected_list, fs._list_object_store.namespace)
     factory = _CreateFactory()
     f = lambda x: x
-    CheckNamespace('CompiledFileSystem/CompiledFileSystemTest/file',
-                   'CompiledFileSystem/CompiledFileSystemTest/list',
-                   factory.Create(f, CompiledFileSystemTest))
-    CheckNamespace('CompiledFileSystem/CompiledFileSystemTest/foo/file',
-                   'CompiledFileSystem/CompiledFileSystemTest/foo/list',
-                   factory.Create(f, CompiledFileSystemTest, category='foo'))
-    CheckNamespace('CompiledFileSystem/CompiledFileSystemTest/file/6',
-                   'CompiledFileSystem/CompiledFileSystemTest/list/6',
-                   factory.Create(f, CompiledFileSystemTest, version=6))
-    CheckNamespace('CompiledFileSystem/CompiledFileSystemTest/foo/file/6',
-                   'CompiledFileSystem/CompiledFileSystemTest/foo/list/6',
-                   factory.Create(f, CompiledFileSystemTest, category='foo',
-                                                             version=6))
+    CheckNamespace(
+        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/file',
+        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/list',
+        factory.Create(f, CompiledFileSystemTest))
+    CheckNamespace(
+        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/foo/file',
+        '3-0/CompiledFileSystem@test/CompiledFileSystemTest/foo/list',
+        factory.Create(f, CompiledFileSystemTest, category='foo'))
 
   def testPopulateFromFile(self):
     def Sleepy(key, val):

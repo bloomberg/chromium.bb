@@ -11,6 +11,7 @@ from api_data_source import APIDataSource
 from api_list_data_source import APIListDataSource
 from appengine_blobstore import AppEngineBlobstore
 from appengine_url_fetcher import AppEngineUrlFetcher
+from appengine_wrappers import GetAppVersion
 from branch_utility import BranchUtility
 from caching_file_system import CachingFileSystem
 from compiled_file_system import CompiledFileSystem
@@ -51,7 +52,8 @@ class ServerInstance(object):
     '''
     branch_utility = ServerInstance._GetOrCreateBranchUtility()
     branch = branch_utility.GetBranchNumberForChannelName(channel)
-    object_store_creator_factory = ObjectStoreCreator.Factory(branch)
+    object_store_creator_factory = ObjectStoreCreator.Factory(GetAppVersion(),
+                                                              branch)
     # No svn nor github file systems. Rely on the crons to fill the caches, and
     # for the caches to exist.
     return ServerInstance(
@@ -87,7 +89,8 @@ class ServerInstance(object):
     viewvc_url = svn_url.replace(url_constants.SVN_URL,
                                  url_constants.VIEWVC_URL)
 
-    object_store_creator_factory = ObjectStoreCreator.Factory(branch)
+    object_store_creator_factory = ObjectStoreCreator.Factory(GetAppVersion(),
+                                                              branch)
 
     svn_file_system = CachingFileSystem(
         SubversionFileSystem(AppEngineUrlFetcher(svn_url),
@@ -102,7 +105,7 @@ class ServerInstance(object):
   @staticmethod
   def CreateForTest(file_system):
     return ServerInstance('test',
-                          ObjectStoreCreator.Factory('test'),
+                          ObjectStoreCreator.TestFactory(),
                           file_system,
                           None)
 

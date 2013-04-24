@@ -92,24 +92,6 @@ def _CheckHeadingIDs(input_api):
         bad_files.append(name)
   return bad_files
 
-def _CheckVersions(input_api, output_api, results):
-  version = '_VERSION ='
-  for affected_file in input_api.AffectedFiles():
-    local_path = affected_file.LocalPath()
-    if not fnmatch.fnmatch(local_path, '%s*' % SERVER2_PATH):
-      continue
-    if local_path.endswith('PRESUBMIT.py'):
-      continue
-    if any(version in line for line in affected_file.NewContents()):
-      found = False
-      for _, text in affected_file.ChangedContents():
-        if version in text:
-          found = True
-          break
-      if not found:
-        results.append(output_api.PresubmitPromptWarning(
-            '_VERSION of %s needs to be incremented.' % affected_file))
-
 def _CheckLinks(input_api, output_api, results):
   for affected_file in input_api.AffectedFiles():
     name = affected_file.LocalPath()

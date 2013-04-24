@@ -13,37 +13,27 @@ class _FooClass(object):
 
 class ObjectStoreCreatorTest(unittest.TestCase):
   def setUp(self):
-    self.creator = ObjectStoreCreator(_FooClass, store_type=TestObjectStore)
+    self.creator = ObjectStoreCreator(_FooClass,
+                                      '3-0',
+                                      'test',
+                                      store_type=TestObjectStore)
 
   def testVanilla(self):
     store = self.creator.Create()
-    self.assertEqual('_FooClass', store.namespace)
-
-  def testWithVersion(self):
-    store = self.creator.Create(version=42)
-    self.assertEqual('_FooClass/42', store.namespace)
+    self.assertEqual('3-0/_FooClass@test', store.namespace)
 
   def testWithCategory(self):
     store = self.creator.Create(category='cat')
-    self.assertEqual('_FooClass/cat', store.namespace)
+    self.assertEqual('3-0/_FooClass@test/cat', store.namespace)
 
-  def testWithVersionAndCategory(self):
-    store = self.creator.Create(version=43, category='mat')
-    self.assertEqual('_FooClass/mat/43', store.namespace)
-
-  def testIllegalIinput(self):
+  def testIllegalInput(self):
     self.assertRaises(AssertionError, self.creator.Create, category='5')
     self.assertRaises(AssertionError, self.creator.Create, category='forty2')
-    self.assertRaises(AssertionError, self.creator.Create, version='twenty')
-    self.assertRaises(AssertionError, self.creator.Create, version='7a')
 
   def testFactoryWithBranch(self):
-    store = ObjectStoreCreator.Factory().Create(
+    store = ObjectStoreCreator.Factory('3-0', 'dev').Create(
         _FooClass, store_type=TestObjectStore).Create()
-    self.assertEqual('_FooClass', store.namespace)
-    store = ObjectStoreCreator.Factory(branch='dev').Create(
-        _FooClass, store_type=TestObjectStore).Create()
-    self.assertEqual('_FooClass@dev', store.namespace)
+    self.assertEqual('3-0/_FooClass@dev', store.namespace)
 
 if __name__ == '__main__':
   unittest.main()

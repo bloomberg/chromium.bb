@@ -4,6 +4,19 @@
 
 import os
 
+def GetAppVersion():
+  if 'CURRENT_VERSION_ID' in os.environ:
+    return os.environ['CURRENT_VERSION_ID']
+  # Not running on appengine, get it from the app.yaml file ourselves. We
+  # could properly parse this using a yaml library but Python doesn't have
+  # one built in so whatevs.
+  version_key = 'version:'
+  app_yaml_path = os.path.join(os.path.split(__file__)[0], 'app.yaml')
+  with open(app_yaml_path, 'r') as app_yaml:
+    version_line = [line for line in app_yaml.read().split('\n')
+                    if line.startswith(version_key)][0]
+  return version_line[len(version_key):].strip()
+
 def IsDevServer():
   return os.environ.get('SERVER_SOFTWARE', '').find('Development') == 0
 

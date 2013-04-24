@@ -23,12 +23,12 @@ class CompiledFileSystem(object):
       self._store_type = store_type
       self._identity_instance = None
 
-    def Create(self, populate_function, cls, category=None, version=None):
+    def Create(self, populate_function, cls, category=None):
       """Create a CompiledFileSystem that populates the cache by calling
       |populate_function| with (path, data), where |data| is the data that was
       fetched from |path|.
       The namespace for the file system is derived like ObjectStoreCreator: from
-      |cls| along with an optional |category| and |version|.
+      |cls| along with an optional |category|.
       """
       assert isinstance(cls, type)
       assert not cls.__name__[0].islower()  # guard against non-class types
@@ -36,10 +36,7 @@ class CompiledFileSystem(object):
       if category is not None:
         full_name = '%s/%s' % (full_name, category)
       # TODO(kalman): Fix ServerInstance.CreateForTest to not give an empty FS.
-      if self._file_system and self._file_system.GetVersion() is not None:
-        version = (self._file_system.GetVersion() +
-                   (version if version is not None else 0))
-      return self._Create(populate_function, full_name, version=version)
+      return self._Create(populate_function, full_name)
 
     def GetOrCreateIdentity(self):
       '''Handy helper to get or create the identity compiled file system.
@@ -50,17 +47,15 @@ class CompiledFileSystem(object):
         self._identity_instance = self._Create(lambda _, x: x, 'id')
       return self._identity_instance
 
-    def _Create(self, populate_function, full_name, version=None):
+    def _Create(self, populate_function, full_name):
       object_store_creator = self._object_store_creator_factory.Create(
           CompiledFileSystem,
           store_type=self._store_type)
       return CompiledFileSystem(
           self._file_system,
           populate_function,
-          object_store_creator.Create(category='%s/file' % full_name,
-                                      version=version),
-          object_store_creator.Create(category='%s/list' % full_name,
-                                      version=version))
+          object_store_creator.Create(category='%s/file' % full_name),
+          object_store_creator.Create(category='%s/list' % full_name))
 
   def __init__(self,
                file_system,

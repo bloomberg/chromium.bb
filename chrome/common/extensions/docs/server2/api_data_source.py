@@ -11,10 +11,6 @@ import third_party.json_schema_compiler.model as model
 import third_party.json_schema_compiler.idl_schema as idl_schema
 import third_party.json_schema_compiler.idl_parser as idl_parser
 
-# Increment this if the data model changes for APIDataSource.
-# This would include changes to model.py in json_schema_compiler!
-_VERSION = 17
-
 def _RemoveNoDocs(item):
   if json_parse.IsDict(item):
     if item.get('nodoc', False):
@@ -266,8 +262,7 @@ class APIDataSource(object):
   class Factory(object):
     def __init__(self, compiled_fs_factory, base_path):
       def create_compiled_fs(fn, category):
-        return compiled_fs_factory.Create(
-            fn, APIDataSource, category=category, version=_VERSION)
+        return compiled_fs_factory.Create(fn, APIDataSource, category=category)
 
       self._permissions_cache = create_compiled_fs(self._LoadPermissions,
                                                    'permissions')

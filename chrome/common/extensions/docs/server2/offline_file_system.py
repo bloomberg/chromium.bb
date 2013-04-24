@@ -17,12 +17,7 @@ class OfflineFileSystem(FileSystem):
   def Stat(self, path):
     raise FileNotFoundError('File system is offline, cannot read %s' % path)
 
-  # HACK: despite GetName/GetVersion being @classmethods, these need to be
-  # instance methods so that we can grab the name and version from the class
-  # given on construction.
-
+  # HACK: despite GetName being a @classmethod, these need to be instance
+  # methods so that we can grab the name from the class given on construction.
   def GetName(self):
     return self._cls.GetName()
-
-  def GetVersion(self):
-    return self._cls.GetVersion()

@@ -15,9 +15,6 @@ import url_constants
 
 DEFAULT_ICON_PATH = '/images/sample-default-icon.png'
 
-# Increment this if the data model changes for SamplesDataSource.
-_VERSION = 4
-
 class SamplesDataSource(object):
   """Constructs a list of samples and their respective files and api calls.
   """
@@ -42,8 +39,7 @@ class SamplesDataSource(object):
             fs,
             object_store_creator_factory).Create(fn,
                                                  SamplesDataSource,
-                                                 category=category,
-                                                 version=_VERSION)
+                                                 category=category)
       self._extensions_cache = create_compiled_fs(extensions_file_system,
                                                   self._MakeSamplesList,
                                                   'extensions')

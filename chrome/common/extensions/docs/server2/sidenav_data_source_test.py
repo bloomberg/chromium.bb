@@ -19,7 +19,7 @@ class SamplesDataSourceTest(unittest.TestCase):
                                    'sidenav_data_source')
     self._compiled_fs_factory = CompiledFileSystem.Factory(
         LocalFileSystem(self._base_path),
-        ObjectStoreCreator.Factory())
+        ObjectStoreCreator.TestFactory())
 
   def _CheckLevels(self, items, level=2):
     for item in items:

@@ -15,7 +15,7 @@ from object_store_creator import ObjectStoreCreator
 
 class ExampleZipperTest(unittest.TestCase):
   def setUp(self):
-    object_store_creator_factory = ObjectStoreCreator.Factory()
+    object_store_creator_factory = ObjectStoreCreator.TestFactory()
     self._file_system = CachingFileSystem(
         LocalFileSystem(os.path.join(sys.path[0], 'test_data')),
         object_store_creator_factory)

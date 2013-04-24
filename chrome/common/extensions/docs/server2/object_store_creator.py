@@ -8,42 +8,58 @@ from persistent_object_store import PersistentObjectStore
 
 class ObjectStoreCreator(object):
   class Factory(object):
-    def __init__(self, branch=None):
-      self._branch = branch
-
     '''Creates ObjectStoreCreators (yes seriously) bound to an SVN branch.
     '''
-    def Create(self, cls, store_type=None):
-      return ObjectStoreCreator(cls, branch=self._branch, store_type=store_type)
+    def __init__(self, app_version, branch):
+      self._app_version = app_version
+      self._branch = branch
 
-  def __init__(self, cls, branch=None, store_type=None):
+    def Create(self, cls, store_type=None):
+      return ObjectStoreCreator(cls,
+                                self._app_version,
+                                self._branch,
+                                store_type=store_type)
+
+  class SharedFactory(object):
+    '''A |Factory| for creating object stores shared across branches.
+    '''
+    def __init__(self, app_version):
+      self._factory = ObjectStoreCreator.Factory(app_version, 'shared')
+
+    def Create(self, cls, store_type=None):
+      return self._factory.Create(cls, store_type=store_type)
+
+  class TestFactory(object):
+    '''A |Factory| for creating object stores for tests, with fake defaults.
+    '''
+    def __init__(self):
+      self._factory = ObjectStoreCreator.Factory('test-version', 'test-branch')
+
+    def Create(self, cls, store_type=None):
+      return self._factory.Create(cls, store_type=store_type)
+
+  def __init__(self, cls, app_version, branch, store_type=None):
     '''Creates stores with a top-level namespace given by the name of |cls|
     combined with |branch|. Set an explicit |store_type| if necessary for tests.
 
     By convention this should be the name of the class which owns the object
-    store. If a class needs multiple object store it should use Create with the
+    store. If a class needs multiple object stores it should use Create with the
     |category| argument.
     '''
     assert isinstance(cls, type)
     assert not cls.__name__[0].islower()  # guard against non-class types
-    if branch is None:
-      self._name = cls.__name__
-    else:
-      self._name = '%s@%s' % (cls.__name__, branch)
+    self._name = '%s/%s@%s' % (app_version, cls.__name__, branch)
     self._store_type = store_type
 
-  def Create(self, version=None, category=None):
+  def Create(self, category=None):
     '''Creates a new object store with the top namespace given in the
-    constructor, at version |version|, with an optional |category| for classes
-    that need multiple object stores (e.g. one for stat and one for read).
+    constructor with an optional |category| for classes that need multiple
+    object stores (e.g. one for stat and one for read).
     '''
     namespace = self._name
     if category is not None:
       assert not any(c.isdigit() for c in category)
       namespace = '%s/%s' % (namespace, category)
-    if version is not None:
-      assert isinstance(version, int)
-      namespace = '%s/%s' % (namespace, version)
     if self._store_type is not None:
       return self._store_type(namespace)
     return CacheChainObjectStore((MemcacheObjectStore(namespace),
