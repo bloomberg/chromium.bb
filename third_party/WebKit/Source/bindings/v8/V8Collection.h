@@ -58,46 +58,6 @@ template<class T> static v8::Handle<v8::Value> getV8Object(PassRefPtr<T> impleme
     return getV8Object(implementation.get(), creationContext, isolate);
 }
 
-// Returns named property of a collection.
-template<class Collection, class ItemType> static v8::Handle<v8::Value> getNamedPropertyOfCollection(v8::Local<v8::String> name, v8::Local<v8::Object> object, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    // FIXME: assert object is a collection type
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
-    ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
-    Collection* collection = toNativeCollection<Collection>(object);
-    AtomicString propertyName = toWebCoreAtomicStringWithNullCheck(name);
-    return getV8Object<ItemType>(collection->namedItem(propertyName), creationContext, isolate);
-}
-
-// A template of named property accessor of collections.
-template<class Collection, class ItemType> static v8::Handle<v8::Value> collectionNamedPropertyGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
-{
-    if (!info.Holder()->GetRealNamedPropertyInPrototypeChain(name).IsEmpty())
-        return v8Undefined();
-    if (info.Holder()->HasRealNamedCallbackProperty(name))
-        return v8Undefined();
-
-    return getNamedPropertyOfCollection<Collection, ItemType>(name, info.Holder(), info.Holder(), info.GetIsolate());
-}
-
-// Returns the property at the index of a collection.
-template<class Collection, class ItemType> static v8::Handle<v8::Value> getIndexedPropertyOfCollection(uint32_t index, v8::Local<v8::Object> object, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    // FIXME: Assert that object must be a collection type.
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(object));
-    ASSERT(toWrapperTypeInfo(object) != &V8Node::info);
-    Collection* collection = toNativeCollection<Collection>(object);
-    if (index >= collection->length())
-        return v8Undefined();
-    return toV8(collection->item(index), creationContext, isolate);
-}
-
-// A template of index interceptor of collections.
-template<class Collection, class ItemType> static v8::Handle<v8::Value> collectionIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    return getIndexedPropertyOfCollection<Collection, ItemType>(index, info.Holder(), info.Holder(), info.GetIsolate());
-}
-
 // Get an array containing the names of indexed properties of HTMLSelectElement and HTMLFormElement.
 template<class Collection> static v8::Handle<v8::Array> nodeCollectionIndexedPropertyEnumerator(const v8::AccessorInfo& info)
 {
@@ -111,74 +71,6 @@ template<class Collection> static v8::Handle<v8::Array> nodeCollectionIndexedPro
         properties->Set(integer, integer);
     }
     return properties;
-}
-
-// Get an array containing the names of indexed properties in a collection.
-template<class Collection> static v8::Handle<v8::Array> collectionIndexedPropertyEnumerator(const v8::AccessorInfo& info)
-{
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    Collection* collection = toNativeCollection<Collection>(info.Holder());
-    int length = collection->length();
-    v8::Handle<v8::Array> properties = v8::Array::New(length);
-    for (int i = 0; i < length; ++i) {
-        // FIXME: Do we need to check that the item function returns a non-null value for this index?
-        v8::Handle<v8::Integer> integer = v8Integer(i, info.GetIsolate());
-        properties->Set(integer, integer);
-    }
-    return properties;
-}
-
-
-// A template for indexed getters on collections of strings that should return null if the resulting string is a null string.
-template<class Collection> static v8::Handle<v8::Value> collectionStringOrUndefinedIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    // FIXME: assert that object must be a collection type
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    Collection* collection = toNativeCollection<Collection>(info.Holder());
-    if (index >= collection->length())
-        return v8Undefined();
-    String result = collection->item(index);
-    return v8StringOrUndefined(result, info.GetIsolate());
-}
-
-
-// A template for indexed getters on collections of strings.
-template<class Collection> static v8::Handle<v8::Value> collectionStringIndexedPropertyGetter(uint32_t index, const v8::AccessorInfo& info)
-{
-    // FIXME: assert that object must be a collection type
-    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));
-    Collection* collection = toNativeCollection<Collection>(info.Holder());
-    if (index >= collection->length())
-        return v8Undefined();
-    String result = collection->item(index);
-    return v8String(result, info.GetIsolate());
-}
-
-
-// Add indexed getter to the function template for a collection.
-template<class Collection, class ItemType> static void setCollectionIndexedGetter(v8::Handle<v8::FunctionTemplate> desc)
-{
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(collectionIndexedPropertyGetter<Collection, ItemType>, 0, 0, 0, collectionIndexedPropertyEnumerator<Collection>);
-}
-
-
-// Add named getter to the function template for a collection.
-template<class Collection, class ItemType> static void setCollectionNamedGetter(v8::Handle<v8::FunctionTemplate> desc)
-{
-    desc->InstanceTemplate()->SetNamedPropertyHandler(collectionNamedPropertyGetter<Collection, ItemType>, 0, 0, 0, 0);
-}
-
-// Add indexed getter returning a string or null to a function template for a collection.
-template<class Collection> static void setCollectionStringOrUndefinedIndexedGetter(v8::Handle<v8::FunctionTemplate> desc)
-{
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(collectionStringOrUndefinedIndexedPropertyGetter<Collection>, 0, 0, 0, collectionIndexedPropertyEnumerator<Collection>);
-}
-
-
-// Add indexed getter returning a string to a function template for a collection.
-template<class Collection> static void setCollectionStringIndexedGetter(v8::Handle<v8::FunctionTemplate> desc)
-{
-    desc->InstanceTemplate()->SetIndexedPropertyHandler(collectionStringIndexedPropertyGetter<Collection>, 0, 0, 0, collectionIndexedPropertyEnumerator<Collection>);
 }
 
 v8::Handle<v8::Value> toOptionsCollectionSetter(uint32_t index, v8::Handle<v8::Value>, HTMLSelectElement*, v8::Isolate*);
