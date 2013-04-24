@@ -28,8 +28,8 @@
 
 #include "EditingBehaviorTypes.h"
 #include "EditingBoundary.h"
-#include "TextBreakIterator.h"
-#include "TextDirection.h"
+#include "core/platform/text/TextBreakIterator.h"
+#include "core/platform/text/TextDirection.h"
 
 namespace WebCore {
 

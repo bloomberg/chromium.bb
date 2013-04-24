@@ -33,8 +33,8 @@
 
 #include "MHTMLArchive.h"
 #include "MIMETypeRegistry.h"
-#include "QuotedPrintable.h"
 #include "core/platform/network/MIMEHeader.h"
+#include "core/platform/text/QuotedPrintable.h"
 #include <wtf/HashMap.h>
 #include <wtf/NotFound.h>
 #include <wtf/text/Base64.h>

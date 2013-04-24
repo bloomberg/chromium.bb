@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "QuotedPrintable.h"
+#include "core/platform/text/QuotedPrintable.h"
 
 #include <wtf/ASCIICType.h>
 

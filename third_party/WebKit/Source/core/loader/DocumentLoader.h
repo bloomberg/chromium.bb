@@ -36,12 +36,12 @@
 #include "DocumentWriter.h"
 #include "NavigationAction.h"
 #include "ResourceLoaderOptions.h"
-#include "StringWithDirection.h"
 #include "SubstituteData.h"
 #include "Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/platform/text/StringWithDirection.h"
 #include <wtf/HashSet.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

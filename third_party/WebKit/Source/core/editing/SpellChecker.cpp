@@ -39,9 +39,9 @@
 #include "Range.h"
 #include "RenderObject.h"
 #include "Settings.h"
-#include "TextCheckerClient.h"
 #include "TextCheckingHelper.h"
 #include "TextIterator.h"
+#include "core/platform/text/TextCheckerClient.h"
 #include "htmlediting.h"
 
 namespace WebCore {

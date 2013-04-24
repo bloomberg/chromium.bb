@@ -42,18 +42,18 @@
 #include "RenderTextControl.h"
 #include "RenderTextFragment.h"
 #include "ShadowRoot.h"
-#include "TextBoundaries.h"
-#include "TextBreakIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/text/TextBoundaries.h"
+#include "core/platform/text/TextBreakIterator.h"
 #include "htmlediting.h"
 #include <wtf/text/CString.h>
 #include <wtf/unicode/CharacterNames.h>
 
 #if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
 #include <unicode/usearch.h>
-#include "TextBreakIteratorInternalICU.h"
+#include "core/platform/text/TextBreakIteratorInternalICU.h"
 #endif
 
 using namespace WTF::Unicode;

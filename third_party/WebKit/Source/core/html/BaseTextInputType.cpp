@@ -26,7 +26,7 @@
 
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "RegularExpression.h"
+#include "core/platform/text/RegularExpression.h"
 
 namespace WebCore {
 

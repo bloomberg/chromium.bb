@@ -28,9 +28,9 @@
 
 #include "HTMLToken.h"
 #include "KURL.h"
-#include "SuffixTree.h"
-#include "TextEncoding.h"
 #include "core/platform/network/HTTPParsers.h"
+#include "core/platform/text/SuffixTree.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

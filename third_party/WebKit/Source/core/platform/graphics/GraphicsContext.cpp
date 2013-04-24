@@ -26,13 +26,13 @@
 #include "config.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
-#include "BidiResolver.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Generator.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/RoundedRect.h"
 #include "core/platform/graphics/TextRunIterator.h"
+#include "core/platform/text/BidiResolver.h"
 
 #include "stdio.h"
 

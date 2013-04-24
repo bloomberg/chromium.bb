@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "TextEncodingDetector.h"
+#include "core/platform/text/TextEncodingDetector.h"
 
-#include "TextEncoding.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/UnusedParam.h>
 
 #include "unicode/ucnv.h"

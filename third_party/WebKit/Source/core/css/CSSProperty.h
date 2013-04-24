@@ -24,8 +24,8 @@
 #include "CSSPropertyNames.h"
 #include "CSSValue.h"
 #include "RenderStyleConstants.h"
-#include "TextDirection.h"
-#include "WritingMode.h"
+#include "core/platform/text/TextDirection.h"
+#include "core/platform/text/WritingMode.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

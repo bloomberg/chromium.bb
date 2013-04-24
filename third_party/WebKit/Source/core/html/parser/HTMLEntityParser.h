@@ -27,7 +27,7 @@
 #ifndef HTMLEntityParser_h
 #define HTMLEntityParser_h
 
-#include "SegmentedString.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

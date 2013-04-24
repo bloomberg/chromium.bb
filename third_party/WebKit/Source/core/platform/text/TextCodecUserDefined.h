@@ -26,7 +26,7 @@
 #ifndef TextCodecUserDefined_h
 #define TextCodecUserDefined_h
 
-#include "TextCodec.h"
+#include "core/platform/text/TextCodec.h"
 
 namespace WebCore {
 

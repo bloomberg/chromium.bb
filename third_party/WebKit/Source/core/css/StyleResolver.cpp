@@ -76,7 +76,6 @@
 #include "InspectorInstrumentation.h"
 #include "KeyframeList.h"
 #include "LinkHash.h"
-#include "LocaleToScriptMapping.h"
 #include "MathMLNames.h"
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"
@@ -131,6 +130,7 @@
 #include "core/platform/graphics/transforms/SkewTransformOperation.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
+#include "core/platform/text/LocaleToScriptMapping.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>

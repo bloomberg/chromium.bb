@@ -31,12 +31,12 @@
 #include "config.h"
 #include "LocaleWin.h"
 
+#include <windows.h>
+#include <limits>
 #include "DateComponents.h"
-#include "DateTimeFormat.h"
 #include "Language.h"
 #include "LocalizedStrings.h"
-#include <limits>
-#include <windows.h>
+#include "core/platform/text/DateTimeFormat.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>
 #include <wtf/HashMap.h>

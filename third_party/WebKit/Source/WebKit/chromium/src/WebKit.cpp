@@ -41,7 +41,6 @@
 #include "Page.h"
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
-#include "TextEncoding.h"
 #include "V8Binding.h"
 #include "V8RecursionScope.h"
 #include "WebMediaPlayerClientImpl.h"
@@ -50,6 +49,7 @@
 #include "WorkerContextProxyChromium.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include "core/platform/graphics/chromium/MediaPlayerPrivateChromium.h"
+#include "core/platform/text/TextEncoding.h"
 #include "v8.h"
 #include <public/Platform.h>
 #include <public/WebPrerenderingSupport.h>

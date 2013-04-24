@@ -23,7 +23,7 @@
 #define SVGParserUtilities_h
 #if ENABLE(SVG)
 
-#include "ParserUtilities.h"
+#include "core/platform/text/ParserUtilities.h"
 #include <wtf/HashSet.h>
 
 typedef pair<unsigned, unsigned> UnicodeRange;

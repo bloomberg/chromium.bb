@@ -26,16 +26,16 @@
 
 #include "config.h"
 #if USE(ICU_UNICODE)
-#include "TextCodecICU.h"
+#include "core/platform/text/TextCodecICU.h"
 
-#include "ThreadGlobalData.h"
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
+#include "ThreadGlobalData.h"
 #include <wtf/Assertions.h>
 #include <wtf/StringExtras.h>
-#include <wtf/Threading.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Threading.h>
 #include <wtf/unicode/CharacterNames.h>
 
 using std::min;

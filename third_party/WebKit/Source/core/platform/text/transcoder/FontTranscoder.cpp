@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "FontTranscoder.h"
+#include "core/platform/text/transcoder/FontTranscoder.h"
 
-#include "TextEncoding.h"
 #include "core/platform/graphics/FontDescription.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/unicode/CharacterNames.h>
 
 namespace WebCore {
@@ -81,7 +81,7 @@ void FontTranscoder::convert(String& text, const FontDescription& fontDescriptio
 {
     switch (converterType(fontDescription, encoding)) {
     case BackslashToYenSign: {
-        // FIXME: TextEncoding.h has similar code. We need to factor them out.
+        // FIXME: core/platform/text/TextEncoding.h has similar code. We need to factor them out.
         text.replace('\\', yenSign);
         break;
     }

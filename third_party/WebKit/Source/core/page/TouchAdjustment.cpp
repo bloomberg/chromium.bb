@@ -36,11 +36,11 @@
 #include "RenderText.h"
 #include "ShadowRoot.h"
 #include "Text.h"
-#include "TextBreakIterator.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/text/TextBreakIterator.h"
 
 namespace WebCore {
 

@@ -30,7 +30,7 @@
 #include "CSSPreloadScanner.h"
 #include "CompactHTMLToken.h"
 #include "HTMLToken.h"
-#include "SegmentedString.h"
+#include "core/platform/text/SegmentedString.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

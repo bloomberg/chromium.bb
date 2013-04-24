@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "TextCodecUTF16.h"
+#include "core/platform/text/TextCodecUTF16.h"
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/CString.h>

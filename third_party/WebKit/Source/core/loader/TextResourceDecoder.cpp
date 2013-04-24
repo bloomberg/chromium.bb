@@ -26,10 +26,10 @@
 #include "DOMImplementation.h"
 #include "HTMLMetaCharsetParser.h"
 #include "HTMLNames.h"
-#include "TextCodec.h"
-#include "TextEncoding.h"
-#include "TextEncodingDetector.h"
-#include "TextEncodingRegistry.h"
+#include "core/platform/text/TextCodec.h"
+#include "core/platform/text/TextEncoding.h"
+#include "core/platform/text/TextEncodingDetector.h"
+#include "core/platform/text/TextEncodingRegistry.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/StringExtras.h>
 

@@ -70,12 +70,12 @@
 #include "ShadowRoot.h"
 #include "SubmitInputType.h"
 #include "TelephoneInputType.h"
-#include "TextBreakIterator.h"
 #include "TextInputType.h"
 #include "TimeInputType.h"
 #include "URLInputType.h"
 #include "WeekInputType.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/text/TextBreakIterator.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>

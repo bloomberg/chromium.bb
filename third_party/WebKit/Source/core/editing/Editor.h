@@ -36,11 +36,11 @@
 #include "FindOptions.h"
 #include "FrameDestructionObserver.h"
 #include "FrameSelection.h"
-#include "TextChecking.h"
 #include "TextIterator.h"
 #include "VisibleSelection.h"
 #include "WritingDirection.h"
 #include "core/platform/graphics/Color.h"
+#include "core/platform/text/TextChecking.h"
 
 namespace WebCore {
 

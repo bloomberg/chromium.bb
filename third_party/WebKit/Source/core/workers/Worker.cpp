@@ -29,22 +29,22 @@
 
 #include "Worker.h"
 
-#include "DOMWindow.h"
 #include "CachedResourceLoader.h"
+#include "DOMWindow.h"
 #include "Document.h"
 #include "EventException.h"
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "UseCounter.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "InspectorInstrumentation.h"
 #include "MessageEvent.h"
-#include "TextEncoding.h"
+#include "UseCounter.h"
 #include "WorkerContextProxy.h"
 #include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

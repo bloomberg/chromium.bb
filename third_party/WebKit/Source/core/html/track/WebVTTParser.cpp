@@ -34,9 +34,9 @@
 
 #include "HTMLElement.h"
 #include "ProcessingInstruction.h"
-#include "SegmentedString.h"
 #include "Text.h"
 #include "WebVTTElement.h"
+#include "core/platform/text/SegmentedString.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

@@ -26,9 +26,7 @@
 #include "RenderText.h"
 
 #include "EllipsisBox.h"
-#include "FontTranscoder.h"
 #include "FrameView.h"
-#include "Hyphenation.h"
 #include "InlineTextBox.h"
 #include "Range.h"
 #include "RenderArena.h"
@@ -38,13 +36,15 @@
 #include "RenderView.h"
 #include "Settings.h"
 #include "Text.h"
-#include "TextBreakIterator.h"
 #include "TextResourceDecoder.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "break_lines.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/graphics/FloatQuad.h"
+#include "core/platform/text/Hyphenation.h"
+#include "core/platform/text/TextBreakIterator.h"
+#include "core/platform/text/transcoder/FontTranscoder.h"
 #include <wtf/text/StringBuffer.h>
 #include <wtf/unicode/CharacterNames.h>
 

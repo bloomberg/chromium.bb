@@ -22,8 +22,6 @@
 
 #include "config.h"
 
-#include "BidiResolver.h"
-#include "Hyphenation.h"
 #include "InlineIterator.h"
 #include "InlineTextBox.h"
 #include "Logging.h"
@@ -41,10 +39,12 @@
 #include "TrailingFloatsRootInlineBox.h"
 #include "VerticalPositionCache.h"
 #include "break_lines.h"
+#include "core/platform/text/BidiResolver.h"
+#include "core/platform/text/Hyphenation.h"
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
 #include <wtf/unicode/CharacterNames.h>
+#include <wtf/Vector.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"

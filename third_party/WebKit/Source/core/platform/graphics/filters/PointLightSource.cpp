@@ -32,7 +32,7 @@
 
 #include "core/platform/graphics/filters/PointLightSource.h"
 
-#include "TextStream.h"
+#include "core/platform/text/TextStream.h"
 
 namespace WebCore {
 

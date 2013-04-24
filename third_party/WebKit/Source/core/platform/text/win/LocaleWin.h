@@ -31,11 +31,11 @@
 #ifndef LocaleWin_h
 #define LocaleWin_h
 
-#include "PlatformLocale.h"
 #include <windows.h>
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/Forward.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

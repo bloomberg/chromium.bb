@@ -65,19 +65,19 @@
 #include "InstrumentingAgents.h"
 #include "MemoryCache.h"
 #include "Page.h"
-#include "RegularExpression.h"
 #include "ScriptController.h"
 #include "ScriptObject.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
-#include "TextEncoding.h"
 #include "TextResourceDecoder.h"
 #include "UserGestureIndicator.h"
+#include "core/platform/text/RegularExpression.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/ListHashSet.h>
-#include <wtf/Vector.h>
 #include <wtf/text/Base64.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 using namespace std;
 

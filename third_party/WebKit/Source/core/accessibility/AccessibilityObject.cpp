@@ -37,12 +37,12 @@
 #include "RenderTheme.h"
 #include "RenderView.h"
 #include "RenderedPosition.h"
-#include "TextCheckerClient.h"
 #include "TextCheckingHelper.h"
 #include "UserGestureIndicator.h"
 #include "VisibleUnits.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityTable.h"
+#include "core/platform/text/TextCheckerClient.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

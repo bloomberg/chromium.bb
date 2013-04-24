@@ -25,7 +25,7 @@
 
 #ifndef RenderTreeAsText_h
 #define RenderTreeAsText_h
-#include "TextStream.h"
+#include "core/platform/text/TextStream.h"
 
 #include <wtf/Forward.h>
 

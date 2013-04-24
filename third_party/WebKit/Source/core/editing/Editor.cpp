@@ -80,7 +80,6 @@
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "Text.h"
-#include "TextCheckerClient.h"
 #include "TextCheckingHelper.h"
 #include "TextEvent.h"
 #include "TextIterator.h"
@@ -89,6 +88,7 @@
 #include "VisibleUnits.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/text/TextCheckerClient.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include <wtf/unicode/CharacterNames.h>

@@ -27,8 +27,8 @@
 #include "DecodedDataDocumentParser.h"
 
 #include "DocumentWriter.h"
-#include "SegmentedString.h"
 #include "TextResourceDecoder.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

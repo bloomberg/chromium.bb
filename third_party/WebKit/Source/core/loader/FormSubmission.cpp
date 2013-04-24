@@ -43,9 +43,9 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "TextEncoding.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/FormDataBuilder.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/RandomNumber.h>
 

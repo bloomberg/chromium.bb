@@ -34,7 +34,7 @@
 #include "Blob.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLFormElement.h"
-#include "TextEncoding.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

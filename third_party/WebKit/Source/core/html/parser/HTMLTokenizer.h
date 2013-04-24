@@ -30,7 +30,7 @@
 #include "HTMLParserOptions.h"
 #include "HTMLToken.h"
 #include "InputStreamPreprocessor.h"
-#include "SegmentedString.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

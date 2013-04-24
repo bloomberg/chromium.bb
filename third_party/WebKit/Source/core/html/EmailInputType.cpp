@@ -28,7 +28,7 @@
 #include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
 #include "LocalizedStrings.h"
-#include "RegularExpression.h"
+#include "core/platform/text/RegularExpression.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 

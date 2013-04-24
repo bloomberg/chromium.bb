@@ -31,9 +31,9 @@
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
 #include "LocalizedStrings.h"
-#include "PlatformLocale.h"
 #include "RenderObject.h"
 #include "Text.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

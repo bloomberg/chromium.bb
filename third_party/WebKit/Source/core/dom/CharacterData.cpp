@@ -34,8 +34,8 @@
 #include "RenderText.h"
 #include "StyleInheritedData.h"
 #include "Text.h"
-#include "TextBreakIterator.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/text/TextBreakIterator.h"
 
 using namespace std;
 

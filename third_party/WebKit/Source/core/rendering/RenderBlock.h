@@ -29,8 +29,8 @@
 #include "RenderBox.h"
 #include "RenderLineBoxList.h"
 #include "RootInlineBox.h"
-#include "TextBreakIterator.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/text/TextBreakIterator.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
 

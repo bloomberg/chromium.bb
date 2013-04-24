@@ -25,11 +25,11 @@
 
 #include "RenderTreeAsText.h"
 #include "SVGRenderingContext.h"
-#include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/platform/text/TextStream.h"
 
 namespace WebCore {
 

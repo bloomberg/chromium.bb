@@ -28,8 +28,8 @@
 #include "DateTimeSymbolicFieldElement.h"
 
 #include "KeyboardEvent.h"
-#include "TextBreakIterator.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/text/TextBreakIterator.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/Unicode.h>
 

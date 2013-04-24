@@ -30,9 +30,9 @@
 #include "DocumentMarker.h"
 #include "FrameSelection.h"
 #include "Range.h"
-#include "TextChecking.h"
 #include "Timer.h"
 #include "VisibleSelection.h"
+#include "core/platform/text/TextChecking.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/UnusedParam.h>
 

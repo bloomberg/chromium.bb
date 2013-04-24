@@ -30,17 +30,17 @@
 #include "DateComponents.h"
 #include "DateTimeFieldElements.h"
 #include "DateTimeFieldsState.h"
-#include "DateTimeFormat.h"
 #include "DateTimeSymbolicFieldElement.h"
 #include "EventHandler.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
-#include "PlatformLocale.h"
 #include "RenderStyle.h"
 #include "StyleResolver.h"
 #include "Text.h"
 #include "core/platform/graphics/FontCache.h"
+#include "core/platform/text/DateTimeFormat.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/DateMath.h>
 #include <wtf/text/StringBuilder.h>
 

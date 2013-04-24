@@ -25,7 +25,6 @@
 #ifndef FontDescription_h
 #define FontDescription_h
 
-#include "NonCJKGlyphOrientation.h"
 #include "WebKitFontFamilyNames.h"
 #include "core/platform/graphics/FontFamily.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
@@ -35,6 +34,7 @@
 #include "core/platform/graphics/FontTraitsMask.h"
 #include "core/platform/graphics/FontWidthVariant.h"
 #include "core/platform/graphics/TextRenderingMode.h"
+#include "core/platform/text/NonCJKGlyphOrientation.h"
 #include <wtf/MathExtras.h>
 
 #include <wtf/RefPtr.h>

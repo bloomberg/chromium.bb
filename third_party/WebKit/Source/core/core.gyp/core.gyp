@@ -75,8 +75,6 @@
       '../page/scrolling',
       '../platform',
       '../platform/graphics/skia',
-      '../platform/text',
-      '../platform/text/transcoder',
       '../plugins',
       '../rendering',
       '../rendering/mathml',

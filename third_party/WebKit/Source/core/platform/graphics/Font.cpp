@@ -24,13 +24,13 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "FontTranscoder.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
+#include "core/platform/text/transcoder/FontTranscoder.h"
 #include <wtf/MainThread.h>
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>

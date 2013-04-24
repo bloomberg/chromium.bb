@@ -33,8 +33,8 @@
 
 #include "FileError.h"
 #include "KURL.h"
-#include "TextEncoding.h"
 #include "ThreadableLoaderClient.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
 

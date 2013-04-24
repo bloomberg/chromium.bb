@@ -26,10 +26,10 @@
  */
 
 #include "config.h"
-#include "TextEncoding.h"
+#include "core/platform/text/TextEncoding.h"
 
-#include "TextCodec.h"
-#include "TextEncodingRegistry.h"
+#include "core/platform/text/TextCodec.h"
+#include "core/platform/text/TextEncodingRegistry.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

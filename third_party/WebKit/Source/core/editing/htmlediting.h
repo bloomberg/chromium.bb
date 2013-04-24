@@ -28,7 +28,7 @@
 
 #include "EditingBoundary.h"
 #include "Position.h"
-#include "TextDirection.h"
+#include "core/platform/text/TextDirection.h"
 #include <wtf/Forward.h>
 #include <wtf/unicode/CharacterNames.h>
 

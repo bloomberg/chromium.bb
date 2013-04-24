@@ -45,12 +45,12 @@
 #include "LineClampValue.h"
 #include "RenderStyleConstants.h"
 #include "SVGRenderStyleDefs.h"
-#include "TextDirection.h"
 #include "ThemeTypes.h"
-#include "UnicodeBidi.h"
-#include "WritingMode.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/TextRenderingMode.h"
+#include "core/platform/text/TextDirection.h"
+#include "core/platform/text/UnicodeBidi.h"
+#include "core/platform/text/WritingMode.h"
 
 #include <wtf/MathExtras.h>
 

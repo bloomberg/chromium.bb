@@ -70,11 +70,11 @@
 #include "StyleResolver.h"
 #include "TextAutosizer.h"
 #include "TextResourceDecoder.h"
-#include "TextStream.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/text/TextStream.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/TemporaryChange.h>

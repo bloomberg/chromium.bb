@@ -61,7 +61,6 @@
 #include "SpeechRecognitionError.h"
 #include "StorageQuota.h"
 #include "TextAffinity.h"
-#include "TextChecking.h"
 #include "TextControlInnerElements.h"
 #include "UserContentTypes.h"
 #include "UserStyleSheetTypes.h"
@@ -110,6 +109,7 @@
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/platform/text/TextChecking.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

@@ -28,14 +28,14 @@
 
 #include "Element.h"
 #include "Range.h"
-#include "TextChecking.h"
 #include "Timer.h"
+#include "core/platform/text/TextChecking.h"
 #include <wtf/Deque.h>
+#include <wtf/Noncopyable.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

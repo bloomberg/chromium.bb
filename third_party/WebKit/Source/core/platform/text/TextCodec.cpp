@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "TextCodec.h"
+#include "core/platform/text/TextCodec.h"
 
 #include <wtf/StringExtras.h>
 #include <wtf/text/WTFString.h>

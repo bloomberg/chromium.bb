@@ -41,9 +41,9 @@
 #include "Language.h"
 #include "NotImplemented.h"
 #include "PickerCommon.h"
-#include "PlatformLocale.h"
 #include "RenderTheme.h"
 #include "WebViewImpl.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <public/Platform.h>
 #include <public/WebLocalizedString.h>
 

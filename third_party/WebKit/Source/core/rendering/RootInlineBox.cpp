@@ -20,7 +20,6 @@
 #include "config.h"
 #include "RootInlineBox.h"
 
-#include "BidiResolver.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
@@ -36,6 +35,7 @@
 #include "RenderView.h"
 #include "VerticalPositionCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/text/BidiResolver.h"
 #include <wtf/unicode/Unicode.h>
 
 using namespace std;

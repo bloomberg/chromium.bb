@@ -31,11 +31,11 @@
 #include "config.h"
 #include "BaseDateAndTimeInputType.h"
 
+#include <limits>
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
-#include "PlatformLocale.h"
-#include <limits>
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>

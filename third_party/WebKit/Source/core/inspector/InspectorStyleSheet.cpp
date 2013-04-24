@@ -47,7 +47,6 @@
 #include "InspectorPageAgent.h"
 #include "InspectorValues.h"
 #include "Node.h"
-#include "RegularExpression.h"
 #include "SVGNames.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
@@ -56,11 +55,12 @@
 #include "StyleSheetContents.h"
 #include "StyleSheetList.h"
 #include "WebKitCSSKeyframesRule.h"
+#include "core/platform/text/RegularExpression.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 using WebCore::TypeBuilder::Array;
 using WebCore::RuleSourceDataList;

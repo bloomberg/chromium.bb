@@ -24,7 +24,7 @@
 #ifndef TextRun_h
 #define TextRun_h
 
-#include "TextDirection.h"
+#include "core/platform/text/TextDirection.h"
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 

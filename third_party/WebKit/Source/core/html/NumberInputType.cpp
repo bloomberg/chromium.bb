@@ -32,6 +32,7 @@
 #include "config.h"
 #include "NumberInputType.h"
 
+#include <limits>
 #include "BeforeTextInsertedEvent.h"
 #include "ExceptionCode.h"
 #include "HTMLInputElement.h"
@@ -40,9 +41,8 @@
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
 #include "LocalizedStrings.h"
-#include "PlatformLocale.h"
 #include "RenderTextControl.h"
-#include <limits>
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/MathExtras.h>
 #include <wtf/PassOwnPtr.h>

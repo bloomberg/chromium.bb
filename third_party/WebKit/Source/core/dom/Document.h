@@ -43,13 +43,13 @@
 #include "QualifiedName.h"
 #include "ReferrerPolicy.h"
 #include "ScriptExecutionContext.h"
-#include "StringWithDirection.h"
 #include "Timer.h"
 #include "TreeScope.h"
 #include "UserActionElementSet.h"
 #include "ViewportArguments.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/text/StringWithDirection.h"
 #include <wtf/Deque.h>
 #include <wtf/FixedArray.h>
 #include <wtf/HashSet.h>

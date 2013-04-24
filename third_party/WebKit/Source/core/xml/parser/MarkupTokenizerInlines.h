@@ -28,7 +28,7 @@
 #ifndef MarkupTokenizerInlines_h
 #define MarkupTokenizerInlines_h
 
-#include "SegmentedString.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

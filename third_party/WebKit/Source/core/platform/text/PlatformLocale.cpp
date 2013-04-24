@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "PlatformLocale.h"
+#include "core/platform/text/PlatformLocale.h"
 
-#include "DateTimeFormat.h"
 #include "LocalizedStrings.h"
+#include "core/platform/text/DateTimeFormat.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

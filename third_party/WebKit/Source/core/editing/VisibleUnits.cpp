@@ -36,10 +36,10 @@
 #include "RenderObject.h"
 #include "RenderedPosition.h"
 #include "Text.h"
-#include "TextBoundaries.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleSelection.h"
+#include "core/platform/text/TextBoundaries.h"
 #include "htmlediting.h"
 #include <wtf/unicode/Unicode.h>
 

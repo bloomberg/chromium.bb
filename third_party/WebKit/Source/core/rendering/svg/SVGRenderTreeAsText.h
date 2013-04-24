@@ -28,7 +28,7 @@
 
 #if ENABLE(SVG)
 
-#include "TextStream.h"
+#include "core/platform/text/TextStream.h"
 
 namespace WebCore {
 

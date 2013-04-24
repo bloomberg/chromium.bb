@@ -27,11 +27,11 @@
 #include "config.h"
 #include "KURL.h"
 
-#include "DecodeEscapeSequences.h"
+#include <stdio.h>
 #include "MIMETypeRegistry.h"
 #include "PlatformMemoryInstrumentation.h"
-#include "TextEncoding.h"
-#include <stdio.h>
+#include "core/platform/text/DecodeEscapeSequences.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/HashMap.h>
 #include <wtf/HexNumber.h>
 #include <wtf/MemoryInstrumentationString.h>

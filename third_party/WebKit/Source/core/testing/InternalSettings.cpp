@@ -33,13 +33,13 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "Language.h"
-#include "LocaleToScriptMapping.h"
 #include "Page.h"
 #include "PageGroup.h"
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 #include "Supplementable.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/platform/text/LocaleToScriptMapping.h"
 
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "ColorChooser.h"

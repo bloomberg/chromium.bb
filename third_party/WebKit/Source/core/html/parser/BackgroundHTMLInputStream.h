@@ -26,9 +26,9 @@
 #ifndef BackgroundHTMLInputStream_h
 #define BackgroundHTMLInputStream_h
 
-#include "SegmentedString.h"
-#include <wtf/Vector.h>
+#include "core/platform/text/SegmentedString.h"
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

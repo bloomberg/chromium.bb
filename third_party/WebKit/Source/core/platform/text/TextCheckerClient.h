@@ -28,12 +28,12 @@
 #ifndef TextCheckerClient_h
 #define TextCheckerClient_h
 
-#include "TextChecking.h"
+#include "core/platform/text/TextChecking.h"
 
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

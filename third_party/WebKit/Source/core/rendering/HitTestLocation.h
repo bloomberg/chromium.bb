@@ -23,11 +23,11 @@
 #define HitTestLocation_h
 
 #include "HitTestRequest.h"
-#include "TextDirection.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/RoundedRect.h"
+#include "core/platform/text/TextDirection.h"
 #include <wtf/Forward.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>

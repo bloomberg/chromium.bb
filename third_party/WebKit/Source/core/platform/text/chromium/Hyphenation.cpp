@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Hyphenation.h"
+#include "core/platform/text/Hyphenation.h"
 
 #include <public/Platform.h>
 #include <public/WebHyphenator.h>

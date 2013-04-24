@@ -22,9 +22,9 @@
 #ifndef BidiResolver_h
 #define BidiResolver_h
 
-#include "BidiContext.h"
-#include "BidiRunList.h"
-#include "TextDirection.h"
+#include "core/platform/text/BidiContext.h"
+#include "core/platform/text/BidiRunList.h"
+#include "core/platform/text/TextDirection.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>

@@ -31,10 +31,10 @@
 #ifndef LocaleICU_h
 #define LocaleICU_h
 
-#include "DateComponents.h"
-#include "PlatformLocale.h"
 #include <unicode/udat.h>
 #include <unicode/unum.h>
+#include "DateComponents.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/text/CString.h>

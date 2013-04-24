@@ -41,9 +41,9 @@
 #include "HTMLTableSectionElement.h"
 #include "HTMLToken.h"
 #include "HTMLViewSourceParser.h"
-#include "SegmentedString.h"
 #include "Text.h"
 #include "TextViewSourceParser.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

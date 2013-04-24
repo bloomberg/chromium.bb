@@ -30,8 +30,8 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "KeyboardEvent.h"
-#include "PlatformLocale.h"
 #include "core/platform/graphics/Font.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/StringBuilder.h>
 
 using namespace WTF::Unicode;

@@ -27,6 +27,7 @@
 #include "config.h"
 #include "CSSParser.h"
 
+#include <limits.h>
 #include "CSSAspectRatioValue.h"
 #include "CSSBasicShapes.h"
 #include "CSSBorderImage.h"
@@ -78,15 +79,14 @@
 #include "StyleRule.h"
 #include "StyleRuleImport.h"
 #include "StyleSheetContents.h"
-#include "TextEncoding.h"
 #include "WebKitCSSKeyframeRule.h"
 #include "WebKitCSSKeyframesRule.h"
 #include "WebKitCSSRegionRule.h"
 #include "WebKitCSSTransformValue.h"
-#include <limits.h>
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/BitArray.h>
-#include <wtf/HexNumber.h>
 #include <wtf/dtoa.h>
+#include <wtf/HexNumber.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringImpl.h>

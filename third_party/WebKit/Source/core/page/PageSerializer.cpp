@@ -54,9 +54,9 @@
 #include "StyleRule.h"
 #include "StyleSheetContents.h"
 #include "Text.h"
-#include "TextEncoding.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/HTTPParsers.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

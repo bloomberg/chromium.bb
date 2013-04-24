@@ -35,7 +35,6 @@
 #include "CSSValueKeywords.h"
 #include "DateComponents.h"
 #include "DateTimeFieldsState.h"
-#include "DateTimeFormat.h"
 #include "ElementShadow.h"
 #include "FocusController.h"
 #include "FormController.h"
@@ -47,9 +46,10 @@
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "PickerIndicatorElement.h"
-#include "PlatformLocale.h"
 #include "RenderTheme.h"
 #include "ShadowRoot.h"
+#include "core/platform/text/DateTimeFormat.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/DateMath.h>
 
 namespace WebCore {

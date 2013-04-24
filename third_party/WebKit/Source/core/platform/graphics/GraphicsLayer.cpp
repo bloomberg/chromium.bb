@@ -28,12 +28,12 @@
 #include "core/platform/graphics/GraphicsLayer.h"
 
 #include "PlatformMemoryInstrumentation.h"
-#include "TextStream.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"
+#include "core/platform/text/TextStream.h"
 #include <wtf/HashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/CString.h>

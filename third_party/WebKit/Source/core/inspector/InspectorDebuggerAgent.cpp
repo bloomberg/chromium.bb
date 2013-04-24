@@ -39,9 +39,9 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
-#include "RegularExpression.h"
 #include "ScriptDebugServer.h"
 #include "ScriptObject.h"
+#include "core/platform/text/RegularExpression.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/WTFString.h>

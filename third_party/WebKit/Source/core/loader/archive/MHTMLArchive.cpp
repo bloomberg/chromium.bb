@@ -38,9 +38,9 @@
 #include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "PageSerializer.h"
-#include "QuotedPrintable.h"
 #include "SchemeRegistry.h"
 #include "SharedBuffer.h"
+#include "core/platform/text/QuotedPrintable.h"
 
 #include <wtf/CryptographicallyRandomNumber.h>
 #include <wtf/DateMath.h>

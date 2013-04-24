@@ -55,9 +55,7 @@
 #include "StyleSurroundData.h"
 #include "StyleTransformData.h"
 #include "StyleVisualData.h"
-#include "TextDirection.h"
 #include "ThemeTypes.h"
-#include "UnicodeBidi.h"
 #include "core/platform/animation/AnimationList.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
@@ -67,6 +65,8 @@
 #include "core/platform/graphics/LayoutBoxExtent.h"
 #include "core/platform/graphics/RoundedRect.h"
 #include "core/platform/graphics/transforms/TransformOperations.h"
+#include "core/platform/text/TextDirection.h"
+#include "core/platform/text/UnicodeBidi.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>

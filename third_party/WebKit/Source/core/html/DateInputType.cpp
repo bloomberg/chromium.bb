@@ -39,7 +39,7 @@
 #include "KeyboardEvent.h"
 #include "LocalizedStrings.h"
 #include "PickerIndicatorElement.h"
-#include "PlatformLocale.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

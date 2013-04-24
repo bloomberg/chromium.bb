@@ -94,7 +94,6 @@
 #include "StaticHashSetNodeList.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
-#include "TextStream.h"
 #include "UseCounter.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatPoint3D.h"
@@ -107,6 +106,7 @@
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
+#include "core/platform/text/TextStream.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

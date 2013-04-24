@@ -42,10 +42,10 @@
 #include "HTMLOptionElement.h"
 #include "HTMLOptionsCollection.h"
 #include "HTMLSelectElement.h"
-#include "TextEncoding.h"
 #include "WebFormElement.h"
 #include "WebInputElement.h"
 #include "core/platform/network/FormDataBuilder.h"
+#include "core/platform/text/TextEncoding.h"
 
 using namespace WebCore;
 using namespace HTMLNames;

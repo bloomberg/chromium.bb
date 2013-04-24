@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "LocaleICU.h"
+#include "core/platform/text/LocaleICU.h"
 
-#include "LocalizedStrings.h"
-#include <limits>
 #include <unicode/udatpg.h>
 #include <unicode/uloc.h>
+#include <limits>
+#include "LocalizedStrings.h"
 #include <wtf/DateMath.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>

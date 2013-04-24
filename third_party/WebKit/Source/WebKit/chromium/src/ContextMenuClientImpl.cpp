@@ -55,8 +55,6 @@
 #include "Page.h"
 #include "RenderWidget.h"
 #include "Settings.h"
-#include "TextBreakIterator.h"
-#include "Widget.h"
 #include "WebContextMenuData.h"
 #include "WebDataSourceImpl.h"
 #include "WebFormElement.h"
@@ -68,6 +66,8 @@
 #include "WebSpellCheckClient.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "Widget.h"
+#include "core/platform/text/TextBreakIterator.h"
 #include <public/WebPoint.h>
 #include <public/WebString.h>
 #include <public/WebURL.h>

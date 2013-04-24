@@ -39,14 +39,14 @@
 #include "HTMLTokenizer.h"
 #include "HTMLTreeBuilderSimulator.h"
 #include "ScriptableDocumentParser.h"
-#include "SegmentedString.h"
 #include "Timer.h"
 #include "XSSAuditor.h"
 #include "XSSAuditorDelegate.h"
+#include "core/platform/text/SegmentedString.h"
 #include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>
-#include <wtf/WeakPtr.h>
 #include <wtf/text/TextPosition.h>
+#include <wtf/WeakPtr.h>
 
 namespace WebCore {
 

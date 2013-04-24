@@ -78,6 +78,7 @@
 #include "config.h"
 #include "WebPageSerializerImpl.h"
 
+#include "DOMUtilitiesPrivate.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "DocumentType.h"
@@ -89,10 +90,9 @@
 #include "HTMLMetaElement.h"
 #include "HTMLNames.h"
 #include "KURL.h"
-#include "TextEncoding.h"
-#include "markup.h"
-#include "DOMUtilitiesPrivate.h"
 #include "WebFrameImpl.h"
+#include "core/platform/text/TextEncoding.h"
+#include "markup.h"
 #include <public/WebURL.h>
 #include <public/WebVector.h>
 

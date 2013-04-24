@@ -32,11 +32,11 @@
 #include "Frame.h"
 #include "Range.h"
 #include "Settings.h"
-#include "TextBreakIterator.h"
-#include "TextCheckerClient.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
+#include "core/platform/text/TextBreakIterator.h"
+#include "core/platform/text/TextCheckerClient.h"
 
 namespace WebCore {
 

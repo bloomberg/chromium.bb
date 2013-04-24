@@ -31,7 +31,7 @@
 #include "ContentSearchUtils.h"
 
 #include "InspectorValues.h"
-#include "RegularExpression.h"
+#include "core/platform/text/RegularExpression.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

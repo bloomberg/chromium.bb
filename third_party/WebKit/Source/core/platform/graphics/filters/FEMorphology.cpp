@@ -27,8 +27,8 @@
 #include "core/platform/graphics/filters/FEMorphology.h"
 
 #include "RenderTreeAsText.h"
-#include "TextStream.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/text/TextStream.h"
 
 #include <wtf/ParallelJobs.h>
 #include <wtf/Uint8ClampedArray.h>

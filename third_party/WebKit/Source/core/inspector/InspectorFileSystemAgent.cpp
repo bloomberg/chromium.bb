@@ -60,9 +60,9 @@
 #include "MetadataCallback.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
-#include "TextEncoding.h"
 #include "TextResourceDecoder.h"
 #include "VoidCallback.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/text/Base64.h>
 
 using WebCore::TypeBuilder::Array;

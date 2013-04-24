@@ -31,9 +31,9 @@
 #include "config.h"
 #include "LocalizedStrings.h"
 
-#include "DateTimeFormat.h"
 #include "NotImplemented.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/platform/text/DateTimeFormat.h"
 
 #include <public/Platform.h>
 #include <public/WebLocalizedString.h>

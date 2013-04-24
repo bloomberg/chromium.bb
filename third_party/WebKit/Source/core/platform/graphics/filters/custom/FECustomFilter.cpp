@@ -35,11 +35,11 @@
 #include "core/platform/graphics/filters/custom/FECustomFilter.h"
 
 #include "RenderTreeAsText.h"
-#include "TextStream.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/filters/custom/CustomFilterRenderer.h"
 #include "core/platform/graphics/filters/custom/CustomFilterValidatedProgram.h"
+#include "core/platform/text/TextStream.h"
 
 #include <wtf/Uint8ClampedArray.h>
 

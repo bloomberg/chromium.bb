@@ -41,10 +41,10 @@
 #include "ScriptController.h"
 #include "ScriptableDocumentParser.h"
 #include "SecurityOrigin.h"
-#include "SegmentedString.h"
 #include "Settings.h"
 #include "SinkDocument.h"
 #include "TextResourceDecoder.h"
+#include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {
 

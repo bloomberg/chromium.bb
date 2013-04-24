@@ -26,7 +26,7 @@
 #ifndef TextCodecUTF16_h
 #define TextCodecUTF16_h
 
-#include "TextCodec.h"
+#include "core/platform/text/TextCodec.h"
 
 namespace WebCore {
 

@@ -22,7 +22,7 @@
 #define FormDataList_h
 
 #include "Blob.h"
-#include "TextEncoding.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/Forward.h>
 #include <wtf/text/CString.h>
 

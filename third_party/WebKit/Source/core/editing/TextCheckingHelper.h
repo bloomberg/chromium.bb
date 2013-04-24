@@ -23,7 +23,7 @@
 
 #include "EditorClient.h"
 #include "ExceptionCode.h"
-#include "TextChecking.h"
+#include "core/platform/text/TextChecking.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

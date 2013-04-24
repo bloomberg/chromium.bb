@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebTextCheckingResult.h"
 
-#include "TextCheckerClient.h"
+#include "core/platform/text/TextCheckerClient.h"
 
 using namespace WebCore;
 

@@ -27,9 +27,9 @@
 #ifndef TextCodecICU_h
 #define TextCodecICU_h
 
-#include "TextCodec.h"
-#include "TextEncoding.h"
 #include <unicode/utypes.h>
+#include "core/platform/text/TextCodec.h"
+#include "core/platform/text/TextEncoding.h"
 
 typedef struct UConverter UConverter;
 

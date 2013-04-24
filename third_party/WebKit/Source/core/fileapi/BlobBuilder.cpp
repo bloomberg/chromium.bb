@@ -37,15 +37,15 @@
 #include "ExceptionCode.h"
 #include "File.h"
 #include "HistogramSupport.h"
-#include "LineEnding.h"
 #include "ScriptCallStack.h"
-#include "TextEncoding.h"
+#include "core/platform/text/LineEnding.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/CString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

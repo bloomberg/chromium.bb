@@ -43,9 +43,9 @@
 #include "ScriptState.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicyViolationEvent.h"
-#include "TextEncoding.h"
 #include "UseCounter.h"
 #include "core/platform/network/FormData.h"
+#include "core/platform/text/TextEncoding.h"
 #include <wtf/HashSet.h>
 #include <wtf/text/TextPosition.h>
 #include <wtf/text/WTFString.h>

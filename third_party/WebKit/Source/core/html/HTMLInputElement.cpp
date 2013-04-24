@@ -58,7 +58,6 @@
 #include "Language.h"
 #include "LocalizedStrings.h"
 #include "MouseEvent.h"
-#include "PlatformLocale.h"
 #include "PlatformMouseEvent.h"
 #include "RenderTextControlSingleLine.h"
 #include "RenderTheme.h"
@@ -71,6 +70,7 @@
 #include "TouchEvent.h"
 #include "UseCounter.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/text/PlatformLocale.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

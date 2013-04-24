@@ -33,10 +33,10 @@
 #include "SVGRenderingContext.h"
 #include "SVGStyledElement.h"
 #include "SVGURIReference.h"
-#include "TextStream.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/platform/text/TextStream.h"
 
 namespace WebCore {
 

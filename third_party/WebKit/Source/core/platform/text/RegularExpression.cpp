@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "RegularExpression.h"
+#include "core/platform/text/RegularExpression.h"
 
 // FIXME: These seem like a layering violation, but converting the strings manually
 // without v8String is difficult, and calling into v8 without V8RecursionScope will

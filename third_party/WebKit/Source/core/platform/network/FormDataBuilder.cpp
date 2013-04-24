@@ -28,7 +28,7 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "TextEncoding.h"
+#include "core/platform/text/TextEncoding.h"
 
 #include <limits>
 #include <wtf/Assertions.h>

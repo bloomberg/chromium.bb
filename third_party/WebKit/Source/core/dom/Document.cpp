@@ -126,7 +126,6 @@
 #include "PageGroup.h"
 #include "PageTransitionEvent.h"
 #include "PlatformKeyboardEvent.h"
-#include "PlatformLocale.h"
 #include "PluginDocument.h"
 #include "PointerLockController.h"
 #include "PopStateEvent.h"
@@ -155,7 +154,6 @@
 #include "ScrollingCoordinator.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
-#include "SegmentedString.h"
 #include "SelectorQuery.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
@@ -186,6 +184,8 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/network/HTTPParsers.h"
+#include "core/platform/text/PlatformLocale.h"
+#include "core/platform/text/SegmentedString.h"
 #include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>

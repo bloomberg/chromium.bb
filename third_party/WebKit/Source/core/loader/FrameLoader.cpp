@@ -89,7 +89,6 @@
 #include "ScrollAnimator.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
-#include "SegmentedString.h"
 #include "SerializedScriptValue.h"
 #include "Settings.h"
 #include "TextResourceDecoder.h"
@@ -102,6 +101,7 @@
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "core/platform/text/SegmentedString.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>

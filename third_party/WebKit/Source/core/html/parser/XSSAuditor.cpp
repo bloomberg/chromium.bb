@@ -30,7 +30,6 @@
 #include "Console.h"
 #include "ContentSecurityPolicy.h"
 #include "DOMWindow.h"
-#include "DecodeEscapeSequences.h"
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "FormDataList.h"
@@ -47,11 +46,12 @@
 #include "PingLoader.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
-#include "TextEncoding.h"
 #include "TextResourceDecoder.h"
 #include "XLinkNames.h"
 #include "XSSAuditorDelegate.h"
 #include "core/platform/network/FormData.h"
+#include "core/platform/text/DecodeEscapeSequences.h"
+#include "core/platform/text/TextEncoding.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

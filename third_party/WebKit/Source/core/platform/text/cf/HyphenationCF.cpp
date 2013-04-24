@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "Hyphenation.h"
+#include "core/platform/text/Hyphenation.h"
 
 #if __MAC_OS_X_VERSION_MIN_REQUIRED >= 1070
 
-#include "AtomicStringKeyedMRUCache.h"
-#include "TextBreakIteratorInternalICU.h"
+#include "core/platform/text/AtomicStringKeyedMRUCache.h"
+#include "core/platform/text/TextBreakIteratorInternalICU.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/RetainPtr.h>
 
