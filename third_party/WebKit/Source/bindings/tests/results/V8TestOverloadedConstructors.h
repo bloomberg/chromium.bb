@@ -63,10 +63,6 @@ inline v8::Handle<v8::Object> wrap(TestOverloadedConstructors* impl, v8::Handle<
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        RELEASE_ASSERT(actualInfo == &V8TestOverloadedConstructors::info);
-    }
     return V8TestOverloadedConstructors::createWrapper(impl, creationContext, isolate);
 }
 

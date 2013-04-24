@@ -62,10 +62,6 @@ inline v8::Handle<v8::Object> wrap(TestActiveDOMObject* impl, v8::Handle<v8::Obj
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        RELEASE_ASSERT(actualInfo == &V8TestActiveDOMObject::info);
-    }
     return V8TestActiveDOMObject::createWrapper(impl, creationContext, isolate);
 }
 
