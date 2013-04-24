@@ -775,7 +775,7 @@ void View::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void View::Paint(gfx::Canvas* canvas) {
-  TRACE_EVENT0("views", "View::Paint");
+  TRACE_EVENT1("views", "View::Paint", "class", GetClassName());
 
   ScopedCanvas scoped_canvas(canvas);
 
@@ -1276,14 +1276,14 @@ void View::NativeViewHierarchyChanged(bool attached,
 // Painting --------------------------------------------------------------------
 
 void View::PaintChildren(gfx::Canvas* canvas) {
-  TRACE_EVENT0("views", "View::PaintChildren");
+  TRACE_EVENT1("views", "View::PaintChildren", "class", GetClassName());
   for (int i = 0, count = child_count(); i < count; ++i)
     if (!child_at(i)->layer())
       child_at(i)->Paint(canvas);
 }
 
 void View::OnPaint(gfx::Canvas* canvas) {
-  TRACE_EVENT0("views", "View::OnPaint");
+  TRACE_EVENT1("views", "View::OnPaint", "class", GetClassName());
   OnPaintBackground(canvas);
   OnPaintFocusBorder(canvas);
   OnPaintBorder(canvas);
