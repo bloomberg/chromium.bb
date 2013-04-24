@@ -106,6 +106,10 @@ class InstantController : public InstantPage::Delegate,
   void HandleAutocompleteResults(
       const std::vector<AutocompleteProvider*>& providers);
 
+  // Called when the default search provider changes. Resets InstantNTP and
+  // InstantOverlay.
+  void OnDefaultSearchProviderChanged();
+
   // Called when the user presses up or down. |count| is a repeat count,
   // negative for moving up, positive for moving down. Returns true if Instant
   // handled the key press.
@@ -226,6 +230,7 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_OmniboxFocusLoadsInstant);
+  FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

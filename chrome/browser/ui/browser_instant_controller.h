@@ -120,6 +120,12 @@ class BrowserInstantController : public content::NotificationObserver,
   // Helper for handling theme change.
   void OnThemeChanged(ThemeService* theme_service);
 
+  // Called when the default search provider changes. Revokes the searchbox API
+  // privileges for any existing WebContents (that belong to the erstwhile
+  // default search provider) by simply reloading all such WebContents. This
+  // ensures that they are reloaded in a non-privileged renderer process.
+  void OnDefaultSearchProviderChanged(const std::string& pref_name);
+
   // Replaces the contents at tab |index| with |new_contents| and deletes the
   // existing contents.
   void ReplaceWebContentsAt(int index,

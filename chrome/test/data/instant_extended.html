@@ -99,6 +99,9 @@ function handleMostVisitedChange() {
 
 function setUp() {
   apiHandle = getApiHandle();
+  if (!apiHandle)
+    return;
+
   newTabPageHandle = getNewTabPageHandle();
   apiHandle.onnativesuggestions = handleNativeSuggestions;
   apiHandle.onsubmit = handleSubmit;

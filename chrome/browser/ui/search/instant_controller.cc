@@ -613,6 +613,24 @@ void InstantController::HandleAutocompleteResults(
     overlay_->SendAutocompleteResults(results);
 }
 
+void InstantController::OnDefaultSearchProviderChanged() {
+  if (ntp_ && extended_enabled_) {
+    ntp_.reset();
+    if (!use_local_page_only_)
+      ResetNTP(false, false);
+  }
+
+  // Do not reload the overlay if it's actually the local overlay.
+  if (overlay_ && !overlay_->IsLocal()) {
+    overlay_.reset();
+    if (extended_enabled_ || instant_enabled_) {
+      // Try to create another overlay immediately so that it is ready for the
+      // next user interaction.
+      EnsureOverlayIsCurrent(false);
+    }
+  }
+}
+
 bool InstantController::OnUpOrDownKeyPressed(int count) {
   if (!extended_enabled_)
     return false;

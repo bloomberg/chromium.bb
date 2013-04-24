@@ -4,11 +4,17 @@
 
 #include "chrome/browser/ui/browser_instant_controller.h"
 
+#include "base/bind.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/instant_service.h"
+#include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/template_url.h"
+#include "chrome/browser/search_engines/template_url_service.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -24,7 +30,9 @@
 #include "chrome/common/url_constants.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/user_metrics.h"
+#include "content/public/browser/web_contents.h"
 #include "grit/theme_resources.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/sys_color_change_listener.h"
@@ -59,6 +67,10 @@ BrowserInstantController::BrowserInstantController(Browser* browser)
   profile_pref_registrar_.Add(
       prefs::kSearchSuggestEnabled,
       base::Bind(&BrowserInstantController::ResetInstant,
+                 base::Unretained(this)));
+  profile_pref_registrar_.Add(
+      prefs::kDefaultSearchProviderID,
+      base::Bind(&BrowserInstantController::OnDefaultSearchProviderChanged,
                  base::Unretained(this)));
   ResetInstant(std::string());
   browser_->search_model()->AddObserver(this);
@@ -353,4 +365,53 @@ void BrowserInstantController::OnThemeChanged(ThemeService* theme_service) {
 
   if (browser_->search_model()->mode().is_ntp())
     instant_.ThemeChanged(theme_info_);
+}
+
+void BrowserInstantController::OnDefaultSearchProviderChanged(
+    const std::string& pref_name) {
+  DCHECK_EQ(pref_name, std::string(prefs::kDefaultSearchProviderID));
+
+  Profile* browser_profile = profile();
+  const TemplateURL* template_url =
+      TemplateURLServiceFactory::GetForProfile(browser_profile)->
+          GetDefaultSearchProvider();
+  if (!template_url) {
+    // A NULL |template_url| could mean either this notification is sent during
+    // the browser start up operation or the user now has no default search
+    // provider. There is no way for the user to reach this state using the
+    // Chrome settings. Only explicitly poking at the DB or bugs in the Sync
+    // could cause that, neither of which we support.
+    return;
+  }
+
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(browser_profile);
+  if (!instant_service)
+    return;
+
+  TabStripModel* tab_model = browser_->tab_strip_model();
+  int count = tab_model->count();
+  for (int index = 0; index < count; ++index) {
+    content::WebContents* contents = tab_model->GetWebContentsAt(index);
+    if (!contents)
+      continue;
+
+    // A Local NTP always runs in the Instant process, so reloading it is
+    // neither useful nor necessary. However, the Local NTP does not reflect
+    // whether Google is the default search engine or not. This is achieved
+    // through a URL parameter, so reloading the existing URL won't fix that
+    // (i.e., the Local NTP may now show an incorrect search engine logo).
+    // TODO(kmadhusu): Fix.
+    if (contents->GetURL() == GURL(chrome::kChromeSearchLocalNtpUrl))
+      continue;
+
+    if (!instant_service->IsInstantProcess(
+            contents->GetRenderProcessHost()->GetID()))
+      continue;
+
+    // Reload the contents to ensure that it gets assigned to a non-priviledged
+    // renderer.
+    contents->GetController().Reload(false);
+  }
+  instant_.OnDefaultSearchProviderChanged();
 }
