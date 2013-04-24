@@ -21,6 +21,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #endif
 
@@ -110,7 +111,8 @@ class VariationsServiceTest : public testing::Test {
  private:
 #if defined(OS_CHROMEOS)
   // Not used directly. Initializes CrosSettings for testing.
-  chromeos::ScopedTestCrosSettings scoped_test_cros_settings;
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(VariationsServiceTest);

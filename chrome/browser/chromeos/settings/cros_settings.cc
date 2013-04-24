@@ -39,7 +39,7 @@ bool CrosSettings::IsInitialized() {
 
 // static
 void CrosSettings::Shutdown() {
-  CHECK(g_cros_settings);
+  DCHECK(g_cros_settings);
   delete g_cros_settings;
   g_cros_settings = NULL;
 }
@@ -328,24 +328,12 @@ void CrosSettings::FireObservers(const std::string& path) {
   }
 }
 
-ScopedTestCrosSettings::ScopedTestCrosSettings()
-    : initialized_device_settings_service_(false),
-      initialized_cros_settings_(false) {
-  if (!DeviceSettingsService::IsInitialized()) {
-    DeviceSettingsService::Initialize();
-    initialized_device_settings_service_ = true;
-  }
-  if (!CrosSettings::IsInitialized()) {
-    CrosSettings::Initialize();
-    initialized_cros_settings_ = true;
-  }
+ScopedTestCrosSettings::ScopedTestCrosSettings() {
+  CrosSettings::Initialize();
 }
 
 ScopedTestCrosSettings::~ScopedTestCrosSettings() {
-  if (initialized_cros_settings_)
-    CrosSettings::Shutdown();
-  if (initialized_device_settings_service_)
-    DeviceSettingsService::Shutdown();
+  CrosSettings::Shutdown();
 }
 
 }  // namespace chromeos

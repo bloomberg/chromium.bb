@@ -7,17 +7,14 @@
 
 #include <string>
 
-#include "base/memory/singleton.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
-#include "chrome/browser/chromeos/settings/cros_settings.h"
 
 class PrefRegistrySimple;
 
 namespace chromeos {
 
 class RemoveUserDelegate;
-class ScopedCrosSettings;
 class UserImageManager;
 
 // Base class for UserManagerImpl - provides a mechanism for discovering users
@@ -315,19 +312,14 @@ class ScopedUserManagerEnabler {
   DISALLOW_COPY_AND_ASSIGN(ScopedUserManagerEnabler);
 };
 
-// Helper class for unit tests. Ensures that the UserManager singleton and the
-// CrosSettings and DeviceSettingsService singletons it depends on are
-// initialized. Any singletons initialized on construction are torn down again
-// on destruction. Singletons that were initialized already are not modified.
+// Helper class for tests. Initializes the UserManager singleton on construction
+// and tears it down again on destruction.
 class ScopedTestUserManager {
  public:
   ScopedTestUserManager();
   ~ScopedTestUserManager();
 
  private:
-  ScopedTestCrosSettings test_cros_settings_;
-  bool initialized_user_manager_;
-
   DISALLOW_COPY_AND_ASSIGN(ScopedTestUserManager);
 };
 

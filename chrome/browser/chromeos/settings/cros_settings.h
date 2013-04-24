@@ -116,19 +116,14 @@ class CrosSettings : public base::NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(CrosSettings);
 };
 
-// Helper class for unit tests. Ensures that the CrosSettings singleton and the
-// DeviceSettingsService singleton it depends on are initialized. Any singletons
-// initialized on construction are torn down again on destruction. Singletons
-// that were initialized already are not modified.
+// Helper class for tests. Initializes the CrosSettings singleton on
+// construction and tears it down again on destruction.
 class ScopedTestCrosSettings {
  public:
   ScopedTestCrosSettings();
   ~ScopedTestCrosSettings();
 
  private:
-  bool initialized_device_settings_service_;
-  bool initialized_cros_settings_;
-
   DISALLOW_COPY_AND_ASSIGN(ScopedTestCrosSettings);
 };
 

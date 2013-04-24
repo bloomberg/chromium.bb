@@ -111,6 +111,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
 using content::BrowserContext;
@@ -4618,6 +4621,12 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   MessageLoop loop;
   content::TestBrowserThread ui_thread(BrowserThread::UI, &loop);
   content::TestBrowserThread file_thread(BrowserThread::FILE, &loop);
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService device_settings_service;
+  chromeos::ScopedTestCrosSettings cros_settings;
+  scoped_ptr<chromeos::ScopedTestUserManager> user_manager(
+      new chromeos::ScopedTestUserManager);
+#endif
   scoped_ptr<CommandLine> command_line;
   base::FilePath install_dir = profile->GetPath()
       .AppendASCII(ExtensionService::kInstallDirectoryName);
@@ -4639,6 +4648,9 @@ TEST(ExtensionServiceTestSimple, Enabledness) {
   service->Init();
   loop.RunUntilIdle();
   EXPECT_TRUE(recorder.ready());
+#if defined OS_CHROMEOS
+  user_manager.reset();
+#endif
 
   // If either the command line or pref is set, we are disabled.
   recorder.set_ready(false);

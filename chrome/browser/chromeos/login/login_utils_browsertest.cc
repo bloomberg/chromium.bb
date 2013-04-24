@@ -295,6 +295,7 @@ class LoginUtilsTest : public testing::Test,
     cryptohome_client_ = mock_dbus_thread_manager_.mock_cryptohome_client();
     EXPECT_CALL(*cryptohome_client_, IsMounted(_));
 
+    test_device_settings_service_.reset(new ScopedTestDeviceSettingsService);
     test_cros_settings_.reset(new ScopedTestCrosSettings);
     test_user_manager_.reset(new ScopedTestUserManager);
 
@@ -546,6 +547,7 @@ class LoginUtilsTest : public testing::Test,
   MockCryptohomeClient* cryptohome_client_;
 
   // Initialized after |mock_dbus_thread_manager_| and |cryptohome_| are set up.
+  scoped_ptr<ScopedTestDeviceSettingsService> test_device_settings_service_;
   scoped_ptr<ScopedTestCrosSettings> test_cros_settings_;
   scoped_ptr<ScopedTestUserManager> test_user_manager_;
 

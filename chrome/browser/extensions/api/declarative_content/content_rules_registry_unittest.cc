@@ -16,6 +16,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 namespace extensions {
 
 using base::test::ParseJson;
@@ -30,6 +35,11 @@ class DeclarativeContentRulesRegistryTest : public testing::Test {
       const ContentRulesRegistry& registry) {
     return registry.active_rules_;
   }
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+#endif
 };
 
 namespace {

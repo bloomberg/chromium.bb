@@ -64,6 +64,12 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
@@ -1476,6 +1482,12 @@ class ExtensionUpdaterTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread io_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 // Because we test some private methods of ExtensionUpdater, it's easier for the

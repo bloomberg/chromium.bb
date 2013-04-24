@@ -14,6 +14,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 namespace extensions {
 namespace {
 
@@ -21,6 +26,10 @@ using base::test::ParseJson;
 using testing::HasSubstr;
 
 TEST(DeclarativeContentActionTest, InvalidCreation) {
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService device_settings_service;
+  chromeos::ScopedTestCrosSettings cros_settings;
+#endif
   TestExtensionEnvironment env;
   std::string error;
   bool bad_message = false;
@@ -52,6 +61,10 @@ TEST(DeclarativeContentActionTest, InvalidCreation) {
 }
 
 TEST(DeclarativeContentActionTest, ShowPageAction) {
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService device_settings_service;
+  chromeos::ScopedTestCrosSettings cros_settings;
+#endif
   TestExtensionEnvironment env;
 
   std::string error;

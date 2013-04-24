@@ -15,6 +15,7 @@
 #include "chrome/browser/chromeos/policy/enterprise_install_attributes.h"
 #include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
 #include "chrome/browser/policy/cloud/mock_device_management_service.h"
@@ -75,6 +76,7 @@ class DeviceCloudPolicyManagerChromeOSTest
 
   TestingPrefServiceSimple local_state_;
   MockDeviceManagementService device_management_service_;
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
 
   DeviceCloudPolicyStoreChromeOS* store_;

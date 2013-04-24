@@ -17,6 +17,12 @@
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 class TestingProfile;
 
 namespace extensions {
@@ -72,6 +78,12 @@ class ExtensionServiceTestBase : public extensions::ExtensionTest {
   content::TestBrowserThread file_thread_;
   content::TestBrowserThread file_user_blocking_thread_;
   content::TestBrowserThread io_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_SERVICE_UNITTEST_H_

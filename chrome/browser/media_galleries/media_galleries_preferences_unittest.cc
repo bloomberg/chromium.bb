@@ -28,6 +28,12 @@
 #include "sync/api/string_ordinal.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
+#endif
+
 namespace chrome {
 
 namespace {
@@ -214,6 +220,12 @@ class MediaGalleriesPreferencesTest : public extensions::ExtensionTest {
   MessageLoop loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
+
+#if defined OS_CHROMEOS
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
+  chromeos::ScopedTestCrosSettings test_cros_settings_;
+  chromeos::ScopedTestUserManager test_user_manager_;
+#endif
 
   test::TestStorageMonitor monitor_;
   scoped_ptr<TestingProfile> profile_;

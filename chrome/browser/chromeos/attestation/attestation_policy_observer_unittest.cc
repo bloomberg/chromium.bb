@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/attestation/attestation_policy_observer.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/policy/cloud/mock_cloud_policy_client.h"
 #include "chromeos/attestation/mock_attestation_flow.h"
@@ -79,6 +80,7 @@ class AttestationPolicyObserverTest : public ::testing::Test {
 
   MessageLoop message_loop_;
   content::TestBrowserThread ui_thread_;
+  ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
   CrosSettingsProvider* device_settings_provider_;
   StubCrosSettingsProvider stub_settings_provider_;

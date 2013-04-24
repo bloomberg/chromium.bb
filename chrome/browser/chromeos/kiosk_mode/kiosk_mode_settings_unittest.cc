@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -73,6 +74,7 @@ class KioskModeSettingsTest : public testing::Test {
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread file_thread_;
 
+  ScopedTestDeviceSettingsService test_device_settings_service_;
   ScopedTestCrosSettings test_cros_settings_;
 
   CrosSettingsProvider* device_settings_provider_;

@@ -14,6 +14,7 @@
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/settings/cros_settings_names.h"
 #include "chrome/browser/chromeos/settings/cros_settings_provider.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/chromeos/system/mock_statistics_provider.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
@@ -233,6 +234,7 @@ class DeviceStatusCollectorTest : public testing::Test {
 
   TestingPrefServiceSimple prefs_;
   chromeos::system::MockStatisticsProvider statistics_provider_;
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
   chromeos::CrosSettings* cros_settings_;
   chromeos::CrosSettingsProvider* device_settings_provider_;

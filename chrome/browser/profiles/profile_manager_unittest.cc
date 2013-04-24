@@ -43,6 +43,7 @@
 #include "chrome/browser/chromeos/login/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 
@@ -127,6 +128,7 @@ class ProfileManagerTest : public testing::Test {
   // before io_thread_ which requires CrosLibrary to be initialized to construct
   // its data member pref_proxy_config_tracker_ on ChromeOS.
   chromeos::ScopedStubCrosEnabler stub_cros_enabler_;
+  chromeos::ScopedTestDeviceSettingsService test_device_settings_service_;
   chromeos::ScopedTestCrosSettings test_cros_settings_;
 #endif
 
