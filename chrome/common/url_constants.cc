@@ -510,6 +510,7 @@ const char kChromeSearchLocalGoogleNtpUrl[] =
     "chrome-search://local-ntp/local-ntp.html?isGoogle";
 
 const char kChromeSearchSuggestionHost[] = "suggestion";
+const char kChromeSearchSuggestionUrl[] = "chrome-search://suggestion/";
 
 // Google SafeSearch query parameters.
 const char kSafeSearchSafeParameter[] = "safe=active";

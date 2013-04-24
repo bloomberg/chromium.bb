@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="assert.js">
+
 /**
  * The global object.
  * @type {!Object}
@@ -195,23 +197,6 @@ function preventDefaultOnPoundLinkClicks() {
  */
 function isRTL() {
   return document.documentElement.dir == 'rtl';
-}
-
-/**
- * Simple common assertion API
- * @param {*} condition The condition to test.  Note that this may be used to
- *     test whether a value is defined or not, and we don't want to force a
- *     cast to Boolean.
- * @param {string=} opt_message A message to use in any error.
- */
-function assert(condition, opt_message) {
-  'use strict';
-  if (!condition) {
-    var msg = 'Assertion failed';
-    if (opt_message)
-      msg = msg + ': ' + opt_message;
-    throw new Error(msg);
-  }
 }
 
 /**

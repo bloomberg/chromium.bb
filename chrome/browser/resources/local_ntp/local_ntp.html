@@ -10,7 +10,10 @@
   <link rel="stylesheet" href="chrome-search://local-ntp/local-ntp.css"></link>
 </head>
 <body>
-  <div id="suggestions-box-container"></div>
+  <iframe src="chrome-search://suggestion/loader.html" id="suggestion-loader"
+          hidden></iframe>
+  <div class="active-suggestions-container"></div>
+  <div class="pending-suggestions-container"></div>
   <div id="ntp-contents">
     <div id="mv-top-margin"></div>
     <div id="most-visited">

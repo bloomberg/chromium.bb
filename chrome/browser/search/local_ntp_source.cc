@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/string_util.h"
+#include "base/stringprintf.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/gurl.h"
 #include "grit/browser_resources.h"
@@ -102,4 +103,11 @@ bool LocalNtpSource::ShouldServiceRequest(
     }
   }
   return false;
+}
+
+std::string LocalNtpSource::GetContentSecurityPolicyFrameSrc() const {
+  // Allow embedding of chrome search suggestion host.
+  return base::StringPrintf("frame-src %s://%s/;",
+                            chrome::kChromeSearchScheme,
+                            chrome::kChromeSearchSuggestionHost);
 }

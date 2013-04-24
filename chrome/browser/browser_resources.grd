@@ -148,7 +148,7 @@
 
       <include name="IDR_LOCAL_NTP_HTML" file="resources\local_ntp\local_ntp.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_CSS" file="resources\local_ntp\local_ntp.css" type="BINDATA" />
-      <include name="IDR_LOCAL_NTP_JS" file="resources\local_ntp\local_ntp.js" type="BINDATA" />
+      <include name="IDR_LOCAL_NTP_JS" file="resources\local_ntp\local_ntp.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_IMAGES_LOGO_PNG" file="resources\local_ntp\images\ntp_google_logo.png" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_IMAGES_2X_LOGO_PNG" file="resources\local_ntp\images\2x\ntp_google_logo.png" type="BINDATA" />
       <include name="IDR_LOCAL_NTP_IMAGES_WHITE_LOGO_PNG" file="resources\local_ntp\images\ntp_white_google_logo.png" type="BINDATA" />
@@ -159,6 +159,10 @@
       <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_PAGE_ICON_PNG" file="resources\local_omnibox_popup\images\2x\page_icon.png" type="BINDATA" />
       <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_SEARCH_ICON_PNG" file="resources\local_omnibox_popup\images\search_icon.png" type="BINDATA" />
       <include name="IDR_LOCAL_OMNIBOX_POPUP_IMAGES_2X_SEARCH_ICON_PNG" file="resources\local_omnibox_popup\images\2x\search_icon.png" type="BINDATA" />
+      <include name="IDR_OMNIBOX_RESULT_LOADER_HTML" file="resources\omnibox_result_loader.html" type="BINDATA" />
+      <include name="IDR_OMNIBOX_RESULT_LOADER_JS" file="resources\omnibox_result_loader.js" type="BINDATA" />
+      <include name="IDR_OMNIBOX_RESULT_HTML" file="resources\omnibox_result.html" type="BINDATA" />
+      <include name="IDR_OMNIBOX_RESULT_JS" file="resources\omnibox_result.js" type="BINDATA" />
 
       <include name="IDR_OMNIBOX_HTML" file="resources\omnibox\omnibox.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_OMNIBOX_CSS" file="resources\omnibox\omnibox.css" type="BINDATA" />

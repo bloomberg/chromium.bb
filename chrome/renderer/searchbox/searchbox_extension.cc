@@ -94,6 +94,74 @@ v8::Handle<v8::String> GenerateFaviconURL(uint64 most_visited_item_id) {
                          base::Uint64ToString(most_visited_item_id).c_str()));
 }
 
+// If |url| starts with |prefix|, removes |prefix|.
+void StripPrefix(string16* url, const string16& prefix) {
+  if (StartsWith(*url, prefix, true))
+    url->erase(0, prefix.length());
+}
+
+// Removes leading "http://" or "http://www." from |url| unless |user_input|
+// starts with those prefixes.
+void StripURLPrefixes(string16* url, const string16& user_input) {
+  string16 trimmed_user_input;
+  TrimWhitespace(user_input, TRIM_TRAILING, &trimmed_user_input);
+  if (StartsWith(*url, trimmed_user_input, true))
+    return;
+
+  StripPrefix(url, ASCIIToUTF16(chrome::kHttpScheme) + ASCIIToUTF16("://"));
+  if (StartsWith(*url, trimmed_user_input, true))
+    return;
+
+  StripPrefix(url, ASCIIToUTF16("www."));
+}
+
+// Formats a URL for display to the user. Strips out prefixes like whitespace,
+// "http://" and "www." unless the user input (|query|) matches the prefix.
+// Also removes trailing whitespaces and "/" unless the user input matches the
+// trailing "/".
+void FormatURLForDisplay(string16* url, const string16& query) {
+  StripURLPrefixes(url, query);
+
+  string16 trimmed_user_input;
+  TrimWhitespace(query, TRIM_LEADING, &trimmed_user_input);
+  if (EndsWith(*url, trimmed_user_input, true))
+    return;
+
+  // Strip a lone trailing slash.
+  if (EndsWith(*url, ASCIIToUTF16("/"), true))
+    url->erase(url->length() - 1, 1);
+}
+
+// Populates a Javascript NativeSuggestions object from |result|.
+// NOTE: Includes properties like "contents" which should be erased before the
+// suggestion is returned to the Instant page.
+v8::Handle<v8::Object> GenerateNativeSuggestion(
+    const string16& query,
+    InstantRestrictedID restricted_id,
+    const InstantAutocompleteResult& result) {
+  v8::Handle<v8::Object> obj = v8::Object::New();
+  obj->Set(v8::String::New("provider"), UTF16ToV8String(result.provider));
+  obj->Set(v8::String::New("type"), UTF16ToV8String(result.type));
+  obj->Set(v8::String::New("description"), UTF16ToV8String(result.description));
+  obj->Set(v8::String::New("destination_url"),
+           UTF16ToV8String(result.destination_url));
+  if (result.search_query.empty()) {
+    string16 url = result.destination_url;
+    FormatURLForDisplay(&url, query);
+    obj->Set(v8::String::New("contents"), UTF16ToV8String(url));
+  } else {
+    obj->Set(v8::String::New("contents"), UTF16ToV8String(result.search_query));
+    obj->Set(v8::String::New("is_search"), v8::Boolean::New(true));
+  }
+  obj->Set(v8::String::New("rid"), v8::Uint32::New(restricted_id));
+
+  v8::Handle<v8::Object> ranking_data = v8::Object::New();
+  ranking_data->Set(v8::String::New("relevance"),
+                    v8::Int32::New(result.relevance));
+  obj->Set(v8::String::New("rankingData"), ranking_data);
+  return obj;
+}
+
 }  // namespace
 
 namespace extensions_v8 {
@@ -333,10 +401,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // Gets the font size of the text in the omnibox.
   static v8::Handle<v8::Value> GetFontSize(const v8::Arguments& args);
 
-  // Gets the URL prefix for the iframe used to display suggestions.
-  static v8::Handle<v8::Value> GetSuggestionIframeURLPrefix(
-      const v8::Arguments& args);
-
   // Navigates the window to a URL represented by either a URL string or a
   // restricted ID. The two variants handle restricted IDs in their
   // respective namespaces.
@@ -378,9 +442,6 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static v8::Handle<v8::Value> StopCapturingKeyStrokes(
       const v8::Arguments& args);
 
-  // Set the CSS values for the dropdown.
-  static v8::Handle<v8::Value> SetSuggestionStyle(const v8::Arguments& args);
-
   // Undoes the deletion of all Most Visited itens.
   static v8::Handle<v8::Value> UndoAllMostVisitedDeletions(
       const v8::Arguments& args);
@@ -396,8 +457,9 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   // event is fired to notify the page.
   static v8::Handle<v8::Value> HideBars(const v8::Arguments& args);
 
-  // Returns true if the Instant page should use iframes to display suggestions.
-  static v8::Handle<v8::Value> ShouldUseIframes(const v8::Arguments& args);
+  // Gets the raw data for a suggestion including its content. Only callable
+  // by chrome-search://suggestion pages.
+  static v8::Handle<v8::Value> GetSuggestionData(const v8::Arguments& args);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
@@ -446,8 +508,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(GetFont);
   if (name->Equals(v8::String::New("GetFontSize")))
     return v8::FunctionTemplate::New(GetFontSize);
-  if (name->Equals(v8::String::New("GetSuggestionIframeURLPrefix")))
-    return v8::FunctionTemplate::New(GetSuggestionIframeURLPrefix);
   if (name->Equals(v8::String::New("NavigateSearchBox")))
     return v8::FunctionTemplate::New(NavigateSearchBox);
   if (name->Equals(v8::String::New("NavigateNewTabPage")))
@@ -472,8 +532,6 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(StartCapturingKeyStrokes);
   if (name->Equals(v8::String::New("StopCapturingKeyStrokes")))
     return v8::FunctionTemplate::New(StopCapturingKeyStrokes);
-  if (name->Equals(v8::String::New("SetSuggestionStyle")))
-    return v8::FunctionTemplate::New(SetSuggestionStyle);
   if (name->Equals(v8::String::New("UndoAllMostVisitedDeletions")))
     return v8::FunctionTemplate::New(UndoAllMostVisitedDeletions);
   if (name->Equals(v8::String::New("UndoMostVisitedDeletion")))
@@ -482,8 +540,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(ShowBars);
   if (name->Equals(v8::String::New("HideBars")))
     return v8::FunctionTemplate::New(HideBars);
-  if (name->Equals(v8::String::New("ShouldUseIframes")))
-    return v8::FunctionTemplate::New(ShouldUseIframes);
+  if (name->Equals(v8::String::New("GetSuggestionData")))
+    return v8::FunctionTemplate::New(GetSuggestionData);
   return v8::Handle<v8::FunctionTemplate>();
 }
 
@@ -599,33 +657,11 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetAutocompleteResults(
   DVLOG(1) << render_view << " GetAutocompleteResults: " << results.size();
 
   v8::Handle<v8::Array> results_array = v8::Array::New(results.size());
+  const string16& query = SearchBox::Get(render_view)->query();
   for (size_t i = 0; i < results.size(); ++i) {
-    v8::Handle<v8::Object> result = v8::Object::New();
-    result->Set(v8::String::New("provider"),
-                UTF16ToV8String(results[i].second.provider));
-    result->Set(v8::String::New("type"),
-                UTF16ToV8String(results[i].second.type));
-    result->Set(v8::String::New("description"),
-                UTF16ToV8String(results[i].second.description));
-    result->Set(v8::String::New("destination_url"),
-                UTF16ToV8String(results[i].second.destination_url));
-    if (results[i].second.search_query.empty()) {
-      string16 url = results[i].second.destination_url;
-      SearchBox::Get(render_view)->FormatURLForDisplay(&url);
-      result->Set(v8::String::New("contents"), UTF16ToV8String(url));
-    } else {
-      result->Set(v8::String::New("contents"),
-                  UTF16ToV8String(results[i].second.search_query));
-      result->Set(v8::String::New("is_search"), v8::Boolean::New(true));
-    }
-    result->Set(v8::String::New("rid"), v8::Uint32::New(results[i].first));
-
-    v8::Handle<v8::Object> ranking_data = v8::Object::New();
-    ranking_data->Set(v8::String::New("relevance"),
-                      v8::Int32::New(results[i].second.relevance));
-    result->Set(v8::String::New("rankingData"), ranking_data);
-
-    results_array->Set(i, result);
+    results_array->Set(i, GenerateNativeSuggestion(query,
+                                                   results[i].first,
+                                                   results[i].second));
   }
   return results_array;
 }
@@ -771,18 +807,6 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetFontSize(
   if (!render_view) return v8::Undefined();
 
   return v8::Uint32::New(SearchBox::Get(render_view)->omnibox_font_size());
-}
-
-// static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSuggestionIframeURLPrefix(
-    const v8::Arguments& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view) return v8::Undefined();
-
-  return UTF8ToV8String(base::StringPrintf(
-      "%s://%s/",
-      chrome::kChromeSearchScheme,
-      chrome::kChromeSearchSuggestionHost));
 }
 
 // static
@@ -1176,25 +1200,6 @@ v8::Extension* SearchBoxExtension::Get() {
 }
 
 // static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::SetSuggestionStyle(
-    const v8::Arguments& args) {
-  content::RenderView* render_view = GetRenderView();
-  if (!render_view || args.Length() < 2 || !args[0]->IsNumber() ||
-      !args[1]->IsNumber()) {
-    return v8::Undefined();
-  }
-
-  DVLOG(1) << render_view << " SetSuggestionStyle";
-
-  InstantAutocompleteResultStyle style;
-  style.url_color = args[0]->IntegerValue();
-  style.title_color = args[1]->IntegerValue();
-  SearchBox::Get(render_view)->SetInstantAutocompleteResultStyle(style);
-
-  return v8::Undefined();
-}
-
-// static
 bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
   if (!frame) return false;
   v8::HandleScope handle_scope;
@@ -1225,10 +1230,35 @@ v8::Handle<v8::Value> SearchBoxExtensionWrapper::HideBars(
 }
 
 // static
-v8::Handle<v8::Value> SearchBoxExtensionWrapper::ShouldUseIframes(
+v8::Handle<v8::Value> SearchBoxExtensionWrapper::GetSuggestionData(
     const v8::Arguments& args) {
-  DVLOG(1) << "ShouldUseIframes";
-  return v8::Boolean::New(SearchBox::ShouldUseIframes());
+  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  if (!webframe) return v8::Undefined();
+  WebKit::WebView* webview = webframe->view();
+  if (!webview) return v8::Undefined();  // Can happen during closing.
+  content::RenderView* render_view = content::RenderView::FromWebView(webview);
+  if (!render_view) return v8::Undefined();
+
+  // If origin does not match, return undefined.
+  GURL url(webframe->document().url());
+  if (!url.SchemeIs(chrome::kChromeSearchScheme) ||
+      url.host() != chrome::kChromeSearchSuggestionHost) {
+    return v8::Undefined();
+  }
+
+  // Need an rid argument.
+  if (args.Length() < 1 || !args[0]->IsNumber())
+    return v8::Undefined();
+
+  DVLOG(1) << render_view << " GetSuggestionData";
+  InstantRestrictedID restricted_id = args[0]->IntegerValue();
+  InstantAutocompleteResult result;
+  if (!SearchBox::Get(render_view)->GetAutocompleteResultWithID(
+          restricted_id, &result)) {
+    return v8::Undefined();
+  }
+  const string16& query = SearchBox::Get(render_view)->query();
+  return GenerateNativeSuggestion(query, restricted_id, result);
 }
 
 // static

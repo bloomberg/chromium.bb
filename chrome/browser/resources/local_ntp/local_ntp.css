@@ -303,16 +303,10 @@ body.fakebox-focused #cursor {
   display: block;
 }
 
-#suggestions-box {
+.suggestions-box {
   border-bottom: 1px #d9d9d9 solid;
   padding-bottom: 6px;
   padding-top: 6px;
-}
-
-#suggestions-box-container {
-  position: absolute;
-  top: 0;
-  width: 100%;
 }
 
 .suggestion {
@@ -322,6 +316,7 @@ body.fakebox-focused #cursor {
   border-radius: 2px;
   padding-bottom: 2px;
   padding-top: 3px;
+  height: 22px;
   white-space: nowrap;
 }
 
@@ -331,28 +326,23 @@ body.fakebox-focused #cursor {
       url(images/2x/search_icon.png) 2x) no-repeat;
 }
 
-.suggestion:hover {
+.hovered {
   background-color: #eee;
 }
 
-.selected,
-.selected:hover {
+.selected {
   background-color: rgba(181, 213, 255, 0.5);
 }
 
-.contents {
+.suggestion-contents {
   -webkit-padding-start: 26px;
   -webkit-user-select: none;
   border: none;
   height: 22px;
   overflow: hidden;
+  position: absolute;
 }
 
-/* Styling for native suggestions, hidden by the shadow DOM. */
-.chrome_url {
-  color: rgb(0, 153, 51);
-}
-
-.chrome_title {
-  color: #666;
+.pending-suggestions-container {
+  display: none;
 }

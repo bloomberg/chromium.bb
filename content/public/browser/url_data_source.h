@@ -107,6 +107,13 @@ class CONTENT_EXPORT URLDataSource {
   // ContentBrowserClient::GetAdditionalWebUISchemes() to permit additional
   // WebUI scheme support for an embedder.
   virtual bool ShouldServiceRequest(const net::URLRequest* request) const;
+
+  // Called to inform the source that StartDataRequest() will be called soon.
+  // Gives the source an opportunity to rewrite |path| to incorporate extra
+  // information from the URLRequest prior to serving.
+  virtual void WillServiceRequest(
+      const net::URLRequest* request,
+      std::string* path) const {}
 };
 
 }  // namespace content

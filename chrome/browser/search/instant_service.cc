@@ -10,6 +10,7 @@
 #include "chrome/browser/search/instant_io_context.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/search/local_ntp_source.h"
+#include "chrome/browser/search/suggestion_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -52,6 +53,7 @@ InstantService::InstantService(Profile* profile)
   content::URLDataSource::Add(profile, new FaviconSource(
       profile, FaviconSource::FAVICON));
   content::URLDataSource::Add(profile, new LocalNtpSource());
+  content::URLDataSource::Add(profile, new SuggestionSource());
 }
 
 InstantService::~InstantService() {

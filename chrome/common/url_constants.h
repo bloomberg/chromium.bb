@@ -429,6 +429,7 @@ extern const char kChromeSearchLocalGoogleNtpUrl[];
 
 // Host for search suggestions iframes.
 extern const char kChromeSearchSuggestionHost[];
+extern const char kChromeSearchSuggestionUrl[];
 
 #if defined(OS_CHROMEOS)
 extern const char kCrosScheme[];

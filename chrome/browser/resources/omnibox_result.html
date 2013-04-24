@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="chrome-search://suggestion/result.js"></script>
+<style>
+body {
+  -webkit-user-select: none;
+  cursor: default;
+  margin: 0;
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+}
+
+body > div {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
+</head>
+<body>
+  <div>
+    <span id="contents"></span>
+    <span id="optional"> &ndash; <span id="title"></span></span>
+  </div>
+</body>
+</html>

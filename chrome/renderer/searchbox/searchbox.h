@@ -109,23 +109,6 @@ class SearchBox : public content::RenderViewObserver,
   // browser.
   void UndoAllMostVisitedDeletions();
 
-  // Generates a data:// URL containing the HTML required to display a result.
-  bool GenerateDataURLForSuggestionRequest(const GURL& request_url,
-                                           GURL* data_url) const;
-
-  // Sets the InstantAutocompleteResultStyle to the input value.
-  void SetInstantAutocompleteResultStyle(
-      const InstantAutocompleteResultStyle& style);
-
-  // Formats a URL for display to the user. Strips out prefixes like whitespace,
-  // "http://" and "www." unless the user input (|query_|) matches the prefix.
-  // Also removes trailing whitespaces and "/" unless the user input matches the
-  // trailing "/".
-  void FormatURLForDisplay(string16* url) const;
-
-  // Returns true if the Instant page should use iframes to display suggestions.
-  static bool ShouldUseIframes();
-
  private:
   // Overridden from content::RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -177,7 +160,6 @@ class SearchBox : public content::RenderViewObserver,
   InstantRestrictedIDCache<InstantAutocompleteResult>
       autocomplete_results_cache_;
   InstantRestrictedIDCache<InstantMostVisitedItem> most_visited_items_cache_;
-  InstantAutocompleteResultStyle autocomplete_results_style_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBox);
 };

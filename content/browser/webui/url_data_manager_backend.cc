@@ -494,6 +494,7 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
 
   if (!source->source()->ShouldServiceRequest(request))
     return false;
+  source->source()->WillServiceRequest(request, &path);
 
   // Save this request so we know where to send the data.
   RequestID request_id = next_request_id_++;

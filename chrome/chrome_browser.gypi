@@ -1651,6 +1651,8 @@
         'browser/search/local_ntp_source.h',
         'browser/search/search.cc',
         'browser/search/search.h',
+        'browser/search/suggestion_source.cc',
+        'browser/search/suggestion_source.h',
         'browser/search_engines/search_engine_type.h',
         'browser/search_engines/search_host_to_urls_map.cc',
         'browser/search_engines/search_host_to_urls_map.h',

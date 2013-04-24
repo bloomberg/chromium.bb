@@ -56,7 +56,8 @@ void InstantIOContext::SetUserDataOnIO(
 
 // static
 void InstantIOContext::AddInstantProcessOnIO(
-    scoped_refptr<InstantIOContext> instant_io_context, int process_id) {
+    scoped_refptr<InstantIOContext> instant_io_context,
+    int process_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   instant_io_context->process_ids_.insert(process_id);
 }
@@ -120,7 +121,7 @@ bool InstantIOContext::GetURLForMostVisitedItemID(
 
 bool InstantIOContext::IsInstantProcess(int process_id) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  return process_ids_.count(process_id) != 0;
+  return process_ids_.find(process_id) != process_ids_.end();
 }
 
 bool InstantIOContext::GetURLForMostVisitedItemID(

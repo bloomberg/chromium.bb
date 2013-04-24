@@ -94,7 +94,6 @@ if (!chrome.embeddedSearch) {
       native function GetAutocompleteResults();
       native function GetDisplayInstantResults();
       native function GetFontSize();
-      native function GetSuggestionIframeURLPrefix();
       native function IsKeyCaptureEnabled();
       native function SetQuery();
       native function SetQueryFromAutocompleteResult();
@@ -105,11 +104,10 @@ if (!chrome.embeddedSearch) {
       native function FocusOmnibox();
       native function StartCapturingKeyStrokes();
       native function StopCapturingKeyStrokes();
-      native function SetSuggestionStyle();
       native function NavigateSearchBox();
       native function ShowBars();
       native function HideBars();
-      native function ShouldUseIframes();
+      native function GetSuggestionData();
 
       function SafeWrapSuggestion(restrictedText) {
         return SafeWrap(restrictedText, 22);
@@ -127,24 +125,19 @@ if (!chrome.embeddedSearch) {
             GetAutocompleteResults());
         var userInput = GetQuery();
         for (var i = 0, result; result = autocompleteResults[i]; ++i) {
-          if (ShouldUseIframes()) {
-            result.destination_url = GetSuggestionIframeURLPrefix() +
-                result.rid;
-          } else {
-            // TODO(shishir): Fix the naming violations (chrome_search ->
-            // chrome-search etc) when the server supports both names.
-            var className = result.is_search ? 'chrome_search' : 'chrome_url';
-            var combinedElement = '<span class=' + className + '>' +
-                escapeHTML(result.contents) + '</span>';
-            if (result.description) {
-              combinedElement +=
-                  '<span class=chrome_separator> &ndash; </span>' +
-                  '<span class=chrome_title>' +
-                  escapeHTML(result.description) + '</span>';
-            }
-            result.combinedNode = SafeWrapSuggestion(combinedElement);
-            result.destination_url = null;
+          // TODO(shishir): Fix the naming violations (chrome_search ->
+          // chrome-search etc) when the server supports both names.
+          var className = result.is_search ? 'chrome_search' : 'chrome_url';
+          var combinedElement = '<span class=' + className + '>' +
+              escapeHTML(result.contents) + '</span>';
+          if (result.description) {
+            combinedElement +=
+                '<span class=chrome_separator> &ndash; </span>' +
+                '<span class=chrome_title>' +
+                escapeHTML(result.description) + '</span>';
           }
+          result.combinedNode = SafeWrapSuggestion(combinedElement);
+          result.destination_url = null;
           result.contents = null;
           result.description = null;
         }
@@ -240,6 +233,12 @@ if (!chrome.embeddedSearch) {
       this.__defineGetter__('font', GetFont);
       this.__defineGetter__('fontSize', GetFontSize);
 
+      // This method is restricted to chrome-search://suggestion pages by
+      // checking the invoking context's origin in searchbox_extension.cc.
+      this.getSuggestionData = function(restrictedId) {
+        return GetSuggestionData(restrictedId);
+      };
+
       this.setSuggestions = function(text) {
         SetSuggestions(text);
       };
@@ -270,9 +269,6 @@ if (!chrome.embeddedSearch) {
       };
       this.stopCapturingKeyStrokes = function() {
         StopCapturingKeyStrokes();
-      };
-      this.setSuggestionStyle = function(url_color, title_color) {
-        SetSuggestionStyle(url_color, title_color);
       };
       this.navigateContentWindow = function(destination, disposition) {
         NavigateSearchBox(destination, disposition);
