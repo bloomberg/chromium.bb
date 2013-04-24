@@ -11,7 +11,7 @@
   <META HTTP-EQUIV="Expires" CONTENT="-1" />
   <script type="text/javascript" src="nacltest.js"></script>
   <script type="text/javascript" src="ppapi_bad.js"></script>
-  <title>PNACL bad pexe/libraries Test</title>
+  <title>PNaCl Error Handling Test</title>
   <style type="text/css">
   .naclModule { background-color: gray; margin: 2px 2px; }
   </style>
@@ -43,21 +43,12 @@ function declareTests(tester) {
       'pnacl_bad_pexe_undefined_syms.nmf',
       'NaCl module load failed: PnaclCoordinator: link failed.');
 
-  // 'nonexistent_pexe loads a manifest, then tries to load a nonexistent pexe,
-  // given both a nexe and a portable program to choose from.
+  // 'nonexistent_pexe' loads a manifest, then tries to to load a nonexistent
+  // pexe and fails.
   badLoadTest(
       tester,
       'nonexistent_pexe',
       'pnacl_bad_doesnotexist.nmf',
-      'NaCl module load failed: PnaclCoordinator: ' +
-      'pexe load failed (pp_error=-2).');
-
-  // 'nonexistent_pexe_only' loads a manifest, then tries to load a nonexistent
-  // pexe, given only a pexe to choose from.
-  badLoadTest(
-      tester,
-      'nonexistent_pexe_only',
-      'pnacl_bad_doesnotexist_pexe_only.nmf',
       'NaCl module load failed: PnaclCoordinator: ' +
       'pexe load failed (pp_error=-2).');
 

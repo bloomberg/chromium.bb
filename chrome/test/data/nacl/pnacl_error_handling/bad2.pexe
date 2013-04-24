@@ -1,7 +1,7 @@
 ;; For now, we are using a .ll file as a "pexe". This is only a bad pexe
-;; in the sense that it shouldn't compile (missing instruction),
-;; not that it will crash LLC. Eventually we should make this into
-;; a bitcode file w/ the proper pexe metadata.
+;; in the sense that it shouldn't compile, not that it will crash LLC.
+;; (missing instruction / not binary bitcode).
+;; Eventually we should make this into a real bitcode file.
 
 ;; To actually crash LLC (and do so reliably), perhaps we could add
 ;; an SRPC method to LLC to ask it to crash itself.

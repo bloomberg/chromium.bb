@@ -15,6 +15,7 @@
     # affect the values in untrusted.gypi.
     'variables': {
       'test_files': [],
+      'generate_nmf%': 1,
       'nacl_newlib_out_dir': '<(PRODUCT_DIR)/nacl_test_data/newlib',
       'nacl_glibc_out_dir': '<(PRODUCT_DIR)/nacl_test_data/glibc',
       'nacl_pnacl_newlib_out_dir': '<(PRODUCT_DIR)/nacl_test_data/pnacl',
@@ -91,7 +92,7 @@
           ],
         },
         'target_conditions': [
-          ['build_newlib==1', {
+          ['generate_nmf==1 and build_newlib==1', {
             'actions': [
               {
                 'action_name': 'Generate NEWLIB NMF',
@@ -122,7 +123,7 @@
               },
             ],
           }],
-          ['"<(target_arch)"!="arm" and disable_glibc==0 and build_glibc==1', {
+          ['"<(target_arch)"!="arm" and generate_nmf==1 and disable_glibc==0 and build_glibc==1', {
             'variables': {
               # NOTE: Use /lib, not /lib64 here; it is a symbolic link which
               # doesn't work on Windows.
@@ -167,7 +168,7 @@
               },
             ],
           }],
-          ['build_pnacl_newlib==1 and disable_pnacl==0', {
+          ['generate_nmf==1 and build_pnacl_newlib==1 and disable_pnacl==0', {
             'actions': [
               {
                 'action_name': 'Generate PNACL NEWLIB NMF',

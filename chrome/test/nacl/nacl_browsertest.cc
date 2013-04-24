@@ -75,6 +75,11 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestStatic, MAYBE_CORSNoCookie) {
 }
 
 IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclErrorHandling)) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL("pnacl_error_handling.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
                        MAYBE_PNACL(PnaclNMFOptionsO0)) {
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=o_0"));
 }
