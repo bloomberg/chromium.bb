@@ -90,13 +90,23 @@ string16 GetAppListAppName() {
 // |is_per_user_install|).
 string16 GetExpectedAppId(const CommandLine& command_line,
                           bool is_per_user_install) {
-  base::FilePath profile_path;
-  if (command_line.HasSwitch(switches::kUserDataDir)) {
-    profile_path =
-        command_line.GetSwitchValuePath(switches::kUserDataDir).AppendASCII(
-            chrome::kInitialProfile);
-  }
+  base::FilePath user_data_dir;
+  if (command_line.HasSwitch(switches::kUserDataDir))
+    user_data_dir = command_line.GetSwitchValuePath(switches::kUserDataDir);
+  else
+    chrome::GetDefaultUserDataDirectory(&user_data_dir);
+  DCHECK(!user_data_dir.empty());
 
+  base::FilePath profile_subdir;
+  if (command_line.HasSwitch(switches::kProfileDirectory)) {
+    profile_subdir =
+        command_line.GetSwitchValuePath(switches::kProfileDirectory);
+  } else {
+    profile_subdir = base::FilePath(ASCIIToUTF16(chrome::kInitialProfile));
+  }
+  DCHECK(!profile_subdir.empty());
+
+  base::FilePath profile_path = user_data_dir.Append(profile_subdir);
   string16 app_name;
   if (command_line.HasSwitch(switches::kApp)) {
     app_name = UTF8ToUTF16(web_app::GenerateApplicationNameFromURL(
@@ -110,6 +120,7 @@ string16 GetExpectedAppId(const CommandLine& command_line,
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
     app_name = ShellUtil::GetBrowserModelId(dist, is_per_user_install);
   }
+  DCHECK(!app_name.empty());
 
   return ShellIntegration::GetAppModelIdForProfile(app_name, profile_path);
 }
@@ -450,7 +461,11 @@ int ShellIntegration::MigrateShortcutsInPathInternal(
       }
     }
 
-    if (check_dual_mode) {
+    // Only set dual mode if the expected app id is the default app id.
+    BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+    string16 default_chromium_model_id(
+        ShellUtil::GetBrowserModelId(dist, is_per_user_install));
+    if (check_dual_mode && expected_app_id == default_chromium_model_id) {
       propvariant.Reset();
       if (property_store->GetValue(PKEY_AppUserModel_IsDualMode,
                                    propvariant.Receive()) != S_OK) {
