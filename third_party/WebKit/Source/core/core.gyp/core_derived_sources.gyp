@@ -230,7 +230,6 @@
             '<@(_inputs)',
             '--',
             '--factory',
-            '--wrapperFactoryV8',
             '--extraDefines', '<(feature_defines)'
           ],
           'msvs_cygwin_shell': 1,
@@ -283,7 +282,6 @@
             '<@(_inputs)',
             '--',
             '--factory',
-            '--wrapperFactoryV8',
             '--extraDefines', '<(feature_defines)'
           ],
           'msvs_cygwin_shell': 1,
