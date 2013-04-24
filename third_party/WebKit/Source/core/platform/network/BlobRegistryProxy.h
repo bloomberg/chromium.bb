@@ -31,7 +31,7 @@
 #ifndef BlobRegistryProxy_h
 #define BlobRegistryProxy_h
 
-#include "BlobRegistry.h"
+#include "core/platform/network/BlobRegistry.h"
 
 namespace WebKit { class WebBlobRegistry; }
 

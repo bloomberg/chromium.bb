@@ -45,7 +45,6 @@
 #include "HTMLMetaCharsetParser.h"
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
-#include "HTTPParsers.h"
 #include "MIMETypeRegistry.h"
 #include "MarkupAccumulator.h"
 #include "Page.h"
@@ -57,6 +56,7 @@
 #include "Text.h"
 #include "TextEncoding.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/network/HTTPParsers.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

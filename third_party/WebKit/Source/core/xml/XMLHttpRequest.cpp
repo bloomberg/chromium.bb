@@ -24,7 +24,6 @@
 #include "XMLHttpRequest.h"
 
 #include "Blob.h"
-#include "BlobData.h"
 #include "CachedResourceRequestInitiators.h"
 #include "ContentSecurityPolicy.h"
 #include "ContextFeatures.h"
@@ -38,13 +37,9 @@
 #include "ExceptionCode.h"
 #include "File.h"
 #include "HTMLDocument.h"
-#include "HTTPParsers.h"
 #include "HistogramSupport.h"
 #include "InspectorInstrumentation.h"
 #include "MemoryCache.h"
-#include "ParsedContentType.h"
-#include "ResourceError.h"
-#include "ResourceRequest.h"
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "ScriptProfile.h"
@@ -57,13 +52,18 @@
 #include "XMLHttpRequestException.h"
 #include "XMLHttpRequestProgressEvent.h"
 #include "XMLHttpRequestUpload.h"
+#include "core/platform/network/BlobData.h"
+#include "core/platform/network/HTTPParsers.h"
+#include "core/platform/network/ParsedContentType.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceRequest.h"
 #include "markup.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
+#include <wtf/UnusedParam.h>
 
 namespace WebCore {
 

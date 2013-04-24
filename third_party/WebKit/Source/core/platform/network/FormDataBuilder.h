@@ -21,7 +21,7 @@
 #ifndef FormDataBuilder_h
 #define FormDataBuilder_h
 
-#include "FormData.h"
+#include "core/platform/network/FormData.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

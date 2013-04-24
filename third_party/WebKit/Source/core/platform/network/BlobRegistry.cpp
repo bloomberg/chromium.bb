@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "BlobRegistry.h"
+#include "core/platform/network/BlobRegistry.h"
 
 #include <wtf/MainThread.h>
 

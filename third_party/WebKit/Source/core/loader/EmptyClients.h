@@ -39,9 +39,9 @@
 #include "FrameLoaderClient.h"
 #include "InspectorClient.h"
 #include "Page.h"
-#include "ResourceError.h"
 #include "TextCheckerClient.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/network/ResourceError.h"
 
 #include <v8.h>
 

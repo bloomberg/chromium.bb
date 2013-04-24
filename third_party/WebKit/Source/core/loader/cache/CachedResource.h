@@ -23,21 +23,21 @@
 #ifndef CachedResource_h
 #define CachedResource_h
 
+#include <time.h>
 #include "CachePolicy.h"
 #include "FrameLoaderTypes.h"
 #include "PurgePriority.h"
-#include "ResourceError.h"
-#include "ResourceLoadPriority.h"
 #include "ResourceLoaderOptions.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "Timer.h"
-#include <time.h>
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceLoadPriority.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/HashCountedSet.h>
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

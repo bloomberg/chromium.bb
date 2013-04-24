@@ -31,7 +31,7 @@
 #include "config.h"
 #include <public/WebSocketStreamError.h>
 
-#include "SocketStreamError.h"
+#include "core/platform/network/SocketStreamError.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

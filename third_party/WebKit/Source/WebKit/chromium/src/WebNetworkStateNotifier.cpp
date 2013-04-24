@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebNetworkStateNotifier.h"
 
-#include "NetworkStateNotifier.h"
+#include "core/platform/network/NetworkStateNotifier.h"
 
 using namespace WebCore;
 

@@ -70,7 +70,6 @@
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
-#include "HTTPParsers.h"
 #include "HistoryItem.h"
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
@@ -83,8 +82,6 @@
 #include "PluginData.h"
 #include "PluginDocument.h"
 #include "ProgressTracker.h"
-#include "ResourceHandle.h"
-#include "ResourceRequest.h"
 #include "SchemeRegistry.h"
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
@@ -102,6 +99,9 @@
 #include "core/accessibility/AXObjectCache.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/network/HTTPParsers.h"
+#include "core/platform/network/ResourceHandle.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>

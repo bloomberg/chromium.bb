@@ -36,12 +36,12 @@
 #include "MediaSourceRegistry.h"
 #include "MemoryCache.h"
 #include "PublicURLManager.h"
-#include "ResourceRequest.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "ThreadableBlobRegistry.h"
-#include <wtf/PassOwnPtr.h>
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/MainThread.h>
+#include <wtf/PassOwnPtr.h>
 
 #if ENABLE(MEDIA_STREAM)
 #include "MediaStream.h"

@@ -32,9 +32,9 @@
 #ifndef HTTPRequest_h
 #define HTTPRequest_h
 
-#include "HTTPHeaderMap.h"
-#include "HTTPParsers.h"
 #include "KURL.h"
+#include "core/platform/network/HTTPHeaderMap.h"
+#include "core/platform/network/HTTPParsers.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

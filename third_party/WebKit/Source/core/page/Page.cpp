@@ -54,7 +54,6 @@
 #include "Logging.h"
 #include "MediaCanStartListener.h"
 #include "Navigator.h"
-#include "NetworkStateNotifier.h"
 #include "PageConsole.h"
 #include "PageGroup.h"
 #include "PlugInClient.h"
@@ -77,6 +76,7 @@
 #include "VoidCallback.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "Widget.h"
+#include "core/platform/network/NetworkStateNotifier.h"
 #include "core/storage/StorageArea.h"
 #include "core/storage/StorageNamespace.h"
 #include <wtf/HashMap.h>

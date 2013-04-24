@@ -36,9 +36,9 @@
 #include "DocumentLoadTiming.h"
 #include "DocumentLoader.h"
 #include "KURL.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "SecurityOrigin.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

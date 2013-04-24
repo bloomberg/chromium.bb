@@ -42,12 +42,12 @@
 #include "FrameLoader.h"
 #include "InspectorInstrumentation.h"
 #include "ProgressTracker.h"
-#include "ResourceError.h"
 #include "ResourceLoader.h"
-#include "ResourceRequest.h"
 #include "SchemeRegistry.h"
 #include "SecurityOrigin.h"
 #include "ThreadableLoaderClient.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/Assertions.h>
 #include <wtf/UnusedParam.h>
 

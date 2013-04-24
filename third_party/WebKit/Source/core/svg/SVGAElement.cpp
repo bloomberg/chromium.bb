@@ -42,11 +42,11 @@
 #include "RenderSVGInline.h"
 #include "RenderSVGText.h"
 #include "RenderSVGTransformableContainer.h"
-#include "ResourceRequest.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGSMILElement.h"
 #include "XLinkNames.h"
+#include "core/platform/network/ResourceRequest.h"
 
 namespace WebCore {
 

@@ -23,7 +23,6 @@
 #include "Chrome.h"
 
 #include "ChromeClient.h"
-#include "DNS.h"
 #include "DateTimeChooser.h"
 #include "Document.h"
 #include "FileChooser.h"
@@ -41,12 +40,13 @@
 #include "PageGroupLoadDeferrer.h"
 #include "PopupOpeningObserver.h"
 #include "RenderObject.h"
-#include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "WindowFeatures.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Icon.h"
+#include "core/platform/network/DNS.h"
+#include "core/platform/network/ResourceHandle.h"
 #include "core/storage/StorageNamespace.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

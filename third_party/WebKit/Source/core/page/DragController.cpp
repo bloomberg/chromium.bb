@@ -64,7 +64,6 @@
 #include "RenderImage.h"
 #include "RenderView.h"
 #include "ReplaceSelectionCommand.h"
-#include "ResourceRequest.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
@@ -74,6 +73,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageOrientation.h"
+#include "core/platform/network/ResourceRequest.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include <wtf/CurrentTime.h>

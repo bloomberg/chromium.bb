@@ -25,7 +25,6 @@
 #include "HTMLAnchorElement.h"
 
 #include "Attribute.h"
-#include "DNS.h"
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "Frame.h"
@@ -33,19 +32,20 @@
 #include "FrameLoaderClient.h"
 #include "FrameLoaderTypes.h"
 #include "FrameSelection.h"
-#include "HistogramSupport.h"
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
+#include "HistogramSupport.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "PingLoader.h"
 #include "PlatformMouseEvent.h"
 #include "RenderImage.h"
-#include "ResourceRequest.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
+#include "core/platform/network/DNS.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

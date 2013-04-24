@@ -22,8 +22,8 @@
 
 #include "Document.h"
 #include "Frame.h"
-#include "NetworkingContext.h"
 #include "ReferrerPolicy.h"
+#include "core/platform/network/NetworkingContext.h"
 
 namespace WebCore {
 

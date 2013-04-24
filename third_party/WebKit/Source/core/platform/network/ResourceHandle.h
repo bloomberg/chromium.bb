@@ -26,8 +26,8 @@
 #ifndef ResourceHandle_h
 #define ResourceHandle_h
 
-#include "ResourceHandleTypes.h"
-#include "ResourceLoadPriority.h"
+#include "core/platform/network/ResourceHandleTypes.h"
+#include "core/platform/network/ResourceLoadPriority.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>

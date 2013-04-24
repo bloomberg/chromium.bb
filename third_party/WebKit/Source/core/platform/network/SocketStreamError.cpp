@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "SocketStreamError.h"
+#include "core/platform/network/SocketStreamError.h"
 
 namespace WebCore {
 

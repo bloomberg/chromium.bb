@@ -34,7 +34,7 @@
 #include "Cookie.h"
 #include "Document.h"
 #include "Frame.h"
-#include "NetworkingContext.h"
+#include "core/platform/network/NetworkingContext.h"
 #include <public/Platform.h>
 #include <public/WebCookie.h>
 #include <public/WebCookieJar.h>

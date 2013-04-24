@@ -31,9 +31,9 @@
 
 #include "CachedResource.h"
 #include "DOMImplementation.h"
-#include "ResourceResponse.h"
 #include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 
 namespace {

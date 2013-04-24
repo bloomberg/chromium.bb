@@ -34,8 +34,6 @@
 #include "DOMFormData.h"
 #include "Document.h"
 #include "Event.h"
-#include "FormData.h"
-#include "FormDataBuilder.h"
 #include "FormState.h"
 #include "Frame.h"
 #include "FrameLoadRequest.h"
@@ -46,6 +44,8 @@
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "TextEncoding.h"
+#include "core/platform/network/FormData.h"
+#include "core/platform/network/FormDataBuilder.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/RandomNumber.h>
 

@@ -26,12 +26,12 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "EventTarget.h"
-#include "FormData.h"
-#include "ResourceResponse.h"
 #include "ScriptWrappable.h"
 #include "SecurityOrigin.h"
 #include "ThreadableLoaderClient.h"
 #include "XMLHttpRequestProgressEventThrottle.h"
+#include "core/platform/network/FormData.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/text/AtomicStringHash.h>
 #include <wtf/text/StringBuilder.h>

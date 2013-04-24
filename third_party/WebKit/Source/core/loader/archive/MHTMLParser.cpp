@@ -32,9 +32,9 @@
 #include "MHTMLParser.h"
 
 #include "MHTMLArchive.h"
-#include "MIMEHeader.h"
 #include "MIMETypeRegistry.h"
 #include "QuotedPrintable.h"
+#include "core/platform/network/MIMEHeader.h"
 #include <wtf/HashMap.h>
 #include <wtf/NotFound.h>
 #include <wtf/text/Base64.h>

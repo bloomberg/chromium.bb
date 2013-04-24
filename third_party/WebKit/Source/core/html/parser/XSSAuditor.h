@@ -27,10 +27,10 @@
 #define XSSAuditor_h
 
 #include "HTMLToken.h"
-#include "HTTPParsers.h"
 #include "KURL.h"
 #include "SuffixTree.h"
 #include "TextEncoding.h"
+#include "core/platform/network/HTTPParsers.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

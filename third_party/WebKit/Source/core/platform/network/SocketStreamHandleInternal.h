@@ -31,7 +31,7 @@
 #ifndef SocketStreamHandleInternal_h
 #define SocketStreamHandleInternal_h
 
-#include "SocketStreamHandle.h"
+#include "core/platform/network/SocketStreamHandle.h"
 #include <public/WebSocketStreamHandleClient.h>
 #include <public/WebURL.h>
 #include <wtf/PassOwnPtr.h>

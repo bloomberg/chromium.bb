@@ -99,7 +99,6 @@
 #include "HTMLParserIdioms.h"
 #include "HTMLStyleElement.h"
 #include "HTMLTitleElement.h"
-#include "HTTPParsers.h"
 #include "HashChangeEvent.h"
 #include "HistogramSupport.h"
 #include "History.h"
@@ -186,6 +185,7 @@
 #include "XSLTProcessor.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/chromium/TraceEvent.h"
+#include "core/platform/network/HTTPParsers.h"
 #include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>

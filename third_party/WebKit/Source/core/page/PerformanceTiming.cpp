@@ -37,8 +37,8 @@
 #include "DocumentTiming.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "ResourceLoadTiming.h"
-#include "ResourceResponse.h"
+#include "core/platform/network/ResourceLoadTiming.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

@@ -29,8 +29,6 @@
 #include "Console.h"
 #include "DOMStringList.h"
 #include "Document.h"
-#include "UseCounter.h"
-#include "FormData.h"
 #include "FormDataList.h"
 #include "Frame.h"
 #include "InspectorInstrumentation.h"
@@ -46,6 +44,8 @@
 #include "SecurityOrigin.h"
 #include "SecurityPolicyViolationEvent.h"
 #include "TextEncoding.h"
+#include "UseCounter.h"
+#include "core/platform/network/FormData.h"
 #include <wtf/HashSet.h>
 #include <wtf/text/TextPosition.h>
 #include <wtf/text/WTFString.h>

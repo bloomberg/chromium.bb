@@ -26,6 +26,7 @@
 #include "config.h"
 #include "Settings.h"
 
+#include <limits>
 #include "BackForwardController.h"
 #include "CachedResourceLoader.h"
 #include "Database.h"
@@ -37,9 +38,8 @@
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
-#include "ResourceHandle.h"
 #include "TextAutosizer.h"
-#include <limits>
+#include "core/platform/network/ResourceHandle.h"
 
 using namespace std;
 

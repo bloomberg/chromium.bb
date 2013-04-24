@@ -25,6 +25,7 @@
 #include "config.h"
 #include "HTMLFormElement.h"
 
+#include <limits>
 #include "Attribute.h"
 #include "AutocompleteErrorEvent.h"
 #include "DOMFormData.h"
@@ -35,7 +36,6 @@
 #include "FileList.h"
 #include "FileSystem.h"
 #include "FormController.h"
-#include "FormData.h"
 #include "FormDataList.h"
 #include "FormState.h"
 #include "Frame.h"
@@ -55,7 +55,7 @@
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "ValidityState.h"
-#include <limits>
+#include "core/platform/network/FormData.h"
 
 using namespace std;
 

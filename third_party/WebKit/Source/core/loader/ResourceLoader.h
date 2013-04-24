@@ -29,11 +29,11 @@
 #ifndef ResourceLoader_h
 #define ResourceLoader_h
 
-#include "ResourceHandleClient.h"
 #include "ResourceLoaderOptions.h"
 #include "ResourceLoaderTypes.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
+#include "core/platform/network/ResourceHandleClient.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>

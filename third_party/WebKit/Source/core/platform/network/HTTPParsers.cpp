@@ -31,7 +31,7 @@
  */
 
 #include "config.h"
-#include "HTTPParsers.h"
+#include "core/platform/network/HTTPParsers.h"
 
 #include "ContentSecurityPolicy.h"
 #include <wtf/DateMath.h>

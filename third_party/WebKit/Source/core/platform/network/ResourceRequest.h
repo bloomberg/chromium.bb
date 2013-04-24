@@ -28,10 +28,10 @@
 #ifndef ResourceRequest_h
 #define ResourceRequest_h
 
-#include "FormData.h"
-#include "HTTPHeaderMap.h"
 #include "KURL.h"
-#include "ResourceLoadPriority.h"
+#include "core/platform/network/FormData.h"
+#include "core/platform/network/HTTPHeaderMap.h"
+#include "core/platform/network/ResourceLoadPriority.h"
 
 #include <wtf/OwnPtr.h>
 

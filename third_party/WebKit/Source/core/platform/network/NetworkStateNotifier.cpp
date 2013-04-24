@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "NetworkStateNotifier.h"
+#include "core/platform/network/NetworkStateNotifier.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>

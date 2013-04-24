@@ -46,11 +46,11 @@
 #include "MemoryUsageSupport.h"
 #include "RenderObject.h"
 #include "RenderView.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "TimelineRecordFactory.h"
 #include "TimelineTraceEventProcessor.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/CurrentTime.h>
 

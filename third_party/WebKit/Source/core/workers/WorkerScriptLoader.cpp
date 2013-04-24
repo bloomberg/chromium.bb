@@ -30,13 +30,13 @@
 #include "WorkerScriptLoader.h"
 
 #include "CrossThreadTask.h"
-#include "ResourceResponse.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "TextResourceDecoder.h"
 #include "WorkerContext.h"
 #include "WorkerScriptLoaderClient.h"
 #include "WorkerThreadableLoader.h"
+#include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

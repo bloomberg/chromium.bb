@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "FormDataBuilder.h"
+#include "core/platform/network/FormDataBuilder.h"
 
 #include "Document.h"
 #include "Frame.h"
@@ -33,8 +33,8 @@
 #include <limits>
 #include <wtf/Assertions.h>
 #include <wtf/HexNumber.h>
-#include <wtf/text/CString.h>
 #include <wtf/RandomNumber.h>
+#include <wtf/text/CString.h>
 
 namespace WebCore {
 

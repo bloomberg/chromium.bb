@@ -33,11 +33,11 @@
 #include "CrossOriginAccessControl.h"
 #include "Document.h"
 #include "Logging.h"
-#include "ResourceHandle.h"
 #include "ScriptCallStack.h"
 #include "SecurityOrigin.h"
 #include "SharedBuffer.h"
 #include "WebVTTParser.h"
+#include "core/platform/network/ResourceHandle.h"
 
 namespace WebCore {
     

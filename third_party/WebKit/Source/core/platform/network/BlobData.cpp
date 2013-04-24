@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "BlobData.h"
 #include "BlobURL.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/platform/network/BlobData.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

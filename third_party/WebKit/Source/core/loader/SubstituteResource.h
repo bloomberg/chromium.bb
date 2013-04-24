@@ -29,8 +29,8 @@
 #include <wtf/RefCounted.h>
 
 #include "KURL.h"
-#include "ResourceResponse.h"
 #include "SharedBuffer.h"
+#include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/RefPtr.h>
 

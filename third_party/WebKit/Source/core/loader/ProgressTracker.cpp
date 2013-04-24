@@ -29,13 +29,13 @@
 #include "DocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "FrameLoaderStateMachine.h"
 #include "FrameLoaderClient.h"
+#include "FrameLoaderStateMachine.h"
 #include "InspectorInstrumentation.h"
 #include "Logging.h"
-#include "ResourceResponse.h"
-#include <wtf/text/CString.h>
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
+#include <wtf/text/CString.h>
 
 using std::min;
 

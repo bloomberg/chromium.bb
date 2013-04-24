@@ -43,7 +43,6 @@
 #include "PlatformContextSkia.h"
 #include "Range.h"
 #include "RenderView.h"
-#include "ResourceError.h"
 #include "ScrollbarTheme.h"
 #include "Settings.h"
 #include "SkBitmap.h"
@@ -68,6 +67,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/platform/network/ResourceError.h"
 #include "v8.h"
 #include <public/Platform.h>
 #include <public/WebFloatRect.h>

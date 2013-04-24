@@ -30,11 +30,11 @@
 
 #include "config.h"
 
-#include "BlobRegistryProxy.h"
+#include "core/platform/network/BlobRegistryProxy.h"
 
-#include "BlobData.h"
 #include "KURL.h"
-#include "ResourceHandle.h"
+#include "core/platform/network/BlobData.h"
+#include "core/platform/network/ResourceHandle.h"
 #include <public/Platform.h>
 #include <public/WebBlobData.h>
 #include <public/WebBlobRegistry.h>

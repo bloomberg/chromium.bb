@@ -27,9 +27,9 @@
 #include "XMLDocumentParser.h"
 
 #include "CDATASection.h"
+#include "CachedResourceLoader.h"
 #include "CachedScript.h"
 #include "Comment.h"
-#include "CachedResourceLoader.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DocumentType.h"
@@ -41,16 +41,16 @@
 #include "HTMLStyleElement.h"
 #include "ImageLoader.h"
 #include "ProcessingInstruction.h"
-#include "ResourceError.h"
-#include "ResourceHandle.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ScriptElement.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "TextResourceDecoder.h"
 #include "TreeDepthLimit.h"
 #include "XMLErrors.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceHandle.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/StringExtras.h>
 #include <wtf/Threading.h>
 #include <wtf/Vector.h>

@@ -36,9 +36,9 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
-#include "NetworkStateNotifier.h"
 #include "Page.h"
-#include "ResourceResponse.h"
+#include "core/platform/network/NetworkStateNotifier.h"
+#include "core/platform/network/ResourceResponse.h"
 
 namespace WebCore {
 

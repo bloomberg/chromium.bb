@@ -39,7 +39,6 @@
 #include "ConsoleTypes.h"
 #include "Element.h"
 #include "EventContext.h"
-#include "FormData.h"
 #include "Frame.h"
 #include "HitTestResult.h"
 #include "Page.h"
@@ -48,6 +47,7 @@
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
+#include "core/platform/network/FormData.h"
 #include "core/storage/StorageArea.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>

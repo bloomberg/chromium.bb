@@ -31,7 +31,7 @@
 #ifndef ResourceHandleInternal_h
 #define ResourceHandleInternal_h
 
-#include "ResourceRequest.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <public/WebCommon.h>
 #include <public/WebURLLoader.h>
 #include <public/WebURLLoaderClient.h>

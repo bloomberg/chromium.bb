@@ -60,12 +60,12 @@
 #include "PlatformEvent.h"
 #include "RenderObject.h"
 #include "ReplaceSelectionCommand.h"
-#include "ResourceRequest.h"
 #include "Settings.h"
 #include "TextIterator.h"
 #include "TypingCommand.h"
 #include "UserTypingGestureIndicator.h"
 #include "WindowFeatures.h"
+#include "core/platform/network/ResourceRequest.h"
 #include "markup.h"
 #include <wtf/unicode/CharacterNames.h>
 #include <wtf/unicode/Unicode.h>

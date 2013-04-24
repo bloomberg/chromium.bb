@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "HTTPHeaderMap.h"
+#include "core/platform/network/HTTPHeaderMap.h"
 
 #include <utility>
 

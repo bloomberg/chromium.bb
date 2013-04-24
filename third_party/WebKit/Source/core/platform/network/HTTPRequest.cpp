@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTTPRequest.h"
+#include "core/platform/network/HTTPRequest.h"
 
 #include <wtf/text/CString.h>
 

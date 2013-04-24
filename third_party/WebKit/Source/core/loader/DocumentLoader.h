@@ -35,13 +35,13 @@
 #include "DocumentLoadTiming.h"
 #include "DocumentWriter.h"
 #include "NavigationAction.h"
-#include "ResourceError.h"
 #include "ResourceLoaderOptions.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "StringWithDirection.h"
 #include "SubstituteData.h"
 #include "Timer.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/HashSet.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

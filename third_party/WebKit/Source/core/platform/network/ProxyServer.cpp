@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ProxyServer.h"
+#include "core/platform/network/ProxyServer.h"
 
 #include <wtf/text/StringBuilder.h>
 

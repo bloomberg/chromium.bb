@@ -41,7 +41,6 @@
 #include "InspectorInstrumentation.h"
 #include "MessagePortChannel.h"
 #include "PlatformMessagePortChannelChromium.h"
-#include "ResourceResponse.h"
 #include "ScriptExecutionContext.h"
 #include "SharedWorker.h"
 #include "WebContentSecurityPolicy.h"
@@ -52,6 +51,7 @@
 #include "WebSharedWorkerRepository.h"
 #include "WorkerScriptLoader.h"
 #include "WorkerScriptLoaderClient.h"
+#include "core/platform/network/ResourceResponse.h"
 
 #include <public/Platform.h>
 #include <public/WebMessagePortChannel.h>

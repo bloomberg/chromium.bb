@@ -32,7 +32,7 @@
 #include <public/WebHTTPBody.h>
 
 #include "FileSystem.h"
-#include "FormData.h"
+#include "core/platform/network/FormData.h"
 
 using namespace WebCore;
 

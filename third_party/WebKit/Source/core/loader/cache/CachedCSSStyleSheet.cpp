@@ -30,12 +30,12 @@
 #include "CSSStyleSheet.h"
 #include "CachedResourceClientWalker.h"
 #include "CachedStyleSheetClient.h"
-#include "HTTPParsers.h"
 #include "MemoryCache.h"
 #include "SharedBuffer.h"
 #include "StyleSheetContents.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/network/HTTPParsers.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 

@@ -35,18 +35,18 @@
 #include "Blob.h"
 #include "BlobURL.h"
 #include "FileReaderLoaderClient.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ScriptExecutionContext.h"
 #include "TextResourceDecoder.h"
 #include "ThreadableBlobRegistry.h"
 #include "ThreadableLoader.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/Base64.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 using namespace std;
 

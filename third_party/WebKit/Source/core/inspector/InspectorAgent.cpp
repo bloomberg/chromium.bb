@@ -43,13 +43,13 @@
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
 #include "Page.h"
-#include "ResourceRequest.h"
 #include "ScriptController.h"
 #include "ScriptFunctionCall.h"
 #include "ScriptObject.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

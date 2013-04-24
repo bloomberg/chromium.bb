@@ -26,11 +26,11 @@
 #include "config.h"
 #include "HistoryItem.h"
 
+#include <stdio.h>
 #include "Document.h"
-#include "ResourceRequest.h"
 #include "SerializedScriptValue.h"
 #include "SharedBuffer.h"
-#include <stdio.h>
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Decoder.h>
 #include <wtf/Encoder.h>

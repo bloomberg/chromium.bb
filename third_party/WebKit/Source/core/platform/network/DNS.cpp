@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "DNS.h"
+#include "core/platform/network/DNS.h"
 
 #include <public/Platform.h>
 

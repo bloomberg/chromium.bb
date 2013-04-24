@@ -32,15 +32,15 @@
 
 #include "ThreadableBlobRegistry.h"
 
-#include "BlobData.h"
-#include "BlobRegistry.h"
 #include "BlobURL.h"
 #include "SecurityOrigin.h"
+#include "core/platform/network/BlobData.h"
+#include "core/platform/network/BlobRegistry.h"
 #include <wtf/HashMap.h>
 #include <wtf/MainThread.h>
 #include <wtf/RefPtr.h>
-#include <wtf/ThreadSpecific.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/ThreadSpecific.h>
 
 using WTF::ThreadSpecific;
 

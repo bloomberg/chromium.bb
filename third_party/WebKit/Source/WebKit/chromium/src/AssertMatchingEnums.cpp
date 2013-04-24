@@ -57,8 +57,6 @@
 #include "NotificationClient.h"
 #include "PageVisibilityState.h"
 #include "ReferrerPolicy.h"
-#include "ResourceLoadPriority.h"
-#include "ResourceResponse.h"
 #include "Settings.h"
 #include "SpeechRecognitionError.h"
 #include "StorageQuota.h"
@@ -110,6 +108,8 @@
 #include "core/platform/mediastream/MediaStreamSource.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
+#include "core/platform/network/ResourceLoadPriority.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <public/WebClipboard.h>
 #include <public/WebFileError.h>
 #include <public/WebFileInfo.h>

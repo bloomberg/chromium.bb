@@ -33,7 +33,6 @@
 
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "FormDataBuilder.h"
 #include "FormDataList.h"
 #include "Frame.h"
 #include "HTMLFormControlElement.h"
@@ -46,6 +45,7 @@
 #include "TextEncoding.h"
 #include "WebFormElement.h"
 #include "WebInputElement.h"
+#include "core/platform/network/FormDataBuilder.h"
 
 using namespace WebCore;
 using namespace HTMLNames;

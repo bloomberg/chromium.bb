@@ -21,21 +21,21 @@
 
 #include "config.h"
 
-#include "FormData.h"
+#include "core/platform/network/FormData.h"
 
-#include "BlobData.h"
 #include "BlobURL.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
 #include "File.h"
 #include "FileSystem.h"
-#include "FormDataBuilder.h"
 #include "FormDataList.h"
 #include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "PlatformMemoryInstrumentation.h"
 #include "TextEncoding.h"
+#include "core/platform/network/BlobData.h"
+#include "core/platform/network/FormDataBuilder.h"
 #include <wtf/Decoder.h>
 #include <wtf/Encoder.h>
 #include <wtf/MemoryInstrumentationVector.h>

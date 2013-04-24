@@ -32,8 +32,8 @@
 #include "WebBlob.h"
 
 #include "Blob.h"
-#include "BlobData.h"
 #include "V8Blob.h"
+#include "core/platform/network/BlobData.h"
 #include <wtf/PassOwnPtr.h>
 
 using namespace WebCore;

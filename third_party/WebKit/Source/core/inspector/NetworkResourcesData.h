@@ -29,9 +29,9 @@
 #ifndef NetworkResourcesData_h
 #define NetworkResourcesData_h
 
-#include "HTTPHeaderMap.h"
 #include "InspectorPageAgent.h"
 #include "TextResourceDecoder.h"
+#include "core/platform/network/HTTPHeaderMap.h"
 #include <wtf/Deque.h>
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>

@@ -31,7 +31,7 @@
 #include "config.h"
 #include <public/WebThreadSafeData.h>
 
-#include "BlobData.h"
+#include "core/platform/network/BlobData.h"
 
 using namespace WebCore;
 

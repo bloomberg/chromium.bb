@@ -29,9 +29,9 @@
 #define WorkerScriptLoader_h
 
 #include "KURL.h"
-#include "ResourceRequest.h"
 #include "ThreadableLoader.h"
 #include "ThreadableLoaderClient.h"
+#include "core/platform/network/ResourceRequest.h"
 
 #include <wtf/FastAllocBase.h>
 #include <wtf/PassRefPtr.h>

@@ -32,7 +32,7 @@
 #include "Event.h"
 #include "FrameLoaderTypes.h"
 #include "KURL.h"
-#include "ResourceRequest.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

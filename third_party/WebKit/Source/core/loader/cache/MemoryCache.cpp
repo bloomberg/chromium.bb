@@ -32,7 +32,6 @@
 #include "FrameLoaderTypes.h"
 #include "FrameView.h"
 #include "Logging.h"
-#include "ResourceHandle.h"
 #include "SecurityOrigin.h"
 #include "SecurityOriginHash.h"
 #include "WebCoreMemoryInstrumentation.h"
@@ -40,6 +39,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
 #include "core/platform/graphics/Image.h"
+#include "core/platform/network/ResourceHandle.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

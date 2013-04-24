@@ -31,7 +31,7 @@
 #include "config.h"
 #include <public/WebURLLoadTiming.h>
 
-#include "ResourceLoadTiming.h"
+#include "core/platform/network/ResourceLoadTiming.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

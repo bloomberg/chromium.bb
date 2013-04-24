@@ -33,13 +33,13 @@
 
 #include "Event.h"
 #include "InspectorValues.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

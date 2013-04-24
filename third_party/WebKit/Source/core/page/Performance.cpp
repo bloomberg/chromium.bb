@@ -40,7 +40,7 @@
 #include "PerformanceResourceTiming.h"
 #include "PerformanceTiming.h"
 #include "PerformanceUserTiming.h"
-#include "ResourceResponse.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 
 #include "Frame.h"

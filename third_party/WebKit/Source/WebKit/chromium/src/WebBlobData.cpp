@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "BlobData.h"
+#include "core/platform/network/BlobData.h"
 #include <public/WebBlobData.h>
 #include <wtf/PassOwnPtr.h>
 

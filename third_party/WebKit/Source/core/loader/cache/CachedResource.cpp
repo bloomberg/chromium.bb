@@ -24,7 +24,6 @@
 #include "config.h"
 #include "CachedResource.h"
 
-#include "MemoryCache.h"
 #include "CachedMetadata.h"
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
@@ -36,11 +35,12 @@
 #include "InspectorInstrumentation.h"
 #include "KURL.h"
 #include "Logging.h"
+#include "MemoryCache.h"
 #include "PurgeableBuffer.h"
-#include "ResourceHandle.h"
-#include "SharedBuffer.h"
 #include "ResourceLoader.h"
+#include "SharedBuffer.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/network/ResourceHandle.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationHashCountedSet.h>

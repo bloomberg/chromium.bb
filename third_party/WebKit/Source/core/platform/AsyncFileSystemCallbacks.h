@@ -33,8 +33,8 @@
 
 #include "AsyncFileSystem.h"
 #include "AsyncFileWriter.h"
-#include "BlobData.h"
 #include "FileMetadata.h"
+#include "core/platform/network/BlobData.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

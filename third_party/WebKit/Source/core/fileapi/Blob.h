@@ -31,14 +31,14 @@
 #ifndef Blob_h
 #define Blob_h
 
-#include "BlobData.h"
 #include "KURL.h"
 #include "ScriptWrappable.h"
+#include "core/platform/network/BlobData.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

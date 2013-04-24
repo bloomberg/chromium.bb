@@ -27,7 +27,7 @@
 #include "config.h"
 #include "NavigatorBase.h"
 
-#include "NetworkStateNotifier.h"
+#include "core/platform/network/NetworkStateNotifier.h"
 #include <wtf/text/WTFString.h>
 
 #if OS(LINUX)

@@ -27,8 +27,8 @@
 #ifndef CrossOriginAccessControl_h
 #define CrossOriginAccessControl_h
 
-#include "ResourceHandle.h"
-#include "ResourceRequest.h"
+#include "core/platform/network/ResourceHandle.h"
+#include "core/platform/network/ResourceRequest.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>
 

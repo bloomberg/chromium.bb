@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "ResourceError.h"
+#include "core/platform/network/ResourceError.h"
 
 namespace WebCore {
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ResourceLoadTiming.h"
+#include "core/platform/network/ResourceLoadTiming.h"
 
 namespace WebCore {
 

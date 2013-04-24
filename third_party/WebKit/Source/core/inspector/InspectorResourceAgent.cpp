@@ -39,7 +39,6 @@
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "HTTPHeaderMap.h"
 #include "IdentifiersFactory.h"
 #include "InspectorClient.h"
 #include "InspectorFrontend.h"
@@ -51,10 +50,7 @@
 #include "MemoryCache.h"
 #include "NetworkResourcesData.h"
 #include "Page.h"
-#include "ResourceError.h"
 #include "ResourceLoader.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "ScriptableDocumentParser.h"
@@ -63,6 +59,10 @@
 #include "WebSocketHandshakeResponse.h"
 #include "XMLHttpRequest.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/platform/network/HTTPHeaderMap.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HexNumber.h>
 #include <wtf/ListHashSet.h>

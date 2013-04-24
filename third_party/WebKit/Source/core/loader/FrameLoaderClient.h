@@ -33,7 +33,7 @@
 #include "FrameLoaderTypes.h"
 #include "IconURL.h"
 #include "LayoutMilestones.h"
-#include "ResourceLoadPriority.h"
+#include "core/platform/network/ResourceLoadPriority.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 

@@ -26,9 +26,9 @@
 #ifndef FrameLoadRequest_h
 #define FrameLoadRequest_h
 
-#include "ResourceRequest.h"
 #include "SecurityOrigin.h"
 #include "SubstituteData.h"
+#include "core/platform/network/ResourceRequest.h"
 
 namespace WebCore {
 class Frame;

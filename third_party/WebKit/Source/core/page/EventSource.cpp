@@ -43,9 +43,6 @@
 #include "Frame.h"
 #include "MemoryCache.h"
 #include "MessageEvent.h"
-#include "ResourceError.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "ScriptExecutionContext.h"
@@ -53,6 +50,9 @@
 #include "SerializedScriptValue.h"
 #include "TextResourceDecoder.h"
 #include "ThreadableLoader.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

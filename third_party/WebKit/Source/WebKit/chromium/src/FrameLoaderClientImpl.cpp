@@ -45,7 +45,6 @@
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"  // needed by FormState.h
 #include "HTMLNames.h"
-#include "HTTPParsers.h"
 #include "HistoryItem.h"
 #include "HitTestResult.h"
 #include "MIMETypeRegistry.h"
@@ -54,15 +53,15 @@
 #include "Page.h"
 #include "PluginData.h"
 #include "ProgressTracker.h"
-#include "ResourceHandleInternal.h"
 #include "ResourceLoader.h"
+#include "core/platform/network/HTTPParsers.h"
+#include "core/platform/network/ResourceHandleInternal.h"
 #if ENABLE(MEDIA_STREAM)
 #include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 #endif
 #include <v8.h>
 #include "ScriptController.h"
 #include "Settings.h"
-#include "SocketStreamHandleInternal.h"
 #include "UserGestureIndicator.h"
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
@@ -85,6 +84,7 @@
 #include "WindowFeatures.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
+#include "core/platform/network/SocketStreamHandleInternal.h"
 #include <public/Platform.h>
 #include <public/WebMimeRegistry.h>
 #include <public/WebSocketStreamHandle.h>

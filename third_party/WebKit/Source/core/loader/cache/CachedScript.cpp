@@ -29,12 +29,12 @@
 
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
-#include "HTTPParsers.h"
 #include "MIMETypeRegistry.h"
 #include "MemoryCache.h"
 #include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/network/HTTPParsers.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

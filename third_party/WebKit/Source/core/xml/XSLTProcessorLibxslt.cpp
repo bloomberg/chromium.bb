@@ -24,31 +24,31 @@
 
 #include "XSLTProcessor.h"
 
+#include <libxslt/imports.h>
+#include <libxslt/security.h>
+#include <libxslt/variables.h>
+#include <libxslt/xsltutils.h>
 #include "CachedResourceLoader.h"
 #include "Document.h"
 #include "Frame.h"
 #include "Page.h"
 #include "PageConsole.h"
-#include "ResourceError.h"
-#include "ResourceHandle.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "SecurityOrigin.h"
 #include "TransformSource.h"
 #include "XMLDocumentParser.h"
 #include "XSLStyleSheet.h"
 #include "XSLTExtensions.h"
 #include "XSLTUnicodeSort.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceHandle.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include "markup.h"
-#include <libxslt/imports.h>
-#include <libxslt/security.h>
-#include <libxslt/variables.h>
-#include <libxslt/xsltutils.h>
 #include <wtf/Assertions.h>
-#include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuffer.h>
 #include <wtf/unicode/UTF8.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

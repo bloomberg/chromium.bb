@@ -37,7 +37,6 @@
 #include "CachedResourceLoader.h"
 #include "CachedResourceRequest.h"
 #include "ContainerNode.h"
-#include "DNS.h"
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -46,6 +45,7 @@
 #include "Prerenderer.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/platform/network/DNS.h"
 
 namespace WebCore {
 

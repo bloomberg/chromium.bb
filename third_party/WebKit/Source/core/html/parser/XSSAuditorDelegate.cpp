@@ -30,7 +30,6 @@
 #include "DOMWindow.h"
 #include "Document.h"
 #include "DocumentLoader.h"
-#include "FormData.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
@@ -38,6 +37,7 @@
 #include "InspectorValues.h"
 #include "PingLoader.h"
 #include "SecurityOrigin.h"
+#include "core/platform/network/FormData.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

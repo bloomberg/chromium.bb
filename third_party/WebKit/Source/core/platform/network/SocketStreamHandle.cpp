@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "SocketStreamHandle.h"
+#include "core/platform/network/SocketStreamHandle.h"
 
 #include "Logging.h"
 #include "NotImplemented.h"
-#include "SocketStreamError.h"
-#include "SocketStreamHandleClient.h"
-#include "SocketStreamHandleInternal.h"
+#include "core/platform/network/SocketStreamError.h"
+#include "core/platform/network/SocketStreamHandleClient.h"
+#include "core/platform/network/SocketStreamHandleInternal.h"
 #include <public/Platform.h>
 #include <public/WebData.h>
 #include <public/WebSocketStreamError.h>

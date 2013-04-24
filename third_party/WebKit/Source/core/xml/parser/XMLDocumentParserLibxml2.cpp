@@ -27,10 +27,12 @@
 #include "config.h"
 #include "XMLDocumentParser.h"
 
+#include <libxml/parser.h>
+#include <libxml/parserInternals.h>
 #include "CDATASection.h"
+#include "CachedResourceLoader.h"
 #include "CachedScript.h"
 #include "Comment.h"
-#include "CachedResourceLoader.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DocumentType.h"
@@ -45,29 +47,27 @@
 #include "HTMLStyleElement.h"
 #include "HTMLTemplateElement.h"
 #include "ProcessingInstruction.h"
-#include "ResourceError.h"
-#include "ResourceHandle.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ScriptElement.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "SecurityOrigin.h"
 #include "TextResourceDecoder.h"
 #include "TransformSource.h"
-#include "XMLNSNames.h"
 #include "XMLDocumentParserScope.h"
-#include <libxml/parser.h>
-#include <libxml/parserInternals.h>
-#include <wtf/text/CString.h>
+#include "XMLNSNames.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceHandle.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/StringExtras.h>
+#include <wtf/text/CString.h>
 #include <wtf/Threading.h>
+#include <wtf/unicode/UTF8.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
-#include <wtf/unicode/UTF8.h>
 
-#include "XMLTreeViewer.h"
 #include <libxslt/xslt.h>
+#include "XMLTreeViewer.h"
 
 using namespace std;
 

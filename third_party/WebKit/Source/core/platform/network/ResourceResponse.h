@@ -28,10 +28,10 @@
 #define ResourceResponse_h
 
 #include "File.h"
-#include "HTTPHeaderMap.h"
 #include "KURL.h"
-#include "ResourceLoadInfo.h"
-#include "ResourceLoadTiming.h"
+#include "core/platform/network/HTTPHeaderMap.h"
+#include "core/platform/network/ResourceLoadInfo.h"
+#include "core/platform/network/ResourceLoadTiming.h"
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>

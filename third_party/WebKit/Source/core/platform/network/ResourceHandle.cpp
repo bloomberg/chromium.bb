@@ -29,17 +29,17 @@
  */
 
 #include "config.h"
-#include "ResourceHandle.h"
+#include "core/platform/network/ResourceHandle.h"
 
-#include "NetworkingContext.h"
-#include "ResourceError.h"
-#include "ResourceHandleClient.h"
-#include "ResourceHandleInternal.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "SharedBuffer.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
+#include "core/platform/network/NetworkingContext.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceHandleClient.h"
+#include "core/platform/network/ResourceHandleInternal.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <public/Platform.h>
 #include <public/WebURLError.h>
 #include <public/WebURLLoader.h>

@@ -32,16 +32,16 @@
 
 #include "WorkerThreadableLoader.h"
 
+#include "CrossThreadTask.h"
 #include "Document.h"
 #include "DocumentThreadableLoader.h"
-#include "CrossThreadTask.h"
-#include "ResourceError.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "ThreadableLoader.h"
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/platform/network/ResourceError.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/MainThread.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>

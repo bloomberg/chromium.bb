@@ -25,11 +25,11 @@
  */
 
 #include "config.h"
-#include "ResourceResponse.h"
+#include "core/platform/network/ResourceResponse.h"
 
-#include "HTTPParsers.h"
 #include "PlatformMemoryInstrumentation.h"
-#include "ResourceResponse.h"
+#include "core/platform/network/HTTPParsers.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

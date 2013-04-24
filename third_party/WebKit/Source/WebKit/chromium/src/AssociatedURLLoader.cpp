@@ -34,8 +34,6 @@
 #include "CrossOriginAccessControl.h"
 #include "DocumentThreadableLoader.h"
 #include "DocumentThreadableLoaderClient.h"
-#include "HTTPParsers.h"
-#include "ResourceError.h"
 #include "ResourceLoader.h"
 #include "Timer.h"
 #include "WebApplicationCacheHost.h"
@@ -44,6 +42,8 @@
 #include "XMLHttpRequest.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
+#include "core/platform/network/HTTPParsers.h"
+#include "core/platform/network/ResourceError.h"
 #include <public/WebHTTPHeaderVisitor.h>
 #include <public/WebString.h>
 #include <public/WebURLError.h>

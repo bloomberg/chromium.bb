@@ -33,21 +33,21 @@
 #include "PingLoader.h"
 
 #include "Document.h"
-#include "FormData.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
-#include "ResourceHandle.h"
-#include "ResourceRequest.h"
-#include "ResourceResponse.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "core/loader/UniqueIdentifier.h"
+#include "core/platform/network/FormData.h"
+#include "core/platform/network/ResourceHandle.h"
+#include "core/platform/network/ResourceRequest.h"
+#include "core/platform/network/ResourceResponse.h"
 #include <wtf/OwnPtr.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
+#include <wtf/UnusedParam.h>
 
 namespace WebCore {
 

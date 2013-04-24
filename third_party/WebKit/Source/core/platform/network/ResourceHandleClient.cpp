@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ResourceHandleClient.h"
+#include "core/platform/network/ResourceHandleClient.h"
 
 namespace WebCore {
 
