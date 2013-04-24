@@ -141,7 +141,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
   // stale.
   static bool IsIndexFileStale(const base::FilePath& index_filename);
 
-  static void LoadFromDisk(
+  static void InitializeInternal(
       const base::FilePath& index_filename,
       base::SingleThreadTaskRunner* io_thread,
       const IndexCompletionCallback& completion_callback);
@@ -151,7 +151,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
       const base::FilePath& index_filename);
 
   static void WriteToDiskInternal(const base::FilePath& index_filename,
-                                  scoped_ptr<Pickle> pickle);
+                                  scoped_ptr<Pickle> pickle,
+                                  const base::TimeTicks& start_time);
 
   // Must run on IO Thread.
   void MergeInitializingSet(scoped_ptr<EntrySet> index_file_entries,

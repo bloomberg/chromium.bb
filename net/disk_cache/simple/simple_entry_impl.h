@@ -118,6 +118,7 @@ class SimpleEntryImpl : public Entry, public base::RefCounted<SimpleEntryImpl> {
   // |completion_callback|.
   void CreationOperationComplete(
       const CompletionCallback& completion_callback,
+      const base::TimeTicks& start_time,
       scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
       Entry** out_entry);
 

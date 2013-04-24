@@ -14,7 +14,9 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/worker_pool.h"
+#include "base/time.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/simple/simple_index.h"
@@ -46,20 +48,40 @@ int SimpleEntryImpl::OpenEntry(SimpleIndex* entry_index,
                                const std::string& key,
                                Entry** out_entry,
                                const CompletionCallback& callback) {
+  // This enumeration is used in histograms, add entries only at end.
+  enum OpenEntryIndexEnum {
+    INDEX_NOEXIST = 0,
+    INDEX_MISS = 1,
+    INDEX_HIT = 2,
+    INDEX_MAX = 3,
+  };
+  OpenEntryIndexEnum open_entry_index_enum = INDEX_NOEXIST;
+  if (entry_index) {
+    if (entry_index->Has(key))
+      open_entry_index_enum = INDEX_HIT;
+    else
+      open_entry_index_enum = INDEX_MISS;
+  }
+  UMA_HISTOGRAM_ENUMERATION("SimpleCache.OpenEntryIndexState",
+                            open_entry_index_enum, INDEX_MAX);
   // If entry is not known to the index, initiate fast failover to the network.
-  if (entry_index && !entry_index->Has(key))
+  if (open_entry_index_enum == INDEX_MISS)
     return net::ERR_FAILED;
 
+  const base::TimeTicks start_time = base::TimeTicks::Now();
+  // Go down to the disk to find the entry.
   scoped_refptr<SimpleEntryImpl> new_entry =
       new SimpleEntryImpl(entry_index, path, key);
-
   typedef SimpleSynchronousEntry* PointerToSimpleSynchronousEntry;
   scoped_ptr<PointerToSimpleSynchronousEntry> sync_entry(
       new PointerToSimpleSynchronousEntry());
   Closure task = base::Bind(&SimpleSynchronousEntry::OpenEntry, path, key,
                             sync_entry.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                             new_entry, callback, base::Passed(&sync_entry),
+                             new_entry,
+                             callback,
+                             start_time,
+                             base::Passed(&sync_entry),
                              out_entry);
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
   return net::ERR_IO_PENDING;
@@ -71,6 +93,7 @@ int SimpleEntryImpl::CreateEntry(SimpleIndex* entry_index,
                                  const std::string& key,
                                  Entry** out_entry,
                                  const CompletionCallback& callback) {
+  const base::TimeTicks start_time = base::TimeTicks::Now();
   // We insert the entry in the index before creating the entry files in the
   // SimpleSynchronousEntry, because this way the worse scenario is when we
   // have the entry in the index but we don't have the created files yet, this
@@ -87,7 +110,10 @@ int SimpleEntryImpl::CreateEntry(SimpleIndex* entry_index,
   Closure task = base::Bind(&SimpleSynchronousEntry::CreateEntry, path, key,
                             sync_entry.get());
   Closure reply = base::Bind(&SimpleEntryImpl::CreationOperationComplete,
-                             new_entry, callback, base::Passed(&sync_entry),
+                             new_entry,
+                             callback,
+                             start_time,
+                             base::Passed(&sync_entry),
                              out_entry);
   WorkerPool::PostTaskAndReply(FROM_HERE, task, reply, true);
   return net::ERR_IO_PENDING;
@@ -280,7 +306,8 @@ SimpleEntryImpl::~SimpleEntryImpl() {
 
 bool SimpleEntryImpl::RunNextOperationIfNeeded() {
   DCHECK(io_thread_checker_.CalledOnValidThread());
-
+  UMA_HISTOGRAM_CUSTOM_COUNTS("SimpleCache.EntryOperationsPending",
+                              pending_operations_.size(), 0, 100, 20);
   if (pending_operations_.size() <= 0 || operation_running_)
     return false;
   base::Closure operation = pending_operations_.front();
@@ -382,12 +409,15 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
 
 void SimpleEntryImpl::CreationOperationComplete(
     const CompletionCallback& completion_callback,
+    const base::TimeTicks& start_time,
     scoped_ptr<SimpleSynchronousEntry*> in_sync_entry,
     Entry** out_entry) {
   DCHECK(io_thread_checker_.CalledOnValidThread());
   DCHECK(in_sync_entry);
 
-  if (!*in_sync_entry) {
+  bool creation_result = !*in_sync_entry;
+  UMA_HISTOGRAM_BOOLEAN("SimpleCache.EntryCreationResult", creation_result);
+  if (creation_result) {
     completion_callback.Run(net::ERR_FAILED);
     // If OpenEntry failed, we must remove it from our index.
     if (entry_index_)
@@ -396,6 +426,7 @@ void SimpleEntryImpl::CreationOperationComplete(
     // delete |this| on leaving this scope.
     return;
   }
+
   // The Backend interface requires us to return |this|, and keep the Entry
   // alive until Entry::Close(). Adding a reference to self will keep |this|
   // alive after the scope of the Callback calling us is destroyed.
@@ -403,6 +434,9 @@ void SimpleEntryImpl::CreationOperationComplete(
   synchronous_entry_ = *in_sync_entry;
   SetSynchronousData();
   *out_entry = this;
+  UMA_HISTOGRAM_TIMES("SimpleCache.EntryCreationTime",
+                      (base::TimeTicks::Now() - start_time));
+
   completion_callback.Run(net::OK);
 }
 
