@@ -157,3 +157,12 @@ class BaselineOptimizerTest(unittest.TestCase):
             'LayoutTests/platform/chromium-mac': '1',
             'LayoutTests/platform/chromium-win': '2',
         })
+
+    def test_root_baseline_unused_and_non_existant(self):
+        self._assertOptimization({
+            'LayoutTests/platform/chromium-mac': '1',
+            'LayoutTests/platform/chromium-win': '2',
+        }, {
+            'LayoutTests/platform/chromium-mac': '1',
+            'LayoutTests/platform/chromium-win': '2',
+        })

@@ -110,7 +110,8 @@ class BaselineOptimizer(object):
         # The root baseline is unused if all the directories immediately preceding the root
         # have a baseline, but have different baselines, so the baselines can't be promoted up.
         if root_baseline_unused:
-            del new_results_by_directory[self.ROOT_LAYOUT_TESTS_DIRECTORY]
+            if self.ROOT_LAYOUT_TESTS_DIRECTORY in new_results_by_directory:
+                del new_results_by_directory[self.ROOT_LAYOUT_TESTS_DIRECTORY]
             return
 
         new_results_by_directory[self.ROOT_LAYOUT_TESTS_DIRECTORY] = shared_result
