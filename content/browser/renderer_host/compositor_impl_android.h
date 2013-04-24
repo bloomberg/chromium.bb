@@ -55,6 +55,7 @@ class CONTENT_EXPORT CompositorImpl
   virtual void SetHasTransparentBackground(bool flag) OVERRIDE;
   virtual bool CompositeAndReadback(
       void *pixels, const gfx::Rect& rect) OVERRIDE;
+  virtual void SetNeedsRedraw() OVERRIDE;
   virtual void Composite() OVERRIDE;
   virtual WebKit::WebGLId GenerateTexture(gfx::JavaBitmap& bitmap) OVERRIDE;
   virtual WebKit::WebGLId GenerateCompressedTexture(

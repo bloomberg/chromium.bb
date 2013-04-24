@@ -233,6 +233,7 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   compositor_->SetWindowBounds(gfx::Size(draw_info->width, draw_info->height));
+  compositor_->SetNeedsRedraw();
 
   if (draw_info->is_layer) {
     // When rendering into a separate layer no view clipping, transform,

@@ -89,6 +89,9 @@ class CONTENT_EXPORT Compositor {
   // The buffer is not modified if false is returned.
   virtual bool CompositeAndReadback(void *pixels, const gfx::Rect& rect) = 0;
 
+  // Invalidate the whole viewport.
+  virtual void SetNeedsRedraw() = 0;
+
   // Composite immediately. Used in single-threaded mode.
   virtual void Composite() = 0;
 

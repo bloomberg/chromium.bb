@@ -130,6 +130,11 @@ CompositorImpl::~CompositorImpl() {
   SetSurface(NULL);
 }
 
+void CompositorImpl::SetNeedsRedraw() {
+  if (host_)
+    host_->SetNeedsRedraw();
+}
+
 void CompositorImpl::Composite() {
   if (host_)
     host_->Composite(base::TimeTicks::Now());
