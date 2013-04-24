@@ -333,6 +333,42 @@ static int checkVarints(const unsigned char *pData, unsigned nData,
   return nFound==n;
 }
 
+/* ctype and str[n]casecmp() can be affected by locale (eg, tr_TR).
+ * These versions consider only the ASCII space.
+ */
+/* TODO(shess): It may be reasonable to just remove the need for these
+ * entirely.  The module could require "TEXT STRICT NOT NULL", not
+ * "Text Strict Not Null" or whatever the developer felt like typing
+ * that day.  Handling corrupt data is a PERFECT place to be pedantic.
+ */
+static int ascii_isspace(char c){
+  /* From fts3_expr.c */
+  return c==' ' || c=='\t' || c=='\n' || c=='\r' || c=='\v' || c=='\f';
+}
+static int ascii_isalnum(int x){
+  /* From fts3_tokenizer1.c */
+  return (x>='0' && x<='9') || (x>='A' && x<='Z') || (x>='a' && x<='z');
+}
+static int ascii_tolower(int x){
+  /* From fts3_tokenizer1.c */
+  return (x>='A' && x<='Z') ? x-'A'+'a' : x;
+}
+/* TODO(shess): Consider sqlite3_strnicmp() */
+static int ascii_strncasecmp(const char *s1, const char *s2, size_t n){
+  const unsigned char *us1 = (const unsigned char *)s1;
+  const unsigned char *us2 = (const unsigned char *)s2;
+  while( *us1 && *us2 && n && ascii_tolower(*us1)==ascii_tolower(*us2) ){
+    us1++, us2++, n--;
+  }
+  return n ? ascii_tolower(*us1)-ascii_tolower(*us2) : 0;
+}
+static int ascii_strcasecmp(const char *s1, const char *s2){
+  /* If s2 is equal through strlen(s1), will exit while() due to s1's
+   * trailing NUL, and return NUL-s2[strlen(s1)].
+   */
+  return ascii_strncasecmp(s1, s2, strlen(s1)+1);
+}
+
 /* For some reason I kept making mistakes with offset calculations. */
 static const unsigned char *PageData(DbPage *pPage, unsigned iOffset){
   assert( iOffset<=pPage->nPageSize );
@@ -359,7 +395,7 @@ static int GetPager(sqlite3 *db, const char *zName,
   Btree *pBt = NULL;
   int i;
   for( i=0; i<db->nDb; ++i ){
-    if( strcasecmp(db->aDb[i].zName, zName)==0 ){
+    if( ascii_strcasecmp(db->aDb[i].zName, zName)==0 ){
       pBt = db->aDb[i].pBt;
       break;
     }
@@ -1759,15 +1795,15 @@ int recoverVtableInit(sqlite3 *db){
 
 /* Find the next word in zText and place the endpoints in pzWord*.
  * Returns true if the word is non-empty.  "Word" is defined as
- * alphanumeric plus '_' at this time.
+ * ASCII alphanumeric plus '_' at this time.
  */
 static int findWord(const char *zText,
                     const char **pzWordStart, const char **pzWordEnd){
-  while( isspace(*zText) ){
+  while( ascii_isspace(*zText) ){
     zText++;
   }
   *pzWordStart = zText;
-  while( isalnum(*zText) || *zText=='_' ){
+  while( ascii_isalnum(*zText) || *zText=='_' ){
     zText++;
   }
   int r = zText>*pzWordStart;  /* In case pzWordStart==pzWordEnd */
@@ -1782,7 +1818,7 @@ static int expectWord(const char *zText, const char *zWord,
                       const char **pzContinue){
   const char *zWordStart, *zWordEnd;
   if( findWord(zText, &zWordStart, &zWordEnd) &&
-      strncasecmp(zWord, zWordStart, zWordEnd - zWordStart)==0 ){
+      ascii_strncasecmp(zWord, zWordStart, zWordEnd - zWordStart)==0 ){
     *pzContinue = zWordEnd;
     return 1;
   }
@@ -1833,7 +1869,7 @@ static int findNameAndType(const char *parameter,
 
   unsigned i, nNameLen = *pzTypeEnd - *pzTypeStart;
   for( i=0; i<ArraySize(kTypeInfo); ++i ){
-    if( strncasecmp(kTypeInfo[i].zName, *pzTypeStart, nNameLen)==0 ){
+    if( ascii_strncasecmp(kTypeInfo[i].zName, *pzTypeStart, nNameLen)==0 ){
       break;
     }
   }
@@ -1952,7 +1988,7 @@ static int recoverInit(
   const unsigned kTypeCol = 4;
 
   /* Require to be in the temp database. */
-  if( strcasecmp(argv[1], "temp")!=0 ){
+  if( ascii_strcasecmp(argv[1], "temp")!=0 ){
     *pzErr = sqlite3_mprintf("recover table must be in temp database");
     return SQLITE_MISUSE;
   }
