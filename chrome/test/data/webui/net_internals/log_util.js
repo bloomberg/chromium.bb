@@ -15,7 +15,7 @@ GEN_INCLUDE(['net_internals_test.js']);
 (function() {
 
 /**
- * A Task that create a log dump and then loads it.
+ * A Task that creates a log dump and then loads it.
  * @param {string} userComments User comments to copy to the ExportsView before
  *     creating the log dump.
  * @extends {NetInternalsTest.Task}
@@ -70,7 +70,8 @@ CreateAndLoadLogTask.prototype = {
 };
 
 /**
- * A Task that waits we receive, then asynchronously completes.
+ * A Task that waits until constants are received, completing asynchronously
+ * once they are.
  * @extends {NetInternalsTest.Task}
  */
 function WaitForConstantsTask() {
@@ -94,6 +95,57 @@ WaitForConstantsTask.prototype = {
   onReceivedConstants: function() {
     if (!this.isDone())
       this.onTaskDone();
+  }
+};
+
+/**
+  * A Task that creates a log dump in the browser process via NetLogLogger,
+  * waits to receive it via IPC, and and then loads it as a string.
+  * @param {integer} truncate The number of bytes to truncate from the end of
+  *     the string, if any, to simulate a truncated log due to crash.
+  * @extends {NetInternalsTest.Task}
+  */
+function GetNetLogLoggerStringAndLoadLogTask(truncate) {
+  NetInternalsTest.Task.call(this);
+  this.setCompleteAsync(true);
+  this.truncate_ = truncate;
+};
+
+GetNetLogLoggerStringAndLoadLogTask.prototype = {
+  __proto__: NetInternalsTest.Task.prototype,
+
+  /**
+   * Sets |NetInternals.callback|, and sends the request to the browser process.
+   */
+  start: function() {
+    NetInternalsTest.setCallback(this.onLogReceived_.bind(this));
+    chrome.send('getNetLogLoggerLog');
+  },
+
+  /**
+   * Loads the received log and completes the Task.
+   * @param {string} logDumpText Log received from the browser process.
+   */
+  onLogReceived_: function(logDumpText) {
+    assertEquals('string', typeof logDumpText);
+    expectTrue(SourceTracker.getInstance().getPrivacyStripping());
+
+    var expectedResult = 'The log file is missing clientInfo.numericDate.\n' +
+        'Synthesizing export date as time of last event captured.\n' +
+        'Log loaded.';
+
+    logDumpText = logDumpText.substring(0, logDumpText.length - this.truncate_);
+    expectEquals(expectedResult, log_util.loadLogFile(logDumpText, 'log.txt'));
+    expectFalse(SourceTracker.getInstance().getPrivacyStripping());
+
+    NetInternalsTest.expectStatusViewNodeVisible(LoadedStatusView.MAIN_BOX_ID);
+
+    // Make sure the DIV on the import tab containing the comments is visible
+    // before checking the displayed text.
+    expectTrue(NetInternalsTest.nodeIsVisible($(ImportView.LOADED_DIV_ID)));
+    expectEquals('', $(ImportView.LOADED_INFO_USER_COMMENTS_ID).innerText);
+
+    this.onTaskDone();
   }
 };
 
@@ -127,6 +179,36 @@ function checkViewsAfterLogLoaded() {
   NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
 }
 
+/**
+ * Checks the visibility of each view after loading a log dump created by the
+ * NetLogLogger.  Also checks that the BrowserBridge is disabled.
+ */
+function checkViewsAfterNetLogLoggerLogLoaded() {
+  expectTrue(g_browser.isDisabled());
+  var tabVisibilityState = {
+    capture: false,
+    export: true,
+    import: true,
+    proxy: false,
+    events: true,
+    timeline: true,
+    dns: false,
+    sockets: false,
+    spdy: false,
+    quic: false,
+    httpPipeline: false,
+    httpCache: false,
+    serviceProviders: false,
+    tests: false,
+    hsts: false,
+    logs: false,
+    prerender: false,
+    bandwidth: true,
+    chromeos: false
+  };
+  NetInternalsTest.checkTabHandleVisibility(tabVisibilityState, false);
+}
+
 function checkPrivacyStripping(expectedValue) {
   expectEquals(expectedValue,
                SourceTracker.getInstance().getPrivacyStripping());
@@ -145,7 +227,6 @@ function checkActiveView(id) {
  * and checks visibility of tabs aftwards.  Does not actually save the log to a
  * file.
  * TODO(mmenke):  Add some checks for the import view.
- * TODO(mmenke):  Add a test for a log created with --log-net-log.
  */
 TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
   expectFalse(g_browser.isDisabled());
@@ -155,6 +236,30 @@ TEST_F('NetInternalsTest', 'netInternalsExportImportDump', function() {
   var taskQueue = new NetInternalsTest.TaskQueue(true);
   taskQueue.addTask(new CreateAndLoadLogTask('Detailed explanation.'));
   taskQueue.addFunctionTask(checkViewsAfterLogLoaded);
+  taskQueue.run(true);
+});
+
+/**
+ * Exports a log dump by using a NetLogLogger and attempts to load it from a
+ * string.  The string is passed to Javascript via an IPC rather than drag and
+ * drop.
+ */
+TEST_F('NetInternalsTest', 'netInternalsImportNetLogLoggerDump', function() {
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
+  taskQueue.addTask(new GetNetLogLoggerStringAndLoadLogTask(0));
+  taskQueue.addFunctionTask(checkViewsAfterNetLogLoggerLogLoaded);
+  taskQueue.run(true);
+});
+
+/**
+ * Same as above, but it truncates the log to simulate the case of a crash when
+ * creating a log.
+ */
+TEST_F('NetInternalsTest', 'netInternalsImportNetLogLoggerDumpTruncated',
+    function() {
+  var taskQueue = new NetInternalsTest.TaskQueue(true);
+  taskQueue.addTask(new GetNetLogLoggerStringAndLoadLogTask(20));
+  taskQueue.addFunctionTask(checkViewsAfterNetLogLoggerLogLoaded);
   taskQueue.run(true);
 });
 

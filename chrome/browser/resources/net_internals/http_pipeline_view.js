@@ -52,6 +52,8 @@ var HttpPipelineView = (function() {
     __proto__: superClass.prototype,
 
     onLoadLogFinish: function(data) {
+      if (!data.httpPipeliningStatus)
+        return false;
       return this.onHttpPipeliningStatusChanged(data.httpPipeliningStatus);
     },
 
