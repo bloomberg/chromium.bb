@@ -74,7 +74,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/size.h"
-#include "ui/snapshot/snapshot.h"
+#include "ui/snapshot/test/snapshot_desktop.h"
 
 #if defined(USE_AURA)
 #include "ash/shell.h"
@@ -631,7 +631,7 @@ bool SaveScreenSnapshotToDirectory(const base::FilePath& directory,
     std::vector<unsigned char> png_data;
     gfx::Rect bounds(
         gfx::Size(rect.right - rect.left, rect.bottom - rect.top));
-    if (ui::GrabWindowSnapshot(NULL, &png_data, bounds) &&
+    if (ui::GrabDesktopSnapshot(bounds, &png_data) &&
         png_data.size() <= INT_MAX) {
       int bytes = static_cast<int>(png_data.size());
       int written = file_util::WriteFile(

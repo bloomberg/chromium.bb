@@ -289,6 +289,7 @@
       'conditions': [
         ['OS!="ios"', {
           'dependencies': [
+            'cloud_policy_proto',
             'common/extensions/api/api.gyp:api',
             'plugin',
             'renderer',
@@ -356,6 +357,9 @@
           ],
         }],
         ['OS=="win"', {
+          'dependencies': [
+            '../ui/snapshot/snapshot.gyp:snapshot_test_support',
+          ],
           'include_dirs': [
             '<(DEPTH)/third_party/wtl/include',
           ],

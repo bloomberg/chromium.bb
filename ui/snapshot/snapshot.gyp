@@ -27,6 +27,7 @@
         'snapshot_ios.mm',
         'snapshot_mac.mm',
         'snapshot_win.cc',
+        'snapshot_win.h',
       ],
       'include_dirs': [
         '..',
@@ -36,11 +37,6 @@
           'dependencies': [
             '../aura/aura.gyp:aura',
             '../compositor/compositor.gyp:compositor',
-          ],
-        }],
-        ['use_aura==1 and OS=="win"', {
-          'sources/': [
-            ['exclude', 'snapshot_win.cc'],
           ],
         }],
       ],
@@ -61,5 +57,25 @@
         'snapshot_mac_unittest.mm',
       ]
     },
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'snapshot_test_support',
+          'type': 'static_library',
+          'sources': [
+            'test/snapshot_desktop.h',
+            'test/snapshot_desktop_win.cc',
+          ],
+          'dependencies': [
+            'snapshot',
+          ],
+          'include_dirs': [
+            '../..',
+          ],
+        },
+      ],
+    }],
   ],
 }
