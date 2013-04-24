@@ -787,7 +787,6 @@ TEST_F(BluetoothExperimentalChromeOSTest, DeviceClassChanged) {
           dbus::ObjectPath(FakeBluetoothDeviceClient::kPairedDevicePath));
 
   properties->bluetooth_class.ReplaceValue(0x002580);
-  properties->NotifyPropertyChanged(properties->bluetooth_class.name());
 
   EXPECT_EQ(1, observer.device_changed_count_);
   EXPECT_EQ(devices[0], observer.last_device_);
@@ -817,7 +816,6 @@ TEST_F(BluetoothExperimentalChromeOSTest, DeviceNameChanged) {
 
   static const std::string new_name("New Device Name");
   properties->alias.ReplaceValue(new_name);
-  properties->NotifyPropertyChanged(properties->alias.name());
 
   EXPECT_EQ(1, observer.device_changed_count_);
   EXPECT_EQ(devices[0], observer.last_device_);
@@ -853,7 +851,6 @@ TEST_F(BluetoothExperimentalChromeOSTest, DeviceUuidsChanged) {
   uuids.push_back("0000110a-0000-1000-8000-00805f9b34fb");
 
   properties->uuids.ReplaceValue(uuids);
-  properties->NotifyPropertyChanged(properties->uuids.name());
 
   EXPECT_EQ(1, observer.device_changed_count_);
   EXPECT_EQ(devices[0], observer.last_device_);

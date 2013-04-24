@@ -133,7 +133,6 @@ void FakeBluetoothDeviceClient::Properties::Set(
   if (property->name() == trusted.name()) {
     callback.Run(true);
     property->ReplaceValueWithSetValue();
-    NotifyPropertyChanged(property->name());
   } else {
     callback.Run(false);
   }
@@ -224,11 +223,9 @@ void FakeBluetoothDeviceClient::Connect(
 
   // The device can be connected.
   properties->connected.ReplaceValue(true);
+  callback.Run();
 
   AddInputDeviceIfNeeded(object_path, properties);
-
-  callback.Run();
-  properties->NotifyPropertyChanged(properties->connected.name());
 }
 
 void FakeBluetoothDeviceClient::Disconnect(
@@ -239,10 +236,8 @@ void FakeBluetoothDeviceClient::Disconnect(
   Properties* properties = GetProperties(object_path);
 
   if (properties->connected.value() == true) {
-    properties->connected.ReplaceValue(false);
-
     callback.Run();
-    properties->NotifyPropertyChanged(properties->connected.name());
+    properties->connected.ReplaceValue(false);
   } else {
     error_callback.Run("org.bluez.Error.NotConnected", "Not Connected");
   }
@@ -460,6 +455,10 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
       properties->adapter.ReplaceValue(
           dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
 
+      std::vector<std::string> uuids;
+      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+      properties->uuids.ReplaceValue(uuids);
+
       properties_map_[dbus::ObjectPath(kAppleMousePath)] = properties;
       device_list_.push_back(dbus::ObjectPath(kAppleMousePath));
       FOR_EACH_OBSERVER(ExperimentalBluetoothDeviceClient::Observer, observers_,
@@ -479,6 +478,10 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
       properties->alias.ReplaceValue(kAppleKeyboardName);
       properties->adapter.ReplaceValue(
           dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+
+      std::vector<std::string> uuids;
+      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+      properties->uuids.ReplaceValue(uuids);
 
       properties_map_[dbus::ObjectPath(kAppleKeyboardPath)] = properties;
       device_list_.push_back(dbus::ObjectPath(kAppleKeyboardPath));
@@ -521,6 +524,10 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
       properties->adapter.ReplaceValue(
           dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
 
+      std::vector<std::string> uuids;
+      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+      properties->uuids.ReplaceValue(uuids);
+
       properties_map_[dbus::ObjectPath(kMicrosoftMousePath)] = properties;
       device_list_.push_back(dbus::ObjectPath(kMicrosoftMousePath));
       FOR_EACH_OBSERVER(ExperimentalBluetoothDeviceClient::Observer, observers_,
@@ -541,6 +548,10 @@ void FakeBluetoothDeviceClient::DiscoverySimulationTimer() {
       properties->alias.ReplaceValue(kMotorolaKeyboardName);
       properties->adapter.ReplaceValue(
           dbus::ObjectPath(FakeBluetoothAdapterClient::kAdapterPath));
+
+      std::vector<std::string> uuids;
+      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
+      properties->uuids.ReplaceValue(uuids);
 
       properties_map_[dbus::ObjectPath(kMotorolaKeyboardPath)] = properties;
       device_list_.push_back(dbus::ObjectPath(kMotorolaKeyboardPath));
@@ -639,11 +650,9 @@ void FakeBluetoothDeviceClient::CompleteSimulatedPairing(
     Properties* properties = GetProperties(object_path);
 
     properties->paired.ReplaceValue(true);
+    callback.Run();
 
     AddInputDeviceIfNeeded(object_path, properties);
-
-    callback.Run();
-    properties->NotifyPropertyChanged(properties->paired.name());
   }
 }
 
@@ -683,15 +692,8 @@ void FakeBluetoothDeviceClient::AddInputDeviceIfNeeded(
       static_cast<FakeBluetoothInputClient*>(
           DBusThreadManager::Get()->GetExperimentalBluetoothInputClient());
 
-  if ((properties->bluetooth_class.value() & 0x001f03) == 0x000500) {
-    std::vector<std::string> uuids = properties->uuids.value();
-    if (std::find(uuids.begin(), uuids.end(),
-        "00001124-0000-1000-8000-00805f9b34fb") == uuids.end()) {
-      uuids.push_back("00001124-0000-1000-8000-00805f9b34fb");
-      properties->uuids.ReplaceValue(uuids);
-      fake_bluetooth_input_client->AddInputDevice(object_path);
-    }
-  }
+  if ((properties->bluetooth_class.value() & 0x001f03) == 0x000500)
+    fake_bluetooth_input_client->AddInputDevice(object_path);
 }
 
 void FakeBluetoothDeviceClient::PinCodeCallback(

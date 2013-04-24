@@ -65,7 +65,6 @@ void FakeBluetoothAdapterClient::Properties::Set(
   if (property->name() == powered.name() || property->name() == alias.name()) {
     callback.Run(true);
     property->ReplaceValueWithSetValue();
-    NotifyPropertyChanged(property->name());
   } else {
     callback.Run(false);
   }
@@ -141,7 +140,6 @@ void FakeBluetoothAdapterClient::StartDiscovery(
 
   if (discovering_count_ == 1) {
     properties_->discovering.ReplaceValue(true);
-    properties_->NotifyPropertyChanged(properties_->discovering.name());
 
     FakeBluetoothDeviceClient* device_client =
         static_cast<FakeBluetoothDeviceClient*>(
@@ -177,7 +175,6 @@ void FakeBluetoothAdapterClient::StopDiscovery(
     device_client->EndDiscoverySimulation(dbus::ObjectPath(kAdapterPath));
 
     properties_->discovering.ReplaceValue(false);
-    properties_->NotifyPropertyChanged(properties_->discovering.name());
   }
 }
 
@@ -246,7 +243,6 @@ void FakeBluetoothAdapterClient::OnPropertyChanged(
     if (discovering_count_) {
       discovering_count_ = 0;
       properties_->discovering.ReplaceValue(false);
-      properties_->NotifyPropertyChanged(properties_->discovering.name());
     }
   }
 

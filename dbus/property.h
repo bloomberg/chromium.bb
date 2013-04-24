@@ -386,11 +386,17 @@ class CHROME_DBUS_EXPORT Property : public PropertyBase {
   // Method used by test and stub implementations of dbus::PropertySet::Set
   // to replace the property value with the set value without using a
   // dbus::MessageReader.
-  virtual void ReplaceValueWithSetValue() { value_ = set_value_; }
+  virtual void ReplaceValueWithSetValue() {
+    value_ = set_value_;
+    property_set()->NotifyPropertyChanged(name());
+  }
 
   // Method used by test and stub implementations to directly set the
   // value of a property.
-  void ReplaceValue(const T& value) { value_ = value; }
+  void ReplaceValue(const T& value) {
+    value_ = value;
+    property_set()->NotifyPropertyChanged(name());
+  }
 
  private:
   // Current cached value of the property.

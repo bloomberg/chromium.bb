@@ -762,7 +762,6 @@ class BluetoothAdapterClientStubImpl : public BluetoothAdapterClient {
       VLOG(1) << "Set " << property->name();
       if (property->name() == "Powered") {
         property->ReplaceValueWithSetValue();
-        NotifyPropertyChanged(property->name());
         callback.Run(true);
       } else {
         callback.Run(false);
