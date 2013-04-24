@@ -26,6 +26,7 @@
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/nacl_host/nacl_browser.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
+#include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_process_type.h"
@@ -48,6 +49,7 @@
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "net/base/net_util.h"
 #include "net/socket/tcp_listen_socket.h"
+#include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/ppapi_nacl_channel_args.h"
 
@@ -851,6 +853,10 @@ void NaClProcessHost::OnPpapiChannelCreated(
         args.switch_values.push_back(value);
       }
     }
+
+    ppapi_host_->GetPpapiHost()->AddHostFactoryFilter(
+        scoped_ptr<ppapi::host::HostFactory>(
+            new chrome::ChromeBrowserPepperHostFactory(ppapi_host_.get())));
 
     // Send a message to create the NaCl-Renderer channel. The handle is just
     // a place holder.
