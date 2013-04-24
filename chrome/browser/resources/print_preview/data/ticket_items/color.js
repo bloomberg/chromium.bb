@@ -13,25 +13,18 @@ cr.define('print_preview.ticket_items', function() {
    * @param {!print_preview.DestinationStore} destinationStore Used to determine
    *     whether color printing should be available.
    * @constructor
-   * @extends {print_preview.ticket_items.TicketItem}
+   * @extends {print_preview.ticket_items.DestDependentTicketItem}
    */
   function Color(appState, destinationStore) {
-    print_preview.ticket_items.TicketItem.call(
-        this, appState, print_preview.AppState.Field.IS_COLOR_ENABLED);
-
-    /**
-     * Used to determine whether color printing should be available.
-     * @type {!print_preview.DestinationStore}
-     * @private
-     */
-    // TODO(rltoscano): Move DestinationStore into a base class.
-    this.destinationStore_ = destinationStore;
-
-    this.addEventHandlers_();
+    print_preview.ticket_items.DestDependentTicketItem.call(
+        this,
+        destinationStore,
+        appState,
+        print_preview.AppState.Field.IS_COLOR_ENABLED);
   };
 
   Color.prototype = {
-    __proto__: print_preview.ticket_items.TicketItem.prototype,
+    __proto__: print_preview.ticket_items.DestDependentTicketItem.prototype,
 
     /** @override */
     wouldValueBeValid: function(value) {
@@ -69,7 +62,7 @@ cr.define('print_preview.ticket_items', function() {
       // TODO(rltoscano): Get rid of this check based on destination ID. These
       // destinations should really update their CDDs to have only one color
       // option that has type 'STANDARD_COLOR'.
-      var dest = this.destinationStore_.selectedDestination;
+      var dest = this.getSelectedDestInternal();
       if (!dest) {
         return false;
       }
@@ -84,7 +77,7 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getColorCapability_: function() {
-      var dest = this.destinationStore_.selectedDestination;
+      var dest = this.getSelectedDestInternal();
       return (dest &&
               dest.capabilities &&
               dest.capabilities.printer &&
@@ -103,28 +96,6 @@ cr.define('print_preview.ticket_items', function() {
         return option.is_default;
       });
       return (defaultOptions.length == 0) ? null : defaultOptions[0];
-    },
-
-    /**
-     * Adds event handlers for this class.
-     * @private
-     */
-    addEventHandlers_: function() {
-      this.getTrackerInternal().add(
-          this.destinationStore_,
-          print_preview.DestinationStore.EventType.
-              SELECTED_DESTINATION_CAPABILITIES_READY,
-          this.onCapsReady_.bind(this));
-    },
-
-    /**
-     * Called when the selected destination's capabilities are ready. Dispatches
-     * a CHANGE event.
-     * @private
-     */
-    onCapsReady_: function() {
-      cr.dispatchSimpleEvent(
-          this, print_preview.ticket_items.TicketItem.EventType.CHANGE);
     }
   };
 

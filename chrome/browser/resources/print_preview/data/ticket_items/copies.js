@@ -12,25 +12,15 @@ cr.define('print_preview.ticket_items', function() {
    * @param {!print_preview.DestinationStore} destinationStore Destination store
    *     used determine if a destination has the copies capability.
    * @constructor
-   * @extends {print_preview.ticket_items.TicketItem}
+   * @extends {print_preview.ticket_items.DestDependentTicketItem}
    */
   function Copies(destinationStore) {
-    print_preview.ticket_items.TicketItem.call(this);
-
-    /**
-     * Destination store used determine if a destination has the copies
-     * capability.
-     * @type {!print_preview.DestinationStore}
-     * @private
-     */
-    // TODO(rltoscano): Move DestinationStore into a base class.
-    this.destinationStore_ = destinationStore;
-
-    this.addEventHandlers_();
+    print_preview.ticket_items.DestDependentTicketItem.call(
+        this, destinationStore);
   };
 
   Copies.prototype = {
-    __proto__: print_preview.ticket_items.TicketItem.prototype,
+    __proto__: print_preview.ticket_items.DestDependentTicketItem.prototype,
 
     /** @override */
     wouldValueBeValid: function(value) {
@@ -70,34 +60,12 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getCopiesCapability_: function() {
-      var dest = this.destinationStore_.selectedDestination;
+      var dest = this.getSelectedDestInternal();
       return (dest &&
               dest.capabilities &&
               dest.capabilities.printer &&
               dest.capabilities.printer.copies) ||
              null;
-    },
-
-    /**
-     * Adds event handlers for this class.
-     * @private
-     */
-    addEventHandlers_: function() {
-      this.getTrackerInternal().add(
-          this.destinationStore_,
-          print_preview.DestinationStore.EventType.
-              SELECTED_DESTINATION_CAPABILITIES_READY,
-          this.onCapsReady_.bind(this));
-    },
-
-    /**
-     * Called when the selected destination's capabilities are ready. Dispatches
-     * a CHANGE event.
-     * @private
-     */
-    onCapsReady_: function() {
-      cr.dispatchSimpleEvent(
-          this, print_preview.ticket_items.TicketItem.EventType.CHANGE);
     }
   };
 
