@@ -81,6 +81,7 @@ InternalSettings::Backup::Backup(Settings* settings)
 #if ENABLE(DIALOG_ELEMENT)
     , m_originalDialogElementEnabled(RuntimeEnabledFeatures::dialogElementEnabled())
 #endif
+    , m_originalLazyLayoutEnabled(RuntimeEnabledFeatures::lazyLayoutEnabled())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
     , m_imagesEnabled(settings->areImagesEnabled())
@@ -108,6 +109,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 #if ENABLE(DIALOG_ELEMENT)
     RuntimeEnabledFeatures::setDialogElementEnabled(m_originalDialogElementEnabled);
 #endif
+    RuntimeEnabledFeatures::setLazyLayoutEnabled(m_originalLazyLayoutEnabled);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
     settings->setImagesEnabled(m_imagesEnabled);
@@ -348,6 +350,12 @@ void InternalSettings::setDialogElementEnabled(bool enabled, ExceptionCode& ec)
 #else
     UNUSED_PARAM(enabled);
 #endif
+}
+
+void InternalSettings::setLazyLayoutEnabled(bool enabled, ExceptionCode& ec)
+{
+    UNUSED_PARAM(ec);
+    RuntimeEnabledFeatures::setLazyLayoutEnabled(enabled);
 }
 
 void InternalSettings::setShouldDisplayTrackKind(const String& kind, bool enabled, ExceptionCode& ec)

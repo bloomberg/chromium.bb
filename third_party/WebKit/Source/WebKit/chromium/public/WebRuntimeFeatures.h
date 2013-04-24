@@ -137,6 +137,9 @@ public:
     WEBKIT_EXPORT static void enableDialogElement(bool);
     WEBKIT_EXPORT static bool isDialogElementEnabled();
 
+    WEBKIT_EXPORT static void enableLazyLayout(bool);
+    WEBKIT_EXPORT static bool isLazyLayoutEnabled();
+
     WEBKIT_EXPORT static void enableCanvasPath(bool);
     WEBKIT_EXPORT static bool isCanvasPathEnabled();
     

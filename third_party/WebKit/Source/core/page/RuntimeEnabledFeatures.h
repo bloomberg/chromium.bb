@@ -220,6 +220,9 @@ public:
     static void setDialogElementEnabled(bool isEnabled) { isDialogElementEnabled = isEnabled; }
 #endif
 
+    static bool lazyLayoutEnabled() { return isLazyLayoutEnabled; }
+    static void setLazyLayoutEnabled(bool isEnabled) { isLazyLayoutEnabled = isEnabled; }
+
     static bool experimentalContentSecurityPolicyFeaturesEnabled() { return areExperimentalContentSecurityPolicyFeaturesEnabled; }
     static void setExperimentalContentSecurityPolicyFeaturesEnabled(bool isEnabled) { areExperimentalContentSecurityPolicyFeaturesEnabled = isEnabled; }
 
@@ -313,6 +316,8 @@ private:
 #if ENABLE(DIALOG_ELEMENT)
     static bool isDialogElementEnabled;
 #endif
+
+    static bool isLazyLayoutEnabled;
 
     static bool isRequestAutocompleteEnabled;
 

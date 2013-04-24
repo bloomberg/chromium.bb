@@ -173,6 +173,8 @@ bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
 bool RuntimeEnabledFeatures::isDialogElementEnabled = false;
 #endif
 
+bool RuntimeEnabledFeatures::isLazyLayoutEnabled = false;
+
 bool RuntimeEnabledFeatures::isRequestAutocompleteEnabled = false;
 
 bool RuntimeEnabledFeatures::areExperimentalContentSecurityPolicyFeaturesEnabled = false;

@@ -65,6 +65,7 @@ public:
 #if ENABLE(DIALOG_ELEMENT)
         bool m_originalDialogElementEnabled;
 #endif
+        bool m_originalLazyLayoutEnabled;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalUsesOverlayScrollbars;
         bool m_langAttributeAwareFormControlUIEnabled;
@@ -110,6 +111,7 @@ public:
     void setCanStartMedia(bool, ExceptionCode&);
     void setEditingBehavior(const String&, ExceptionCode&);
     void setDialogElementEnabled(bool, ExceptionCode&);
+    void setLazyLayoutEnabled(bool, ExceptionCode&);
     void setShouldDisplayTrackKind(const String& kind, bool enabled, ExceptionCode&);
     bool shouldDisplayTrackKind(const String& kind, ExceptionCode&);
     void setLangAttributeAwareFormControlUIEnabled(bool);

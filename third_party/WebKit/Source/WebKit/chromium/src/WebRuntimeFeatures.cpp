@@ -432,6 +432,16 @@ bool WebRuntimeFeatures::isDialogElementEnabled()
 #endif
 }
 
+void WebRuntimeFeatures::enableLazyLayout(bool enable)
+{
+    RuntimeEnabledFeatures::setLazyLayoutEnabled(enable);
+}
+
+bool WebRuntimeFeatures::isLazyLayoutEnabled()
+{
+    return RuntimeEnabledFeatures::lazyLayoutEnabled();
+}
+
 void WebRuntimeFeatures::enableExperimentalContentSecurityPolicyFeatures(bool enable)
 {
     RuntimeEnabledFeatures::setExperimentalContentSecurityPolicyFeaturesEnabled(enable);

@@ -49,6 +49,7 @@
     [RaisesException] void setCanStartMedia(boolean enabled);
     [RaisesException] void setEditingBehavior(DOMString behavior);
     [RaisesException] void setDialogElementEnabled(boolean enabled);
+    [RaisesException] void setLazyLayoutEnabled(boolean enabled);
     void setLangAttributeAwareFormControlUIEnabled(boolean enabled);
 
     [RaisesException] void setShouldDisplayTrackKind(DOMString kind, boolean enabled);
