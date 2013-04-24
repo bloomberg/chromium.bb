@@ -73,12 +73,12 @@ class Manifest(object):
 
   def token(self):
     if not self._token:
-      result = run_isolated.url_open(
-          self.base_url + '/content/get_token')
+      result = run_isolated.url_open(self.base_url + '/content/get_token')
       if not result:
         # TODO(maruel): Implement authentication.
         raise Failure('Failed to get token, need authentication')
-      self._token = result.read()
+      # Quote it right away, so creating the urls is simpler.
+      self._token = urllib.quote(result.read())
     return self._token
 
   def add_task(self, task_name, actions, time_out=600):

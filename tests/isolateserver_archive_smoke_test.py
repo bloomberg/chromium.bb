@@ -11,6 +11,7 @@ import sys
 import tempfile
 import time
 import unittest
+import urllib
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
@@ -32,8 +33,8 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     # before being uploaded.
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
-    self.token = isolateserver_archive.url_open(
-        ISOLATE_SERVER + '/content/get_token?from_smoke_test=1', None).read()
+    url = ISOLATE_SERVER + '/content/get_token?from_smoke_test=1'
+    self.token = urllib.quote(isolateserver_archive.url_open(url, None).read())
 
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver_archive.py with them. Then

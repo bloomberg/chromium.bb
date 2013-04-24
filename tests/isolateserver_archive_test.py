@@ -57,9 +57,9 @@ class IsolateServerTest(unittest.TestCase):
         binascii.unhexlify(isolateserver_archive.sha1_file(f)) for f in files)
     path = 'http://random/'
     self._requests = [
-      ((path + 'content/get_token',), {}, StringIO.StringIO('foo')),
+      ((path + 'content/get_token',), {}, StringIO.StringIO('foo bar')),
       (
-        (path + 'content/contains/default-gzip?token=foo', sha1encoded),
+        (path + 'content/contains/default-gzip?token=foo%20bar', sha1encoded),
         {'content_type': 'application/octet-stream'},
         StringIO.StringIO('\1\1'),
       ),
@@ -82,15 +82,15 @@ class IsolateServerTest(unittest.TestCase):
     ]
     path = 'http://random/'
     self._requests = [
-      ((path + 'content/get_token',), {}, StringIO.StringIO('foo')),
+      ((path + 'content/get_token',), {}, StringIO.StringIO('foo bar')),
       (
-        (path + 'content/contains/default-gzip?token=foo', sha1encoded),
+        (path + 'content/contains/default-gzip?token=foo%20bar', sha1encoded),
         {'content_type': 'application/octet-stream'},
         StringIO.StringIO('\0\0'),
       ),
       (
         (
-           path + 'content/store/default-gzip/%s?token=foo' % sha1s[0],
+           path + 'content/store/default-gzip/%s?token=foo%%20bar' % sha1s[0],
            compressed[0],
         ),
         {'content_type': 'application/octet-stream'},
@@ -98,7 +98,7 @@ class IsolateServerTest(unittest.TestCase):
       ),
       (
         (
-          path + 'content/store/default-gzip/%s?token=foo' % sha1s[1],
+          path + 'content/store/default-gzip/%s?token=foo%%20bar' % sha1s[1],
           compressed[1],
         ),
         {'content_type': 'application/octet-stream'},
@@ -132,19 +132,19 @@ class IsolateServerTest(unittest.TestCase):
     try:
       isolateserver_archive.randomness = lambda: 'not_really_random'
       content_type, body = isolateserver_archive.encode_multipart_formdata(
-                  [('token', 'foo')], [('hash_contents', s, compressed)])
+                  [('token', 'foo bar')], [('hash_contents', s, compressed)])
 
       self._requests = [
-        ((path + 'content/get_token',), {}, StringIO.StringIO('foo')),
+        ((path + 'content/get_token',), {}, StringIO.StringIO('foo bar')),
         (
-          (path + 'content/contains/default-gzip?token=foo', sha1encoded),
+          (path + 'content/contains/default-gzip?token=foo%20bar', sha1encoded),
           {'content_type': 'application/octet-stream'},
           StringIO.StringIO('\0'),
         ),
         (
           (
             path + 'content/generate_blobstore_url/default-gzip/%s' % s,
-            [('token', 'foo')],
+            [('token', 'foo bar')],
           ),
           {},
           StringIO.StringIO('an_url/'),

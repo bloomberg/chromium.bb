@@ -13,6 +13,7 @@ import os
 import cStringIO
 import sys
 import time
+import urllib
 import zlib
 
 import run_isolated
@@ -153,7 +154,9 @@ class UploadRemote(run_isolated.Remote):
       if len(content) > MIN_SIZE_FOR_DIRECT_BLOBSTORE:
         url = '%sgenerate_blobstore_url/%s/%s' % (
             content_url, self.namespace, hash_key)
-        data = [('token', self._token)]
+        # self._token is stored already quoted but it is unnecessary here, and
+        # only here.
+        data = [('token', urllib.unquote(self._token))]
         upload_hash_content_to_blobstore(url, data, hash_key, content)
       else:
         url = '%sstore/%s/%s?token=%s' % (
@@ -257,7 +260,7 @@ def upload_sha1_tree(base_url, indir, infiles, namespace):
 
   # TODO(maruel): Make this request much earlier asynchronously while the files
   # are being enumerated.
-  token = url_open(base_url + '/content/get_token').read()
+  token = urllib.quote(url_open(base_url + '/content/get_token').read())
 
   # Create a pool of workers to zip and upload any files missing from
   # the server.
