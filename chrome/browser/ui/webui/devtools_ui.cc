@@ -187,7 +187,6 @@ class LocalhostDataSource : public content::URLDataSource {
       int render_process_id,
       int render_view_id,
       const content::URLDataSource::GotDataCallback& callback) OVERRIDE {
-
     GURL url = GURL("http://localhost:9222/" + path);
     new FetchRequest(request_context_, url, callback);
   }
@@ -212,14 +211,16 @@ class LocalhostDataSource : public content::URLDataSource {
 
 // static
 GURL DevToolsUI::GetProxyURL(const std::string& frontend_url) {
+  GURL url(frontend_url);
 #if defined(DEBUG_DEVTOOLS)
-  if (frontend_url.find(chrome::kChromeUIDevToolsBundledHost) == 1) {
-    return GURL(base::StringPrintf("%s://localhost%s",
+  if (frontend_url.find("https://localhost:9222/") == 0) {
+    std::string path = url.path();
+    CHECK(path.find(chrome::kChromeUIDevToolsBundledHost) == 1);
+    return GURL(base::StringPrintf("%s://localhost/%s",
                                    chrome::kChromeDevToolsScheme,
-                                   frontend_url.c_str()));
+                                   path.substr(1).c_str()));
   }
 #endif  // defined(DEBUG_DEVTOOLS)
-  GURL url(frontend_url);
   CHECK(url.is_valid());
   CHECK_EQ(url.host(), kRemoteFrontendDomain);
   return GURL(base::StringPrintf("%s://%s/%s", chrome::kChromeDevToolsScheme,
