@@ -4,6 +4,7 @@
 
 #include "chromeos/dbus/power_policy_controller.h"
 
+#include "base/memory/scoped_ptr.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/mock_dbus_thread_manager_without_gmock.h"
@@ -24,18 +25,19 @@ class PowerPolicyControllerTest : public testing::Test {
     dbus_manager_ = new MockDBusThreadManagerWithoutGMock;
     DBusThreadManager::InitializeForTesting(dbus_manager_);  // Takes ownership.
 
-    policy_controller_ =
-        new PowerPolicyController(dbus_manager_, &fake_power_client_);
+    policy_controller_.reset(
+        new PowerPolicyController(dbus_manager_, &fake_power_client_));
   }
 
   virtual void TearDown() OVERRIDE {
+    policy_controller_.reset();
     DBusThreadManager::Shutdown();
   }
 
  protected:
   MockDBusThreadManagerWithoutGMock* dbus_manager_;  // Not owned.
   FakePowerManagerClient fake_power_client_;
-  PowerPolicyController* policy_controller_;  // Not owned.
+  scoped_ptr<PowerPolicyController> policy_controller_;
 };
 
 TEST_F(PowerPolicyControllerTest, Prefs) {
