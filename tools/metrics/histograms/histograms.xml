@@ -391,6 +391,57 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Drive.CacheDBOpenStatus" enum="DriveCacheDBOpenStatus">
+  <summary>Status of drive cache metadata database open.</summary>
+</histogram>
+
+<histogram name="Drive.EntireFeedLoadTime" units="microseconds">
+  <summary>
+    Time spent to load the entire file system information from the server
+  </summary>
+</histogram>
+
+<histogram name="Drive.EntryKind" enum="DriveEntryKind">
+  <summary>
+    Provides breakdown of specific formats for hosted documents. Recorded when
+    feed is loaded from the server.
+  </summary>
+</histogram>
+
+<histogram name="Drive.FileFormat" enum="DriveFileFormat">
+  <summary>
+    Provides breakdown of specific file formats for regular files. Recorded when
+    feed is loaded from the server.
+  </summary>
+</histogram>
+
+<histogram name="Drive.InitialFeedLoadTime" units="microseconds">
+  <summary>
+    Time spent to load the initial part of the file system information from the
+    server
+  </summary>
+</histogram>
+
+<histogram name="Drive.NumberOfHostedDocuments">
+  <summary>
+    Number of hosted documents (spreadsheets etc.) on Drive. Logged when Drive
+    is first accessed.
+  </summary>
+</histogram>
+
+<histogram name="Drive.NumberOfRegularFiles">
+  <summary>
+    Number of regualr files on Drive.  Logged when Drive is first accessed.
+  </summary>
+</histogram>
+
+<histogram name="Drive.NumberOfTotalFiles">
+  <summary>
+    Number of total files (regualr files + hosted documents) on Drive.  Logged
+    when Drive is first accessed.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.Policies" enum="EnterprisePolicies">
   <summary>
     A set of enterprise policy rules that are in use. This is recorded every 24
@@ -408,6 +459,210 @@ other types of suffix sets.
 
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
   <summary>Number of calls to extension functions.</summary>
+</histogram>
+
+<histogram name="FileBrowser.Create" enum="FileDialogType">
+  <summary>Chrome OS File Browser opening mode.</summary>
+</histogram>
+
+<histogram name="FileBrowser.DirectoryScan" units="milliseconds">
+  <summary>
+    Chrome OS File Browser: time to scan a directory. Measured on every File
+    Browser directory change.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.DownloadDestination.IsGoogleDrive.Changed"
+    enum="BooleanEnabled">
+  <summary>
+    Tracks whether download destination is set to a Google Drive folder when the
+    download destination is changed by the user in the settings page.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.DownloadDestination.IsGoogleDrive.Started"
+    enum="BooleanEnabled">
+  <summary>
+    Tracks whether download destination is set to a Google Drive folder on
+    startup.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.DownloadsCount">
+  <summary>
+    Chrome OS File Browser: number of files and directories in the Downloads
+    directory (not including the contents of nested directories). Computed every
+    time the File Browser current directory changes to Downloads.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.Load" units="milliseconds">
+  <summary>
+    Chrome OS File Browser is an built-in extension without a background page.
+    Its main.html file is loaded every time the user opens a File Browser tab or
+    a file chooser dialog. The file is fairly large and the initialization is
+    pretty expensive.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.OpeningFileType" enum="FileType">
+  <obsolete>
+    Deprecated 4/2013, and replaced by FileBrowser.ViewingFileType.
+  </obsolete>
+  <summary>File types that were tried to be opened through browser.</summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.DisplayTime" units="milliseconds">
+  <summary>
+    Chrome OS Photo Editor: time to display an image. Measured from the moment
+    the user selected the image till the moment it is displayed (not counting
+    the low resolution preview).
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.FileType" enum="PhotoEditorFileType">
+  <summary>Chrome OS Photo Editor: the type of the file opened.</summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.LoadMode" enum="PhotoEditorLoadMode">
+  <summary>Chrome OS Photo Editor: the way the image has been loaded.</summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.LoadTime" units="milliseconds">
+  <summary>Chrome OS Photo Editor: time to load an image from a file.</summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.SaveResult"
+    enum="PhotoEditorSaveResult">
+  <summary>
+    Chrome OS Photo Editor: the result of a file save operation.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.SaveTime" units="milliseconds">
+  <summary>Chrome OS Photo Editor: time to save an image to a file.</summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.Size.MB" units="MBytes">
+  <summary>
+    Chrome OS Photo Editor: size of an image file in megabytes. Measured on
+    every image load.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.Size.MPix" units="MPixels">
+  <summary>
+    Chrome OS Photo Editor: size of an image in megapixels. Measured on every
+    image load.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoEditor.Tool" enum="PhotoEditorToolType">
+  <summary>Chrome OS Photo Editor: the button which the user clicked.</summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoImport.Action" enum="ExternalDeviceAction">
+  <summary>
+    Chrome OS Photo Import flow: action chosen in the Action Choice dialog for
+    the external device.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoImport.ImportCount">
+  <summary>
+    Chrome OS Photo Import flow: the number of photos imported. Measured on
+    every successfull import operation.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoImport.ImportPercentage">
+  <summary>
+    Chrome OS Photo Import flow: the percent of photos imported among all the
+    photos on the device. Measured on every successfull import operation.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoImport.Load" units="milliseconds">
+  <summary>
+    Chrome OS Photo Import flow: time to load the action dialog. Measured
+    between the moment window appears and the moment user see all available
+    actions for the device.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.PhotoImport.Scan" units="milliseconds">
+  <summary>
+    Chrome OS Photo Import flow: time to scan the external device.
+  </summary>
+</histogram>
+
+<histogram name="FileBrowser.ViewingFileType" enum="ViewFileType">
+  <summary>
+    File types that were tried to be viewed through browser. This is recorded
+    when the user tries to view a file from Files.app.
+  </summary>
+</histogram>
+
+<histogram name="GData.AuthSuccess" enum="GDataAuthResult">
+  <summary>Result of the authentication for Drive.</summary>
+</histogram>
+
+<histogram name="GData.EntireFeedLoadTime" units="microseconds">
+  <obsolete>
+    Deprecated 9/2012, and replaced by Drive.EntireFeedLoadTime
+  </obsolete>
+  <summary>
+    Time spent to load the entire file system information from the server
+  </summary>
+</histogram>
+
+<histogram name="GData.EntryKind" enum="GDataEntryKind">
+  <obsolete>
+    Deprecated 9/2012, and replaced by Drive.EntryKind
+  </obsolete>
+  <summary>
+    Provides breakdown of specific formats for hosted documents. Recorded when
+    feed is loaded from the server.
+  </summary>
+</histogram>
+
+<histogram name="GData.InitialFeedLoadTime" units="microseconds">
+  <obsolete>
+    Deprecated 9/2012, and replaced by Drive.InitialFeedLoadTime
+  </obsolete>
+  <summary>
+    Time spent to load the initial part of the file system information from the
+    server
+  </summary>
+</histogram>
+
+<histogram name="GData.NumberOfHostedDocuments">
+  <obsolete>
+    Deprecated 9/2012, and replaced by Drive.NumberOfHostedDocuments
+  </obsolete>
+  <summary>
+    Number of hosted documents (spreadsheets etc.) on Drive. Logged when Drive
+    is first accessed.
+  </summary>
+</histogram>
+
+<histogram name="GData.NumberOfRegularFiles">
+  <obsolete>
+    Deprecated 9/2012, and replaced by Drive.NumberOfRegularFiles
+  </obsolete>
+  <summary>
+    Number of regualr files on Drive.  Logged when Drive is first accessed.
+  </summary>
+</histogram>
+
+<histogram name="GData.NumberOfTotalFiles">
+  <obsolete>
+    Deprecated 9/2012, and replaced by Drive.NumberOfTotalFiles
+  </obsolete>
+  <summary>
+    Number of total files (regualr files + hosted documents) on Drive.  Logged
+    when Drive is first accessed.
+  </summary>
 </histogram>
 
 <histogram name="HttpCache.EntryLockWait" units="milliseconds">
@@ -4257,6 +4512,55 @@ other types of suffix sets.
   <int value="2" label="GET_NON_CACHABLE"/>
 </enum>
 
+<enum name="DriveCacheDBOpenStatus" type="int">
+  <int value="0" label="Success"/>
+  <int value="1" label="Corrupt database"/>
+  <int value="2" label="Unknown recoverable failure"/>
+  <int value="3" label="Unrecoverable (disk full?) failure"/>
+</enum>
+
+<enum name="DriveEntryKind" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Item"/>
+  <int value="2" label="Site"/>
+  <int value="3" label="Document"/>
+  <int value="4" label="Spereadsheet"/>
+  <int value="5" label="Presentation"/>
+  <int value="6" label="Drawing"/>
+  <int value="7" label="Table"/>
+  <int value="8" label="External app"/>
+  <int value="9" label="Folder"/>
+  <int value="10" label="File"/>
+  <int value="11" label="PDF"/>
+</enum>
+
+<enum name="DriveFileFormat" type="int">
+  <int value="0" label="AAC"/>
+  <int value="1" label="ASF"/>
+  <int value="2" label="AVI"/>
+  <int value="3" label="CSV"/>
+  <int value="4" label="DOC"/>
+  <int value="5" label="DOCX"/>
+  <int value="6" label="FLV"/>
+  <int value="7" label="JPG"/>
+  <int value="8" label="MJPG"/>
+  <int value="9" label="MOV"/>
+  <int value="10" label="MP3"/>
+  <int value="11" label="MP4"/>
+  <int value="12" label="MPG"/>
+  <int value="13" label="OTHER"/>
+  <int value="14" label="PDF"/>
+  <int value="15" label="PPT"/>
+  <int value="16" label="PPTX"/>
+  <int value="17" label="PSD"/>
+  <int value="18" label="RAR"/>
+  <int value="19" label="WMA"/>
+  <int value="20" label="WMV"/>
+  <int value="21" label="XLS"/>
+  <int value="22" label="XLSX"/>
+  <int value="23" label="ZIP"/>
+</enum>
+
 <enum name="EnterprisePolicies" type="int">
 <!-- Generated from ../../../chrome/app/policy/policy_templates.json -->
 
@@ -5043,6 +5347,15 @@ other types of suffix sets.
   <int value="460" label="USB_RESETDEVICE"/>
 </enum>
 
+<enum name="ExternalDeviceAction" type="int">
+  <int value="0" label="Import to Drive"/>
+  <int value="1" label="View files"/>
+  <int value="2" label="View files (automatically)"/>
+  <int value="3" label="Watch video"/>
+  <int value="4" label="Error"/>
+  <int value="5" label="Close (no action)"/>
+</enum>
+
 <enum name="FallbackSSLVersion" type="int">
   <int value="0" label="FALLBACK_NONE">SSL version fallback did not occur.</int>
   <int value="1" label="FALLBACK_SSL3">Fell back on SSL 3.0.</int>
@@ -5421,6 +5734,39 @@ other types of suffix sets.
   <int value="1950507339" label="TAK"/>
 </enum>
 
+<enum name="FileDialogType" type="int">
+  <int value="0" label="Select folder"/>
+  <int value="1" label="Save as file"/>
+  <int value="2" label="Open file"/>
+  <int value="3" label="Open multiple files"/>
+  <int value="4" label="Full page"/>
+  <int value="5" label="Error"/>
+</enum>
+
+<enum name="FileType" type="int">
+  <int value="0" label="other"/>
+  <int value="1" label=".doc"/>
+  <int value="2" label=".docx"/>
+  <int value="3" label=".odt"/>
+  <int value="4" label=".rtf"/>
+  <int value="5" label=".pdf"/>
+  <int value="6" label=".ppt"/>
+  <int value="7" label=".pptx"/>
+  <int value="8" label=".odp"/>
+  <int value="9" label=".xls"/>
+  <int value="10" label=".xlsx"/>
+  <int value="11" label=".ods"/>
+  <int value="12" label=".csv"/>
+  <int value="13" label=".odf"/>
+  <int value="14" label=".rar"/>
+  <int value="15" label=".asf"/>
+  <int value="16" label=".wma"/>
+  <int value="17" label=".wmv"/>
+  <int value="18" label=".mov"/>
+  <int value="19" label=".mpg"/>
+  <int value="20" label=".log"/>
+</enum>
+
 <enum name="FtpDataConnectionError" type="int">
   <int value="0">Data connection successful</int>
   <int value="1">Local firewall blocked the connection</int>
@@ -5453,6 +5799,30 @@ other types of suffix sets.
   <int value="8" label="win16">
     win16 hosts: SuperTCP or NetManage Chameleon
   </int>
+</enum>
+
+<enum name="GDataAuthResult" type="int">
+  <int value="0" label="FAILURE"/>
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="NO_CONNECTION"/>
+</enum>
+
+<enum name="GDataEntryKind" type="int">
+  <obsolete>
+    Deprecated 9/2012, and replaced by DriveEntryKind
+  </obsolete>
+  <int value="0" label="UNKNOWN"/>
+  <int value="4097" label="ITEM"/>
+  <int value="4098" label="SITE"/>
+  <int value="8449" label="DOCUMENT"/>
+  <int value="8450" label="SPEREADSHEET"/>
+  <int value="8451" label="PRESENTATION"/>
+  <int value="8452" label="DRAWING"/>
+  <int value="8453" label="TABLE"/>
+  <int value="8705" label="EXTERNAL_APP"/>
+  <int value="16385" label="FOLDER"/>
+  <int value="32769" label="FILE"/>
+  <int value="32770" label="PDF"/>
 </enum>
 
 <enum name="HttpAuthCount" type="int">
@@ -6040,6 +6410,40 @@ other types of suffix sets.
   <int value="34" label="ERANGE">Numerical result out of range</int>
 </enum>
 
+<enum name="PhotoEditorFileType" type="int">
+  <int value="0" label="jpg"/>
+  <int value="1" label="png"/>
+  <int value="2" label="gif"/>
+  <int value="3" label="bmp"/>
+  <int value="4" label="webp"/>
+  <int value="5" label="other"/>
+</enum>
+
+<enum name="PhotoEditorLoadMode" type="int">
+  <int value="0" label="From full resolution cache"/>
+  <int value="1" label="From screen resolution cache"/>
+  <int value="2" label="From file"/>
+  <int value="3" label="Other"/>
+</enum>
+
+<enum name="PhotoEditorSaveResult" type="int">
+  <int value="0" label="Failure"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="Other"/>
+</enum>
+
+<enum name="PhotoEditorToolType" type="int">
+  <int value="0" label="Auto-fix"/>
+  <int value="1" label="Crop"/>
+  <int value="2" label="Brightness"/>
+  <int value="3" label="Rotate left"/>
+  <int value="4" label="Rotate right"/>
+  <int value="5" label="Rotate undo"/>
+  <int value="6" label="Rotate redo"/>
+  <int value="7" label="Share"/>
+  <int value="8" label="Other"/>
+</enum>
+
 <enum name="PlatformFileError" type="int">
   <int value="0" label="OK"/>
   <int value="1" label="FAILED"/>
@@ -6328,6 +6732,58 @@ other types of suffix sets.
   <int value="4" label="VAAPI_ERROR"/>
 </enum>
 
+<enum name="ViewFileType" type="int">
+  <int value="0" label="other"/>
+  <int value="1" label=".3ga"/>
+  <int value="2" label=".3gp"/>
+  <int value="3" label=".aac"/>
+  <int value="4" label=".alac"/>
+  <int value="5" label=".asf"/>
+  <int value="6" label=".avi"/>
+  <int value="7" label=".bmp"/>
+  <int value="8" label=".csv"/>
+  <int value="9" label=".doc"/>
+  <int value="10" label=".docx"/>
+  <int value="11" label=".flac"/>
+  <int value="12" label=".gif"/>
+  <int value="13" label=".jpeg"/>
+  <int value="14" label=".jpg"/>
+  <int value="15" label=".log"/>
+  <int value="16" label=".m3u"/>
+  <int value="17" label=".m3u8"/>
+  <int value="18" label=".m4a"/>
+  <int value="19" label=".m4v"/>
+  <int value="20" label=".mid"/>
+  <int value="21" label=".mkv"/>
+  <int value="22" label=".mov"/>
+  <int value="23" label=".mp3"/>
+  <int value="24" label=".mp4"/>
+  <int value="25" label=".mpg"/>
+  <int value="26" label=".odf"/>
+  <int value="27" label=".odp"/>
+  <int value="28" label=".ods"/>
+  <int value="29" label=".odt"/>
+  <int value="30" label=".oga"/>
+  <int value="31" label=".ogg"/>
+  <int value="32" label=".ogv"/>
+  <int value="33" label=".pdf"/>
+  <int value="34" label=".png"/>
+  <int value="35" label=".ppt"/>
+  <int value="36" label=".pptx"/>
+  <int value="37" label=".ra"/>
+  <int value="38" label=".ram"/>
+  <int value="39" label=".rar"/>
+  <int value="40" label=".rm"/>
+  <int value="41" label=".rtf"/>
+  <int value="42" label=".wav"/>
+  <int value="43" label=".webm"/>
+  <int value="44" label=".webp"/>
+  <int value="45" label=".wma"/>
+  <int value="46" label=".wmv"/>
+  <int value="47" label=".xls"/>
+  <int value="48" label=".xlsx"/>
+</enum>
+
 <enum name="WalletErrors" type="int">
   <int value="0" label="Baseline: Issued request"/>
   <int value="1" label="Fatal error (deprecated)"/>
@@ -6559,6 +7015,20 @@ other types of suffix sets.
   <group name="Google" label="only Google cookies are recorded."/>
   <group name="Other" label="only NON-Google cookies are recorded."/>
   <affected-histogram name="Cookie.ReinstatedCookies"/>
+</fieldtrial>
+
+<fieldtrial name="FileBrowserLoad" separator=".">
+  <group name="Construct"
+      label="Time spent constructing the main Javascript object."/>
+  <group name="DOM" label="Time to initialize DOM."/>
+  <group name="FileSystem"
+      label="Time to get access to the local file system."/>
+  <group name="Parse" label="Time to parse Javascript and CSS."/>
+  <group name="Roots" label="Time to enumerate file system roots."/>
+  <group name="Total"
+      label="Total load time from the moment the Javascript started parsing
+             till the moment the empty file list is displayed."/>
+  <affected-histogram name="FileBrowser.Load"/>
 </fieldtrial>
 
 <fieldtrial name="HttpPipeliningCompatibility">
