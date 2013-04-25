@@ -20,6 +20,8 @@ simple-egl
 simple-shm
 simple-touch
 smoke
+subsurface-client-protocol.h
+subsurface-protocol.c
 tablet-shell-client-protocol.h
 tablet-shell-protocol.c
 text-client-protocol.h

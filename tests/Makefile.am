@@ -64,6 +64,8 @@ weston_test_client_src =		\
 	weston-test-client-helper.h	\
 	wayland-test-protocol.c		\
 	wayland-test-client-protocol.h	\
+	subsurface-protocol.c		\
+	subsurface-client-protocol.h	\
 	$(weston_test_runner_src)
 weston_test_client_libs =		\
 	$(SIMPLE_CLIENT_LIBS)		\
@@ -113,6 +115,8 @@ endif
 EXTRA_DIST = weston-tests-env
 
 BUILT_SOURCES =					\
+	subsurface-protocol.c			\
+	subsurface-client-protocol.h		\
 	wayland-test-protocol.c			\
 	wayland-test-server-protocol.h		\
 	wayland-test-client-protocol.h

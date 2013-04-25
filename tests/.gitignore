@@ -11,3 +11,5 @@ keyboard-test
 event-test
 button-test
 xwayland-test
+subsurface-client-protocol.h
+subsurface-protocol.c

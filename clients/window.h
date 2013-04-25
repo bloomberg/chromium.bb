@@ -27,6 +27,7 @@
 #include <wayland-client.h>
 #include <cairo.h>
 #include "../shared/config-parser.h"
+#include "subsurface-client-protocol.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 

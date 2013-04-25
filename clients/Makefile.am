@@ -81,6 +81,8 @@ libtoytoolkit_la_SOURCES =			\
 	window.h				\
 	text-cursor-position-protocol.c		\
 	text-cursor-position-client-protocol.h	\
+	subsurface-protocol.c			\
+	subsurface-client-protocol.h		\
 	workspaces-protocol.c			\
 	workspaces-client-protocol.h
 
@@ -185,6 +187,8 @@ BUILT_SOURCES =					\
 	desktop-shell-protocol.c		\
 	tablet-shell-client-protocol.h		\
 	tablet-shell-protocol.c			\
+	subsurface-client-protocol.h		\
+	subsurface-protocol.c			\
 	workspaces-client-protocol.h		\
 	workspaces-protocol.c
 

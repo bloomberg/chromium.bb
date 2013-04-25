@@ -35,6 +35,7 @@ extern "C" {
 #include "version.h"
 #include "matrix.h"
 #include "config-parser.h"
+#include "subsurface-server-protocol.h"
 
 #define ARRAY_LENGTH(a) (sizeof (a) / sizeof (a)[0])
 
