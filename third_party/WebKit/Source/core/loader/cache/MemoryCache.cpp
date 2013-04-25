@@ -21,11 +21,9 @@
 */
 
 #include "config.h"
-#include "MemoryCache.h"
+#include "core/loader/cache/MemoryCache.h"
 
 #include <stdio.h>
-#include "CachedResource.h"
-#include "CachedResourceHandle.h"
 #include "CrossThreadTask.h"
 #include "Document.h"
 #include "FrameView.h"
@@ -37,6 +35,8 @@
 #include "WorkerThread.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/ResourceHandle.h"

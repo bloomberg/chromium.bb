@@ -29,10 +29,9 @@
  */
 
 #include "config.h"
-#include "ApplicationCacheHost.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 
 #include "ApplicationCacheHostInternal.h"
-#include "DOMApplicationCache.h"
 #include "Frame.h"
 #include "InspectorApplicationCacheAgent.h"
 #include "InspectorInstrumentation.h"
@@ -43,6 +42,7 @@
 #include "WebFrameImpl.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/appcache/DOMApplicationCache.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <public/WebURL.h>

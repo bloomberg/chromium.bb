@@ -25,15 +25,15 @@
  */
 
 #include "config.h"
-#include "CachedFont.h"
+#include "core/loader/cache/CachedFont.h"
 
-#include "CachedResourceClient.h"
-#include "CachedResourceClientWalker.h"
-#include "CachedResourceLoader.h"
 #include "FontCustomPlatformData.h"
-#include "MemoryCache.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceClientWalker.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include <wtf/Vector.h>

@@ -25,15 +25,15 @@
 */
 
 #include "config.h"
-#include "CachedCSSStyleSheet.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
 
 #include "CSSStyleSheet.h"
-#include "CachedResourceClientWalker.h"
-#include "CachedStyleSheetClient.h"
-#include "MemoryCache.h"
 #include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResourceClientWalker.h"
+#include "core/loader/cache/CachedStyleSheetClient.h"
+#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include <wtf/CurrentTime.h>

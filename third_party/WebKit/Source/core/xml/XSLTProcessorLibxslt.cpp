@@ -28,7 +28,6 @@
 #include <libxslt/security.h>
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
-#include "CachedResourceLoader.h"
 #include "Document.h"
 #include "Frame.h"
 #include "Page.h"
@@ -39,6 +38,7 @@
 #include "XSLStyleSheet.h"
 #include "XSLTExtensions.h"
 #include "XSLTUnicodeSort.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"

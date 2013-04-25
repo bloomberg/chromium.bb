@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "MHTMLParser.h"
+#include "core/loader/archive/MHTMLParser.h"
 
-#include "MHTMLArchive.h"
+#include "core/loader/archive/MHTMLArchive.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/network/MIMEHeader.h"
 #include "core/platform/text/QuotedPrintable.h"

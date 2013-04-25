@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "ArchiveResource.h"
+#include "core/loader/archive/ArchiveResource.h"
 
 #include "core/platform/SharedBuffer.h"
 

@@ -29,8 +29,8 @@
 #ifndef ArchiveResourceCollection_h
 #define ArchiveResourceCollection_h
 
-#include "ArchiveResource.h"
-#include "MHTMLArchive.h"
+#include "core/loader/archive/ArchiveResource.h"
+#include "core/loader/archive/MHTMLArchive.h"
 #include "core/platform/KURL.h"
 #include <wtf/text/WTFString.h>
 

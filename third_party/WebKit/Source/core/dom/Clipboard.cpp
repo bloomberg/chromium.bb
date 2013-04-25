@@ -26,10 +26,10 @@
 #include "config.h"
 #include "Clipboard.h"
 
-#include "CachedImage.h"
 #include "FileList.h"
 #include "Frame.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Image.h"
 
 namespace WebCore {

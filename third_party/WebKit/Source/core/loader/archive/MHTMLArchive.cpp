@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include "MHTMLArchive.h"
+#include "core/loader/archive/MHTMLArchive.h"
 
 #include "Document.h"
 #include "Frame.h"
-#include "MHTMLParser.h"
 #include "Page.h"
 #include "PageSerializer.h"
+#include "core/loader/archive/MHTMLParser.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/SharedBuffer.h"

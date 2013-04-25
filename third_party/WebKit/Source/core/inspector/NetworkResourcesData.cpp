@@ -29,9 +29,9 @@
 #include "config.h"
 #include "NetworkResourcesData.h"
 
-#include "CachedResource.h"
 #include "DOMImplementation.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResource.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/MemoryInstrumentationHashMap.h>

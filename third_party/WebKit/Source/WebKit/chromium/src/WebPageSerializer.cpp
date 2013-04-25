@@ -37,7 +37,6 @@
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "MHTMLArchive.h"
 #include "PageSerializer.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
@@ -46,6 +45,7 @@
 #include "WebView.h"
 #include "WebViewImpl.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/archive/MHTMLArchive.h"
 #include "core/platform/KURL.h"
 #include <public/WebCString.h>
 #include <public/WebString.h>

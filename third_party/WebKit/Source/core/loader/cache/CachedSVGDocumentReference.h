@@ -27,8 +27,8 @@
 #define CachedSVGDocumentReference_h
 
 #if ENABLE(SVG)
-#include "CachedResourceHandle.h"
-#include "CachedSVGDocument.h"
+#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 
 namespace WebCore {
 

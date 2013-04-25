@@ -24,9 +24,9 @@
 #include "config.h"
 #include "core/rendering/RenderListItem.h"
 
-#include "CachedImage.h"
 #include "HTMLNames.h"
 #include "HTMLOListElement.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderListMarker.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"

@@ -24,7 +24,6 @@
 #include "CSSImportRule.h"
 #include "CSSParser.h"
 #include "CSSStyleSheet.h"
-#include "CachedCSSStyleSheet.h"
 #include "Document.h"
 #include "MediaList.h"
 #include "Node.h"
@@ -33,6 +32,7 @@
 #include "StyleRule.h"
 #include "StyleRuleImport.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
 #include <wtf/Deque.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

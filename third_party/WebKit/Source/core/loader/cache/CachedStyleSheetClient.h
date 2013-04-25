@@ -26,7 +26,7 @@
 #ifndef CachedStyleSheetClient_h
 #define CachedStyleSheetClient_h
 
-#include "CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceClient.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

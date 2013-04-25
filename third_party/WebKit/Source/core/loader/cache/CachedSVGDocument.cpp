@@ -23,10 +23,10 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "CachedSVGDocument.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 
-#include "CachedResourceClient.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/SharedBuffer.h"
 #include <wtf/text/StringBuilder.h>
 

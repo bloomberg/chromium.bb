@@ -30,9 +30,9 @@
 #ifndef ClipboardChromium_h
 #define ClipboardChromium_h
 
-#include "CachedImageClient.h"
 #include "Clipboard.h"
 #include "DataTransferItem.h"
+#include "core/loader/cache/CachedImageClient.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
 namespace WebCore {

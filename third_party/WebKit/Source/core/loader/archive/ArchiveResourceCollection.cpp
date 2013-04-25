@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "ArchiveResourceCollection.h"
+#include "core/loader/archive/ArchiveResourceCollection.h"
 
 namespace WebCore {
 

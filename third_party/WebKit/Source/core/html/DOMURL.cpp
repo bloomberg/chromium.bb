@@ -33,11 +33,11 @@
 #include "BlobURL.h"
 #include "MediaSource.h"
 #include "MediaSourceRegistry.h"
-#include "MemoryCache.h"
 #include "PublicURLManager.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/MainThread.h>

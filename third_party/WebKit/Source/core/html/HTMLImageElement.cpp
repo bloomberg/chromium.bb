@@ -26,7 +26,6 @@
 #include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "CachedImage.h"
 #include "EventNames.h"
 #include "FrameView.h"
 #include "HTMLDocument.h"
@@ -34,6 +33,7 @@
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "ScriptEventListener.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderImage.h"
 
 using namespace std;

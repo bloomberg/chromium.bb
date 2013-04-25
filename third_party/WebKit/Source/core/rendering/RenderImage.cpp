@@ -28,7 +28,6 @@
 #include "config.h"
 #include "core/rendering/RenderImage.h"
 
-#include "CachedImage.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "HTMLAreaElement.h"
@@ -38,6 +37,7 @@
 #include "HTMLNames.h"
 #include "Page.h"
 #include "SVGImage.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"

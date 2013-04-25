@@ -26,8 +26,8 @@
 #include "config.h"
 #include "HTMLResourcePreloader.h"
 
-#include "CachedResourceLoader.h"
 #include "Document.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"

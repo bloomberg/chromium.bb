@@ -28,7 +28,6 @@
 
 #include <limits>
 #include "BackForwardController.h"
-#include "CachedResourceLoader.h"
 #include "Database.h"
 #include "Document.h"
 #include "Frame.h"
@@ -38,6 +37,7 @@
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/rendering/TextAutosizer.h"
 

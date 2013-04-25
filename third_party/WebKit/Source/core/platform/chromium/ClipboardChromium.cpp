@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 
-#include "CachedImage.h"
 #include "DataTransferItemList.h"
 #include "Document.h"
 #include "Editor.h"
@@ -41,6 +40,7 @@
 #include "NamedNodeMap.h"
 #include "Range.h"
 #include "StringCallback.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/DragData.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/chromium/ChromiumDataObject.h"

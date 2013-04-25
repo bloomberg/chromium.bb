@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 

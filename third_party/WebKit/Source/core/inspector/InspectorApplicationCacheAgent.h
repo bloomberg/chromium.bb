@@ -26,9 +26,9 @@
 #define InspectorApplicationCacheAgent_h
 
 
-#include "ApplicationCacheHost.h"
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 

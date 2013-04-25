@@ -26,7 +26,7 @@
 #ifndef CachedResourceHandle_h
 #define CachedResourceHandle_h
 
-#include "CachedResource.h"
+#include "core/loader/cache/CachedResource.h"
 
 namespace WebCore {
 

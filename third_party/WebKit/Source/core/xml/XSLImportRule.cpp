@@ -22,11 +22,11 @@
 #include "config.h"
 #include "XSLImportRule.h"
 
-#include "CachedXSLStyleSheet.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
 #include "Document.h"
 #include "XSLStyleSheet.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedXSLStyleSheet.h"
 
 namespace WebCore {
 

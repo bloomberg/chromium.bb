@@ -26,17 +26,17 @@
 #ifndef DOMApplicationCache_h
 #define DOMApplicationCache_h
 
-#include "ApplicationCacheHost.h"
 #include "DOMWindowProperty.h"
 #include "EventNames.h"
 #include "EventTarget.h"
 #include "ScriptWrappable.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicStringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

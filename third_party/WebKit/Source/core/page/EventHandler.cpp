@@ -29,7 +29,6 @@
 #include "EventHandler.h"
 
 #include "AutoscrollController.h"
-#include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
@@ -69,6 +68,7 @@
 #include "WheelEvent.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/PlatformEvent.h"

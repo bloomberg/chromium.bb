@@ -31,7 +31,7 @@
 #ifndef MHTMLArchive_h
 #define MHTMLArchive_h
 
-#include "ArchiveResource.h"
+#include "core/loader/archive/ArchiveResource.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

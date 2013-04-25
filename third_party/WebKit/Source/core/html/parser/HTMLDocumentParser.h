@@ -27,7 +27,6 @@
 #define HTMLDocumentParser_h
 
 #include "BackgroundHTMLInputStream.h"
-#include "CachedResourceClient.h"
 #include "CompactHTMLToken.h"
 #include "FragmentScriptingPermission.h"
 #include "HTMLInputStream.h"
@@ -41,6 +40,7 @@
 #include "ScriptableDocumentParser.h"
 #include "XSSAuditor.h"
 #include "XSSAuditorDelegate.h"
+#include "core/loader/cache/CachedResourceClient.h"
 #include "core/platform/Timer.h"
 #include "core/platform/text/SegmentedString.h"
 #include <wtf/Deque.h>

@@ -26,11 +26,11 @@
 #ifndef PendingScript_h
 #define PendingScript_h
 
-#include "CachedResourceClient.h"
-#include "CachedResourceHandle.h"
-#include <wtf/text/TextPosition.h>
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
+#include <wtf/text/TextPosition.h>
 
 namespace WebCore {
 

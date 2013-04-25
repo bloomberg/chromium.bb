@@ -36,7 +36,7 @@
 #include <wtf/text/WTFString.h>
 
 #if ENABLE(SVG)
-#include "CachedSVGDocumentReference.h"
+#include "core/loader/cache/CachedSVGDocumentReference.h"
 #endif
 
 // Annoyingly, wingdi.h #defines this.

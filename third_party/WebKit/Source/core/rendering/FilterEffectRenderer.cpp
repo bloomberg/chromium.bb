@@ -51,10 +51,10 @@
 #endif
 
 #if ENABLE(SVG)
-#include "CachedSVGDocument.h"
-#include "CachedSVGDocumentReference.h"
 #include "SVGElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
+#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedSVGDocumentReference.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
 #endif
 

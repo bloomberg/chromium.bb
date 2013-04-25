@@ -26,8 +26,8 @@
 #ifndef CachedFont_h
 #define CachedFont_h
 
-#include "CachedResource.h"
-#include "CachedResourceClient.h"
+#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/CachedResourceClient.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/FontWidthVariant.h"

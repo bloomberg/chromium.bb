@@ -24,9 +24,8 @@
  */
 
 #include "config.h"
-#include "DOMApplicationCache.h"
+#include "core/loader/appcache/DOMApplicationCache.h"
 
-#include "ApplicationCacheHost.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventException.h"
@@ -36,6 +35,7 @@
 #include "Frame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 
 namespace WebCore {
 

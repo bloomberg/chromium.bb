@@ -29,7 +29,6 @@
 
 #include "AnimationController.h"
 #include "CSSPropertyNames.h"
-#include "CachedImage.h"
 #include "CanvasRenderingContext.h"
 #include "Chrome.h"
 #include "FrameView.h"
@@ -43,6 +42,7 @@
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"

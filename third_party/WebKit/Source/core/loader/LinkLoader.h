@@ -32,9 +32,9 @@
 #ifndef LinkLoader_h
 #define LinkLoader_h
 
-#include "CachedResourceClient.h"
-#include "CachedResourceHandle.h"
 #include "core/loader/LinkLoaderClient.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/PrerenderClient.h"
 #include "core/platform/Timer.h"
 

@@ -24,9 +24,9 @@
 #define CachedResource_h
 
 #include <time.h>
-#include "CachePolicy.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/ResourceLoaderOptions.h"
+#include "core/loader/cache/CachePolicy.h"
 #include "core/platform/PurgePriority.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"

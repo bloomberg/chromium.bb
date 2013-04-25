@@ -43,7 +43,6 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
-#include "MemoryCache.h"
 #include "MemoryInstrumentationImpl.h"
 #include "Node.h"
 #include "NodeTraversal.h"
@@ -51,6 +50,7 @@
 #include "ScriptGCEvent.h"
 #include "ScriptProfiler.h"
 #include "StyledElement.h"
+#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include <wtf/ArrayBufferView.h>
 #include <wtf/HashSet.h>

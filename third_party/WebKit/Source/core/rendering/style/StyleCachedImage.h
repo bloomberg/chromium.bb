@@ -24,8 +24,8 @@
 #ifndef StyleCachedImage_h
 #define StyleCachedImage_h
 
-#include "CachedImageClient.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {

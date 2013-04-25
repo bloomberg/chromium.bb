@@ -24,7 +24,6 @@
 
 #include "XSLTProcessor.h"
 
-#include "CachedResourceLoader.h"
 #include "ContentSecurityPolicy.h"
 #include "DOMImplementation.h"
 #include "DocumentFragment.h"
@@ -37,6 +36,7 @@
 #include "Text.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "markup.h"
 
 #include <wtf/Assertions.h>

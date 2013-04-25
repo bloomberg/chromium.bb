@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/platform/ThreadGlobalData.h"
 
-#include "CachedResourceRequestInitiators.h"
 #include "EventNames.h"
 #include "InspectorCounters.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/ThreadTimers.h"
 #include <wtf/MainThread.h>
 #include <wtf/text/StringImpl.h>

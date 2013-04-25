@@ -49,7 +49,6 @@
 #include "CSSTimingFunctionValue.h"
 #include "CSSValueList.h"
 #include "CSSVariableValue.h"
-#include "CachedImage.h"
 #include "ContextFeatures.h"
 #include "Counter.h"
 #include "DocumentStyleSheetCollection.h"
@@ -105,6 +104,7 @@
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
 #include "XMLNames.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/CalculationValue.h"
 #include "core/platform/LinkHash.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
@@ -141,13 +141,13 @@
 #include "core/platform/graphics/filters/FilterOperation.h"
 
 #if ENABLE(SVG)
-#include "CachedSVGDocument.h"
-#include "CachedSVGDocumentReference.h"
 #include "SVGDocument.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
 #include "SVGURIReference.h"
 #include "WebKitCSSSVGDocumentValue.h"
+#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedSVGDocumentReference.h"
 #endif
 
 #include "WebKitCSSMixFunctionValue.h"

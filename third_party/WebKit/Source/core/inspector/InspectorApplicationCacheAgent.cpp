@@ -26,7 +26,6 @@
 #include "config.h"
 #include "InspectorApplicationCacheAgent.h"
 
-#include "ApplicationCacheHost.h"
 #include "Frame.h"
 #include "InspectorAgent.h"
 #include "InspectorFrontend.h"
@@ -37,6 +36,7 @@
 #include "Page.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/platform/network/NetworkStateNotifier.h"
 #include "core/platform/network/ResourceResponse.h"
 

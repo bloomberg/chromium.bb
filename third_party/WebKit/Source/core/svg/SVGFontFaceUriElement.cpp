@@ -25,13 +25,13 @@
 
 #include "Attribute.h"
 #include "CSSFontFaceSrcValue.h"
-#include "CachedFont.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
 #include "Document.h"
 #include "SVGFontFaceElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
 
 namespace WebCore {
     

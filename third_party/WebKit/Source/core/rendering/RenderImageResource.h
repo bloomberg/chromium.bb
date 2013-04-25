@@ -26,8 +26,8 @@
 #ifndef RenderImageResource_h
 #define RenderImageResource_h
 
-#include "CachedImage.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"

@@ -30,9 +30,9 @@
 #ifndef StyleCustomFilterProgram_h
 #define StyleCustomFilterProgram_h
 
-#include "CachedResourceClient.h"
-#include "CachedResourceHandle.h"
-#include "CachedShader.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedShader.h"
 #include "core/platform/KURL.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"

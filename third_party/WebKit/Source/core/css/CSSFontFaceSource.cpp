@@ -28,9 +28,9 @@
 
 #include "CSSFontFace.h"
 #include "CSSFontSelector.h"
-#include "CachedFont.h"
-#include "CachedResourceLoader.h"
 #include "Document.h"
+#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"
 #include "core/platform/graphics/SimpleFontData.h"

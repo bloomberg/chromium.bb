@@ -28,8 +28,8 @@
 
 #if ENABLE(CSS_IMAGE_SET)
 
-#include "CachedImageClient.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/LayoutSize.h"
 #include "core/rendering/style/StyleImage.h"
 

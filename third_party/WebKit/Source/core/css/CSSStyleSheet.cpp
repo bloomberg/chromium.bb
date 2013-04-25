@@ -27,7 +27,6 @@
 #include "CSSParser.h"
 #include "CSSRuleList.h"
 #include "CSSStyleRule.h"
-#include "CachedCSSStyleSheet.h"
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "HTMLNames.h"
@@ -38,6 +37,7 @@
 #include "StyleRule.h"
 #include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 

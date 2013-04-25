@@ -33,7 +33,6 @@
 
 #include "config.h"
 
-#include "ApplicationCacheHost.h"
 #include "ContentSecurityPolicy.h"
 #include "DocumentMarker.h"
 #include "EditorInsertAction.h"
@@ -96,6 +95,7 @@
 #include "WebView.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityObject.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/FileMetadata.h"
 #include "core/platform/ReferrerPolicy.h"

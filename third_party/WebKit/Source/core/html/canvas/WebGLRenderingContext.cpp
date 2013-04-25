@@ -27,7 +27,6 @@
 
 #include "WebGLRenderingContext.h"
 
-#include "CachedImage.h"
 #include "CheckedInt.h"
 #include "DOMWindow.h"
 #include "EXTDrawBuffers.h"
@@ -67,6 +66,7 @@
 #include "WebGLUniformLocation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/Extensions3D.h"
 #include "core/platform/graphics/ImageBuffer.h"

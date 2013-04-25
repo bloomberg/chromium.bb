@@ -64,9 +64,6 @@
       '../html/shadow',
       '../html/track',
       '../inspector',
-      '../loader/appcache',
-      '../loader/archive',
-      '../loader/cache',
       '../page',
       '../page/animation',
       '../page/scrolling',
@@ -348,6 +345,7 @@
         # FIXME: It's not clear if the bindings generation scripts should have
         # a map from header name to absolute include path. For now, let the
         # generated bindings files use relative paths.
+        '../loader/appcache',
         '../platform/leveldb',
         '../platform/sql',
         '../storage',

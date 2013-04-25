@@ -22,7 +22,6 @@
 #include "config.h"
 #include "XSLStyleSheet.h"
 
-#include "CachedResourceLoader.h"
 #include "Document.h"
 #include "Frame.h"
 #include "Node.h"
@@ -33,6 +32,7 @@
 #include "XMLDocumentParserScope.h"
 #include "XSLImportRule.h"
 #include "XSLTProcessor.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include <wtf/text/CString.h>
 
 #include <libxml/uri.h>

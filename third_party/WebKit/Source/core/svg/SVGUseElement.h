@@ -22,7 +22,6 @@
 #define SVGUseElement_h
 
 #if ENABLE(SVG)
-#include "CachedSVGDocument.h"
 #include "SVGAnimatedBoolean.h"
 #include "SVGAnimatedLength.h"
 #include "SVGExternalResourcesRequired.h"
@@ -30,6 +29,7 @@
 #include "SVGStyledTransformableElement.h"
 #include "SVGTests.h"
 #include "SVGURIReference.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 
 namespace WebCore {
 

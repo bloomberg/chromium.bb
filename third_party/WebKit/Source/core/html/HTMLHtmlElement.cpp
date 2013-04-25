@@ -24,13 +24,13 @@
 #include "config.h"
 #include "HTMLHtmlElement.h"
 
-#include "ApplicationCacheHost.h"
 #include "Document.h"
 #include "DocumentParser.h"
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 
 namespace WebCore {
 

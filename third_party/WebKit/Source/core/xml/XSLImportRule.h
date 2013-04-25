@@ -23,9 +23,9 @@
 #ifndef XSLImportRule_h
 #define XSLImportRule_h
 
-#include "CachedResourceHandle.h"
-#include "CachedStyleSheetClient.h"
 #include "XSLStyleSheet.h"
+#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedStyleSheetClient.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

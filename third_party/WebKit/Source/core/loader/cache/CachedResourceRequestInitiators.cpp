@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "CachedResourceRequestInitiators.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
 
 namespace WebCore {
 

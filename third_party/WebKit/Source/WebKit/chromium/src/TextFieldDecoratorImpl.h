@@ -31,8 +31,8 @@
 #ifndef TextFieldDecoratorImpl_h
 #define TextFieldDecoratorImpl_h
 
-#include "CachedResourceHandle.h"
 #include "TextFieldDecorationElement.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 
 namespace WebKit {
 

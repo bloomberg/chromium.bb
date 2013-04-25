@@ -26,7 +26,7 @@
 #ifndef ScriptRunner_h
 #define ScriptRunner_h
 
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/Timer.h"
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>

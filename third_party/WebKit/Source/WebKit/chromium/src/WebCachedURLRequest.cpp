@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebCachedURLRequest.h"
 
-#include "CachedResourceRequest.h"
 #include "Element.h"
+#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include <public/WebURLRequest.h>
 

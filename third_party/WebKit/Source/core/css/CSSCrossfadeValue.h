@@ -28,9 +28,9 @@
 
 #include "CSSImageGeneratorValue.h"
 #include "CSSPrimitiveValue.h"
-#include "CachedImage.h"
-#include "CachedImageClient.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedImageClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageObserver.h"
 

@@ -22,9 +22,9 @@
 #ifndef StyleRuleImport_h
 #define StyleRuleImport_h
 
-#include "CachedResourceHandle.h"
-#include "CachedStyleSheetClient.h"
 #include "StyleRule.h"
+#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedStyleSheetClient.h"
 
 namespace WebCore {
 

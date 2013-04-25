@@ -31,7 +31,6 @@
 #include "config.h"
 #include "core/platform/Pasteboard.h"
 
-#include "CachedImage.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "Editor.h"
@@ -41,6 +40,7 @@
 #include "HTMLParserIdioms.h"
 #include "NativeImageSkia.h"
 #include "Range.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/KURL.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"

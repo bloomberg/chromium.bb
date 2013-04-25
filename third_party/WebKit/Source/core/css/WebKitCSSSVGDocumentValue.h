@@ -26,8 +26,8 @@
 #define WebKitCSSSVGDocumentValue_h
 
 #include "CSSValue.h"
-#include "CachedResourceHandle.h"
-#include "CachedSVGDocument.h"
+#include "core/loader/cache/CachedResourceHandle.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 
 namespace WebCore {
 

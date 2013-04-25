@@ -27,8 +27,6 @@
 #include "XMLDocumentParser.h"
 
 #include "CDATASection.h"
-#include "CachedResourceLoader.h"
-#include "CachedScript.h"
 #include "Comment.h"
 #include "Document.h"
 #include "DocumentFragment.h"
@@ -47,6 +45,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/ImageLoader.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedScript.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"

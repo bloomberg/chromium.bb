@@ -21,8 +21,8 @@
 #ifndef ScriptElement_h
 #define ScriptElement_h
 
-#include "CachedResourceClient.h"
-#include "CachedResourceHandle.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include <wtf/text/TextPosition.h>
 #include <wtf/text/WTFString.h>
 

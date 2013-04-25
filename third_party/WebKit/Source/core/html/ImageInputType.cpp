@@ -23,7 +23,6 @@
 #include "config.h"
 #include "ImageInputType.h"
 
-#include "CachedImage.h"
 #include "FormDataList.h"
 #include "HTMLFormElement.h"
 #include "HTMLImageLoader.h"
@@ -32,6 +31,7 @@
 #include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
 #include "MouseEvent.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderImage.h"
 #include <wtf/PassOwnPtr.h>
 

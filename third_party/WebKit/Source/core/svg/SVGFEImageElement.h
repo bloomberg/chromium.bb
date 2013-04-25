@@ -22,8 +22,6 @@
 #define SVGFEImageElement_h
 
 #if ENABLE(SVG)
-#include "CachedImage.h"
-#include "CachedResourceHandle.h"
 #include "SVGAnimatedBoolean.h"
 #include "SVGAnimatedPreserveAspectRatio.h"
 #include "SVGExternalResourcesRequired.h"
@@ -31,6 +29,8 @@
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGLangSpace.h"
 #include "SVGURIReference.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/graphics/ImageBuffer.h"
 
 namespace WebCore {

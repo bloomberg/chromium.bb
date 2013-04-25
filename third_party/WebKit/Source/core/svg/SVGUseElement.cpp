@@ -28,9 +28,6 @@
 #include "SVGUseElement.h"
 
 #include "Attribute.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
-#include "CachedSVGDocument.h"
 #include "Document.h"
 #include "ElementShadow.h"
 #include "Event.h"
@@ -53,6 +50,9 @@
 #include "XLinkNames.h"
 #include "XMLDocumentParser.h"
 #include "XMLSerializer.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 

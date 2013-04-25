@@ -22,9 +22,6 @@
 #include "config.h"
 #include "core/loader/ImageLoader.h"
 
-#include "CachedImage.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
 #include "Document.h"
 #include "Element.h"
 #include "Event.h"
@@ -37,6 +34,9 @@
 #include "SecurityOrigin.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/CrossOriginAccessControl.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
 

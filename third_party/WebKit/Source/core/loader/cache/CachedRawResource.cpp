@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "CachedRawResource.h"
+#include "core/loader/cache/CachedRawResource.h"
 
-#include "CachedResourceClient.h"
-#include "CachedResourceClientWalker.h"
-#include "CachedResourceLoader.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/ResourceLoader.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceClientWalker.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/SharedBuffer.h"
 #include <wtf/PassRefPtr.h>
 

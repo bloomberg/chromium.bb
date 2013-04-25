@@ -27,7 +27,6 @@
 #include "HTMLMediaElement.h"
 
 #include <limits>
-#include "ApplicationCacheHost.h"
 #include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -74,6 +73,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/platform/ContentType.h"
 #include "core/platform/Language.h"
 #include "core/platform/Logging.h"

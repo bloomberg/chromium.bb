@@ -22,10 +22,6 @@
 #include "ProcessingInstruction.h"
 
 #include "CSSStyleSheet.h"
-#include "CachedCSSStyleSheet.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
-#include "CachedXSLStyleSheet.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "ExceptionCode.h"
@@ -35,6 +31,10 @@
 #include "XMLDocumentParser.h" // for parseAttributes()
 #include "XSLStyleSheet.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedXSLStyleSheet.h"
 
 namespace WebCore {
 

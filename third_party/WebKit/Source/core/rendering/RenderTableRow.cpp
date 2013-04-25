@@ -25,10 +25,10 @@
 #include "config.h"
 #include "core/rendering/RenderTableRow.h"
 
-#include "CachedImage.h"
 #include "Document.h"
 #include "HTMLNames.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderTableCell.h"

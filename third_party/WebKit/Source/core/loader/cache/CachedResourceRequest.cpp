@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "CachedResourceRequest.h"
+#include "core/loader/cache/CachedResourceRequest.h"
 
-#include "CachedResourceLoader.h"
 #include "Document.h"
 #include "Element.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 
 namespace WebCore {
 

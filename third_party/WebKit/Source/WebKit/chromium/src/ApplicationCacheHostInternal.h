@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ApplicationCacheHost.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 
 #include "WebApplicationCacheHostClient.h"
 #include "WebFrameClient.h"

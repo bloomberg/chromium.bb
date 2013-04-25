@@ -30,7 +30,6 @@
 #include "config.h"
 #include "InspectorDebuggerAgent.h"
 
-#include "CachedResource.h"
 #include "ContentSearchUtils.h"
 #include "InjectedScript.h"
 #include "InjectedScriptManager.h"
@@ -41,6 +40,7 @@
 #include "InstrumentingAgents.h"
 #include "ScriptDebugServer.h"
 #include "ScriptObject.h"
+#include "core/loader/cache/CachedResource.h"
 #include "core/platform/text/RegularExpression.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

@@ -27,14 +27,14 @@
 
 #include "core/loader/TextTrackLoader.h"
 
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
-#include "CachedTextTrack.h"
 #include "Document.h"
 #include "ScriptCallStack.h"
 #include "SecurityOrigin.h"
 #include "WebVTTParser.h"
 #include "core/loader/CrossOriginAccessControl.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedTextTrack.h"
 #include "core/platform/Logging.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceHandle.h"

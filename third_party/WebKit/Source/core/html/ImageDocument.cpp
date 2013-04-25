@@ -25,7 +25,6 @@
 #include "config.h"
 #include "ImageDocument.h"
 
-#include "CachedImage.h"
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCodePlaceholder.h"
@@ -41,6 +40,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/NotImplemented.h"
 

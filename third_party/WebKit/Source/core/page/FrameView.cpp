@@ -29,7 +29,6 @@
 
 #include "AnimationController.h"
 #include "BackForwardController.h"
-#include "CachedResourceLoader.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "DocumentMarkerController.h"
@@ -56,6 +55,7 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FontCache.h"

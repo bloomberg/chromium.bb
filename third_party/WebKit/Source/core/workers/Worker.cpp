@@ -29,7 +29,6 @@
 
 #include "Worker.h"
 
-#include "CachedResourceLoader.h"
 #include "DOMWindow.h"
 #include "Document.h"
 #include "EventException.h"
@@ -44,6 +43,7 @@
 #include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/MainThread.h>
 

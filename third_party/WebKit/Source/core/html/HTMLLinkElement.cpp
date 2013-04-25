@@ -26,10 +26,6 @@
 #include "HTMLLinkElement.h"
 
 #include "Attribute.h"
-#include "CachedCSSStyleSheet.h"
-#include "CachedResource.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Event.h"
@@ -49,6 +45,10 @@
 #include "StyleSheetContents.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CachedResource.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

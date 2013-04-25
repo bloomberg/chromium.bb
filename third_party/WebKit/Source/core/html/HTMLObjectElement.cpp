@@ -26,7 +26,6 @@
 
 #include "Attribute.h"
 #include "CSSValueKeywords.h"
-#include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "EventNames.h"
@@ -47,6 +46,7 @@
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "Text.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderEmbeddedObject.h"

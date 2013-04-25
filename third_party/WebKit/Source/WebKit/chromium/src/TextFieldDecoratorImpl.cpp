@@ -31,10 +31,10 @@
 #include "config.h"
 #include "TextFieldDecoratorImpl.h"
 
-#include "CachedImage.h"
 #include "HTMLInputElement.h"
 #include "WebInputElement.h"
 #include "WebTextFieldDecoratorClient.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Image.h"
 
 namespace WebKit {

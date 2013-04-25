@@ -23,10 +23,10 @@
 #include "CSSCursorImageValue.h"
 
 #include "CSSImageValue.h"
-#include "CachedImage.h"
-#include "CachedResourceLoader.h"
 #include "TreeScope.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleImage.h"
 #include "core/rendering/style/StylePendingImage.h"

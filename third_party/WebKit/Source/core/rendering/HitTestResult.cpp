@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/rendering/HitTestResult.h"
 
-#include "CachedImage.h"
 #include "DocumentMarkerController.h"
 #include "Editor.h"
 #include "Frame.h"
@@ -36,6 +35,7 @@
 #include "HTMLParserIdioms.h"
 #include "HTMLPlugInImageElement.h"
 #include "HTMLVideoElement.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/Scrollbar.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderBlock.h"

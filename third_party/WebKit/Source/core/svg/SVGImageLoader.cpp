@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGImageLoader.h"
 
-#include "CachedImage.h"
 #include "Event.h"
 #include "EventNames.h"
 #include "HTMLParserIdioms.h"
 #include "SVGImageElement.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderImage.h"
 
 namespace WebCore {

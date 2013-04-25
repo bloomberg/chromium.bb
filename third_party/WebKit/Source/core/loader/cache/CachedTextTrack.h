@@ -26,7 +26,7 @@
 #ifndef CachedTextTrack_h
 #define CachedTextTrack_h
 
-#include "CachedResource.h"
+#include "core/loader/cache/CachedResource.h"
 #include "core/platform/graphics/FontOrientation.h"
 
 namespace WebCore {

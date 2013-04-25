@@ -33,9 +33,6 @@
 #include "core/loader/LinkLoader.h"
 
 #include "CSSStyleSheet.h"
-#include "CachedCSSStyleSheet.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
 #include "ContainerNode.h"
 #include "Document.h"
 #include "Frame.h"
@@ -44,6 +41,9 @@
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "core/loader/Prerenderer.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/network/DNS.h"
 

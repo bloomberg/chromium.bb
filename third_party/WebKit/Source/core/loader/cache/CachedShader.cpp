@@ -29,9 +29,9 @@
 
 #include "config.h"
 
-#include "CachedShader.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedShader.h"
 #include "core/platform/SharedBuffer.h"
 #include <wtf/text/StringBuilder.h>
 

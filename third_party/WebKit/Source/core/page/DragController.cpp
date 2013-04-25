@@ -27,8 +27,6 @@
 #include "config.h"
 #include "DragController.h"
 
-#include "CachedImage.h"
-#include "CachedResourceLoader.h"
 #include "Clipboard.h"
 #include "ClipboardAccessPolicy.h"
 #include "Document.h"
@@ -63,6 +61,8 @@
 #include "TextEvent.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/DragData.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/graphics/FloatRect.h"

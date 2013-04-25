@@ -27,7 +27,6 @@
 
 #include <math.h>
 #include <algorithm>
-#include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
@@ -38,6 +37,7 @@
 #include "HTMLNames.h"
 #include "Page.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"

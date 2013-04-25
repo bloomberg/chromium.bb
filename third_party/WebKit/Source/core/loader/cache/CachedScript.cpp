@@ -25,13 +25,13 @@
 */
 
 #include "config.h"
-#include "CachedScript.h"
+#include "core/loader/cache/CachedScript.h"
 
-#include "CachedResourceClient.h"
-#include "CachedResourceClientWalker.h"
-#include "MemoryCache.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
+#include "core/loader/cache/CachedResourceClient.h"
+#include "core/loader/cache/CachedResourceClientWalker.h"
+#include "core/loader/cache/MemoryCache.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"

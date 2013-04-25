@@ -25,17 +25,8 @@
 */
 
 #include "config.h"
-#include "CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceLoader.h"
 
-#include "CachedCSSStyleSheet.h"
-#include "CachedFont.h"
-#include "CachedImage.h"
-#include "CachedRawResource.h"
-#include "CachedResourceRequest.h"
-#include "CachedSVGDocument.h"
-#include "CachedScript.h"
-#include "CachedShader.h"
-#include "CachedXSLStyleSheet.h"
 #include "Console.h"
 #include "ContentSecurityPolicy.h"
 #include "DOMWindow.h"
@@ -43,7 +34,6 @@
 #include "Frame.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
-#include "MemoryCache.h"
 #include "Performance.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
@@ -52,6 +42,16 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
+#include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/loader/cache/CachedFont.h"
+#include "core/loader/cache/CachedImage.h"
+#include "core/loader/cache/CachedRawResource.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedSVGDocument.h"
+#include "core/loader/cache/CachedScript.h"
+#include "core/loader/cache/CachedShader.h"
+#include "core/loader/cache/CachedXSLStyleSheet.h"
+#include "core/loader/cache/MemoryCache.h"
 #include "core/page/SecurityPolicy.h"
 #include "core/platform/Logging.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
@@ -61,7 +61,7 @@
 #include <wtf/text/WTFString.h>
 #include <wtf/UnusedParam.h>
 
-#include "CachedTextTrack.h"
+#include "core/loader/cache/CachedTextTrack.h"
 
 #define PRELOAD_DEBUG 0
 

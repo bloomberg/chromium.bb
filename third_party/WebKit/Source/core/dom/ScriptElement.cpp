@@ -24,9 +24,6 @@
 #include "config.h"
 #include "ScriptElement.h"
 
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
-#include "CachedScript.h"
 #include "ContentSecurityPolicy.h"
 #include "Document.h"
 #include "DocumentParser.h"
@@ -48,6 +45,9 @@
 #include "Text.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/FrameLoader.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedScript.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

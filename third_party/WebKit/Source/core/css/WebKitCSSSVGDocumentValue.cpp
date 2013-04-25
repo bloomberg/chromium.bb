@@ -28,12 +28,12 @@
 #include "WebKitCSSSVGDocumentValue.h"
 
 #include "CSSParser.h"
-#include "CachedResourceLoader.h"
-#include "CachedResourceRequest.h"
-#include "CachedResourceRequestInitiators.h"
-#include "CachedSVGDocument.h"
 #include "Document.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/cache/CachedResourceLoader.h"
+#include "core/loader/cache/CachedResourceRequest.h"
+#include "core/loader/cache/CachedResourceRequestInitiators.h"
+#include "core/loader/cache/CachedSVGDocument.h"
 
 namespace WebCore {
 

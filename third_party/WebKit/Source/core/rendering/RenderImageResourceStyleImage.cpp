@@ -28,7 +28,7 @@
 #include "config.h"
 #include "core/rendering/RenderImageResourceStyleImage.h"
 
-#include "CachedImage.h"
+#include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/StyleCachedImage.h"
 

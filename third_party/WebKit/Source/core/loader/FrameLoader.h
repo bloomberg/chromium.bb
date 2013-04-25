@@ -32,7 +32,6 @@
 #ifndef FrameLoader_h
 #define FrameLoader_h
 
-#include "CachePolicy.h"
 #include "IconURL.h"
 #include "LayoutMilestones.h"
 #include "SecurityContext.h"
@@ -43,6 +42,7 @@
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/ResourceLoadNotifier.h"
 #include "core/loader/SubframeLoader.h"
+#include "core/loader/cache/CachePolicy.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <wtf/Forward.h>
