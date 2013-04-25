@@ -1318,10 +1318,13 @@ void AutofillDialogViews::UpdateSectionImpl(
     const DetailInput& input = *iter;
     TextfieldMap::iterator text_mapping = group->textfields.find(&input);
 
-    if (text_mapping != group->textfields.end() &&
-        (text_mapping->second->textfield()->text().empty() ||
-         clobber_inputs)) {
-      text_mapping->second->textfield()->SetText(iter->initial_value);
+    if (text_mapping != group->textfields.end()) {
+      views::Textfield* textfield = text_mapping->second->textfield();
+      if (textfield->text().empty() || clobber_inputs) {
+        textfield->SetText(iter->initial_value);
+        textfield->SetIcon(controller_->IconForField(
+            input.type, textfield->text()).AsImageSkia());
+      }
     }
 
     ComboboxMap::iterator combo_mapping = group->comboboxes.find(&input);
