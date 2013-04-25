@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.autofill;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-
 import android.content.DialogInterface.OnClickListener;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -556,8 +555,13 @@ public class AutofillDialog extends AlertDialog
             for (AutofillDialogField field : fields) {
                 View currentField = findViewById(
                         AutofillDialogUtils.getViewIDForField(section, field.mFieldType));
-                if (currentField instanceof EditText)
+                if (currentField instanceof EditText) {
                     ((EditText) currentField).setError(null);
+                } else if (currentField instanceof Spinner) {
+                    View innerView =
+                            currentField.findViewById(R.id.autofill_editing_spinner_item);
+                    if (innerView instanceof TextView) ((TextView) innerView).setError(null);
+                }
             }
         }
 
@@ -565,8 +569,15 @@ public class AutofillDialog extends AlertDialog
         for(AutofillDialogFieldError error : errors) {
             View currentField = findViewById(
                     AutofillDialogUtils.getViewIDForField(section, error.mFieldType));
-            if (currentField instanceof EditText)
+            if (currentField instanceof EditText) {
                 ((EditText) currentField).setError(error.mErrorText);
+            } else if (currentField instanceof Spinner) {
+                View innerView =
+                        currentField.findViewById(R.id.autofill_editing_spinner_item);
+                if (innerView instanceof TextView) {
+                    ((TextView) innerView).setError(error.mErrorText);
+                }
+            }
         }
     }
 

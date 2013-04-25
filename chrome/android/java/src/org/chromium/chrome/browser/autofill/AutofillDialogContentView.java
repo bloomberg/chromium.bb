@@ -127,7 +127,7 @@ public class AutofillDialogContentView extends LinearLayout {
 
     private void initializeSpinner(int section, int field) {
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(getContext(),
-                android.R.layout.simple_spinner_dropdown_item);
+                R.layout.autofill_editing_spinner_item);
         adapter.addAll(Arrays.asList(mDialog.getListForField(field)));
         ((Spinner) findViewById(AutofillDialogUtils
                 .getViewIDForField(section, field))).setAdapter(adapter);
