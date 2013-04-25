@@ -30,6 +30,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
+#include "ui/gfx/vector2d.h"
 #include "ui/views/background.h"
 #include "ui/views/widget/widget.h"
 
@@ -44,7 +45,12 @@ const int kPanelIdealSpacing = 4;
 const float kMaxHeightFactor = .80f;
 const float kMaxWidthFactor = .50f;
 
+// Duration for panel animations.
 const int kPanelSlideDurationMilliseconds = 50;
+
+// Offset used when sliding panel in/out of the launcher. Used for minimizing,
+// restoring and the initial showing of a panel.
+const int kPanelSlideInOffset = 20;
 
 // Callout arrow dimensions.
 const int kArrowWidth = 18;
@@ -104,13 +110,15 @@ struct VisiblePanelPositionInfo {
         max_major(0),
         major_pos(0),
         major_length(0),
-        window(NULL) {}
+        window(NULL),
+        slide_in(false) {}
 
   int min_major;
   int max_major;
   int major_pos;
   int major_length;
   aura::Window* window;
+  bool slide_in;
 };
 
 bool CompareWindowMajor(const VisiblePanelPositionInfo& win1,
@@ -163,6 +171,25 @@ bool BoundsAdjacent(const gfx::Rect& bounds1, const gfx::Rect& bounds2) {
          bounds1.y() == bounds2.bottom() ||
          bounds1.right() == bounds2.x() ||
          bounds1.bottom() == bounds2.y();
+}
+
+gfx::Vector2d GetSlideInAnimationOffset(ShelfAlignment alignment) {
+  gfx::Vector2d offset;
+  switch (alignment) {
+    case SHELF_ALIGNMENT_BOTTOM:
+      offset.set_y(kPanelSlideInOffset);
+      break;
+    case SHELF_ALIGNMENT_LEFT:
+      offset.set_x(-kPanelSlideInOffset);
+      break;
+    case SHELF_ALIGNMENT_RIGHT:
+      offset.set_x(kPanelSlideInOffset);
+      break;
+    case SHELF_ALIGNMENT_TOP:
+      offset.set_y(-kPanelSlideInOffset);
+      break;
+  }
+  return offset;
 }
 
 }  // namespace
@@ -287,6 +314,12 @@ void PanelLayoutManager::OnWindowAddedToLayout(aura::Window* child) {
   PanelInfo panel_info;
   panel_info.window = child;
   panel_info.callout_widget = new PanelCalloutWidget(panel_container_);
+  if (child != dragged_panel_) {
+    // Set the panel to 0 opacity until it has been positioned to prevent it
+    // from flashing briefly at position (0, 0).
+    child->layer()->SetOpacity(0);
+    panel_info.slide_in = true;
+  }
   panel_windows_.push_back(panel_info);
   child->AddObserver(this);
   Relayout();
@@ -415,7 +448,24 @@ void PanelLayoutManager::OnWindowActivated(aura::Window* gained_active,
 void PanelLayoutManager::MinimizePanel(aura::Window* panel) {
   views::corewm::SetWindowVisibilityAnimationType(
       panel, WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE);
+  ui::Layer* layer = panel->layer();
+  ui::ScopedLayerAnimationSettings panel_slide_settings(layer->GetAnimator());
+  panel_slide_settings.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+  panel_slide_settings.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
+  gfx::Rect bounds(panel->bounds());
+  bounds.Offset(GetSlideInAnimationOffset(
+      launcher_->shelf_widget()->GetAlignment()));
+  SetChildBoundsDirect(panel, bounds);
   panel->Hide();
+  PanelList::iterator found =
+      std::find(panel_windows_.begin(), panel_windows_.end(), panel);
+  if (found != panel_windows_.end()) {
+    layer->SetOpacity(0);
+    // The next time the window is visible it should slide into place.
+    found->slide_in = true;
+  }
   if (wm::IsActiveWindow(panel))
     wm::DeactivateWindow(panel);
   Relayout();
@@ -491,6 +541,8 @@ void PanelLayoutManager::Relayout() {
         panel_end_bounds - position_info.major_length / 2);
     position_info.major_pos = (icon_start + icon_end) / 2;
     position_info.window = panel;
+    position_info.slide_in = iter->slide_in;
+    iter->slide_in = false;
     visible_panels.push_back(position_info);
   }
 
@@ -516,7 +568,8 @@ void PanelLayoutManager::Relayout() {
   for (size_t i = 0; i < visible_panels.size(); ++i) {
     if (visible_panels[i].window == dragged_panel_)
       continue;
-    gfx::Rect bounds = visible_panels[i].window->bounds();
+    bool slide_in = visible_panels[i].slide_in;
+    gfx::Rect bounds = visible_panels[i].window->GetTargetBounds();
     switch (alignment) {
       case SHELF_ALIGNMENT_BOTTOM:
         bounds.set_y(launcher_bounds.y() - bounds.height());
@@ -531,10 +584,7 @@ void PanelLayoutManager::Relayout() {
         bounds.set_y(launcher_bounds.bottom());
         break;
     }
-    // Only animate if the panel window is already snapped to the launcher. This
-    // prevents new panels from sliding into place from the top left corner.
-    bool animate = visible_panels[i].window->bounds().x() == bounds.x() &&
-                   visible_panels[i].window->bounds().y() == bounds.y();
+    bool on_launcher = visible_panels[i].window->GetTargetBounds() == bounds;
 
     if (horizontal) {
       bounds.set_x(visible_panels[i].major_pos -
@@ -545,7 +595,16 @@ void PanelLayoutManager::Relayout() {
     }
 
     ui::Layer* layer = visible_panels[i].window->layer();
-    if (animate) {
+    if (slide_in) {
+      // New windows shift up from the launcher  into position.
+      gfx::Rect initial_bounds(bounds);
+      initial_bounds.Offset(GetSlideInAnimationOffset(alignment));
+      SetChildBoundsDirect(visible_panels[i].window, initial_bounds);
+      // Set on launcher so that the panel animates into its target position.
+      on_launcher = true;
+    }
+
+    if (on_launcher) {
       ui::ScopedLayerAnimationSettings panel_slide_settings(
           layer->GetAnimator());
       panel_slide_settings.SetPreemptionStrategy(
@@ -553,8 +612,11 @@ void PanelLayoutManager::Relayout() {
       panel_slide_settings.SetTransitionDuration(
           base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
       SetChildBoundsDirect(visible_panels[i].window, bounds);
+      if (slide_in)
+        layer->SetOpacity(1);
     } else {
-      // TODO(flackr): Animate new windows http://crbug.com/230479.
+      // If the launcher moved don't animate, move immediately to the new
+      // target location.
       SetChildBoundsDirect(visible_panels[i].window, bounds);
     }
   }
@@ -621,10 +683,11 @@ void PanelLayoutManager::UpdateCallouts() {
     aura::Window* panel = iter->window;
     views::Widget* callout_widget = iter->callout_widget;
 
-    gfx::Rect bounds = panel->GetBoundsInScreen();
+    gfx::Rect bounds = ScreenAsh::ConvertRectToScreen(panel->parent(),
+                                                      panel->GetTargetBounds());
     gfx::Rect icon_bounds =
         launcher_->GetScreenBoundsOfItemIconForWindow(panel);
-    if (icon_bounds.IsEmpty() || !panel->IsVisible() ||
+    if (icon_bounds.IsEmpty() || !panel->layer()->GetTargetVisibility() ||
         panel == dragged_panel_) {
       callout_widget->Hide();
       continue;

@@ -100,7 +100,7 @@ class ASH_EXPORT PanelLayoutManager
   views::Widget* CreateCalloutWidget();
 
   struct PanelInfo{
-    PanelInfo() : window(NULL), callout_widget(NULL) {}
+    PanelInfo() : window(NULL), callout_widget(NULL), slide_in(false) {}
 
     bool operator==(const aura::Window* other_window) const {
       return window == other_window;
@@ -112,6 +112,11 @@ class ASH_EXPORT PanelLayoutManager
     // manually as this structure is used in a std::list. See
     // http://www.chromium.org/developers/smart-pointer-guidelines
     PanelCalloutWidget* callout_widget;
+
+    // True on new and restored panel windows until the panel has been
+    // positioned. The first time Relayout is called the panel will slide into
+    // position and this will be set to false.
+    bool slide_in;
   };
 
   typedef std::list<PanelInfo> PanelList;
