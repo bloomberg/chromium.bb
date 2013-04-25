@@ -755,6 +755,11 @@ void OneClickSigninHelper::ShowInfoBarIfPossible(net::URLRequest* request,
 }
 
 // static
+void OneClickSigninHelper::LogConfirmHistogramValue(int action) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.OneClickConfirmation", action,
+                            one_click_signin::HISTOGRAM_CONFIRM_MAX);
+}
+// static
 void OneClickSigninHelper::ShowInfoBarUIThread(
     const std::string& session_index,
     const std::string& email,

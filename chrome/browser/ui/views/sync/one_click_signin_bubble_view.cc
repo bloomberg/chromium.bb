@@ -10,6 +10,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/chromium_strings.h"
@@ -59,15 +61,24 @@ class OneClickSigninDialogView : public OneClickSigninBubbleView {
   virtual void InitContent(views::GridLayout* layout) OVERRIDE;
   virtual void GetButtons(views::LabelButton** ok_button,
                           views::LabelButton** undo_button) OVERRIDE;
-  virtual views::Link* GetAdvancedLink() OVERRIDE;
+  virtual views::Link* CreateAdvancedLink() OVERRIDE;
 
   // Overridden from views::LinkListener:
   virtual void LinkClicked(views::Link* source, int event_flags) OVERRIDE;
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
+  // views::View method:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   const string16 email_;
   content::WebContents* web_content_;
   views::Link* learn_more_link_;
   views::ImageButton* close_button_;
+
+  bool clicked_learn_more_;
 
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninDialogView);
 };
@@ -81,7 +92,8 @@ OneClickSigninDialogView::OneClickSigninDialogView(
       email_(email),
       web_content_(web_content),
       learn_more_link_(NULL),
-      close_button_(NULL) {
+      close_button_(NULL),
+      clicked_learn_more_(false) {
   set_arrow(views::BubbleBorder::NONE);
   set_anchor_view_insets(gfx::Insets(0, 0, anchor_view->height() / 2, 0));
   set_close_on_deactivate(false);
@@ -94,6 +106,9 @@ ui::ModalType OneClickSigninDialogView::GetModalType() const {
 }
 
 void OneClickSigninDialogView::InitContent(views::GridLayout* layout) {
+  OneClickSigninHelper::LogConfirmHistogramValue(
+      one_click_signin::HISTOGRAM_CONFIRM_SHOWN);
+
   // Column set for title bar.
   views::ColumnSet* cs = layout->AddColumnSet(COLUMN_SET_TITLE_BAR);
   cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
@@ -175,7 +190,7 @@ void OneClickSigninDialogView::GetButtons(views::LabelButton** ok_button,
   (*undo_button)->SetText(undo_label);
 }
 
-views::Link* OneClickSigninDialogView::GetAdvancedLink() {
+views::Link* OneClickSigninDialogView::CreateAdvancedLink() {
   views::Link* advanced_link= new views::Link(
       l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_DIALOG_ADVANCED));
   advanced_link->set_listener(this);
@@ -186,6 +201,11 @@ views::Link* OneClickSigninDialogView::GetAdvancedLink() {
 void OneClickSigninDialogView::LinkClicked(views::Link* source,
                                            int event_flags) {
   if (source == learn_more_link_) {
+    if (!clicked_learn_more_) {
+      OneClickSigninHelper::LogConfirmHistogramValue(
+          one_click_signin::HISTOGRAM_LEARN_MORE);
+      clicked_learn_more_ = true;
+    }
     content::OpenURLParams params(
         GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(),
         NEW_WINDOW, content::PAGE_TRANSITION_LINK, false);
@@ -193,7 +213,52 @@ void OneClickSigninDialogView::LinkClicked(views::Link* source,
     return;
   }
 
+  if (source == GetAdvancedLink())
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clicked_learn_more_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
+            one_click_signin::HISTOGRAM_CONFIRM_ADVANCED);
+
   OneClickSigninBubbleView::LinkClicked(source, event_flags);
+}
+
+void OneClickSigninDialogView::ButtonPressed(views::Button* sender,
+                                             const ui::Event& event) {
+  if (sender == GetOkButton())
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clicked_learn_more_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
+            one_click_signin::HISTOGRAM_CONFIRM_OK);
+
+  if (sender == GetUndoButton())
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clicked_learn_more_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
+            one_click_signin::HISTOGRAM_CONFIRM_UNDO);
+
+  if (sender == close_button_)
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clicked_learn_more_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
+            one_click_signin::HISTOGRAM_CONFIRM_CLOSE);
+
+
+  OneClickSigninBubbleView::ButtonPressed(sender, event);
+}
+
+bool OneClickSigninDialogView::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (accelerator.key_code() == ui::VKEY_RETURN)
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clicked_learn_more_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_RETURN :
+            one_click_signin::HISTOGRAM_CONFIRM_RETURN);
+  if (accelerator.key_code() == ui::VKEY_ESCAPE)
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        clicked_learn_more_ ?
+            one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ESCAPE :
+            one_click_signin::HISTOGRAM_CONFIRM_ESCAPE);
+  return OneClickSigninBubbleView::AcceleratorPressed(accelerator);
 }
 
 }  // namespace
@@ -288,7 +353,7 @@ void OneClickSigninBubbleView::Init() {
   InitContent(layout);
 
   // Add controls at the bottom.
-  advanced_link_= GetAdvancedLink();
+  advanced_link_= CreateAdvancedLink();
   GetButtons(&ok_button_, &undo_button_);
   ok_button_->SetIsDefault(true);
 
@@ -335,7 +400,7 @@ void OneClickSigninBubbleView::GetButtons(views::LabelButton** ok_button,
   (*undo_button)->SetText(undo_label);
 }
 
-views::Link* OneClickSigninBubbleView::GetAdvancedLink() {
+views::Link* OneClickSigninBubbleView::CreateAdvancedLink() {
   views::Link* advanced_link= new views::Link(
       l10n_util::GetStringUTF16(IDS_SYNC_PROMO_NTP_BUBBLE_ADVANCED));
   advanced_link->set_listener(this);
@@ -372,6 +437,18 @@ bool OneClickSigninBubbleView::AcceleratorPressed(
   }
 
   return BubbleDelegateView::AcceleratorPressed(accelerator);
+}
+
+views::Link* OneClickSigninBubbleView::GetAdvancedLink() {
+  return advanced_link_;
+}
+
+views::Button* OneClickSigninBubbleView::GetOkButton() {
+  return ok_button_;
+}
+
+views::Button* OneClickSigninBubbleView::GetUndoButton() {
+  return undo_button_;
 }
 
 void OneClickSigninBubbleView::LinkClicked(views::Link* source,

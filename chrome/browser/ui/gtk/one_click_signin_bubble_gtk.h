@@ -72,6 +72,8 @@ class OneClickSigninBubbleGtk : public BubbleDelegateGtk {
   GtkWidget* header_label_;
   scoped_ptr<CustomDrawButton> close_button_;
 
+  bool clicked_learn_more_;
+
   DISALLOW_COPY_AND_ASSIGN(OneClickSigninBubbleGtk);
 };
 

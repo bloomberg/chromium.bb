@@ -115,6 +115,8 @@ class OneClickSigninHelper
   // a new page becomes "current".
   static void RemoveCurrentHistoryItem(content::WebContents* web_contents);
 
+  static void LogConfirmHistogramValue(int action);
+
  private:
   explicit OneClickSigninHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<OneClickSigninHelper>;

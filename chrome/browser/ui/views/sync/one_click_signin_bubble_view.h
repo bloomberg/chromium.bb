@@ -63,6 +63,13 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   virtual void ButtonPressed(views::Button* sender,
                              const ui::Event& event) OVERRIDE;
 
+  // views::View method:
+  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
+
+  views::Link* GetAdvancedLink();
+  views::Button* GetOkButton();
+  views::Button* GetUndoButton();
+
  private:
   friend class OneClickSigninBubbleViewBrowserTest;
 
@@ -87,13 +94,10 @@ class OneClickSigninBubbleView : public views::BubbleDelegateView,
   // Creates advanced link to be used at the bottom of the bubble.
   // Derived classes can reimplement.  The caller of this function owns the
   // returned link.
-  virtual views::Link* GetAdvancedLink();
+  virtual views::Link* CreateAdvancedLink();
 
   // views::WidgetDelegate method:
   virtual void WindowClosing() OVERRIDE;
-
-  // views::View method:
-  virtual bool AcceleratorPressed(const ui::Accelerator& accelerator) OVERRIDE;
 
   // The bubble, if we're showing one.
   static OneClickSigninBubbleView* bubble_view_;

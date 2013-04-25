@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/gtk/gtk_theme_service.h"
 #include "chrome/browser/ui/gtk/gtk_util.h"
 #include "chrome/browser/ui/gtk/tabs/tab_strip_gtk.h"
+#include "chrome/browser/ui/sync/one_click_signin_helper.h"
+#include "chrome/browser/ui/sync/one_click_signin_histogram.h"
 #include "chrome/common/url_constants.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -37,7 +39,8 @@ OneClickSigninBubbleGtk::OneClickSigninBubbleGtk(
       ok_button_(NULL),
       undo_button_(NULL),
       learn_more_(NULL),
-      header_label_(NULL) {
+      header_label_(NULL),
+      clicked_learn_more_(false) {
   InitializeWidgets(browser_window_gtk);
   ShowWidget(browser_window_gtk, LayoutWidgets());
 }
@@ -59,24 +62,44 @@ void OneClickSigninBubbleGtk::BubbleClosing(
 }
 
 void OneClickSigninBubbleGtk::OnClickAdvancedLink(GtkWidget* link) {
+  OneClickSigninHelper::LogConfirmHistogramValue(
+      clicked_learn_more_ ?
+          one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_ADVANCED :
+          one_click_signin::HISTOGRAM_CONFIRM_ADVANCED);
   base::ResetAndReturn(&start_sync_callback_).Run(
       OneClickSigninSyncStarter::CONFIGURE_SYNC_FIRST);
   bubble_->Close();
 }
 
 void OneClickSigninBubbleGtk::OnClickOK(GtkWidget* link) {
+  OneClickSigninHelper::LogConfirmHistogramValue(
+      clicked_learn_more_ ?
+          one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_OK :
+          one_click_signin::HISTOGRAM_CONFIRM_OK);
+
   base::ResetAndReturn(&start_sync_callback_).Run(
       OneClickSigninSyncStarter::SYNC_WITH_DEFAULT_SETTINGS);
   bubble_->Close();
 }
 
 void OneClickSigninBubbleGtk::OnClickUndo(GtkWidget* link) {
+  OneClickSigninHelper::LogConfirmHistogramValue(
+      clicked_learn_more_ ?
+          one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_UNDO :
+          one_click_signin::HISTOGRAM_CONFIRM_UNDO);
+
   base::ResetAndReturn(&start_sync_callback_).Run(
       OneClickSigninSyncStarter::UNDO_SYNC);
   bubble_->Close();
 }
 
 void OneClickSigninBubbleGtk::OnClickLearnMoreLink(GtkWidget* link) {
+  // We only want to log the Learn More click once per bubble instance.
+  if (!clicked_learn_more_) {
+    OneClickSigninHelper::LogConfirmHistogramValue(
+        one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE);
+    clicked_learn_more_ = true;
+  }
   Browser* browser = chrome::FindBrowserWithWindow(
       gtk_window_get_transient_for(bubble_->GetNativeWindow()));
   DCHECK(browser);
@@ -87,6 +110,10 @@ void OneClickSigninBubbleGtk::OnClickLearnMoreLink(GtkWidget* link) {
 }
 
 void OneClickSigninBubbleGtk::OnClickCloseButton(GtkWidget* button) {
+  OneClickSigninHelper::LogConfirmHistogramValue(
+      clicked_learn_more_ ?
+          one_click_signin::HISTOGRAM_CONFIRM_LEARN_MORE_CLOSE :
+          one_click_signin::HISTOGRAM_CONFIRM_CLOSE);
   start_sync_callback_.Reset();
   bubble_->Close();
 }
@@ -199,6 +226,8 @@ GtkWidget* OneClickSigninBubbleGtk::LayoutWidgets() {
 
 void OneClickSigninBubbleGtk::ShowWidget(BrowserWindowGtk* browser_window_gtk,
                                          GtkWidget* content_widget) {
+  OneClickSigninHelper::LogConfirmHistogramValue(
+      one_click_signin::HISTOGRAM_CONFIRM_SHOWN);
   GtkThemeService* const theme_provider = GtkThemeService::GetFrom(
       browser_window_gtk->browser()->profile());
 
