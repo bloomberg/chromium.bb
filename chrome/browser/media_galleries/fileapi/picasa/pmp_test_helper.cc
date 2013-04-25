@@ -27,7 +27,7 @@ bool WriteToFile(const base::FilePath& path, std::vector<uint8> data) {
 template<class T>
 std::vector<uint8> Flatten(const std::vector<T>& elems) {
   const uint8* elems0 = reinterpret_cast<const uint8*>(&elems[0]);
-  std::vector<uint8> data_body(elems0, elems0 + sizeof(T)*elems.size());
+  std::vector<uint8> data_body(elems0, elems0 + sizeof(T) * elems.size());
 
   return data_body;
 }
@@ -40,7 +40,7 @@ std::vector<uint8> Flatten(const std::vector<std::string>& strings) {
   for (std::vector<std::string>::const_iterator it = strings.begin();
       it != strings.end(); ++it) {
     std::copy(it->begin(), it->end(), std::back_inserter(totalchars));
-    totalchars.push_back('\0'); // Add the null termination too.
+    totalchars.push_back('\0');  // Add the null termination too.
   }
 
   return totalchars;
@@ -59,10 +59,18 @@ std::vector<uint8> CombinedVectors(const std::vector<uint8>& a,
 
 }  // namespace
 
-PmpTestHelper::PmpTestHelper() { }
+PmpTestHelper::PmpTestHelper(const std::string& table_name)
+    : table_name_(table_name) {
+}
 
 bool PmpTestHelper::Init() {
-  return temp_dir_.CreateUniqueTempDir();
+  if (!temp_dir_.CreateUniqueTempDir() || !temp_dir_.IsValid())
+    return false;
+
+  base::FilePath indicator_path = temp_dir_.path().Append(
+      base::FilePath::FromUTF8Unsafe(table_name_ + "_0"));
+
+  return file_util::WriteFile(indicator_path, NULL, 0) == 0;
 }
 
 base::FilePath PmpTestHelper::GetTempDirPath() {
@@ -72,11 +80,11 @@ base::FilePath PmpTestHelper::GetTempDirPath() {
 
 template<class T>
 bool PmpTestHelper::WriteColumnFileFromVector(
-    const std::string& table_name, const std::string& column_name,
-    const PmpFieldType field_type, const std::vector<T>& elements_vector) {
+    const std::string& column_name, const PmpFieldType field_type,
+    const std::vector<T>& elements_vector) {
   DCHECK(temp_dir_.IsValid());
 
-  std::string file_name = table_name + "_" + column_name + "." + kPmpExtension;
+  std::string file_name = table_name_ + "_" + column_name + "." + kPmpExtension;
 
   base::FilePath path = temp_dir_.path().Append(
       base::FilePath::FromUTF8Unsafe(file_name));
@@ -89,34 +97,30 @@ bool PmpTestHelper::WriteColumnFileFromVector(
 
 // Explicit Instantiation for all the valid types.
 template bool PmpTestHelper::WriteColumnFileFromVector<std::string>(
-    const std::string&, const std::string&, const PmpFieldType,
-    const std::vector<std::string>&);
+    const std::string&, const PmpFieldType, const std::vector<std::string>&);
 template bool PmpTestHelper::WriteColumnFileFromVector<uint32>(
-    const std::string&, const std::string&, const PmpFieldType,
-    const std::vector<uint32>&);
+    const std::string&, const PmpFieldType, const std::vector<uint32>&);
 template bool PmpTestHelper::WriteColumnFileFromVector<double>(
-    const std::string&, const std::string&, const PmpFieldType,
-    const std::vector<double>&);
+    const std::string&, const PmpFieldType, const std::vector<double>&);
 template bool PmpTestHelper::WriteColumnFileFromVector<uint8>(
-    const std::string&, const std::string&, const PmpFieldType,
-    const std::vector<uint8>&);
+    const std::string&, const PmpFieldType, const std::vector<uint8>&);
 template bool PmpTestHelper::WriteColumnFileFromVector<uint64>(
-    const std::string&, const std::string&, const PmpFieldType,
-    const std::vector<uint64>&);
+    const std::string&, const PmpFieldType, const std::vector<uint64>&);
 
-bool PmpTestHelper::InitColumnReaderFromBytes(
-    PmpColumnReader* const reader, const std::vector<uint8>& data,
-    uint32* rows_read) {
+bool PmpTestHelper::InitColumnReaderFromBytes(PmpColumnReader* const reader,
+                                              const std::vector<uint8>& data,
+                                              const PmpFieldType expected_type,
+                                              uint32* rows_read) {
   DCHECK(temp_dir_.IsValid());
 
   base::FilePath temp_path;
 
-  if (!file_util::CreateTemporaryFileInDir(temp_dir_.path(), &temp_path) ||
-      !WriteToFile(temp_path, data)) {
+  if (!file_util::CreateTemporaryFileInDir(temp_dir_.path(), &temp_path)
+      || !WriteToFile(temp_path, data)) {
     return false;
   }
 
-  bool success = reader->Init(temp_path, rows_read);
+  bool success = reader->Init(temp_path, expected_type, rows_read);
 
   file_util::Delete(temp_path, true);
 
@@ -140,11 +144,14 @@ std::vector<uint8> PmpTestHelper::MakeHeader(const PmpFieldType field_type,
          sizeof(picasaimport::kPmpMagic4));
 
   // Copy in field type.
-  memcpy(&header[picasaimport::kPmpFieldType1Offset], &field_type, 2);
-  memcpy(&header[picasaimport::kPmpFieldType2Offset], &field_type, 2);
+  uint16 field_type_short = static_cast<uint16>(field_type);
+  memcpy(&header[picasaimport::kPmpFieldType1Offset], &field_type_short,
+         sizeof(uint16));
+  memcpy(&header[picasaimport::kPmpFieldType2Offset], &field_type_short,
+         sizeof(uint16));
 
   // Copy in row count.
-  memcpy(&header[picasaimport::kPmpRowCountOffset], &row_count, 4);
+  memcpy(&header[picasaimport::kPmpRowCountOffset], &row_count, sizeof(uint32));
 
   return header;
 }

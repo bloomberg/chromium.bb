@@ -22,11 +22,13 @@ const size_t kPmpMaxFilesize = 50*1024*1024; // Maximum of 50 MB.
 PmpColumnReader::PmpColumnReader()
     : length_(0),
       field_type_(PMP_TYPE_INVALID),
-      rows_(0) { }
+      rows_(0) {}
 
-PmpColumnReader::~PmpColumnReader() { }
+PmpColumnReader::~PmpColumnReader() {}
 
-bool PmpColumnReader::Init(const base::FilePath& filepath, uint32* rows_read) {
+bool PmpColumnReader::Init(const base::FilePath& filepath,
+                           const PmpFieldType expected_type,
+                           uint32* rows_read) {
   DCHECK(!data_.get());
   base::ThreadRestrictions::AssertIOAllowed();
 
@@ -44,7 +46,7 @@ bool PmpColumnReader::Init(const base::FilePath& filepath, uint32* rows_read) {
   char* data_begin = reinterpret_cast<char*>(data_.get());
 
   return file_util::ReadFile(filepath, data_begin, length_) &&
-         ParseData(rows_read);
+         ParseData(expected_type, rows_read);
 }
 
 bool PmpColumnReader::ReadString(const uint32 row, std::string* result) const {
@@ -102,7 +104,8 @@ bool PmpColumnReader::ReadUInt64(const uint32 row, uint64* result) const {
   return true;
 }
 
-bool PmpColumnReader::ParseData(uint32* rows_read) {
+bool PmpColumnReader::ParseData(const PmpFieldType expected_type,
+                                uint32* rows_read) {
   DCHECK(data_.get() != NULL);
   DCHECK_GE(length_, kPmpHeaderSize);
 
@@ -124,6 +127,9 @@ bool PmpColumnReader::ParseData(uint32* rows_read) {
   }
 
   field_type_ = static_cast<PmpFieldType>(field_type_data);
+
+  if (field_type_ != expected_type)
+    return false;
 
   rows_ = *(reinterpret_cast<uint32*>(&data_[kPmpRowCountOffset]));
 

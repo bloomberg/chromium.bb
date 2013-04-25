@@ -18,10 +18,9 @@ namespace {
 using picasaimport::PmpTestHelper;
 
 TEST(PmpTableReaderTest, RowCountAndFieldType) {
-  PmpTestHelper test_helper;
+  std::string table_name("tabletest");
+  PmpTestHelper test_helper(table_name);
   ASSERT_TRUE(test_helper.Init());
-
-  std::string table_name = "testtable";
 
   std::vector<std::string> column_names;
   column_names.push_back("strings");
@@ -40,33 +39,24 @@ TEST(PmpTableReaderTest, RowCountAndFieldType) {
 
   const uint32 max_rows = uint32s_vector.size();
 
-  base::FilePath indicator_path = test_helper.GetTempDirPath().Append(
-      base::FilePath::FromUTF8Unsafe(table_name + "_0"));
-
-  ASSERT_EQ(0, file_util::WriteFile(indicator_path, NULL, 0));
   // Write three column files, one each for strings, uint32s, and doubles.
 
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      table_name, column_names[0], column_field_types[0], strings_vector));
-
+      column_names[0], column_field_types[0], strings_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      table_name, column_names[1], column_field_types[1], uint32s_vector));
-
+      column_names[1], column_field_types[1], uint32s_vector));
   ASSERT_TRUE(test_helper.WriteColumnFileFromVector(
-      table_name, column_names[2], column_field_types[2], doubles_vector));
+      column_names[2], column_field_types[2], doubles_vector));
 
-  picasaimport::PmpTableReader table_reader;
-  ASSERT_TRUE(table_reader.Init(
-      table_name, test_helper.GetTempDirPath(), column_names));
+  picasaimport::PmpTableReader table_reader(table_name,
+                                            test_helper.GetTempDirPath());
+
+  for (unsigned int i = 0; i < column_names.size(); i++) {
+    ASSERT_TRUE(
+        table_reader.AddColumn(column_names[i], column_field_types[i]) != NULL);
+  }
 
   EXPECT_EQ(max_rows, table_reader.RowCount());
-
-  const std::vector<const picasaimport::PmpColumnReader*> column_readers =
-      table_reader.GetColumns();
-
-  for (int i = 0; i < 3; i++) {
-    EXPECT_EQ(column_field_types[i], column_readers[i]->field_type());
-  }
 }
 
 }  // namespace

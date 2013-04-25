@@ -358,6 +358,11 @@
             'service',
           ],
         }],
+        ['OS=="android"', {
+          'sources/': [
+            ['exclude', '^browser/media_galleries/'],
+          ],
+        }],
         ['OS=="win"', {
           'dependencies': [
             '../ui/snapshot/snapshot.gyp:snapshot_test_support',
@@ -884,6 +889,7 @@
         'browser/managed_mode/managed_user_passphrase_unittest.cc',
         'browser/managed_mode/managed_user_service_unittest.cc',
         'browser/media_galleries/fileapi/native_media_file_util_unittest.cc',
+        'browser/media_galleries/fileapi/picasa/picasa_album_table_reader_unittest.cc',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader_unittest.cc',
         'browser/media_galleries/fileapi/picasa/pmp_table_reader_unittest.cc',
         'browser/media_galleries/linux/mtp_device_object_enumerator_unittest.cc',

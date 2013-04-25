@@ -26,7 +26,8 @@ class PmpColumnReader {
 
   // Returns true if read successfully.
   // |rows_read| is undefined if returns false.
-  bool Init(const base::FilePath& filepath, uint32* rows_read);
+  bool Init(const base::FilePath& filepath, const PmpFieldType expected_type,
+            uint32* rows_read);
 
   // These functions read the value of that |row| into |result|.
   // Functions return false if the column is of the wrong type or the row
@@ -37,13 +38,8 @@ class PmpColumnReader {
   bool ReadUInt8(const uint32 row, uint8* result) const;
   bool ReadUInt64(const uint32 row, uint64* result) const;
 
-  // Returns the native encoding of field_type.
-  PmpFieldType field_type() const {
-    return field_type_;
-  }
-
  private:
-  bool ParseData(uint32* rows_read);
+  bool ParseData(const PmpFieldType expected_type, uint32* rows_read);
   // Returns the number of bytes parsed in the body, or, -1 on failure.
   long IndexStrings();
 

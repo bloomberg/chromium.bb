@@ -22,20 +22,20 @@ class PmpColumnReader;
 // A helper class used for unit tests only
 class PmpTestHelper {
  public:
-  PmpTestHelper();
+  explicit PmpTestHelper(const std::string& table_name);
 
   bool Init();
 
   base::FilePath GetTempDirPath();
 
   template<class T>
-  bool WriteColumnFileFromVector(const std::string& table_name,
-                                 const std::string& column_name,
+  bool WriteColumnFileFromVector(const std::string& column_name,
                                  const PmpFieldType field_type,
                                  const std::vector<T>& elements_vector);
 
   bool InitColumnReaderFromBytes(PmpColumnReader* const reader,
                                  const std::vector<uint8>& data,
+                                 const PmpFieldType expected_type,
                                  uint32* rows_read);
 
   static std::vector<uint8> MakeHeader(const PmpFieldType field_type,
@@ -47,6 +47,7 @@ class PmpTestHelper {
                                               const std::vector<T>& elems);
 
  private:
+  std::string table_name_;
   base::ScopedTempDir temp_dir_;
 };
 

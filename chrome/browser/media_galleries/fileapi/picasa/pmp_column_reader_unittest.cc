@@ -41,7 +41,7 @@ bool DoRead(const PmpColumnReader* reader, uint32 row, uint64* target) {
 template<class T>
 void TestValid(const picasaimport::PmpFieldType field_type,
                const std::vector<T>& elems) {
-  PmpTestHelper test_helper;
+  PmpTestHelper test_helper("test");
   ASSERT_TRUE(test_helper.Init());
 
   PmpColumnReader reader;
@@ -50,7 +50,8 @@ void TestValid(const picasaimport::PmpFieldType field_type,
 
   std::vector<uint8> data =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
-  ASSERT_TRUE(test_helper.InitColumnReaderFromBytes(&reader, data, &rows_read));
+  ASSERT_TRUE(test_helper.InitColumnReaderFromBytes(
+      &reader, data, field_type, &rows_read));
   EXPECT_EQ(elems.size(), rows_read);
 
   for (uint32 i = 0; i < elems.size() && i < rows_read; i++) {
@@ -63,32 +64,40 @@ void TestValid(const picasaimport::PmpFieldType field_type,
 template<class T>
 void TestMalformed(const picasaimport::PmpFieldType field_type,
                    const std::vector<T>& elems) {
-  PmpTestHelper test_helper;
+  PmpTestHelper test_helper("test");
   ASSERT_TRUE(test_helper.Init());
 
-  PmpColumnReader reader1, reader2, reader3, reader4;
-
+  PmpColumnReader reader_too_few_declared_rows;
   std::vector<uint8> data_too_few_declared_rows =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size()-1, elems);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader1, data_too_few_declared_rows, NULL));
+      &reader_too_few_declared_rows,
+      data_too_few_declared_rows,
+      field_type,
+      NULL));
 
+  PmpColumnReader reader_too_many_declared_rows;
   std::vector<uint8> data_too_many_declared_rows =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size()+1, elems);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader2, data_too_many_declared_rows, NULL));
+      &reader_too_many_declared_rows,
+      data_too_many_declared_rows,
+      field_type,
+      NULL));
 
+  PmpColumnReader reader_truncated;
   std::vector<uint8> data_truncated =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
   data_truncated.resize(data_truncated.size()-10);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader3, data_truncated, NULL));
+      &reader_truncated, data_truncated, field_type, NULL));
 
+  PmpColumnReader reader_padded;
   std::vector<uint8> data_padded =
       PmpTestHelper::MakeHeaderAndBody(field_type, elems.size(), elems);
   data_padded.resize(data_padded.size()+10);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader4, data_padded, NULL));
+      &reader_padded, data_padded, field_type, NULL));
 }
 
 template<class T>
@@ -106,45 +115,60 @@ void TestPrimitive(const picasaimport::PmpFieldType field_type) {
 
 
 TEST(PmpColumnReaderTest, HeaderParsingAndValidation) {
-  PmpTestHelper test_helper;
+  PmpTestHelper test_helper("test");
   ASSERT_TRUE(test_helper.Init());
 
-  PmpColumnReader reader1, reader2, reader3, reader4, reader5;
-
-  // Good header.
+  PmpColumnReader reader_good_header;
   uint32 rows_read = 0xFF;
-  std::vector<uint8> good_header = PmpTestHelper::MakeHeader(
-      picasaimport::PMP_TYPE_STRING, 0);
-  ASSERT_TRUE(test_helper.InitColumnReaderFromBytes(
-      &reader1, good_header, &rows_read));
+  std::vector<uint8> good_header =
+      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
+  EXPECT_TRUE(test_helper.InitColumnReaderFromBytes(
+      &reader_good_header,
+      good_header,
+      picasaimport::PMP_TYPE_STRING,
+      &rows_read));
   EXPECT_EQ(0U, rows_read) << "Read non-zero rows from header-only data.";
 
-  // Botch up elements of the header.
-  std::vector<uint8> bad_magic_byte = PmpTestHelper::MakeHeader(
-      picasaimport::PMP_TYPE_STRING, 0);
-  bad_magic_byte[0] = 0xff;
+  PmpColumnReader reader_bad_magic_bytes;
+  std::vector<uint8> bad_magic_bytes =
+      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
+  bad_magic_bytes[0] = 0xff;
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader2, bad_magic_byte, NULL));
+      &reader_bad_magic_bytes,
+      bad_magic_bytes,
+      picasaimport::PMP_TYPE_STRING,
+      NULL));
 
-  // Corrupt means the type fields don't agree.
-  std::vector<uint8> corrupt_type = PmpTestHelper::MakeHeader(
-      picasaimport::PMP_TYPE_STRING, 0);
-  corrupt_type[picasaimport::kPmpFieldType1Offset] = 0xff;
+  PmpColumnReader reader_inconsistent_types;
+  std::vector<uint8> inconsistent_type =
+      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
+  inconsistent_type[picasaimport::kPmpFieldType1Offset] = 0xff;
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader3, corrupt_type, NULL));
+      &reader_inconsistent_types,
+      inconsistent_type,
+      picasaimport::PMP_TYPE_STRING,
+      NULL));
 
-  std::vector<uint8> invalid_type = PmpTestHelper::MakeHeader(
-      picasaimport::PMP_TYPE_STRING, 0);
+  PmpColumnReader reader_invalid_type;
+  std::vector<uint8> invalid_type =
+      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
   invalid_type[picasaimport::kPmpFieldType1Offset] = 0xff;
   invalid_type[picasaimport::kPmpFieldType2Offset] = 0xff;
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader4, invalid_type, NULL));
+      &reader_invalid_type,
+      invalid_type,
+      picasaimport::PMP_TYPE_STRING,
+      NULL));
 
-  std::vector<uint8> incomplete_header = PmpTestHelper::MakeHeader(
-      picasaimport::PMP_TYPE_STRING, 0);
+  PmpColumnReader reader_incomplete_header;
+  std::vector<uint8> incomplete_header =
+      PmpTestHelper::MakeHeader(picasaimport::PMP_TYPE_STRING, 0);
   incomplete_header.resize(10);
   EXPECT_FALSE(test_helper.InitColumnReaderFromBytes(
-      &reader5, incomplete_header, NULL));
+      &reader_incomplete_header,
+      incomplete_header,
+      picasaimport::PMP_TYPE_STRING,
+      NULL));
 }
 
 TEST(PmpColumnReaderTest, StringParsing) {

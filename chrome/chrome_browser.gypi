@@ -933,6 +933,8 @@
         'browser/media_galleries/fileapi/mtp_device_file_system_config.h',
         'browser/media_galleries/fileapi/native_media_file_util.cc',
         'browser/media_galleries/fileapi/native_media_file_util.h',
+        'browser/media_galleries/fileapi/picasa/picasa_album_table_reader.cc',
+        'browser/media_galleries/fileapi/picasa/picasa_album_table_reader.h',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader.cc',
         'browser/media_galleries/fileapi/picasa/pmp_column_reader.h',
         'browser/media_galleries/fileapi/picasa/pmp_constants.h',
