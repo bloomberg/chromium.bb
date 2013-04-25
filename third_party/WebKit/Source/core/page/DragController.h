@@ -26,7 +26,7 @@
 #ifndef DragController_h
 #define DragController_h
 
-#include "DragActions.h"
+#include "core/page/DragActions.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/KURL.h"
 #include "core/platform/graphics/IntPoint.h"

@@ -32,11 +32,7 @@
 #include "WebBindings.h"
 
 #include "BindingState.h"
-#include "DOMWindow.h"
-#include "Frame.h"
 #include "NPV8Object.h"  // for PrivateIdentifier
-#include "npruntime_impl.h"
-#include "npruntime_priv.h"
 #include "Range.h"
 #include "ScriptController.h"
 #include "V8ArrayBuffer.h"
@@ -49,6 +45,10 @@
 #include "WebArrayBufferView.h"
 #include "WebElement.h"
 #include "WebRange.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "npruntime_impl.h"
+#include "npruntime_priv.h"
 #include <wtf/ArrayBufferView.h>
 
 using namespace WebCore;

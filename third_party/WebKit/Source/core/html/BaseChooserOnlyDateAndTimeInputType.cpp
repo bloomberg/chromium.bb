@@ -27,12 +27,12 @@
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "BaseChooserOnlyDateAndTimeInputType.h"
 
-#include "Chrome.h"
 #include "HTMLDivElement.h"
 #include "HTMLInputElement.h"
-#include "Page.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
+#include "core/page/Chrome.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 

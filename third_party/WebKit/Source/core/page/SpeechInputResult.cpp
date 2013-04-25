@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SpeechInputResult.h"
+#include "core/page/SpeechInputResult.h"
 
 #if ENABLE(INPUT_SPEECH)
 

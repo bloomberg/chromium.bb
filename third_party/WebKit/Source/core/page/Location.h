@@ -30,8 +30,8 @@
 #define Location_h
 
 #include "DOMStringList.h"
-#include "DOMWindowProperty.h"
 #include "ScriptWrappable.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

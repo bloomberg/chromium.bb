@@ -23,14 +23,14 @@
  */
 
 #include "config.h"
-#include "PointerLockController.h"
+#include "core/page/PointerLockController.h"
 
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "Element.h"
 #include "Event.h"
-#include "Page.h"
 #include "VoidCallback.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/platform/PlatformMouseEvent.h"
 
 namespace WebCore {

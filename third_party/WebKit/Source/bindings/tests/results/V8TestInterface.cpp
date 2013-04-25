@@ -25,14 +25,14 @@
 #include "BindingState.h"
 #include "ContextFeatures.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
-#include "RuntimeEnabledFeatures.h"
 #include "ScriptController.h"
 #include "TestSupplemental.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
 #include "V8Node.h"
 #include "V8TestObj.h"
+#include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/GetPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

@@ -39,7 +39,7 @@
 #include "Element.h"
 #include "HTMLNames.h"
 #include "HTMLUnknownElement.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/HashSet.h>
 

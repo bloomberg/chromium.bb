@@ -31,19 +31,19 @@
 #define InspectorDebuggerAgent_h
 
 #include "ConsoleAPITypes.h"
-#include "ConsoleTypes.h"
 #include "InjectedScript.h"
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "ScriptBreakpoint.h"
 #include "ScriptDebugListener.h"
 #include "ScriptState.h"
+#include "core/page/ConsoleTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

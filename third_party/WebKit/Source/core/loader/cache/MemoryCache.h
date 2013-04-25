@@ -25,8 +25,8 @@
 #ifndef Cache_h
 #define Cache_h
 
-#include "SecurityOriginHash.h"
 #include "core/loader/cache/CachedResource.h"
+#include "core/page/SecurityOriginHash.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>

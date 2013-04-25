@@ -29,10 +29,6 @@
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
 #include "Document.h"
-#include "Frame.h"
-#include "Page.h"
-#include "PageConsole.h"
-#include "SecurityOrigin.h"
 #include "TransformSource.h"
 #include "XMLDocumentParser.h"
 #include "XSLStyleSheet.h"
@@ -40,6 +36,10 @@
 #include "XSLTUnicodeSort.h"
 #include "core/editing/markup.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/PageConsole.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"

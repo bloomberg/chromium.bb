@@ -31,7 +31,7 @@
 #ifndef ContextMenuClientImpl_h
 #define ContextMenuClientImpl_h
 
-#include "ContextMenuClient.h"
+#include "core/page/ContextMenuClient.h"
 
 namespace WebKit {
 

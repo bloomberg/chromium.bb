@@ -36,8 +36,8 @@
 #include "core/loader/IconController.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "IconURL.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

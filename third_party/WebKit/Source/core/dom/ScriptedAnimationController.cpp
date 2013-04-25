@@ -27,10 +27,10 @@
 #include "ScriptedAnimationController.h"
 
 #include "Document.h"
-#include "FrameView.h"
 #include "InspectorInstrumentation.h"
 #include "RequestAnimationFrameCallback.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/FrameView.h"
 
 namespace WebCore {
 

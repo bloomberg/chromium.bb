@@ -24,6 +24,7 @@
  */
 
 #include "config.h"
+#include <gtest/gtest.h>
 #include "DOMStringList.h"
 #include "IDBCallbacks.h"
 #include "IDBCursorBackendInterface.h"
@@ -33,8 +34,7 @@
 #include "IDBFakeBackingStore.h"
 #include "IDBKey.h"
 #include "IndexedDB.h"
-#include "SecurityOrigin.h"
-#include <gtest/gtest.h>
+#include "core/page/SecurityOrigin.h"
 #include <wtf/Vector.h>
 
 using namespace WebCore;

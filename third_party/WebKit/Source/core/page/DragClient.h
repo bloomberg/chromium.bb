@@ -27,7 +27,7 @@
 #ifndef DragClient_h
 #define DragClient_h
 
-#include "DragActions.h"
+#include "core/page/DragActions.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/graphics/IntPoint.h"
 

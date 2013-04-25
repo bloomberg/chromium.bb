@@ -27,8 +27,8 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/SVGRenderingContext.h"
 
-#include "Frame.h"
-#include "FrameView.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/style/BasicShapes.h"
 #include "core/rendering/svg/RenderSVGImage.h"

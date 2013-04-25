@@ -31,7 +31,7 @@
 #ifndef DOMSelection_h
 #define DOMSelection_h
 
-#include "DOMWindowProperty.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

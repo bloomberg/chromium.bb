@@ -27,13 +27,13 @@
 #include "config.h"
 #include "DocumentEventQueue.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventNames.h"
 #include "ScriptExecutionContext.h"
-#include "SuspendableTimer.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/SuspendableTimer.h"
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationListHashSet.h>
 

@@ -33,9 +33,9 @@
 #include "DedicatedWorkerContext.h"
 
 #include "DedicatedWorkerThread.h"
-#include "DOMWindow.h"
 #include "MessageEvent.h"
 #include "WorkerObjectProxy.h"
+#include "core/page/DOMWindow.h"
 
 namespace WebCore {
 

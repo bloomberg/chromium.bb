@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "GroupSettings.h"
+#include "core/page/GroupSettings.h"
 
 namespace WebCore {
 

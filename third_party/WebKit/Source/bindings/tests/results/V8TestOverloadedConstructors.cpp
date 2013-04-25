@@ -24,14 +24,14 @@
 #include "BindingState.h"
 #include "ContextFeatures.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
-#include "RuntimeEnabledFeatures.h"
 #include "ScriptController.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8DOMWrapper.h"
+#include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/ArrayBufferView.h>
 #include <wtf/UnusedParam.h>

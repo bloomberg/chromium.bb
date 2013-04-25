@@ -23,13 +23,13 @@
 #include "config.h"
 #include "KeyboardEvent.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "EventDispatcher.h"
-#include "EventHandler.h"
 #include "EventNames.h"
-#include "Frame.h"
-#include "Settings.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/WindowsKeyboardCodes.h"
 

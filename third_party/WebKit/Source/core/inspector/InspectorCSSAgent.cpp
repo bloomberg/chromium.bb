@@ -33,8 +33,6 @@
 #include "CSSRuleList.h"
 #include "CSSStyleRule.h"
 #include "CSSStyleSheet.h"
-#include "ContentSecurityPolicy.h"
-#include "DOMWindow.h"
 #include "ExceptionCodePlaceholder.h"
 #include "HTMLHeadElement.h"
 #include "HTMLStyleElement.h"
@@ -55,6 +53,8 @@
 #include "StyleRule.h"
 #include "StyleSheet.h"
 #include "StyleSheetList.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/DOMWindow.h"
 #include "core/rendering/RenderRegion.h"
 
 #include <wtf/CurrentTime.h>

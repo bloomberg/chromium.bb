@@ -27,14 +27,14 @@
 #ifndef MediaControls_h
 #define MediaControls_h
 
-#include "Chrome.h"
 #include "HTMLDivElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "MediaControlElements.h"
 #include "MouseEvent.h"
-#include "Page.h"
 #include "Text.h"
+#include "core/page/Chrome.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 #include <wtf/RefPtr.h>
 

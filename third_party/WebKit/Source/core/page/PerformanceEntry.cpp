@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PerformanceEntry.h"
+#include "core/page/PerformanceEntry.h"
 
 namespace WebCore {
 

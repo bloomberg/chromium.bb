@@ -31,16 +31,8 @@
 #include "config.h"
 #include "WebPagePopupImpl.h"
 
-#include "Chrome.h"
 #include "ContextFeatures.h"
-#include "DOMWindowPagePopup.h"
-#include "EventHandler.h"
-#include "FocusController.h"
-#include "FrameView.h"
-#include "Page.h"
-#include "PagePopupClient.h"
 #include "PageWidgetDelegate.h"
-#include "Settings.h"
 #include "WebCursorInfo.h"
 #include "WebInputEventConversion.h"
 #include "WebPagePopup.h"
@@ -50,6 +42,14 @@
 #include "WebWidgetClient.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
+#include "core/page/Chrome.h"
+#include "core/page/DOMWindowPagePopup.h"
+#include "core/page/EventHandler.h"
+#include "core/page/FocusController.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
+#include "core/page/PagePopupClient.h"
+#include "core/page/Settings.h"
 
 using namespace WebCore;
 using namespace std;

@@ -27,11 +27,11 @@
 #include "WebCoreTestSupport.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "InternalSettings.h"
 #include "Internals.h"
 #include "ScriptExecutionContext.h"
 #include "V8Internals.h"
+#include "core/page/Frame.h"
 
 #include <v8.h>
 

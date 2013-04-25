@@ -27,8 +27,8 @@
 #include "UserTypingGestureIndicator.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "Node.h"
+#include "core/page/Frame.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

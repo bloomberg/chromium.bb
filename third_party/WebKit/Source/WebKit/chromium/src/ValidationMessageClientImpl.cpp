@@ -27,9 +27,9 @@
 #include "ValidationMessageClientImpl.h"
 
 #include "Element.h"
-#include "FrameView.h"
 #include "WebTextDirection.h"
 #include "WebValidationMessageClient.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderObject.h"
 #include <public/WebString.h>
 

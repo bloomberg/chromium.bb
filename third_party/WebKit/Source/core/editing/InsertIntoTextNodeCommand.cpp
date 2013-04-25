@@ -28,9 +28,9 @@
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Settings.h"
 #include "Text.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/page/Settings.h"
 #include "core/rendering/RenderText.h"
 
 namespace WebCore {

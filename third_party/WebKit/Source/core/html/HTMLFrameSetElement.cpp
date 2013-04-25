@@ -29,7 +29,6 @@
 #include "Document.h"
 #include "Event.h"
 #include "EventNames.h"
-#include "Frame.h"
 #include "HTMLNames.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
@@ -37,6 +36,7 @@
 #include "Text.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
 #include "core/platform/Length.h"
 #include "core/rendering/RenderFrameSet.h"
 

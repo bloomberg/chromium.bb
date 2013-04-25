@@ -21,21 +21,21 @@
  */
 
 #include "config.h"
-#include "Navigator.h"
+#include "core/page/Navigator.h"
 
 #include "DOMMimeTypeArray.h"
 #include "DOMPluginArray.h"
 #include "Document.h"
-#include "Frame.h"
 #include "Geolocation.h"
-#include "Page.h"
 #include "PluginData.h"
 #include "ScriptController.h"
-#include "SecurityOrigin.h"
-#include "Settings.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/Settings.h"
 #include "core/platform/Language.h"
 #include "core/storage/StorageNamespace.h"
 #include <wtf/HashSet.h>

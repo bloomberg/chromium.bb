@@ -36,8 +36,8 @@
 #include "Event.h"
 #include "Notification.h"
 #include "UserGestureIndicator.h"
-#include "WindowFocusAllowedIndicator.h"
 #include "WebTextDirection.h"
+#include "core/page/WindowFocusAllowedIndicator.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>

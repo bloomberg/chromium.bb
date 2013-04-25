@@ -29,12 +29,12 @@
 
 #include "CSSValueKeywords.h"
 #include "Element.h"
-#include "Frame.h"
 #include "HTMLNames.h"
 #include "StylePropertySet.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

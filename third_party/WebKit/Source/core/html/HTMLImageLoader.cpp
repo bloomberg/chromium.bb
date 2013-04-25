@@ -28,8 +28,8 @@
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
-#include "Settings.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/Settings.h"
 
 namespace WebCore {
 

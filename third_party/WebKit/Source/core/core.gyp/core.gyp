@@ -63,7 +63,6 @@
       '../html/shadow',
       '../html/track',
       '../inspector',
-      '../page',
       '../platform/graphics/skia',
       '../plugins',
       '../svg',
@@ -342,6 +341,7 @@
         # FIXME: It's not clear if the bindings generation scripts should have
         # a map from header name to absolute include path. For now, let the
         # generated bindings files use relative paths.
+        '../page',
         '../loader/appcache',
         '../platform/leveldb',
         '../platform/sql',
@@ -1229,6 +1229,7 @@
         'webcore',
       ],
       'include_dirs': [
+        '../page',
         '../testing',
         '../testing/v8',
       ],

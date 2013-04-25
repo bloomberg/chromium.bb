@@ -26,7 +26,7 @@
 #ifndef PageGroup_h
 #define PageGroup_h
 
-#include "UserStyleSheet.h"
+#include "core/page/UserStyleSheet.h"
 #include "core/platform/Supplementable.h"
 #include <wtf/HashSet.h>
 #include <wtf/Noncopyable.h>

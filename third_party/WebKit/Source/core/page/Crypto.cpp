@@ -28,7 +28,7 @@
 
 
 #include "config.h"
-#include "Crypto.h"
+#include "core/page/Crypto.h"
 
 #include "ExceptionCode.h"
 #include <wtf/ArrayBufferView.h>

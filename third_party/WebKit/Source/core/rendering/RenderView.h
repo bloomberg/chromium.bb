@@ -22,7 +22,7 @@
 #ifndef RenderView_h
 #define RenderView_h
 
-#include "FrameView.h"
+#include "core/page/FrameView.h"
 #include "core/platform/PODFreeListArena.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/RenderBlock.h"

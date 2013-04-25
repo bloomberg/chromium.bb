@@ -22,11 +22,11 @@
 #include "SVGImageCache.h"
 
 #if ENABLE(SVG)
-#include "FrameView.h"
-#include "Page.h"
 #include "SVGImage.h"
 #include "SVGImageForContainer.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/svg/RenderSVGRoot.h"

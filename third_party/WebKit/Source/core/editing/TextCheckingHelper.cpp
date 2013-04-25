@@ -29,12 +29,12 @@
 
 #include "Document.h"
 #include "DocumentMarkerController.h"
-#include "Frame.h"
 #include "Range.h"
-#include "Settings.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/platform/text/TextCheckerClient.h"
 

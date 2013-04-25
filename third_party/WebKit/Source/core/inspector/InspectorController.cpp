@@ -32,7 +32,6 @@
 #include "InspectorController.h"
 
 #include "DOMWrapperWorld.h"
-#include "Frame.h"
 #include "IdentifiersFactory.h"
 #include "InjectedScriptHost.h"
 #include "InjectedScriptManager.h"
@@ -65,12 +64,13 @@
 #include "InspectorTimelineAgent.h"
 #include "InspectorWorkerAgent.h"
 #include "InstrumentingAgents.h"
-#include "Page.h"
 #include "PageConsoleAgent.h"
 #include "PageDebuggerAgent.h"
 #include "PageRuntimeAgent.h"
 #include "ScriptObject.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/UnusedParam.h>

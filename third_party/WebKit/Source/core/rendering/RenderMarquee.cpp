@@ -46,9 +46,9 @@
 
 #include "core/rendering/RenderMarquee.h"
 
-#include "FrameView.h"
 #include "HTMLMarqueeElement.h"
 #include "HTMLNames.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 

@@ -31,13 +31,13 @@
 #include "config.h"
 #include "PageConsoleAgent.h"
 
-#include "DOMWindow.h"
 #include "InjectedScriptHost.h"
 #include "InjectedScriptManager.h"
 #include "InspectorAgent.h"
 #include "InspectorDOMAgent.h"
 #include "Node.h"
 #include "ScriptObject.h"
+#include "core/page/DOMWindow.h"
 
 namespace WebCore {
 

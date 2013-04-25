@@ -27,8 +27,8 @@
 #include "core/rendering/RenderTable.h"
 
 #include "Document.h"
-#include "FrameView.h"
 #include "HTMLNames.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/AutoTableLayout.h"
 #include "core/rendering/FixedTableLayout.h"
 #include "core/rendering/HitTestResult.h"

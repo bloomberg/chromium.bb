@@ -23,8 +23,8 @@
 #include "config.h"
 #include "core/rendering/RenderWidget.h"
 
-#include "Frame.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/page/Frame.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestResult.h"

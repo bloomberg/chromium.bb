@@ -21,9 +21,9 @@
 #include "config.h"
 #include "HTMLFrameOwnerElement.h"
 
-#include "DOMWindow.h"
-#include "Frame.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderPart.h"
 
 #if ENABLE(SVG)

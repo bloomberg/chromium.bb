@@ -32,13 +32,13 @@
 #include "core/platform/chromium/PopupContainer.h"
 
 #include <limits>
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "Document.h"
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
 #include "UserGestureIndicator.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/PlatformMouseEvent.h"

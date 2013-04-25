@@ -30,9 +30,7 @@
 #include "config.h"
 #include "InspectorProfilerAgent.h"
 
-#include "Console.h"
 #include "ConsoleAPITypes.h"
-#include "ConsoleTypes.h"
 #include "InjectedScript.h"
 #include "InjectedScriptHost.h"
 #include "InspectorConsoleAgent.h"
@@ -40,13 +38,15 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
-#include "Page.h"
 #include "PageScriptDebugServer.h"
 #include "ScriptObject.h"
 #include "ScriptProfile.h"
 #include "ScriptProfiler.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WorkerScriptDebugServer.h"
+#include "core/page/Console.h"
+#include "core/page/ConsoleTypes.h"
+#include "core/page/Page.h"
 #include "core/platform/KURL.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

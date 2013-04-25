@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebSettingsImpl.h"
 
-#include "Settings.h"
+#include "core/page/Settings.h"
 #include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include <public/WebString.h>

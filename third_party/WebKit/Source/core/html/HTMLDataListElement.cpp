@@ -33,9 +33,9 @@
 #if ENABLE(DATALIST_ELEMENT)
 #include "HTMLDataListElement.h"
 
-#include "UseCounter.h"
 #include "HTMLNames.h"
 #include "IdTargetObserverRegistry.h"
+#include "core/page/UseCounter.h"
 
 namespace WebCore {
 

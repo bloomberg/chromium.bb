@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "SecurityPolicy.h"
+#include "core/page/SecurityPolicy.h"
 
-#include "OriginAccessEntry.h"
-#include "SecurityOrigin.h"
+#include "core/page/OriginAccessEntry.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include <wtf/MainThread.h>
 #include <wtf/OwnPtr.h>

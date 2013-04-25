@@ -33,11 +33,11 @@
 #ifndef InputType_h
 #define InputType_h
 
-#include "UseCounter.h"
 #include "HTMLTextFormControlElement.h"
 #include "StepRange.h"
-#include <wtf/Forward.h>
+#include "core/page/UseCounter.h"
 #include <wtf/FastAllocBase.h>
+#include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

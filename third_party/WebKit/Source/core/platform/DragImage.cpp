@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/DragImage.h"
 
-#include "DragController.h"
-#include "Frame.h"
+#include "core/page/DragController.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
     

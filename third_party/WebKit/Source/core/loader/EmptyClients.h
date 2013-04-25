@@ -29,16 +29,16 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
-#include "ChromeClient.h"
-#include "ContextMenuClient.h"
 #include "DeviceMotionClient.h"
 #include "DeviceOrientationClient.h"
-#include "DragClient.h"
-#include "EditorClient.h"
-#include "FocusDirection.h"
 #include "InspectorClient.h"
-#include "Page.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/ContextMenuClient.h"
+#include "core/page/DragClient.h"
+#include "core/page/EditorClient.h"
+#include "core/page/FocusDirection.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/text/TextCheckerClient.h"

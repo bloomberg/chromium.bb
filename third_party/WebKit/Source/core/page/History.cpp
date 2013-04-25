@@ -24,18 +24,18 @@
  */
 
 #include "config.h"
-#include "History.h"
+#include "core/page/History.h"
 
 #include "BackForwardController.h"
 #include "Document.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "HistoryItem.h"
-#include "Page.h"
-#include "SecurityOrigin.h"
 #include "SerializedScriptValue.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

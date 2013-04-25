@@ -29,12 +29,8 @@
 
 #include "Document.h"
 #include "DocumentMarkerController.h"
-#include "EditorClient.h"
 #include "Event.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
 #include "TextEvent.h"
 #include "core/editing/DictationAlternative.h"
 #include "core/editing/EditCommand.h"
@@ -46,6 +42,10 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/editing/markup.h"
+#include "core/page/EditorClient.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/text/TextCheckerClient.h"
 

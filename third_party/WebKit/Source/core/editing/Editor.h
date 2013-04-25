@@ -28,7 +28,6 @@
 
 #include "ClipboardAccessPolicy.h"
 #include "DocumentMarker.h"
-#include "FrameDestructionObserver.h"
 #include "core/editing/DictationAlternative.h"
 #include "core/editing/EditAction.h"
 #include "core/editing/EditingBehavior.h"
@@ -39,6 +38,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/WritingDirection.h"
+#include "core/page/FrameDestructionObserver.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/text/TextChecking.h"
 

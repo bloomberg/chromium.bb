@@ -33,10 +33,10 @@
 #include "core/loader/archive/MHTMLArchive.h"
 
 #include "Document.h"
-#include "Frame.h"
-#include "Page.h"
-#include "PageSerializer.h"
 #include "core/loader/archive/MHTMLParser.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/PageSerializer.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/SharedBuffer.h"

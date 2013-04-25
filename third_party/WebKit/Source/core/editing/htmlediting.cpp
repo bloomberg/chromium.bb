@@ -28,7 +28,6 @@
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Frame.h"
 #include "HTMLBRElement.h"
 #include "HTMLDivElement.h"
 #include "HTMLElementFactory.h"
@@ -51,6 +50,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/editing/VisibleUnits.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>

@@ -33,9 +33,9 @@
 #include "CSSSegmentedFontFace.h"
 #include "Dictionary.h"
 #include "Document.h"
-#include "FrameView.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
+#include "core/page/FrameView.h"
 
 namespace WebCore {
 

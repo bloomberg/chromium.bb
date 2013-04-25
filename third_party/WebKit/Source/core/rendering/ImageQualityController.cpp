@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/rendering/ImageQualityController.h"
 
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 

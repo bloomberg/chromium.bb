@@ -28,13 +28,13 @@
 
 #include "Document.h"
 #include "DocumentFragment.h"
-#include "Frame.h"
 #include "core/editing/AlternativeTextController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/InsertTextCommand.h"
 #include "core/editing/SetSelectionCommand.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/markup.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

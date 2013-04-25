@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "PerformanceTiming.h"
+#include "core/page/PerformanceTiming.h"
 
 #include "Document.h"
 #include "DocumentTiming.h"
-#include "Frame.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/Frame.h"
 #include "core/platform/network/ResourceLoadTiming.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>

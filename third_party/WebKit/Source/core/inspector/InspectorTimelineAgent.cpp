@@ -32,8 +32,6 @@
 #include "InspectorTimelineAgent.h"
 
 #include "Event.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "IdentifiersFactory.h"
 #include "InspectorClient.h"
 #include "InspectorCounters.h"
@@ -45,6 +43,8 @@
 #include "InstrumentingAgents.h"
 #include "TimelineRecordFactory.h"
 #include "TimelineTraceEventProcessor.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/network/ResourceRequest.h"

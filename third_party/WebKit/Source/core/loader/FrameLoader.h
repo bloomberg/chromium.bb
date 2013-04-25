@@ -33,7 +33,6 @@
 #define FrameLoader_h
 
 #include "IconURL.h"
-#include "LayoutMilestones.h"
 #include "SecurityContext.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
@@ -43,6 +42,7 @@
 #include "core/loader/ResourceLoadNotifier.h"
 #include "core/loader/SubframeLoader.h"
 #include "core/loader/cache/CachePolicy.h"
+#include "core/page/LayoutMilestones.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <wtf/Forward.h>

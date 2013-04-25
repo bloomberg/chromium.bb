@@ -29,9 +29,7 @@
 
 #include "WorkerMessagingProxy.h"
 
-#include "ContentSecurityPolicy.h"
 #include "CrossThreadTask.h"
-#include "DOMWindow.h"
 #include "DedicatedWorkerContext.h"
 #include "DedicatedWorkerThread.h"
 #include "Document.h"
@@ -39,12 +37,14 @@
 #include "ExceptionCode.h"
 #include "InspectorInstrumentation.h"
 #include "MessageEvent.h"
-#include "PageGroup.h"
 #include "ScriptCallStack.h"
 #include "ScriptExecutionContext.h"
 #include "Worker.h"
 #include "WorkerDebuggerAgent.h"
 #include "WorkerInspectorController.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/PageGroup.h"
 #include "core/platform/NotImplemented.h"
 #include <wtf/MainThread.h>
 

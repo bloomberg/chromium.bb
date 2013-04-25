@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebSecurityOrigin.h"
 
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>

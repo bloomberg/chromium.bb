@@ -23,9 +23,9 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourcePattern.h"
 
-#include "FrameView.h"
 #include "PatternAttributes.h"
 #include "SVGFitToViewBox.h"
+#include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderSupport.h"

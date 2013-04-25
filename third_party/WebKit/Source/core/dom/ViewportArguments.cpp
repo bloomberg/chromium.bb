@@ -28,13 +28,13 @@
 #include "config.h"
 #include "ViewportArguments.h"
 
-#include "Chrome.h"
-#include "Console.h"
-#include "DOMWindow.h"
 #include "Document.h"
-#include "Frame.h"
-#include "Page.h"
 #include "ScriptableDocumentParser.h"
+#include "core/page/Chrome.h"
+#include "core/page/Console.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/IntSize.h"
 #include <wtf/text/WTFString.h>
 

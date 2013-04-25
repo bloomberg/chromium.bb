@@ -18,7 +18,7 @@
 */
 
 #include "config.h"
-#include "MouseEventWithHitTestResults.h"
+#include "core/page/MouseEventWithHitTestResults.h"
 
 #include "Element.h"
 #include "Node.h"

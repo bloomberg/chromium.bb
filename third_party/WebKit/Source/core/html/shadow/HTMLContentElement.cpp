@@ -32,8 +32,8 @@
 #include "ContentSelectorQuery.h"
 #include "HTMLNames.h"
 #include "QualifiedName.h"
-#include "RuntimeEnabledFeatures.h"
 #include "ShadowRoot.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

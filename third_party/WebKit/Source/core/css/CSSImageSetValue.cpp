@@ -31,12 +31,12 @@
 #include "CSSImageValue.h"
 #include "CSSPrimitiveValue.h"
 #include "Document.h"
-#include "Page.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
+#include "core/page/Page.h"
 #include "core/rendering/style/StyleCachedImageSet.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include <wtf/MemoryInstrumentationVector.h>

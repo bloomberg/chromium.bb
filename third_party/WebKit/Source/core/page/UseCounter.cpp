@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "UseCounter.h"
+#include "core/page/UseCounter.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
-#include "Page.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Page.h"
 #include "core/platform/HistogramSupport.h"
 
 namespace WebCore {

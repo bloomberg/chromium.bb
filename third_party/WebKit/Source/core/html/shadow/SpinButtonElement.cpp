@@ -27,14 +27,14 @@
 #include "config.h"
 #include "SpinButtonElement.h"
 
-#include "Chrome.h"
-#include "EventHandler.h"
 #include "EventNames.h"
-#include "Frame.h"
 #include "HTMLNames.h"
 #include "MouseEvent.h"
-#include "Page.h"
 #include "WheelEvent.h"
+#include "core/page/Chrome.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/RenderBox.h"
 

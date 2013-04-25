@@ -29,14 +29,14 @@
 #include "config.h"
 #include "core/loader/MixedContentChecker.h"
 
-#include "Console.h"
-#include "DOMWindow.h"
 #include "Document.h"
-#include "Frame.h"
-#include "SecurityOrigin.h"
-#include "Settings.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/Console.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/Settings.h"
 #include "core/platform/SchemeRegistry.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>

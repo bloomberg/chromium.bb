@@ -29,7 +29,6 @@
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Frame.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "HTMLTextFormControlElement.h"
@@ -39,6 +38,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/Frame.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/TextBoundaries.h"
 #include "core/platform/text/TextBreakIterator.h"

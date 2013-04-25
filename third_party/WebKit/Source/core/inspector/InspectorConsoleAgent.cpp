@@ -26,9 +26,7 @@
 #include "config.h"
 #include "InspectorConsoleAgent.h"
 
-#include "Console.h"
 #include "ConsoleMessage.h"
-#include "DOMWindow.h"
 #include "InjectedScriptHost.h"
 #include "InjectedScriptManager.h"
 #include "InspectorFrontend.h"
@@ -41,6 +39,8 @@
 #include "ScriptController.h"
 #include "ScriptObject.h"
 #include "ScriptProfiler.h"
+#include "core/page/Console.h"
+#include "core/page/DOMWindow.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>

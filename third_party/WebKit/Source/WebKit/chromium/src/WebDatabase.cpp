@@ -34,8 +34,8 @@
 #include "DatabaseBackendBase.h"
 #include "DatabaseManager.h"
 #include "QuotaTracker.h"
-#include "SecurityOrigin.h"
 #include "WebDatabaseObserver.h"
+#include "core/page/SecurityOrigin.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

@@ -23,10 +23,10 @@
 #include "HTMLAreaElement.h"
 
 #include "Attribute.h"
-#include "Frame.h"
 #include "HTMLImageElement.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
+#include "core/page/Frame.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/HitTestResult.h"

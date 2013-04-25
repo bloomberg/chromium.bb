@@ -29,7 +29,6 @@
 
 #include "DOMStringList.h"
 #include "Document.h"
-#include "Frame.h"
 #include "FrameTestHelpers.h"
 #include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendInterface.h"
@@ -41,6 +40,7 @@
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/page/Frame.h"
 
 #include <gtest/gtest.h>
 

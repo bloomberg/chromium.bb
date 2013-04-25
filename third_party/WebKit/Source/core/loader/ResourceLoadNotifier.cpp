@@ -31,14 +31,14 @@
 #include "config.h"
 #include "core/loader/ResourceLoadNotifier.h"
 
-#include "Frame.h"
 #include "InspectorInstrumentation.h"
-#include "Page.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/loader/ResourceLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 

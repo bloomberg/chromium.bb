@@ -448,8 +448,8 @@ sub generateInternalSettingsCppFile($)
 #include "config.h"
 #include "InternalSettingsGenerated.h"
 
-#include "Page.h"
-#include "Settings.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #define DateTimeChooserImpl_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "PagePopupClient.h"
+#include "core/page/PagePopupClient.h"
 #include "core/platform/DateTimeChooser.h"
 
 namespace WebCore {

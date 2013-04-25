@@ -35,7 +35,6 @@
 #include "CharacterData.h"
 #include "Document.h"
 #include "EventListenerMap.h"
-#include "Frame.h"
 #include "HeapGraphSerializer.h"
 #include "InspectorClient.h"
 #include "InspectorDOMStorageAgent.h"
@@ -46,11 +45,12 @@
 #include "MemoryInstrumentationImpl.h"
 #include "Node.h"
 #include "NodeTraversal.h"
-#include "Page.h"
 #include "ScriptGCEvent.h"
 #include "ScriptProfiler.h"
 #include "StyledElement.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include <wtf/ArrayBufferView.h>
 #include <wtf/HashSet.h>

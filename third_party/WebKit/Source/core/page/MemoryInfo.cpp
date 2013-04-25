@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "MemoryInfo.h"
+#include "core/page/MemoryInfo.h"
 
-#include "Frame.h"
-#include "ScriptGCEvent.h"
-#include "Settings.h"
 #include <limits>
+#include "ScriptGCEvent.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MainThread.h>
 

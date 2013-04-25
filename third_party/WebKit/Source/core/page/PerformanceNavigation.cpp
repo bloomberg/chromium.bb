@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "PerformanceNavigation.h"
+#include "core/page/PerformanceNavigation.h"
 
-#include "Frame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

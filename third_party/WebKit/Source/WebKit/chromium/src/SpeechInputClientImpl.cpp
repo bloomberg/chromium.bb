@@ -31,11 +31,11 @@
 #include "config.h"
 #include "SpeechInputClientImpl.h"
 
-#include "SecurityOrigin.h"
-#include "SpeechInputListener.h"
 #include "WebSecurityOrigin.h"
 #include "WebSpeechInputController.h"
 #include "WebViewClient.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/SpeechInputListener.h"
 #include <public/WebString.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>

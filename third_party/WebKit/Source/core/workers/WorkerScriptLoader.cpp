@@ -31,11 +31,11 @@
 
 #include "CrossThreadTask.h"
 #include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
 #include "WorkerContext.h"
 #include "WorkerScriptLoaderClient.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/WorkerThreadableLoader.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/OwnPtr.h>

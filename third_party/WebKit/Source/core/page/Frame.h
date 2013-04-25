@@ -28,10 +28,10 @@
 #ifndef Frame_h
 #define Frame_h
 
-#include "AdjustViewSizeOrNot.h"
-#include "FrameTree.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/NavigationScheduler.h"
+#include "core/page/AdjustViewSizeOrNot.h"
+#include "core/page/FrameTree.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/IntRect.h"

@@ -26,14 +26,14 @@
  */
 
 #include "config.h"
-#include "AutoscrollController.h"
+#include "core/page/AutoscrollController.h"
 
-#include "Chrome.h"
-#include "ChromeClient.h"
-#include "EventHandler.h"
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/ScrollView.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBox.h"

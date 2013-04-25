@@ -28,10 +28,10 @@
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "Document.h"
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
 #include "PluginViewBase.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarThemeComposite.h"

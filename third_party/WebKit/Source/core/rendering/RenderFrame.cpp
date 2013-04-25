@@ -24,8 +24,8 @@
 #include "config.h"
 #include "core/rendering/RenderFrame.h"
 
-#include "FrameView.h"
 #include "HTMLFrameElement.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {

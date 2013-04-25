@@ -21,7 +21,7 @@
 #define FrameNetworkingContext_h
 
 #include "Document.h"
-#include "Frame.h"
+#include "core/page/Frame.h"
 #include "core/platform/ReferrerPolicy.h"
 #include "core/platform/network/NetworkingContext.h"
 

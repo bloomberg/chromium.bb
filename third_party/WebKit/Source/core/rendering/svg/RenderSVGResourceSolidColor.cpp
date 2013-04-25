@@ -22,9 +22,9 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"
 
-#include "Frame.h"
-#include "FrameView.h"
 #include "PlatformContextSkia.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/svg/RenderSVGShape.h"

@@ -23,11 +23,11 @@
 
 #include "BindingState.h"
 #include "ContextFeatures.h"
-#include "Frame.h"
-#include "RuntimeEnabledFeatures.h"
 #include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
+#include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(BINDING_INTEGRITY)

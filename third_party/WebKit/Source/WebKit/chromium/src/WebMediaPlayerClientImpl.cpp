@@ -5,7 +5,6 @@
 #include "config.h"
 #include "WebMediaPlayerClientImpl.h"
 
-#include "Frame.h"
 #include "HTMLMediaElement.h"
 #include "PlatformContextSkia.h"
 #include "TimeRanges.h"
@@ -17,6 +16,7 @@
 #include "WebMediaPlayer.h"
 #include "WebMediaSourceImpl.h"
 #include "WebViewImpl.h"
+#include "core/page/Frame.h"
 #include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/audio/AudioBus.h"

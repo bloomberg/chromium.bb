@@ -25,11 +25,11 @@
  */
 
 #include "config.h"
-#include "DeviceController.h"
+#include "core/page/DeviceController.h"
 
-#include "DeviceClient.h"
 #include "Document.h"
-#include "Page.h"
+#include "core/page/DeviceClient.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 

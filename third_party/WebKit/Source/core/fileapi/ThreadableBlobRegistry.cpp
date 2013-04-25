@@ -33,7 +33,7 @@
 #include "ThreadableBlobRegistry.h"
 
 #include "BlobURL.h"
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/BlobRegistry.h"
 #include <wtf/HashMap.h>

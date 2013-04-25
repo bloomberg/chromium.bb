@@ -27,10 +27,10 @@
 #include "config.h"
 #include "SecurityContext.h"
 
-#include "ContentSecurityPolicy.h"
 #include "HTMLParserIdioms.h"
-#include "SecurityOrigin.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

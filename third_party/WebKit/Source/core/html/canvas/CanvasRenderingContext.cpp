@@ -30,8 +30,8 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLVideoElement.h"
-#include "SecurityOrigin.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 
 namespace WebCore {

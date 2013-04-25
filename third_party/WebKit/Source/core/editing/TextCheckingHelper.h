@@ -21,8 +21,8 @@
 #ifndef TextCheckingHelper_h
 #define TextCheckingHelper_h
 
-#include "EditorClient.h"
 #include "ExceptionCode.h"
+#include "core/page/EditorClient.h"
 #include "core/platform/text/TextChecking.h"
 #include <wtf/text/WTFString.h>
 

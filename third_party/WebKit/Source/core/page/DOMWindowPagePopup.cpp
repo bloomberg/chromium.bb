@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "DOMWindowPagePopup.h"
+#include "core/page/DOMWindowPagePopup.h"
 
 #if ENABLE(PAGE_POPUP)
-#include "DOMWindow.h"
-#include "PagePopupController.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/PagePopupController.h"
 
 namespace WebCore {
 

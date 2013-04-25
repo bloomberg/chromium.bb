@@ -33,14 +33,11 @@
 #include "core/loader/NavigationScheduler.h"
 
 #include "BackForwardController.h"
-#include "DOMWindow.h"
 #include "Event.h"
-#include "Frame.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
-#include "Page.h"
 #include "ScriptController.h"
 #include "UserGestureIndicator.h"
 #include "core/loader/DocumentLoader.h"
@@ -49,6 +46,9 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

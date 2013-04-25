@@ -30,20 +30,20 @@
  */
 
 #include "config.h"
-#include "Performance.h"
+#include "core/page/Performance.h"
 
 #include "Document.h"
-#include "MemoryInfo.h"
-#include "PerformanceEntry.h"
-#include "PerformanceNavigation.h"
-#include "PerformanceResourceTiming.h"
-#include "PerformanceTiming.h"
-#include "PerformanceUserTiming.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/MemoryInfo.h"
+#include "core/page/PerformanceEntry.h"
+#include "core/page/PerformanceNavigation.h"
+#include "core/page/PerformanceResourceTiming.h"
+#include "core/page/PerformanceTiming.h"
+#include "core/page/PerformanceUserTiming.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 
-#include "Frame.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

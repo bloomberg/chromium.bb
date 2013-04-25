@@ -25,7 +25,6 @@
 
 #include "config.h"
 #include "Document.h"
-#include "Frame.h"
 #include "FrameTestHelpers.h"
 #include "IDBBindingUtilities.h"
 #include "IDBKey.h"
@@ -37,6 +36,7 @@
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/page/Frame.h"
 
 #include <gtest/gtest.h>
 #include <wtf/Vector.h>

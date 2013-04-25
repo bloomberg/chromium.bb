@@ -33,7 +33,6 @@
 
 #include "ConsoleMessage.h"
 
-#include "Console.h"
 #include "IdentifiersFactory.h"
 #include "InjectedScript.h"
 #include "InjectedScriptManager.h"
@@ -44,6 +43,7 @@
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "ScriptValue.h"
+#include "core/page/Console.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

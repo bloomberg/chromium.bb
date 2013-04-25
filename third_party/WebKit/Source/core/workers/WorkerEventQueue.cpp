@@ -27,11 +27,11 @@
 #include "config.h"
 #include "WorkerEventQueue.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventNames.h"
 #include "ScriptExecutionContext.h"
+#include "core/page/DOMWindow.h"
 
 namespace WebCore {
 

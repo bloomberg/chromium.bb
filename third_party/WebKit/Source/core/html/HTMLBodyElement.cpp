@@ -29,14 +29,14 @@
 #include "CSSParser.h"
 #include "CSSValueKeywords.h"
 #include "EventNames.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "Page.h"
 #include "ScriptEventListener.h"
 #include "StylePropertySet.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 

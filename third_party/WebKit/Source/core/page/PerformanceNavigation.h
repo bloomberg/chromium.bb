@@ -31,7 +31,7 @@
 #ifndef PerformanceNavigation_h
 #define PerformanceNavigation_h
 
-#include "DOMWindowProperty.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

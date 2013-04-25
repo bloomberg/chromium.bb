@@ -32,10 +32,10 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

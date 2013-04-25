@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "PageGroup.h"
+#include "core/page/PageGroup.h"
 
-#include "CaptionUserPreferences.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
-#include "Frame.h"
-#include "GroupSettings.h"
-#include "Page.h"
-#include "Settings.h"
+#include "core/page/CaptionUserPreferences.h"
+#include "core/page/Frame.h"
+#include "core/page/GroupSettings.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/storage/StorageNamespace.h"
 
 namespace WebCore {

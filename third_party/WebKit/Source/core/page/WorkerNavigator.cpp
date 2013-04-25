@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "WorkerNavigator.h"
+#include "core/page/WorkerNavigator.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #ifndef PerformanceMeasure_h
 #define PerformanceMeasure_h
 
-#include "PerformanceEntry.h"
+#include "core/page/PerformanceEntry.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

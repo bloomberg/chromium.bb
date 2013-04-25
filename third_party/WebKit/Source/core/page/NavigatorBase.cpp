@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "NavigatorBase.h"
+#include "core/page/NavigatorBase.h"
 
 #include "core/platform/network/NetworkStateNotifier.h"
 #include <wtf/text/WTFString.h>

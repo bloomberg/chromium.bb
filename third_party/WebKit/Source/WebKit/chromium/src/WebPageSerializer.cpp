@@ -32,12 +32,10 @@
 #include "WebPageSerializer.h"
 
 #include "Element.h"
-#include "Frame.h"
 #include "HTMLAllCollection.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "PageSerializer.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebPageSerializerClient.h"
@@ -46,6 +44,8 @@
 #include "WebViewImpl.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/archive/MHTMLArchive.h"
+#include "core/page/Frame.h"
+#include "core/page/PageSerializer.h"
 #include "core/platform/KURL.h"
 #include <public/WebCString.h>
 #include <public/WebString.h>

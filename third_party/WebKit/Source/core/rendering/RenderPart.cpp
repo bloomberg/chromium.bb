@@ -25,10 +25,10 @@
 #include "config.h"
 #include "core/rendering/RenderPart.h"
 
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLFrameElementBase.h"
 #include "PluginViewBase.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"

@@ -27,7 +27,7 @@
 
 #if ENABLE(INPUT_TYPE_COLOR) && ENABLE(PAGE_POPUP)
 #include "ColorChooserUIController.h"
-#include "PagePopupClient.h"
+#include "core/page/PagePopupClient.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

@@ -26,19 +26,19 @@
 #define InspectorCSSAgent_h
 
 #include "CSSSelector.h"
-#include "ContentSecurityPolicy.h"
 #include "InspectorBaseAgent.h"
 #include "InspectorDOMAgent.h"
 #include "InspectorStyleSheet.h"
 #include "InspectorValues.h"
 #include "SecurityContext.h"
+#include "core/page/ContentSecurityPolicy.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

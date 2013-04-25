@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "SpeechInput.h"
+#include "core/page/SpeechInput.h"
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "SecurityOrigin.h"
-#include "SpeechInputClient.h"
-#include "SpeechInputListener.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/SpeechInputClient.h"
+#include "core/page/SpeechInputListener.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

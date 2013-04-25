@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "SuspendableTimer.h"
+#include "core/page/SuspendableTimer.h"
 
 #include "ScriptExecutionContext.h"
 

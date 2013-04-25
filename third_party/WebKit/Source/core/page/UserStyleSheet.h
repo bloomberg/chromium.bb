@@ -26,8 +26,8 @@
 #ifndef UserStyleSheet_h
 #define UserStyleSheet_h
 
-#include "UserContentTypes.h"
-#include "UserStyleSheetTypes.h"
+#include "core/page/UserContentTypes.h"
+#include "core/page/UserStyleSheetTypes.h"
 #include "core/platform/KURL.h"
 #include <wtf/Vector.h>
 

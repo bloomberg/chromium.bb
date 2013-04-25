@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "DOMTimer.h"
+#include "core/page/DOMTimer.h"
 
 #include "InspectorInstrumentation.h"
 #include "ScheduledAction.h"

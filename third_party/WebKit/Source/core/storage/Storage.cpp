@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/storage/Storage.h"
 
-#include "Frame.h"
-#include "Page.h"
-#include "Settings.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

@@ -28,8 +28,8 @@
 #include "NonCompositedContentHost.h"
 
 #include "PlatformContextSkia.h"
-#include "Settings.h"
 #include "WebViewImpl.h"
+#include "core/page/Settings.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsLayer.h"

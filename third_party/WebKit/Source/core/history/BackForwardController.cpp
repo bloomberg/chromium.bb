@@ -28,7 +28,7 @@
 
 #include "BackForwardListImpl.h"
 #include "HistoryItem.h"
-#include "Page.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 

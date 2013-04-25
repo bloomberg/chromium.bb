@@ -32,7 +32,6 @@
 
 #include "AbstractWorker.h"
 
-#include "ContentSecurityPolicy.h"
 #include "ErrorEvent.h"
 #include "Event.h"
 #include "EventException.h"
@@ -40,7 +39,8 @@
 #include "ExceptionCode.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/SecurityOrigin.h"
 
 namespace WebCore {
 

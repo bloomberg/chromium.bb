@@ -28,8 +28,8 @@
 #include "PopStateEvent.h"
 
 #include "EventNames.h"
-#include "History.h"
 #include "SerializedScriptValue.h"
+#include "core/page/History.h"
 
 namespace WebCore {
 

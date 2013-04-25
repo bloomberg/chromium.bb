@@ -28,11 +28,11 @@
 #include "config.h"
 #include "core/loader/EmptyClients.h"
 
-#include "Frame.h"
 #include "HTMLFormElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameNetworkingContext.h"
+#include "core/page/Frame.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
 

@@ -20,7 +20,7 @@
 #include "DOMPlugin.h"
 
 #include "PluginData.h"
-#include "Frame.h"
+#include "core/page/Frame.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

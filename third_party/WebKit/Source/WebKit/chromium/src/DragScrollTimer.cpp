@@ -31,7 +31,7 @@
 #include "config.h"
 #include "DragScrollTimer.h"
 
-#include "FrameView.h"
+#include "core/page/FrameView.h"
 
 using namespace WebCore;
 

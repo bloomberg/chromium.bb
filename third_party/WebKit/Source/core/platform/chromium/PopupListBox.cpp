@@ -33,7 +33,7 @@
 #include <ctype.h>
 #include <limits>
 #include "CSSValueKeywords.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/PlatformMouseEvent.h"

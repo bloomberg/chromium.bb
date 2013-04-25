@@ -26,13 +26,13 @@
 #include "config.h"
 #include "HTMLTrackElement.h"
 
-#include "ContentSecurityPolicy.h"
 #include "Event.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "ScriptCallStack.h"
 #include "ScriptEventListener.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/Logging.h"
 
 using namespace std;

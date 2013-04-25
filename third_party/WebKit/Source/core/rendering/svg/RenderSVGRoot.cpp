@@ -26,14 +26,14 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGRoot.h"
 
-#include "Chrome.h"
-#include "ChromeClient.h"
-#include "Frame.h"
-#include "Page.h"
 #include "SVGLength.h"
 #include "SVGSVGElement.h"
 #include "SVGStyledElement.h"
 #include "SVGViewSpec.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/HitTestResult.h"

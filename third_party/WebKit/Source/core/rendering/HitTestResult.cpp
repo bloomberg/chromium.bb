@@ -23,8 +23,6 @@
 #include "core/rendering/HitTestResult.h"
 
 #include "DocumentMarkerController.h"
-#include "Frame.h"
-#include "FrameTree.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
@@ -36,6 +34,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameTree.h"
 #include "core/platform/Scrollbar.h"
 #include "core/rendering/HitTestLocation.h"
 #include "core/rendering/RenderBlock.h"

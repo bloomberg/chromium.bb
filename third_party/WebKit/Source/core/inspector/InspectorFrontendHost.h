@@ -29,8 +29,8 @@
 #ifndef InspectorFrontendHost_h
 #define InspectorFrontendHost_h
 
-#include "ConsoleTypes.h"
-#include "ContextMenuProvider.h"
+#include "core/page/ConsoleTypes.h"
+#include "core/page/ContextMenuProvider.h"
 #include "core/platform/ContextMenu.h"
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

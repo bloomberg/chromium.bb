@@ -27,7 +27,6 @@
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
 #include "ImageData.h"
-#include "Page.h"
 #include "SVGElement.h"
 #include "SVGFilter.h"
 #include "SVGFilterElement.h"
@@ -35,7 +34,8 @@
 #include "SVGNames.h"
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
-#include "Settings.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"

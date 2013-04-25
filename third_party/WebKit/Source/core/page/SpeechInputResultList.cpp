@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "SpeechInputResultList.h"
+#include "core/page/SpeechInputResultList.h"
 
 #if ENABLE(INPUT_SPEECH)
 

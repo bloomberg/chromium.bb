@@ -32,12 +32,12 @@
 #include "WebPasswordFormData.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/Frame.h"
 #include "core/platform/KURL.h"
 
 #include "DOMUtilitiesPrivate.h"

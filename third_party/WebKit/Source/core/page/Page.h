@@ -22,12 +22,12 @@
 #define Page_h
 
 #include "BackForwardList.h"
-#include "LayoutMilestones.h"
-#include "PageVisibilityState.h"
-#include "UseCounter.h"
 #include "ViewportArguments.h"
 #include "core/editing/FindOptions.h"
 #include "core/loader/FrameLoaderTypes.h"
+#include "core/page/LayoutMilestones.h"
+#include "core/page/PageVisibilityState.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/Supplementable.h"
 #include "core/platform/graphics/LayoutRect.h"

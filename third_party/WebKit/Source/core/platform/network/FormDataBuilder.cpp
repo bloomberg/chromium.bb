@@ -26,8 +26,8 @@
 #include "core/platform/network/FormDataBuilder.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/Frame.h"
 #include "core/platform/text/TextEncoding.h"
 
 #include <limits>

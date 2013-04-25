@@ -32,9 +32,9 @@
 #ifndef ChromeClientImpl_h
 #define ChromeClientImpl_h
 
-#include "ChromeClient.h"
 #include "NavigatorContentUtilsClient.h"
 #include "WebNavigationPolicy.h"
+#include "core/page/ChromeClient.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/SearchPopupMenu.h"
 #include <public/WebColor.h>

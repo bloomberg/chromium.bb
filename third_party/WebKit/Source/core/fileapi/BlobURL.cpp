@@ -32,7 +32,7 @@
 
 #include "BlobURL.h"
 
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "core/platform/UUID.h"
 #include <wtf/text/WTFString.h>

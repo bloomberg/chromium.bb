@@ -30,8 +30,8 @@
 #ifndef Screen_h
 #define Screen_h
 
-#include "DOMWindowProperty.h"
 #include "ScriptWrappable.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

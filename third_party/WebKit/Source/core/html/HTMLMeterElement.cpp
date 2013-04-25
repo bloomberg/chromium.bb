@@ -31,8 +31,8 @@
 #include "HTMLParserIdioms.h"
 #include "MeterShadowElement.h"
 #include "NodeRenderingContext.h"
-#include "Page.h"
 #include "ShadowRoot.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>

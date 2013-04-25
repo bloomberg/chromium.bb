@@ -29,11 +29,11 @@
 #include "config.h"
 #include "VisitedLinkState.h"
 
-#include "Frame.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLNames.h"
 #include "NodeTraversal.h"
-#include "Page.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/VisitedLinks.h"
 
 namespace WebCore {

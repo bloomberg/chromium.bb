@@ -28,9 +28,9 @@
 
 #include "EventDispatcher.h"
 #include "EventNames.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "MouseRelatedEvent.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/PlatformEvent.h"
 #include "core/platform/PlatformGestureEvent.h"
 

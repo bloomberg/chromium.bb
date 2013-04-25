@@ -27,14 +27,14 @@
 #include "config.h"
 #include "MessagePort.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "EventException.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "MessageEvent.h"
-#include "SecurityOrigin.h"
 #include "WorkerContext.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/Timer.h"
 #include <wtf/text/AtomicString.h>
 

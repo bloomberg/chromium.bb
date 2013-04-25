@@ -27,24 +27,24 @@
  */
 
 #include "config.h"
-#include "PageConsole.h"
+#include "core/page/PageConsole.h"
 
 #include <stdio.h>
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "ConsoleAPITypes.h"
-#include "ConsoleTypes.h"
 #include "Document.h"
-#include "Frame.h"
 #include "InspectorConsoleInstrumentation.h"
 #include "InspectorController.h"
-#include "Page.h"
 #include "ScriptArguments.h"
 #include "ScriptCallStack.h"
 #include "ScriptCallStackFactory.h"
 #include "ScriptValue.h"
 #include "ScriptableDocumentParser.h"
-#include "Settings.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/ConsoleTypes.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/UnusedParam.h>

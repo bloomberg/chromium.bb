@@ -32,13 +32,13 @@
 #include "WebPopupMenuImpl.h"
 
 #include <skia/ext/platform_canvas.h>
-#include "FrameView.h"
 #include "SkiaUtils.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebRange.h"
 #include "WebViewClient.h"
 #include "WebWidgetClient.h"
+#include "core/page/FrameView.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/PlatformGestureEvent.h"

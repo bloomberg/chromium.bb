@@ -30,12 +30,12 @@
 #if ENABLE(SVG)
 #include "SVGImage.h"
 
-#include "FrameView.h"
 #include "SVGDocument.h"
 #include "SVGImageChromeClient.h"
 #include "SVGSVGElement.h"
-#include "Settings.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/FrameView.h"
+#include "core/page/Settings.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"

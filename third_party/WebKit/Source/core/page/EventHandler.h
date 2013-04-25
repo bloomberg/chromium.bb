@@ -26,11 +26,11 @@
 #ifndef EventHandler_h
 #define EventHandler_h
 
-#include "DragActions.h"
-#include "FocusDirection.h"
 #include "TextEventInputType.h"
 #include "UserGestureIndicator.h"
 #include "core/editing/TextGranularity.h"
+#include "core/page/DragActions.h"
+#include "core/page/FocusDirection.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformWheelEvent.h"

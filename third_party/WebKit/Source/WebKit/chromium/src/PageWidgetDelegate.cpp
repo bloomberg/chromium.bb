@@ -31,12 +31,12 @@
 #include "config.h"
 #include "PageWidgetDelegate.h"
 
-#include "EventHandler.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "PageOverlayList.h"
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <wtf/CurrentTime.h>
 

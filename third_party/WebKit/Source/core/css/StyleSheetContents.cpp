@@ -27,12 +27,12 @@
 #include "Document.h"
 #include "MediaList.h"
 #include "Node.h"
-#include "SecurityOrigin.h"
 #include "StylePropertySet.h"
 #include "StyleRule.h"
 #include "StyleRuleImport.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/Deque.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

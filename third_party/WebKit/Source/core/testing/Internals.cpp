@@ -28,25 +28,18 @@
 #include "Internals.h"
 
 #include "BackForwardController.h"
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "ComposedShadowTreeWalker.h"
 #include "ContentDistributor.h"
-#include "DOMPoint.h"
 #include "DOMStringList.h"
-#include "DOMWindow.h"
 #include "Document.h"
 #include "DocumentMarker.h"
 #include "DocumentMarkerController.h"
 #include "Element.h"
 #include "ElementShadow.h"
-#include "EventHandler.h"
 #include "ExceptionCode.h"
 #include "FormController.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLContentElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLMediaElement.h"
@@ -67,14 +60,10 @@
 #include "MallocStatistics.h"
 #include "MockPagePopupDriver.h"
 #include "NodeRenderingContext.h"
-#include "Page.h"
-#include "PrintContext.h"
 #include "PseudoElement.h"
 #include "Range.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SelectRuleFeatureSet.h"
 #include "SerializedScriptValue.h"
-#include "Settings.h"
 #include "ShadowRoot.h"
 #include "StyleSheetContents.h"
 #include "TreeScope.h"
@@ -87,6 +76,17 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/MemoryCache.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/DOMPoint.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
+#include "core/page/PrintContext.h"
+#include "core/page/RuntimeEnabledFeatures.h"
+#include "core/page/Settings.h"
 #include "core/page/animation/AnimationController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/Cursor.h"
@@ -108,7 +108,7 @@
 #endif
 
 #if ENABLE(PAGE_POPUP)
-#include "PagePopupController.h"
+#include "core/page/PagePopupController.h"
 #endif
 
 #include "core/platform/graphics/GraphicsLayer.h"
@@ -122,8 +122,8 @@
 #include "MockCDM.h"
 #endif
 
-#include "CaptionUserPreferences.h"
-#include "PageGroup.h"
+#include "core/page/CaptionUserPreferences.h"
+#include "core/page/PageGroup.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 #include "DOMWindowSpeechSynthesis.h"

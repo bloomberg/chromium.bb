@@ -22,7 +22,6 @@
 #include "StyleElement.h"
 
 #include "Attribute.h"
-#include "ContentSecurityPolicy.h"
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "Element.h"
@@ -30,6 +29,7 @@
 #include "MediaQueryEvaluator.h"
 #include "ScriptableDocumentParser.h"
 #include "StyleSheetContents.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/TextPosition.h>
 

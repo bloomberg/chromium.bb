@@ -27,9 +27,9 @@
 
 #include "CSSHelper.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
+#include "core/page/Frame.h"
 #include "core/platform/graphics/FontMetrics.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderView.h"

@@ -27,10 +27,10 @@
 #include "core/loader/DocumentLoadTiming.h"
 
 #include "Document.h"
-#include "Frame.h"
-#include "Page.h"
-#include "SecurityOrigin.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/RefPtr.h>
 

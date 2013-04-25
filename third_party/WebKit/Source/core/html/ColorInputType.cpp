@@ -33,7 +33,6 @@
 #include "ColorInputType.h"
 
 #include "CSSPropertyNames.h"
-#include "Chrome.h"
 #include "ElementShadow.h"
 #include "HTMLDataListElement.h"
 #include "HTMLDivElement.h"
@@ -43,6 +42,7 @@
 #include "MouseEvent.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
+#include "core/page/Chrome.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"

@@ -25,8 +25,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 
-#include "Frame.h"
-#include "FrameView.h"
 #include "SVGClipPathElement.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
@@ -34,6 +32,8 @@
 #include "SVGStyledTransformableElement.h"
 #include "SVGUnitTypes.h"
 #include "SVGUseElement.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"

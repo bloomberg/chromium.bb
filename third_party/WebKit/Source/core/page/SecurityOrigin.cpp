@@ -27,12 +27,12 @@
  */
 
 #include "config.h"
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 
 #include "BlobURL.h"
 #include "Document.h"
-#include "SecurityPolicy.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/page/SecurityPolicy.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/KURL.h"
 #include "core/platform/SchemeRegistry.h"

@@ -33,7 +33,7 @@
 #include "config.h"
 #include "core/platform/network/HTTPParsers.h"
 
-#include "ContentSecurityPolicy.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include <wtf/DateMath.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>

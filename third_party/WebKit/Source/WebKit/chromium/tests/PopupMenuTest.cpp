@@ -32,10 +32,7 @@
 
 #include <gtest/gtest.h>
 #include "Element.h"
-#include "EventHandler.h"
-#include "FrameView.h"
 #include "HTMLSelectElement.h"
-#include "RuntimeEnabledFeatures.h"
 #include "URLTestHelpers.h"
 #include "WebDocument.h"
 #include "WebElement.h"
@@ -49,6 +46,9 @@
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/page/EventHandler.h"
+#include "core/page/FrameView.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"

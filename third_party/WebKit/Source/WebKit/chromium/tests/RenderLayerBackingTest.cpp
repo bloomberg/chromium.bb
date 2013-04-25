@@ -30,7 +30,6 @@
 #include <gtest/gtest.h>
 #include "Document.h"
 #include "FrameTestHelpers.h"
-#include "FrameView.h"
 #include "URLTestHelpers.h"
 #include "WebCompositorInitializer.h"
 #include "WebDocument.h"
@@ -40,6 +39,7 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/page/FrameView.h"
 #include <public/Platform.h>
 #include <public/WebUnitTestSupport.h>
 

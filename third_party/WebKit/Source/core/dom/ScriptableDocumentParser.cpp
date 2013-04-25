@@ -27,9 +27,9 @@
 #include "ScriptableDocumentParser.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "ScriptController.h"
-#include "Settings.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 
 namespace WebCore {
 

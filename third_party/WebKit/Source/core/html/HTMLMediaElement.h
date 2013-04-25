@@ -29,8 +29,8 @@
 #include "ActiveDOMObject.h"
 #include "GenericEventQueue.h"
 #include "HTMLElement.h"
-#include "MediaCanStartListener.h"
 #include "MediaControllerInterface.h"
+#include "core/page/MediaCanStartListener.h"
 #include "core/platform/graphics/MediaPlayer.h"
 
 #include "TextTrack.h"

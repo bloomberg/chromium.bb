@@ -33,9 +33,9 @@
 
 #include "WebFrame.h"
 
-#include "Frame.h"
-#include "FrameDestructionObserver.h"
 #include "FrameLoaderClientImpl.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameDestructionObserver.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <public/WebFileSystemType.h>
 #include <wtf/Compiler.h>

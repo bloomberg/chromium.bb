@@ -27,7 +27,7 @@
 #ifndef DeviceOrientationClient_h
 #define DeviceOrientationClient_h
 
-#include "DeviceClient.h"
+#include "core/page/DeviceClient.h"
 
 namespace WebCore {
 

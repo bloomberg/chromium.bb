@@ -30,7 +30,7 @@
 #include "DeviceMotionClient.h"
 #include "DeviceMotionData.h"
 #include "DeviceMotionEvent.h"
-#include "Page.h"
+#include "core/page/Page.h"
 
 namespace WebCore {
 

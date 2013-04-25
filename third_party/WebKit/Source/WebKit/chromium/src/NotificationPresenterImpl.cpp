@@ -35,7 +35,7 @@
 
 #include "Notification.h"
 #include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 
 #include "WebNotification.h"

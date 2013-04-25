@@ -30,17 +30,17 @@
 
 #include "config.h"
 
-#include "TouchDisambiguation.h"
+#include "core/page/TouchDisambiguation.h"
 
 #include <algorithm>
 #include <cmath>
 #include "Document.h"
 #include "Element.h"
-#include "EventHandler.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLNames.h"
 #include "NodeTraversal.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderBlock.h"
 

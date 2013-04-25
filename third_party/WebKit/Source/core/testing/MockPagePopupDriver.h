@@ -26,8 +26,8 @@
 #ifndef MockPagePopupDriver_h
 #define MockPagePopupDriver_h
 
-#include "PagePopupClient.h"
-#include "PagePopupDriver.h"
+#include "core/page/PagePopupClient.h"
+#include "core/page/PagePopupDriver.h"
 #include <wtf/RefPtr.h>
 
 #if ENABLE(PAGE_POPUP)

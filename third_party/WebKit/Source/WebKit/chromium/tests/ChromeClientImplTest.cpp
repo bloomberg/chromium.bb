@@ -32,12 +32,12 @@
 
 #include <gtest/gtest.h>
 
-#include "Chrome.h"
 #include "WebFrameClient.h"
 #include "WebInputEvent.h"
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/page/Chrome.h"
 
 using namespace WebKit;
 

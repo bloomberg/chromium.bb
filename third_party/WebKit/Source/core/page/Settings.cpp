@@ -24,20 +24,20 @@
  */
 
 #include "config.h"
-#include "Settings.h"
+#include "core/page/Settings.h"
 
 #include <limits>
 #include "BackForwardController.h"
 #include "Database.h"
 #include "Document.h"
-#include "Frame.h"
-#include "FrameTree.h"
-#include "FrameView.h"
 #include "HTMLMediaElement.h"
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
-#include "Page.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameTree.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/network/ResourceHandle.h"
 #include "core/rendering/TextAutosizer.h"
 

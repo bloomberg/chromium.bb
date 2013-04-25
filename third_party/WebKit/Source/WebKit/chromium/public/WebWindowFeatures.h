@@ -36,7 +36,7 @@
 #include "../../../Platform/chromium/public/WebVector.h"
 
 #if WEBKIT_IMPLEMENTATION
-#include "WindowFeatures.h"
+#include "core/page/WindowFeatures.h"
 #endif
 
 namespace WebKit {

@@ -27,7 +27,7 @@
 
 #include "config.h"
 #include "NSScrollerImpDetails.h"
-#include "Settings.h"
+#include "core/page/Settings.h"
 
 namespace WebCore {
 

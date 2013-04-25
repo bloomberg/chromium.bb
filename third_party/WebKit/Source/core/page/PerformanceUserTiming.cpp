@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "PerformanceUserTiming.h"
+#include "core/page/PerformanceUserTiming.h"
 
-#include "Performance.h"
-#include "PerformanceMark.h"
-#include "PerformanceMeasure.h"
+#include "core/page/Performance.h"
+#include "core/page/PerformanceMark.h"
+#include "core/page/PerformanceMeasure.h"
 #include <wtf/dtoa/utils.h>
 #include <wtf/text/WTFString.h>
 

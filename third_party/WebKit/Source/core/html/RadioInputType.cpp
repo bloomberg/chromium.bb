@@ -22,15 +22,15 @@
 #include "config.h"
 #include "RadioInputType.h"
 
-#include "Frame.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "NodeTraversal.h"
-#include "Settings.h"
-#include "SpatialNavigation.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
+#include "core/page/SpatialNavigation.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 

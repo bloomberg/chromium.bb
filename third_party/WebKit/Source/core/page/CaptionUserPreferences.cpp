@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "CaptionUserPreferences.h"
-#include "Page.h"
-#include "PageGroup.h"
-#include "Settings.h"
 #include "TextTrackList.h"
+#include "core/page/CaptionUserPreferences.h"
+#include "core/page/Page.h"
+#include "core/page/PageGroup.h"
+#include "core/page/Settings.h"
 #include <wtf/NonCopyingSort.h>
 
 namespace WebCore {

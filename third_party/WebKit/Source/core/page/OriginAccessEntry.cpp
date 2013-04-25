@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "OriginAccessEntry.h"
+#include "core/page/OriginAccessEntry.h"
 
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 
 namespace WebCore {
     

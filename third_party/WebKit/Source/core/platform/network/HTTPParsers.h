@@ -31,7 +31,7 @@
 #ifndef HTTPParsers_h
 #define HTTPParsers_h
 
-#include "ContentSecurityPolicy.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>
 

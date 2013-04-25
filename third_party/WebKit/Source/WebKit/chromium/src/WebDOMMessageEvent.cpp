@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebDOMMessageEvent.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "MessageEvent.h"
 #include "MessagePort.h"
@@ -40,6 +39,7 @@
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebSerializedScriptValue.h"
+#include "core/page/DOMWindow.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

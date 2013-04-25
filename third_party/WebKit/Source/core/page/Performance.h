@@ -32,13 +32,13 @@
 #ifndef Performance_h
 #define Performance_h
 
-#include "DOMWindowProperty.h"
 #include "EventTarget.h"
-#include "MemoryInfo.h"
-#include "PerformanceEntry.h"
-#include "PerformanceNavigation.h"
-#include "PerformanceTiming.h"
 #include "ScriptWrappable.h"
+#include "core/page/DOMWindowProperty.h"
+#include "core/page/MemoryInfo.h"
+#include "core/page/PerformanceEntry.h"
+#include "core/page/PerformanceNavigation.h"
+#include "core/page/PerformanceTiming.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

@@ -27,7 +27,6 @@
 #include "config.h"
 #include "EventContext.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "Event.h"
 #include "FocusEvent.h"
@@ -35,6 +34,7 @@
 #include "Node.h"
 #include "TouchEvent.h"
 #include "TouchList.h"
+#include "core/page/DOMWindow.h"
 
 namespace WebCore {
 

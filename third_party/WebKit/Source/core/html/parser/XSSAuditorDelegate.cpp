@@ -26,17 +26,17 @@
 #include "config.h"
 #include "XSSAuditorDelegate.h"
 
-#include "Console.h"
-#include "DOMWindow.h"
 #include "Document.h"
-#include "Frame.h"
 #include "HTMLParserIdioms.h"
 #include "InspectorValues.h"
-#include "SecurityOrigin.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
+#include "core/page/Console.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"
 #include <wtf/text/StringBuilder.h>
 

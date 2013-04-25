@@ -25,7 +25,6 @@
 #include "Document.h"
 #include "DocumentStyleSheetCollection.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "MediaList.h"
 #include "StyleSheetContents.h"
 #include "XMLDocumentParser.h" // for parseAttributes()
@@ -35,6 +34,7 @@
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

@@ -32,13 +32,13 @@
 #include "InspectorFrontendClientImpl.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "InspectorFrontendHost.h"
-#include "Page.h"
 #include "ScriptController.h"
 #include "V8InspectorFrontendHost.h"
 #include "WebDevToolsFrontendClient.h"
 #include "WebDevToolsFrontendImpl.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include "core/platform/NotImplemented.h"
 #include <public/WebFloatPoint.h>
 #include <public/WebString.h>

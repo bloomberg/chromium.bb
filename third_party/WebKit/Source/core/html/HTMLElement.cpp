@@ -36,7 +36,6 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "HTMLBRElement.h"
 #include "HTMLCollection.h"
 #include "HTMLDocument.h"
@@ -49,13 +48,14 @@
 #include "NodeTraversal.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
-#include "Settings.h"
 #include "StylePropertySet.h"
 #include "Text.h"
 #include "XMLNames.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/markup.h"
 #include "core/loader/FrameLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 #include "core/rendering/RenderWordBreak.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

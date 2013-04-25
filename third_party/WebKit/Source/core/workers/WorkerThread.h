@@ -27,10 +27,10 @@
 #ifndef WorkerThread_h
 #define WorkerThread_h
 
-#include "ContentSecurityPolicy.h"
-#include "GroupSettings.h"
-#include "SecurityOrigin.h"
 #include "WorkerRunLoop.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/GroupSettings.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>

@@ -26,8 +26,8 @@
 #ifndef RenderLayerCompositor_h
 #define RenderLayerCompositor_h
 
-#include "ChromeClient.h"
-#include "Frame.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Frame.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
 #include "core/rendering/RenderLayer.h"
 #include <wtf/HashMap.h>

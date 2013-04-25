@@ -27,9 +27,9 @@
 #include "EventNames.h"
 #include "EventTarget.h"
 #include "ScriptWrappable.h"
-#include "SecurityOrigin.h"
 #include "XMLHttpRequestProgressEventThrottle.h"
 #include "core/loader/ThreadableLoaderClient.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/OwnPtr.h>

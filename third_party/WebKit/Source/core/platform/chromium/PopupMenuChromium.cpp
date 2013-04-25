@@ -32,10 +32,10 @@
 #include "config.h"
 #include "core/platform/chromium/PopupMenuChromium.h"
 
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
-#include "Settings.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/platform/chromium/PopupContainer.h"
 
 namespace WebCore {

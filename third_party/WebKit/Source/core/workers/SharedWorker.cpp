@@ -40,9 +40,9 @@
 #include "MessageChannel.h"
 #include "MessagePort.h"
 #include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
 #include "SharedWorkerRepository.h"
-#include "UseCounter.h"
+#include "core/page/SecurityOrigin.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/KURL.h"
 
 namespace WebCore {

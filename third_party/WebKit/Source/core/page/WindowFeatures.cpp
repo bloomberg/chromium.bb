@@ -21,7 +21,7 @@
  */
 
 #include "config.h"
-#include "WindowFeatures.h"
+#include "core/page/WindowFeatures.h"
 
 #include "core/platform/graphics/FloatRect.h"
 #include <wtf/Assertions.h>

@@ -27,8 +27,6 @@
 
 #include "LinkHighlight.h"
 
-#include "Frame.h"
-#include "FrameView.h"
 #include "Node.h"
 #include "NonCompositedContentHost.h"
 #include "PlatformContextSkia.h"
@@ -36,6 +34,8 @@
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebViewImpl.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/graphics/Color.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"

@@ -33,11 +33,11 @@
 #include "core/loader/Prerenderer.h"
 
 #include "Document.h"
-#include "Frame.h"
-#include "SecurityPolicy.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/PrerendererClient.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityPolicy.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/ReferrerPolicy.h"
 

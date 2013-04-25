@@ -34,10 +34,10 @@
 
 #include "CalendarPicker.h"
 #include "ChromeClientImpl.h"
-#include "FrameView.h"
 #include "InputTypeNames.h"
 #include "PickerCommon.h"
 #include "WebViewImpl.h"
+#include "core/page/FrameView.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/DateTimeChooserClient.h"
 #include "core/platform/Language.h"

@@ -29,10 +29,10 @@
 #include "EventException.h"
 #include "EventListener.h"
 #include "EventNames.h"
-#include "FrameView.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGElementInstanceList.h"
 #include "SVGUseElement.h"
+#include "core/page/FrameView.h"
 
 #include <wtf/RefCountedLeakCounter.h>
 

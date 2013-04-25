@@ -29,10 +29,10 @@
 #ifndef Console_h
 #define Console_h
 
-#include "DOMWindowProperty.h"
 #include "ScriptProfile.h"
 #include "ScriptState.h"
 #include "ScriptWrappable.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

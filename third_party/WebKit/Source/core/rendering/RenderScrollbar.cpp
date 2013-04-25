@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/rendering/RenderScrollbar.h"
 
-#include "Frame.h"
-#include "FrameView.h"
 #include "StyleResolver.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderPart.h"
 #include "core/rendering/RenderScrollbarPart.h"
 #include "core/rendering/RenderScrollbarTheme.h"

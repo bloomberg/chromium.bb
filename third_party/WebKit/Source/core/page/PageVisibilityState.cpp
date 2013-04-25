@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PageVisibilityState.h"
+#include "core/page/PageVisibilityState.h"
 
 namespace WebCore {
 

@@ -27,9 +27,9 @@
 #include "EventDispatcher.h"
 #include "EventNames.h"
 #include "EventRetargeter.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLIFrameElement.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/PlatformMouseEvent.h"
 
 namespace WebCore {

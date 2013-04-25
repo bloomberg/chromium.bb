@@ -20,12 +20,12 @@
 #ifndef DOMPlugin_h
 #define DOMPlugin_h
 
-#include "FrameDestructionObserver.h"
 #include "DOMMimeType.h"
 #include "ScriptWrappable.h"
+#include "core/page/FrameDestructionObserver.h"
 #include <wtf/Forward.h>
-#include <wtf/RefPtr.h>
 #include <wtf/RefCounted.h>
+#include <wtf/RefPtr.h>
 
 namespace WebCore {
 

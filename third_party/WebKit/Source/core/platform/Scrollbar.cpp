@@ -36,11 +36,11 @@
 
 // FIXME: The following #includes are a layering violation and should be removed.
 #include "Document.h"
-#include "EventHandler.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityScrollbar.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 
 using namespace std;
 

@@ -34,8 +34,6 @@
 #include "CSSRule.h"
 #include "CSSStyleRule.h"
 #include "ConsoleAPITypes.h"
-#include "ConsoleTypes.h"
-#include "DOMWindow.h"
 #include "DOMWrapperWorld.h"
 #include "Database.h"
 #include "DeviceOrientationData.h"
@@ -74,6 +72,8 @@
 #include "WorkerThread.h"
 #include "XMLHttpRequest.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/ConsoleTypes.h"
+#include "core/page/DOMWindow.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

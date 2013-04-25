@@ -24,9 +24,9 @@
 #ifndef UIEvent_h
 #define UIEvent_h
 
-#include "DOMWindow.h"
 #include "Event.h"
 #include "EventDispatchMediator.h"
+#include "core/page/DOMWindow.h"
 
 namespace WebCore {
 

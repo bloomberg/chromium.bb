@@ -30,8 +30,8 @@
 #ifndef DedicatedWorkerThread_h
 #define DedicatedWorkerThread_h
 
-#include "ContentSecurityPolicy.h"
 #include "WorkerThread.h"
+#include "core/page/ContentSecurityPolicy.h"
 
 namespace WebCore {
 

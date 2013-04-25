@@ -32,15 +32,15 @@
 #include "Document.h"
 #include "Element.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Frame.h"
-#include "Page.h"
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
-#include "Settings.h"
 #include "Text.h"
 #include "XMLViewerCSS.h"
 #include "XMLViewerJS.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 
 using namespace std;
 

@@ -28,8 +28,8 @@
 
 #include "EventException.h"
 #include "ExceptionCode.h"
-#include "Performance.h"
-#include "PerformanceTiming.h"
+#include "core/page/Performance.h"
+#include "core/page/PerformanceTiming.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

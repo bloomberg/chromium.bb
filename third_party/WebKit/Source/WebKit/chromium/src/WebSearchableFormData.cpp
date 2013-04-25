@@ -33,7 +33,6 @@
 
 #include "Document.h"
 #include "FormDataList.h"
-#include "Frame.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
@@ -44,6 +43,7 @@
 #include "WebFormElement.h"
 #include "WebInputElement.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/Frame.h"
 #include "core/platform/network/FormDataBuilder.h"
 #include "core/platform/text/TextEncoding.h"
 

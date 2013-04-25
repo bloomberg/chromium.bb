@@ -26,11 +26,11 @@
 #ifndef AlternativeTextController_h
 #define AlternativeTextController_h
 
-#include "AlternativeTextClient.h"
 #include "DocumentMarker.h"
 #include "Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
+#include "core/page/AlternativeTextClient.h"
 #include "core/platform/Timer.h"
 #include "core/platform/text/TextChecking.h"
 #include <wtf/Noncopyable.h>

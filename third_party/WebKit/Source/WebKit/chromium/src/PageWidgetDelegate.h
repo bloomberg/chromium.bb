@@ -31,8 +31,8 @@
 #ifndef PageWidgetDelegate_h
 #define PageWidgetDelegate_h
 
-#include "Page.h"
 #include "WebWidget.h"
+#include "core/page/Page.h"
 #include <public/WebCanvas.h>
 #include <wtf/OwnPtr.h>
 

@@ -19,14 +19,14 @@
  */
 
 #include "config.h"
-#include "PageGroupLoadDeferrer.h"
+#include "core/page/PageGroupLoadDeferrer.h"
 
 #include "Document.h"
 #include "DocumentParser.h"
-#include "Frame.h"
-#include "Page.h"
-#include "PageGroup.h"
 #include "ScriptRunner.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/PageGroup.h"
 #include <wtf/HashSet.h>
 
 namespace WebCore {

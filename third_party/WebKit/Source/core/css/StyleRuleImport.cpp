@@ -24,12 +24,12 @@
 
 #include "CSSStyleSheet.h"
 #include "Document.h"
-#include "SecurityOrigin.h"
 #include "StyleSheetContents.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

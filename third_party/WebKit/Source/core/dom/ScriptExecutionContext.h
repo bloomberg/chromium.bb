@@ -29,8 +29,8 @@
 #define ScriptExecutionContext_h
 
 #include "ActiveDOMObject.h"
-#include "ConsoleTypes.h"
 #include "SecurityContext.h"
+#include "core/page/ConsoleTypes.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"
 #include <wtf/Forward.h>

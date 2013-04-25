@@ -27,14 +27,14 @@
 #ifndef WorkerContext_h
 #define WorkerContext_h
 
-#include "ContentSecurityPolicy.h"
 #include "EventListener.h"
 #include "EventNames.h"
 #include "EventTarget.h"
-#include "GroupSettings.h"
 #include "ScriptExecutionContext.h"
 #include "WorkerEventQueue.h"
 #include "WorkerScriptController.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/GroupSettings.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

@@ -39,8 +39,6 @@
 #include "FileInputType.h"
 #include "FileList.h"
 #include "FormController.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLCollection.h"
 #include "HTMLDataListElement.h"
 #include "HTMLFormElement.h"
@@ -53,17 +51,19 @@
 #include "InsertionPoint.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
-#include "RuntimeEnabledFeatures.h"
 #include "ScopedEventQueue.h"
 #include "ScriptEventListener.h"
 #include "SearchInputType.h"
 #include "ShadowRoot.h"
 #include "StyleResolver.h"
 #include "TouchEvent.h"
-#include "UseCounter.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/RuntimeEnabledFeatures.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/Language.h"
 #include "core/platform/LocalizedStrings.h"
@@ -79,7 +79,7 @@
 #endif
 
 #if ENABLE(INPUT_SPEECH)
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #endif
 
 using namespace std;

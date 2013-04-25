@@ -28,10 +28,10 @@
 #include "LiveNodeList.h"
 #include "MutationObserver.h"
 #include "MutationObserverRegistration.h"
-#include "Page.h"
 #include "QualifiedName.h"
 #include "TagNodeList.h"
 #include "TextTrack.h"
+#include "core/page/Page.h"
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

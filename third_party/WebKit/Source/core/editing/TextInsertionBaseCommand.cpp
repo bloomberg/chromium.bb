@@ -29,9 +29,9 @@
 #include "BeforeTextInsertedEvent.h"
 #include "Document.h"
 #include "Element.h"
-#include "Frame.h"
 #include "Node.h"
 #include "core/editing/FrameSelection.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

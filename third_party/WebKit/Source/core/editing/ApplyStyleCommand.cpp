@@ -32,7 +32,6 @@
 #include "CSSValueKeywords.h"
 #include "CSSValuePool.h"
 #include "Document.h"
-#include "Frame.h"
 #include "HTMLFontElement.h"
 #include "HTMLNames.h"
 #include "NodeList.h"
@@ -47,6 +46,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
 #include <wtf/StdLibExtras.h>

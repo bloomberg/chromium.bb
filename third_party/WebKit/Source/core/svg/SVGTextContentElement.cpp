@@ -25,12 +25,12 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Frame.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "XMLNames.h"
 #include "core/editing/FrameSelection.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"

@@ -34,7 +34,6 @@
 #include "CSSSelectorList.h"
 #include "HTMLNames.h"
 #include "MediaQueryEvaluator.h"
-#include "SecurityOrigin.h"
 #include "SelectorChecker.h"
 #include "SelectorCheckerFastPath.h"
 #include "SelectorFilter.h"
@@ -44,6 +43,7 @@
 #include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WebKitCSSKeyframesRule.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>

@@ -32,8 +32,8 @@
 #include "WebRuntimeFeatures.h"
 
 #include "DatabaseManager.h"
-#include "RuntimeEnabledFeatures.h"
 #include "WebMediaPlayerClientImpl.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "modules/websockets/WebSocket.h"
 
 #include <wtf/UnusedParam.h>

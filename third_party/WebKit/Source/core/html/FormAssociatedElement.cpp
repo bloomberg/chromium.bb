@@ -25,15 +25,15 @@
 #include "config.h"
 #include "FormAssociatedElement.h"
 
-#include "EditorClient.h"
 #include "FormController.h"
-#include "Frame.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "IdTargetObserver.h"
 #include "ValidityState.h"
+#include "core/page/EditorClient.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

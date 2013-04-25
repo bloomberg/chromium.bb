@@ -31,7 +31,7 @@
 #ifndef PerformanceTiming_h
 #define PerformanceTiming_h
 
-#include "DOMWindowProperty.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

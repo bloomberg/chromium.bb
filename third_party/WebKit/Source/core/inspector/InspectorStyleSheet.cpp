@@ -37,7 +37,6 @@
 #include "CSSStyleSheet.h"
 #include "CSSSupportsRule.h"
 #include "ContentSearchUtils.h"
-#include "ContentSecurityPolicy.h"
 #include "Document.h"
 #include "Element.h"
 #include "HTMLHeadElement.h"
@@ -55,6 +54,7 @@
 #include "StyleSheetContents.h"
 #include "StyleSheetList.h"
 #include "WebKitCSSKeyframesRule.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/text/RegularExpression.h"
 
 #include <wtf/OwnPtr.h>

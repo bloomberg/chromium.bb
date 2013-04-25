@@ -34,9 +34,9 @@
 #include "IDBCallbacksProxy.h"
 #include "IDBDatabaseCallbacksProxy.h"
 #include "IDBFactoryBackendImpl.h"
-#include "SecurityOrigin.h"
 #include "WebIDBDatabaseCallbacks.h"
 #include "WebIDBDatabaseError.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/OwnPtr.h>
 
 using namespace WebCore;

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "FrameActionScheduler.h"
+#include "core/page/FrameActionScheduler.h"
 
 #include "Event.h"
 #include "ExceptionCodePlaceholder.h"

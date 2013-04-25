@@ -32,9 +32,9 @@
 #include "ContextFeaturesClientImpl.h"
 
 #include "Document.h"
-#include "SecurityOrigin.h"
 #include "WebDocument.h"
 #include "WebPermissionClient.h"
+#include "core/page/SecurityOrigin.h"
 
 using namespace WebCore;
 

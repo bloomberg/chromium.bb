@@ -32,11 +32,11 @@
 #include "IFrameShimSupport.h"
 
 #include "Element.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderObject.h"

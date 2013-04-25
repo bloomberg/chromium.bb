@@ -29,7 +29,7 @@
 
 #include "IDBFactoryBackendImpl.h"
 #include "IDBLevelDBCoding.h"
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/SharedBuffer.h"
 
 #include <gtest/gtest.h>

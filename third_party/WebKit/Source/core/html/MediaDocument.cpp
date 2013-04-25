@@ -29,7 +29,6 @@
 
 #include "EventNames.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Frame.h"
 #include "HTMLEmbedElement.h"
 #include "HTMLHtmlElement.h"
 #include "HTMLNames.h"
@@ -42,6 +41,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

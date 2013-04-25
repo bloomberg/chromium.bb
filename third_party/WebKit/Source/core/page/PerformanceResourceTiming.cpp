@@ -30,12 +30,12 @@
  */
 
 #include "config.h"
-#include "PerformanceResourceTiming.h"
+#include "core/page/PerformanceResourceTiming.h"
 
 #include "Document.h"
-#include "SecurityOrigin.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

@@ -22,8 +22,8 @@
 #define DOMMimeTypeArray_h
 
 #include "DOMMimeType.h"
-#include "DOMWindowProperty.h"
 #include "ScriptWrappable.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

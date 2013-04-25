@@ -23,10 +23,10 @@
 #define ContainerNodeAlgorithms_h
 
 #include "Document.h"
-#include "Frame.h"
 #include "HTMLFrameOwnerElement.h"
 #include "InspectorInstrumentation.h"
 #include "NodeTraversal.h"
+#include "core/page/Frame.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

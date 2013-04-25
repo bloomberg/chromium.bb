@@ -30,7 +30,6 @@
 #include "CustomElementRegistry.h"
 #include "Element.h"
 #include "Event.h"
-#include "Frame.h"
 #include "HTMLInputStream.h"
 #include "HTMLNames.h"
 #include "HTMLScriptRunnerHost.h"
@@ -41,6 +40,7 @@
 #include "ScriptSourceCode.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedScript.h"
+#include "core/page/Frame.h"
 #include "core/platform/NotImplemented.h"
 
 namespace WebCore {

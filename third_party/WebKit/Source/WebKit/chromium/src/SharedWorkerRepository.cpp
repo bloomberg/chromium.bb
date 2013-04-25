@@ -34,7 +34,6 @@
 
 #include "SharedWorkerRepository.h"
 
-#include "ContentSecurityPolicy.h"
 #include "Event.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
@@ -51,6 +50,7 @@
 #include "WebSharedWorkerRepository.h"
 #include "WorkerScriptLoader.h"
 #include "WorkerScriptLoaderClient.h"
+#include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/network/ResourceResponse.h"
 
 #include <public/Platform.h>

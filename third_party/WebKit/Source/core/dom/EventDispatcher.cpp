@@ -32,7 +32,6 @@
 #include "EventDispatchMediator.h"
 #include "EventPathWalker.h"
 #include "EventRetargeter.h"
-#include "FrameView.h"
 #include "HTMLMediaElement.h"
 #include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
@@ -40,6 +39,7 @@
 #include "ScopedEventQueue.h"
 #include "ShadowRoot.h"
 #include "WindowEventContext.h"
+#include "core/page/FrameView.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
 

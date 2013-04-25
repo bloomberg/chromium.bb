@@ -27,8 +27,8 @@
 #include "config.h"
 #include "WebViewBenchmarkSupportImpl.h"
 
-#include "FrameView.h"
 #include "WebViewImpl.h"
+#include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/IntRect.h"

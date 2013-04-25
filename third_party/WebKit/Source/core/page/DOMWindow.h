@@ -29,7 +29,7 @@
 
 #include "ContextDestructionObserver.h"
 #include "EventTarget.h"
-#include "FrameDestructionObserver.h"
+#include "core/page/FrameDestructionObserver.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"
 

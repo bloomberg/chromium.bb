@@ -21,9 +21,9 @@
 #include "DOMPluginArray.h"
 
 #include "DOMPlugin.h"
-#include "Frame.h"
-#include "Page.h"
 #include "PluginData.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

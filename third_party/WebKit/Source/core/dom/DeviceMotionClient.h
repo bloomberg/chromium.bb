@@ -27,7 +27,7 @@
 #ifndef DeviceMotionClient_h
 #define DeviceMotionClient_h
 
-#include "DeviceClient.h"
+#include "core/page/DeviceClient.h"
 
 namespace WebCore {
 

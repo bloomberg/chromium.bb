@@ -29,11 +29,11 @@
 #define MessageEvent_h
 
 #include "Blob.h"
-#include "DOMWindow.h"
 #include "Event.h"
 #include "MessagePort.h"
 #include "ScriptValue.h"
 #include "SerializedScriptValue.h"
+#include "core/page/DOMWindow.h"
 #include <wtf/ArrayBuffer.h>
 
 namespace WebCore {

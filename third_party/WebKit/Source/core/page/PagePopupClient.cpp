@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PagePopupClient.h"
+#include "core/page/PagePopupClient.h"
 
 #if ENABLE(PAGE_POPUP)
 

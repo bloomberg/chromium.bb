@@ -2,7 +2,6 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "FrameView.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
@@ -14,6 +13,7 @@
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"
 #include <public/Platform.h>
 #include <public/WebUnitTestSupport.h>

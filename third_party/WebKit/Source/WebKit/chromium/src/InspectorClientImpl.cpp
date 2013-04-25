@@ -31,13 +31,13 @@
 #include "config.h"
 #include "InspectorClientImpl.h"
 
-#include "DOMWindow.h"
 #include "InspectorInstrumentation.h"
-#include "Page.h"
-#include "Settings.h"
 #include "WebDevToolsAgentImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <public/WebRect.h>

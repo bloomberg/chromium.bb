@@ -36,19 +36,19 @@
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
-#include "Page.h"
-#include "PageGroup.h"
 #include "ProcessingInstruction.h"
 #include "SVGNames.h"
 #include "SVGStyleElement.h"
 #include "SelectorChecker.h"
-#include "Settings.h"
 #include "StyleInvalidationAnalysis.h"
 #include "StyleResolver.h"
 #include "StyleSheetContents.h"
 #include "StyleSheetList.h"
-#include "UserContentURLPattern.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/page/Page.h"
+#include "core/page/PageGroup.h"
+#include "core/page/Settings.h"
+#include "core/page/UserContentURLPattern.h"
 #include <wtf/MemoryInstrumentationListHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>
 

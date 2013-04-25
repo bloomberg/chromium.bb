@@ -29,9 +29,7 @@
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DocumentMarkerController.h"
-#include "EditorClient.h"
 #include "Element.h"
-#include "Frame.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLTextAreaElement.h"
@@ -41,6 +39,8 @@
 #include "core/editing/Editor.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/EditorClient.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderTableCell.h"
 
 namespace WebCore {

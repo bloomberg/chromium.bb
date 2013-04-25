@@ -29,7 +29,7 @@
 #if ENABLE(INPUT_SPEECH)
 
 #include "Event.h"
-#include "SpeechInputResultList.h"
+#include "core/page/SpeechInputResultList.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

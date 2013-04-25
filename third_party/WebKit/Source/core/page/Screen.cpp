@@ -28,12 +28,12 @@
 
 
 #include "config.h"
-#include "Screen.h"
+#include "core/page/Screen.h"
 
-#include "Frame.h"
-#include "FrameView.h"
 #include "InspectorInstrumentation.h"
-#include "Settings.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Settings.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/Widget.h"
 #include "core/platform/graphics/FloatRect.h"

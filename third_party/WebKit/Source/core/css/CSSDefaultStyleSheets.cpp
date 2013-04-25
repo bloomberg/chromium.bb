@@ -29,13 +29,13 @@
 #include "config.h"
 #include "CSSDefaultStyleSheets.h"
 
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "MediaQueryEvaluator.h"
-#include "Page.h"
 #include "RuleSet.h"
 #include "StyleSheetContents.h"
 #include "UserAgentStyleSheets.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderTheme.h"
 
 namespace WebCore {

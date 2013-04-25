@@ -23,8 +23,8 @@
 #include "core/rendering/svg/SVGInlineTextBox.h"
 
 #if ENABLE(SVG)
-#include "Frame.h"
-#include "FrameView.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"

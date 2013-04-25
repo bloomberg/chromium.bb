@@ -33,14 +33,12 @@
 #include "InspectorIndexedDBAgent.h"
 
 #include "DOMStringList.h"
-#include "DOMWindow.h"
 #include "DOMWindowIndexedDatabase.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventListener.h"
 #include "EventTarget.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "IDBCursor.h"
 #include "IDBCursorWithValue.h"
 #include "IDBDatabase.h"
@@ -63,7 +61,9 @@
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
 #include "ScriptController.h"
-#include "SecurityOrigin.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
 
 #include <wtf/Vector.h>
 

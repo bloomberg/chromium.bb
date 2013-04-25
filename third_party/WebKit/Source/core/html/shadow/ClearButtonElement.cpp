@@ -26,9 +26,9 @@
 #include "config.h"
 #include "ClearButtonElement.h"
 
-#include "EventHandler.h"
-#include "Frame.h"
 #include "MouseEvent.h"
+#include "core/page/EventHandler.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {

@@ -32,9 +32,7 @@
 #include "core/loader/DocumentThreadableLoader.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "InspectorInstrumentation.h"
-#include "SecurityOrigin.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/CrossOriginPreflightResultCache.h"
 #include "core/loader/DocumentThreadableLoaderClient.h"
@@ -45,6 +43,8 @@
 #include "core/loader/cache/CachedRawResource.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
+#include "core/page/Frame.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"

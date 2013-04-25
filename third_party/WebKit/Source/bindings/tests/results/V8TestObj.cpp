@@ -26,16 +26,13 @@
 #include "DOMStringList.h"
 #include "Dictionary.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "HTMLNames.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SVGPropertyTearOff.h"
 #include "SVGStaticPropertyTearOff.h"
 #include "ScriptController.h"
 #include "ScriptProfile.h"
 #include "ScriptValue.h"
 #include "SerializedScriptValue.h"
-#include "UseCounter.h"
 #include "V8Binding.h"
 #include "V8DOMActivityLogger.h"
 #include "V8DOMStringList.h"
@@ -54,6 +51,9 @@
 #include "V8bool.h"
 #include "V8d.h"
 #include "V8e.h"
+#include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
+#include "core/page/UseCounter.h"
 #include <wtf/Float32Array.h>
 #include <wtf/GetPtr.h>
 #include <wtf/RefCounted.h>

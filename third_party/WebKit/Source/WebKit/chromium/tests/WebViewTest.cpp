@@ -31,10 +31,10 @@
 #include "config.h"
 #include "WebView.h"
 
+#include <gtest/gtest.h>
 #include "Document.h"
 #include "Element.h"
 #include "FrameTestHelpers.h"
-#include "FrameView.h"
 #include "HTMLDocument.h"
 #include "URLTestHelpers.h"
 #include "WebAutofillClient.h"
@@ -48,7 +48,7 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include <gtest/gtest.h>
+#include "core/page/FrameView.h"
 #include <public/Platform.h>
 #include <public/WebSize.h>
 #include <public/WebThread.h>

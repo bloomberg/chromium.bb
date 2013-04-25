@@ -33,14 +33,14 @@
 
 
 #include "DeviceOrientationData.h"
-#include "Frame.h"
 #include "GeolocationPosition.h"
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
+#include "core/page/Frame.h"
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

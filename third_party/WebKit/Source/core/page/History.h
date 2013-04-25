@@ -26,9 +26,9 @@
 #ifndef History_h
 #define History_h
 
-#include "DOMWindowProperty.h"
 #include "ScriptWrappable.h"
 #include "SerializedScriptValue.h"
+#include "core/page/DOMWindowProperty.h"
 #include "core/platform/KURL.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>

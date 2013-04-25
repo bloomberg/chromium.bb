@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebPerformance.h"
 
-#include "Performance.h"
+#include "core/page/Performance.h"
 
 using namespace WebCore;
 

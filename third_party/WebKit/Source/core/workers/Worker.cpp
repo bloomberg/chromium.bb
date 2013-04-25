@@ -29,21 +29,21 @@
 
 #include "Worker.h"
 
-#include "DOMWindow.h"
 #include "Document.h"
 #include "EventException.h"
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
 #include "InspectorInstrumentation.h"
 #include "MessageEvent.h"
-#include "UseCounter.h"
 #include "WorkerContextProxy.h"
 #include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/UseCounter.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/MainThread.h>
 

@@ -33,8 +33,8 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "Page.h"
-#include "SpeechInputListener.h"
+#include "core/page/Page.h"
+#include "core/page/SpeechInputListener.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 

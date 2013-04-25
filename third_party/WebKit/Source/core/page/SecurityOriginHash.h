@@ -29,7 +29,7 @@
 #ifndef SecurityOriginHash_h
 #define SecurityOriginHash_h
 
-#include "SecurityOrigin.h"
+#include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 #include <wtf/RefPtr.h>
 
@@ -54,7 +54,7 @@ struct SecurityOriginHash {
     {
         // FIXME: The hash function above compares three specific fields.
         // This code to compare those three specific fields should be moved here from
-        // SecurityOrigin as mentioned in SecurityOrigin.h so we don't accidentally change
+        // SecurityOrigin as mentioned in core/page/SecurityOrigin.h so we don't accidentally change
         // equal without changing hash to match it.
         if (!a || !b)
             return a == b;

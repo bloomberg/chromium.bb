@@ -23,16 +23,16 @@
 #include "XSLStyleSheet.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "Node.h"
-#include "Page.h"
-#include "PageConsole.h"
 #include "TransformSource.h"
 #include "XMLDocumentParser.h"
 #include "XMLDocumentParserScope.h"
 #include "XSLImportRule.h"
 #include "XSLTProcessor.h"
 #include "core/loader/cache/CachedResourceLoader.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
+#include "core/page/PageConsole.h"
 #include <wtf/text/CString.h>
 
 #include <libxml/uri.h>

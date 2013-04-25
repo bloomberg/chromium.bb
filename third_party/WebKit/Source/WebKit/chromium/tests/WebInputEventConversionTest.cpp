@@ -32,9 +32,8 @@
 
 #include "WebInputEventConversion.h"
 
-#include "Frame.h"
+#include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "FrameView.h"
 #include "GestureEvent.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
@@ -45,7 +44,8 @@
 #include "WebFrame.h"
 #include "WebSettings.h"
 #include "WebViewImpl.h"
-#include <gtest/gtest.h>
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 
 using namespace WebKit;
 using namespace WebCore;

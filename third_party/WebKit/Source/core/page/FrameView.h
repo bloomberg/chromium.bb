@@ -25,8 +25,8 @@
 #ifndef FrameView_h
 #define FrameView_h
 
-#include "AdjustViewSizeOrNot.h"
-#include "Frame.h"
+#include "core/page/AdjustViewSizeOrNot.h"
+#include "core/page/Frame.h"
 #include "core/platform/ScrollView.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/LayoutRect.h"

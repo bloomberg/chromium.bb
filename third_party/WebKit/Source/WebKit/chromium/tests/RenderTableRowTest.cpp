@@ -28,11 +28,11 @@
 #include "core/rendering/RenderTableRow.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "FrameTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderArena.h"
 
 #include <gtest/gtest.h>

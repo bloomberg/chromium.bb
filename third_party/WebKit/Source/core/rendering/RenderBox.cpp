@@ -27,18 +27,18 @@
 
 #include <math.h>
 #include <algorithm>
-#include "Chrome.h"
-#include "ChromeClient.h"
 #include "Document.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "Page.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/editing/htmlediting.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/Chrome.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"

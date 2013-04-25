@@ -22,13 +22,13 @@
 
 #include "Document.h"
 #include "Element.h"
-#include "Frame.h"
-#include "FrameView.h"
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"
 #include "MediaQueryList.h"
 #include "MediaQueryListListener.h"
 #include "StyleResolver.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
 
 namespace WebCore {
 

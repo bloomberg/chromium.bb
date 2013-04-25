@@ -33,7 +33,6 @@
 #include "CSSStyleRule.h"
 #include "CSSValueKeywords.h"
 #include "CSSValueList.h"
-#include "Frame.h"
 #include "HTMLFontElement.h"
 #include "HTMLNames.h"
 #include "Node.h"
@@ -50,6 +49,7 @@
 #include "core/editing/HTMLInterchange.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/Frame.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/HashSet.h>
 

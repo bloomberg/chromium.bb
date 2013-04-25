@@ -872,7 +872,7 @@ sub GenerateDomainSafeFunctionGetter
 
     my $newTemplateParams = "${interfaceName}V8Internal::${funcName}MethodCallback, v8Undefined(), $signature";
 
-    AddToImplIncludes("Frame.h");
+    AddToImplIncludes("core/page/Frame.h");
     AddToImplContentInternals(<<END);
 static v8::Handle<v8::Value> ${funcName}AttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
@@ -956,7 +956,7 @@ sub GenerateFeatureObservation
     my $measureAs = shift;
 
     if ($measureAs) {
-        AddToImplIncludes("UseCounter.h");
+        AddToImplIncludes("core/page/UseCounter.h");
         return "    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::${measureAs});\n";
     }
 
@@ -1349,7 +1349,7 @@ static void ${interfaceName}ReplaceableAttrSetter(v8::Local<v8::String> name, v8
 {
 END
     if ($interface->extendedAttributes->{"CheckSecurity"}) {
-        AddToImplIncludes("Frame.h");
+        AddToImplIncludes("core/page/Frame.h");
         $code .= <<END;
     ${interfaceName}* imp = V8${interfaceName}::toNative(info.Holder());
     if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
@@ -1859,7 +1859,7 @@ END
     # Check domain security if needed
     if ($interface->extendedAttributes->{"CheckSecurity"} && !$function->signature->extendedAttributes->{"DoNotCheckSecurity"}) {
         # We have not find real use cases yet.
-        AddToImplIncludes("Frame.h");
+        AddToImplIncludes("core/page/Frame.h");
         $code .= <<END;
     if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame()))
         return v8Undefined();
@@ -2442,7 +2442,7 @@ sub GenerateNamedConstructor
         $toEventTarget = "${v8InterfaceName}::toEventTarget";
     }
 
-    AddToImplIncludes("Frame.h");
+    AddToImplIncludes("core/page/Frame.h");
     AddToImplContent(<<END);
 WrapperTypeInfo ${v8InterfaceName}Constructor::info = { ${v8InterfaceName}Constructor::GetTemplate, ${v8InterfaceName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8InterfaceName}::installPerContextPrototypeProperties, 0, WrapperTypeObjectPrototype };
 
@@ -3016,9 +3016,9 @@ sub GenerateImplementation
 
     AddToImplIncludes("BindingState.h");
     AddToImplIncludes("ContextFeatures.h");
-    AddToImplIncludes("RuntimeEnabledFeatures.h");
     AddToImplIncludes("V8Binding.h");
     AddToImplIncludes("V8DOMWrapper.h");
+    AddToImplIncludes("core/page/RuntimeEnabledFeatures.h");
 
     AddIncludesForType($interfaceName);
 
@@ -3952,7 +3952,7 @@ sub GenerateToV8Converters
         return;
     }
 
-    AddToImplIncludes("Frame.h");
+    AddToImplIncludes("core/page/Frame.h");
     AddToImplIncludes("ScriptController.h");
 
     my $createWrapperArgumentType = GetPassRefPtrType($nativeType);

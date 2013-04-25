@@ -34,7 +34,6 @@
 #include "IDBDatabaseCallbacks.h"
 #include "IDBDatabaseError.h"
 #include "ScriptExecutionContext.h"
-#include "SecurityOrigin.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
 #include "WebIDBDatabase.h"
@@ -50,6 +49,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/page/SecurityOrigin.h"
 #include <public/WebVector.h>
 
 

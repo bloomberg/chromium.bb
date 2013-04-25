@@ -32,7 +32,7 @@
 
 #if ENABLE(INPUT_SPEECH)
 
-#include "SpeechInputEvent.h"
+#include "core/page/SpeechInputEvent.h"
 
 #include "EventNames.h"
 

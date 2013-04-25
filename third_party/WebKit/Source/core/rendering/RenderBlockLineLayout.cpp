@@ -22,7 +22,7 @@
 
 #include "config.h"
 
-#include "Settings.h"
+#include "core/page/Settings.h"
 #include "core/platform/Logging.h"
 #include "core/platform/text/BidiResolver.h"
 #include "core/platform/text/Hyphenation.h"

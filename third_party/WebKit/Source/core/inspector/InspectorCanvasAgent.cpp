@@ -32,8 +32,6 @@
 #include "InspectorCanvasAgent.h"
 
 #include "BindingVisitors.h"
-#include "DOMWindow.h"
-#include "Frame.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLNames.h"
 #include "InjectedScript.h"
@@ -43,10 +41,12 @@
 #include "InspectorPageAgent.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "Page.h"
 #include "ScriptObject.h"
 #include "ScriptProfiler.h"
 #include "ScriptState.h"
+#include "core/page/DOMWindow.h"
+#include "core/page/Frame.h"
+#include "core/page/Page.h"
 
 using WebCore::TypeBuilder::Array;
 using WebCore::TypeBuilder::Canvas::ResourceId;

@@ -25,7 +25,7 @@
 #include "Document.h"
 #include "HTMLElement.h"
 #include "InspectorInstrumentation.h"
-#include "Settings.h"
+#include "core/page/Settings.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"

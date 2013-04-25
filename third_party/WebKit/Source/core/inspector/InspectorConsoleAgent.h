@@ -27,10 +27,10 @@
 
 
 #include "ConsoleAPITypes.h"
-#include "ConsoleTypes.h"
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "ScriptState.h"
+#include "core/page/ConsoleTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>

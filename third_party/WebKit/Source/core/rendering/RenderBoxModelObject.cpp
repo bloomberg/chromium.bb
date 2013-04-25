@@ -28,8 +28,8 @@
 
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "Page.h"
-#include "Settings.h"
+#include "core/page/Page.h"
+#include "core/page/Settings.h"
 #include "core/page/scrolling/ScrollingConstraints.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"

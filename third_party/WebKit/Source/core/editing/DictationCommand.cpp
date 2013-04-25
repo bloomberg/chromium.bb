@@ -29,11 +29,11 @@
 #include "Document.h"
 #include "DocumentMarker.h"
 #include "DocumentMarkerController.h"
-#include "Frame.h"
 #include "Text.h"
 #include "core/editing/AlternativeTextController.h"
 #include "core/editing/InsertParagraphSeparatorCommand.h"
 #include "core/editing/InsertTextCommand.h"
+#include "core/page/Frame.h"
 
 namespace WebCore {
 

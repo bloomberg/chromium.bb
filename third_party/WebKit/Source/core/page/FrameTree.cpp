@@ -19,18 +19,18 @@
  */
 
 #include "config.h"
-#include "FrameTree.h"
+#include "core/page/FrameTree.h"
 
-#include "Frame.h"
-#include "FrameView.h"
-#include "Page.h"
-#include "PageGroup.h"
-#include "Document.h"
 #include <stdarg.h>
+#include "Document.h"
+#include "core/page/Frame.h"
+#include "core/page/FrameView.h"
+#include "core/page/Page.h"
+#include "core/page/PageGroup.h"
 #include <wtf/StringExtras.h>
-#include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 using std::swap;
 

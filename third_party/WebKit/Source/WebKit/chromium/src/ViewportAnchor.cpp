@@ -32,8 +32,8 @@
 #include "ViewportAnchor.h"
 
 #include "ContainerNode.h"
-#include "EventHandler.h"
 #include "Node.h"
+#include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 
 #if ENABLE(VIEWPORT)

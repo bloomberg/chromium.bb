@@ -25,8 +25,6 @@
 #include "ContextFeatures.h"
 #include "DOMStringList.h"
 #include "ExceptionCode.h"
-#include "Frame.h"
-#include "RuntimeEnabledFeatures.h"
 #include "SVGPropertyTearOff.h"
 #include "ScriptController.h"
 #include "SerializedScriptValue.h"
@@ -37,6 +35,8 @@
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
 #include "V8TestSubObj.h"
+#include "core/page/Frame.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(BINDING_INTEGRITY)

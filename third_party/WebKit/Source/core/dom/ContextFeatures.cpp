@@ -28,8 +28,8 @@
 #include "ContextFeatures.h"
 
 #include "Document.h"
-#include "Page.h"
-#include "RuntimeEnabledFeatures.h"
+#include "core/page/Page.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 
 namespace WebCore {
 

@@ -33,9 +33,9 @@
 
 #if ENABLE(PAGE_POPUP)
 
-#include "PagePopup.h"
 #include "PageWidgetDelegate.h"
 #include "WebPagePopup.h"
+#include "core/page/PagePopup.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 

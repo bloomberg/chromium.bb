@@ -27,10 +27,10 @@
 #include "core/editing/ModifySelectionListLevel.h"
 
 #include "Document.h"
-#include "Frame.h"
 #include "HTMLElement.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

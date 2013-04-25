@@ -28,7 +28,6 @@
 
 #include "Document.h"
 #include "Element.h"
-#include "Frame.h"
 #include "HTMLNames.h"
 #include "core/editing/BreakBlockquoteCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
@@ -41,6 +40,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/Frame.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

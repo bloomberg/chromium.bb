@@ -34,10 +34,10 @@
 
 #include "CSSValueKeywords.h"
 #include "Document.h"
-#include "Page.h"
 #include "StylePropertySet.h"
 #include "StyleRule.h"
 #include "ViewportArguments.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 
 namespace WebCore {

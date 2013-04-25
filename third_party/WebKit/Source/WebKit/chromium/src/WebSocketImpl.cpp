@@ -33,12 +33,12 @@
 
 #include "Document.h"
 #include "MainThreadWebSocketChannel.h"
-#include "RuntimeEnabledFeatures.h"
 #include "WebArrayBuffer.h"
 #include "WebDocument.h"
 #include "WebSocketChannel.h"
 #include "WebSocketChannelClient.h"
 #include "WebSocketClient.h"
+#include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/KURL.h"
 
 #include <public/WebString.h>

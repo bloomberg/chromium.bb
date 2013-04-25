@@ -33,7 +33,6 @@
 #include "Document.h"
 #include "Event.h"
 #include "EventListener.h"
-#include "FrameView.h"
 #include "HTMLNames.h"
 #include "SMILTimeContainer.h"
 #include "SVGDocumentExtensions.h"
@@ -42,6 +41,7 @@
 #include "SVGSVGElement.h"
 #include "SVGURIReference.h"
 #include "XLinkNames.h"
+#include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>

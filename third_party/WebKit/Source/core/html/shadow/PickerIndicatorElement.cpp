@@ -32,9 +32,9 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "PickerIndicatorElement.h"
 
-#include "Chrome.h"
 #include "Event.h"
-#include "Page.h"
+#include "core/page/Chrome.h"
+#include "core/page/Page.h"
 #include "core/rendering/RenderDetailsMarker.h"
 
 using namespace WTF::Unicode;

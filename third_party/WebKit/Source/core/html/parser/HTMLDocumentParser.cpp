@@ -29,10 +29,8 @@
 #include "AtomicHTMLToken.h"
 #include "BackgroundHTMLParser.h"
 #include "CompactHTMLToken.h"
-#include "ContentSecurityPolicy.h"
 #include "DocumentFragment.h"
 #include "Element.h"
-#include "Frame.h"
 #include "HTMLDocument.h"
 #include "HTMLIdentifier.h"
 #include "HTMLNames.h"
@@ -44,8 +42,10 @@
 #include "HTMLTreeBuilder.h"
 #include "InspectorInstrumentation.h"
 #include "NestingLevelIncrementer.h"
-#include "Settings.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/ContentSecurityPolicy.h"
+#include "core/page/Frame.h"
+#include "core/page/Settings.h"
 #include <wtf/Functional.h>
 
 namespace WebCore {

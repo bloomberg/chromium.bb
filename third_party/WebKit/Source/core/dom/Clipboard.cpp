@@ -27,9 +27,9 @@
 #include "Clipboard.h"
 
 #include "FileList.h"
-#include "Frame.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/Frame.h"
 #include "core/platform/graphics/Image.h"
 
 namespace WebCore {

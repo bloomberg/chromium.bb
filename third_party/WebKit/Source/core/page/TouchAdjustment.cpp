@@ -19,10 +19,9 @@
 
 #include "config.h"
 
-#include "TouchAdjustment.h"
+#include "core/page/TouchAdjustment.h"
 
 #include "ContainerNode.h"
-#include "FrameView.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLLabelElement.h"
@@ -32,6 +31,7 @@
 #include "ShadowRoot.h"
 #include "Text.h"
 #include "core/editing/Editor.h"
+#include "core/page/FrameView.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntPoint.h"

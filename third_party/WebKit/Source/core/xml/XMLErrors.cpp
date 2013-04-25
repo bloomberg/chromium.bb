@@ -31,9 +31,9 @@
 
 #include "Document.h"
 #include "Element.h"
-#include "Frame.h"
 #include "HTMLNames.h"
 #include "Text.h"
+#include "core/page/Frame.h"
 #include <wtf/text/WTFString.h>
 
 #if ENABLE(SVG)

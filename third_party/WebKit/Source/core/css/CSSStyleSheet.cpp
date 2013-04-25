@@ -33,11 +33,11 @@
 #include "MediaList.h"
 #include "Node.h"
 #include "SVGNames.h"
-#include "SecurityOrigin.h"
 #include "StyleRule.h"
 #include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
+#include "core/page/SecurityOrigin.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 

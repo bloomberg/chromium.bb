@@ -23,8 +23,6 @@
 #include "CSSImportRule.h"
 #include "CSSParser.h"
 #include "CSSStyleSheet.h"
-#include "Console.h"
-#include "DOMWindow.h"
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "MediaFeatureNames.h"
@@ -32,6 +30,8 @@
 #include "MediaQueryExp.h"
 #include "ScriptableDocumentParser.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/page/Console.h"
+#include "core/page/DOMWindow.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 

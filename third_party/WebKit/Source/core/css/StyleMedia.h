@@ -27,7 +27,7 @@
 #ifndef StyleMedia_h
 #define StyleMedia_h
 
-#include "DOMWindowProperty.h"
+#include "core/page/DOMWindowProperty.h"
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>
 

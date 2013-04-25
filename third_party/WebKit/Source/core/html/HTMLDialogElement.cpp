@@ -27,8 +27,8 @@
 #include "HTMLDialogElement.h"
 
 #include "ExceptionCode.h"
-#include "FrameView.h"
 #include "StyleResolver.h"
+#include "core/page/FrameView.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyle.h"
 

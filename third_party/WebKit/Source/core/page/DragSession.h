@@ -26,7 +26,7 @@
 #ifndef DragSession_h
 #define DragSession_h
 
-#include "DragActions.h"
+#include "core/page/DragActions.h"
 
 namespace WebCore {
     
