@@ -36,6 +36,7 @@
 #include "Frame.h"
 #include "htmlediting.h"
 #include "HTMLInputElement.h"
+#include "HTMLTextAreaElement.h"
 #include "HTMLNames.h"
 #include "NodeTraversal.h"
 #include "RenderTableCell.h"
@@ -790,9 +791,9 @@ void DeleteSelectionCommand::doApply()
 
     String originalString = originalStringForAutocorrectionAtBeginningOfSelection();
 
+    Element* textControl = enclosingTextFormControl(m_selectionToDelete.start());
     // If the deletion is occurring in a text field, and we're not deleting to replace the selection, then let the frame call across the bridge to notify the form delegate. 
     if (!m_replace) {
-        Element* textControl = enclosingTextFormControl(m_selectionToDelete.start());
         if (textControl && textControl->focused())
             document()->frame()->editor()->textWillBeDeletedInTextField(textControl);
     }
@@ -803,7 +804,9 @@ void DeleteSelectionCommand::doApply()
     Position downstreamEnd = m_selectionToDelete.end().downstream();
     m_needPlaceholder = isStartOfParagraph(m_selectionToDelete.visibleStart(), CanCrossEditingBoundary)
             && isEndOfParagraph(m_selectionToDelete.visibleEnd(), CanCrossEditingBoundary)
-            && !lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd());
+            && !lineBreakExistsAtVisiblePosition(m_selectionToDelete.visibleEnd())
+            && !(textControl && (isHTMLTextAreaElement(textControl) || textControl->toInputElement())) ;
+
     if (m_needPlaceholder) {
         // Don't need a placeholder when deleting a selection that starts just before a table
         // and ends inside it (we do need placeholders to hold open empty cells, but that's

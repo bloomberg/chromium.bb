@@ -1,0 +1,25 @@
+<!doctype html>
+<html> 
+<head>
+<script>
+if (window.testRunner)
+    testRunner.dumpAsText();
+
+function deleteAndCheckShadowTreeDivIsEmpty(id)
+{
+    var elem = document.getElementById(id);
+    elem.focus();
+    elem.setSelectionRange(elem.value.length, elem.value.length);
+    document.execCommand("Delete");
+    if (internals.shadowRoot(elem).firstChild.innerHTML == '')
+        return true;
+    else
+        return false;
+}
+</script>
+</head> 
+<body><input id="input" value="A" /><textarea id="textarea">B</textarea>
+<script>
+document.write((deleteAndCheckShadowTreeDivIsEmpty("input") && deleteAndCheckShadowTreeDivIsEmpty("textarea")) ? 'PASS' : 'FAIL' );
+</script></body>
+</html>
