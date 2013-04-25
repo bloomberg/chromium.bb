@@ -6,6 +6,15 @@ Root
 --------> Layout
 --------> Layout
 ----> Layout
+----> FunctionCall
+--------> FunctionCall
+------------> Layout
+----------------> Layout
+----------------> Layout
+--------> FunctionCall
+------------> Layout
+----------------> Layout
+----------------> Layout
 coalesced record's hasWarning: undefined
 coalesced record's childHasWarning: true
 
