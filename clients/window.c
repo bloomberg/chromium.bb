@@ -3561,16 +3561,21 @@ idle_redraw(struct task *task, uint32_t events)
 	struct window *window = container_of(task, struct window, redraw_task);
 	struct surface *surface;
 
-	if (window->resize_needed)
+	wl_list_init(&window->redraw_task.link);
+	window->redraw_task_scheduled = 0;
+
+	if (window->resize_needed) {
+		/* throttle resizing to the main surface display */
+		if (window->main_surface->frame_cb)
+			return;
+
 		idle_resize(window);
+	}
 
 	wl_list_for_each(surface, &window->subsurface_list, link)
 		surface_redraw(surface);
 
 	window->redraw_needed = 0;
-	wl_list_init(&window->redraw_task.link);
-	window->redraw_task_scheduled = 0;
-
 	window_flush(window);
 
 	wl_list_for_each(surface, &window->subsurface_list, link)
