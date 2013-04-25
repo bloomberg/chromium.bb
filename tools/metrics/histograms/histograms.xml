@@ -391,6 +391,68 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DomainBoundCerts.DBLoadedCount">
+  <summary>Number of certs loaded from domain bound cert database.</summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.DBLoadTime" units="ms">
+  <summary>Time spent loading domain bound cert database.</summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.DBSizeInKB" units="KB">
+  <summary>
+    The size, on disk, of the domain bound cert database as it is being loaded.
+  </summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.GenerateCertTime" units="ms">
+  <summary>Time spent generating a domain bound cert.</summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.GetCertTime" units="ms">
+  <summary>
+    Combined time for GetDomainBoundCert retrieval (both synchronous and
+    asynchronous).
+  </summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.GetCertTimeAsync" units="ms">
+  <summary>
+    Time for asynchronous retrieval (from the GetDomainBoundCert call until
+    completion callback is called).
+  </summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.GetCertTimeSync" units="ms">
+  <summary>Time for synchronous GetDomainBoundCert cert retrieval.</summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.GetDomainBoundCertResult"
+    enum="DomainBoundCerts.GetCertResult">
+  <summary>Result of GetDomainBoundCert function.</summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.Support" enum="DomainBoundCerts.Support">
+  <summary>
+    Counts of SSL client sockets broken down by support for Domain Bound
+    Certificates TLS extension.  Counts only connections with full handshakes,
+    resumed sessions are not counted.
+  </summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.TaskMaxWaitTime" units="ms">
+  <summary>
+    Longest time spent by requests waiting for load of domain bound cert
+    database.
+  </summary>
+</histogram>
+
+<histogram name="DomainBoundCerts.TaskWaitCount">
+  <summary>
+    Number of requests that waited for load of domain bound cert database.
+  </summary>
+</histogram>
+
 <histogram name="Drive.CacheDBOpenStatus" enum="DriveCacheDBOpenStatus">
   <summary>Status of drive cache metadata database open.</summary>
 </histogram>
@@ -3882,8 +3944,852 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="SB.BloomFilter" units="milliseconds">
+  <summary>
+    The first stage check that measures the time that Chrome took to check if a
+    URL is present in our in-memory bloom filter.
+  </summary>
+</histogram>
+
+<histogram name="SB.BuildBloom">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="SB.Database" units="milliseconds">
+  <summary>
+    The second stage check that measures the time that Chrome took to check if a
+    URL is present in our SQLite database.
+  </summary>
+</histogram>
+
+<histogram name="SB.DBCheck" units="milliseconds">
+  <summary>
+    The second stage check that mesures the time that Chrome took to check if a
+    URL is present in our SQLite database. This time includes the filter check
+    time.
+  </summary>
+</histogram>
+
+<histogram name="SB.Delay" units="milliseconds">
+  <summary>
+    This measures the time that SafeBrowsing actually delayed the browsing
+    experience. It records the difference between the time when Chrome would
+    have started reading the response for a URL and when the SafeBrowsing system
+    completed its check of that URL.
+  </summary>
+</histogram>
+
+<histogram name="SB.FilterCheck" units="milliseconds">
+  <summary>
+    The first stage check that measures the time that Chrome took to check if a
+    URL is present in our in-memory hash table.
+  </summary>
+</histogram>
+
+<histogram name="SB.Network" units="milliseconds">
+  <summary>
+    The third and final stage check that mesures the time that Chrome took to
+    get a response from the Google SafeBrowsing servers for a particular URL.
+  </summary>
+</histogram>
+
+<histogram name="SB.NetworkCheck" units="milliseconds">
+  <summary>
+    The third and final stage check that mesures the time that Chrome took to
+    get a response from the Google SafeBrowsing servers for a particular URL.
+    This time includes the filter and database check time.
+  </summary>
+</histogram>
+
+<histogram name="SB.PauseSafe" units="milliseconds">
+  <summary>
+    This measures the time that SafeBrowsing actually delayed the browsing
+    experience. It records the difference between the time when Chrome would
+    have started reading the response for a URL and when the SafeBrowsing system
+    completed its check of that URL.
+  </summary>
+</histogram>
+
+<histogram name="SB.Update">
+  <summary>TBD.</summary>
+</histogram>
+
+<histogram name="SB2.AddPrefixes">
+  <summary>
+    The number of add prefixes stored in the database after the last update.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BloomFailure" enum="SB2BloomFailure">
+  <summary>
+    Track failures when in processing the safe-browsing database bloom filter.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BloomFilterFalsePositives"
+    enum="SB2BloomFilterFalsePositives">
+  <summary>
+    All prefix misses (server returned no full hashes) and prefix misses due to
+    false positives in the bloom filter.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BloomFilterLoad" units="ms">
+  <summary>Time to load the BloomFilter file.</summary>
+</histogram>
+
+<histogram name="SB2.BrowseDatabaseKilobytes" units="KB">
+  <summary>
+    The size of the browsing SafeBrowsing database file on disk in kilobytes,
+    after an update has occurred.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildFilter" units="milliseconds">
+  <summary>
+    The time that it took to regenerate the filter after we have received all
+    the update chunks.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildReadBytes" units="bytes">
+  <obsolete>
+    Deprecated because it was exceeding the range.  Replaced by
+    SB2.BuildReadKilobytes.
+  </obsolete>
+  <summary>
+    The number of bytes read by the browser process during the bloom filter
+    generation phase.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildReadKilobytes" units="KB">
+  <summary>
+    The number of kilobytes read by the browser process during the filter
+    generation phase.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildReadOperations">
+  <summary>
+    The number of read operations issued by the browser process during the
+    filter generation phase.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildWriteBytes" units="bytes">
+  <obsolete>
+    Deprecated because it was exceeding the range.  Replaced by
+    SB2.BuildWriteKilobytes.
+  </obsolete>
+  <summary>
+    The number of bytes written by the browser process during the bloom filter
+    generation phase.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildWriteKilobytes" units="KB">
+  <summary>
+    The number of kilobytes written by the browser process during the filter
+    generation phase.
+  </summary>
+</histogram>
+
+<histogram name="SB2.BuildWriteOperations">
+  <summary>
+    The number of write operations issued by the browser process during the
+    filter generation phase.
+  </summary>
+</histogram>
+
+<histogram name="SB2.ChunkInsert" units="milliseconds">
+  <summary>
+    The time that it takes to write one redirect URL (which can contain multiple
+    chunks) to the database.
+  </summary>
+</histogram>
+
+<histogram name="SB2.ChunkRequest" units="milliseconds">
+  <summary>
+    The network time between the request and response for a chunk.
+  </summary>
+</histogram>
+
+<histogram name="SB2.ChunkSize" units="bytes">
+  <summary>The size of one chunk URL.</summary>
+</histogram>
+
+<histogram name="SB2.DatabaseBytes" units="bytes">
+  <obsolete>
+    Deprecated because it was exceeding the range.  Replaced by
+    SB2.DatabaseKilobytes.
+  </obsolete>
+  <summary>The size of the SafeBrowsing database file on disk.</summary>
+</histogram>
+
+<histogram name="SB2.DatabaseFailure" enum="SB2DatabaseFailure">
+  <summary>Track failures when updating the safe-browsing database.</summary>
+</histogram>
+
+<histogram name="SB2.DatabaseKilobytes" units="KB">
+  <obsolete>
+    Replaced by SB2.BrowseDatabaseKilobytes.
+  </obsolete>
+  <summary>
+    The size of the SafeBrowsing database file on disk in kilobytes.
+  </summary>
+</histogram>
+
+<histogram name="SB2.DatabaseOpen" units="milliseconds">
+  <summary>
+    The time it takes to initialize the SafeBrowsing storage backend, in
+    milliseconds.
+  </summary>
+</histogram>
+
+<histogram name="SB2.DatabaseUpdateKilobytes" units="KB">
+  <summary>
+    The size of the update file before merging with the database file, in
+    kilobytes.
+  </summary>
+</histogram>
+
+<histogram name="SB2.Delay" units="milliseconds">
+  <summary>
+    The time that SafeBrowsing actually delayed the browsing experience. It
+    records the difference between the time when Chrome would have started
+    reading the response for a URL and when the SafeBrowsing system completed
+    its check of that URL.
+  </summary>
+</histogram>
+
+<histogram name="SB2.DownloadChecks" enum="SB2DownloadChecks">
+  <summary>
+    Records results of SafeBrowsing download check, including both url check and
+    downloaded file hash check.
+  </summary>
+</histogram>
+
+<histogram name="SB2.DownloadDatabaseKilobytes" units="KB">
+  <summary>
+    The size of the downloads SafeBrowsing database file on disk in kilobytes,
+    after an update has occurred.
+  </summary>
+</histogram>
+
+<histogram name="SB2.DownloadDuration" units="milliseconds">
+  <summary>The time it takes for a download to finish.</summary>
+</histogram>
+
+<histogram name="SB2.DownloadHashCheckDuration" units="milliseconds">
+  <summary>
+    The time it takes for SafeBrowsing to check hash of a download file.
+  </summary>
+</histogram>
+
+<histogram name="SB2.DownloadUrlCheckDuration" units="milliseconds">
+  <summary>The time it takes for SafeBrowsing to check a download url.</summary>
+</histogram>
+
+<histogram name="SB2.DownloadUrlChecks" enum="SB2DownloadChecks">
+  <obsolete>
+    Deprecated 3/11/11, and replaced by SB2.DownloadChecks.
+  </obsolete>
+  <summary>Records results of SafeBrowsing download url check.</summary>
+</histogram>
+
+<histogram name="SB2.FailedUpdate">
+  <obsolete>
+    Deprecated, replaced by SB2.DatabaseFailure BROWSE_DB_UPDATE_FINISH.
+  </obsolete>
+  <summary>
+    The count of the number of times an update failed when being committed to
+    the database.
+  </summary>
+</histogram>
+
+<histogram name="SB2.FilterCheck" units="milliseconds">
+  <summary>
+    The time that it took to check a URL against our in-memory filter.
+  </summary>
+</histogram>
+
+<histogram name="SB2.FilterKilobytes" units="KB">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>The size of the current bloom filter in kilobytes.</summary>
+</histogram>
+
+<histogram name="SB2.FilterLoad" enum="SB2FilterLoad">
+  <summary>Which filter file the database loaded from disk.</summary>
+</histogram>
+
+<histogram name="SB2.FilterMissing">
+  <obsolete>
+    Deprecated, replaced by SB2.DatabaseFailure FILTER_MISSING.
+  </obsolete>
+  <summary>
+    The count of the number of times we attempted to load the bloom filter file
+    but it was missing.
+  </summary>
+</histogram>
+
+<histogram name="SB2.FilterReadFail">
+  <obsolete>
+    Deprecated, replaced by SB2.DatabaseFailure FILTER_READ.
+  </obsolete>
+  <summary>
+    The count of the number of times we attempted to load the bloom filter file
+    but failed while reading the file on disk.
+  </summary>
+</histogram>
+
+<histogram name="SB2.FilterSize" units="bytes">
+  <obsolete>
+    Deprecated because it was exceeding the range.  Replaced by
+    SB2.FilterKilobytes.
+  </obsolete>
+  <summary>The size of the current bloom filter.</summary>
+</histogram>
+
+<histogram name="SB2.FilterWriteFail">
+  <obsolete>
+    Deprecated, replaced by SB2.DatabaseFailure FILTER_WRITE.
+  </obsolete>
+  <summary>
+    The count of the number of times we attempted to save the bloom filter file
+    but failed while writing the file to disk.
+  </summary>
+</histogram>
+
+<histogram name="SB2.FormatEvent" enum="SB2FormatEvent">
+  <summary>
+    Tracks events involved in upgrading safe-browsing data from SQLite format to
+    new file format.
+  </summary>
+</histogram>
+
+<histogram name="SB2.GetHash200">
+  <obsolete>
+    Deprecated in favor of SB2.GetHashResult STATUS_200.
+  </obsolete>
+  <summary>
+    The number of GetHash requests that returned data (valid requests).
+  </summary>
+</histogram>
+
+<histogram name="SB2.GetHash204">
+  <obsolete>
+    Deprecated in favor of SB2.GetHashResult STATUS_204.
+  </obsolete>
+  <summary>
+    The number of GetHash requests that returned empty data (false positives).
+  </summary>
+</histogram>
+
+<histogram name="SB2.GetHashResult" enum="SB2GetHashResult">
+  <summary>
+    Track return status from GetHash requests to server (STATUS_200 and
+    STATUS_204), and dispensation of returned values (EMPTY, HIT, MISS).  EMPTY
+    means the response had no full hashes, and should contain all of the 204
+    responses plus those 200 responses corrosponding to items deleted on the
+    server but not yet deleted on the client.  HIT means that one of the full
+    hashes matched. MISS means that none of the hashes matched (there was a
+    prefix collision).
+  </summary>
+</histogram>
+
+<histogram name="SB2.GetHashResultDownload" enum="SB2GetHashResult">
+  <summary>
+    Track return status from GetHash requests to server (STATUS_200 and
+    STATUS_204), and dispensation of returned values (EMPTY, HIT, MISS).  EMPTY
+    means the response had no full hashes, and should contain all of the 204
+    responses plus those 200 responses corrosponding to items deleted on the
+    server but not yet deleted on the client.  HIT means that one of the full
+    hashes matched. MISS means that none of the hashes matched (there was a
+    prefix collision).
+  </summary>
+</histogram>
+
+<histogram name="SB2.GetHashServerMiss">
+  <obsolete>
+    Deprecated in favor of SB2.GetHashResult FULL_HASH_* and
+    SB2.BloomFilterFalsePositives.  It is unclear if this histogram ever
+    reported useful data.
+  </obsolete>
+  <summary>
+    The number of GetHash requests returning full hashes that didn't match the
+    URL that initiated the request.
+  </summary>
+</histogram>
+
+<histogram name="SB2.HandleCorrupt">
+  <obsolete>
+    Deprecated, replaced by SB2.DatabaseFailure CORRUPT.
+  </obsolete>
+  <summary>
+    The count of the number of times a database was found corrupt and reset.
+  </summary>
+</histogram>
+
+<histogram name="SB2.InterstitialAction" enum="SB2InterstitialAction">
+  <summary>
+    Track number of times Safe Browsing interstitials have been shown, and how
+    many times they have been clicked through or not.
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimeClosed" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user navigating away by for example, closing the tab, clicking the browser
+    back button or typing another URL in the address bar.
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimeDiagnostic" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user clicking on diagnostic page link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimeExpandedSeeMore"
+    units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user expanding the &quot;see more info&quot; section of the page.  (Only
+    applies to field trial version 2 of the interstitial.)
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimeLearnMore" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user clicking on the learn more about malware link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimePrivacyPolicy" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user clicking on the privacy policy link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimeProceed" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user clicking on the proceed link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.MalwareInterstitialTimeTakeMeBack" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing malware interstitial and the
+    user clicking on the big green back button.
+  </summary>
+</histogram>
+
+<histogram name="SB2.Network" units="milliseconds">
+  <summary>
+    The time that it took to receive a response from the Google SafeBrowsing
+    servers for a GetHash request.
+  </summary>
+</histogram>
+
+<histogram name="SB2.OldDatabaseKilobytes" units="KB">
+  <summary>Size of v1 database deleted from client profile.</summary>
+</histogram>
+
+<histogram name="SB2.PhishingInterstitialTimeClosed" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing phishing interstitial and the
+    user navigating away by for example, closing the tab, clicking the browser
+    back button or typing another URL in the address bar.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PhishingInterstitialTimeExpandedSeeMore"
+    units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing phishing interstitial and the
+    user expanding the &quot;see more info&quot; section of the page.  (Only
+    applies to field trial version 2 of the interstitial.)
+  </summary>
+</histogram>
+
+<histogram name="SB2.PhishingInterstitialTimeLearnMore" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing phishing interstitial and the
+    user clicking on the learn more link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PhishingInterstitialTimeProceed" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing phishing interstitial and the
+    user clicking on the proceed link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PhishingInterstitialTimeReportError" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing phishing interstitial and the
+    user clicking on the report error link.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PhishingInterstitialTimeTakeMeBack" units="milliseconds">
+  <summary>
+    The time between when we show the SafeBrowsing phishing interstitial and the
+    user clicking on the big green back button.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetBitsPerPrefix" units="bits">
+  <summary>
+    The size of the PrefixSet storage in bits, divided by the number of prefixes
+    represented.  Should almost always be 16.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetEvent" enum="SB2PrefixSetEvent">
+  <obsolete>
+    Deprecated 9/2012. No longer generated, BloomFilter being removed.
+  </obsolete>
+  <summary>
+    Records how well the PrefixSet implementation matches the BloomFilter
+    implementation.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetKilobytes" units="KB">
+  <summary>The size of the PrefixSet file in kilobytes.</summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetLoad" units="ms">
+  <summary>Time to load the PrefixSet file.</summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetRestoredExcess">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>
+    For debugging PrefixSet.  How many extra results GetPrefixes returns.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetRestoredShortfall">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>
+    For debugging PrefixSet.  How many fewer results GetPrefixes returns.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetUnsortedDelta">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>
+    For debugging PrefixSet.  How far unsorted deltas are from expected value.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetUnsortedDifference">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>
+    For debugging PrefixSet.  Distance of unsorted elements from expected
+    location.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetUnsortedPercent">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>
+    For debugging PrefixSet.  How far into the results unsorted elements were
+    found.  Interesting values would be 0%, 50%, or 100%.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetUnsortedSize">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <summary>
+    For debugging PrefixSet.  Size of unsorted sets.  To see if there is a
+    problem with a particular size of dataset.
+  </summary>
+</histogram>
+
+<histogram name="SB2.PrefixSetWrite" units="ms">
+  <summary>Time to store the PrefixSet file.</summary>
+</histogram>
+
+<histogram name="SB2.SubPrefixes">
+  <summary>
+    The number of sub prefixes stored in the database after the last update.
+  </summary>
+</histogram>
+
+<histogram name="SB2.Update" units="milliseconds">
+  <summary>
+    The time from the receipt of the update request to the receipt of the final
+    update chunk.
+  </summary>
+</histogram>
+
 <histogram name="SB2.UpdateRequestSize" units="bytes">
   <summary>The payload size of update requests to the server.</summary>
+</histogram>
+
+<histogram name="SB2.UpdateResult" enum="SB2UpdateResult">
+  <summary>Result from trying to update the SafeBrowsing data.</summary>
+</histogram>
+
+<histogram name="SB2.UpdateSize" units="bytes">
+  <summary>The size of all the chunk URLs in an update response.</summary>
+</histogram>
+
+<histogram name="SB2.UpdateUrls">
+  <summary>The number of chunk URLs in an update response.</summary>
+</histogram>
+
+<histogram name="SBClientDownload.CheckDownloadStats"
+    enum="SBClientDownloadCheckDownloadStats">
+  <summary>
+    Records a histogram of the reason why downloads are marked as being
+    malicious or clean by the improved SafeBrowsing binary download protection.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DownloadExtensions"
+    enum="SBClientDownloadExtensions">
+  <summary>
+    Records a histogram of how often users download a file with a file extension
+    that is possibly dangerous (e.g., exe, class).
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.DownloadRequestDuration" units="milliseconds">
+  <summary>
+    Records the total time it takes for the SafeBrowsing download service to
+    check whether the content of a download is malicious or not. This histogram
+    only includes requests that are sent to the SafeBrowsing server.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.SignedBinaryDownload"
+    enum="SBClientDownloadIsSignedBinary">
+  <summary>
+    Records the number of signed vs. unsigned executables that are downloaded.
+  </summary>
+</histogram>
+
+<histogram name="SBClientDownload.SignedOrWhitelistedDownload">
+  <summary>
+    Counter which is incremented whenever an executable is downloaded which is
+    either signed or whose URL matches the download whitelist.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.CancelClassificationReason"
+    enum="SBClientPhishingCancelClassificationReason">
+  <summary>
+    The counts for various reasons why an in-progress phishing classification
+    was canceled.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.CheckNoPendingClassificationFailed">
+  <summary>
+    The number of times client-side phishing classifier expected to have no
+    pending classifications running but that check failed.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ClassificationStart">
+  <summary>
+    The number of pages that we could have possibly classified (essentially the
+    number of top page navigations by users with SBClientPhishing enabled). The
+    name is slightly misleading as it is recorded before
+    &quot;Preclassification&quot; happens.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ClientModelStatus"
+    enum="SBClientPhishingClientModelStatus">
+  <summary>
+    The counts for various model status codes that we get after loading a new
+    client-side phishing model.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.DOMFeatureChunkTime" units="milliseconds">
+  <summary>
+    The time that an individual chunk of DOM feature extraction work took.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.DOMFeatureFrameRemoved">
+  <summary>
+    The number of times that DOM feature extraction finished early because the
+    active WebDocument's frame was removed during traversal.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.DOMFeatureIterations">
+  <summary>
+    The number of iterations that the DOM feature extractor took to finish.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.DOMFeatureResumeTime" units="milliseconds">
+  <summary>
+    The time that it took to resume DOM feature extraction for the phishing
+    classifier.  Longer times may indicate that the page DOM changed between
+    chunks of work and the extractor had to re-traverse up to the saved
+    position.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.DOMFeatureTimeout">
+  <summary>
+    The number of phishing classifications that were aborted because DOM feature
+    extraction took too long.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.DOMFeatureTotalTime" units="milliseconds">
+  <summary>
+    The time that the DOM feature extarctor took to finish, summed across all
+    chunks of work.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.GrabPhishingThumbnail" units="ms">
+  <summary>Time spent generating the thumbnail.</summary>
+</histogram>
+
+<histogram name="SBClientPhishing.IllegalFeatureValue">
+  <summary>
+    The number of features which were omitted from phishing classification
+    because they were added with an illegal value.  This would indicate a bug.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.InitPrivateNetworksFailed">
+  <summary>
+    The number of times that the phishing detection service could not be
+    initialized due to an error parsing the private IP networks.  This would
+    indicate a bug.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.InvalidWhitelistExpression">
+  <obsolete>
+    Deprecated 12/2011.  Whitelist entries are no longer part of
+    ClientPhishingResponse.
+  </obsolete>
+  <summary>
+    The number of whitelist_expression entries in a ClientPhishingResponse that
+    could not be canonicalized.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.PreClassificationCheckFail"
+    enum="SBClientPhishingPreClassificationCheckFail">
+  <summary>
+    Records the number of phishing classifications that were skipped because a
+    pre-classification check failed.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ReportLimitSkipped">
+  <summary>
+    The number of phishing classifications that were previously cached as being
+    phishing but that will get re-classified (to possibly fix false positives).
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.RequestNotSerialized">
+  <summary>
+    The number of phishing classifier pingbacks that were skipped because
+    serializing the request protocol buffer to string failed.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.RequestSatisfiedFromCache">
+  <summary>
+    The number of times that a cached phishing classification result was used,
+    rather than pinging the server.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.ScorerCreationStatus"
+    enum="SBClientPhishingScorerCreationStatus">
+  <summary>
+    Records the status when we create a scorer object for the client-side
+    phishing detection classifier.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.TermFeatureBreakIterError">
+  <summary>
+    The number of phishing classifications that were aborted because the term
+    feature extractor failed to initialize an ICU break iterator.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.TermFeatureChunkTime" units="milliseconds">
+  <summary>
+    The time that an individual chunk of term feature extraction work took.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.TermFeatureIterations">
+  <summary>
+    The number of iterations that the term feature extractor took to finish.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.TermFeatureTimeout">
+  <summary>
+    The number of phishing classification that were aborted because term feature
+    extraction took too long.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.TermFeatureTotalTime" units="milliseconds">
+  <summary>
+    The time that the term feature extarctor took to finish, summed across all
+    chunks of work.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.TooManyFeatures">
+  <summary>
+    The number of times that the limit on the number of phishing classifier
+    features for a page was reached.  This may indicate a bug, or that
+    kMaxFeatureSize is too small.
+  </summary>
+</histogram>
+
+<histogram name="SBClientPhishing.URLFeatureTime" units="milliseconds">
+  <summary>
+    The time taken to extract URL features for the phishing classifier.
+  </summary>
 </histogram>
 
 <histogram name="Search.DefaultSearchProvider" enum="OmniboxSearchEngine">
@@ -4519,6 +5425,37 @@ other types of suffix sets.
   <int value="10" label="expired_overwrite">
     The cookie deletion occurred because the server overwrote it with an already
     expired cookie (this is a common idiom for server deletions of cookies).
+  </int>
+</enum>
+
+<enum name="DomainBoundCerts.GetCertResult" type="int">
+  <int value="0" label="SYNC_SUCCESS"/>
+  <int value="1" label="ASYNC_SUCCESS"/>
+  <int value="2" label="ASYNC_CANCELLED"/>
+  <int value="3" label="ASYNC_FAILURE_KEYGEN"/>
+  <int value="4" label="ASYNC_FAILURE_CREATE_CERT"/>
+  <int value="5" label="ASYNC_FAILURE_EXPORT_KEY"/>
+  <int value="6" label="ASYNC_FAILURE_UNKNOWN"/>
+  <int value="7" label="INVALID_ARGUMENT"/>
+  <int value="8" label="UNSUPPORTED_TYPE"/>
+  <int value="9" label="TYPE_MISMATCH"/>
+  <int value="10" label="WORKER_FAILURE"/>
+</enum>
+
+<enum name="DomainBoundCerts.Support" type="int">
+  <int value="0" label="DISABLED"/>
+  <int value="1" label="CLIENT_ONLY"/>
+  <int value="2" label="CLIENT_AND_SERVER"/>
+  <int value="3" label="CLIENT_NO_ECC">
+    Channel ID was enabled, but the client did not support elliptic curve key
+    generation.
+  </int>
+  <int value="4" label="CLIENT_BAD_SYSTEM_TIME">
+    Channel ID was enabled, but the client had an invalid system time which
+    prevented using it.
+  </int>
+  <int value="5" label="CLIENT_NO_SERVER_BOUND_CERT_SERVICE">
+    The SSLClientSocket was created without a ServerBoundCertService.
   </int>
 </enum>
 
@@ -6611,6 +7548,213 @@ other types of suffix sets.
   <int value="22" label="DOMAIN_NUM_EVENTS"/>
 </enum>
 
+<enum name="SB2BloomFailure" type="int">
+  <int value="0" label="READ_OPEN"/>
+  <int value="1" label="READ_VERSION"/>
+  <int value="2" label="READ_NUM_KEYS"/>
+  <int value="3" label="READ_KEY"/>
+  <int value="4" label="READ_DATA_MINSIZE"/>
+  <int value="5" label="READ_DATA_MAXSIZE"/>
+  <int value="6" label="READ_DATA_SHORT"/>
+  <int value="7" label="READ_DATA"/>
+</enum>
+
+<enum name="SB2BloomFilterFalsePositives" type="int">
+  <int value="0" label="ALL_MISSES"/>
+  <int value="1" label="FALSE_POSITIVE_MISSES"/>
+</enum>
+
+<enum name="SB2DatabaseFailure" type="int">
+  <int value="0" label="CORRUPT"/>
+  <int value="1" label="CORRUPT_HANDLER"/>
+  <int value="2" label="BROWSE_DB_UPDATE_BEGIN"/>
+  <int value="3" label="BROWSE_DB_UPDATE_FINISH"/>
+  <int value="4" label="FILTER_MISSING"/>
+  <int value="5" label="FILTER_READ"/>
+  <int value="6" label="FILTER_WRITE"/>
+  <int value="7" label="FILTER_DELETE"/>
+  <int value="8" label="STORE_MISSING"/>
+  <int value="9" label="STORE_DELETE"/>
+  <int value="10" label="DOWNLOAD_DB_UPDATE_BEGIN"/>
+  <int value="11" label="DOWNLOAD_DB_UPDATE_FINISH"/>
+  <int value="12" label="CSD_DB_UPDATE_BEGIN"/>
+  <int value="13" label="CSD_DB_UPDATE_FINISH"/>
+  <int value="14" label="PREFIX_SET_MISSING"/>
+  <int value="15" label="PREFIX_SET_READ"/>
+  <int value="16" label="PREFIX_SET_WRITE"/>
+  <int value="17" label="PREFIX_SET_DELETE"/>
+</enum>
+
+<enum name="SB2DownloadChecks" type="int">
+  <int value="0" label="URL_CHECKS_TOTAL"/>
+  <int value="1" label="URL_CHECKS_CANCELED"/>
+  <int value="2" label="URL_CHECKS_MALWARE"/>
+  <int value="3" label="HASH_CHECKS_TOTAL"/>
+  <int value="4" label="HASH_CHECKS_MALWARE"/>
+</enum>
+
+<enum name="SB2FilterLoad" type="int">
+  <int value="0" label="ALL"/>
+  <int value="1" label="PREFIX_SET"/>
+  <int value="2" label="BLOOM_FILTER"/>
+</enum>
+
+<enum name="SB2FormatEvent" type="int">
+  <int value="0" label="FILE_CORRUPT"/>
+  <int value="1" label="SQLITE_CORRUPT"/>
+  <int value="2" label="FOUND_SQLITE"/>
+  <int value="3" label="FOUND_UNKNOWN"/>
+  <int value="4" label="SQLITE_DELETED"/>
+  <int value="5" label="SQLITE_DELETE_FAILED"/>
+  <int value="6" label="SQLITE_DELETED_ORIGINAL"/>
+  <int value="7" label="SQLITE_DELETE_ORIGINAL_FAILED"/>
+</enum>
+
+<enum name="SB2GetHashResult" type="int">
+  <int value="0" label="STATUS_200"/>
+  <int value="1" label="STATUS_204"/>
+  <int value="2" label="FULL_HASH_EMPTY"/>
+  <int value="3" label="FULL_HASH_HIT"/>
+  <int value="4" label="FULL_HASH_MISS"/>
+</enum>
+
+<enum name="SB2InterstitialAction" type="int">
+  <int value="0" label="MALWARE_SHOW"/>
+  <int value="1" label="MALWARE_DONT_PROCEED"/>
+  <int value="2" label="MALWARE_FORCED_DONT_PROCEED"/>
+  <int value="3" label="MALWARE_PROCEED"/>
+  <int value="4" label="MULTIPLE_SHOW"/>
+  <int value="5" label="MULTIPLE_DONT_PROCEED"/>
+  <int value="6" label="MULTIPLE_FORCED_DONT_PROCEED"/>
+  <int value="7" label="MULTIPLE_PROCEED"/>
+  <int value="8" label="PHISHING_SHOW"/>
+  <int value="9" label="PHISHING_DONT_PROCEED"/>
+  <int value="10" label="PHISHING_FORCED_DONT_PROCEED"/>
+  <int value="11" label="PHISHING_PROCEED"/>
+</enum>
+
+<enum name="SB2PrefixSetEvent" type="int">
+  <obsolete>
+    Deprecated 9/2012. No longer generated.
+  </obsolete>
+  <int value="0" label="PREFIX_SET_HIT"/>
+  <int value="1" label="BLOOM_HIT"/>
+  <int value="2" label="BLOOM_MISS_PREFIX_SET_HIT"/>
+  <int value="3" label="BLOOM_MISS_PREFIX_HIT_INVALID"/>
+  <int value="4" label="GETPREFIXES_BROKEN"/>
+  <int value="5" label="GETPREFIXES_BROKEN_SIZE"/>
+  <int value="6" label="GETPREFIXES_FIRST_BROKEN"/>
+  <int value="7" label="SBPREFIX_WAS_BROKEN"/>
+  <int value="8" label="GETPREFIXES_BROKEN_SORTING"/>
+  <int value="9" label="GETPREFIXES_BROKEN_DUPLICATION"/>
+  <int value="10" label="GETPREFIX_UNSORTED_IS_DELTA"/>
+  <int value="11" label="GETPREFIX_UNSORTED_IS_INDEX"/>
+  <int value="12" label="CREATE_PREFIX_SET_CHECKSUM"/>
+  <int value="13" label="CREATE_BLOOM_FILTER_CHECKSUM"/>
+  <int value="14" label="CREATE_ADD_PREFIXES_CHECKSUM"/>
+  <int value="15" label="CREATE_PREFIXES_CHECKSUM"/>
+  <int value="16" label="GET_PREFIXES_CHECKSUM"/>
+  <int value="17" label="MISMATCH_PREFIX_SET_CHECKSUM"/>
+  <int value="18" label="MISMATCH_BLOOM_FILTER_CHECKSUM"/>
+  <int value="19" label="BLOOM_MISS_PREFIX_HIT"/>
+</enum>
+
+<enum name="SB2UpdateResult" type="int">
+  <int value="0" label="FAIL"/>
+  <int value="1" label="SUCCESS"/>
+  <int value="2" label="BACKUP_CONNECT_FAIL"/>
+  <int value="3" label="BACKUP_CONNECT_SUCCESS"/>
+  <int value="4" label="BACKUP_HTTP_FAIL"/>
+  <int value="5" label="BACKUP_HTTP_SUCCESS"/>
+  <int value="6" label="BACKUP_NETWORK_FAIL"/>
+  <int value="7" label="BACKUP_NETWORK_SUCCESS"/>
+</enum>
+
+<enum name="SBClientDownloadCheckDownloadStats" type="int">
+  <int value="0" label="INVALID_URL"/>
+  <int value="1" label="SB_DISABLED"/>
+  <int value="2" label="WHITELISTED_URL"/>
+  <int value="3" label="WHITELISTED_REFERRER"/>
+  <int value="4" label="INVALID_REQUEST_PROTO"/>
+  <int value="5" label="SERVER_PING_FAILED"/>
+  <int value="6" label="INVALID_RESPONSE_PROTO"/>
+  <int value="7" label="NOT_BINARY_FILE"/>
+  <int value="8" label="REQUEST_CANCELED"/>
+  <int value="9" label="DOWNLOAD_DANGEROUS"/>
+  <int value="10" label="DOWNLOAD_SAFE"/>
+  <int value="11" label="EMPTY_URL_CHAIN"/>
+  <int value="12" label="HTTPS_URL"/>
+  <int value="13" label="PING_DISABLED"/>
+  <int value="14" label="TRUSTED_EXECUTABLE"/>
+  <int value="15" label="OS_NOT_SUPPORTED"/>
+</enum>
+
+<enum name="SBClientDownloadExtensions" type="int">
+  <int value="0" label="EXE"/>
+  <int value="1" label="MSI"/>
+  <int value="2" label="CAB"/>
+  <int value="3" label="SYS"/>
+  <int value="4" label="SCR"/>
+  <int value="5" label="DRV"/>
+  <int value="6" label="BAT"/>
+  <int value="7" label="ZIP"/>
+  <int value="8" label="RAR"/>
+  <int value="9" label="DLL"/>
+  <int value="10" label="PIF"/>
+  <int value="11" label="COM"/>
+  <int value="12" label="JAR"/>
+  <int value="13" label="CLASS"/>
+  <int value="14" label="PDF"/>
+  <int value="15" label="VB"/>
+  <int value="16" label="REG"/>
+  <int value="17" label="GRP"/>
+  <int value="18" label="OTHER"/>
+  <int value="19" label="CRX"/>
+  <int value="20" label="APK"/>
+</enum>
+
+<enum name="SBClientDownloadIsSignedBinary" type="int">
+  <int value="0" label="Unsigned"/>
+  <int value="1" label="Signed"/>
+</enum>
+
+<enum name="SBClientPhishingCancelClassificationReason" type="int">
+  <int value="0" label="NAVIGATE_AWAY"/>
+  <int value="1" label="NAVIGATE_WITHIN_PAGE"/>
+  <int value="2" label="PAGE_RECAPTURED"/>
+  <int value="3" label="SHUTDOWN"/>
+  <int value="4" label="NEW_PHISHING_SCORER"/>
+</enum>
+
+<enum name="SBClientPhishingClientModelStatus" type="int">
+  <int value="0" label="MODEL_SUCCESS"/>
+  <int value="1" label="MODEL_NOT_CHANGED"/>
+  <int value="2" label="MODEL_FETCH_FAILED"/>
+  <int value="3" label="MODEL_EMPTY"/>
+  <int value="4" label="MODEL_TOO_LARGE"/>
+  <int value="5" label="MODEL_PARSE_ERROR"/>
+  <int value="6" label="MODEL_MISSING_FIELDS"/>
+  <int value="7" label="MODEL_INVALID_VERSION_NUMBER"/>
+</enum>
+
+<enum name="SBClientPhishingPreClassificationCheckFail" type="int">
+  <int value="0" label="PROXY_FETCH"/>
+  <int value="1" label="PRIVATE_IP"/>
+  <int value="2" label="OFF_THE_RECORD"/>
+  <int value="3" label="MATCH_CSD_WHITELIST"/>
+  <int value="4" label="TOO_MANY_REPORTS"/>
+  <int value="5" label="UNSUPPORTED_MIME_TYPE"/>
+</enum>
+
+<enum name="SBClientPhishingScorerCreationStatus" type="int">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="MODEL_OPEN_FAIL"/>
+  <int value="2" label="MODEL_FILE_EMPTY"/>
+  <int value="3" label="MODEL_FILE_TOO_LARGE"/>
+  <int value="4" label="MODEL_PARSE_ERROR"/>
+  <int value="5" label="MODEL_MISSING_FIELDS"/>
+</enum>
+
 <enum name="SocketStreamConnectionType" type="int">
   <int value="0" label="none"/>
   <int value="1" label="all connections"/>
@@ -7867,6 +9011,18 @@ other types of suffix sets.
   <group name="4" label="N = 4"/>
   <group name="5" label="N = 5"/>
   <affected-histogram name="Omnibox.QueryTime"/>
+</fieldtrial>
+
+<fieldtrial name="SBInterstitial">
+  <group name="V1" label="original interstitial"/>
+  <group name="V2" label="version 2 (new interstitial)"/>
+  <affected-histogram name="SB2.InterstitialAction"/>
+  <affected-histogram name="SB2.MalwareInterstitialTimeClosed"/>
+  <affected-histogram name="SB2.MalwareInterstitialTimeDiagnostic"/>
+  <affected-histogram name="SB2.MalwareInterstitialTimeLearnMore"/>
+  <affected-histogram name="SB2.MalwareInterstitialTimePrivacyPolicy"/>
+  <affected-histogram name="SB2.MalwareInterstitialTimeProceed"/>
+  <affected-histogram name="SB2.MalwareInterstitialTimeTakeMeBack"/>
 </fieldtrial>
 
 <fieldtrial name="SocketType">
