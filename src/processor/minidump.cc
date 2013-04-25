@@ -1950,7 +1950,8 @@ string MinidumpModule::code_identifier() const {
     case MD_OS_IOS:
     case MD_OS_SOLARIS:
     case MD_OS_ANDROID:
-    case MD_OS_LINUX: {
+    case MD_OS_LINUX: 
+    case MD_OS_PS3: {
       // TODO(mmentovai): support uuid extension if present, otherwise fall
       // back to version (from LC_ID_DYLIB?), otherwise fall back to something
       // else.
@@ -3300,6 +3301,10 @@ string MinidumpSystemInfo::GetOS() {
 
     case MD_OS_ANDROID:
       os = "android";
+      break;
+
+    case MD_OS_PS3:
+      os = "ps3";
       break;
 
     default:

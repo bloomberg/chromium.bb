@@ -529,10 +529,11 @@ typedef struct {
   uint64_t  exception_information[MD_EXCEPTION_MAXIMUM_PARAMETERS];
 } MDException;  /* MINIDUMP_EXCEPTION */
 
-#include "minidump_exception_win32.h"
-#include "minidump_exception_mac.h"
 #include "minidump_exception_linux.h"
+#include "minidump_exception_mac.h"
+#include "minidump_exception_ps3.h"
 #include "minidump_exception_solaris.h"
+#include "minidump_exception_win32.h"
 
 typedef struct {
   uint32_t             thread_id;         /* Thread in which the exception
@@ -652,7 +653,8 @@ typedef enum {
   MD_OS_IOS           = 0x8102,  /* iOS */
   MD_OS_LINUX         = 0x8201,  /* Linux */
   MD_OS_SOLARIS       = 0x8202,  /* Solaris */
-  MD_OS_ANDROID       = 0x8203   /* Android */
+  MD_OS_ANDROID       = 0x8203,  /* Android */
+  MD_OS_PS3           = 0x8204   /* PS3 */
 } MDOSPlatform;
 
 typedef struct {

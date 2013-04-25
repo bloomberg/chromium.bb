@@ -552,6 +552,10 @@ bool MinidumpProcessor::GetOSInfo(Minidump *dump, SystemInfo *info) {
       break;
     }
 
+    case MD_OS_PS3: {
+      info->os = "PS3";
+    }
+
     default: {
       // Assign the numeric platform ID into the OS string.
       char os_string[11];
@@ -1272,6 +1276,84 @@ string MinidumpProcessor::GetCrashReason(Minidump *dump, uint64_t *address) {
           break;
         default:
           BPLOG(INFO) << "Unknown exception reason " << reason;
+          break;
+      }
+      break;
+    }
+
+    case MD_OS_PS3: {
+      switch (exception_code) {
+        case MD_EXCEPTION_CODE_PS3_UNKNOWN:
+          reason = "UNKNOWN";
+          break;
+        case MD_EXCEPTION_CODE_PS3_TRAP_EXCEP:
+          reason = "TRAP_EXCEP";
+          break;
+        case MD_EXCEPTION_CODE_PS3_PRIV_INSTR:
+          reason = "PRIV_INSTR";
+          break;
+        case MD_EXCEPTION_CODE_PS3_ILLEGAL_INSTR:
+          reason = "ILLEGAL_INSTR";
+          break;
+        case MD_EXCEPTION_CODE_PS3_INSTR_STORAGE:
+          reason = "INSTR_STORAGE";
+          break;
+        case MD_EXCEPTION_CODE_PS3_INSTR_SEGMENT:
+          reason = "INSTR_SEGMENT";
+          break;
+        case MD_EXCEPTION_CODE_PS3_DATA_STORAGE:
+          reason = "DATA_STORAGE";
+          break;
+        case MD_EXCEPTION_CODE_PS3_DATA_SEGMENT:
+          reason = "DATA_SEGMENT";
+          break;
+        case MD_EXCEPTION_CODE_PS3_FLOAT_POINT:
+          reason = "FLOAT_POINT";
+          break;
+        case MD_EXCEPTION_CODE_PS3_DABR_MATCH:
+          reason = "DABR_MATCH";
+          break;
+        case MD_EXCEPTION_CODE_PS3_ALIGN_EXCEP:
+          reason = "ALIGN_EXCEP";
+          break;
+        case MD_EXCEPTION_CODE_PS3_MEMORY_ACCESS:
+          reason = "MEMORY_ACCESS";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_ALIGN:
+          reason = "COPRO_ALIGN";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_INVALID_COM:
+          reason = "COPRO_INVALID_COM";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_ERR:
+          reason = "COPRO_ERR";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_FIR:
+          reason = "COPRO_FIR";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_DATA_SEGMENT:
+          reason = "COPRO_DATA_SEGMENT";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_DATA_STORAGE:
+          reason = "COPRO_DATA_STORAGE";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_STOP_INSTR:
+          reason = "COPRO_STOP_INSTR";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_HALT_INSTR:
+          reason = "COPRO_HALT_INSTR";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_HALTINST_UNKNOWN:
+          reason = "COPRO_HALTINSTR_UNKNOWN";
+          break;
+        case MD_EXCEPTION_CODE_PS3_COPRO_MEMORY_ACCESS:
+          reason = "COPRO_MEMORY_ACCESS";
+          break;
+        case MD_EXCEPTION_CODE_PS3_GRAPHIC:
+          reason = "GRAPHIC";
+          break;
+        default:
+          BPLOG(INFO) << "Unknown exception reason "<< reason;
           break;
       }
       break;
