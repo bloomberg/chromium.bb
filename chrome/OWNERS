@@ -37,6 +37,18 @@ per-file chrome_android.gypi=nileshagrawal@chromium.org
 per-file chrome_android.gypi=tedchoc@chromium.org
 per-file chrome_android.gypi=yfriedman@chromium.org
 
+# Chrome OS OWNERS from chrome/browser/chromeos/OWNERS
+per-file chrome_browser_chromeos.gypi=achuith@chromium.org
+per-file chrome_browser_chromeos.gypi=davemoore@chromium.org
+per-file chrome_browser_chromeos.gypi=derat@chromium.org
+per-file chrome_browser_chromeos.gypi=dpolukhin@chromium.org
+per-file chrome_browser_chromeos.gypi=nkostylev@chromium.org
+per-file chrome_browser_chromeos.gypi=oshima@chromium.org
+per-file chrome_browser_chromeos.gypi=satorux@chromium.org
+per-file chrome_browser_chromeos.gypi=stevenjb@chromium.org
+per-file chrome_browser_chromeos.gypi=xiyuan@chromium.org
+per-file chrome_browser_chromeos.gypi=zelidrag@chromium.org
+
 # If you just remove, rename, or add a file to a non-test gypi file,
 # you can land that change TBR. Make sure to still add the people
 # you're TBRing to the review thread and to send them email.
