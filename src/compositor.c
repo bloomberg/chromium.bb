@@ -262,6 +262,9 @@ region_init_infinite(pixman_region32_t *region)
 				  UINT32_MAX, UINT32_MAX);
 }
 
+static struct weston_subsurface *
+weston_surface_to_subsurface(struct weston_surface *surface);
+
 WL_EXPORT struct weston_surface *
 weston_surface_create(struct weston_compositor *compositor)
 {
@@ -313,6 +316,9 @@ weston_surface_create(struct weston_compositor *compositor)
 	pixman_region32_init(&surface->pending.opaque);
 	region_init_infinite(&surface->pending.input);
 	wl_list_init(&surface->pending.frame_callback_list);
+
+	wl_list_init(&surface->subsurface_list);
+	wl_list_init(&surface->subsurface_list_pending);
 
 	return surface;
 }
@@ -972,6 +978,8 @@ destroy_surface(struct wl_resource *resource)
 	struct weston_frame_callback *cb, *next;
 
 	assert(wl_list_empty(&surface->geometry.child_list));
+	assert(wl_list_empty(&surface->subsurface_list_pending));
+	assert(wl_list_empty(&surface->subsurface_list));
 
 	if (weston_surface_is_mapped(surface))
 		weston_surface_unmap(surface);
@@ -1168,36 +1176,72 @@ compositor_accumulate_damage(struct weston_compositor *ec)
 }
 
 static void
+surface_list_add(struct weston_compositor *compositor,
+		 struct weston_surface *surface)
+{
+	struct weston_subsurface *sub;
+
+	if (wl_list_empty(&surface->subsurface_list)) {
+		weston_surface_update_transform(surface);
+		wl_list_insert(compositor->surface_list.prev, &surface->link);
+		return;
+	}
+
+	wl_list_for_each(sub, &surface->subsurface_list, parent_link) {
+		if (!weston_surface_is_mapped(sub->surface))
+			continue;
+
+		if (sub->surface == surface) {
+			weston_surface_update_transform(sub->surface);
+			wl_list_insert(compositor->surface_list.prev,
+				       &sub->surface->link);
+		} else {
+			surface_list_add(compositor, sub->surface);
+		}
+	}
+}
+
+static void
+weston_compositor_build_surface_list(struct weston_compositor *compositor)
+{
+	struct weston_surface *surface;
+	struct weston_layer *layer;
+
+	wl_list_init(&compositor->surface_list);
+	wl_list_for_each(layer, &compositor->layer_list, link) {
+		wl_list_for_each(surface, &layer->surface_list, layer_link) {
+			surface_list_add(compositor, surface);
+		}
+	}
+}
+
+static void
 weston_output_repaint(struct weston_output *output, uint32_t msecs)
 {
 	struct weston_compositor *ec = output->compositor;
 	struct weston_surface *es;
-	struct weston_layer *layer;
 	struct weston_animation *animation, *next;
 	struct weston_frame_callback *cb, *cnext;
 	struct wl_list frame_callback_list;
 	pixman_region32_t output_damage;
 
 	/* Rebuild the surface list and update surface transforms up front. */
-	wl_list_init(&ec->surface_list);
-	wl_list_init(&frame_callback_list);
-	wl_list_for_each(layer, &ec->layer_list, link) {
-		wl_list_for_each(es, &layer->surface_list, layer_link) {
-			weston_surface_update_transform(es);
-			wl_list_insert(ec->surface_list.prev, &es->link);
-			if (es->output == output) {
-				wl_list_insert_list(&frame_callback_list,
-						    &es->frame_callback_list);
-				wl_list_init(&es->frame_callback_list);
-			}
-		}
-	}
+	weston_compositor_build_surface_list(ec);
 
 	if (output->assign_planes && !output->disable_planes)
 		output->assign_planes(output);
 	else
 		wl_list_for_each(es, &ec->surface_list, link)
 			weston_surface_move_to_plane(es, &ec->primary_plane);
+
+	wl_list_init(&frame_callback_list);
+	wl_list_for_each(es, &ec->surface_list, link) {
+		if (es->output == output) {
+			wl_list_insert_list(&frame_callback_list,
+					    &es->frame_callback_list);
+			wl_list_init(&es->frame_callback_list);
+		}
+	}
 
 	compositor_accumulate_damage(ec);
 
@@ -1425,9 +1469,20 @@ surface_set_input_region(struct wl_client *client,
 }
 
 static void
-surface_commit(struct wl_client *client, struct wl_resource *resource)
+weston_surface_commit_subsurface_order(struct weston_surface *surface)
 {
-	struct weston_surface *surface = resource->data;
+	struct weston_subsurface *sub;
+
+	wl_list_for_each_reverse(sub, &surface->subsurface_list_pending,
+				 parent_link_pending) {
+		wl_list_remove(&sub->parent_link);
+		wl_list_insert(&surface->subsurface_list, &sub->parent_link);
+	}
+}
+
+static void
+weston_surface_commit(struct weston_surface *surface)
+{
 	pixman_region32_t opaque;
 	int buffer_width = 0;
 	int buffer_height = 0;
@@ -1492,7 +1547,35 @@ surface_commit(struct wl_client *client, struct wl_resource *resource)
 			    &surface->pending.frame_callback_list);
 	wl_list_init(&surface->pending.frame_callback_list);
 
+	weston_surface_commit_subsurface_order(surface);
+
 	weston_surface_schedule_repaint(surface);
+}
+
+static void
+weston_subsurface_commit(struct weston_subsurface *sub);
+
+static void
+weston_subsurface_parent_commit(struct weston_subsurface *sub,
+				int parent_is_synchronized);
+
+static void
+surface_commit(struct wl_client *client, struct wl_resource *resource)
+{
+	struct weston_surface *surface = resource->data;
+	struct weston_subsurface *sub = weston_surface_to_subsurface(surface);
+
+	if (sub) {
+		weston_subsurface_commit(sub);
+		return;
+	}
+
+	weston_surface_commit(surface);
+
+	wl_list_for_each(sub, &surface->subsurface_list, parent_link) {
+		if (sub->surface != surface)
+			weston_subsurface_parent_commit(sub, 0);
+	}
 }
 
 static void
@@ -1612,6 +1695,623 @@ static const struct wl_compositor_interface compositor_interface = {
 	compositor_create_surface,
 	compositor_create_region
 };
+
+static void
+weston_subsurface_commit_from_cache(struct weston_subsurface *sub)
+{
+	struct weston_surface *surface = sub->surface;
+	pixman_region32_t opaque;
+	int buffer_width = 0;
+	int buffer_height = 0;
+
+	/* wl_surface.set_buffer_rotation */
+	surface->buffer_transform = sub->cached.buffer_transform;
+
+	/* wl_surface.attach */
+	if (sub->cached.buffer_ref.buffer || sub->cached.newly_attached)
+		weston_surface_attach(surface, sub->cached.buffer_ref.buffer);
+	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
+
+	if (surface->buffer_ref.buffer) {
+		buffer_width = weston_surface_buffer_width(surface);
+		buffer_height = weston_surface_buffer_height(surface);
+	}
+
+	if (surface->configure && sub->cached.newly_attached)
+		surface->configure(surface, sub->cached.sx, sub->cached.sy,
+				   buffer_width, buffer_height);
+	sub->cached.sx = 0;
+	sub->cached.sy = 0;
+	sub->cached.newly_attached = 0;
+
+	/* wl_surface.damage */
+	pixman_region32_union(&surface->damage, &surface->damage,
+			      &sub->cached.damage);
+	pixman_region32_intersect_rect(&surface->damage, &surface->damage,
+				       0, 0,
+				       surface->geometry.width,
+				       surface->geometry.height);
+	empty_region(&sub->cached.damage);
+
+	/* wl_surface.set_opaque_region */
+	pixman_region32_init_rect(&opaque, 0, 0,
+				  surface->geometry.width,
+				  surface->geometry.height);
+	pixman_region32_intersect(&opaque,
+				  &opaque, &sub->cached.opaque);
+
+	if (!pixman_region32_equal(&opaque, &surface->opaque)) {
+		pixman_region32_copy(&surface->opaque, &opaque);
+		weston_surface_geometry_dirty(surface);
+	}
+
+	pixman_region32_fini(&opaque);
+
+	/* wl_surface.set_input_region */
+	pixman_region32_fini(&surface->input);
+	pixman_region32_init_rect(&surface->input, 0, 0,
+				  surface->geometry.width,
+				  surface->geometry.height);
+	pixman_region32_intersect(&surface->input,
+				  &surface->input, &sub->cached.input);
+
+	/* wl_surface.frame */
+	wl_list_insert_list(&surface->frame_callback_list,
+			    &sub->cached.frame_callback_list);
+	wl_list_init(&sub->cached.frame_callback_list);
+
+	weston_surface_commit_subsurface_order(surface);
+
+	weston_surface_schedule_repaint(surface);
+
+	sub->cached.has_data = 0;
+}
+
+static void
+weston_subsurface_commit_to_cache(struct weston_subsurface *sub)
+{
+	struct weston_surface *surface = sub->surface;
+
+	/*
+	 * If this commit would cause the surface to move by the
+	 * attach(dx, dy) parameters, the old damage region must be
+	 * translated to correspond to the new surface coordinate system
+	 * origin.
+	 */
+	pixman_region32_translate(&sub->cached.damage,
+				  -surface->pending.sx, -surface->pending.sy);
+	pixman_region32_union(&sub->cached.damage, &sub->cached.damage,
+			      &surface->pending.damage);
+	empty_region(&surface->pending.damage);
+
+	if (surface->pending.newly_attached) {
+		sub->cached.newly_attached = 1;
+		weston_buffer_reference(&sub->cached.buffer_ref,
+					surface->pending.buffer);
+	}
+	sub->cached.sx += surface->pending.sx;
+	sub->cached.sy += surface->pending.sy;
+	surface->pending.sx = 0;
+	surface->pending.sy = 0;
+	surface->pending.newly_attached = 0;
+
+	sub->cached.buffer_transform = surface->pending.buffer_transform;
+
+	pixman_region32_copy(&sub->cached.opaque, &surface->pending.opaque);
+
+	pixman_region32_copy(&sub->cached.input, &surface->pending.input);
+
+	wl_list_insert_list(&sub->cached.frame_callback_list,
+			    &surface->pending.frame_callback_list);
+	wl_list_init(&surface->pending.frame_callback_list);
+
+	sub->cached.has_data = 1;
+}
+
+static int
+weston_subsurface_is_synchronized(struct weston_subsurface *sub)
+{
+	while (sub) {
+		if (sub->synchronized)
+			return 1;
+
+		if (!sub->parent)
+			return 0;
+
+		sub = weston_surface_to_subsurface(sub->parent);
+	}
+
+	return 0;
+}
+
+static void
+weston_subsurface_commit(struct weston_subsurface *sub)
+{
+	struct weston_surface *surface = sub->surface;
+	struct weston_subsurface *tmp;
+
+	/* Recursive check for effectively synchronized. */
+	if (weston_subsurface_is_synchronized(sub)) {
+		weston_subsurface_commit_to_cache(sub);
+	} else {
+		if (sub->cached.has_data) {
+			/* flush accumulated state from cache */
+			weston_subsurface_commit_to_cache(sub);
+			weston_subsurface_commit_from_cache(sub);
+		} else {
+			weston_surface_commit(surface);
+		}
+
+		wl_list_for_each(tmp, &surface->subsurface_list, parent_link) {
+			if (tmp->surface != surface)
+				weston_subsurface_parent_commit(tmp, 0);
+		}
+	}
+}
+
+static void
+weston_subsurface_parent_commit(struct weston_subsurface *sub,
+				int parent_is_synchronized)
+{
+	struct weston_surface *surface = sub->surface;
+	struct weston_subsurface *tmp;
+
+	if (sub->position.set) {
+		weston_surface_set_position(sub->surface,
+					    sub->position.x, sub->position.y);
+		sub->position.set = 0;
+	}
+
+	if (!parent_is_synchronized && !sub->synchronized)
+		return;
+
+	/* From now on, commit_from_cache the whole sub-tree, regardless of
+	 * the synchronized mode of each child. This sub-surface or some
+	 * of its ancestors were synchronized, so we are synchronized
+	 * all the way down.
+	 */
+
+	if (sub->cached.has_data)
+		weston_subsurface_commit_from_cache(sub);
+
+	wl_list_for_each(tmp, &surface->subsurface_list, parent_link) {
+		if (tmp->surface != surface)
+			weston_subsurface_parent_commit(tmp, 1);
+	}
+}
+
+static void
+subsurface_configure(struct weston_surface *surface, int32_t dx, int32_t dy,
+		     int32_t width, int32_t height)
+{
+	struct weston_compositor *compositor = surface->compositor;
+
+	weston_surface_configure(surface,
+				 surface->geometry.x + dx,
+				 surface->geometry.y + dy,
+				 width, height);
+
+	/* No need to check parent mappedness, because if parent is not
+	 * mapped, parent is not in a visible layer, so this sub-surface
+	 * will not be drawn either.
+	 */
+	if (!weston_surface_is_mapped(surface)) {
+		wl_list_init(&surface->layer_link);
+
+		/* Cannot call weston_surface_update_transform(),
+		 * because that would call it also for the parent surface,
+		 * which might not be mapped yet. That would lead to
+		 * inconsistent state, where the window could never be
+		 * mapped.
+		 *
+		 * Instead just assing any output, to make
+		 * weston_surface_is_mapped() return true, so that when the
+		 * parent surface does get mapped, this one will get
+		 * included, too. See surface_list_add().
+		 */
+		assert(!wl_list_empty(&compositor->output_list));
+		surface->output = container_of(compositor->output_list.next,
+					       struct weston_output, link);
+	}
+}
+
+static struct weston_subsurface *
+weston_surface_to_subsurface(struct weston_surface *surface)
+{
+	if (surface->configure == subsurface_configure)
+		return surface->configure_private;
+
+	return NULL;
+}
+
+static void
+subsurface_set_position(struct wl_client *client,
+			struct wl_resource *resource, int32_t x, int32_t y)
+{
+	struct weston_subsurface *sub = resource->data;
+
+	if (!sub)
+		return;
+
+	sub->position.x = x;
+	sub->position.y = y;
+	sub->position.set = 1;
+}
+
+static struct weston_subsurface *
+subsurface_from_surface(struct weston_surface *surface)
+{
+	struct weston_subsurface *sub;
+
+	sub = weston_surface_to_subsurface(surface);
+	if (sub)
+		return sub;
+
+	wl_list_for_each(sub, &surface->subsurface_list, parent_link)
+		if (sub->surface == surface)
+			return sub;
+
+	return NULL;
+}
+
+static struct weston_subsurface *
+subsurface_sibling_check(struct weston_subsurface *sub,
+			 struct weston_surface *surface,
+			 const char *request)
+{
+	struct weston_subsurface *sibling;
+
+	sibling = subsurface_from_surface(surface);
+
+	if (!sibling) {
+		wl_resource_post_error(sub->resource,
+			WL_SUBSURFACE_ERROR_BAD_SURFACE,
+			"%s: wl_surface@%d is not a parent or sibling",
+			request, surface->resource.object.id);
+		return NULL;
+	}
+
+	if (sibling->parent != sub->parent) {
+		wl_resource_post_error(sub->resource,
+			WL_SUBSURFACE_ERROR_BAD_SURFACE,
+			"%s: wl_surface@%d has a different parent",
+			request, surface->resource.object.id);
+		return NULL;
+	}
+
+	return sibling;
+}
+
+static void
+subsurface_place_above(struct wl_client *client,
+		       struct wl_resource *resource,
+		       struct wl_resource *sibling_resource)
+{
+	struct weston_subsurface *sub = resource->data;
+	struct weston_surface *surface = sibling_resource->data;
+	struct weston_subsurface *sibling;
+
+	if (!sub)
+		return;
+
+	sibling = subsurface_sibling_check(sub, surface, "place_above");
+	if (!sibling)
+		return;
+
+	wl_list_remove(&sub->parent_link_pending);
+	wl_list_insert(sibling->parent_link_pending.prev,
+		       &sub->parent_link_pending);
+}
+
+static void
+subsurface_place_below(struct wl_client *client,
+		       struct wl_resource *resource,
+		       struct wl_resource *sibling_resource)
+{
+	struct weston_subsurface *sub = resource->data;
+	struct weston_surface *surface = sibling_resource->data;
+	struct weston_subsurface *sibling;
+
+	if (!sub)
+		return;
+
+	sibling = subsurface_sibling_check(sub, surface, "place_below");
+	if (!sibling)
+		return;
+
+	wl_list_remove(&sub->parent_link_pending);
+	wl_list_insert(&sibling->parent_link_pending,
+		       &sub->parent_link_pending);
+}
+
+static void
+subsurface_set_sync(struct wl_client *client, struct wl_resource *resource)
+{
+	struct weston_subsurface *sub = resource->data;
+
+	if (sub)
+		sub->synchronized = 1;
+}
+
+static void
+subsurface_set_desync(struct wl_client *client, struct wl_resource *resource)
+{
+	struct weston_subsurface *sub = resource->data;
+
+	if (sub)
+		sub->synchronized = 0;
+}
+
+static void
+weston_subsurface_cache_init(struct weston_subsurface *sub)
+{
+	pixman_region32_init(&sub->cached.damage);
+	pixman_region32_init(&sub->cached.opaque);
+	pixman_region32_init(&sub->cached.input);
+	wl_list_init(&sub->cached.frame_callback_list);
+	sub->cached.buffer_ref.buffer = NULL;
+}
+
+static void
+weston_subsurface_cache_fini(struct weston_subsurface *sub)
+{
+	struct weston_frame_callback *cb, *tmp;
+
+	wl_list_for_each_safe(cb, tmp, &sub->cached.frame_callback_list, link)
+		wl_resource_destroy(&cb->resource);
+
+	weston_buffer_reference(&sub->cached.buffer_ref, NULL);
+	pixman_region32_fini(&sub->cached.damage);
+	pixman_region32_fini(&sub->cached.opaque);
+	pixman_region32_fini(&sub->cached.input);
+}
+
+static void
+weston_subsurface_unlink_parent(struct weston_subsurface *sub)
+{
+	wl_list_remove(&sub->parent_link);
+	wl_list_remove(&sub->parent_link_pending);
+	wl_list_remove(&sub->parent_destroy_listener.link);
+	sub->parent = NULL;
+}
+
+static void
+weston_subsurface_destroy(struct weston_subsurface *sub);
+
+static void
+subsurface_handle_surface_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_subsurface *sub =
+		container_of(listener, struct weston_subsurface,
+			     surface_destroy_listener);
+	assert(data == &sub->surface->resource);
+
+	/* The protocol object (wl_resource) is left inert. */
+	if (sub->resource)
+		sub->resource->data = NULL;
+
+	weston_subsurface_destroy(sub);
+}
+
+static void
+subsurface_handle_parent_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_subsurface *sub =
+		container_of(listener, struct weston_subsurface,
+			     parent_destroy_listener);
+	assert(data == &sub->parent->resource);
+	assert(sub->surface != sub->parent);
+
+	if (weston_surface_is_mapped(sub->surface))
+		weston_surface_unmap(sub->surface);
+
+	weston_subsurface_unlink_parent(sub);
+}
+
+static void
+subsurface_resource_destroy(struct wl_resource *resource)
+{
+	struct weston_subsurface *sub = resource->data;
+
+	if (sub)
+		weston_subsurface_destroy(sub);
+
+	free(resource);
+}
+
+static void
+subsurface_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static void
+weston_subsurface_link_parent(struct weston_subsurface *sub,
+			      struct weston_surface *parent)
+{
+	sub->parent = parent;
+	sub->parent_destroy_listener.notify = subsurface_handle_parent_destroy;
+	wl_signal_add(&parent->resource.destroy_signal,
+		      &sub->parent_destroy_listener);
+
+	wl_list_insert(&parent->subsurface_list, &sub->parent_link);
+	wl_list_insert(&parent->subsurface_list_pending,
+		       &sub->parent_link_pending);
+}
+
+static void
+weston_subsurface_link_surface(struct weston_subsurface *sub,
+			       struct weston_surface *surface)
+{
+	sub->surface = surface;
+	sub->surface_destroy_listener.notify =
+		subsurface_handle_surface_destroy;
+	wl_signal_add(&surface->resource.destroy_signal,
+		      &sub->surface_destroy_listener);
+}
+
+static void
+weston_subsurface_destroy(struct weston_subsurface *sub)
+{
+	assert(sub->surface);
+
+	if (sub->resource) {
+		assert(weston_surface_to_subsurface(sub->surface) == sub);
+		assert(sub->parent_destroy_listener.notify ==
+		       subsurface_handle_parent_destroy);
+
+		weston_surface_set_transform_parent(sub->surface, NULL);
+		if (sub->parent)
+			weston_subsurface_unlink_parent(sub);
+
+		weston_subsurface_cache_fini(sub);
+
+		sub->surface->configure = NULL;
+		sub->surface->configure_private = NULL;
+	} else {
+		/* the dummy weston_subsurface for the parent itself */
+		assert(sub->parent_destroy_listener.notify == NULL);
+		wl_list_remove(&sub->parent_link);
+		wl_list_remove(&sub->parent_link_pending);
+	}
+
+	wl_list_remove(&sub->surface_destroy_listener.link);
+	free(sub);
+}
+
+static const struct wl_subsurface_interface subsurface_implementation = {
+	subsurface_destroy,
+	subsurface_set_position,
+	subsurface_place_above,
+	subsurface_place_below,
+	subsurface_set_sync,
+	subsurface_set_desync
+};
+
+static struct weston_subsurface *
+weston_subsurface_create(uint32_t id, struct weston_surface *surface,
+			 struct weston_surface *parent)
+{
+	struct weston_subsurface *sub;
+
+	sub = calloc(1, sizeof *sub);
+	if (!sub)
+		return NULL;
+
+	sub->resource = wl_client_add_object(surface->resource.client,
+					     &wl_subsurface_interface,
+					     &subsurface_implementation,
+					     id, sub);
+	if (!sub->resource) {
+		free(sub);
+		return NULL;
+	}
+
+	sub->resource->destroy = subsurface_resource_destroy;
+	weston_subsurface_link_surface(sub, surface);
+	weston_subsurface_link_parent(sub, parent);
+	weston_subsurface_cache_init(sub);
+	sub->synchronized = 1;
+	weston_surface_set_transform_parent(surface, parent);
+
+	return sub;
+}
+
+/* Create a dummy subsurface for having the parent itself in its
+ * sub-surface lists. Makes stacking order manipulation easy.
+ */
+static struct weston_subsurface *
+weston_subsurface_create_for_parent(struct weston_surface *parent)
+{
+	struct weston_subsurface *sub;
+
+	sub = calloc(1, sizeof *sub);
+	if (!sub)
+		return NULL;
+
+	weston_subsurface_link_surface(sub, parent);
+	sub->parent = parent;
+	wl_list_insert(&parent->subsurface_list, &sub->parent_link);
+	wl_list_insert(&parent->subsurface_list_pending,
+		       &sub->parent_link_pending);
+
+	return sub;
+}
+
+static void
+subcompositor_get_subsurface(struct wl_client *client,
+			     struct wl_resource *resource,
+			     uint32_t id,
+			     struct wl_resource *surface_resource,
+			     struct wl_resource *parent_resource)
+{
+	struct weston_surface *surface = surface_resource->data;
+	struct weston_surface *parent = parent_resource->data;
+	struct weston_subsurface *sub;
+	static const char where[] = "get_subsurface: wl_subsurface@";
+
+	if (surface == parent) {
+		wl_resource_post_error(resource,
+			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
+			"%s%d: wl_surface@%d cannot be its own parent",
+			where, id, surface_resource->object.id);
+		return;
+	}
+
+	if (weston_surface_to_subsurface(surface)) {
+		wl_resource_post_error(resource,
+			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
+			"%s%d: wl_surface@%d is already a sub-surface",
+			where, id, surface_resource->object.id);
+		return;
+	}
+
+	if (surface->configure) {
+		wl_resource_post_error(resource,
+			WL_SUBCOMPOSITOR_ERROR_BAD_SURFACE,
+			"%s%d: wl_surface@%d already has a role",
+			where, id, surface_resource->object.id);
+		return;
+	}
+
+	/* make sure the parent is in its own list */
+	if (wl_list_empty(&parent->subsurface_list)) {
+		if (!weston_subsurface_create_for_parent(parent)) {
+			wl_resource_post_no_memory(resource);
+			return;
+		}
+	}
+
+	sub = weston_subsurface_create(id, surface, parent);
+	if (!sub) {
+		wl_resource_post_no_memory(resource);
+		return;
+	}
+
+	surface->configure = subsurface_configure;
+	surface->configure_private = sub;
+}
+
+static void
+subcompositor_destroy(struct wl_client *client, struct wl_resource *resource)
+{
+	wl_resource_destroy(resource);
+}
+
+static const struct wl_subcompositor_interface subcompositor_interface = {
+	subcompositor_destroy,
+	subcompositor_get_subsurface
+};
+
+static void
+bind_subcompositor(struct wl_client *client,
+		   void *data, uint32_t version, uint32_t id)
+{
+	struct weston_compositor *compositor = data;
+
+	wl_client_add_object(client, &wl_subcompositor_interface,
+			     &subcompositor_interface, id, compositor);
+}
 
 static void
 weston_compositor_dpms(struct weston_compositor *compositor,
@@ -2010,6 +2710,10 @@ weston_compositor_init(struct weston_compositor *ec,
 
 	if (!wl_display_add_global(display, &wl_compositor_interface,
 				   ec, compositor_bind))
+		return -1;
+
+	if (!wl_display_add_global(display, &wl_subcompositor_interface,
+				   ec, bind_subcompositor))
 		return -1;
 
 	wl_list_init(&ec->surface_list);
