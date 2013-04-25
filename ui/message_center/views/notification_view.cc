@@ -34,6 +34,7 @@ namespace {
 // Dimensions.
 const int kIconSize = message_center::kNotificationIconSize;
 const int kLegacyIconSize = 40;
+const int kIconBottomPadding = 16;
 const int kTextLeftPadding = kIconSize + message_center::kIconToTextPadding;
 const int kTextBottomPadding = 12;
 const int kTextRightPadding = 23;
@@ -502,22 +503,26 @@ int NotificationView::GetHeightForWidth(int width) {
   int content_width = width - GetInsets().width();
   int top_height = top_view_->GetHeightForWidth(content_width);
   int bottom_height = bottom_view_->GetHeightForWidth(content_width);
-  int total_height = std::max(top_height, kIconSize) +
-                     bottom_height + GetInsets().height();
+  int content_height = std::max(top_height, kIconSize) + bottom_height;
 
-  // Fix for http://crbug.com/230448: Adjust the height when the message_view's
+  // <http://crbug.com/230448> Fix: Adjust the height when the message_view's
   // line limit would be different for the specified width than it currently is.
   // TODO(dharcourt): Avoid BoxLayout and directly compute the correct height.
   if (message_view_ && title_view_) {
     int used_limit = message_view_->GetLineLimit();
     int correct_limit = GetMessageLineLimit(width);
     if (used_limit != correct_limit) {
-      total_height -= GetMessageHeight(content_width, used_limit);
-      total_height += GetMessageHeight(content_width, correct_limit);
+      content_height -= GetMessageHeight(content_width, used_limit);
+      content_height += GetMessageHeight(content_width, correct_limit);
     }
   }
 
-  return total_height;
+  // Adjust the height to make sure there is at least 16px of space below the
+  // icon if there is any space there (<http://crbug.com/232966>).
+  if (content_height > kIconSize)
+    content_height = std::max(content_height, kIconSize + kIconBottomPadding);
+
+  return content_height + GetInsets().height();
 }
 
 void NotificationView::Layout() {
