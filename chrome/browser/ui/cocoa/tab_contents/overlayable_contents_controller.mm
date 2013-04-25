@@ -75,9 +75,9 @@
 
   // Remove any old overlay contents before showing the new one.
   if (overlayContents_) {
-    [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
     if (overlayContents_ != overlay)
       overlayContents_->WasHidden();
+    [overlayContents_->GetView()->GetNativeView() removeFromSuperview];
   }
 
   overlayContents_ = overlay;
