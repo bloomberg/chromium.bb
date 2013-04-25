@@ -50,6 +50,9 @@ class BrokerProcess {
   // The implementation only supports certain white listed flags and will
   // return -EPERM on other flags.
   // It's similar to the open() system call and will return -errno on errors.
+  // We do allow O_CLOEXEC despite not really supporting it. The O_CLOEXEC flag
+  // will be set via fcntl() in a racy way. It is not a concern for any
+  // sandboxed caller that cannot access the file system or use execve().
   int Open(const char* pathname, int flags) const;
 
   int broker_pid() const { return broker_pid_; }

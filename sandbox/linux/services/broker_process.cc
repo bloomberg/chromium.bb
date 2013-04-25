@@ -7,6 +7,7 @@
 #include <fcntl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -19,16 +20,25 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "sandbox/linux/services/linux_syscalls.h"
 
 namespace {
 
 static const size_t kMaxMessageLength = 4096;
 
-// Some flags will need special treatment on the client side and are not
-// supported for now.
-int ForCurrentProcessFlagsMask() {
-  return O_CLOEXEC | O_NONBLOCK;
-}
+// Some flags are local to the current process and cannot be sent over a Unix
+// socket. They need special treatment from the client.
+// O_CLOEXEC is tricky because in theory another thread could call execve()
+// before special treatment is made on the client. Thankfully it can be solved
+// by contract, as callers to Open() are typically sandboxed.
+// To make things worse, there are two CLOEXEC related flags, FD_CLOEXEC (see
+// F_GETFD in fcntl(2)) and O_CLOEXEC (see F_GETFL in fcntl(2)). O_CLOEXEC
+// doesn't affect the semantics on execve(), it's merely a note that the
+// descriptor was originally opened with O_CLOEXEC as a flag. And it is sent
+// over unix sockets just fine, so a receiver that would (incorrectly) look at
+// O_CLOEXEC instead of FD_CLOEXEC may be tricked in thinking that the file
+// descriptor will be closed on execve().
+static const int kCurrentProcessOpenFlagsMask = O_CLOEXEC;
 
 // Check whether |requested_filename| is in |allowed_file_names|.
 // See GetFileNameIfAllowedToOpen() for an explanation of |file_to_open|.
@@ -73,7 +83,7 @@ bool IsAllowedOpenFlags(int flags) {
 
   // Some flags affect the behavior of the current process. We don't support
   // them and don't allow them for now.
-  if (flags & ForCurrentProcessFlagsMask()) {
+  if (flags & kCurrentProcessOpenFlagsMask) {
     return false;
   }
 
@@ -168,7 +178,27 @@ int BrokerProcess::Access(const char* pathname, int mode) const {
 }
 
 int BrokerProcess::Open(const char* pathname, int flags) const {
-  return PathAndFlagsSyscall(kCommandOpen, pathname, flags);
+  // Certain open flags can't be honored over an IPC, handle them locally.
+  // This function only supports O_CLOEXEC and will need to be modified if this
+  // mask changes.
+  RAW_CHECK(kCurrentProcessOpenFlagsMask == O_CLOEXEC);
+  int local_flags = flags & kCurrentProcessOpenFlagsMask;
+  flags &= ~local_flags;
+  int fd = PathAndFlagsSyscall(kCommandOpen, pathname, flags);
+  if (fd >= 0) {
+    if (local_flags & O_CLOEXEC) {
+      // There would be a race condition here if another thread was calling
+      // execve() before we call fcntl. We ask callers of Open() to be mindful
+      // of this.
+      // Note: F_SETFL would set a bit that is not actually used by the kernel.
+      int ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
+      if (ret) {
+        HANDLE_EINTR(close(fd));
+        return -ENOMEM;
+      }
+    }
+  }
+  return fd;
 }
 
 // Make a remote system call over IPC for syscalls that take a path and flags
@@ -384,12 +414,9 @@ void BrokerProcess::OpenFileForIPC(const std::string& requested_filename,
 
   if (safe_to_open_file) {
     CHECK(file_to_open);
-    // O_CLOEXEC doesn't hurt (even though we won't execve()), and this
-    // property won't be passed to the client.
-    // We may want to think about O_NONBLOCK as well.
     // We're doing a 2-parameter open, so we don't support O_CREAT. It doesn't
     // hurt to always pass a third argument though.
-    int opened_fd = open(file_to_open, flags | O_CLOEXEC, 0);
+    int opened_fd = syscall(__NR_open, file_to_open, flags, 0);
     if (opened_fd < 0) {
       write_pickle->WriteInt(-errno);
     } else {

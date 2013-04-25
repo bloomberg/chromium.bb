@@ -360,23 +360,40 @@ SANDBOX_TEST(BrokerProcess, BrokerDied) {
 }
 
 void TestOpenComplexFlags(bool fast_check_in_client) {
+  const char kCpuInfo[] = "/proc/cpuinfo";
   std::vector<std::string> whitelist;
-  whitelist.push_back("/proc/cpuinfo");
+  whitelist.push_back(kCpuInfo);
 
   BrokerProcess open_broker(whitelist,
                             whitelist,
                             fast_check_in_client);
   ASSERT_TRUE(open_broker.Init(NULL));
   // Test that we do the right thing for O_CLOEXEC and O_NONBLOCK.
-  // Presently, the right thing is to always deny them since they are not
-  // supported.
   int fd = -1;
-  fd = open_broker.Open("/proc/cpuinfo", O_RDONLY);
+  int ret = 0;
+  fd = open_broker.Open(kCpuInfo, O_RDONLY);
   ASSERT_GE(fd, 0);
-  ASSERT_EQ(close(fd), 0);
+  ret = fcntl(fd, F_GETFL);
+  ASSERT_NE(-1, ret);
+  // The descriptor shouldn't have the O_CLOEXEC attribute, nor O_NONBLOCK.
+  ASSERT_EQ(0, ret & (O_CLOEXEC | O_NONBLOCK));
+  ASSERT_EQ(0, close(fd));
 
-  ASSERT_EQ(open_broker.Open("/proc/cpuinfo", O_RDONLY | O_CLOEXEC), -EPERM);
-  ASSERT_EQ(open_broker.Open("/proc/cpuinfo", O_RDONLY | O_NONBLOCK), -EPERM);
+  fd = open_broker.Open(kCpuInfo, O_RDONLY | O_CLOEXEC);
+  ASSERT_GE(fd, 0);
+  ret = fcntl(fd, F_GETFD);
+  ASSERT_NE(-1, ret);
+  // Important: use F_GETFD, not F_GETFL. The O_CLOEXEC flag in F_GETFL
+  // is actually not used by the kernel.
+  ASSERT_TRUE(FD_CLOEXEC & ret);
+  ASSERT_EQ(0, close(fd));
+
+  fd = open_broker.Open(kCpuInfo, O_RDONLY | O_NONBLOCK);
+  ASSERT_GE(fd, 0);
+  ret = fcntl(fd, F_GETFL);
+  ASSERT_NE(-1, ret);
+  ASSERT_TRUE(O_NONBLOCK & ret);
+  ASSERT_EQ(0, close(fd));
 }
 
 TEST(BrokerProcess, OpenComplexFlagsWithClientCheck) {
