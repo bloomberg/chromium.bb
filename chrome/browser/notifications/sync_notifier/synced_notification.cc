@@ -4,12 +4,31 @@
 
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 
+#include "base/basictypes.h"
+#include "base/utf_string_conversions.h"
+#include "base/values.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
+#include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
+#endif  // ENABLE_MESSAGE_CENTER
 
 namespace {
 const char kExtensionScheme[] = "chrome-extension://";
+
+bool UseRichNotifications() {
+#if defined(ENABLE_MESSAGE_CENTER)
+  return message_center::IsRichNotificationEnabled();
+#else  // ENABLE_MESSAGE_CENTER
+  return false;
+#endif  // ENABLE_MESSAGE_CENTER
+}
+
 }  // namespace
 
 namespace notifier {
@@ -42,6 +61,129 @@ sync_pb::EntitySpecifics SyncedNotification::GetEntitySpecifics() const {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.mutable_synced_notification()->CopyFrom(specifics_);
   return entity_specifics;
+}
+
+void SyncedNotification::Show(NotificationUIManager* notification_manager,
+                              ChromeNotifierService* notifier_service,
+                              Profile* profile) {
+  // Set up the fields we need to send and create a Notification object.
+  GURL image_url = GetImageUrl();
+  string16 text = UTF8ToUTF16(GetText());
+  string16 heading = UTF8ToUTF16(GetHeading());
+  // TODO(petewil): Eventually put the display name of the sending service here.
+  string16 display_source = UTF8ToUTF16(GetOriginUrl().spec());
+  string16 replace_key = UTF8ToUTF16(GetKey());
+
+  // The delegate will eventually catch calls that the notification
+  // was read or deleted, and send the changes back to the server.
+  scoped_refptr<NotificationDelegate> delegate =
+      new ChromeNotifierDelegate(GetKey(), notifier_service);
+
+  // TODO(petewil): For now, just punt on dismissed notifications until
+  // I change the interface to let NotificationUIManager know the right way.
+  if (SyncedNotification::kRead == GetReadState() ||
+      SyncedNotification::kDismissed == GetReadState() ) {
+    DVLOG(2) << "Dismissed notification arrived"
+             << GetHeading() << " " << GetText();
+    return;
+  }
+
+  // Some inputs and fields are only used if there is a notification center.
+  if (UseRichNotifications()) {
+
+#if defined(ENABLE_MESSAGE_CENTER)
+    double creation_time = static_cast<double>(GetCreationTime());
+    int priority = GetPriority();
+    int notification_count = GetNotificationCount();
+    int button_count = GetButtonCount();
+    // TODO(petewil): Refactor this for an arbitrary number of buttons.
+    std::string button_one_title = GetButtonOneTitle();
+    std::string button_one_icon_url = GetButtonOneIconUrl();
+    std::string button_two_title = GetButtonTwoTitle();
+    std::string button_two_icon_url = GetButtonTwoIconUrl();
+
+    // Deduce which notification template to use from the data.
+    message_center::NotificationType notification_type =
+        message_center::NOTIFICATION_TYPE_SIMPLE;
+    if (!image_url.is_empty()) {
+      notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
+    } else if (notification_count > 1) {
+      notification_type = message_center::NOTIFICATION_TYPE_MULTIPLE;
+    } else if (button_count > 0) {
+      notification_type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
+    }
+
+    // Fill the optional fields with the information we need to make a
+    // notification.
+    DictionaryValue optional_fields;
+    optional_fields.SetDouble(message_center::kTimestampKey, creation_time);
+    if (priority != SyncedNotification::kUndefinedPriority)
+      optional_fields.SetInteger(message_center::kPriorityKey, priority);
+    if (!button_one_title.empty())
+      optional_fields.SetString(message_center::kButtonOneTitleKey,
+                                button_one_title);
+    if (!button_one_icon_url.empty())
+      optional_fields.SetString(message_center::kButtonOneIconUrlKey,
+                                button_one_icon_url);
+    if (!button_two_title.empty())
+      optional_fields.SetString(message_center::kButtonTwoTitleKey,
+                                button_two_title);
+    if (!button_two_icon_url.empty())
+      optional_fields.SetString(message_center::kButtonTwoIconUrlKey,
+                                button_two_icon_url);
+
+    // Fill the individual notification fields for a multiple notification.
+    if (notification_count > 1) {
+      base::ListValue* items = new base::ListValue();
+
+      for (int ii = 0; ii < notification_count; ++ii) {
+        DictionaryValue* item = new DictionaryValue();
+        item->SetString(message_center::kItemTitleKey,
+                        UTF8ToUTF16(GetContainedNotificationTitle(
+                            ii)));
+        item->SetString(message_center::kItemMessageKey,
+                        UTF8ToUTF16(GetContainedNotificationMessage(
+                            ii)));
+        items->Append(item);
+      }
+
+      optional_fields.Set(message_center::kItemsKey, items);
+    }
+
+    Notification ui_notification(notification_type,
+                                 GetOriginUrl(),
+                                 GetAppIconUrl(),
+                                 heading,
+                                 text,
+                                 WebKit::WebTextDirectionDefault,
+                                 display_source,
+                                 replace_key,
+                                 &optional_fields,
+                                 delegate);
+
+    notification_manager->Add(ui_notification, profile);
+#endif  // ENABLE_MESSAGE_CENTER
+
+  } else {
+
+    Notification ui_notification(GetOriginUrl(),
+                                 GetAppIconUrl(),
+                                 heading,
+                                 text,
+                                 WebKit::WebTextDirectionDefault,
+                                 display_source,
+                                 replace_key,
+                                 delegate);
+
+    notification_manager->Add(ui_notification, profile);
+
+  }
+
+  DVLOG(1) << "Showing Synced Notification! " << heading << " " << text
+           << " " << GetAppIconUrl() << " " << replace_key << " "
+           << GetReadState();
+
+  return;
 }
 
 // TODO(petewil): Consider the timestamp too once it gets added to the protobuf.

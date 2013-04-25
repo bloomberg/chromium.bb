@@ -20,7 +20,12 @@ namespace sync_pb {
 class SyncedNotificationSpecifics;
 }
 
+class NotificationUIManager;
+class Profile;
+
 namespace notifier {
+
+class ChromeNotifierService;
 
 class SyncedNotification {
  public:
@@ -70,6 +75,11 @@ class SyncedNotification {
   bool EqualsIgnoringReadState(const SyncedNotification& other) const;
 
   void NotificationHasBeenDismissed();
+
+  // Display the notification in the notification center
+  void Show(NotificationUIManager* notification_manager,
+            ChromeNotifierService* notifier_service,
+            Profile* profile);
 
   // This gets a pointer to the SyncedNotificationSpecifics part
   // of the sync data.

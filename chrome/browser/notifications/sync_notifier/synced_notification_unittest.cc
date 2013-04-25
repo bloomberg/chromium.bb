@@ -5,12 +5,18 @@
 #include <string>
 
 #include "base/memory/scoped_ptr.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/notifications/notification.h"
+#include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/notifications/sync_notifier/synced_notification.h"
 #include "sync/api/sync_data.h"
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#if defined(ENABLE_MESSAGE_CENTER)
+#include "ui/message_center/message_center_util.h"
 #include "ui/message_center/notification_types.h"
+#endif // ENABLE_MESSAGE_CENTER
 
 using syncer::SyncData;
 using notifier::SyncedNotification;
@@ -29,6 +35,13 @@ const int kNotificationPriority = static_cast<int>(
 const int kNotificationPriority = 1;
 #endif  // ENABLE_MESSAGE_CENTER
 
+bool UseRichNotifications() {
+#if defined(ENABLE_MESSAGE_CENTER)
+  return message_center::IsRichNotificationEnabled();
+#else  // ENABLE_MESSAGE_CENTER
+  return false;
+#endif  // ENABLE_MESSAGE_CENTER
+}
 
 const char kTitle1[] = "New appointment at 2:15";
 const char kTitle2[] = "Email from Mark: Upcoming Ski trip";
@@ -61,6 +74,8 @@ const char kContainedTitle3[] = "Starcraft Tonight";
 const char kContainedMessage1[] = "Due to rain, we will be inside the cafe.";
 const char kContainedMessage2[] = "Meet at noon in the Gym.";
 const char kContainedMessage3[] = "Let's play starcraft tonight on the LAN.";
+const char kExpectedOriginUrl[] =
+    "chrome-extension://fboilmbenheemaomgaeehigklolhkhnf/";
 
 const sync_pb::CoalescedSyncedNotification_ReadState kRead =
     sync_pb::CoalescedSyncedNotification_ReadState_READ;
@@ -69,6 +84,55 @@ const sync_pb::CoalescedSyncedNotification_ReadState kUnread =
 const sync_pb::CoalescedSyncedNotification_ReadState kDismissed =
     sync_pb::CoalescedSyncedNotification_ReadState_DISMISSED;
 }  // namespace
+
+// Stub out the NotificationUIManager for unit testing.
+class StubNotificationUIManager : public NotificationUIManager {
+ public:
+  StubNotificationUIManager()
+      : notification_(GURL(), GURL(), string16(), string16(), NULL) {}
+  virtual ~StubNotificationUIManager() {}
+
+  // Adds a notification to be displayed. Virtual for unit test override.
+  virtual void Add(const Notification& notification, Profile* profile)
+      OVERRIDE {
+    // Make a deep copy of the notification that we can inspect.
+    notification_ = notification;
+  }
+
+  // Returns true if any notifications match the supplied ID, either currently
+  // displayed or in the queue.
+  virtual bool DoesIdExist(const std::string& id) OVERRIDE {
+    return true;
+  }
+
+  // Removes any notifications matching the supplied ID, either currently
+  // displayed or in the queue.  Returns true if anything was removed.
+  virtual bool CancelById(const std::string& notification_id) OVERRIDE {
+    return false;
+  }
+
+  // Removes notifications matching the |source_origin| (which could be an
+  // extension ID). Returns true if anything was removed.
+  virtual bool CancelAllBySourceOrigin(const GURL& source_origin) OVERRIDE {
+    return false;
+  }
+
+  // Removes notifications matching |profile|. Returns true if any were removed.
+  virtual bool CancelAllByProfile(Profile* profile) OVERRIDE {
+    return false;
+  }
+
+  // Cancels all pending notifications and closes anything currently showing.
+  // Used when the app is terminating.
+  virtual void CancelAll() OVERRIDE {}
+
+  // Test hook to get the notification so we can check it
+  const Notification& notification() const { return notification_; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(StubNotificationUIManager);
+  Notification notification_;
+};
 
 class SyncedNotificationTest : public testing::Test {
  public:
@@ -138,25 +202,37 @@ class SyncedNotificationTest : public testing::Test {
             kProtobufPriority));
 
     // Set the title.
-    specifics->mutable_coalesced_notification()->
+    specifics->
+        mutable_coalesced_notification()->
         mutable_render_info()->
         mutable_expanded_info()->
         mutable_simple_expanded_layout()->
         set_title(title);
 
     // Set the text.
-    specifics->mutable_coalesced_notification()->
+    specifics->
+        mutable_coalesced_notification()->
         mutable_render_info()->
         mutable_expanded_info()->
         mutable_simple_expanded_layout()->
         set_text(text);
 
+    // Set the heading.
+    specifics->
+        mutable_coalesced_notification()->
+        mutable_render_info()->
+        mutable_collapsed_info()->
+        mutable_simple_collapsed_layout()->
+        set_heading(title);
+
     // Add the collapsed info and set the app_icon_url on it.
-    specifics->mutable_coalesced_notification()->
+    specifics->
+        mutable_coalesced_notification()->
         mutable_render_info()->
         mutable_expanded_info()->
         add_collapsed_info();
-    specifics->mutable_coalesced_notification()->
+    specifics->
+        mutable_coalesced_notification()->
         mutable_render_info()->
         mutable_expanded_info()->
         mutable_collapsed_info(0)->
@@ -165,12 +241,14 @@ class SyncedNotificationTest : public testing::Test {
         set_url(app_icon_url);
 
     // Add the media object and set the image url on it.
-    specifics->mutable_coalesced_notification()->
+    specifics->
+        mutable_coalesced_notification()->
         mutable_render_info()->
         mutable_expanded_info()->
         mutable_simple_expanded_layout()->
         add_media();
-    specifics->mutable_coalesced_notification()->
+    specifics->
+        mutable_coalesced_notification()->
         mutable_render_info()->
         mutable_expanded_info()->
         mutable_simple_expanded_layout()->
@@ -489,4 +567,76 @@ TEST_F(SyncedNotificationTest, UpdateTest) {
   EXPECT_FALSE(notification5->EqualsIgnoringReadState(*notification1_));
 }
 
-// Add a test for a notification being read and or deleted.
+TEST_F(SyncedNotificationTest, ShowTest) {
+
+  if (!UseRichNotifications())
+    return;
+
+#if defined(ENABLE_MESSAGE_CENTER)
+
+  StubNotificationUIManager notification_manager;
+
+  // Call the method under test using the pre-populated data.
+  notification1_->Show(&notification_manager, NULL, NULL);
+
+  // Check the base fields of the notification.
+  EXPECT_EQ(message_center::NOTIFICATION_TYPE_IMAGE,
+            notification_manager.notification().type());
+  EXPECT_EQ(kTitle1,
+            UTF16ToUTF8(notification_manager.notification().title()));
+  EXPECT_EQ(kText1,
+            UTF16ToUTF8(notification_manager.notification().body()));
+  EXPECT_EQ(kExpectedOriginUrl,
+            notification_manager.notification().origin_url().spec());
+  EXPECT_EQ(kIconUrl1, notification_manager.notification().icon_url().spec());
+  EXPECT_EQ(kKey1,
+            UTF16ToUTF8(notification_manager.notification().replace_id()));
+  const DictionaryValue* actual_fields =
+      notification_manager.notification().optional_fields();
+
+  // Check the optional fields of the notification.
+  // Make an optional fields struct like we expect, compare it with actual.
+  DictionaryValue expected_fields;
+  expected_fields.SetDouble(message_center::kTimestampKey, kFakeCreationTime);
+  expected_fields.SetInteger(message_center::kPriorityKey,
+                             kNotificationPriority);
+  expected_fields.SetString(message_center::kButtonOneTitleKey,
+                            kButtonOneTitle);
+  expected_fields.SetString(message_center::kButtonOneIconUrlKey,
+                            kButtonOneIconUrl);
+  expected_fields.SetString(message_center::kButtonTwoTitleKey,
+                            kButtonTwoTitle);
+  expected_fields.SetString(message_center::kButtonTwoIconUrlKey,
+                            kButtonTwoIconUrl);
+
+  // Fill the individual notification fields for a mutiple notification.
+  base::ListValue* items = new base::ListValue();
+  DictionaryValue* item1 = new DictionaryValue();
+  DictionaryValue* item2 = new DictionaryValue();
+  DictionaryValue* item3 = new DictionaryValue();
+  item1->SetString(message_center::kItemTitleKey,
+                   UTF8ToUTF16(kContainedTitle1));
+  item1->SetString(message_center::kItemMessageKey,
+                   UTF8ToUTF16(kContainedMessage1));
+  item2->SetString(message_center::kItemTitleKey,
+                   UTF8ToUTF16(kContainedTitle2));
+  item2->SetString(message_center::kItemMessageKey,
+                   UTF8ToUTF16(kContainedMessage2));
+  item3->SetString(message_center::kItemTitleKey,
+                   UTF8ToUTF16(kContainedTitle3));
+  item3->SetString(message_center::kItemMessageKey,
+                   UTF8ToUTF16(kContainedMessage3));
+  items->Append(item1);
+  items->Append(item2);
+  items->Append(item3);
+  expected_fields.Set(message_center::kItemsKey, items);
+
+  EXPECT_TRUE(expected_fields.Equals(actual_fields))
+      << "Expected: " << expected_fields
+      << ", but actual: " << *actual_fields;
+
+#endif  // ENABLE_MESSAGE_CENTER
+
+}
+
+// TODO(petewil): Add a test for a notification being read and or deleted.

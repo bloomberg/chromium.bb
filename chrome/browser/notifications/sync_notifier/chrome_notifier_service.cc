@@ -8,11 +8,8 @@
 
 #include "chrome/browser/notifications/sync_notifier/chrome_notifier_service.h"
 
-#include "base/utf_string_conversions.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
-#include "chrome/browser/notifications/sync_notifier/chrome_notifier_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "googleurl/src/gurl.h"
 #include "sync/api/sync_change.h"
@@ -21,7 +18,6 @@
 #include "sync/protocol/sync.pb.h"
 #include "sync/protocol/synced_notification_specifics.pb.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebTextDirection.h"
-#include "ui/message_center/notification_types.h"
 
 namespace notifier {
 
@@ -261,129 +257,8 @@ void ChromeNotifierService::Add(scoped_ptr<SyncedNotification> notification) {
   // Take ownership of the object and put it into our local storage.
   notification_data_.push_back(notification.release());
 
-  // Show it to the user.
-  Show(notification_copy);
-}
-
-// Send the notification to the NotificationUIManager to show to the user.
-void ChromeNotifierService::Show(SyncedNotification* notification) {
-  // Set up the fields we need to send and create a Notification object.
-  GURL origin_url(notification->GetOriginUrl());
-  GURL app_icon_url(notification->GetAppIconUrl());
-  GURL image_url(notification->GetImageUrl());
-  string16 title = UTF8ToUTF16(notification->GetTitle());
-  string16 text = UTF8ToUTF16(notification->GetText());
-  string16 heading = UTF8ToUTF16(notification->GetHeading());
-  string16 description = UTF8ToUTF16(notification->GetDescription());
-  // TODO(petewil): What goes in the display source, is empty OK?
-  string16 display_source;
-  string16 replace_key = UTF8ToUTF16(notification->GetKey());
-
-  // The delegate will eventually catch calls that the notification
-  // was read or deleted, and send the changes back to the server.
-  scoped_refptr<NotificationDelegate> delegate =
-      new ChromeNotifierDelegate(notification->GetKey(), this);
-
-  // Some inputs and fields are only used if there is a notification center.
-#if defined(ENABLE_MESSAGE_CENTER)
-  double creation_time = static_cast<double>(notification->GetCreationTime());
-  int priority = notification->GetPriority();
-  int notification_count = notification->GetNotificationCount();
-  int button_count = notification->GetButtonCount();
-  std::string button_one_title = notification->GetButtonOneTitle();
-  std::string button_one_icon_url = notification->GetButtonOneIconUrl();
-  std::string button_two_title = notification->GetButtonTwoTitle();
-  std::string button_two_icon_url = notification->GetButtonTwoIconUrl();
-
-  // Deduce which notification template to use from the data.
-  message_center::NotificationType notification_type =
-      message_center::NOTIFICATION_TYPE_SIMPLE;
-  if (!image_url.is_empty()) {
-    notification_type = message_center::NOTIFICATION_TYPE_IMAGE;
-  } else if (notification_count > 1) {
-    notification_type = message_center::NOTIFICATION_TYPE_MULTIPLE;
-  } else if (button_count > 0) {
-    notification_type = message_center::NOTIFICATION_TYPE_BASE_FORMAT;
-  }
-
-  // Fill the optional fields with the information we need to make a
-  // notification.
-  DictionaryValue optional_fields;
-  optional_fields.SetDouble(message_center::kTimestampKey, creation_time);
-  if (priority != SyncedNotification::kUndefinedPriority)
-    optional_fields.SetInteger(message_center::kPriorityKey, priority);
-  if (!button_one_title.empty())
-    optional_fields.SetString(message_center::kButtonOneTitleKey,
-                               button_one_title);
-  if (!button_one_icon_url.empty())
-    optional_fields.SetString(message_center::kButtonOneIconUrlKey,
-                               button_one_icon_url);
-  if (!button_two_title.empty())
-    optional_fields.SetString(message_center::kButtonTwoTitleKey,
-                               button_two_title);
-  if (!button_two_icon_url.empty())
-    optional_fields.SetString(message_center::kButtonTwoIconUrlKey,
-                               button_two_icon_url);
-
-  // Fill the individual notification fields for a multiple notification.
-  if (notification_count > 1) {
-    base::ListValue* items = new base::ListValue();
-
-    for (int ii = 0; ii < notification_count; ++ii) {
-      DictionaryValue* item = new DictionaryValue();
-      item->SetString(message_center::kItemTitleKey,
-                      UTF8ToUTF16(notification->GetContainedNotificationTitle(
-                          ii)));
-      item->SetString(message_center::kItemMessageKey,
-                      UTF8ToUTF16(notification->GetContainedNotificationMessage(
-                          ii)));
-      items->Append(item);
-    }
-
-    optional_fields.Set(message_center::kItemsKey, items);
-  }
-
-  // TODO(petewil): For now, just punt on dismissed notifications until
-  // I change the interface to let NotificationUIManager know the right way.
-  if (SyncedNotification::kRead == notification->GetReadState() ||
-      SyncedNotification::kDismissed == notification->GetReadState() ) {
-    DVLOG(2) << "Dismissed notification arrived"
-             << notification->GetTitle() << " " << notification->GetText();
-    return;
-  }
-
-  Notification ui_notification(notification_type,
-                               origin_url,
-                               app_icon_url,
-                               heading,
-                               text,
-                               WebKit::WebTextDirectionDefault,
-                               display_source,
-                               replace_key,
-                               &optional_fields,
-                               delegate);
-
-
-#else  // ENABLE_MESSAGE_CENTER
-
-  Notification ui_notification(origin_url,
-                               app_icon_url,
-                               heading,
-                               text,
-                               WebKit::WebTextDirectionDefault,
-                               display_source,
-                               replace_key,
-                               delegate);
-
-#endif  // ENABLE_MESSAGE_CENTER
-
-  notification_manager_->Add(ui_notification, profile_);
-
-  DVLOG(1) << "Synced Notification arrived! " << title << " " << text
-           << " " << app_icon_url << " " << replace_key << " "
-           << notification->GetReadState();
-
-  return;
+  // Get the contained bitmaps, and show the notification once we have them.
+  notification_copy->Show(notification_manager_, this, profile_);
 }
 
 }  // namespace notifier
