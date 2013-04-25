@@ -65,6 +65,8 @@ void V8MutationCallback::call(const Vector<RefPtr<MutationRecord> >& mutations, 
     v8::Isolate* isolate = v8Context->GetIsolate();
 
     v8::Handle<v8::Function> callback = v8::Local<v8::Function>::New(isolate, m_callback.get());
+    if (callback.IsEmpty())
+        return;
 
     v8::Handle<v8::Value> observerHandle = toV8(observer, v8::Handle<v8::Object>(), isolate);
     if (observerHandle.IsEmpty()) {
