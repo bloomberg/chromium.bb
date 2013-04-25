@@ -32,8 +32,6 @@ void ExportLayoutTestSpecificPreferences(const WebPreferences& from,
   to->loads_images_automatically = from.loadsImagesAutomatically;
   to->plugins_enabled = from.pluginsEnabled;
   to->java_enabled = from.javaEnabled;
-  to->uses_page_cache = from.usesPageCache;
-  to->page_cache_supports_plugins = from.pageCacheSupportsPlugins;
   to->application_cache_enabled = from.offlineWebApplicationCacheEnabled;
   to->tabs_to_links = from.tabsToLinks;
   to->experimental_webgl_enabled = from.experimentalWebGLEnabled;

@@ -409,8 +409,6 @@ WebPreferences WebContentsImpl::GetWebkitPrefs(RenderViewHost* rvh,
   prefs.java_enabled =
       !command_line.HasSwitch(switches::kDisableJava);
 
-  prefs.uses_page_cache =
-      command_line.HasSwitch(switches::kEnableFastback);
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);
   prefs.xss_auditor_enabled =

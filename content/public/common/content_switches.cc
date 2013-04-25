@@ -295,9 +295,6 @@ const char kEnableExperimentalWebKitFeatures[] =
 // Disables the threaded HTML parser in WebKit
 const char kDisableThreadedHTMLParser[]     = "disable-threaded-html-parser";
 
-// Enables the fastback page cache.
-const char kEnableFastback[]                = "enable-fastback";
-
 // By default, a page is laid out to fill the entire width of the window.
 // This flag fixes the layout of the page to a default of 980 CSS pixels,
 // or to a specified width and height using --enable-fixed-layout=w,h

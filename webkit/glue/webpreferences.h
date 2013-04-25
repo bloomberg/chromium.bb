@@ -72,8 +72,6 @@ struct WEBKIT_GLUE_EXPORT WebPreferences {
   bool text_areas_are_resizable;
   bool java_enabled;
   bool allow_scripts_to_close_windows;
-  bool uses_page_cache;
-  bool page_cache_supports_plugins;
   bool remote_fonts_enabled;
   bool javascript_can_access_clipboard;
   bool xss_auditor_enabled;
