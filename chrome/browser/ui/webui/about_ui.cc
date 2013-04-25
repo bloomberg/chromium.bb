@@ -78,6 +78,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/customization_document.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/webui/chromeos/about_network.h"
@@ -434,7 +435,8 @@ std::string AboutDiscardsRun() {
       chrome::kChromeUIDiscardsURL));
   AddContentSecurityPolicy(&output);
   output.append(WrapWithTag("p", "Discarding a tab..."));
-  g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
+  g_browser_process->platform_part()->
+      oom_priority_manager()->LogMemoryAndDiscardTab();
   AppendFooter(&output);
   return output;
 }
@@ -452,7 +454,8 @@ std::string AboutDiscards(const std::string& path) {
       "<p>Tabs sorted from most interesting to least interesting. The least "
       "interesting tab may be discarded if we run out of physical memory.</p>");
 
-  chromeos::OomPriorityManager* oom = g_browser_process->oom_priority_manager();
+  chromeos::OomPriorityManager* oom =
+      g_browser_process->platform_part()->oom_priority_manager();
   std::vector<string16> titles = oom->GetTabTitles();
   if (!titles.empty()) {
     output.append("<ul>");

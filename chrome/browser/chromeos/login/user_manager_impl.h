@@ -94,6 +94,10 @@ class UserManagerImpl
       const std::string& email) const OVERRIDE;
   virtual void AddObserver(UserManager::Observer* obs) OVERRIDE;
   virtual void RemoveObserver(UserManager::Observer* obs) OVERRIDE;
+  virtual void AddSessionStateObserver(
+      UserManager::UserSessionStateObserver* obs) OVERRIDE;
+  virtual void RemoveSessionStateObserver(
+      UserManager::UserSessionStateObserver* obs) OVERRIDE;
   virtual void NotifyLocalStateChanged() OVERRIDE;
   virtual const User* CreateLocallyManagedUserRecord(
       const std::string& e_mail,
@@ -227,6 +231,9 @@ class UserManagerImpl
   // Notifies observers that merge session state had changed.
   void NotifyMergeSessionStateChanged();
 
+  // Notifies observers that active user_id hash has changed.
+  void NotifyActiveUserHashChanged(const std::string& hash);
+
   // Returns true if there is non-committed user creation transaction.
   bool HasFailedLocallyManagedUserCreationTransaction();
 
@@ -306,6 +313,10 @@ class UserManagerImpl
   ProfileSyncService* observed_sync_service_;
 
   ObserverList<UserManager::Observer> observer_list_;
+
+  // TODO(nkostylev): Merge with session state refactoring CL.
+  ObserverList<UserManager::UserSessionStateObserver>
+      session_state_observer_list_;
 
   // User avatar manager.
   scoped_ptr<UserImageManagerImpl> user_image_manager_;

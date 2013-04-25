@@ -5,14 +5,23 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_PROFILES_PROFILE_HELPER_H_
 
+#include <string>
+
 #include "base/basictypes.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 
 class Profile;
 
 namespace chromeos {
 
-class ProfileHelper {
+class ProfileHelper : public UserManager::UserSessionStateObserver {
  public:
+  ProfileHelper();
+  virtual ~ProfileHelper();
+
+  // Returns Profile instance that corresponds to |user_id_hash|.
+  static Profile* GetProfileByUserIdHash(const std::string& user_id_hash);
+
   // Returns OffTheRecord profile for use during signing phase.
   static Profile* GetSigninProfile();
 
@@ -20,8 +29,21 @@ class ProfileHelper {
   // TODO(dzhioev): Investigate whether or not this method is needed.
   static void ProfileStartup(Profile* profile, bool process_startup);
 
+  // Should called once after UserManager instance has been created.
+  void Initialize();
+
+  // Returns hash for active user ID which is used to identify that user profile
+  // on Chrome OS.
+  std::string active_user_id_hash() { return active_user_id_hash_; }
+
  private:
-  DISALLOW_IMPLICIT_CONSTRUCTORS(ProfileHelper);
+  // UserManager::UserSessionStateObserver implementation:
+  virtual void ActiveUserHashChanged(const std::string& hash) OVERRIDE;
+
+  // Identifies path to active user profile on Chrome OS.
+  std::string active_user_id_hash_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileHelper);
 };
 
 } // namespace chromeos

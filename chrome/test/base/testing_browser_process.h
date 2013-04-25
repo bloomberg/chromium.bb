@@ -66,10 +66,7 @@ class TestingBrowserProcess : public BrowserProcess {
   virtual safe_browsing::ClientSideDetectionService*
       safe_browsing_detection_service() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
-
-#if defined(OS_CHROMEOS)
-  virtual chromeos::OomPriorityManager* oom_priority_manager() OVERRIDE;
-#endif  // defined(OS_CHROMEOS)
+  virtual BrowserProcessPlatformPart* platform_part() OVERRIDE;
 
   virtual extensions::EventRouterForwarder*
       extension_event_router_forwarder() OVERRIDE;
@@ -158,6 +155,8 @@ class TestingBrowserProcess : public BrowserProcess {
   PrefService* local_state_;
   IOThread* io_thread_;
   net::URLRequestContextGetter* system_request_context_;
+
+  scoped_ptr<BrowserProcessPlatformPart> platform_part_;
 
   DISALLOW_COPY_AND_ASSIGN(TestingBrowserProcess);
 };

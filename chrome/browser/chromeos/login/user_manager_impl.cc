@@ -333,6 +333,8 @@ void UserManagerImpl::SwitchActiveUser(const std::string& email) {
   user->set_is_active(true);
   active_user_ = user;
 
+  NotifyActiveUserHashChanged(active_user_->username_hash());
+
   // TODO(nkostylev): Notify session_manager on active user change.
   // http://crbug.com/230857
   content::NotificationService::current()->Notify(
@@ -799,6 +801,18 @@ void UserManagerImpl::RemoveObserver(UserManager::Observer* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
+void UserManagerImpl::AddSessionStateObserver(
+    UserManager::UserSessionStateObserver* obs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  session_state_observer_list_.AddObserver(obs);
+}
+
+void UserManagerImpl::RemoveSessionStateObserver(
+    UserManager::UserSessionStateObserver* obs) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  session_state_observer_list_.RemoveObserver(obs);
+}
+
 void UserManagerImpl::NotifyLocalStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
@@ -1084,6 +1098,8 @@ void UserManagerImpl::RetailModeUserLoggedIn() {
 
 void UserManagerImpl::NotifyOnLogin() {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  NotifyActiveUserHashChanged(active_user_->username_hash());
+
   UpdateLoginState();
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
@@ -1396,6 +1412,13 @@ void UserManagerImpl::NotifyMergeSessionStateChanged() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   FOR_EACH_OBSERVER(UserManager::Observer, observer_list_,
                     MergeSessionStateChanged(merge_session_state_));
+}
+
+void UserManagerImpl::NotifyActiveUserHashChanged(const std::string& hash) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  FOR_EACH_OBSERVER(UserManager::UserSessionStateObserver,
+                    session_state_observer_list_,
+                    ActiveUserHashChanged(hash));
 }
 
 void UserManagerImpl::UpdateLoginState() {

@@ -4,17 +4,47 @@
 
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/sms_observer.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_constants.h"
-
+#include "chrome/common/chrome_switches.h"
 
 namespace chromeos {
+
+namespace {
+
+// TODO(nkostylev): Remove this hack when http://crbug.com/224291 is fixed.
+// Now user homedirs are mounted to /home/user which is different from
+// user data dir (/home/chronos).
+base::FilePath GetChromeOSProfileDir(const base::FilePath& path) {
+  base::FilePath profile_dir(FILE_PATH_LITERAL("/home/user/"));
+  profile_dir = profile_dir.Append(path);
+  return profile_dir;
+}
+
+} // namespace
+
+////////////////////////////////////////////////////////////////////////////////
+// ProfileHelper, public
+
+ProfileHelper::ProfileHelper() {
+}
+
+ProfileHelper::~ProfileHelper() {
+}
+
+// static
+Profile* ProfileHelper::GetProfileByUserIdHash(
+    const std::string& user_id_hash) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetProfile(base::FilePath(user_id_hash));
+}
 
 // static
 Profile* ProfileHelper::GetSigninProfile() {
@@ -43,6 +73,18 @@ void ProfileHelper::ProfileStartup(Profile* profile, bool process_startup) {
 
     profile->SetupChromeOSEnterpriseExtensionObserver();
   }
+}
+
+void ProfileHelper::Initialize() {
+  UserManager::Get()->AddSessionStateObserver(this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// ProfileHelper, UserManager::UserSessionStateObserver implementation:
+
+void ProfileHelper::ActiveUserHashChanged(const std::string& hash) {
+  active_user_id_hash_ = hash;
+  LOG(INFO) << "Switching to custom profile_dir: " << active_user_id_hash_;
 }
 
 }  // namespace chromeos

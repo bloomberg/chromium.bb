@@ -24,6 +24,12 @@
 #include "chrome/browser/thumbnails/render_widget_snapshot_taker.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chrome/test/base/testing_browser_process_platform_part_chromeos.h"
+#else
+#include "chrome/test/base/testing_browser_process_platform_part.h"
+#endif  // defined(OS_CHROMEOS)
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
 #include "chrome/browser/policy/browser_policy_connector.h"
 #else
@@ -48,7 +54,8 @@ TestingBrowserProcess::TestingBrowserProcess()
 #endif
       local_state_(NULL),
       io_thread_(NULL),
-      system_request_context_(NULL) {
+      system_request_context_(NULL),
+      platform_part_(new TestingBrowserProcessPlatformPart()) {
 }
 
 TestingBrowserProcess::~TestingBrowserProcess() {
@@ -172,11 +179,9 @@ net::URLRequestContextGetter* TestingBrowserProcess::system_request_context() {
   return system_request_context_;
 }
 
-#if defined(OS_CHROMEOS)
-chromeos::OomPriorityManager* TestingBrowserProcess::oom_priority_manager() {
-  return NULL;
+BrowserProcessPlatformPart* TestingBrowserProcess::platform_part() {
+  return platform_part_.get();
 }
-#endif  // defined(OS_CHROMEOS)
 
 extensions::EventRouterForwarder*
 TestingBrowserProcess::extension_event_router_forwarder() {

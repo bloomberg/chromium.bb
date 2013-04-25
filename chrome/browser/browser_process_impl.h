@@ -83,9 +83,7 @@ class BrowserProcessImpl : public BrowserProcess,
   virtual PrefService* local_state() OVERRIDE;
   virtual net::URLRequestContextGetter* system_request_context() OVERRIDE;
   virtual chrome_variations::VariationsService* variations_service() OVERRIDE;
-#if defined(OS_CHROMEOS)
-  virtual chromeos::OomPriorityManager* oom_priority_manager() OVERRIDE;
-#endif  // defined(OS_CHROMEOS)
+  virtual BrowserProcessPlatformPart* platform_part() OVERRIDE;
   virtual extensions::EventRouterForwarder*
         extension_event_router_forwarder() OVERRIDE;
   virtual NotificationUIManager* notification_ui_manager() OVERRIDE;
@@ -148,9 +146,6 @@ class BrowserProcessImpl : public BrowserProcess,
  private:
   void CreateMetricsService();
   void CreateWatchdogThread();
-#if defined(OS_CHROMEOS)
-  void InitializeWebSocketProxyThread();
-#endif
   void CreateProfileManager();
   void CreateLocalState();
   void CreateViewedPageTracker();
@@ -288,9 +283,6 @@ class BrowserProcessImpl : public BrowserProcess,
   void RestartBackgroundInstance();
 #endif  // defined(OS_WIN) || defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
-#if defined(OS_CHROMEOS)
-  scoped_ptr<chromeos::OomPriorityManager> oom_priority_manager_;
-#endif
   // component updater is normally not used under ChromeOS due
   // to concerns over integrity of data shared between profiles,
   // but some users of component updater only install per-user.
@@ -314,6 +306,8 @@ class BrowserProcessImpl : public BrowserProcess,
   // Hosts the IPC channel factory that App Shims connect to on Mac.
   scoped_ptr<AppShimHostManager> app_shim_host_manager_;
 #endif
+
+  scoped_ptr<BrowserProcessPlatformPart> platform_part_;
 
   // TODO(eroman): Remove this when done debugging 113031. This tracks
   // the callstack which released the final module reference count.

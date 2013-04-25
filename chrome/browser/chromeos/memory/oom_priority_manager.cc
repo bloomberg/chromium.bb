@@ -24,6 +24,7 @@
 #include "base/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/memory/low_memory_observer.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/ui/browser.h"
@@ -141,8 +142,10 @@ void OomMemoryDetails::OnDetailsAvailable() {
   }
   LOG(WARNING) << "OOM details (" << delta.InMilliseconds() << " ms):\n"
       << log_string;
-  if (g_browser_process && g_browser_process->oom_priority_manager()) {
-    OomPriorityManager* manager = g_browser_process->oom_priority_manager();
+  if (g_browser_process &&
+      g_browser_process->platform_part()->oom_priority_manager()) {
+    OomPriorityManager* manager =
+        g_browser_process->platform_part()->oom_priority_manager();
     manager->PurgeBrowserMemory();
     manager->DiscardTab();
   }

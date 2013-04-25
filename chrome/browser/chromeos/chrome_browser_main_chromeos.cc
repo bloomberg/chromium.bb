@@ -24,6 +24,7 @@
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
@@ -66,6 +67,7 @@
 #include "chrome/browser/chromeos/power/suspend_observer.h"
 #include "chrome/browser/chromeos/power/user_activity_notifier.h"
 #include "chrome/browser/chromeos/power/video_activity_notifier.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/screensaver/screensaver_controller.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
@@ -525,6 +527,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
   // notification it needs to track the logged in user.
   g_browser_process->profile_manager();
 
+  // ProfileHelper has to be initialized after UserManager instance is created.
+  g_browser_process->platform_part()->profile_helper()->Initialize();
+
   // TODO(abarth): Should this move to InitializeNetworkOptions()?
   // Allow access to file:// on ChromeOS for tests.
   if (parsed_command_line().HasSwitch(::switches::kAllowFileAccess))
@@ -720,7 +725,7 @@ void ChromeBrowserMainPartsChromeos::PreBrowserStart() {
   // Start the out-of-memory priority manager here so that we give the most
   // amount of time for the other services to start up before we start
   // adjusting the oom priority.
-  g_browser_process->oom_priority_manager()->Start();
+  g_browser_process->platform_part()->oom_priority_manager()->Start();
 
   ChromeBrowserMainPartsLinux::PreBrowserStart();
 }
@@ -739,7 +744,7 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
 void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
   BootTimesLoader::Get()->AddLogoutTimeMarker("UIMessageLoopEnded", true);
 
-  g_browser_process->oom_priority_manager()->Stop();
+  g_browser_process->platform_part()->oom_priority_manager()->Stop();
 
   // Stops LoginUtils background fetchers. This is needed because IO thread is
   // going to stop soon after this function. The pending background jobs could

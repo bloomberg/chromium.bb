@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -25,7 +26,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   using content::WindowedNotificationObserver;
 
   chromeos::OomPriorityManager* oom_priority_manager =
-      g_browser_process->oom_priority_manager();
+      g_browser_process->platform_part()->oom_priority_manager();
   EXPECT_FALSE(oom_priority_manager->recent_tab_discard());
 
   // Get three tabs open.
@@ -82,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
   // Discard a tab.  It should kill the first tab, since it was the oldest
   // and was not selected.
-  EXPECT_TRUE(g_browser_process->oom_priority_manager()->DiscardTab());
+  EXPECT_TRUE(oom_priority_manager->DiscardTab());
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(0));
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(1));
@@ -90,7 +91,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
   EXPECT_TRUE(oom_priority_manager->recent_tab_discard());
 
   // Run discard again, make sure it kills the second tab.
-  EXPECT_TRUE(g_browser_process->oom_priority_manager()->DiscardTab());
+  EXPECT_TRUE(oom_priority_manager->DiscardTab());
   EXPECT_EQ(3, browser()->tab_strip_model()->count());
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(0));
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(1));
@@ -98,7 +99,7 @@ IN_PROC_BROWSER_TEST_F(OomPriorityManagerTest, OomPriorityManagerBasics) {
 
   // Kill the third tab. It should not kill the last tab, since it is active
   // tab.
-  EXPECT_FALSE(g_browser_process->oom_priority_manager()->DiscardTab());
+  EXPECT_FALSE(oom_priority_manager->DiscardTab());
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(0));
   EXPECT_TRUE(browser()->tab_strip_model()->IsTabDiscarded(1));
   EXPECT_FALSE(browser()->tab_strip_model()->IsTabDiscarded(2));

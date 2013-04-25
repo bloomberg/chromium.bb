@@ -43,7 +43,18 @@ class UserManager {
     virtual void MergeSessionStateChanged(MergeSessionState state) {}
 
    protected:
-    virtual ~Observer() {}
+    virtual ~Observer();
+  };
+
+  // TODO(nkostylev): Merge with session state refactoring CL.
+  class UserSessionStateObserver {
+   public:
+    // Called right before notifying on user change so that those who rely
+    // on user_id hash would be accessing up-to-date value.
+    virtual void ActiveUserHashChanged(const std::string& hash) = 0;
+
+   protected:
+    virtual ~UserSessionStateObserver();
   };
 
   // Username for stub login when not running on ChromeOS.
@@ -285,6 +296,9 @@ class UserManager {
 
   virtual void AddObserver(Observer* obs) = 0;
   virtual void RemoveObserver(Observer* obs) = 0;
+
+  virtual void AddSessionStateObserver(UserSessionStateObserver* obs) = 0;
+  virtual void RemoveSessionStateObserver(UserSessionStateObserver* obs) = 0;
 
   virtual void NotifyLocalStateChanged() = 0;
 

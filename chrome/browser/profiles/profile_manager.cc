@@ -71,8 +71,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -283,12 +285,6 @@ ProfileManager::ProfileManager(const base::FilePath& user_data_dir)
       this,
       chrome::NOTIFICATION_LOGIN_USER_CHANGED,
       content::NotificationService::AllSources());
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kMultiProfiles)) {
-    registrar_.Add(
-        this,
-        chrome::NOTIFICATION_ACTIVE_USER_CHANGED,
-        content::NotificationService::AllSources());
-  }
 #endif
   registrar_.Add(
       this,
@@ -340,17 +336,21 @@ base::FilePath ProfileManager::GetInitialProfileDir() {
     if (command_line.HasSwitch(chromeos::switches::kLoginProfile)) {
       profile_dir = command_line.GetSwitchValuePath(
           chromeos::switches::kLoginProfile);
-    } else {
-      // We should never be logged in with no profile dir.
+    } else if (!command_line.HasSwitch(switches::kMultiProfiles)) {
+      // We should never be logged in with no profile dir unless
+      // multi-profiles are enabled.
+      // In that case profile dir will be defined by user_id hash.
       NOTREACHED();
       return base::FilePath("");
     }
     // In case of multi-profiles ignore --login-profile switch.
     // TODO(nkostylev): Some cases like Guest mode will have empty username_hash
     // so default kLoginProfile dir will be used.
+    std::string user_id_hash = g_browser_process->platform_part()->
+        profile_helper()->active_user_id_hash();
     if (command_line.HasSwitch(switches::kMultiProfiles) &&
-        !active_profile_username_hash_.empty()) {
-      profile_dir = base::FilePath(active_profile_username_hash_);
+        !user_id_hash.empty()) {
+      profile_dir = base::FilePath(user_id_hash);
     }
     relative_profile_dir = relative_profile_dir.Append(profile_dir);
     return relative_profile_dir;
@@ -643,9 +643,6 @@ void ProfileManager::Observe(
   if (type == chrome::NOTIFICATION_LOGIN_USER_CHANGED) {
     logged_in_ = true;
 
-    chromeos::User* user = content::Details<chromeos::User>(details).ptr();
-    DCHECK(user);
-
     const CommandLine& command_line = *CommandLine::ForCurrentProcess();
     if (!command_line.HasSwitch(switches::kTestType)) {
       // If we don't have a mounted profile directory we're in trouble.
@@ -656,24 +653,11 @@ void ProfileManager::Observe(
           base::Bind(&CheckCryptohomeIsMounted));
 
       // Confirm that we hadn't loaded the new profile previously.
-      if (command_line.HasSwitch(switches::kMultiProfiles)) {
-        // TODO(nkostylev): We could not enforce username_hash not being
-        // empty here till all cases like Guest mode are migrated.
-        active_profile_username_hash_ = user->username_hash();
-        LOG(INFO) << "Switching to custom profile_dir: "
-                  << active_profile_username_hash_;
-      }
       base::FilePath default_profile_dir = user_data_dir_.Append(
-          GetInitialProfileDir(/*active_profile_username_hash_*/));
+          GetInitialProfileDir());
       CHECK(!GetProfileByPath(default_profile_dir))
           << "The default profile was loaded before we mounted the cryptohome.";
     }
-    return;
-  } else if (type == chrome::NOTIFICATION_ACTIVE_USER_CHANGED) {
-    chromeos::User* user = content::Details<chromeos::User>(details).ptr();
-    active_profile_username_hash_ = user->username_hash();
-    LOG(INFO) << "Switching to custom profile_dir: "
-              << active_profile_username_hash_;
     return;
   }
 #endif

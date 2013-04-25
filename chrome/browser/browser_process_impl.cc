@@ -114,7 +114,9 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/memory/oom_priority_manager.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
+#else
+#include "chrome/browser/browser_process_platform_part.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if !defined(OS_ANDROID)
@@ -174,6 +176,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       download_status_updater_(new DownloadStatusUpdater),
       local_state_task_runner_(local_state_task_runner) {
   g_browser_process = this;
+  platform_part_.reset(new BrowserProcessPlatformPart());
 
 #if defined(ENABLE_PRINTING)
   // Must be created after the NotificationService.
@@ -280,6 +283,8 @@ void BrowserProcessImpl::StartTearDown() {
 #if defined(OS_MACOSX)
   app_shim_host_manager_.reset();
 #endif
+
+  platform_part()->StartTearDown();
 }
 
 void BrowserProcessImpl::PostDestroyThreads() {
@@ -455,14 +460,9 @@ chrome_variations::VariationsService* BrowserProcessImpl::variations_service() {
   return variations_service_.get();
 }
 
-#if defined(OS_CHROMEOS)
-chromeos::OomPriorityManager* BrowserProcessImpl::oom_priority_manager() {
-  DCHECK(CalledOnValidThread());
-  if (!oom_priority_manager_.get())
-    oom_priority_manager_.reset(new chromeos::OomPriorityManager());
-  return oom_priority_manager_.get();
+BrowserProcessPlatformPart* BrowserProcessImpl::platform_part() {
+  return platform_part_.get();
 }
-#endif  // defined(OS_CHROMEOS)
 
 extensions::EventRouterForwarder*
 BrowserProcessImpl::extension_event_router_forwarder() {

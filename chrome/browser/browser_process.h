@@ -18,6 +18,7 @@
 class AutomationProviderList;
 class BackgroundModeManager;
 class BookmarkPromptController;
+class BrowserProcessPlatformPart;
 class ChromeNetLog;
 class CommandLine;
 class CRLSetFetcher;
@@ -44,12 +45,6 @@ class WatchDogThread;
 namespace chrome {
 class MediaFileSystemRegistry;
 }
-
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class OomPriorityManager;
-}
-#endif  // defined(OS_CHROMEOS)
 
 namespace chrome_variations {
 class VariationsService;
@@ -111,10 +106,7 @@ class BrowserProcess {
   virtual net::URLRequestContextGetter* system_request_context() = 0;
   virtual chrome_variations::VariationsService* variations_service() = 0;
 
-#if defined(OS_CHROMEOS)
-  // Returns the out-of-memory priority manager.
-  virtual chromeos::OomPriorityManager* oom_priority_manager() = 0;
-#endif  // defined(OS_CHROMEOS)
+  virtual BrowserProcessPlatformPart* platform_part() = 0;
 
   virtual extensions::EventRouterForwarder*
       extension_event_router_forwarder() = 0;

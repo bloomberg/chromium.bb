@@ -13,6 +13,7 @@
 #include "base/time.h"
 #include "base/timer.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/memory/oom_priority_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/zygote_host_linux.h"
@@ -93,8 +94,11 @@ class LowMemoryObserverImpl
     // the UI thread.
     static void DiscardTab() {
       CHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-      if (g_browser_process && g_browser_process->oom_priority_manager())
-        g_browser_process->oom_priority_manager()->LogMemoryAndDiscardTab();
+      if (g_browser_process &&
+          g_browser_process->platform_part()->oom_priority_manager()) {
+        g_browser_process->platform_part()->
+            oom_priority_manager()->LogMemoryAndDiscardTab();
+      }
     }
 
    private:

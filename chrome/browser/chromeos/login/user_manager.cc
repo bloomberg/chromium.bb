@@ -21,6 +21,12 @@ const char UserManager::kKioskAppUserDomain[] = "kiosk-apps.localhost";
 
 static UserManager* g_user_manager = NULL;
 
+UserManager::Observer::~Observer() {
+}
+
+UserManager::UserSessionStateObserver::~UserSessionStateObserver() {
+}
+
 // static
 void UserManager::Initialize() {
   CHECK(!g_user_manager);

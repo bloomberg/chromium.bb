@@ -267,6 +267,10 @@
         'browser/browser_process_impl.cc',
         'browser/browser_process_impl.h',
         'browser/browser_process_impl_win.cc',
+        'browser/browser_process_platform_part.cc',
+        'browser/browser_process_platform_part.h',
+        'browser/browser_process_platform_part_chromeos.cc',
+        'browser/browser_process_platform_part_chromeos.h',
         'browser/browser_shutdown.cc',
         'browser/browser_shutdown.h',
         'browser/browser_util_win.cc',
@@ -2235,6 +2239,7 @@
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
             ['include', '^browser/browser_process\\.cc$'],
+            ['include', '^browser/browser_process_platform_part\\.cc$'],
           ],
           'link_settings': {
             'libraries': [
@@ -2440,6 +2445,8 @@
             'browser_chromeos',
           ],
           'sources!': [
+            'browser/browser_process_platform_part.cc',
+            'browser/browser_process_platform_part.h',
             'browser/first_run/upgrade_util.cc',
             'browser/first_run/upgrade_util.h',
             'browser/first_run/upgrade_util_linux.cc',
