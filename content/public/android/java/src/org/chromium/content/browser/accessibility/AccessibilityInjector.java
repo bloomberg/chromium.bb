@@ -171,16 +171,23 @@ public class AccessibilityInjector extends WebContentsObserverAndroid {
      * Checks whether or not touch to explore is enabled on the system.
      */
     public boolean accessibilityIsAvailable() {
-        // Need to make sure we actually have a service running that requires injecting
-        // this script.
-        List<AccessibilityServiceInfo> services =
-                getAccessibilityManager().getEnabledAccessibilityServiceList(
-                        FEEDBACK_BRAILLE | AccessibilityServiceInfo.FEEDBACK_SPOKEN);
+        if (!getAccessibilityManager().isEnabled() ||
+                mContentViewCore.getContentSettings() == null ||
+                !mContentViewCore.getContentSettings().getJavaScriptEnabled()) {
+            return false;
+        }
 
-        return getAccessibilityManager().isEnabled() &&
-                mContentViewCore.getContentSettings() != null &&
-                mContentViewCore.getContentSettings().getJavaScriptEnabled() &&
-                services.size() > 0;
+        try {
+            // Check that there is actually a service running that requires injecting this script.
+            List<AccessibilityServiceInfo> services =
+                    getAccessibilityManager().getEnabledAccessibilityServiceList(
+                            FEEDBACK_BRAILLE | AccessibilityServiceInfo.FEEDBACK_SPOKEN);
+            return services.size() > 0;
+        } catch (NullPointerException e) {
+            // getEnabledAccessibilityServiceList() can throw an NPE due to a bad
+            // AccessibilityService.
+            return false;
+        }
     }
 
     /**
