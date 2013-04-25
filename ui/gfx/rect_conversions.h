@@ -22,6 +22,11 @@ UI_EXPORT Rect ToEnclosedRect(const RectF& rect);
 // you should use a different method.
 UI_EXPORT Rect ToNearestRect(const RectF& rect);
 
+// Returns true if the Rect produced after snapping the corners of the RectF
+// to an integer grid is withing |distance|.
+UI_EXPORT bool IsNearestRectWithinDistance(
+    const gfx::RectF& rect, float distance);
+
 // Returns a Rect obtained by flooring the values of the given RectF.
 // Please prefer the previous two functions in new code.
 UI_EXPORT Rect ToFlooredRectDeprecated(const RectF& rect);
