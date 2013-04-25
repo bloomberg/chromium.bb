@@ -21,6 +21,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -69,6 +70,9 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 // The AppFilter is used in AddExceptionsGrantedByHostedApps() to choose
 // extensions which should have their extent displayed.
 typedef bool (*AppFilter)(const extensions::Extension& app, Profile* profile);
+
+const char kExceptionsLearnMoreUrl[] =
+    "https://support.google.com/chrome/?p=settings_manage_exceptions";
 
 const char* kSetting = "setting";
 const char* kOrigin = "origin";
@@ -413,6 +417,10 @@ void ContentSettingsHandler::GetLocalizedValues(
 
   localized_strings->SetBoolean("newContentSettings",
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kContentSettings2));
+  localized_strings->SetString(
+      "exceptionsLearnMoreUrl",
+      google_util::StringAppendGoogleLocaleParam(
+          kExceptionsLearnMoreUrl));
 }
 
 void ContentSettingsHandler::InitializeHandler() {
