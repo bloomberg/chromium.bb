@@ -1813,6 +1813,8 @@
         'browser/spellchecker/spellcheck_service.h',
         'browser/spellchecker/spelling_service_client.cc',
         'browser/spellchecker/spelling_service_client.h',
+        'browser/spellchecker/word_trimmer.cc',
+        'browser/spellchecker/word_trimmer.h',
         'browser/ssl/ssl_add_certificate.cc',
         'browser/ssl/ssl_add_certificate.h',
         'browser/ssl/ssl_add_cert_handler.cc',
