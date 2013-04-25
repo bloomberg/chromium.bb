@@ -231,12 +231,8 @@ class DriveResourceMetadata {
                       const base::Closure& completion_callback);
 
  private:
-  struct FileMoveResult;
-  struct GetEntryInfoResult;
-  struct ReadDirectoryResult;
-
   // Note: Use Destroy() to delete this object.
-  virtual ~DriveResourceMetadata();
+  ~DriveResourceMetadata();
 
   // Used to implement Initialize();
   FileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
@@ -257,19 +253,23 @@ class DriveResourceMetadata {
   FileError SetLargestChangestampOnBlockingPool(int64 value);
 
   // Used to implement AddEntry().
-  FileMoveResult AddEntryOnBlockingPool(const DriveEntryProto& entry_proto);
+  FileError AddEntryOnBlockingPool(const DriveEntryProto& entry_proto,
+                                   base::FilePath* out_file_path);
 
   // Used to implement MoveEntryToDirectory().
-  FileMoveResult MoveEntryToDirectoryOnBlockingPool(
+  FileError MoveEntryToDirectoryOnBlockingPool(
       const base::FilePath& file_path,
-      const base::FilePath& directory_path);
+      const base::FilePath& directory_path,
+      base::FilePath* out_file_path);
 
   // Used to implement RenameEntry().
-  FileMoveResult RenameEntryOnBlockingPool(const base::FilePath& file_path,
-                                           const std::string& new_name);
+  FileError RenameEntryOnBlockingPool(const base::FilePath& file_path,
+                                      const std::string& new_name,
+                                      base::FilePath* out_file_path);
 
   // Used to implement RemoveEntry().
-  FileMoveResult RemoveEntryOnBlockingPool(const std::string& resource_id);
+  FileError RemoveEntryOnBlockingPool(const std::string& resource_id,
+                                      base::FilePath* out_file_path);
 
   // Used to implement GetEntryInfoByResourceId().
   FileError GetEntryInfoByResourceIdOnBlockingPool(
@@ -278,12 +278,13 @@ class DriveResourceMetadata {
       DriveEntryProto* out_entry);
 
   // Used to implement GetEntryInfoByPath().
-  scoped_ptr<GetEntryInfoResult> GetEntryInfoByPathOnBlockingPool(
-      const base::FilePath& file_path);
+  FileError GetEntryInfoByPathOnBlockingPool(const base::FilePath& file_path,
+                                             DriveEntryProto* out_entry);
 
   // Used to implement ReadDirectoryByPath().
-  scoped_ptr<ReadDirectoryResult> ReadDirectoryByPathOnBlockingPool(
-      const base::FilePath& file_path);
+  FileError ReadDirectoryByPathOnBlockingPool(
+      const base::FilePath& file_path,
+      DriveEntryProtoVector* out_entries);
 
   // Used to implement RefreshEntry().
   FileError RefreshEntryOnBlockingPool(const DriveEntryProto& entry_proto,
@@ -291,9 +292,10 @@ class DriveResourceMetadata {
                                        DriveEntryProto* out_entry);
 
   // Used to implement RefreshDirectory().
-  FileMoveResult RefreshDirectoryOnBlockingPool(
+  FileError RefreshDirectoryOnBlockingPool(
       const DirectoryFetchInfo& directory_fetch_info,
-      const DriveEntryProtoMap& entry_proto_map);
+      const DriveEntryProtoMap& entry_proto_map,
+      base::FilePath* out_file_path);
 
   // Used to implement GetChildDirectories().
   scoped_ptr<std::set<base::FilePath> > GetChildDirectoriesOnBlockingPool(
