@@ -31,8 +31,11 @@ class ConnectivityStateHelper {
   // implementation). Call SetForTest(NUL) when |impl| is deleted.
   static void SetForTest(ConnectivityStateHelper* impl);
 
-  // Returns true if we are in a connected state.
+  // Returns true if in a connected state.
   virtual bool IsConnected() = 0;
+
+  // Returns true if in a connecting state.
+  virtual bool IsConnecting() = 0;
 
   // Returns true if there's a network of |type| in connected state.
   virtual bool IsConnectedType(const std::string& type) = 0;

@@ -19,6 +19,7 @@ class MockConnectivityStateHelper : public ConnectivityStateHelper {
   MockConnectivityStateHelper();
   virtual ~MockConnectivityStateHelper();
   MOCK_METHOD0(IsConnected, bool(void));
+  MOCK_METHOD0(IsConnecting, bool(void));
   MOCK_METHOD1(IsConnectedType, bool(const std::string&));
   MOCK_METHOD1(IsConnectingType, bool(const std::string&));
   MOCK_METHOD1(NetworkNameForType, std::string(const std::string&));

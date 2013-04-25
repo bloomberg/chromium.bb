@@ -9,15 +9,15 @@
 #include "base/memory/ref_counted.h"
 #include "base/string16.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/screens/network_screen_actor.h"
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
+#include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 
 namespace chromeos {
 
 class NetworkScreen : public WizardScreen,
-                      public NetworkLibrary::NetworkManagerObserver,
+                      public ConnectivityStateHelperObserver,
                       public NetworkScreenActor::Delegate {
  public:
   NetworkScreen(ScreenObserver* screen_observer, NetworkScreenActor* actor);
@@ -29,8 +29,8 @@ class NetworkScreen : public WizardScreen,
   virtual void Hide() OVERRIDE;
   virtual std::string GetName() const OVERRIDE;
 
-  // NetworkLibrary::NetworkManagerObserver implementation:
-  virtual void OnNetworkManagerChanged(NetworkLibrary* network_lib) OVERRIDE;
+  // ConnectivityStateHelperObserver implementation:
+  virtual void NetworkManagerChanged() OVERRIDE;
 
   // NetworkScreenActor::Delegate implementation:
   virtual void OnActorDestroyed(NetworkScreenActor* actor) OVERRIDE;
@@ -59,7 +59,7 @@ class NetworkScreen : public WizardScreen,
   void OnConnectionTimeout();
 
   // Update UI based on current network status.
-  void UpdateStatus(NetworkLibrary* network);
+  void UpdateStatus();
 
   // Stops waiting for network to connect.
   void StopWaitingForConnection(const string16& network_id);

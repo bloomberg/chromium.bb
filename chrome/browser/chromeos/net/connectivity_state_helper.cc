@@ -29,6 +29,7 @@ class ConnectivityStateHelperImpl
 
   // NetworkStateHandler overrides.
   virtual bool IsConnected() OVERRIDE;
+  virtual bool IsConnecting() OVERRIDE;
   virtual bool IsConnectedType(const std::string& type) OVERRIDE;
   virtual bool IsConnectingType(const std::string& type) OVERRIDE;
   virtual std::string NetworkNameForType(const std::string& type) OVERRIDE;
@@ -54,6 +55,7 @@ class ConnectivityStateHelperNetworkLibrary
 
   // ConnectivityStateHelper overrides.
   virtual bool IsConnected() OVERRIDE;
+  virtual bool IsConnecting() OVERRIDE;
   virtual bool IsConnectedType(const std::string& type) OVERRIDE;
   virtual bool IsConnectingType(const std::string& type) OVERRIDE;
   virtual std::string NetworkNameForType(const std::string& type) OVERRIDE;
@@ -137,6 +139,11 @@ bool ConnectivityStateHelperImpl::IsConnected() {
       NetworkStateHandler::kMatchTypeDefault) != NULL;
 }
 
+bool ConnectivityStateHelperImpl::IsConnecting() {
+  return network_state_handler_->ConnectingNetworkByType(
+      NetworkStateHandler::kMatchTypeDefault) != NULL;
+}
+
 bool ConnectivityStateHelperImpl::IsConnectedType(
     const std::string& type) {
   return network_state_handler_->ConnectedNetworkByType(type) != NULL;
@@ -200,6 +207,10 @@ bool ConnectivityStateHelperNetworkLibrary::IsConnected() {
   return network_library_->Connected();
 }
 
+bool ConnectivityStateHelperNetworkLibrary::IsConnecting() {
+  return network_library_->Connecting();
+}
+
 bool ConnectivityStateHelperNetworkLibrary::IsConnectedType(
     const std::string& type) {
   if (type == flimflam::kTypeEthernet)
@@ -222,7 +233,7 @@ bool ConnectivityStateHelperNetworkLibrary::IsConnectingType(
   if (type == flimflam::kTypeCellular)
     return network_library_->cellular_connecting();
   if (type == flimflam::kTypeWimax)
-    return network_library_->cellular_connecting();
+    return network_library_->wimax_connecting();
   return false;
 }
 

@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/login/screens/wizard_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
+#include "chrome/browser/chromeos/net/mock_connectivity_state_helper.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/dbus/mock_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_session_manager_client.h"
@@ -18,6 +19,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/views/controls/button/button.h"
 
 using ::testing::_;
@@ -47,6 +49,11 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
         .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
     DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
+
+    mock_connectivity_state_helper_.reset(new MockConnectivityStateHelper);
+    ConnectivityStateHelper::SetForTest(mock_connectivity_state_helper_.get());
+    SetDefaultMockConnectivityStateHelperExpectations();
+
     cros_mock_->InitStatusAreaMocks();
     mock_network_library_ = cros_mock_->mock_network_library();
     MockSessionManagerClient* mock_session_manager_client =
@@ -62,7 +69,8 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
     // these mocks will be active once status bar is initialized.
     EXPECT_CALL(*mock_network_library_, AddUserActionObserver(_))
         .Times(AnyNumber());
-    EXPECT_CALL(*mock_network_library_, wifi_connected())
+    EXPECT_CALL(*mock_connectivity_state_helper_,
+                IsConnectedType(flimflam::kTypeWifi))
         .Times(1)
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*mock_network_library_, FindWifiDevice())
@@ -73,51 +81,6 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
         .WillRepeatedly(Return(true));
 
     cros_mock_->SetStatusAreaMocksExpectations();
-
-    // Override these return values, but do not set specific expectation:
-    EXPECT_CALL(*mock_network_library_, wifi_available())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
-    EXPECT_CALL(*mock_network_library_, wifi_enabled())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
-    EXPECT_CALL(*mock_network_library_, wifi_busy())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-    EXPECT_CALL(*mock_network_library_, wifi_connecting())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-    EXPECT_CALL(*mock_network_library_, wifi_scanning())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-    EXPECT_CALL(*mock_network_library_, cellular_available())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
-    EXPECT_CALL(*mock_network_library_, cellular_enabled())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
-    EXPECT_CALL(*mock_network_library_, cellular_busy())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-    EXPECT_CALL(*mock_network_library_, cellular_connecting())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-    EXPECT_CALL(*mock_network_library_, wimax_available())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
-    EXPECT_CALL(*mock_network_library_, wimax_enabled())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(true)));
-    EXPECT_CALL(*mock_network_library_, wimax_connected())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-    EXPECT_CALL(*mock_network_library_, wimax_connecting())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(false)));
-
-    EXPECT_CALL(*mock_network_library_, FindCellularDevice())
-        .Times(AnyNumber())
-        .WillRepeatedly((Return(cellular_.get())));
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
@@ -136,19 +99,44 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   virtual void TearDownInProcessBrowserTestFixture() OVERRIDE {
     CrosInProcessBrowserTest::TearDownInProcessBrowserTestFixture();
     DBusThreadManager::Shutdown();
+    ConnectivityStateHelper::SetForTest(NULL);
   }
 
   void EmulateContinueButtonExit(NetworkScreen* network_screen) {
     EXPECT_CALL(*mock_screen_observer_,
                 OnExit(ScreenObserver::NETWORK_CONNECTED))
         .Times(1);
-    EXPECT_CALL(*mock_network_library_, Connected())
+    EXPECT_CALL(*mock_connectivity_state_helper_, IsConnected())
         .WillOnce(Return(true));
     network_screen->OnContinuePressed();
     content::RunAllPendingInMessageLoop();
   }
 
+  void SetDefaultMockConnectivityStateHelperExpectations() {
+    EXPECT_CALL(*mock_connectivity_state_helper_, AddNetworkManagerObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_connectivity_state_helper_,
+                RemoveNetworkManagerObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_connectivity_state_helper_, NetworkNameForType(_))
+        .Times(AnyNumber())
+        .WillRepeatedly((Return("")));
+    EXPECT_CALL(*mock_connectivity_state_helper_, IsConnected())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
+    EXPECT_CALL(*mock_connectivity_state_helper_, IsConnecting())
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
+    EXPECT_CALL(*mock_connectivity_state_helper_, IsConnectedType(_))
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
+    EXPECT_CALL(*mock_connectivity_state_helper_, IsConnectingType(_))
+        .Times(AnyNumber())
+        .WillRepeatedly((Return(false)));
+  }
+
   scoped_ptr<MockScreenObserver> mock_screen_observer_;
+  scoped_ptr<MockConnectivityStateHelper> mock_connectivity_state_helper_;
   MockNetworkLibrary* mock_network_library_;
   scoped_ptr<NetworkDevice> cellular_;
   NetworkScreen* network_screen_;
@@ -158,41 +146,51 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Ethernet) {
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeWifi))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, cellular_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeCellular))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeEthernet))
       .WillOnce((Return(true)));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_network_library_, Connected())
-      .Times(3)
+  EXPECT_CALL(*mock_connectivity_state_helper_, IsConnected())
+      .Times(2)
       .WillRepeatedly(Return(true));
   // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   // EXPECT_FALSE(actor_->IsConnecting());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
   // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeWifi))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, cellular_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeCellular))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeWifi))
       .WillOnce((Return(true)));
   scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
   WifiNetworkVector wifi_networks;
@@ -202,73 +200,86 @@ IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Wifi) {
   EXPECT_CALL(*mock_network_library_, wifi_networks())
       .WillRepeatedly(ReturnRef(wifi_networks));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_network_library_, Connected())
-        .Times(3)
+  EXPECT_CALL(*mock_connectivity_state_helper_, IsConnected())
+        .Times(2)
         .WillRepeatedly(Return(true));
   // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   // EXPECT_FALSE(actor_->IsConnecting());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
   // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Cellular) {
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeWifi))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, cellular_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeCellular))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeWifi))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, cellular_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeCellular))
       .WillOnce((Return(true)));
   scoped_ptr<CellularNetwork> cellular(new CellularNetwork("cellular"));
   EXPECT_CALL(*mock_network_library_, cellular_network())
       .WillRepeatedly(Return(cellular.get()));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce(Return(true));
-  EXPECT_CALL(*mock_network_library_, Connected())
-      .Times(3)
+  EXPECT_CALL(*mock_connectivity_state_helper_, IsConnected())
+      .Times(2)
       .WillRepeatedly(Return(true));
   // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570
   // EXPECT_FALSE(actor_->IsContinueEnabled());
   // EXPECT_FALSE(actor_->IsConnecting());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
   // EXPECT_TRUE(actor_->IsContinueEnabled());
   EmulateContinueButtonExit(network_screen_);
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkScreenTest, Timeout) {
-  EXPECT_CALL(*mock_network_library_, ethernet_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeWifi))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, cellular_connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectedType(flimflam::kTypeCellular))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, ethernet_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeEthernet))
       .WillOnce((Return(false)));
-  EXPECT_CALL(*mock_network_library_, wifi_connecting())
+  EXPECT_CALL(*mock_connectivity_state_helper_,
+              IsConnectingType(flimflam::kTypeWifi))
       .WillOnce((Return(true)));
   scoped_ptr<WifiNetwork> wifi(new WifiNetwork("wifi"));
   EXPECT_CALL(*mock_network_library_, wifi_network())
       .WillRepeatedly(Return(wifi.get()));
   // EXPECT_FALSE(actor_->IsContinueEnabled());
-  network_screen_->OnNetworkManagerChanged(mock_network_library_);
+  network_screen_->NetworkManagerChanged();
 
-  EXPECT_CALL(*mock_network_library_, Connected())
+  EXPECT_CALL(*mock_connectivity_state_helper_, IsConnected())
       .Times(2)
       .WillRepeatedly(Return(false));
   // TODO(nkostylev): Add integration with WebUI actor http://crosbug.com/22570

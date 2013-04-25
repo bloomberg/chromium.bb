@@ -74,10 +74,10 @@ std::string NetworkScreen::GetName() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// NetworkScreen, NetworkLibrary::NetworkManagerObserver implementation:
+// NetworkScreen, ConnectivityStateHelperObserver implementation:
 
-void NetworkScreen::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
-  UpdateStatus(network_lib);
+void NetworkScreen::NetworkManagerChanged() {
+  UpdateStatus();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +85,7 @@ void NetworkScreen::OnNetworkManagerChanged(NetworkLibrary* network_lib) {
 
 void NetworkScreen::Refresh() {
   SubscribeNetworkNotification();
-  OnNetworkManagerChanged(chromeos::CrosLibrary::Get()->GetNetworkLibrary());
+  NetworkManagerChanged();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,16 +111,14 @@ void NetworkScreen::OnContinuePressed() {
 void NetworkScreen::SubscribeNetworkNotification() {
   if (!is_network_subscribed_) {
     is_network_subscribed_ = true;
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->AddNetworkManagerObserver(this);
+    ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
   }
 }
 
 void NetworkScreen::UnsubscribeNetworkNotification() {
   if (is_network_subscribed_) {
     is_network_subscribed_ = false;
-    chromeos::CrosLibrary::Get()->GetNetworkLibrary()
-        ->RemoveNetworkManagerObserver(this);
+    ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
   }
 }
 
@@ -143,17 +141,18 @@ void NetworkScreen::OnConnectionTimeout() {
   }
 }
 
-void NetworkScreen::UpdateStatus(NetworkLibrary* network) {
-  if (!actor_ || !network)
+void NetworkScreen::UpdateStatus() {
+  if (!actor_)
     return;
 
-  if (network->Connected())
+  bool is_connected = ConnectivityStateHelper::Get()->IsConnected();
+  if (is_connected)
     actor_->ClearErrors();
 
   string16 network_name = GetCurrentNetworkName();
-  if (network->Connected()) {
+  if (is_connected) {
     StopWaitingForConnection(network_name);
-  } else if (network->Connecting()) {
+  } else if (ConnectivityStateHelper::Get()->IsConnecting()) {
     WaitForConnection(network_name);
   } else {
     StopWaitingForConnection(network_id_);
