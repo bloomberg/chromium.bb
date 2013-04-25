@@ -385,6 +385,8 @@
       'sources': [
         'dbus/fake_cros_disks_client.cc',
         'dbus/fake_cros_disks_client.h',
+        'dbus/fake_cryptohome_client.cc',
+        'dbus/fake_cryptohome_client.h',
         'dbus/fake_power_manager_client.cc',
         'dbus/fake_power_manager_client.h',
         'dbus/fake_shill_manager_client.cc',
