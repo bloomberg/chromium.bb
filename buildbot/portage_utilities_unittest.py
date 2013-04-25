@@ -299,16 +299,10 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     portage_utilities.filecmp.cmp(self.m_ebuild.ebuild_path,
                                   self.revved_ebuild_path,
                                   shallow=False).AndReturn(not rev)
-    if rev:
-      portage_utilities.EBuild._RunCommand(
-          ['git', 'add', self.revved_ebuild_path],
-          cwd=self.overlay)
-      if self.m_ebuild.is_stable:
-        portage_utilities.EBuild._RunCommand(
-            ['git', 'rm', self.m_ebuild.ebuild_path],
-            cwd=self.overlay)
-    else:
+    if not rev:
       os.unlink(self.revved_ebuild_path)
+    elif self.m_ebuild.is_stable:
+      os.unlink(os.path.join(self.overlay, self.m_ebuild.ebuild_path))
 
     return m_file
 
@@ -360,7 +354,9 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     self.mox.StubOutWithMock(cros_build_lib, 'RunCommand')
     mock_message = 'Commitme'
     cros_build_lib.RunCommand(
-        ['git', 'commit', '-a', '-m', mock_message], cwd='.', print_cmd=False)
+        ['git', 'add', '-A'], cwd='.', print_cmd=False)
+    cros_build_lib.RunCommand(
+        ['git', 'commit', '-m', mock_message], cwd='.', print_cmd=False)
     self.mox.ReplayAll()
     self.m_ebuild.CommitChange(mock_message, '.')
     self.mox.VerifyAll()

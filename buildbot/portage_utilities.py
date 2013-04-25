@@ -243,8 +243,11 @@ class EBuild(object):
     Raises:
       RunCommandError: Error occurred while committing.
     """
+    logging.info('Updating index to match working tree.')
+    cros_build_lib.RunCommand(['git', 'add', '-A'], cwd=overlay,
+                              print_cmd=cls.VERBOSE)
     logging.info('Committing changes with commit message: %s', message)
-    git_commit_cmd = ['git', 'commit', '-a', '-m', message]
+    git_commit_cmd = ['git', 'commit', '-m', message]
     cros_build_lib.RunCommand(git_commit_cmd, cwd=overlay,
                               print_cmd=cls.VERBOSE)
 
@@ -482,14 +485,8 @@ class EBuild(object):
       os.unlink(new_stable_ebuild_path)
       return None
     else:
-      self._Print('Adding new stable ebuild to git')
-      self._RunCommand(['git', 'add', new_stable_ebuild_path],
-                       cwd=self._overlay)
-
       if self.is_stable:
-        self._Print('Removing old ebuild from git')
-        self._RunCommand(['git', 'rm', old_ebuild_path],
-                         cwd=self._overlay)
+        os.unlink(os.path.join(self._overlay, old_ebuild_path))
 
       return '%s-%s' % (self.package, new_version)
 
@@ -678,15 +675,18 @@ def RegenCache(overlay):
   """Regenerate the cache of the specified overlay.
 
   overlay: The tree to regenerate the cache for.
+
+  Returns:
+    Whether any changes were made to the cache.
   """
   repo_name = GetOverlayName(overlay)
   if not repo_name:
-    return
+    return False
 
   layout = cros_build_lib.LoadKeyValueFile('%s/metadata/layout.conf' % overlay,
                                            ignore_missing=True)
   if layout.get('cache-format') != 'md5-dict':
-    return
+    return False
 
   # Regen for the whole repo.
   cros_build_lib.RunCommand(['egencache', '--update', '--repo', repo_name,
@@ -694,13 +694,7 @@ def RegenCache(overlay):
   # If there was nothing new generated, then let's just bail.
   result = cros_build_lib.RunCommand(['git', 'status', '-s', 'metadata/'],
                                      cwd=overlay, redirect_stdout=True)
-  if not result.output:
-    return
-  # Explicitly add any new files to the index.
-  cros_build_lib.RunCommand(['git', 'add', 'metadata/'], cwd=overlay)
-  # Explicitly tell git to also include rm-ed files.
-  cros_build_lib.RunCommand(['git', 'commit', '-m', 'regen cache',
-                             'metadata/'], cwd=overlay)
+  return bool(result.output)
 
 
 def ParseBashArray(value):

@@ -35,10 +35,21 @@ def FindRepoDir(path):
   """Returns the nearest higher-level repo dir from the specified path.
 
   Args:
-    path: The path to use. Defaults to cwd.
+    path: The path to use.
   """
-  return osutils.FindInPathParents(
-      '.repo', path, test_func=os.path.isdir)
+  return osutils.FindInPathParents('.repo', path, test_func=os.path.isdir)
+
+
+def FindGitCheckoutRoot(path):
+  """Returns the nearest higher-level repo dir from the specified path.
+
+  Args:
+    path: The path to use.
+  """
+  git_dir = osutils.FindInPathParents('.git', path, test_func=os.path.isdir)
+  if git_dir:
+    return os.path.dirname(git_dir)
+  return None
 
 
 def FindRepoCheckoutRoot(path):
