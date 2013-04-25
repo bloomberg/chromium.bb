@@ -1441,16 +1441,19 @@ class BuildImageStage(BuildPackagesStage):
     images_to_build = set(self._build_config['images']).intersection(
         images_can_build)
 
+    version = self.archive_stage.release_tag
     disk_layout = self._build_config['disk_layout']
     if self._pgo_generate:
       disk_layout = constants.PGO_GENERATE_DISK_LAYOUT
+      if version:
+        version = '%s-pgo-generate' % version
 
     rootfs_verification = self._build_config['rootfs_verification']
     commands.BuildImage(self._build_root,
                         self._current_board,
                         sorted(images_to_build),
                         rootfs_verification=rootfs_verification,
-                        version=self.archive_stage.release_tag,
+                        version=version,
                         disk_layout=disk_layout,
                         extra_env=self._env)
 
