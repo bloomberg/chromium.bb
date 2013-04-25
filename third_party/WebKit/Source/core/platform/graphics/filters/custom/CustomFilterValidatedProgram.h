@@ -44,11 +44,6 @@ struct ANGLEShaderSymbol;
 class CustomFilterCompiledProgram;
 class CustomFilterGlobalContext;
 
-#if USE(TEXTURE_MAPPER)
-class TextureMapperPlatformCompiledProgram;
-typedef TextureMapperPlatformCompiledProgram PlatformCompiledProgram;
-#endif
-
 //
 // A unique combination of vertex shader and fragment shader is only validated and compiled once.
 // All shaders are validated through ANGLE in CustomFilterValidatedProgram before being compiled by the GraphicsContext3D in CustomFilterCompiledProgram.
@@ -89,10 +84,6 @@ public:
         return m_validatedFragmentShader;
     }
 
-#if USE(TEXTURE_MAPPER)
-    PlatformCompiledProgram* platformCompiledProgram();
-#endif
-
     bool isInitialized() const { return m_isInitialized; }
 
     // 'detachFromGlobalContext' is called when the CustomFilterGlobalContext is deleted, and there's no need for the callback anymore.
@@ -122,9 +113,6 @@ private:
     String m_validatedFragmentShader;
 
     RefPtr<CustomFilterCompiledProgram> m_compiledProgram;
-#if USE(TEXTURE_MAPPER)
-    PlatformCompiledProgram* m_platformCompiledProgram;
-#endif
 
     bool m_isInitialized;
 };

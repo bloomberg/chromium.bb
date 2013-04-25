@@ -346,12 +346,6 @@ namespace WebCore {
         enum IncludeDeviceScale { DefinitelyIncludeDeviceScale, PossiblyIncludeDeviceScale };
         AffineTransform getCTM(IncludeDeviceScale includeScale = PossiblyIncludeDeviceScale) const;
 
-#if USE(TEXTURE_MAPPER)
-        // This is needed when using accelerated-compositing in software mode, like in TextureMapper.
-        void concat3DTransform(const TransformationMatrix&);
-        void set3DTransform(const TransformationMatrix&);
-        TransformationMatrix get3DTransform() const;
-#endif
         // Create an image buffer compatible with this context, with suitable resolution
         // for drawing into the buffer and then into this context.
         PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, bool hasAlpha = true) const;

@@ -606,7 +606,6 @@ CustomFilterProgramInfo CustomFilterValidatedProgram::validatedProgramInfo() con
     return CustomFilterProgramInfo(m_validatedVertexShader, m_validatedFragmentShader, m_programInfo.programType(), m_programInfo.mixSettings(), m_programInfo.meshType());
 }
 
-#if !USE(TEXTURE_MAPPER)
 void CustomFilterValidatedProgram::platformInit()
 {
 }
@@ -614,7 +613,6 @@ void CustomFilterValidatedProgram::platformInit()
 void CustomFilterValidatedProgram::platformDestroy()
 {
 }
-#endif
 
 } // namespace WebCore
 
