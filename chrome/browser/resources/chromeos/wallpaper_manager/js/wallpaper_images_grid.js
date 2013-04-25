@@ -11,15 +11,6 @@ cr.define('wallpapers', function() {
   /** @const */ var ThumbnailSuffix = '_thumbnail.png';
 
   /**
-   * Wallpaper sources enum.
-   */
-  /** #const */ var WallpaperSourceEnum = {
-                    Online: 'ONLINE',
-                    Custom: 'CUSTOM',
-                    AddNew: 'ADDNEW'
-                };
-
-  /**
    * Creates a new wallpaper thumbnails grid item.
    * @param {{baseURL: string, layout: string, source: string,
    *          availableOffline: boolean, opt_dynamicURL: string,
@@ -51,13 +42,13 @@ cr.define('wallpapers', function() {
       var self = this;
 
       switch (this.dataItem.source) {
-        case WallpaperSourceEnum.AddNew:
+        case Constants.WallpaperSourceEnum.AddNew:
           this.id = 'add-new';
           this.addEventListener('click', function(e) {
             $('wallpaper-selection-container').hidden = false;
           });
           break;
-        case WallpaperSourceEnum.Custom:
+        case Constants.WallpaperSourceEnum.Custom:
           var errorHandler = function(e) {
             console.error('Can not access file system.');
           };
@@ -82,7 +73,7 @@ cr.define('wallpapers', function() {
           }
           getThumbnail(self.dataItem.baseURL);
           break;
-        case WallpaperSourceEnum.Online:
+        case Constants.WallpaperSourceEnum.Online:
           chrome.wallpaperPrivate.getThumbnail(this.dataItem.baseURL,
                                                this.dataItem.source,
                                                function(data) {
@@ -93,7 +84,8 @@ cr.define('wallpapers', function() {
               imageEl.addEventListener('load', function(e) {
                 window.URL.revokeObjectURL(this.src);
               });
-            } else if (self.dataItem.source == WallpaperSourceEnum.Online) {
+            } else if (self.dataItem.source ==
+                       Constants.WallpaperSourceEnum.Online) {
               var xhr = new XMLHttpRequest();
               xhr.open('GET', self.dataItem.baseURL + ThumbnailSuffix, true);
               xhr.responseType = 'arraybuffer';
@@ -290,7 +282,6 @@ cr.define('wallpapers', function() {
   };
 
   return {
-    WallpaperSourceEnum: WallpaperSourceEnum,
     WallpaperThumbnailsGrid: WallpaperThumbnailsGrid
   };
 });

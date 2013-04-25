@@ -15,7 +15,6 @@
 
 function WallpaperManager(dialogDom) {
   this.dialogDom_ = dialogDom;
-  this.storage_ = chrome.storage.local;
   this.document_ = dialogDom.ownerDocument;
   this.enableOnlineWallpaper_ = loadTimeData.valueExists('manifestBaseURL');
   this.selectedCategory = null;
@@ -214,8 +213,8 @@ function WallpaperManager(dialogDom) {
 
     this.manifest_ = manifest;
     var items = {};
-    items[this.backgroundPage_.AccessManifestKey] = manifest;
-    this.storage_.set(items, function() {});
+    items[Constants.AccessManifestKey] = manifest;
+    Constants.WallpaperLocalStorage.set(items, function() {});
     this.initDom_();
   };
 
@@ -225,9 +224,9 @@ function WallpaperManager(dialogDom) {
     if (!this.backgroundPageFetched_(this.onLoadManifestFailed_.bind(this)))
       return;
 
-    var accessManifestKey = this.backgroundPage_.AccessManifestKey;
+    var accessManifestKey = Constants.AccessManifestKey;
     var self = this;
-    this.storage_.get(accessManifestKey, function(items) {
+    Constants.WallpaperLocalStorage.get(accessManifestKey, function(items) {
       self.manifest_ = items[accessManifestKey] ? items[accessManifestKey] : {};
       self.showError_(str('connectionFailed'));
       self.initDom_();
@@ -285,17 +284,16 @@ function WallpaperManager(dialogDom) {
       $('surprise-me').hidden = false;
       $('surprise-me').addEventListener('click',
                                         this.toggleSurpriseMe_.bind(this));
-      var accessSurpriseMeEnabledKey =
-          this.backgroundPage_.AccessSurpriseMeEnabledKey;
-      this.storage_.get(accessSurpriseMeEnabledKey, function(items) {
-        if (items[accessSurpriseMeEnabledKey]) {
+      Constants.WallpaperLocalStorage.get(Constants.AccessSurpriseMeEnabledKey,
+                                          function(items) {
+        if (items[Constants.AccessSurpriseMeEnabledKey]) {
           self.toggleSurpriseMe_();
         }
       });
 
       window.addEventListener('offline', function() {
         chrome.wallpaperPrivate.getOfflineWallpaperList(
-            wallpapers.WallpaperSourceEnum.Online, function(lists) {
+            Constants.WallpaperSourceEnum.Online, function(lists) {
           if (!self.downloadedListMap_)
             self.downloadedListMap_ = {};
           for (var i = 0; i < lists.length; i++) {
@@ -306,7 +304,7 @@ function WallpaperManager(dialogDom) {
             var thumbnail = thumbnails[i];
             var url = self.wallpaperGrid_.dataModel.item(i).baseURL;
             var fileName = url.substring(url.lastIndexOf('/') + 1) +
-                this.backgroundPage_.HighResolutionSuffix;
+                Constants.HighResolutionSuffix;
             if (self.downloadedListMap_ &&
                 self.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
               thumbnail.offline = true;
@@ -362,7 +360,7 @@ function WallpaperManager(dialogDom) {
       var wallpaperGrid = this.wallpaperGrid_;
       var selectedIndex = wallpaperGrid.selectionModel.selectedIndex;
       var item = wallpaperGrid.dataModel.item(selectedIndex);
-      if (!item || item.source != wallpapers.WallpaperSourceEnum.Custom)
+      if (!item || item.source != Constants.WallpaperSourceEnum.Custom)
         return;
       this.removeCustomWallpaper(item.baseURL);
       wallpaperGrid.dataModel.splice(selectedIndex, 1);
@@ -392,7 +390,7 @@ function WallpaperManager(dialogDom) {
         var selectedIndex = wallpaperGrid.selectionModel.selectedIndex;
         var item = wallpaperGrid.dataModel.item(selectedIndex);
         if (selectedIndex != this.wallpaperGrid_.dataModel.length - 1 &&
-          item && item.source == wallpapers.WallpaperSourceEnum.Custom) {
+          item && item.source == Constants.WallpaperSourceEnum.Custom) {
           event.canExecute = true;
           break;
         }
@@ -410,8 +408,7 @@ function WallpaperManager(dialogDom) {
     // custom wallpaper file name converted from an integer value represent
     // time (e.g., 13006377367586070).
     if (!this.enableOnlineWallpaper_ || (this.currentWallpaper_ &&
-        this.currentWallpaper_.indexOf(
-            this.backgroundPage_.HighResolutionSuffix) == -1)) {
+        this.currentWallpaper_.indexOf(Constants.HighResolutionSuffix) == -1)) {
       // Custom is the last one in the categories list.
       this.categoriesList_.selectionModel.selectedIndex =
           this.categoriesList_.dataModel.length - 1;
@@ -426,7 +423,7 @@ function WallpaperManager(dialogDom) {
       if (self.currentWallpaper_) {
         for (var key in self.manifest_.wallpaper_list) {
           var url = self.manifest_.wallpaper_list[key].base_url +
-              self.backgroundPage_.HighResolutionSuffix;
+              Constants.HighResolutionSuffix;
           if (url.indexOf(self.currentWallpaper_) != -1 &&
               self.manifest_.wallpaper_list[key].categories.length > 0) {
             presetCategory = self.manifest_.wallpaper_list[key].categories[0] +
@@ -444,7 +441,7 @@ function WallpaperManager(dialogDom) {
       // Wallpapers which are not in the list will display a grayscaled
       // thumbnail.
       chrome.wallpaperPrivate.getOfflineWallpaperList(
-          wallpapers.WallpaperSourceEnum.Online, function(lists) {
+          Constants.WallpaperSourceEnum.Online, function(lists) {
         if (!self.downloadedListMap_)
           self.downloadedListMap_ = {};
         for (var i = 0; i < lists.length; i++)
@@ -505,7 +502,7 @@ function WallpaperManager(dialogDom) {
   WallpaperManager.prototype.setSelectedWallpaper_ = function(selectedItem) {
     var self = this;
     switch (selectedItem.source) {
-      case wallpapers.WallpaperSourceEnum.Custom:
+      case Constants.WallpaperSourceEnum.Custom:
         var errorHandler = this.onFileSystemError_.bind(this);
         var setActive = function() {
           self.wallpaperGrid_.activeItem = selectedItem;
@@ -530,9 +527,9 @@ function WallpaperManager(dialogDom) {
         this.wallpaperDirs_.getDirectory(WallpaperDirNameEnum.ORIGINAL,
                                          success, errorHandler);
         break;
-      case wallpapers.WallpaperSourceEnum.Online:
+      case Constants.WallpaperSourceEnum.Online:
         var wallpaperURL = selectedItem.baseURL +
-            this.backgroundPage_.HighResolutionSuffix;
+            Constants.HighResolutionSuffix;
         var selectedGridItem = this.wallpaperGrid_.getListItem(selectedItem);
 
         chrome.wallpaperPrivate.setWallpaperIfExists(wallpaperURL,
@@ -589,7 +586,7 @@ function WallpaperManager(dialogDom) {
     // last element is the add new button, need to exclude it as well.
     var oldestIndex = this.wallpaperGrid_.dataModel.length - 2;
     var item = this.wallpaperGrid_.dataModel.item(oldestIndex);
-    if (!item || item.source != wallpapers.WallpaperSourceEnum.Custom)
+    if (!item || item.source != Constants.WallpaperSourceEnum.Custom)
       return;
     if (item.baseURL == this.currentWallpaper_)
       item = this.wallpaperGrid_.dataModel.item(--oldestIndex);
@@ -641,11 +638,11 @@ function WallpaperManager(dialogDom) {
       return;
 
     if (this.selectedItem_.baseURL && !this.wallpaperGrid_.inProgramSelection) {
-      if (this.selectedItem_.source == wallpapers.WallpaperSourceEnum.Custom) {
+      if (this.selectedItem_.source == Constants.WallpaperSourceEnum.Custom) {
         var items = {};
         var key = this.selectedItem_.baseURL;
         var self = this;
-        this.storage_.get(key, function(items) {
+        Constants.WallpaperLocalStorage.get(key, function(items) {
           self.selectedItem_.layout =
               items[key] ? items[key] : 'CENTER_CROPPED';
           self.setSelectedWallpaper_(self.selectedItem_);
@@ -778,7 +775,7 @@ function WallpaperManager(dialogDom) {
                 var wallpaperInfo = {
                   baseURL: fileName,
                   layout: layout,
-                  source: wallpapers.WallpaperSourceEnum.Custom,
+                  source: Constants.WallpaperSourceEnum.Custom,
                   availableOffline: true
                 };
                 self.wallpaperGrid_.dataModel.splice(0, 0, wallpaperInfo);
@@ -787,7 +784,7 @@ function WallpaperManager(dialogDom) {
                 self.currentWallpaper_ = fileName;
                 var items = {};
                 items[self.currentWallpaper_] = layout;
-                self.storage_.set(items, function() {});
+                Constants.WallpaperLocalStorage.set(items, function() {});
               };
 
               fileWriter.onerror = errorHandler;
@@ -926,7 +923,7 @@ function WallpaperManager(dialogDom) {
       } else {
         var items = {};
         items[self.currentWallpaper_] = layout;
-        self.storage_.set(items, function() {});
+        Constants.WallpaperLocalStorage.set(items, function() {});
       }
     });
   };
@@ -965,7 +962,7 @@ function WallpaperManager(dialogDom) {
                 // to speed up the process of constructing. So we do not need to
                 // wait for fetching correct layout.
                 layout: 'CENTER_CROPPED',
-                source: wallpapers.WallpaperSourceEnum.Custom,
+                source: Constants.WallpaperSourceEnum.Custom,
                 availableOffline: true
           };
           if (self.currentWallpaper_ == entry.name)
@@ -1012,7 +1009,7 @@ function WallpaperManager(dialogDom) {
           var wallpaperInfo = {
             baseURL: this.manifest_.wallpaper_list[key].base_url,
             layout: this.manifest_.wallpaper_list[key].default_layout,
-            source: wallpapers.WallpaperSourceEnum.Online,
+            source: Constants.WallpaperSourceEnum.Online,
             availableOffline: false,
             author: this.manifest_.wallpaper_list[key].author,
             authorWebsite: this.manifest_.wallpaper_list[key].author_website,
@@ -1020,14 +1017,14 @@ function WallpaperManager(dialogDom) {
           };
           var startIndex = wallpaperInfo.baseURL.lastIndexOf('/') + 1;
           var fileName = wallpaperInfo.baseURL.substring(startIndex) +
-              this.backgroundPage_.HighResolutionSuffix;
+              Constants.HighResolutionSuffix;
           if (this.downloadedListMap_ &&
               this.downloadedListMap_.hasOwnProperty(encodeURI(fileName))) {
             wallpaperInfo.availableOffline = true;
           }
           wallpapersDataModel.push(wallpaperInfo);
           var url = this.manifest_.wallpaper_list[key].base_url +
-              this.backgroundPage_.HighResolutionSuffix;
+              Constants.HighResolutionSuffix;
           if (url == this.currentWallpaper_) {
             selectedItem = wallpaperInfo;
           }
