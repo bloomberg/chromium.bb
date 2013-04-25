@@ -85,6 +85,7 @@ struct display {
 	struct wl_display *display;
 	struct wl_registry *registry;
 	struct wl_compositor *compositor;
+	struct wl_subcompositor *subcompositor;
 	struct wl_shell *shell;
 	struct wl_shm *shm;
 	struct wl_data_device_manager *data_device_manager;
@@ -189,6 +190,9 @@ struct surface {
 	struct window *window;
 
 	struct wl_surface *surface;
+	struct wl_subsurface *subsurface;
+	int synchronized;
+	int synchronized_default;
 	struct toysurface *toysurface;
 	struct widget *widget;
 
@@ -202,6 +206,8 @@ struct surface {
 	enum wl_output_transform buffer_transform;
 
 	cairo_surface_t *cairo_surface;
+
+	struct wl_list link;
 };
 
 struct window {
@@ -239,6 +245,9 @@ struct window {
 	struct wl_callback *frame_cb;
 
 	struct frame *frame;
+
+	/* struct surface::link, contains also main_surface */
+	struct wl_list subsurface_list;
 
 	void *user_data;
 	struct wl_list link;
@@ -1197,10 +1206,19 @@ window_has_focus(struct window *window)
 static void
 window_flush(struct window *window)
 {
+	struct surface *surface;
+
 	if (window->type == TYPE_NONE) {
 		window->type = TYPE_TOPLEVEL;
 		if (window->shell_surface)
 			wl_shell_surface_set_toplevel(window->shell_surface);
+	}
+
+	wl_list_for_each(surface, &window->subsurface_list, link) {
+		if (surface == window->main_surface)
+			continue;
+
+		surface_flush(surface);
 	}
 
 	surface_flush(window->main_surface);
@@ -1299,11 +1317,15 @@ surface_destroy(struct surface *surface)
 	if (surface->opaque_region)
 		wl_region_destroy(surface->opaque_region);
 
+	if (surface->subsurface)
+		wl_subsurface_destroy(surface->subsurface);
+
 	wl_surface_destroy(surface->surface);
 
 	if (surface->toysurface)
 		surface->toysurface->destroy(surface->toysurface);
 
+	wl_list_remove(&surface->link);
 	free(surface);
 }
 
@@ -1373,7 +1395,16 @@ widget_find_widget(struct widget *widget, int32_t x, int32_t y)
 static struct widget *
 window_find_widget(struct window *window, int32_t x, int32_t y)
 {
-	return widget_find_widget(window->main_surface->widget, x, y);
+	struct surface *surface;
+	struct widget *widget;
+
+	wl_list_for_each(surface, &window->subsurface_list, link) {
+		widget = widget_find_widget(surface->widget, x, y);
+		if (widget)
+			return widget;
+	}
+
+	return NULL;
 }
 
 static struct widget *
@@ -1423,7 +1454,12 @@ void
 widget_destroy(struct widget *widget)
 {
 	struct display *display = widget->window->display;
+	struct surface *surface = widget->surface;
 	struct input *input;
+
+	/* Destroy the sub-surface along with the root widget */
+	if (surface->widget == widget && surface->subsurface)
+		surface_destroy(widget->surface);
 
 	if (widget->tooltip) {
 		free(widget->tooltip);
@@ -1498,11 +1534,14 @@ widget_get_cairo_surface(struct widget *widget)
 cairo_t *
 widget_cairo_create(struct widget *widget)
 {
+	struct surface *surface = widget->surface;
 	cairo_surface_t *cairo_surface;
 	cairo_t *cr;
 
 	cairo_surface = widget_get_cairo_surface(widget);
 	cr = cairo_create(cairo_surface);
+
+	cairo_translate(cr, -surface->allocation.x, -surface->allocation.y);
 
 	return cr;
 }
@@ -3220,6 +3259,36 @@ window_move(struct window *window, struct input *input, uint32_t serial)
 }
 
 static void
+surface_set_synchronized(struct surface *surface)
+{
+	if (!surface->subsurface)
+		return;
+
+	if (surface->synchronized)
+		return;
+
+	wl_subsurface_set_sync(surface->subsurface);
+	surface->synchronized = 1;
+}
+
+static void
+surface_set_synchronized_default(struct surface *surface)
+{
+	if (!surface->subsurface)
+		return;
+
+	if (surface->synchronized == surface->synchronized_default)
+		return;
+
+	if (surface->synchronized_default)
+		wl_subsurface_set_sync(surface->subsurface);
+	else
+		wl_subsurface_set_desync(surface->subsurface);
+
+	surface->synchronized = surface->synchronized_default;
+}
+
+static void
 surface_resize(struct surface *surface)
 {
 	struct widget *widget = surface->widget;
@@ -3241,11 +3310,18 @@ surface_resize(struct surface *surface)
 				       widget->allocation.height,
 				       widget->user_data);
 
+	if (surface->subsurface &&
+	    (surface->allocation.x != widget->allocation.x ||
+	     surface->allocation.y != widget->allocation.y)) {
+		wl_subsurface_set_position(surface->subsurface,
+					   widget->allocation.x,
+					   widget->allocation.y);
+	}
 	if (surface->allocation.width != widget->allocation.width ||
 	    surface->allocation.height != widget->allocation.height) {
-		surface->allocation = widget->allocation;
 		window_schedule_redraw(widget->window);
 	}
+	surface->allocation = widget->allocation;
 
 	if (widget->opaque)
 		wl_region_add(surface->opaque_region, 0, 0,
@@ -3256,6 +3332,8 @@ surface_resize(struct surface *surface)
 static void
 idle_resize(struct window *window)
 {
+	struct surface *surface;
+
 	window->resize_needed = 0;
 
 	widget_set_allocation(window->main_surface->widget,
@@ -3265,6 +3343,19 @@ idle_resize(struct window *window)
 			      window->pending_allocation.height);
 
 	surface_resize(window->main_surface);
+
+	/* The main surface is in the list, too. Main surface's
+	 * resize_handler is responsible for calling widget_set_allocation()
+	 * on all sub-surface root widgets, so they will be resized
+	 * properly.
+	 */
+	wl_list_for_each(surface, &window->subsurface_list, link) {
+		if (surface == window->main_surface)
+			continue;
+
+		surface_set_synchronized(surface);
+		surface_resize(surface);
+	}
 }
 
 void
@@ -3377,17 +3468,23 @@ static void
 idle_redraw(struct task *task, uint32_t events)
 {
 	struct window *window = container_of(task, struct window, redraw_task);
+	struct surface *surface;
 
 	if (window->resize_needed)
 		idle_resize(window);
 
-	widget_redraw(window->main_surface->widget);
+	wl_list_for_each(surface, &window->subsurface_list, link)
+		widget_redraw(surface->widget);
+
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
 
 	window->frame_cb = wl_surface_frame(window->main_surface->surface);
 	wl_callback_add_listener(window->frame_cb, &listener, window);
 	window_flush(window);
+
+	wl_list_for_each(surface, &window->subsurface_list, link)
+		surface_set_synchronized_default(surface);
 }
 
 void
@@ -3687,6 +3784,8 @@ surface_create(struct window *window)
 	surface->surface = wl_compositor_create_surface(display->compositor);
 	wl_surface_add_listener(surface->surface, &surface_listener, window);
 
+	wl_list_insert(&window->subsurface_list, &surface->link);
+
 	return surface;
 }
 
@@ -3702,6 +3801,7 @@ window_create_internal(struct display *display,
 		return NULL;
 
 	memset(window, 0, sizeof *window);
+	wl_list_init(&window->subsurface_list);
 	window->display = display;
 	window->parent = parent;
 
@@ -3952,6 +4052,42 @@ window_set_buffer_type(struct window *window, enum window_buffer_type type)
 	window->main_surface->buffer_type = type;
 }
 
+struct widget *
+window_add_subsurface(struct window *window, void *data,
+		      enum subsurface_mode default_mode)
+{
+	struct widget *widget;
+	struct surface *surface;
+	struct wl_surface *parent;
+	struct wl_subcompositor *subcompo = window->display->subcompositor;
+
+	if (!subcompo)
+		return NULL;
+
+	surface = surface_create(window);
+	widget = widget_create(window, surface, data);
+	wl_list_init(&widget->link);
+	surface->widget = widget;
+
+	parent = window->main_surface->surface;
+	surface->subsurface = wl_subcompositor_get_subsurface(subcompo,
+							      surface->surface,
+							      parent);
+	surface->synchronized = 1;
+
+	switch (default_mode) {
+	case SUBSURFACE_SYNCHRONIZED:
+		surface->synchronized_default = 1;
+		break;
+	case SUBSURFACE_DESYNCHRONIZED:
+		surface->synchronized_default = 0;
+		break;
+	default:
+		assert(!"bad enum subsurface_mode");
+	}
+
+	return widget;
+}
 
 static void
 display_handle_geometry(void *data,
@@ -4223,6 +4359,10 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 					 &text_cursor_position_interface, 1);
 	} else if (strcmp(interface, "workspace_manager") == 0) {
 		init_workspace_manager(d, id);
+	} else if (strcmp(interface, "wl_subcompositor") == 0) {
+		d->subcompositor =
+			wl_registry_bind(registry, id,
+					 &wl_subcompositor_interface, 1);
 	}
 
 	if (d->global_handler)
@@ -4515,6 +4655,9 @@ display_destroy(struct display *display)
 	if (display->argb_device)
 		fini_egl(display);
 #endif
+
+	if (display->subcompositor)
+		wl_subcompositor_destroy(display->subcompositor);
 
 	if (display->shell)
 		wl_shell_destroy(display->shell);

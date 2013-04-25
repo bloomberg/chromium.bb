@@ -259,6 +259,15 @@ window_destroy(struct window *window);
 struct widget *
 window_add_widget(struct window *window, void *data);
 
+enum subsurface_mode {
+	SUBSURFACE_SYNCHRONIZED,
+	SUBSURFACE_DESYNCHRONIZED
+};
+
+struct widget *
+window_add_subsurface(struct window *window, void *data,
+		      enum subsurface_mode default_mode);
+
 typedef void (*data_func_t)(void *data, size_t len,
 			    int32_t x, int32_t y, void *user_data);
 
