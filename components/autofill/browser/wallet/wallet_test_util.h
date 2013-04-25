@@ -11,10 +11,12 @@
 namespace autofill {
 namespace wallet {
 
-class Instrument;
 class Address;
+class FullWallet;
+class Instrument;
 
 scoped_ptr<Address> GetTestAddress();
+scoped_ptr<FullWallet> GetTestFullWallet();
 scoped_ptr<Instrument> GetTestInstrument();
 scoped_ptr<WalletItems::LegalDocument> GetTestLegalDocument();
 scoped_ptr<WalletItems::MaskedInstrument> GetTestMaskedInstrument();

@@ -8,8 +8,10 @@
 #include <vector>
 
 #include "base/string16.h"
+#include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"
+#include "components/autofill/browser/wallet/full_wallet.h"
 #include "components/autofill/browser/wallet/instrument.h"
 #include "components/autofill/browser/wallet/required_action.h"
 #include "components/autofill/browser/wallet/wallet_address.h"
@@ -27,6 +29,18 @@ scoped_ptr<Address> GetTestAddress() {
                                          ASCIIToUTF16("postal_code_number"),
                                          ASCIIToUTF16("phone_number"),
                                          std::string()));
+}
+
+scoped_ptr<FullWallet> GetTestFullWallet() {
+  base::Time::Exploded exploded;
+  base::Time::Now().LocalExplode(&exploded);
+  return scoped_ptr<FullWallet>(new FullWallet(exploded.year + 3,
+                                               exploded.month,
+                                               "iin",
+                                               "rest",
+                                               GetTestAddress(),
+                                               GetTestShippingAddress(),
+                                               std::vector<RequiredAction>()));
 }
 
 scoped_ptr<Instrument> GetTestInstrument() {

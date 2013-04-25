@@ -496,8 +496,13 @@ bool AutofillDialogControllerImpl::HadAutocheckoutError() const {
 
 bool AutofillDialogControllerImpl::IsDialogButtonEnabled(
     ui::DialogButton button) const {
-  if (button == ui::DIALOG_BUTTON_OK)
-    return !is_submitting_ || IsSubmitPausedOn(wallet::VERIFY_CVV);
+  if (button == ui::DIALOG_BUTTON_OK) {
+    if (IsSubmitPausedOn(wallet::VERIFY_CVV))
+      return true;
+    if (is_submitting_ || ShouldShowSpinner())
+      return false;
+    return true;
+  }
 
   DCHECK_EQ(ui::DIALOG_BUTTON_CANCEL, button);
   // TODO(ahutter): Make it possible for the user to cancel out of the dialog
@@ -517,7 +522,7 @@ bool AutofillDialogControllerImpl::SectionIsActive(DialogSection section)
     return section == SECTION_CC_BILLING;
 
   if (IsPayingWithWallet())
-    return section != SECTION_BILLING && section != SECTION_CC;
+    return section == SECTION_CC_BILLING || section == SECTION_SHIPPING;
 
   return section != SECTION_CC_BILLING;
 }
@@ -575,6 +580,8 @@ void AutofillDialogControllerImpl::OnWalletOrSigninUpdate() {
   SignedInStateUpdated();
   SuggestionsUpdated();
   UpdateAccountChooserView();
+  if (view_)
+    view_->UpdateButtonStrip();
 
   // On the first successful response, compute the initial user state metric.
   if (initial_user_state_ == AutofillMetrics::DIALOG_USER_STATE_UNKNOWN)
@@ -832,7 +839,6 @@ scoped_ptr<DataModelWrapper> AutofillDialogControllerImpl::CreateWrapper(
           new WalletAddressWrapper(wallet_items_->addresses()[index]));
     }
 
-    // TODO(dbeam): should SECTION_EMAIL get here? http://crbug.com/223923
     return scoped_ptr<DataModelWrapper>();
   }
 
@@ -1837,6 +1843,15 @@ bool AutofillDialogControllerImpl::IsCompleteProfile(
 void AutofillDialogControllerImpl::FillOutputForSectionWithComparator(
     DialogSection section,
     const InputFieldComparator& compare) {
+  // Email is hidden while using Wallet, special case it.
+  if (section == SECTION_EMAIL && IsPayingWithWallet()) {
+    AutofillProfile profile;
+    profile.SetRawInfo(EMAIL_ADDRESS,
+                       account_chooser_model_.active_wallet_account_name());
+    FillFormStructureForSection(profile, 0, section, compare);
+    return;
+  }
+
   if (!SectionIsActive(section))
     return;
 

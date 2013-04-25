@@ -65,6 +65,7 @@ class FullWallet {
 
  private:
   friend class FullWalletTest;
+  friend scoped_ptr<FullWallet> GetTestFullWallet();
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWallet);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, CreateFullWalletWithRequiredActions);
   FRIEND_TEST_ALL_PREFIXES(FullWalletTest, EvenRestDecryptionTest);

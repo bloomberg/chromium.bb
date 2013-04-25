@@ -222,10 +222,15 @@ class AutofillDialogControllerTest : public testing::Test {
 
   // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
-    FormFieldData field;
-    field.autocomplete_attribute = "cc-number";
     FormData form_data;
-    form_data.fields.push_back(field);
+
+    FormFieldData email;
+    email.autocomplete_attribute = "email";
+    form_data.fields.push_back(email);
+
+    FormFieldData cc_number;
+    email.autocomplete_attribute = "cc-number";
+    form_data.fields.push_back(cc_number);
 
     profile()->CreateRequestContext();
     test_web_contents_.reset(
@@ -292,9 +297,13 @@ class AutofillDialogControllerTest : public testing::Test {
 
   TestingProfile* profile() { return &profile_; }
 
+  const FormStructure* form_structure() { return form_structure_; }
+
  private:
   void FinishedCallback(const FormStructure* form_structure,
-                        const std::string& google_transaction_id) {}
+                        const std::string& google_transaction_id) {
+    form_structure_ = form_structure;
+  }
 
 #if defined(OS_WIN)
    // http://crbug.com/227221
@@ -317,6 +326,9 @@ class AutofillDialogControllerTest : public testing::Test {
 
   // Must outlive the controller.
   AutofillMetrics metric_logger_;
+
+  // Returned when the dialog closes successfully.
+  const FormStructure* form_structure_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerTest);
 };
@@ -558,7 +570,6 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
   controller()->OnAccept();
 
   EXPECT_TRUE(NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
-  EXPECT_TRUE(controller()->SectionIsActive(SECTION_EMAIL));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_SHIPPING));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
   EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
@@ -572,7 +583,6 @@ TEST_F(AutofillDialogControllerTest, VerifyCvv) {
 
   EXPECT_FALSE(
       NotificationsOfType(DialogNotification::REQUIRED_ACTION).empty());
-  EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
   EXPECT_FALSE(controller()->SectionIsActive(SECTION_SHIPPING));
   EXPECT_TRUE(controller()->SectionIsActive(SECTION_CC_BILLING));
 
@@ -829,6 +839,43 @@ TEST_F(AutofillDialogControllerTest, ViewSubmitSetsPref) {
       ::prefs::kAutofillDialogPayWithoutWallet));
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet));
+}
+
+TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
+  controller()->OnUserNameFetchSuccess(kFakeEmail);
+  controller()->MenuModelForAccountChooser()->ActivatedAt(
+      TestAccountChooserModel::kAutofillItemId);
+  // Email section should be showing when using Autofill.
+  EXPECT_TRUE(controller()->SectionIsActive(SECTION_EMAIL));
+
+  // Setup some wallet state, submit, and get a full wallet to end the flow.
+  controller()->MenuModelForAccountChooser()->ActivatedAt(
+      TestAccountChooserModel::kActiveWalletItemId);
+  scoped_ptr<wallet::WalletItems> wallet_items = wallet::GetTestWalletItems();
+  wallet_items->AddInstrument(wallet::GetTestMaskedInstrument());
+  wallet_items->AddAddress(wallet::GetTestShippingAddress());
+
+  // Filling |form_structure()| depends on the current username and wallet items
+  // being fetched. Until both of these have occurred, the user should not be
+  // able to click Submit if using Wallet. The username fetch happened earlier.
+  EXPECT_FALSE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+  controller()->OnDidGetWalletItems(wallet_items.Pass());
+  EXPECT_TRUE(controller()->IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK));
+
+  // Email section should be hidden when using Wallet.
+  EXPECT_FALSE(controller()->SectionIsActive(SECTION_EMAIL));
+
+  controller()->OnAccept();
+  controller()->OnDidGetFullWallet(wallet::GetTestFullWallet());
+
+  size_t i = 0;
+  for (; i < form_structure()->field_count(); ++i) {
+    if (form_structure()->field(i)->type() == EMAIL_ADDRESS) {
+      EXPECT_EQ(ASCIIToUTF16(kFakeEmail), form_structure()->field(i)->value);
+      break;
+    }
+  }
+  ASSERT_LT(i, form_structure()->field_count());
 }
 
 }  // namespace autofill
