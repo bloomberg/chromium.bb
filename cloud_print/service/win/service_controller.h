@@ -28,7 +28,7 @@ class ServiceController {
   DECLARE_REGISTRY_APPID_RESOURCEID(IDR_CLOUDPRINTSERVICE,
                                     "{8013FB7C-2E3E-4992-B8BD-05C0C4AB0627}")
 
-  explicit ServiceController(const string16& name);
+  ServiceController();
   ~ServiceController();
 
   // Installs temporarily service to check pre-requirements.

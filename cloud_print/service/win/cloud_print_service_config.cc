@@ -118,8 +118,7 @@ class SetupDialog : public base::RefCounted<SetupDialog>,
 
 SetupDialog::SetupDialog()
     : state_(ServiceController::STATE_NOT_FOUND),
-      worker_("worker"),
-      controller_(cloud_print::LoadLocalString(IDS_SERVICENAME)) {
+      worker_("worker") {
   ui_loop_ = MessageLoop::current();
   DCHECK(ui_loop_->IsType(MessageLoop::TYPE_UI));
 

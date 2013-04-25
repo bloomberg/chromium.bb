@@ -35,6 +35,7 @@ const int kUsageUpdateTimeoutMs = 6 * 3600 * 1000;  // 6 hours.
 static const char16 kAutoRunKeyPath[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
+// Terminates any process.
 void ShutdownChrome(HANDLE process, DWORD thread_id) {
   if (::PostThreadMessage(thread_id, WM_QUIT, 0, 0) &&
       WAIT_OBJECT_0 == ::WaitForSingleObject(process, kShutdownTimeoutMs)) {
@@ -42,6 +43,27 @@ void ShutdownChrome(HANDLE process, DWORD thread_id) {
   }
   LOG(ERROR) << "Failed to shutdown process.";
   base::KillProcess(process, 0, true);
+}
+
+BOOL CALLBACK CloseIfPidEqual(HWND wnd, LPARAM lparam) {
+  DWORD pid = 0;
+  ::GetWindowThreadProcessId(wnd, &pid);
+  if (pid == static_cast<DWORD>(lparam))
+    ::PostMessage(wnd, WM_CLOSE, 0, 0);
+  return TRUE;
+}
+
+void CloseAllProcessWindows(HANDLE process) {
+  ::EnumWindows(&CloseIfPidEqual, GetProcessId(process));
+}
+
+// Close Chrome browser window.
+void CloseChrome(HANDLE process, DWORD thread_id) {
+  CloseAllProcessWindows(process);
+  if (WAIT_OBJECT_0 == ::WaitForSingleObject(process, kShutdownTimeoutMs)) {
+    return;
+  }
+  ShutdownChrome(process, thread_id);
 }
 
 bool LaunchProcess(const CommandLine& cmdline,
@@ -89,20 +111,31 @@ GURL GetCloudPrintServiceEnableURLWithSignin(const std::string& proxy_id) {
       url, "continue", GetCloudPrintServiceEnableURL(proxy_id).spec());
 }
 
-std::string UpdateServiceState(const std::string& json,
-                               const std::string& proxy_id) {
-  std::string result;
+std::string ReadAndUpdateServiceState(const base::FilePath& directory,
+                                      const std::string& proxy_id) {
+  std::string json;
+  base::FilePath file_path = directory.Append(chrome::kServiceStateFileName);
+  if (!file_util::ReadFileToString(file_path, &json)) {
+    return std::string();
+  }
 
   scoped_ptr<base::Value> service_state(base::JSONReader::Read(json));
   base::DictionaryValue* dictionary = NULL;
   if (!service_state->GetAsDictionary(&dictionary) || !dictionary) {
-    return result;
+    return std::string();
   }
 
   bool enabled = false;
   if (!dictionary->GetBoolean(prefs::kCloudPrintProxyEnabled, &enabled) ||
       !enabled) {
-    return result;
+    return std::string();
+  }
+
+  std::string refresh_token;
+  if (!dictionary->GetString(prefs::kCloudPrintRobotRefreshToken,
+                             &refresh_token) ||
+      refresh_token.empty()) {
+    return std::string();
   }
 
   // Remove everything except kCloudPrintRoot.
@@ -112,7 +145,9 @@ std::string UpdateServiceState(const std::string& json,
   dictionary->Set(prefs::kCloudPrintRoot, cloud_print_root);
 
   dictionary->SetBoolean(prefs::kCloudPrintXmppPingEnabled, true);
-  dictionary->SetString(prefs::kCloudPrintProxyId, proxy_id);
+  if (!proxy_id.empty())  // Reuse proxy id if we already had one.
+    dictionary->SetString(prefs::kCloudPrintProxyId, proxy_id);
+  std::string result;
   base::JSONWriter::WriteWithOptions(dictionary,
                                      base::JSONWriter::OPTIONS_PRETTY_PRINT,
                                      &result);
@@ -287,18 +322,25 @@ std::string ChromeLauncher::CreateServiceStateFile(
     return result;
   }
 
-  DWORD wait_result = ::WaitForSingleObject(chrome_handle, INFINITE);
-  if (wait_result != WAIT_OBJECT_0) {
-    LOG(ERROR) << "Chrome launch failed.";
-    return result;
+  for (;;) {
+    DWORD wait_result = ::WaitForSingleObject(chrome_handle, 500);
+    std::string json = ReadAndUpdateServiceState(temp_user_data.path(),
+                                                 proxy_id);
+    if (wait_result == WAIT_OBJECT_0) {
+      // Return what we have because browser is closed.
+      return json;
+    } else if (wait_result == WAIT_TIMEOUT) {
+      if (!json.empty()) {
+        // Close chrome because Service State is ready.
+        CloseChrome(chrome_handle, thread_id);
+        return json;
+      }
+    } else {
+      LOG(ERROR) << "Chrome launch failed.";
+      return result;
+    }
   }
-
-  std::string json;
-  if (!file_util::ReadFileToString(
-          temp_user_data.path().Append(chrome::kServiceStateFileName), &json)) {
-    return result;
-  }
-
-  return UpdateServiceState(json, proxy_id);
+  NOTREACHED();
+  return std::string();
 }
 

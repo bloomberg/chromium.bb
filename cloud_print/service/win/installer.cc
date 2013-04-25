@@ -84,7 +84,7 @@ HRESULT ProcessInstallerSwitches() {
         kGoogleUpdateId, cloud_print::LoadLocalString(IDS_FULL_PRODUCT_NAME),
         kUninstallSwitch);
 
-    ServiceController controller(cloud_print::LoadLocalString(IDS_SERVICENAME));
+    ServiceController controller;
     HRESULT hr = controller.UpdateBinaryPath();
     if (FAILED(hr))
       return hr;
@@ -102,7 +102,7 @@ HRESULT ProcessInstallerSwitches() {
 
     return S_OK;
   } else if (command_line.HasSwitch(kUninstallSwitch)) {
-    ServiceController controller(cloud_print::LoadLocalString(IDS_SERVICENAME));
+    ServiceController controller;
     HRESULT hr = controller.UninstallService();
     if (FAILED(hr))
       return hr;

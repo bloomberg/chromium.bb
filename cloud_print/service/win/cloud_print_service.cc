@@ -116,14 +116,15 @@ bool AskUser(const std::string& request) {
 
 
 class CloudPrintServiceModule
-    : public ATL::CAtlServiceModuleT<CloudPrintServiceModule, IDS_SERVICENAME> {
+    : public ATL::CAtlServiceModuleT<CloudPrintServiceModule,
+                                     IDS_SERVICE_NAME> {
  public:
   typedef ATL::CAtlServiceModuleT<CloudPrintServiceModule,
-                                  IDS_SERVICENAME> Base;
+                                  IDS_SERVICE_NAME> Base;
 
   CloudPrintServiceModule()
       : check_requirements_(false),
-        controller_(new ServiceController(m_szServiceName)) {
+        controller_(new ServiceController()) {
   }
 
   static wchar_t* GetAppIdT() {
@@ -244,6 +245,7 @@ class CloudPrintServiceModule
       std::cout << "\nPlease provide Windows account to run service.\n";
       *run_as_user = ASCIIToWide(GetOption("Account as DOMAIN\\USERNAME",
                                             WideToASCII(*run_as_user), false));
+      *run_as_user = ReplaceLocalHostInName(*run_as_user);
       *run_as_password = ASCIIToWide(GetOption("Password", "", true));
 
       SetupListener setup(*run_as_user);
@@ -268,7 +270,7 @@ class CloudPrintServiceModule
         continue;
       }
       if (setup.user_data_dir().empty()) {
-        LOG(ERROR) << "Service can't access user data dir.";
+        LOG(ERROR) << "Service can't write data directory.";
         continue;
       }
       if (setup.chrome_path().empty()) {
@@ -324,20 +326,22 @@ class CloudPrintServiceModule
         }
       }
 
-      while (!is_valid) {
-        std::cout << "\nUse Chrome to setup Cloud Print Settings.\n";
-        std::string new_contents =
-            ChromeLauncher::CreateServiceStateFile(proxy_id, printers);
-        is_valid = !new_contents.empty();
-        if (is_valid) {
-          if (new_contents != contents) {
-            size_t  written = file_util::WriteFile(file, new_contents.c_str(),
-                                                   new_contents.size());
-            if (written != new_contents.size()) {
-              LOG(ERROR) << "Failed to write file " << file.value() << ".";
-              return cloud_print::GetLastHResult();
-            }
-          }
+      string16 message =
+          cloud_print::LoadLocalString(IDS_ADD_PRINTERS_USING_CHROME);
+      std::cout << "\n" << message.c_str() << "\n" ;
+      std::string new_contents =
+          ChromeLauncher::CreateServiceStateFile(proxy_id, printers);
+
+      if (new_contents.empty()) {
+        LOG(ERROR) << "Failed create Service State file.";
+        return E_FAIL;
+      }
+      if (new_contents != contents) {
+        size_t  written = file_util::WriteFile(file, new_contents.c_str(),
+                                                new_contents.size());
+        if (written != new_contents.size()) {
+          LOG(ERROR) << "Failed to write file " << file.value() << ".";
+          return cloud_print::GetLastHResult();
         }
       }
     }

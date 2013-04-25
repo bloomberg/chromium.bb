@@ -18,8 +18,14 @@ file.
   </translations>
     <release seq="1">
     <messages>
-      <message name="IDS_SERVICENAME" translateable="false">
+      <message name="IDS_SERVICE_NAME" translateable="false">
         CloudPrintService
+      </message>
+      <message name="IDS_SERVICE_DISPLAY_NAME">
+        Google Cloud Print Service
+      </message>
+      <message name="IDS_SERVICE_DESCRIPTION">
+        Connects classic printers with Google Cloud Print.
       </message>
       <message name="IDS_FULL_PRODUCT_NAME" translateable="false">
         Google Cloud Print Service
@@ -76,7 +82,7 @@ file.
         Continue in Chrome.
       </message>
       <message name="IDS_ADD_PRINTERS_USING_CHROME">
-        Login and add printers using opened Chrome window. Close Chrome after completion.
+        Login and add printers using opened Chrome window. Close Chrome to cancel process.
       </message>
     </messages>
 

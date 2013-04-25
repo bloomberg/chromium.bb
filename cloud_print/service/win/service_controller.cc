@@ -81,8 +81,9 @@ HRESULT OpenService(const string16& name, DWORD access,
 
 }  // namespace
 
-ServiceController::ServiceController(const string16& name)
-    : name_(name), command_line_(CommandLine::NO_PROGRAM) {
+ServiceController::ServiceController()
+    : name_(cloud_print::LoadLocalString(IDS_SERVICE_NAME)),
+      command_line_(CommandLine::NO_PROGRAM) {
 }
 
 ServiceController::~ServiceController() {
@@ -192,9 +193,11 @@ HRESULT ServiceController::InstallService(const string16& user,
   if (FAILED(hr))
     return hr;
 
+  string16 display_name =
+      cloud_print::LoadLocalString(IDS_SERVICE_DISPLAY_NAME);
   ServiceHandle service(
       ::CreateService(
-          scm, name_.c_str(), name_.c_str(), SERVICE_ALL_ACCESS,
+          scm, name_.c_str(), display_name.c_str(), SERVICE_ALL_ACCESS,
           SERVICE_WIN32_OWN_PROCESS,
           auto_start ? SERVICE_AUTO_START : SERVICE_DEMAND_START,
           SERVICE_ERROR_NORMAL, command_line.GetCommandLineString().c_str(),
@@ -205,6 +208,12 @@ HRESULT ServiceController::InstallService(const string16& user,
     LOG(ERROR) << "Failed to install service as " << user << ".";
     return cloud_print::GetLastHResult();
   }
+
+  string16 description_string =
+      cloud_print::LoadLocalString(IDS_SERVICE_DESCRIPTION);
+  SERVICE_DESCRIPTION description = {0};
+  description.lpDescription = const_cast<wchar_t*>(description_string.c_str());
+  ::ChangeServiceConfig2(service, SERVICE_CONFIG_DESCRIPTION, &description);
 
   return S_OK;
 }
