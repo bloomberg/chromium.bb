@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2003, 2006, 2007, 2008, 2009 Apple Inc. All rights reserved.
  * Copyright (C) 2008-2009 Torch Mobile, Inc.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,6 +37,14 @@
 #include "core/platform/graphics/ImageOrientation.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/Pattern.h"
+
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPaint.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRRect.h"
+#include "third_party/skia/include/effects/SkCornerPathEffect.h"
+
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>
 
@@ -360,38 +369,38 @@ namespace WebCore {
         static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
     private:
-        void platformInit(PlatformGraphicsContext*);
-        void platformDestroy();
-
-        void savePlatformState();
-        void restorePlatformState();
-
-        void setPlatformTextDrawingMode(TextDrawingModeFlags);
-        void setPlatformFont(const Font& font);
-
-        void setPlatformStrokeColor(const Color&, ColorSpace);
-        void setPlatformStrokeStyle(StrokeStyle);
-        void setPlatformStrokeThickness(float);
-
-        void setPlatformFillColor(const Color&, ColorSpace);
-
-        void setPlatformShouldAntialias(bool);
-        void setPlatformShouldSmoothFonts(bool);
-
-        void setPlatformShadow(const FloatSize&, float blur, const Color&, ColorSpace);
-        void clearPlatformShadow();
-
-        void setPlatformCompositeOperation(CompositeOperator, BlendMode = BlendModeNormal);
-
-        void beginPlatformTransparencyLayer(float opacity);
-        void endPlatformTransparencyLayer();
         static bool supportsTransparencyLayers();
+        static void addCornerArc(SkPath*, const SkRect&, const IntSize&, int);
+        static void setPathFromConvexPoints(SkPath* path, size_t numPoints, const FloatPoint* points);
+        static void drawOuterPath(PlatformContextSkia* context, const SkPath& path, SkPaint& paint, int width);
+        static void drawInnerPath(PlatformContextSkia* context, const SkPath& path, SkPaint& paint, int width);
+        static void setRadii(SkVector* radii, IntSize topLeft, IntSize topRight, IntSize bottomRight, IntSize bottomLeft);
 
-        void fillEllipseAsPath(const FloatRect&);
-        void strokeEllipseAsPath(const FloatRect&);
+#if OS(DARWIN)
+        static inline int getFocusRingOutset(int offset) { return offset + 2; }
+#else
+        static inline int getFocusRingOutset(int offset) { return 0; }
+        static const SkPMColor lineColors(int);
+        static const SkPMColor antiColors1(int);
+        static const SkPMColor antiColors2(int);
+        static void draw1xMarker(SkBitmap*, int);
+        static void draw2xMarker(SkBitmap*, int);
+#endif
 
-        void platformFillEllipse(const FloatRect&);
-        void platformStrokeEllipse(const FloatRect&);
+        // Return value % max, but account for value possibly being negative.
+        static int fastMod(int value, int max)
+        {
+            bool isNeg = false;
+            if (value < 0) {
+                value = -value;
+                isNeg = true;
+            }
+            if (value >= max)
+                value %= max;
+            if (isNeg)
+                value = -value;
+            return value;
+        }
 
         GraphicsContextPlatformPrivate* m_data;
 

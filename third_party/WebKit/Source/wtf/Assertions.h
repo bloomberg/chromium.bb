@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2003, 2006, 2007 Apple Inc.  All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -44,6 +45,7 @@
    http://msdn2.microsoft.com/en-us/library/ms177415(VS.80).aspx
 */
 
+#include <wtf/ExportMacros.h>
 #include <wtf/Platform.h>
 
 #include <stddef.h>

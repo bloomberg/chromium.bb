@@ -30,6 +30,7 @@
 #define PlatformContextSkiaState_h
 
 #include "third_party/skia/include/core/SkColorPriv.h"
+#include "third_party/skia/include/effects/SkDashPathEffect.h"
 
 namespace WebCore {
 
