@@ -16,7 +16,7 @@ ALLOWED_DARWIN_VERSION = 12  # Darwin 12 = 10.8.
 MINIMUM_DARWIN_RELEASE = 'B'  # Release B = 10.8.1.
 
 MINIMUM_IB_VERSION = 2549  # Xcode 4.4.1.
-MAXIMUM_IB_VERSION = 2845  # Xcode 4.5.x.
+MAXIMUM_IB_VERSION = 3084  # Xcode 4.6.x.
 HUMAN_IB_VERSION = '4.4.x, x >= 1'
 
 SYSTEM_VERSION_RE = r'<string key="IBDocument\.SystemVersion">' + \
