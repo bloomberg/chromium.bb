@@ -195,6 +195,8 @@ struct surface {
 	int synchronized_default;
 	struct toysurface *toysurface;
 	struct widget *widget;
+	int redraw_needed;
+	struct wl_callback *frame_cb;
 
 	struct rectangle allocation;
 	struct rectangle server_allocation;
@@ -220,8 +222,8 @@ struct window {
 	struct rectangle pending_allocation;
 	int x, y;
 	int resize_edges;
-	int redraw_scheduled;
 	int redraw_needed;
+	int redraw_task_scheduled;
 	struct task redraw_task;
 	int resize_needed;
 	int saved_type;
@@ -242,7 +244,6 @@ struct window {
 
 	struct surface *main_surface;
 	struct wl_shell_surface *shell_surface;
-	struct wl_callback *frame_cb;
 
 	struct frame *frame;
 
@@ -1311,6 +1312,9 @@ static void frame_destroy(struct frame *frame);
 static void
 surface_destroy(struct surface *surface)
 {
+	if (surface->frame_cb)
+		wl_callback_destroy(surface->frame_cb);
+
 	if (surface->input_region)
 		wl_region_destroy(surface->input_region);
 
@@ -1337,8 +1341,7 @@ window_destroy(struct window *window)
 	struct window_output *window_output;
 	struct window_output *window_output_tmp;
 
-	if (window->redraw_scheduled)
-		wl_list_remove(&window->redraw_task.link);
+	wl_list_remove(&window->redraw_task.link);
 
 	wl_list_for_each(input, &display->input_list, link) {
 		if (input->pointer_focus == window)
@@ -1365,8 +1368,6 @@ window_destroy(struct window *window)
 
 	wl_list_remove(&window->link);
 
-	if (window->frame_cb)
-		wl_callback_destroy(window->frame_cb);
 	free(window->title);
 	free(window);
 }
@@ -1593,10 +1594,14 @@ widget_set_axis_handler(struct widget *widget,
 	widget->axis_handler = handler;
 }
 
+static void
+window_schedule_redraw_task(struct window *window);
+
 void
 widget_schedule_redraw(struct widget *widget)
 {
-	window_schedule_redraw(widget->window);
+	widget->surface->redraw_needed = 1;
+	window_schedule_redraw_task(widget->window);
 }
 
 cairo_surface_t *
@@ -3335,6 +3340,7 @@ idle_resize(struct window *window)
 	struct surface *surface;
 
 	window->resize_needed = 0;
+	window->redraw_needed = 1;
 
 	widget_set_allocation(window->main_surface->widget,
 			      window->pending_allocation.x,
@@ -3450,19 +3456,42 @@ widget_redraw(struct widget *widget)
 static void
 frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 {
-	struct window *window = data;
+	struct surface *surface = data;
 
-	assert(callback == window->frame_cb);
+	assert(callback == surface->frame_cb);
 	wl_callback_destroy(callback);
-	window->frame_cb = 0;
-	window->redraw_scheduled = 0;
-	if (window->redraw_needed)
-		window_schedule_redraw(window);
+	surface->frame_cb = NULL;
+
+	if (surface->redraw_needed || surface->window->redraw_needed)
+		window_schedule_redraw_task(surface->window);
 }
 
 static const struct wl_callback_listener listener = {
 	frame_callback
 };
+
+static void
+surface_redraw(struct surface *surface)
+{
+	if (!surface->window->redraw_needed && !surface->redraw_needed)
+		return;
+
+	/* Whole-window redraw forces a redraw even if the previous has
+	 * not yet hit the screen.
+	 */
+	if (surface->frame_cb) {
+		if (!surface->window->redraw_needed)
+			return;
+
+		wl_callback_destroy(surface->frame_cb);
+	}
+
+	surface->frame_cb = wl_surface_frame(surface->surface);
+	wl_callback_add_listener(surface->frame_cb, &listener, surface);
+
+	surface->redraw_needed = 0;
+	widget_redraw(surface->widget);
+}
 
 static void
 idle_redraw(struct task *task, uint32_t events)
@@ -3474,30 +3503,39 @@ idle_redraw(struct task *task, uint32_t events)
 		idle_resize(window);
 
 	wl_list_for_each(surface, &window->subsurface_list, link)
-		widget_redraw(surface->widget);
+		surface_redraw(surface);
 
 	window->redraw_needed = 0;
 	wl_list_init(&window->redraw_task.link);
+	window->redraw_task_scheduled = 0;
 
-	window->frame_cb = wl_surface_frame(window->main_surface->surface);
-	wl_callback_add_listener(window->frame_cb, &listener, window);
 	window_flush(window);
 
 	wl_list_for_each(surface, &window->subsurface_list, link)
 		surface_set_synchronized_default(surface);
 }
 
+static void
+window_schedule_redraw_task(struct window *window)
+{
+	if (window->configure_requests)
+		return;
+	if (!window->redraw_task_scheduled) {
+		window->redraw_task.run = idle_redraw;
+		display_defer(window->display, &window->redraw_task);
+		window->redraw_task_scheduled = 1;
+	}
+}
+
 void
 window_schedule_redraw(struct window *window)
 {
-	window->redraw_needed = 1;
-	if (window->configure_requests)
-		return;
-	if (!window->redraw_scheduled) {
-		window->redraw_task.run = idle_redraw;
-		display_defer(window->display, &window->redraw_task);
-		window->redraw_scheduled = 1;
-	}
+	struct surface *surface;
+
+	wl_list_for_each(surface, &window->subsurface_list, link)
+		surface->redraw_needed = 1;
+
+	window_schedule_redraw_task(window);
 }
 
 int
@@ -3527,13 +3565,9 @@ window_defer_redraw_until_configure(struct window* window)
 {
 	struct wl_callback *callback;
 
-	if (window->redraw_scheduled) {
+	if (window->redraw_task_scheduled) {
 		wl_list_remove(&window->redraw_task.link);
-		window->redraw_scheduled = 0;
-	}
-	if (window->frame_cb) {
-		wl_callback_destroy(window->frame_cb);
-		window->frame_cb = 0;
+		window->redraw_task_scheduled = 0;
 	}
 
 	callback = wl_display_sync(window->display->display);
