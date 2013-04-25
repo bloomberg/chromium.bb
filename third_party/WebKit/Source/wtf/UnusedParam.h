@@ -23,7 +23,7 @@
 
 #include <wtf/Platform.h>
 
-#if COMPILER(INTEL) && !OS(WINDOWS) || COMPILER(RVCT)
+#if COMPILER(INTEL) && !OS(WINDOWS)
 template<typename T>
 inline void unusedParam(T& x) { (void)x; }
 #define UNUSED_PARAM(variable) unusedParam(variable)

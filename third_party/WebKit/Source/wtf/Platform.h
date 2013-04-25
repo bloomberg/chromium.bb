@@ -169,7 +169,7 @@
 #define WTF_CPU_ARM_HARDFP 1
 #endif
 
-#if defined(__ARMEB__) || (COMPILER(RVCT) && defined(__BIG_ENDIAN))
+#if defined(__ARMEB__)
 #define WTF_CPU_BIG_ENDIAN 1
 
 #elif !defined(__ARM_EABI__) \
@@ -216,18 +216,6 @@
 /* MSVC sets _M_ARM */
 #elif defined(_M_ARM)
 #define WTF_ARM_ARCH_VERSION _M_ARM
-
-/* RVCT sets _TARGET_ARCH_ARM */
-#elif defined(__TARGET_ARCH_ARM)
-#define WTF_ARM_ARCH_VERSION __TARGET_ARCH_ARM
-
-#if defined(__TARGET_ARCH_5E) \
-    || defined(__TARGET_ARCH_5TE) \
-    || defined(__TARGET_ARCH_5TEJ)
-/*ARMv5TE requires allocators to use aligned memory*/
-#define WTF_USE_ARENA_ALLOC_ALIGNMENT_INTEGER 1
-#endif
-
 #else
 #define WTF_ARM_ARCH_VERSION 0
 
@@ -256,10 +244,6 @@
     || defined(__ARM_ARCH_7R__) \
     || defined(__ARM_ARCH_7S__)
 #define WTF_THUMB_ARCH_VERSION 4
-
-/* RVCT sets __TARGET_ARCH_THUMB */
-#elif defined(__TARGET_ARCH_THUMB)
-#define WTF_THUMB_ARCH_VERSION __TARGET_ARCH_THUMB
 
 #else
 #define WTF_THUMB_ARCH_VERSION 0
@@ -471,7 +455,7 @@
 #endif
 
 #if !defined(HAVE_VASPRINTF)
-#if !COMPILER(MSVC) && !COMPILER(RVCT) && !COMPILER(MINGW) && !(COMPILER(GCC) && OS(QNX))
+#if !COMPILER(MSVC) && !COMPILER(MINGW) && !(COMPILER(GCC) && OS(QNX))
 #define HAVE_VASPRINTF 1
 #endif
 #endif
