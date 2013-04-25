@@ -39,7 +39,9 @@
 
 namespace WebCore {
 
-ScriptObject InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrumentation(Document* document, const ScriptObject& context)
+namespace InspectorInstrumentation {
+
+inline ScriptObject wrapCanvas2DRenderingContextForInstrumentation(Document* document, const ScriptObject& context)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document)) {
         if (InspectorCanvasAgent* canvasAgent = instrumentingAgents->inspectorCanvasAgent())
@@ -48,7 +50,7 @@ ScriptObject InspectorInstrumentation::wrapCanvas2DRenderingContextForInstrument
     return ScriptObject();
 }
 
-ScriptObject InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentation(Document* document, const ScriptObject& glContext)
+inline ScriptObject wrapWebGLRenderingContextForInstrumentation(Document* document, const ScriptObject& glContext)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForDocument(document)) {
         if (InspectorCanvasAgent* canvasAgent = instrumentingAgents->inspectorCanvasAgent())
@@ -56,6 +58,8 @@ ScriptObject InspectorInstrumentation::wrapWebGLRenderingContextForInstrumentati
     }
     return ScriptObject();
 }
+
+} // namespace InspectorInstrumentation
 
 } // namespace WebCore
 

@@ -44,7 +44,6 @@ class InjectedScriptManager;
 class InspectorBackendDispatcher;
 class InspectorFrontend;
 class InspectorFrontendChannel;
-class InspectorInstrumentation;
 class InspectorRuntimeAgent;
 class InspectorState;
 class InspectorStateClient;

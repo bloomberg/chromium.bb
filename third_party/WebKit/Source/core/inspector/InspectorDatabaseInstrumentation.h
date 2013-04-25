@@ -38,11 +38,15 @@
 
 namespace WebCore {
 
-inline void InspectorInstrumentation::didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
+namespace InspectorInstrumentation {
+
+inline void didOpenDatabase(ScriptExecutionContext* context, PassRefPtr<Database> database, const String& domain, const String& name, const String& version)
 {
     if (InstrumentingAgents* instrumentingAgents = instrumentingAgentsForContext(context))
         didOpenDatabaseImpl(instrumentingAgents, database, domain, name, version);
 }
+
+} // namespace InspectorInstrumentation
 
 } // namespace WebCore
 
