@@ -98,11 +98,11 @@ class VIEWS_EXPORT ImagePainter : public Painter {
  private:
   // Images must share widths by column and heights by row as depicted below.
   // Coordinates along the X and Y axes are used for construction and painting.
-  //     x0   x1   x2   x3
-  // y0__|____|____|____|
-  // y1__|_i0_|_i1_|_i2_|
-  // y2__|_i3_|_i4_|_i5_|
-  // y3__|_i6_|_i7_|_i8_|
+  //     x0     x1     x2     x3
+  // y0__|______|______|______|
+  // y1__|__i0__|__i1__|__i2__|
+  // y2__|__i3__|__i4__|__i5__|
+  // y3__|__i6__|__i7__|__i8__|
   gfx::ImageSkia images_[9];
 
   DISALLOW_COPY_AND_ASSIGN(ImagePainter);
@@ -111,7 +111,8 @@ class VIEWS_EXPORT ImagePainter : public Painter {
 ImagePainter::ImagePainter(const int image_ids[]) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   for (size_t i = 0; i < 9; ++i)
-    images_[i] = *rb.GetImageSkiaNamed(image_ids[i]);
+    if (image_ids[i] != 0)
+      images_[i] = *rb.GetImageSkiaNamed(image_ids[i]);
 }
 
 ImagePainter::ImagePainter(const gfx::ImageSkia& image,
@@ -155,7 +156,8 @@ void ImagePainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
   Fill(canvas, images_[1], x[1], y[0], x[2] - x[1], y[1] - y[0]);
   canvas->DrawImageInt(images_[2], x[2], y[0]);
   Fill(canvas, images_[3], x[0], y[1], x[1] - x[0], y[2] - y[1]);
-  Fill(canvas, images_[4], x[1], y[1], x[2] - x[1], y[2] - y[1]);
+  if (!images_[4].isNull())
+    Fill(canvas, images_[4], x[1], y[1], x[2] - x[1], y[2] - y[1]);
   Fill(canvas, images_[5], x[2], y[1], x[3] - x[2], y[2] - y[1]);
   canvas->DrawImageInt(images_[6], 0, y[2]);
   Fill(canvas, images_[7], x[1], y[2], x[2] - x[1], y[3] - y[2]);

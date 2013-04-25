@@ -53,7 +53,7 @@ class ExampleBubble : public BubbleDelegateView {
 
  protected:
   virtual void Init() OVERRIDE {
-    SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 20, 20, 0));
+    SetLayoutManager(new BoxLayout(BoxLayout::kVertical, 50, 50, 0));
     AddChildView(new Label(GetArrowName(arrow())));
   }
 

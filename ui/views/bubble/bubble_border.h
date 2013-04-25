@@ -16,6 +16,10 @@ class ImageSkia;
 
 namespace views {
 
+namespace internal {
+struct BorderImages;
+}
+
 // Renders a border, with optional arrow, and a custom dropshadow.
 // This can be used to produce floating "bubble" objects with rounded corners.
 class VIEWS_EXPORT BubbleBorder : public Border {
@@ -62,7 +66,7 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     // The tip of the arrow points to the middle of the anchor.
     ALIGN_ARROW_TO_MID_ANCHOR,
     // The edge nearest to the arrow is lined up with the edge of the anchor.
-    ALIGN_EDGE_TO_ANCHOR_EDGE
+    ALIGN_EDGE_TO_ANCHOR_EDGE,
   };
 
   // The way the arrow should be painted.
@@ -88,24 +92,6 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     return 4;
   }
 
-  // Sets the arrow type.
-  void set_arrow(Arrow arrow) { arrow_ = arrow; }
-  Arrow arrow() const { return arrow_; }
-
-  // Sets the alignment.
-  void set_alignment(BubbleAlignment alignment) { alignment_ = alignment; }
-  BubbleAlignment alignment() const { return alignment_; }
-
-  static Arrow horizontal_mirror(Arrow a) {
-    return (a == TOP_CENTER || a == BOTTOM_CENTER || a >= NONE) ?
-        a : static_cast<Arrow>(a ^ RIGHT);
-  }
-
-  static Arrow vertical_mirror(Arrow a) {
-    return (a == LEFT_CENTER || a == RIGHT_CENTER || a >= NONE) ?
-        a : static_cast<Arrow>(a ^ BOTTOM);
-  }
-
   static bool has_arrow(Arrow a) { return a < NONE; }
 
   static bool is_arrow_on_left(Arrow a) {
@@ -124,28 +110,52 @@ class VIEWS_EXPORT BubbleBorder : public Border {
     return has_arrow(a) && !!(a & CENTER);
   }
 
-  // Sets the background color for the arrow body.  This is irrelevant if you do
-  // not also set the arrow type to something other than NONE.
+  static Arrow horizontal_mirror(Arrow a) {
+    return (a == TOP_CENTER || a == BOTTOM_CENTER || a >= NONE) ?
+        a : static_cast<Arrow>(a ^ RIGHT);
+  }
+
+  static Arrow vertical_mirror(Arrow a) {
+    return (a == LEFT_CENTER || a == RIGHT_CENTER || a >= NONE) ?
+        a : static_cast<Arrow>(a ^ BOTTOM);
+  }
+
+  // Get or set the arrow type.
+  void set_arrow(Arrow arrow) { arrow_ = arrow; }
+  Arrow arrow() const { return arrow_; }
+
+  // Get or set the bubble alignment.
+  void set_alignment(BubbleAlignment alignment) { alignment_ = alignment; }
+  BubbleAlignment alignment() const { return alignment_; }
+
+  // Get the shadow type.
+  Shadow shadow() const { return shadow_; }
+
+  // Get or set the background color for the bubble and arrow body.
   void set_background_color(SkColor color) { background_color_ = color; }
   SkColor background_color() const { return background_color_; }
 
+  // Get or set the client_bounds, a Windows-only temporary hack.
   void set_client_bounds(const gfx::Rect& bounds) { client_bounds_ = bounds; }
   const gfx::Rect& client_bounds() const { return client_bounds_; }
 
-  // Sets a fixed offset for the arrow from the beginning of corresponding edge.
-  // The arrow will still point to the same location but the bubble will shift
-  // location to make that happen.
-  void set_arrow_offset(int offset) { override_arrow_offset_ = offset; }
+  // Sets a desired pixel distance between the arrow tip and the outside edge of
+  // the neighboring border image. For example:    |----offset----|
+  // '(' represents shadow around the '{' edge:    ((({           ^   })))
+  // The arrow will still anchor to the same location but the bubble will shift
+  // location to place the arrow |offset| pixels from the perpendicular edge.
+  void set_arrow_offset(int offset) { arrow_offset_ = offset; }
 
   // Sets the way the arrow is actually painted.  Default is PAINT_NORMAL.
   void set_paint_arrow(ArrowPaintType value) { arrow_paint_type_ = value; }
 
-  // For borders with an arrow, gives the desired bounds (in screen coordinates)
-  // given the rect to point to and the size of the contained contents.  This
-  // depends on the arrow type, so if you change that, you should call this
-  // again to find out the new coordinates.
-  virtual gfx::Rect GetBounds(const gfx::Rect& position_relative_to,
+  // Get the desired widget bounds (in screen coordinates) given the anchor rect
+  // and bubble content size; calculated from shadow and arrow image dimensions.
+  virtual gfx::Rect GetBounds(const gfx::Rect& anchor_rect,
                               const gfx::Size& contents_size) const;
+
+  // Get the border exterior thickness, including stroke and shadow, in pixels.
+  int GetBorderThickness() const;
 
   // Returns the corner radius of the current image set.
   int GetBorderCornerRadius() const;
@@ -155,48 +165,19 @@ class VIEWS_EXPORT BubbleBorder : public Border {
 
   // Overridden from Border:
   virtual gfx::Insets GetInsets() const OVERRIDE;
-
-  // How many pixels the bubble border is from the edge of the images.
-  virtual int GetBorderThickness() const;
-
- private:
-  struct BorderImages;
-
-  // Loads images if necessary.
-  static BorderImages* GetBorderImages(Shadow shadow);
-
-  int GetArrowSize() const;
-
-  // Overridden from Border:
   virtual void Paint(const View& view, gfx::Canvas* canvas) OVERRIDE;
 
-  void DrawEdgeWithArrow(gfx::Canvas* canvas,
-                         bool is_horizontal,
-                         const gfx::ImageSkia& edge,
-                         const gfx::ImageSkia& arrow,
-                         int start_x,
-                         int start_y,
-                         int before_arrow,
-                         int after_arrow,
-                         int offset) const;
-
-  void DrawArrowInterior(gfx::Canvas* canvas, float tip_x, float tip_y) const;
-
-  // Border graphics.
-  struct BorderImages* images_;
-
-  // Image bundles.
-  static struct BorderImages* border_images_[SHADOW_COUNT];
-
-  // Minimal offset of the arrow from the closet edge of bounding rect.
-  int arrow_offset_;
-
-  // If specified, overrides the pre-calculated |arrow_offset_| of the arrow.
-  int override_arrow_offset_;
+ private:
+  gfx::ImageSkia* GetArrowImage() const;
+  gfx::Rect GetArrowRect(const gfx::Rect& bounds) const;
+  void DrawArrow(gfx::Canvas* canvas, const gfx::Rect& arrow_bounds) const;
 
   Arrow arrow_;
+  int arrow_offset_;
   ArrowPaintType arrow_paint_type_;
   BubbleAlignment alignment_;
+  Shadow shadow_;
+  internal::BorderImages* images_;
   SkColor background_color_;
 
   // The client/content bounds; must be clipped from the background on Windows.

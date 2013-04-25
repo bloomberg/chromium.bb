@@ -51,16 +51,15 @@ class VIEWS_EXPORT Painter {
   // Creates a painter that divides |image| into nine regions. The four corners
   // are rendered at the size specified in insets (eg. the upper-left corner is
   // rendered at 0 x 0 with a size of insets.left() x insets.top()). The center
-  // image and four edge images are stretched to fill the destination size.
+  // and edge images are stretched to fill the painted area.
   static Painter* CreateImagePainter(const gfx::ImageSkia& image,
                                      const gfx::Insets& insets);
 
-  // Creates a painter that paints nine images as a scalable grid. The four
-  // corners are rendered in their full sizes (they are assumed to share widths
-  // by column and heights by row). The center image and four edge images are
-  // stretched to fill the destination size.
-  // |image_ids| must contain nine image IDs specified in this order: Top-Left,
-  // Top, Top-Right, Left, Center, Right, Bottom-Left, Bottom, Bottom-Right.
+  // Creates a painter that paints images in a scalable grid. The images must
+  // share widths by column and heights by row. The corners are painted at full
+  // size, while center and edge images are stretched to fill the painted area.
+  // The center image may be zero (to be skipped). This ordering must be used:
+  // Top-Left/Top/Top-Right/Left/[Center]/Right/Bottom-Left/Bottom/Bottom-Right.
   static Painter* CreateImageGridPainter(const int image_ids[]);
 
   virtual ~Painter() {}
