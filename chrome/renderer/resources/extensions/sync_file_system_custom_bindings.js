@@ -68,12 +68,13 @@ binding.registerCustomHook(function(bindingsAPI) {
     if (response) {
       for (var i = 0; i < response.length; i++) {
         var result = {};
+        var entry = response[i].entry;
         result.fileEntry = fileSystemNatives.GetFileEntry(
-            response[i].fileSystemType,
-            response[i].fileSystemName,
-            response[i].rootUrl,
-            response[i].filePath,
-            false /* isDirectory */);
+            entry.fileSystemType,
+            entry.fileSystemName,
+            entry.rootUrl,
+            entry.filePath,
+            entry.isDirectory);
         result.status = response[i].status;
         result.error = response[i].error;
         results.push(result);
@@ -88,20 +89,20 @@ binding.registerCustomHook(function(bindingsAPI) {
 chromeHidden.Event.registerArgumentMassager(
     'syncFileSystem.onFileStatusChanged', function(args, dispatch) {
   // Make FileEntry object using all the base string fields.
-  var fileSystemType = args[0];
-  var fileSystemName = args[1];
-  var rootUrl = args[2];
-  var filePath = args[3];
-  var fileEntry = fileSystemNatives.GetFileEntry(fileSystemType,
-      fileSystemName, rootUrl, filePath, false);
+  var fileEntry = fileSystemNatives.GetFileEntry(
+      args[0].fileSystemType,
+      args[0].fileSystemName,
+      args[0].rootUrl,
+      args[0].filePath,
+      args[0].isDirectory);
 
   // Combine into a single dictionary.
   var fileInfo = new Object();
   fileInfo.fileEntry = fileEntry;
-  fileInfo.status = args[4];
+  fileInfo.status = args[1];
   if (fileInfo.status == "synced") {
-    fileInfo.action = args[5];
-    fileInfo.direction = args[6];
+    fileInfo.action = args[2];
+    fileInfo.direction = args[3];
   }
   dispatch([fileInfo]);
 });

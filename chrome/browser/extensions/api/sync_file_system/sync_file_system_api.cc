@@ -27,7 +27,6 @@
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/syncable/sync_file_status.h"
-#include "webkit/fileapi/syncable/syncable_file_system_util.h"
 #include "webkit/quota/quota_manager.h"
 
 using content::BrowserContext;
@@ -297,17 +296,8 @@ void SyncFileSystemGetFileStatusesFunction::DidGetFileStatus(
     api::sync_file_system::FileStatus file_status =
         SyncFileStatusToExtensionEnum(it->second.second);
 
-    GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(
-        url.origin(), url.filesystem_id());
-    std::string file_path = base::FilePath(
-        fileapi::VirtualPath::GetNormalizedFilePath(url.path())).AsUTF8Unsafe();
-
-    dict->SetString("fileSystemType",
-                    fileapi::GetFileSystemTypeString(url.mount_type()));
-    dict->SetString("fileSystemName",
-                    fileapi::GetFileSystemName(url.origin(), url.type()));
-    dict->SetString("rootUrl", root_url.spec());
-    dict->SetString("filePath", file_path);
+    dict->Set("entry", CreateDictionaryValueForFileSystemEntry(
+        url, sync_file_system::SYNC_FILE_TYPE_FILE));
     dict->SetString("status", ToString(file_status));
 
     if (file_error == sync_file_system::SYNC_STATUS_OK)

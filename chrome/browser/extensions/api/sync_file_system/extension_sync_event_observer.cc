@@ -77,20 +77,11 @@ void ExtensionSyncEventObserver::OnFileSynced(
     sync_file_system::SyncFileStatus status,
     sync_file_system::SyncAction action,
     sync_file_system::SyncDirection direction) {
-  // Get all values needed to build FileEntry in custom_bindings args massager.
-  std::string mount_type = fileapi::GetFileSystemTypeString(url.mount_type());
-  std::string file_system_name = fileapi::GetFileSystemName(url.origin(),
-                                                            url.type());
-  GURL root_url = sync_file_system::GetSyncableFileSystemRootURI(
-      url.origin(), url.filesystem_id());
-  base::FilePath file_path = url.path();
-
-  // Arguments must all be basic types.
   scoped_ptr<base::ListValue> params(new ListValue());
-  params->AppendString(mount_type);
-  params->AppendString(file_system_name);
-  params->AppendString(root_url.spec());
-  params->AppendString(fileapi::VirtualPath::GetNormalizedFilePath(file_path));
+
+  // For now we always assume events come only for files (not directories).
+  params->Append(CreateDictionaryValueForFileSystemEntry(
+      url, sync_file_system::SYNC_FILE_TYPE_FILE));
 
   // Status, SyncAction and any optional notes to go here.
   api::sync_file_system::FileStatus status_enum =

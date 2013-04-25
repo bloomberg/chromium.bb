@@ -11,6 +11,15 @@
 #include "webkit/fileapi/syncable/sync_action.h"
 #include "webkit/fileapi/syncable/sync_direction.h"
 #include "webkit/fileapi/syncable/sync_file_status.h"
+#include "webkit/fileapi/syncable/sync_file_type.h"
+
+namespace fileapi {
+class FileSystemURL;
+}
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace extensions {
 
@@ -35,6 +44,17 @@ ConflictResolutionPolicyToExtensionEnum(
 sync_file_system::ConflictResolutionPolicy
 ExtensionEnumToConflictResolutionPolicy(
     api::sync_file_system::ConflictResolutionPolicy);
+
+// Creates a dictionary for FileSystem Entry from given |url|.
+// This will create a dictionary which has 'fileSystemType', 'fileSystemName',
+// 'rootUrl', 'filePath' and 'isDirectory' fields.
+// The returned dictionary is supposed to be interpreted
+// in the renderer's customer binding to create a FileEntry object.
+// This returns NULL if the given |url| is not valid or |file_type| is
+// SYNC_FILE_TYPE_UNKNOWN.
+base::DictionaryValue* CreateDictionaryValueForFileSystemEntry(
+    const fileapi::FileSystemURL& url,
+    sync_file_system::SyncFileType file_type);
 
 }  // namespace extensions
 

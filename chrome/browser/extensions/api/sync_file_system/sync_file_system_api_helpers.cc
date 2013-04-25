@@ -5,6 +5,8 @@
 #include "chrome/browser/extensions/api/sync_file_system/sync_file_system_api_helpers.h"
 
 #include "base/logging.h"
+#include "webkit/fileapi/file_system_url.h"
+#include "webkit/fileapi/file_system_util.h"
 
 namespace extensions {
 
@@ -98,6 +100,35 @@ ConflictResolutionPolicyToExtensionEnum(
   }
   NOTREACHED() << "Invalid conflict resolution policy: " << policy;
   return api::sync_file_system::CONFLICT_RESOLUTION_POLICY_NONE;
+}
+
+base::DictionaryValue* CreateDictionaryValueForFileSystemEntry(
+    const fileapi::FileSystemURL& url,
+    sync_file_system::SyncFileType file_type) {
+  if (!url.is_valid() || file_type == sync_file_system::SYNC_FILE_TYPE_UNKNOWN)
+    return NULL;
+
+  std::string file_path = base::FilePath(
+      fileapi::VirtualPath::GetNormalizedFilePath(url.path())).AsUTF8Unsafe();
+
+  std::string root_url = fileapi::GetFileSystemRootURI(
+    url.origin(), url.mount_type()).spec();
+  if (!url.filesystem_id().empty()) {
+    root_url.append(url.filesystem_id());
+    root_url.append("/");
+  }
+
+  base::DictionaryValue* dict = new base::DictionaryValue;
+  dict->SetString("fileSystemType",
+                  fileapi::GetFileSystemTypeString(url.mount_type()));
+  dict->SetString("fileSystemName",
+                  fileapi::GetFileSystemName(url.origin(), url.type()));
+  dict->SetString("rootUrl", root_url);
+  dict->SetString("filePath", file_path);
+  dict->SetBoolean("isDirectory",
+                   (file_type == sync_file_system::SYNC_FILE_TYPE_DIRECTORY));
+
+  return dict;
 }
 
 }  // namespace extensions
