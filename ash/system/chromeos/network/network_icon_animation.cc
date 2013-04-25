@@ -39,24 +39,14 @@ double NetworkIconAnimation::GetAnimation() {
 }
 
 void NetworkIconAnimation::AddObserver(AnimationObserver* observer) {
-  observers_.AddObserver(observer);
+  if (!observers_.HasObserver(observer))
+    observers_.AddObserver(observer);
 }
 
 void NetworkIconAnimation::RemoveObserver(AnimationObserver* observer) {
   observers_.RemoveObserver(observer);
   if (observers_.size() == 0)
-    animation_.Stop();
-}
-
-void NetworkIconAnimation::AddNetwork(const std::string& network_id) {
-  networks_.insert(network_id);
-  // Animation will start (if stopped) when GetAnimation is called.
-}
-
-void NetworkIconAnimation::RemoveNetwork(const std::string& network_id) {
-  networks_.erase(network_id);
-  if (networks_.empty())
-    animation_.Reset();
+    animation_.Reset();  // Stops the animation and resets the current value.
 }
 
 // static

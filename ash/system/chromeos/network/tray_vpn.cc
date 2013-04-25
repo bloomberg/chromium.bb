@@ -47,8 +47,6 @@ class VpnDefaultView : public TrayItemMore,
   VpnDefaultView(SystemTrayItem* owner, bool show_more)
       : TrayItemMore(owner, show_more) {
     Update();
-    if (UseNewNetworkHandlers())
-      network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
   }
 
   virtual ~VpnDefaultView() {
@@ -74,7 +72,12 @@ class VpnDefaultView : public TrayItemMore,
     if (UseNewNetworkHandlers()) {
       gfx::ImageSkia image;
       base::string16 label;
-      GetNetworkStateHandlerImageAndLabel(&image, &label);
+      bool animating = false;
+      GetNetworkStateHandlerImageAndLabel(&image, &label, &animating);
+      if (animating)
+        network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+      else
+        network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
       SetImage(&image);
       SetLabel(label);
       SetAccessibleName(label);
@@ -95,7 +98,8 @@ class VpnDefaultView : public TrayItemMore,
 
  private:
   void GetNetworkStateHandlerImageAndLabel(gfx::ImageSkia* image,
-                                           base::string16* label) {
+                                           base::string16* label,
+                                           bool* animating) {
     NetworkStateHandler* handler = NetworkStateHandler::Get();
     const NetworkState* vpn = handler->FirstNetworkByType(
         flimflam::kTypeVPN);
@@ -106,8 +110,10 @@ class VpnDefaultView : public TrayItemMore,
         *label = l10n_util::GetStringUTF16(
             IDS_ASH_STATUS_TRAY_VPN_DISCONNECTED);
       }
+      *animating = false;
       return;
     }
+    *animating = vpn->IsConnectingState();
     *image = network_icon::GetImageForNetwork(
         vpn, network_icon::ICON_TYPE_DEFAULT_VIEW);
     if (label) {

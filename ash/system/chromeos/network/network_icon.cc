@@ -611,11 +611,8 @@ gfx::ImageSkia GetImageForNetwork(const NetworkState* network,
                                   IconType icon_type) {
   DCHECK(network);
   // Handle connecting icons.
-  if (network->IsConnectingState()) {
-    NetworkIconAnimation::GetInstance()->AddNetwork(network->path());
+  if (network->IsConnectingState())
     return GetConnectingImage(network->type(), icon_type);
-  }
-  NetworkIconAnimation::GetInstance()->RemoveNetwork(network->path());
 
   // Find or add the icon.
   NetworkIconMap* icon_map = GetIconMap(icon_type);

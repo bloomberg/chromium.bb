@@ -151,7 +151,6 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       no_wifi_networks_view_(NULL),
       no_cellular_networks_view_(NULL),
       info_bubble_(NULL) {
-  network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
 }
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
@@ -420,6 +419,7 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
   NetworkStateHandler* handler = NetworkStateHandler::Get();
 
   // First, update state for all networks
+  bool animating = false;
   for (size_t i = 0; i < network_list_.size(); ++i) {
     NetworkInfo* info = network_list_[i];
     const NetworkState* network =
@@ -434,7 +434,13 @@ void NetworkStateListDetailedView::UpdateNetworkList() {
         network->IsConnectedState() || network->IsConnectingState();
     info->disable =
         network->activation_state() == flimflam::kActivationStateActivating;
+    if (!animating && network->IsConnectingState())
+      animating = true;
   }
+  if (animating)
+    network_icon::NetworkIconAnimation::GetInstance()->AddObserver(this);
+  else
+    network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
 
   // Get the updated list entries
   network_map_.clear();

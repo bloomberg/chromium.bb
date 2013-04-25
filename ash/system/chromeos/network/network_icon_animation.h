@@ -27,10 +27,10 @@ class ASH_EXPORT NetworkIconAnimation : public ui::AnimationDelegate {
   // Returns the current animation value, [0-1].
   double GetAnimation();
 
+  // The animation stops when all observers have been removed.
+  // Be sure to remove observers when no associated icons are animating.
   void AddObserver(AnimationObserver* observer);
   void RemoveObserver(AnimationObserver* observer);
-  void AddNetwork(const std::string& network_id);
-  void RemoveNetwork(const std::string& network_id);
 
   // ui::AnimationDelegate implementation.
   virtual void AnimationProgressed(const ui::Animation* animation) OVERRIDE;
@@ -40,7 +40,6 @@ class ASH_EXPORT NetworkIconAnimation : public ui::AnimationDelegate {
  private:
   ui::ThrobAnimation animation_;
   ObserverList<AnimationObserver> observers_;
-  std::set<std::string> networks_;
 };
 
 }  // namespace network_icon
