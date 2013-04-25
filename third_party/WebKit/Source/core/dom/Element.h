@@ -558,9 +558,7 @@ public:
     // to event listeners, and prevents DOMActivate events from being sent at all.
     virtual bool isDisabledFormControl() const;
 
-#if ENABLE(DIALOG_ELEMENT)
     bool isInert() const;
-#endif
 
 #if ENABLE(SVG)
     virtual bool childShouldCreateRenderer(const NodeRenderingContext&) const;
@@ -583,10 +581,8 @@ public:
     // W3C API
     void webkitRequestFullscreen();
 
-#if ENABLE(DIALOG_ELEMENT)
     bool isInTopLayer() const;
     void setIsInTopLayer(bool);
-#endif
 
     void webkitRequestPointerLock();
 

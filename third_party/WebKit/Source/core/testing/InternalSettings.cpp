@@ -78,9 +78,7 @@ InternalSettings::Backup::Backup(Settings* settings)
     , m_originalTextAutosizingFontScaleFactor(settings->textAutosizingFontScaleFactor())
     , m_originalResolutionOverride(settings->resolutionOverride())
     , m_originalMediaTypeOverride(settings->mediaTypeOverride())
-#if ENABLE(DIALOG_ELEMENT)
     , m_originalDialogElementEnabled(RuntimeEnabledFeatures::dialogElementEnabled())
-#endif
     , m_originalLazyLayoutEnabled(RuntimeEnabledFeatures::lazyLayoutEnabled())
     , m_originalMockScrollbarsEnabled(settings->mockScrollbarsEnabled())
     , m_langAttributeAwareFormControlUIEnabled(RuntimeEnabledFeatures::langAttributeAwareFormControlUIEnabled())
@@ -106,9 +104,7 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
     settings->setTextAutosizingFontScaleFactor(m_originalTextAutosizingFontScaleFactor);
     settings->setResolutionOverride(m_originalResolutionOverride);
     settings->setMediaTypeOverride(m_originalMediaTypeOverride);
-#if ENABLE(DIALOG_ELEMENT)
     RuntimeEnabledFeatures::setDialogElementEnabled(m_originalDialogElementEnabled);
-#endif
     RuntimeEnabledFeatures::setLazyLayoutEnabled(m_originalLazyLayoutEnabled);
     settings->setMockScrollbarsEnabled(m_originalMockScrollbarsEnabled);
     RuntimeEnabledFeatures::setLangAttributeAwareFormControlUIEnabled(m_langAttributeAwareFormControlUIEnabled);
@@ -342,14 +338,9 @@ void InternalSettings::setEditingBehavior(const String& editingBehavior, Excepti
         ec = SYNTAX_ERR;
 }
 
-void InternalSettings::setDialogElementEnabled(bool enabled, ExceptionCode& ec)
+void InternalSettings::setDialogElementEnabled(bool enabled, ExceptionCode&)
 {
-    UNUSED_PARAM(ec);
-#if ENABLE(DIALOG_ELEMENT)
     RuntimeEnabledFeatures::setDialogElementEnabled(enabled);
-#else
-    UNUSED_PARAM(enabled);
-#endif
 }
 
 void InternalSettings::setLazyLayoutEnabled(bool enabled, ExceptionCode& ec)

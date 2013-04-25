@@ -24,7 +24,6 @@
  */
 
 [
-    Conditional=DIALOG_ELEMENT,
     SkipVTableValidation
 ] interface HTMLDialogElement : HTMLElement {
     [Reflect] attribute boolean open;

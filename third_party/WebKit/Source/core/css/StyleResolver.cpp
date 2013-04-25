@@ -1417,13 +1417,11 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
             style->setDisplay(equivalentBlockDisplay(style->display(), style->isFloating(), !document()->inQuirksMode()));
         }
 
-#if ENABLE(DIALOG_ELEMENT)
         // Per the spec, position 'static' and 'relative' in the top layer compute to 'absolute'.
         if (e && e->isInTopLayer() && (style->position() == StaticPosition || style->position() == RelativePosition)) {
             style->setPosition(AbsolutePosition);
             style->setDisplay(BLOCK);
         }
-#endif
     }
 
     // Make sure our z-index value is only applied if the object is positioned.
@@ -1447,9 +1445,7 @@ void StyleResolver::adjustRenderStyle(RenderStyle* style, RenderStyle* parentSty
         // Touch overflow scrolling creates a stacking context.
         || ((style->overflowX() != OHIDDEN || style->overflowY() != OHIDDEN) && style->useTouchOverflowScrolling())
 #endif
-#if ENABLE(DIALOG_ELEMENT)
         || (e && e->isInTopLayer())
-#endif
         ))
         style->setZIndex(0);
 

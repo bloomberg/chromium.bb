@@ -213,10 +213,8 @@ public:
     static bool inputTypeWeekEnabled() { return isInputTypeWeekEnabled; }
     static void setInputTypeWeekEnabled(bool isEnabled) { isInputTypeWeekEnabled = isEnabled; }
 
-#if ENABLE(DIALOG_ELEMENT)
     static bool dialogElementEnabled() { return isDialogElementEnabled; }
     static void setDialogElementEnabled(bool isEnabled) { isDialogElementEnabled = isEnabled; }
-#endif
 
     static bool lazyLayoutEnabled() { return isLazyLayoutEnabled; }
     static void setLazyLayoutEnabled(bool isEnabled) { isLazyLayoutEnabled = isEnabled; }
@@ -309,9 +307,7 @@ private:
 
     static bool isInputTypeWeekEnabled;
 
-#if ENABLE(DIALOG_ELEMENT)
     static bool isDialogElementEnabled;
-#endif
 
     static bool isLazyLayoutEnabled;
 

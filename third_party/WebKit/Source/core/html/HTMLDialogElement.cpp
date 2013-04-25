@@ -24,7 +24,6 @@
  */
 
 #include "config.h"
-#if ENABLE(DIALOG_ELEMENT)
 #include "HTMLDialogElement.h"
 
 #include "ExceptionCode.h"
@@ -135,6 +134,4 @@ bool HTMLDialogElement::isPresentationAttribute(const QualifiedName& name) const
     return HTMLElement::isPresentationAttribute(name);
 }
 
-}
-
-#endif
+} // namespace WebCore

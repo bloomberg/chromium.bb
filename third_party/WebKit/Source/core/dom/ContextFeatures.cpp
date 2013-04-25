@@ -52,14 +52,9 @@ ContextFeatures* ContextFeatures::defaultSwitch()
 
 bool ContextFeatures::dialogElementEnabled(Document* document)
 {
-#if ENABLE(DIALOG_ELEMENT)
     if (!document)
         return RuntimeEnabledFeatures::dialogElementEnabled();
     return document->contextFeatures()->isEnabled(document, DialogElement, RuntimeEnabledFeatures::dialogElementEnabled());
-#else
-    UNUSED_PARAM(document);
-    return false;
-#endif
 }
 
 bool ContextFeatures::styleScopedEnabled(Document* document)

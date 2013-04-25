@@ -167,9 +167,7 @@ bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
 
 bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
 
-#if ENABLE(DIALOG_ELEMENT)
 bool RuntimeEnabledFeatures::isDialogElementEnabled = false;
-#endif
 
 bool RuntimeEnabledFeatures::isLazyLayoutEnabled = false;
 

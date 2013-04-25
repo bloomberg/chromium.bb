@@ -5225,7 +5225,6 @@ void Document::addDocumentToFullScreenChangeEventQueue(Document* doc)
     m_fullScreenChangeEventTargetQueue.append(target);
 }
 
-#if ENABLE(DIALOG_ELEMENT)
 void Document::addToTopLayer(Element* element)
 {
     if (element->isInTopLayer())
@@ -5244,7 +5243,6 @@ void Document::removeFromTopLayer(Element* element)
     m_topLayerElements.remove(position);
     element->setIsInTopLayer(false);
 }
-#endif
 
 void Document::webkitExitPointerLock()
 {
@@ -5713,9 +5711,7 @@ void Document::reportMemoryUsage(MemoryObjectInfo* memoryObjectInfo) const
     info.addMember(m_fullScreenChangeEventTargetQueue, "fullScreenChangeEventTargetQueue");
     info.addMember(m_fullScreenErrorEventTargetQueue, "fullScreenErrorEventTargetQueue");
     info.addMember(m_savedPlaceholderRenderStyle, "savedPlaceholderRenderStyle");
-#if ENABLE(DIALOG_ELEMENT)
     info.addMember(m_topLayerElements, "topLayerElements");
-#endif
     info.addMember(m_loadEventDelayTimer, "loadEventDelayTimer");
     info.addMember(m_viewportArguments, "viewportArguments");
     info.addMember(m_documentTiming, "documentTiming");

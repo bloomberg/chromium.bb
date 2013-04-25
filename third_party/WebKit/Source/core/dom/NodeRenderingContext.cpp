@@ -79,10 +79,8 @@ static bool isRendererReparented(const RenderObject* renderer)
         return false;
     if (renderer->style() && !renderer->style()->flowThread().isEmpty())
         return true;
-#if ENABLE(DIALOG_ELEMENT)
     if (toElement(renderer->node())->isInTopLayer())
         return true;
-#endif
     return false;
 }
 
@@ -91,7 +89,6 @@ RenderObject* NodeRenderingContext::nextRenderer() const
     if (RenderObject* renderer = m_node->renderer())
         return renderer->nextSibling();
 
-#if ENABLE(DIALOG_ELEMENT)
     Element* element = m_node->isElementNode() ? toElement(m_node) : 0;
     if (element && element->isInTopLayer()) {
         const Vector<RefPtr<Element> >& topLayerElements = element->document()->topLayerElements();
@@ -103,7 +100,6 @@ RenderObject* NodeRenderingContext::nextRenderer() const
         }
         return 0;
     }
-#endif
 
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer->nextRendererForNode(m_node);
@@ -127,12 +123,10 @@ RenderObject* NodeRenderingContext::previousRenderer() const
     if (RenderObject* renderer = m_node->renderer())
         return renderer->previousSibling();
 
-#if ENABLE(DIALOG_ELEMENT)
     // FIXME: This doesn't work correctly for things in the top layer that are
     // display: none. We'd need to duplicate the logic in nextRenderer, but since
     // nothing needs that yet just assert.
     ASSERT(!m_node->isElementNode() || !toElement(m_node)->isInTopLayer());
-#endif
 
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer->previousRendererForNode(m_node);
@@ -153,7 +147,6 @@ RenderObject* NodeRenderingContext::parentRenderer() const
     if (RenderObject* renderer = m_node->renderer())
         return renderer->parent();
 
-#if ENABLE(DIALOG_ELEMENT)
     if (m_node->isElementNode() && toElement(m_node)->isInTopLayer()) {
         // The parent renderer of top layer elements is the RenderView, but only
         // if the normal parent would have had a renderer.
@@ -165,7 +158,6 @@ RenderObject* NodeRenderingContext::parentRenderer() const
             return 0;
         return m_node->document()->renderView();
     }
-#endif
 
     if (m_parentFlowRenderer)
         return m_parentFlowRenderer;

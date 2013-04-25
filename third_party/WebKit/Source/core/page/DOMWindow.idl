@@ -374,7 +374,7 @@
     attribute HTMLCanvasElementConstructor HTMLCanvasElement;
     attribute HTMLDListElementConstructor HTMLDListElement;
     [Conditional=DATALIST_ELEMENT] attribute HTMLDataListElementConstructor HTMLDataListElement;
-    [Conditional=DIALOG_ELEMENT, EnabledPerContext=dialogElement] attribute HTMLDialogElementConstructor HTMLDialogElement;
+    [EnabledPerContext=dialogElement] attribute HTMLDialogElementConstructor HTMLDialogElement;
     attribute HTMLDirectoryElementConstructor HTMLDirectoryElement;
     attribute HTMLDivElementConstructor HTMLDivElement;
     attribute HTMLEmbedElementConstructor HTMLEmbedElement;

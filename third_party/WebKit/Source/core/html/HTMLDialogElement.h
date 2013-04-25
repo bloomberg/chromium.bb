@@ -26,7 +26,6 @@
 #ifndef HTMLDialogElement_h
 #define HTMLDialogElement_h
 
-#if ENABLE(DIALOG_ELEMENT)
 #include "HTMLElement.h"
 
 namespace WebCore {
@@ -54,7 +53,5 @@ private:
 };
 
 } // namespace WebCore
-
-#endif
 
 #endif

@@ -4468,7 +4468,6 @@ Node* RenderLayer::enclosingElement() const
     return 0;
 }
 
-#if ENABLE(DIALOG_ELEMENT)
 bool RenderLayer::isInTopLayer() const
 {
     Node* node = renderer()->node();
@@ -4483,7 +4482,6 @@ bool RenderLayer::isInTopLayerSubtree() const
     }
     return false;
 }
-#endif
 
 // Compute the z-offset of the point in the transformState.
 // This is effectively projecting a ray normal to the plane of ancestor, finding where that
@@ -5773,7 +5771,6 @@ void RenderLayer::rebuildZOrderLists(CollectLayersBehavior behavior, OwnPtr<Vect
     if (negZOrderList)
         std::stable_sort(negZOrderList->begin(), negZOrderList->end(), compareZIndex);
 
-#if ENABLE(DIALOG_ELEMENT)
     // Append layers for top layer elements after normal layer collection, to ensure they are on top regardless of z-indexes.
     // The renderers of top layer elements are children of the view, sorted in top layer stacking order.
     if (isRootLayer()) {
@@ -5786,8 +5783,6 @@ void RenderLayer::rebuildZOrderLists(CollectLayersBehavior behavior, OwnPtr<Vect
             }
         }
     }
-#endif
-
 }
 
 void RenderLayer::updateNormalFlowList()
@@ -5811,10 +5806,8 @@ void RenderLayer::updateNormalFlowList()
 
 void RenderLayer::collectLayers(bool includeHiddenLayers, CollectLayersBehavior behavior, OwnPtr<Vector<RenderLayer*> >& posBuffer, OwnPtr<Vector<RenderLayer*> >& negBuffer, const RenderLayer* layerToForceAsStackingContainer)
 {
-#if ENABLE(DIALOG_ELEMENT)
     if (isInTopLayer())
         return;
-#endif
 
     updateDescendantDependentFlags();
 

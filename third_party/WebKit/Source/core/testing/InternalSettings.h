@@ -62,9 +62,7 @@ public:
         float m_originalTextAutosizingFontScaleFactor;
         IntSize m_originalResolutionOverride;
         String m_originalMediaTypeOverride;
-#if ENABLE(DIALOG_ELEMENT)
         bool m_originalDialogElementEnabled;
-#endif
         bool m_originalLazyLayoutEnabled;
         bool m_originalMockScrollbarsEnabled;
         bool m_originalUsesOverlayScrollbars;

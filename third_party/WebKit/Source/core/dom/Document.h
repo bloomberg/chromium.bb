@@ -1102,12 +1102,10 @@ public:
     // Return a Locale for the default locale if the argument is null or empty.
     Locale& getCachedLocale(const AtomicString& locale = nullAtom);
 
-#if ENABLE(DIALOG_ELEMENT)
     void addToTopLayer(Element*);
     void removeFromTopLayer(Element*);
     const Vector<RefPtr<Element> >& topLayerElements() const { return m_topLayerElements; }
     Element* activeModalDialog() const { return !m_topLayerElements.isEmpty() ? m_topLayerElements.last().get() : 0; }
-#endif
 
     const Document* templateDocument() const;
     Document* ensureTemplateDocument();
@@ -1400,9 +1398,7 @@ private:
     LayoutRect m_savedPlaceholderFrameRect;
     RefPtr<RenderStyle> m_savedPlaceholderRenderStyle;
 
-#if ENABLE(DIALOG_ELEMENT)
     Vector<RefPtr<Element> > m_topLayerElements;
-#endif
 
     int m_loadEventDelayCount;
     Timer<Document> m_loadEventDelayTimer;

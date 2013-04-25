@@ -144,7 +144,6 @@ map {
     display: inline
 }
 
-#if defined(ENABLE_DIALOG_ELEMENT) && ENABLE_DIALOG_ELEMENT
 dialog:not([open]) { display: none; }
 dialog {
     position: absolute;
@@ -155,7 +154,6 @@ dialog {
     background: white;
     color: black;
 }
-#endif
 
 /* heading elements */
 
