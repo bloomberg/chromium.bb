@@ -9,9 +9,9 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/nacl_name_service.h>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_name_service.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 
