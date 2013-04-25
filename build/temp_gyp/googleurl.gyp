@@ -71,39 +71,5 @@
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [4267, ],
     },
-    {
-      'target_name': 'googleurl_unittests',
-      'type': 'executable',
-      'dependencies': [
-        'googleurl',
-        '../../base/base.gyp:base_i18n',
-        '../../base/base.gyp:run_all_unittests',
-        '../../testing/gtest.gyp:gtest',
-        '../../third_party/icu/icu.gyp:icuuc',
-      ],
-      'sources': [
-        '../../googleurl/src/gurl_unittest.cc',
-        '../../googleurl/src/url_canon_unittest.cc',
-        '../../googleurl/src/url_parse_unittest.cc',
-        '../../googleurl/src/url_test_utils.h',
-        '../../googleurl/src/url_util_unittest.cc',
-      ],
-      'defines': [
-        'FULL_FILESYSTEM_URL_SUPPORT=1',
-      ],
-      'conditions': [
-        ['os_posix==1 and OS!="mac" and OS!="ios"', {
-          'conditions': [
-            ['linux_use_tcmalloc==1', {
-              'dependencies': [
-                '../../base/allocator/allocator.gyp:allocator',
-              ],
-            }],
-          ],
-        }],
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [4267, ],
-    },
   ],
 }
