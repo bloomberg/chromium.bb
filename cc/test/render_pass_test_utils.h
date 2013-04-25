@@ -38,12 +38,6 @@ SolidColorDrawQuad* AddClippedQuad(TestRenderPass* pass,
                                    gfx::Rect rect,
                                    SkColor color);
 
-// Adds a solid quad with a transform to a given render pass.
-SolidColorDrawQuad* AddTransformedQuad(TestRenderPass* pass,
-                                       gfx::Rect rect,
-                                       SkColor color,
-                                       const gfx::Transform& transform);
-
 // Adds a render pass quad to an existing render pass.
 void AddRenderPassQuad(TestRenderPass* to_pass,
                        TestRenderPass* contributing_pass);

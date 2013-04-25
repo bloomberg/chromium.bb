@@ -52,24 +52,6 @@ Rect ToNearestRect(const RectF& rect) {
   return Rect(min_x, min_y, max_x - min_x, max_y - min_y);
 }
 
-bool IsNearestRectWithinDistance(const gfx::RectF& rect, float distance) {
-  float float_min_x = rect.x();
-  float float_min_y = rect.y();
-  float float_max_x = rect.right();
-  float float_max_y = rect.bottom();
-
-  int min_x = ToRoundedInt(float_min_x);
-  int min_y = ToRoundedInt(float_min_y);
-  int max_x = ToRoundedInt(float_max_x);
-  int max_y = ToRoundedInt(float_max_y);
-
-  return
-      (std::abs(min_x - float_min_x) < distance) &&
-      (std::abs(min_y - float_min_y) < distance) &&
-      (std::abs(max_x - float_max_x) < distance) &&
-      (std::abs(max_y - float_max_y) < distance);
-}
-
 Rect ToFlooredRectDeprecated(const RectF& rect) {
   return Rect(ToFlooredInt(rect.x()),
               ToFlooredInt(rect.y()),

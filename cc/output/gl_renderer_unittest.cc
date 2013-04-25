@@ -325,12 +325,6 @@ class GLRendererShaderTest : public testing::Test {
         renderer_->render_pass_color_matrix_program_aa_->program());
   }
 
-  void TestSolidColorProgramAA() {
-    EXPECT_PROGRAM_VALID(renderer_->solid_color_program_aa_);
-    EXPECT_TRUE(renderer_->program_shadow_ ==
-        renderer_->solid_color_program_aa_->program());
-  }
-
   scoped_ptr<OutputSurface> output_surface_;
   FakeRendererClient mock_client_;
   scoped_ptr<ResourceProvider> resource_provider_;
@@ -1275,34 +1269,6 @@ TEST_F(GLRendererShaderTest, DrawRenderPassQuadShaderPermutations) {
       *mock_client_.render_passes_in_draw_order());
   renderer_->DrawFrame(mock_client_.render_passes_in_draw_order());
   TestRenderPassMaskColorMatrixProgramAA();
-}
-
-TEST_F(GLRendererShaderTest, DrawSolidColorShader) {
-  gfx::Rect viewport_rect(mock_client_.DeviceViewportSize());
-  ScopedPtrVector<RenderPass>* render_passes =
-      mock_client_.render_passes_in_draw_order();
-
-  RenderPass::Id root_pass_id(1, 0);
-  TestRenderPass* root_pass;
-
-  gfx::Transform pixel_aligned_transform_causing_aa;
-  pixel_aligned_transform_causing_aa.Translate(25.5f, 25.5f);
-  pixel_aligned_transform_causing_aa.Scale(0.5f, 0.5f);
-
-  render_passes->clear();
-
-  root_pass = AddRenderPass(
-      render_passes, root_pass_id, viewport_rect, gfx::Transform());
-  AddTransformedQuad(root_pass,
-                     viewport_rect,
-                     SK_ColorYELLOW,
-                     pixel_aligned_transform_causing_aa);
-
-  renderer_->DecideRenderPassAllocationsForFrame(
-      *mock_client_.render_passes_in_draw_order());
-  renderer_->DrawFrame(mock_client_.render_passes_in_draw_order());
-
-  TestSolidColorProgramAA();
 }
 
 class OutputSurfaceMockContext : public TestWebGraphicsContext3D {
