@@ -10,6 +10,12 @@
 
 namespace {
 const int kMaxInputChannels = 2;
+
+// TODO(henrika): remove usage of timers and add support for proper
+// notification of when the input device is removed.  This was originally added
+// to resolve http://crbug.com/79936 for Windows platforms.  This then caused
+// breakage (very hard to repro bugs!) on other platforms: See
+// http://crbug.com/226327 and http://crbug.com/230972.
 const int kTimerResetIntervalSeconds = 1;
 #if defined(OS_IOS)
 // The first callback on iOS is received after the current background
@@ -19,9 +25,6 @@ const int kTimerInitialIntervalSeconds = 4;
 // We have received reports that the timer can be too trigger happy on some
 // Mac devices and the initial timer interval has therefore been increased
 // from 1 second to 5 seconds.
-// TODO(henrika): remove usage of timers and add support for proper
-// notification of when the input device is removed.
-// See http://crbug.com/226327 for details.
 const int kTimerInitialIntervalSeconds = 5;
 #endif  // defined(OS_IOS)
 }
@@ -123,10 +126,15 @@ scoped_refptr<AudioInputController> AudioInputController::CreateForStream(
       event_handler, sync_writer));
   controller->message_loop_ = audio_manager->GetMessageLoop();
 
+  // TODO(miu): See TODO at top of file.  Until that's resolved, we need to
+  // disable the error auto-detection here (since the audio mirroring
+  // implementation will reliably report error and close events).  Note, of
+  // course, that we're assuming CreateForStream() has been called for the audio
+  // mirroring use case only.
   if (!controller->message_loop_->PostTask(
           FROM_HERE,
           base::Bind(&AudioInputController::DoCreateForStream, controller,
-                     stream))) {
+                     stream, false))) {
     controller = NULL;
   }
 
@@ -160,11 +168,16 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
                                     const AudioParameters& params,
                                     const std::string& device_id) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id));
+  // TODO(miu): See TODO at top of file.  Until that's resolved, assume all
+  // platform audio input requires the |no_data_timer_| be used to auto-detect
+  // errors.  In reality, probably only Windows and IOS need to be treated as
+  // unreliable here.
+  DoCreateForStream(audio_manager->MakeAudioInputStream(params, device_id),
+                    true);
 }
 
 void AudioInputController::DoCreateForStream(
-    AudioInputStream* stream_to_control) {
+    AudioInputStream* stream_to_control, bool enable_nodata_timer) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   DCHECK(!stream_);
@@ -183,12 +196,18 @@ void AudioInputController::DoCreateForStream(
   }
 
   DCHECK(!no_data_timer_.get());
-  // Create the data timer which will call DoCheckForNoData(). The timer
-  // is started in DoRecord() and restarted in each DoCheckForNoData() callback.
-  no_data_timer_.reset(new base::Timer(
-      FROM_HERE, base::TimeDelta::FromSeconds(kTimerInitialIntervalSeconds),
-      base::Bind(&AudioInputController::DoCheckForNoData,
-      base::Unretained(this)), false));
+  if (enable_nodata_timer) {
+    // Create the data timer which will call DoCheckForNoData(). The timer
+    // is started in DoRecord() and restarted in each DoCheckForNoData()
+    // callback.
+    no_data_timer_.reset(new base::Timer(
+        FROM_HERE, base::TimeDelta::FromSeconds(kTimerInitialIntervalSeconds),
+        base::Bind(&AudioInputController::DoCheckForNoData,
+                   base::Unretained(this)), false));
+  } else {
+    DVLOG(1) << "Disabled: timer check for no data.";
+  }
+
   state_ = kCreated;
   handler_->OnCreated(this);
 }
@@ -204,9 +223,11 @@ void AudioInputController::DoRecord() {
     state_ = kRecording;
   }
 
-  // Start the data timer. Once |kTimerResetIntervalSeconds| have passed,
-  // a callback to DoCheckForNoData() is made.
-  no_data_timer_->Reset();
+  if (no_data_timer_) {
+    // Start the data timer. Once |kTimerResetIntervalSeconds| have passed,
+    // a callback to DoCheckForNoData() is made.
+    no_data_timer_->Reset();
+  }
 
   stream_->Start(this);
   handler_->OnRecording(this);
