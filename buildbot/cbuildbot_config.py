@@ -29,6 +29,9 @@ CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_FULL,
     CONFIG_TYPE_RELEASE,
     'release-group',
+    'release-pgo',
+    'release-pgo-generate',
+    'release-pgo-use',
     'sdk',
     'chromium-pfq',
     'chrome-perf',
@@ -185,9 +188,9 @@ def FindFullConfigsForBoard(board):
 
   for name, c in config.iteritems():
     if c['boards'] and board in c['boards']:
-      if name == '-'.join((board, CONFIG_TYPE_RELEASE)) and c['internal']:
+      if name.endswith('-%s' % CONFIG_TYPE_RELEASE) and c['internal']:
         int_cfgs.append(copy.deepcopy(c))
-      elif name == '-'.join((board, CONFIG_TYPE_FULL)) and not c['internal']:
+      elif name.endswith('-%s' % CONFIG_TYPE_FULL) and not c['internal']:
         ext_cfgs.append(copy.deepcopy(c))
 
   return ext_cfgs, int_cfgs
@@ -1229,23 +1232,23 @@ release_pgo = _release.derive(
   dev_installer_prebuilts=False,
 )
 
-release_pgo.add_group('x86-alex-pgo-release',
-  release_pgo.add_config('x86-alex-pgo-generate-release',
+release_pgo.add_group('x86-alex-release-pgo',
+  release_pgo.add_config('x86-alex-release-pgo-generate',
     boards=['x86-alex'],
     pgo_generate=True,
   ),
-  release_pgo.add_config('x86-alex-pgo-use-release',
+  release_pgo.add_config('x86-alex-release-pgo-use',
     boards=['x86-alex'],
     pgo_use=True,
   ),
 )
 
-release_pgo.add_group('lumpy-pgo-release',
-  release_pgo.add_config('lumpy-pgo-generate-release',
+release_pgo.add_group('lumpy-release-pgo',
+  release_pgo.add_config('lumpy-release-pgo-generate',
     boards=['lumpy'],
     pgo_generate=True,
   ),
-  release_pgo.add_config('lumpy-pgo-use-release',
+  release_pgo.add_config('lumpy-release-pgo-use',
     boards=['lumpy'],
     pgo_use=True,
   ),

@@ -406,6 +406,31 @@ class FindFullTest(cros_test_lib.TestCase):
     """Test prefer non-PGO over PGO builder."""
     self._CheckCanonicalConfig('lumpy', 'release')
 
+  def testOneFullConfigPerBoard(self):
+    """There is at most one 'full' config for a board."""
+    # Verifies that there is one external 'full' and one internal 'release'
+    # build per board.  This is to ensure that we fail any new configs that
+    # wrongly have names like *-bla-release or *-bla-full. This case can also
+    # be caught if the new suffix was added to
+    # cbuildbot_config.CONFIG_TYPE_DUMP_ORDER
+    # (see testNonOverlappingConfigTypes), but that's not guaranteed to happen.
+    def AtMostOneConfig(board, label, configs):
+      if len(configs) > 1:
+        self.fail(
+            'Found more than one %s config for %s: %r'
+            % (label, board, [c['name'] for c in configs]))
+
+    boards = set()
+    for config in cbuildbot_config.config.itervalues():
+      boards.update(config['boards'])
+    # Sanity check of the boards.
+    assert boards
+
+    for b in boards:
+      external, internal = cbuildbot_config.FindFullConfigsForBoard(b)
+      AtMostOneConfig(b, 'external', external)
+      AtMostOneConfig(b, 'internal', internal)
+
 
 if __name__ == '__main__':
   cros_test_lib.main()
