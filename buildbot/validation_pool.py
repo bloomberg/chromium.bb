@@ -1495,9 +1495,8 @@ class ValidationPool(object):
         if self.pre_cq:
           status = manifest_version.BuilderStatus.STATUS_FAILED
           self.UpdatePreCQStatus(change, status)
-        else:
-          self._helper_pool.ForChange(change).RemoveCommitReady(
-              change, dryrun=self.dryrun)
+        self._helper_pool.ForChange(change).RemoveCommitReady(
+            change, dryrun=self.dryrun)
 
   def GetValidationFailedMessage(self):
     """Returns message indicating these changes failed to be validated."""

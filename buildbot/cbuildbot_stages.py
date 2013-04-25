@@ -1106,6 +1106,7 @@ class PreCQLauncherStage(SyncStage):
   STATUS_INFLIGHT = manifest_version.BuilderStatus.STATUS_INFLIGHT
   STATUS_PASSED = manifest_version.BuilderStatus.STATUS_PASSED
   STATUS_FAILED = manifest_version.BuilderStatus.STATUS_FAILED
+  STATUS_WAITING = 'waiting'
 
   def __init__(self, options, build_config):
     super(PreCQLauncherStage, self).__init__(options, build_config)
@@ -1126,8 +1127,15 @@ class PreCQLauncherStage(SyncStage):
 
     for change in changes:
       status = pool.GetPreCQStatus(change)
-      if status in (self.STATUS_INFLIGHT, self.STATUS_FAILED):
+      if status == self.STATUS_INFLIGHT:
         busy.add(change)
+      elif status == self.STATUS_FAILED:
+        # The Pre-CQ run failed for this change. It's possible that we got
+        # unlucky and this change was just marked as 'Not Ready' by a bot. To
+        # test this, mark the CL as 'waiting' for now. If the CL is still marked
+        # as 'Ready' next time we check, we'll know the CL is truly still ready.
+        busy.add(change)
+        pool.UpdatePreCQStatus(change, self.STATUS_WAITING)
       elif status == self.STATUS_PASSED:
         passed.add(change)
 
