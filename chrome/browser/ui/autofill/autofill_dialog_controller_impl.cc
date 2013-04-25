@@ -2177,13 +2177,16 @@ void AutofillDialogControllerImpl::GetFullWallet() {
   DCHECK(!active_instrument_id_.empty());
   DCHECK(!active_address_id_.empty());
 
+  std::vector<wallet::WalletClient::RiskCapability> capabilities;
+  capabilities.push_back(wallet::WalletClient::VERIFY_CVC);
+
   GetWalletClient()->GetFullWallet(wallet::WalletClient::FullWalletRequest(
       active_instrument_id_,
       active_address_id_,
       source_url_,
       wallet::Cart(base::IntToString(kCartMax), kCartCurrency),
       wallet_items_->google_transaction_id(),
-      std::vector<wallet::WalletClient::RiskCapability>()));
+      capabilities));
 }
 
 void AutofillDialogControllerImpl::FinishSubmit() {
