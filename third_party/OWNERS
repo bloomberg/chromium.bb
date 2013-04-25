@@ -1,3 +1,7 @@
+# Owner approval for 3rd party is only required for
+# adding new libraries. For changes to existing code
+# simply TBR= one of people below.
+
 brettw@chromium.org
 cpu@chromium.org
 darin@chromium.org
