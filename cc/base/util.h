@@ -5,15 +5,22 @@
 #ifndef CC_BASE_UTIL_H_
 #define CC_BASE_UTIL_H_
 
+#include <limits>
+
+#include "base/basictypes.h"
+
 namespace cc {
 
 template <typename T> T RoundUp(T n, T mul) {
+  COMPILE_ASSERT(std::numeric_limits<T>::is_integer, type_must_be_integral);
   return (n > 0) ? ((n + mul - 1) / mul) * mul
                  : (n / mul) * mul;
 }
 
 template <typename T> T RoundDown(T n, T mul) {
+  COMPILE_ASSERT(std::numeric_limits<T>::is_integer, type_must_be_integral);
   return (n > 0) ? (n / mul) * mul
+                 : (n == 0) ? 0
                  : ((n - mul + 1) / mul) * mul;
 }
 
