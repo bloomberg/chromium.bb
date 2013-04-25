@@ -27,6 +27,7 @@
 #include "ui/aura/focus_manager.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/background.h"
@@ -42,6 +43,8 @@ const int kPanelIdealSpacing = 4;
 
 const float kMaxHeightFactor = .80f;
 const float kMaxWidthFactor = .50f;
+
+const int kPanelSlideDurationMilliseconds = 50;
 
 // Callout arrow dimensions.
 const int kArrowWidth = 18;
@@ -510,12 +513,6 @@ void PanelLayoutManager::Relayout() {
     if (visible_panels[i].window == dragged_panel_)
       continue;
     gfx::Rect bounds = visible_panels[i].window->bounds();
-    if (horizontal)
-      bounds.set_x(visible_panels[i].major_pos -
-                   visible_panels[i].major_length / 2);
-    else
-      bounds.set_y(visible_panels[i].major_pos -
-                   visible_panels[i].major_length / 2);
     switch (alignment) {
       case SHELF_ALIGNMENT_BOTTOM:
         bounds.set_y(launcher_bounds.y() - bounds.height());
@@ -530,7 +527,32 @@ void PanelLayoutManager::Relayout() {
         bounds.set_y(launcher_bounds.bottom());
         break;
     }
-    SetChildBoundsDirect(visible_panels[i].window, bounds);
+    // Only animate if the panel window is already snapped to the launcher. This
+    // prevents new panels from sliding into place from the top left corner.
+    bool animate = visible_panels[i].window->bounds().x() == bounds.x() &&
+                   visible_panels[i].window->bounds().y() == bounds.y();
+
+    if (horizontal) {
+      bounds.set_x(visible_panels[i].major_pos -
+                   visible_panels[i].major_length / 2);
+    } else {
+      bounds.set_y(visible_panels[i].major_pos -
+                   visible_panels[i].major_length / 2);
+    }
+
+    ui::Layer* layer = visible_panels[i].window->layer();
+    if (animate) {
+      ui::ScopedLayerAnimationSettings panel_slide_settings(
+          layer->GetAnimator());
+      panel_slide_settings.SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+      panel_slide_settings.SetTransitionDuration(
+          base::TimeDelta::FromMilliseconds(kPanelSlideDurationMilliseconds));
+      SetChildBoundsDirect(visible_panels[i].window, bounds);
+    } else {
+      // TODO(flackr): Animate new windows http://crbug.com/230479.
+      SetChildBoundsDirect(visible_panels[i].window, bounds);
+    }
   }
 
   UpdateStacking(active_panel);

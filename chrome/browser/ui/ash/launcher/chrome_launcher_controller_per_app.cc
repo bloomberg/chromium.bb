@@ -952,11 +952,18 @@ ash::LauncherID ChromeLauncherControllerPerApp::GetIDByWindow(
       return i->first;
     }
   }
-  // Coming here we are looking for the associated browser item as the default.
-  int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
-  // Note that there should always be a browser item in the launcher.
-  DCHECK_GE(browser_index, 0);
-  return model_->items()[browser_index].id;
+  if (window->type() == aura::client::WINDOW_TYPE_NORMAL) {
+    // Coming here we are looking for the associated browser item as the
+    // default.
+    // TODO(flackr): This shouldn't return a default icon if no window is found.
+    //    The browser launcher item controller should know which windows it is
+    //    managing so that it is identified as the ID in the above loop.
+    int browser_index = ash::launcher::GetBrowserItemIndex(*model_);
+    // Note that there should always be a browser item in the launcher.
+    DCHECK_GE(browser_index, 0);
+    return model_->items()[browser_index].id;
+  }
+  return 0;
 }
 
 bool ChromeLauncherControllerPerApp::IsDraggable(
