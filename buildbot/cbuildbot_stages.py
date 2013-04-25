@@ -2426,10 +2426,11 @@ class ReportStage(bs.BuilderStage):
     acl = None if self._build_config['internal'] else 'public-read'
     archive_urls = {}
 
-    for board, archive_stage in sorted(self._archive_stages.iteritems()):
+    for board_config, archive_stage in sorted(self._archive_stages.iteritems()):
+      board = board_config.board
       head_data = {
           'board': board,
-          'config': self._build_config['name'],
+          'config': board_config.name,
           'version': archive_stage.version,
       }
       head = self._HTML_HEAD % head_data

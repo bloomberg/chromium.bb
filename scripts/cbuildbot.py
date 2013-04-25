@@ -10,6 +10,7 @@ Used by Chromium OS buildbot configuration for all Chromium OS builds including
 full and pre-flight-queue builds.
 """
 
+import collections
 import distutils.version
 import errno
 import glob
@@ -333,6 +334,9 @@ because the stage that threw the exception should be marked as failing."""
     return success
 
 
+BoardConfig = collections.namedtuple('BoardConfig', ['board', 'name'])
+
+
 class SimpleBuilder(Builder):
   """Builder that performs basic vetting operations."""
 
@@ -366,11 +370,11 @@ class SimpleBuilder(Builder):
           results_lib.Results.Record(stage.name, ex, str(ex))
       raise
 
-  def _RunBackgroundStagesForBoard(self, board, compilecheck):
+  def _RunBackgroundStagesForBoard(self, config, board, compilecheck):
     """Run background board-specific stages for the specified board."""
-    archive_stage = self.archive_stages[board]
-    configs = self.build_config['board_specific_configs']
-    config = configs.get(board, self.build_config)
+    archive_stage = self.archive_stages[BoardConfig(board, config['name'])]
+    if config['pgo_generate']:
+      return
     if compilecheck:
       self._RunStage(stages.BuildPackagesStage, board, archive_stage,
                      config=config)
@@ -424,42 +428,41 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.SyncChromeStage)
       self._RunStage(stages.PatchChromeStage)
 
-      configs = self.build_config['board_specific_configs']
-      for board in self.build_config['boards']:
-        config = configs.get(board, self.build_config)
-        archive_stage = self._GetStageInstance(stages.ArchiveStage, board,
-                                               self.release_tag, config=config)
-        self.archive_stages[board] = archive_stage
+      configs = self.build_config['child_configs'] or [self.build_config]
+      tasks = []
+      for config in configs:
+        for board in config['boards']:
+          archive_stage = self._GetStageInstance(stages.ArchiveStage, board,
+                                                 self.release_tag,
+                                                 config=config)
+          board_config = BoardConfig(board, config['name'])
+          self.archive_stages[board_config] = archive_stage
+          tasks.append((config, board, archive_stage))
 
       # Set up a process pool to run test/archive stages in the background.
       # This process runs task(board) for each board added to the queue.
-      compilecheck = (self.build_config['compilecheck'] or
-                      self.options.compilecheck)
       task = self._RunBackgroundStagesForBoard
       with parallel.BackgroundTaskRunner(task) as queue:
-        for board in self.build_config['boards']:
+        for config, board, archive_stage in tasks:
+          compilecheck = config['compilecheck'] or self.options.compilecheck
           if not compilecheck:
-            archive_stage = self.archive_stages[board]
-            config = configs.get(board, self.build_config)
+            # Run BuildPackages and BuildImage in the foreground, generating
+            # or using PGO data if requested.
+            kwargs = {'archive_stage': archive_stage, 'config': config}
+            if config['pgo_generate']:
+              kwargs['pgo_generate'] = True
+            elif config['pgo_use']:
+              kwargs['pgo_use'] = True
+            self._RunStage(stages.BuildPackagesStage, board, **kwargs)
+            self._RunStage(stages.BuildImageStage, board, **kwargs)
 
-            # Run BuildPackages and BuildImage in the foreground, generating and
-            # using PGO data if requested.
-            built = False
-            for step in ('pgo_generate', 'pgo_use', None):
-              if config.get(step) or not step and not built:
-                kwargs = {step: True} if step else {}
-                self._RunStage(stages.BuildPackagesStage, board, archive_stage,
-                               config=config, **kwargs)
-                self._RunStage(stages.BuildImageStage, board, archive_stage,
-                               config=config, **kwargs)
-                if step == 'pgo_generate':
-                  suite = cbuildbot_config.PGORecordTest()
-                  self._RunStage(stages.HWTestStage, board, archive_stage,
-                                 suite, config=config)
-                built = True
+            if config['pgo_generate']:
+              suite = cbuildbot_config.PGORecordTest()
+              self._RunStage(stages.HWTestStage, board, archive_stage, suite,
+                             config=config)
 
-          # Kick off task(board) in the background.
-          queue.put([board, compilecheck])
+          # Kick off our background stages.
+          queue.put([config, board, compilecheck])
 
 
 class DistributedBuilder(SimpleBuilder):

@@ -8,7 +8,6 @@
 # pylint: disable=W0403
 import constants
 import copy
-import itertools
 import json
 import optparse
 import sys
@@ -57,8 +56,7 @@ def OverrideConfigForTrybot(build_config, options):
     A build configuration dictionary with the overrides applied.
   """
   copy_config = copy.deepcopy(build_config)
-  board_specific_configs = copy_config['board_specific_configs'].values()
-  for my_config in [copy_config] + board_specific_configs:
+  for my_config in [copy_config] + copy_config['child_configs']:
     my_config['uprev'] = True
     if my_config['internal']:
       my_config['overlays'] = constants.BOTH_OVERLAYS
@@ -416,10 +414,9 @@ _settings = dict(
 # git_sync -- Boolean that enables parameter --git-sync for upload_prebuilts.
   git_sync=False,
 
-# board_specific_configs -- A mapping from boards in the boards array to
-#                           config objects. Only used for config groups (see
-#                           the add_group method).
-  board_specific_configs={},
+# child_configs -- A list of the child config groups, if applicable. See the
+#                  add_group method.
+  child_configs=[],
 
 # grouped -- Whether this config belongs to a config group.
   grouped=False,
@@ -606,15 +603,8 @@ class _config(dict):
                for syncing and creating the chroot.
       group_overrides: See the docstring of derive. Applies to entire group.
     """
-    board_specific_configs = {}
-    for x in configs:
-      for my_board in x['boards']:
-        board_specific_configs[my_board] = _default.derive(x, grouped=True)
-
-    group_overrides.update(dict(
-        boards=list(itertools.chain.from_iterable(
-            x['boards'] for x in configs)),
-        board_specific_configs=board_specific_configs))
+    child_configs = [_default.derive(x, grouped=True) for x in configs]
+    group_overrides['child_configs'] = child_configs
     return configs[0].add_config(name, **group_overrides)
 
 _default = _config(**_settings)
@@ -1235,18 +1225,30 @@ _release.add_config('lumpy-release',
 release_pgo = _release.derive(
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
                                     num=4),
-  pgo_generate=True,
-  pgo_use=True,
   push_image=False,
   dev_installer_prebuilts=False,
 )
 
-release_pgo.add_config('x86-alex-pgo-release',
-  boards=['x86-alex'],
+release_pgo.add_group('x86-alex-pgo-release',
+  release_pgo.add_config('x86-alex-pgo-generate-release',
+    boards=['x86-alex'],
+    pgo_generate=True,
+  ),
+  release_pgo.add_config('x86-alex-pgo-use-release',
+    boards=['x86-alex'],
+    pgo_use=True,
+  ),
 )
 
-release_pgo.add_config('lumpy-pgo-release',
-  boards=['lumpy'],
+release_pgo.add_group('lumpy-pgo-release',
+  release_pgo.add_config('lumpy-pgo-generate-release',
+    boards=['lumpy'],
+    pgo_generate=True,
+  ),
+  release_pgo.add_config('lumpy-pgo-use-release',
+    boards=['lumpy'],
+    pgo_use=True,
+  ),
 )
 
 _release.add_config('link-release',

@@ -1509,9 +1509,9 @@ class ReportStageTest(AbstractStageTest):
     archive_stage = stages.ArchiveStage(self.options, self.build_config,
                                         self._current_board, '')
     archive_stages = {
-        'board': archive_stage,
-        'zororororor': archive_stage,
-        'matress-man': archive_stage,
+        cbuildbot.BoardConfig('board', 'config1'): archive_stage,
+        cbuildbot.BoardConfig('zororororor', 'config1'): archive_stage,
+        cbuildbot.BoardConfig('mattress-man', 'config2'): archive_stage,
     }
     return stages.ReportStage(self.options, self.build_config,
                               archive_stages, None)

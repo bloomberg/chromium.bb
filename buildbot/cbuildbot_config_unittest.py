@@ -356,6 +356,11 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                        config['vm_tests'], '%s has both quick_unit=False and '
                        'vm_tests' % build_name)
 
+  def testCantBeBothTypesOfPGO(self):
+    """Using pgo_generate and pgo_use together doesn't work."""
+    for config in cbuildbot_config.config.values():
+      self.assertFalse(config['pgo_use'] and config['pgo_generate'])
+
 
 class FindFullTest(cros_test_lib.TestCase):
   """Test locating of official build for a board."""
