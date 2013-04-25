@@ -136,6 +136,15 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //
   // LocalFileSystemOperation::ReadDirectory calls this.
   //
+  // Note that the |name| field of each entry in |file_list|
+  // returned by |callback| should have a base file name
+  // of the entry relative to the directory, but not an absolute path.
+  //
+  // (E.g. if ReadDirectory is called for a directory
+  // 'path/to/dir' and the directory has entries 'a' and 'b',
+  // the returned |file_list| should include entries whose names
+  // are 'a' and 'b', but not '/path/to/dir/a' and '/path/to/dir/b'.)
+  //
   // This returns false if it fails to post an async task.
   //
   // This reports following error code via |callback|:
