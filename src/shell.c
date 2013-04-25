@@ -1199,6 +1199,41 @@ static const struct weston_pointer_grab_interface resize_grab_interface = {
 	resize_grab_button,
 };
 
+/*
+ * Returns the bounding box of a surface and all its sub-surfaces,
+ * in the surface coordinates system. */
+static void
+surface_subsurfaces_boundingbox(struct weston_surface *surface, int32_t *x,
+				int32_t *y, int32_t *w, int32_t *h) {
+	pixman_region32_t region;
+	pixman_box32_t *box;
+	struct weston_subsurface *subsurface;
+
+	pixman_region32_init_rect(&region, 0, 0,
+	                          surface->geometry.width,
+	                          surface->geometry.height);
+
+	wl_list_for_each(subsurface, &surface->subsurface_list, parent_link) {
+		pixman_region32_union_rect(&region, &region,
+		                           subsurface->position.x,
+		                           subsurface->position.y,
+		                           subsurface->surface->geometry.width,
+		                           subsurface->surface->geometry.height);
+	}
+
+	box = pixman_region32_extents(&region);
+	if (x)
+		*x = box->x1;
+	if (y)
+		*y = box->y1;
+	if (w)
+		*w = box->x2 - box->x1;
+	if (h)
+		*h = box->y2 - box->y1;
+
+	pixman_region32_fini(&region);
+}
+
 static int
 surface_resize(struct shell_surface *shsurf,
 	       struct weston_seat *seat, uint32_t edges)
@@ -1218,8 +1253,8 @@ surface_resize(struct shell_surface *shsurf,
 		return -1;
 
 	resize->edges = edges;
-	resize->width = shsurf->surface->geometry.width;
-	resize->height = shsurf->surface->geometry.height;
+	surface_subsurfaces_boundingbox(shsurf->surface, NULL, NULL,
+	                                &resize->width, &resize->height);
 
 	shell_grab_start(&resize->base, &resize_grab_interface, shsurf,
 			 seat->pointer, edges);
@@ -1707,6 +1742,7 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 	struct weston_surface *surface = shsurf->surface;
 	struct weston_matrix *matrix;
 	float scale, output_aspect, surface_aspect, x, y;
+	int32_t surf_x, surf_y, surf_width, surf_height;
 
 	if (!shsurf->fullscreen.black_surface)
 		shsurf->fullscreen.black_surface =
@@ -1721,6 +1757,9 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 		       &shsurf->fullscreen.black_surface->layer_link);
 	shsurf->fullscreen.black_surface->output = output;
 
+	surface_subsurfaces_boundingbox(surface, &surf_x, &surf_y,
+	                                &surf_width, &surf_height);
+
 	switch (shsurf->fullscreen.type) {
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT:
 		if (surface->buffer_ref.buffer)
@@ -1728,9 +1767,10 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE:
 		/* 1:1 mapping between surface and output dimensions */
-		if (output->width == surface->geometry.width &&
-		    output->height == surface->geometry.height) {
-			weston_surface_set_position(surface, output->x, output->y);
+		if (output->width == surf_width &&
+			output->height == surf_height) {
+			weston_surface_set_position(surface, output->x - surf_x,
+			                                     output->y - surf_y);
 			break;
 		}
 
@@ -1743,33 +1783,33 @@ shell_configure_fullscreen(struct shell_surface *shsurf)
 			(float) surface->geometry.height;
 		if (output_aspect < surface_aspect)
 			scale = (float) output->width /
-				(float) surface->geometry.width;
+				(float) surf_width;
 		else
 			scale = (float) output->height /
-				(float) surface->geometry.height;
+				(float) surf_height;
 
 		weston_matrix_scale(matrix, scale, scale, 1);
 		wl_list_remove(&shsurf->fullscreen.transform.link);
 		wl_list_insert(&surface->geometry.transformation_list,
 			       &shsurf->fullscreen.transform.link);
-		x = output->x + (output->width - surface->geometry.width * scale) / 2;
-		y = output->y + (output->height - surface->geometry.height * scale) / 2;
+		x = output->x + (output->width - surf_width * scale) / 2 - surf_x;
+		y = output->y + (output->height - surf_height * scale) / 2 - surf_y;
 		weston_surface_set_position(surface, x, y);
 
 		break;
 	case WL_SHELL_SURFACE_FULLSCREEN_METHOD_DRIVER:
 		if (shell_surface_is_top_fullscreen(shsurf)) {
 			struct weston_mode mode = {0,
-				surface->geometry.width,
-				surface->geometry.height,
+				surf_width,
+				surf_height,
 				shsurf->fullscreen.framerate};
 
 			if (weston_output_switch_mode(output, &mode) == 0) {
 				weston_surface_configure(shsurf->fullscreen.black_surface,
-					                 output->x, output->y,
+					                 output->x - surf_x,
+					                 output->y - surf_y,
 							 output->width,
 							 output->height);
-				weston_surface_set_position(surface, output->x, output->y);
 				break;
 			}
 		}
@@ -3120,12 +3160,13 @@ update_input_panels(struct wl_listener *listener, void *data)
 static void
 center_on_output(struct weston_surface *surface, struct weston_output *output)
 {
-	int32_t width = weston_surface_buffer_width(surface);
-	int32_t height = weston_surface_buffer_height(surface);
+	int32_t surf_x, surf_y, width, height;
 	float x, y;
 
-	x = output->x + (output->width - width) / 2;
-	y = output->y + (output->height - height) / 2;
+	surface_subsurfaces_boundingbox(surface, &surf_x, &surf_y, &width, &height);
+
+	x = output->x + (output->width - width) / 2 - surf_x / 2;
+	y = output->y + (output->height - height) / 2 - surf_y / 2;
 
 	weston_surface_configure(surface, x, y, width, height);
 }
@@ -3203,6 +3244,7 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	struct weston_seat *seat;
 	struct workspace *ws;
 	int panel_height = 0;
+	int32_t surf_x, surf_y;
 
 	surface->geometry.width = width;
 	surface->geometry.height = height;
@@ -3220,8 +3262,10 @@ map(struct desktop_shell *shell, struct weston_surface *surface,
 	case SHELL_SURFACE_MAXIMIZED:
 		/* use surface configure to set the geometry */
 		panel_height = get_output_panel_height(shell,surface->output);
-		weston_surface_set_position(surface, shsurf->output->x,
-					    shsurf->output->y + panel_height);
+		surface_subsurfaces_boundingbox(shsurf->surface, &surf_x, &surf_y,
+		                                                 NULL, NULL);
+		weston_surface_set_position(surface, shsurf->output->x - surf_x,
+		                            shsurf->output->y + panel_height - surf_y);
 		break;
 	case SHELL_SURFACE_POPUP:
 		shell_map_popup(shsurf);
@@ -3295,6 +3339,7 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 {
 	enum shell_surface_type surface_type = SHELL_SURFACE_NONE;
 	struct shell_surface *shsurf;
+	int32_t surf_x, surf_y;
 
 	shsurf = get_shell_surface(surface);
 	if (shsurf)
@@ -3309,9 +3354,11 @@ configure(struct desktop_shell *shell, struct weston_surface *surface,
 		break;
 	case SHELL_SURFACE_MAXIMIZED:
 		/* setting x, y and using configure to change that geometry */
-		surface->geometry.x = surface->output->x;
+		surface_subsurfaces_boundingbox(shsurf->surface, &surf_x, &surf_y,
+		                                                 NULL, NULL);
+		surface->geometry.x = surface->output->x - surf_x;
 		surface->geometry.y = surface->output->y +
-			get_output_panel_height(shell,surface->output);
+		get_output_panel_height(shell,surface->output) - surf_y;
 		break;
 	case SHELL_SURFACE_TOPLEVEL:
 		break;
