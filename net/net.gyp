@@ -78,8 +78,6 @@
         'android/network_change_notifier_factory_android.h',
         'android/network_library.cc',
         'android/network_library.h',
-        'android/simple_cache_activity_status_notifier.cc',
-        'android/simple_cache_activity_status_notifier.h',
         'base/address_family.h',
         'base/address_list.cc',
         'base/address_list.h',
@@ -2655,7 +2653,6 @@
             'android/java/src/org/chromium/net/GURLUtils.java',
             'android/java/src/org/chromium/net/NetworkChangeNotifier.java',
             'android/java/src/org/chromium/net/ProxyChangeListener.java',
-            'android/java/src/org/chromium/net/SimpleCacheActivityStatusNotifier.java',
           ],
           'variables': {
             'jni_gen_package': 'net',
