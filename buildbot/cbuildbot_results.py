@@ -133,6 +133,8 @@ class _Results(object):
     # names to previous records.
     self._previous = {}
 
+    self.start_time = datetime.datetime.now()
+
   def Clear(self):
     """Clear existing stage results."""
     self.__init__()

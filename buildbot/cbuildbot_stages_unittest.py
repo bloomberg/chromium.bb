@@ -903,10 +903,12 @@ class ArchiveStageMock(partial_mock.PartialMock):
   """Partial mock for Archive Stage."""
 
   TARGET = 'chromite.buildbot.cbuildbot_stages.ArchiveStage'
-  ATTRS = ('GetVersion', 'WaitForBreakpadSymbols',)
+  ATTRS = ('GetVersionInfo', 'WaitForBreakpadSymbols',)
 
-  def GetVersion(self, inst):
-    return 'R27-%s' % inst.release_tag if inst.release_tag else ''
+  def GetVersionInfo(self, inst):
+    return manifest_version.VersionInfo(
+        version_string=inst.release_tag if inst.release_tag else '3333.1.0',
+        chrome_branch='27')
 
   def WaitForBreakpadSymbols(self, _inst):
     return True
@@ -956,34 +958,32 @@ class ArchiveStageTest(AbstractStageTest):
     # pylint: disable=E1101
     self.assertEquals(commands.PushImages.call_count, 0)
 
-  def testArchiveMetadataJson(self):
+  def testMetadataJson(self):
     """Test that the json metadata is built correctly"""
     # First run the code.
     stage = self.ConstructStage()
-    stage.ArchiveMetadataJson()
+    stage.RefreshMetadata('tests')
 
     # Now check the results.
-    json_file = stage._upload_queue.get()
-    self.assertEquals(json_file, [constants.METADATA_JSON])
-    json_file = os.path.join(stage.archive_path, json_file[0])
+    json_file = os.path.join(stage.archive_path, constants.METADATA_JSON)
     json_data = json.loads(osutils.ReadFile(json_file))
 
     important_keys = (
         'boards',
         'bot-config',
-        'cros-version',
         'metadata-version',
         'sdk-version',
         'toolchain-tuple',
         'toolchain-url',
+        'version',
     )
     for key in important_keys:
       self.assertTrue(key in json_data)
 
     self.assertEquals(json_data['boards'], ['x86-generic'])
     self.assertEquals(json_data['bot-config'], 'x86-generic-paladin')
-    self.assertEquals(json_data['cros-version'], stage.version)
-    self.assertEquals(json_data['metadata-version'], '1')
+    self.assertEquals(json_data['version']['full'], stage.version)
+    self.assertEquals(json_data['metadata-version'], '2')
 
     # The buildtools manifest doesn't have any overlays. In this case, we can't
     # find any toolchains.

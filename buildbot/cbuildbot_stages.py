@@ -5,10 +5,12 @@
 """Module containing the various stages that a builder runs."""
 
 import contextlib
+import datetime
 import functools
 import glob
 import json
 import logging
+import math
 import multiprocessing
 import os
 import Queue
@@ -1364,6 +1366,11 @@ class SyncChromeStage(bs.BuilderStage):
 
   option_name = 'managed_chrome'
 
+  def __init__(self, options, build_config):
+    super(SyncChromeStage, self).__init__(options, build_config)
+    # PerformStage() will fill this out for us.
+    self.chrome_version = None
+
   def PerformStage(self):
     # Perform chrome uprev.
     chrome_atom_to_build = None
@@ -1378,11 +1385,13 @@ class SyncChromeStage(bs.BuilderStage):
       kwargs['revision'] = self._options.chrome_version
       cpv = None
       cros_build_lib.PrintBuildbotStepText('revision %s' % kwargs['revision'])
+      self.chrome_version = self._options.chrome_version
     else:
       cpv = portage_utilities.BestVisible(constants.CHROME_CP,
                                           buildroot=self._build_root)
       kwargs['tag'] = cpv.version_no_rev.partition('_')[0]
       cros_build_lib.PrintBuildbotStepText('tag %s' % kwargs['tag'])
+      self.chrome_version = kwargs['tag']
 
     useflags = self._build_config['useflags'] or []
     commands.SyncChrome(self._build_root, self._options.chrome_root, useflags,
@@ -1898,8 +1907,10 @@ class ArchiveStage(ArchivingStage):
   option_name = 'archive'
 
   # This stage is intended to run in the background, in parallel with tests.
-  def __init__(self, options, build_config, board, release_tag):
+  def __init__(self, options, build_config, board, release_tag,
+               chrome_version=None):
     self.release_tag = release_tag
+    self._chrome_version = chrome_version
     super(ArchiveStage, self).__init__(options, build_config, board, self)
 
     self._breakpad_symbols_queue = multiprocessing.Queue()
@@ -1916,9 +1927,14 @@ class ArchiveStage(ArchivingStage):
     self._SetupArchivePath()
 
   @cros_build_lib.MemoizedSingleCall
+  def GetVersionInfo(self):
+    """Helper for picking apart various version bits"""
+    return manifest_version.VersionInfo.from_repo(self._build_root)
+
+  @cros_build_lib.MemoizedSingleCall
   def GetVersion(self):
     """Helper for calculating self.version."""
-    verinfo = manifest_version.VersionInfo.from_repo(self._build_root)
+    verinfo = self.GetVersionInfo()
     calc_version = self.release_tag or verinfo.VersionString()
     calc_version = 'R%s-%s' % (verinfo.chrome_branch, calc_version)
 
@@ -1978,35 +1994,79 @@ class ArchiveStage(ArchivingStage):
 
     os.makedirs(self.archive_path)
 
-  def ArchiveMetadataJson(self):
+  def RefreshMetadata(self, stage, final_status=None):
     """Create a JSON of various metadata describing this build."""
     config = self._build_config
+    acl = None if self._build_config['internal'] else 'public-read'
 
-    target = os.path.join(self.archive_path, constants.METADATA_JSON)
+    start_time = results_lib.Results.start_time
+    current_time = datetime.datetime.now()
+    start_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=start_time)
+    current_time_stamp = cros_build_lib.UserDateTimeFormat(timeval=current_time)
+    duration = '%s' % (current_time - start_time,)
+
     sdk_verinfo = cros_build_lib.LoadKeyValueFile(
         os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
         ignore_missing=True)
-    json_input = {
+    verinfo = self.GetVersionInfo()
+    metadata = {
         # Version of the metadata format.
-        'metadata-version': '1',
+        'metadata-version': '2',
         # Data for this build.
         'bot-config': config['name'],
         'bot-hostname': cros_build_lib.GetHostName(fully_qualified=True),
         'boards': config['boards'],
         'build-number': self._options.buildnumber,
         'builder-name': os.environ.get('BUILDBOT_BUILDERNAME'),
-        'cros-version': self.version,
+        'status': {
+            'current-time': current_time_stamp,
+            'status': final_status if final_status else 'running',
+            'summary': stage,
+        },
+        'time': {
+            'start': start_time_stamp,
+            'finish': current_time_stamp if final_status else '',
+            'duration': duration,
+        },
+        'version': {
+            'chrome': self._chrome_version,
+            'full': self.version,
+            'milestone': verinfo.chrome_branch,
+            'platform': self.release_tag or verinfo.VersionString(),
+        },
         # Data for the toolchain used.
         'sdk-version': sdk_verinfo.get('SDK_LATEST_VERSION', '<unknown>'),
         'toolchain-url': sdk_verinfo.get('TC_PATH', '<unknown>'),
     }
     if len(config['boards']) == 1:
       toolchains = toolchain.GetToolchainsForBoard(config['boards'][0])
-      json_input['toolchain-tuple'] = (
+      metadata['toolchain-tuple'] = (
           toolchain.FilterToolchains(toolchains, 'default', True).keys() +
           toolchain.FilterToolchains(toolchains, 'default', False).keys())
-    osutils.WriteFile(target, json.dumps(json_input))
-    self._upload_queue.put([constants.METADATA_JSON])
+
+    metadata['results'] = []
+    for name, result, description, run_time in results_lib.Results.Get():
+      timestr = datetime.timedelta(seconds=math.ceil(run_time))
+      if result in results_lib.Results.NON_FAILURE_TYPES:
+        status = 'passed'
+      else:
+        status = 'failed'
+      metadata['results'].append({
+          'name': name,
+          'status': status,
+          'summary': result,
+          'duration': '%s' % timestr,
+          'description': description,
+          'log': self.ConstructDashboardURL(stage=name),
+      })
+
+    metadata_json = os.path.join(self.archive_path, constants.METADATA_JSON)
+    # Stages may run in parallel, so we have to do atomic updates on this.
+    osutils.WriteFile(metadata_json, json.dumps(metadata), atomic=True)
+    commands.UploadArchivedFile(self.archive_path, self.upload_url,
+                                os.path.basename(metadata_json),
+                                debug=self.debug, acl=acl,
+                                update_list=bool(final_status))
 
   @staticmethod
   def _SingleMatchGlob(path_pattern):
@@ -2078,7 +2138,6 @@ class ArchiveStage(ArchivingStage):
     # The following functions are run in parallel (except where indicated
     # otherwise)
     # \- BuildAndArchiveArtifacts
-    #    \- ArchiveMetadataJson
     #    \- ArchiveReleaseArtifacts
     #       \- ArchiveDebugSymbols
     #       \- ArchiveFirmwareImages
@@ -2261,7 +2320,7 @@ class ArchiveStage(ArchivingStage):
 
     def BuildAndArchiveArtifacts():
       # Run archiving steps in parallel.
-      steps = [ArchiveReleaseArtifacts, self.ArchiveMetadataJson]
+      steps = [ArchiveReleaseArtifacts]
       if config['images']:
         steps.extend(
             [self.ArchiveStrippedChrome, self.BuildAndArchiveChromeSysroot,
@@ -2465,6 +2524,13 @@ class ReportStage(bs.BuilderStage):
       url = archive_stage.download_url
       path = archive_stage.archive_path
       upload_url = archive_stage.upload_url
+
+      # Generate the final metadata before we look at the uploaded list.
+      if results_lib.Results.BuildSucceededSoFar():
+        final_status = 'passed'
+      else:
+        final_status = 'failed'
+      archive_stage.RefreshMetadata('', final_status=final_status)
 
       # Generate the index page needed for public reading.
       uploaded = os.path.join(path, commands.UPLOADED_LIST_FILENAME)

@@ -425,16 +425,18 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.InitSDKStage)
       self._RunStage(stages.UprevStage)
       self._RunStage(stages.SetupBoardStage)
-      self._RunStage(stages.SyncChromeStage)
+      # We need a handle to this stage to extract info from it.
+      sync_chrome_stage = self._GetStageInstance(stages.SyncChromeStage)
+      sync_chrome_stage.Run()
       self._RunStage(stages.PatchChromeStage)
 
       configs = self.build_config['child_configs'] or [self.build_config]
       tasks = []
       for config in configs:
         for board in config['boards']:
-          archive_stage = self._GetStageInstance(stages.ArchiveStage, board,
-                                                 self.release_tag,
-                                                 config=config)
+          archive_stage = self._GetStageInstance(
+              stages.ArchiveStage, board, self.release_tag, config=config,
+              chrome_version=sync_chrome_stage.chrome_version)
           board_config = BoardConfig(board, config['name'])
           self.archive_stages[board_config] = archive_stage
           tasks.append((config, board, archive_stage))
