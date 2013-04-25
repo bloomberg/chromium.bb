@@ -3451,6 +3451,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Renderer.PixelIncreaseFromTransitions">
+  <summary>
+    A lower-bound on the percentage increase in memory that would result from
+    promoting all layers that have a webkit-transition on opacity or transform.
+  </summary>
+</histogram>
+
 <histogram name="Renderer2.FinishDocToFinish">
   <summary>
     The time from when a document finished loading to when all it's resources
