@@ -11,7 +11,6 @@ emerge-$board autotest-all, by simply rsync'ing changes from trunk to sysroot.
 """
 
 import argparse
-import errno
 import logging
 import os
 import re
@@ -22,6 +21,7 @@ from chromite.buildbot import constants
 from chromite.buildbot import portage_utilities
 from chromite.lib import cros_build_lib
 from chromite.lib import git
+from chromite.lib import osutils
 
 
 if cros_build_lib.IsInsideChroot():
@@ -169,7 +169,7 @@ def DowngradePackageVersion(portage_root, package_cp,
     downgrade_to_version: String version to downgrade to. Default: '0'
 
   Returns:
-    Returns the return value of the `mv` command used to perform operation.
+    True on success. False on failure (nonzero return code from `mv` command).
   """
   package, _ = GetPackageAPI(portage_root, package_cp)
 
@@ -177,9 +177,10 @@ def DowngradePackageVersion(portage_root, package_cp,
   destination_path = os.path.join(
       package.dbroot, package_cp + '-' + downgrade_to_version)
   if os.path.abspath(source_directory) == os.path.abspath(destination_path):
-    return 0
+    return True
   command = ['mv', source_directory, destination_path]
-  return cros_build_lib.SudoRunCommand(command).returncode
+  code = cros_build_lib.SudoRunCommand(command, error_code_ok=True).returncode
+  return code == 0
 
 
 def UpdatePackageContents(change_report, package_cp, portage_root=None):
@@ -224,13 +225,8 @@ def RemoveTestPackages(stale_packages, autotest_sysroot):
     package_filename = 'test-' + package + '.tar.bz2'
     package_file_fullpath = os.path.join(autotest_sysroot, 'packages',
                                          package_filename)
-    try:
-      os.remove(package_file_fullpath)
+    if osutils.SafeUnlink(package_file_fullpath):
       logging.info('Removed stale %s', package_file_fullpath)
-    except OSError as err:
-      # Suppress no-such-file exceptions. Raise all others.
-      if err.errno != errno.ENOENT:
-        raise
 
 
 def RsyncQuickmerge(source_path, sysroot_autotest_path,
@@ -247,6 +243,9 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
     pretend:   True to use the '-n' option to rsync, to perform dry run.
     overwrite: True to omit '-u' option, overwrite all files in sysroot,
                not just older files.
+
+  Returns:
+    The cros_build_lib.CommandResult object resulting from the rsync command.
   """
   command = ['rsync', '-a']
 
@@ -337,7 +336,7 @@ def main(argv):
     UpdatePackageContents(change_report, AUTOTEST_TESTS_EBUILD,
                           sysroot_path)
     for ebuild in DOWNGRADE_EBUILDS:
-      if DowngradePackageVersion(sysroot_path, ebuild) != 0:
+      if not DowngradePackageVersion(sysroot_path, ebuild):
         logging.warning('Unable to downgrade package %s version number.',
                         ebuild)
     stale_packages = GetStalePackageNames(
