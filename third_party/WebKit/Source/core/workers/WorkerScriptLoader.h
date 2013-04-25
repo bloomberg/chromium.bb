@@ -28,9 +28,9 @@
 #ifndef WorkerScriptLoader_h
 #define WorkerScriptLoader_h
 
-#include "KURL.h"
 #include "ThreadableLoader.h"
 #include "ThreadableLoaderClient.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 
 #include <wtf/FastAllocBase.h>

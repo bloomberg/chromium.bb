@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebSecurityOrigin.h"
 
-#include "KURL.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>

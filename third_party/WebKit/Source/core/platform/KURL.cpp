@@ -25,11 +25,11 @@
  */
 
 #include "config.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 
 #include <stdio.h>
-#include "MIMETypeRegistry.h"
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/text/DecodeEscapeSequences.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/HashMap.h>

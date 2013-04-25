@@ -27,7 +27,6 @@
 #include "RenderSVGInlineText.h"
 
 #include "CSSFontSelector.h"
-#include "FloatConversion.h"
 #include "RenderBlock.h"
 #include "RenderSVGRoot.h"
 #include "RenderSVGText.h"
@@ -37,6 +36,7 @@
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "VisiblePosition.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 
 namespace WebCore {

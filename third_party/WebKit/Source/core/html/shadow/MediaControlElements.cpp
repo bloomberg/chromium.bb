@@ -39,8 +39,6 @@
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
 #include "HTMLVideoElement.h"
-#include "Language.h"
-#include "LocalizedStrings.h"
 #include "MediaControls.h"
 #include "MouseEvent.h"
 #include "Page.h"
@@ -54,6 +52,8 @@
 #include "Settings.h"
 #include "TextTrack.h"
 #include "TextTrackList.h"
+#include "core/platform/Language.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
 namespace WebCore {

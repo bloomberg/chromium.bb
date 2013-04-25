@@ -31,12 +31,12 @@
 #ifndef BlobData_h
 #define BlobData_h
 
-#include "FileSystem.h"
-#include "KURL.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/KURL.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/ThreadSafeRefCounted.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/ThreadSafeRefCounted.h>
 
 namespace WebCore {
 

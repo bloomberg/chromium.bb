@@ -28,9 +28,9 @@
 #define Settings_h
 
 #include "EditingBehaviorTypes.h"
-#include "KURL.h"
 #include "SettingsMacros.h"
-#include "Timer.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/FontRenderingMode.h"
 #include "core/platform/graphics/IntSize.h"
 #include <wtf/HashMap.h>

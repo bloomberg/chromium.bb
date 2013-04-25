@@ -26,9 +26,9 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "config.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 
-#include "PurgeableBuffer.h"
+#include "core/platform/PurgeableBuffer.h"
 
 namespace WebCore {
 

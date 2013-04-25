@@ -28,7 +28,7 @@
 
 #include "DeviceOrientationClient.h"
 #include "DeviceOrientationData.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

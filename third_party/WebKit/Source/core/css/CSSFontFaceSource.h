@@ -28,7 +28,7 @@
 
 #include "CachedFont.h"
 #include "CachedResourceHandle.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/AtomicString.h>
 

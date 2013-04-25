@@ -37,7 +37,6 @@
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"
 #include "HitTestResult.h"
-#include "LocalizedStrings.h"
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "ProgressTracker.h"
@@ -62,6 +61,7 @@
 #include "core/accessibility/AccessibilitySVGRoot.h"
 #include "core/accessibility/AccessibilitySpinButton.h"
 #include "core/accessibility/AccessibilityTable.h"
+#include "core/platform/LocalizedStrings.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

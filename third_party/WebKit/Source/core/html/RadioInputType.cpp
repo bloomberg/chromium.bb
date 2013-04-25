@@ -27,11 +27,11 @@
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
-#include "LocalizedStrings.h"
 #include "MouseEvent.h"
 #include "NodeTraversal.h"
 #include "Settings.h"
 #include "SpatialNavigation.h"
+#include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

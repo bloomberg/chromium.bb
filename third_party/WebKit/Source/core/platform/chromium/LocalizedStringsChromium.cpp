@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "LocalizedStrings.h"
+#include "core/platform/LocalizedStrings.h"
 
-#include "NotImplemented.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/text/DateTimeFormat.h"
 
@@ -337,7 +337,7 @@ String unknownFileSizeText()
     return String();
 }
 
-// The following two functions are not declared in LocalizedStrings.h.
+// The following two functions are not declared in core/platform/LocalizedStrings.h.
 // They are used by the menu for the HTML keygen tag.
 String keygenMenuHighGradeKeySize()
 {

@@ -28,7 +28,7 @@
 #include "core/platform/graphics/chromium/ThreadSafeDataTransport.h"
 
 #include <gtest/gtest.h>
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 
 using namespace WebCore;
 

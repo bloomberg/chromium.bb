@@ -30,10 +30,10 @@
 #include "Event.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "Logging.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScriptCallStack.h"
 #include "ScriptEventListener.h"
+#include "core/platform/Logging.h"
 
 using namespace std;
 

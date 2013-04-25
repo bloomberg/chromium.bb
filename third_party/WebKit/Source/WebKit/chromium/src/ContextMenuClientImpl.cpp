@@ -33,7 +33,6 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSStyleDeclaration.h"
-#include "ContextMenu.h"
 #include "ContextMenuController.h"
 #include "Document.h"
 #include "DocumentLoader.h"
@@ -50,7 +49,6 @@
 #include "HTMLPlugInImageElement.h"
 #include "HistoryItem.h"
 #include "HitTestResult.h"
-#include "KURL.h"
 #include "MediaError.h"
 #include "Page.h"
 #include "RenderWidget.h"
@@ -66,7 +64,9 @@
 #include "WebSpellCheckClient.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include "Widget.h"
+#include "core/platform/ContextMenu.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Widget.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include <public/WebPoint.h>
 #include <public/WebString.h>

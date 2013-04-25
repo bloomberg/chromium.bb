@@ -27,9 +27,9 @@
 #include "RenderGrid.h"
 
 #include "LayoutRepainter.h"
-#include "NotImplemented.h"
 #include "RenderLayer.h"
 #include "RenderView.h"
+#include "core/platform/NotImplemented.h"
 
 namespace WebCore {
 

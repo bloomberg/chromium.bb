@@ -26,10 +26,10 @@
 #include "config.h"
 #include "ScrollElasticityController.h"
 
-#include "PlatformWheelEvent.h"
-#include "WebCoreSystemInterface.h"
-#include <sys/time.h>
 #include <sys/sysctl.h>
+#include <sys/time.h>
+#include "WebCoreSystemInterface.h"
+#include "core/platform/PlatformWheelEvent.h"
 
 #if ENABLE(RUBBER_BANDING)
 

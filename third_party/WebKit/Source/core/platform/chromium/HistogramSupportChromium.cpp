@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "HistogramSupport.h"
+#include "core/platform/HistogramSupport.h"
 
 #include <public/Platform.h>
 

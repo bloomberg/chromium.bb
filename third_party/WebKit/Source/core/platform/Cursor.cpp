@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Cursor.h"
+#include "core/platform/Cursor.h"
 
 #include "core/platform/graphics/Image.h"
 #include <wtf/Assertions.h>

@@ -28,13 +28,13 @@
 
 #if ENABLE(INPUT_TYPE_COLOR) && ENABLE(PAGE_POPUP)
 #include "ChromeClientImpl.h"
-#include "ColorChooserClient.h"
 #include "ColorSuggestionPicker.h"
 #include "FrameView.h"
-#include "LocalizedStrings.h"
 #include "PickerCommon.h"
 #include "WebColorChooser.h"
 #include "WebViewImpl.h"
+#include "core/platform/ColorChooserClient.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/IntRect.h"
 #include <public/Platform.h>
 #include <public/WebLocalizedString.h>

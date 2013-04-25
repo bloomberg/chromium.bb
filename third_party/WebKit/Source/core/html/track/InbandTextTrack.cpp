@@ -31,9 +31,9 @@
 #include "Document.h"
 #include "Event.h"
 #include "ExceptionCodePlaceholder.h"
-#include "Logging.h"
 #include "TextTrackCueGeneric.h"
 #include "TextTrackCueList.h"
+#include "core/platform/Logging.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/UnusedParam.h>

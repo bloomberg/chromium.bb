@@ -24,9 +24,9 @@
 #include "config.h"
 #include "LengthFunctions.h"
 
-#include "LayoutUnit.h"
-#include "Length.h"
 #include "RenderView.h"
+#include "core/platform/LayoutUnit.h"
+#include "core/platform/Length.h"
 
 namespace WebCore {
 

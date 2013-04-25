@@ -29,7 +29,7 @@
 #include <stdio.h>
 #include "Document.h"
 #include "SerializedScriptValue.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Decoder.h>

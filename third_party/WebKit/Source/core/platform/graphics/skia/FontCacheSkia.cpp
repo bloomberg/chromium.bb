@@ -30,11 +30,11 @@
 
 #include "config.h"
 #include <unicode/locid.h>
-#include "Logging.h"
-#include "NotImplemented.h"
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "SkUtils.h"
+#include "core/platform/Logging.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontDescription.h"

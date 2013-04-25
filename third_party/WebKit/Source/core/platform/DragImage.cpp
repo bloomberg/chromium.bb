@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DragImage.h"
+#include "core/platform/DragImage.h"
 
 #include "DragController.h"
 #include "Frame.h"

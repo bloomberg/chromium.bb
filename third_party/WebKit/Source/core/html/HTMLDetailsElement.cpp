@@ -24,12 +24,12 @@
 #include "HTMLContentElement.h"
 #include "HTMLNames.h"
 #include "HTMLSummaryElement.h"
-#include "LocalizedStrings.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
 #include "RenderBlock.h"
 #include "ShadowRoot.h"
 #include "Text.h"
+#include "core/platform/LocalizedStrings.h"
 
 namespace WebCore {
 

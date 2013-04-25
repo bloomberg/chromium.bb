@@ -32,7 +32,7 @@
 #if USE(OPENTYPE_SANITIZER)
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "opentype-sanitiser.h"
 #include "ots-memory-stream.h"
 #include <wtf/OwnArrayPtr.h>

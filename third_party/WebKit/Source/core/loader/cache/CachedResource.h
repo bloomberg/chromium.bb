@@ -26,9 +26,9 @@
 #include <time.h>
 #include "CachePolicy.h"
 #include "FrameLoaderTypes.h"
-#include "PurgePriority.h"
 #include "ResourceLoaderOptions.h"
-#include "Timer.h"
+#include "core/platform/PurgePriority.h"
+#include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"

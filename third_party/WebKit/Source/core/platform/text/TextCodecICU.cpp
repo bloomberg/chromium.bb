@@ -30,7 +30,7 @@
 
 #include <unicode/ucnv.h>
 #include <unicode/ucnv_cb.h>
-#include "ThreadGlobalData.h"
+#include "core/platform/ThreadGlobalData.h"
 #include <wtf/Assertions.h>
 #include <wtf/StringExtras.h>
 #include <wtf/text/CString.h>

@@ -33,9 +33,9 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "InspectorInstrumentation.h"
-#include "PlatformScreen.h"
 #include "Settings.h"
-#include "Widget.h"
+#include "core/platform/PlatformScreen.h"
+#include "core/platform/Widget.h"
 #include "core/platform/graphics/FloatRect.h"
 
 namespace WebCore {

@@ -26,7 +26,7 @@
 #ifndef MediaFragmentURIParser_h
 #define MediaFragmentURIParser_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 

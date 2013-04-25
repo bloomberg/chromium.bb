@@ -26,7 +26,7 @@
 #include "Clipboard.h"
 #include "EventDispatcher.h"
 #include "EventNames.h"
-#include "PlatformWheelEvent.h"
+#include "core/platform/PlatformWheelEvent.h"
 
 #include <wtf/MathExtras.h>
 

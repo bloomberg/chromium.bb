@@ -34,8 +34,8 @@
 #include "ExceptionCode.h"
 #include "MessageEvent.h"
 #include "SecurityOrigin.h"
-#include "Timer.h"
 #include "WorkerContext.h"
+#include "core/platform/Timer.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

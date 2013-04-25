@@ -24,9 +24,9 @@
 #include "HTMLPlugInElement.h"
 
 #include "Attribute.h"
+#include "CSSPropertyNames.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
-#include "CSSPropertyNames.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventHandler.h"
@@ -40,7 +40,7 @@
 #include "RenderWidget.h"
 #include "ScriptController.h"
 #include "Settings.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 #include "npruntime_impl.h"
 #include <wtf/UnusedParam.h>
 

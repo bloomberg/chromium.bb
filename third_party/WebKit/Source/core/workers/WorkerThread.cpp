@@ -32,10 +32,10 @@
 #include "DatabaseTask.h"
 #include "DedicatedWorkerContext.h"
 #include "InspectorInstrumentation.h"
-#include "KURL.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
-#include "ThreadGlobalData.h"
+#include "core/platform/KURL.h"
+#include "core/platform/ThreadGlobalData.h"
 
 #include <utility>
 #include <wtf/Noncopyable.h>

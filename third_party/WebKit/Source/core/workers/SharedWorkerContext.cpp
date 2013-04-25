@@ -37,9 +37,9 @@
 #include "DOMWindow.h"
 #include "EventNames.h"
 #include "MessageEvent.h"
-#include "NotImplemented.h"
 #include "ScriptCallStack.h"
 #include "SharedWorkerThread.h"
+#include "core/platform/NotImplemented.h"
 
 namespace WebCore {
 

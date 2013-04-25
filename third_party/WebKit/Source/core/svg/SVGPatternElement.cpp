@@ -26,7 +26,6 @@
 
 #include "Attribute.h"
 #include "Document.h"
-#include "FloatConversion.h"
 #include "PatternAttributes.h"
 #include "RenderSVGContainer.h"
 #include "RenderSVGResourcePattern.h"
@@ -37,6 +36,7 @@
 #include "SVGSVGElement.h"
 #include "SVGStyledTransformableElement.h"
 #include "SVGTransformable.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"

@@ -24,9 +24,9 @@
 #include "config.h"
 #include "ScriptElement.h"
 
-#include "CachedScript.h"
 #include "CachedResourceLoader.h"
 #include "CachedResourceRequest.h"
+#include "CachedScript.h"
 #include "ContentSecurityPolicy.h"
 #include "CrossOriginAccessControl.h"
 #include "Document.h"
@@ -38,7 +38,6 @@
 #include "HTMLParserIdioms.h"
 #include "HTMLScriptElement.h"
 #include "IgnoreDestructiveWriteCountIncrementer.h"
-#include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
@@ -49,6 +48,7 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "Text.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringHash.h>

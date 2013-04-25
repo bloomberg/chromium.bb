@@ -26,7 +26,7 @@
 #ifndef ScrollbarThemeClient_h
 #define ScrollbarThemeClient_h
 
-#include "ScrollTypes.h"
+#include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/IntSize.h"

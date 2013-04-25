@@ -32,8 +32,8 @@
 #include "core/platform/chromium/ScrollbarThemeChromiumDefault.h"
 
 #include "PlatformContextSkia.h"
-#include "PlatformMouseEvent.h"
-#include "Scrollbar.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/Scrollbar.h"
 #include <public/default/WebThemeEngine.h>
 #include <public/Platform.h>
 #include <public/WebRect.h>

@@ -31,7 +31,7 @@
 #ifndef ApplicationCacheHost_h
 #define ApplicationCacheHost_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>

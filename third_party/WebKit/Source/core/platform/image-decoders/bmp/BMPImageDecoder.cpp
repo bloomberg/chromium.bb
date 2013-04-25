@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 
-#include "PlatformInstrumentation.h"
+#include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/image-decoders/bmp/BMPImageReader.h"
 #include <wtf/PassOwnPtr.h>
 

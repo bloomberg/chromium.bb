@@ -32,9 +32,9 @@
 #include "CachedResourceLoader.h"
 #include "FontCustomPlatformData.h"
 #include "MemoryCache.h"
-#include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include <wtf/Vector.h>
 

@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "Language.h"
+#include "core/platform/Language.h"
 
 #include <public/Platform.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

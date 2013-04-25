@@ -29,11 +29,11 @@
 
 #include "ContentDistributor.h"
 #include "ElementShadow.h"
-#include "HistogramSupport.h"
 #include "InsertionPoint.h"
 #include "RuntimeEnabledFeatures.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/platform/HistogramSupport.h"
 #include "markup.h"
 
 namespace WebCore {

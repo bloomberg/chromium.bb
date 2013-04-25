@@ -26,10 +26,10 @@
 #ifndef TextTrackList_h
 #define TextTrackList_h
 
+#include <algorithm>
 #include "EventListener.h"
 #include "EventTarget.h"
-#include "Timer.h"
-#include <algorithm>
+#include "core/platform/Timer.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

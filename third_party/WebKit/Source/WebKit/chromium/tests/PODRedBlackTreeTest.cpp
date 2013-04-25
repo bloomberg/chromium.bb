@@ -27,11 +27,11 @@
 
 #include "config.h"
 
-#include "PODRedBlackTree.h"
+#include "core/platform/PODRedBlackTree.h"
 
+#include <gtest/gtest.h>
 #include "ArenaTestHelpers.h"
 #include "TreeTestHelpers.h"
-#include <gtest/gtest.h>
 #include <wtf/Vector.h>
 
 namespace WebCore {

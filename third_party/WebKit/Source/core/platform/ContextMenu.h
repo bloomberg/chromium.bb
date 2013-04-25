@@ -28,7 +28,7 @@
 
 #include <wtf/Noncopyable.h>
 
-#include "ContextMenuItem.h"
+#include "core/platform/ContextMenuItem.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

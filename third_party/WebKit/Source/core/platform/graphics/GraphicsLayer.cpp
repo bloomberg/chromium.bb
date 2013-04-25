@@ -27,7 +27,7 @@
 
 #include "core/platform/graphics/GraphicsLayer.h"
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"

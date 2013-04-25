@@ -29,7 +29,7 @@
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"
 #include "HTMLTreeBuilder.h"
-#include "LocalizedStrings.h"
+#include "core/platform/LocalizedStrings.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

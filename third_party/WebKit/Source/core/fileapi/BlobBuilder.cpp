@@ -36,8 +36,8 @@
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "File.h"
-#include "HistogramSupport.h"
 #include "ScriptCallStack.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/text/LineEnding.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/ArrayBuffer.h>

@@ -33,8 +33,8 @@
 
 #include "HTMLInputElement.h"
 #include "InputTypeNames.h"
-#include "LocalizedStrings.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
+#include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

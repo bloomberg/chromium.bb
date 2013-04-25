@@ -27,10 +27,10 @@
 #include "config.h"
 #include "core/platform/chromium/ScrollbarThemeChromium.h"
 
-#include "PlatformMouseEvent.h"
-#include "ScrollableArea.h"
-#include "Scrollbar.h"
-#include "ScrollbarThemeComposite.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/ScrollableArea.h"
+#include "core/platform/Scrollbar.h"
+#include "core/platform/ScrollbarThemeComposite.h"
 
 // -----------------------------------------------------------------------------
 // This file contains scrollbar theme code that is cross platform. Additional

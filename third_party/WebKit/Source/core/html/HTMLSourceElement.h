@@ -27,7 +27,7 @@
 #define HTMLSourceElement_h
 
 #include "HTMLElement.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 namespace WebCore {
 

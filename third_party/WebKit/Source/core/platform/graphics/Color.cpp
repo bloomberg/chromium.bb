@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/graphics/Color.h"
 
-#include "HashTools.h"
+#include "core/platform/HashTools.h"
 #include <wtf/Assertions.h>
 #include <wtf/DecimalNumber.h>
 #include <wtf/HexNumber.h>

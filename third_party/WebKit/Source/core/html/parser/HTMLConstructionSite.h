@@ -30,7 +30,7 @@
 #include "FragmentScriptingPermission.h"
 #include "HTMLElementStack.h"
 #include "HTMLFormattingElementList.h"
-#include "NotImplemented.h"
+#include "core/platform/NotImplemented.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

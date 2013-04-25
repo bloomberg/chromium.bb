@@ -27,7 +27,7 @@
 #ifndef WorkerLocation_h
 #define WorkerLocation_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

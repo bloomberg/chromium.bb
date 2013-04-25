@@ -26,7 +26,7 @@
 #ifndef WebScrollbarThemeClientImpl_h
 #define WebScrollbarThemeClientImpl_h
 
-#include "ScrollbarThemeClient.h"
+#include "core/platform/ScrollbarThemeClient.h"
 #include <public/WebScrollbar.h>
 #include <wtf/Noncopyable.h>
 

@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "DragImage.h"
+#include "core/platform/DragImage.h"
 
 #include "NativeImageSkia.h"
-#include "NotImplemented.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkMatrix.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Image.h"

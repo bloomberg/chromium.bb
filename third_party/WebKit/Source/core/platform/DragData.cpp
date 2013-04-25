@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "DragData.h"
+#include "core/platform/DragData.h"
 
-#include "PlatformEvent.h"
-#include "PlatformKeyboardEvent.h"
+#include "core/platform/PlatformEvent.h"
+#include "core/platform/PlatformKeyboardEvent.h"
 
 namespace WebCore {
 

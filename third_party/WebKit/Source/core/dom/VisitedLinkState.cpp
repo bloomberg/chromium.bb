@@ -34,7 +34,7 @@
 #include "HTMLNames.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "VisitedLinks.h"
+#include "core/platform/VisitedLinks.h"
 
 namespace WebCore {
 

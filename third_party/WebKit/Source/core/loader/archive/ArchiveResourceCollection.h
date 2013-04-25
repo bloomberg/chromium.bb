@@ -30,8 +30,8 @@
 #define ArchiveResourceCollection_h
 
 #include "ArchiveResource.h"
-#include "KURL.h"
 #include "MHTMLArchive.h"
+#include "core/platform/KURL.h"
 #include <wtf/text/WTFString.h>
 
 #include <wtf/HashMap.h>

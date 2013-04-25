@@ -30,10 +30,10 @@
 #include "ColorMac.h"
 #include "LocalCurrentGraphicsContext.h"
 #include "NSScrollerImpDetails.h"
-#include "PlatformMouseEvent.h"
 #include "ScrollAnimatorMac.h"
-#include "ScrollView.h"
 #include "WebCoreSystemInterface.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/ScrollView.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include <wtf/HashMap.h>

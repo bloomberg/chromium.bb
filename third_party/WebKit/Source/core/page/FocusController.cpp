@@ -53,12 +53,12 @@
 #include "Range.h"
 #include "RenderObject.h"
 #include "RenderWidget.h"
-#include "ScrollAnimator.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "SpatialNavigation.h"
-#include "Widget.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/ScrollAnimator.h"
+#include "core/platform/Widget.h"
 #include "htmlediting.h" // For firstPositionInOrBeforeNode
 
 namespace WebCore {

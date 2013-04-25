@@ -32,12 +32,12 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "InlineTextBox.h"
-#include "Logging.h"
 #include "Range.h"
 #include "RenderBlock.h"
 #include "RootInlineBox.h"
 #include "Text.h"
 #include "VisibleUnits.h"
+#include "core/platform/Logging.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "htmlediting.h"
 #include <wtf/text/CString.h>

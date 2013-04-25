@@ -33,10 +33,10 @@
 #include "FrameLoaderClientImpl.h"
 
 #include "FrameLoader.h"
-#include "KURL.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/platform/KURL.h"
 
 #include <gtest/gtest.h>
 #include <wtf/text/WTFString.h>

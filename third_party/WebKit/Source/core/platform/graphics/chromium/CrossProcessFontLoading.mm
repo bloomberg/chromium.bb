@@ -31,7 +31,7 @@
 
 #import <AppKit/NSFont.h>
 #import "../graphics/FontPlatformData.h"
-#include "LinkHash.h"
+#include "core/platform/LinkHash.h"
 #import <public/mac/WebSandboxSupport.h>
 #import <public/Platform.h>
 #import <wtf/HashMap.h>

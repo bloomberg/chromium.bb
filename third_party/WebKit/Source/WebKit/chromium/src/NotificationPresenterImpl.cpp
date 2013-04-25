@@ -33,10 +33,10 @@
 
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
-#include "KURL.h"
 #include "Notification.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
 
 #include "WebNotification.h"
 #include "WebNotificationPermissionCallback.h"

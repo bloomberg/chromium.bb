@@ -36,10 +36,10 @@
 #include "CachedResourceRequest.h"
 #include "CachedResourceRequestInitiators.h"
 #include "Document.h"
-#include "KURL.h"
 #include "StyleCachedShader.h"
 #include "StylePendingShader.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

@@ -36,7 +36,6 @@
 #include "HTMLSelectElement.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "PopupMenu.h"
 #include "RenderBR.h"
 #include "RenderScrollbar.h"
 #include "RenderTheme.h"
@@ -44,6 +43,7 @@
 #include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityMenuList.h"
+#include "core/platform/PopupMenu.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/TextRun.h"
 

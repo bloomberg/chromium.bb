@@ -24,7 +24,7 @@
 
 #include "OverlapTestRequestClient.h"
 #include "RenderReplaced.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
 namespace WebCore {
 

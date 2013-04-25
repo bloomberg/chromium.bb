@@ -28,8 +28,8 @@
 #include <public/WebScrollbarThemePainter.h>
 
 #include "PlatformContextSkia.h"
-#include "Scrollbar.h"
-#include "ScrollbarThemeComposite.h"
+#include "core/platform/Scrollbar.h"
+#include "core/platform/ScrollbarThemeComposite.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;

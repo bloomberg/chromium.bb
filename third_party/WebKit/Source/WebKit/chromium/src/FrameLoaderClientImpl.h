@@ -33,8 +33,8 @@
 #define FrameLoaderClientImpl_h
 
 #include "FrameLoaderClient.h"
-#include "KURL.h"
 #include "WebNavigationPolicy.h"
+#include "core/platform/KURL.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

@@ -32,8 +32,8 @@
 #define ENABLE_SATURATED_LAYOUT_ARITHMETIC 1
 #include "config.h"
 
-#include "LayoutUnit.h"
 #include <gtest/gtest.h>
+#include "core/platform/LayoutUnit.h"
 
 using namespace WebCore;
 

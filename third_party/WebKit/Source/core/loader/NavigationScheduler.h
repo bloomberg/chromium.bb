@@ -31,7 +31,7 @@
 #ifndef NavigationScheduler_h
 #define NavigationScheduler_h
 
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>

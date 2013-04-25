@@ -33,12 +33,12 @@
 
 #include "PluginViewBase.h"
 #include "WebPluginContainer.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 struct NPObject;
 

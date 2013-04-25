@@ -29,9 +29,9 @@
 #import <Carbon/Carbon.h>
 #import "BlockExceptions.h"
 #import "LocalCurrentGraphicsContext.h"
-#import "ScrollView.h"
 #import "WebCoreNSCellExtras.h"
 #import "WebCoreSystemInterface.h"
+#import "core/platform/ScrollView.h"
 #import "core/platform/graphics/GraphicsContext.h"
 #include <wtf/StdLibExtras.h>
 

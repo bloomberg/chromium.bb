@@ -30,14 +30,14 @@
 #define AnimationControllerPrivate_h
 
 #include "CSSPropertyNames.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

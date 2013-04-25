@@ -26,7 +26,7 @@
 #ifndef GraphicsContext3D_h
 #define GraphicsContext3D_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntRect.h"

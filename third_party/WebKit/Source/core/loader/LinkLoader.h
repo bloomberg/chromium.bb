@@ -35,8 +35,8 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "LinkLoaderClient.h"
-#include "PrerenderClient.h"
-#include "Timer.h"
+#include "core/platform/PrerenderClient.h"
+#include "core/platform/Timer.h"
 
 #include <wtf/RefPtr.h>
 

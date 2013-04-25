@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Gamepads.h"
+#include "core/platform/Gamepads.h"
 
 #include "GamepadList.h"
 #include <public/Platform.h>

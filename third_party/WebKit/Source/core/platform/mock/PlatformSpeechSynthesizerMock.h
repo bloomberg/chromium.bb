@@ -28,8 +28,8 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "PlatformSpeechSynthesizer.h"
-#include "Timer.h"
+#include "core/platform/PlatformSpeechSynthesizer.h"
+#include "core/platform/Timer.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

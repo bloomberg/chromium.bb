@@ -22,7 +22,7 @@
 #define MouseEventWithHitTestResults_h
 
 #include "HitTestResult.h"
-#include "PlatformMouseEvent.h"
+#include "core/platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

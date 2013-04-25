@@ -38,13 +38,13 @@
 #include "HTMLTemplateElement.h"
 #include "HTMLToken.h"
 #include "HTMLTokenizer.h"
-#include "LocalizedStrings.h"
 #include "MathMLNames.h"
-#include "NotImplemented.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/platform/LocalizedStrings.h"
+#include "core/platform/NotImplemented.h"
 #include <wtf/MainThread.h>
 #include <wtf/unicode/CharacterNames.h>
 

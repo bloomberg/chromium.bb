@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "Sound.h"
+#include "core/platform/Sound.h"
 
-#include "NotImplemented.h"
+#include "core/platform/NotImplemented.h"
 
 namespace WebCore {
 

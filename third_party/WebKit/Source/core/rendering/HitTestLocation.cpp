@@ -38,7 +38,7 @@
 #include "RenderBlock.h"
 #include "RenderImage.h"
 #include "RenderInline.h"
-#include "Scrollbar.h"
+#include "core/platform/Scrollbar.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

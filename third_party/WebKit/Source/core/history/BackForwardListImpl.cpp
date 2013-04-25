@@ -31,9 +31,9 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "HistoryItem.h"
-#include "Logging.h"
 #include "Page.h"
 #include "SerializedScriptValue.h"
+#include "core/platform/Logging.h"
 
 using namespace std;
 

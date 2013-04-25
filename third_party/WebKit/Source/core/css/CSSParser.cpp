@@ -57,12 +57,9 @@
 #include "CSSVariableValue.h"
 #include "Counter.h"
 #include "Document.h"
-#include "FloatConversion.h"
 #include "FontFeatureValue.h"
 #include "FontValue.h"
 #include "HTMLParserIdioms.h"
-#include "HashTools.h"
-#include "HistogramSupport.h"
 #include "MediaList.h"
 #include "MediaQueryExp.h"
 #include "Page.h"
@@ -83,6 +80,9 @@
 #include "WebKitCSSKeyframesRule.h"
 #include "WebKitCSSRegionRule.h"
 #include "WebKitCSSTransformValue.h"
+#include "core/platform/FloatConversion.h"
+#include "core/platform/HashTools.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/BitArray.h>
 #include <wtf/dtoa.h>

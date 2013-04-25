@@ -30,7 +30,7 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLIFrameElement.h"
-#include "PlatformMouseEvent.h"
+#include "core/platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

@@ -34,8 +34,8 @@
 
 #include "config.h"
 
-#include "SharedBuffer.h"
 #include "SkTypeface.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"
 #include <wtf/Forward.h>

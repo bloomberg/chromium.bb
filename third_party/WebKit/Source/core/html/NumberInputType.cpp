@@ -40,8 +40,8 @@
 #include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
-#include "LocalizedStrings.h"
 #include "RenderTextControl.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/MathExtras.h>

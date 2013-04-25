@@ -26,7 +26,7 @@
 #ifndef ContextMenuClient_h
 #define ContextMenuClient_h
 
-#include "ContextMenu.h"
+#include "core/platform/ContextMenu.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 

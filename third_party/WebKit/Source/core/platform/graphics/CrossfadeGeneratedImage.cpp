@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"

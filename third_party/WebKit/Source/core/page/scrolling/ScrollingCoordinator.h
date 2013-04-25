@@ -26,9 +26,9 @@
 #ifndef ScrollingCoordinator_h
 #define ScrollingCoordinator_h
 
-#include "PlatformWheelEvent.h"
 #include "RenderObject.h"
-#include "ScrollTypes.h"
+#include "core/platform/PlatformWheelEvent.h"
+#include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
 

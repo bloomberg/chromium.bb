@@ -40,7 +40,6 @@
 #include "HTMLNames.h"
 #include "HTMLParamElement.h"
 #include "HTMLParserIdioms.h"
-#include "MIMETypeRegistry.h"
 #include "NodeList.h"
 #include "NodeTraversal.h"
 #include "Page.h"
@@ -51,7 +50,8 @@
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "Text.h"
-#include "Widget.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/Widget.h"
 
 namespace WebCore {
 

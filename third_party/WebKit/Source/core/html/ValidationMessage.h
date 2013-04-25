@@ -31,7 +31,7 @@
 #ifndef ValidationMessage_h
 #define ValidationMessage_h
 
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefPtr.h>

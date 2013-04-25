@@ -32,8 +32,8 @@
 #include "PagePopupController.h"
 
 #if ENABLE(PAGE_POPUP)
-#include "HistogramSupport.h"
 #include "PagePopupClient.h"
+#include "core/platform/HistogramSupport.h"
 #include "core/platform/text/PlatformLocale.h"
 
 namespace WebCore {

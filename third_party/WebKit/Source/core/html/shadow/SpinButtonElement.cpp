@@ -35,8 +35,8 @@
 #include "MouseEvent.h"
 #include "Page.h"
 #include "RenderBox.h"
-#include "ScrollbarTheme.h"
 #include "WheelEvent.h"
+#include "core/platform/ScrollbarTheme.h"
 
 namespace WebCore {
 

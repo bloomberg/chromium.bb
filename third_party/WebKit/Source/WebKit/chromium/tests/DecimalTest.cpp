@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "Decimal.h"
+#include "core/platform/Decimal.h"
 
 #include <gtest/gtest.h>
 #include <wtf/MathExtras.h>

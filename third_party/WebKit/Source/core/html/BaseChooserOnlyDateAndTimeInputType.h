@@ -29,8 +29,8 @@
 #if !ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "BaseClickableWithKeyInputType.h"
 #include "BaseDateAndTimeInputType.h"
-#include "DateTimeChooser.h"
-#include "DateTimeChooserClient.h"
+#include "core/platform/DateTimeChooser.h"
+#include "core/platform/DateTimeChooserClient.h"
 
 namespace WebCore {
 

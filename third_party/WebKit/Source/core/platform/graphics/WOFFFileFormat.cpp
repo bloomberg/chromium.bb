@@ -29,7 +29,7 @@
 
 #if !USE(OPENTYPE_SANITIZER)
 
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include <wtf/ByteOrder.h>
 
 namespace WebCore {

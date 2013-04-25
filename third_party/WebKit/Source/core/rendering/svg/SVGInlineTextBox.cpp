@@ -23,7 +23,6 @@
 #include "SVGInlineTextBox.h"
 
 #if ENABLE(SVG)
-#include "FloatConversion.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HitTestResult.h"
@@ -37,6 +36,7 @@
 #include "SVGResourcesCache.h"
 #include "SVGRootInlineBox.h"
 #include "SVGTextRunRenderingContext.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 

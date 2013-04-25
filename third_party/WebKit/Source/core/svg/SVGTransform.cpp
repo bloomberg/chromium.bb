@@ -23,9 +23,9 @@
 #if ENABLE(SVG)
 #include "SVGTransform.h"
 
-#include "FloatConversion.h"
 #include "SVGAngle.h"
 #include "SVGSVGElement.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatSize.h"
 #include <wtf/MathExtras.h>

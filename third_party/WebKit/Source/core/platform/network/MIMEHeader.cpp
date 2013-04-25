@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/network/MIMEHeader.h"
 
-#include "SharedBufferChunkReader.h"
+#include "core/platform/SharedBufferChunkReader.h"
 #include "core/platform/network/ParsedContentType.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/CString.h>

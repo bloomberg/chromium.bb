@@ -34,8 +34,8 @@
 
 #include "WebMediaStreamRegistry.h"
 
-#include "KURL.h"
 #include "MediaStreamRegistry.h"
+#include "core/platform/KURL.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 #include <public/WebMediaStream.h>
 #include <public/WebString.h>

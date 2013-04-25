@@ -22,7 +22,7 @@
 #ifndef LengthBox_h
 #define LengthBox_h
 
-#include "Length.h"
+#include "core/platform/Length.h"
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/WritingMode.h"
 

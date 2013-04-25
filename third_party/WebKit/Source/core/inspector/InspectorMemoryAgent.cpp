@@ -45,23 +45,23 @@
 #include "InstrumentingAgents.h"
 #include "MemoryCache.h"
 #include "MemoryInstrumentationImpl.h"
-#include "MemoryUsageSupport.h"
 #include "Node.h"
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "ScriptGCEvent.h"
 #include "ScriptProfiler.h"
 #include "StyledElement.h"
+#include "core/platform/MemoryUsageSupport.h"
 #include <wtf/ArrayBufferView.h>
 #include <wtf/HashSet.h>
 #include <wtf/MemoryInstrumentationArrayBufferView.h>
 #include <wtf/NonCopyingSort.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringImpl.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 // Use a type alias instead of 'using' here which would cause a conflict on Mac.
 typedef WebCore::TypeBuilder::Memory::MemoryBlock InspectorMemoryBlock;

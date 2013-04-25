@@ -23,9 +23,9 @@
 #include "CSSRule.h"
 
 #include "CSSStyleSheet.h"
-#include "NotImplemented.h"
 #include "StyleRule.h"
 #include "StyleSheetContents.h"
+#include "core/platform/NotImplemented.h"
 
 namespace WebCore {
 

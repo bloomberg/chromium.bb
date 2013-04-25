@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 
-#include "KURL.h"
-#include "Pasteboard.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Pasteboard.h"
 
 #include <public/WebClipboard.h>
 #include <wtf/text/StringBuilder.h>

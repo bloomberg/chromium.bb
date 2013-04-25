@@ -32,7 +32,7 @@
 #define TimelineRecordFactory_h
 
 #include "InspectorValues.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>

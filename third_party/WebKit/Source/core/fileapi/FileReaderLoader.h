@@ -32,8 +32,8 @@
 #define FileReaderLoader_h
 
 #include "FileError.h"
-#include "KURL.h"
 #include "ThreadableLoaderClient.h"
+#include "core/platform/KURL.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>

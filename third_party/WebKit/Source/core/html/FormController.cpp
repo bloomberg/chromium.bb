@@ -21,10 +21,10 @@
 #include "config.h"
 #include "FormController.h"
 
-#include "FileChooser.h"
 #include "HTMLFormControlElementWithState.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
+#include "core/platform/FileChooser.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

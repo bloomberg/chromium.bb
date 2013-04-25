@@ -30,8 +30,8 @@
 #include "ContextDestructionObserver.h"
 #include "EventTarget.h"
 #include "FrameDestructionObserver.h"
-#include "KURL.h"
-#include "Supplementable.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Supplementable.h"
 
 namespace WebCore {
 

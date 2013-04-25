@@ -31,8 +31,8 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "MouseRelatedEvent.h"
-#include "PlatformEvent.h"
-#include "PlatformGestureEvent.h"
+#include "core/platform/PlatformEvent.h"
+#include "core/platform/PlatformGestureEvent.h"
 
 namespace WebCore {
 

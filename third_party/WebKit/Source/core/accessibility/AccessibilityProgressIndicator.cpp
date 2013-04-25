@@ -21,9 +21,9 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityProgressIndicator.h"
 
-#include "FloatConversion.h"
 #include "HTMLProgressElement.h"
 #include "RenderProgress.h"
+#include "core/platform/FloatConversion.h"
 
 namespace WebCore {
     

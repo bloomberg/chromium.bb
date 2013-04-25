@@ -27,8 +27,8 @@
 #include "CachedResourceHandle.h"
 #include "ClipboardAccessPolicy.h"
 #include "DragActions.h"
-#include "DragImage.h"
 #include "Node.h"
+#include "core/platform/DragImage.h"
 #include "core/platform/graphics/IntPoint.h"
 
 namespace WebCore {

@@ -26,8 +26,8 @@
 #ifndef ArenaTestHelpers_h
 #define ArenaTestHelpers_h
 
-#include "PODArena.h"
 #include <gtest/gtest.h>
+#include "core/platform/PODArena.h"
 #include <wtf/NotFound.h>
 #include <wtf/Vector.h>
 

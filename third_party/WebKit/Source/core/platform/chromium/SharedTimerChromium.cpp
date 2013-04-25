@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SharedTimer.h"
+#include "core/platform/SharedTimer.h"
 
 #include <public/Platform.h>
 

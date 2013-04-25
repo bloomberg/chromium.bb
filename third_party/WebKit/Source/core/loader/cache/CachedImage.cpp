@@ -36,7 +36,7 @@
 #include "ResourceLoader.h"
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

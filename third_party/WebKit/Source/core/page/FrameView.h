@@ -29,7 +29,7 @@
 #include "Frame.h"
 #include "Pagination.h"
 #include "PaintPhase.h"
-#include "ScrollView.h"
+#include "core/platform/ScrollView.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Forward.h>

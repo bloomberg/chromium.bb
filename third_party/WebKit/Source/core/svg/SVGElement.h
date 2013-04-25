@@ -27,7 +27,7 @@
 #include "SVGParsingError.h"
 #include "SVGPropertyInfo.h"
 #include "StyledElement.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

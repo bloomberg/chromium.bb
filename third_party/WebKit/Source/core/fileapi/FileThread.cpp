@@ -32,7 +32,7 @@
 
 #include "FileThread.h"
 
-#include "Logging.h"
+#include "core/platform/Logging.h"
 #include <wtf/AutodrainedPool.h>
 
 namespace WebCore {

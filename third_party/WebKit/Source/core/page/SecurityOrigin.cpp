@@ -31,11 +31,11 @@
 
 #include "BlobURL.h"
 #include "Document.h"
-#include "FileSystem.h"
-#include "KURL.h"
-#include "SchemeRegistry.h"
 #include "SecurityPolicy.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/KURL.h"
+#include "core/platform/SchemeRegistry.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

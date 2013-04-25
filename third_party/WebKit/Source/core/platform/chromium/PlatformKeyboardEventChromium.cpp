@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "PlatformKeyboardEvent.h"
+#include "core/platform/PlatformKeyboardEvent.h"
 
 #if OS(WINDOWS)
 #include <windows.h>
 #elif OS(DARWIN)
 #import <Carbon/Carbon.h>
 #else
-#include "NotImplemented.h"
+#include "core/platform/NotImplemented.h"
 #endif
 
 namespace WebCore {

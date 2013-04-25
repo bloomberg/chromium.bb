@@ -31,7 +31,7 @@
 #include "config.h"
 #include "InspectorCounters.h"
 
-#include "ThreadGlobalData.h"
+#include "core/platform/ThreadGlobalData.h"
 
 namespace WebCore {
 

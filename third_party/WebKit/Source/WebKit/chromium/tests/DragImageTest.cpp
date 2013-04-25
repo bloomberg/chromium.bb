@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "DragImage.h"
+#include "core/platform/DragImage.h"
 
 #include <gtest/gtest.h>
 #include "NativeImageSkia.h"

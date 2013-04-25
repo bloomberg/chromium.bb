@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebIconLoadingCompletionImpl.h"
 
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Icon.h"
 

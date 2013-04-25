@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "MIMETypeRegistry.h"
+#include "core/platform/MIMETypeRegistry.h"
 
 #include "PluginData.h"
 #include "core/platform/graphics/MediaPlayer.h"

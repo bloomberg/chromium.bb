@@ -31,7 +31,7 @@
 
 #include "Event.h"
 #include "FrameLoaderTypes.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/Forward.h>
 

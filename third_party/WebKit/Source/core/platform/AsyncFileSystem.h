@@ -32,8 +32,8 @@
 #define AsyncFileSystem_h
 
 #include "FileSystemType.h"
-#include "KURL.h"
-#include "Timer.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Timer.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 

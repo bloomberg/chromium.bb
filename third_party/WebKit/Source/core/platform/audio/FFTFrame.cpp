@@ -36,8 +36,8 @@
 #include <stdio.h>
 #endif
 
-#include "Logging.h"
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/Logging.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include <wtf/Complex.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryObjectInfo.h>

@@ -28,7 +28,7 @@
 #define ResourceResponse_h
 
 #include "File.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/ResourceLoadInfo.h"
 #include "core/platform/network/ResourceLoadTiming.h"

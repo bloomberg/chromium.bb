@@ -30,8 +30,8 @@
 #include "EventListener.h"
 #include "EventNames.h"
 #include "EventTarget.h"
-#include "Timer.h"
 #include "VoidCallback.h"
+#include "core/platform/Timer.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

@@ -30,10 +30,10 @@
  */
 
 #include "config.h"
-#include "PrerenderHandle.h"
+#include "core/platform/PrerenderHandle.h"
 
-#include "KURL.h"
-#include "ReferrerPolicy.h"
+#include "core/platform/KURL.h"
+#include "core/platform/ReferrerPolicy.h"
 #include "core/platform/chromium/Prerender.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>

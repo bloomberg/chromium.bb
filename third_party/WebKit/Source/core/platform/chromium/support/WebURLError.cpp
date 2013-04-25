@@ -31,7 +31,7 @@
 #include "config.h"
 #include <public/WebURLError.h>
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceError.h"
 #include <wtf/text/CString.h>
 

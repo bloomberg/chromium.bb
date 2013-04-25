@@ -25,15 +25,15 @@
 #define HTMLLinkElement_h
 
 #include "CSSStyleSheet.h"
-#include "CachedStyleSheetClient.h"
 #include "CachedResourceHandle.h"
+#include "CachedStyleSheetClient.h"
 #include "DOMSettableTokenList.h"
 #include "HTMLElement.h"
 #include "IconURL.h"
 #include "LinkLoader.h"
 #include "LinkLoaderClient.h"
 #include "LinkRelAttribute.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 namespace WebCore {
 

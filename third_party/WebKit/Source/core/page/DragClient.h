@@ -28,7 +28,7 @@
 #define DragClient_h
 
 #include "DragActions.h"
-#include "DragImage.h"
+#include "core/platform/DragImage.h"
 #include "core/platform/graphics/IntPoint.h"
 
 namespace WebCore {

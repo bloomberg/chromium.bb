@@ -33,12 +33,12 @@
 #include "FrameView.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "KURL.h"
 #include "Page.h"
 #include "RenderPart.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

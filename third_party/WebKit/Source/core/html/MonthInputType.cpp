@@ -31,10 +31,10 @@
 #include "config.h"
 #include "MonthInputType.h"
 
-#include "DateComponents.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
+#include "core/platform/DateComponents.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
@@ -42,7 +42,7 @@
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeFieldsState.h"
-#include "LocalizedStrings.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/WTFString.h>
 #endif

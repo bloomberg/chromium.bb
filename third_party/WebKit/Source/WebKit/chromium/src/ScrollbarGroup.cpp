@@ -27,9 +27,9 @@
 #include "ScrollbarGroup.h"
 
 #include "FrameView.h"
-#include "Scrollbar.h"
-#include "ScrollbarTheme.h"
 #include "WebPluginScrollbarImpl.h"
+#include "core/platform/Scrollbar.h"
+#include "core/platform/ScrollbarTheme.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;

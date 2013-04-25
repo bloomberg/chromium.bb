@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/platform/graphics/BitmapImage.h"
 
-#include "MIMETypeRegistry.h"
-#include "PlatformMemoryInstrumentation.h"
-#include "Timer.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"

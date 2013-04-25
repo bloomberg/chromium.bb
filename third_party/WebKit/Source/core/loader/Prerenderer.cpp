@@ -35,11 +35,11 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "PrerenderHandle.h"
 #include "PrerendererClient.h"
-#include "ReferrerPolicy.h"
 #include "SecurityPolicy.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/PrerenderHandle.h"
+#include "core/platform/ReferrerPolicy.h"
 
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/PassOwnPtr.h>

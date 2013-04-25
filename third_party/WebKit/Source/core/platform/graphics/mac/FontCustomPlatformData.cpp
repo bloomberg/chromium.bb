@@ -22,7 +22,7 @@
 #include "FontCustomPlatformData.h"
 
 #include <ApplicationServices/ApplicationServices.h>
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/WOFFFileFormat.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"

@@ -26,7 +26,7 @@
 #ifndef ThemeMac_h
 #define ThemeMac_h
 
-#include "Theme.h"
+#include "core/platform/Theme.h"
 
 @interface NSFont(WebCoreTheme)
 - (NSString*)webCoreFamilyName;

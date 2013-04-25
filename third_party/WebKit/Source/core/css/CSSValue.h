@@ -22,7 +22,7 @@
 #define CSSValue_h
 
 #include "ExceptionCode.h"
-#include "KURLHash.h"
+#include "core/platform/KURLHash.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

@@ -32,9 +32,9 @@
 #define WebDataSourceImpl_h
 
 #include "DocumentLoader.h"
-#include "KURL.h"
 #include "WebDataSource.h"
 #include "WebPluginLoadObserver.h"
+#include "core/platform/KURL.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <wtf/OwnPtr.h>

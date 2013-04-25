@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "ThreadGlobalData.h"
+#include "core/platform/ThreadGlobalData.h"
 
 #include "CachedResourceRequestInitiators.h"
 #include "EventNames.h"
 #include "InspectorCounters.h"
-#include "ThreadTimers.h"
+#include "core/platform/ThreadTimers.h"
 #include <wtf/MainThread.h>
 #include <wtf/text/StringImpl.h>
 #include <wtf/UnusedParam.h>

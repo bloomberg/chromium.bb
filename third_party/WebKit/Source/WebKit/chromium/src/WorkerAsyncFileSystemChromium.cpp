@@ -31,11 +31,7 @@
 #include "config.h"
 #include "WorkerAsyncFileSystemChromium.h"
 
-#include "AsyncFileSystemCallbacks.h"
 #include "BlobURL.h"
-#include "FileMetadata.h"
-#include "FileSystem.h"
-#include "NotImplemented.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebFileWriter.h"
 #include "WorkerAsyncFileWriterChromium.h"
@@ -43,6 +39,10 @@
 #include "WorkerFileSystemCallbacksBridge.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/platform/AsyncFileSystemCallbacks.h"
+#include "core/platform/FileMetadata.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/NotImplemented.h"
 #include <public/WebFileSystem.h>
 #include <wtf/text/CString.h>
 

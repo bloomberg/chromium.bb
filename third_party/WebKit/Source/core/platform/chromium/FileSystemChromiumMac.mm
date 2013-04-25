@@ -29,7 +29,7 @@
  */
 
 #import "config.h"
-#import "FileSystem.h"
+#import "core/platform/FileSystem.h"
 
 #import <Foundation/NSFileManager.h>
 #import <wtf/text/WTFString.h>

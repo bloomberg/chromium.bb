@@ -36,14 +36,14 @@
 #include "SharedWorker.h"
 
 #include "ExceptionCode.h"
-#include "UseCounter.h"
 #include "InspectorInstrumentation.h"
-#include "KURL.h"
 #include "MessageChannel.h"
 #include "MessagePort.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "SharedWorkerRepository.h"
+#include "UseCounter.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

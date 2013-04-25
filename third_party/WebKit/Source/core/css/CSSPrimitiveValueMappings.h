@@ -41,11 +41,11 @@
 #if ENABLE(CSS_IMAGE_ORIENTATION)
 #include "core/platform/graphics/ImageOrientation.h"
 #endif
-#include "Length.h"
 #include "LineClampValue.h"
 #include "RenderStyleConstants.h"
 #include "SVGRenderStyleDefs.h"
-#include "ThemeTypes.h"
+#include "core/platform/Length.h"
+#include "core/platform/ThemeTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/TextRenderingMode.h"
 #include "core/platform/text/TextDirection.h"

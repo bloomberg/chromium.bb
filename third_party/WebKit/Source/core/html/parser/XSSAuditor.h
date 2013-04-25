@@ -27,7 +27,7 @@
 #define XSSAuditor_h
 
 #include "HTMLToken.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/text/SuffixTree.h"
 #include "core/platform/text/TextEncoding.h"

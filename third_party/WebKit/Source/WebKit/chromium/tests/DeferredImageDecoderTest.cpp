@@ -30,10 +30,10 @@
 #include <gtest/gtest.h>
 #include "MockImageDecoder.h"
 #include "NativeImageSkia.h"
-#include "SharedBuffer.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPicture.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

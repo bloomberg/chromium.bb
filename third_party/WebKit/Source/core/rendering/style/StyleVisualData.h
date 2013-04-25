@@ -25,10 +25,10 @@
 #ifndef StyleVisualData_h
 #define StyleVisualData_h
 
-#include "LengthBox.h"
 #include "RenderStyleConstants.h"
-#include <wtf/RefCounted.h>
+#include "core/platform/LengthBox.h"
 #include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 

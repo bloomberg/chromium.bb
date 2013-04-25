@@ -43,13 +43,13 @@
 
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 
-#include "FloatConversion.h"
 #include "NativeImageSkia.h"
 #include "PlatformContextSkia.h"
-#include "PlatformMemoryInstrumentation.h"
-#include "ScrollableArea.h"
 #include "SkImageFilter.h"
 #include "SkMatrix44.h"
+#include "core/platform/FloatConversion.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayerFactory.h"

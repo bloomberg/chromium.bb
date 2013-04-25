@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityScrollbar.h"
 
-#include "ScrollView.h"
+#include "core/platform/ScrollView.h"
 
 namespace WebCore {
 

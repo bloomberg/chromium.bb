@@ -31,7 +31,6 @@
 #include "config.h"
 #include "DatabaseObserver.h"
 
-#include "CrossThreadCopier.h"
 #include "CrossThreadTask.h"
 #include "DatabaseBackendBase.h"
 #include "DatabaseBackendContext.h"
@@ -50,6 +49,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/platform/CrossThreadCopier.h"
 
 using namespace WebKit;
 

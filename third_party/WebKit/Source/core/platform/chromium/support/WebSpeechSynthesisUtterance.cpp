@@ -29,7 +29,7 @@
 
 #include <public/WebSpeechSynthesisUtterance.h>
 
-#include "PlatformSpeechSynthesisUtterance.h"
+#include "core/platform/PlatformSpeechSynthesisUtterance.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 

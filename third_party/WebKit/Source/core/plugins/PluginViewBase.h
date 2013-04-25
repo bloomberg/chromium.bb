@@ -25,8 +25,8 @@
 #ifndef PluginWidget_h
 #define PluginWidget_h
 
-#include "ScrollTypes.h"
-#include "Widget.h"
+#include "core/platform/ScrollTypes.h"
+#include "core/platform/Widget.h"
 #include "core/platform/graphics/PlatformLayer.h"
 #include <wtf/text/WTFString.h>
 

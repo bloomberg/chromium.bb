@@ -23,10 +23,7 @@
 #include "Chrome.h"
 
 #include "ChromeClient.h"
-#include "DateTimeChooser.h"
 #include "Document.h"
-#include "FileChooser.h"
-#include "FileIconLoader.h"
 #include "FileList.h"
 #include "Frame.h"
 #include "FrameTree.h"
@@ -43,6 +40,9 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "WindowFeatures.h"
+#include "core/platform/DateTimeChooser.h"
+#include "core/platform/FileChooser.h"
+#include "core/platform/FileIconLoader.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/network/DNS.h"
@@ -54,7 +54,7 @@
 #include <wtf/Vector.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
-#include "ColorChooser.h"
+#include "core/platform/ColorChooser.h"
 #endif
 
 namespace WebCore {

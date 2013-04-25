@@ -31,7 +31,7 @@
 #ifndef LayoutBoxExtent_h
 #define LayoutBoxExtent_h
 
-#include "LayoutUnit.h"
+#include "core/platform/LayoutUnit.h"
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/WritingMode.h"
 

@@ -26,7 +26,7 @@
 #ifndef EventSender_h
 #define EventSender_h
 
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

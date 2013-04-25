@@ -46,7 +46,7 @@
 
 #include "PaintInfo.h"
 #include "RenderBox.h"
-#include "ScrollableArea.h"
+#include "core/platform/ScrollableArea.h"
 #include <wtf/OwnPtr.h>
 
 #include "RenderLayerFilterInfo.h"

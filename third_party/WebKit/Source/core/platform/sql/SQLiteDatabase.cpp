@@ -29,7 +29,7 @@
 
 #include <sqlite3.h>
 #include "DatabaseAuthorizer.h"
-#include "Logging.h"
+#include "core/platform/Logging.h"
 #include "core/platform/sql/SQLiteFileSystem.h"
 #include "core/platform/sql/SQLiteStatement.h"
 #include <wtf/text/CString.h>

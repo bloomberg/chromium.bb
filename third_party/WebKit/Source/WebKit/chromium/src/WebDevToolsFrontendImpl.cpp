@@ -32,7 +32,6 @@
 #include "WebDevToolsFrontendImpl.h"
 
 #include "ContextMenuController.h"
-#include "ContextMenuItem.h"
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Event.h"
@@ -42,7 +41,6 @@
 #include "InspectorFrontendHost.h"
 #include "Node.h"
 #include "Page.h"
-#include "Pasteboard.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
@@ -56,9 +54,11 @@
 #include "WebFrameImpl.h"
 #include "WebScriptSource.h"
 #include "WebViewImpl.h"
+#include "core/platform/ContextMenuItem.h"
+#include "core/platform/Pasteboard.h"
 #include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 using namespace WebCore;
 

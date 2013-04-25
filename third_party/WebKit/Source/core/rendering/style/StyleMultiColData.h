@@ -26,8 +26,8 @@
 #define StyleMultiColData_h
 
 #include "BorderValue.h"
-#include "Length.h"
 #include "RenderStyleConstants.h"
+#include "core/platform/Length.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

@@ -33,7 +33,7 @@
 
 #include <algorithm>
 
-#include "PlatformInstrumentation.h"
+#include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/image-decoders/bmp/BMPImageReader.h"
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 #include <wtf/PassOwnPtr.h>

@@ -35,11 +35,11 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "HTMLTemplateElement.h"
-#include "KURL.h"
 #include "ProcessingInstruction.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/platform/KURL.h"
 #include <wtf/unicode/CharacterNames.h>
 
 namespace WebCore {

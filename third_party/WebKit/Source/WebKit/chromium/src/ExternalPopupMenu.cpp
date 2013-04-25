@@ -32,11 +32,11 @@
 #include "ExternalPopupMenu.h"
 
 #include "FrameView.h"
-#include "PopupMenuClient.h"
 #include "WebExternalPopupMenu.h"
 #include "WebMenuItemInfo.h"
 #include "WebPopupMenuInfo.h"
 #include "WebViewClient.h"
+#include "core/platform/PopupMenuClient.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/text/TextDirection.h"
 #include <public/WebVector.h>

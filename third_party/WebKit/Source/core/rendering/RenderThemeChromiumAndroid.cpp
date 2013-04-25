@@ -27,14 +27,14 @@
 #include "RenderThemeChromiumAndroid.h"
 
 #include "CSSValueKeywords.h"
-#include "LayoutTestSupport.h"
 #include "PaintInfo.h"
 #include "RenderMediaControlsChromium.h"
 #include "RenderObject.h"
 #include "RenderProgress.h"
 #include "RenderSlider.h"
-#include "ScrollbarTheme.h"
 #include "UserAgentStyleSheets.h"
+#include "core/platform/LayoutTestSupport.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/Color.h"
 
 #include <public/android/WebThemeEngine.h>

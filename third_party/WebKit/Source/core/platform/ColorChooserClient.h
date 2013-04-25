@@ -3,7 +3,7 @@
 
 #if ENABLE(INPUT_TYPE_COLOR)
 
-#include "ColorChooser.h"
+#include "core/platform/ColorChooser.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

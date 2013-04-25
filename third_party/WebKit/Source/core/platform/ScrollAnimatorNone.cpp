@@ -30,13 +30,13 @@
 
 #include "config.h"
 
-#include "ScrollAnimatorNone.h"
+#include "core/platform/ScrollAnimatorNone.h"
 
 #include <algorithm>
-#include "NotImplemented.h"
-#include "PlatformGestureEvent.h"
-#include "ScrollableArea.h"
-#include "ScrollbarTheme.h"
+#include "core/platform/NotImplemented.h"
+#include "core/platform/PlatformGestureEvent.h"
+#include "core/platform/ScrollableArea.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/OwnArrayPtr.h>

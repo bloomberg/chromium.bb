@@ -32,8 +32,8 @@
 #ifndef Prerender_h
 #define Prerender_h
 
-#include "KURL.h"
-#include "ReferrerPolicy.h"
+#include "core/platform/KURL.h"
+#include "core/platform/ReferrerPolicy.h"
 #include <public/WebSize.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

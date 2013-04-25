@@ -32,7 +32,6 @@
 #include "WorkerFileSystemCallbacksBridge.h"
 
 #include "CrossThreadTask.h"
-#include "KURL.h"
 #include "WebCommonWorkerClient.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebWorkerBase.h"
@@ -40,6 +39,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
 #include <public/WebFileInfo.h>
 #include <public/WebFileSystemEntry.h>

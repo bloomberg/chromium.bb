@@ -34,7 +34,7 @@
 
 #include "core/platform/audio/FFTFrame.h"
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/VectorMath.h"
 
 extern "C" {

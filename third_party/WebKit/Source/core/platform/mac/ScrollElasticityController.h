@@ -28,7 +28,7 @@
 
 #if ENABLE(RUBBER_BANDING)
 
-#include "ScrollTypes.h"
+#include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatSize.h"
 #include <wtf/Noncopyable.h>

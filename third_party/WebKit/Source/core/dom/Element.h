@@ -30,8 +30,8 @@
 #include "Document.h"
 #include "FragmentScriptingPermission.h"
 #include "HTMLNames.h"
-#include "ScrollTypes.h"
 #include "SpaceSplitString.h"
+#include "core/platform/ScrollTypes.h"
 
 namespace WebCore {
 

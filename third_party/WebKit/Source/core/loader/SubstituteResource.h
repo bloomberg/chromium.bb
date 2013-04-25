@@ -28,8 +28,8 @@
 
 #include <wtf/RefCounted.h>
 
-#include "KURL.h"
-#include "SharedBuffer.h"
+#include "core/platform/KURL.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/RefPtr.h>

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 
-#include "ScrollbarTheme.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/chromium/FramelessScrollViewClient.h"
 
 namespace WebCore {

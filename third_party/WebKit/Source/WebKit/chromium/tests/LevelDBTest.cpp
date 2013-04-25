@@ -27,7 +27,7 @@
 
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 #include "core/platform/leveldb/LevelDBComparator.h"
 #include "core/platform/leveldb/LevelDBDatabase.h"
 #include "core/platform/leveldb/LevelDBIterator.h"

@@ -28,16 +28,16 @@
 // they may not be available to us in the multiprocess 
 
 #include "config.h"
-#include "DragData.h"
+#include "core/platform/DragData.h"
 
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DraggedIsolatedFileSystem.h"
-#include "FileSystem.h"
 #include "Frame.h"
-#include "KURL.h"
-#include "NotImplemented.h"
 #include "Range.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/KURL.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "markup.h"

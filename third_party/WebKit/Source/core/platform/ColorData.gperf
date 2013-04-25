@@ -1,5 +1,5 @@
 %{
-#include "HashTools.h"
+#include "core/platform/HashTools.h"
 #include <string.h>
 
 namespace WebCore {

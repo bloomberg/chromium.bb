@@ -30,8 +30,8 @@
 #include "CachedResourceClientWalker.h"
 #include "CachedResourceLoader.h"
 #include "ResourceLoader.h"
-#include "SharedBuffer.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/SharedBuffer.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

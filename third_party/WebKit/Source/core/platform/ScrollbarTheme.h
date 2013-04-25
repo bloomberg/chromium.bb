@@ -26,7 +26,7 @@
 #ifndef ScrollbarTheme_h
 #define ScrollbarTheme_h
 
-#include "ScrollTypes.h"
+#include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/IntRect.h"
 

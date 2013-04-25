@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "PlatformMemoryInstrumentation.h"
-#include "SharedBuffer.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/image-decoders/bmp/BMPImageDecoder.h"
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 #include "core/platform/image-decoders/ico/ICOImageDecoder.h"

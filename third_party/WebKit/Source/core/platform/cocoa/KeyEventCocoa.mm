@@ -26,8 +26,8 @@
 #import "config.h"
 #import "core/platform/cocoa/KeyEventCocoa.h"
 
-#import "Logging.h"
-#import "WindowsKeyboardCodes.h"
+#import "core/platform/Logging.h"
+#import "core/platform/WindowsKeyboardCodes.h"
 #import <wtf/ASCIICType.h>
 #import <wtf/text/WTFString.h>
 

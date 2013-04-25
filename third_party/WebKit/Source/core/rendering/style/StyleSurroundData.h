@@ -26,9 +26,9 @@
 #define StyleSurroundData_h
 
 #include "BorderData.h"
-#include "LengthBox.h"
-#include <wtf/RefCounted.h>
+#include "core/platform/LengthBox.h"
 #include <wtf/PassRefPtr.h>
+#include <wtf/RefCounted.h>
 
 namespace WebCore {
 

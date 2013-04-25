@@ -43,7 +43,7 @@
 #include "ResourceLoadNotifier.h"
 #include "SecurityContext.h"
 #include "SubframeLoader.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>

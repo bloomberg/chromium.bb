@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "VisitedLinks.h"
+#include "core/platform/VisitedLinks.h"
 
 #include <public/Platform.h>
 

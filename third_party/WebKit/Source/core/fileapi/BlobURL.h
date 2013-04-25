@@ -31,7 +31,7 @@
 #ifndef BlobURL_h
 #define BlobURL_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

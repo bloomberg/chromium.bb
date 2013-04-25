@@ -27,10 +27,10 @@
 
 #include "MediaController.h"
 
-#include "Clock.h"
 #include "ExceptionCode.h"
 #include "HTMLMediaElement.h"
 #include "TimeRanges.h"
+#include "core/platform/Clock.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/AtomicString.h>

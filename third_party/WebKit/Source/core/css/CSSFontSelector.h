@@ -27,7 +27,7 @@
 #define CSSFontSelector_h
 
 #include "CachedResourceHandle.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/FontSelector.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>

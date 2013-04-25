@@ -35,7 +35,7 @@
 
 #include <gtest/gtest.h>
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 
 namespace WTF {
 

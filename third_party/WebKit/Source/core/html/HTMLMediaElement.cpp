@@ -36,7 +36,6 @@
 #include "ClientRect.h"
 #include "ClientRectList.h"
 #include "ContentSecurityPolicy.h"
-#include "ContentType.h"
 #include "DiagnosticLoggingKeys.h"
 #include "DocumentLoader.h"
 #include "ElementShadow.h"
@@ -52,9 +51,6 @@
 #include "HTMLNames.h"
 #include "HTMLSourceElement.h"
 #include "HTMLVideoElement.h"
-#include "Language.h"
-#include "Logging.h"
-#include "MIMETypeRegistry.h"
 #include "MediaController.h"
 #include "MediaControls.h"
 #include "MediaDocument.h"
@@ -81,6 +77,10 @@
 #include "ShadowRoot.h"
 #include "TimeRanges.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/ContentType.h"
+#include "core/platform/Language.h"
+#include "core/platform/Logging.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>

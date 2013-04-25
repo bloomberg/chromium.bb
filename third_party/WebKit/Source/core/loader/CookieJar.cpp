@@ -31,9 +31,9 @@
 #include "config.h"
 #include "CookieJar.h"
 
-#include "Cookie.h"
 #include "Document.h"
 #include "Frame.h"
+#include "core/platform/Cookie.h"
 #include "core/platform/network/NetworkingContext.h"
 #include <public/Platform.h>
 #include <public/WebCookie.h>

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "TimeInputType.h"
 
-#include "DateComponents.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
+#include "core/platform/DateComponents.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>

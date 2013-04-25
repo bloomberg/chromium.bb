@@ -31,7 +31,7 @@
 #ifndef LayoutSize_h
 #define LayoutSize_h
 
-#include "LayoutUnit.h"
+#include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/IntSize.h"
 

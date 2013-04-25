@@ -30,11 +30,11 @@
 #include "config.h"
 #include "WebFileSystemCallbacksImpl.h"
 
-#include "AsyncFileSystemCallbacks.h"
 #include "AsyncFileSystemChromium.h"
-#include "FileMetadata.h"
 #include "ScriptExecutionContext.h"
 #include "WorkerAsyncFileSystemChromium.h"
+#include "core/platform/AsyncFileSystemCallbacks.h"
+#include "core/platform/FileMetadata.h"
 #include <public/WebFileInfo.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemEntry.h>

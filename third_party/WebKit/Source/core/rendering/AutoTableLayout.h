@@ -21,9 +21,9 @@
 #ifndef AutoTableLayout_h
 #define AutoTableLayout_h
 
-#include "LayoutUnit.h"
-#include "Length.h"
 #include "TableLayout.h"
+#include "core/platform/LayoutUnit.h"
+#include "core/platform/Length.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

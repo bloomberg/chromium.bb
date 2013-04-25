@@ -21,7 +21,7 @@
 #ifndef LengthSize_h
 #define LengthSize_h
 
-#include "Length.h"
+#include "core/platform/Length.h"
 
 namespace WebCore {
 

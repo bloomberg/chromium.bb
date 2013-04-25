@@ -41,10 +41,10 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "LinkRelAttribute.h"
-#include "PrerenderHandle.h"
 #include "Prerenderer.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/platform/PrerenderHandle.h"
 #include "core/platform/network/DNS.h"
 
 namespace WebCore {

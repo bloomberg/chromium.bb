@@ -21,8 +21,8 @@
 #if ENABLE(SVG)
 #include "SVGTransformDistance.h"
 
-#include "FloatConversion.h"
 #include "SVGTransform.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatSize.h"
 

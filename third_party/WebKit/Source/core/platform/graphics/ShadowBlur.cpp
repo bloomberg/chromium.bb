@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/platform/graphics/ShadowBlur.h"
 
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"

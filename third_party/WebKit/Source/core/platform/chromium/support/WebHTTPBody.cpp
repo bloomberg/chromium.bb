@@ -31,7 +31,7 @@
 #include "config.h"
 #include <public/WebHTTPBody.h>
 
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 #include "core/platform/network/FormData.h"
 
 using namespace WebCore;

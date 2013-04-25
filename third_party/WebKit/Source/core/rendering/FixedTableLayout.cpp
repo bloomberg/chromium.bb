@@ -26,6 +26,7 @@
 #include "RenderTableCell.h"
 #include "RenderTableCol.h"
 #include "RenderTableSection.h"
+#include "core/platform/LayoutUnit.h"
 
 /*
   The text below is from the CSS 2.1 specs.

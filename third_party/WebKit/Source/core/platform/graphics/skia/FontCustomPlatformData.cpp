@@ -39,9 +39,9 @@
 #include "SkStream.h"
 #endif
 
-#include "LayoutTestSupport.h"
-#include "NotImplemented.h"
-#include "SharedBuffer.h"
+#include "core/platform/LayoutTestSupport.h"
+#include "core/platform/NotImplemented.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 

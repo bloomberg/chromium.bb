@@ -33,12 +33,12 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "HTMLNames.h"
-#include "Length.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
 #include "RenderFrameSet.h"
 #include "ScriptEventListener.h"
 #include "Text.h"
+#include "core/platform/Length.h"
 
 namespace WebCore {
 

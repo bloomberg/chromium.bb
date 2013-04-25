@@ -35,12 +35,12 @@
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "Node.h"
-#include "PODIntervalTree.h"
 #include "PaintInfo.h"
 #include "RenderBoxRegionInfo.h"
 #include "RenderLayer.h"
 #include "RenderRegion.h"
 #include "RenderView.h"
+#include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 
 namespace WebCore {

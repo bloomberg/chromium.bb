@@ -35,8 +35,8 @@
 #include "Document.h"
 #include "DocumentLoadTiming.h"
 #include "DocumentLoader.h"
-#include "KURL.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/Vector.h>

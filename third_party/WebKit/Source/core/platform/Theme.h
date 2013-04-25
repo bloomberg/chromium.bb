@@ -26,9 +26,9 @@
 #ifndef Theme_h
 #define Theme_h
 
-#include "LengthBox.h"
-#include "LengthSize.h"
-#include "ThemeTypes.h"
+#include "core/platform/LengthBox.h"
+#include "core/platform/LengthSize.h"
+#include "core/platform/ThemeTypes.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/IntRect.h"

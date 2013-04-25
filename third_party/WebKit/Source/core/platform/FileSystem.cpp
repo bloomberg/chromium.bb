@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 
 #include <wtf/HexNumber.h>
 

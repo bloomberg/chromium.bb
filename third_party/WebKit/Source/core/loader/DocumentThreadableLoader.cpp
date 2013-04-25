@@ -43,9 +43,9 @@
 #include "InspectorInstrumentation.h"
 #include "ProgressTracker.h"
 #include "ResourceLoader.h"
-#include "SchemeRegistry.h"
 #include "SecurityOrigin.h"
 #include "ThreadableLoaderClient.h"
+#include "core/platform/SchemeRegistry.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/Assertions.h>

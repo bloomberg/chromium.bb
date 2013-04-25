@@ -21,7 +21,6 @@
 #include "SVGTextQuery.h"
 
 #if ENABLE(SVG)
-#include "FloatConversion.h"
 #include "InlineFlowBox.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
@@ -29,6 +28,7 @@
 #include "SVGInlineTextBox.h"
 #include "SVGTextMetrics.h"
 #include "VisiblePosition.h"
+#include "core/platform/FloatConversion.h"
 
 #include <wtf/MathExtras.h>
 

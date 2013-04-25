@@ -24,7 +24,6 @@
 
 #include "InlineIterator.h"
 #include "InlineTextBox.h"
-#include "Logging.h"
 #include "RenderArena.h"
 #include "RenderCombineText.h"
 #include "RenderCounter.h"
@@ -39,6 +38,7 @@
 #include "TrailingFloatsRootInlineBox.h"
 #include "VerticalPositionCache.h"
 #include "break_lines.h"
+#include "core/platform/Logging.h"
 #include "core/platform/text/BidiResolver.h"
 #include "core/platform/text/Hyphenation.h"
 #include <wtf/RefCountedLeakCounter.h>

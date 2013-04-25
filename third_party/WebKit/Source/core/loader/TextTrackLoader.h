@@ -29,8 +29,8 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "CachedTextTrack.h"
-#include "Timer.h"
 #include "WebVTTParser.h"
+#include "core/platform/Timer.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"
 
-#include "Scrollbar.h"
 #include "Settings.h"
+#include "core/platform/Scrollbar.h"
 
 namespace WebCore {
 

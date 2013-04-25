@@ -32,16 +32,16 @@
 #if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
 #include "DateTimeInputType.h"
 
-#include "DateComponents.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
+#include "core/platform/DateComponents.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/PassOwnPtr.h>
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeFieldsState.h"
-#include "LocalizedStrings.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

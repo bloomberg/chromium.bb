@@ -33,8 +33,8 @@
 #include "core/platform/image-decoders/gif/GIFImageDecoder.h"
 
 #include <gtest/gtest.h>
-#include "FileSystem.h"
-#include "SharedBuffer.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/SharedBuffer.h"
 #include <public/Platform.h>
 #include <public/WebData.h>
 #include <public/WebSize.h>

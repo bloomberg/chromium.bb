@@ -28,8 +28,8 @@
 #include "FilterEffectRenderer.h"
 
 #include "Document.h"
-#include "FloatConversion.h"
 #include "RenderLayer.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/filters/FEColorMatrix.h"
 #include "core/platform/graphics/filters/FEComponentTransfer.h"

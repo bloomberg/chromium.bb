@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "Pasteboard.h"
+#include "core/platform/Pasteboard.h"
 
 #include "CachedImage.h"
 #include "Document.h"
@@ -39,10 +39,10 @@
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "KURL.h"
 #include "NativeImageSkia.h"
 #include "Range.h"
 #include "RenderImage.h"
+#include "core/platform/KURL.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"

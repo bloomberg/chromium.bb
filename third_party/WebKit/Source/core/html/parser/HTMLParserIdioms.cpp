@@ -25,10 +25,10 @@
 #include "config.h"
 #include "HTMLParserIdioms.h"
 
-#include "Decimal.h"
+#include <limits>
 #include "HTMLIdentifier.h"
 #include "QualifiedName.h"
-#include <limits>
+#include "core/platform/Decimal.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/StringBuilder.h>

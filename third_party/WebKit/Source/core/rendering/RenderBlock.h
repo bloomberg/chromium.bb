@@ -25,10 +25,10 @@
 
 #include "ColumnInfo.h"
 #include "GapRects.h"
-#include "PODIntervalTree.h"
 #include "RenderBox.h"
 #include "RenderLineBoxList.h"
 #include "RootInlineBox.h"
+#include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include <wtf/ListHashSet.h>

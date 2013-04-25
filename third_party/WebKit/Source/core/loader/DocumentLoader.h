@@ -37,7 +37,7 @@
 #include "NavigationAction.h"
 #include "ResourceLoaderOptions.h"
 #include "SubstituteData.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

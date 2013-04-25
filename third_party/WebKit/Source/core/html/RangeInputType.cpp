@@ -42,7 +42,6 @@
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
-#include "PlatformMouseEvent.h"
 #include "RenderSlider.h"
 #include "ScopedEventQueue.h"
 #include "ShadowRoot.h"
@@ -52,6 +51,7 @@
 #include "TouchEvent.h"
 #include "TouchList.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/PlatformMouseEvent.h"
 #include <wtf/MathExtras.h>
 #include <wtf/PassOwnPtr.h>
 

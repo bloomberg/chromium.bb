@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#include "FloatConversion.h"
-#include "Logging.h"
 #include "NativeImageSkia.h"
 #include "PlatformContextSkia.h"
 #include "SkBitmap.h"
@@ -39,6 +37,8 @@
 #include "SkRect.h"
 #include "SkShader.h"
 #include "SkiaUtils.h"
+#include "core/platform/FloatConversion.h"
+#include "core/platform/Logging.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"

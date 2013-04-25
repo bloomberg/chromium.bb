@@ -26,7 +26,7 @@
 
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "LinkHash.h"
+#include "core/platform/LinkHash.h"
 
 namespace WebCore {
 

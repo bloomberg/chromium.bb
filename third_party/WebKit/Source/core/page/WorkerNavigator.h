@@ -27,7 +27,7 @@
 #define WorkerNavigator_h
 
 #include "NavigatorBase.h"
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

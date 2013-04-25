@@ -38,7 +38,7 @@
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 
 #include "DOMUtilitiesPrivate.h"
 #include "WebPasswordFormUtils.h"

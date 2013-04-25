@@ -46,7 +46,7 @@
 #include "InspectorDebuggerAgent.h"
 #include "InspectorFrontend.h"
 #include "InspectorValues.h"
-#include "Pasteboard.h"
+#include "core/platform/Pasteboard.h"
 #include "core/storage/Storage.h"
 
 

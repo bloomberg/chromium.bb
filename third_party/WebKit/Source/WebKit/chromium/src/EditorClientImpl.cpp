@@ -35,9 +35,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
-#include "NotImplemented.h"
 #include "Page.h"
-#include "PlatformKeyboardEvent.h"
 #include "RenderObject.h"
 #include "Settings.h"
 #include "SpellChecker.h"
@@ -59,6 +57,8 @@
 #include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/platform/NotImplemented.h"
+#include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include <wtf/text/WTFString.h>
 

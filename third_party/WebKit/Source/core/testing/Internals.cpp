@@ -36,7 +36,6 @@
 #include "ClientRectList.h"
 #include "ComposedShadowTreeWalker.h"
 #include "ContentDistributor.h"
-#include "Cursor.h"
 #include "DOMPoint.h"
 #include "DOMStringList.h"
 #include "DOMWindow.h"
@@ -69,7 +68,6 @@
 #include "InspectorOverlay.h"
 #include "InstrumentingAgents.h"
 #include "InternalSettings.h"
-#include "Language.h"
 #include "MallocStatistics.h"
 #include "MemoryCache.h"
 #include "MockPagePopupDriver.h"
@@ -82,7 +80,6 @@
 #include "RenderObject.h"
 #include "RenderTreeAsText.h"
 #include "RuntimeEnabledFeatures.h"
-#include "SchemeRegistry.h"
 #include "ScrollingCoordinator.h"
 #include "SelectRuleFeatureSet.h"
 #include "SerializedScriptValue.h"
@@ -95,12 +92,15 @@
 #include "TypeConversions.h"
 #include "ViewportArguments.h"
 #include "WorkerThread.h"
+#include "core/platform/Cursor.h"
+#include "core/platform/Language.h"
+#include "core/platform/SchemeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/dtoa.h>
 #include <wtf/text/StringBuffer.h>
 
 #if ENABLE(INPUT_TYPE_COLOR)
-#include "ColorChooser.h"
+#include "core/platform/ColorChooser.h"
 #endif
 
 #if ENABLE(BATTERY_STATUS)

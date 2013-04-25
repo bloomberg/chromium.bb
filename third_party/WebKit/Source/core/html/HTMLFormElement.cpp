@@ -34,7 +34,6 @@
 #include "Event.h"
 #include "EventNames.h"
 #include "FileList.h"
-#include "FileSystem.h"
 #include "FormController.h"
 #include "FormDataList.h"
 #include "FormState.h"
@@ -46,7 +45,6 @@
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "MIMETypeRegistry.h"
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
 #include "Page.h"
@@ -55,6 +53,8 @@
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "ValidityState.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/network/FormData.h"
 
 using namespace std;

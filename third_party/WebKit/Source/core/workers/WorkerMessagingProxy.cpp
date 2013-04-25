@@ -31,21 +31,21 @@
 
 #include "ContentSecurityPolicy.h"
 #include "CrossThreadTask.h"
+#include "DOMWindow.h"
 #include "DedicatedWorkerContext.h"
 #include "DedicatedWorkerThread.h"
-#include "DOMWindow.h"
 #include "Document.h"
 #include "ErrorEvent.h"
 #include "ExceptionCode.h"
 #include "InspectorInstrumentation.h"
 #include "MessageEvent.h"
-#include "NotImplemented.h"
 #include "PageGroup.h"
 #include "ScriptCallStack.h"
 #include "ScriptExecutionContext.h"
 #include "Worker.h"
 #include "WorkerDebuggerAgent.h"
 #include "WorkerInspectorController.h"
+#include "core/platform/NotImplemented.h"
 #include <wtf/MainThread.h>
 
 namespace WebCore {

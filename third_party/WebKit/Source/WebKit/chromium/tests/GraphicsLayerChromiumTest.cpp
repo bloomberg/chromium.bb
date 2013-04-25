@@ -28,7 +28,7 @@
 
 #include <gtest/gtest.h>
 #include "CompositorFakeWebGraphicsContext3D.h"
-#include "ScrollableArea.h"
+#include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/RotateTransformOperation.h"

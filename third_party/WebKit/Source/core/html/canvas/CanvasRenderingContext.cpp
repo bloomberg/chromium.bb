@@ -31,8 +31,8 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLVideoElement.h"
-#include "KURL.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

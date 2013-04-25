@@ -26,9 +26,9 @@
 #ifndef UserStyleSheet_h
 #define UserStyleSheet_h
 
-#include "KURL.h"
 #include "UserContentTypes.h"
 #include "UserStyleSheetTypes.h"
+#include "core/platform/KURL.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

@@ -31,9 +31,9 @@
 #ifndef PageSerializer_h
 #define PageSerializer_h
 
-#include "KURL.h"
-#include "KURLHash.h"
-#include "SharedBuffer.h"
+#include "core/platform/KURL.h"
+#include "core/platform/KURLHash.h"
+#include "core/platform/SharedBuffer.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/Vector.h>

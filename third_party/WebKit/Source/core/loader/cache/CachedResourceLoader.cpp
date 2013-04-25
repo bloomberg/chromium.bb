@@ -28,11 +28,11 @@
 #include "CachedResourceLoader.h"
 
 #include "CachedCSSStyleSheet.h"
-#include "CachedSVGDocument.h"
 #include "CachedFont.h"
 #include "CachedImage.h"
 #include "CachedRawResource.h"
 #include "CachedResourceRequest.h"
+#include "CachedSVGDocument.h"
 #include "CachedScript.h"
 #include "CachedShader.h"
 #include "CachedXSLStyleSheet.h"
@@ -46,7 +46,6 @@
 #include "FrameLoaderClient.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
-#include "Logging.h"
 #include "MemoryCache.h"
 #include "Performance.h"
 #include "PingLoader.h"
@@ -54,12 +53,13 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "core/page/SecurityPolicy.h"
+#include "core/platform/Logging.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationListHashSet.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/UnusedParam.h>
 
 #include "CachedTextTrack.h"
 

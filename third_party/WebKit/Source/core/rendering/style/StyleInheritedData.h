@@ -25,7 +25,7 @@
 #ifndef StyleInheritedData_h
 #define StyleInheritedData_h
 
-#include "Length.h"
+#include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
 #include <wtf/PassRefPtr.h>

@@ -25,7 +25,7 @@
 #ifndef OpenTypeTypes_h
 #define OpenTypeTypes_h
 
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 
 namespace WebCore {
 namespace OpenType {

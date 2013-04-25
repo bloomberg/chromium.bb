@@ -31,7 +31,7 @@
 #ifndef ChromiumDataObject_h
 #define ChromiumDataObject_h
 
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 #include "core/platform/chromium/ChromiumDataObjectItem.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>

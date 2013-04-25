@@ -32,7 +32,7 @@
 #define SearchInputType_h
 
 #include "BaseTextInputType.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 namespace WebCore {
 

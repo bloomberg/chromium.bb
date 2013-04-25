@@ -42,13 +42,13 @@
 #include "HTMLTokenizer.h"
 #include "InspectorInstrumentation.h"
 #include "InspectorValues.h"
-#include "KURL.h"
 #include "PingLoader.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "TextResourceDecoder.h"
 #include "XLinkNames.h"
 #include "XSSAuditorDelegate.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/text/DecodeEscapeSequences.h"
 #include "core/platform/text/TextEncoding.h"
@@ -166,7 +166,7 @@ static inline String decode16BitUnicodeEscapeSequences(const String& string)
 
 static inline String decodeStandardURLEscapeSequences(const String& string, const TextEncoding& encoding)
 {
-    // We use decodeEscapeSequences() instead of decodeURLEscapeSequences() (declared in KURL.h) to
+    // We use decodeEscapeSequences() instead of decodeURLEscapeSequences() (declared in core/platform/KURL.h) to
     // avoid platform-specific URL decoding differences (e.g. KURLGoogle).
     return decodeEscapeSequences<URLEscapeSequence>(string, encoding);
 }

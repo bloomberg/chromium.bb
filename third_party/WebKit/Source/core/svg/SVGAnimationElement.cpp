@@ -32,13 +32,13 @@
 #include "CSSParser.h"
 #include "CSSPropertyNames.h"
 #include "Document.h"
-#include "FloatConversion.h"
 #include "RenderObject.h"
 #include "SVGAnimateElement.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGStyledElement.h"
+#include "core/platform/FloatConversion.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

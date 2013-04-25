@@ -31,11 +31,11 @@
 #include "config.h"
 #include "MemoryInstrumentationSkia.h"
 
-#include "PlatformMemoryInstrumentation.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "SkDevice.h"
 #include "SkPixelRef.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include <wtf/MemoryObjectInfo.h>
 
 void reportMemoryUsage(const SkBitmap* const& image, WTF::MemoryObjectInfo* memoryObjectInfo)

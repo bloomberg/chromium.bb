@@ -26,8 +26,8 @@
 #ifndef ValidationMessageClientImpl_h
 #define ValidationMessageClientImpl_h
 
-#include "Timer.h"
 #include "ValidationMessageClient.h"
+#include "core/platform/Timer.h"
 
 namespace WebKit {
 

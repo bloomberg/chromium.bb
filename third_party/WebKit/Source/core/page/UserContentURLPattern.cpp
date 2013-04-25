@@ -26,7 +26,7 @@
 #include "config.h"
 #include "UserContentURLPattern.h"
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

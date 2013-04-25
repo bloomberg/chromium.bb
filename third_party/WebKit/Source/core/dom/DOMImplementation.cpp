@@ -26,7 +26,6 @@
 #include "DOMImplementation.h"
 
 #include "CSSStyleSheet.h"
-#include "ContentType.h"
 #include "ContextFeatures.h"
 #include "DocumentType.h"
 #include "Element.h"
@@ -38,7 +37,6 @@
 #include "HTMLNames.h"
 #include "HTMLViewSourceDocument.h"
 #include "ImageDocument.h"
-#include "MIMETypeRegistry.h"
 #include "MediaDocument.h"
 #include "MediaList.h"
 #include "Page.h"
@@ -49,6 +47,8 @@
 #include "StyleSheetContents.h"
 #include "TextDocument.h"
 #include "XMLNames.h"
+#include "core/platform/ContentType.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/StdLibExtras.h>

@@ -37,14 +37,14 @@
 #include "ExceptionCode.h"
 #include "QualifiedName.h"
 #include "ScriptValue.h"
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 #include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicStringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

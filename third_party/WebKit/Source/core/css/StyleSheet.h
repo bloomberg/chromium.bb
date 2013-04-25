@@ -22,7 +22,7 @@
 #define StyleSheet_h
 
 #include "CSSParserMode.h"
-#include "KURLHash.h"
+#include "core/platform/KURLHash.h"
 #include <wtf/Forward.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>

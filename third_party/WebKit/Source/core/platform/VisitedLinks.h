@@ -31,7 +31,7 @@
 #ifndef VisitedLinks_h
 #define VisitedLinks_h
 
-#include "LinkHash.h"
+#include "core/platform/LinkHash.h"
 
 namespace WebCore {
 

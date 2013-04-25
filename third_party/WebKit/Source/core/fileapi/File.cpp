@@ -26,9 +26,9 @@
 #include "config.h"
 #include "File.h"
 
-#include "FileMetadata.h"
-#include "FileSystem.h"
-#include "MIMETypeRegistry.h"
+#include "core/platform/FileMetadata.h"
+#include "core/platform/FileSystem.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>
 #include <wtf/text/WTFString.h>

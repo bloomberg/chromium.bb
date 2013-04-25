@@ -31,7 +31,7 @@
 #include "HTMLDocument.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "Logging.h"
+#include "core/platform/Logging.h"
 
 using namespace std;
 

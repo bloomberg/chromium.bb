@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Clock.h"
+#include "core/platform/Clock.h"
 
 #if USE(COREMEDIA)
     #include "PlatformClockCM.h"

@@ -41,10 +41,10 @@
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HistoryItem.h"
-#include "Logging.h"
 #include "Page.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
+#include "core/platform/Logging.h"
 #include <wtf/text/CString.h>
 
 namespace WebCore {

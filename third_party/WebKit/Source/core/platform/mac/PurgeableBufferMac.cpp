@@ -27,7 +27,7 @@
 
 #if ENABLE(PURGEABLE_MEMORY)
 
-#include "PurgeableBuffer.h"
+#include "core/platform/PurgeableBuffer.h"
 
 #include <mach/mach.h>
 #include <wtf/Assertions.h>

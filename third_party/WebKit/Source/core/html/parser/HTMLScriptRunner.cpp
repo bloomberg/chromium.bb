@@ -27,8 +27,8 @@
 #include "HTMLScriptRunner.h"
 
 #include "Attribute.h"
-#include "CachedScript.h"
 #include "CachedResourceLoader.h"
+#include "CachedScript.h"
 #include "CustomElementRegistry.h"
 #include "Element.h"
 #include "Event.h"
@@ -39,9 +39,9 @@
 #include "IgnoreDestructiveWriteCountIncrementer.h"
 #include "MutationObserver.h"
 #include "NestingLevelIncrementer.h"
-#include "NotImplemented.h"
 #include "ScriptElement.h"
 #include "ScriptSourceCode.h"
+#include "core/platform/NotImplemented.h"
 
 namespace WebCore {
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "LayoutTestSupport.h"
+#include "core/platform/LayoutTestSupport.h"
 
 namespace WebCore {
 

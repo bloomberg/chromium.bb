@@ -32,8 +32,8 @@
 #include <leveldb/env.h>
 #include <leveldb/slice.h>
 #include <string>
-#include "HistogramSupport.h"
-#include "Logging.h"
+#include "core/platform/HistogramSupport.h"
+#include "core/platform/Logging.h"
 #include "core/platform/leveldb/LevelDBComparator.h"
 #include "core/platform/leveldb/LevelDBIterator.h"
 #include "core/platform/leveldb/LevelDBSlice.h"

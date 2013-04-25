@@ -31,8 +31,8 @@
 #ifndef FontPlatformDataHarfBuzz_h
 #define FontPlatformDataHarfBuzz_h
 
-#include "SharedBuffer.h"
 #include "SkPaint.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontOrientation.h"
 #include "core/platform/graphics/chromium/FontRenderStyle.h"
 #include "core/platform/graphics/opentype/OpenTypeVerticalData.h"

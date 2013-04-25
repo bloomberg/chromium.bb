@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "FileStream.h"
+#include "core/platform/FileStream.h"
 
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

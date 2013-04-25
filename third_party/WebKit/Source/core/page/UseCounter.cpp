@@ -28,8 +28,8 @@
 
 #include "DOMWindow.h"
 #include "Document.h"
-#include "HistogramSupport.h"
 #include "Page.h"
+#include "core/platform/HistogramSupport.h"
 
 namespace WebCore {
 

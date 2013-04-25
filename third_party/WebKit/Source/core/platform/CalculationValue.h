@@ -31,8 +31,8 @@
 #ifndef CalculationValue_h
 #define CalculationValue_h
 
-#include "Length.h"
 #include "LengthFunctions.h"
+#include "core/platform/Length.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

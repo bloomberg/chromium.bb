@@ -29,10 +29,10 @@
 #include "config.h"
 #include "SecurityPolicy.h"
 
-#include "KURL.h"
-#include <wtf/MainThread.h>
 #include "OriginAccessEntry.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
+#include <wtf/MainThread.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringHash.h>

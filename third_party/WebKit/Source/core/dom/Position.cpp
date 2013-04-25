@@ -26,11 +26,11 @@
 #include "config.h"
 #include "Position.h"
 
+#include <stdio.h>
 #include "CSSComputedStyleDeclaration.h"
 #include "HTMLNames.h"
 #include "InlineIterator.h"
 #include "InlineTextBox.h"
-#include "Logging.h"
 #include "PositionIterator.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
@@ -40,8 +40,8 @@
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
+#include "core/platform/Logging.h"
 #include "htmlediting.h"
-#include <stdio.h>
 #include <wtf/text/CString.h>
 #include <wtf/unicode/CharacterNames.h>
   

@@ -26,7 +26,7 @@
 #ifndef CachedResourceRequestInitiators_h
 #define CachedResourceRequestInitiators_h
 
-#include "ThreadGlobalData.h"
+#include "core/platform/ThreadGlobalData.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

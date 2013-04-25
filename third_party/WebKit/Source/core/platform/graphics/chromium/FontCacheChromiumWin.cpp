@@ -34,7 +34,7 @@
 
 #include <unicode/uniset.h>
 #include "HWndDC.h"
-#include "LayoutTestSupport.h"
+#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/chromium/FontPlatformDataChromiumWin.h"

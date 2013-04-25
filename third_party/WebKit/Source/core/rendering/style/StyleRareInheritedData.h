@@ -25,7 +25,7 @@
 #ifndef StyleRareInheritedData_h
 #define StyleRareInheritedData_h
 
-#include "Length.h"
+#include "core/platform/Length.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

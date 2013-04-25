@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
+#include "core/platform/HostWindow.h"
+#include "core/platform/ScrollView.h"
 #include <wtf/Assertions.h>
-#include "HostWindow.h"
-#include "ScrollView.h"
 
 namespace WebCore {
 

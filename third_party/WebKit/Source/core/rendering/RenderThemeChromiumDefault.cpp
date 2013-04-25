@@ -31,8 +31,8 @@
 #include "RenderObject.h"
 #include "RenderProgress.h"
 #include "RenderSlider.h"
-#include "ScrollbarTheme.h"
 #include "UserAgentStyleSheets.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/Color.h"
 #include <public/default/WebThemeEngine.h>
 #include <public/Platform.h>

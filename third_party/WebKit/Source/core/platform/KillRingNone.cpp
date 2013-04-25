@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "KillRing.h"
+#include "core/platform/KillRing.h"
 
 namespace WebCore {
 

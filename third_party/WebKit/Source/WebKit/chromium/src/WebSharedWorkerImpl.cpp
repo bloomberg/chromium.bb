@@ -37,14 +37,13 @@
 #include "FrameLoadRequest.h"
 #include "FrameLoader.h"
 #include "GroupSettings.h"
-#include "KURL.h"
 #include "MessageEvent.h"
 #include "MessagePortChannel.h"
 #include "Page.h"
 #include "PageGroup.h"
 #include "PlatformMessagePortChannelChromium.h"
-#include "SecurityOrigin.h"
 #include "ScriptExecutionContext.h"
+#include "SecurityOrigin.h"
 #include "SharedWorkerContext.h"
 #include "SharedWorkerThread.h"
 #include "WebDataSourceImpl.h"
@@ -59,6 +58,7 @@
 #include "WorkerInspectorController.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/platform/KURL.h"
 #include <public/WebFileError.h>
 #include <public/WebMessagePortChannel.h>
 #include <public/WebString.h>

@@ -44,7 +44,6 @@
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInImageElement.h"
-#include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
@@ -54,6 +53,7 @@
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
+#include "core/platform/MIMETypeRegistry.h"
 
 namespace WebCore {
     

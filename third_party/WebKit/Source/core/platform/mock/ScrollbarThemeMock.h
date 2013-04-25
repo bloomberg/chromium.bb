@@ -26,7 +26,7 @@
 #ifndef ScrollbarThemeMock_h
 #define ScrollbarThemeMock_h
 
-#include "ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarThemeComposite.h"
 
 namespace WebCore {
 

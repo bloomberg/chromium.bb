@@ -38,7 +38,6 @@
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "KURL.h"
 #include "MHTMLArchive.h"
 #include "PageSerializer.h"
 #include "WebFrame.h"
@@ -47,12 +46,13 @@
 #include "WebPageSerializerImpl.h"
 #include "WebView.h"
 #include "WebViewImpl.h"
+#include "core/platform/KURL.h"
 #include <public/WebCString.h>
 #include <public/WebString.h>
 #include <public/WebURL.h>
 #include <public/WebVector.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringConcatenate.h>
+#include <wtf/Vector.h>
 
 using namespace WebCore;
 

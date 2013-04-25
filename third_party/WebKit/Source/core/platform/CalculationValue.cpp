@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "CalculationValue.h"
+#include "core/platform/CalculationValue.h"
 
 #include <limits>
 

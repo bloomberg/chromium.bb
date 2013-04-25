@@ -31,9 +31,9 @@
 #ifndef WorkerFileWriterCallbacksBridge_h
 #define WorkerFileWriterCallbacksBridge_h
 
-#include "KURL.h"
 #include "WebFileWriterClient.h"
 #include "WorkerContext.h"
+#include "core/platform/KURL.h"
 #include <public/WebFileError.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

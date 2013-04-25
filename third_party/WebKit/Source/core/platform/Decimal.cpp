@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "Decimal.h"
+#include "core/platform/Decimal.h"
 
-#include <algorithm>
 #include <float.h>
+#include <algorithm>
 
 #include <wtf/Assertions.h>
 #include <wtf/MathExtras.h>

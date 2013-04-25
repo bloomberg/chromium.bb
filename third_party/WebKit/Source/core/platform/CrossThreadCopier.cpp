@@ -30,10 +30,10 @@
 
 #include "config.h"
 
-#include "CrossThreadCopier.h"
+#include "core/platform/CrossThreadCopier.h"
 
-#include "KURL.h"
 #include "SerializedScriptValue.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

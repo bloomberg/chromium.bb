@@ -31,12 +31,12 @@
 #include "config.h"
 
 #include "ScriptExecutionContext.h"
-#include "SharedTimer.h"
-#include "ThreadGlobalData.h"
-#include "ThreadTimers.h"
-#include "WorkerRunLoop.h"
 #include "WorkerContext.h"
+#include "WorkerRunLoop.h"
 #include "WorkerThread.h"
+#include "core/platform/SharedTimer.h"
+#include "core/platform/ThreadGlobalData.h"
+#include "core/platform/ThreadTimers.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

@@ -26,6 +26,7 @@
 
 namespace WebCore {
 
+class LayoutUnit;
 class RenderTable;
 
 class TableLayout {

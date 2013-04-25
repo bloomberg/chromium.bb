@@ -32,7 +32,7 @@
 #ifndef HTTPRequest_h
 #define HTTPRequest_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include "core/platform/network/HTTPParsers.h"
 #include <wtf/PassRefPtr.h>

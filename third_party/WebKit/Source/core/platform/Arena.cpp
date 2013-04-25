@@ -44,11 +44,11 @@
  */
 
 #include "config.h"
-#include "Arena.h"
+#include "core/platform/Arena.h"
 
-#include <algorithm>
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
 #include <wtf/Assertions.h>
 #include <wtf/FastMalloc.h>
 

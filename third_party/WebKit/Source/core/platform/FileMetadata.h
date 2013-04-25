@@ -31,7 +31,7 @@
 #ifndef FileMetadata_h
 #define FileMetadata_h
 
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

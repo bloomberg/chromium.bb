@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
-#include "ScrollView.h"
+#include "core/platform/ScrollView.h"
 #include "core/platform/graphics/IntRect.h"
 
 #include <wtf/Assertions.h>

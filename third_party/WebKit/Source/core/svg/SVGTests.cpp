@@ -25,10 +25,10 @@
 
 #include "Attribute.h"
 #include "DOMImplementation.h"
-#include "Language.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
 #include "SVGStringList.h"
+#include "core/platform/Language.h"
 
 namespace WebCore {
 

@@ -35,9 +35,9 @@
 #include "IDBFakeBackingStore.h"
 #include "IDBTransactionBackendImpl.h"
 #include "IndexedDB.h"
-#include "SharedBuffer.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
 #include "WebIDBDatabaseImpl.h"
+#include "core/platform/SharedBuffer.h"
 
 #include <gtest/gtest.h>
 

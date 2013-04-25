@@ -26,7 +26,7 @@
 #ifndef AutoscrollController_h
 #define AutoscrollController_h
 
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/IntPoint.h"
 
 namespace WebCore {

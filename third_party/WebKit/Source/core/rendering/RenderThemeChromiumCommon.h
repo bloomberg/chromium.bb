@@ -27,7 +27,7 @@
 #ifndef RenderThemeChromiumCommon_h
 #define RenderThemeChromiumCommon_h
 
-#include "LayoutUnit.h"
+#include "core/platform/LayoutUnit.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

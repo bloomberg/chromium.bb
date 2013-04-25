@@ -26,9 +26,9 @@
 #ifndef PODIntervalTree_h
 #define PODIntervalTree_h
 
-#include "PODArena.h"
-#include "PODInterval.h"
-#include "PODRedBlackTree.h"
+#include "core/platform/PODArena.h"
+#include "core/platform/PODInterval.h"
+#include "core/platform/PODRedBlackTree.h"
 #include <wtf/Assertions.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/Vector.h>

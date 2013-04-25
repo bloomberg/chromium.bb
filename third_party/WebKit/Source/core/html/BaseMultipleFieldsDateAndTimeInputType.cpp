@@ -33,7 +33,6 @@
 #include "BaseMultipleFieldsDateAndTimeInputType.h"
 
 #include "CSSValueKeywords.h"
-#include "DateComponents.h"
 #include "DateTimeFieldsState.h"
 #include "ElementShadow.h"
 #include "FocusController.h"
@@ -42,12 +41,13 @@
 #include "HTMLInputElement.h"
 #include "HTMLOptionElement.h"
 #include "KeyboardEvent.h"
-#include "LocalizedStrings.h"
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "PickerIndicatorElement.h"
 #include "RenderTheme.h"
 #include "ShadowRoot.h"
+#include "core/platform/DateComponents.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/DateMath.h>

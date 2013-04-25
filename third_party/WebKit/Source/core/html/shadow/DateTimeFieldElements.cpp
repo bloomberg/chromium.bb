@@ -27,9 +27,9 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeFieldElements.h"
 
-#include "DateComponents.h"
 #include "DateTimeFieldsState.h"
-#include "LocalizedStrings.h"
+#include "core/platform/DateComponents.h"
+#include "core/platform/LocalizedStrings.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>
 

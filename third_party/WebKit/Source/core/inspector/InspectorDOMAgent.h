@@ -38,17 +38,17 @@
 #include "InspectorOverlay.h"
 #include "InspectorValues.h"
 #include "RenderLayer.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 #include <wtf/Deque.h>
-#include <wtf/ListHashSet.h>
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
+#include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 class ContainerNode;

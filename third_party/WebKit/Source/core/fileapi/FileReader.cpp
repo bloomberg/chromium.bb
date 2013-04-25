@@ -35,9 +35,9 @@
 #include "CrossThreadTask.h"
 #include "ExceptionCode.h"
 #include "File.h"
-#include "Logging.h"
 #include "ProgressEvent.h"
 #include "ScriptExecutionContext.h"
+#include "core/platform/Logging.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/text/CString.h>

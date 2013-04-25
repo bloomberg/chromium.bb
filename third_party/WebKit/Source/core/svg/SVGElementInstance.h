@@ -24,7 +24,7 @@
 #if ENABLE(SVG)
 #include "EventTarget.h"
 #include "SVGElement.h"
-#include "TreeShared.h"
+#include "core/platform/TreeShared.h"
 
 namespace WebCore {
 

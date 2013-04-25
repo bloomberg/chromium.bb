@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WorkerAsyncFileWriterChromium.h"
 
-#include "AsyncFileSystem.h"
 #include "Blob.h"
 #include "ScriptExecutionContext.h"
 #include "WebFileWriter.h"
@@ -40,6 +39,7 @@
 #include "WorkerFileWriterCallbacksBridge.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/platform/AsyncFileSystem.h"
 #include <public/WebFileSystem.h>
 #include <public/WebURL.h>
 #include <wtf/Assertions.h>

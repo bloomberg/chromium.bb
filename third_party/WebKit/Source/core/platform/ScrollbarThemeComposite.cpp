@@ -24,16 +24,16 @@
  */
 
 #include "config.h"
-#include "ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarThemeComposite.h"
 
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "Page.h"
-#include "PlatformMouseEvent.h"
-#include "ScrollbarThemeClient.h"
 #include "Settings.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/ScrollbarThemeClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
 using namespace std;

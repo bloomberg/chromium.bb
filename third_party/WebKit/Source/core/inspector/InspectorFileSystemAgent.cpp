@@ -53,15 +53,15 @@
 #include "InspectorPageAgent.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "KURL.h"
 #include "LocalFileSystem.h"
-#include "MIMETypeRegistry.h"
 #include "Metadata.h"
 #include "MetadataCallback.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "TextResourceDecoder.h"
 #include "VoidCallback.h"
+#include "core/platform/KURL.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/text/Base64.h>
 

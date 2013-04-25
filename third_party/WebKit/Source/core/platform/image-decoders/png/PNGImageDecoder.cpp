@@ -40,7 +40,7 @@
 #include "config.h"
 #include "core/platform/image-decoders/png/PNGImageDecoder.h"
 
-#include "PlatformInstrumentation.h"
+#include "core/platform/PlatformInstrumentation.h"
 #include "png.h"
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnPtr.h>

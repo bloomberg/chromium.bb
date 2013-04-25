@@ -24,12 +24,12 @@
 #define RenderTheme_h
 
 #if USE(NEW_THEME)
-#include "Theme.h"
+#include "core/platform/Theme.h"
 #else
-#include "ThemeTypes.h"
+#include "core/platform/ThemeTypes.h"
 #endif
 #include "RenderObject.h"
-#include "ScrollTypes.h"
+#include "core/platform/ScrollTypes.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

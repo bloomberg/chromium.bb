@@ -35,11 +35,11 @@
 #include "Document.h"
 #include "Frame.h"
 #include "MHTMLParser.h"
-#include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "PageSerializer.h"
-#include "SchemeRegistry.h"
-#include "SharedBuffer.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/SchemeRegistry.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/text/QuotedPrintable.h"
 
 #include <wtf/CryptographicallyRandomNumber.h>

@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/platform/image-decoders/webp/WEBPImageDecoder.h"
 
-#include "PlatformInstrumentation.h"
+#include "core/platform/PlatformInstrumentation.h"
 
 #ifdef QCMS_WEBP_COLOR_CORRECTION
 #include "qcms.h"

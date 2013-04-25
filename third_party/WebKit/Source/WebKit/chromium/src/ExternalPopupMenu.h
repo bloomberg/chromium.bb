@@ -31,8 +31,8 @@
 #ifndef ExternalPopupMenu_h
 #define ExternalPopupMenu_h
 
-#include "PopupMenu.h"
 #include "WebExternalPopupMenuClient.h"
+#include "core/platform/PopupMenu.h"
 #include <public/WebCanvas.h>
 #include <public/WebScrollbar.h>
 

@@ -25,7 +25,7 @@
 
 #include "RenderBoxModelObject.h"
 #include "RenderOverflow.h"
-#include "ScrollTypes.h"
+#include "core/platform/ScrollTypes.h"
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeOutsideInfo.h"
 #endif

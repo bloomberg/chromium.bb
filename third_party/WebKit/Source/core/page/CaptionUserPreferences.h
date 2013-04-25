@@ -26,10 +26,10 @@
 #ifndef CaptionUserPreferences_h
 #define CaptionUserPreferences_h
 
-#include "Language.h"
-#include "LocalizedStrings.h"
 #include "TextTrack.h"
-#include "Timer.h"
+#include "core/platform/Language.h"
+#include "core/platform/LocalizedStrings.h"
+#include "core/platform/Timer.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/AtomicString.h>
 

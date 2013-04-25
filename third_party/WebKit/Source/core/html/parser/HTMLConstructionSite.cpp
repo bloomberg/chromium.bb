@@ -47,10 +47,10 @@
 #include "HTMLTemplateElement.h"
 #include "HTMLToken.h"
 #include "HTMLTokenizer.h"
-#include "LocalizedStrings.h"
-#include "NotImplemented.h"
 #include "Settings.h"
 #include "Text.h"
+#include "core/platform/LocalizedStrings.h"
+#include "core/platform/NotImplemented.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

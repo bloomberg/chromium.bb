@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "Scrollbar.h"
+#include "core/platform/Scrollbar.h"
 
 #include <algorithm>
-#include "PlatformGestureEvent.h"
-#include "PlatformMouseEvent.h"
-#include "ScrollAnimator.h"
-#include "ScrollableArea.h"
-#include "ScrollbarTheme.h"
+#include "core/platform/PlatformGestureEvent.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/ScrollAnimator.h"
+#include "core/platform/ScrollableArea.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
 
 // FIXME: The following #includes are a layering violation and should be removed.

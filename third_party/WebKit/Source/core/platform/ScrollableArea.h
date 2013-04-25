@@ -26,7 +26,7 @@
 #ifndef ScrollableArea_h
 #define ScrollableArea_h
 
-#include "Scrollbar.h"
+#include "core/platform/Scrollbar.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

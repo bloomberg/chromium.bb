@@ -35,9 +35,9 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
-#include "SchemeRegistry.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "core/platform/SchemeRegistry.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 

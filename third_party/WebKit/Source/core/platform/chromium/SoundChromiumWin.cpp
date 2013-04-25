@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "Sound.h"
+#include "core/platform/Sound.h"
 
 #include <windows.h>
 

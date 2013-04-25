@@ -24,8 +24,8 @@
 
 #include "FrameView.h"
 #include "LayoutState.h"
-#include "PODFreeListArena.h"
 #include "RenderBlock.h"
+#include "core/platform/PODFreeListArena.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

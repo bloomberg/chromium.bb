@@ -34,10 +34,10 @@
 
 #include "MemoryInstrumentationSkia.h"
 #include "NativeImageSkia.h"
-#include "PlatformInstrumentation.h"
-#include "PlatformMemoryInstrumentation.h"
 #include "SkPixelRef.h"
 #include "SkiaUtils.h"
+#include "core/platform/PlatformInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 
 #include "core/platform/chromium/TraceEvent.h"

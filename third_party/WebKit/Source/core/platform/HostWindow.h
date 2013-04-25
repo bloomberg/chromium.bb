@@ -26,7 +26,7 @@
 #ifndef HostWindow_h
 #define HostWindow_h
 
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
 namespace WebCore {
 

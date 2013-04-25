@@ -49,7 +49,6 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "HTMLTextFormControlElement.h"
-#include "KURL.h"
 #include "MarkupAccumulator.h"
 #include "NodeTraversal.h"
 #include "Range.h"
@@ -62,6 +61,7 @@
 #include "VisibleSelection.h"
 #include "VisibleUnits.h"
 #include "XMLNSNames.h"
+#include "core/platform/KURL.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

@@ -7,8 +7,6 @@
 
 #include "Frame.h"
 #include "HTMLMediaElement.h"
-#include "KURL.h"
-#include "NotImplemented.h"
 #include "PlatformContextSkia.h"
 #include "RenderLayerCompositor.h"
 #include "RenderView.h"
@@ -21,6 +19,8 @@
 #include "WebMediaPlayer.h"
 #include "WebMediaSourceImpl.h"
 #include "WebViewImpl.h"
+#include "core/platform/KURL.h"
+#include "core/platform/NotImplemented.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioSourceProvider.h"
 #include "core/platform/audio/AudioSourceProviderClient.h"

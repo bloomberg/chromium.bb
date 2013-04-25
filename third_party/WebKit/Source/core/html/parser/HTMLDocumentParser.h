@@ -39,9 +39,9 @@
 #include "HTMLTokenizer.h"
 #include "HTMLTreeBuilderSimulator.h"
 #include "ScriptableDocumentParser.h"
-#include "Timer.h"
 #include "XSSAuditor.h"
 #include "XSSAuditorDelegate.h"
+#include "core/platform/Timer.h"
 #include "core/platform/text/SegmentedString.h"
 #include <wtf/Deque.h>
 #include <wtf/OwnPtr.h>

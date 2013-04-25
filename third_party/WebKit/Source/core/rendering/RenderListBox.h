@@ -32,7 +32,7 @@
 #define RenderListBox_h
 
 #include "RenderBlock.h"
-#include "ScrollableArea.h"
+#include "core/platform/ScrollableArea.h"
 
 namespace WebCore {
 

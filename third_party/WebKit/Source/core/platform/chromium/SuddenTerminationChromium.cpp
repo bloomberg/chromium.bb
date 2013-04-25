@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "SuddenTermination.h"
+#include "core/platform/SuddenTermination.h"
 
 #include <public/Platform.h>
 

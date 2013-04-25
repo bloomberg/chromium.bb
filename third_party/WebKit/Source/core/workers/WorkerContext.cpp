@@ -38,9 +38,7 @@
 #include "Event.h"
 #include "EventException.h"
 #include "InspectorConsoleInstrumentation.h"
-#include "KURL.h"
 #include "MessagePort.h"
-#include "NotImplemented.h"
 #include "ScheduledAction.h"
 #include "ScriptCallStack.h"
 #include "ScriptSourceCode.h"
@@ -54,6 +52,8 @@
 #include "WorkerThread.h"
 #include "WorkerThreadableLoader.h"
 #include "XMLHttpRequestException.h"
+#include "core/platform/KURL.h"
+#include "core/platform/NotImplemented.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>
 

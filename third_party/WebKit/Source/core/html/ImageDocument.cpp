@@ -37,12 +37,12 @@
 #include "HTMLHtmlElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
-#include "LocalizedStrings.h"
 #include "MouseEvent.h"
-#include "NotImplemented.h"
 #include "Page.h"
 #include "RawDataDocumentParser.h"
 #include "Settings.h"
+#include "core/platform/LocalizedStrings.h"
+#include "core/platform/NotImplemented.h"
 
 using std::min;
 

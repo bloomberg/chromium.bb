@@ -33,7 +33,7 @@
 
 #include "config.h"
 
-#include "PopupMenu.h"
+#include "core/platform/PopupMenu.h"
 #include "core/platform/chromium/PopupMenuPrivate.h"
 
 namespace WebCore {

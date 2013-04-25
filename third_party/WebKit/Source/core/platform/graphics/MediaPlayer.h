@@ -26,8 +26,8 @@
 #ifndef MediaPlayer_h
 #define MediaPlayer_h
 
-#include "KURL.h"
-#include "Timer.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/GraphicsTypes3D.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/IntRect.h"

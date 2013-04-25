@@ -73,7 +73,6 @@
       '../page',
       '../page/animation',
       '../page/scrolling',
-      '../platform',
       '../platform/graphics/skia',
       '../plugins',
       '../rendering',

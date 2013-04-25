@@ -31,8 +31,8 @@
 
 #include "core/platform/image-decoders/ImageDecoder.h"
 
-#include "NotImplemented.h"
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/NotImplemented.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageOrientation.h"
 
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"

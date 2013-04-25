@@ -29,7 +29,6 @@
 #if ENABLE(SVG)
 #include "RenderSVGText.h"
 
-#include "FloatConversion.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "LayoutRepainter.h"
@@ -47,6 +46,7 @@
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
 #include "VisiblePosition.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"

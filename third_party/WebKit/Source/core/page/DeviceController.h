@@ -29,8 +29,8 @@
 
 #include "DOMWindow.h"
 #include "Event.h"
-#include "Supplementable.h"
-#include "Timer.h"
+#include "core/platform/Supplementable.h"
+#include "core/platform/Timer.h"
 #include <wtf/HashCountedSet.h>
 
 namespace WebCore {

@@ -24,7 +24,7 @@
  */
 
 #import "config.h"
-#import "KillRing.h"
+#import "core/platform/KillRing.h"
 
 namespace WebCore {
 

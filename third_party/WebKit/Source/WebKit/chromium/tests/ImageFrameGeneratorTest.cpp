@@ -29,7 +29,7 @@
 
 #include <gtest/gtest.h>
 #include "MockImageDecoder.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/chromium/ImageDecodingStore.h"
 #include <wtf/Threading.h>
 

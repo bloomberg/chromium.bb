@@ -32,7 +32,7 @@
 #ifndef PrerenderHandle_h
 #define PrerenderHandle_h
 
-#include "ReferrerPolicy.h"
+#include "core/platform/ReferrerPolicy.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

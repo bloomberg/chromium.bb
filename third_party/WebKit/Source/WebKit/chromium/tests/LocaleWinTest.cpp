@@ -31,8 +31,8 @@
 #include "config.h"
 #include "LocaleWin.h"
 
-#include "DateComponents.h"
 #include <gtest/gtest.h>
+#include "core/platform/DateComponents.h"
 #include <wtf/DateMath.h>
 #include <wtf/MathExtras.h>
 #include <wtf/PassOwnPtr.h>

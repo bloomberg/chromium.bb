@@ -63,18 +63,18 @@
 #include "FrameLoader.h"
 #include "FrameTree.h"
 #include "FrameView.h"
-#include "HashTools.h"
-#include "HTMLDocumentParser.h"
 #include "HTMLBodyElement.h"
+#include "HTMLDocumentParser.h"
 #include "HTMLElementFactory.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
 #include "InspectorInstrumentation.h"
-#include "KURL.h"
 #include "Page.h"
 #include "ScriptController.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/platform/HashTools.h"
+#include "core/platform/KURL.h"
 #include <wtf/text/CString.h>
 
 namespace WebCore {

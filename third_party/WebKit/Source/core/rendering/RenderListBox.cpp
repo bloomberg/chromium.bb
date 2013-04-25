@@ -52,11 +52,11 @@
 #include "RenderText.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
-#include "Scrollbar.h"
-#include "ScrollbarTheme.h"
 #include "SpatialNavigation.h"
 #include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/Scrollbar.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 

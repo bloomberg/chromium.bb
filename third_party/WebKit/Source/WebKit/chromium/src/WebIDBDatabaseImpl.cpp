@@ -32,13 +32,13 @@
 #include "IDBDatabaseCallbacksProxy.h"
 #include "IDBKeyRange.h"
 #include "IDBMetadata.h"
-#include "SharedBuffer.h"
 #include "WebIDBCallbacks.h"
 #include "WebIDBDatabaseCallbacks.h"
 #include "WebIDBDatabaseError.h"
 #include "WebIDBKey.h"
 #include "WebIDBKeyRange.h"
 #include "WebIDBMetadata.h"
+#include "core/platform/SharedBuffer.h"
 #include "public/WebData.h"
 
 using namespace WebCore;

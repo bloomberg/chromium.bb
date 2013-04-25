@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 
 #include <windows.h>
 #include <shlwapi.h>

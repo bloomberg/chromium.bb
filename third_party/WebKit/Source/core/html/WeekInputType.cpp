@@ -31,15 +31,15 @@
 #include "config.h"
 #include "WeekInputType.h"
 
-#include "DateComponents.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
+#include "core/platform/DateComponents.h"
 #include <wtf/PassOwnPtr.h>
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeFieldsState.h"
-#include "LocalizedStrings.h"
+#include "core/platform/LocalizedStrings.h"
 #include <wtf/text/WTFString.h>
 #endif
 

@@ -36,7 +36,7 @@
 #include "Page.h"
 #include "ScriptObject.h"
 #include "Settings.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include <wtf/Deque.h>
 #include <wtf/text/WTFString.h>
 

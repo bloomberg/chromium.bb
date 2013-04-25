@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Image.h"
 

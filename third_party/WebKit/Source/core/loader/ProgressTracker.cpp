@@ -32,7 +32,7 @@
 #include "FrameLoaderClient.h"
 #include "FrameLoaderStateMachine.h"
 #include "InspectorInstrumentation.h"
-#include "Logging.h"
+#include "core/platform/Logging.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/text/CString.h>

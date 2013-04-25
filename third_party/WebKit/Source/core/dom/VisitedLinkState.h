@@ -30,9 +30,9 @@
 #define VisitedLinkState_h
 
 #include "Element.h"
-#include "LinkHash.h"
 #include "RenderStyleConstants.h"
 #include "XLinkNames.h"
+#include "core/platform/LinkHash.h"
 #include <wtf/HashSet.h>
 #include <wtf/OwnPtr.h>
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 
 #if ENABLE(WEB_AUDIO)
 #include "core/platform/audio/HRTFDatabaseLoader.h"

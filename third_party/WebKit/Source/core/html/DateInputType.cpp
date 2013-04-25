@@ -31,14 +31,14 @@
 #include "config.h"
 #include "DateInputType.h"
 
-#include "DateComponents.h"
 #include "DateTimeFieldsState.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
-#include "LocalizedStrings.h"
 #include "PickerIndicatorElement.h"
+#include "core/platform/DateComponents.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/PassOwnPtr.h>
 

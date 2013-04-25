@@ -30,9 +30,9 @@
 #define ImageDecoder_h
 
 #include "NativeImageSkia.h"
-#include "PlatformScreen.h"
-#include "SharedBuffer.h"
 #include "SkColorPriv.h"
+#include "core/platform/PlatformScreen.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/ImageSource.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/Assertions.h>

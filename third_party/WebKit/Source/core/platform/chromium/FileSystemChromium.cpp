@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 
-#include "FileMetadata.h"
-#include "NotImplemented.h"
+#include "core/platform/FileMetadata.h"
+#include "core/platform/NotImplemented.h"
 
 #include <public/Platform.h>
 #include <public/WebFileInfo.h>

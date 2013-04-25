@@ -30,7 +30,7 @@
 #ifndef FloatPolygon_h
 #define FloatPolygon_h
 
-#include "PODIntervalTree.h"
+#include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/WindRule.h"

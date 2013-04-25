@@ -36,7 +36,7 @@
 #include "KeyboardEvent.h"
 #include "WebInputEvent.h"
 #include "WebInputEventFactory.h"
-#include "WindowsKeyboardCodes.h"
+#include "core/platform/WindowsKeyboardCodes.h"
 
 using WebKit::WebInputEventFactory;
 using WebKit::WebKeyboardEvent;

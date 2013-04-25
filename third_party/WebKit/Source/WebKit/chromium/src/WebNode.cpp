@@ -34,11 +34,11 @@
 #include "Document.h"
 #include "Element.h"
 #include "Event.h"
+#include "EventListenerWrapper.h"
 #include "Frame.h"
 #include "FrameLoaderClientImpl.h"
 #include "Node.h"
 #include "NodeList.h"
-#include "EventListenerWrapper.h"
 #include "RenderObject.h"
 #include "RenderWidget.h"
 #include "WebDOMEvent.h"
@@ -49,7 +49,7 @@
 #include "WebNodeList.h"
 #include "WebPluginContainer.h"
 #include "WebPluginContainerImpl.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 #include "markup.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>

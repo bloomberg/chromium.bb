@@ -30,11 +30,11 @@
 #define InspectorFrontendHost_h
 
 #include "ConsoleTypes.h"
-#include "ContextMenu.h"
 #include "ContextMenuProvider.h"
+#include "core/platform/ContextMenu.h"
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

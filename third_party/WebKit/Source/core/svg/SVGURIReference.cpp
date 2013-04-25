@@ -26,7 +26,7 @@
 #include "Attribute.h"
 #include "Document.h"
 #include "Element.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

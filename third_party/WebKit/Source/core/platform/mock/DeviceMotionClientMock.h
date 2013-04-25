@@ -28,7 +28,7 @@
 
 #include "DeviceMotionClient.h"
 #include "DeviceMotionData.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

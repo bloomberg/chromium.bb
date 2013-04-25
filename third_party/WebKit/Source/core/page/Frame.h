@@ -29,11 +29,11 @@
 #define Frame_h
 
 #include "AdjustViewSizeOrNot.h"
-#include "DragImage.h"
 #include "FrameLoader.h"
 #include "FrameTree.h"
 #include "NavigationScheduler.h"
-#include "ScrollTypes.h"
+#include "core/platform/DragImage.h"
+#include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/RefCounted.h>
 

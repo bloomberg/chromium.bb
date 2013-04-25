@@ -29,7 +29,6 @@
 #include "Document.h"
 #include "EventListener.h"
 #include "EventNames.h"
-#include "FloatConversion.h"
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "FrameTree.h"
@@ -55,6 +54,7 @@
 #include "SVGZoomEvent.h"
 #include "ScriptEventListener.h"
 #include "StaticNodeList.h"
+#include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/StdLibExtras.h>

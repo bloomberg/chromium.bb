@@ -28,7 +28,7 @@
 #include "core/platform/image-decoders/ImageDecoder.h"
 
 #include "NativeImageSkia.h"
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 
 namespace WebCore {
 

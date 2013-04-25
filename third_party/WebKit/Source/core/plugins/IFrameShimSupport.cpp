@@ -39,7 +39,7 @@
 #include "HTMLNames.h"
 #include "RenderBox.h"
 #include "RenderObject.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
 #include <wtf/HashSet.h>
 

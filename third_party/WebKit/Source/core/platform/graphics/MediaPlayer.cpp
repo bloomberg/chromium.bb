@@ -27,15 +27,15 @@
 
 #include "core/platform/graphics/MediaPlayer.h"
 
-#include "ContentType.h"
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "Logging.h"
-#include "MIMETypeRegistry.h"
 #include "MediaSource.h"
 #include "Settings.h"
 #include "TimeRanges.h"
+#include "core/platform/ContentType.h"
+#include "core/platform/Logging.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/MediaPlayerPrivate.h"
 #include <wtf/text/CString.h>

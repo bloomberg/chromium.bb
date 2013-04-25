@@ -29,8 +29,8 @@
  */
 
 #include "config.h"
-#include "KURL.h"
-#include "LinkHash.h"
+#include "core/platform/KURL.h"
+#include "core/platform/LinkHash.h"
 
 #include <googleurl/src/url_util.h>
 #include <public/Platform.h>

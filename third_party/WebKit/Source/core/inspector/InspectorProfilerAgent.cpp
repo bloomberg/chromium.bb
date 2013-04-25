@@ -40,7 +40,6 @@
 #include "InspectorState.h"
 #include "InspectorValues.h"
 #include "InstrumentingAgents.h"
-#include "KURL.h"
 #include "Page.h"
 #include "PageScriptDebugServer.h"
 #include "ScriptObject.h"
@@ -48,6 +47,7 @@
 #include "ScriptProfiler.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WorkerScriptDebugServer.h"
+#include "core/platform/KURL.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/OwnPtr.h>

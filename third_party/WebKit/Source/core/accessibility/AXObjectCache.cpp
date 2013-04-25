@@ -53,7 +53,6 @@
 #include "RenderTableCell.h"
 #include "RenderTableRow.h"
 #include "RenderView.h"
-#include "ScrollView.h"
 #include "core/accessibility/AccessibilityARIAGrid.h"
 #include "core/accessibility/AccessibilityARIAGridCell.h"
 #include "core/accessibility/AccessibilityARIAGridRow.h"
@@ -77,6 +76,7 @@
 #include "core/accessibility/AccessibilityTableColumn.h"
 #include "core/accessibility/AccessibilityTableHeaderContainer.h"
 #include "core/accessibility/AccessibilityTableRow.h"
+#include "core/platform/ScrollView.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

@@ -27,13 +27,13 @@
 
 #include "config.h"
 
-#include "PODIntervalTree.h"
+#include "core/platform/PODIntervalTree.h"
 
-#include "Logging.h"
-#include "TreeTestHelpers.h"
 #include <gtest/gtest.h>
-#include <wtf/Vector.h>
+#include "TreeTestHelpers.h"
+#include "core/platform/Logging.h"
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

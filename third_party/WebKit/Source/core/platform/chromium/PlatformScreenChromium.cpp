@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "PlatformScreen.h"
+#include "core/platform/PlatformScreen.h"
 
-#include "HostWindow.h"
-#include "ScrollView.h"
-#include "Widget.h"
+#include "core/platform/HostWindow.h"
+#include "core/platform/ScrollView.h"
+#include "core/platform/Widget.h"
 #include "core/platform/chromium/PageClientChromium.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <public/Platform.h>

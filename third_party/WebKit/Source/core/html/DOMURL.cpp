@@ -31,7 +31,6 @@
 #include "ActiveDOMObject.h"
 #include "Blob.h"
 #include "BlobURL.h"
-#include "KURL.h"
 #include "MediaSource.h"
 #include "MediaSourceRegistry.h"
 #include "MemoryCache.h"
@@ -39,6 +38,7 @@
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/MainThread.h>
 #include <wtf/PassOwnPtr.h>

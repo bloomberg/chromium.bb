@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "FileIconLoader.h"
+#include "core/platform/FileIconLoader.h"
 
 #include "core/platform/graphics/Icon.h"
 

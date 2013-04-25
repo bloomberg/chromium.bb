@@ -29,7 +29,7 @@
 
 #include "HTMLDivElement.h"
 #include "PopupOpeningObserver.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
 namespace WebCore {
 

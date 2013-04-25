@@ -28,8 +28,8 @@
 
 #include "ActiveDOMObject.h"
 #include "CanvasRenderingContext.h"
-#include "Timer.h"
 #include "WebGLGetInfo.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/ImageBuffer.h"
 

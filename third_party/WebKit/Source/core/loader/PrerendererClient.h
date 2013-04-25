@@ -32,7 +32,7 @@
 #ifndef PrerendererClient_h
 #define PrerendererClient_h
 
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

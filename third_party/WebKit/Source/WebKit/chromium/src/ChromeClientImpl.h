@@ -34,9 +34,9 @@
 
 #include "ChromeClient.h"
 #include "NavigatorContentUtilsClient.h"
-#include "PopupMenu.h"
-#include "SearchPopupMenu.h"
 #include "WebNavigationPolicy.h"
+#include "core/platform/PopupMenu.h"
+#include "core/platform/SearchPopupMenu.h"
 #include <public/WebColor.h>
 #include <wtf/PassOwnPtr.h>
 

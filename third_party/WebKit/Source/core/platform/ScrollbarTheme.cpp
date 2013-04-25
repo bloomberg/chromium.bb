@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ScrollbarTheme.h"
+#include "core/platform/ScrollbarTheme.h"
 
 #include "Settings.h"
 #include "core/platform/mock/ScrollbarThemeMock.h"

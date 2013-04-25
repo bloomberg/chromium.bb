@@ -23,7 +23,7 @@
 #include "DOMWindowProperty.h"
 #include "NavigatorBase.h"
 #include "ScriptWrappable.h"
-#include "Supplementable.h"
+#include "core/platform/Supplementable.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>

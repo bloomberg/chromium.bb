@@ -27,14 +27,14 @@
 
 #include "config.h"
 
-#include "ScrollAnimatorNone.h"
+#include "core/platform/ScrollAnimatorNone.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>
-#include "Logging.h"
-#include "ScrollAnimator.h"
-#include "ScrollableArea.h"
 #include "TreeTestHelpers.h"
+#include "core/platform/Logging.h"
+#include "core/platform/ScrollAnimator.h"
+#include "core/platform/ScrollableArea.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntRect.h"
 

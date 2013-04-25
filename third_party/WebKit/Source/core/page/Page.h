@@ -27,10 +27,10 @@
 #include "LayoutMilestones.h"
 #include "PageVisibilityState.h"
 #include "Pagination.h"
-#include "PlatformScreen.h"
-#include "Supplementable.h"
 #include "UseCounter.h"
 #include "ViewportArguments.h"
+#include "core/platform/PlatformScreen.h"
+#include "core/platform/Supplementable.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/Region.h"
 #include <wtf/Forward.h>

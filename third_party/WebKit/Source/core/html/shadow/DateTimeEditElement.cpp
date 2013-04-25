@@ -27,7 +27,6 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "DateTimeEditElement.h"
 
-#include "DateComponents.h"
 #include "DateTimeFieldElements.h"
 #include "DateTimeFieldsState.h"
 #include "DateTimeSymbolicFieldElement.h"
@@ -38,6 +37,7 @@
 #include "RenderStyle.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"

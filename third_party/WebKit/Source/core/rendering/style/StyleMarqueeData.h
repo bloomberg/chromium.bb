@@ -25,8 +25,8 @@
 #ifndef StyleMarqueeData_h
 #define StyleMarqueeData_h
 
-#include "Length.h"
 #include "RenderStyleConstants.h"
+#include "core/platform/Length.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

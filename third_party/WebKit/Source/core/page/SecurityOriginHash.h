@@ -29,8 +29,8 @@
 #ifndef SecurityOriginHash_h
 #define SecurityOriginHash_h
 
-#include "KURL.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

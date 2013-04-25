@@ -29,8 +29,8 @@
 #include "EditingStyle.h"
 #include "Range.h"
 #include "ScrollBehavior.h"
-#include "Timer.h"
 #include "VisibleSelection.h"
+#include "core/platform/Timer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/Noncopyable.h>

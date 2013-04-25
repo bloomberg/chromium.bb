@@ -33,7 +33,7 @@
 #include "RenderApplet.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
-#include "Widget.h"
+#include "core/platform/Widget.h"
 
 namespace WebCore {
 

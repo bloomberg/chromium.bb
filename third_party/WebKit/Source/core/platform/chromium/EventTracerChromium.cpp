@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "EventTracer.h"
+#include "core/platform/EventTracer.h"
 
 #include <public/Platform.h>
 

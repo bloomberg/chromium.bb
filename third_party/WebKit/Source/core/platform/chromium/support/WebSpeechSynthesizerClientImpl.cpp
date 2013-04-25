@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/chromium/support/WebSpeechSynthesizerClientImpl.h"
 
-#include "PlatformSpeechSynthesisUtterance.h"
+#include "core/platform/PlatformSpeechSynthesisUtterance.h"
 
 namespace WebCore {
 

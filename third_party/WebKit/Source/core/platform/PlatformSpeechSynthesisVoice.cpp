@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "PlatformSpeechSynthesisVoice.h"
+#include "core/platform/PlatformSpeechSynthesisVoice.h"
 
 #if ENABLE(SPEECH_SYNTHESIS)
 

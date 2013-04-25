@@ -31,8 +31,8 @@
 #ifndef WebFileChooserCompletionImpl_h
 #define WebFileChooserCompletionImpl_h
 
-#include "FileChooser.h"
 #include "WebFileChooserCompletion.h"
+#include "core/platform/FileChooser.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>
 #include <wtf/PassRefPtr.h>

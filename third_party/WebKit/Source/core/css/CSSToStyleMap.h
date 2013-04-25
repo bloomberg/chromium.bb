@@ -23,7 +23,7 @@
 #define CSSToStyleMap_h
 
 #include "CSSPropertyNames.h"
-#include "LengthBox.h"
+#include "core/platform/LengthBox.h"
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {

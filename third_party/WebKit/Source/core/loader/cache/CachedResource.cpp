@@ -33,13 +33,13 @@
 #include "Document.h"
 #include "DocumentLoader.h"
 #include "InspectorInstrumentation.h"
-#include "KURL.h"
-#include "Logging.h"
 #include "MemoryCache.h"
-#include "PurgeableBuffer.h"
 #include "ResourceLoader.h"
-#include "SharedBuffer.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Logging.h"
+#include "core/platform/PurgeableBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>

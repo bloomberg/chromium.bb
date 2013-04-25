@@ -28,8 +28,8 @@
 
 #if ENABLE(INPUT_TYPE_COLOR)
 
-#include "ColorChooser.h"
 #include "WebColorChooserClient.h"
+#include "core/platform/ColorChooser.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/OwnPtr.h>
 

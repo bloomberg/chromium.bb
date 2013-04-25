@@ -21,7 +21,7 @@
 #ifndef StepRange_h
 #define StepRange_h
 
-#include "Decimal.h"
+#include "core/platform/Decimal.h"
 #include <wtf/Forward.h>
 #include <wtf/Noncopyable.h>
 

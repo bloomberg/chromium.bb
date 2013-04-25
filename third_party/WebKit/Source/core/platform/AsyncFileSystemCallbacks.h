@@ -31,9 +31,9 @@
 #ifndef AsyncFileSystemCallbacks_h
 #define AsyncFileSystemCallbacks_h
 
-#include "AsyncFileSystem.h"
 #include "AsyncFileWriter.h"
-#include "FileMetadata.h"
+#include "core/platform/AsyncFileSystem.h"
+#include "core/platform/FileMetadata.h"
 #include "core/platform/network/BlobData.h"
 #include <wtf/text/WTFString.h>
 

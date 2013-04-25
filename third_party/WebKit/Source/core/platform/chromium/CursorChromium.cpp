@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "Cursor.h"
+#include "core/platform/Cursor.h"
 
 #include <wtf/Assertions.h>
 

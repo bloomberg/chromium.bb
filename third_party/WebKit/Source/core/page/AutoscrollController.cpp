@@ -36,7 +36,7 @@
 #include "HitTestResult.h"
 #include "Page.h"
 #include "RenderBox.h"
-#include "ScrollView.h"
+#include "core/platform/ScrollView.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

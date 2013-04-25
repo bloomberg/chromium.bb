@@ -31,7 +31,7 @@
 #ifndef MHTMLParser_h
 #define MHTMLParser_h
 
-#include "SharedBufferChunkReader.h"
+#include "core/platform/SharedBufferChunkReader.h"
 #include <wtf/RefPtr.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/Vector.h>

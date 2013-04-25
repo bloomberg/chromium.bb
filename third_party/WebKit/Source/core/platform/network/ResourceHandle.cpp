@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/network/ResourceHandle.h"
 
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include "core/platform/network/NetworkingContext.h"

@@ -32,9 +32,9 @@
 #include "WebSecurityPolicy.h"
 
 #include "FrameLoader.h"
-#include "SchemeRegistry.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
+#include "core/platform/SchemeRegistry.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
 

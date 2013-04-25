@@ -29,7 +29,7 @@
 #ifndef DocumentWriter_h
 #define DocumentWriter_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

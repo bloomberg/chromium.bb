@@ -32,8 +32,8 @@
 #import <float.h>
 #import <unicode/uchar.h>
 #import "BlockExceptions.h"
-#import "SharedBuffer.h"
 #import "WebCoreSystemInterface.h"
+#import "core/platform/SharedBuffer.h"
 #import "core/platform/graphics/Color.h"
 #import "core/platform/graphics/FloatRect.h"
 #import "core/platform/graphics/Font.h"

@@ -31,7 +31,7 @@
 #ifndef FileStream_h
 #define FileStream_h
 
-#include "FileSystem.h"
+#include "core/platform/FileSystem.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

@@ -32,15 +32,15 @@
 #include "FrameView.h"
 #include "HTMLNames.h"
 #include "HitTestResult.h"
-#include "LocalizedStrings.h"
 #include "Page.h"
-#include "PlatformKeyboardEvent.h"
 #include "RenderLayer.h"
 #include "RenderScrollbar.h"
 #include "RenderTheme.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "TextControlInnerElements.h"
+#include "core/platform/LocalizedStrings.h"
+#include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/graphics/SimpleFontData.h"
 
 using namespace std;

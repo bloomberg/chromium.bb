@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "MemoryUsageSupport.h"
+#include "core/platform/MemoryUsageSupport.h"
 
 #include <SkGraphics.h>
 #include <public/Platform.h>

@@ -32,7 +32,7 @@
 #ifndef PingLoader_h
 #define PingLoader_h
 
-#include "Timer.h"
+#include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandleClient.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/RefPtr.h>

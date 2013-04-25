@@ -26,7 +26,7 @@
 #ifndef AnimationUtilities_h
 #define AnimationUtilities_h
 
-#include "LayoutUnit.h"
+#include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/IntPoint.h"
 #include <wtf/MathExtras.h>
 

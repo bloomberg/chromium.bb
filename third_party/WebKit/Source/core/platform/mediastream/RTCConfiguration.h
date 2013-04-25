@@ -33,11 +33,11 @@
 
 #if ENABLE(MEDIA_STREAM)
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "SSLKeyGenerator.h"
+#include "core/platform/SSLKeyGenerator.h"
 
 
 #include <public/Platform.h>

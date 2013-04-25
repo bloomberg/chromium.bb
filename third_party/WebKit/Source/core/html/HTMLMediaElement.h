@@ -33,9 +33,9 @@
 #include "MediaControllerInterface.h"
 #include "core/platform/graphics/MediaPlayer.h"
 
-#include "PODIntervalTree.h"
 #include "TextTrack.h"
 #include "TextTrackCue.h"
+#include "core/platform/PODIntervalTree.h"
 
 namespace WebCore {
 

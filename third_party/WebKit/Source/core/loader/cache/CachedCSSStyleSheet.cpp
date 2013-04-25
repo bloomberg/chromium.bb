@@ -31,10 +31,10 @@
 #include "CachedResourceClientWalker.h"
 #include "CachedStyleSheetClient.h"
 #include "MemoryCache.h"
-#include "SharedBuffer.h"
 #include "StyleSheetContents.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>

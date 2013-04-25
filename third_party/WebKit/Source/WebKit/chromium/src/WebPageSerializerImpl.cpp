@@ -89,8 +89,8 @@
 #include "HTMLFormElement.h"
 #include "HTMLMetaElement.h"
 #include "HTMLNames.h"
-#include "KURL.h"
 #include "WebFrameImpl.h"
+#include "core/platform/KURL.h"
 #include "core/platform/text/TextEncoding.h"
 #include "markup.h"
 #include <public/WebURL.h>

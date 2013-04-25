@@ -27,7 +27,7 @@
 
 // FIXME: This should be moved to WebKit, because browser process needs to track secure input state anyway to manipulate input contexts.
 #if OS(DARWIN)
-#include "SecureTextInput.h"
+#include "core/platform/SecureTextInput.h"
 
 #import <Carbon/Carbon.h>
 

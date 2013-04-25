@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/platform/network/ResourceRequest.h"
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>

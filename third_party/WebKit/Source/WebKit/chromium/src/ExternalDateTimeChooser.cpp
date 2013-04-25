@@ -28,11 +28,11 @@
 #include "ExternalDateTimeChooser.h"
 
 #include "ChromeClientImpl.h"
-#include "DateTimeChooserClient.h"
 #include "InputTypeNames.h"
 #include "WebDateTimeChooserCompletion.h"
 #include "WebDateTimeChooserParams.h"
 #include "WebViewClient.h"
+#include "core/platform/DateTimeChooserClient.h"
 #include <wtf/text/AtomicString.h>
 
 using namespace WebCore;

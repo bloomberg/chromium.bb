@@ -35,9 +35,9 @@
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "InspectorValues.h"
-#include "PlatformInstrumentation.h"
 #include "ScriptGCEvent.h"
 #include "ScriptGCEventListener.h"
+#include "core/platform/PlatformInstrumentation.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>

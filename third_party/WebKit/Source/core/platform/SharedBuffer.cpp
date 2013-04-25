@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 
-#include "PlatformMemoryInstrumentation.h"
-#include "PurgeableBuffer.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/PurgeableBuffer.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/PassOwnPtr.h>
-#include <wtf/unicode/UTF8.h>
 #include <wtf/unicode/Unicode.h>
+#include <wtf/unicode/UTF8.h>
 
 using namespace std;
 

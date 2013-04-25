@@ -27,8 +27,8 @@
 #include "core/platform/chromium/ScrollbarThemeChromiumAndroid.h"
 
 #include "PlatformContextSkia.h"
-#include "PlatformMouseEvent.h"
-#include "Scrollbar.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/Scrollbar.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 
 #include <algorithm>

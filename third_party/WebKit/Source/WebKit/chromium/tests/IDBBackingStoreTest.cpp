@@ -30,7 +30,7 @@
 #include "IDBFactoryBackendImpl.h"
 #include "IDBLevelDBCoding.h"
 #include "SecurityOrigin.h"
-#include "SharedBuffer.h"
+#include "core/platform/SharedBuffer.h"
 
 #include <gtest/gtest.h>
 #include <webkit/support/webkit_support.h>

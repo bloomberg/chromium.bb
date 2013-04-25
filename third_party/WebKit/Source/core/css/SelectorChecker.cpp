@@ -48,12 +48,12 @@
 #include "RenderObject.h"
 #include "RenderScrollbar.h"
 #include "RenderStyle.h"
-#include "ScrollableArea.h"
-#include "ScrollbarTheme.h"
 #include "ShadowRoot.h"
 #include "SiblingTraversalStrategies.h"
 #include "StyledElement.h"
 #include "Text.h"
+#include "core/platform/ScrollableArea.h"
+#include "core/platform/ScrollbarTheme.h"
 
 #include "WebVTTElement.h"
 

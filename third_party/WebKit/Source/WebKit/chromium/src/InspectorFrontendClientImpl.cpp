@@ -34,12 +34,12 @@
 #include "Document.h"
 #include "Frame.h"
 #include "InspectorFrontendHost.h"
-#include "NotImplemented.h"
 #include "Page.h"
 #include "ScriptController.h"
 #include "V8InspectorFrontendHost.h"
 #include "WebDevToolsFrontendClient.h"
 #include "WebDevToolsFrontendImpl.h"
+#include "core/platform/NotImplemented.h"
 #include <public/WebFloatPoint.h>
 #include <public/WebString.h>
 #include <wtf/text/WTFString.h>

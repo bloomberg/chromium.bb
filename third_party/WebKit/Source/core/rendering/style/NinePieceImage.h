@@ -25,9 +25,9 @@
 #define NinePieceImage_h
 
 #include "DataRef.h"
-#include "LayoutUnit.h"
-#include "LengthBox.h"
 #include "StyleImage.h"
+#include "core/platform/LayoutUnit.h"
+#include "core/platform/LengthBox.h"
 
 namespace WebCore {
 

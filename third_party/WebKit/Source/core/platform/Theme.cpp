@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Theme.h"
+#include "core/platform/Theme.h"
 
 namespace WebCore {
 

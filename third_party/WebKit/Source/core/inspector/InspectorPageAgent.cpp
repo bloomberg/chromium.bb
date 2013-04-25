@@ -38,7 +38,6 @@
 #include "CachedResourceLoader.h"
 #include "CachedScript.h"
 #include "ContentSearchUtils.h"
-#include "Cookie.h"
 #include "CookieJar.h"
 #include "DOMImplementation.h"
 #include "DOMPatchSupport.h"
@@ -71,6 +70,7 @@
 #include "Settings.h"
 #include "TextResourceDecoder.h"
 #include "UserGestureIndicator.h"
+#include "core/platform/Cookie.h"
 #include "core/platform/text/RegularExpression.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/CurrentTime.h>

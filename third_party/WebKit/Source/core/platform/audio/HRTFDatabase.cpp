@@ -32,7 +32,7 @@
 
 #include "core/platform/audio/HRTFDatabase.h"
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/HRTFElevation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 

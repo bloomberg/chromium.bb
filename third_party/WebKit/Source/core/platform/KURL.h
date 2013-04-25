@@ -26,7 +26,7 @@
 #ifndef KURL_h
 #define KURL_h
 
-#include "KURLGooglePrivate.h"
+#include "core/platform/KURLGooglePrivate.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/WTFString.h>

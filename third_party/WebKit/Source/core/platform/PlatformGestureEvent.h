@@ -26,7 +26,7 @@
 #ifndef PlatformGestureEvent_h
 #define PlatformGestureEvent_h
 
-#include "PlatformEvent.h"
+#include "core/platform/PlatformEvent.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntSize.h"

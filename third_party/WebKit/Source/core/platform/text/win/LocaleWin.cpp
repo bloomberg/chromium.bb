@@ -33,9 +33,9 @@
 
 #include <windows.h>
 #include <limits>
-#include "DateComponents.h"
-#include "Language.h"
-#include "LocalizedStrings.h"
+#include "core/platform/DateComponents.h"
+#include "core/platform/Language.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>

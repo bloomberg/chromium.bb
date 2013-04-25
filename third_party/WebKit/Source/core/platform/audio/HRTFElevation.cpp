@@ -34,7 +34,7 @@
 
 #include <math.h>
 #include <algorithm>
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/audio/AudioBus.h"
 #include "core/platform/audio/AudioFileReader.h"
 #include "core/platform/audio/Biquad.h"

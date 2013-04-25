@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "Timer.h"
+#include "core/platform/Timer.h"
 
-#include "SharedTimer.h"
-#include "ThreadGlobalData.h"
-#include "ThreadTimers.h"
 #include <limits.h>
-#include <limits>
 #include <math.h>
+#include <limits>
+#include "core/platform/SharedTimer.h"
+#include "core/platform/ThreadGlobalData.h"
+#include "core/platform/ThreadTimers.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>

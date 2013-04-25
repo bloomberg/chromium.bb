@@ -34,8 +34,8 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "KURL.h"
 #include "SecurityOrigin.h"
+#include "core/platform/KURL.h"
 
 namespace WebCore {
 

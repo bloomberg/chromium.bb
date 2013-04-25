@@ -30,8 +30,8 @@
 #include "Element.h"
 #include "Event.h"
 #include "Page.h"
-#include "PlatformMouseEvent.h"
 #include "VoidCallback.h"
+#include "core/platform/PlatformMouseEvent.h"
 
 namespace WebCore {
 

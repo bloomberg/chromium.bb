@@ -28,10 +28,10 @@
 #include "core/platform/graphics/Image.h"
 
 #include <math.h>
-#include "Length.h"
-#include "MIMETypeRegistry.h"
-#include "PlatformMemoryInstrumentation.h"
-#include "SharedBuffer.h"
+#include "core/platform/Length.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageObserver.h"

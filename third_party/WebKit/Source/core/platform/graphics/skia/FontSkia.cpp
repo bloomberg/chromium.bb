@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/platform/graphics/Font.h"
 
-#include "LayoutTestSupport.h"
 #include "PlatformContextSkia.h"
+#include "core/platform/LayoutTestSupport.h"
 #include "core/platform/graphics/FontSmoothingMode.h"
 #include "core/platform/graphics/GlyphBuffer.h"
 #include "core/platform/graphics/GraphicsContext.h"

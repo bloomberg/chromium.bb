@@ -28,7 +28,7 @@
 
 #if ENABLE(SPEECH_SYNTHESIS)
 
-#include "PlatformSpeechSynthesisVoice.h"
+#include "core/platform/PlatformSpeechSynthesisVoice.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 

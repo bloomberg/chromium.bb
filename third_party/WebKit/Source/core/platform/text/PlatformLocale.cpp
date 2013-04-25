@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/text/PlatformLocale.h"
 
-#include "LocalizedStrings.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include <wtf/text/StringBuilder.h>
 

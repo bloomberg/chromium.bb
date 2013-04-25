@@ -31,12 +31,12 @@
 #include "FrameLoader.h"
 #include "FrameLoaderClient.h"
 #include "Geolocation.h"
-#include "Language.h"
 #include "Page.h"
 #include "PluginData.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "core/platform/Language.h"
 #include "core/storage/StorageNamespace.h"
 #include <wtf/HashSet.h>
 #include <wtf/StdLibExtras.h>

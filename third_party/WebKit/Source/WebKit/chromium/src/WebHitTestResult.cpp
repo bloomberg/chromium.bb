@@ -28,12 +28,12 @@
 
 #include "Element.h"
 #include "HitTestResult.h"
-#include "KURL.h"
 #include "Node.h"
 #include "RenderObject.h"
 #include "VisiblePosition.h"
 #include "WebElement.h"
 #include "WebNode.h"
+#include "core/platform/KURL.h"
 #include <public/WebPoint.h>
 #include <public/WebURL.h>
 

@@ -22,7 +22,7 @@
 
 #include "Document.h"
 #include "Frame.h"
-#include "ReferrerPolicy.h"
+#include "core/platform/ReferrerPolicy.h"
 #include "core/platform/network/NetworkingContext.h"
 
 namespace WebCore {

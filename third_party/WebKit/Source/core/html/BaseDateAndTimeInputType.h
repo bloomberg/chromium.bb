@@ -31,8 +31,8 @@
 #ifndef BaseDateAndTimeInputType_h
 #define BaseDateAndTimeInputType_h
 
-#include "DateComponents.h"
 #include "InputType.h"
+#include "core/platform/DateComponents.h"
 #include <wtf/unicode/Unicode.h>
 
 namespace WebCore {

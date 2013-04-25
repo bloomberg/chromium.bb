@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "KURL.h"
+#include "core/platform/KURL.h"
 
 #ifndef NDEBUG
 #include <stdio.h>
@@ -38,8 +38,8 @@
 
 #include <algorithm>
 
-#include "NotImplemented.h"
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/NotImplemented.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/HashMap.h>
 #include <wtf/MemoryInstrumentationString.h>

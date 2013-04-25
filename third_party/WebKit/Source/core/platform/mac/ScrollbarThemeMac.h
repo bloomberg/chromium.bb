@@ -26,7 +26,7 @@
 #ifndef ScrollbarThemeMac_h
 #define ScrollbarThemeMac_h
 
-#include "ScrollbarThemeComposite.h"
+#include "core/platform/ScrollbarThemeComposite.h"
 
 typedef id ScrollbarPainter;
 

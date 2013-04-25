@@ -42,12 +42,12 @@
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "ImageData.h"
-#include "MIMETypeRegistry.h"
 #include "Page.h"
 #include "RenderHTMLCanvas.h"
 #include "ScriptController.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 

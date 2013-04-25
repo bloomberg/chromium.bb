@@ -34,9 +34,9 @@
 
 #include "ActiveDOMObject.h"
 #include "EventTarget.h"
-#include "KURL.h"
 #include "ThreadableLoaderClient.h"
-#include "Timer.h"
+#include "core/platform/KURL.h"
+#include "core/platform/Timer.h"
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>
 

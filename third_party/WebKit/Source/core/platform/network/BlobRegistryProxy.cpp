@@ -32,7 +32,7 @@
 
 #include "core/platform/network/BlobRegistryProxy.h"
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <public/Platform.h>

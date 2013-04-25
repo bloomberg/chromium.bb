@@ -31,7 +31,7 @@
 #ifndef  AsyncFileSystemChromium_h
 #define  AsyncFileSystemChromium_h
 
-#include "AsyncFileSystem.h"
+#include "core/platform/AsyncFileSystem.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebKit {

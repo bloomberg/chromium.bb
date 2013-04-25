@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "StatsCounter.h"
+#include "core/platform/StatsCounter.h"
 
 #include <public/Platform.h>
 

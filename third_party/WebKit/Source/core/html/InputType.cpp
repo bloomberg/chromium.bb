@@ -33,7 +33,6 @@
 #include "ButtonInputType.h"
 #include "CheckboxInputType.h"
 #include "ColorInputType.h"
-#include "DateComponents.h"
 #include "DateInputType.h"
 #include "DateTimeInputType.h"
 #include "DateTimeLocalInputType.h"
@@ -54,7 +53,6 @@
 #include "ImageInputType.h"
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
-#include "LocalizedStrings.h"
 #include "MonthInputType.h"
 #include "NodeRenderStyle.h"
 #include "NumberInputType.h"
@@ -75,6 +73,8 @@
 #include "URLInputType.h"
 #include "WeekInputType.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/DateComponents.h"
+#include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>

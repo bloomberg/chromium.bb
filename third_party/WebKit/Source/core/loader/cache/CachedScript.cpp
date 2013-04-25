@@ -29,11 +29,11 @@
 
 #include "CachedResourceClient.h"
 #include "CachedResourceClientWalker.h"
-#include "MIMETypeRegistry.h"
 #include "MemoryCache.h"
-#include "SharedBuffer.h"
 #include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/MIMETypeRegistry.h"
+#include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include <wtf/Vector.h>
 

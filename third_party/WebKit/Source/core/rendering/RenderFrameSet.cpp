@@ -24,7 +24,6 @@
 #include "config.h"
 #include "RenderFrameSet.h"
 
-#include "Cursor.h"
 #include "Document.h"
 #include "EventHandler.h"
 #include "EventNames.h"
@@ -40,6 +39,7 @@
 #include "RenderView.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/Cursor.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/MemoryInstrumentationVector.h>
 

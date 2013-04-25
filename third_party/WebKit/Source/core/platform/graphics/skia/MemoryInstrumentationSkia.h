@@ -31,7 +31,7 @@
 #ifndef MemoryInstrumentationSkia_h
 #define MemoryInstrumentationSkia_h
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 
 class SkBitmap;
 class SkDevice;

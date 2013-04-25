@@ -32,7 +32,7 @@
 #ifndef SocketStreamHandle_h
 #define SocketStreamHandle_h
 
-#include "KURL.h"
+#include "core/platform/KURL.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/StreamBuffer.h>

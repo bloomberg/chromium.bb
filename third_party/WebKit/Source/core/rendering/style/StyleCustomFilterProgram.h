@@ -33,8 +33,8 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "CachedShader.h"
-#include "KURL.h"
 #include "StyleShader.h"
+#include "core/platform/KURL.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include <wtf/FastAllocBase.h>
 

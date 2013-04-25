@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "ScrollView.h"
+#include "core/platform/ScrollView.h"
 
-#include "HostWindow.h"
-#include "PlatformMouseEvent.h"
-#include "PlatformWheelEvent.h"
-#include "ScrollAnimator.h"
-#include "Scrollbar.h"
-#include "ScrollbarTheme.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/HostWindow.h"
+#include "core/platform/PlatformMouseEvent.h"
+#include "core/platform/PlatformWheelEvent.h"
+#include "core/platform/ScrollAnimator.h"
+#include "core/platform/Scrollbar.h"
+#include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include <wtf/StdLibExtras.h>

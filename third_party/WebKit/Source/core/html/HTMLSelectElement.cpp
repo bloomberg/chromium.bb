@@ -43,18 +43,18 @@
 #include "HTMLOptionElement.h"
 #include "HTMLOptionsCollection.h"
 #include "KeyboardEvent.h"
-#include "LocalizedStrings.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "PlatformMouseEvent.h"
 #include "RenderListBox.h"
 #include "RenderMenuList.h"
 #include "RenderTheme.h"
 #include "ScriptEventListener.h"
 #include "SpatialNavigation.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/platform/LocalizedStrings.h"
+#include "core/platform/PlatformMouseEvent.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/Unicode.h>
 

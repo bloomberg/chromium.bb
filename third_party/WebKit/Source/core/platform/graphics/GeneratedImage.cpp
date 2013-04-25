@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/platform/graphics/GeneratedImage.h"
 
-#include "PlatformMemoryInstrumentation.h"
+#include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatSize.h"
 
 
