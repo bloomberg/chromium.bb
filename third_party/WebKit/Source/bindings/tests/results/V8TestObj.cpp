@@ -48,7 +48,6 @@
 #include "V8SVGPoint.h"
 #include "V8ScriptProfile.h"
 #include "V8TestCallback.h"
-#include "V8TestEnumType.h"
 #include "V8TestSubObj.h"
 #include "V8a.h"
 #include "V8b.h"
@@ -227,6 +226,17 @@ static void enumAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> 
 static void enumAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
     TestObjV8Internal::enumAttrAttrSetter(name, value, info);
+}
+
+static v8::Handle<v8::Value> readOnlyEnumAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObj::toNative(info.Holder());
+    return v8String(imp->readOnlyEnumAttr(), info.GetIsolate(), ReturnUnsafeHandle);
+}
+
+static v8::Handle<v8::Value> readOnlyEnumAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    return TestObjV8Internal::readOnlyEnumAttrAttrGetter(name, info);
 }
 
 static v8::Handle<v8::Value> shortAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
@@ -3892,6 +3902,8 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     {"TestSubObj", TestObjV8Internal::TestObjConstructorGetter, 0, 0, 0, &V8TestSubObj::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'enumAttr' (Type: 'attribute' ExtAttr: '')
     {"enumAttr", TestObjV8Internal::enumAttrAttrGetterCallback, TestObjV8Internal::enumAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'readOnlyEnumAttr' (Type: 'readonly attribute' ExtAttr: '')
+    {"readOnlyEnumAttr", TestObjV8Internal::readOnlyEnumAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'shortAttr' (Type: 'attribute' ExtAttr: '')
     {"shortAttr", TestObjV8Internal::shortAttrAttrGetterCallback, TestObjV8Internal::shortAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'unsignedShortAttr' (Type: 'attribute' ExtAttr: '')
@@ -4055,6 +4067,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
     {"longMethod", TestObjV8Internal::longMethodMethodCallback, 0, 0},
     {"objMethod", TestObjV8Internal::objMethodMethodCallback, 0, 0},
     {"methodReturningSequence", TestObjV8Internal::methodReturningSequenceMethodCallback, 0, 1},
+    {"methodWithEnumArg", TestObjV8Internal::methodWithEnumArgMethodCallback, 0, 1},
     {"serializedValue", TestObjV8Internal::serializedValueMethodCallback, 0, 1},
     {"optionsObject", TestObjV8Internal::optionsObjectMethodCallback, 0, 1},
     {"methodWithException", TestObjV8Internal::methodWithExceptionMethodCallback, 0, 0},
@@ -4206,12 +4219,6 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
     v8::Handle<v8::FunctionTemplate> methodWithSequenceArgArgv[methodWithSequenceArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8sequence<ScriptProfile>::info, currentWorldType) };
     v8::Handle<v8::Signature> methodWithSequenceArgSignature = v8::Signature::New(desc, methodWithSequenceArgArgc, methodWithSequenceArgArgv);
     proto->Set(v8::String::NewSymbol("methodWithSequenceArg"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithSequenceArgMethodCallback, v8Undefined(), methodWithSequenceArgSignature));
-
-    // Custom Signature 'methodWithEnumArg'
-    const int methodWithEnumArgArgc = 1;
-    v8::Handle<v8::FunctionTemplate> methodWithEnumArgArgv[methodWithEnumArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestEnumType::info, currentWorldType) };
-    v8::Handle<v8::Signature> methodWithEnumArgSignature = v8::Signature::New(desc, methodWithEnumArgArgc, methodWithEnumArgArgv);
-    proto->Set(v8::String::NewSymbol("methodWithEnumArg"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithEnumArgMethodCallback, v8Undefined(), methodWithEnumArgSignature));
 
     // Custom Signature 'methodThatRequiresAllArgsAndThrows'
     const int methodThatRequiresAllArgsAndThrowsArgc = 2;

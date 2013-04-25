@@ -4601,6 +4601,7 @@ sub IsWrapperType
 {
     my $type = shift;
     # FIXME: Should this return false for Sequence and Array types?
+    return 0 if $codeGenerator->IsEnumType($type);
     return !($non_wrapper_types{$type});
 }
 
