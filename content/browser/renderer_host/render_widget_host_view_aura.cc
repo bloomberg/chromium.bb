@@ -561,6 +561,9 @@ class RenderWidgetHostViewAura::ResizeLock {
                          root_window_->compositor()->GetCompositorLock()),
         weak_ptr_factory_(this),
         defer_compositor_lock_(defer_compositor_lock) {
+    TRACE_EVENT_ASYNC_BEGIN2("ui", "ResizeLock", this,
+                             "width", new_size_.width(),
+                             "height", new_size_.height());
     root_window_->HoldMouseMoves();
 
     BrowserThread::PostDelayedTask(
@@ -572,6 +575,9 @@ class RenderWidgetHostViewAura::ResizeLock {
 
   ~ResizeLock() {
     CancelLock();
+    TRACE_EVENT_ASYNC_END2("ui", "ResizeLock", this,
+                           "width", new_size_.width(),
+                           "height", new_size_.height());
   }
 
   void UnlockCompositor() {
@@ -760,7 +766,19 @@ void RenderWidgetHostViewAura::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
-  if (window_->bounds().size() != rect.size() &&
+  window_->SetBounds(rect);
+  host_->WasResized();
+  MaybeCreateResizeLock();
+  if (touch_editing_client_) {
+    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
+        selection_focus_rect_);
+  }
+}
+
+void RenderWidgetHostViewAura::MaybeCreateResizeLock() {
+  gfx::Size desired_size = window_->bounds().size();
+  if (!resize_lock_.get() &&
+      desired_size != current_frame_size_ &&
       host_->is_accelerated_compositing_active()) {
     aura::RootWindow* root_window = window_->GetRootWindow();
     ui::Compositor* compositor = root_window ?
@@ -785,16 +803,10 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
       if (can_lock_compositor_ == YES)
         can_lock_compositor_ = YES_DID_LOCK;
 
-      resize_locks_.push_back(make_linked_ptr(
-          new ResizeLock(root_window, rect.size(), defer_compositor_lock)));
+      resize_lock_.reset(new ResizeLock(root_window, desired_size,
+                                        defer_compositor_lock));
 #endif
     }
-  }
-  window_->SetBounds(rect);
-  host_->WasResized();
-  if (touch_editing_client_) {
-    touch_editing_client_->OnSelectionOrCursorChanged(selection_anchor_rect_,
-        selection_focus_rect_);
   }
 }
 
@@ -946,7 +958,14 @@ bool RenderWidgetHostViewAura::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewAura::GetViewBounds() const {
-  return window_->GetBoundsInScreen();
+  // This is the size that we want the renderer to produce. While we're waiting
+  // for the correct frame (i.e. during a resize), don't change the size so that
+  // we don't pipeline more resizes than we can handle.
+  gfx::Rect bounds(window_->GetBoundsInScreen());
+  if (resize_lock_.get())
+    return gfx::Rect(bounds.origin(), resize_lock_->expected_size());
+  else
+    return bounds;
 }
 
 void RenderWidgetHostViewAura::SetBackground(const SkBitmap& background) {
@@ -1265,47 +1284,24 @@ void RenderWidgetHostViewAura::OnAcceleratedCompositingStateChange() {
 bool RenderWidgetHostViewAura::ShouldSkipFrame(gfx::Size size_in_dip) const {
   if (can_lock_compositor_ == NO_PENDING_RENDERER_FRAME ||
       can_lock_compositor_ == NO_PENDING_COMMIT ||
-      resize_locks_.empty())
+      !resize_lock_.get())
     return false;
 
-  ResizeLockList::const_iterator it = resize_locks_.begin();
-  while (it != resize_locks_.end()) {
-    if ((*it)->expected_size() == size_in_dip)
-      break;
-    ++it;
-  }
-
-  // We could be getting an unexpected frame due to an animation
-  // (i.e. we start resizing but we get an old size frame first).
-  return it == resize_locks_.end() || ++it != resize_locks_.end();
+  return size_in_dip != resize_lock_->expected_size();
 }
 
-void RenderWidgetHostViewAura::CheckResizeLocks(gfx::Size size_in_dip) {
-  ResizeLockList::iterator it = resize_locks_.begin();
-  while (it != resize_locks_.end()) {
-    if ((*it)->expected_size() == size_in_dip)
-      break;
-    ++it;
-  }
-  if (it != resize_locks_.end()) {
-    ++it;
-    ui::Compositor* compositor = GetCompositor();
-    if (compositor) {
-      // Delay the release of the lock until we've kicked a frame with the
-      // new texture, to avoid resizing the UI before we have a chance to
-      // draw a "good" frame.
-      locks_pending_commit_.insert(
-          locks_pending_commit_.begin(), resize_locks_.begin(), it);
-      // However since we got the size we were looking for, unlock the
-      // compositor.
-      for (ResizeLockList::iterator it2 = resize_locks_.begin();
-           it2 !=it; ++it2) {
-        it2->get()->UnlockCompositor();
-      }
-      if (!compositor->HasObserver(this))
-        compositor->AddObserver(this);
-    }
-    resize_locks_.erase(resize_locks_.begin(), it);
+void RenderWidgetHostViewAura::CheckResizeLock() {
+  if (!resize_lock_ || resize_lock_->expected_size() != current_frame_size_)
+    return;
+
+  // Since we got the size we were looking for, unlock the compositor. But delay
+  // the release of the lock until we've kicked a frame with the new texture, to
+  // avoid resizing the UI before we have a chance to draw a "good" frame.
+  resize_lock_->UnlockCompositor();
+  ui::Compositor* compositor = GetCompositor();
+  if (compositor) {
+    if (!compositor->HasObserver(this))
+      compositor->AddObserver(this);
   }
 }
 
@@ -1319,15 +1315,16 @@ void RenderWidgetHostViewAura::UpdateExternalTexture() {
   bool is_compositing_active = host_->is_accelerated_compositing_active();
   if (is_compositing_active && current_surface_) {
     window_->SetExternalTexture(current_surface_.get());
-    gfx::Size container_size = ConvertSizeToDIP(this, current_surface_->size());
-    CheckResizeLocks(container_size);
+    current_frame_size_ = ConvertSizeToDIP(this, current_surface_->size());
+    CheckResizeLock();
   } else if (is_compositing_active && current_dib_) {
     window_->SetExternalTexture(NULL);
-    gfx::Size frame_size = ConvertSizeToDIP(this, last_swapped_surface_size_);
-    CheckResizeLocks(frame_size);
+    current_frame_size_ = ConvertSizeToDIP(this, last_swapped_surface_size_);
+    CheckResizeLock();
   } else {
     window_->SetExternalTexture(NULL);
-    resize_locks_.clear();
+    resize_lock_.reset();
+    host_->WasResized();
   }
 }
 
@@ -1452,7 +1449,8 @@ void RenderWidgetHostViewAura::SwapDelegatedFrame(
   }
   window_->layer()->SetDelegatedFrame(frame_data.Pass(), frame_size_in_dip);
   released_front_lock_ = NULL;
-  CheckResizeLocks(frame_size_in_dip);
+  current_frame_size_ = frame_size_in_dip;
+  CheckResizeLock();
 
   if (paint_observer_)
     paint_observer_->OnUpdateCompositorContent();
@@ -1528,7 +1526,8 @@ void RenderWidgetHostViewAura::SwapSoftwareFrame(
                    AsWeakPtr(), last_dib_id));
   }
 
-  CheckResizeLocks(frame_size_in_dip);
+  current_frame_size_ = frame_size_in_dip;
+  CheckResizeLock();
   released_front_lock_ = NULL;
   window_->SetExternalTexture(NULL);
   window_->SchedulePaintInRect(ConvertRectToDIP(this, damage_rect));
@@ -2559,13 +2558,18 @@ void RenderWidgetHostViewAura::OnCompositingDidCommit(
     ui::Compositor* compositor) {
   if (can_lock_compositor_ == NO_PENDING_COMMIT) {
     can_lock_compositor_ = YES;
-    for (ResizeLockList::iterator it = resize_locks_.begin();
-        it != resize_locks_.end(); ++it)
-      if ((*it)->GrabDeferredLock())
-        can_lock_compositor_ = YES_DID_LOCK;
+    if (resize_lock_.get() && resize_lock_->GrabDeferredLock())
+      can_lock_compositor_ = YES_DID_LOCK;
   }
   RunOnCommitCallbacks();
-  locks_pending_commit_.clear();
+  if (resize_lock_ && resize_lock_->expected_size() == current_frame_size_) {
+    resize_lock_.reset();
+    host_->WasResized();
+    // We may have had a resize while we had the lock (e.g. if the lock expired,
+    // or if the UI still gave us some resizes), so make sure we grab a new lock
+    // if necessary.
+    MaybeCreateResizeLock();
+  }
 }
 
 void RenderWidgetHostViewAura::OnCompositingStarted(
@@ -2658,7 +2662,6 @@ void RenderWidgetHostViewAura::FatalAccessibilityTreeError() {
 void RenderWidgetHostViewAura::OnLostResources() {
   current_surface_ = NULL;
   UpdateExternalTexture();
-  locks_pending_commit_.clear();
 
   // Make sure all ImageTransportClients are deleted now that the context those
   // are using is becoming invalid. This sends pending ACKs and needs to happen
@@ -2862,7 +2865,8 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   // composited data.
   ui::Compositor* compositor = GetCompositor();
   RunOnCommitCallbacks();
-  locks_pending_commit_.clear();
+  resize_lock_.reset();
+  host_->WasResized();
   if (compositor && compositor->HasObserver(this))
     compositor->RemoveObserver(this);
 }

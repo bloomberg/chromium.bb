@@ -365,7 +365,14 @@ class RenderWidgetHostViewAura
 
   void UpdateCursorIfOverSelf();
   bool ShouldSkipFrame(gfx::Size size_in_dip) const;
-  void CheckResizeLocks(gfx::Size size_in_dip);
+
+  // Lazily grab a resize lock if the aura window size doesn't match the current
+  // frame size, to give time to the renderer.
+  void MaybeCreateResizeLock();
+
+  // Checks if the resize lock can be released because we received an new frame.
+  void CheckResizeLock();
+
   void UpdateExternalTexture();
   ui::InputMethod* GetInputMethod() const;
 
@@ -574,13 +581,17 @@ class RenderWidgetHostViewAura
 
   // Used to prevent further resizes while a resize is pending.
   class ResizeLock;
-  typedef std::vector<linked_ptr<ResizeLock> > ResizeLockList;
 
-  // These locks are the ones waiting for a texture of the right size to come
-  // back from the renderer/GPU process.
-  ResizeLockList resize_locks_;
-  // These locks are the ones waiting for a frame to be committed.
-  ResizeLockList locks_pending_commit_;
+  // This lock is the one waiting for a frame of the right size to come back
+  // from the renderer/GPU process. It is set from the moment the aura window
+  // got resized, to the moment we committed the renderer frame of the same
+  // size. It keeps track of the size we expect from the renderer, and locks the
+  // compositor, as well as the UI for a short time to give a chance to the
+  // renderer of producing a frame of the right size.
+  scoped_ptr<ResizeLock> resize_lock_;
+
+  // Keeps track of the current frame size.
+  gfx::Size current_frame_size_;
 
   // This lock is for waiting for a front surface to become available to draw.
   scoped_refptr<ui::CompositorLock> released_front_lock_;
