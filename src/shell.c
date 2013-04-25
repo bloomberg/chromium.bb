@@ -1109,10 +1109,12 @@ shell_surface_move(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_seat *seat = seat_resource->data;
 	struct shell_surface *shsurf = resource->data;
+	struct weston_surface *surface;
 
+	surface = weston_surface_get_main_surface(seat->pointer->focus);
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    seat->pointer->focus != shsurf->surface)
+	    surface != shsurf->surface)
 		return;
 
 	if (surface_move(shsurf, seat) < 0)
@@ -1232,13 +1234,15 @@ shell_surface_resize(struct wl_client *client, struct wl_resource *resource,
 {
 	struct weston_seat *seat = seat_resource->data;
 	struct shell_surface *shsurf = resource->data;
+	struct weston_surface *surface;
 
 	if (shsurf->type == SHELL_SURFACE_FULLSCREEN)
 		return;
 
+	surface = weston_surface_get_main_surface(seat->pointer->focus);
 	if (seat->pointer->button_count == 0 ||
 	    seat->pointer->grab_serial != serial ||
-	    seat->pointer->focus != shsurf->surface)
+	    surface != shsurf->surface)
 		return;
 
 	if (surface_resize(shsurf, seat, edges) < 0)
