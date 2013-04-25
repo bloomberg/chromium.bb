@@ -250,10 +250,6 @@ DEFAULT_CQ_READY_QUERY = ('status:open AND CodeReview=+2 AND Verified=+1 '
                           'AND CommitQueue=+1 '
                           'AND NOT ( CodeReview=-2 OR Verified=-1 )')
 
-# Default filter rules for verifying that Gerrit returned results that matched
-# our query. This used for working around Gerrit bugs.
-DEFAULT_CQ_READY_FIELDS = {'SUBM': '0', 'CRVW': '2', 'VRIF': '1', 'COMR': '1'}
-
 # Some files need permissions set for several distinct groups. A google storage
 # acl (xml) file will be necessary in those cases. Make available well known
 # locations and standardize.

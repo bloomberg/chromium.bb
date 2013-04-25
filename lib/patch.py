@@ -1102,9 +1102,9 @@ class GerritPatch(GitRepoPatch):
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
-    self._approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
+    approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
     self.approval_timestamp = \
-        max(x['grantedOn'] for x in self._approvals) if self._approvals else 0
+        max(x['grantedOn'] for x in approvals) if approvals else 0
 
   def __reduce__(self):
     """Used for pickling to re-create patch object."""
@@ -1121,22 +1121,6 @@ class GerritPatch(GitRepoPatch):
   def IsAlreadyMerged(self):
     """Returns whether the patch has already been merged in Gerrit."""
     return self.status == 'MERGED'
-
-  def HasApproval(self, field, value):
-    """Return whether the current patchset has the specified approval.
-
-    Args:
-      field: Which field to check.
-        'SUBM': Whether patch was submitted.
-        'VRIF': Whether patch was verified.
-        'CRVW': Whether patch was approved.
-        'COMR': Whether patch was marked ready.
-      value: The expected value of the specified field.
-    """
-    for approval in self._approvals:
-      if approval['type'] == field and approval['value'] == value:
-        return True
-    return False
 
   def _EnsureId(self, commit_message):
     """Ensure we have a usable Change-Id, validating what we received

@@ -939,35 +939,6 @@ class ValidationPool(object):
             self.pre_cq))
 
   @classmethod
-  def FilterNonMatchingChanges(cls, changes):
-    """Filter out changes that don't actually match our query.
-
-    Generally, Gerrit should only return patches that match our query. However,
-    there are race conditions (bugs in Gerrit) where the final patch won't
-    match our query.
-
-    Here's an example problem that this code fixes: If the Pre-CQ launcher
-    picks up a CL while the CQ is committing the CL, it may catch a race
-    condition where a new patchset has been created and committed by the CQ,
-    but the CL is still treated as if it matches the query (which it doesn't,
-    anymore).
-
-    Arguments:
-      changes: List of changes to filter.
-
-    Returns:
-      List of changes that match our query.
-    """
-    for change in changes:
-      # Check that the user (or chrome-bot) uploaded a new change under our
-      # feet while Gerrit was in the middle of answering our query.
-      for field, value in constants.DEFAULT_CQ_READY_FIELDS.iteritems():
-        if not change.HasApproval(field, value):
-          break
-      else:
-        yield change
-
-  @classmethod
   def AcquirePreCQPool(cls, *args, **kwargs):
     """See ValidationPool.__init__ for arguments."""
     kwargs.setdefault('pre_cq', True)
@@ -1026,10 +997,6 @@ class ValidationPool(object):
       for helper in cls.GetGerritHelpersForOverlays(overlays):
         raw_changes = helper.Query(changes_query, sort='lastUpdated')
         raw_changes.reverse()
-
-        # Verify the results match the query, to prevent race conditions.
-        if changes_query == constants.DEFAULT_CQ_READY_QUERY:
-          raw_changes = cls.FilterNonMatchingChanges(raw_changes)
 
         changes, non_manifest_changes = ValidationPool._FilterNonCrosProjects(
             raw_changes, git.ManifestCheckout.Cached(repo.directory))
