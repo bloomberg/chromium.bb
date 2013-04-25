@@ -117,7 +117,6 @@
 #include "UserActionElementSet.h"
 #include "VisitedLinkState.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include "XMLDocumentParser.h"
 #include "XMLHttpRequest.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
@@ -187,6 +186,7 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>
 #include <wtf/MainThread.h>

@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "XMLDocumentParser.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
@@ -46,7 +46,6 @@
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
 #include "TransformSource.h"
-#include "XMLDocumentParserScope.h"
 #include "XMLNSNames.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
@@ -59,6 +58,7 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/xml/parser/XMLDocumentParserScope.h"
 #include <wtf/StringExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/Threading.h>

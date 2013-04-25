@@ -48,13 +48,13 @@
 #include "ShadowRoot.h"
 #include "StyleResolver.h"
 #include "XLinkNames.h"
-#include "XMLDocumentParser.h"
 #include "XMLSerializer.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedSVGDocument.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 
 // Dump SVGElementInstance object tree - useful to debug instanceRoot problems
 // #define DUMP_INSTANCE_TREE

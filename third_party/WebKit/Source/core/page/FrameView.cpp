@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/page/FrameView.h"
 
-#include "BackForwardController.h"
 #include "DocumentMarkerController.h"
 #include "FontLoader.h"
 #include "HTMLDocument.h"
@@ -42,6 +41,7 @@
 #include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/editing/FrameSelection.h"
+#include "core/history/BackForwardController.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/TextResourceDecoder.h"

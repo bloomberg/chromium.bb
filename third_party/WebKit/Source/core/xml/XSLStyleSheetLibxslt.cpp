@@ -25,14 +25,14 @@
 #include "Document.h"
 #include "Node.h"
 #include "TransformSource.h"
-#include "XMLDocumentParser.h"
-#include "XMLDocumentParserScope.h"
 #include "XSLImportRule.h"
 #include "XSLTProcessor.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
+#include "core/xml/parser/XMLDocumentParser.h"
+#include "core/xml/parser/XMLDocumentParserScope.h"
 #include <wtf/text/CString.h>
 
 #include <libxml/uri.h>

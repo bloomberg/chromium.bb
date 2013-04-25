@@ -28,7 +28,6 @@
 #include "core/page/DOMWindow.h"
 
 #include <algorithm>
-#include "BackForwardController.h"
 #include "BeforeUnloadEvent.h"
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSRuleList.h"
@@ -62,6 +61,7 @@
 #include "StyleMedia.h"
 #include "StyleResolver.h"
 #include "core/editing/Editor.h"
+#include "core/history/BackForwardController.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"

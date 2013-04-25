@@ -31,9 +31,9 @@
 #include "config.h"
 #include "BackForwardListChromium.h"
 
-#include "HistoryItem.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/history/HistoryItem.h"
 #include <wtf/text/StringConcatenate.h>
 
 using namespace WebCore;

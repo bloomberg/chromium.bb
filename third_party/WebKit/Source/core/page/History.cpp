@@ -26,11 +26,11 @@
 #include "config.h"
 #include "core/page/History.h"
 
-#include "BackForwardController.h"
 #include "Document.h"
 #include "ExceptionCode.h"
-#include "HistoryItem.h"
 #include "SerializedScriptValue.h"
+#include "core/history/BackForwardController.h"
+#include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"

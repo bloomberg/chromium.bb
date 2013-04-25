@@ -30,7 +30,6 @@
 #include <libxslt/xsltutils.h>
 #include "Document.h"
 #include "TransformSource.h"
-#include "XMLDocumentParser.h"
 #include "XSLStyleSheet.h"
 #include "XSLTExtensions.h"
 #include "XSLTUnicodeSort.h"
@@ -44,6 +43,7 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 #include <wtf/Assertions.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuffer.h>

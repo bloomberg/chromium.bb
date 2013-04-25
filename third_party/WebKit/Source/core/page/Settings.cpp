@@ -27,12 +27,12 @@
 #include "core/page/Settings.h"
 
 #include <limits>
-#include "BackForwardController.h"
 #include "Database.h"
 #include "Document.h"
 #include "HTMLMediaElement.h"
-#include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
+#include "core/history/BackForwardController.h"
+#include "core/history/HistoryItem.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"

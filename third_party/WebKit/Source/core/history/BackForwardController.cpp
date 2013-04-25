@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "BackForwardController.h"
+#include "core/history/BackForwardController.h"
 
-#include "BackForwardListImpl.h"
-#include "HistoryItem.h"
+#include "core/history/BackForwardListImpl.h"
+#include "core/history/HistoryItem.h"
 #include "core/page/Page.h"
 
 namespace WebCore {

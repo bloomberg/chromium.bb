@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "XMLDocumentParserScope.h"
+#include "core/xml/parser/XMLDocumentParserScope.h"
 
 namespace WebCore {
 

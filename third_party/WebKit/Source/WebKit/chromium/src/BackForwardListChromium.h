@@ -31,8 +31,8 @@
 #ifndef BackForwardListChromium_h
 #define BackForwardListChromium_h
 
-#include "BackForwardList.h"
-#include "HistoryItem.h"
+#include "core/history/BackForwardList.h"
+#include "core/history/HistoryItem.h"
 
 namespace WebKit {
 class WebViewImpl;

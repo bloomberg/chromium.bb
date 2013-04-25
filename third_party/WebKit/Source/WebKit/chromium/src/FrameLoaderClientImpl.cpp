@@ -38,10 +38,10 @@
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"  // needed by core/loader/FormState.h
 #include "HTMLNames.h"
-#include "HistoryItem.h"
 #include "MessageEvent.h"
 #include "MouseEvent.h"
 #include "PluginData.h"
+#include "core/history/HistoryItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"

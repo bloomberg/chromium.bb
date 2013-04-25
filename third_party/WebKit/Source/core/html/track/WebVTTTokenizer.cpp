@@ -32,7 +32,7 @@
 
 #include "WebVTTTokenizer.h"
 
-#include "MarkupTokenizerInlines.h"
+#include "core/xml/parser/MarkupTokenizerInlines.h"
 
 namespace WebCore {
 

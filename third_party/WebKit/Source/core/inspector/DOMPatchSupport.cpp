@@ -45,7 +45,7 @@
 #include "HTMLNames.h"
 #include "InspectorHistory.h"
 #include "Node.h"
-#include "XMLDocumentParser.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 
 #include <wtf/Deque.h>
 #include <wtf/HashTraits.h>

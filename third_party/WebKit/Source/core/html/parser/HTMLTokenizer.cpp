@@ -32,8 +32,8 @@
 #include "HTMLNames.h"
 #include "HTMLToken.h"
 #include "HTMLTreeBuilder.h"
-#include "MarkupTokenizerInlines.h"
 #include "core/platform/NotImplemented.h"
+#include "core/xml/parser/MarkupTokenizerInlines.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/CurrentTime.h>
 #include <wtf/text/AtomicString.h>

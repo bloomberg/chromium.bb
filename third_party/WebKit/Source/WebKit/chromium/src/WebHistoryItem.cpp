@@ -32,9 +32,9 @@
 #include "WebHistoryItem.h"
 
 #include "FormController.h"
-#include "HistoryItem.h"
 #include "SerializedScriptValue.h"
 #include "WebSerializedScriptValue.h"
+#include "core/history/HistoryItem.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/FormData.h"
 #include <public/WebHTTPBody.h>

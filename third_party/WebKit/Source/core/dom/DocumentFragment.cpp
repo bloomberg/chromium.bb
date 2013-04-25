@@ -25,9 +25,9 @@
 
 #include "Document.h"
 #include "HTMLDocumentParser.h"
-#include "XMLDocumentParser.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 
 namespace WebCore {
 

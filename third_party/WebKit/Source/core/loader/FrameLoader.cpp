@@ -35,7 +35,6 @@
 #include "config.h"
 #include "core/loader/FrameLoader.h"
 
-#include "BackForwardController.h"
 #include "BeforeUnloadEvent.h"
 #include "DOMImplementation.h"
 #include "DOMWrapperWorld.h"
@@ -50,7 +49,6 @@
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
-#include "HistoryItem.h"
 #include "InspectorController.h"
 #include "InspectorInstrumentation.h"
 #include "PageTransitionEvent.h"
@@ -61,9 +59,10 @@
 #include "ScriptSourceCode.h"
 #include "SerializedScriptValue.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include "XMLDocumentParser.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/editing/Editor.h"
+#include "core/history/BackForwardController.h"
+#include "core/history/HistoryItem.h"
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
@@ -102,6 +101,7 @@
 #include "core/platform/network/ResourceHandle.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/text/SegmentedString.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/StdLibExtras.h>

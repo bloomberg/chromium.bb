@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/page/ContextMenuController.h"
 
-#include "BackForwardController.h"
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "Event.h"
@@ -44,6 +43,7 @@
 #include "core/editing/TextIterator.h"
 #include "core/editing/TypingCommand.h"
 #include "core/editing/markup.h"
+#include "core/history/BackForwardController.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "XMLDocumentParser.h"
+#include "core/xml/parser/XMLDocumentParser.h"
 
 #include "CDATASection.h"
 #include "Comment.h"

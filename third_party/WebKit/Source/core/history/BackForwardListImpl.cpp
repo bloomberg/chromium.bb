@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "BackForwardListImpl.h"
+#include "core/history/BackForwardListImpl.h"
 
-#include "HistoryItem.h"
 #include "SerializedScriptValue.h"
+#include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"
