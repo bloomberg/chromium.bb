@@ -29,6 +29,7 @@
 import copy
 import logging
 
+from webkitpy.common.memoized import memoized
 
 _log = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class BaselineOptimizer(object):
         self._scm = host.scm()
         self._port_names = port_names
 
+    @memoized
     def _relative_baseline_search_paths(self, port_name):
         port = self._port_factory.get(port_name)
         relative_paths = [self._filesystem.relpath(path, port.webkit_base()) for path in port.baseline_search_path()]
@@ -76,6 +78,7 @@ class BaselineOptimizer(object):
                     break
         return results_by_port_name
 
+    @memoized
     def _directories_immediately_preceding_root(self):
         directories = set()
         for port_name in self._port_names:
