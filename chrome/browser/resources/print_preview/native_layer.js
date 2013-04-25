@@ -167,7 +167,7 @@ cr.define('print_preview', function() {
         'printWithCloudPrint': destination != null && !destination.isLocal,
         'deviceName': destination == null ? 'foo' : destination.id,
         'generateDraftData': printTicketStore.isDocumentModifiable,
-        'fitToPageEnabled': printTicketStore.isFitToPageEnabled(),
+        'fitToPageEnabled': printTicketStore.fitToPage.getValue(),
 
         // NOTE: Even though the following fields don't directly relate to the
         // preview, they still need to be included.
@@ -242,7 +242,7 @@ cr.define('print_preview', function() {
         'deviceName': destination.id,
         'isFirstRequest': false,
         'requestID': -1,
-        'fitToPageEnabled': printTicketStore.isFitToPageEnabled()
+        'fitToPageEnabled': printTicketStore.fitToPage.getValue()
       };
 
       if (!destination.isLocal) {

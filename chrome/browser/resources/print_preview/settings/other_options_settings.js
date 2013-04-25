@@ -25,6 +25,13 @@ cr.define('print_preview', function() {
     this.duplexTicketItem_ = printTicketStore.duplex;
 
     /**
+     * Fit-to-page ticket item, used to read/write the fit-to-page selection.
+     * @type {!print_preview.ticket_items.FitToPage}
+     * @private
+     */
+    this.fitToPageTicketItem_ = printTicketStore.fitToPage;
+
+    /**
      * Used to monitor the state of the print ticket.
      * @type {!print_preview.PrintTicketStore}
      * @private
@@ -156,6 +163,10 @@ cr.define('print_preview', function() {
           this.duplexTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onDuplexChange_.bind(this));
+      this.tracker.add(
+          this.fitToPageTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onFitToPageChange_.bind(this));
     },
 
     /** @override */
@@ -203,7 +214,7 @@ cr.define('print_preview', function() {
      */
     updateContainerState_: function() {
       if (this.printTicketStore_.hasHeaderFooterCapability() ||
-          this.printTicketStore_.hasFitToPageCapability() ||
+          this.fitToPageTicketItem_.isCapabilityAvailable() ||
           this.duplexTicketItem_.isCapabilityAvailable() ||
           this.printTicketStore_.hasCssBackgroundCapability() ||
           this.printTicketStore_.hasSelectionOnlyCapability()) {
@@ -229,7 +240,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onFitToPageCheckboxClick_: function() {
-      this.printTicketStore_.updateFitToPage(this.fitToPageCheckbox_.checked);
+      this.fitToPageTicketItem_.updateValue(this.fitToPageCheckbox_.checked);
     },
 
     /**
@@ -271,11 +282,6 @@ cr.define('print_preview', function() {
       this.headerFooterCheckbox_.checked =
           this.printTicketStore_.isHeaderFooterEnabled();
 
-      setIsVisible(this.fitToPageContainer_,
-                   this.printTicketStore_.hasFitToPageCapability());
-      this.fitToPageCheckbox_.checked =
-          this.printTicketStore_.isFitToPageEnabled();
-
       setIsVisible(this.cssBackgroundContainer_,
                    this.printTicketStore_.hasCssBackgroundCapability());
       this.cssBackgroundCheckbox_.checked =
@@ -298,6 +304,18 @@ cr.define('print_preview', function() {
       setIsVisible(this.duplexContainer_,
                    this.duplexTicketItem_.isCapabilityAvailable());
       this.duplexCheckbox_.checked = this.duplexTicketItem_.getValue();
+      this.updateContainerState_();
+    },
+
+    /**
+     * Called when the fit-to-page ticket item has changed. Updates the
+     * fit-to-page checkbox.
+     * @private
+     */
+    onFitToPageChange_: function() {
+      setIsVisible(this.fitToPageContainer_,
+                   this.fitToPageTicketItem_.isCapabilityAvailable());
+      this.fitToPageCheckbox_.checked = this.fitToPageTicketItem_.getValue();
       this.updateContainerState_();
     }
   };

@@ -785,7 +785,11 @@ cr.define('print_preview', function() {
      * @private
      */
     onDisableScaling_: function() {
-      this.printTicketStore_.updateFitToPage(false);
+      // TODO(rltoscano): This should be a property of the document and should
+      // affect whether the fit-to-page capability is available. That way, we
+      // don't mistake this value for a user provided value.
+      // See crbug.com/234857
+      this.printTicketStore_.fitToPage.updateValue(false);
     },
 
     /**

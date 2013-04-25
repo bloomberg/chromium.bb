@@ -207,6 +207,10 @@ cr.define('print_preview', function() {
       return this.duplex_;
     },
 
+    get fitToPage() {
+      return this.fitToPage_;
+    },
+
     /** @return {boolean} Whether the document is modifiable. */
     get isDocumentModifiable() {
       return this.documentInfo_.isModifiable;
@@ -539,27 +543,6 @@ cr.define('print_preview', function() {
     updatePageRange: function(pageRangeStr) {
       if (this.pageRange_.getValue() != pageRangeStr) {
         this.pageRange_.updateValue(pageRangeStr);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /** @return {boolean} Whether the fit-to-page capability is available. */
-    hasFitToPageCapability: function() {
-      return this.fitToPage_.isCapabilityAvailable();
-    },
-
-    /** @return {boolean} Whether the fit-to-page capability is enabled. */
-    isFitToPageEnabled: function() {
-      return this.fitToPage_.getValue();
-    },
-
-    /**
-     * @param {boolean} isFitToPageEnabled Whether to enable the fit-to-page
-     *     capability.
-     */
-    updateFitToPage: function(isFitToPageEnabled) {
-      if (this.fitToPage_.getValue() != isFitToPageEnabled) {
-        this.fitToPage_.updateValue(isFitToPageEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },

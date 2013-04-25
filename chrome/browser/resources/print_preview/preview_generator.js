@@ -158,7 +158,7 @@ cr.define('print_preview', function() {
       this.isHeaderFooterEnabled_ =
           this.printTicketStore_.isHeaderFooterEnabled();
       this.colorValue_ = this.printTicketStore_.color.getValue();
-      this.isFitToPageEnabled_ = this.printTicketStore_.isFitToPageEnabled();
+      this.isFitToPageEnabled_ = this.printTicketStore_.fitToPage.getValue();
       this.pageRanges_ = this.printTicketStore_.getPageRanges();
       this.marginsType_ = this.printTicketStore_.getMarginsType();
       this.isCssBackgroundEnabled_ =
@@ -259,7 +259,7 @@ cr.define('print_preview', function() {
           ticketStore.isLandscapeEnabled() != this.isLandscapeEnabled_ ||
           ticketStore.isHeaderFooterEnabled() != this.isHeaderFooterEnabled_ ||
           !ticketStore.color.isValueEqual(this.colorValue_) ||
-          ticketStore.isFitToPageEnabled() != this.isFitToPageEnabled_ ||
+          !ticketStore.fitToPage.isValueEqual(this.isFitToPageEnabled_) ||
           this.pageRanges_ == null ||
           !areRangesEqual(ticketStore.getPageRanges(), this.pageRanges_) ||
           (ticketStore.getMarginsType() != this.marginsType_ &&
