@@ -52,9 +52,7 @@ public:
     bool isSafeToRecurse(size_t minAvailableDelta = s_defaultAvailabilityDelta) const
     {
         checkConsistency();
-        if (isGrowingDownward())
-            return current() >= recursionLimit(minAvailableDelta);
-        return current() <= recursionLimit(minAvailableDelta);
+        return current() >= recursionLimit(minAvailableDelta);
     }
 
     void* origin() const
@@ -65,9 +63,7 @@ public:
 
     size_t size() const
     {
-        if (isGrowingDownward())
-            return static_cast<char*>(m_origin) - static_cast<char*>(m_bound);
-        return static_cast<char*>(m_bound) - static_cast<char*>(m_origin);
+        return static_cast<char*>(m_origin) - static_cast<char*>(m_bound);
     }
 
 private:
@@ -89,15 +85,7 @@ private:
     void* recursionLimit(size_t minAvailableDelta = s_defaultAvailabilityDelta) const
     {
         checkConsistency();
-        if (isGrowingDownward())
-            return static_cast<char*>(m_bound) + minAvailableDelta;
-        return static_cast<char*>(m_bound) - minAvailableDelta;
-    }
-
-    bool isGrowingDownward() const
-    {
-        ASSERT(m_origin && m_bound);
-        return true;
+        return static_cast<char*>(m_bound) + minAvailableDelta;
     }
 
     void checkConsistency() const
@@ -105,9 +93,7 @@ private:
 #if !ASSERT_DISABLED
         void* currentPosition = &currentPosition;
         ASSERT(m_origin != m_bound);
-        ASSERT(isGrowingDownward()
-            ? (currentPosition < m_origin && currentPosition > m_bound)
-            : (currentPosition > m_origin && currentPosition < m_bound));
+        ASSERT(currentPosition < m_origin && currentPosition > m_bound);
 #endif
     }
 
