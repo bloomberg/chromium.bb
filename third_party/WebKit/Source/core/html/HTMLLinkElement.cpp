@@ -110,7 +110,7 @@ void HTMLLinkElement::setDisabledState(bool disabled)
                 removePendingSheet();
 
             // Check #2: An alternate sheet becomes enabled while it is still loading.
-            if (m_relAttribute.m_isAlternate && m_disabledState == EnabledViaScript)
+            if (m_relAttribute.isAlternate() && m_disabledState == EnabledViaScript)
                 addPendingSheet(Blocking);
 
             // Check #3: A main sheet becomes enabled while it was still loading and
@@ -118,7 +118,7 @@ void HTMLLinkElement::setDisabledState(bool disabled)
             // happen (a double toggle for no reason essentially). This happens on
             // virtualplastic.net, which manages to do about 12 enable/disables on only 3
             // sheets. :)
-            if (!m_relAttribute.m_isAlternate && m_disabledState == EnabledViaScript && oldDisabledState == Disabled)
+            if (!m_relAttribute.isAlternate() && m_disabledState == EnabledViaScript && oldDisabledState == Disabled)
                 addPendingSheet(Blocking);
 
             // If the sheet is already loading just bail.
@@ -196,7 +196,7 @@ void HTMLLinkElement::process()
     if (!m_linkLoader.loadLink(m_relAttribute, type, m_sizes->toString(), url, document()))
         return;
 
-    if ((m_disabledState != Disabled) && m_relAttribute.m_isStyleSheet
+    if ((m_disabledState != Disabled) && m_relAttribute.isStyleSheet()
         && document()->frame() && url.isValid()) {
         
         String charset = getAttribute(charsetAttr);
@@ -447,7 +447,7 @@ String HTMLLinkElement::type() const
 
 IconType HTMLLinkElement::iconType() const
 {
-    return m_relAttribute.m_iconType;
+    return m_relAttribute.iconType();
 }
 
 String HTMLLinkElement::iconSizes() const
@@ -460,10 +460,10 @@ void HTMLLinkElement::addSubresourceAttributeURLs(ListHashSet<KURL>& urls) const
     HTMLElement::addSubresourceAttributeURLs(urls);
 
     // Favicons are handled by a special case in LegacyWebArchive::create()
-    if (m_relAttribute.m_iconType != InvalidIcon)
+    if (m_relAttribute.iconType() != InvalidIcon)
         return;
 
-    if (!m_relAttribute.m_isStyleSheet)
+    if (!m_relAttribute.isStyleSheet())
         return;
     
     // Append the URL of this link element.

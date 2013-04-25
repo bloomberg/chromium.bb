@@ -3688,6 +3688,7 @@
         'core_unittest_files': [
             'tests/HeapGraphSerializerTest.cpp',
             'tests/LayoutUnit.cpp',
+            'tests/LinkRelAttribute.cpp',
         ],
         'conditions': [
             ['OS=="win"', {

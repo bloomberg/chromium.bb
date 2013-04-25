@@ -96,7 +96,7 @@ private:
     virtual void didSendLoadForLinkPrerender() OVERRIDE;
     virtual void didSendDOMContentLoadedForLinkPrerender() OVERRIDE;
 
-    bool isAlternate() const { return m_disabledState == Unset && m_relAttribute.m_isAlternate; }
+    bool isAlternate() const { return m_disabledState == Unset && m_relAttribute.isAlternate(); }
     
     void setDisabledState(bool);
 

@@ -36,8 +36,20 @@
 
 namespace WebCore {
 
-struct LinkRelAttribute {
+class LinkRelAttribute {
 public:
+    LinkRelAttribute();
+    explicit LinkRelAttribute(const String&);
+
+    bool isStyleSheet() const { return m_isStyleSheet; }
+    IconType iconType() const { return m_iconType; }
+    bool isAlternate() const { return m_isAlternate; }
+    bool isDNSPrefetch() const { return m_isDNSPrefetch; }
+    bool isLinkPrefetch() const { return m_isLinkPrefetch; }
+    bool isLinkSubresource() const { return m_isLinkSubresource; }
+    bool isLinkPrerender() const { return m_isLinkPrerender; }
+
+private:
     bool m_isStyleSheet;
     IconType m_iconType;
     bool m_isAlternate;
@@ -46,8 +58,6 @@ public:
     bool m_isLinkSubresource;
     bool m_isLinkPrerender;
 
-    LinkRelAttribute();
-    explicit LinkRelAttribute(const String&);
 };
     
 }

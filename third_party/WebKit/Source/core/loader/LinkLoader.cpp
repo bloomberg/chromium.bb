@@ -113,13 +113,13 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
                           const String& sizes, const KURL& href, Document* document)
 {
     // We'll record this URL per document, even if we later only use it in top level frames
-    if (relAttribute.m_iconType != InvalidIcon && href.isValid() && !href.isEmpty()) {
+    if (relAttribute.iconType() != InvalidIcon && href.isValid() && !href.isEmpty()) {
         if (!m_client->shouldLoadLink()) 
             return false;
-        document->addIconURL(href.string(), type, sizes, relAttribute.m_iconType);
+        document->addIconURL(href.string(), type, sizes, relAttribute.iconType());
     }
 
-    if (relAttribute.m_isDNSPrefetch) {
+    if (relAttribute.isDNSPrefetch()) {
         Settings* settings = document->settings();
         // FIXME: The href attribute of the link element can be in "//hostname" form, and we shouldn't attempt
         // to complete that as URL <https://bugs.webkit.org/show_bug.cgi?id=48857>.
@@ -127,14 +127,14 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             prefetchDNS(href.host());
     }
 
-    if ((relAttribute.m_isLinkPrefetch || relAttribute.m_isLinkSubresource) && href.isValid() && document->frame()) {
+    if ((relAttribute.isLinkPrefetch() || relAttribute.isLinkSubresource()) && href.isValid() && document->frame()) {
         if (!m_client->shouldLoadLink())
             return false;
         ResourceLoadPriority priority = ResourceLoadPriorityUnresolved;
         CachedResource::Type type = CachedResource::LinkPrefetch;
         // We only make one request to the cachedresourcelodaer if multiple rel types are
         // specified, 
-        if (relAttribute.m_isLinkSubresource) {
+        if (relAttribute.isLinkSubresource()) {
             priority = ResourceLoadPriorityLow;
             type = CachedResource::LinkSubresource;
         }
@@ -149,7 +149,7 @@ bool LinkLoader::loadLink(const LinkRelAttribute& relAttribute, const String& ty
             m_cachedLinkResource->addClient(this);
     }
 
-    if (relAttribute.m_isLinkPrerender) {
+    if (relAttribute.isLinkPrerender()) {
         if (!m_prerenderHandle) {
             m_prerenderHandle = document->prerenderer()->render(this, href);
         } else if (m_prerenderHandle->url() != href) {
