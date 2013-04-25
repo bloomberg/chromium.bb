@@ -42,11 +42,18 @@ my $outputDir = ".";
 my $defaultItemFactory;
 
 my %parsedItems;
+my %parsedItemPaths;
 my %parsedParameters;
 
 sub itemHandler($$$)
 {
     my ($itemName, $property, $value) = @_;
+
+    if ($itemName =~ /\//) {
+        my ($dirname, $basename) = $itemName =~ /^(.*)\/(.*)/;
+        $itemName = $basename;
+        $parsedItemPaths{$itemName} = $dirname;
+    }
 
     $parsedItems{$itemName} = { &$defaultItemFactory($itemName) } if !defined($parsedItems{$itemName});
 
@@ -278,7 +285,9 @@ sub generateHeadersHeader()
         $includedInterfaces{$interfaceName} = 1;
 
         print F "#if " . $object->conditionalStringFromAttributeValue($conditional) . "\n" if $conditional;
-        print F "#include \"$interfaceName.h\"\n";
+        my $path = "$interfaceName.h";
+        $path = $parsedItemPaths{$itemName} . "/" . $path if defined($parsedItemPaths{$itemName});
+        print F "#include \"$path\"\n";
         print F "#include \"V8$interfaceName.h\"\n";
         print F "#endif\n" if $conditional;
     }

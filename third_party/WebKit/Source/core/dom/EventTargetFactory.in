@@ -3,7 +3,7 @@ namespace="EventTarget"
 AudioContext conditional=WEB_AUDIO
 BatteryManager conditional=BATTERY_STATUS
 DedicatedWorkerContext
-DOMApplicationCache
+core/loader/appcache/DOMApplicationCache
 DOMWindow
 EventSource
 FileReader

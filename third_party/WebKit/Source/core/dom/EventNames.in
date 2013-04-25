@@ -41,7 +41,7 @@ SpeechRecognitionError
 SpeechRecognitionEvent
 SpeechSynthesisEvent conditional=SPEECH_SYNTHESIS
 WebGLContextEvent conditional=WEBGL
-StorageEvent
+core/storage/StorageEvent
 SVGEvents interfaceName=Event, conditional=SVG
 SVGZoomEvent conditional=SVG
 SVGZoomEvents interfaceName=SVGZoomEvent, conditional=SVG
