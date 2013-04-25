@@ -9,6 +9,9 @@
 
 #include "chrome/renderer/extensions/chrome_v8_context_set.h"
 
+namespace base {
+class DictionaryValue;
+}
 
 namespace content {
 class RenderView;
@@ -40,9 +43,10 @@ class MiscellaneousBindings {
       const ChromeV8ContextSet::ContextSet& contexts,
       int target_port_id,
       const std::string& channel_name,
-      const std::string& tab_json,
+      const base::DictionaryValue& source_tab,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
+      const GURL& source_url,
       content::RenderView* restrict_to_render_view);
 
   // Delivers a message sent using content script messaging to some of the

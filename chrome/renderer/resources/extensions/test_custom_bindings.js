@@ -11,6 +11,7 @@ var chrome = requireNative('chrome').GetChrome();
 var GetExtensionAPIDefinitions =
     requireNative('apiDefinitions').GetExtensionAPIDefinitions;
 var GetAvailability = requireNative('v8_context').GetAvailability;
+var json = require('json');
 
 binding.registerCustomHook(function(api) {
   var chromeTest = api.compiledApi;
@@ -181,8 +182,8 @@ binding.registerCustomHook(function(api) {
     if (typeof(expected) == 'object') {
       if (!chromeTest.checkDeepEq(expected, actual)) {
         chromeTest.fail(error_msg +
-                         "\nActual: " + JSON.stringify(actual) +
-                         "\nExpected: " + JSON.stringify(expected));
+                         "\nActual: " + json.stringify(actual) +
+                         "\nExpected: " + json.stringify(expected));
       }
       return;
     }

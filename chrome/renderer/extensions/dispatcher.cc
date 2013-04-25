@@ -542,15 +542,15 @@ void Dispatcher::OnMessageInvoke(const std::string& extension_id,
   }
 }
 
-void Dispatcher::OnDispatchOnConnect(int target_port_id,
-                                     const std::string& channel_name,
-                                     const std::string& tab_json,
-                                     const std::string& source_extension_id,
-                                     const std::string& target_extension_id) {
+void Dispatcher::OnDispatchOnConnect(
+    int target_port_id,
+    const std::string& channel_name,
+    const base::DictionaryValue& source_tab,
+    const ExtensionMsg_ExternalConnectionInfo& info) {
   MiscellaneousBindings::DispatchOnConnect(
       v8_context_set_.GetAll(),
-      target_port_id, channel_name, tab_json,
-      source_extension_id, target_extension_id,
+      target_port_id, channel_name, source_tab,
+      info.source_id, info.target_id, info.source_url,
       NULL);  // All render views.
 }
 

@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/values.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/message_bundle.h"
 #include "chrome/common/url_constants.h"
@@ -21,6 +22,7 @@
 #include "chrome/renderer/extensions/scoped_persistent.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebScopedMicrotaskSuppression.h"
 #include "v8/include/v8.h"
@@ -36,6 +38,7 @@
 // });
 
 using content::RenderThread;
+using content::V8ValueConverter;
 
 namespace {
 
@@ -201,13 +204,17 @@ void MiscellaneousBindings::DispatchOnConnect(
     const ChromeV8ContextSet::ContextSet& contexts,
     int target_port_id,
     const std::string& channel_name,
-    const std::string& tab_json,
+    const base::DictionaryValue& source_tab,
     const std::string& source_extension_id,
     const std::string& target_extension_id,
+    const GURL& source_url,
     content::RenderView* restrict_to_render_view) {
   v8::HandleScope handle_scope;
 
+  scoped_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+
   bool port_created = false;
+  std::string source_url_spec = source_url.spec();
 
   for (ChromeV8ContextSet::ContextSet::const_iterator it = contexts.begin();
        it != contexts.end(); ++it) {
@@ -216,20 +223,23 @@ void MiscellaneousBindings::DispatchOnConnect(
       continue;
     }
 
-    std::vector<v8::Handle<v8::Value> > arguments;
-    arguments.push_back(v8::Integer::New(target_port_id));
-    arguments.push_back(v8::String::New(channel_name.c_str(),
-                                        channel_name.size()));
-    arguments.push_back(v8::String::New(tab_json.c_str(),
-                                        tab_json.size()));
-    arguments.push_back(v8::String::New(source_extension_id.c_str(),
-                                        source_extension_id.size()));
-    arguments.push_back(v8::String::New(target_extension_id.c_str(),
-                                        target_extension_id.size()));
+    v8::Handle<v8::Value> tab = v8::Null();
+    if (!source_tab.empty())
+      tab = converter->ToV8Value(&source_tab, (*it)->v8_context());
+
+    v8::Handle<v8::Value> arguments[] = {
+      v8::Integer::New(target_port_id),
+      v8::String::New(channel_name.c_str(), channel_name.size()),
+      tab,
+      v8::String::New(source_extension_id.c_str(), source_extension_id.size()),
+      v8::String::New(target_extension_id.c_str(), target_extension_id.size()),
+      v8::String::New(source_url_spec.c_str(), source_url_spec.size())
+    };
+
     v8::Handle<v8::Value> retval;
     v8::TryCatch try_catch;
     if (!(*it)->CallChromeHiddenMethod("Port.dispatchOnConnect",
-                                      arguments.size(), &arguments[0],
+                                      arraysize(arguments), arguments,
                                       &retval)) {
       continue;
     }

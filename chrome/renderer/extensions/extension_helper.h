@@ -19,9 +19,11 @@
 class GURL;
 class SkBitmap;
 struct ExtensionMsg_ExecuteCode_Params;
+struct ExtensionMsg_ExternalConnectionInfo;
 struct WebApplicationInfo;
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 }
 
@@ -78,11 +80,11 @@ class ExtensionHelper
                                 const base::ListValue& args,
                                 const GURL& event_url,
                                 bool user_gesture);
-  void OnExtensionDispatchOnConnect(int target_port_id,
-                                    const std::string& channel_name,
-                                    const std::string& tab_json,
-                                    const std::string& source_extension_id,
-                                    const std::string& target_extension_id);
+  void OnExtensionDispatchOnConnect(
+      int target_port_id,
+      const std::string& channel_name,
+      const base::DictionaryValue& source_tab,
+      const ExtensionMsg_ExternalConnectionInfo& info);
   void OnExtensionDeliverMessage(int target_port_id,
                                  const std::string& message);
   void OnExtensionDispatchOnDisconnect(int port_id,

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+var otherId = 'ljhhihhmjomkjokmknellgbidphmahkh';
+
 chrome.runtime.onConnectExternal.addListener(function(port) {
   port.onMessage.addListener(function(msg) {
     if (msg == 'ok_to_disconnect') {
@@ -13,6 +15,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 });
 
 chrome.runtime.onMessageExternal.addListener(function(msg, sender, callback) {
+  chrome.test.assertEq({id: otherId}, sender);
   if (msg == 'hello')
     callback('hello_response');
   else

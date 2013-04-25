@@ -15,6 +15,7 @@ class DictionaryValue;
 }
 
 class MockPrinter;
+struct ExtensionMsg_ExternalConnectionInfo;
 struct PrintHostMsg_DidGetPreviewPageCount_Params;
 struct PrintHostMsg_DidPreviewPage_Params;
 struct PrintHostMsg_DidPrintPage_Params;
@@ -52,9 +53,8 @@ class ChromeMockRenderThread : public content::MockRenderThread {
 
   // The callee expects to be returned a valid channel_id.
   void OnOpenChannelToExtension(int routing_id,
-                                const std::string& extension_id,
-                                const std::string& source_extension_id,
-                                const std::string& target_extension_id,
+                                const ExtensionMsg_ExternalConnectionInfo& info,
+                                const std::string& channel_name,
                                 int* port_id);
 
 #if defined(OS_CHROMEOS)

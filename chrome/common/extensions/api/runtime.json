@@ -30,8 +30,9 @@
         "type": "object",
         "description": "An object containing information about the script context that sent a message or request.",
         "properties": {
-          "tab": {"$ref": "tabs.Tab", "optional": true, "description":"This property will <b>only</b> be present when the connection was opened from a tab or content script."},
-          "id": {"type": "string", "description": "The ID of the extension/app that opened the connection."}
+          "tab": {"$ref": "tabs.Tab", "optional": true, "description": "The $ref:tabs.Tab which opened the connection, if any. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts), and <strong>only</strong> if the receiver is an extension, not an app."},
+          "id": {"type": "string", "description": "The ID of the extension or app that opened the connection."},
+          "url": {"type": "string", "optional": true, "description": "The URL of the page or frame that opened the connection. This property will <strong>only</strong> be present when the connection was opened from a tab (including content scripts)."}
         }
       }
     ],

@@ -16,7 +16,12 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+class GURL;
 class Profile;
+
+namespace base {
+class DictionaryValue;
+}
 
 namespace content {
 class RenderProcessHost;
@@ -24,6 +29,7 @@ class WebContents;
 }
 
 namespace extensions {
+class Extension;
 class ExtensionHost;
 class LazyBackgroundTaskQueue;
 
@@ -63,9 +69,10 @@ class MessageService : public content::NotificationObserver,
     // Notify the port that the channel has been opened.
     virtual void DispatchOnConnect(int dest_port_id,
                                    const std::string& channel_name,
-                                   const std::string& tab_json,
+                                   const base::DictionaryValue& source_tab,
                                    const std::string& source_extension_id,
-                                   const std::string& target_extension_id) {}
+                                   const std::string& target_extension_id,
+                                   const GURL& source_url) {}
 
     // Notify the port that the channel has been closed. If |error_message| is
     // non-empty, it indicates an error occurred while opening the connection.
@@ -105,6 +112,7 @@ class MessageService : public content::NotificationObserver,
       int source_process_id, int source_routing_id, int receiver_port_id,
       const std::string& source_extension_id,
       const std::string& target_extension_id,
+      const GURL& source_url,
       const std::string& channel_name);
 
   // Same as above, but opens a channel to the tab with the given ID.  Messages
@@ -172,6 +180,7 @@ class MessageService : public content::NotificationObserver,
   // to open a channel. Returns true if a task was queued.
   // Takes ownership of |params| if true is returned.
   bool MaybeAddPendingOpenChannelTask(Profile* profile,
+                                      const Extension* extension,
                                       OpenChannelParams* params);
 
   // Callbacks for LazyBackgroundTaskQueue tasks. The queue passes in an

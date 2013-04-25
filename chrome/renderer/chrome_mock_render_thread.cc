@@ -68,8 +68,7 @@ bool ChromeMockRenderThread::OnMessageReceived(const IPC::Message& msg) {
 
 void ChromeMockRenderThread::OnOpenChannelToExtension(
     int routing_id,
-    const std::string& source_extension_id,
-    const std::string& target_extension_id,
+    const ExtensionMsg_ExternalConnectionInfo& info,
     const std::string& channel_name,
     int* port_id) {
   *port_id = 0;

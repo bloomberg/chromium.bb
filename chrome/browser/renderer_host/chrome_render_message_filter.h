@@ -20,6 +20,7 @@ class CookieSettings;
 struct ExtensionHostMsg_APIActionOrEvent_Params;
 struct ExtensionHostMsg_DOMAction_Params;
 struct ExtensionHostMsg_Request_Params;
+struct ExtensionMsg_ExternalConnectionInfo;
 class ExtensionInfoMap;
 class GURL;
 
@@ -100,15 +101,14 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   void OnFPS(int routing_id, float fps);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
   void OnOpenChannelToExtension(int routing_id,
-                                const std::string& source_extension_id,
-                                const std::string& target_extension_id,
+                                const ExtensionMsg_ExternalConnectionInfo& info,
                                 const std::string& channel_name, int* port_id);
-  void OpenChannelToExtensionOnUIThread(int source_process_id,
-                                        int source_routing_id,
-                                        int receiver_port_id,
-                                        const std::string& source_extension_id,
-                                        const std::string& target_extension_id,
-                                        const std::string& channel_name);
+  void OpenChannelToExtensionOnUIThread(
+      int source_process_id,
+      int source_routing_id,
+      int receiver_port_id,
+      const ExtensionMsg_ExternalConnectionInfo& info,
+      const std::string& channel_name);
   void OnOpenChannelToNativeApp(int routing_id,
                                 const std::string& source_extension_id,
                                 const std::string& native_app_name,

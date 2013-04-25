@@ -24,6 +24,7 @@
 class GURL;
 class ModuleSystem;
 class URLPattern;
+struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_Loaded_Params;
 
 namespace WebKit {
@@ -31,6 +32,7 @@ class WebFrame;
 }
 
 namespace base {
+class DictionaryValue;
 class ListValue;
 }
 
@@ -145,9 +147,8 @@ class Dispatcher : public content::RenderProcessObserver {
                        bool user_gesture);
   void OnDispatchOnConnect(int target_port_id,
                            const std::string& channel_name,
-                           const std::string& tab_json,
-                           const std::string& source_extension_id,
-                           const std::string& target_extension_id);
+                           const base::DictionaryValue& source_tab,
+                           const ExtensionMsg_ExternalConnectionInfo& info);
   void OnDeliverMessage(int target_port_id, const std::string& message);
   void OnDispatchOnDisconnect(int port_id, const std::string& error_message);
   void OnSetFunctionNames(const std::vector<std::string>& names);

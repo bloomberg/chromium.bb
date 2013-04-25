@@ -7,6 +7,8 @@
 
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 
+class GURL;
+
 namespace content {
 class RenderProcessHost;
 }  // namespace content
@@ -22,9 +24,10 @@ class ExtensionMessagePort : public MessageService::MessagePort {
   virtual void DispatchOnConnect(
       int dest_port_id,
       const std::string& channel_name,
-      const std::string& tab_json,
+      const base::DictionaryValue& source_tab,
       const std::string& source_extension_id,
-      const std::string& target_extension_id) OVERRIDE;
+      const std::string& target_extension_id,
+      const GURL& source_url) OVERRIDE;
   virtual void DispatchOnDisconnect(int source_port_id,
                                     const std::string& error_message) OVERRIDE;
   virtual void DispatchOnMessage(const std::string& message,
