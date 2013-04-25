@@ -7,6 +7,7 @@
 #include "base/callback.h"
 #include "base/file_util.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -15,6 +16,18 @@
 namespace drive {
 
 namespace {
+
+// Enum to describe DB initialization status.
+enum DBInitStatus {
+  DB_INIT_SUCCESS,
+  DB_INIT_NOT_FOUND,
+  DB_INIT_CORRUPTION,
+  DB_INIT_IO_ERROR,
+  DB_INIT_FAILED,
+  DB_INIT_INCOMPATIBLE,
+  DB_INIT_BROKEN,
+  DB_INIT_MAX_VALUE,
+};
 
 const base::FilePath::CharType kResourceMapDBName[] =
     FILE_PATH_LITERAL("resource_metadata_resource_map.db");
@@ -35,6 +48,19 @@ std::string GetHeaderDBKey() {
 // Returns true if |key| is a key for a child entry.
 bool IsChildEntryKey(const leveldb::Slice& key) {
   return !key.empty() && key[key.size() - 1] == kDBKeyDelimeter;
+}
+
+// Converts leveldb::Status to DBInitStatus.
+DBInitStatus LevelDBStatusToDBInitStatus(const leveldb::Status status) {
+  if (status.ok())
+    return DB_INIT_SUCCESS;
+  if (status.IsNotFound())
+    return DB_INIT_NOT_FOUND;
+  if (status.IsCorruption())
+    return DB_INIT_CORRUPTION;
+  if (status.IsIOError())
+    return DB_INIT_IO_ERROR;
+  return DB_INIT_FAILED;
 }
 
 }  // namespace
@@ -67,16 +93,30 @@ bool DriveResourceMetadataStorage::Initialize() {
 
   leveldb::Status status =
       leveldb::DB::Open(options, resource_map_path.value(), &db);
-  if (status.ok())
+  DBInitStatus open_existing_result = LevelDBStatusToDBInitStatus(status);
+
+  if (open_existing_result == DB_INIT_SUCCESS) {
     resource_map_.reset(db);
 
-  // Check the validity of existing DB.
-  if (resource_map_) {
-    if (!CheckValidity()) {
+    // Check the validity of existing DB.
+    scoped_ptr<DriveResourceMetadataHeader> header = GetHeader();
+    if (!header || header->version() != kDBVersion) {
+      open_existing_result = DB_INIT_INCOMPATIBLE;
+      LOG(INFO) << "Reject incompatible DB.";
+    } else if (!CheckValidity()) {
+      open_existing_result = DB_INIT_BROKEN;
       LOG(ERROR) << "Reject invalid DB.";
-      resource_map_.reset();
     }
+
+    if (open_existing_result != DB_INIT_SUCCESS)
+      resource_map_.reset();
   }
+
+  UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBOpenExistingResult",
+                            open_existing_result,
+                            DB_INIT_MAX_VALUE);
+
+  DBInitStatus init_result = DB_INIT_SUCCESS;
 
   // Failed to open the existing DB, create new DB.
   if (!resource_map_) {
@@ -90,20 +130,23 @@ bool DriveResourceMetadataStorage::Initialize() {
     options.create_if_missing = true;
 
     status = leveldb::DB::Open(options, resource_map_path.value(), &db);
-    if (!status.ok()) {
-      LOG(ERROR) << "Failed to create resource map DB: " << status.ToString();
-      return false;
-    }
-    resource_map_.reset(db);
+    if (status.ok()) {
+      resource_map_.reset(db);
 
-    // Set up header.
-    DriveResourceMetadataHeader header;
-    header.set_version(kDBVersion);
-    PutHeader(header);
+      // Set up header.
+      DriveResourceMetadataHeader header;
+      header.set_version(kDBVersion);
+      PutHeader(header);
+    } else {
+      LOG(ERROR) << "Failed to create resource map DB: " << status.ToString();
+    }
+    init_result = LevelDBStatusToDBInitStatus(status);
   }
 
-  DCHECK(resource_map_);
-  return true;
+  UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBInitResult",
+                            init_result,
+                            DB_INIT_MAX_VALUE);
+  return resource_map_;
 }
 
 void DriveResourceMetadataStorage::SetLargestChangestamp(
