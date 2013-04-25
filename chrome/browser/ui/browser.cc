@@ -1416,10 +1416,15 @@ void Browser::BeforeUnloadFired(WebContents* web_contents,
 bool Browser::ShouldFocusLocationBarByDefault(WebContents* source) {
   const content::NavigationEntry* entry =
       source->GetController().GetActiveEntry();
-  if (entry &&
-      entry->GetURL().SchemeIs(chrome::kChromeUIScheme) &&
-      entry->GetURL().host() == chrome::kChromeUINewTabHost) {
-    return true;
+  if (entry) {
+    GURL url = entry->GetURL();
+    GURL virtual_url = entry->GetVirtualURL();
+    if ((url.SchemeIs(chrome::kChromeUIScheme) &&
+        url.host() == chrome::kChromeUINewTabHost) ||
+        (virtual_url.SchemeIs(chrome::kChromeUIScheme) &&
+        virtual_url.host() == chrome::kChromeUINewTabHost)) {
+      return true;
+    }
   }
 
   return chrome::NavEntryIsInstantNTP(source, entry);
