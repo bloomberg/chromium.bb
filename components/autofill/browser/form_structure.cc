@@ -135,7 +135,7 @@ void EncodeFieldForFieldAssignments(const AutofillField& field,
   for (FieldTypeSet::iterator field_type = types.begin();
        field_type != types.end(); ++field_type) {
     buzz::XmlElement *field_element = new buzz::XmlElement(
-        buzz::QName(kXMLElementField));
+        buzz::QName(kXMLElementFields));
 
     field_element->SetAttr(buzz::QName(kAttributeFieldID),
                            field.FieldSignature());

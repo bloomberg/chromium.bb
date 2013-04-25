@@ -1822,6 +1822,132 @@ TEST(FormStructureTest, EncodeUploadRequest) {
                                                    &encoded_xml));
 }
 
+TEST(FormStructureTest, EncodeFieldAssignments) {
+  scoped_ptr<FormStructure> form_structure;
+  std::vector<FieldTypeSet> possible_field_types;
+  FormData form;
+  form.method = ASCIIToUTF16("post");
+  form_structure.reset(new FormStructure(form, std::string()));
+  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
+
+  FormFieldData field;
+  field.form_control_type = "text";
+
+  field.label = ASCIIToUTF16("First Name");
+  field.name = ASCIIToUTF16("firstname");
+  form.fields.push_back(field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(NAME_FIRST);
+
+  field.label = ASCIIToUTF16("Last Name");
+  field.name = ASCIIToUTF16("lastname");
+  form.fields.push_back(field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(NAME_LAST);
+
+  field.label = ASCIIToUTF16("Email");
+  field.name = ASCIIToUTF16("email");
+  field.form_control_type = "email";
+  form.fields.push_back(field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(EMAIL_ADDRESS);
+
+  field.label = ASCIIToUTF16("Phone");
+  field.name = ASCIIToUTF16("phone");
+  field.form_control_type = "number";
+  form.fields.push_back(field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(PHONE_HOME_WHOLE_NUMBER);
+
+  field.label = ASCIIToUTF16("Country");
+  field.name = ASCIIToUTF16("country");
+  field.form_control_type = "select-one";
+  form.fields.push_back(field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
+
+  // Add checkable field.
+  FormFieldData checkable_field;
+  checkable_field.is_checkable = true;
+  checkable_field.label = ASCIIToUTF16("Checkable1");
+  checkable_field.name = ASCIIToUTF16("Checkable1");
+  form.fields.push_back(checkable_field);
+  possible_field_types.push_back(FieldTypeSet());
+  possible_field_types.back().insert(ADDRESS_HOME_COUNTRY);
+
+  form_structure.reset(new FormStructure(form, std::string()));
+
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+
+  FieldTypeSet available_field_types;
+  available_field_types.insert(NAME_FIRST);
+  available_field_types.insert(NAME_LAST);
+  available_field_types.insert(ADDRESS_HOME_LINE1);
+  available_field_types.insert(ADDRESS_HOME_LINE2);
+  available_field_types.insert(ADDRESS_HOME_COUNTRY);
+  available_field_types.insert(ADDRESS_BILLING_LINE1);
+  available_field_types.insert(ADDRESS_BILLING_LINE2);
+  available_field_types.insert(EMAIL_ADDRESS);
+  available_field_types.insert(PHONE_HOME_WHOLE_NUMBER);
+
+  std::string encoded_xml;
+  EXPECT_TRUE(form_structure->EncodeFieldAssignments(
+      available_field_types, &encoded_xml));
+  EXPECT_EQ(
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<fieldassignments formsignature=\"8736493185895608956\">"
+      "<fields fieldid=\"3763331450\" fieldtype=\"3\" name=\"firstname\"/>"
+      "<fields fieldid=\"3494530716\" fieldtype=\"5\" name=\"lastname\"/>"
+      "<fields fieldid=\"1029417091\" fieldtype=\"9\" name=\"email\"/>"
+      "<fields fieldid=\"466116101\" fieldtype=\"14\" name=\"phone\"/>"
+      "<fields fieldid=\"2799270304\" fieldtype=\"36\" name=\"country\"/>"
+      "<fields fieldid=\"3410250678\" fieldtype=\"36\" name=\"Checkable1\"/>"
+      "</fieldassignments>",
+      encoded_xml);
+
+  // Add 2 address fields - this should be still a valid form.
+  for (size_t i = 0; i < 2; ++i) {
+    field.label = ASCIIToUTF16("Address");
+    field.name = ASCIIToUTF16("address");
+    field.form_control_type = "text";
+    form.fields.push_back(field);
+    possible_field_types.push_back(FieldTypeSet());
+    possible_field_types.back().insert(ADDRESS_HOME_LINE1);
+    possible_field_types.back().insert(ADDRESS_HOME_LINE2);
+    possible_field_types.back().insert(ADDRESS_BILLING_LINE1);
+    possible_field_types.back().insert(ADDRESS_BILLING_LINE2);
+  }
+
+  form_structure.reset(new FormStructure(form, std::string()));
+  ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
+  for (size_t i = 0; i < form_structure->field_count(); ++i)
+    form_structure->field(i)->set_possible_types(possible_field_types[i]);
+
+  EXPECT_TRUE(form_structure->EncodeFieldAssignments(
+      available_field_types, &encoded_xml));
+  EXPECT_EQ(
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+      "<fieldassignments formsignature=\"7816485729218079147\">"
+      "<fields fieldid=\"3763331450\" fieldtype=\"3\" name=\"firstname\"/>"
+      "<fields fieldid=\"3494530716\" fieldtype=\"5\" name=\"lastname\"/>"
+      "<fields fieldid=\"1029417091\" fieldtype=\"9\" name=\"email\"/>"
+      "<fields fieldid=\"466116101\" fieldtype=\"14\" name=\"phone\"/>"
+      "<fields fieldid=\"2799270304\" fieldtype=\"36\" name=\"country\"/>"
+      "<fields fieldid=\"3410250678\" fieldtype=\"36\" name=\"Checkable1\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"30\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"31\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"37\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"38\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"30\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"31\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"37\" name=\"address\"/>"
+      "<fields fieldid=\"509334676\" fieldtype=\"38\" name=\"address\"/>"
+      "</fieldassignments>",
+      encoded_xml);
+}
+
 // Check that we compute the "datapresent" string correctly for the given
 // |available_types|.
 TEST(FormStructureTest, CheckDataPresence) {
