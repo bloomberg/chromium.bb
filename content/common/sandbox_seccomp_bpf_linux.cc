@@ -1323,7 +1323,7 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
 #if defined(__arm__)
     // ARM GPU sandbox is started earlier so we need to allow networking
     // in the sandbox.
-    // TODO(jorgelo): tighten this up.
+    // TODO(jorgelo): tighten this (crbug.com/235609).
     case __NR_connect:
     case __NR_getpeername:
     case __NR_getsockname:
@@ -1619,9 +1619,8 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     if (IsChromeOS() && !command_line.HasSwitch(switches::kEnableGpuSandbox))
       return BlacklistDebugAndNumaPolicy;
     // On Chrome OS ARM, we need a specific GPU process policy.
-    // TODO(jorgelo): switch to ArmMaliGpuProcessPolicy.
     else if (IsChromeOS() && IsArchitectureArm())
-      return BlacklistDebugAndNumaPolicy;
+      return ArmMaliGpuProcessPolicy;
     else
       return GpuProcessPolicy;
   }
