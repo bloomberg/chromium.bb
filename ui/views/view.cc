@@ -2104,13 +2104,12 @@ bool View::ProcessMouseDragged(const ui::MouseEvent& event) {
   ContextMenuController* context_menu_controller = context_menu_controller_;
   const bool possible_drag = GetDragInfo()->possible_drag;
   if (possible_drag &&
-      ExceededDragThreshold(GetDragInfo()->start_pt - event.location())) {
-    if (!drag_controller_ ||
-        drag_controller_->CanStartDragForView(
-            this, GetDragInfo()->start_pt, event.location())) {
-      DoDrag(event, GetDragInfo()->start_pt,
-          ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
-    }
+      ExceededDragThreshold(GetDragInfo()->start_pt - event.location()) &&
+      (!drag_controller_ ||
+       drag_controller_->CanStartDragForView(
+           this, GetDragInfo()->start_pt, event.location()))) {
+    DoDrag(event, GetDragInfo()->start_pt,
+           ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE);
   } else {
     if (OnMouseDragged(event))
       return true;

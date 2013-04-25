@@ -476,7 +476,7 @@ int NativeTextfieldViews::GetDragOperationsForView(views::View* sender,
 bool NativeTextfieldViews::CanStartDragForView(View* sender,
                                                const gfx::Point& press_pt,
                                                const gfx::Point& p) {
-  return GetRenderText()->IsPointInSelection(press_pt);
+  return initiating_drag_ && GetRenderText()->IsPointInSelection(press_pt);
 }
 
 /////////////////////////////////////////////////////////////////

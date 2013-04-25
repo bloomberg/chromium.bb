@@ -934,6 +934,9 @@ TEST_F(NativeTextfieldViewsTest, MAYBE_DragAndDrop_InitiateDrag) {
             textfield_view_->GetDragOperationsForView(NULL, kStringPoint));
   textfield_->SetObscured(false);
   // Ensure that textfields only initiate drag operations inside the selection.
+  ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, kStringPoint, kStringPoint,
+                             ui::EF_LEFT_MOUSE_BUTTON);
+  textfield_view_->OnMousePressed(press_event);
   EXPECT_EQ(ui::DragDropTypes::DRAG_NONE,
             textfield_view_->GetDragOperationsForView(NULL, gfx::Point()));
   EXPECT_FALSE(textfield_view_->CanStartDragForView(NULL, gfx::Point(),
