@@ -219,7 +219,7 @@ PlatformLayer* ImageBuffer::platformLayer() const
     return m_data.m_layerBridge ? m_data.m_layerBridge->layer() : 0;
 }
 
-bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GC3Denum internalFormat, bool premultiplyAlpha, bool flipY)
+bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DObject texture, GC3Denum internalFormat, GC3Denum destType, GC3Dint level, bool premultiplyAlpha, bool flipY)
 {
     if (!m_data.m_layerBridge || !platformLayer())
         return false;
@@ -230,7 +230,8 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
         return false;
 
     Extensions3D* extensions = context.getExtensions();
-    if (!extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy"))
+    if (!extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
+        || !extensions->canUseCopyTextureCHROMIUM(internalFormat, destType, level))
         return false;
 
     // The canvas is stored in a premultiplied format, so unpremultiply if necessary.
@@ -239,7 +240,7 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
     // The canvas is stored in an inverted position, so the flip semantics are reversed.
     context.pixelStorei(Extensions3D::UNPACK_FLIP_Y_CHROMIUM, !flipY);
 
-    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, sourceTexture, texture, 0, internalFormat);
+    extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, sourceTexture, texture, level, internalFormat, destType);
 
     context.pixelStorei(Extensions3D::UNPACK_FLIP_Y_CHROMIUM, false);
     context.pixelStorei(Extensions3D::UNPACK_UNPREMULTIPLY_ALPHA_CHROMIUM, false);
