@@ -1,21 +1,20 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 /*
-   It can't get much simpler than this (uh, except for noop.c).
-*/
+ * It can't get much simpler than this (uh, except for noop.c).
+ */
 
 #include <stdio.h>
 #include <time.h>
 #include <sys/time.h>
-#include <sys/nacl_syscalls.h>
 
 void loop() {
   int count = 0;
-  timespec t = {1,0};
+  timespec t = {1, 0};
   while (1) {
     printf("Running");
     int i = 0;
@@ -28,7 +27,7 @@ void loop() {
     printf("\r");
     fflush(stdout);
     ++count;
-    nanosleep(&t,0);
+    nanosleep(&t, 0);
   }
 }
 

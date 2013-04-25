@@ -1,7 +1,7 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2008 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <assert.h>
@@ -9,9 +9,9 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/mman.h>
-#include <sys/nacl_imc_api.h>
-#include <sys/nacl_syscalls.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"
 
 int verbosity = 0;

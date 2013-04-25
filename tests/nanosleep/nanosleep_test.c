@@ -13,6 +13,7 @@
 #include <sys/time.h>
 
 #include "native_client/src/include/nacl/nacl_inttypes.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /*
  * Newlib's time.h not working right: getting the nanosleep
@@ -25,7 +26,6 @@
  *
  * Sigh.
  */
-#include <sys/nacl_syscalls.h>
 
 #define NANOS_PER_MICRO   (1000)
 #define MICROS_PER_MILLI  (1000)

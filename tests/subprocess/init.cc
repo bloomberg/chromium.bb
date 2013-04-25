@@ -17,11 +17,11 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#include <sys/nacl_syscalls.h>
 
-#include "native_client/src/untrusted/irt/irt.h"
 #include "native_client/src/include/nacl_scoped_ptr.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+#include "native_client/src/untrusted/irt/irt.h"
 
 #include "native_client/tests/subprocess/scoped_lock.h"
 #include "native_client/tests/subprocess/scoped_non_ptr.h"

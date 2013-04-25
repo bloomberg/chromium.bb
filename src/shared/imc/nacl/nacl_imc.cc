@@ -10,12 +10,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/nacl_syscalls.h>
 #include <unistd.h>
 
 #include <algorithm>
 
 #include "native_client/src/shared/imc/nacl_imc_c.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /* Duplicate a NaCl file descriptor. */
 NaClHandle NaClDuplicateNaClHandle(NaClHandle handle) {

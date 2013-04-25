@@ -23,7 +23,8 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <bits/nacl_syscalls.h>
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
+
 #if USE_PTHREAD == 1
 #include <pthread.h>
 #endif

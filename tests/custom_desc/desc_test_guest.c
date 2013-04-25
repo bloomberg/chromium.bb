@@ -9,10 +9,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/nacl_imc_api.h>
-#include <sys/nacl_syscalls.h>
 #include <unistd.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 
 #define EXAMPLE_DESC 10

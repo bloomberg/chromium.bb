@@ -5,7 +5,8 @@
  */
 
 #include <sys/types.h>
-#include <bits/nacl_syscalls.h>
+
+#include "native_client/src/trusted/service_runtime/include/bits/nacl_syscalls.h"
 
 int main(void) {
   typedef int (*syswrite_t)(int, char const *, size_t);

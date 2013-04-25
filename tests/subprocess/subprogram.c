@@ -9,9 +9,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <sys/nacl_syscalls.h>
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 void HelloHandler(struct NaClSrpcRpc *rpc,
                   struct NaClSrpcArg *args[],

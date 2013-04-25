@@ -5,11 +5,11 @@
  */
 
 #include "native_client/src/shared/srpc/nacl_srpc_ppapi_plugin_internal.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #include <unistd.h>
 
 #include <sys/fcntl.h>
-#include <sys/nacl_syscalls.h>
 #if 0  /* until toolchain propagation */
 #include <sys/nacl_kernel_service.h>
 #else

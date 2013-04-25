@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/nacl_syscalls.h>
 
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_exception.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 #include "native_client/tests/common/register_set.h"
 #include "native_client/tests/inbrowser_test_runner/test_runner.h"

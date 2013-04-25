@@ -10,7 +10,8 @@
 
 #define CHECK_ERRNO 1
 
-#include <sys/nacl_syscalls.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+
 /*
  * These must come after <sys/nacl_syscalls.h> when using nacl-newlib
  * otherwise we get errors about conflicting types.  This is a bug in

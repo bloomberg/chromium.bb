@@ -8,9 +8,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 #include <sys/nacl_imc_api.h>
-#include <sys/nacl_syscalls.h>
+
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 
 /* Use the same descriptor number for both:  this demonstrates that the

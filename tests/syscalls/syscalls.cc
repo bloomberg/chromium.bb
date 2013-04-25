@@ -14,8 +14,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/nacl_syscalls.h>
 #include <unistd.h>
+
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #define PRINT_HEADER 0
 #define TEXT_LINE_SIZE 1024

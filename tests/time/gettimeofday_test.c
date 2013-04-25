@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <sys/time.h>
 #include <time.h>
-#include <sys/nacl_syscalls.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #include "native_client/src/include/nacl/nacl_inttypes.h"
 

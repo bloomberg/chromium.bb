@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <sys/nacl_syscalls.h>
 
 #include <cstdio>
 #include <cstring>
@@ -18,6 +17,7 @@
 #include <sstream>
 #include <string>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/tests/syscalls/test.h"
 
 /*

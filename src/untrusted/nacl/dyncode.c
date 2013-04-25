@@ -5,9 +5,9 @@
  */
 
 #include <errno.h>
-#include <sys/nacl_syscalls.h>
 #include <unistd.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/irt/irt.h"
 
 /*

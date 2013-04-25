@@ -61,7 +61,7 @@
 #include <pthread.h>
 
 #include <sys/nacl_imc_api.h>
-#include <sys/nacl_syscalls.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #define DEFAULT_PREYIELD_COUNT 8
 #define SHM_PAGE_BYTES      (1<<16)

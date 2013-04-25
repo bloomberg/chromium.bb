@@ -8,22 +8,22 @@
  * gc_instrumentation test: test compiler and syscall instrumentation
  */
 
-#include "native_client/tests/gc_instrumentation/gc_instrumentation.h"
-/* TODO(bradchen): fix this include once it is moved to the right place */
-#include "native_client/src/untrusted/nacl/gc_hooks.h"
-
 #include <errno.h>
 #include <fcntl.h>
 #include <sched.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/nacl_syscalls.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
 #include <unistd.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
+/* TODO(bradchen): fix this include once it is moved to the right place */
+#include "native_client/src/untrusted/nacl/gc_hooks.h"
 #include "native_client/src/untrusted/pthread/pthread_internal.h"
+#include "native_client/tests/gc_instrumentation/gc_instrumentation.h"
+
 
 
 /* Cheap way to keep track if we're in the main thread */
