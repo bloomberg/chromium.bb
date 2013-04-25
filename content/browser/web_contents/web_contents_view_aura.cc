@@ -95,6 +95,13 @@ bool ShouldNavigateBack(const NavigationController& controller,
          controller.CanGoBack();
 }
 
+RenderWidgetHostViewAura* ToRenderWidgetHostViewAura(
+    RenderWidgetHostView* view) {
+  if (RenderViewHostFactory::has_factory())
+    return NULL;  // Can't cast to RenderWidgetHostViewAura in unit tests.
+  return static_cast<RenderWidgetHostViewAura*>(view);
+}
+
 // The window delegate for the overscroll window. This redirects trackpad events
 // to the web-contents window. The delegate destroys itself when the window is
 // destroyed.
@@ -630,7 +637,8 @@ class OverscrollNavigationOverlay :
     received_paint_update_ = false;
     compositor_updated_ = false;
     view_ = view;
-    view_->set_paint_observer(this);
+    if (view_)
+      view_->set_paint_observer(this);
 
     // Make sure the overlay window is on top.
     if (window_.get() && window_->parent())
@@ -837,13 +845,10 @@ class WebContentsViewAura::ChildWindowObserver : public aura::WindowObserver,
 
  private:
   void UpdateConstrainedWindows(aura::Window* exclude) {
-    if (RenderViewHostFactory::has_factory())
-      return;  // Can't cast to RenderWidgetHostViewAura in unit tests.
-
     if (web_contents_destroyed_)
       return;
 
-    RenderWidgetHostViewAura* view = static_cast<RenderWidgetHostViewAura*>(
+    RenderWidgetHostViewAura* view = ToRenderWidgetHostViewAura(
         view_->web_contents_->GetRenderWidgetHostView());
     if (!view)
       return;
@@ -1100,8 +1105,8 @@ void WebContentsViewAura::PrepareOverscrollNavigationOverlay() {
       gfx::Rect(overscroll_window_->bounds().size()));
   navigation_overlay_->SetOverlayWindow(overscroll_window_.Pass(),
                                         delegate->has_screenshot());
-  navigation_overlay_->StartObservingView(static_cast<
-      RenderWidgetHostViewAura*>(web_contents_->GetRenderWidgetHostView()));
+  navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(
+      web_contents_->GetRenderWidgetHostView()));
 }
 
 void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
@@ -1127,7 +1132,7 @@ void WebContentsViewAura::UpdateOverscrollWindowBrightness(float delta_x) {
 void WebContentsViewAura::AttachTouchEditableToRenderView() {
   if (!touch_editable_)
     return;
-  RenderWidgetHostViewAura* rwhva = static_cast<RenderWidgetHostViewAura*>(
+  RenderWidgetHostViewAura* rwhva = ToRenderWidgetHostViewAura(
       web_contents_->GetRenderWidgetHostView());
   touch_editable_->AttachToView(rwhva);
 }
@@ -1274,8 +1279,7 @@ RenderWidgetHostView* WebContentsViewAura::CreateViewForWidget(
   GetNativeView()->AddChild(content_container_);
 
   if (navigation_overlay_.get() && navigation_overlay_->has_window()) {
-    navigation_overlay_->StartObservingView(static_cast<
-        RenderWidgetHostViewAura*>(view));
+    navigation_overlay_->StartObservingView(ToRenderWidgetHostViewAura(view));
   }
 
   view->Show();
@@ -1311,8 +1315,8 @@ void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 
 void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
   if (navigation_overlay_.get() && navigation_overlay_->has_window()) {
-    navigation_overlay_->StartObservingView(static_cast<
-        RenderWidgetHostViewAura*>(host->GetView()));
+    navigation_overlay_->StartObservingView(
+        ToRenderWidgetHostViewAura(host->GetView()));
   }
   AttachTouchEditableToRenderView();
 }
