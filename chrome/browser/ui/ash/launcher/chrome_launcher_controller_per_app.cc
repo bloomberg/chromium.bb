@@ -77,6 +77,9 @@ using content::WebContents;
 
 namespace {
 
+// The App ID for of the gMail application.
+const char kGmailAppId[] = "pjkljhegncpnkpknbcohdijeoejaedia";
+
 std::string GetPrefKeyForRootWindow(aura::RootWindow* root_window) {
   gfx::Display display = gfx::Screen::GetScreenFor(
       root_window)->GetDisplayNearestWindow(root_window);
@@ -800,6 +803,11 @@ void ChromeLauncherControllerPerApp::UpdateAppState(
     AppState app_state) {
   std::string app_id = GetAppID(contents);
 
+  // Check if the gMail app is loaded and it matches the given content.
+  // This special treatment is needed to address crbug.com/234268.
+  if (app_id.empty() && ContentCanBeHandledByGmailApp(contents))
+    app_id = kGmailAppId;
+
   // Check the old |app_id| for a tab. If the contents has changed we need to
   // remove it from the previous app.
   if (web_contents_to_app_id_.find(contents) != web_contents_to_app_id_.end()) {
@@ -1172,9 +1180,27 @@ void ChromeLauncherControllerPerApp::ActivateShellApp(
 bool ChromeLauncherControllerPerApp::IsWebContentHandledByApplication(
     content::WebContents* web_contents,
     const std::string& app_id) {
-  return ((web_contents_to_app_id_.find(web_contents) !=
-           web_contents_to_app_id_.end()) &&
-          (web_contents_to_app_id_[web_contents] == app_id));
+  if ((web_contents_to_app_id_.find(web_contents) !=
+       web_contents_to_app_id_.end()) &&
+      (web_contents_to_app_id_[web_contents] == app_id))
+    return true;
+  return (app_id == kGmailAppId && ContentCanBeHandledByGmailApp(web_contents));
+}
+
+bool ChromeLauncherControllerPerApp::ContentCanBeHandledByGmailApp(
+    content::WebContents* web_contents) {
+  ash::LauncherID id = GetLauncherIDForAppID(kGmailAppId);
+  if (id) {
+    const GURL url = web_contents->GetURL();
+    // We need to extend the application matching for the gMail app beyond the
+    // manifest file's specification. This is required because of the namespace
+    // overlap with the offline app ("/mail/mu/").
+    if (!MatchPattern(url.path(), "/mail/mu/*") &&
+        MatchPattern(url.path(), "/mail/*") &&
+        GetExtensionForAppID(kGmailAppId)->OverlapsWithOrigin(url))
+      return true;
+  }
+  return false;
 }
 
 gfx::Image ChromeLauncherControllerPerApp::GetAppListIcon(

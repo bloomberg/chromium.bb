@@ -331,6 +331,10 @@ class ChromeLauncherControllerPerApp
   bool IsWebContentHandledByApplication(content::WebContents* web_contents,
                                         const std::string& app_id);
 
+  // Check if the gMail app is loaded and it can handle the given web content.
+  // This special treatment is required to address crbug.com/234268.
+  bool ContentCanBeHandledByGmailApp(content::WebContents* web_contents);
+
   // Get the favicon for the application list entry for |web_contents|.
   // Note that for incognito windows the incognito icon will be returned.
   // If |web_contents| has not loaded, returns the default favicon.

@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_manifest_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
@@ -43,6 +44,7 @@ using extensions::Manifest;
 namespace {
 const int kExpectedAppIndex = 1;
 const char* gmail_app_id = "pjkljhegncpnkpknbcohdijeoejaedia";
+const char* offline_gmail_url = "https://mail.google.com/mail/mu/u";
 const char* gmail_url = "https://mail.google.com/mail/u";
 }
 
@@ -146,9 +148,11 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
     model_->AddObserver(model_observer_.get());
 
     DictionaryValue manifest;
-    manifest.SetString("name", "launcher controller test extension");
-    manifest.SetString("version", "1");
-    manifest.SetString("description", "for testing pinned apps");
+    manifest.SetString(extension_manifest_keys::kName,
+                       "launcher controller test extension");
+    manifest.SetString(extension_manifest_keys::kVersion, "1");
+    manifest.SetString(extension_manifest_keys::kDescription,
+                       "for testing pinned apps");
 
     extensions::TestExtensionSystem* extension_system(
         static_cast<extensions::TestExtensionSystem*>(
@@ -168,8 +172,20 @@ class ChromeLauncherControllerPerAppTest : public BrowserWithTestWindowTest {
                                     "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
                                     &error);
     // Fake gmail extension.
+    DictionaryValue manifest_gmail;
+    manifest_gmail.SetString(extension_manifest_keys::kName,
+                             "Gmail launcher controller test extension");
+    manifest_gmail.SetString(extension_manifest_keys::kVersion, "1");
+    manifest_gmail.SetString(extension_manifest_keys::kDescription,
+                             "for testing pinned Gmail");
+    manifest_gmail.SetString(extension_manifest_keys::kLaunchWebURL,
+                             "https://mail.google.com/mail/ca");
+    ListValue* list = new ListValue();
+    list->Append(Value::CreateStringValue("*://mail.google.com/mail/ca"));
+    manifest_gmail.Set(extension_manifest_keys::kWebURLs, list);
+
     extension3_ = Extension::Create(base::FilePath(), Manifest::UNPACKED,
-                                    manifest,
+                                    manifest_gmail,
                                     Extension::NO_FLAGS,
                                     gmail_app_id,
                                     &error);
@@ -863,4 +879,62 @@ TEST_F(ChromeLauncherControllerPerAppTest, AppPanels) {
 
   launcher_controller_->CloseLauncherItem(launcher_id1);
   EXPECT_EQ(1, model_observer_->removed());
+}
+
+// Tests that the Gmail extension matches more then the app itself claims with
+// the manifest file.
+TEST_F(ChromeLauncherControllerPerAppTest, GmailMatching) {
+  InitLauncherControllerWithBrowser();
+
+  // Create a Gmail browser tab.
+  chrome::NewTab(browser());
+  string16 title = ASCIIToUTF16("Test");
+  NavigateAndCommitActiveTabWithTitle(browser(), GURL(gmail_url), title);
+  content::WebContents* content =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Check that the launcher controller does not recognize the running app.
+  EXPECT_FALSE(launcher_controller_->ContentCanBeHandledByGmailApp(content));
+
+  // Installing |extension3_| adds it to the launcher.
+  ash::LauncherID gmail_id = model_->next_id();
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_EQ(3, model_->item_count());
+  int gmail_index = model_->ItemIndexByID(gmail_id);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[gmail_index].type);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
+
+  // Check that it is now handled.
+  EXPECT_TRUE(launcher_controller_->ContentCanBeHandledByGmailApp(content));
+
+  // Check also that the app has detected that properly.
+  ash::LauncherItem item_gmail;
+  item_gmail.type = ash::TYPE_APP_SHORTCUT;
+  item_gmail.id = gmail_id;
+  EXPECT_EQ(2U, launcher_controller_->GetApplicationList(item_gmail, 0).size());
+}
+
+// Tests that the Gmail extension does not match the offline verison.
+TEST_F(ChromeLauncherControllerPerAppTest, GmailOfflineMatching) {
+  InitLauncherControllerWithBrowser();
+
+  // Create a Gmail browser tab.
+  chrome::NewTab(browser());
+  string16 title = ASCIIToUTF16("Test");
+  NavigateAndCommitActiveTabWithTitle(browser(),
+                                      GURL(offline_gmail_url),
+                                      title);
+  content::WebContents* content =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Installing |extension3_| adds it to the launcher.
+  ash::LauncherID gmail_id = model_->next_id();
+  extension_service_->AddExtension(extension3_.get());
+  EXPECT_EQ(3, model_->item_count());
+  int gmail_index = model_->ItemIndexByID(gmail_id);
+  EXPECT_EQ(ash::TYPE_APP_SHORTCUT, model_->items()[gmail_index].type);
+  EXPECT_TRUE(launcher_controller_->IsAppPinned(extension3_->id()));
+
+  // The content should not be able to be handled by the app.
+  EXPECT_FALSE(launcher_controller_->ContentCanBeHandledByGmailApp(content));
 }
