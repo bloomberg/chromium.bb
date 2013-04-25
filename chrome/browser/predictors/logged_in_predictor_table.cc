@@ -32,11 +32,17 @@ LoggedInPredictorTable::LoggedInPredictorTable()
 LoggedInPredictorTable::~LoggedInPredictorTable() {
 }
 
-string LoggedInPredictorTable::GetKey(const GURL& url) const {
+// static
+string LoggedInPredictorTable::GetKey(const GURL& url) {
+  return GetKeyFromDomain(url.host());
+}
+
+// static
+string LoggedInPredictorTable::GetKeyFromDomain(const std::string& domain) {
   string effective_domain(
-      net::RegistryControlledDomainService::GetDomainAndRegistry(url.host()));
+      net::RegistryControlledDomainService::GetDomainAndRegistry(domain));
   if (effective_domain.empty())
-    effective_domain = url.host();
+    effective_domain = domain;
 
   // Strip off a preceding ".", if present.
   if (!effective_domain.empty() && effective_domain[0] == '.')
@@ -44,7 +50,7 @@ string LoggedInPredictorTable::GetKey(const GURL& url) const {
   return effective_domain;
 }
 
-void LoggedInPredictorTable::Add(const GURL& url) {
+void LoggedInPredictorTable::AddDomainFromURL(const GURL& url) {
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
   if (CantAccessDatabase())
     return;
@@ -57,6 +63,23 @@ void LoggedInPredictorTable::Add(const GURL& url) {
   statement.BindInt64(1, base::Time::Now().ToInternalValue());
 
   statement.Run();
+}
+
+void LoggedInPredictorTable::DeleteDomainFromURL(const GURL& url) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  if (CantAccessDatabase())
+    return;
+
+  Statement statement(DB()->GetCachedStatement(SQL_FROM_HERE,
+      base::StringPrintf("DELETE FROM %s WHERE domain=?", kTableName).c_str()));
+
+  statement.BindString(0, GetKey(url));
+
+  statement.Run();
+}
+
+void LoggedInPredictorTable::DeleteDomain(const std::string& domain) {
+  DeleteDomainFromURL(GURL("http://" + domain));
 }
 
 void LoggedInPredictorTable::HasUserLoggedIn(const GURL& url, bool* is_present,
@@ -92,6 +115,24 @@ void LoggedInPredictorTable::DeleteAllCreatedBetween(
   statement.BindInt64(1, delete_end.ToInternalValue());
 
   statement.Run();
+}
+
+void LoggedInPredictorTable::GetAllData(
+    LoggedInPredictorTable::LoggedInStateMap* state_map) {
+  CHECK(BrowserThread::CurrentlyOn(BrowserThread::DB));
+  DCHECK(state_map != NULL);
+  state_map->clear();
+  if (CantAccessDatabase())
+    return;
+
+  Statement statement(DB()->GetUniqueStatement(
+      base::StringPrintf("SELECT * FROM %s", kTableName).c_str()));
+
+  while (statement.Step()) {
+    string domain = statement.ColumnString(0);
+    int64 value = statement.ColumnInt64(1);
+    (*state_map)[domain] = value;
+  }
 }
 
 void LoggedInPredictorTable::CreateTableIfNonExistent() {
