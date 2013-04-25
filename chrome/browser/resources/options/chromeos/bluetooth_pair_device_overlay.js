@@ -58,9 +58,10 @@ cr.define('options', function() {
      * Description of the bluetooth device.
      * @type {{name: string,
      *         address: string,
-     *         icon: Constants.DEVICE_TYPE,
      *         paired: boolean,
      *         connected: boolean,
+     *         connecting: boolean,
+     *         connectable: boolean,
      *         pairing: string|undefined,
      *         passkey: number|undefined,
      *         pincode: string|undefined,

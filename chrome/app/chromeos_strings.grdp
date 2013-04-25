@@ -702,14 +702,8 @@ Press any key to continue exploring.
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND">
     No devices found
   </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED">
-    Connected
-  </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING">
-    Connecting
-  </message>
-  <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED">
-    Not connected
+    <ph name="DEVICE_NAME">$1<ex>Apple Magic Mouse</ex></ph>: Connecting...
   </message>
   <message name="IDS_OPTIONS_SETTINGS_BLUETOOTH_ADD_DEVICE_TITLE">
     Add Bluetooth device

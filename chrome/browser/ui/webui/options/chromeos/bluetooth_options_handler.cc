@@ -90,10 +90,8 @@ void BluetoothOptionsHandler::GetLocalizedValues(
     { "bluetoothNoDevices", IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES },
     { "bluetoothNoDevicesFound",
         IDS_OPTIONS_SETTINGS_BLUETOOTH_NO_DEVICES_FOUND },
-    {"bluetoothScanning", IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING },
-    {"bluetoothDeviceConnected", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTED },
-    { "bluetoothDeviceNotConnected",
-        IDS_OPTIONS_SETTINGS_BLUETOOTH_NOT_CONNECTED },
+    { "bluetoothScanning", IDS_OPTIONS_SETTINGS_BLUETOOTH_SCANNING },
+    { "bluetoothDeviceConnecting", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECTING },
     { "bluetoothConnectDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_CONNECT },
     { "bluetoothDisconnectDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_DISCONNECT },
     { "bluetoothForgetDevice", IDS_OPTIONS_SETTINGS_BLUETOOTH_FORGET },
@@ -430,6 +428,7 @@ void BluetoothOptionsHandler::SendDeviceNotification(
   js_properties.SetString("address", device->GetAddress());
   js_properties.SetBoolean("paired", device->IsPaired());
   js_properties.SetBoolean("connected", device->IsConnected());
+  js_properties.SetBoolean("connecting", device->IsConnecting());
   js_properties.SetBoolean("connectable", device->IsConnectable());
   if (params)
     js_properties.MergeDictionary(params);

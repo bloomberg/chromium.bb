@@ -7,8 +7,12 @@
   padding: 5px 10px;
 }
 
-.bluetooth-device[paired] {
+.bluetooth-device[notconnectable] {
   color: gray;
+}
+
+.bluetooth-device[connected] {
+  font-weight: bold; /* semibold */
 }
 
 #bluetooth-options .bluetooth-device-list {

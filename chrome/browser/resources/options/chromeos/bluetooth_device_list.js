@@ -18,8 +18,11 @@ cr.define('options.system.bluetooth', function() {
    *          address: string,
    *          paired: boolean,
    *          connected: boolean,
+   *          connecting: boolean,
+   *          connectable: boolean,
    *          pairing: string|undefined,
    *          passkey: number|undefined,
+   *          pincode: string|undefined,
    *          entered: number|undefined}} device
    *    Description of the Bluetooth device.
    * @constructor
@@ -32,8 +35,9 @@ cr.define('options.system.bluetooth', function() {
     for (var key in device)
       el.data[key] = device[key];
     el.decorate();
-    // Only show the close button for paired devices.
-    el.deletable = device.paired;
+    // Only show the close button for paired devices, but not for connecting
+    // devices.
+    el.deletable = device.paired && !device.connecting;
     return el;
   }
 
@@ -46,8 +50,11 @@ cr.define('options.system.bluetooth', function() {
      *         address: string,
      *         paired: boolean,
      *         connected: boolean,
+     *         connecting: boolean,
+     *         connectable: boolean,
      *         pairing: string|undefined,
      *         passkey: number|undefined,
+     *         pincode: string|undefined,
      *         entered: number|undefined}}
      */
     data: null,
@@ -58,16 +65,26 @@ cr.define('options.system.bluetooth', function() {
       var label = this.ownerDocument.createElement('div');
       label.className = 'bluetooth-device-label';
       this.classList.add('bluetooth-device');
-      this.connected = this.data.connected;
-      // Though strictly speaking, a connected device will also be paired, we
-      // are interested in tracking paired devices that are not connected.
-      this.paired = this.data.paired && !this.data.connected;
-      this.connecting = !!this.data.pairing;
+      // There are four kinds of devices we want to distinguish:
+      //  * Connecting devices: in bold with a "connecting" label,
+      //  * Connected devices: in bold,
+      //  * Paired, not connected but connectable devices: regular and
+      //  * Paired, not connected and not connectable devices: grayed out.
+      this.connected = this.data.connecting ||
+          (this.data.paired && this.data.connected);
+      this.notconnectable = this.data.paired && !this.data.connecting &&
+          !this.data.connected && !this.data.connectable;
+      // "paired" devices are those that are remembered but not connected.
+      this.paired = this.data.paired && !this.data.connected &&
+          this.data.connectable;
+
       var content = this.data.name;
-      // Update label for devices that are paired but not connected.
-      if (this.paired) {
-        content = content + ' (' +
-            loadTimeData.getString('bluetoothDeviceNotConnected') + ')';
+      // Update the device's label according to its state. A "connecting" device
+      // can be in the process of connecting and pairing, so we check connecting
+      // first.
+      if (this.data.connecting) {
+        content = loadTimeData.getStringF('bluetoothDeviceConnecting',
+            this.data.name);
       }
       label.textContent = content;
       this.contentElement.appendChild(label);
@@ -127,8 +144,11 @@ cr.define('options.system.bluetooth', function() {
      *          address: string,
      *          paired: boolean,
      *          connected: boolean,
+     *          connecting: boolean,
+     *          connectable: boolean,
      *          pairing: string|undefined,
      *          passkey: number|undefined,
+     *          pincode: string|undefined,
      *          entered: number|undefined}} device
      *     Description of the bluetooth device.
      * @return {boolean} True if the devies was successfully added or updated.
@@ -326,6 +346,9 @@ cr.define('options.system.bluetooth', function() {
   cr.defineProperty(BluetoothListItem, 'paired', cr.PropertyKind.BOOL_ATTR);
 
   cr.defineProperty(BluetoothListItem, 'connecting', cr.PropertyKind.BOOL_ATTR);
+
+  cr.defineProperty(BluetoothListItem, 'notconnectable',
+      cr.PropertyKind.BOOL_ATTR);
 
   return {
     BluetoothListItem: BluetoothListItem,
