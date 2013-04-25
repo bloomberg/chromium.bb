@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -193,7 +194,7 @@ public class ContentViewZoomTest extends AwTestBase {
     }
 
     private void runMagnificationTest(boolean supportZoom) throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
+        getAwSettingsOnUiThread(mAwContents).setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
         // It takes some time for scaling to settle down.
@@ -238,13 +239,13 @@ public class ContentViewZoomTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testZoomUsingMultiTouch() throws Throwable {
-        ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
+        AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
-        assertTrue(webSettings.supportZoom());
-        assertFalse(webSettings.getBuiltInZoomControls());
+        assertTrue(getContentSettingsOnUiThread(mAwContents).supportZoom());
+        assertFalse(getContentSettingsOnUiThread(mAwContents).getBuiltInZoomControls());
         assertFalse(isMultiTouchZoomSupportedOnUiThread());
 
         getContentSettingsOnUiThread(mAwContents).setBuiltInZoomControls(true);
@@ -261,14 +262,14 @@ public class ContentViewZoomTest extends AwTestBase {
      */
     @FlakyTest
     public void testZoomControls() throws Throwable {
-        ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
+        AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
-        assertTrue(webSettings.supportZoom());
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(false);
+        assertTrue(getContentSettingsOnUiThread(mAwContents).supportZoom());
+        getContentSettingsOnUiThread(mAwContents).setBuiltInZoomControls(true);
+        getContentSettingsOnUiThread(mAwContents).setDisplayZoomControls(false);
 
         // With DisplayZoomControls set to false, attempts to display zoom
         // controls must be ignored.
@@ -276,7 +277,7 @@ public class ContentViewZoomTest extends AwTestBase {
         invokeZoomPickerOnUiThread();
         assertNull(getZoomControlsOnUiThread());
 
-        webSettings.setDisplayZoomControls(true);
+        getContentSettingsOnUiThread(mAwContents).setDisplayZoomControls(true);
         assertNull(getZoomControlsOnUiThread());
         invokeZoomPickerOnUiThread();
         View zoomControls = getZoomControlsOnUiThread();
@@ -286,7 +287,7 @@ public class ContentViewZoomTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testZoomControlsOnNonZoomableContent() throws Throwable {
-        ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
+        AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getNonZoomableHtml(), "text/html", false);
@@ -294,9 +295,9 @@ public class ContentViewZoomTest extends AwTestBase {
         // ContentView must update itself according to the viewport setup.
         waitUntilCanNotZoom();
 
-        assertTrue(webSettings.supportZoom());
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(true);
+        assertTrue(getContentSettingsOnUiThread(mAwContents).supportZoom());
+        getContentSettingsOnUiThread(mAwContents).setBuiltInZoomControls(true);
+        getContentSettingsOnUiThread(mAwContents).setDisplayZoomControls(true);
         assertNull(getZoomControlsOnUiThread());
         invokeZoomPickerOnUiThread();
         View zoomControls = getZoomControlsOnUiThread();
@@ -310,14 +311,14 @@ public class ContentViewZoomTest extends AwTestBase {
      */
     @DisabledTest
     public void testZoomControlsOnOrientationChange() throws Throwable {
-        ContentSettings webSettings = getContentSettingsOnUiThread(mAwContents);
+        AwSettings webSettings = getAwSettingsOnUiThread(mAwContents);
         webSettings.setUseWideViewPort(true);
         loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 getZoomableHtml(), "text/html", false);
 
-        assertTrue(webSettings.supportZoom());
-        webSettings.setBuiltInZoomControls(true);
-        webSettings.setDisplayZoomControls(true);
+        assertTrue(getContentSettingsOnUiThread(mAwContents).supportZoom());
+        getContentSettingsOnUiThread(mAwContents).setBuiltInZoomControls(true);
+        getContentSettingsOnUiThread(mAwContents).setDisplayZoomControls(true);
         invokeZoomPickerOnUiThread();
 
         // Now force an orientation change, and try to display the zoom picker

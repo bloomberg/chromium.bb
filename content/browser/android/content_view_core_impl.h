@@ -88,10 +88,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       jstring base_url_for_data_url,
       jstring virtual_url_for_data_url,
       jboolean can_load_local_resources);
-  void SetAllUserAgentOverridesInHistory(
-      JNIEnv* env,
-      jobject obj,
-      jstring user_agent_override);
   base::android::ScopedJavaLocalRef<jstring> GetURL(JNIEnv* env, jobject) const;
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env, jobject obj) const;

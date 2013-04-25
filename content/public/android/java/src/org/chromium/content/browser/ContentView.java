@@ -109,7 +109,7 @@ public class ContentView extends FrameLayout
         super(context, attrs, defStyle);
 
         mContentViewCore = new ContentViewCore(context, personality);
-        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid, false);
+        mContentViewCore.initialize(this, this, nativeWebContents, windowAndroid);
     }
 
     // PageInfo implementation.
@@ -227,10 +227,6 @@ public class ContentView extends FrameLayout
      */
     public void loadUrl(LoadUrlParams params) {
         mContentViewCore.loadUrl(params);
-    }
-
-    void setAllUserAgentOverridesInHistory() {
-        mContentViewCore.setAllUserAgentOverridesInHistory();
     }
 
     /**

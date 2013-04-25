@@ -88,7 +88,7 @@ public class AwShellActivity extends Activity {
         testContainerView.initialize(new AwContents(browserContext, testContainerView,
                 testContainerView.getInternalAccessDelegate(),
                 awContentsClient, false));
-        testContainerView.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
+        testContainerView.getAwContents().getSettings().setJavaScriptEnabled(true);
         return testContainerView;
     }
 

@@ -288,7 +288,7 @@ public class AwContents {
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
      * @param contentsClient will receive API callbacks from this WebView Contents
-     * @param isAccessFromFileURLsGrantedByDefault passed to ContentViewCore.initialize.
+     * @param isAccessFromFileURLsGrantedByDefault passed to AwSettings.
      *
      * This constructor uses the default view sizing policy.
      */
@@ -328,12 +328,12 @@ public class AwContents {
         mCleanupReference = new CleanupReference(this, new DestroyRunnable(mNativeAwContents));
 
         int nativeWebContents = nativeGetWebContents(mNativeAwContents);
-        mContentViewCore.initialize(containerView, internalAccessAdapter, nativeWebContents,
-                null, isAccessFromFileURLsGrantedByDefault);
+        mContentViewCore.initialize(containerView, internalAccessAdapter, nativeWebContents, null);
         mContentViewCore.setContentViewClient(mContentsClient);
         mContentsClient.installWebContentsObserver(mContentViewCore);
 
-        mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents);
+        mSettings = new AwSettings(mContentViewCore.getContext(), nativeWebContents,
+                isAccessFromFileURLsGrantedByDefault);
         setIoThreadClient(new IoThreadClientImpl());
         setInterceptNavigationDelegate(new InterceptNavigationDelegateImpl());
 
@@ -344,7 +344,7 @@ public class AwContents {
         mContentsClient.setDIPScale(mDIPScale);
         mSettings.setDIPScale(mDIPScale);
         mDefaultVideoPosterRequestHandler = new DefaultVideoPosterRequestHandler(mContentsClient);
-        mContentViewCore.getContentSettings().setDefaultVideoPosterURL(
+        mSettings.setDefaultVideoPosterURL(
                 mDefaultVideoPosterRequestHandler.getDefaultVideoPosterURL());
 
         ContentVideoView.registerContentVideoViewContextDelegate(
@@ -571,11 +571,7 @@ public class AwContents {
         // wrap it and then swap it.
         ContentViewCore newCore = new ContentViewCore(mContainerView.getContext(),
                 ContentViewCore.PERSONALITY_VIEW);
-        // Note we pass false for isAccessFromFileURLsGrantedByDefault as we'll
-        // set it correctly when when we copy the settings from the old ContentViewCore
-        // into the new one.
-        newCore.initialize(mContainerView, mInternalAccessAdapter,
-                newWebContentsPtr, null, false);
+        newCore.initialize(mContainerView, mInternalAccessAdapter, newWebContentsPtr, null);
         newCore.setContentViewClient(mContentsClient);
         mContentsClient.installWebContentsObserver(newCore);
 
@@ -591,6 +587,7 @@ public class AwContents {
         nativeSetIoThreadClient(mNativeAwContents, mIoThreadClient);
         nativeSetInterceptNavigationDelegate(mNativeAwContents, mInterceptNavigationDelegate);
 
+        // This will also apply settings to the new WebContents.
         mSettings.setWebContents(newWebContentsPtr);
 
         // Finally poke the new ContentViewCore with the size of the container view and show it.

@@ -31,7 +31,7 @@ public class UserAgentTest extends AwTestBase {
     @SmallTest
     @Feature({"AndroidWebView"})
     public void testNoExtraSpaceBeforeBuildName() throws Throwable {
-        getContentSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
+        getAwSettingsOnUiThread(mAwContents).setJavaScriptEnabled(true);
         loadDataSync(
             mAwContents,
             mContentsClient.getOnPageFinishedHelper(),

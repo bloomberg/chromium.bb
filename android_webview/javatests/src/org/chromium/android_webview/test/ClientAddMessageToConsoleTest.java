@@ -37,7 +37,7 @@ public class ClientAddMessageToConsoleTest extends AwTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mAwContents.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
+                mAwContents.getSettings().setJavaScriptEnabled(true);
             }
         });
     }

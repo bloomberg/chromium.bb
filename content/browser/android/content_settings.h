@@ -16,15 +16,11 @@ namespace content {
 class ContentSettings : public WebContentsObserver {
  public:
   ContentSettings(JNIEnv* env, jobject obj,
-                  WebContents* contents,
-                  bool is_master_mode);
+                  WebContents* contents);
 
   static bool RegisterContentSettings(JNIEnv* env);
 
-  // Synchronizes the Java settings from native settings.
   void SyncFromNative(JNIEnv* env, jobject obj);
-  // Synchronizes the native settings from Java settings.
-  void SyncToNative(JNIEnv* env, jobject obj);
 
  private:
   struct FieldIds;
@@ -32,15 +28,9 @@ class ContentSettings : public WebContentsObserver {
   virtual ~ContentSettings();
 
   void SyncFromNativeImpl();
-  void SyncToNativeImpl();
 
   // WebContentsObserver overrides:
-  virtual void RenderViewCreated(RenderViewHost* render_view_host) OVERRIDE;
   virtual void WebContentsDestroyed(WebContents* web_contents) OVERRIDE;
-
-  // Determines whether a sync to native should be triggered when a new render
-  // view is created.
-  bool is_master_mode_;
 
   // Java field references for accessing the values in the Java object.
   scoped_ptr<FieldIds> field_ids_;

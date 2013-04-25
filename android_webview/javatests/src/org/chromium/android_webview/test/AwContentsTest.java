@@ -291,7 +291,7 @@ public class AwContentsTest extends AwTestBase {
             // the page load completes which makes it slightly hard to test.
             final Bitmap defaultFavicon = awContents.getFavicon();
 
-            getContentSettingsOnUiThread(awContents).setImagesEnabled(true);
+            getAwSettingsOnUiThread(awContents).setImagesEnabled(true);
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), pageUrl);
 
             assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {

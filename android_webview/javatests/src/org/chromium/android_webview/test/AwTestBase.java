@@ -71,7 +71,7 @@ public class AwTestBase
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                awContents.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
+                awContents.getSettings().setJavaScriptEnabled(true);
             }
         });
     }

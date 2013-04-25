@@ -6,8 +6,8 @@ package org.chromium.android_webview.test;
 
 import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
@@ -20,7 +20,7 @@ public class AwTargetDensityDpiTest extends AwTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(contentClient);
         final AwContents awContents = testContainerView.getAwContents();
-        ContentSettings settings = getContentSettingsOnUiThread(awContents);
+        AwSettings settings = getAwSettingsOnUiThread(awContents);
         CallbackHelper onPageFinishedHelper = contentClient.getOnPageFinishedHelper();
 
         final String pageTemplate = "<html><head>" +

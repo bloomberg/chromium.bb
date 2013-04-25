@@ -201,7 +201,7 @@ public class NavigationHistoryTest extends AwTestBase {
                 CommonResources.FAVICON_STATIC_HTML, null);
 
         assertEquals(0, list.getEntryCount());
-        getContentSettingsOnUiThread(mAwContents).setImagesEnabled(true);
+        getAwSettingsOnUiThread(mAwContents).setImagesEnabled(true);
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
         list = getNavigationHistory(mAwContents);

@@ -44,7 +44,7 @@ public class CookieManagerTest extends AwTestBase {
         final AwTestContainerView testContainerView =
                 createAwTestContainerViewOnMainSync(mContentsClient);
         mAwContents = testContainerView.getAwContents();
-        mAwContents.getContentViewCore().getContentSettings().setJavaScriptEnabled(true);
+        mAwContents.getSettings().setJavaScriptEnabled(true);
         assertNotNull(mCookieManager);
     }
 

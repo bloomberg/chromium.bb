@@ -10,8 +10,8 @@ import android.webkit.ValueCallback;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwQuotaManagerBridge;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentSettings;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
@@ -37,7 +37,7 @@ public class AwQuotaManagerBridgeTest extends AwTestBase {
         mWebServer = new TestWebServer(false);
         mOrigin = mWebServer.getBaseUrl();
 
-        ContentSettings settings = getContentSettingsOnUiThread(mAwContents);
+        AwSettings settings = getAwSettingsOnUiThread(mAwContents);
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setAppCacheEnabled(true);

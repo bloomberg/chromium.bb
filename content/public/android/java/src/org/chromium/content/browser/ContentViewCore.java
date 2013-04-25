@@ -519,7 +519,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
      *                           containerView.
      * @param nativeWebContents A pointer to the native web contents.
      * @param windowAndroid An instance of the WindowAndroid.
-     * @param isAccessFromFileURLsGrantedByDefault Default WebSettings configuration.
      */
     // Perform important post-construction set up of the ContentViewCore.
     // We do not require the containing view in the constructor to allow embedders to create a
@@ -531,8 +530,7 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
     // Note that the caller remains the owner of the nativeWebContents and is responsible for
     // deleting it after destroying the ContentViewCore.
     public void initialize(ViewGroup containerView, InternalAccessDelegate internalDispatcher,
-            int nativeWebContents, WindowAndroid windowAndroid,
-            boolean isAccessFromFileURLsGrantedByDefault) {
+            int nativeWebContents, WindowAndroid windowAndroid) {
         // Check whether to use hardware acceleration. This is a bit hacky, and
         // only works if the Context is actually an Activity (as it is in the
         // Chrome application).
@@ -560,12 +558,8 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
 
         mNativeContentViewCore = nativeInit(mHardwareAccelerated,
                 nativeWebContents, viewAndroidNativePointer, windowNativePointer);
-        mContentSettings = new ContentSettings(
-                this, mNativeContentViewCore, isAccessFromFileURLsGrantedByDefault);
+        mContentSettings = new ContentSettings(this, mNativeContentViewCore);
         initializeContainerView(internalDispatcher);
-        if (mPersonality == PERSONALITY_VIEW) {
-            setAllUserAgentOverridesInHistory();
-        }
 
         mAccessibilityInjector = AccessibilityInjector.newInstance(this);
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
@@ -810,11 +804,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
                 params.mBaseUrlForDataUrl,
                 params.mVirtualUrlForDataUrl,
                 params.mCanLoadLocalResources);
-    }
-
-    void setAllUserAgentOverridesInHistory() {
-        nativeSetAllUserAgentOverridesInHistory(mNativeContentViewCore,
-                mContentSettings.getUserAgentString());
     }
 
     /**
@@ -2755,9 +2744,6 @@ public class ContentViewCore implements MotionEventDelegate, NavigationClient {
             String baseUrlForDataUrl,
             String virtualUrlForDataUrl,
             boolean canLoadLocalResources);
-
-    private native void nativeSetAllUserAgentOverridesInHistory(int nativeContentViewCoreImpl,
-            String userAgentOverride);
 
     private native String nativeGetURL(int nativeContentViewCoreImpl);
 
