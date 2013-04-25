@@ -32,7 +32,11 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
     fake_cros_disks_client_(new FakeCrosDisksClient),
     fake_shill_manager_client_(new FakeShillManagerClient),
     mock_ibus_client_(new MockIBusClient),
+    mock_ibus_config_client_(new MockIBusConfigClient),
     mock_ibus_input_context_client_(new MockIBusInputContextClient),
+    mock_ibus_engine_service_(new MockIBusEngineService),
+    mock_ibus_engine_factory_service_(new MockIBusEngineFactoryService),
+    mock_ibus_panel_service_(new MockIBusPanelService),
     ibus_bus_(NULL) {
 }
 
