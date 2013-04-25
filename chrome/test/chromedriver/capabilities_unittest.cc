@@ -253,6 +253,24 @@ TEST(ParseCapabilities, MissingSettingForManualProxy) {
   ASSERT_FALSE(status.IsOk());
 }
 
+TEST(ParseCapabilities, IgnoreNullValueForManualProxy) {
+  Capabilities capabilities;
+  base::DictionaryValue proxy;
+  proxy.SetString("proxyType", "manual");
+  proxy.SetString("ftpProxy", "localhost:9001");
+  proxy.Set("sslProxy", base::Value::CreateNullValue());
+  proxy.Set("noProxy", base::Value::CreateNullValue());
+  base::DictionaryValue caps;
+  caps.Set("proxy", proxy.DeepCopy());
+  Status status = capabilities.Parse(caps);
+  ASSERT_TRUE(status.IsOk());
+  ASSERT_EQ(1u, capabilities.command.GetSwitches().size());
+  ASSERT_TRUE(capabilities.command.HasSwitch("proxy-server"));
+  ASSERT_STREQ(
+      "ftp=localhost:9001",
+      capabilities.command.GetSwitchValueASCII("proxy-server").c_str());
+}
+
 TEST(ParseCapabilities, LoggingPrefsOk) {
   Capabilities capabilities;
   base::DictionaryValue logging_prefs;
@@ -275,4 +293,3 @@ TEST(ParseCapabilities, LoggingPrefsNotDict) {
   Status status = capabilities.Parse(caps);
   ASSERT_FALSE(status.IsOk());
 }
-

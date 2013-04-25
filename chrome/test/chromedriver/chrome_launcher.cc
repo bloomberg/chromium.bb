@@ -71,7 +71,6 @@ Status PrepareCommandLine(int port,
                   base::StringPrintf("no chrome binary at %" PRFilePath,
                                      program.value().c_str()));
   }
-  LOG(INFO) << "Using chrome from " << program.value();
 
   command.AppendSwitchASCII("remote-debugging-port", base::IntToString(port));
   command.AppendSwitch("no-first-run");
@@ -189,6 +188,7 @@ Status LaunchDesktopChrome(
   base::ScopedTempDir extension_dir;
   PrepareCommandLine(port, capabilities,
                      &command, &user_data_dir, &extension_dir);
+  command.AppendSwitch("ignore-certificate-errors");
   base::LaunchOptions options;
 
 #if !defined(OS_WIN)
@@ -201,6 +201,7 @@ Status LaunchDesktopChrome(
   }
 #endif
 
+  LOG(INFO) << "Launching chrome: " << command.GetCommandLineString();
   base::ProcessHandle process;
   if (!base::LaunchProcess(command, options, &process))
     return Status(kUnknownError, "chrome failed to start");

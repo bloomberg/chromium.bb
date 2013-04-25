@@ -110,12 +110,15 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
   } else if (proxy_type == "manual") {
     const char* proxy_servers_options[][2] = {
         {"ftpProxy", "ftp"}, {"httpProxy", "http"}, {"sslProxy", "https"}};
+    const base::Value* option_value = NULL;
     std::string proxy_servers;
     for (size_t i = 0; i < arraysize(proxy_servers_options); ++i) {
-      if (!proxy_dict->HasKey(proxy_servers_options[i][0]))
+      if (!proxy_dict->Get(proxy_servers_options[i][0], &option_value) ||
+          option_value->IsType(base::Value::TYPE_NULL)) {
         continue;
+      }
       std::string value;
-      if (!proxy_dict->GetString(proxy_servers_options[i][0], &value)) {
+      if (!option_value->GetAsString(&value)) {
         return Status(
             kUnknownError,
             base::StringPrintf("'%s' must be a string",
@@ -130,8 +133,9 @@ Status ParseProxy(const base::Value& option, Capabilities* capabilities) {
     }
 
     std::string proxy_bypass_list;
-    if (proxy_dict->HasKey("noProxy")) {
-      if (!proxy_dict->GetString("noProxy", &proxy_bypass_list))
+    if (proxy_dict->Get("noProxy", &option_value) &&
+        !option_value->IsType(base::Value::TYPE_NULL)) {
+      if (!option_value->GetAsString(&proxy_bypass_list))
         return Status(kUnknownError, "'noProxy' must be a string");
     }
 
