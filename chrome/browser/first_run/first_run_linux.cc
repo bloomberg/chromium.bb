@@ -63,11 +63,6 @@ bool ImportBookmarks(const base::FilePath& import_bookmarks_path) {
   return base::LaunchProcess(import_cmd, options, NULL);
 }
 
-}  // namespace internal
-}  // namespace first_run
-
-namespace first_run {
-
 base::FilePath MasterPrefsPath() {
   // The standard location of the master prefs is next to the chrome binary.
   base::FilePath master_prefs;
@@ -76,4 +71,5 @@ base::FilePath MasterPrefsPath() {
   return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 
+}  // namespace internal
 }  // namespace first_run

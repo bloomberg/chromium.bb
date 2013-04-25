@@ -9,6 +9,7 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram.h"
 #include "base/path_service.h"
@@ -63,8 +64,8 @@ using content::UserMetricsAction;
 namespace {
 
 // Flags for functions of similar name.
-bool should_show_welcome_page_ = false;
-bool should_do_autofill_personal_data_manager_first_run_ = false;
+bool g_should_show_welcome_page = false;
+bool g_should_do_autofill_personal_data_manager_first_run = false;
 
 // Flags indicating whether a first-run profile auto import was performed, and
 // whether the importer process exited successfully.
@@ -150,7 +151,7 @@ void SetImportItem(PrefService* user_prefs,
                    int import_items,
                    int dont_import_items,
                    importer::ImportItem import_type,
-                   int& items) {
+                   int* items) {
   // Work out whether an item is to be imported according to what is specified
   // in master preferences.
   bool should_import = false;
@@ -159,12 +160,11 @@ void SetImportItem(PrefService* user_prefs,
   bool master_pref = ((import_items & ~dont_import_items) & import_type) != 0;
 
   if (import_type == importer::HISTORY ||
-      ((import_type != importer::FAVORITES) &&
-      first_run::internal::IsOrganicFirstRun())) {
+      (import_type != importer::FAVORITES &&
+       first_run::internal::IsOrganicFirstRun())) {
     // History is always imported unless turned off in master_preferences.
-    // Search engines are only imported in certain builds unless overridden
-    // in master_preferences.Home page is imported in organic builds only unless
-    // turned off in master_preferences.
+    // Search engines and home page are imported in organic builds only
+    // unless turned off in master_preferences.
     should_import = !master_pref_set || master_pref;
   } else {
     // Bookmarks are never imported, unless turned on in master_preferences.
@@ -184,10 +184,10 @@ void SetImportItem(PrefService* user_prefs,
 
   if (!user_prefs->FindPreference(pref_path)->IsDefaultValue()) {
     if (user_prefs->GetBoolean(pref_path))
-      items |= import_type;
+      *items |= import_type;
   } else { // no policy (recommended or managed) is set
     if (should_import)
-      items |= import_type;
+      *items |= import_type;
   }
 
   user_prefs->ClearPref(pref_path);
@@ -283,6 +283,12 @@ bool CopyPrefFile(const base::FilePath& user_data_dir,
 void SetupMasterPrefsFromInstallPrefs(
     const installer::MasterPreferences& install_prefs,
     MasterPrefs* out_prefs) {
+  ConvertStringVectorToGURLVector(
+      install_prefs.GetFirstRunTabs(), &out_prefs->new_tabs);
+
+  install_prefs.GetInt(installer::master_preferences::kDistroPingDelay,
+                       &out_prefs->ping_delay);
+
   bool value = false;
   if (install_prefs.GetBool(
           installer::master_preferences::kDistroImportSearchPref, &value)) {
@@ -371,16 +377,6 @@ void SetDefaultBrowser(installer::MasterPreferences* install_prefs){
             prefs::kDefaultBrowserSettingEnabled)) {
       ShellIntegration::SetAsDefaultBrowser();
     }
-  }
-}
-
-void SetRLZPref(first_run::MasterPrefs* out_prefs,
-                installer::MasterPreferences* install_prefs) {
-  if (!install_prefs->GetInt(installer::master_preferences::kDistroPingDelay,
-                    &out_prefs->ping_delay)) {
-    // Default value in case master preferences is missing or corrupt,
-    // or ping_delay is missing.
-    out_prefs->ping_delay = 90;
   }
 }
 
@@ -477,22 +473,22 @@ bool SetShowFirstRunBubblePref(FirstRunBubbleOptions show_bubble_option) {
 }
 
 void SetShouldShowWelcomePage() {
-  should_show_welcome_page_ = true;
+  g_should_show_welcome_page = true;
 }
 
 bool ShouldShowWelcomePage() {
-  bool retval = should_show_welcome_page_;
-  should_show_welcome_page_ = false;
+  bool retval = g_should_show_welcome_page;
+  g_should_show_welcome_page = false;
   return retval;
 }
 
 void SetShouldDoPersonalDataManagerFirstRun() {
-  should_do_autofill_personal_data_manager_first_run_ = true;
+  g_should_do_autofill_personal_data_manager_first_run = true;
 }
 
 bool ShouldDoPersonalDataManagerFirstRun() {
-  bool retval = should_do_autofill_personal_data_manager_first_run_;
-  should_do_autofill_personal_data_manager_first_run_ = false;
+  bool retval = g_should_do_autofill_personal_data_manager_first_run;
+  g_should_do_autofill_personal_data_manager_first_run = false;
   return retval;
 }
 
@@ -622,26 +618,26 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
   base::FilePath master_prefs_path;
   scoped_ptr<installer::MasterPreferences>
       install_prefs(internal::LoadMasterPrefs(&master_prefs_path));
-  if (!install_prefs.get())
-    return DO_FIRST_RUN_TASKS;
 
-  ConvertStringVectorToGURLVector(
-      install_prefs->GetFirstRunTabs(), &out_prefs->new_tabs);
+  // Default value in case master preferences is missing or corrupt, or
+  // ping_delay is missing.
+  out_prefs->ping_delay = 90;
+  if (install_prefs.get()) {
+    if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))
+      return EULA_EXIT_NOW;
 
-  internal::SetRLZPref(out_prefs, install_prefs.get());
+    if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
+      DLOG(ERROR) << "Failed to copy master_preferences to user data dir.";
 
-  if (!internal::ShowPostInstallEULAIfNeeded(install_prefs.get()))
-    return EULA_EXIT_NOW;
+    DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
 
-  if (!internal::CopyPrefFile(user_data_dir, master_prefs_path))
-    DLOG(ERROR) << "Failed to copy master_preferences to user data dir.";
+    internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
 
-  DoDelayedInstallExtensionsIfNeeded(install_prefs.get());
+    internal::SetImportPreferencesAndLaunchImport(out_prefs,
+                                                  install_prefs.get());
 
-  internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);
-
-  internal::SetImportPreferencesAndLaunchImport(out_prefs, install_prefs.get());
-  internal::SetDefaultBrowser(install_prefs.get());
+    internal::SetDefaultBrowser(install_prefs.get());
+  }
 
   return DO_FIRST_RUN_TASKS;
 }
@@ -700,25 +696,25 @@ void AutoImport(
                   import_items,
                   dont_import_items,
                   importer::HISTORY,
-                  items);
+                  &items);
     SetImportItem(user_prefs,
                   prefs::kImportHomepage,
                   import_items,
                   dont_import_items,
                   importer::HOME_PAGE,
-                  items);
+                  &items);
     SetImportItem(user_prefs,
                   prefs::kImportSearchEngine,
                   import_items,
                   dont_import_items,
                   importer::SEARCH_ENGINES,
-                  items);
+                  &items);
     SetImportItem(user_prefs,
                   prefs::kImportBookmarks,
                   import_items,
                   dont_import_items,
                   importer::FAVORITES,
-                  items);
+                  &items);
 
     importer::LogImporterUseToMetrics(
         "AutoImport", importer_list->GetSourceProfileAt(0).importer_type);
@@ -730,7 +726,6 @@ void AutoImport(
 
   content::RecordAction(UserMetricsAction("FirstRunDef_Accept"));
 
-  first_run::CreateSentinel();
 #endif  // !defined(USE_AURA)
   did_perform_profile_import = true;
 }

@@ -903,9 +903,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
             prefs::kBrowserSuppressDefaultBrowserPrompt,
             master_prefs_->suppress_default_browser_prompt_for_version);
       }
-    } else if (parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
-      // Create the First Run beacon anyways if --no-first-run was passed on the
-      // command line.
+    }
+
+    if (do_first_run_tasks_ ||
+        parsed_command_line().HasSwitch(switches::kNoFirstRun)) {
+      // Create the First Run sentinel whether first run tasks are executed
+      // or not.
       first_run::CreateSentinel();
     }
   }

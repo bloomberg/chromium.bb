@@ -497,6 +497,14 @@ bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs) {
   return true;
 }
 
+base::FilePath MasterPrefsPath() {
+  // The standard location of the master prefs is next to the chrome binary.
+  base::FilePath master_prefs;
+  if (!PathService::Get(base::DIR_EXE, &master_prefs))
+    return base::FilePath();
+  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
+}
+
 }  // namespace internal
 }  // namespace first_run
 
@@ -510,14 +518,6 @@ int ImportNow(Profile* profile, const CommandLine& cmdline) {
   }
 #endif
   return return_code;
-}
-
-base::FilePath MasterPrefsPath() {
-  // The standard location of the master prefs is next to the chrome binary.
-  base::FilePath master_prefs;
-  if (!PathService::Get(base::DIR_EXE, &master_prefs))
-    return base::FilePath();
-  return master_prefs.AppendASCII(installer::kDefaultMasterPrefs);
 }
 
 }  // namespace first_run

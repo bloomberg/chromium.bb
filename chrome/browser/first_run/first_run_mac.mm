@@ -20,13 +20,9 @@ bool ImportBookmarks(const base::FilePath& import_bookmarks_path) {
   return false;
 }
 
-}  // namespace internal
-}  // namespace first_run
-
-namespace first_run {
-
 base::FilePath MasterPrefsPath() {
   return master_prefs::MasterPrefsPath();
 }
 
-}  //namespace first_run
+}  // namespace internal
+}  // namespace first_run

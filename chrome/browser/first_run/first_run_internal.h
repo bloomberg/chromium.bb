@@ -32,6 +32,7 @@ class MasterPreferences;
 }
 
 namespace first_run {
+
 namespace internal {
 
 enum FirstRunState {
@@ -96,10 +97,6 @@ void SetupMasterPrefsFromInstallPrefs(
 
 void SetDefaultBrowser(installer::MasterPreferences* install_prefs);
 
-// Sets ping_delay.
-void SetRLZPref(first_run::MasterPrefs* out_prefs,
-                installer::MasterPreferences* install_prefs);
-
 // -- Platform-specific functions --
 
 void DoPostImportPlatformSpecificTasks();
@@ -139,6 +136,9 @@ bool ImportBookmarks(const base::FilePath& import_bookmarks_path);
 // returns false if the EULA has not been accepted, in which case the browser
 // should exit.
 bool ShowPostInstallEULAIfNeeded(installer::MasterPreferences* install_prefs);
+
+// Returns the path for the master preferences file.
+base::FilePath MasterPrefsPath();
 
 }  // namespace internal
 }  // namespace first_run

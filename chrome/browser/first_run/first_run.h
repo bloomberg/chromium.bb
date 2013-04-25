@@ -157,9 +157,6 @@ bool DidPerformProfileImport(bool* exited_successfully);
 // cmdline parameters.
 int ImportNow(Profile* profile, const CommandLine& cmdline);
 
-// Returns the path for the master preferences file.
-base::FilePath MasterPrefsPath();
-
 // Set a master preferences file path that overrides platform defaults.
 void SetMasterPrefsPathForTesting(const base::FilePath& master_prefs);
 
