@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
+#include "ui/message_center/message_center_export.h"
 
 namespace message_center {
 class MessageCenter;
@@ -19,6 +20,7 @@ class Notification;
 // A window controller that hosts a notification as a popup balloon on the
 // user's desktop. Unlike most window controllers, this does not own itself and
 // its lifetime must be managed manually.
+MESSAGE_CENTER_EXPORT
 @interface MCPopupController : NSWindowController {
  @private
   scoped_nsobject<MCNotificationController> notificationController_;

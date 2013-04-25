@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/memory/scoped_nsobject.h"
+#include "ui/message_center/message_center_export.h"
 
 namespace message_center {
 class MessageCenter;
@@ -19,6 +20,7 @@ class Notification;
 // The base view controller class for notifications. A notification at minimum
 // has an image, title, body, and close button. This controller can be used as
 // the content for both a popup bubble and a view in the notification tray.
+MESSAGE_CENTER_EXPORT
 @interface MCNotificationController : NSViewController {
  @protected
   // The message object. Weak.
