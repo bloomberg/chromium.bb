@@ -65,81 +65,30 @@ public:
     LayoutUnit(int value) { setValue(value); }
     LayoutUnit(unsigned short value) { setValue(value); }
     LayoutUnit(unsigned value) { setValue(value); }
-    LayoutUnit(unsigned long value)
-    {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
-        m_value = clampTo<int>(value * kFixedPointDenominator);
-#else
-        REPORT_OVERFLOW(isInBounds(static_cast<unsigned>(value)));
-        m_value = value * kFixedPointDenominator;
-#endif
-    }
-    LayoutUnit(unsigned long long value)
-    {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
-        m_value = clampTo<int>(value * kFixedPointDenominator);
-#else
-        REPORT_OVERFLOW(isInBounds(static_cast<unsigned>(value)));
-        m_value = static_cast<int>(value * kFixedPointDenominator);
-#endif
-    }
-    LayoutUnit(float value)
-    {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
-        m_value = clampTo<float>(value * kFixedPointDenominator, static_cast<float>(INT_MIN), static_cast<float>(INT_MAX));
-#else
-        REPORT_OVERFLOW(isInBounds(value));
-        m_value = value * kFixedPointDenominator;
-#endif
-    }
-    LayoutUnit(double value)
-    {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
-        m_value = clampTo<double>(value * kFixedPointDenominator, static_cast<double>(INT_MIN), static_cast<double>(INT_MAX));
-#else
-        REPORT_OVERFLOW(isInBounds(value));
-        m_value = value * kFixedPointDenominator;
-#endif
-    }
+    LayoutUnit(unsigned long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    LayoutUnit(unsigned long long value) { m_value = clampTo<int>(value * kFixedPointDenominator); }
+    LayoutUnit(float value) { m_value = clampTo<float>(value * kFixedPointDenominator, static_cast<float>(INT_MIN), static_cast<float>(INT_MAX)); }
+    LayoutUnit(double value) { m_value = clampTo<double>(value * kFixedPointDenominator, static_cast<double>(INT_MIN), static_cast<double>(INT_MAX)); }
 
     static LayoutUnit fromFloatCeil(float value)
     {
         LayoutUnit v;
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         v.m_value = clampToInteger(ceilf(value * kFixedPointDenominator));
-#else
-        REPORT_OVERFLOW(isInBounds(value));
-        v.m_value = ceilf(value * kFixedPointDenominator);
-#endif
         return v;
     }
 
     static LayoutUnit fromFloatFloor(float value)
     {
         LayoutUnit v;
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         v.m_value = clampToInteger(floorf(value * kFixedPointDenominator));
-#else
-        REPORT_OVERFLOW(isInBounds(value));
-        v.m_value = floorf(value * kFixedPointDenominator);
-#endif
         return v;
     }
 
     static LayoutUnit fromFloatRound(float value)
     {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         if (value >= 0)
             return clamp(value + epsilon() / 2.0f);
         return clamp(value - epsilon() / 2.0f);
-#else
-        if (value >= 0) {
-            REPORT_OVERFLOW(isInBounds(value + epsilon() / 2.0f));
-            return LayoutUnit(value + epsilon() / 2.0f);
-        }
-        REPORT_OVERFLOW(isInBounds(value - epsilon() / 2.0f));
-        return LayoutUnit(value - epsilon() / 2.0f);
-#endif
     }
 
     int toInt() const { return m_value / kFixedPointDenominator; }
@@ -188,33 +137,25 @@ public:
     int ceil() const
 #endif
     {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         if (UNLIKELY(m_value >= INT_MAX - kFixedPointDenominator + 1))
             return intMaxForLayoutUnit;
-#endif
+
         if (m_value >= 0)
             return (m_value + kFixedPointDenominator - 1) / kFixedPointDenominator;
         return toInt();
     }
     int round() const
     {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         if (m_value > 0)
             return saturatedAddition(rawValue(), kFixedPointDenominator / 2) / kFixedPointDenominator;
         return saturatedSubtraction(rawValue(), (kFixedPointDenominator / 2) - 1) / kFixedPointDenominator;
-#else
-        if (m_value > 0)
-            return (m_value + (kFixedPointDenominator / 2)) / kFixedPointDenominator;
-        return (m_value - ((kFixedPointDenominator / 2) - 1)) / kFixedPointDenominator;
-#endif
     }
 
     int floor() const
     {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         if (UNLIKELY(m_value <= INT_MIN + kFixedPointDenominator - 1))
             return intMinForLayoutUnit;
-#endif
+
         if (m_value >= 0)
             return toInt();
         return (m_value - kFixedPointDenominator + 1) / kFixedPointDenominator;
@@ -279,29 +220,19 @@ private:
     
     inline void setValue(int value)
     {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         if (value > intMaxForLayoutUnit)
             m_value = std::numeric_limits<int>::max();
         else if (value < intMinForLayoutUnit)
             m_value = std::numeric_limits<int>::min();
         else
             m_value = value * kFixedPointDenominator;
-#else
-        REPORT_OVERFLOW(isInBounds(value));
-        m_value = value * kFixedPointDenominator;
-#endif
     }
     inline void setValue(unsigned value)
     {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
         if (value >= static_cast<unsigned>(intMaxForLayoutUnit))
             m_value = std::numeric_limits<int>::max();
         else
             m_value = value * kFixedPointDenominator;
-#else
-        REPORT_OVERFLOW(isInBounds(value));
-        m_value = value * kFixedPointDenominator;
-#endif
     }
 
     int m_value;
@@ -485,15 +416,8 @@ inline LayoutUnit boundedMultiply(const LayoutUnit& a, const LayoutUnit& b)
 
 inline LayoutUnit operator*(const LayoutUnit& a, const LayoutUnit& b)
 {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
     return boundedMultiply(a, b);
-#else
-    LayoutUnit returnVal;
-    long long rawVal = static_cast<long long>(a.rawValue()) * b.rawValue() / kFixedPointDenominator;
-    returnVal.setRawValue(rawVal);
-    return returnVal;
-#endif
-}    
+}
 
 inline double operator*(const LayoutUnit& a, double b)
 {
@@ -569,11 +493,7 @@ inline LayoutUnit operator/(const LayoutUnit& a, const LayoutUnit& b)
 {
     LayoutUnit returnVal;
     long long rawVal = static_cast<long long>(kFixedPointDenominator) * a.rawValue() / b.rawValue();
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
     returnVal.setRawValue(clampTo<int>(rawVal));
-#else
-    returnVal.setRawValue(rawVal);
-#endif
     return returnVal;
 }    
 
@@ -650,11 +570,7 @@ inline LayoutUnit operator/(unsigned long long a, const LayoutUnit& b)
 inline LayoutUnit operator+(const LayoutUnit& a, const LayoutUnit& b)
 {
     LayoutUnit returnVal;
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
     returnVal.setRawValue(saturatedAddition(a.rawValue(), b.rawValue()));
-#else
-    returnVal.setRawValue(a.rawValue() + b.rawValue());
-#endif
     return returnVal;
 }
 
@@ -691,11 +607,7 @@ inline double operator+(const double a, const LayoutUnit& b)
 inline LayoutUnit operator-(const LayoutUnit& a, const LayoutUnit& b)
 {
     LayoutUnit returnVal;
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
     returnVal.setRawValue(saturatedSubtraction(a.rawValue(), b.rawValue()));
-#else
-    returnVal.setRawValue(a.rawValue() - b.rawValue());
-#endif
     return returnVal;
 }
 
@@ -761,11 +673,7 @@ inline LayoutUnit operator%(int a, const LayoutUnit& b)
 
 inline LayoutUnit& operator+=(LayoutUnit& a, const LayoutUnit& b)
 {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
     a.setRawValue(saturatedAddition(a.rawValue(), b.rawValue()));
-#else
-    a = a + b;
-#endif
     return a;
 }
 
@@ -795,11 +703,7 @@ inline LayoutUnit& operator-=(LayoutUnit& a, int b)
 
 inline LayoutUnit& operator-=(LayoutUnit& a, const LayoutUnit& b)
 {
-#if ENABLE(SATURATED_LAYOUT_ARITHMETIC)
     a.setRawValue(saturatedSubtraction(a.rawValue(), b.rawValue()));
-#else
-    a = a - b;
-#endif
     return a;
 }
 
