@@ -1615,11 +1615,8 @@ Sandbox::EvaluateSyscall GetProcessSyscallPolicy(
     const CommandLine& command_line,
     const std::string& process_type) {
   if (process_type == switches::kGpuProcess) {
-    // On Chrome OS, --enable-gpu-sandbox enables the more restrictive policy.
-    if (IsChromeOS() && !command_line.HasSwitch(switches::kEnableGpuSandbox))
-      return BlacklistDebugAndNumaPolicy;
     // On Chrome OS ARM, we need a specific GPU process policy.
-    else if (IsChromeOS() && IsArchitectureArm())
+    if (IsChromeOS() && IsArchitectureArm())
       return ArmMaliGpuProcessPolicy;
     else
       return GpuProcessPolicy;
