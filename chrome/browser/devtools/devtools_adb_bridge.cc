@@ -47,6 +47,7 @@ static const char kOpenedUnixSocketsCommand[] =
     "host:transport:%s|shell:cat /proc/net/unix";
 
 static const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
+static const char kVersionRequest[] = "GET /json/version HTTP/1.1\r\n\r\n";
 static const char kWebSocketUpgradeRequest[] = "GET %s HTTP/1.1\r\n"
     "Upgrade: WebSocket\r\n"
     "Connection: Upgrade\r\n"
@@ -150,11 +151,13 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
       model = kUnknownModel;
 #if defined(DEBUG_DEVTOOLS)
       // For desktop remote debugging.
-      sockets_.push_back(std::string());
-      AdbClientSocket::HttpQuery(
-          kAdbPort, serials_.back(), sockets_.back(), kPageListRequest,
-          base::Bind(&AdbPagesCommand::ReceivedPages, this, model));
-      return;
+      if (serials_.back().empty()) {
+        sockets_.push_back(std::string());
+        AdbClientSocket::HttpQuery(
+            kAdbPort, serials_.back(), sockets_.back(), kVersionRequest,
+            base::Bind(&AdbPagesCommand::ReceivedVersion, this, model));
+        return;
+      }
 #endif  // defined(DEBUG_DEVTOOLS)
     }
     AdbClientSocket::AdbQuery(
@@ -187,9 +190,36 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
       ProcessSerials();
     } else {
       AdbClientSocket::HttpQuery(
+          kAdbPort, serials_.back(), sockets_.back(), kVersionRequest,
+          base::Bind(&AdbPagesCommand::ReceivedVersion, this, model));
+    }
+  }
+
+  void ReceivedVersion(const std::string& model,
+                       int result,
+                       const std::string& response) {
+    if (result < 0) {
+      sockets_.pop_back();
+      ProcessSockets(model);
+      return;
+    }
+
+    // Parse version, append to package name if available,
+    std::string body = response.substr(result);
+    scoped_ptr<base::Value> value(base::JSONReader::Read(body));
+    base::DictionaryValue* dict;
+    if (value && value->GetAsDictionary(&dict)) {
+      std::string browser;
+      if (dict->GetString("Browser", &browser)) {
+        socket_to_package_[sockets_.back()] = base::StringPrintf(
+            "%s (%s)", socket_to_package_[sockets_.back()].c_str(),
+            browser.c_str());
+      }
+    }
+
+    AdbClientSocket::HttpQuery(
           kAdbPort, serials_.back(), sockets_.back(), kPageListRequest,
           base::Bind(&AdbPagesCommand::ReceivedPages, this, model));
-    }
   }
 
   void ReceivedPages(const std::string& model,
@@ -249,6 +279,8 @@ class AdbPagesCommand : public base::RefCounted<AdbPagesCommand> {
       std::vector<std::string> fields;
       Tokenize(entries[i], " ", &fields);
       if (fields.size() < 8)
+        continue;
+      if (fields[3] != "00010000" || fields[5] != "01")
         continue;
       std::string path_field = fields[7];
       if (path_field.size() < 1 || path_field[0] != '@')
