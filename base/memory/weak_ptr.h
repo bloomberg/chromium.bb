@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Weak pointers help in cases where you have many objects referring back to a
-// shared object and you wish for the lifetime of the shared object to not be
-// bound to the lifetime of the referrers.  In other words, this is useful when
-// reference counting is not a good fit.
-//
-// A common alternative to weak pointers is to have the shared object hold a
-// list of all referrers, and then when the shared object is destroyed, it
-// calls a method on the referrers to tell them to drop their references.  This
-// approach also requires the referrers to tell the shared object when they get
-// destroyed so that the shared object can remove the referrer from its list of
-// referrers.  Such a solution works, but it is a bit complex.
-//
+// Weak pointers are pointers to an object that do not affect its lifetime,
+// and which may be invalidated (i.e. reset to NULL) by the object, or its
+// owner, at any time, most commonly when the object is about to be deleted.
+
+// Weak pointers are useful when an object needs to be accessed safely by one
+// or more objects other than its owner, and those callers can cope with the
+// object vanishing and e.g. tasks posted to it being silently dropped.
+// Reference-counting such an object would complicate the ownership graph and
+// make it harder to reason about the object's lifetime.
+
 // EXAMPLE:
 //
-//  class Controller : public SupportsWeakPtr<Controller> {
+//  class Controller {
 //   public:
-//    void SpawnWorker() { Worker::StartNew(AsWeakPtr()); }
+//    void SpawnWorker() { Worker::StartNew(weak_factory_.GetWeakPtr()); }
 //    void WorkComplete(const Result& result) { ... }
+//   private:
+//    WeakPtrFactory<Controller> weak_factory_;
 //  };
 //
 //  class Worker {
@@ -38,34 +38,23 @@
 //    WeakPtr<Controller> controller_;
 //  };
 //
-// Given the above classes, a consumer may allocate a Controller object, call
-// SpawnWorker several times, and then destroy the Controller object before all
-// of the workers have completed.  Because the Worker class only holds a weak
-// pointer to the Controller, we don't have to worry about the Worker
-// dereferencing the Controller back pointer after the Controller has been
-// destroyed.
-//
-// ------------------------ Thread-safety notes ------------------------
-// When you get a WeakPtr (from a WeakPtrFactory or SupportsWeakPtr), if it's
-// the only one pointing to the object, the object become bound to the
-// current thread, as well as this WeakPtr and all later ones get created.
-//
-// You may only dereference the WeakPtr on the thread it binds to. However, it
-// is safe to destroy the WeakPtr object on another thread. Because of this,
-// querying WeakPtrFactory's HasWeakPtrs() method can be racy.
-//
-// On the other hand, the object that supports WeakPtr (extends SupportsWeakPtr)
-// can only be deleted from the thread it binds to, until all WeakPtrs are
-// deleted.
-//
+// With this implementation a caller may use SpawnWorker() to dispatch multiple
+// Workers and subsequently delete the Controller, without waiting for all
+// Workers to have completed.
+
+// ------------------------- IMPORTANT: Thread-safety -------------------------
+
+// Weak pointers must always be dereferenced and invalidated on the same thread
+// otherwise checking the pointer would be racey.  WeakPtrFactory enforces this
+// by binding itself to the current thread when a WeakPtr is first created
+// and un-binding only when those pointers are invalidated.  WeakPtrs may still
+// be handed off to other threads, however, so long as they are only actually
+// dereferenced on the originating thread. This includes posting tasks to the
+// thread using base::Bind() to invoke a method on the object via the WeakPtr.
+
 // Calling SupportsWeakPtr::DetachFromThread() can work around the limitations
 // above and cancel the thread binding of the object and all WeakPtrs pointing
-// to it, but it's not recommended and unsafe.
-//
-// WeakPtrs may be copy-constructed or assigned on threads other than the thread
-// they are bound to. This does not change the thread binding. So these WeakPtrs
-// may only be dereferenced on the thread that the original WeakPtr was bound
-// to.
+// to it, but it's not recommended and unsafe.  See crbug.com/232143.
 
 #ifndef BASE_MEMORY_WEAK_PTR_H_
 #define BASE_MEMORY_WEAK_PTR_H_
@@ -132,6 +121,7 @@ class BASE_EXPORT WeakReferenceOwner {
   void Invalidate();
 
   // Indicates that this object will be used on another thread from now on.
+  // Do not use this in new code. See crbug.com/232143.
   void DetachFromThread() {
     if (flag_) flag_->DetachFromThread();
   }
@@ -247,10 +237,56 @@ class WeakPtr : public internal::WeakPtrBase {
   T* ptr_;
 };
 
-// A class may extend from SupportsWeakPtr to expose weak pointers to itself.
-// This is useful in cases where you want others to be able to get a weak
-// pointer to your class.  It also has the property that you don't need to
-// initialize it from your constructor.
+// A class may be composed of a WeakPtrFactory and thereby
+// control how it exposes weak pointers to itself.  This is helpful if you only
+// need weak pointers within the implementation of a class.  This class is also
+// useful when working with primitive types.  For example, you could have a
+// WeakPtrFactory<bool> that is used to pass around a weak reference to a bool.
+template <class T>
+class WeakPtrFactory {
+ public:
+  explicit WeakPtrFactory(T* ptr) : ptr_(ptr) {
+  }
+
+  ~WeakPtrFactory() {
+    ptr_ = NULL;
+  }
+
+  WeakPtr<T> GetWeakPtr() {
+    DCHECK(ptr_);
+    return WeakPtr<T>(weak_reference_owner_.GetRef(), ptr_);
+  }
+
+  // Call this method to invalidate all existing weak pointers.
+  void InvalidateWeakPtrs() {
+    DCHECK(ptr_);
+    weak_reference_owner_.Invalidate();
+  }
+
+  // Call this method to determine if any weak pointers exist.
+  bool HasWeakPtrs() const {
+    DCHECK(ptr_);
+    return weak_reference_owner_.HasRefs();
+  }
+
+  // Indicates that this object will be used on another thread from now on.
+  // Do not use this in new code. See crbug.com/232143.
+  void DetachFromThread() {
+    DCHECK(ptr_);
+    weak_reference_owner_.DetachFromThread();
+  }
+
+ private:
+  internal::WeakReferenceOwner weak_reference_owner_;
+  T* ptr_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(WeakPtrFactory);
+};
+
+// A class may extend from SupportsWeakPtr to let others take weak pointers to
+// it. This avoids the class itself implementing boilerplate to dispense weak
+// pointers.  However, since SupportsWeakPtr's destructor won't invalidate
+// weak pointers to the class until after the derived class' members have been
+// destroyed, its use can lead to subtle use-after-destroy issues.
 template <class T>
 class SupportsWeakPtr : public internal::SupportsWeakPtrBase {
  public:
@@ -261,6 +297,7 @@ class SupportsWeakPtr : public internal::SupportsWeakPtrBase {
   }
 
   // Indicates that this object will be used on another thread from now on.
+  // Do not use this in new code. See crbug.com/232143.
   void DetachFromThread() {
     weak_reference_owner_.DetachFromThread();
   }
@@ -295,50 +332,6 @@ template <typename Derived>
 WeakPtr<Derived> AsWeakPtr(Derived* t) {
   return internal::SupportsWeakPtrBase::StaticAsWeakPtr<Derived>(t);
 }
-
-// A class may alternatively be composed of a WeakPtrFactory and thereby
-// control how it exposes weak pointers to itself.  This is helpful if you only
-// need weak pointers within the implementation of a class.  This class is also
-// useful when working with primitive types.  For example, you could have a
-// WeakPtrFactory<bool> that is used to pass around a weak reference to a bool.
-template <class T>
-class WeakPtrFactory {
- public:
-  explicit WeakPtrFactory(T* ptr) : ptr_(ptr) {
-  }
-
-  ~WeakPtrFactory() {
-    ptr_ = NULL;
-  }
-
-  WeakPtr<T> GetWeakPtr() {
-    DCHECK(ptr_);
-    return WeakPtr<T>(weak_reference_owner_.GetRef(), ptr_);
-  }
-
-  // Call this method to invalidate all existing weak pointers.
-  void InvalidateWeakPtrs() {
-    DCHECK(ptr_);
-    weak_reference_owner_.Invalidate();
-  }
-
-  // Call this method to determine if any weak pointers exist.
-  bool HasWeakPtrs() const {
-    DCHECK(ptr_);
-    return weak_reference_owner_.HasRefs();
-  }
-
-  // Indicates that this object will be used on another thread from now on.
-  void DetachFromThread() {
-    DCHECK(ptr_);
-    weak_reference_owner_.DetachFromThread();
-  }
-
- private:
-  internal::WeakReferenceOwner weak_reference_owner_;
-  T* ptr_;
-  DISALLOW_IMPLICIT_CONSTRUCTORS(WeakPtrFactory);
-};
 
 }  // namespace base
 
