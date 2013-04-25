@@ -47,4 +47,8 @@ enum {
   return [notificationController_ notification];
 }
 
+- (const std::string&)notificationID {
+  return [notificationController_ notificationID];
+}
+
 @end

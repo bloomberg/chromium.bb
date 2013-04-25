@@ -7,6 +7,8 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <string>
+
 #import "base/memory/scoped_nsobject.h"
 #include "ui/message_center/message_center_export.h"
 
@@ -25,6 +27,9 @@ MESSAGE_CENTER_EXPORT
  @protected
   // The message object. Weak.
   const message_center::Notification* notification_;
+
+  // A copy of the notification ID.
+  std::string notificationID_;
 
   // Controller of the notifications, where action messages are forwarded. Weak.
   message_center::MessageCenter* messageCenter_;
@@ -51,6 +56,11 @@ MESSAGE_CENTER_EXPORT
 
 // Accessor for the notification.
 - (const message_center::Notification*)notification;
+
+// Gets the notification ID. This string is owned by the NotificationController
+// rather than the model object, so it's safe to use after the Notification has
+// been deleted.
+- (const std::string&)notificationID;
 
 @end
 

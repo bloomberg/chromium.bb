@@ -53,6 +53,7 @@ const int kTextTopPaddingAdjustment = -6;
     messageCenter:(message_center::MessageCenter*)messageCenter {
   if ((self = [super initWithNibName:nil bundle:nil])) {
     notification_ = notification;
+    notificationID_ = notification_->id();
     messageCenter_ = messageCenter;
   }
   return self;
@@ -101,6 +102,10 @@ const int kTextTopPaddingAdjustment = -6;
 
 - (const message_center::Notification*)notification {
   return notification_;
+}
+
+- (const std::string&)notificationID {
+  return notificationID_;
 }
 
 // Private /////////////////////////////////////////////////////////////////////

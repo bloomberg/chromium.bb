@@ -12,6 +12,8 @@ namespace message_center {
 // An observer class for the change of notifications in the MessageCenter.
 class MESSAGE_CENTER_EXPORT MessageCenterObserver {
  public:
+  virtual ~MessageCenterObserver() {}
+
   // Called when the notification associated with |notification_id| is added
   // to the notification_list.
   virtual void OnNotificationAdded(const std::string& notification_id) {}
@@ -37,9 +39,6 @@ class MESSAGE_CENTER_EXPORT MessageCenterObserver {
   // Called when the notification associated with |notification_id| is actually
   // displayed.
   virtual void OnNotificationDisplayed(const std::string& notification_id) {}
-
- protected:
-  virtual ~MessageCenterObserver() {}
 };
 
 }  // namespace message_center

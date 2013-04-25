@@ -27,6 +27,8 @@
       'sources': [
         'cocoa/notification_controller.h',
         'cocoa/notification_controller.mm',
+        'cocoa/popup_collection.h',
+        'cocoa/popup_collection.mm',
         'cocoa/popup_controller.h',
         'cocoa/popup_controller.mm',
         'message_center.cc',
@@ -109,6 +111,7 @@
       ],
       'sources': [
         'cocoa/notification_controller_unittest.mm',
+        'cocoa/popup_collection_unittest.mm',
         'cocoa/popup_controller_unittest.mm',
         'message_center_tray_unittest.cc',
         'fake_message_center.h',
