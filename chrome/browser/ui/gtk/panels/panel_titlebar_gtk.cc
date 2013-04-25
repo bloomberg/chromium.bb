@@ -17,27 +17,21 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/skia_utils_gtk.h"
 
 namespace {
 
 // Padding around the titlebar.
 const int kPanelTitlebarPaddingTop = 4;
-const int kPanelTitlebarPaddingBottom = 0;
-const int kPanelTitlebarPaddingLeft = 0;
+const int kPanelTitlebarPaddingBottom = 8;
+const int kPanelTitlebarPaddingLeft = 6;
 const int kPanelTitlebarPaddingRight = 0;
 
 // Padding around the box containing icon and title.
-const int kPanelIconTitlePaddingTop = 0;
+const int kPanelIconTitlePaddingTop = 3;
 const int kPanelIconTitlePaddingBottom = 0;
 const int kPanelIconTitlePaddingLeft = 0;
 const int kPanelIconTitlePaddingRight = 0;
-
-// Size of panel icon. The panel icon can't take the whole titlebar height
-// due to that we need to leave 4-pixle space on top for the border.
-const int kPanelIconSize = 32;
 
 // Spacing between buttons of panel's titlebar.
 const int kPanelButtonSpacing = 5;
@@ -110,7 +104,6 @@ void PanelTitlebarGtk::Init() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   icon_ = gtk_image_new_from_pixbuf(rb.GetNativeImageNamed(
       IDR_PRODUCT_LOGO_16, ui::ResourceBundle::RTL_ENABLED).ToGdkPixbuf());
-  gtk_widget_set_size_request(icon_, kPanelIconSize, kPanelIconSize);
   g_object_set_data(G_OBJECT(icon_), "left-align-popup",
                     reinterpret_cast<void*>(true));
   gtk_box_pack_start(GTK_BOX(icon_title_hbox), icon_, FALSE, FALSE, 0);
@@ -247,14 +240,7 @@ void PanelTitlebarGtk::UpdateThrobber(
       gtk_image_set_from_pixbuf(GTK_IMAGE(icon_),
           rb.GetNativeImageNamed(IDR_PRODUCT_LOGO_16).ToGdkPixbuf());
     } else {
-      // GTK images does not support scaling. So we have to do the image
-      // resizing by ourselves.
-      gfx::Image resized_icon = gfx::Image(
-          gfx::ImageSkiaOperations::CreateResizedImage(
-              icon.AsImageSkia(),
-              skia::ImageOperations::RESIZE_GOOD,
-              gfx::Size(kPanelIconSize, kPanelIconSize)));
-      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), resized_icon.ToGdkPixbuf());
+      gtk_image_set_from_pixbuf(GTK_IMAGE(icon_), icon.ToGdkPixbuf());
     }
 
     throbber_.Reset();

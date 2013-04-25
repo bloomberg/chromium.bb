@@ -9,6 +9,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_page_zoom.h"
 #include "chrome/browser/extensions/window_controller.h"
+#include "chrome/browser/favicon/favicon_tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -25,12 +26,11 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/favicon_url.h"
 #include "extensions/browser/view_type_utils.h"
-#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 
 using content::UserMetricsAction;
@@ -39,8 +39,7 @@ PanelHost::PanelHost(Panel* panel, Profile* profile)
     : panel_(panel),
       profile_(profile),
       extension_function_dispatcher_(profile, this),
-      weak_factory_(this),
-      favicon_loading_factory_(this) {
+      weak_factory_(this) {
 }
 
 PanelHost::~PanelHost() {
@@ -63,6 +62,7 @@ void PanelHost::Init(const GURL& url) {
   SessionTabHelper::FromWebContents(web_contents_.get())->SetWindowID(
       panel_->session_id());
 
+  FaviconTabHelper::CreateForWebContents(web_contents_.get());
   PrefsTabHelper::CreateForWebContents(web_contents_.get());
 
   web_contents_->GetController().LoadURL(
@@ -82,7 +82,10 @@ gfx::Image PanelHost::GetPageIcon() const {
   if (!web_contents_.get())
     return gfx::Image();
 
-  return favicon_image_;
+  FaviconTabHelper* favicon_tab_helper =
+      FaviconTabHelper::FromWebContents(web_contents_.get());
+  CHECK(favicon_tab_helper);
+  return favicon_tab_helper->GetFavicon();
 }
 
 content::WebContents* PanelHost::OpenURLFromTab(
@@ -208,46 +211,6 @@ void PanelHost::WebContentsDestroyed(content::WebContents* web_contents) {
 
 void PanelHost::ClosePanel() {
   panel_->Close();
-}
-
-void PanelHost::DidUpdateFaviconURL(
-    int32 page_id,
-    const std::vector<content::FaviconURL>& candidates) {
-  if (favicon_loading_factory_.HasWeakPtrs())
-    favicon_loading_factory_.InvalidateWeakPtrs();
-  for (std::vector<content::FaviconURL>::const_iterator iter =
-           candidates.begin();
-       iter != candidates.end(); ++iter) {
-    if (iter->icon_type != content::FaviconURL::FAVICON)
-      continue;
-    const GURL& url = iter->icon_url;
-    if (!url.is_valid() || url == favicon_image_url_)
-      continue;
-    web_contents_->DownloadImage(url, true, 0,
-        base::Bind(&PanelHost::DidDownloadFavicon,
-                   favicon_loading_factory_.GetWeakPtr()));
-  }
-}
-
-void PanelHost::DidDownloadFavicon(int id,
-                                   const GURL& image_url,
-                                   int requested_size,
-                                   const std::vector<SkBitmap>& bitmaps) {
-  if (bitmaps.empty())
-    return;
-
-  // Favicon bitmaps are ordered by decreasing width.
-  SkBitmap new_bitmap = bitmaps[0];
-
-  // We want to use the favicon as large as possible.
-  if (!favicon_image_.IsEmpty() &&
-       new_bitmap.height() < favicon_image_.Height()) {
-    return;
-  }
-  favicon_image_ = gfx::Image(gfx::ImageSkia::CreateFrom1xBitmap(new_bitmap));
-  favicon_image_url_ = image_url;
-
-  panel_->UpdateTitleBar();
 }
 
 bool PanelHost::OnMessageReceived(const IPC::Message& message) {

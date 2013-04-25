@@ -191,7 +191,7 @@
 								<string>NeXT TIFF v4.0 pasteboard type</string>
 							</object>
 						</object>
-						<string key="NSFrame">{{126, 3}, {36, 36}}</string>
+						<string key="NSFrame">{{126, 3}, {14, 14}}</string>
 						<reference key="NSSuperview" ref="304499912"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSImageCell" key="NSCell" id="966884311">
