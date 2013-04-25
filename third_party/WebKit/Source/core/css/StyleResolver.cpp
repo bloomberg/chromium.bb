@@ -1193,8 +1193,12 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     m_state.setStyle(RenderStyle::create());
     m_state.style()->inheritFrom(m_state.rootElementStyle());
 
-    PageRuleCollector collector(m_state, m_ruleSets);
-    collector.matchAllPageRules(pageIndex);
+    PageRuleCollector collector(m_state, pageIndex);
+
+    collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
+    collector.matchPageRules(m_ruleSets.userStyle());
+    collector.matchPageRules(m_ruleSets.authorStyle());
+
     m_state.setLineHeightValue(0);
     bool inheritedOnly = false;
 

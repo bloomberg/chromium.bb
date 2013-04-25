@@ -61,25 +61,19 @@ String PageRuleCollector::pageName(int /* pageIndex */) const
     return "";
 }
 
-void PageRuleCollector::matchAllPageRules(int pageIndex)
-{
-    const bool isLeft = isLeftPage(pageIndex);
-    const bool isFirst = isFirstPage(pageIndex);
-    const String page = pageName(pageIndex);
-    
-    matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle, isLeft, isFirst, page);
-    matchPageRules(m_ruleSets.userStyle(), isLeft, isFirst, page);
-    // Only consider the global author RuleSet for @page rules, as per the HTML5 spec.
-    matchPageRules(m_ruleSets.authorStyle(), isLeft, isFirst, page);
-}
+PageRuleCollector::PageRuleCollector(const StyleResolver::State& state, int pageIndex)
+    : m_state(state)
+    , m_isLeftPage(isLeftPage(pageIndex))
+    , m_isFirstPage(isFirstPage(pageIndex))
+    , m_pageName(pageName(pageIndex)) { }
 
-void PageRuleCollector::matchPageRules(RuleSet* rules, bool isLeftPage, bool isFirstPage, const String& pageName)
+void PageRuleCollector::matchPageRules(RuleSet* rules)
 {
     if (!rules)
         return;
 
     Vector<StyleRulePage*> matchedPageRules;
-    matchPageRulesForList(matchedPageRules, rules->pageRules(), isLeftPage, isFirstPage, pageName);
+    matchPageRulesForList(matchedPageRules, rules->pageRules(), m_isLeftPage, m_isFirstPage, m_pageName);
     if (matchedPageRules.isEmpty())
         return;
 
