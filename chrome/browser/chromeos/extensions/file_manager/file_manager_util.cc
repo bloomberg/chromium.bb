@@ -219,29 +219,6 @@ std::string GetDialogTypeAsString(
   return type_str;
 }
 
-DictionaryValue* ProgessStatusToDictionaryValue(
-    Profile* profile,
-    const std::string& extension_id,
-    const google_apis::OperationProgressStatus& status) {
-  scoped_ptr<DictionaryValue> result(new DictionaryValue());
-  GURL file_url;
-  if (file_manager_util::ConvertFileToFileSystemUrl(profile,
-          drive::util::GetSpecialRemoteRootPath().Append(
-              base::FilePath(status.file_path)),
-          extension_id,
-          &file_url)) {
-    result->SetString("fileUrl", file_url.spec());
-  }
-
-  result->SetString("transferState",
-                    OperationTransferStateToString(status.transfer_state));
-  result->SetString("transferType",
-                    OperationTypeToString(status.operation_type));
-  result->SetInteger("processed", static_cast<int>(status.progress_current));
-  result->SetInteger("total", static_cast<int>(status.progress_total));
-  return result.release();
-}
-
 void OpenNewTab(Profile* profile, const GURL& url) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   Browser* browser = chrome::FindOrCreateTabbedBrowser(
@@ -949,20 +926,6 @@ bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension) {
   if (LowerCaseEqualsASCII(file_extension, kSwfExtension))
     return IsFlashPluginEnabled(profile);
   return false;
-}
-
-ListValue* ProgressStatusVectorToListValue(
-    Profile* profile,
-    const std::string& extension_id,
-    const google_apis::OperationProgressStatusList& list) {
-  scoped_ptr<ListValue> result_list(new ListValue());
-  for (google_apis::OperationProgressStatusList::const_iterator iter =
-           list.begin();
-       iter != list.end(); ++iter) {
-    result_list->Append(
-        ProgessStatusToDictionaryValue(profile, extension_id, *iter));
-  }
-  return result_list.release();
 }
 
 }  // namespace file_manager_util

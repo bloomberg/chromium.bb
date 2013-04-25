@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/files/file_path.h"
-#include "chrome/browser/google_apis/operation_registry.h"
 #include "googleurl/src/gurl.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
@@ -94,12 +93,6 @@ bool ExecuteBuiltinHandler(
 
 // Checks whether a pepper plugin for |file_extension| is enabled.
 bool ShouldBeOpenedWithPlugin(Profile* profile, const char* file_extension);
-
-// Converts the vector of progress status to their JSON (Value) form.
-base::ListValue* ProgressStatusVectorToListValue(
-    Profile* profile,
-    const std::string& extension_id,
-    const google_apis::OperationProgressStatusList& list);
 
 }  // namespace file_manager_util
 

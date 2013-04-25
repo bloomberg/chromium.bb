@@ -27,6 +27,7 @@ class FileManagerEventRouter
       public chromeos::ConnectivityStateHelperObserver,
       public drive::DriveSystemServiceObserver,
       public drive::DriveFileSystemObserver,
+      public drive::JobListObserver,
       public google_apis::DriveServiceObserver {
  public:
   // Interface that should keep track of the system state in regards to system
@@ -93,9 +94,13 @@ class FileManagerEventRouter
   // chromeos::ConnectivityStateHelperObserver override.
   virtual void NetworkManagerChanged() OVERRIDE;
 
+  // drive::JobListObserver overrides.
+  virtual void OnJobAdded(const drive::JobInfo& job_info) OVERRIDE;
+  virtual void OnJobUpdated(const drive::JobInfo& job_info) OVERRIDE;
+  virtual void OnJobDone(const drive::JobInfo& job_info,
+                         drive::FileError error) OVERRIDE;
+
   // drive::DriveServiceObserver overrides.
-  virtual void OnProgressUpdate(
-      const google_apis::OperationProgressStatusList& list) OVERRIDE;
   virtual void OnRefreshTokenInvalid() OVERRIDE;
 
   // drive::DriveFileSystemObserver overrides.
@@ -193,6 +198,22 @@ class FileManagerEventRouter
   void ShowRemovableDeviceInFileManager(
       const chromeos::disks::DiskMountManager::Disk& disk,
       const base::FilePath& mount_path);
+
+  // Sends onFileTranferUpdated to extensions if needed. If |always| is true,
+  // it sends the event always. Otherwise, it sends the event if enough time has
+  // passed from the previous event so as not to make extension busy.
+  void SendDriveFileTransferEvent(bool always);
+
+  // Manages the list of currently active Drive file transfer jobs.
+  struct DriveJobInfoWithStatus {
+    DriveJobInfoWithStatus();
+    DriveJobInfoWithStatus(const drive::JobInfo& info,
+                           const std::string& status);
+    drive::JobInfo job_info;
+    std::string status;
+  };
+  std::map<drive::JobID, DriveJobInfoWithStatus> drive_jobs_;
+  base::Time last_file_transfer_event_;
 
   base::FilePathWatcher::Callback file_watcher_callback_;
   WatcherMap file_watchers_;

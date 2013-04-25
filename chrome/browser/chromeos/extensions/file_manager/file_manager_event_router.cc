@@ -232,7 +232,68 @@ base::FilePathWatcher* CreateAndStartFilePathWatcher(
   return watcher;
 }
 
+// Constants for the "transferState" field of onFileTransferUpdated event.
+const char kFileTransferStateStarted[] = "started";
+const char kFileTransferStateInProgress[] = "in_progress";
+const char kFileTransferStateCompleted[] = "completed";
+const char kFileTransferStateFailed[] = "failed";
+
+// Frequency of sending onFileTransferUpdated.
+const int64 kFileTransferEventFrequencyInMilliseconds = 1000;
+
+// Utility function to check if |job_info| is a file uploading job.
+bool IsUploadJob(drive::JobType type) {
+  return type == drive::TYPE_UPLOAD_NEW_FILE ||
+         type == drive::TYPE_UPLOAD_EXISTING_FILE;
+}
+
+// Utility function to check if |job_info| is a file downloading job.
+bool IsDownloadJob(drive::JobType type) {
+  return type == drive::TYPE_DOWNLOAD_FILE;
+}
+
+// Checks if |job_info| represents a job for currently active file transfer.
+bool IsActiveFileTransferJobInfo(const drive::JobInfo& job_info) {
+  return job_info.state != drive::STATE_NONE &&
+      (IsUploadJob(job_info.job_type) || IsDownloadJob(job_info.job_type));
+}
+
+// Converts the job info to its JSON (Value) form.
+scoped_ptr<base::DictionaryValue> JobInfoToDictionaryValue(
+    Profile* profile,
+    const std::string& extension_id,
+    const std::string& job_status,
+    const drive::JobInfo& job_info) {
+  DCHECK(IsActiveFileTransferJobInfo(job_info));
+
+  scoped_ptr<base::DictionaryValue> result(new base::DictionaryValue);
+  GURL file_url;
+  if (file_manager_util::ConvertFileToFileSystemUrl(profile,
+          drive::util::GetSpecialRemoteRootPath().Append(job_info.file_path),
+          extension_id,
+          &file_url)) {
+    result->SetString("fileUrl", file_url.spec());
+  }
+  result->SetString("transferState", job_status);
+  result->SetString("transferType",
+                    IsUploadJob(job_info.job_type) ? "upload" : "download");
+  result->SetInteger("processed",
+                     static_cast<int>(job_info.num_completed_bytes));
+  result->SetInteger("total", static_cast<int>(job_info.num_total_bytes));
+  return result.Pass();
+}
+
 }  // namespace
+
+// Pass dummy value to JobInfo's constructor for make it default constructible.
+FileManagerEventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus()
+    : job_info(drive::TYPE_DOWNLOAD_FILE) {
+}
+
+FileManagerEventRouter::DriveJobInfoWithStatus::DriveJobInfoWithStatus(
+    const drive::JobInfo& info, const std::string& status)
+    : job_info(info), status(status) {
+}
 
 FileManagerEventRouter::FileManagerEventRouter(
     Profile* profile)
@@ -271,6 +332,7 @@ void FileManagerEventRouter::Shutdown() {
     system_service->RemoveObserver(this);
     system_service->file_system()->RemoveObserver(this);
     system_service->drive_service()->RemoveObserver(this);
+    system_service->job_list()->RemoveObserver(this);
   }
 
   if (chromeos::ConnectivityStateHelper::IsInitialized()) {
@@ -303,6 +365,7 @@ void FileManagerEventRouter::ObserveFileSystemEvents() {
     system_service->AddObserver(this);
     system_service->drive_service()->AddObserver(this);
     system_service->file_system()->AddObserver(this);
+    system_service->job_list()->AddObserver(this);
   }
 
   if (chromeos::ConnectivityStateHelper::IsInitialized()) {
@@ -547,13 +610,76 @@ void FileManagerEventRouter::OnFileManagerPrefsChanged() {
       BroadcastEvent(event.Pass());
 }
 
-void FileManagerEventRouter::OnProgressUpdate(
-    const google_apis::OperationProgressStatusList& list) {
+void FileManagerEventRouter::OnJobAdded(const drive::JobInfo& job_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  OnJobUpdated(job_info);
+}
+
+void FileManagerEventRouter::OnJobUpdated(const drive::JobInfo& job_info) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!IsActiveFileTransferJobInfo(job_info))
+    return;
+
+  bool is_new_job = (drive_jobs_.find(job_info.job_id) == drive_jobs_.end());
+
+  // Replace with the latest job info.
+  drive_jobs_[job_info.job_id] = DriveJobInfoWithStatus(
+      job_info,
+      is_new_job ? kFileTransferStateStarted : kFileTransferStateInProgress);
+
+  // Fire event if needed.
+  bool always = is_new_job;
+  SendDriveFileTransferEvent(always);
+}
+
+void FileManagerEventRouter::OnJobDone(const drive::JobInfo& job_info,
+                                       drive::FileError error) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+  if (!IsActiveFileTransferJobInfo(job_info))
+    return;
+
+  // Replace with the latest job info.
+  drive_jobs_[job_info.job_id] = DriveJobInfoWithStatus(
+      job_info,
+      error == drive::FILE_ERROR_OK ? kFileTransferStateCompleted
+                                    : kFileTransferStateFailed);
+
+  // Fire event if needed.
+  bool always = true;
+  SendDriveFileTransferEvent(always);
+
+  // Forget about the job.
+  drive_jobs_.erase(job_info.job_id);
+}
+
+void FileManagerEventRouter::SendDriveFileTransferEvent(bool always) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  scoped_ptr<ListValue> event_list(
-      file_manager_util::ProgressStatusVectorToListValue(
-          profile_, kFileBrowserDomain, list));
+  const base::Time now = base::Time::Now();
+
+  // When |always| flag is not set, we don't send the event until certain
+  // amount of time passes after the previous one. This is to avoid
+  // flooding the IPC between extensions by many onFileTransferUpdated events.
+  if (!always) {
+    const int64 delta = (now - last_file_transfer_event_).InMilliseconds();
+    // delta < 0 may rarely happen if system clock is synced and rewinded.
+    // To be conservative, we don't skip in that case.
+    if (0 <= delta && delta < kFileTransferEventFrequencyInMilliseconds)
+      return;
+  }
+
+  // Convert the current |drive_jobs_| to a JSON value.
+  scoped_ptr<base::ListValue> event_list(new base::ListValue);
+  for (std::map<drive::JobID, DriveJobInfoWithStatus>::iterator
+       iter = drive_jobs_.begin(); iter != drive_jobs_.end(); ++iter) {
+
+    scoped_ptr<base::DictionaryValue> job_info_dict(
+        JobInfoToDictionaryValue(profile_,
+                                 kFileBrowserDomain,
+                                 iter->second.status,
+                                 iter->second.job_info));
+    event_list->Append(job_info_dict.release());
+  }
 
   scoped_ptr<ListValue> args(new ListValue());
   args->Append(event_list.release());
@@ -561,6 +687,8 @@ void FileManagerEventRouter::OnProgressUpdate(
       extensions::event_names::kOnFileTransfersUpdated, args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(kFileBrowserDomain, event.Pass());
+
+  last_file_transfer_event_ = now;
 }
 
 void FileManagerEventRouter::OnDirectoryChanged(
