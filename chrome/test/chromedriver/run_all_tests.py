@@ -157,16 +157,11 @@ def main():
         continuous_archive.CHROME_26_REVISION, util.MakeTempDir())
     chrome_27 = continuous_archive.DownloadChrome(
         continuous_archive.CHROME_27_REVISION, util.MakeTempDir())
-    if util.IsWindows():
-      chrome_path_versions = [
-          {'path': chrome_tip_of_tree, 'version': 'HEAD'},
-          {'path': chrome_27, 'version': '27'},
-          {'path': chrome_26, 'version': '26'},
-      ]
-    else:
-      # TODO(chrisgao): enable tests on Mac and Linux after 0.8 is released.
-      chrome_path_versions = []
-
+    chrome_path_versions = [
+        {'path': chrome_tip_of_tree, 'version': 'HEAD'},
+        {'path': chrome_27, 'version': '27'},
+        {'path': chrome_26, 'version': '26'},
+    ]
     code = 0
     for chrome in chrome_path_versions:
       if options.chrome_version and chrome['version'] != options.chrome_version:
