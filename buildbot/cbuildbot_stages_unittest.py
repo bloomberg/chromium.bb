@@ -746,13 +746,13 @@ class HWTestStageTest(AbstractStageTest):
 
   def testSendPerfResults(self):
     """Tests that we can send perf results back correctly."""
-    self.suite = 'pyauto_perf'
+    self.suite = 'perf_v2'
     self.bot_id = 'lumpy-chrome-perf'
     self.build_config = config.config['lumpy-chrome-perf'].copy()
     self.suite_config = self.build_config['hw_tests'][0]
     self.mox.StubOutWithMock(stages.HWTestStage, '_PrintFile')
 
-    results_file = 'pyauto_perf.results'
+    results_file = 'perf_v2.results'
     stages.HWTestStage._PrintFile(os.path.join(self.options.log_dir,
                                                results_file))
     with gs_unittest.GSContextMock() as gs_mock:

@@ -838,7 +838,7 @@ chrome_perf = chrome_info.derive(
   vm_tests=None,
   upload_hw_test_artifacts=True,
 
-  hw_tests=[HWTestConfig('pyauto_perf', pool=constants.HWTEST_CHROME_PERF_POOL,
+  hw_tests=[HWTestConfig('perf_v2', pool=constants.HWTEST_CHROME_PERF_POOL,
                          timeout=90 * 60, critical=True, num=1,
                          copy_perf_results=True)],
   nowithdebug=True,
