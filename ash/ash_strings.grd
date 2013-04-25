@@ -258,9 +258,6 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING" desc="Shows a connecting bluetooth device in the bluetooth list.">
         <ph name="BLUETOOTH">$1<ex>Apple Magic Mouse</ex></ph>: Connecting...
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTING" desc="Shows a disconnecting bluetooth device in the bluetooth list.">
-        <ph name="BLUETOOTH">$1<ex>Apple Magic Mouse</ex></ph>: Disconnecting...
-      </message>      
       <message name="IDS_ASH_STATUS_TRAY_DISABLE_BLUETOOTH" desc="The label used in the tray popup to disable bluetooth.">
         Disable Bluetooth
       </message>
@@ -289,10 +286,10 @@ Press Ctrl+Alt+Z to disable.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_OUTPUT" desc="The label used in audio detailed page for audio output section of ash tray pop up.">
         OUTPUT
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT" desc="The label used in audio detailed page for audio input section of ash tray pop up.">
         INPUT
-      </message>                  
+      </message>
 
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_MIRRORING" desc="The label used in the tray to show that the current status is mirroring.">
 	Mirroring to <ph name="DISPLAY_NAME">$1</ph>
@@ -366,7 +363,7 @@ Press Shift + Alt to switch.
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE" desc="The label used in the title of the accessibility option menu.">
         Accessibility
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK" desc="The label used in the accessibility menu of the 
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_SPOKEN_FEEDBACK" desc="The label used in the accessibility menu of the
     system tray to toggle on/off spoken feedback feature.">
         Spoken feedback
       </message>
@@ -397,10 +394,10 @@ Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is empty.">
         <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> left
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_TIME_UNTIL_FULL_SHORT" desc="The label in the tray bubble settings row to show a time estimate until the battery is fully charged.">
         <ph name="hour">$1<ex>2</ex></ph>:<ph name="minute">$2<ex>53</ex></ph> until full
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_FULL_CHARGE_ACCESSIBLE" desc="The message used by accessibility to show battery is full and charging.">
         Battery is full and charging.
       </message>
@@ -409,10 +406,10 @@ Press Shift + Alt to switch.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_CHARGING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time.">
         Battery is <ph name="percentage">$1<ex>56</ex></ph>% full and charging
-      </message>      
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_CALCULATING_ACCESSIBLE" desc="The message used by accessibility to show battery is calculating its time in short message.">
         Calculating battery time.
-      </message>               
+      </message>
       <message name= "IDS_ASH_STATUS_TRAY_BATTERY_TIME_LEFT_ACCESSIBLE" desc="The message used by accessibility to read remaining battery time until empty.">
         Time left until battery is empty, <ph name="time_left">$1<ex>1 hour and 15 minutes</ex></ph>
       </message>

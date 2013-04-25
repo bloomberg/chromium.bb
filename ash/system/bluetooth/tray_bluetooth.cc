@@ -291,15 +291,11 @@ class BluetoothDetailedView : public TrayDetailsView,
   // or disconnected if such an operation is going to be performed underway.
   void UpdateClickedDevice(std::string device_id, views::View* item_container) {
     base::string16 display_name;
-    if (FoundDevice(device_id, connected_devices_, &display_name)) {
-      display_name = l10n_util::GetStringFUTF16(
-          IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTING, display_name);
-    } else if (FoundDevice(device_id, paired_not_connected_devices_,
+    if (FoundDevice(device_id, paired_not_connected_devices_,
                            &display_name)) {
       display_name = l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_BLUETOOTH_CONNECTING, display_name);
-    }
-    if (display_name.length() > 0) {
+
       item_container->RemoveAllChildViews(true);
       static_cast<HoverHighlightView*>(item_container)->
           AddCheckableLabel(display_name, gfx::Font::BOLD, false);
