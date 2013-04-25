@@ -52,24 +52,40 @@ const char kKeyboardTestFileCopyName[] = "world (1).mpeg";
 const char kDownloadsVolume[] = "Downloads";
 const char kDriveVolume[] = "Drive";
 
-struct TestFileInfo {
-  const char* base_name;
-  int64 file_size;
-  const char* last_modified_time_as_string;
-} kTestFiles[] = {
-  { "hello.txt", 123, "4 Sep 1998 12:34:56" },
-  { "My Desktop Background.png", 1024, "18 Jan 2038 01:02:03" },
-  { kKeyboardTestFileName, kKeyboardTestFileSize, "4 July 2012 10:35:00" },
+enum EntryType {
+  FILE,
+  DIRECTORY,
 };
 
-struct TestDirectoryInfo {
+enum SharedOption {
+  NONE,
+  SHARED,
+};
+
+struct TestEntryInfo {
+  EntryType type;
   const char* base_name;
+  const char* mime_type;
+  int64 file_size;
+  SharedOption shared_option;
   const char* last_modified_time_as_string;
-} kTestDirectories[] = {
-  { "photos", "1 Jan 1980 23:59:59" },
-  // Files starting with . are filtered out in
-  // file_manager/js/directory_contents.js, so this should not be shown.
-  { ".warez", "26 Oct 1985 13:39" },
+};
+
+TestEntryInfo kTestEntrySetCommon[] = {
+  { FILE, "hello.txt", "text/plain", 123, NONE, "4 Sep 1998 12:34:56" },
+  { FILE, "My Desktop Background.png", "text/plain", 1024, NONE,
+    "18 Jan 2038 01:02:03" },
+  { FILE, kKeyboardTestFileName, "text/plain", kKeyboardTestFileSize, NONE,
+    "4 July 2012 10:35:00" },
+  { DIRECTORY, "photos", NULL, 0, NONE, "1 Jan 1980 23:59:59"},
+  { DIRECTORY, ".warez", NULL, 0, NONE, "26 Oct 1985 13:39"}
+};
+
+TestEntryInfo kTestEntrySetDriveOnly[] = {
+  { FILE, "Test Document", "application/vnd.google-apps.document", 0, NONE,
+    "10 Apr 2013 16:20:00" },
+  { FILE, "Test Shared Document", "application/vnd.google-apps.document", 0,
+    SHARED, "20 Mar 2013 22:40:00" }
 };
 
 // Monitors changes to a single file until the supplied condition callback
@@ -188,16 +204,9 @@ class TestVolume {
  public:
   virtual ~TestVolume() {}
 
-  // Creates a file with the given |name|, |length|, and |modification_time|.
+  // Creates an entry with given infromation.
   // Returns true on success.
-  virtual bool CreateFile(const std::string& name,
-                          int64 length,
-                          const std::string& modification_time) = 0;
-
-  // Creates an empty directory with the given |name| and |modification_time|.
-  // Returns true on success.
-  virtual bool CreateDirectory(const std::string& name,
-                               const std::string& modification_time) = 0;
+  virtual bool CreateEntry(const TestEntryInfo& entry) = 0;
 
   // Returns the path of the root directory.
   virtual base::FilePath GetRootPath() const = 0;
@@ -254,9 +263,22 @@ class LocalTestVolume : public TestVolume {
     return true;
   }
 
-  virtual bool CreateFile(const std::string& name,
-                          int64 length,
-                          const std::string& modification_time) OVERRIDE {
+  virtual bool CreateEntry(const TestEntryInfo& entry) OVERRIDE {
+    if (entry.type == DIRECTORY) {
+      return CreateDirectory(entry.base_name,
+                             entry.last_modified_time_as_string);
+    } else if (entry.type == FILE) {
+      return CreateFile(entry.base_name, entry.file_size,
+                        entry.last_modified_time_as_string);
+    } else {
+      NOTREACHED();
+      return false;
+    }
+  }
+
+  bool CreateFile(const std::string& name,
+                  int64 length,
+                  const std::string& modification_time) {
     if (length < 0)
       return false;
     base::FilePath path = local_path_.AppendASCII(name);
@@ -279,8 +301,8 @@ class LocalTestVolume : public TestVolume {
     return true;
   }
 
-  virtual bool CreateDirectory(const std::string& name,
-                               const std::string& modification_time) OVERRIDE {
+  bool CreateDirectory(const std::string& name,
+                       const std::string& modification_time) {
     base::FilePath path = local_path_.AppendASCII(name);
     if (!file_util::CreateDirectory(path))
       return false;
@@ -347,20 +369,25 @@ class DriveTestVolume : public TestVolume,
     return true;
   }
 
-  // Creates a file with the given |name|, |length|, and |modification_time|.
-  virtual bool CreateFile(const std::string& name,
-                          int64 length,
-                          const std::string& modification_time) OVERRIDE {
-    return CreateFileWithMimeType(name,
-                                  "text/plain",
-                                  length,
-                                  false,  // shared_with_me
-                                  modification_time);
+  virtual bool CreateEntry(const TestEntryInfo& entry) OVERRIDE {
+    if (entry.type == DIRECTORY) {
+      return CreateDirectory(entry.base_name,
+                             entry.last_modified_time_as_string);
+    } else if (entry.type == FILE) {
+      return CreateFile(entry.base_name,
+                        entry.mime_type,
+                        entry.file_size,
+                        entry.shared_option == SHARED,
+                        entry.last_modified_time_as_string);
+    } else {
+      NOTREACHED();
+      return false;
+    }
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
-  virtual bool CreateDirectory(const std::string& name,
-                               const std::string& modification_time) OVERRIDE {
+  bool CreateDirectory(const std::string& name,
+                       const std::string& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
     fake_drive_service_->AddNewDirectory(
@@ -395,13 +422,12 @@ class DriveTestVolume : public TestVolume,
     return "Drive";
   }
 
-  // Creates a test file with the given spec. This is a utility for
-  // CreateTestFile() as well. Returns true on success.
-  bool CreateFileWithMimeType(const std::string& name,
-                              const std::string& mime_type,
-                              int64 length,
-                              bool shared_with_me,
-                              const std::string& modification_time) {
+  // Creates a test file with the given spec. Returns true on success.
+  bool CreateFile(const std::string& name,
+                  const std::string& mime_type,
+                  int64 length,
+                  bool shared_with_me,
+                  const std::string& modification_time) {
     google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
     scoped_ptr<google_apis::ResourceEntry> resource_entry;
     fake_drive_service_->AddNewFile(
@@ -554,8 +580,8 @@ class DriveTestVolume : public TestVolume,
   bool waiting_for_directory_change_;
 };
 
-// The base test class. Used by FileManagerBrowserLocalTest and
-// FileManagerBrowserDriveTest.
+// The base test class. Used by FileManagerBrowserLocalTest,
+// FileManagerBrowserDriveTest, and FileManagerBrowserTransferTest.
 // The boolean parameter, retrieved by GetParam(), is true if testing in the
 // guest mode. See SetUpCommandLine() below for details.
 class FileManagerBrowserTestBase : public ExtensionApiTest,
@@ -569,7 +595,8 @@ class FileManagerBrowserTestBase : public ExtensionApiTest,
   void StartTest(const std::string& test_name);
 
   // Creates test files and directories.
-  bool CreateTestFilesAndDirectories(TestVolume* volume);
+  bool CreateTestEntries(TestVolume* volume, const TestEntryInfo* entries,
+                         size_t num_entries);
 
   // After starting the test, set up volumes.
   virtual bool PrepareVolume() = 0;
@@ -606,19 +633,10 @@ void FileManagerBrowserTestBase::StartTest(const std::string& test_name) {
   listener.Reply(test_name);
 }
 
-bool FileManagerBrowserTestBase::CreateTestFilesAndDirectories(
-    TestVolume* volume) {
-  for (size_t i = 0; i < arraysize(kTestFiles); ++i) {
-    if (!volume->CreateFile(kTestFiles[i].base_name,
-                            kTestFiles[i].file_size,
-                            kTestFiles[i].last_modified_time_as_string)) {
-      return false;
-    }
-  }
-  for (size_t i = 0; i < arraysize(kTestDirectories); ++i) {
-    if (!volume->CreateDirectory(
-            kTestDirectories[i].base_name,
-            kTestDirectories[i].last_modified_time_as_string)) {
+bool FileManagerBrowserTestBase::CreateTestEntries(
+    TestVolume* volume, const TestEntryInfo* entries, size_t num_entries) {
+  for (size_t i = 0; i < num_entries; ++i) {
+    if (!volume->CreateEntry(entries[i])) {
       return false;
     }
   }
@@ -631,8 +649,15 @@ void FileManagerBrowserTestBase::DoTestFileDisplay(TestVolume* volume) {
 
   ExtensionTestMessageListener listener("initial check done", true);
   ASSERT_TRUE(listener.WaitUntilSatisfied());
-
-  volume->CreateFile("newly added file.mp3", 2000, "4 Sep 1998 00:00:00");
+  const TestEntryInfo entry = {
+    FILE,
+    "newly added file.mp3",
+    "audio/mp3",
+    2000,
+    NONE,
+    "4 Sep 1998 00:00:00"
+  };
+  ASSERT_TRUE(volume->CreateEntry(entry));
   listener.Reply("file added");
 
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
@@ -668,6 +693,7 @@ void FileManagerBrowserTestBase::DoTestKeyboardDelete(TestVolume* volume) {
   ASSERT_TRUE(volume->WaitUntilFileNotPresent(delete_path));
 }
 
+// A class to test local volumes.
 class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
  public:
   FileManagerBrowserLocalTest() : volume_("Downloads") {}
@@ -681,7 +707,8 @@ class FileManagerBrowserLocalTest : public FileManagerBrowserTestBase {
   virtual bool PrepareVolume() OVERRIDE {
     return
         volume_.Mount(browser()->profile()) &&
-        CreateTestFilesAndDirectories(&volume_);
+        CreateTestEntries(&volume_, kTestEntrySetCommon,
+                          arraysize(kTestEntrySetCommon));
   }
 
   LocalTestVolume volume_;
@@ -697,6 +724,7 @@ INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         FileManagerBrowserLocalTest,
                         ::testing::Values(false));
 
+// A class to test Drive's volumes
 class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
  public:
   virtual void SetUp() OVERRIDE {
@@ -712,26 +740,14 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
 
  protected:
   virtual bool PrepareVolume() OVERRIDE {
-    if (!CreateTestFilesAndDirectories(&volume_))
+    if (!CreateTestEntries(&volume_, kTestEntrySetCommon,
+                           arraysize(kTestEntrySetCommon)))
       return false;
     // For testing Drive, create more entries with Drive specific attributes.
     // TODO(haruki): Add a case for an entry cached by DriveCache.
-    if (!volume_.CreateFileWithMimeType(
-            "Test Document",
-            "application/vnd.google-apps.document",
-            0,
-            false,  // shared_with_me
-            "10 Apr 2013 16:20:00")) {
+    if (!CreateTestEntries(&volume_, kTestEntrySetDriveOnly,
+                           arraysize(kTestEntrySetDriveOnly)))
       return false;
-    }
-    if (!volume_.CreateFileWithMimeType(
-            "Test Shared Document",
-            "application/vnd.google-apps.document",
-            0,
-            true,  // shared_with_me
-            "20 Mar 2013 22:40:00")) {
-      return false;
-    }
     drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
     return true;
   }
@@ -742,6 +758,44 @@ class FileManagerBrowserDriveTest : public FileManagerBrowserTestBase {
 // Don't test Drive in the guest mode as it's not supported.
 INSTANTIATE_TEST_CASE_P(InNonGuestMode,
                         FileManagerBrowserDriveTest,
+                        ::testing::Values(false));
+
+// A class to test both local and Drive's volumes.
+class FileManagerBrowserTransferTest : public FileManagerBrowserTestBase {
+ public:
+  FileManagerBrowserTransferTest() : local_volume_("Downloads") {}
+
+  virtual void SetUp() OVERRIDE {
+    extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+    ASSERT_TRUE(drive_volume_.SetUp());
+    ExtensionApiTest::SetUp();
+  }
+
+ protected:
+  virtual bool PrepareVolume() OVERRIDE {
+    if (!local_volume_.Mount(browser()->profile()))
+      return false;
+    if (!CreateTestEntries(&local_volume_, kTestEntrySetCommon,
+                           arraysize(kTestEntrySetCommon)))
+      return false;
+    if (!CreateTestEntries(&drive_volume_, kTestEntrySetCommon,
+                           arraysize(kTestEntrySetCommon)))
+      return false;
+    if (!CreateTestEntries(&drive_volume_, kTestEntrySetDriveOnly,
+                           arraysize(kTestEntrySetDriveOnly)))
+      return false;
+    drive_test_util::WaitUntilDriveMountPointIsAdded(browser()->profile());
+    return true;
+  }
+
+  LocalTestVolume local_volume_;
+  DriveTestVolume drive_volume_;
+};
+
+// FileManagerBrowserTransferTest depends on Drive and Drive is not supported in
+// the guest mode.
+INSTANTIATE_TEST_CASE_P(InNonGuestMode,
+                        FileManagerBrowserTransferTest,
                         ::testing::Values(false));
 
 IN_PROC_BROWSER_TEST_P(FileManagerBrowserLocalTest, TestFileDisplay) {
@@ -792,4 +846,11 @@ IN_PROC_BROWSER_TEST_P(FileManagerBrowserDriveTest, TestAutocomplete) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+IN_PROC_BROWSER_TEST_P(FileManagerBrowserTransferTest,
+                       TransferFromDriveToDownloads) {
+  ASSERT_TRUE(PrepareVolume());
+  ResultCatcher catcher;
+  StartTest("transferFromDriveToDownloads");
+  ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
 }  // namespace

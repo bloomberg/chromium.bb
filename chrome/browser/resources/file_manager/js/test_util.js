@@ -217,6 +217,22 @@ test.util.selectFile = function(contentWindow, filename) {
 };
 
 /**
+ * Selects a volume specified by its icon name
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} iconName Name of the volume icon.
+ * @return {boolean} True if the target is found and mousedown and click events
+ *     are sent.
+ */
+test.util.selectVolume = function(contentWindow, iconName) {
+  var query = '[volume-type-icon=' + iconName + ']';
+  // To change the selected volume, we have to send both events 'mousedown' and
+  // 'click' to the volume list.
+  return test.util.fakeMouseDown(contentWindow, query) &&
+      test.util.fakeMouseClick(contentWindow, query);
+};
+
+/**
  * Sends an event to the element specified by |targetQuery|.
  *
  * @param {Window} contentWindow Window to be tested.
@@ -262,6 +278,18 @@ test.util.fakeKeyDown = function(
  */
 test.util.fakeMouseClick = function(contentWindow, targetQuery) {
   var event = new MouseEvent('click', { bubbles: true });
+  return test.util.sendEvent(contentWindow, targetQuery, event);
+};
+
+/**
+ * Sends a fake mouse down event to the element specified by |targetQuery|.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} targetQuery Query to specify the element.
+ * @return {boolean} True if the event is sent to the target, false otherwise.
+ */
+test.util.fakeMouseDown = function(contentWindow, targetQuery) {
+  var event = new MouseEvent('mousedown', { bubbles: true });
   return test.util.sendEvent(contentWindow, targetQuery, event);
 };
 
@@ -350,7 +378,10 @@ test.util.registerRemoteTestUtils = function() {
           test.util.waitAndAcceptDialog(contentWindow, sendResponse);
           return true;
         case 'selectFile':
-          test.util.sendResponse(selectFile(contentWindow, request.args[0]));
+          sendResponse(test.util.selectFile(contentWindow, request.args[0]));
+          return false;
+        case 'selectVolume':
+          sendResponse(test.util.selectVolume(contentWindow, request.args[0]));
           return false;
         case 'fakeKeyDown':
           sendResponse(test.util.fakeKeyDown(contentWindow,
@@ -360,6 +391,10 @@ test.util.registerRemoteTestUtils = function() {
           return false;
         case 'fakeMouseClick':
           sendResponse(test.util.fakeMouseClick(
+              contentWindow, request.args[0]));
+          return false;
+        case 'fakeMouseDown':
+          sendResponse(test.util.fakeMouseDown(
               contentWindow, request.args[0]));
           return false;
         case 'copyFile':

@@ -225,7 +225,7 @@ testcase.openSidebarRecent = function() {
   setupAndWaitUntilReady('/drive/root', function(appId) {
     // Use the icon for a click target.
     callRemoteTestUtil(
-        'fakeMouseClick', appId, ['[volume-type-icon=drive_recent]'],
+        'selectVolume', appId, ['drive_recent'],
         function(result) {
           chrome.test.assertFalse(!result);
           callRemoteTestUtil(
@@ -252,7 +252,7 @@ testcase.openSidebarOffline = function() {
   setupAndWaitUntilReady('/drive/root/', function(appId) {
     // Use the icon for a click target.
     callRemoteTestUtil(
-        'fakeMouseClick', appId, ['[volume-type-icon=drive_offline]'],
+        'selectVolume', appId, ['drive_offline'],
         function(result) {
           chrome.test.assertFalse(!result);
           callRemoteTestUtil(
@@ -277,7 +277,7 @@ testcase.openSidebarSharedWithMe = function() {
   setupAndWaitUntilReady('/drive/root/', function(appId) {
     // Use the icon for a click target.
     callRemoteTestUtil(
-        'fakeMouseClick', appId, ['[volume-type-icon=drive_shared_with_me]'],
+        'selectVolume', appId, ['drive_shared_with_me'],
         function(result) {
           chrome.test.assertFalse(!result);
           callRemoteTestUtil(
@@ -310,4 +310,73 @@ testcase.autocomplete = function() {
                        ['hello', EXPECTED_AUTOCOMPLETE_LIST.length],
                        onAutocompleteListShown);
   });
+};
+
+/**
+ * Tests copy from Drive's root to local's downloads.
+ */
+testcase.transferFromDriveToDownloads = function() {
+  var appId;
+  var steps = [
+    function() {
+      setupAndWaitUntilReady('/Downloads', steps.shift());
+    },
+    function(inAppId) {
+      appId = inAppId;
+      callRemoteTestUtil('selectVolume', appId, ['drive'], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Using callRemoteTestUtil assumes EXPECTED_FILES_BEFORE_LOCAL.length !=
+      // EXPECTED_FILES_BEFORE_DRIVE.length
+      callRemoteTestUtil('waitForFileListChange', appId,
+                         [EXPECTED_FILES_BEFORE_LOCAL.length], steps.shift());
+    },
+    function(actualFilesAfter) {
+      chrome.test.assertEq(EXPECTED_FILES_BEFORE_DRIVE, actualFilesAfter);
+      callRemoteTestUtil('selectFile', appId, ['hello.txt'], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Ctrl + C
+      callRemoteTestUtil('fakeKeyDown', appId,
+                         ['#file-list', 'U+0043', true], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      // Switch to downloads
+      callRemoteTestUtil('selectVolume', appId, ['downloads'], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFileListChange', appId,
+                         [EXPECTED_FILES_BEFORE_DRIVE.length], steps.shift());
+    },
+    function(actualFilesAfter) {
+      chrome.test.assertEq(EXPECTED_FILES_BEFORE_LOCAL, actualFilesAfter);
+      // Ctrl + V
+      callRemoteTestUtil('fakeKeyDown', appId,
+                         ['#file-list', 'U+0056', true], steps.shift());
+    },
+    function(result) {
+      chrome.test.assertTrue(result);
+      callRemoteTestUtil('waitForFileListChange', appId,
+                         [EXPECTED_FILES_BEFORE_LOCAL.length], steps.shift());
+    },
+    function(actualFilesAfter) {
+      chrome.test.assertEq(EXPECTED_FILES_BEFORE_LOCAL.length + 1,
+                           actualFilesAfter.length);
+      for (var i = 0; i < actualFilesAfter.length; i++) {
+        if (actualFilesAfter[i][0] == 'hello (1).txt' &&
+            actualFilesAfter[i][1] == '123 bytes' &&
+            actualFilesAfter[i][2] == 'Plain text') {
+          chrome.test.succeed();
+          return;
+        }
+      }
+      chrome.test.fail();
+    }
+  ];
+  steps = steps.map(function(f) { return chrome.test.callbackPass(f); });
+  steps.shift()();
 };
