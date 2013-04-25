@@ -655,7 +655,16 @@ getToken (FileInfo * nested, CharsString * result, const char *description)
     nested->linepos++;
   result->length = 0;
   while (nested->line[nested->linepos] && nested->line[nested->linepos] > 32)
+    {
+    int maxlen = MAXSTRING;
+    if (result->length >= maxlen)
+    {
+    compileError (nested, "more than %d characters (bytes)", maxlen);
+    return 0;
+    }
+    else
     result->chars[result->length++] = nested->line[nested->linepos++];
+    }
   if (!result->length)
     {
       /* Not enough tokens */
