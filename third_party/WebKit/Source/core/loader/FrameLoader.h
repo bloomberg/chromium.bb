@@ -183,7 +183,8 @@ public:
     void detachFromParent();
     void detachViewsAndDocumentLoader();
 
-    void addExtraFieldsToRequest(ResourceRequest&);
+    void addExtraFieldsToSubresourceRequest(ResourceRequest&);
+    void addExtraFieldsToMainResourceRequest(ResourceRequest&);
     
     static void addHTTPOriginIfNeeded(ResourceRequest&, const String& origin);
 
@@ -287,6 +288,8 @@ private:
     
     void updateFirstPartyForCookies();
     void setFirstPartyForCookies(const KURL&);
+    
+    void addExtraFieldsToRequest(ResourceRequest&, FrameLoadType, bool isMainResource);
 
     void clearProvisionalLoad();
     void transitionToCommitted();

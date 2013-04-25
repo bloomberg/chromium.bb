@@ -300,6 +300,7 @@ private:
     double currentAge() const;
     double freshnessLifetime() const;
 
+    void addAdditionalRequestHeaders(CachedResourceLoader*);
     void failBeforeStarting();
 
     String m_fragmentIdentifierForRequest;

@@ -64,7 +64,7 @@ void PingLoader::loadImage(Frame* frame, const KURL& url)
     String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), request.url(), frame->loader()->outgoingReferrer());
     if (!referrer.isEmpty())
         request.setHTTPReferrer(referrer);
-    frame->loader()->addExtraFieldsToRequest(request);
+    frame->loader()->addExtraFieldsToSubresourceRequest(request);
     OwnPtr<PingLoader> pingLoader = adoptPtr(new PingLoader(frame, request));
 
     // Leak the ping loader, since it will kill itself as soon as it receives a response.
@@ -81,7 +81,7 @@ void PingLoader::sendPing(Frame* frame, const KURL& pingURL, const KURL& destina
     request.setHTTPContentType("text/ping");
     request.setHTTPBody(FormData::create("PING"));
     request.setHTTPHeaderField("Cache-Control", "max-age=0");
-    frame->loader()->addExtraFieldsToRequest(request);
+    frame->loader()->addExtraFieldsToSubresourceRequest(request);
 
     SecurityOrigin* sourceOrigin = frame->document()->securityOrigin();
     RefPtr<SecurityOrigin> pingOrigin = SecurityOrigin::create(pingURL);
@@ -109,7 +109,7 @@ void PingLoader::sendViolationReport(Frame* frame, const KURL& reportURL, PassRe
     request.setHTTPMethod("POST");
     request.setHTTPContentType("application/json");
     request.setHTTPBody(report);
-    frame->loader()->addExtraFieldsToRequest(request);
+    frame->loader()->addExtraFieldsToSubresourceRequest(request);
 
     String referrer = SecurityPolicy::generateReferrerHeader(frame->document()->referrerPolicy(), reportURL, frame->loader()->outgoingReferrer());
     if (!referrer.isEmpty())

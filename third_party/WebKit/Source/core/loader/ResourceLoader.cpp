@@ -145,6 +145,16 @@ bool ResourceLoader::init(const ResourceRequest& r)
         releaseResources();
         return false;
     }
+    
+    // https://bugs.webkit.org/show_bug.cgi?id=26391
+    // The various plug-in implementations call directly to ResourceLoader::load() instead of piping requests
+    // through FrameLoader. As a result, they miss the FrameLoader::addExtraFieldsToRequest() step which sets
+    // up the 1st party for cookies URL. Until plug-in implementations can be reigned in to pipe through that
+    // method, we need to make sure there is always a 1st party for cookies set.
+    if (clientRequest.firstPartyForCookies().isNull()) {
+        if (Document* document = m_frame->document())
+            clientRequest.setFirstPartyForCookies(document->firstPartyForCookies());
+    }
 
     willSendRequest(0, clientRequest, ResourceResponse());
     if (clientRequest.isNull()) {
