@@ -1369,8 +1369,11 @@ def GenerateOutputForConfig(target_list, target_dicts, data, params,
   #   'CC_host'/'CXX_host' enviroment variable, cc_host/cxx_host should be set
   #   to cc/cxx.
   if flavor == 'win':
-    cc = 'UNKNOWN'  # Must be overridden by local arch choice.
-    cxx = 'UNKNOWN'
+    # Overridden by local arch choice in the use_deps case.
+    # Chromium's ffmpeg c99conv.py currently looks for a 'cc =' line in
+    # build.ninja so needs something valid here. http://crbug.com/233985
+    cc = 'cl.exe'
+    cxx = 'cl.exe'
     ld = 'link.exe'
     ld_host = '$ld'
   else:
