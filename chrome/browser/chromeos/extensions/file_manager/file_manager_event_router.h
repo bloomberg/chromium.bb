@@ -10,8 +10,8 @@
 
 #include "base/files/file_path_watcher.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/net/connectivity_state_helper_observer.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
 #include "chromeos/disks/disk_mount_manager.h"
@@ -26,7 +26,7 @@ class FileManagerEventRouter
     : public chromeos::disks::DiskMountManager::Observer,
       public chromeos::ConnectivityStateHelperObserver,
       public drive::DriveSystemServiceObserver,
-      public drive::DriveFileSystemObserver,
+      public drive::FileSystemObserver,
       public drive::JobListObserver,
       public google_apis::DriveServiceObserver {
  public:
@@ -103,7 +103,7 @@ class FileManagerEventRouter
   // drive::DriveServiceObserver overrides.
   virtual void OnRefreshTokenInvalid() OVERRIDE;
 
-  // drive::DriveFileSystemObserver overrides.
+  // drive::FileSystemObserver overrides.
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;
 

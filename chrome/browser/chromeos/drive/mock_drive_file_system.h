@@ -12,7 +12,7 @@
 
 namespace drive {
 
-class DriveFileSystemObserver;
+class FileSystemObserver;
 
 // Mock for DriveFileSystemInterface.
 class MockDriveFileSystem : public DriveFileSystemInterface {
@@ -22,9 +22,9 @@ class MockDriveFileSystem : public DriveFileSystemInterface {
 
   // DriveFileSystemInterface overrides.
   MOCK_METHOD0(Initialize, void());
-  MOCK_METHOD1(AddObserver, void(DriveFileSystemObserver* observer));
+  MOCK_METHOD1(AddObserver, void(FileSystemObserver* observer));
   MOCK_METHOD1(RemoveObserver,
-               void(DriveFileSystemObserver* observer));
+               void(FileSystemObserver* observer));
   MOCK_METHOD0(CheckForUpdates, void());
   MOCK_METHOD2(GetEntryInfoByResourceId,
                void(const std::string& resource_id,

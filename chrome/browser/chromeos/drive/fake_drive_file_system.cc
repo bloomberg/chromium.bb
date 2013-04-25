@@ -41,11 +41,11 @@ void FakeDriveFileSystem::Initialize() {
   InitializeForTesting();
 }
 
-void FakeDriveFileSystem::AddObserver(DriveFileSystemObserver* observer) {
+void FakeDriveFileSystem::AddObserver(FileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void FakeDriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
+void FakeDriveFileSystem::RemoveObserver(FileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 

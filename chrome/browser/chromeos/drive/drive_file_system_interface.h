@@ -21,8 +21,8 @@ class ResourceEntry;
 
 namespace drive {
 
-class DriveFileSystemObserver;
 class DriveResourceMetadata;
+class FileSystemObserver;
 
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
@@ -153,8 +153,8 @@ class DriveFileSystemInterface {
   virtual void Initialize() = 0;
 
   // Adds and removes the observer.
-  virtual void AddObserver(DriveFileSystemObserver* observer) = 0;
-  virtual void RemoveObserver(DriveFileSystemObserver* observer) = 0;
+  virtual void AddObserver(FileSystemObserver* observer) = 0;
+  virtual void RemoveObserver(FileSystemObserver* observer) = 0;
 
   // Checks for updates on the server.
   virtual void CheckForUpdates() = 0;

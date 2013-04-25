@@ -20,8 +20,8 @@
 #include "base/time.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/extensions/file_manager/drive_test_util.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -350,7 +350,7 @@ class LocalTestVolume : public TestVolume {
 // This class provides the operations for a test volume that simulates Google
 // drive.
 class DriveTestVolume : public TestVolume,
-                        public drive::DriveFileSystemObserver {
+                        public drive::FileSystemObserver {
  public:
   DriveTestVolume() : fake_drive_service_(NULL),
                       system_service_(NULL),

@@ -26,7 +26,7 @@ class ResourceEntry;
 namespace drive {
 
 class DriveEntryProto;
-class DriveFileSystemObserver;
+class FileSystemObserver;
 
 namespace test_util {
 
@@ -48,8 +48,8 @@ class FakeDriveFileSystem : public DriveFileSystemInterface {
 
   // DriveFileSystemInterface Overrides.
   virtual void Initialize() OVERRIDE;
-  virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
+  virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,

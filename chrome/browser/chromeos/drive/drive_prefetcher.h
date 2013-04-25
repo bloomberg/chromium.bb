@@ -13,7 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 
 namespace base {
 class FilePath;
@@ -33,13 +33,13 @@ struct DrivePrefetcherOptions {
 // maintaining the prioritized list of files to prefetch into the cache.
 //
 // All the methods (including ctor and dtor) must be called from UI thread.
-class DrivePrefetcher : public DriveFileSystemObserver {
+class DrivePrefetcher : public FileSystemObserver {
  public:
   DrivePrefetcher(DriveFileSystemInterface* file_system,
                   const DrivePrefetcherOptions& options);
   virtual ~DrivePrefetcher();
 
-  // DriveFileSystemObserver overrides.
+  // FileSystemObserver overrides.
   virtual void OnInitialLoadFinished() OVERRIDE;
   virtual void OnDirectoryChanged(
       const base::FilePath& directory_path) OVERRIDE;

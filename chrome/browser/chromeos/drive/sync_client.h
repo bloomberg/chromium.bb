@@ -12,8 +12,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/chromeos/drive/drive_cache_observer.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 
 namespace drive {
 
@@ -35,7 +35,7 @@ class DriveFileSystemInterface;
 // If the user logs out before fetching of the pinned files is complete, this
 // client resumes fetching operations next time the user logs in, based on
 // the states left in the cache.
-class SyncClient : public DriveFileSystemObserver,
+class SyncClient : public FileSystemObserver,
                    public DriveCacheObserver {
  public:
   // Types of sync tasks.

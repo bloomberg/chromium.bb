@@ -17,9 +17,9 @@
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_scheduler.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -292,12 +292,12 @@ DriveFileSystem::~DriveFileSystem() {
   change_list_loader_->RemoveObserver(this);
 }
 
-void DriveFileSystem::AddObserver(DriveFileSystemObserver* observer) {
+void DriveFileSystem::AddObserver(FileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.AddObserver(observer);
 }
 
-void DriveFileSystem::RemoveObserver(DriveFileSystemObserver* observer) {
+void DriveFileSystem::RemoveObserver(FileSystemObserver* observer) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   observers_.RemoveObserver(observer);
 }
@@ -1351,21 +1351,21 @@ void DriveFileSystem::OnDirectoryChangedByOperation(
 void DriveFileSystem::OnDirectoryChanged(const base::FilePath& directory_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
+  FOR_EACH_OBSERVER(FileSystemObserver, observers_,
                     OnDirectoryChanged(directory_path));
 }
 
 void DriveFileSystem::OnFeedFromServerLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
+  FOR_EACH_OBSERVER(FileSystemObserver, observers_,
                     OnFeedFromServerLoaded());
 }
 
 void DriveFileSystem::OnInitialFeedLoaded() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  FOR_EACH_OBSERVER(DriveFileSystemObserver,
+  FOR_EACH_OBSERVER(FileSystemObserver,
                     observers_,
                     OnInitialLoadFinished());
 }
@@ -1510,7 +1510,7 @@ void DriveFileSystem::SetHideHostedDocuments(bool hide) {
   hide_hosted_docs_ = hide;
 
   // Kick off directory refresh when this setting changes.
-  FOR_EACH_OBSERVER(DriveFileSystemObserver, observers_,
+  FOR_EACH_OBSERVER(FileSystemObserver, observers_,
                     OnDirectoryChanged(util::GetDriveGrandRootPath()));
 }
 

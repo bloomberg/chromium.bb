@@ -34,13 +34,13 @@ class ResourceEntry;
 
 namespace drive {
 
+class ChangeList;
+class ChangeListLoader;
 class DriveCacheEntry;
-class DriveFileSystemObserver;
 class DriveResourceMetadata;
 class DriveScheduler;
 class DriveWebAppsRegistry;
-class ChangeList;
-class ChangeListLoader;
+class FileSystemObserver;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -58,8 +58,8 @@ class DriveFileSystem : public DriveFileSystemInterface,
 
   // DriveFileSystem overrides.
   virtual void Initialize() OVERRIDE;
-  virtual void AddObserver(DriveFileSystemObserver* observer) OVERRIDE;
-  virtual void RemoveObserver(DriveFileSystemObserver* observer) OVERRIDE;
+  virtual void AddObserver(FileSystemObserver* observer) OVERRIDE;
+  virtual void RemoveObserver(FileSystemObserver* observer) OVERRIDE;
   virtual void CheckForUpdates() OVERRIDE;
   virtual void GetEntryInfoByResourceId(
       const std::string& resource_id,
@@ -497,7 +497,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // The loader is used to load the change lists.
   scoped_ptr<ChangeListLoader> change_list_loader_;
 
-  ObserverList<DriveFileSystemObserver> observers_;
+  ObserverList<FileSystemObserver> observers_;
 
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 

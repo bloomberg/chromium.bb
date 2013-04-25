@@ -6,18 +6,18 @@
 #define CHROME_BROWSER_CHROMEOS_DRIVE_MOCK_DIRECTORY_CHANGE_OBSERVER_H_
 
 #include "base/files/file_path.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace drive {
 
-// Mock for DriveFileSystemInterface::Observer::OnDirectoryChanged().
-class MockDirectoryChangeObserver : public DriveFileSystemObserver {
+// Mock for FileSystemObserver::OnDirectoryChanged().
+class MockDirectoryChangeObserver : public FileSystemObserver {
  public:
   MockDirectoryChangeObserver();
   virtual ~MockDirectoryChangeObserver();
 
-  // DriveFileSystemInterface::Observer overrides.
+  // FileSystemObserver overrides.
   MOCK_METHOD1(OnDirectoryChanged, void(const base::FilePath& directory_path));
 };
 

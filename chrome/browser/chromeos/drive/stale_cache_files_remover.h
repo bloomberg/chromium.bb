@@ -10,7 +10,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_observer.h"
+#include "chrome/browser/chromeos/drive/file_system_observer.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace drive{
@@ -22,7 +22,7 @@ class DriveFileSystemInterface;
 // This class removes stale cache files, which are present locally, but no
 // longer present on the server. This can happen if files are removed from the
 // server from other devices, or from the web interface.
-class StaleCacheFilesRemover : public DriveFileSystemObserver {
+class StaleCacheFilesRemover : public FileSystemObserver {
  public:
   StaleCacheFilesRemover(DriveFileSystemInterface* file_system,
                          DriveCache* cache);
