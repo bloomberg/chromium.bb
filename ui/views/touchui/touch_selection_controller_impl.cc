@@ -4,9 +4,10 @@
 
 #include "ui/views/touchui/touch_selection_controller_impl.h"
 
+#include "base/command_line.h"
 #include "base/time.h"
 #include "grit/ui_strings.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -419,8 +420,11 @@ ViewsTouchSelectionControllerFactory::ViewsTouchSelectionControllerFactory() {
 
 ui::TouchSelectionController* ViewsTouchSelectionControllerFactory::create(
     ui::TouchEditable* client_view) {
-  if (switches::IsTouchEditingEnabled())
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTouchEditing))
     return new views::TouchSelectionControllerImpl(client_view);
+#endif
   return NULL;
 }
 

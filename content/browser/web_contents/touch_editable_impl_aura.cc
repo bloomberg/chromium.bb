@@ -4,6 +4,7 @@
 
 #include "content/browser/web_contents/touch_editable_impl_aura.h"
 
+#include "base/command_line.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/common/view_messages.h"
@@ -15,7 +16,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/range/range.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_switches.h"
 
 namespace content {
 
@@ -28,8 +29,11 @@ TouchEditableImplAura::~TouchEditableImplAura() {
 
 // static
 TouchEditableImplAura* TouchEditableImplAura::Create() {
-  if (switches::IsTouchEditingEnabled())
+#if defined(OS_CHROMEOS)
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTouchEditing))
     return new TouchEditableImplAura();
+#endif
   return NULL;
 }
 

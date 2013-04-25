@@ -14,8 +14,6 @@ namespace switches {
 
 UI_EXPORT extern const char kDisableDwmComposition[];
 UI_EXPORT extern const char kDisableTouchAdjustment[];
-UI_EXPORT extern const char kDisableTouchDragDrop[];
-UI_EXPORT extern const char kDisableTouchEditing[];
 UI_EXPORT extern const char kDisableViewsTextfield[];
 UI_EXPORT extern const char kEnableBezelTouch[];
 UI_EXPORT extern const char kEnableNewDialogStyle[];

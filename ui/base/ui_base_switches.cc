@@ -12,12 +12,6 @@ const char kDisableDwmComposition[] = "disable-dwm-composition";
 // Disables touch adjustment.
 const char kDisableTouchAdjustment[] = "disable-touch-adjustment";
 
-// Disables touch event based drag and drop.
-const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
-
-// Disables controls that support touch base text editing.
-const char kDisableTouchEditing[] = "disable-touch-editing";
-
 // Disables the Views textfield on Windows.
 const char kDisableViewsTextfield[] = "disable-views-textfield";
 
@@ -27,7 +21,6 @@ const char kEnableBezelTouch[] = "enable-bezel-touch";
 // Enables the new dialog style wherever it is available.
 const char kEnableNewDialogStyle[] = "enable-new-dialog-style";
 
-// Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
 // Enables controls that support touch base text editing.

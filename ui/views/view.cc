@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
@@ -18,7 +19,7 @@
 #include "third_party/skia/include/core/SkRect.h"
 #include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/dragdrop/drag_drop_types.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -107,7 +108,8 @@ class PostEventDispatchHandler : public ui::EventHandler {
  public:
   explicit PostEventDispatchHandler(View* owner)
       : owner_(owner),
-        touch_dnd_enabled_(switches::IsTouchDragDropEnabled()) {
+        touch_dnd_enabled_(CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTouchDragDrop)) {
   }
   virtual ~PostEventDispatchHandler() {}
 

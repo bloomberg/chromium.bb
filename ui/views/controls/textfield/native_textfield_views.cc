@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/debug/trace_event.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
@@ -23,7 +24,7 @@
 #include "ui/base/events/event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/range/range.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/insets.h"
@@ -200,7 +201,8 @@ void NativeTextfieldViews::OnGestureEvent(ui::GestureEvent* event) {
         OnAfterUserAction();
         if (touch_selection_controller_.get())
           event->SetHandled();
-      } else if (switches::IsTouchDragDropEnabled()) {
+      } else if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableTouchDragDrop)) {
         touch_selection_controller_.reset();
       } else {
         if (!touch_selection_controller_.get())

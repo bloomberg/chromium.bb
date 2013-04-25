@@ -181,7 +181,7 @@
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebView.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/WebWindowFeatures.h"
 #include "third_party/WebKit/Source/WebKit/chromium/public/default/WebRenderTheme.h"
-#include "ui/base/ui_base_switches_util.h"
+#include "ui/base/ui_base_switches.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/rect.h"
@@ -746,10 +746,10 @@ void RenderViewImpl::Initialize(RenderViewImplParams* params) {
   webkit_preferences_.Apply(webview());
   webview()->initializeMainFrame(this);
 
-  if (switches::IsTouchDragDropEnabled())
+  if (command_line.HasSwitch(switches::kEnableTouchDragDrop))
     webview()->settings()->setTouchDragDropEnabled(true);
 
-  if (switches::IsTouchEditingEnabled())
+  if (command_line.HasSwitch(switches::kEnableTouchEditing))
     webview()->settings()->setTouchEditingEnabled(true);
 
   if (!params->frame_name.empty())
