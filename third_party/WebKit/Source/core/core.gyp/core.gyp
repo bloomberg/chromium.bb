@@ -64,8 +64,6 @@
       '../html/track',
       '../inspector',
       '../page',
-      '../page/animation',
-      '../page/scrolling',
       '../platform/graphics/skia',
       '../plugins',
       '../svg',

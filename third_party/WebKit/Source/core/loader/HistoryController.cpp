@@ -38,12 +38,12 @@
 #include "FrameView.h"
 #include "HistoryItem.h"
 #include "Page.h"
-#include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderStateMachine.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/Logging.h"
 #include <wtf/text/CString.h>
 

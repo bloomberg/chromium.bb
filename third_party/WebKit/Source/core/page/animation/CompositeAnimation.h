@@ -29,8 +29,8 @@
 #ifndef CompositeAnimation_h
 #define CompositeAnimation_h
 
-#include "ImplicitAnimation.h"
-#include "KeyframeAnimation.h"
+#include "core/page/animation/ImplicitAnimation.h"
+#include "core/page/animation/KeyframeAnimation.h"
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/text/AtomicString.h>

@@ -27,15 +27,15 @@
  */
 
 #include "config.h"
-#include "AnimationBase.h"
+#include "core/page/animation/AnimationBase.h"
 
 #include <algorithm>
-#include "AnimationControllerPrivate.h"
 #include "CSSPrimitiveValue.h"
-#include "CSSPropertyAnimation.h"
-#include "CompositeAnimation.h"
 #include "Document.h"
 #include "EventNames.h"
+#include "core/page/animation/AnimationControllerPrivate.h"
+#include "core/page/animation/CSSPropertyAnimation.h"
+#include "core/page/animation/CompositeAnimation.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/UnitBezier.h"
 #include "core/rendering/RenderBox.h"

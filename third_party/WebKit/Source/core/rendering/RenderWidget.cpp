@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/rendering/RenderWidget.h"
 
-#include "AnimationController.h"
 #include "Frame.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/page/animation/AnimationController.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderCounter.h"

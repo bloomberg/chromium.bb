@@ -27,13 +27,13 @@
  */
 
 #include "config.h"
-#include "CompositeAnimation.h"
+#include "core/page/animation/CompositeAnimation.h"
 
-#include "AnimationControllerPrivate.h"
-#include "CSSPropertyAnimation.h"
 #include "CSSPropertyNames.h"
-#include "ImplicitAnimation.h"
-#include "KeyframeAnimation.h"
+#include "core/page/animation/AnimationControllerPrivate.h"
+#include "core/page/animation/CSSPropertyAnimation.h"
+#include "core/page/animation/ImplicitAnimation.h"
+#include "core/page/animation/KeyframeAnimation.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 

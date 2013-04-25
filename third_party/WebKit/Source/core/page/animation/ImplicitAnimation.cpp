@@ -28,12 +28,12 @@
 
 #include "config.h"
 
-#include "AnimationControllerPrivate.h"
-#include "CSSPropertyAnimation.h"
-#include "CompositeAnimation.h"
 #include "EventNames.h"
-#include "ImplicitAnimation.h"
-#include "KeyframeAnimation.h"
+#include "core/page/animation/AnimationControllerPrivate.h"
+#include "core/page/animation/CSSPropertyAnimation.h"
+#include "core/page/animation/CompositeAnimation.h"
+#include "core/page/animation/ImplicitAnimation.h"
+#include "core/page/animation/KeyframeAnimation.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include <wtf/UnusedParam.h>
 

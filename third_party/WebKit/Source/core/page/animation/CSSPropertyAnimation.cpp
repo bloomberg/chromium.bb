@@ -28,10 +28,9 @@
  */
 
 #include "config.h"
-#include "CSSPropertyAnimation.h"
+#include "core/page/animation/CSSPropertyAnimation.h"
 
 #include <algorithm>
-#include "AnimationBase.h"
 #include "CSSCrossfadeValue.h"
 #include "CSSImageGeneratorValue.h"
 #include "CSSImageValue.h"
@@ -40,6 +39,7 @@
 #include "StylePropertyShorthand.h"
 #include "StyleResolver.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/animation/AnimationBase.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/transforms/IdentityTransformOperation.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"

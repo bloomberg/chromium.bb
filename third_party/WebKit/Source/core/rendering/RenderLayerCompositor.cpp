@@ -27,7 +27,6 @@
 
 #include "core/rendering/RenderLayerCompositor.h"
 
-#include "AnimationController.h"
 #include "CSSPropertyNames.h"
 #include "CanvasRenderingContext.h"
 #include "Chrome.h"
@@ -40,10 +39,11 @@
 #include "InspectorInstrumentation.h"
 #include "NodeList.h"
 #include "Page.h"
-#include "ScrollingConstraints.h"
-#include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/page/animation/AnimationController.h"
+#include "core/page/scrolling/ScrollingConstraints.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/Logging.h"
 #include "core/platform/ScrollbarTheme.h"

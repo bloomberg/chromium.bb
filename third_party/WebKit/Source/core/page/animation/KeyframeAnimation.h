@@ -29,8 +29,8 @@
 #ifndef KeyframeAnimation_h
 #define KeyframeAnimation_h
 
-#include "AnimationBase.h"
 #include "Document.h"
+#include "core/page/animation/AnimationBase.h"
 #include "core/rendering/style/KeyframeList.h"
 
 namespace WebCore {

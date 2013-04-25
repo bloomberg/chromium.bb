@@ -27,19 +27,19 @@
  */
 
 #include "config.h"
-#include "AnimationController.h"
+#include "core/page/animation/AnimationController.h"
 
-#include "AnimationBase.h"
-#include "AnimationControllerPrivate.h"
 #include "AnimationEvent.h"
 #include "CSSParser.h"
-#include "CSSPropertyAnimation.h"
-#include "CompositeAnimation.h"
 #include "EventNames.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "PseudoElement.h"
 #include "TransitionEvent.h"
+#include "core/page/animation/AnimationBase.h"
+#include "core/page/animation/AnimationControllerPrivate.h"
+#include "core/page/animation/CSSPropertyAnimation.h"
+#include "core/page/animation/CompositeAnimation.h"
 #include "core/rendering/RenderView.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/UnusedParam.h>

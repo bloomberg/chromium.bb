@@ -24,7 +24,7 @@
 
 #include "config.h"
 
-#include "ScrollingCoordinator.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"

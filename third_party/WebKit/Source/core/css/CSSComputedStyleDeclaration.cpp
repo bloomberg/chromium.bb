@@ -24,7 +24,6 @@
 #include "config.h"
 #include "CSSComputedStyleDeclaration.h"
 
-#include "AnimationController.h"
 #include "BasicShapeFunctions.h"
 #include "CSSAspectRatioValue.h"
 #include "CSSBasicShapes.h"
@@ -55,6 +54,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
+#include "core/page/animation/AnimationController.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"

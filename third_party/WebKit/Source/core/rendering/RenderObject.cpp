@@ -29,7 +29,6 @@
 
 #include <stdio.h>
 #include <algorithm>
-#include "AnimationController.h"
 #include "Chrome.h"
 #include "EventHandler.h"
 #include "Frame.h"
@@ -44,6 +43,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"
+#include "core/page/animation/AnimationController.h"
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"

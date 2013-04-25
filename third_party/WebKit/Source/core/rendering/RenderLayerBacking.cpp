@@ -27,7 +27,6 @@
 
 #include "core/rendering/RenderLayerBacking.h"
 
-#include "AnimationController.h"
 #include "CSSPropertyNames.h"
 #include "CanvasRenderingContext.h"
 #include "Chrome.h"
@@ -38,11 +37,12 @@
 #include "HTMLNames.h"
 #include "InspectorInstrumentation.h"
 #include "PluginViewBase.h"
-#include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
+#include "core/page/animation/AnimationController.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"

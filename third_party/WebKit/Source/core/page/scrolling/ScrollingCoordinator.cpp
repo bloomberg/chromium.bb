@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "ScrollingCoordinator.h"
+#include "core/page/scrolling/ScrollingCoordinator.h"
 
 #include "Document.h"
 #include "Frame.h"

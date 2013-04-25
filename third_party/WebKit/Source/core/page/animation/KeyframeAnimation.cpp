@@ -27,14 +27,14 @@
  */
 
 #include "config.h"
-#include "KeyframeAnimation.h"
+#include "core/page/animation/KeyframeAnimation.h"
 
-#include "AnimationControllerPrivate.h"
-#include "CSSPropertyAnimation.h"
 #include "CSSPropertyNames.h"
-#include "CompositeAnimation.h"
 #include "EventNames.h"
 #include "StyleResolver.h"
+#include "core/page/animation/AnimationControllerPrivate.h"
+#include "core/page/animation/CSSPropertyAnimation.h"
+#include "core/page/animation/CompositeAnimation.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/UnusedParam.h>
