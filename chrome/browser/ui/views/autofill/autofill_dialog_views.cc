@@ -106,6 +106,57 @@ views::Label* CreateDetailsSectionLabel(const string16& text) {
   return label;
 }
 
+// This class handles layout for the first row of a SuggestionView.
+// It exists to circumvent shortcomings of GridLayout and BoxLayout (namely that
+// the former doesn't fully respect child visibility, and that the latter won't
+// expand a single child).
+class SectionRowView : public views::View {
+ public:
+  SectionRowView() {}
+  virtual ~SectionRowView() {}
+
+  // views::View implementation:
+  virtual gfx::Size GetPreferredSize() OVERRIDE {
+    // Only the height matters anyway.
+    return child_at(2)->GetPreferredSize();
+  }
+
+  virtual void Layout() {
+    const gfx::Rect bounds = GetContentsBounds();
+
+    // Icon is left aligned.
+    int start_x = bounds.x();
+    views::View* icon = child_at(0);
+    if (icon->visible()) {
+      icon->SizeToPreferredSize();
+      icon->SetX(start_x);
+      icon->SetY(bounds.y() +
+          (bounds.height() - icon->bounds().height()) / 2);
+      start_x += icon->bounds().width() + kAroundTextPadding;
+    }
+
+    // Textfield is right aligned.
+    int end_x = bounds.width();
+    views::View* decorated = child_at(2);
+    if (decorated->visible()) {
+      decorated->SizeToPreferredSize();
+      decorated->SetX(bounds.width() - decorated->bounds().width());
+      decorated->SetY(bounds.y());
+      end_x = decorated->bounds().x() - kAroundTextPadding;
+    }
+
+    // Label takes up all the space in between.
+    views::View* label = child_at(1);
+    if (label->visible())
+      label->SetBounds(start_x, bounds.y(), end_x - start_x, bounds.height());
+
+    views::View::Layout();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SectionRowView);
+};
+
 }  // namespace
 
 // AutofillDialogViews::SizeLimitedScrollView ----------------------------------
@@ -510,16 +561,13 @@ AutofillDialogViews::SuggestionView::SuggestionView(
     : label_(new views::Label()),
       label_line_2_(new views::Label()),
       icon_(new views::ImageView()),
-      label_container_(new views::View()),
+      label_container_(new SectionRowView()),
       decorated_(
           new DecoratedTextfield(string16(), string16(), autofill_dialog)),
       edit_link_(new views::Link(edit_label)) {
   // Label and icon.
   label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label_->set_border(CreateLabelAlignmentBorder());
-  label_container_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0,
-                           kAroundTextPadding));
   label_container_->AddChildView(icon_);
   label_container_->AddChildView(label_);
   label_container_->AddChildView(decorated_);
