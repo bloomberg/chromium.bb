@@ -33,10 +33,7 @@
 #include "core/page/ConsoleTypes.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"
-#include <wtf/Forward.h>
 #include <wtf/HashSet.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
 
 namespace WebCore {
 
