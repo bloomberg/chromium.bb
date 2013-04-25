@@ -528,7 +528,7 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
   CertVerifyResult verify_result;
   int error = Verify(server_cert, "jira.aquameta.com", flags, NULL,
                      empty_cert_list_, &verify_result);
-#if defined(USE_OPENSSL)
+#if defined(USE_OPENSSL) && !defined(OS_ANDROID)
   // This certificate has two errors: "invalid key usage" and "untrusted CA".
   // However, OpenSSL returns only one (the latter), and we can't detect
   // the other errors.
@@ -539,7 +539,7 @@ TEST_F(CertVerifyProcTest, InvalidKeyUsage) {
 #endif
   // TODO(wtc): fix http://crbug.com/75520 to get all the certificate errors
   // from NSS.
-#if !defined(USE_NSS) && !defined(OS_IOS)
+#if !defined(USE_NSS) && !defined(OS_IOS) && !defined(OS_ANDROID)
   // The certificate is issued by an unknown CA.
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_AUTHORITY_INVALID);
 #endif

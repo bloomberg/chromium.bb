@@ -25,3 +25,7 @@ CERT_VERIFY_RESULT_ANDROID(NOT_YET_VALID, -4)
 
 // Certificate is not trusted because it could not be parsed.
 CERT_VERIFY_RESULT_ANDROID(UNABLE_TO_PARSE, -5)
+
+// Certificate is not trusted because it has an extendedKeyUsage field, but
+// its value is not correct for a web server.
+CERT_VERIFY_RESULT_ANDROID(INCORRECT_KEY_USAGE, -6)

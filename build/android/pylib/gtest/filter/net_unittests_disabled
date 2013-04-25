@@ -1,6 +1,5 @@
 # List of suppressions.
 
-CertVerifyProcTest.InvalidKeyUsage
 CertVerifyProcTest.PublicKeyHashes
 CertVerifyProcTest.VerifyReturnChainBasic
 CertVerifyProcTest.VerifyReturnChainFiltersUnrelatedCerts

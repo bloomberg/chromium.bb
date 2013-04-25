@@ -195,7 +195,7 @@ public class X509Util {
         try {
             serverCertificates[0].checkValidity();
             if (!verifyKeyUsage(serverCertificates[0]))
-                return CertVerifyResultAndroid.VERIFY_FAILED;
+                return CertVerifyResultAndroid.VERIFY_INCORRECT_KEY_USAGE;
         } catch (CertificateExpiredException e) {
             return CertVerifyResultAndroid.VERIFY_EXPIRED;
         } catch (CertificateNotYetValidException e) {

@@ -41,6 +41,9 @@ bool VerifyFromAndroidTrustManager(const std::vector<std::string>& cert_bytes,
     case android::VERIFY_UNABLE_TO_PARSE:
       verify_result->cert_status |= CERT_STATUS_INVALID;
       break;
+    case android::VERIFY_INCORRECT_KEY_USAGE:
+      verify_result->cert_status |= CERT_STATUS_INVALID;
+      break;
     default:
       NOTREACHED();
       verify_result->cert_status |= CERT_STATUS_INVALID;
