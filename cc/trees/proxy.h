@@ -21,6 +21,7 @@ class Vector2d;
 
 namespace cc {
 
+class OutputSurface;
 class Thread;
 struct RendererCapabilities;
 
@@ -53,24 +54,16 @@ class CC_EXPORT Proxy {
 
   virtual bool IsStarted() const = 0;
 
-  // Attempts to initialize a context to use for rendering. Returns false if
-  // the context could not be created.  The context will not be used and no
-  // frames may be produced until InitializeRenderer() is called.
-  virtual bool InitializeOutputSurface() = 0;
-
   // Indicates that the compositing surface associated with our context is
   // ready to use.
   virtual void SetSurfaceReady() = 0;
 
   virtual void SetVisible(bool visible) = 0;
 
-  // Attempts to initialize the layer renderer. Returns false if the context
-  // isn't usable for compositing.
-  virtual bool InitializeRenderer() = 0;
-
-  // Attempts to recreate the context and layer renderer after a context lost.
-  // Returns false if the renderer couldn't be reinitialized.
-  virtual bool RecreateOutputSurface() = 0;
+  // Attempts to recreate the context and renderer synchronously after the
+  // output surface is lost. Calls
+  // LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted with the result.
+  virtual void CreateAndInitializeOutputSurface() = 0;
 
   virtual const RendererCapabilities& GetRendererCapabilities() const = 0;
 
@@ -87,7 +80,8 @@ class CC_EXPORT Proxy {
 
   virtual bool CommitRequested() const = 0;
 
-  virtual void Start() = 0;  // Must be called before using the proxy.
+  // Must be called before using the proxy.
+  virtual void Start(scoped_ptr<OutputSurface> first_output_surface) = 0;
   virtual void Stop() = 0;   // Must be called before deleting the proxy.
 
   // Forces 3D commands on all contexts to wait for all previous SwapBuffers
