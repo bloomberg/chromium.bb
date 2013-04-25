@@ -38,7 +38,7 @@ const char kServiceStateContent[] =
     "          { 'name': 'prn2', 'connect': false },"
     "          { 'name': 'prn3', 'connect': true }"
     "        ],"
-    "        'connect_new_printers': false"
+    "        'connectNewPrinters': false"
     "      },"
     "      'print_system_settings': {"
     "         'delete_on_enum_fail' : true"

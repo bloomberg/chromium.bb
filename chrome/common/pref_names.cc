@@ -2135,7 +2135,7 @@ const char kCloudPrintRobotRefreshToken[] = "cloud_print.robot_refresh_token";
 const char kCloudPrintRobotEmail[] = "cloud_print.robot_email";
 // A boolean indicating whether we should connect to cloud print new printers.
 const char kCloudPrintConnectNewPrinters[] =
-    "cloud_print.user_settings.connect_new_printers";
+    "cloud_print.user_settings.connectNewPrinters";
 // A boolean indicating whether we should ping XMPP connection.
 const char kCloudPrintXmppPingEnabled[] = "cloud_print.xmpp_ping_enabled";
 // An int value indicating the average timeout between xmpp pings.
