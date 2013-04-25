@@ -1503,6 +1503,8 @@
         'browser/process_singleton_startup_lock.cc',
         'browser/process_singleton_startup_lock.h',
         'browser/process_singleton_win.cc',
+        'browser/profile_resetter/profile_resetter.h',
+        'browser/profile_resetter/profile_resetter.cc',
         'browser/profiles/avatar_menu_model.cc',
         'browser/profiles/avatar_menu_model.h',
         'browser/profiles/avatar_menu_model_observer.h',

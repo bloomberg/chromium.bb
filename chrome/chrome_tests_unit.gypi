@@ -1031,6 +1031,7 @@
         'browser/process_info_snapshot_mac_unittest.cc',
         'browser/process_singleton_linux_unittest.cc',
         'browser/process_singleton_mac_unittest.cc',
+        'browser/profile_resetter/profile_resetter_unittest.cc',
         'browser/profiles/avatar_menu_model_unittest.cc',
         'browser/profiles/dependency_graph_unittest.cc',
         'browser/profiles/gaia_info_update_service_unittest.cc',
