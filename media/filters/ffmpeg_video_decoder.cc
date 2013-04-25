@@ -135,19 +135,16 @@ void FFmpegVideoDecoder::Initialize(DemuxerStream* stream,
                                     const PipelineStatusCB& status_cb,
                                     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
-  PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
-  weak_this_ = weak_factory_.GetWeakPtr();
+  DCHECK(stream);
+  DCHECK(read_cb_.is_null());
+  DCHECK(reset_cb_.is_null());
 
   FFmpegGlue::InitializeFFmpeg();
-  DCHECK(!demuxer_stream_) << "Already initialized.";
-
-  if (!stream) {
-    initialize_cb.Run(PIPELINE_ERROR_DECODE);
-    return;
-  }
+  weak_this_ = weak_factory_.GetWeakPtr();
 
   demuxer_stream_ = stream;
   statistics_cb_ = statistics_cb;
+  PipelineStatusCB initialize_cb = BindToCurrentLoop(status_cb);
 
   if (!ConfigureDecoder()) {
     initialize_cb.Run(DECODER_ERROR_NOT_SUPPORTED);
@@ -212,6 +209,7 @@ void FFmpegVideoDecoder::Stop(const base::Closure& closure) {
     base::ResetAndReturn(&read_cb_).Run(kOk, NULL);
 
   ReleaseFFmpegResources();
+  decoded_frames_.clear();
   state_ = kUninitialized;
 }
 
@@ -470,6 +468,7 @@ bool FFmpegVideoDecoder::ConfigureDecoder() {
 
   // Release existing decoder resources if necessary.
   ReleaseFFmpegResources();
+  decoded_frames_.clear();
 
   // Initialize AVCodecContext structure.
   codec_context_ = avcodec_alloc_context3(NULL);

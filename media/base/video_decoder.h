@@ -7,8 +7,8 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
-#include "media/base/pipeline_status.h"
 #include "media/base/media_export.h"
+#include "media/base/pipeline_status.h"
 #include "ui/gfx/size.h"
 
 namespace media {
@@ -31,9 +31,17 @@ class MEDIA_EXPORT VideoDecoder {
   // Initializes a VideoDecoder with the given DemuxerStream, executing the
   // |status_cb| upon completion.
   // |statistics_cb| is used to update the global pipeline statistics.
+  //
   // Note:
-  // 1) No VideoDecoder calls should be made before |status_cb| is executed.
-  // 2) DemuxerStream should not be accessed after the VideoDecoder is stopped.
+  // 1) The VideoDecoder will be reinitialized if it was initialized before.
+  //    Upon reinitialization, all internal buffered frames will be dropped.
+  // 2) This method should not be called during any pending read, reset or stop.
+  // 3) No VideoDecoder calls except for Stop() should be made before
+  //    |status_cb| is executed.
+  // 4) DemuxerStream should not be accessed after the VideoDecoder is stopped.
+  //
+  // TODO(xhwang): Make all VideoDecoder implementations reinitializable.
+  // See http://crbug.com/233608
   virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;

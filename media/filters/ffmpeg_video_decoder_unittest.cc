@@ -73,13 +73,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
     InitializeWithConfig(config_);
   }
 
-  void InitializeWithEncryptedConfig() {
-    config_.Initialize(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-                       kCodedSize, kVisibleRect, kNaturalSize,
-                       NULL, 0, true, true);
-    InitializeWithConfig(config_);
-  }
-
   void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
                                      PipelineStatus status) {
     demuxer_->set_video_decoder_config(config);
@@ -92,6 +85,14 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   void InitializeWithConfig(const VideoDecoderConfig& config) {
     InitializeWithConfigAndStatus(config, PIPELINE_OK);
+  }
+
+  void Reinitialize() {
+    gfx::Size new_coded_size(640, 480);
+    VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
+                              kVideoFormat, new_coded_size, kVisibleRect,
+                              kNaturalSize, NULL, 0, false);
+    InitializeWithConfig(config);
   }
 
   void Reset() {
@@ -299,6 +300,34 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_AspectRatioDenominatorTooLarge) {
                             kCodedSize, kVisibleRect, natural_size,
                             NULL, 0, false);
   InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+}
+
+TEST_F(FFmpegVideoDecoderTest, Reinitialize_Normal) {
+  Initialize();
+  Reinitialize();
+}
+
+TEST_F(FFmpegVideoDecoderTest, Reinitialize_Failure) {
+  Initialize();
+
+  VideoDecoderConfig config(kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN,
+                            kVideoFormat,
+                            kCodedSize, kVisibleRect, kNaturalSize,
+                            NULL, 0, false);
+  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+}
+
+TEST_F(FFmpegVideoDecoderTest, Reinitialize_AfterDecodeFrame) {
+  Initialize();
+  EnterDecodingState();
+  Reinitialize();
+}
+
+TEST_F(FFmpegVideoDecoderTest, Reinitialize_AfterReset) {
+  Initialize();
+  EnterDecodingState();
+  Reset();
+  Reinitialize();
 }
 
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_Normal) {
