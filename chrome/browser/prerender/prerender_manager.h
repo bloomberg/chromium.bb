@@ -19,14 +19,19 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/time.h"
 #include "base/timer.h"
+#include "chrome/browser/predictors/logged_in_predictor_table.h"
 #include "chrome/browser/prerender/prerender_config.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_final_status.h"
 #include "chrome/browser/prerender/prerender_origin.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "net/cookies/cookie_monster.h"
 
 class Profile;
+struct ChromeCookieDetails;
 
 namespace base {
 class DictionaryValue;
@@ -40,8 +45,8 @@ namespace gfx {
 class Size;
 }
 
-namespace predictors {
-class LoggedInPredictorTable;
+namespace net {
+class URLRequestContextGetter;
 }
 
 #if defined(COMPILER_GCC)
@@ -72,6 +77,7 @@ class PrerenderTracker;
 // indicated otherwise.
 class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
                          public base::NonThreadSafe,
+                         public content::NotificationObserver,
                          public ProfileKeyedService {
  public:
   // NOTE: New values need to be appended, since they are used in histograms.
@@ -94,6 +100,8 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
     CLEAR_PRERENDER_HISTORY = 0x1 << 1,
     CLEAR_MAX = 0x1 << 2
   };
+
+  typedef predictors::LoggedInPredictorTable::LoggedInStateMap LoggedInStateMap;
 
   // ID indicating that no experiment is active.
   static const uint8 kNoExperiment = 0;
@@ -256,6 +264,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       PrerenderContents::MatchCompleteStatus mc_status,
       FinalStatus final_status) const;
 
+  // content::NotificationObserver
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
   const Config& config() const { return config_; }
   Config& mutable_config() { return config_; }
 
@@ -268,6 +281,17 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // provided URL.
   void RecordNavigation(const GURL& url);
 
+  // Updates the LoggedInPredictor state to reflect that a login has likely
+  // on the URL provided.
+  void RecordLikelyLoginOnURL(const GURL& url);
+
+  // Checks if the LoggedInPredictor shows that the user is likely logged on
+  // to the site for the URL provided.
+  void CheckIfLikelyLoggedInOnURL(const GURL& url,
+                                  bool* lookup_result,
+                                  bool* database_was_present,
+                                  const base::Closure& result_cb);
+
   Profile* profile() const { return profile_; }
 
   // Classes which will be tested in prerender unit browser tests should use
@@ -275,8 +299,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // mock advancing/retarding time.
   virtual base::Time GetCurrentTime() const;
   virtual base::TimeTicks GetCurrentTimeTicks() const;
-
-  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_predictor_table();
 
  protected:
   class PrerenderData : public base::SupportsWeakPtr<PrerenderData> {
@@ -505,6 +527,11 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   // Must be called on the UI thread.
   bool IsEnabled() const;
 
+  void CookieChanged(ChromeCookieDetails* details);
+  void CookieChangedAnyCookiesLeftLookupResult(const std::string& domain_key,
+                                               bool cookies_exist);
+  void LoggedInPredictorDataReceived(scoped_ptr<LoggedInStateMap> new_map);
+
   // The configuration.
   Config config_;
 
@@ -566,9 +593,6 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
 
   std::list<content::WebContents*> old_web_contents_list_;
 
-  // Cancels pending tasks on deletion.
-  base::WeakPtrFactory<PrerenderManager> weak_factory_;
-
   ScopedVector<OnCloseWebContentsDeleter> on_close_web_contents_deleters_;
 
   scoped_ptr<PrerenderHistory> prerender_history_;
@@ -580,6 +604,16 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
   scoped_ptr<PrerenderLocalPredictor> local_predictor_;
 
   scoped_refptr<predictors::LoggedInPredictorTable> logged_in_predictor_table_;
+
+  // Here, we keep the logged in predictor state, but potentially a superset
+  // of its actual (database-backed) state, since we do not incorporate
+  // browser data deletion. We do not use this for actual lookups, but only
+  // to query cookie data for domains we know there was a login before.
+  // This is required to avoid a large number of cookie lookups on bulk
+  // deletion of cookies.
+  scoped_ptr<LoggedInStateMap> logged_in_state_;
+
+  content::NotificationRegistrar notification_registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(PrerenderManager);
 };
