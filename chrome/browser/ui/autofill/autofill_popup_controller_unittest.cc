@@ -269,7 +269,28 @@ TEST_F(AutofillPopupControllerUnitTest, RemoveLine) {
 
   // Remove the last entry. The popup should then be hidden since there are
   // no Autofill entries left.
+  EXPECT_CALL(*autofill_popup_controller_, Hide());
   autofill_popup_controller_->SetSelectedLine(0);
+  EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
+}
+
+TEST_F(AutofillPopupControllerUnitTest, RemoveOnlyLine) {
+  // Set up the popup.
+  std::vector<string16> names(1, string16());
+  std::vector<int> autofill_ids;
+  autofill_ids.push_back(1);
+  autofill_popup_controller_->Show(names, names, names, autofill_ids);
+
+  // Generate a popup.
+  autofill::GenerateTestAutofillPopup(external_delegate_.get());
+
+  // Select the only line.
+  autofill_popup_controller_->SetSelectedLine(0);
+
+  // Remove the only line. There should be no row invalidation and the popup
+  // should then be hidden since there are no Autofill entries left.
+  EXPECT_CALL(*autofill_popup_controller_, Hide());
+  EXPECT_CALL(*autofill_popup_controller_, InvalidateRow(_)).Times(0);
   EXPECT_TRUE(autofill_popup_controller_->RemoveSelectedLine());
 }
 

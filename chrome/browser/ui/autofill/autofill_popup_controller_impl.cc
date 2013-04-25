@@ -334,7 +334,8 @@ void AutofillPopupControllerImpl::SetSelectedLine(int selected_line) {
   if (selected_line_ == selected_line)
     return;
 
-  if (selected_line_ != kNoSelection)
+  if (selected_line_ != kNoSelection &&
+      static_cast<size_t>(selected_line_) < identifiers_.size())
     InvalidateRow(selected_line_);
 
   if (selected_line != kNoSelection)
@@ -464,6 +465,8 @@ void AutofillPopupControllerImpl::ShowView() {
 }
 
 void AutofillPopupControllerImpl::InvalidateRow(size_t row) {
+  DCHECK(0 <= row);
+  DCHECK(row < identifiers_.size());
   view_->InvalidateRow(row);
 }
 
