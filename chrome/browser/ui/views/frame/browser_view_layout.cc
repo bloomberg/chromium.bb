@@ -286,24 +286,6 @@ int BrowserViewLayout::NonClientHitTest(
 // BrowserViewLayout, views::LayoutManager implementation:
 
 void BrowserViewLayout::Layout(views::View* host) {
-  // Showing Instant extended suggestions causes us to temporarily hide any
-  // visible bookmark bar and infobars.  In turn, this hiding would normally
-  // cause the content below the suggestions to shift upwards, which looks
-  // surprising (since from the user's perspective, we're "covering" rather than
-  // "removing" the bookmark bar/infobars).  To prevent this, we save off the
-  // content origin here, then once we finish laying things out, force the
-  // contents to continue to display from that origin.  If suggestions
-  // completely obscure the tab's contents, there's no need to modify the
-  // content origin.
-  views::WebView* contents = browser_view_->contents_web_view_;
-  int overlay_height = contents_container_->overlay_height();
-  gfx::Point old_contents_origin;
-  if (overlay_height > 0 && !contents_container_->IsOverlayFullHeight()) {
-    old_contents_origin = contents->bounds().origin();
-    views::View::ConvertPointToTarget(contents->parent(), browser_view_,
-                                      &old_contents_origin);
-  }
-
   vertical_layout_rect_ = browser_view_->GetLocalBounds();
   int top = LayoutTabStripRegion();
   if (browser_view_->IsTabStripVisible()) {
@@ -336,26 +318,6 @@ void BrowserViewLayout::Layout(views::View* host) {
       contents_container_->SetOverlayTopMargin(GetTopMarginForOverlayContent());
   if (needs_layout)
     contents_container_->Layout();
-
-  // Now set the contents to display at their previous origin if we just hid the
-  // bookmark and/or infobars.
-  if (active_top_margin == 0 && !old_contents_origin.IsOrigin()) {
-    // Retrieve the overlay height again since it may have changed in layouts
-    // triggered in LayoutTabContents().
-    overlay_height = contents_container_->overlay_height();
-    // Get the new origin of contents.
-    gfx::Point new_contents_origin(contents->bounds().origin());
-    views::View::ConvertPointToTarget(contents->parent(), browser_view_,
-                                      &new_contents_origin);
-    active_top_margin = old_contents_origin.y() - new_contents_origin.y();
-    // Special case: While normally the suggestions appear to "cover" any
-    // bookmark/infobars, if the suggestions are very short, they might not
-    // fully cover that gap, and leaving the contents at their original height
-    // would leave an odd-looking blank space.  In this case, we allow the
-    // contents to go ahead and shift upward.
-    if (active_top_margin > 0 && active_top_margin < overlay_height)
-      contents_container_->SetActiveTopMargin(active_top_margin);
-  }
 
   // This must be done _after_ we lay out the WebContents since this
   // code calls back into us to find the bounding box the find bar
