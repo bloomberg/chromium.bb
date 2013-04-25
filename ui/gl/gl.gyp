@@ -48,11 +48,18 @@
         'android/surface_texture_bridge.h',
         'android/surface_texture_listener.cc',
         'android/surface_texture_listener.h',
+        'async_pixel_transfer_delegate.cc',
         'async_pixel_transfer_delegate.h',
+        'async_pixel_transfer_delegate_android.cc',
         'async_pixel_transfer_delegate_idle.cc',
         'async_pixel_transfer_delegate_idle.h',
+        'async_pixel_transfer_delegate_linux.cc',
+        'async_pixel_transfer_delegate_mac.cc',
         'async_pixel_transfer_delegate_stub.cc',
         'async_pixel_transfer_delegate_stub.h',
+        'async_pixel_transfer_delegate_sync.cc',
+        'async_pixel_transfer_delegate_sync.h',
+        'async_pixel_transfer_delegate_win.cc',
         'gl_bindings.h',
         'gl_bindings_skia_in_process.cc',
         'gl_bindings_skia_in_process.h',
@@ -183,6 +190,8 @@
       'conditions': [
         ['OS != "mac"', {
           'sources': [
+            'async_pixel_transfer_delegate_egl.cc',
+            'async_pixel_transfer_delegate_egl.h',
             'egl_util.cc',
             'egl_util.h',
             'gl_context_egl.cc',
@@ -265,8 +274,6 @@
             'gl_jni_headers',
           ],
           'sources': [
-            'async_pixel_transfer_delegate_android.cc',
-            'async_pixel_transfer_delegate_android.h',
             'gl_image_egl.cc',
             'gl_image_egl.h',
           ],

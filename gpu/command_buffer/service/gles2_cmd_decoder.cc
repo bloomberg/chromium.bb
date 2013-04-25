@@ -2546,8 +2546,8 @@ bool GLES2DecoderImpl::Initialize(
     context_->SetSafeToForceGpuSwitch();
 
   // Create a delegate to perform async pixel transfers.
-  async_pixel_transfer_delegate_ =
-      gfx::AsyncPixelTransferDelegate::Create(context.get());
+  async_pixel_transfer_delegate_.reset(
+      gfx::AsyncPixelTransferDelegate::Create(context.get()));
 
   return true;
 }
@@ -10278,9 +10278,10 @@ error::Error GLES2DecoderImpl::HandleAsyncTexImage2DCHROMIUM(
   // is set up lazily when the transfer completes.
   DCHECK(!texture->GetAsyncTransferState());
   texture->SetAsyncTransferState(
-      async_pixel_transfer_delegate_->
-          CreatePixelTransferState(texture->service_id(),
-                                   tex_params));
+      make_scoped_ptr(
+          async_pixel_transfer_delegate_->CreatePixelTransferState(
+              texture->service_id(),
+              tex_params)));
   texture->SetImmutable(true);
 
   async_pixel_transfer_delegate_->AsyncTexImage2D(
@@ -10374,9 +10375,10 @@ error::Error GLES2DecoderImpl::HandleAsyncTexSubImage2DCHROMIUM(
     // Set up the async state if needed, and make the texture
     // immutable so the async state stays valid.
     texture->SetAsyncTransferState(
-        async_pixel_transfer_delegate_->
-            CreatePixelTransferState(texture->service_id(),
-                                     define_params));
+        make_scoped_ptr(
+            async_pixel_transfer_delegate_->CreatePixelTransferState(
+                texture->service_id(),
+                define_params)));
     texture->SetImmutable(true);
   }
 

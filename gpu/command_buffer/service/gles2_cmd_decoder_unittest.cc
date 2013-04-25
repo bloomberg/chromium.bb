@@ -8134,7 +8134,6 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   Texture* texture = GetTexture(client_texture_id_);
 
   // Set a mock Async delegate
-  // Async state is returned as a scoped_ptr, but we keep a raw copy.
   StrictMock<gfx::MockAsyncPixelTransferDelegate>* delegate =
       new StrictMock<gfx::MockAsyncPixelTransferDelegate>;
   decoder_->SetAsyncPixelTransferDelegate(delegate);
@@ -8158,7 +8157,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   // AsyncTexImage2D
   {
     // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId, _))
+    EXPECT_CALL(*delegate, CreatePixelTransferState(kServiceTextureId, _))
         .WillOnce(Return(
             state = new StrictMock<gfx::MockAsyncPixelTransferState>))
         .RetiresOnSaturation();
@@ -8208,7 +8207,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
   texture->SetImmutable(false);
   {
     // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId, _))
+    EXPECT_CALL(*delegate, CreatePixelTransferState(kServiceTextureId, _))
         .WillOnce(Return(
             state = new StrictMock<gfx::MockAsyncPixelTransferState>))
         .RetiresOnSaturation();
@@ -8262,7 +8261,7 @@ TEST_F(GLES2DecoderManualInitTest, AsyncPixelTransfers) {
     texture->SetAsyncTransferState(scoped_ptr<gfx::AsyncPixelTransferState>());
     texture->SetImmutable(false);
     // Create transfer state since it doesn't exist.
-    EXPECT_CALL(*delegate, CreateRawPixelTransferState(kServiceTextureId, _))
+    EXPECT_CALL(*delegate, CreatePixelTransferState(kServiceTextureId, _))
         .WillOnce(Return(
             state = new StrictMock<gfx::MockAsyncPixelTransferState>))
         .RetiresOnSaturation();

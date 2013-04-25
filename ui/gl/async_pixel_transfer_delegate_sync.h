@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_STUB_H_
-#define UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_STUB_H_
+#ifndef UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_SYNC_H_
+#define UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_SYNC_H_
 
 #include "ui/gl/async_pixel_transfer_delegate.h"
 
 namespace gfx {
 
-class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
+// Class which handles async pixel transfers synchronously.
+class AsyncPixelTransferDelegateSync : public AsyncPixelTransferDelegate {
  public:
-  AsyncPixelTransferDelegateStub();
-  virtual ~AsyncPixelTransferDelegateStub();
+  AsyncPixelTransferDelegateSync();
+  virtual ~AsyncPixelTransferDelegateSync();
 
   // Implement AsyncPixelTransferDelegate:
   virtual AsyncPixelTransferState* CreatePixelTransferState(
@@ -39,9 +40,12 @@ class AsyncPixelTransferDelegateStub : public AsyncPixelTransferDelegate {
   virtual bool NeedsProcessMorePendingTransfers() OVERRIDE;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateStub);
+  int texture_upload_count_;
+  base::TimeDelta total_texture_upload_time_;
+
+  DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegateSync);
 };
 
 }  // namespace gfx
 
-#endif  // UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_STUB_H_
+#endif  // UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_SYNC_H_

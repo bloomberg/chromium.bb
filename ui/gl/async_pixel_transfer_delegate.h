@@ -1,16 +1,15 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GL_ASYNC_TASK_DELEGATE_H_
-#define UI_GL_ASYNC_TASK_DELEGATE_H_
+#ifndef UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
+#define UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
 
 #include "base/basictypes.h"
-#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time.h"
-#include "build/build_config.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_export.h"
 
@@ -55,14 +54,14 @@ struct AsyncMemoryParams {
 class GL_EXPORT AsyncPixelTransferState :
     public base::SupportsWeakPtr<AsyncPixelTransferState> {
  public:
-  virtual ~AsyncPixelTransferState() {}
+  virtual ~AsyncPixelTransferState();
 
   // Returns true if there is a transfer in progress.
   virtual bool TransferIsInProgress() = 0;
 
  protected:
   friend class base::RefCounted<AsyncPixelTransferState>;
-  AsyncPixelTransferState() {}
+  AsyncPixelTransferState();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferState);
@@ -72,17 +71,13 @@ class GL_EXPORT AsyncPixelTransferDelegate {
  public:
   typedef base::Callback<void(const AsyncMemoryParams&)> CompletionCallback;
 
-  static scoped_ptr<AsyncPixelTransferDelegate>
-      Create(gfx::GLContext* context);
-  virtual ~AsyncPixelTransferDelegate() {}
+  static AsyncPixelTransferDelegate* Create(gfx::GLContext* context);
 
-  // This wouldn't work with MOCK_METHOD, so it routes through
-  // a virtual protected version which returns a raw pointer.
-  scoped_ptr<AsyncPixelTransferState>
-      CreatePixelTransferState(GLuint tex_id,
-          const AsyncTexImage2DParams& define_params) {
-    return make_scoped_ptr(CreateRawPixelTransferState(tex_id, define_params));
-  }
+  virtual ~AsyncPixelTransferDelegate();
+
+  virtual AsyncPixelTransferState* CreatePixelTransferState(
+      GLuint texture_id,
+      const AsyncTexImage2DParams& define_params) = 0;
 
   // Returns true iff a texture was bound to texture-unit zero.
   virtual bool BindCompletedAsyncTransfers() = 0;
@@ -123,11 +118,7 @@ class GL_EXPORT AsyncPixelTransferDelegate {
   virtual bool NeedsProcessMorePendingTransfers() = 0;
 
  protected:
-  AsyncPixelTransferDelegate() {}
-  // For testing, as returning scoped_ptr wouldn't work with MOCK_METHOD.
-  virtual AsyncPixelTransferState*
-      CreateRawPixelTransferState(GLuint tex_id,
-          const AsyncTexImage2DParams& define_params) = 0;
+  AsyncPixelTransferDelegate();
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AsyncPixelTransferDelegate);
@@ -135,5 +126,5 @@ class GL_EXPORT AsyncPixelTransferDelegate {
 
 }  // namespace gfx
 
-#endif  // UI_GL_ASYNC_TASK_DELEGATE_H_
+#endif  // UI_GL_ASYNC_PIXEL_TRANSFER_DELEGATE_H_
 

@@ -8,14 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/lazy_instance.h"
 #include "base/memory/shared_memory.h"
-#include "base/message_loop.h"
-#include "base/process_util.h"
-#include "build/build_config.h"
-#include "ui/gl/gl_bindings.h"
-#include "ui/gl/gl_context.h"
-#include "ui/gl/gl_surface.h"
 #include "ui/gl/safe_shared_memory_pool.h"
-#include "ui/gl/scoped_make_current.h"
 
 using base::SharedMemory;
 using base::SharedMemoryHandle;
@@ -42,34 +35,18 @@ SafeSharedMemoryPool* safe_shared_memory_pool() {
 
 static uint64 g_next_pixel_transfer_state_id = 1;
 
-} // namespace
-
-#if !defined(OS_ANDROID)
-scoped_ptr<AsyncPixelTransferDelegate>
-    AsyncPixelTransferDelegate::Create(gfx::GLContext* context) {
-  return AsyncPixelTransferDelegateIdle::Create(context);
-}
-#endif
-
-scoped_ptr<AsyncPixelTransferDelegate>
-      AsyncPixelTransferDelegateIdle::Create(gfx::GLContext* context) {
-  return make_scoped_ptr(
-      static_cast<AsyncPixelTransferDelegate*>(
-          new AsyncPixelTransferDelegateIdle()));
-}
-
-class AsyncPixelTransferStateIdle : public AsyncPixelTransferState {
+class AsyncPixelTransferStateImpl : public AsyncPixelTransferState {
  public:
   typedef base::Callback<void(GLuint)> TransferCallback;
 
-  explicit AsyncPixelTransferStateIdle(GLuint texture_id)
+  explicit AsyncPixelTransferStateImpl(GLuint texture_id)
       : id_(g_next_pixel_transfer_state_id++),
         texture_id_(texture_id),
         transfer_in_progress_(false) {
   }
-  virtual ~AsyncPixelTransferStateIdle() {}
+  virtual ~AsyncPixelTransferStateImpl() {}
 
-  // Overridden from gfx::AsyncPixelTransferState:
+  // Implement AsyncPixelTransferState:
   virtual bool TransferIsInProgress() OVERRIDE {
     return transfer_in_progress_;
   }
@@ -93,6 +70,8 @@ class AsyncPixelTransferStateIdle : public AsyncPixelTransferState {
   bool transfer_in_progress_;
 };
 
+}  // namespace
+
 AsyncPixelTransferDelegateIdle::Task::Task(
     uint64 transfer_id, const base::Closure& task)
     : transfer_id(transfer_id),
@@ -105,14 +84,12 @@ AsyncPixelTransferDelegateIdle::AsyncPixelTransferDelegateIdle()
     : texture_upload_count_(0) {
 }
 
-AsyncPixelTransferDelegateIdle::~AsyncPixelTransferDelegateIdle() {
-}
+AsyncPixelTransferDelegateIdle::~AsyncPixelTransferDelegateIdle() {}
 
-AsyncPixelTransferState*
-    AsyncPixelTransferDelegateIdle::CreateRawPixelTransferState(
-        GLuint texture_id,
-        const AsyncTexImage2DParams& define_params) {
-  return new AsyncPixelTransferStateIdle(texture_id);
+AsyncPixelTransferState* AsyncPixelTransferDelegateIdle::
+    CreatePixelTransferState(GLuint texture_id,
+                             const AsyncTexImage2DParams& define_params) {
+  return new AsyncPixelTransferStateImpl(texture_id);
 }
 
 bool AsyncPixelTransferDelegateIdle::BindCompletedAsyncTransfers() {
@@ -146,8 +123,8 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
     const AsyncTexImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params,
     const base::Closure& bind_callback) {
-  AsyncPixelTransferStateIdle* state =
-      static_cast<AsyncPixelTransferStateIdle*>(transfer_state);
+  AsyncPixelTransferStateImpl* state =
+      static_cast<AsyncPixelTransferStateImpl*>(transfer_state);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
@@ -157,7 +134,7 @@ void AsyncPixelTransferDelegateIdle::AsyncTexImage2D(
   tasks_.push_back(
       Task(state->id(),
            base::Bind(
-               &AsyncPixelTransferStateIdle::PerformTransfer,
+               &AsyncPixelTransferStateImpl::PerformTransfer,
                base::AsWeakPtr(state),
                base::Bind(
                    &AsyncPixelTransferDelegateIdle::PerformAsyncTexImage2D,
@@ -177,8 +154,8 @@ void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
     AsyncPixelTransferState* transfer_state,
     const AsyncTexSubImage2DParams& tex_params,
     const AsyncMemoryParams& mem_params) {
-  AsyncPixelTransferStateIdle* state =
-      static_cast<AsyncPixelTransferStateIdle*>(transfer_state);
+  AsyncPixelTransferStateImpl* state =
+      static_cast<AsyncPixelTransferStateImpl*>(transfer_state);
   DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D), tex_params.target);
   DCHECK(mem_params.shared_memory);
   DCHECK_LE(mem_params.shm_data_offset + mem_params.shm_data_size,
@@ -188,7 +165,7 @@ void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
   tasks_.push_back(
       Task(state->id(),
            base::Bind(
-               &AsyncPixelTransferStateIdle::PerformTransfer,
+               &AsyncPixelTransferStateImpl::PerformTransfer,
                base::AsWeakPtr(state),
                base::Bind(
                    &AsyncPixelTransferDelegateIdle::PerformAsyncTexSubImage2D,
@@ -205,8 +182,8 @@ void AsyncPixelTransferDelegateIdle::AsyncTexSubImage2D(
 
 void AsyncPixelTransferDelegateIdle::WaitForTransferCompletion(
     AsyncPixelTransferState* transfer_state) {
-  AsyncPixelTransferStateIdle* state =
-      static_cast<AsyncPixelTransferStateIdle*>(transfer_state);
+  AsyncPixelTransferStateImpl* state =
+      static_cast<AsyncPixelTransferStateImpl*>(transfer_state);
   DCHECK(state);
 
   for (std::list<Task>::iterator iter = tasks_.begin();

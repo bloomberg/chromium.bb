@@ -30,7 +30,7 @@ class MockAsyncPixelTransferDelegate : public gfx::AsyncPixelTransferDelegate {
   virtual ~MockAsyncPixelTransferDelegate();
 
   // Implement AsyncPixelTransferDelegate.
-  MOCK_METHOD2(CreateRawPixelTransferState,
+  MOCK_METHOD2(CreatePixelTransferState,
       gfx::AsyncPixelTransferState*(
           GLuint service_id, const AsyncTexImage2DParams& define_params));
   MOCK_METHOD0(BindCompletedAsyncTransfers, bool());
