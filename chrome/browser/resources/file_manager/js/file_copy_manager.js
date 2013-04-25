@@ -524,7 +524,8 @@ FileCopyManager.prototype.paste = function(clipboard, targetPath,
                   onPathError);
   };
 
-  if (clipboard.sourceDir) {
+  if (clipboard.sourceDir &&
+      !PathUtil.isSpecialSearchRoot(clipboard.sourceDir)) {
     this.root_.getDirectory(clipboard.sourceDir,
                             {create: false},
                             onSourceEntryFound,
