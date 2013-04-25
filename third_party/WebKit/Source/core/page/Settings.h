@@ -139,10 +139,6 @@ namespace WebCore {
         void setUserStyleSheetLocation(const KURL&);
         const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
 
-        // FIXME: Remove these, PageCache is dead.
-        void setUsesPageCache(bool) { }
-        bool usesPageCache() const { return false; }
-        
         void setFontRenderingMode(FontRenderingMode mode);
         FontRenderingMode fontRenderingMode() const;
 

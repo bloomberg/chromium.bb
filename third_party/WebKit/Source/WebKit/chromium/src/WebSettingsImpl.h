@@ -123,7 +123,6 @@ public:
     virtual void setNeedsSiteSpecificQuirks(bool);
     virtual void setOfflineWebApplicationCacheEnabled(bool);
     virtual void setOpenGLMultisamplingEnabled(bool);
-    virtual void setPageCacheSupportsPlugins(bool);
     virtual void setPasswordEchoDurationInSeconds(double);
     virtual void setPasswordEchoEnabled(bool);
     virtual void setPerTilePaintingEnabled(bool);
@@ -161,7 +160,6 @@ public:
     virtual void setUnsafePluginPastingEnabled(bool);
     virtual void setUserStyleSheetLocation(const WebURL&);
     virtual void setUsesEncodingDetector(bool);
-    virtual void setUsesPageCache(bool);
     virtual void setUseWideViewport(bool);
     virtual void setValidationMessageTimerMagnification(int);
     virtual void setViewportEnabled(bool);

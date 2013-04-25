@@ -107,11 +107,6 @@ void HistoryController::restoreScrollPositionAndViewState()
     if (!m_currentItem)
         return;
 
-    // FIXME: There is some scrolling related work that needs to happen whenever a page goes into the
-    // page cache and similar work that needs to occur when it comes out. This is where we do the work
-    // that needs to happen when we exit, and the work that needs to happen when we enter is in
-    // Document::setIsInPageCache(bool). It would be nice if there was more symmetry in these spots.
-    // https://bugs.webkit.org/show_bug.cgi?id=98698
     if (FrameView* view = m_frame->view()) {
         Page* page = m_frame->page();
         if (page && page->mainFrame() == m_frame) {
