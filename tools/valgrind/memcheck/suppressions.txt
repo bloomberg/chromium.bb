@@ -6073,10 +6073,7 @@
    bug_163924
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN24JSONAsynchronousUnpacker6CreateEP32JSONAsynchronousUnpackerDelegate
-   fun:_ZN18WebResourceService18OnURLFetchCompleteEPKN3net10URLFetcherE
-   fun:_ZN3net14URLFetcherCore29InformDelegateFetchIsCompleteEv
-   fun:_ZN3net14URLFetcherCore21OnCompletedURLRequestEN4base9TimeDeltaE
+   fun:_ZN28JSONAsynchronousUnpackerImpl22StartProcessOnIOThreadEN7content13BrowserThread2IDERKSs
 }
 {
    bug_164176
