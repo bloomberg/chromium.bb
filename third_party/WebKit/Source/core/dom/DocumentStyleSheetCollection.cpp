@@ -247,8 +247,8 @@ void DocumentStyleSheetCollection::addStyleSheetCandidateNode(Node* node, bool c
     do {
         --it;
         Node* n = *it;
-        unsigned short position = n->compareDocumentPosition(node);
-        if (position == Node::DOCUMENT_POSITION_FOLLOWING) {
+        unsigned short position = n->compareDocumentPositionInternal(node, Node::TreatShadowTreesAsComposed);
+        if (position & Node::DOCUMENT_POSITION_FOLLOWING) {
             m_styleSheetCandidateNodes.insertBefore(followingNode, node);
             return;
         }
