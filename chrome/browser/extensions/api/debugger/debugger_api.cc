@@ -313,9 +313,11 @@ ExtensionDevToolsClientHost::ExtensionDevToolsClientHost(
 
   if (infobar_delegate_) {
     infobar_delegate_->AttachClientHost(this);
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
-                   content::Source<InfoBarService>(infobar_delegate_->owner()));
+    registrar_.Add(
+        this, chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
+        content::Source<InfoBarService>(InfoBarService::FromWebContents(
+            WebContents::FromRenderViewHost(
+                agent_host_->GetRenderViewHost()))));
   }
 }
 
@@ -326,8 +328,10 @@ ExtensionDevToolsClientHost::~ExtensionDevToolsClientHost() {
 
   if (infobar_delegate_) {
     infobar_delegate_->DiscardClientHost();
-    if (infobar_delegate_->owner())
-      infobar_delegate_->owner()->RemoveInfoBar(infobar_delegate_);
+    InfoBarService* infobar_service = InfoBarService::FromWebContents(
+        WebContents::FromRenderViewHost(agent_host_->GetRenderViewHost()));
+    if (infobar_service)
+      infobar_service->RemoveInfoBar(infobar_delegate_);
   }
   AttachedClientHosts::GetInstance()->Remove(this);
 }
