@@ -1144,8 +1144,7 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHostResolverInfo(
       // Append all of the resolved addresses.
       ListValue* address_list = new ListValue();
       for (size_t i = 0; i < entry.addrlist.size(); ++i) {
-        address_list->Append(
-            Value::CreateStringValue(entry.addrlist[i].ToStringWithoutPort()));
+        address_list->AppendString(entry.addrlist[i].ToStringWithoutPort());
       }
       entry_dict->Set("addresses", address_list);
     }
@@ -1402,14 +1401,11 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetSpdyStatus(
                        net::HttpStreamFactory::force_spdy_always()));
 
   // The next_protos may not be specified for certain configurations of SPDY.
-  Value* next_protos_value;
+  std::string next_protos_string;
   if (net::HttpStreamFactory::has_next_protos()) {
-    next_protos_value = Value::CreateStringValue(
-        JoinString(net::HttpStreamFactory::next_protos(), ','));
-  } else {
-    next_protos_value = Value::CreateStringValue(std::string());
+    next_protos_string = JoinString(net::HttpStreamFactory::next_protos(), ',');
   }
-  status_dict->Set("next_protos", next_protos_value);
+  status_dict->SetString("next_protos", next_protos_string);
 
   SendJavascriptCommand("receivedSpdyStatus", status_dict);
 }
