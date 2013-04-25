@@ -1169,4 +1169,27 @@ TEST_F(PolicyLoaderWinTest, AppliedPolicyUNCPath) {
   EXPECT_TRUE(MatchesRegistrySentinel());
 }
 
+TEST_F(PolicyLoaderWinTest, LoadExtensionPolicyAlternativeSpelling) {
+  base::FilePath gpo_dir(
+      test_data_dir_.AppendASCII("extension_alternative_spelling"));
+  GROUP_POLICY_OBJECT gpo;
+  InitGPO(&gpo, 0, gpo_dir, NULL, NULL);
+  gpo_list_ = &gpo;
+  gpo_list_status_ = ERROR_SUCCESS;
+
+  PolicyBundle expected;
+  base::DictionaryValue expected_a;
+  expected_a.SetInteger("policy 1", 1);
+  expected_a.SetInteger("policy 2", 3);
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                               "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"))
+      .LoadFrom(&expected_a, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  base::DictionaryValue expected_b;
+  expected_b.SetInteger("policy 1", 2);
+  expected.Get(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                               "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"))
+      .LoadFrom(&expected_b, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_MACHINE);
+  EXPECT_TRUE(Matches(expected));
+}
+
 }  // namespace policy

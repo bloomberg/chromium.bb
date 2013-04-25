@@ -688,6 +688,9 @@ void PolicyLoaderWin::Load3rdPartyPolicy(
     PolicyDomain domain;
   } k3rdPartyDomains[] = {
     { "extensions", POLICY_DOMAIN_EXTENSIONS },
+    // Support a common misspelling. The correct spelling is first, so it takes
+    // precedence in case of collisions.
+    { "Extensions", POLICY_DOMAIN_EXTENSIONS },
   };
 
   // Policy level and corresponding path.
