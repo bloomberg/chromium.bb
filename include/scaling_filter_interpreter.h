@@ -66,6 +66,7 @@ class ScalingFilterInterpreter : public FilterInterpreter {
   void ScaleTouchpadHardwareState(HardwareState* hwstate);
   void ConsumeGesture(const Gesture& gs);
   void FilterLowPressure(HardwareState* hwstate);
+  void FilterZeroArea(HardwareState* hwstate);
 
   GestureInterpreterDeviceClass devclass_;
 

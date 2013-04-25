@@ -71,6 +71,22 @@ void ScalingFilterInterpreter::FilterLowPressure(HardwareState* hwstate) {
   hwstate->touch_cnt = touch_cnt;
 }
 
+void ScalingFilterInterpreter::FilterZeroArea(HardwareState* hwstate) {
+  unsigned short finger_cnt = hwstate->finger_cnt;
+  unsigned short touch_cnt = hwstate->touch_cnt;
+  for (short i = finger_cnt - 1 ; i >= 0; i--) {
+    if (hwstate->fingers[i].pressure == 0.0) {
+      if (i != finger_cnt - 1)
+        hwstate->fingers[i] = hwstate->fingers[finger_cnt - 1];
+      finger_cnt--;
+      if (touch_cnt > 0)
+        touch_cnt--;
+    }
+  }
+  hwstate->finger_cnt = finger_cnt;
+  hwstate->touch_cnt = touch_cnt;
+}
+
 void ScalingFilterInterpreter::ScaleHardwareState(HardwareState* hwstate) {
   if (devclass_ == GESTURES_DEVCLASS_TOUCHPAD ||
       devclass_ == GESTURES_DEVCLASS_TOUCHSCREEN) {
@@ -158,6 +174,10 @@ void ScalingFilterInterpreter::ScaleTouchpadHardwareState(
       else
         hwstate->fingers[i].pressure = 0;
     }
+  }
+
+  if (!surface_area_from_pressure_.val_) {
+    FilterZeroArea(hwstate);
   }
 }
 

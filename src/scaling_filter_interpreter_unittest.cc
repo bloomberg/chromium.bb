@@ -8,6 +8,7 @@
 #include <utility>
 
 #include <base/logging.h>
+#include <base/memory/scoped_ptr.h>
 #include <gtest/gtest.h>
 
 #include "gestures/include/gestures.h"
@@ -280,6 +281,8 @@ static void RunTouchMajorAndMinorTest(
 
   float orientation, touch_major, touch_minor, pressure;
 
+  scoped_array<bool> has_zero_area(new bool[n_fs]);
+
   for (size_t i = 0; i < n_fs; i++) {
     bool no_orientation = hwprops->orientation_maximum == 0;
     float cos_2, sin_2, touch_major_bias, touch_minor_bias;
@@ -316,13 +319,26 @@ static void RunTouchMajorAndMinorTest(
     else
       pressure = 0;
 
-    base_interpreter->expected_orientation_.push_back(
-        vector<float>(1, orientation));
-    base_interpreter->expected_touch_major_.push_back(
-        vector<float>(1, touch_major));
-    base_interpreter->expected_touch_minor_.push_back(
-        vector<float>(1, touch_minor));
-    base_interpreter->expected_pressures_.push_back(pressure);
+    has_zero_area[i] = pressure == 0.0;
+
+    if (has_zero_area[i]) {
+      base_interpreter->expected_orientation_.push_back(
+          vector<float>(0));
+      base_interpreter->expected_touch_major_.push_back(
+          vector<float>(0));
+      base_interpreter->expected_touch_minor_.push_back(
+          vector<float>(0));
+      base_interpreter->expected_finger_cnt_.push_back(0);
+      base_interpreter->expected_touch_cnt_.push_back(0);
+    } else {
+      base_interpreter->expected_orientation_.push_back(
+          vector<float>(1, orientation));
+      base_interpreter->expected_touch_major_.push_back(
+          vector<float>(1, touch_major));
+      base_interpreter->expected_touch_minor_.push_back(
+          vector<float>(1, touch_minor));
+      base_interpreter->expected_pressures_.push_back(pressure);
+    }
   }
 
   base_interpreter->expected_hwprops_ = *expected_hwprops;
@@ -333,8 +349,13 @@ static void RunTouchMajorAndMinorTest(
     HardwareState hs;
     memset(&hs, 0x0, sizeof(hs));
     hs.timestamp = (i + 1) * 1000;
-    hs.finger_cnt = 1;
-    hs.touch_cnt = 1;
+    if (has_zero_area[i]) {
+      hs.finger_cnt = 0;
+      hs.touch_cnt = 0;
+    } else {
+      hs.finger_cnt = 1;
+      hs.touch_cnt = 1;
+    }
     hs.fingers = fs + i;
     interpreter->SyncInterpret(&hs, NULL);
   }
