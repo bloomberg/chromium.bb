@@ -229,12 +229,9 @@ void IndexedDBDispatcherHost::OnIDBFactoryGetDatabaseNames(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  WebSecurityOrigin origin(
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
-
   Context()->GetIDBFactory()->getDatabaseNames(
       new IndexedDBCallbacks<WebVector<WebString> >(this, params.ipc_thread_id,
-      params.ipc_callbacks_id), origin, NULL,
+      params.ipc_callbacks_id), params.database_identifier,
       webkit_base::FilePathToWebString(indexed_db_path));
 }
 
@@ -243,9 +240,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  GURL origin_url = DatabaseUtil::GetOriginFromIdentifier(params.origin);
-  WebSecurityOrigin origin(
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin));
+  GURL origin_url =
+      DatabaseUtil::GetOriginFromIdentifier(params.database_identifier);
 
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::WEBKIT_DEPRECATED));
 
@@ -264,7 +260,8 @@ void IndexedDBDispatcherHost::OnIDBFactoryOpen(
                                      origin_url),
       new IndexedDBDatabaseCallbacks(this, params.ipc_thread_id,
                                      params.ipc_database_callbacks_id),
-      origin, NULL, webkit_base::FilePathToWebString(indexed_db_path));
+      params.database_identifier,
+      webkit_base::FilePathToWebString(indexed_db_path));
 }
 
 void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
@@ -277,7 +274,7 @@ void IndexedDBDispatcherHost::OnIDBFactoryDeleteDatabase(
       new IndexedDBCallbacks<WebData>(this,
                                       params.ipc_thread_id,
                                       params.ipc_callbacks_id),
-      WebSecurityOrigin::createFromDatabaseIdentifier(params.origin), NULL,
+      params.database_identifier,
       webkit_base::FilePathToWebString(indexed_db_path));
 }
 

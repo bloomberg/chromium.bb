@@ -242,35 +242,10 @@ void IndexedDBDispatcher::RequestIDBCursorDelete(
 void IndexedDBDispatcher::RequestIDBFactoryOpen(
     const string16& name,
     int64 version,
-    WebIDBCallbacks* callbacks_ptr,
-    WebIDBDatabaseCallbacks* database_callbacks_ptr,
-    const string16& origin,
-    WebFrame* web_frame) {
-  ResetCursorPrefetchCaches();
-  scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
-  scoped_ptr<WebIDBDatabaseCallbacks>
-      database_callbacks(database_callbacks_ptr);
-
-  IndexedDBHostMsg_FactoryOpen_Params params;
-  params.ipc_thread_id = CurrentWorkerId();
-  params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
-  params.ipc_database_callbacks_id = pending_database_callbacks_.Add(
-      database_callbacks.release());
-  params.origin = origin;
-  params.name = name;
-  params.transaction_id = 0;
-  params.version = version;
-  Send(new IndexedDBHostMsg_FactoryOpen(params));
-}
-
-void IndexedDBDispatcher::RequestIDBFactoryOpen(
-    const string16& name,
-    int64 version,
     int64 transaction_id,
     WebIDBCallbacks* callbacks_ptr,
     WebIDBDatabaseCallbacks* database_callbacks_ptr,
-    const string16& origin,
-    WebFrame* web_frame) {
+    const string16& database_identifier) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
   scoped_ptr<WebIDBDatabaseCallbacks>
@@ -281,7 +256,7 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
   params.ipc_database_callbacks_id = pending_database_callbacks_.Add(
       database_callbacks.release());
-  params.origin = origin;
+  params.database_identifier = database_identifier;
   params.name = name;
   params.transaction_id = transaction_id;
   params.version = version;
@@ -290,30 +265,28 @@ void IndexedDBDispatcher::RequestIDBFactoryOpen(
 
 void IndexedDBDispatcher::RequestIDBFactoryGetDatabaseNames(
     WebIDBCallbacks* callbacks_ptr,
-    const string16& origin,
-    WebFrame* web_frame) {
+    const string16& database_identifier) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryGetDatabaseNames_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
-  params.origin = origin;
+  params.database_identifier = database_identifier;
   Send(new IndexedDBHostMsg_FactoryGetDatabaseNames(params));
 }
 
 void IndexedDBDispatcher::RequestIDBFactoryDeleteDatabase(
     const string16& name,
     WebIDBCallbacks* callbacks_ptr,
-    const string16& origin,
-    WebFrame* web_frame) {
+    const string16& database_identifier) {
   ResetCursorPrefetchCaches();
   scoped_ptr<WebIDBCallbacks> callbacks(callbacks_ptr);
 
   IndexedDBHostMsg_FactoryDeleteDatabase_Params params;
   params.ipc_thread_id = CurrentWorkerId();
   params.ipc_callbacks_id = pending_callbacks_.Add(callbacks.release());
-  params.origin = origin;
+  params.database_identifier = database_identifier;
   params.name = name;
   Send(new IndexedDBHostMsg_FactoryDeleteDatabase(params));
 }

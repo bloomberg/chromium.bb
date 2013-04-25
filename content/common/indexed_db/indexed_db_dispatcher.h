@@ -63,16 +63,7 @@ class CONTENT_EXPORT IndexedDBDispatcher
 
   void RequestIDBFactoryGetDatabaseNames(
       WebKit::WebIDBCallbacks* callbacks,
-      const string16& origin,
-      WebKit::WebFrame* web_frame);
-
-  void RequestIDBFactoryOpen(
-      const string16& name,
-      int64 version,
-      WebKit::WebIDBCallbacks* callbacks,
-      WebKit::WebIDBDatabaseCallbacks* database_callbacks,
-      const string16& origin,
-      WebKit::WebFrame* web_frame);
+      const string16& database_identifier);
 
   void RequestIDBFactoryOpen(
       const string16& name,
@@ -80,14 +71,12 @@ class CONTENT_EXPORT IndexedDBDispatcher
       int64 transaction_id,
       WebKit::WebIDBCallbacks* callbacks,
       WebKit::WebIDBDatabaseCallbacks* database_callbacks,
-      const string16& origin,
-      WebKit::WebFrame* web_frame);
+      const string16& database_identifier);
 
   void RequestIDBFactoryDeleteDatabase(
       const string16& name,
       WebKit::WebIDBCallbacks* callbacks,
-      const string16& origin,
-      WebKit::WebFrame* web_frame);
+      const string16& database_identifier);
 
   void RequestIDBCursorAdvance(
       unsigned long count,

@@ -23,10 +23,9 @@ TestWebIDBFactory::~TestWebIDBFactory() {
 
 void TestWebIDBFactory::getDatabaseNames(
     WebKit::WebIDBCallbacks* callbacks,
-    const WebKit::WebSecurityOrigin& origin,
-    WebKit::WebFrame* frame,
+    const WebKit::WebString& database_identifier,
     const WebKit::WebString& data_dir) {
-  GetFactory()->getDatabaseNames(callbacks, origin, frame,
+  GetFactory()->getDatabaseNames(callbacks, database_identifier,
                                  data_dir.isEmpty() ? GetDataDir() : data_dir);
 }
 
@@ -36,20 +35,19 @@ void TestWebIDBFactory::open(
     long long transaction_id,
     WebKit::WebIDBCallbacks* callbacks,
     WebKit::WebIDBDatabaseCallbacks* database_callbacks,
-    const WebKit::WebSecurityOrigin& origin,
-    WebKit::WebFrame* frame,
+    const WebKit::WebString& database_identifier,
     const WebKit::WebString& data_dir) {
   GetFactory()->open(name, version, transaction_id, callbacks,
-                     database_callbacks, origin, frame,
+                     database_callbacks, database_identifier,
                      data_dir.isEmpty() ? GetDataDir() : data_dir);
 }
 
-void TestWebIDBFactory::deleteDatabase(const WebKit::WebString& name,
-                                       WebKit::WebIDBCallbacks* callbacks,
-                                       const WebKit::WebSecurityOrigin& origin,
-                                       WebKit::WebFrame* frame,
-                                       const WebKit::WebString& data_dir) {
-  GetFactory()->deleteDatabase(name, callbacks, origin, frame,
+void TestWebIDBFactory::deleteDatabase(
+    const WebKit::WebString& name,
+    WebKit::WebIDBCallbacks* callbacks,
+    const WebKit::WebString& database_identifier,
+    const WebKit::WebString& data_dir) {
+  GetFactory()->deleteDatabase(name, callbacks, database_identifier,
                                data_dir.isEmpty() ? GetDataDir() : data_dir);
 }
 

@@ -12,7 +12,6 @@ using WebKit::WebFrame;
 using WebKit::WebIDBCallbacks;
 using WebKit::WebIDBDatabase;
 using WebKit::WebIDBDatabaseCallbacks;
-using WebKit::WebSecurityOrigin;
 using WebKit::WebString;
 
 namespace content {
@@ -25,13 +24,12 @@ RendererWebIDBFactoryImpl::~RendererWebIDBFactoryImpl() {
 
 void RendererWebIDBFactoryImpl::getDatabaseNames(
     WebIDBCallbacks* callbacks,
-    const WebSecurityOrigin& origin,
-    WebFrame* web_frame,
+    const WebString& database_identifier,
     const WebString& data_dir_unused) {
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryGetDatabaseNames(
-      callbacks, origin.databaseIdentifier(), web_frame);
+      callbacks, database_identifier);
 }
 
 void RendererWebIDBFactoryImpl::open(
@@ -40,8 +38,7 @@ void RendererWebIDBFactoryImpl::open(
     long long transaction_id,
     WebIDBCallbacks* callbacks,
     WebIDBDatabaseCallbacks* database_callbacks,
-    const WebSecurityOrigin& origin,
-    WebFrame* web_frame,
+    const WebString& database_identifier,
     const WebString& data_dir) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
@@ -49,22 +46,20 @@ void RendererWebIDBFactoryImpl::open(
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryOpen(
       name, version, transaction_id, callbacks, database_callbacks,
-      origin.databaseIdentifier(),
-      web_frame);
+      database_identifier);
 }
 
 void RendererWebIDBFactoryImpl::deleteDatabase(
     const WebString& name,
     WebIDBCallbacks* callbacks,
-    const WebSecurityOrigin& origin,
-    WebFrame* web_frame,
+    const WebString& database_identifier,
     const WebString& data_dir) {
   // Don't send the data_dir. We know what we want on the Browser side of
   // things.
   IndexedDBDispatcher* dispatcher =
       IndexedDBDispatcher::ThreadSpecificInstance();
   dispatcher->RequestIDBFactoryDeleteDatabase(
-      name, callbacks, origin.databaseIdentifier(), web_frame);
+      name, callbacks, database_identifier);
 }
 
 }  // namespace content

@@ -12,7 +12,6 @@
 
 namespace WebKit {
 class WebFrame;
-class WebSecurityOrigin;
 class WebString;
 }
 
@@ -26,8 +25,7 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
   // See WebIDBFactory.h for documentation on these functions.
   virtual void getDatabaseNames(
       WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebSecurityOrigin& origin,
-      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& database_identifier,
       const WebKit::WebString& data_dir);
   virtual void open(
       const WebKit::WebString& name,
@@ -35,14 +33,12 @@ class RendererWebIDBFactoryImpl : public WebKit::WebIDBFactory {
       long long transaction_id,
       WebKit::WebIDBCallbacks* callbacks,
       WebKit::WebIDBDatabaseCallbacks* databaseCallbacks,
-      const WebKit::WebSecurityOrigin& origin,
-      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& database_identifier,
       const WebKit::WebString& data_dir);
   virtual void deleteDatabase(
       const WebKit::WebString& name,
       WebKit::WebIDBCallbacks* callbacks,
-      const WebKit::WebSecurityOrigin& origin,
-      WebKit::WebFrame* web_frame,
+      const WebKit::WebString& database_identifier,
       const WebKit::WebString& data_dir);
 };
 

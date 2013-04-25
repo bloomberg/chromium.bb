@@ -18,22 +18,19 @@ class TestWebIDBFactory : public WebKit::WebIDBFactory {
   virtual ~TestWebIDBFactory();
 
   // WebIDBFactory methods:
-  virtual void getDatabaseNames(WebKit::WebIDBCallbacks* callbacks,
-                                const WebKit::WebSecurityOrigin& origin,
-                                WebKit::WebFrame* frame,
+  virtual void getDatabaseNames(WebKit::WebIDBCallbacks*,
+                                const WebKit::WebString& database_identifier,
                                 const WebKit::WebString& data_dir);
   virtual void open(const WebKit::WebString& name,
                     long long version,
                     long long transaction_id,
-                    WebKit::WebIDBCallbacks* callbacks,
-                    WebKit::WebIDBDatabaseCallbacks* database_callbacks,
-                    const WebKit::WebSecurityOrigin& origin,
-                    WebKit::WebFrame* frame,
+                    WebKit::WebIDBCallbacks*,
+                    WebKit::WebIDBDatabaseCallbacks*,
+                    const WebKit::WebString& database_identifier,
                     const WebKit::WebString& data_dir);
   virtual void deleteDatabase(const WebKit::WebString& name,
-                              WebKit::WebIDBCallbacks* callbacks,
-                              const WebKit::WebSecurityOrigin& origin,
-                              WebKit::WebFrame* frame,
+                              WebKit::WebIDBCallbacks*,
+                              const WebKit::WebString& database_identifier,
                               const WebKit::WebString& data_dir);
 
  private:
