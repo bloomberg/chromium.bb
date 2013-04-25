@@ -6,7 +6,6 @@
 
 """This module uprevs a given package's ebuild to the next revision."""
 
-import functools
 import optparse
 import os
 import sys
@@ -17,6 +16,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
 from chromite.lib import parallel
+
 
 # Commit message for uprevving Portage packages.
 _GIT_COMMIT_MESSAGE = 'Marking 9999 ebuild for %s as stable.'
@@ -39,6 +39,9 @@ def CleanStalePackages(boards, package_atoms):
     boards: Boards to clean the packages from.
     package_atoms: A list of package atoms to unmerge.
   """
+  if package_atoms:
+    cros_build_lib.Info('Cleaning up stale packages %s.' % package_atoms)
+
   # First unmerge all the packages for a board, then eclean it.
   # We need these two steps to run in order (unmerge/eclean),
   # but we can let all the boards run in parallel.
@@ -188,84 +191,6 @@ class GitBranch(object):
     return branch in branches.split()
 
 
-def RevWorkonEBuild(srcroot, manifest, revved_queue, ebuild):
-  """Rev a single workon ebuild.
-
-  Args:
-    srcroot: The root directory of the checkout.
-    manifest: A ManifestCheckout object.
-    revved_queue: The queue where (new_cpv, new_cp) should be placed. If the
-      ebuild is not revved, (None, None) will be put on the queue.
-    ebuild: The ebuild to rev.
-  """
-  try:
-    new_cpv = ebuild.RevWorkOnEBuild(srcroot, manifest)
-  except (OSError, IOError, SystemExit):
-    # TODO: RevWorkonEbuild shouldn't raise SystemExit.
-    cros_build_lib.Error('Cannot rev %s' % ebuild.package, exc_info=True)
-    raise
-  if new_cpv:
-    revved_queue.put(('=%s' % new_cpv, ebuild.package))
-
-
-def ProcessGitRepo(options, manifest, command, result_queue, git_repo, ebuilds):
-  """Process the specified git repo for cros_mark_as_stable.
-
-  Args:
-    options: The options object from main().
-    manifest: A ManifestCheckout object.
-    command: The command to process inside the git repo.
-    result_queue: The queue to put the results onto, if command == 'commit'.
-    git_repo: The git repo to process.
-    ebuilds: The ebuilds to rev, if command == 'commit'.
-  """
-  # Note we intentionally work from the non push tracking branch;
-  # everything built thus far has been against it (meaning, http mirrors),
-  # thus we should honor that.  During the actual push, the code switches
-  # to the correct urls, and does an appropriate rebasing.
-  tracking_branch = git.GetTrackingBranchViaManifest(
-      git_repo, manifest=manifest)[1]
-  if command == 'push':
-    PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch, options.dryrun,
-               cwd=git_repo)
-    return
-  assert command == 'commit'
-  existing_branch = git.GetCurrentBranch(git_repo)
-  work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
-                          cwd=git_repo)
-  work_branch.CreateBranch()
-  if not work_branch.Exists():
-    cros_build_lib.Die('Unable to create stabilizing branch in %s', git_repo)
-  # In the case of uprevving overlays that have patches applied to them,
-  # include the patched changes in the stabilizing branch.
-  if existing_branch:
-    cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
-                              print_cmd=False, cwd=git_repo)
-
-  revved, messages = [], []
-  with parallel.ManagedQueue() as revved_queue:
-    args = (options.srcroot, manifest, revved_queue)
-    task = functools.partial(RevWorkonEBuild, *args)
-    with parallel.BackgroundTaskRunner(task) as ebuild_queue:
-      for ebuild in ebuilds:
-        ebuild_queue.put((ebuild,))
-
-    for atom, package in parallel.AllItemsInQueue(revved_queue):
-      revved.append((atom, package))
-      messages.append(_GIT_COMMIT_MESSAGE % package)
-
-  if revved:
-    result_queue.put(revved)
-
-  # Regenerate caches if need be.  We do this all the time to
-  # catch when users make changes without updating cache files.
-  if portage_utilities.RegenCache(git_repo):
-    messages.append('Regenerating cache')
-
-  if messages:
-    portage_utilities.EBuild.CommitChange('\n\n'.join(messages), git_repo)
-
-
 def main(_argv):
   parser = optparse.OptionParser('cros_mark_as_stable OPTIONS packages')
   parser.add_option('--all', action='store_true',
@@ -316,29 +241,88 @@ def main(_argv):
   if command == 'commit':
     portage_utilities.BuildEBuildDictionary(overlays, options.all, package_list)
 
-  # Build a mapping of git repositories to ebuilds.
-  git_repo_map = {}
-  for overlay, ebuilds in overlays.items():
-    git_repo = git.FindGitCheckoutRoot(overlay)
-    git_repo_map.setdefault(git_repo, []).extend(ebuilds)
+  # Contains the array of packages we actually revved.
+  revved_packages = []
+  new_package_atoms = []
 
-  # Process all git repositories.
-  atoms, packages = [], []
-  with parallel.ManagedQueue() as result_queue:
-    args = (options, manifest, command, result_queue)
-    task = functools.partial(ProcessGitRepo, *args)
-    with parallel.BackgroundTaskRunner(task) as git_repo_queue:
-      for item in git_repo_map.iteritems():
-        git_repo_queue.put(item)
+  # Slight optimization hack: process the chromiumos overlay before any other
+  # cros-workon overlay first so we can do background cache generation in it.
+  # A perfect solution would walk all the overlays, figure out any dependencies
+  # between them (with layout.conf), and then process them in dependency order.
+  # However, this operation isn't slow enough to warrant that level of
+  # complexity, so we'll just special case the main overlay.
+  #
+  # Similarly, generate the cache in the portage-stable tree asap.  We know
+  # we won't have any cros-workon packages in there, so generating the cache
+  # is the only thing it'll be doing.  The chromiumos overlay instead might
+  # have revbumping to do before it can generate the cache.
+  keys = overlays.keys()
+  for overlay in ('/third_party/chromiumos-overlay',
+                  '/third_party/portage-stable'):
+    for k in keys:
+      if k.endswith(overlay):
+        keys.remove(k)
+        keys.insert(0, k)
+        break
 
-    # Retrieve and process all items.
-    for items in parallel.AllItemsInQueue(git_repo_queue):
-      for atom, package in items:
-        atoms.append(atom)
-        packages.append(package)
+  with parallel.BackgroundTaskRunner(portage_utilities.RegenCache) as queue:
+    for overlay in keys:
+      ebuilds = overlays[overlay]
+      if not os.path.isdir(overlay):
+        cros_build_lib.Warning("Skipping %s" % overlay)
+        continue
 
-  if options.drop_file:
-    osutils.WriteFile(options.drop_file, ' '.join(packages))
+      # Note we intentionally work from the non push tracking branch;
+      # everything built thus far has been against it (meaning, http mirrors),
+      # thus we should honor that.  During the actual push, the code switches
+      # to the correct urls, and does an appropriate rebasing.
+      tracking_branch = git.GetTrackingBranchViaManifest(
+          overlay, manifest=manifest)[1]
 
-  if cros_build_lib.IsInsideChroot() and atoms:
-    CleanStalePackages(options.boards.split(':'), atoms)
+      if command == 'push':
+        PushChange(constants.STABLE_EBUILD_BRANCH, tracking_branch,
+                   options.dryrun, cwd=overlay)
+      elif command == 'commit':
+        existing_branch = git.GetCurrentBranch(overlay)
+        work_branch = GitBranch(constants.STABLE_EBUILD_BRANCH, tracking_branch,
+                                cwd=overlay)
+        work_branch.CreateBranch()
+        if not work_branch.Exists():
+          cros_build_lib.Die('Unable to create stabilizing branch in %s' %
+                             overlay)
+
+        # In the case of uprevving overlays that have patches applied to them,
+        # include the patched changes in the stabilizing branch.
+        if existing_branch:
+          cros_build_lib.RunCommand(['git', 'rebase', existing_branch],
+                                    print_cmd=False, cwd=overlay)
+
+        messages = []
+        for ebuild in ebuilds:
+          if options.verbose:
+            cros_build_lib.Info('Working on %s', ebuild.package)
+          try:
+            new_package = ebuild.RevWorkOnEBuild(options.srcroot, manifest)
+            if new_package:
+              revved_packages.append(ebuild.package)
+              new_package_atoms.append('=%s' % new_package)
+              messages.append(_GIT_COMMIT_MESSAGE % ebuild.package)
+          except (OSError, IOError):
+            cros_build_lib.Warning('Cannot rev %s\n' % ebuild.package +
+                    'Note you will have to go into %s '
+                    'and reset the git repo yourself.' % overlay)
+            raise
+
+        if messages:
+          portage_utilities.EBuild.CommitChange('\n\n'.join(messages), overlay)
+
+        if cros_build_lib.IsInsideChroot():
+          # Regenerate caches if need be.  We do this all the time to
+          # catch when users make changes without updating cache files.
+          queue.put([overlay])
+
+  if command == 'commit':
+    if cros_build_lib.IsInsideChroot():
+      CleanStalePackages(options.boards.split(':'), new_package_atoms)
+    if options.drop_file:
+      osutils.WriteFile(options.drop_file, ' '.join(revved_packages))

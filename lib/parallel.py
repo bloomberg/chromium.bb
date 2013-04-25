@@ -551,33 +551,3 @@ def RunTasksInProcessPool(task, inputs, processes=None, onexit=None):
   with BackgroundTaskRunner(task, processes=processes, onexit=onexit) as queue:
     for x in inputs:
       queue.put(x)
-
-
-@contextlib.contextmanager
-def ManagedQueue():
-  """Create a queue that is managed by this process.
-
-  This helper function is useful in cases where a child process puts items into
-  a queue and we don't read the queue until after the child exits. Without a
-  managed queue, the child process will wait for all items to be read before
-  exiting, which may cause hangs. With a managed queue, the manager process
-  will read the items and hold on to them until the managed queue goes out of
-  scope and is cleaned up.
-  """
-  manager = multiprocessing.Manager()
-  # pylint: disable=E1101
-  yield manager.Queue()
-
-
-def AllItemsInQueue(queue):
-  """Fetch all items in a given queue.
-
-  This helper function is useful in cases where a queue has been filled and we
-  just want to grab all items in the queue before exiting.
-  """
-  while True:
-    try:
-      item = queue.get(block=False)
-    except Queue.Empty:
-      break
-    yield item
