@@ -284,13 +284,20 @@ NotifierSettingsView::NotifierSettingsView(
 
   std::vector<Notifier*> notifiers;
   delegate_->GetNotifierList(&notifiers);
+  views::View* first_view = NULL;
+  views::View* last_view = NULL;
   for (size_t i = 0; i < notifiers.size(); ++i) {
     NotifierButton* button = new NotifierButton(notifiers[i], this);
     EntryView* entry = new EntryView(button);
     entry->set_focusable(true);
     contents_view->AddChildView(entry);
     buttons_.insert(button);
+    if (i == 0)
+      first_view = entry;
+    last_view = entry;
   }
+  if (last_view)
+    last_view->SetNextFocusableView(first_view);
   scroller_->SetContents(contents_view);
 
   contents_view->SetBoundsRect(gfx::Rect(contents_view->GetPreferredSize()));
@@ -342,10 +349,6 @@ gfx::Size NotifierSettingsView::GetMinimumSize() {
 
 gfx::Size NotifierSettingsView::GetPreferredSize() {
   return GetMinimumSize();
-}
-
-void NotifierSettingsView::OnBlur() {
-  set_focusable(false);
 }
 
 bool NotifierSettingsView::OnKeyPressed(const ui::KeyEvent& event) {
