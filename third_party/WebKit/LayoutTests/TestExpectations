@@ -430,8 +430,6 @@ webkit.org/b/82894 [ Debug ] inspector/profiler/heap-snapshot-inspect-dom-wrappe
 webkit.org/b/60109 [ Win Linux Mac Release ] inspector/elements/edit-dom-actions.html [ Slow ]
 webkit.org/b/60109 [ Win Mac Debug ] inspector/elements/edit-dom-actions.html [ Skip ]
 
-webkit.org/b/90488 [ Mac Debug ] inspector/elements/edit-style-attribute.html [ Pass Timeout ]
-
 webkit.org/b/74654 http/tests/inspector/network/network-worker.html
 
 webkit.org/b/75186 [ Linux ] http/tests/inspector-enabled/dedicated-workers-list.html [ Skip ]
@@ -2863,8 +2861,6 @@ webkit.org/b/107953 inspector-protocol/debugger-terminate-dedicated-worker-while
 webkit.org/b/108286 virtual/softwarecompositing/geometry/fixed-position-composited-page-scale-down.html [ ImageOnlyFailure ]
 webkit.org/b/108286 virtual/softwarecompositing/geometry/fixed-position-iframe-composited-page-scale-down.html [ ImageOnlyFailure ]
 
-webkit.org/b/108789 [ Win Mac ] http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout ]
-
 webkit.org/b/108876 [ Linux ] media/track/track-cues-cuechange.html [ Slow ]
 webkit.org/b/108876 [ Linux ] media/track/track-cues-enter-exit.html [ Slow ]
 
@@ -3070,7 +3066,7 @@ crbug.com/233223 http/tests/history/redirect-js-location-href-0-seconds.html [ P
 crbug.com/233260 [ Win ] fast/preloader/script.html [ Failure ]
 
 crbug.com/233585 media/media-document-audio-repaint.html [ ImageOnlyFailure ]
-crbug.com/233700 [ Win Debug ] inspector/debugger/debugger-script-preprocessor.html [ Timeout ]
+crbug.com/233700 [ Debug ] inspector/debugger/debugger-script-preprocessor.html [ Pass Timeout Crash ]
 
 # These failing spatial navigation tests need closer inspection.
 crbug.com/233995 fast/spatial-navigation/snav-container-white-space.html [ Failure ]
@@ -3087,11 +3083,18 @@ crbug.com/234555 [ Debug ] fast/ruby/ruby-svg-crash.html [ Failure ]
 
 crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 
+crbug.com/234758 virtual/softwarecompositing/scrollbars/custom-composited-different-track-parts.html [ Pass ImageOnlyFailure ]
+crbug.com/234758 [ Debug ] fast/parser/nested-fragment-parser-crash.html [ Pass Timeout ]
+crbug.com/234758 [ Debug ] http/tests/workers/terminate-during-sync-operation.html [ Pass Timeout ]
+crbug.com/234758 fast/frames/seamless/seamless-nested-crash.html [ Pass Timeout Crash ]
+crbug.com/234758 [ Linux Debug ] inspector/elements/edit-dom-actions.html [ Pass Timeout Failure ]
+crbug.com/234758 [ Debug ] inspector/elements/edit-style-attribute.html [ Pass Timeout Crash ]
+crbug.com/234758 [ Debug ] storage/indexeddb/dont-wedge.html [ Pass Crash ]
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
 
-crbug.com/233588 [ Linux Win Mac ] inspector/styles/stylesheet-tracking.html [ Pass Failure ]
+crbug.com/234758 [ Debug ] inspector/styles/stylesheet-tracking.html [ Pass Timeout ]
 
 crbug.com/169374 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
 crbug.com/169374 compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
