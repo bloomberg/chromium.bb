@@ -68,7 +68,7 @@ class ChromotingHostTest : public testing::Test {
   }
 
   virtual void SetUp() OVERRIDE {
-    ui_task_runner_ = new AutoThreadTaskRunner(
+    task_runner_ = new AutoThreadTaskRunner(
         message_loop_.message_loop_proxy(),
         base::Bind(&ChromotingHostTest::QuitMainMessageLoop,
                    base::Unretained(this)));
@@ -84,16 +84,16 @@ class ChromotingHostTest : public testing::Test {
 
     session_manager_ = new protocol::MockSessionManager();
 
-    host_ = new ChromotingHost(
+    host_.reset(new ChromotingHost(
         &signal_strategy_,
         desktop_environment_factory_.get(),
         scoped_ptr<protocol::SessionManager>(session_manager_),
-        ui_task_runner_,  // Audio
-        ui_task_runner_,  // Input
-        ui_task_runner_,  // Video capture
-        ui_task_runner_,  // Video encode
-        ui_task_runner_,  // Network
-        ui_task_runner_); // UI
+        task_runner_,   // Audio
+        task_runner_,   // Input
+        task_runner_,   // Video capture
+        task_runner_,   // Video encode
+        task_runner_,   // Network
+        task_runner_)); // UI
     host_->AddStatusObserver(&host_status_observer_);
 
     xmpp_login_ = "host@domain";
@@ -183,41 +183,40 @@ class ChromotingHostTest : public testing::Test {
     protocol::ConnectionToClient* connection_ptr = connection.get();
     scoped_ptr<ClientSession> client(new ClientSession(
         host_.get(),
-        ui_task_runner_,  // Audio
-        ui_task_runner_,  // Input
-        ui_task_runner_,  // Video capture
-        ui_task_runner_,  // Video encode
-        ui_task_runner_,  // Network
-        ui_task_runner_,  // UI
+        task_runner_, // Audio
+        task_runner_, // Input
+        task_runner_, // Video capture
+        task_runner_, // Video encode
+        task_runner_, // Network
+        task_runner_, // UI
         connection.Pass(),
         desktop_environment_factory_.get(),
         base::TimeDelta()));
 
-    ClientSession* client_raw = client.get();
-    connection_ptr->set_host_stub(client_raw);
-
-    ui_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&ChromotingHostTest::AddClientToHost,
-                              host_, base::Passed(&client)));
+    connection_ptr->set_host_stub(client.get());
 
     if (authenticate) {
-      ui_task_runner_->PostTask(
-          FROM_HERE, base::Bind(&ClientSession::OnConnectionAuthenticated,
-                                base::Unretained(client_raw), connection_ptr));
+      task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&ClientSession::OnConnectionAuthenticated,
+                     base::Unretained(client.get()), connection_ptr));
       if (!reject) {
-        ui_task_runner_->PostTask(
+        task_runner_->PostTask(
             FROM_HERE,
             base::Bind(&ClientSession::OnConnectionChannelsConnected,
-                       base::Unretained(client_raw), connection_ptr));
+                       base::Unretained(client.get()), connection_ptr));
       }
     } else {
-      ui_task_runner_->PostTask(
+      task_runner_->PostTask(
           FROM_HERE, base::Bind(&ClientSession::OnConnectionClosed,
-                                base::Unretained(client_raw), connection_ptr,
+                                base::Unretained(client.get()), connection_ptr,
                                 protocol::AUTHENTICATION_FAILED));
     }
 
-    get_client(connection_index) = client_raw;
+    get_client(connection_index) = client.get();
+
+    // |host| is responsible for deleting |client| from now on.
+    host_->clients_.push_back(client.release());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -297,23 +296,16 @@ class ChromotingHostTest : public testing::Test {
     }
   }
 
-  static void AddClientToHost(scoped_refptr<ChromotingHost> host,
-                              scoped_ptr<ClientSession> client) {
-    // |host| is responsible for deleting |client| from now on.
-    host->clients_.push_back(client.release());
-  }
-
   void ShutdownHost() {
-    ui_task_runner_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&ChromotingHost::Shutdown, host_,
-                   base::Bind(&ChromotingHostTest::ReleaseUiTaskRunner,
-                              base::Unretained(this))));
+        base::Bind(&ChromotingHostTest::StopAndReleaseTaskRunner,
+                   base::Unretained(this)));
   }
 
-  void ReleaseUiTaskRunner() {
-    ui_task_runner_ = NULL;
-    host_ = NULL;
+  void StopAndReleaseTaskRunner() {
+    host_.reset();
+    task_runner_ = NULL;
     desktop_environment_factory_.reset();
   }
 
@@ -399,11 +391,11 @@ class ChromotingHostTest : public testing::Test {
 
  protected:
   MessageLoop message_loop_;
-  scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<AutoThreadTaskRunner> task_runner_;
   MockConnectionToClientEventHandler handler_;
   MockSignalStrategy signal_strategy_;
   scoped_ptr<MockDesktopEnvironmentFactory> desktop_environment_factory_;
-  scoped_refptr<ChromotingHost> host_;
+  scoped_ptr<ChromotingHost> host_;
   MockHostStatusObserver host_status_observer_;
   protocol::MockSessionManager* session_manager_;
   std::string xmpp_login_;

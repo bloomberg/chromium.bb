@@ -142,8 +142,13 @@ class HostNPScriptObject::It2MeImpl
                            const std::string& support_id,
                            const base::TimeDelta& lifetime);
 
-  // Called when ChromotingHost::Shutdown() has completed.
-  void OnShutdownFinished();
+  // Shuts down |host_| on the network thread and posts ShutdownOnUiThread()
+  // to shut down UI thread resources.
+  void ShutdownOnNetworkThread();
+
+  // Shuts down |desktop_environment_factory_| and |policy_watcher_| on
+  // the UI thread.
+  void ShutdownOnUiThread();
 
   // Called when initial policies are read, and when they change.
   void OnPolicyUpdate(scoped_ptr<base::DictionaryValue> policies);
@@ -168,7 +173,7 @@ class HostNPScriptObject::It2MeImpl
   scoped_ptr<DesktopEnvironmentFactory> desktop_environment_factory_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
-  scoped_refptr<ChromotingHost> host_;
+  scoped_ptr<ChromotingHost> host_;
   int failed_login_attempts_;
 
   scoped_ptr<policy_hack::PolicyWatcher> policy_watcher_;
@@ -254,13 +259,13 @@ void HostNPScriptObject::It2MeImpl::Disconnect() {
 
   switch (state_) {
     case kDisconnected:
-      OnShutdownFinished();
+      ShutdownOnNetworkThread();
       return;
 
     case kStarting:
       SetState(kDisconnecting);
       SetState(kDisconnected);
-      OnShutdownFinished();
+      ShutdownOnNetworkThread();
       return;
 
     case kDisconnecting:
@@ -270,18 +275,16 @@ void HostNPScriptObject::It2MeImpl::Disconnect() {
       SetState(kDisconnecting);
 
       if (!host_) {
-        OnShutdownFinished();
+        SetState(kDisconnected);
+        ShutdownOnNetworkThread();
         return;
       }
 
-      // ChromotingHost::Shutdown() may destroy SignalStrategy
-      // synchronously, but SignalStrategy::Listener handlers are not
-      // allowed to destroy SignalStrategy, so post task to call
-      // Shutdown() later.
+      // Deleting the host destroys SignalStrategy synchronously, but
+      // SignalStrategy::Listener handlers are not allowed to destroy
+      // SignalStrategy, so post task to destroy the host later.
       host_context_->network_task_runner()->PostTask(
-          FROM_HERE, base::Bind(
-              &ChromotingHost::Shutdown, host_,
-              base::Bind(&It2MeImpl::OnShutdownFinished, this)));
+          FROM_HERE, base::Bind(&It2MeImpl::ShutdownOnNetworkThread, this));
       return;
   }
 }
@@ -369,7 +372,7 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
   }
 
   // Create the host.
-  host_ = new ChromotingHost(
+  host_.reset(new ChromotingHost(
       signal_strategy_.get(),
       desktop_environment_factory_.get(),
       CreateHostSessionManager(network_settings,
@@ -379,7 +382,7 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
       host_context_->video_capture_task_runner(),
       host_context_->video_encode_task_runner(),
       host_context_->network_task_runner(),
-      host_context_->ui_task_runner());
+      host_context_->ui_task_runner()));
   host_->AddStatusObserver(this);
   log_to_server_.reset(
       new LogToServer(host_->AsWeakPtr(), ServerLogEntry::IT2ME,
@@ -404,14 +407,21 @@ void HostNPScriptObject::It2MeImpl::FinishConnect(
   return;
 }
 
-void HostNPScriptObject::It2MeImpl::OnShutdownFinished() {
-  if (!host_context_->ui_task_runner()->BelongsToCurrentThread()) {
-    host_context_->ui_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&It2MeImpl::OnShutdownFinished, this));
-    return;
+void HostNPScriptObject::It2MeImpl::ShutdownOnNetworkThread() {
+  DCHECK(host_context_->network_task_runner()->BelongsToCurrentThread());
+  DCHECK(state_ == kDisconnecting || state_ == kDisconnected);
+
+  if (state_ == kDisconnecting) {
+    host_.reset();
+    SetState(kDisconnected);
   }
 
-  // Note that OnShutdownFinished() may be called more than once.
+  host_context_->ui_task_runner()->PostTask(
+      FROM_HERE, base::Bind(&It2MeImpl::ShutdownOnUiThread, this));
+}
+
+void HostNPScriptObject::It2MeImpl::ShutdownOnUiThread() {
+  DCHECK(host_context_->ui_task_runner()->BelongsToCurrentThread());
 
   // Destroy the DesktopEnvironmentFactory, to free thread references.
   desktop_environment_factory_.reset();
@@ -486,11 +496,6 @@ void HostNPScriptObject::It2MeImpl::OnShutdown() {
   signal_strategy_.reset();
   host_event_logger_.reset();
   host_->RemoveStatusObserver(this);
-  host_ = NULL;
-
-  if (state_ != kDisconnected) {
-    SetState(kDisconnected);
-  }
 }
 
 void HostNPScriptObject::It2MeImpl::OnPolicyUpdate(
