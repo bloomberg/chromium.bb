@@ -545,7 +545,7 @@
     'appcache': ['michaeln@chromium.org'],
     'apps': ['tfarina@chromium.org', 'chromium-apps-reviews@chromium.org'],
     'aura': ['ben+watch@chromium.org', 'sadrul@chromium.org'],
-    'autofill': ['dhollowa+watch@chromium.org', 'isherman@chromium.org',
+    'autofill': ['isherman@chromium.org',
                  'dyu@chromium.org', 'abodenha@chromium.org',
                  'dbeam+watch-autofill@chromium.org',
                  'estade+watch@chromium.org', 'ahutter@chromium.org',
