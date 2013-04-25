@@ -13,3 +13,4 @@ button-test
 xwayland-test
 subsurface-client-protocol.h
 subsurface-protocol.c
+subsurface-test
