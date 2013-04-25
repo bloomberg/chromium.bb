@@ -24,20 +24,20 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
 
 #include "CSSFontSelector.h"
 #include "RenderBlock.h"
-#include "RenderSVGRoot.h"
-#include "RenderSVGText.h"
-#include "SVGInlineTextBox.h"
-#include "SVGRenderingContext.h"
-#include "SVGRootInlineBox.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGText.h"
+#include "core/rendering/svg/SVGInlineTextBox.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/rendering/svg/SVGRootInlineBox.h"
 
 namespace WebCore {
 

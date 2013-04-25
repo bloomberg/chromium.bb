@@ -20,7 +20,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTextLayoutEngineSpacing.h"
+#include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 
 #include "SVGLengthContext.h"
 #include "core/platform/graphics/Font.h"

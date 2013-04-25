@@ -81,9 +81,9 @@
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(SVG)
-#include "RenderSVGRoot.h"
 #include "SVGDocument.h"
 #include "SVGSVGElement.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 #endif
 
 #include "core/platform/chromium/TraceEvent.h"

@@ -25,14 +25,14 @@
 
 #include "Attribute.h"
 #include "NodeRenderingContext.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGText.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGTSpanElement.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/style/SVGRenderStyle.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGText.h"
 
 namespace WebCore {
 

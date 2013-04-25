@@ -25,23 +25,23 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGRenderSupport.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 
 #include "NodeRenderStyle.h"
 #include "RenderGeometryMap.h"
 #include "RenderLayer.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGResourceClipper.h"
-#include "RenderSVGResourceFilter.h"
-#include "RenderSVGResourceMarker.h"
-#include "RenderSVGResourceMasker.h"
-#include "RenderSVGRoot.h"
-#include "RenderSVGText.h"
-#include "RenderSVGViewportContainer.h"
-#include "SVGResources.h"
-#include "SVGResourcesCache.h"
 #include "SVGStyledElement.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/RenderSVGResourceMarker.h"
+#include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGText.h"
+#include "core/rendering/svg/RenderSVGViewportContainer.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

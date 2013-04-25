@@ -22,7 +22,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceRadialGradient.h"
+#include "core/rendering/svg/RenderSVGResourceRadialGradient.h"
 
 #include "RadialGradientAttributes.h"
 #include "SVGRadialGradientElement.h"

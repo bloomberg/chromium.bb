@@ -21,10 +21,10 @@
 #define RenderSVGResourceMarker_h
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceContainer.h"
 #include "SVGMarkerElement.h"
 #include "SVGStyledElement.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
 
 #include <wtf/HashSet.h>
 

@@ -21,11 +21,11 @@
 #define SVGTextLayoutEngine_h
 
 #if ENABLE(SVG)
-#include "SVGTextChunkBuilder.h"
-#include "SVGTextFragment.h"
-#include "SVGTextLayoutAttributes.h"
-#include "SVGTextMetrics.h"
 #include "core/platform/graphics/Path.h"
+#include "core/rendering/svg/SVGTextChunkBuilder.h"
+#include "core/rendering/svg/SVGTextFragment.h"
+#include "core/rendering/svg/SVGTextLayoutAttributes.h"
+#include "core/rendering/svg/SVGTextMetrics.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

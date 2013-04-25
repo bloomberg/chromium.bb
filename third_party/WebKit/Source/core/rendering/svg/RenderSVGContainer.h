@@ -25,7 +25,7 @@
 
 #if ENABLE(SVG)
 
-#include "RenderSVGModelObject.h"
+#include "core/rendering/svg/RenderSVGModelObject.h"
 
 namespace WebCore {
 

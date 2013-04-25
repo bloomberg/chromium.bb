@@ -51,19 +51,19 @@
 #include "RenderWidget.h"
 #include "StylePropertySet.h"
 #include <wtf/HexNumber.h>
+#include <wtf/unicode/CharacterNames.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>
-#include <wtf/unicode/CharacterNames.h>
 
 #if ENABLE(SVG)
-#include "RenderSVGContainer.h"
-#include "RenderSVGGradientStop.h"
-#include "RenderSVGImage.h"
-#include "RenderSVGInlineText.h"
-#include "RenderSVGPath.h"
-#include "RenderSVGRoot.h"
-#include "RenderSVGText.h"
-#include "SVGRenderTreeAsText.h"
+#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/rendering/svg/RenderSVGGradientStop.h"
+#include "core/rendering/svg/RenderSVGImage.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGText.h"
+#include "core/rendering/svg/SVGRenderTreeAsText.h"
 #endif
 
 

@@ -25,7 +25,6 @@
 #include "SVGFilterPrimitiveStandardAttributes.h"
 
 #include "Attribute.h"
-#include "RenderSVGResourceFilterPrimitive.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGLength.h"
@@ -33,6 +32,7 @@
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 
 namespace WebCore {
 

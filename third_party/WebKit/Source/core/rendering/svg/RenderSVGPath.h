@@ -27,7 +27,7 @@
 #define RenderSVGPath_h
 
 #if ENABLE(SVG)
-#include "RenderSVGShape.h"
+#include "core/rendering/svg/RenderSVGShape.h"
 
 namespace WebCore {
 

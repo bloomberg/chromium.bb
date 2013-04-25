@@ -76,7 +76,6 @@
       '../platform/graphics/skia',
       '../plugins',
       '../rendering',
-      '../rendering/svg',
       '../svg',
       '../svg/animation',
       '../svg/graphics',

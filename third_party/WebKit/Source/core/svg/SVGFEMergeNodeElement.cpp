@@ -25,11 +25,11 @@
 
 #include "Attribute.h"
 #include "RenderObject.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

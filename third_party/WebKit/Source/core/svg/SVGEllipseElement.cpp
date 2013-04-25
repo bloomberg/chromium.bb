@@ -24,13 +24,13 @@
 #include "SVGEllipseElement.h"
 
 #include "Attribute.h"
-#include "RenderSVGEllipse.h"
-#include "RenderSVGPath.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/rendering/svg/RenderSVGEllipse.h"
+#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

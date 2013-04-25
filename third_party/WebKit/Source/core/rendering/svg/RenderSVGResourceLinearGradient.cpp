@@ -21,7 +21,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceLinearGradient.h"
+#include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 
 #include "LinearGradientAttributes.h"
 #include "SVGLinearGradientElement.h"

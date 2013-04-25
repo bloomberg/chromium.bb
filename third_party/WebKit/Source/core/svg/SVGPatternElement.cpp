@@ -27,12 +27,9 @@
 #include "Attribute.h"
 #include "Document.h"
 #include "PatternAttributes.h"
-#include "RenderSVGContainer.h"
-#include "RenderSVGResourcePattern.h"
 #include "SVGElementInstance.h"
 #include "SVGFitToViewBox.h"
 #include "SVGNames.h"
-#include "SVGRenderSupport.h"
 #include "SVGSVGElement.h"
 #include "SVGStyledTransformableElement.h"
 #include "SVGTransformable.h"
@@ -40,6 +37,9 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/rendering/svg/RenderSVGResourcePattern.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
 

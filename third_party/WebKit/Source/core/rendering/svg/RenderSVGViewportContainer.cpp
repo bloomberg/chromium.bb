@@ -23,7 +23,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGViewportContainer.h"
+#include "core/rendering/svg/RenderSVGViewportContainer.h"
 
 #include "RenderView.h"
 #include "SVGElementInstance.h"

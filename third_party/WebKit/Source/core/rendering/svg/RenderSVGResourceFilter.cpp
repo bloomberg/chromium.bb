@@ -24,18 +24,15 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceFilter.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
 
 #include "ImageData.h"
 #include "Page.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGResourceFilterPrimitive.h"
 #include "SVGElement.h"
 #include "SVGFilter.h"
 #include "SVGFilterElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
-#include "SVGRenderingContext.h"
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
 #include "Settings.h"
@@ -49,6 +46,9 @@
 #include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/platform/graphics/filters/SourceGraphic.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

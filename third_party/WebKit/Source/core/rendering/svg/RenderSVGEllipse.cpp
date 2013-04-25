@@ -27,7 +27,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGEllipse.h"
+#include "core/rendering/svg/RenderSVGEllipse.h"
 
 #include "SVGCircleElement.h"
 #include "SVGEllipseElement.h"

@@ -21,9 +21,9 @@
 #define RenderSVGResourceSolidColor_h
 
 #if ENABLE(SVG)
-#include "RenderSVGResource.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

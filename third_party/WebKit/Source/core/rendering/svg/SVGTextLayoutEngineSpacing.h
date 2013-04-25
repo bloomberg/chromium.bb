@@ -21,7 +21,7 @@
 #define SVGTextLayoutEngineSpacing_h
 
 #if ENABLE(SVG)
-#include "SVGTextMetrics.h"
+#include "core/rendering/svg/SVGTextMetrics.h"
 
 namespace WebCore {
 

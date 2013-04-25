@@ -26,24 +26,24 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGImage.h"
+#include "core/rendering/svg/RenderSVGImage.h"
 
 #include "Attr.h"
 #include "LayoutRepainter.h"
 #include "PointerEventsHitRules.h"
 #include "RenderImageResource.h"
 #include "RenderLayer.h"
-#include "RenderSVGResourceContainer.h"
-#include "RenderSVGResourceFilter.h"
 #include "SVGImageElement.h"
 #include "SVGLength.h"
 #include "SVGPreserveAspectRatio.h"
-#include "SVGRenderingContext.h"
-#include "SVGResources.h"
-#include "SVGResourcesCache.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace WebCore {
 

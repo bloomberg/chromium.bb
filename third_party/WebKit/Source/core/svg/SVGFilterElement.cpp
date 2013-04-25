@@ -28,12 +28,12 @@
 
 #include "Attr.h"
 #include "NodeRenderingContext.h"
-#include "RenderSVGResourceFilter.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
 
 namespace WebCore {
 

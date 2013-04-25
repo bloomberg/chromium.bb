@@ -27,7 +27,7 @@
 #include "RenderReplaced.h"
 #include "core/platform/graphics/FloatRect.h"
 
-#include "SVGRenderSupport.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
 

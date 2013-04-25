@@ -22,7 +22,7 @@
 #define RenderSVGTextPath_h
 
 #if ENABLE(SVG)
-#include "RenderSVGInline.h"
+#include "core/rendering/svg/RenderSVGInline.h"
 
 namespace WebCore {
 

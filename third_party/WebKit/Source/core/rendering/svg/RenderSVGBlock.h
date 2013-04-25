@@ -22,7 +22,7 @@
 
 #if ENABLE(SVG)
 #include "RenderBlock.h"
-#include "SVGRenderSupport.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
 

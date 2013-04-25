@@ -51,8 +51,8 @@
 #endif
 
 #if ENABLE(SVG)
-#include "RenderSVGInlineText.h"
-#include "SVGRootInlineBox.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/SVGRootInlineBox.h"
 #endif
 
 using namespace std;

@@ -30,13 +30,13 @@
 #include "RenderTreeAsText.h"
 #include "SVGFilter.h"
 #include "SVGPreserveAspectRatio.h"
-#include "SVGRenderingContext.h"
 #include "SVGStyledElement.h"
 #include "SVGURIReference.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
 
 namespace WebCore {
 

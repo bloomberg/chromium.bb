@@ -24,17 +24,17 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGContainer.h"
+#include "core/rendering/svg/RenderSVGContainer.h"
 
 #include "LayoutRepainter.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGResourceFilter.h"
 #include "RenderView.h"
-#include "SVGRenderingContext.h"
-#include "SVGResources.h"
-#include "SVGResourcesCache.h"
 #include "SVGStyledElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace WebCore {
 

@@ -81,8 +81,8 @@
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceContainer.h"
-#include "SVGRenderSupport.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 #endif
 
 using namespace std;

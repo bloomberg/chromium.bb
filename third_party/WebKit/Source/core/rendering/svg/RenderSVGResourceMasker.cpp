@@ -20,13 +20,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceMasker.h"
+#include "core/rendering/svg/RenderSVGResourceMasker.h"
 
 #include "Element.h"
-#include "RenderSVGResource.h"
 #include "SVGElement.h"
 #include "SVGMaskElement.h"
-#include "SVGRenderingContext.h"
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
 #include "core/platform/graphics/FloatPoint.h"
@@ -36,6 +34,8 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
 
 #include <wtf/UnusedParam.h>
 #include <wtf/Vector.h>

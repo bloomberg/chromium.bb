@@ -25,19 +25,19 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGRenderingContext.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
 
 #include "Frame.h"
 #include "FrameView.h"
 #include "RenderLayer.h"
-#include "RenderSVGImage.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGResourceClipper.h"
-#include "RenderSVGResourceFilter.h"
-#include "RenderSVGResourceMasker.h"
-#include "SVGResources.h"
-#include "SVGResourcesCache.h"
 #include "core/rendering/style/BasicShapes.h"
+#include "core/rendering/svg/RenderSVGImage.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/RenderSVGResourceMasker.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 
 static int kMaxImageBufferSize = 4096;
 

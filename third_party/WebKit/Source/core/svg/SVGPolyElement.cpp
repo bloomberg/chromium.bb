@@ -25,13 +25,13 @@
 
 #include "Attribute.h"
 #include "Document.h"
-#include "RenderSVGPath.h"
-#include "RenderSVGResource.h"
 #include "SVGAnimatedPointList.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

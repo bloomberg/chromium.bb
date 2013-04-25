@@ -18,13 +18,9 @@
  */
 
 #include "config.h"
-#include "SVGResources.h"
+#include "core/rendering/svg/SVGResources.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceClipper.h"
-#include "RenderSVGResourceFilter.h"
-#include "RenderSVGResourceMarker.h"
-#include "RenderSVGResourceMasker.h"
 #include "SVGFilterElement.h"
 #include "SVGGradientElement.h"
 #include "SVGNames.h"
@@ -32,6 +28,10 @@
 #include "SVGPatternElement.h"
 #include "SVGURIReference.h"
 #include "core/rendering/style/SVGRenderStyle.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/RenderSVGResourceMarker.h"
+#include "core/rendering/svg/RenderSVGResourceMasker.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

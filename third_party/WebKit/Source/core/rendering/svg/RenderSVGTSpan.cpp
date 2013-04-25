@@ -23,7 +23,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGTSpan.h"
+#include "core/rendering/svg/RenderSVGTSpan.h"
 
 namespace WebCore {
 

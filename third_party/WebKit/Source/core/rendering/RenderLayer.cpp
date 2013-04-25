@@ -76,7 +76,6 @@
 #include "RenderLayerCompositor.h"
 #include "RenderMarquee.h"
 #include "RenderReplica.h"
-#include "RenderSVGResourceClipper.h"
 #include "RenderScrollbar.h"
 #include "RenderScrollbarPart.h"
 #include "RenderTheme.h"
@@ -107,6 +106,7 @@
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
 #include "core/platform/graphics/transforms/TranslateTransformOperation.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

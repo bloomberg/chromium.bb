@@ -20,11 +20,11 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTextLayoutAttributesBuilder.h"
+#include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
 
-#include "RenderSVGInlineText.h"
-#include "RenderSVGText.h"
 #include "SVGTextPositioningElement.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGText.h"
 
 namespace WebCore {
 

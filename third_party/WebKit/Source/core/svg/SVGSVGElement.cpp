@@ -37,10 +37,6 @@
 #include "NodeTraversal.h"
 #include "RenderObject.h"
 #include "RenderPart.h"
-#include "RenderSVGModelObject.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGRoot.h"
-#include "RenderSVGViewportContainer.h"
 #include "SMILTimeContainer.h"
 #include "SVGAngle.h"
 #include "SVGElementInstance.h"
@@ -57,6 +53,10 @@
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/svg/RenderSVGModelObject.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGViewportContainer.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

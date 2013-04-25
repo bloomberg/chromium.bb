@@ -24,7 +24,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 
 #include "Chrome.h"
 #include "ChromeClient.h"
@@ -33,20 +33,20 @@
 #include "LayoutRepainter.h"
 #include "Page.h"
 #include "RenderPart.h"
-#include "RenderSVGContainer.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGResourceContainer.h"
-#include "RenderSVGResourceFilter.h"
 #include "RenderView.h"
 #include "SVGLength.h"
-#include "SVGRenderingContext.h"
-#include "SVGResources.h"
-#include "SVGResourcesCache.h"
 #include "SVGSVGElement.h"
 #include "SVGStyledElement.h"
 #include "SVGViewSpec.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/svg/RenderSVGContainer.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/RenderSVGResourceFilter.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 
 using namespace std;
 

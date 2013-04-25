@@ -34,7 +34,7 @@
 #if ENABLE(SVG)
 
 #include "RenderObject.h"
-#include "SVGRenderSupport.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
 
 namespace WebCore {
 

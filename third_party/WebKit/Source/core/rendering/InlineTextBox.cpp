@@ -41,13 +41,13 @@
 #include "RenderRubyText.h"
 #include "RenderTheme.h"
 #include "RenderedDocumentMarker.h"
-#include "SVGTextRunRenderingContext.h"
 #include "Settings.h"
 #include "Text.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "break_lines.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/text/CString.h>
 
 using namespace std;

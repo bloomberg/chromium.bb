@@ -26,15 +26,15 @@
 
 #include "Attribute.h"
 #include "RenderObject.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGMPathElement.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
-#include "SVGPathData.h"
 #include "SVGPathElement.h"
 #include "SVGPathUtilities.h"
 #include "SVGTransformList.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/SVGPathData.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

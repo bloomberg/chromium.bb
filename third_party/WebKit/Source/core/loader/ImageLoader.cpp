@@ -41,7 +41,7 @@
 #include "WebCoreMemoryInstrumentation.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGImage.h"
+#include "core/rendering/svg/RenderSVGImage.h"
 #endif
 
 #if !ASSERT_DISABLED

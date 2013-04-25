@@ -23,21 +23,16 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceClipper.h"
+#include "core/rendering/svg/RenderSVGResourceClipper.h"
 
 #include "Frame.h"
 #include "FrameView.h"
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "RenderObject.h"
-#include "RenderSVGResource.h"
 #include "SVGClipPathElement.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
-#include "SVGRenderSupport.h"
-#include "SVGRenderingContext.h"
-#include "SVGResources.h"
-#include "SVGResourcesCache.h"
 #include "SVGStyledElement.h"
 #include "SVGStyledTransformableElement.h"
 #include "SVGUnitTypes.h"
@@ -48,6 +43,11 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

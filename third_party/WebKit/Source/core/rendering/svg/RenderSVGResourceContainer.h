@@ -21,8 +21,8 @@
 #define RenderSVGResourceContainer_h
 
 #if ENABLE(SVG)
-#include "RenderSVGHiddenContainer.h"
-#include "RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGHiddenContainer.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

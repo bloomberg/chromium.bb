@@ -56,7 +56,6 @@
 #include "RenderTextFragment.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
-#include "SVGTextRunRenderingContext.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "WebCoreMemoryInstrumentation.h"
@@ -65,6 +64,7 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/StdLibExtras.h>
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"

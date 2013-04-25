@@ -28,8 +28,8 @@
 #define RenderSVGEllipse_h
 
 #if ENABLE(SVG)
-#include "RenderSVGShape.h"
 #include "SVGStyledTransformableElement.h"
+#include "core/rendering/svg/RenderSVGShape.h"
 
 namespace WebCore {
 

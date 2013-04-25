@@ -29,12 +29,12 @@
 #include "ExceptionCode.h"
 #include "Frame.h"
 #include "RenderPart.h"
-#include "RenderSVGRoot.h"
-#include "RenderSVGViewportContainer.h"
 #include "RenderView.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
 #include "core/platform/graphics/FontMetrics.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/RenderSVGViewportContainer.h"
 
 namespace WebCore {
 

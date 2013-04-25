@@ -29,8 +29,8 @@
 #define RenderSVGRect_h
 
 #if ENABLE(SVG)
-#include "RenderSVGPath.h"
 #include "SVGRectElement.h"
+#include "core/rendering/svg/RenderSVGPath.h"
 
 namespace WebCore {
 

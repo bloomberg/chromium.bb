@@ -25,8 +25,8 @@
 
 #if ENABLE(SVG)
 #include "RootInlineBox.h"
-#include "SVGRenderSupport.h"
-#include "SVGTextLayoutEngine.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/rendering/svg/SVGTextLayoutEngine.h"
 
 namespace WebCore {
 

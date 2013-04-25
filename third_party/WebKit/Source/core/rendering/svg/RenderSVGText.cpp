@@ -27,22 +27,14 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGText.h"
+#include "core/rendering/svg/RenderSVGText.h"
 
 #include "HitTestRequest.h"
 #include "HitTestResult.h"
 #include "LayoutRepainter.h"
 #include "PointerEventsHitRules.h"
-#include "RenderSVGInlineText.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGRoot.h"
 #include "SVGLengthList.h"
-#include "SVGRenderSupport.h"
-#include "SVGResourcesCache.h"
-#include "SVGRootInlineBox.h"
 #include "SVGTextElement.h"
-#include "SVGTextLayoutAttributesBuilder.h"
-#include "SVGTextRunRenderingContext.h"
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
 #include "VisiblePosition.h"
@@ -52,6 +44,14 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
+#include "core/rendering/svg/SVGRenderSupport.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/rendering/svg/SVGRootInlineBox.h"
+#include "core/rendering/svg/SVGTextLayoutAttributesBuilder.h"
+#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 namespace WebCore {
 

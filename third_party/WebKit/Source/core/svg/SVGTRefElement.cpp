@@ -30,9 +30,6 @@
 #include "ExceptionCodePlaceholder.h"
 #include "MutationEvent.h"
 #include "NodeRenderingContext.h"
-#include "RenderSVGInline.h"
-#include "RenderSVGInlineText.h"
-#include "RenderSVGResource.h"
 #include "SVGDocument.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
@@ -41,6 +38,9 @@
 #include "UseCounter.h"
 #include "XLinkNames.h"
 #include "core/rendering/style/StyleInheritedData.h"
+#include "core/rendering/svg/RenderSVGInline.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

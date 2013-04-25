@@ -26,11 +26,11 @@
 #include "SVGAltGlyphElement.h"
 #include "SVGFontElement.h"
 #include "SVGNames.h"
-#include "SVGTextRunRenderingContext.h"
 #include "XMLNames.h"
 #include "core/platform/graphics/SVGGlyph.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
+#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>
 #include <wtf/unicode/Unicode.h>

@@ -38,15 +38,15 @@
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
-#include "RenderSVGInline.h"
-#include "RenderSVGText.h"
-#include "RenderSVGTransformableContainer.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGSMILElement.h"
 #include "XLinkNames.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "core/rendering/svg/RenderSVGInline.h"
+#include "core/rendering/svg/RenderSVGText.h"
+#include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
 namespace WebCore {
 

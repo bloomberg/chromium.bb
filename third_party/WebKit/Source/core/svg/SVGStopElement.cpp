@@ -25,11 +25,11 @@
 
 #include "Attribute.h"
 #include "Document.h"
-#include "RenderSVGGradientStop.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGGradientElement.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGGradientStop.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

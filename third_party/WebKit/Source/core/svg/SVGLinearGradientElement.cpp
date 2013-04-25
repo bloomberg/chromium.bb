@@ -29,7 +29,6 @@
 #include "Attribute.h"
 #include "Document.h"
 #include "LinearGradientAttributes.h"
-#include "RenderSVGResourceLinearGradient.h"
 #include "SVGElementInstance.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
@@ -37,6 +36,7 @@
 #include "SVGTransformList.h"
 #include "SVGUnitTypes.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/rendering/svg/RenderSVGResourceLinearGradient.h"
 
 namespace WebCore {
 

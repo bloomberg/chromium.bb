@@ -23,7 +23,7 @@
 
 #if ENABLE(SVG)
 #include "RadialGradientAttributes.h"
-#include "RenderSVGResourceGradient.h"
+#include "core/rendering/svg/RenderSVGResourceGradient.h"
 
 namespace WebCore {
 

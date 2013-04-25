@@ -24,12 +24,12 @@
 #include "SVGTextPositioningElement.h"
 
 #include "Attribute.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGText.h"
 #include "SVGElementInstance.h"
 #include "SVGLengthList.h"
 #include "SVGNames.h"
 #include "SVGNumberList.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGText.h"
 
 namespace WebCore {
 

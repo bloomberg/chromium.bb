@@ -25,10 +25,10 @@
 
 #include "Attribute.h"
 #include "NodeRenderingContext.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGTextPath.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGTextPath.h"
 
 namespace WebCore {
 

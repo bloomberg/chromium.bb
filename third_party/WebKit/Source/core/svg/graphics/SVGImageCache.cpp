@@ -25,11 +25,11 @@
 #include "CachedImage.h"
 #include "FrameView.h"
 #include "Page.h"
-#include "RenderSVGRoot.h"
 #include "SVGImage.h"
 #include "SVGImageForContainer.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 
 namespace WebCore {
 

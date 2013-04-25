@@ -18,7 +18,7 @@
  */
 
 #include "config.h"
-#include "SVGPathData.h"
+#include "core/rendering/svg/SVGPathData.h"
 
 #if ENABLE(SVG)
 #include "SVGCircleElement.h"

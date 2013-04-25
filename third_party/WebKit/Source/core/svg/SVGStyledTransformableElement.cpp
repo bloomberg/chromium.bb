@@ -24,12 +24,12 @@
 #include "SVGStyledTransformableElement.h"
 
 #include "Attribute.h"
-#include "RenderSVGPath.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGPathData.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/SVGPathData.h"
 
 namespace WebCore {
 

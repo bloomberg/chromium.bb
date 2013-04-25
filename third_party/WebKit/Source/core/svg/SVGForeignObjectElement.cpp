@@ -26,11 +26,11 @@
 #include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "NodeRenderingContext.h"
-#include "RenderSVGForeignObject.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGForeignObject.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

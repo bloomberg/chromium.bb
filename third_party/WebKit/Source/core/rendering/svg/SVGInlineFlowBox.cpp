@@ -21,15 +21,15 @@
  */
 
 #include "config.h"
-#include "SVGInlineFlowBox.h"
+#include "core/rendering/svg/SVGInlineFlowBox.h"
 
 #if ENABLE(SVG)
 #include "DocumentMarkerController.h"
-#include "RenderSVGInlineText.h"
 #include "RenderedDocumentMarker.h"
-#include "SVGInlineTextBox.h"
-#include "SVGRenderingContext.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/SVGInlineTextBox.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
 
 using namespace std;
 

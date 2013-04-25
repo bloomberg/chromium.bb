@@ -28,12 +28,12 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGResourceFilterPrimitive.h"
+#include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 
-#include "RenderSVGResource.h"
 #include "SVGFEImage.h"
 #include "SVGFilter.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

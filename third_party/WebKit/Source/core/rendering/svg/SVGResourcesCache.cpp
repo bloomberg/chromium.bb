@@ -18,15 +18,15 @@
  */
 
 #include "config.h"
-#include "SVGResourcesCache.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 
 #if ENABLE(SVG)
 #include "HTMLNames.h"
-#include "RenderSVGResourceContainer.h"
 #include "SVGDocumentExtensions.h"
-#include "SVGResources.h"
-#include "SVGResourcesCycleSolver.h"
 #include "SVGStyledElement.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/SVGResources.h"
+#include "core/rendering/svg/SVGResourcesCycleSolver.h"
 
 namespace WebCore {
 

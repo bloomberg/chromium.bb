@@ -31,8 +31,8 @@
 #include "HitTestResult.h"
 #include "PluginViewBase.h"
 #include "RenderLayer.h"
-#include "RenderSVGRoot.h"
 #include "RenderView.h"
+#include "core/rendering/svg/RenderSVGRoot.h"
 
 using namespace std;
 

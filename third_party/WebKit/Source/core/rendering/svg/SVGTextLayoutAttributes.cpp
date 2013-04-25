@@ -20,7 +20,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTextLayoutAttributes.h"
+#include "core/rendering/svg/SVGTextLayoutAttributes.h"
 
 #include <stdio.h>
 #include <wtf/text/CString.h>

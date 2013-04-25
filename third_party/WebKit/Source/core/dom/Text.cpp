@@ -30,8 +30,8 @@
 #include "ShadowRoot.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGInlineText.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
 #endif
 
 #include "StyleResolver.h"

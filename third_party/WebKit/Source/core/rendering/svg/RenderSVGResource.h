@@ -21,9 +21,9 @@
 #define RenderSVGResource_h
 
 #if ENABLE(SVG)
-#include "RenderSVGShape.h"
 #include "SVGDocumentExtensions.h"
 #include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/svg/RenderSVGShape.h"
 
 namespace WebCore {
 

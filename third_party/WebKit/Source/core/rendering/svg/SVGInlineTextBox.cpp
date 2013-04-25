@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "SVGInlineTextBox.h"
+#include "core/rendering/svg/SVGInlineTextBox.h"
 
 #if ENABLE(SVG)
 #include "Frame.h"
@@ -29,16 +29,16 @@
 #include "InlineFlowBox.h"
 #include "PointerEventsHitRules.h"
 #include "RenderBlock.h"
-#include "RenderSVGInlineText.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGResourceSolidColor.h"
-#include "SVGRenderingContext.h"
-#include "SVGResourcesCache.h"
-#include "SVGRootInlineBox.h"
-#include "SVGTextRunRenderingContext.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGResourceSolidColor.h"
+#include "core/rendering/svg/SVGRenderingContext.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
+#include "core/rendering/svg/SVGRootInlineBox.h"
+#include "core/rendering/svg/SVGTextRunRenderingContext.h"
 
 using namespace std;
 

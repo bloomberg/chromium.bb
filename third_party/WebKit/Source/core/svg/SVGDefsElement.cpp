@@ -23,8 +23,8 @@
 #if ENABLE(SVG)
 #include "SVGDefsElement.h"
 
-#include "RenderSVGHiddenContainer.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGHiddenContainer.h"
 
 namespace WebCore {
 

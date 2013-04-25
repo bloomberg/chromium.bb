@@ -33,11 +33,11 @@
 #include "Page.h"
 #include "SMILTimeContainer.h"
 #include "SVGElement.h"
-#include "SVGResourcesCache.h"
 #include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
 #include "ScriptableDocumentParser.h"
 #include "XLinkNames.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

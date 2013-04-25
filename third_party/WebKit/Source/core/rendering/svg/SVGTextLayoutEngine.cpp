@@ -20,15 +20,15 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGTextLayoutEngine.h"
+#include "core/rendering/svg/SVGTextLayoutEngine.h"
 
-#include "RenderSVGInlineText.h"
-#include "RenderSVGTextPath.h"
 #include "SVGElement.h"
-#include "SVGInlineTextBox.h"
 #include "SVGLengthContext.h"
-#include "SVGTextLayoutEngineBaseline.h"
-#include "SVGTextLayoutEngineSpacing.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/RenderSVGTextPath.h"
+#include "core/rendering/svg/SVGInlineTextBox.h"
+#include "core/rendering/svg/SVGTextLayoutEngineBaseline.h"
+#include "core/rendering/svg/SVGTextLayoutEngineSpacing.h"
 
 // Set to a value > 0 to dump the text fragments
 #define DUMP_TEXT_FRAGMENTS 0

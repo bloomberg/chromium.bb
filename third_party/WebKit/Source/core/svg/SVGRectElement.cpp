@@ -24,12 +24,12 @@
 #include "SVGRectElement.h"
 
 #include "Attribute.h"
-#include "RenderSVGPath.h"
-#include "RenderSVGRect.h"
-#include "RenderSVGResource.h"
 #include "SVGElementInstance.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
+#include "core/rendering/svg/RenderSVGPath.h"
+#include "core/rendering/svg/RenderSVGRect.h"
+#include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {
 

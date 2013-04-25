@@ -24,8 +24,8 @@
 
 #if ENABLE(SVG)
 #include "RenderText.h"
-#include "SVGTextLayoutAttributes.h"
 #include "core/platform/graphics/Font.h"
+#include "core/rendering/svg/SVGTextLayoutAttributes.h"
 
 namespace WebCore {
 

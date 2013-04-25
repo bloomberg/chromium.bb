@@ -20,13 +20,13 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "RenderSVGGradientStop.h"
+#include "core/rendering/svg/RenderSVGGradientStop.h"
 
-#include "RenderSVGResourceContainer.h"
 #include "SVGGradientElement.h"
 #include "SVGNames.h"
-#include "SVGResourcesCache.h"
 #include "SVGStopElement.h"
+#include "core/rendering/svg/RenderSVGResourceContainer.h"
+#include "core/rendering/svg/SVGResourcesCache.h"
 
 namespace WebCore {
     

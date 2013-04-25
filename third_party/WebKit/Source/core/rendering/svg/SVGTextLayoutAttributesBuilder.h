@@ -21,7 +21,7 @@
 #define SVGTextLayoutAttributesBuilder_h
 
 #if ENABLE(SVG)
-#include "SVGTextMetricsBuilder.h"
+#include "core/rendering/svg/SVGTextMetricsBuilder.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

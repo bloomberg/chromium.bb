@@ -25,11 +25,11 @@
 #include "SVGMarkerElement.h"
 
 #include "Attribute.h"
-#include "RenderSVGResourceMarker.h"
 #include "SVGElementInstance.h"
 #include "SVGFitToViewBox.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
+#include "core/rendering/svg/RenderSVGResourceMarker.h"
 
 namespace WebCore {
  

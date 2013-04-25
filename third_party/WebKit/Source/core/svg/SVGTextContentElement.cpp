@@ -28,13 +28,13 @@
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "RenderObject.h"
-#include "RenderSVGResource.h"
-#include "RenderSVGText.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGTextQuery.h"
 #include "XMLNames.h"
+#include "core/rendering/svg/RenderSVGResource.h"
+#include "core/rendering/svg/RenderSVGText.h"
+#include "core/rendering/svg/SVGTextQuery.h"
 
 namespace WebCore {
  

@@ -18,17 +18,17 @@
  */
 
 #include "config.h"
-#include "SVGTextQuery.h"
+#include "core/rendering/svg/SVGTextQuery.h"
 
 #if ENABLE(SVG)
 #include "InlineFlowBox.h"
 #include "RenderBlock.h"
 #include "RenderInline.h"
-#include "RenderSVGInlineText.h"
-#include "SVGInlineTextBox.h"
-#include "SVGTextMetrics.h"
 #include "VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
+#include "core/rendering/svg/RenderSVGInlineText.h"
+#include "core/rendering/svg/SVGInlineTextBox.h"
+#include "core/rendering/svg/SVGTextMetrics.h"
 
 #include <wtf/MathExtras.h>
 
