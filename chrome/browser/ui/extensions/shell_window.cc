@@ -467,6 +467,13 @@ bool ShellWindow::ShouldSuppressDialogs() {
 
 void ShellWindow::RunFileChooser(WebContents* tab,
                                  const content::FileChooserParams& params) {
+  if (window_type_is_panel()) {
+    // Panels can't host a file dialog, abort. TODO(stevenjb): allow file
+    // dialogs to be unhosted but still close with the owning web contents.
+    // crbug.com/172502.
+    LOG(WARNING) << "File dialog opened by panel.";
+    return;
+  }
   FileSelectHelper::RunFileChooser(tab, params);
 }
 

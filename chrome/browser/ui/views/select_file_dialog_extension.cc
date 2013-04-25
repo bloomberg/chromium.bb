@@ -276,6 +276,10 @@ void SelectFileDialogExtension::SelectFileImpl(
   }
 
   if (shell_window) {
+    if (shell_window->window_type_is_panel()) {
+      NOTREACHED() << "File dialog opened by panel.";
+      return;
+    }
     base_window = shell_window->GetBaseWindow();
     web_contents = shell_window->web_contents();
   } else {
