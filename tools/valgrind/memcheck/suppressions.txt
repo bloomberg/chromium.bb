@@ -7108,3 +7108,11 @@
    fun:PK11_ExportEncryptedPrivKeyInfo
    fun:_ZN6crypto12ECPrivateKey25ExportEncryptedPrivateKeyERKSsiPSt6vectorIhSaIhEE
 }
+{
+   bug_235584
+   Memcheck:Leak
+   fun:_Znw*
+   fun:_ZN4base4Bind*
+   fun:_ZN3net18SSLClientSocketNSS4Core21OnHandshakeIOCompleteEi
+   fun:_ZN3net18SSLClientSocketNSS4Core28OnGetDomainBoundCertCompleteEi
+}
