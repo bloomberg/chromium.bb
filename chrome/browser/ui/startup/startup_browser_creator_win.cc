@@ -41,7 +41,6 @@ GURL GetURLToOpen(Profile* profile) {
 
 }  // namespace chrome
 
-#if !defined(USE_AURA)
 // static
 bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
     Profile* profile,
@@ -66,4 +65,3 @@ bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
   browser->window()->Show();
   return true;
 }
-#endif

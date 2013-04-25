@@ -979,7 +979,7 @@ void StartupBrowserCreatorImpl::AddStartupURLs(
   }
 }
 
-#if !defined(OS_WIN) || defined(USE_AURA)
+#if !defined(OS_WIN)
 // static
 bool StartupBrowserCreatorImpl::OpenStartupURLsInExistingBrowser(
     Profile* profile,
