@@ -147,7 +147,8 @@ function recordEvent(event) {
  *     if it exists, undefined otherwise.
  */
 function showNotification(card, notificationsData, previousVersion) {
-  console.log('showNotification ' + JSON.stringify(card));
+  console.log('showNotification ' + JSON.stringify(card) + ' ' +
+             previousVersion);
 
   if (typeof card.version != 'number') {
     console.error('card.version is not a number');
@@ -162,9 +163,16 @@ function showNotification(card, notificationsData, previousVersion) {
       chrome.notifications.create(
           card.notificationId,
           card.notification,
-          function() {});
+          function(notificationId) {
+            if (!notificationId || chrome.runtime.lastError) {
+              var errorMessage =
+                  chrome.runtime.lastError && chrome.runtime.lastError.message;
+              console.error('notifications.create: ID=' + notificationId +
+                            ', ERROR=' + errorMessage);
+            }
+          });
     } catch (error) {
-      console.error('Error in notifications.create', error);
+      console.error('Error in notifications.create: ' + error);
     }
   } else {
     try {
@@ -172,9 +180,16 @@ function showNotification(card, notificationsData, previousVersion) {
       chrome.notifications.update(
           card.notificationId,
           card.notification,
-          function() {});
+          function(wasUpdated) {
+            if (!wasUpdated || chrome.runtime.lastError) {
+              var errorMessage =
+                  chrome.runtime.lastError && chrome.runtime.lastError.message;
+              console.error('notifications.update: UPDATED=' + wasUpdated +
+                            ', ERROR=' + errorMessage);
+            }
+          });
     } catch (error) {
-      console.error('Error in notifications.update', error);
+      console.error('Error in notifications.update: ' + error);
     }
   }
 
@@ -330,7 +345,7 @@ function requestNotificationCardsWithLocation(position, callback) {
  * location.
  */
 function updateNotificationsCards() {
-  console.log('updateNotificationsCards');
+  console.log('updateNotificationsCards @' + new Date());
   tasks.add(UPDATE_CARDS_TASK_NAME, function(callback) {
     console.log('updateNotificationsCards-task-begin');
     tasks.debugSetStepName('updateNotificationsCards-get-retryDelaySeconds');
