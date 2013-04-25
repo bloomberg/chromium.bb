@@ -40,6 +40,7 @@ var CLASSES = {
   HOVERED: 'hovered',
   PENDING_SUGGESTIONS_CONTAINER: 'pending-suggestions-container',
   PAGE: 'mv-page', // page tiles
+  ROW: 'mv-row',  // tile row
   SEARCH: 'search',
   SELECTED: 'selected', // a selected suggestion (if any)
   SUGGESTION: 'suggestion',
@@ -129,13 +130,6 @@ var tiles = [];
 var lastBlacklistedTile = null;
 
 /**
- * The index of the last blacklisted tile, if any. Used to determine where to
- * re-insert a tile on undo.
- * @type {number}
- */
-var lastBlacklistedIndex = -1;
-
-/**
  * True if a page has been blacklisted and we're waiting on the
  * onmostvisitedchange callback. See onMostVisitedChange() for how this
  * is used.
@@ -144,18 +138,11 @@ var lastBlacklistedIndex = -1;
 var isBlacklisting = false;
 
 /**
- * True if a blacklist has been undone and we're waiting on the
- * onmostvisitedchange callback. See onMostVisitedChange() for how this
- * is used.
- * @type {boolean}
- */
-var isUndoing = false;
-
-/**
- * Current number of tiles shown based on the window width, including filler.
+ * Current number of tiles columns shown based on the window width, including
+ * those that just contain filler.
  * @type {number}
  */
-var numTilesShown = 0;
+var numColumnsShown = 0;
 
 /**
  * The browser embeddedSearch.newTabPage object.
@@ -183,13 +170,19 @@ var TILE_WIDTH = 160;
  * @type {number}
  * @const
  */
-var MOST_VISITED_HEIGHT = 156;
+var MOST_VISITED_HEIGHT = 296;
 
 /** @type {number} @const */
-var MAX_NUM_TILES_TO_SHOW = 4;
+var MAX_NUM_TILES_TO_SHOW = 8;
 
 /** @type {number} @const */
-var MIN_NUM_TILES_TO_SHOW = 2;
+var MIN_NUM_COLUMNS = 2;
+
+/** @type {number} @const */
+var MAX_NUM_COLUMNS = 4;
+
+/** @type {number} @const */
+var NUM_ROWS = 2;
 
 /**
  * Minimum total padding to give to the left and right of the most visited
@@ -270,35 +263,13 @@ function onMostVisitedChange() {
   var pages = ntpApiHandle.mostVisited;
 
   if (isBlacklisting) {
-    // If this was called as a result of a blacklist, add a new replacement
-    // (possibly filler) tile at the end and trigger the blacklist animation.
-    var replacementTile = createTile(pages[MAX_NUM_TILES_TO_SHOW - 1]);
-
-    tiles.push(replacementTile);
-    tilesContainer.appendChild(replacementTile.elem);
-
+    // Trigger the blacklist animation and re-render the tiles when it
+    // completes.
     var lastBlacklistedTileElement = lastBlacklistedTile.elem;
     lastBlacklistedTileElement.addEventListener(
         'webkitTransitionEnd', blacklistAnimationDone);
     lastBlacklistedTileElement.classList.add(CLASSES.BLACKLIST);
-    // In order to animate the replacement tile sliding into place, it must
-    // be made visible.
-    updateTileVisibility(numTilesShown + 1);
 
-  } else if (isUndoing) {
-    // If this was called as a result of an undo, re-insert the last blacklisted
-    // tile in its old location and trigger the undo animation.
-    tiles.splice(
-        lastBlacklistedIndex, 0, lastBlacklistedTile);
-    var lastBlacklistedTileElement = lastBlacklistedTile.elem;
-    tilesContainer.insertBefore(
-        lastBlacklistedTileElement,
-        tilesContainer.childNodes[lastBlacklistedIndex]);
-    lastBlacklistedTileElement.addEventListener(
-        'webkitTransitionEnd', undoAnimationDone);
-    // Force the removal to happen synchronously.
-    lastBlacklistedTileElement.scrollTop;
-    lastBlacklistedTileElement.classList.remove(CLASSES.BLACKLIST);
   } else {
     // Otherwise render the tiles using the new data without animation.
     tiles = [];
@@ -310,12 +281,17 @@ function onMostVisitedChange() {
 }
 
 /**
- * Renders the current set of tiles without animation.
+ * Renders the current set of tiles.
  */
 function renderTiles() {
-  removeChildren(tilesContainer);
-  for (var i = 0, length = tiles.length; i < length; ++i) {
-    tilesContainer.appendChild(tiles[i].elem);
+  var rows = tilesContainer.children;
+  for (var i = 0; i < rows.length; ++i) {
+    removeChildren(rows[i]);
+  }
+
+  for (var i = 0, length = tiles.length;
+       i < Math.min(length, numColumnsShown * NUM_ROWS); ++i) {
+    rows[Math.floor(i / numColumnsShown)].appendChild(tiles[i].elem);
   }
 }
 
@@ -396,19 +372,16 @@ function createTile(page) {
  * is blacklisted.
  * @param {number} rid The RID of the page being blacklisted.
  * @return {function(Event)} A function which handles the blacklisting of the
- *     page by displaying the notification, updating state variables, and
- *     notifying Chrome.
+ *     page by updating state variables and notifying Chrome.
  */
 function generateBlacklistFunction(rid) {
   return function(e) {
     // Prevent navigation when the page is being blacklisted.
     e.stopPropagation();
 
-    showNotification();
     isBlacklisting = true;
     tilesContainer.classList.add(CLASSES.HIDE_BLACKLIST_BUTTON);
     lastBlacklistedTile = getTileByRid(rid);
-    lastBlacklistedIndex = tiles.indexOf(lastBlacklistedTile);
     ntpApiHandle.deleteMostVisitedItem(rid);
   };
 }
@@ -431,16 +404,19 @@ function hideNotification() {
 }
 
 /**
- * Handles the end of the blacklist animation by removing the blacklisted tile.
+ * Handles the end of the blacklist animation by showing the notification and
+ * re-rendering the new set of tiles.
  */
 function blacklistAnimationDone() {
-  tiles.splice(lastBlacklistedIndex, 1);
-  removeNode(lastBlacklistedTile.elem);
-  updateTileVisibility(numTilesShown);
+  showNotification();
   isBlacklisting = false;
   tilesContainer.classList.remove(CLASSES.HIDE_BLACKLIST_BUTTON);
   lastBlacklistedTile.elem.removeEventListener(
       'webkitTransitionEnd', blacklistAnimationDone);
+  // Need to call explicitly to re-render the tiles, since the initial
+  // onmostvisitedchange issued by the blacklist function only triggered
+  // the animation.
+  onMostVisitedChange();
 }
 
 /**
@@ -450,22 +426,8 @@ function blacklistAnimationDone() {
 function onUndo() {
   hideNotification();
   var lastBlacklistedRID = lastBlacklistedTile.rid;
-  if (typeof lastBlacklistedRID != 'undefined') {
-    isUndoing = true;
+  if (typeof lastBlacklistedRID != 'undefined')
     ntpApiHandle.undoMostVisitedDeletion(lastBlacklistedRID);
-  }
-}
-
-/**
- * Handles the end of the undo animation by removing the extraneous end tile.
- */
-function undoAnimationDone() {
-  isUndoing = false;
-  tiles.splice(tiles.length - 1, 1);
-  removeNode(tilesContainer.lastElementChild);
-  updateTileVisibility(numTilesShown);
-  lastBlacklistedTile.elem.removeEventListener(
-      'webkitTransitionEnd', undoAnimationDone);
 }
 
 /**
@@ -479,7 +441,7 @@ function onRestoreAll() {
 
 /**
  * Handles a resize by vertically centering the most visited section
- * and triggering the tile show/hide animation if necessary.
+ * and re-rendering the tiles if the number of columns has changed.
  */
 function onResize() {
   // The Google page uses a fixed layout instead.
@@ -489,23 +451,13 @@ function onResize() {
         Math.max(0, (clientHeight - MOST_VISITED_HEIGHT) / 2) + 'px';
   }
   var clientWidth = document.documentElement.clientWidth;
-  var numTilesToShow = Math.floor(
+  var numColumnsToShow = Math.floor(
       (clientWidth - MIN_TOTAL_HORIZONTAL_PADDING) / TILE_WIDTH);
-  numTilesToShow = Math.max(MIN_NUM_TILES_TO_SHOW, numTilesToShow);
-  if (numTilesToShow != numTilesShown) {
-    updateTileVisibility(numTilesToShow);
-    numTilesShown = numTilesToShow;
-  }
-}
-
-/**
- * Triggers an animation to show the first numTilesToShow tiles and hide the
- * remaining.
- * @param {number} numTilesToShow The number of tiles to show.
- */
-function updateTileVisibility(numTilesToShow) {
-  for (var i = 0, length = tiles.length; i < length; ++i) {
-    tiles[i].elem.classList.toggle(CLASSES.HIDE_TILE, i >= numTilesToShow);
+  numColumnsToShow = Math.max(MIN_NUM_COLUMNS,
+                              Math.min(MAX_NUM_COLUMNS, numColumnsToShow));
+  if (numColumnsToShow != numColumnsShown) {
+    numColumnsShown = numColumnsToShow;
+    renderTiles();
   }
 }
 
@@ -1400,6 +1352,12 @@ function init() {
   attribution = $(IDS.ATTRIBUTION);
   ntpContents = $(IDS.NTP_CONTENTS);
 
+  for (var i = 0; i < NUM_ROWS; i++) {
+    var row = document.createElement('div');
+    row.classList.add(CLASSES.ROW);
+    tilesContainer.appendChild(row);
+  }
+
   if (isGooglePage) {
     document.body.classList.add(CLASSES.GOOGLE_PAGE);
     var logo = document.createElement('div');
@@ -1459,11 +1417,6 @@ function init() {
   $qs('.' + CLASSES.PENDING_SUGGESTIONS_CONTAINER).dir =
       searchboxApiHandle.rtl ? 'rtl' : 'ltr';
 
-  if (!document.webkitHidden)
-    window.addEventListener('resize', addDelayedTransitions);
-  else
-    document.addEventListener('webkitvisibilitychange', addDelayedTransitions);
-
   if (fakebox) {
     // Listener for updating the fakebox focus.
     document.body.onclick = function(event) {
@@ -1479,22 +1432,6 @@ function init() {
     // Set the cursor alignment based on language directionality.
     $(IDS.CURSOR).style[searchboxApiHandle.rtl ? 'right' : 'left'] = '9px';
   }
-}
-
-/**
- * Applies webkit transitions to NTP elements which need to be delayed until
- * after the page is made visible and any initial resize has occurred.  This is
- * to prevent animations from triggering when the NTP is shown.
- */
-function addDelayedTransitions() {
-  if (fakebox) {
-    fakebox.style.webkitTransition =
-        '-webkit-transform 100ms linear, width 200ms ease';
-  }
-
-  tilesContainer.style.webkitTransition = 'width 200ms';
-  window.removeEventListener('resize', addDelayedTransitions);
-  document.removeEventListener('webkitvisibilitychange', addDelayedTransitions);
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -6,7 +6,7 @@ body {
   background-color: white;
   cursor: default;
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 #ntp-contents {
@@ -100,7 +100,7 @@ body.fakebox-focused #cursor {
 
 #most-visited {
   -webkit-user-select: none;
-  margin-top: 60px;
+  margin-top: 50px;
   text-align: -webkit-center;
 }
 
@@ -118,7 +118,7 @@ body.fakebox-focused #cursor {
 #mv-tiles {
   /* Use GPU compositing if available. */
   -webkit-transform: translate3d(0, 0, 0);
-  height: 120px;
+  height: 260px;
   overflow: hidden;
   white-space: nowrap;
   width: 304px;
@@ -131,11 +131,15 @@ body.fakebox-focused #cursor {
   }
 }
 
-@media only screen and (min-width:829px) {
+@media only screen and (min-width:828px) {
   #fakebox,
   #mv-tiles {
-    width: 629px;
+    width: 628px;
   }
+}
+
+.mv-row {
+  margin-bottom: 50px;
 }
 
 .mv-tile:first-child {
@@ -160,10 +164,8 @@ body.fakebox-focused #cursor {
 
 /* Class applied to tiles to trigger the blacklist animation. */
 .mv-tile.mv-blacklist {
-  -webkit-margin-start: 0;
   -webkit-transform: scale(0.5);
   opacity: 0;
-  width: 0;
 }
 
 .mv-filler {
