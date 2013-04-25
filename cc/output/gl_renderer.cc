@@ -81,6 +81,10 @@ bool NeedsIOSurfaceReadbackWorkaround() {
 #endif
 }
 
+// Smallest unit that impact anti-aliasing output. We use this to
+// determine when anti-aliasing is unnecessary.
+const float kAntiAliasingEpsilon = 1.0f / 1024.0f;
+
 }  // anonymous namespace
 
 scoped_ptr<GLRenderer> GLRenderer::Create(RendererClient* client,
@@ -715,7 +719,8 @@ void GLRenderer::DrawRenderPassQuad(DrawingFrame* frame,
 
   // Use anti-aliasing programs only when necessary.
   bool use_aa = (!device_quad.IsRectilinear() ||
-                 !device_quad.BoundingBox().IsExpressibleAsRect());
+                 !gfx::IsNearestRectWithinDistance(device_quad.BoundingBox(),
+                                                   kAntiAliasingEpsilon));
   if (use_aa) {
     device_layer_bounds.InflateAntiAliasingDistance();
     device_layer_edges.InflateAntiAliasingDistance();
@@ -1011,11 +1016,11 @@ bool GLRenderer::SetupQuadForAntialiasing(
       device_transform, gfx::QuadF(quad->visibleContentRect()), &clipped);
   DCHECK(!clipped);
 
-  // TODO(reveman): Axis-aligned is not enough to avoid anti-aliasing.
-  // Bounding rectangle for quad also needs to be expressible as an integer
-  // rectangle. crbug.com/169374
   bool is_axis_aligned_in_target = device_layer_quad.IsRectilinear();
-  bool use_aa = !clipped && !is_axis_aligned_in_target && quad->IsEdge();
+  bool is_nearest_rect_within_epsilon = is_axis_aligned_in_target &&
+      gfx::IsNearestRectWithinDistance(device_layer_quad.BoundingBox(),
+                                       kAntiAliasingEpsilon);
+  bool use_aa = !clipped && !is_nearest_rect_within_epsilon && quad->IsEdge();
 
   if (!use_aa)
     return false;
@@ -1200,13 +1205,16 @@ void GLRenderer::DrawContentQuad(const DrawingFrame* frame,
   // is mapped to the unit square by the vertex shader and mapped
   // back to normalized texture coordinates by the fragment shader
   // after being clamped to 0-1 range.
-  const float epsilon = 1.0f / 1024.0f;
-  float tex_clamp_x = std::min(0.5f, 0.5f * clamp_tex_rect.width() - epsilon);
-  float tex_clamp_y = std::min(0.5f, 0.5f * clamp_tex_rect.height() - epsilon);
-  float geom_clamp_x = std::min(tex_clamp_x * tex_to_geom_scale_x,
-                                0.5f * clamp_geom_rect.width() - epsilon);
-  float geom_clamp_y = std::min(tex_clamp_y * tex_to_geom_scale_y,
-                                0.5f * clamp_geom_rect.height() - epsilon);
+  float tex_clamp_x = std::min(
+      0.5f, 0.5f * clamp_tex_rect.width() - kAntiAliasingEpsilon);
+  float tex_clamp_y = std::min(
+      0.5f, 0.5f * clamp_tex_rect.height() - kAntiAliasingEpsilon);
+  float geom_clamp_x = std::min(
+      tex_clamp_x * tex_to_geom_scale_x,
+      0.5f * clamp_geom_rect.width() - kAntiAliasingEpsilon);
+  float geom_clamp_y = std::min(
+      tex_clamp_y * tex_to_geom_scale_y,
+      0.5f * clamp_geom_rect.height() - kAntiAliasingEpsilon);
   clamp_geom_rect.Inset(geom_clamp_x, geom_clamp_y, geom_clamp_x, geom_clamp_y);
   clamp_tex_rect.Inset(tex_clamp_x, tex_clamp_y, tex_clamp_x, tex_clamp_y);
 

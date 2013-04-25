@@ -524,6 +524,58 @@ TEST_F(GLRendererPixelTest, AntiAliasing) {
       base::FilePath(FILE_PATH_LITERAL("anti_aliasing.png")),
       ExactPixelComparator(true)));
 }
+
+TEST_F(GLRendererPixelTest, AxisAligned) {
+  gfx::Rect rect(0, 0, 200, 200);
+
+  RenderPass::Id id(1, 1);
+  gfx::Transform transform_to_root;
+  scoped_ptr<RenderPass> pass =
+      CreateTestRenderPass(id, rect, transform_to_root);
+
+  gfx::Transform red_content_to_target_transform;
+  red_content_to_target_transform.Translate(50, 50);
+  red_content_to_target_transform.Scale(
+      0.5f + 1.0f / (rect.width() * 2.0f),
+      0.5f + 1.0f / (rect.height() * 2.0f));
+  scoped_ptr<SharedQuadState> red_shared_state =
+      CreateTestSharedQuadState(red_content_to_target_transform, rect);
+
+  scoped_ptr<SolidColorDrawQuad> red = SolidColorDrawQuad::Create();
+  red->SetNew(red_shared_state.get(), rect, SK_ColorRED);
+
+  pass->quad_list.push_back(red.PassAs<DrawQuad>());
+
+  gfx::Transform yellow_content_to_target_transform;
+  yellow_content_to_target_transform.Translate(25.5f, 25.5f);
+  yellow_content_to_target_transform.Scale(0.5f, 0.5f);
+  scoped_ptr<SharedQuadState> yellow_shared_state =
+      CreateTestSharedQuadState(yellow_content_to_target_transform, rect);
+
+  scoped_ptr<SolidColorDrawQuad> yellow = SolidColorDrawQuad::Create();
+  yellow->SetNew(yellow_shared_state.get(), rect, SK_ColorYELLOW);
+
+  pass->quad_list.push_back(yellow.PassAs<DrawQuad>());
+
+  gfx::Transform blue_content_to_target_transform;
+  scoped_ptr<SharedQuadState> blue_shared_state =
+      CreateTestSharedQuadState(blue_content_to_target_transform, rect);
+
+  scoped_ptr<SolidColorDrawQuad> blue = SolidColorDrawQuad::Create();
+  blue->SetNew(blue_shared_state.get(), rect, SK_ColorBLUE);
+
+  pass->quad_list.push_back(blue.PassAs<DrawQuad>());
+
+  RenderPassList pass_list;
+  pass_list.push_back(pass.Pass());
+
+  renderer_->DrawFrame(&pass_list);
+
+  EXPECT_TRUE(PixelsMatchReference(
+      base::FilePath(FILE_PATH_LITERAL("axis_aligned.png")),
+      ExactPixelComparator(true)));
+}
+
 #endif
 
 }  // namespace
