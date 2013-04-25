@@ -11003,13 +11003,6 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
         </message>
       </if>
 
-      <!-- One click sign in infobar -->
-      <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON" desc="The string used in the infobar button that the user presses to accept one click sign in.">
-        OK, sync
-      </message>
-      <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON" desc="The string used in the infobar button that the user presses to never see this infobar again.">
-        No thanks
-      </message>
       <message name="IDS_ONE_CLICK_SIGNIN_CONFIRM_EMAIL_DIALOG_OK_BUTTON" desc="The string used in the dialog for the button that means 'create a new profile'.">
         Create a new user
       </message>

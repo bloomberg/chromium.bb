@@ -849,9 +849,6 @@ For Chromium, processes used to display diagnostics information (such as this "a
         <message name="IDS_ONE_CLICK_SIGNIN_DIALOG_TITLE" desc="The title of the modal dialog window that opens when the user chooses to use one click sign in.">
           You're signed in to Chromium!
         </message>
-        <message name="IDS_ONE_CLICK_SIGNIN_INFOBAR_MESSAGE" desc="The string shown in the infobar explaining that the user can connect his profile to a Google account instead of logging in only here.">
-          Use this Google Account to sync all your Chromium stuff?
-        </message>
         <message name="IDS_ONE_CLICK_SIGNIN_BUBBLE_MESSAGE" desc="The body of the sync promo NTP bubble.">
           You're now signed in to Chromium! Your bookmarks, history, and other settings will be synced to your Google Account.
         </message>

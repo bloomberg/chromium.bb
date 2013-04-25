@@ -61,9 +61,7 @@ InfoBarView::InfoBarView(InfoBarService* owner, InfoBarDelegate* delegate)
       icon_(NULL),
       close_button_(NULL) {
   set_owned_by_client();  // InfoBar deletes itself at the appropriate time.
-  set_background(new InfoBarBackground(
-      GetInfoBarTopColor(delegate->GetInfoBarType()),
-      GetInfoBarBottomColor(delegate->GetInfoBarType())));
+  set_background(new InfoBarBackground(delegate->GetInfoBarType()));
 }
 
 InfoBarView::~InfoBarView() {

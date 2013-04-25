@@ -398,7 +398,6 @@
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_RESTORE_SESSION" file="infobar_restore.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_SAVE_PASSWORD" file="infobar_savepassword.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_SSL_WARNING" file="infobar_insecure.png" />
-      <structure type="chrome_scaled_image" name="IDR_INFOBAR_SYNC" file="infobar_sync.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_THEME" file="infobar_theme.png" />
       <structure type="chrome_scaled_image" name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" />
       <structure type="chrome_scaled_image" name="IDR_INPUT_ALERT" file="common/input_alert.png" />

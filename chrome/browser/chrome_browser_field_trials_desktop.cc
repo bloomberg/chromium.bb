@@ -154,9 +154,6 @@ void SetupDesktopFieldTrials(const CommandLine& parsed_command_line,
   SetUpCacheSensitivityAnalysisFieldTrial();
   DisableShowProfileSwitcherTrialIfNecessary();
   WindowsOverlappedTCPReadsFieldTrial(parsed_command_line);
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
-  OneClickSigninHelper::InitializeFieldTrial();
-#endif
   SetupAppLauncherFieldTrial(local_state);
 }
 

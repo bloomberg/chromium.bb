@@ -42,7 +42,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/sync/one_click_signin_histogram.h"
-#include "chrome/browser/ui/sync/one_click_signin_infobar_delegate.h"
 #include "chrome/browser/ui/sync/one_click_signin_sync_starter.h"
 #include "chrome/browser/ui/sync/signin_histogram.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
@@ -83,10 +82,6 @@ namespace {
 // clearing the internal state of the helper.  This is necessary to support
 // SAML-based accounts, but causes bug crbug.com/181163.
 const int kMaxNavigationsSince = 10;
-
-// Set to true if this chrome instance is in the blue-button-on-white-bar
-// experimental group.
-bool use_blue_on_white = false;
 
 // Add a specific email to the list of emails rejected for one-click
 // sign-in, for this profile.
@@ -444,178 +439,6 @@ void CurrentHistoryCleaner::WebContentsDestroyed(
 
 }  // namespace
 
-// The infobar asking the user if they want to use one-click sign in.
-// TODO(rogerta): once we move to a web-based sign in flow, we can get rid
-// of this infobar.
-class OneClickInfoBarDelegateImpl : public OneClickSigninInfoBarDelegate {
- public:
-  // Creates a one click signin delegate and adds it to |infobar_service|.
-  static void Create(InfoBarService* infobar_service,
-                     const std::string& session_index,
-                     const std::string& email,
-                     const std::string& password);
-
- private:
-  OneClickInfoBarDelegateImpl(InfoBarService* owner,
-                               const std::string& session_index,
-                               const std::string& email,
-                               const std::string& password);
-  virtual ~OneClickInfoBarDelegateImpl();
-
-  // InfoBarDelegate overrides.
-  virtual InfoBarAutomationType GetInfoBarAutomationType() const OVERRIDE;
-  virtual void InfoBarDismissed() OVERRIDE;
-  virtual gfx::Image* GetIcon() const OVERRIDE;
-  virtual Type GetInfoBarType() const OVERRIDE;
-  virtual string16 GetMessageText() const OVERRIDE;
-
-  // ConfirmInfoBarDelegate overrides.
-  virtual string16 GetButtonLabel(InfoBarButton button) const OVERRIDE;
-  virtual bool Accept() OVERRIDE;
-  virtual bool Cancel() OVERRIDE;
-  virtual string16 GetLinkText() const OVERRIDE;
-  virtual bool LinkClicked(WindowOpenDisposition disposition) OVERRIDE;
-
-  // OneClickSigninInfoBarDelegate overrides.
-  virtual void GetAlternateColors(AlternateColors* alt_colors) OVERRIDE;
-
-  // Record the specified action in the histogram for one-click sign in.
-  void RecordHistogramAction(int action);
-
-  // Information about the account that has just logged in.
-  std::string session_index_;
-  std::string email_;
-  std::string password_;
-
-  // Whether any UI controls in the infobar were pressed or not.
-  bool button_pressed_;
-
-  DISALLOW_COPY_AND_ASSIGN(OneClickInfoBarDelegateImpl);
-};
-
-// static
-void OneClickInfoBarDelegateImpl::Create(InfoBarService* infobar_service,
-                                         const std::string& session_index,
-                                         const std::string& email,
-                                         const std::string& password) {
-  infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new OneClickInfoBarDelegateImpl(infobar_service, session_index, email,
-                                      password)));
-}
-
-OneClickInfoBarDelegateImpl::OneClickInfoBarDelegateImpl(
-    InfoBarService* owner,
-    const std::string& session_index,
-    const std::string& email,
-    const std::string& password)
-    : OneClickSigninInfoBarDelegate(owner),
-      session_index_(session_index),
-      email_(email),
-      password_(password),
-      button_pressed_(false) {
-  RecordHistogramAction(one_click_signin::HISTOGRAM_SHOWN);
-}
-
-OneClickInfoBarDelegateImpl::~OneClickInfoBarDelegateImpl() {
-  if (!button_pressed_)
-    RecordHistogramAction(one_click_signin::HISTOGRAM_IGNORED);
-}
-
-InfoBarDelegate::InfoBarAutomationType
-    OneClickInfoBarDelegateImpl::GetInfoBarAutomationType() const {
-  return ONE_CLICK_LOGIN_INFOBAR;
-}
-
-void OneClickInfoBarDelegateImpl::InfoBarDismissed() {
-  RecordHistogramAction(one_click_signin::HISTOGRAM_DISMISSED);
-  button_pressed_ = true;
-}
-
-gfx::Image* OneClickInfoBarDelegateImpl::GetIcon() const {
-  return &ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      IDR_INFOBAR_SYNC);
-}
-
-InfoBarDelegate::Type OneClickInfoBarDelegateImpl::GetInfoBarType() const {
-  return PAGE_ACTION_TYPE;
-}
-
-string16 OneClickInfoBarDelegateImpl::GetMessageText() const {
-  return l10n_util::GetStringUTF16(IDS_ONE_CLICK_SIGNIN_INFOBAR_MESSAGE);
-}
-
-string16 OneClickInfoBarDelegateImpl::GetButtonLabel(
-    InfoBarButton button) const {
-  return l10n_util::GetStringUTF16(
-      (button == BUTTON_OK) ? IDS_ONE_CLICK_SIGNIN_INFOBAR_OK_BUTTON
-                            : IDS_ONE_CLICK_SIGNIN_INFOBAR_CANCEL_BUTTON);
-}
-
-bool OneClickInfoBarDelegateImpl::Accept() {
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents());
-  Profile* profile = Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext());
-
-  // User has accepted one-click sign-in for this account. Never ask again for
-  // this profile.
-  SigninManager::DisableOneClickSignIn(profile);
-  RecordHistogramAction(one_click_signin::HISTOGRAM_ACCEPTED);
-  chrome::FindBrowserWithWebContents(web_contents())->window()->
-      ShowOneClickSigninBubble(
-          BrowserWindow::ONE_CLICK_SIGNIN_BUBBLE_TYPE_BUBBLE,
-          UTF8ToUTF16(email_),
-          base::Bind(&StartSync,
-                     StartSyncArgs(profile, browser,
-                                   OneClickSigninHelper::AUTO_ACCEPT_NONE,
-                                   session_index_, email_, password_,
-                                   false /* force_same_tab_navigation */)));
-  button_pressed_ = true;
-  return true;
-}
-
-bool OneClickInfoBarDelegateImpl::Cancel() {
-  AddEmailToOneClickRejectedList(Profile::FromBrowserContext(
-      web_contents()->GetBrowserContext()), email_);
-  RecordHistogramAction(one_click_signin::HISTOGRAM_REJECTED);
-  button_pressed_ = true;
-  return true;
-}
-
-string16 OneClickInfoBarDelegateImpl::GetLinkText() const {
-  return l10n_util::GetStringUTF16(IDS_LEARN_MORE);
-}
-
-bool OneClickInfoBarDelegateImpl::LinkClicked(
-    WindowOpenDisposition disposition) {
-  RecordHistogramAction(one_click_signin::HISTOGRAM_LEARN_MORE);
-  content::OpenURLParams params(
-      GURL(chrome::kChromeSyncLearnMoreURL), content::Referrer(),
-      (disposition == CURRENT_TAB) ? NEW_FOREGROUND_TAB : disposition,
-      content::PAGE_TRANSITION_LINK, false);
-  web_contents()->OpenURL(params);
-  return false;
-}
-
-void OneClickInfoBarDelegateImpl::GetAlternateColors(
-    AlternateColors* alt_colors) {
-  if (use_blue_on_white) {
-    alt_colors->enabled = true;
-    alt_colors->infobar_bottom_color = SK_ColorWHITE;
-    alt_colors->infobar_top_color = SK_ColorWHITE;
-    alt_colors->button_text_color = SK_ColorWHITE;
-    alt_colors->button_background_color = SkColorSetRGB(71, 135, 237);
-    alt_colors->button_border_color = SkColorSetRGB(48, 121, 237);
-    return;
-  }
-
-  return OneClickSigninInfoBarDelegate::GetAlternateColors(alt_colors);
-}
-
-void OneClickInfoBarDelegateImpl::RecordHistogramAction(int action) {
-  UMA_HISTOGRAM_ENUMERATION("AutoLogin.Reverse", action,
-                            one_click_signin::HISTOGRAM_MAX);
-}
-
 OneClickSigninHelper::OneClickSigninHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       showing_signin_(false),
@@ -825,21 +648,6 @@ OneClickSigninHelper::Offer OneClickSigninHelper::CanOfferOnIOThreadImpl(
   }
 
   return CAN_OFFER;
-}
-
-// static
-void OneClickSigninHelper::InitializeFieldTrial() {
-  scoped_refptr<base::FieldTrial> trial(
-      base::FieldTrialList::FactoryGetFieldTrial("OneClickSignIn", 100,
-                                                 "Standard", 2013, 9, 1, NULL));
-
-  // For dev and beta, we'll give half the people the new experience.  For
-  // stable, only 1%.  These numbers are overridable on the server.
-  const bool kIsStableChannel =
-      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
-  const int kBlueOnWhiteGroup = trial->AppendGroup("BlueOnWhite",
-                                                   kIsStableChannel ? 1 : 50);
-  use_blue_on_white = trial->group() == kBlueOnWhiteGroup;
 }
 
 // static
@@ -1266,14 +1074,8 @@ void OneClickSigninHelper::DidStopLoading(
 
   switch (auto_accept_) {
     case AUTO_ACCEPT_NONE:
-      if (SyncPromoUI::UseWebBasedSigninFlow()) {
-        if (showing_signin_)
+      if (SyncPromoUI::UseWebBasedSigninFlow() && showing_signin_)
           LogOneClickHistogramValue(one_click_signin::HISTOGRAM_DISMISSED);
-      } else {
-        OneClickInfoBarDelegateImpl::Create(
-            InfoBarService::FromWebContents(contents), session_index_, email_,
-            password_);
-      }
       break;
     case AUTO_ACCEPT_ACCEPTED:
       LogOneClickHistogramValue(one_click_signin::HISTOGRAM_ACCEPTED);

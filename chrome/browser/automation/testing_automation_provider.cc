@@ -2105,9 +2105,6 @@ ListValue* TestingAutomationProvider::GetInfobarsInfo(WebContents* wc) {
       case InfoBarDelegate::CONFIRM_INFOBAR:
         infobar_item->SetString("type", "confirm_infobar");
         break;
-      case InfoBarDelegate::ONE_CLICK_LOGIN_INFOBAR:
-        infobar_item->SetString("type", "oneclicklogin_infobar");
-        break;
       case InfoBarDelegate::PASSWORD_INFOBAR:
         infobar_item->SetString("type", "password_infobar");
         break;

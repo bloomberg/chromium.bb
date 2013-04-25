@@ -42,7 +42,6 @@ class InfoBarDelegate {
 
   enum InfoBarAutomationType {
     CONFIRM_INFOBAR,
-    ONE_CLICK_LOGIN_INFOBAR,
     PASSWORD_INFOBAR,
     RPH_INFOBAR,
     UNKNOWN_INFOBAR,

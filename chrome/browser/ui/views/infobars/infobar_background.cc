@@ -4,14 +4,17 @@
 
 #include "chrome/browser/ui/views/infobars/infobar_background.h"
 
+#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/views/view.h"
 
-InfoBarBackground::InfoBarBackground(SkColor top, SkColor bottom)
-    : separator_color_(SK_ColorBLACK), top_color_(top), bottom_color_(bottom) {
+InfoBarBackground::InfoBarBackground(InfoBarDelegate::Type infobar_type)
+    : separator_color_(SK_ColorBLACK),
+      top_color_(GetInfoBarTopColor(infobar_type)),
+      bottom_color_(GetInfoBarBottomColor(infobar_type)) {
   SetNativeControlColor(
       color_utils::AlphaBlend(top_color_, bottom_color_, 128));
 }

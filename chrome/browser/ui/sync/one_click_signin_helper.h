@@ -102,9 +102,6 @@ class OneClickSigninHelper
   static Offer CanOfferOnIOThread(net::URLRequest* request,
                                   ProfileIOData* io_data);
 
-  // Initialize a finch experiment for the infobar.
-  static void InitializeFieldTrial();
-
   // Looks for the Google-Accounts-SignIn response header, and if found,
   // tries to display an infobar in the tab contents identified by the
   // child/route id.

@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/views/infobars/translate_infobar_base.h"
 
 #include "base/utf_string_conversions.h"
-#include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/translate/translate_infobar_delegate.h"
 #include "chrome/browser/ui/views/infobars/after_translate_infobar.h"
 #include "chrome/browser/ui/views/infobars/before_translate_infobar.h"
@@ -35,8 +34,7 @@ const int TranslateInfoBarBase::kButtonInLabelSpacing = 5;
 TranslateInfoBarBase::TranslateInfoBarBase(InfoBarService* owner,
                                            TranslateInfoBarDelegate* delegate)
     : InfoBarView(owner, delegate),
-      error_background_(GetInfoBarTopColor(InfoBarDelegate::WARNING_TYPE),
-                        GetInfoBarBottomColor(InfoBarDelegate::WARNING_TYPE)) {
+      error_background_(InfoBarDelegate::WARNING_TYPE) {
 }
 
 TranslateInfoBarBase::~TranslateInfoBarBase() {
