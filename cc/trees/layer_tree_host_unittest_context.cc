@@ -1226,5 +1226,40 @@ class ScrollbarLayerLostContext : public LayerTreeHostContextTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(ScrollbarLayerLostContext);
 
+class LayerTreeHostContextTestFailsToCreateSurface
+    : public LayerTreeHostContextTest {
+ public:
+  LayerTreeHostContextTestFailsToCreateSurface()
+      : LayerTreeHostContextTest(),
+        failure_count_(0) {
+    times_to_lose_on_create_ = 10;
+  }
+
+  virtual void BeginTest() OVERRIDE {
+    PostSetNeedsCommitToMainThread();
+  }
+
+  virtual void AfterTest() OVERRIDE {}
+
+  virtual void DidRecreateOutputSurface(bool success) OVERRIDE {
+    EXPECT_FALSE(success);
+    EXPECT_EQ(0, failure_count_);
+    times_to_lose_on_create_ = 0;
+    failure_count_++;
+    // Normally, the embedder should stop trying to use the compositor at
+    // this point, but let's force it back into action when we shouldn't.
+    char pixels[4];
+    EXPECT_FALSE(
+        layer_tree_host()->CompositeAndReadback(pixels, gfx::Rect(1, 1)));
+    // If we've made it this far without crashing, we've succeeded.
+    EndTest();
+  }
+
+ private:
+  int failure_count_;
+};
+
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestFailsToCreateSurface);
+
 }  // namespace
 }  // namespace cc

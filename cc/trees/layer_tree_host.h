@@ -292,6 +292,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   int commit_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
+  bool renderer_can_be_initialized_;
   bool renderer_initialized_;
   bool output_surface_lost_;
   int num_failed_recreate_attempts_;
