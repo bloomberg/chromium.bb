@@ -773,6 +773,16 @@ public:
     bool supportsDrawBuffers();
 
     friend class WebGLStateRestorer;
+    friend class WebGLRenderingContextEvictionManager;
+
+    static Vector<WebGLRenderingContext*>& activeContexts();
+    static Vector<WebGLRenderingContext*>& forciblyEvictedContexts();
+
+    static void activateContext(WebGLRenderingContext*);
+    static void deactivateContext(WebGLRenderingContext*, bool addToInactiveList);
+    static void willDestroyContext(WebGLRenderingContext*);
+    static void forciblyLoseOldestContext(const String& reason);
+    static IntSize oldestContextSize();
 };
 
 } // namespace WebCore

@@ -84,6 +84,102 @@ namespace WebCore {
 
 const double secondsBetweenRestoreAttempts = 1.0;
 const int maxGLErrorsAllowedToConsole = 256;
+const int maxGLActiveContexts = 16;
+
+Vector<WebGLRenderingContext*>& WebGLRenderingContext::activeContexts()
+{
+    DEFINE_STATIC_LOCAL(Vector<WebGLRenderingContext*>, activeContexts, ());
+    return activeContexts;
+}
+
+Vector<WebGLRenderingContext*>& WebGLRenderingContext::forciblyEvictedContexts()
+{
+    DEFINE_STATIC_LOCAL(Vector<WebGLRenderingContext*>, forciblyEvictedContexts, ());
+    return forciblyEvictedContexts;
+}
+
+void WebGLRenderingContext::forciblyLoseOldestContext(const String& reason)
+{
+    if (activeContexts().size()) {
+        WebGLRenderingContext* oldestActiveContext = activeContexts().first();
+        activeContexts().remove(0);
+
+        oldestActiveContext->printWarningToConsole(reason);
+
+        // This will call deactivateContext once the context has actually been lost.
+        oldestActiveContext->forceLostContext(WebGLRenderingContext::SyntheticLostContext);
+    }
+}
+
+IntSize WebGLRenderingContext::oldestContextSize()
+{
+    IntSize size;
+
+    if (activeContexts().size()) {
+        WebGLRenderingContext* oldestActiveContext = activeContexts().first();
+        size.setWidth(oldestActiveContext->drawingBufferWidth());
+        size.setHeight(oldestActiveContext->drawingBufferHeight());
+    }
+
+    return size;
+}
+
+void WebGLRenderingContext::activateContext(WebGLRenderingContext* context)
+{
+    if (!activeContexts().contains(context))
+        activeContexts().append(context);
+
+    if (activeContexts().size() > maxGLActiveContexts)
+        forciblyLoseOldestContext("WARNING: Too many active WebGL contexts. Oldest context will be lost.");
+}
+
+void WebGLRenderingContext::deactivateContext(WebGLRenderingContext* context, bool addToEvictedList)
+{
+    size_t position = activeContexts().find(context);
+    if (position != WTF::notFound)
+        activeContexts().remove(position);
+
+    if (addToEvictedList && !forciblyEvictedContexts().contains(context))
+        forciblyEvictedContexts().append(context);
+}
+
+void WebGLRenderingContext::willDestroyContext(WebGLRenderingContext* context)
+{
+    size_t position = forciblyEvictedContexts().find(context);
+    if (position != WTF::notFound)
+        forciblyEvictedContexts().remove(position);
+
+    deactivateContext(context, false);
+
+    // Try to re-enable the oldest inactive contexts.
+    while(activeContexts().size() < maxGLActiveContexts && forciblyEvictedContexts().size()) {
+        WebGLRenderingContext* evictedContext = forciblyEvictedContexts().first();
+        if (!evictedContext->m_restoreAllowed) {
+            forciblyEvictedContexts().remove(0);
+            continue;
+        }
+
+        IntSize desiredSize = evictedContext->m_drawingBuffer->adjustSize(evictedContext->clampedCanvasSize());
+
+        // If there's room in the pixel budget for this context, restore it.
+        if (!desiredSize.isEmpty()) {
+            forciblyEvictedContexts().remove(0);
+            evictedContext->forceRestoreContext();
+            activeContexts().append(evictedContext);
+        }
+        break;
+    }
+}
+
+class WebGLRenderingContextEvictionManager : public ContextEvictionManager {
+public:
+    void forciblyLoseOldestContext(const String& reason) {
+        WebGLRenderingContext::forciblyLoseOldestContext(reason);
+    };
+    IntSize oldestContextSize() {
+        return WebGLRenderingContext::oldestContextSize();
+    };
+};
 
 namespace {
 
@@ -474,9 +570,11 @@ WebGLRenderingContext::WebGLRenderingContext(HTMLCanvasElement* passedCanvas, Pa
     m_maxViewportDims[0] = m_maxViewportDims[1] = 0;
     m_context->getIntegerv(GraphicsContext3D::MAX_VIEWPORT_DIMS, m_maxViewportDims);
 
+    RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
+
     // Create the DrawingBuffer and initialize the platform layer.
     DrawingBuffer::PreserveDrawingBuffer preserve = m_attributes.preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    m_drawingBuffer = DrawingBuffer::create(m_context.get(), clampedCanvasSize(), preserve);
+    m_drawingBuffer = DrawingBuffer::create(m_context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
     if (!m_drawingBuffer->isZeroSized()) {
         m_drawingBuffer->bind();
@@ -563,6 +661,8 @@ void WebGLRenderingContext::initializeNewContext()
 
     m_context->setContextLostCallback(adoptPtr(new WebGLRenderingContextLostCallback(this)));
     m_context->setErrorMessageCallback(adoptPtr(new WebGLRenderingContextErrorMessageCallback(this)));
+
+    activateContext(this);
 }
 
 void WebGLRenderingContext::setupFlags()
@@ -623,6 +723,8 @@ WebGLRenderingContext::~WebGLRenderingContext()
     detachAndRemoveAllObjects();
     destroyGraphicsContext3D();
     m_contextGroup->removeContext(this);
+
+    willDestroyContext(this);
 }
 
 void WebGLRenderingContext::destroyGraphicsContext3D()
@@ -5741,6 +5843,7 @@ void WebGLRenderingContext::dispatchContextLostEvent(Timer<WebGLRenderingContext
     RefPtr<WebGLContextEvent> event = WebGLContextEvent::create(eventNames().webglcontextlostEvent, false, true, "");
     canvas()->dispatchEvent(event);
     m_restoreAllowed = event->defaultPrevented();
+    deactivateContext(this, m_contextLostMode != RealLostContext && m_restoreAllowed);
     if (m_contextLostMode == RealLostContext && m_restoreAllowed)
         m_restoreTimer.startOneShot(0);
 }
@@ -5817,10 +5920,12 @@ void WebGLRenderingContext::maybeRestoreContext(Timer<WebGLRenderingContext>*)
         return;
     }
 
+    RefPtr<WebGLRenderingContextEvictionManager> contextEvictionManager = adoptRef(new WebGLRenderingContextEvictionManager());
+
     // Construct a new drawing buffer with the new GraphicsContext3D.
     m_drawingBuffer->clear();
     DrawingBuffer::PreserveDrawingBuffer preserve = m_attributes.preserveDrawingBuffer ? DrawingBuffer::Preserve : DrawingBuffer::Discard;
-    m_drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve);
+    m_drawingBuffer = DrawingBuffer::create(context.get(), clampedCanvasSize(), preserve, contextEvictionManager.release());
 
     if (m_drawingBuffer->isZeroSized())
         return;

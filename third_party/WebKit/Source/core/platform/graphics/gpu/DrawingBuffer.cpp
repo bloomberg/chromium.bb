@@ -58,6 +58,9 @@ static const int s_maximumResourceUsePixels = 16 * 1024 * 1024;
 static int s_currentResourceUsePixels = 0;
 static const float s_resourceAdjustedRatio = 0.5;
 
+static const bool s_allowContextEvictionOnCreate = true;
+static const int s_maxScaleAttempts = 3;
+
 class ScopedTextureUnit0BindingRestorer {
 public:
     ScopedTextureUnit0BindingRestorer(GraphicsContext3D* context, GC3Denum activeTextureUnit, Platform3DObject textureUnitZeroId)
@@ -79,7 +82,7 @@ private:
     Platform3DObject m_oldTextureUnitZeroId;
 };
 
-PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve)
+PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, const IntSize& size, PreserveDrawingBuffer preserve, PassRefPtr<ContextEvictionManager> contextEvictionManager)
 {
     Extensions3D* extensions = context->getExtensions();
     bool multisampleSupported = extensions->maySupportMultisampling()
@@ -95,7 +98,7 @@ PassRefPtr<DrawingBuffer> DrawingBuffer::create(GraphicsContext3D* context, cons
     if (packedDepthStencilSupported)
         extensions->ensureEnabled("GL_OES_packed_depth_stencil");
 
-    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve));
+    RefPtr<DrawingBuffer> drawingBuffer = adoptRef(new DrawingBuffer(context, size, multisampleSupported, packedDepthStencilSupported, preserve, contextEvictionManager));
     return drawingBuffer.release();
 }
 
@@ -103,7 +106,8 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
                              const IntSize& size,
                              bool multisampleExtensionSupported,
                              bool packedDepthStencilExtensionSupported,
-                             PreserveDrawingBuffer preserve)
+                             PreserveDrawingBuffer preserve,
+                             PassRefPtr<ContextEvictionManager> contextEvictionManager)
     : m_preserveDrawingBuffer(preserve)
     , m_scissorEnabled(false)
     , m_texture2DBinding(0)
@@ -126,6 +130,7 @@ DrawingBuffer::DrawingBuffer(GraphicsContext3D* context,
     , m_internalColorFormat(0)
     , m_colorFormat(0)
     , m_internalRenderbufferFormat(0)
+    , m_contextEvictionManager(contextEvictionManager)
 {
     // Used by browser tests to detect the use of a DrawingBuffer.
     TRACE_EVENT_INSTANT0("test_gpu", "DrawingBufferCreation");
@@ -451,6 +456,7 @@ void DrawingBuffer::clear()
     m_stencilBuffer = 0;
     m_multisampleFBO = 0;
     m_fbo = 0;
+    m_contextEvictionManager.clear();
 
 #if USES_MAILBOX
     m_lastColorBuffer.clear();
@@ -470,7 +476,7 @@ unsigned DrawingBuffer::createColorTexture(const IntSize& size)
     m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_MIN_FILTER, GraphicsContext3D::LINEAR);
     m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_S, GraphicsContext3D::CLAMP_TO_EDGE);
     m_context->texParameteri(GraphicsContext3D::TEXTURE_2D, GraphicsContext3D::TEXTURE_WRAP_T, GraphicsContext3D::CLAMP_TO_EDGE);
-    if(!size.isEmpty())
+    if (!size.isEmpty())
         m_context->texImage2DResourceSafe(GraphicsContext3D::TEXTURE_2D, 0, m_internalColorFormat, size.width(), size.height(), 0, m_colorFormat, GraphicsContext3D::UNSIGNED_BYTE);
 
     return offscreenColorTexture;
@@ -577,6 +583,8 @@ void DrawingBuffer::resizeDepthStencil(const IntSize& size, int sampleCount)
     m_context->bindRenderbuffer(GraphicsContext3D::RENDERBUFFER, 0);
 }
 
+
+
 void DrawingBuffer::clearFramebuffers(GC3Dbitfield clearMask)
 {
     m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, m_multisampleFBO ? m_multisampleFBO : m_fbo);
@@ -648,20 +656,55 @@ IntSize DrawingBuffer::adjustSize(const IntSize& size) {
         adjustedSize.setWidth(maxTextureSize);
 
     // Try progressively smaller sizes until we find a size that fits or reach a scale limit.
+    int scaleAttempts = 0;
     while ((s_currentResourceUsePixels + pixelDelta(adjustedSize)) > s_maximumResourceUsePixels) {
+        scaleAttempts++;
+        if (scaleAttempts > s_maxScaleAttempts)
+            return IntSize();
+
         adjustedSize.scale(s_resourceAdjustedRatio);
 
         if (adjustedSize.isEmpty())
             return IntSize();
     }
+
+    return adjustedSize;
+}
+
+IntSize DrawingBuffer::adjustSizeWithContextEviction(const IntSize& size, bool& evictContext) {
+    IntSize adjustedSize = adjustSize(size);
+    if (!adjustedSize.isEmpty()) {
+        evictContext = false;
+        return adjustedSize; // Buffer fits without evicting a context.
+    }
+
+    // Speculatively adjust the pixel budget to see if the buffer would fit should the oldest context be evicted.
+    IntSize oldestSize = m_contextEvictionManager->oldestContextSize();
+    int pixelDelta = oldestSize.width() * oldestSize.height();
+
+    s_currentResourceUsePixels -= pixelDelta;
+    adjustedSize = adjustSize(size);
+    s_currentResourceUsePixels += pixelDelta;
+
+    evictContext = !adjustedSize.isEmpty();
     return adjustedSize;
 }
 
 void DrawingBuffer::reset(const IntSize& newSize)
 {
-    IntSize adjustedSize = adjustSize(newSize);
+    IntSize adjustedSize;
+    bool evictContext = false;
+    bool isNewContext = m_size.isEmpty();
+    if (s_allowContextEvictionOnCreate && isNewContext)
+        adjustedSize = adjustSizeWithContextEviction(newSize, evictContext);
+    else
+        adjustedSize = adjustSize(newSize);
+
     if (adjustedSize.isEmpty())
         return;
+
+    if (evictContext)
+        m_contextEvictionManager->forciblyLoseOldestContext("WARNING: WebGL contexts have exceeded the maximum allowed backbuffer area. Oldest context will be lost.");
 
     if (adjustedSize != m_size) {
         do {

@@ -51,6 +51,15 @@ namespace WebCore {
 class GraphicsContext3D;
 class ImageData;
 
+// Abstract interface to allow basic context eviction management
+class ContextEvictionManager : public RefCounted<ContextEvictionManager> {
+public:
+    virtual ~ContextEvictionManager() {};
+
+    virtual void forciblyLoseOldestContext(const String& reason) = 0;
+    virtual IntSize oldestContextSize() = 0;
+};
+
 // Manages a rendering target (framebuffer + attachment) for a canvas.  Can publish its rendering
 // results to a PlatformLayer for compositing.
 class DrawingBuffer : public RefCounted<DrawingBuffer>, public WebKit::WebExternalTextureLayerClient  {
@@ -65,7 +74,7 @@ public:
         Discard
     };
 
-    static PassRefPtr<DrawingBuffer> create(GraphicsContext3D*, const IntSize&, PreserveDrawingBuffer);
+    static PassRefPtr<DrawingBuffer> create(GraphicsContext3D*, const IntSize&, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     ~DrawingBuffer();
 
@@ -121,7 +130,7 @@ public:
 
 private:
     DrawingBuffer(GraphicsContext3D*, const IntSize&, bool multisampleExtensionSupported,
-                  bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer);
+                  bool packedDepthStencilExtensionSupported, PreserveDrawingBuffer, PassRefPtr<ContextEvictionManager>);
 
     void initialize(const IntSize&);
 
@@ -151,6 +160,10 @@ private:
 
     // Calculates the difference in pixels between the current buffer size and the proposed size.
     int pixelDelta(const IntSize& size);
+
+    // Given the desired buffer size, provides the largest dimensions that will fit in the pixel budget
+    // Returns true if the buffer will only fit if the oldest WebGL context is forcibly lost
+    IntSize adjustSizeWithContextEviction(const IntSize&, bool& evictContext);
 
     PreserveDrawingBuffer m_preserveDrawingBuffer;
     bool m_scissorEnabled;
@@ -192,6 +205,8 @@ private:
     // Mailboxes that were released by the compositor and can be used again by this DrawingBuffer.
     Vector<RefPtr<MailboxInfo> > m_recycledMailboxes;
     RefPtr<MailboxInfo> m_lastColorBuffer;
+
+    RefPtr<ContextEvictionManager> m_contextEvictionManager;
 };
 
 } // namespace WebCore
