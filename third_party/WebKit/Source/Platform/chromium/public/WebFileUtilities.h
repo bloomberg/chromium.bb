@@ -57,7 +57,6 @@ public:
     virtual WebString directoryName(const WebString& path)  { return WebString(); }
     virtual WebString pathByAppendingComponent(const WebString& path, const WebString& component)  { return WebString(); }
     virtual bool makeAllDirectories(const WebString& path) { return false; }
-    virtual WebString getAbsolutePath(const WebString& path)  { return WebString(); }
     virtual bool isDirectory(const WebString& path) { return false; }
     virtual WebURL filePathToURL(const WebString& path)  { return WebURL(); }
     virtual FileHandle openFile(const WebString& path, int mode)  { return FileHandle(); }
