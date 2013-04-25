@@ -186,10 +186,14 @@ enum VariationID {
   IOS_TOUR_DEFAULT = 3310189,
   IOS_TOUR_EXPERIMENT = 3310190,
 
+  // OmniboxStopTimer field trial.
+  OMNIBOX_STOP_TIMER_CONTROL = 3310263,
+  OMNIBOX_STOP_TIMER_EXPERIMENT = 3310264,
+
   // NEXT ID: When adding new IDs, please add them above this section, starting
   // with the value of NEXT_ID, and updating NEXT_ID to (end of your reserved
   // range) + 1.
-  NEXT_ID = 3310263,
+  NEXT_ID = 3310265,
 
   // USABLE IDs END HERE.
   //
