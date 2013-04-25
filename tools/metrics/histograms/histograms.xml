@@ -398,6 +398,14 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DisabledUIUserResponse"
+    enum="ExtensionDisabledUIUserResponse">
+  <summary>
+    User response to the dialog shown when an extension is disabled due to an
+    update requiring more permissions.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.FunctionCalls" enum="ExtensionFunctions">
   <summary>Number of calls to extension functions.</summary>
 </histogram>
@@ -4554,6 +4562,12 @@ other types of suffix sets.
   <int value="11002" label="WSATRY_AGAIN"/>
   <int value="11003" label="WSA_ANO_RECOVERY"/>
   <int value="11004" label="WSANO_DATA"/>
+</enum>
+
+<enum name="ExtensionDisabledUIUserResponse" type="int">
+  <int value="0" label="IGNORED"/>
+  <int value="1" label="REENABLE"/>
+  <int value="2" label="UNINSTALL"/>
 </enum>
 
 <enum name="ExtensionFunctions" type="int">
