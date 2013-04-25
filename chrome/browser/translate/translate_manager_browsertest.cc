@@ -1358,11 +1358,11 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
     EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
               infobar->infobar_type());
     if (i < 7) {
-      EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateButton());
+      EXPECT_FALSE(infobar->ShouldShowAlwaysTranslateShortcut());
       infobar->Translate();
       process()->sink().ClearMessages();
     } else {
-      EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateButton());
+      EXPECT_TRUE(infobar->ShouldShowAlwaysTranslateShortcut());
     }
     if (i == 3)
       test_profile->set_incognito(false);
@@ -1391,10 +1391,10 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
     EXPECT_EQ(TranslateInfoBarDelegate::BEFORE_TRANSLATE,
               infobar->infobar_type());
     if (i < 7) {
-      EXPECT_FALSE(infobar->ShouldShowNeverTranslateButton());
+      EXPECT_FALSE(infobar->ShouldShowNeverTranslateShortcut());
       infobar->TranslationDeclined();
     } else {
-      EXPECT_TRUE(infobar->ShouldShowNeverTranslateButton());
+      EXPECT_TRUE(infobar->ShouldShowNeverTranslateShortcut());
     }
     if (i == 3)
       test_profile->set_incognito(false);

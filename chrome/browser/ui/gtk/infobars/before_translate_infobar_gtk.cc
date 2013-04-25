@@ -61,7 +61,7 @@ void BeforeTranslateInfoBar::InitWidgets() {
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 
   TranslateInfoBarDelegate* delegate = GetDelegate();
-  if (delegate->ShouldShowNeverTranslateButton()) {
+  if (delegate->ShouldShowNeverTranslateShortcut()) {
     std::string label = l10n_util::GetStringFUTF8(
         IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE,
         delegate->language_name_at(delegate->original_language_index()));
@@ -71,7 +71,7 @@ void BeforeTranslateInfoBar::InitWidgets() {
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
   }
 
-  if (delegate->ShouldShowAlwaysTranslateButton()) {
+  if (delegate->ShouldShowAlwaysTranslateShortcut()) {
     std::string label = l10n_util::GetStringFUTF8(
         IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE,
         delegate->language_name_at(delegate->original_language_index()));

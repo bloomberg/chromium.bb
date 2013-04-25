@@ -25,6 +25,7 @@ template <typename T> struct DefaultSingletonTraits;
 class GURL;
 struct PageTranslatedDetails;
 class PrefService;
+struct ShortcutConfiguration;
 class TranslateInfoBarDelegate;
 
 namespace content {
@@ -175,6 +176,10 @@ class TranslateManager : public content::NotificationObserver,
   //     the accept-language list
   // If no language is found then an empty string is returned.
   static std::string GetTargetLanguage(PrefService* prefs);
+
+  // Returns the different parameters used to decide whether extra shortcuts
+  // are needed.
+  static ShortcutConfiguration ShortcutConfig();
 
   content::NotificationRegistrar notification_registrar_;
 

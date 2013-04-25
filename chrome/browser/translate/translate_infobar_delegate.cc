@@ -31,13 +31,11 @@ TranslateInfoBarDelegate::~TranslateInfoBarDelegate() {
 }
 
 // static
-void TranslateInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                      bool replace_existing_infobar,
-                                      Type infobar_type,
-                                      TranslateErrors::Type error_type,
-                                      PrefService* prefs,
-                                      const std::string& original_language,
-                                      const std::string& target_language) {
+void TranslateInfoBarDelegate::Create(
+    InfoBarService* infobar_service, bool replace_existing_infobar,
+    Type infobar_type, TranslateErrors::Type error_type, PrefService* prefs,
+    const ShortcutConfiguration& shortcut_config,
+    const std::string& original_language, const std::string& target_language) {
   // Check preconditions.
   if (infobar_type != TRANSLATION_ERROR) {
     DCHECK(TranslateManager::IsSupportedLanguage(target_language));
@@ -61,7 +59,8 @@ void TranslateInfoBarDelegate::Create(InfoBarService* infobar_service,
   // Create the new delegate.
   scoped_ptr<TranslateInfoBarDelegate> infobar(
       new TranslateInfoBarDelegate(infobar_type, error_type, infobar_service,
-                                   prefs, original_language, target_language));
+                                   prefs, shortcut_config,
+                                   original_language, target_language));
   infobar->UpdateBackgroundAnimation(old_delegate);
 
   // Add the new delegate if necessary.
@@ -234,16 +233,18 @@ bool TranslateInfoBarDelegate::ShouldShowMessageInfoBarButton() {
   return !GetMessageInfoBarButtonText().empty();
 }
 
-bool TranslateInfoBarDelegate::ShouldShowNeverTranslateButton() {
+bool TranslateInfoBarDelegate::ShouldShowNeverTranslateShortcut() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-      (prefs_.GetTranslationDeniedCount(original_language_code()) >= 3);
+      (prefs_.GetTranslationDeniedCount(original_language_code()) >=
+          shortcut_config_.never_translate_min_count);
 }
 
-bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateButton() {
+bool TranslateInfoBarDelegate::ShouldShowAlwaysTranslateShortcut() {
   DCHECK_EQ(BEFORE_TRANSLATE, infobar_type_);
   return !web_contents()->GetBrowserContext()->IsOffTheRecord() &&
-      (prefs_.GetTranslationAcceptedCount(original_language_code()) >= 3);
+      (prefs_.GetTranslationAcceptedCount(original_language_code()) >=
+          shortcut_config_.always_translate_min_count);
 }
 
 void TranslateInfoBarDelegate::UpdateBackgroundAnimation(
@@ -287,6 +288,7 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
     TranslateErrors::Type error_type,
     InfoBarService* infobar_service,
     PrefService* prefs,
+    ShortcutConfiguration shortcut_config,
     const std::string& original_language,
     const std::string& target_language)
     : InfoBarDelegate(infobar_service),
@@ -296,7 +298,8 @@ TranslateInfoBarDelegate::TranslateInfoBarDelegate(
       initial_original_language_index_(kNoIndex),
       target_language_index_(kNoIndex),
       error_type_(error_type),
-      prefs_(prefs) {
+      prefs_(prefs),
+      shortcut_config_(shortcut_config) {
   DCHECK_NE((infobar_type == TRANSLATION_ERROR),
             (error_type_ == TranslateErrors::NONE));
 

@@ -474,6 +474,7 @@ void TranslateManager::OnURLFetchComplete(const net::URLFetcher* source) {
             TranslateInfoBarDelegate::TRANSLATION_ERROR,
             TranslateErrors::NETWORK,
             profile->GetPrefs(),
+            ShortcutConfig(),
             request.source_lang,
             request.target_lang);
       } else {
@@ -577,7 +578,8 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   TranslateInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), false,
       TranslateInfoBarDelegate::BEFORE_TRANSLATE, TranslateErrors::NONE,
-      profile->GetPrefs(), language_code, target_lang);
+      profile->GetPrefs(), ShortcutConfig(),
+      language_code, target_lang);
 }
 
 void TranslateManager::InitiateTranslationPosted(
@@ -607,10 +609,11 @@ void TranslateManager::TranslatePage(WebContents* web_contents,
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
   TranslateInfoBarDelegate::Create(
       InfoBarService::FromWebContents(web_contents), true,
       TranslateInfoBarDelegate::TRANSLATING, TranslateErrors::NONE,
-      profile->GetPrefs(), source_lang, target_lang);
+      profile->GetPrefs(), ShortcutConfig(), source_lang, target_lang);
 
   if (!translate_script_.empty()) {
     DoTranslatePage(web_contents, translate_script_, source_lang, target_lang);
@@ -715,7 +718,7 @@ void TranslateManager::PageTranslated(WebContents* web_contents,
       (details->error_type == TranslateErrors::NONE) ?
           TranslateInfoBarDelegate::AFTER_TRANSLATE :
           TranslateInfoBarDelegate::TRANSLATION_ERROR,
-      details->error_type, prefs, details->source_language,
+      details->error_type, prefs, ShortcutConfig(), details->source_language,
       details->target_language);
 }
 
@@ -890,4 +893,20 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
       return lang_code;
   }
   return std::string();
+}
+
+// static
+ShortcutConfiguration TranslateManager::ShortcutConfig() {
+  ShortcutConfiguration config;
+
+  // The android implementation does not offer a drop down for space
+  // reason so we are more aggressive showing the shortcuts for never translate.
+  #if defined(OS_ANDROID)
+  config.never_translate_min_count = 1;
+  #else
+  config.never_translate_min_count = 3;
+  #endif  // defined(OS_ANDROID)
+
+  config.always_translate_min_count = 3;
+  return config;
 }

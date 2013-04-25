@@ -18,6 +18,13 @@
 
 class PrefService;
 
+// The defaults after which extra shortcuts for options
+// can be shown.
+struct ShortcutConfiguration {
+  int always_translate_min_count;
+  int never_translate_min_count;
+};
+
 class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
   // The different types of infobars that can be shown for translation.
@@ -57,6 +64,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                      Type infobar_type,
                      TranslateErrors::Type error_type,
                      PrefService* prefs,
+                     const ShortcutConfiguration& shortcut_config,
                      const std::string& original_language,
                      const std::string& target_language);
 
@@ -140,10 +148,12 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   bool ShouldShowMessageInfoBarButton();
 
   // Called by the before translate infobar to figure-out if it should show
-  // an extra button to let the user black-list/white-list that language (based
-  // on how many times the user accepted/declined translation).
-  bool ShouldShowNeverTranslateButton();
-  bool ShouldShowAlwaysTranslateButton();
+  // an extra shortcut to let the user black-list/white-list that language
+  // (based on how many times the user accepted/declined translation).
+  // The shortcut itself is platform specific, it can be a button or a new bar
+  // for example.
+  bool ShouldShowNeverTranslateShortcut();
+  bool ShouldShowAlwaysTranslateShortcut();
 
   // Sets this infobar background animation based on the previous infobar shown.
   // A fading background effect is used when transitioning from a normal state
@@ -170,6 +180,7 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                            TranslateErrors::Type error_type,
                            InfoBarService* infobar_service,
                            PrefService* prefs,
+                           ShortcutConfiguration shortcut_config,
                            const std::string& original_language,
                            const std::string& target_language);
   Type infobar_type_;
@@ -219,6 +230,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // The translation related preferences.
   TranslatePrefs prefs_;
 
+  // Translation shortcut configuration
+  ShortcutConfiguration shortcut_config_;
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 

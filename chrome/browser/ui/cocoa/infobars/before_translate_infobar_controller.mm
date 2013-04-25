@@ -96,10 +96,10 @@ NSButton* CreateNSButtonWithResourceIDAndParameter(
       label1_.get(), fromLanguagePopUp_.get(), label2_.get(),
       cancelButton_, okButton_, nil];
 
-  if ([self delegate]->ShouldShowNeverTranslateButton())
+  if ([self delegate]->ShouldShowNeverTranslateShortcut())
     [visibleControls addObject:neverTranslateButton_.get()];
 
-  if ([self delegate]->ShouldShowAlwaysTranslateButton())
+  if ([self delegate]->ShouldShowAlwaysTranslateShortcut())
     [visibleControls addObject:alwaysTranslateButton_.get()];
 
   return visibleControls;

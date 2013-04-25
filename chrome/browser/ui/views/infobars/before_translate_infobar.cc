@@ -119,13 +119,13 @@ void BeforeTranslateInfoBar::ViewHierarchyChanged(bool is_add,
 
   const string16& language(
       delegate->language_name_at(delegate->original_language_index()));
-  if (delegate->ShouldShowNeverTranslateButton()) {
-    DCHECK(!delegate->ShouldShowAlwaysTranslateButton());
+  if (delegate->ShouldShowNeverTranslateShortcut()) {
+    DCHECK(!delegate->ShouldShowAlwaysTranslateShortcut());
     never_translate_button_ = CreateLabelButton(this,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_NEVER_TRANSLATE,
                                    language), false);
     AddChildView(never_translate_button_);
-  } else if (delegate->ShouldShowAlwaysTranslateButton()) {
+  } else if (delegate->ShouldShowAlwaysTranslateShortcut()) {
     always_translate_button_ = CreateLabelButton(this,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_ALWAYS_TRANSLATE,
                                    language), false);
