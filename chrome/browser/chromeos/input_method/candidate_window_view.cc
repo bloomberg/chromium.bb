@@ -511,7 +511,7 @@ void CandidateView::UpdateLabelBackgroundColors() {
 }
 
 CandidateWindowView::CandidateWindowView(views::Widget* parent_frame)
-    : selected_candidate_index_in_page_(0),
+    : selected_candidate_index_in_page_(-1),
       parent_frame_(parent_frame),
       preedit_area_(NULL),
       header_area_(NULL),
@@ -726,9 +726,21 @@ void CandidateWindowView::UpdateCandidates(
   lookup_table_.CopyFrom(new_lookup_table);
 
   // Select the current candidate in the page.
-  const int current_candidate_in_page =
-      lookup_table_.cursor_position() % lookup_table_.page_size();
-  SelectCandidateAt(current_candidate_in_page);
+  if (lookup_table_.is_cursor_visible()) {
+    if (lookup_table_.page_size()) {
+      const int current_candidate_in_page =
+          lookup_table_.cursor_position() % lookup_table_.page_size();
+      SelectCandidateAt(current_candidate_in_page);
+    }
+  } else {
+    // Unselect the currently selected candidate.
+    if (0 <= selected_candidate_index_in_page_ &&
+        static_cast<size_t>(selected_candidate_index_in_page_) <
+        candidate_views_.size()) {
+      candidate_views_[selected_candidate_index_in_page_]->Unselect();
+      selected_candidate_index_in_page_ = -1;
+    }
+  }
 }
 
 void CandidateWindowView::MaybeInitializeCandidateViews(
@@ -900,6 +912,12 @@ void CandidateWindowView::OnCandidatePressed(
 }
 
 void CandidateWindowView::CommitCandidate() {
+  if (!(0 <= selected_candidate_index_in_page_ &&
+        static_cast<size_t>(selected_candidate_index_in_page_) <
+        candidate_views_.size())) {
+    return;  // Out of range, do nothing.
+  }
+
   // For now, we don't distinguish left and right clicks.
   const int button = 1;  // Left button.
   const int key_modifilers = 0;

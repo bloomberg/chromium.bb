@@ -148,7 +148,8 @@ class CandidateWindowView : public views::View {
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, MozcUpdateCandidateTest);
+  FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest,
+                           UpdateCandidatesTest_CursorVisibility);
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest, ShortcutSettingTest);
   FRIEND_TEST_ALL_PREFIXES(CandidateWindowViewTest,
                            DoNotChangeRowHeightWithLabelSwitchTest);

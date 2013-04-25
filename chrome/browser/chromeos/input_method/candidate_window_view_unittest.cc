@@ -73,6 +73,39 @@ class CandidateWindowViewTest : public views::ViewsTestBase {
   }
 };
 
+TEST_F(CandidateWindowViewTest, UpdateCandidatesTest_CursorVisibility) {
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params =
+      CreateParams(views::Widget::InitParams::TYPE_WINDOW);
+  widget->Init(params);
+
+  CandidateWindowView candidate_window_view(widget);
+  candidate_window_view.Init();
+
+  // Visible (by default) cursor.
+  IBusLookupTable table;
+  const int table_size = 9;
+  InitIBusLookupTableWithCandidatesFilled(table_size, &table);
+  candidate_window_view.UpdateCandidates(table);
+  EXPECT_EQ(0, candidate_window_view.selected_candidate_index_in_page_);
+
+  // Invisible cursor.
+  table.set_is_cursor_visible(false);
+  candidate_window_view.UpdateCandidates(table);
+  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
+
+  // Move the cursor to the end.
+  table.set_cursor_position(table_size - 1);
+  candidate_window_view.UpdateCandidates(table);
+  EXPECT_EQ(-1, candidate_window_view.selected_candidate_index_in_page_);
+
+  // Change the cursor to visible.  The cursor must be at the end.
+  table.set_is_cursor_visible(true);
+  candidate_window_view.UpdateCandidates(table);
+  EXPECT_EQ(table_size - 1,
+            candidate_window_view.selected_candidate_index_in_page_);
+}
+
 TEST_F(CandidateWindowViewTest, SelectCandidateAtTest) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params =
