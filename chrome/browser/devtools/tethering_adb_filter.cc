@@ -16,6 +16,7 @@
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/dns/host_resolver.h"
 #include "net/socket/tcp_client_socket.h"
 
 namespace {
@@ -33,7 +34,7 @@ static const char kTetheringUnbind[] = "Tethering.unbind";
 
 class SocketTunnel {
  public:
-  SocketTunnel(const std::string& location)
+  explicit SocketTunnel(const std::string& location)
       : location_(location) {
   }
 
@@ -52,15 +53,25 @@ class SocketTunnel {
       return;
     }
 
-    net::IPAddressNumber ip_number;
-    if (!net::ParseIPLiteralToNumber(tokens[0], &ip_number)) {
+    host_resolver_ = net::HostResolver::CreateDefaultResolver(NULL);
+    net::HostResolver::RequestInfo request_info(
+        net::HostPortPair(tokens[0], port));
+    result = host_resolver_->Resolve(
+        request_info, &address_list_,
+        base::Bind(&SocketTunnel::OnResolved, base::Unretained(this)),
+        NULL, net::BoundNetLog());
+    if (result != net::ERR_IO_PENDING)
+      OnResolved(result);
+  }
+
+ private:
+  void OnResolved(int result) {
+    if (result < 0) {
       SelfDestruct();
       return;
     }
 
-    net::AddressList address_list =
-        net::AddressList::CreateFromIPAddress(ip_number, port);
-    host_socket_.reset(new net::TCPClientSocket(address_list, NULL,
+    host_socket_.reset(new net::TCPClientSocket(address_list_, NULL,
                                                 net::NetLog::Source()));
     result = host_socket_->Connect(base::Bind(&SocketTunnel::OnConnected,
                                               base::Unretained(this)));
@@ -71,7 +82,6 @@ class SocketTunnel {
   ~SocketTunnel() {
   }
 
- private:
   void OnConnected(int result) {
     if (result < 0) {
       SelfDestruct();
@@ -121,6 +131,8 @@ class SocketTunnel {
   std::string location_;
   scoped_ptr<net::StreamSocket> remote_socket_;
   scoped_ptr<net::StreamSocket> host_socket_;
+  scoped_ptr<net::HostResolver> host_resolver_;
+  net::AddressList address_list_;
 };
 
 }  // namespace
