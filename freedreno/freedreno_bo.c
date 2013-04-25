@@ -165,12 +165,17 @@ struct fd_bo * fd_bo_from_name(struct fd_device *dev, uint32_t name)
 	struct drm_gem_open req = {
 			.name = name,
 	};
+	struct fd_bo *bo;
 
 	if (drmIoctl(dev->fd, DRM_IOCTL_GEM_OPEN, &req)) {
 		return NULL;
 	}
 
-	return bo_from_handle(dev, req.size, req.handle);
+	bo = bo_from_handle(dev, req.size, req.handle);
+	if (bo)
+		bo->name = name;
+
+	return bo;
 }
 
 struct fd_bo * fd_bo_ref(struct fd_bo *bo)
@@ -271,4 +276,65 @@ uint32_t fd_bo_gpuaddr(struct fd_bo *bo, uint32_t offset)
 		bo->gpuaddr = req.gpuaddr[0];
 	}
 	return bo->gpuaddr + offset;
+}
+
+/*
+ * Super-cheezy way to synchronization between mesa and ddx..  the
+ * SET_ACTIVE ioctl gives us a way to stash a 32b # w/ a GEM bo, and
+ * GET_BUFINFO gives us a way to retrieve it.  We use this to stash
+ * the timestamp of the last ISSUEIBCMDS on the buffer.
+ *
+ * To avoid an obscene amount of syscalls, we:
+ *  1) Only set the timestamp for buffers w/ an flink name, ie.
+ *     only buffers shared across processes.  This is enough to
+ *     catch the DRI2 buffers.
+ *  2) Only set the timestamp for buffers submitted to the 3d ring
+ *     and only check the timestamps on buffers submitted to the
+ *     2d ring.  This should be enough to handle synchronizing of
+ *     presentation blit.  We could do synchronization in the other
+ *     direction too, but that would be problematic if we are using
+ *     the 3d ring from DDX, since client side wouldn't know this.
+ *
+ * The waiting on timestamp happens before flush, and setting of
+ * timestamp happens after flush.  It is transparent to the user
+ * of libdrm_freedreno as all the tracking of buffers happens via
+ * _emit_reloc()..
+ */
+
+void fb_bo_set_timestamp(struct fd_bo *bo, uint32_t timestamp)
+{
+	if (bo->name) {
+		struct drm_kgsl_gem_active req = {
+				.handle = bo->handle,
+				.active = timestamp,
+		};
+		int ret;
+
+		ret = drmCommandWrite(bo->dev->fd, DRM_KGSL_GEM_SET_ACTIVE,
+				&req, sizeof(req));
+		if (ret) {
+			ERROR_MSG("set active failed: %s", strerror(errno));
+		}
+	}
+}
+
+uint32_t fd_bo_get_timestamp(struct fd_bo *bo)
+{
+	uint32_t timestamp = 0;
+	if (bo->name) {
+		struct drm_kgsl_gem_bufinfo req = {
+				.handle = bo->handle,
+		};
+		int ret;
+
+		ret = drmCommandWriteRead(bo->dev->fd, DRM_KGSL_GEM_GET_BUFINFO,
+				&req, sizeof(req));
+		if (ret) {
+			ERROR_MSG("get bufinfo failed: %s", strerror(errno));
+			return 0;
+		}
+
+		timestamp = req.active;
+	}
+	return timestamp;
 }

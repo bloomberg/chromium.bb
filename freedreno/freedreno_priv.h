@@ -70,10 +70,16 @@ struct fd_pipe {
 	 * not passed yet (so still ref'd in active cmdstream)
 	 */
 	struct list_head pending_list;
+
+	/* if we are the 2d pipe, and want to wait on a timestamp
+	 * from 3d, we need to also internally open the 3d pipe:
+	 */
+	struct fd_pipe *p3d;
 };
 
 void fd_pipe_add_submit(struct fd_pipe *pipe, struct fd_bo *bo);
-void fd_pipe_process_submit(struct fd_pipe *pipe, uint32_t timestamp);
+void fd_pipe_pre_submit(struct fd_pipe *pipe);
+void fd_pipe_post_submit(struct fd_pipe *pipe, uint32_t timestamp);
 void fd_pipe_process_pending(struct fd_pipe *pipe, uint32_t timestamp);
 
 struct fd_bo {
@@ -95,6 +101,8 @@ struct fd_bo {
  * a proper kernel driver
  */
 uint32_t fd_bo_gpuaddr(struct fd_bo *bo, uint32_t offset);
+void fb_bo_set_timestamp(struct fd_bo *bo, uint32_t timestamp);
+uint32_t fd_bo_get_timestamp(struct fd_bo *bo);
 
 #define ALIGN(v,a) (((v) + (a) - 1) & ~((a) - 1))
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))

@@ -159,6 +159,8 @@ static int flush_impl(struct fd_ringbuffer *ring, uint32_t *last_start)
 	};
 	int ret;
 
+	fd_pipe_pre_submit(ring->pipe);
+
 	/* z180_cmdstream_issueibcmds() is made of fail: */
 	if (ring->pipe->id == FD_PIPE_2D) {
 		/* fix up size field in last cmd packet */
@@ -180,7 +182,7 @@ static int flush_impl(struct fd_ringbuffer *ring, uint32_t *last_start)
 	ring->last_timestamp = req.timestamp;
 	ring->last_start = ring->cur;
 
-	fd_pipe_process_submit(ring->pipe, req.timestamp);
+	fd_pipe_post_submit(ring->pipe, req.timestamp);
 
 	return ret;
 }
