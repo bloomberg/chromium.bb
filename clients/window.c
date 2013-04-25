@@ -28,6 +28,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -418,6 +419,47 @@ enum window_location {
 };
 
 static const cairo_user_data_key_t shm_surface_data_key;
+
+#if 0
+
+static void
+debug_print(void *proxy, int line, const char *func, const char *fmt, ...)
+__attribute__ ((format (printf, 4, 5)));
+
+static void
+debug_print(void *proxy, int line, const char *func, const char *fmt, ...)
+{
+	va_list ap;
+	struct timeval tv;
+
+	gettimeofday(&tv, NULL);
+	fprintf(stderr, "%8ld.%03ld ",
+		(long)tv.tv_sec & 0xffff, (long)tv.tv_usec / 1000);
+
+	if (proxy)
+		fprintf(stderr, "%s@%d ",
+			wl_proxy_get_class(proxy), wl_proxy_get_id(proxy));
+
+	/*fprintf(stderr, __FILE__ ":%d:%s ", line, func);*/
+	fprintf(stderr, "%s ", func);
+
+	va_start(ap, fmt);
+	vfprintf(stderr, fmt, ap);
+	va_end(ap);
+}
+
+#define DBG(fmt, ...) \
+	debug_print(NULL, __LINE__, __func__, fmt, ##__VA_ARGS__)
+
+#define DBG_OBJ(obj, fmt, ...) \
+	debug_print(obj, __LINE__, __func__, fmt, ##__VA_ARGS__)
+
+#else
+
+#define DBG(...) do {} while (0)
+#define DBG_OBJ(...) do {} while (0)
+
+#endif
 
 #ifdef HAVE_CAIRO_EGL
 
@@ -857,11 +899,14 @@ shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 	struct shm_surface_leaf *leaf;
 	int i;
 	int free_found;
+	int available = MAX_LEAVES;
+	char bufs[MAX_LEAVES + 1];
 
 	for (i = 0; i < MAX_LEAVES; i++) {
 		leaf = &surface->leaf[i];
 		if (leaf->data && leaf->data->buffer == buffer) {
 			leaf->busy = 0;
+			available = i;
 			break;
 		}
 	}
@@ -872,14 +917,27 @@ shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 	for (i = 0; i < MAX_LEAVES; i++) {
 		leaf = &surface->leaf[i];
 
+		if (leaf->busy)
+			bufs[i] = 'b';
+		else if (leaf->cairo_surface)
+			bufs[i] = 'a';
+		else
+			bufs[i] = ' ';
+
 		if (!leaf->cairo_surface || leaf->busy)
 			continue;
 
 		if (!free_found)
 			free_found = 1;
-		else
+		else {
 			shm_surface_leaf_release(leaf);
+			bufs[i] = '*';
+		}
 	}
+
+	bufs[MAX_LEAVES] = '\0';
+	DBG_OBJ(surface->surface, "leaf %d released, leaves [%s]\n",
+		available, bufs);
 }
 
 static const struct wl_buffer_listener shm_surface_buffer_listener = {
@@ -907,9 +965,13 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 		if (!leaf || surface->leaf[i].cairo_surface)
 			leaf = &surface->leaf[i];
 	}
+	DBG_OBJ(surface->surface, "pick leaf %d\n",
+		(int)(leaf - &surface->leaf[0]));
+
 	if (!leaf) {
 		fprintf(stderr, "%s: all buffers are held by the server.\n",
 			__func__);
+		exit(1);
 		return NULL;
 	}
 
@@ -971,6 +1033,9 @@ shm_surface_swap(struct toysurface *base,
 			  server_allocation->width, server_allocation->height);
 	wl_surface_commit(surface->surface);
 
+	DBG_OBJ(surface->surface, "leaf %d busy\n",
+		(int)(leaf - &surface->leaf[0]));
+
 	leaf->busy = 1;
 	surface->current = NULL;
 }
@@ -1003,6 +1068,7 @@ shm_surface_create(struct display *display, struct wl_surface *wl_surface,
 		   uint32_t flags, struct rectangle *rectangle)
 {
 	struct shm_surface *surface;
+	DBG_OBJ(wl_surface, "\n");
 
 	surface = calloc(1, sizeof *surface);
 	if (!surface)
@@ -1628,6 +1694,7 @@ window_schedule_redraw_task(struct window *window);
 void
 widget_schedule_redraw(struct widget *widget)
 {
+	DBG_OBJ(widget->surface->surface, "widget %p\n", widget);
 	widget->surface->redraw_needed = 1;
 	window_schedule_redraw_task(widget->window);
 }
@@ -3400,6 +3467,12 @@ idle_resize(struct window *window)
 	window->resize_needed = 0;
 	window->redraw_needed = 1;
 
+	DBG("from %dx%d to %dx%d\n",
+	    window->main_surface->server_allocation.width,
+	    window->main_surface->server_allocation.height,
+	    window->pending_allocation.width,
+	    window->pending_allocation.height);
+
 	hack_prevent_EGL_sub_surface_deadlock(window);
 
 	widget_set_allocation(window->main_surface->widget,
@@ -3519,13 +3592,16 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 	struct surface *surface = data;
 
 	assert(callback == surface->frame_cb);
+	DBG_OBJ(callback, "done\n");
 	wl_callback_destroy(callback);
 	surface->frame_cb = NULL;
 
 	surface->last_time = time;
 
-	if (surface->redraw_needed || surface->window->redraw_needed)
+	if (surface->redraw_needed || surface->window->redraw_needed) {
+		DBG_OBJ(surface->surface, "window_schedule_redraw_task\n");
 		window_schedule_redraw_task(surface->window);
+	}
 }
 
 static const struct wl_callback_listener listener = {
@@ -3535,6 +3611,8 @@ static const struct wl_callback_listener listener = {
 static void
 surface_redraw(struct surface *surface)
 {
+	DBG_OBJ(surface->surface, "begin\n");
+
 	if (!surface->window->redraw_needed && !surface->redraw_needed)
 		return;
 
@@ -3545,14 +3623,18 @@ surface_redraw(struct surface *surface)
 		if (!surface->window->redraw_needed)
 			return;
 
+		DBG_OBJ(surface->frame_cb, "cancelled\n");
 		wl_callback_destroy(surface->frame_cb);
 	}
 
 	surface->frame_cb = wl_surface_frame(surface->surface);
 	wl_callback_add_listener(surface->frame_cb, &listener, surface);
+	DBG_OBJ(surface->frame_cb, "new\n");
 
 	surface->redraw_needed = 0;
+	DBG_OBJ(surface->surface, "-> widget_redraw\n");
 	widget_redraw(surface->widget);
+	DBG_OBJ(surface->surface, "done\n");
 }
 
 static void
@@ -3561,13 +3643,17 @@ idle_redraw(struct task *task, uint32_t events)
 	struct window *window = container_of(task, struct window, redraw_task);
 	struct surface *surface;
 
+	DBG(" --------- \n");
+
 	wl_list_init(&window->redraw_task.link);
 	window->redraw_task_scheduled = 0;
 
 	if (window->resize_needed) {
 		/* throttle resizing to the main surface display */
-		if (window->main_surface->frame_cb)
+		if (window->main_surface->frame_cb) {
+			DBG_OBJ(window->main_surface->frame_cb, "pending\n");
 			return;
+		}
 
 		idle_resize(window);
 	}
@@ -3598,6 +3684,8 @@ void
 window_schedule_redraw(struct window *window)
 {
 	struct surface *surface;
+
+	DBG_OBJ(window->main_surface->surface, "window %p\n", window);
 
 	wl_list_for_each(surface, &window->subsurface_list, link)
 		surface->redraw_needed = 1;
