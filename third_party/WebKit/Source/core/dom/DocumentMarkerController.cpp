@@ -31,7 +31,7 @@
 #include "NodeTraversal.h"
 #include "Range.h"
 #include "RenderedDocumentMarker.h"
-#include "TextIterator.h"
+#include "core/editing/TextIterator.h"
 #include "core/rendering/RenderObject.h"
 
 #ifndef NDEBUG

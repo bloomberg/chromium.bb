@@ -24,11 +24,10 @@
  */
 
 #include "config.h"
-#include "SpellChecker.h"
+#include "core/editing/SpellChecker.h"
 
 #include "Document.h"
 #include "DocumentMarkerController.h"
-#include "Editor.h"
 #include "EditorClient.h"
 #include "Frame.h"
 #include "HTMLInputElement.h"
@@ -38,11 +37,12 @@
 #include "PositionIterator.h"
 #include "Range.h"
 #include "Settings.h"
-#include "TextCheckingHelper.h"
-#include "TextIterator.h"
+#include "core/editing/Editor.h"
+#include "core/editing/TextCheckingHelper.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include "core/rendering/RenderObject.h"
-#include "htmlediting.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #ifndef InsertTextCommand_h
 #define InsertTextCommand_h
 
-#include "CompositeEditCommand.h"
+#include "core/editing/CompositeEditCommand.h"
 
 namespace WebCore {
 

@@ -26,7 +26,7 @@
 #ifndef MoveSelectionCommand_h
 #define MoveSelectionCommand_h
 
-#include "CompositeEditCommand.h"
+#include "core/editing/CompositeEditCommand.h"
 
 namespace WebCore {
 

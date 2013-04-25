@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityRenderObject.h"
 
-#include "FrameSelection.h"
 #include "HTMLFormElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLLabelElement.h"
@@ -38,16 +37,18 @@
 #include "HTMLTextAreaElement.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "RenderedPosition.h"
 #include "SVGImage.h"
 #include "SVGImageChromeClient.h"
 #include "SVGSVGElement.h"
-#include "VisibleUnits.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityImageMapLink.h"
 #include "core/accessibility/AccessibilitySVGRoot.h"
 #include "core/accessibility/AccessibilitySpinButton.h"
 #include "core/accessibility/AccessibilityTable.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/RenderedPosition.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/loader/ProgressTracker.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/rendering/HitTestResult.h"
@@ -62,7 +63,6 @@
 #include "core/rendering/RenderTextControlSingleLine.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderWidget.h"
-#include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>

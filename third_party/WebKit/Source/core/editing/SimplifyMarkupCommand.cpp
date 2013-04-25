@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SimplifyMarkupCommand.h"
+#include "core/editing/SimplifyMarkupCommand.h"
 
 #include "NodeRenderStyle.h"
 #include "NodeTraversal.h"

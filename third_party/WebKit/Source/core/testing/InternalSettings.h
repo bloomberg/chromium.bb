@@ -27,8 +27,8 @@
 #ifndef InternalSettings_h
 #define InternalSettings_h
 
-#include "EditingBehaviorTypes.h"
 #include "InternalSettingsGenerated.h"
+#include "core/editing/EditingBehaviorTypes.h"
 #include "core/platform/graphics/IntSize.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

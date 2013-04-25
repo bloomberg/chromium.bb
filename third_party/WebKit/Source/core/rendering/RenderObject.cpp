@@ -31,10 +31,8 @@
 #include <algorithm>
 #include "AnimationController.h"
 #include "Chrome.h"
-#include "EditingBoundary.h"
 #include "EventHandler.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "FrameView.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
@@ -43,6 +41,9 @@
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/editing/EditingBoundary.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/graphics/DashArray.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -76,7 +77,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/CursorList.h"
-#include "htmlediting.h"
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/UnusedParam.h>
 

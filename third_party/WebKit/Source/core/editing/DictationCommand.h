@@ -26,8 +26,8 @@
 #ifndef DictationCommand_h
 #define DictationCommand_h
 
-#include "DictationAlternative.h"
-#include "TextInsertionBaseCommand.h"
+#include "core/editing/DictationAlternative.h"
+#include "core/editing/TextInsertionBaseCommand.h"
 
 namespace WebCore {
 

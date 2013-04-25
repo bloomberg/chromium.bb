@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SplitTextNodeContainingElementCommand.h"
+#include "core/editing/SplitTextNodeContainingElementCommand.h"
 
 #include "Element.h"
 #include "Text.h"

@@ -104,6 +104,7 @@
 #include "WindowEventContext.h"
 #include "XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/Logging.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformWheelEvent.h"
@@ -112,7 +113,6 @@
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderView.h"
 #include "core/storage/StorageEvent.h"
-#include "htmlediting.h"
 #include <wtf/HashSet.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCountedLeakCounter.h>

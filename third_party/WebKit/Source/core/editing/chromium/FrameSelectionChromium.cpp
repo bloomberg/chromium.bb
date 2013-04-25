@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FrameSelection.h"
+#include "core/editing/FrameSelection.h"
 
 #include "Document.h"
 #include "Frame.h"

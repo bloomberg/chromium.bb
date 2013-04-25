@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "SmartReplace.h"
+#include "core/editing/SmartReplace.h"
 
 #include <CoreFoundation/CFCharacterSet.h>
 #include <CoreFoundation/CFString.h>

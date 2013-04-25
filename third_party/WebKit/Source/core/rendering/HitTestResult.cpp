@@ -23,9 +23,7 @@
 #include "core/rendering/HitTestResult.h"
 
 #include "DocumentMarkerController.h"
-#include "Editor.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "FrameTree.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLImageElement.h"
@@ -35,6 +33,8 @@
 #include "HTMLParserIdioms.h"
 #include "HTMLPlugInImageElement.h"
 #include "HTMLVideoElement.h"
+#include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/Scrollbar.h"
 #include "core/rendering/HitTestLocation.h"

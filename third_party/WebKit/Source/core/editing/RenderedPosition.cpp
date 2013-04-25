@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "RenderedPosition.h"
+#include "core/editing/RenderedPosition.h"
 
 #include "Position.h"
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/rendering/InlineBox.h"
 #include "core/rendering/InlineTextBox.h"
 

@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "CreateLinkCommand.h"
-#include "htmlediting.h"
 #include "Text.h"
+#include "core/editing/CreateLinkCommand.h"
+#include "core/editing/htmlediting.h"
 
 #include "HTMLAnchorElement.h"
 

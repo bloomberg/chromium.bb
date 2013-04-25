@@ -24,16 +24,14 @@
  */
 
 #include "config.h"
-#include "htmlediting.h"
+#include "core/editing/htmlediting.h"
 
 #include "Document.h"
-#include "Editor.h"
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
 #include "HTMLBRElement.h"
 #include "HTMLDivElement.h"
 #include "HTMLElementFactory.h"
-#include "HTMLInterchange.h"
 #include "HTMLLIElement.h"
 #include "HTMLNames.h"
 #include "HTMLOListElement.h"
@@ -46,11 +44,13 @@
 #include "Range.h"
 #include "ShadowRoot.h"
 #include "Text.h"
-#include "TextIterator.h"
-#include "VisiblePosition.h"
-#include "VisibleSelection.h"
-#include "VisibleUnits.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/editing/Editor.h"
+#include "core/editing/HTMLInterchange.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>

@@ -33,13 +33,13 @@
 #define EditingStyle_h
 
 #include "CSSPropertyNames.h"
-#include "WritingDirection.h"
+#include "core/editing/WritingDirection.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
+#include <wtf/text/WTFString.h>
 #include <wtf/TriState.h>
 #include <wtf/Vector.h>
-#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 

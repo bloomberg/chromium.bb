@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "DeleteFromTextNodeCommand.h"
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
+#include "core/editing/DeleteFromTextNodeCommand.h"
 
 #include "Text.h"
 #include "core/accessibility/AXObjectCache.h"

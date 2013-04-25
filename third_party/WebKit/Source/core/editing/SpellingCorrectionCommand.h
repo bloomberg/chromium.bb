@@ -26,8 +26,8 @@
 #ifndef SpellingCorrectionCommand_h
 #define SpellingCorrectionCommand_h
 
-#include "CompositeEditCommand.h"
 #include "Range.h"
+#include "core/editing/CompositeEditCommand.h"
 
 namespace WebCore {
 

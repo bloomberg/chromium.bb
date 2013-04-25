@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RemoveNodeCommand.h"
+#include "core/editing/RemoveNodeCommand.h"
 
 #include "ExceptionCodePlaceholder.h"
 #include "Node.h"

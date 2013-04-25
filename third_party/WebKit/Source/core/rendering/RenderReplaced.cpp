@@ -26,8 +26,8 @@
 
 #include "Frame.h"
 #include "Page.h"
-#include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/LayoutRepainter.h"
 #include "core/rendering/RenderBlock.h"

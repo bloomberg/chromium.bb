@@ -26,7 +26,7 @@
 #ifndef TypingCommand_h
 #define TypingCommand_h
 
-#include "TextInsertionBaseCommand.h"
+#include "core/editing/TextInsertionBaseCommand.h"
 
 namespace WebCore {
 

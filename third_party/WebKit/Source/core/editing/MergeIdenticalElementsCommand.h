@@ -26,7 +26,7 @@
 #ifndef MergeIdenticalElementsCommand_h
 #define MergeIdenticalElementsCommand_h
 
-#include "EditCommand.h"
+#include "core/editing/EditCommand.h"
 
 namespace WebCore {
 

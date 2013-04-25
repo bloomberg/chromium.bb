@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RemoveNodePreservingChildrenCommand.h"
+#include "core/editing/RemoveNodePreservingChildrenCommand.h"
 
 #include "Node.h"
 #include <wtf/Assertions.h>

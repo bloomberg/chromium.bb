@@ -55,7 +55,6 @@
 #include "DocumentSharedObjectPool.h"
 #include "DocumentStyleSheetCollection.h"
 #include "DocumentType.h"
-#include "Editor.h"
 #include "Element.h"
 #include "ElementShadow.h"
 #include "EntityReference.h"
@@ -70,7 +69,6 @@
 #include "FontLoader.h"
 #include "FormController.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "GeolocationController.h"
@@ -154,6 +152,9 @@
 #include "XPathResult.h"
 #include "XSLTProcessor.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/htmlediting.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
@@ -186,7 +187,6 @@
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
 #include "core/rendering/TextAutosizer.h"
-#include "htmlediting.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashFunctions.h>
 #include <wtf/MainThread.h>

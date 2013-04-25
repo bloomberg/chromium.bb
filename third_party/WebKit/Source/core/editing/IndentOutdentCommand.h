@@ -26,8 +26,8 @@
 #ifndef IndentOutdentCommand_h
 #define IndentOutdentCommand_h
 
-#include "ApplyBlockElementCommand.h"
-#include "EditAction.h"
+#include "core/editing/ApplyBlockElementCommand.h"
+#include "core/editing/EditAction.h"
 
 namespace WebCore {
 

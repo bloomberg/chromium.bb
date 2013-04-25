@@ -27,8 +27,8 @@
 #define Position_h
 
 #include "ContainerNode.h"
-#include "EditingBoundary.h"
-#include "TextAffinity.h"
+#include "core/editing/EditingBoundary.h"
+#include "core/editing/TextAffinity.h"
 #include "core/platform/text/TextDirection.h"
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>

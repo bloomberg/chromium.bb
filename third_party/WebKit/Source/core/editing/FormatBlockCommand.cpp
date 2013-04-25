@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "Element.h"
-#include "FormatBlockCommand.h"
 #include "Document.h"
+#include "Element.h"
 #include "ExceptionCodePlaceholder.h"
-#include "htmlediting.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "Range.h"
-#include "VisibleUnits.h"
+#include "core/editing/FormatBlockCommand.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 
 namespace WebCore {
 

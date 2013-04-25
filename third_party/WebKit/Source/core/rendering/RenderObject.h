@@ -28,7 +28,7 @@
 
 #include "DocumentStyleSheetCollection.h"
 #include "Element.h"
-#include "TextAffinity.h"
+#include "core/editing/TextAffinity.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"

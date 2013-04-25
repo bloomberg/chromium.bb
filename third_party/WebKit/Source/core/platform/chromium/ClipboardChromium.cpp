@@ -29,7 +29,6 @@
 
 #include "DataTransferItemList.h"
 #include "Document.h"
-#include "Editor.h"
 #include "Element.h"
 #include "ExceptionCode.h"
 #include "File.h"
@@ -40,6 +39,8 @@
 #include "NamedNodeMap.h"
 #include "Range.h"
 #include "StringCallback.h"
+#include "core/editing/Editor.h"
+#include "core/editing/markup.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/DragData.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -49,7 +50,6 @@
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderImage.h"
-#include "markup.h"
 
 #include <wtf/text/WTFString.h>
 

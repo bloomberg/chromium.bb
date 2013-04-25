@@ -32,8 +32,8 @@
 #include "WebTextCheckingCompletionImpl.h"
 
 #include "EditorClientImpl.h"
-#include "SpellChecker.h"
 #include "WebTextCheckingResult.h"
+#include "core/editing/SpellChecker.h"
 #include "core/platform/text/TextCheckerClient.h"
 #include <public/WebVector.h>
 #include <wtf/Assertions.h>

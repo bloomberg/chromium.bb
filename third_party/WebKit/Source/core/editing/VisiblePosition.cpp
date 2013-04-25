@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 
 #include <stdio.h>
 #include "Document.h"
@@ -33,13 +33,13 @@
 #include "HTMLNames.h"
 #include "Range.h"
 #include "Text.h"
-#include "VisibleUnits.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RootInlineBox.h"
-#include "htmlediting.h"
 #include <wtf/text/CString.h>
 
 namespace WebCore {

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SplitTextNodeCommand.h"
+#include "core/editing/SplitTextNodeCommand.h"
 
 #include "Document.h"
 #include "DocumentMarkerController.h"

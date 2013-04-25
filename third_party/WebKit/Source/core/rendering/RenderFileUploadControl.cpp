@@ -27,7 +27,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "ShadowRoot.h"
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"

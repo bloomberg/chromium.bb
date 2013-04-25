@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "InsertIntoTextNodeCommand.h"
+#include "core/editing/InsertIntoTextNodeCommand.h"
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"

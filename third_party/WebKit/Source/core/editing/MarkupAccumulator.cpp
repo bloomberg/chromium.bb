@@ -25,13 +25,12 @@
  */
 
 #include "config.h"
-#include "MarkupAccumulator.h"
+#include "core/editing/MarkupAccumulator.h"
 
 #include "CDATASection.h"
 #include "Comment.h"
 #include "DocumentFragment.h"
 #include "DocumentType.h"
-#include "Editor.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "HTMLTemplateElement.h"
@@ -39,6 +38,7 @@
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/editing/Editor.h"
 #include "core/platform/KURL.h"
 #include <wtf/unicode/CharacterNames.h>
 

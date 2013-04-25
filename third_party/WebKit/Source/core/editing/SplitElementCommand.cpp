@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SplitElementCommand.h"
+#include "core/editing/SplitElementCommand.h"
 
 #include "Element.h"
 #include "HTMLNames.h"

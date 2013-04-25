@@ -24,14 +24,12 @@
  */
   
 #include "config.h"
-#include "FrameSelection.h"
+#include "core/editing/FrameSelection.h"
 
 #include <limits.h>
 #include <stdio.h>
 #include "CharacterData.h"
-#include "DeleteSelectionCommand.h"
 #include "Document.h"
-#include "Editor.h"
 #include "EditorClient.h"
 #include "Element.h"
 #include "EventHandler.h"
@@ -48,13 +46,16 @@
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "Range.h"
-#include "RenderedPosition.h"
 #include "Settings.h"
 #include "SpatialNavigation.h"
 #include "StylePropertySet.h"
-#include "TextIterator.h"
-#include "TypingCommand.h"
-#include "VisibleUnits.h"
+#include "core/editing/DeleteSelectionCommand.h"
+#include "core/editing/Editor.h"
+#include "core/editing/RenderedPosition.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/TypingCommand.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/SecureTextInput.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -66,7 +67,6 @@
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
-#include "htmlediting.h"
 #include <wtf/text/CString.h>
 
 #define EDIT_DEBUG 0

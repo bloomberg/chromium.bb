@@ -24,16 +24,16 @@
  */
 
 #include "config.h"
-#include "DictationCommand.h"
+#include "core/editing/DictationCommand.h"
 
-#include "AlternativeTextController.h"
 #include "Document.h"
 #include "DocumentMarker.h"
 #include "DocumentMarkerController.h"
 #include "Frame.h"
-#include "InsertParagraphSeparatorCommand.h"
-#include "InsertTextCommand.h"
 #include "Text.h"
+#include "core/editing/AlternativeTextController.h"
+#include "core/editing/InsertParagraphSeparatorCommand.h"
+#include "core/editing/InsertTextCommand.h"
 
 namespace WebCore {
 

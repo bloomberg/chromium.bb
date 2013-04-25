@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "InsertNodeBeforeCommand.h"
+#include "core/editing/InsertNodeBeforeCommand.h"
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "htmlediting.h"
+#include "core/editing/htmlediting.h"
 
 namespace WebCore {
 

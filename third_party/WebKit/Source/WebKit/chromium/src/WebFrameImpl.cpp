@@ -85,14 +85,12 @@
 #include "Document.h"
 #include "DocumentMarker.h"
 #include "DocumentMarkerController.h"
-#include "Editor.h"
 #include "EventHandler.h"
 #include "EventListenerWrapper.h"
 #include "FileEntry.h"
 #include "FileSystemType.h"
 #include "FindInPageCoordinates.h"
 #include "FocusController.h"
-#include "FrameSelection.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLCollection.h"
@@ -122,9 +120,6 @@
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "SkiaUtils.h"
-#include "SpellChecker.h"
-#include "TextAffinity.h"
-#include "TextIterator.h"
 #include "UserGestureIndicator.h"
 #include "V8DOMFileSystem.h"
 #include "V8DirectoryEntry.h"
@@ -153,6 +148,13 @@
 #include "WebSerializedScriptValue.h"
 #include "WebViewImpl.h"
 #include "XPathResult.h"
+#include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/SpellChecker.h"
+#include "core/editing/TextAffinity.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/htmlediting.h"
+#include "core/editing/markup.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -176,8 +178,6 @@
 #include "core/rendering/RenderTreeAsText.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
-#include "htmlediting.h"
-#include "markup.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebFileSystem.h>
@@ -229,7 +229,7 @@ static void frameContentAsPlainText(size_t maxChars, Frame* frame, Vector<UChar>
 
     if (!exception) {
         // The text iterator will walk nodes giving us text. This is similar to
-        // the plainText() function in TextIterator.h, but we implement the maximum
+        // the plainText() function in core/editing/TextIterator.h, but we implement the maximum
         // size and also copy the results directly into a wstring, avoiding the
         // string conversion.
         for (TextIterator it(range.get()); !it.atEnd(); it.advance()) {

@@ -26,7 +26,7 @@
 #ifndef TextInsertionBaseCommand_h
 #define TextInsertionBaseCommand_h
 
-#include "CompositeEditCommand.h"
+#include "core/editing/CompositeEditCommand.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

@@ -26,7 +26,7 @@
 #ifndef InsertListCommand_h
 #define InsertListCommand_h
 
-#include "CompositeEditCommand.h"
+#include "core/editing/CompositeEditCommand.h"
 
 namespace WebCore {
 

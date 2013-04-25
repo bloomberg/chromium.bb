@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "Editor.h"
+#include "core/editing/Editor.h"
 
 #include "Frame.h"
 #include "core/platform/chromium/ChromiumDataObject.h"

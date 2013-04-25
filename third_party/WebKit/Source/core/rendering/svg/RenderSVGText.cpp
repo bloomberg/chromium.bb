@@ -33,7 +33,7 @@
 #include "SVGTextElement.h"
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FontCache.h"

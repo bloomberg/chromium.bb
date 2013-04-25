@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "WrapContentsInDummySpanCommand.h"
+#include "core/editing/WrapContentsInDummySpanCommand.h"
 
-#include "ApplyStyleCommand.h"
 #include "ExceptionCodePlaceholder.h"
 #include "HTMLElement.h"
+#include "core/editing/ApplyStyleCommand.h"
 
 namespace WebCore {
 

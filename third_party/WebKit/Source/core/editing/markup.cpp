@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "markup.h"
+#include "core/editing/markup.h"
 
 #include "CDATASection.h"
 #include "CSSPrimitiveValue.h"
@@ -41,7 +41,6 @@
 #include "ContextFeatures.h"
 #include "DocumentFragment.h"
 #include "DocumentType.h"
-#include "Editor.h"
 #include "ExceptionCode.h"
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
@@ -49,20 +48,21 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "HTMLTextFormControlElement.h"
-#include "MarkupAccumulator.h"
 #include "NodeTraversal.h"
 #include "Range.h"
 #include "Settings.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
-#include "TextIterator.h"
-#include "VisibleSelection.h"
-#include "VisibleUnits.h"
 #include "XMLNSNames.h"
+#include "core/editing/Editor.h"
+#include "core/editing/MarkupAccumulator.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/KURL.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderObject.h"
-#include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>

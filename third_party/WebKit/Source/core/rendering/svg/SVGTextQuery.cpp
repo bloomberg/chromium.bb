@@ -21,7 +21,7 @@
 #include "core/rendering/svg/SVGTextQuery.h"
 
 #if ENABLE(SVG)
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/RenderBlock.h"

@@ -88,11 +88,11 @@
 #include "HTMLMetaElement.h"
 #include "HTMLNames.h"
 #include "WebFrameImpl.h"
+#include "core/editing/markup.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
 #include "core/platform/text/TextEncoding.h"
-#include "markup.h"
 #include <public/WebURL.h>
 #include <public/WebVector.h>
 

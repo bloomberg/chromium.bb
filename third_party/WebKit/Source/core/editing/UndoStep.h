@@ -31,7 +31,7 @@
 #ifndef UndoStep_h
 #define UndoStep_h
 
-#include "EditAction.h"
+#include "core/editing/EditAction.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

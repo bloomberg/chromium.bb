@@ -31,8 +31,8 @@
 #ifndef CompositionUnderlineBuilder_h
 #define CompositionUnderlineBuilder_h
 
-#include "Editor.h"
 #include "WebCompositionUnderline.h"
+#include "core/editing/Editor.h"
 #include <public/WebVector.h>
 #include <wtf/Vector.h>
 

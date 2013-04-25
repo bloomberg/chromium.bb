@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "MergeIdenticalElementsCommand.h"
+#include "core/editing/MergeIdenticalElementsCommand.h"
 
 #include "Element.h"
 

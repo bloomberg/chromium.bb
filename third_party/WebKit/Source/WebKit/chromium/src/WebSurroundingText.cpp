@@ -28,10 +28,10 @@
 #include "Element.h"
 #include "Node.h"
 #include "Range.h"
-#include "SurroundingText.h"
 #include "Text.h"
-#include "VisiblePosition.h"
 #include "WebHitTestResult.h"
+#include "core/editing/SurroundingText.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/rendering/RenderObject.h"
 #include <public/WebPoint.h>
 

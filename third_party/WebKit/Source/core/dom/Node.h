@@ -25,13 +25,13 @@
 #ifndef Node_h
 #define Node_h
 
-#include "EditingBoundary.h"
 #include "EventTarget.h"
 #include "FocusDirection.h"
 #include "MutationObserver.h"
 #include "ScriptWrappable.h"
 #include "SimulatedClickOptions.h"
 #include "TreeScope.h"
+#include "core/editing/EditingBoundary.h"
 #include "core/platform/KURLHash.h"
 #include "core/platform/TreeShared.h"
 #include "core/platform/graphics/LayoutRect.h"

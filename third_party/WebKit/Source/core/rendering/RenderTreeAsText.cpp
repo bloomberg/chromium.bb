@@ -28,12 +28,12 @@
 
 #include "Document.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "FrameView.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "PrintContext.h"
 #include "StylePropertySet.h"
+#include "core/editing/FrameSelection.h"
 #include "core/rendering/FlowThreadController.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/RenderBR.h"

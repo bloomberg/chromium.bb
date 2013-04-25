@@ -25,16 +25,16 @@
  */
 
 #include "config.h"
-#include "TextCheckingHelper.h"
+#include "core/editing/TextCheckingHelper.h"
 
 #include "Document.h"
 #include "DocumentMarkerController.h"
 #include "Frame.h"
 #include "Range.h"
 #include "Settings.h"
-#include "TextIterator.h"
-#include "VisiblePosition.h"
-#include "VisibleUnits.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleUnits.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/platform/text/TextCheckerClient.h"
 

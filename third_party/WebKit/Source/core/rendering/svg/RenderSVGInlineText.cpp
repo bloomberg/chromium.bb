@@ -29,7 +29,7 @@
 #include "CSSFontSelector.h"
 #include "Settings.h"
 #include "StyleResolver.h"
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/rendering/RenderBlock.h"

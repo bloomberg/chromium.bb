@@ -26,10 +26,10 @@
 #ifndef MarkupAccumulator_h
 #define MarkupAccumulator_h
 
-#include "markup.h"
+#include "core/editing/markup.h"
 #include <wtf/HashMap.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -28,8 +28,8 @@
 
 #include "HTMLNames.h"
 #include "Node.h"
+#include "core/editing/htmlediting.h"
 #include "core/rendering/RenderBlock.h"
-#include "htmlediting.h"
 
 namespace WebCore {
 

@@ -27,9 +27,9 @@
 #ifndef EditorClient_h
 #define EditorClient_h
 
-#include "EditorInsertAction.h"
-#include "TextAffinity.h"
-#include "UndoStep.h"
+#include "core/editing/EditorInsertAction.h"
+#include "core/editing/TextAffinity.h"
+#include "core/editing/UndoStep.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/text/TextChecking.h"
 #include <wtf/Forward.h>

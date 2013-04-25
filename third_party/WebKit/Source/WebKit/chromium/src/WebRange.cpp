@@ -34,13 +34,13 @@
 #include "Document.h"
 #include "Element.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "FrameView.h"
 #include "Range.h"
 #include "ShadowRoot.h"
-#include "TextIterator.h"
 #include "WebFrameImpl.h"
 #include "WebNode.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/TextIterator.h"
 #include <public/WebFloatQuad.h>
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>

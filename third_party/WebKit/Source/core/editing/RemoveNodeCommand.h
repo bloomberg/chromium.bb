@@ -26,7 +26,7 @@
 #ifndef RemoveNodeCommand_h
 #define RemoveNodeCommand_h
 
-#include "EditCommand.h"
+#include "core/editing/EditCommand.h"
 
 namespace WebCore {
 

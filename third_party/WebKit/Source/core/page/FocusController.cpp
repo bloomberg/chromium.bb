@@ -30,7 +30,6 @@
 #include <limits>
 #include "Chrome.h"
 #include "Document.h"
-#include "Editor.h"
 #include "EditorClient.h"
 #include "Element.h"
 #include "ElementShadow.h"
@@ -39,7 +38,6 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLAreaElement.h"
@@ -54,12 +52,14 @@
 #include "ShadowRoot.h"
 #include "SpatialNavigation.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/htmlediting.h" // For firstPositionInOrBeforeNode
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Widget.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderWidget.h"
-#include "htmlediting.h" // For firstPositionInOrBeforeNode
 
 namespace WebCore {
 

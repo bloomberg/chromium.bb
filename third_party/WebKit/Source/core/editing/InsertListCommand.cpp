@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "Element.h"
-#include "InsertListCommand.h"
 #include "DocumentFragment.h"
+#include "Element.h"
 #include "ExceptionCodePlaceholder.h"
-#include "htmlediting.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "TextIterator.h"
-#include "VisibleUnits.h"
+#include "core/editing/InsertListCommand.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 
 namespace WebCore {
 

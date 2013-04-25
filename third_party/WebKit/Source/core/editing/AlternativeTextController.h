@@ -28,9 +28,9 @@
 
 #include "AlternativeTextClient.h"
 #include "DocumentMarker.h"
-#include "FrameSelection.h"
 #include "Range.h"
-#include "VisibleSelection.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/platform/Timer.h"
 #include "core/platform/text/TextChecking.h"
 #include <wtf/Noncopyable.h>

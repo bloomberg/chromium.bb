@@ -95,8 +95,8 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
-#include "htmlediting.h"
-#include "markup.h"
+#include "core/editing/htmlediting.h"
+#include "core/editing/markup.h"
 
 #include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>

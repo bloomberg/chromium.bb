@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RemoveCSSPropertyCommand.h"
+#include "core/editing/RemoveCSSPropertyCommand.h"
 
 #include "CSSStyleDeclaration.h"
 #include "ExceptionCodePlaceholder.h"

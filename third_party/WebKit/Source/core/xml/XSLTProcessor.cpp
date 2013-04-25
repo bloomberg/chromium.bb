@@ -34,10 +34,10 @@
 #include "Page.h"
 #include "SecurityOrigin.h"
 #include "Text.h"
+#include "core/editing/markup.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceLoader.h"
-#include "markup.h"
 
 #include <wtf/Assertions.h>
 #include <wtf/Vector.h>

@@ -37,6 +37,7 @@
 #include "HTMLNames.h"
 #include "Page.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/editing/htmlediting.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatQuad.h"
@@ -58,7 +59,6 @@
 #include "core/rendering/RenderTableCell.h"
 #include "core/rendering/RenderTheme.h"
 #include "core/rendering/RenderView.h"
-#include "htmlediting.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 
 using namespace std;

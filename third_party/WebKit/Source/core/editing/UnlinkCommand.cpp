@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "UnlinkCommand.h"
+#include "core/editing/UnlinkCommand.h"
 
 #include "HTMLAnchorElement.h"
 

@@ -26,9 +26,9 @@
 #ifndef FrameSelection_h
 #define FrameSelection_h
 
-#include "EditingStyle.h"
 #include "Range.h"
-#include "VisibleSelection.h"
+#include "core/editing/EditingStyle.h"
+#include "core/editing/VisibleSelection.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ApplyStyleCommand.h"
+#include "core/editing/ApplyStyleCommand.h"
 
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSParser.h"
@@ -32,11 +32,8 @@
 #include "CSSValueKeywords.h"
 #include "CSSValuePool.h"
 #include "Document.h"
-#include "EditingStyle.h"
-#include "Editor.h"
 #include "Frame.h"
 #include "HTMLFontElement.h"
-#include "HTMLInterchange.h"
 #include "HTMLNames.h"
 #include "NodeList.h"
 #include "NodeTraversal.h"
@@ -44,11 +41,14 @@
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "Text.h"
-#include "TextIterator.h"
-#include "VisibleUnits.h"
+#include "core/editing/EditingStyle.h"
+#include "core/editing/Editor.h"
+#include "core/editing/HTMLInterchange.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderText.h"
-#include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 

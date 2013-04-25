@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "TextIterator.h"
+#include "core/editing/TextIterator.h"
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
@@ -36,8 +36,9 @@
 #include "NodeTraversal.h"
 #include "Range.h"
 #include "ShadowRoot.h"
-#include "VisiblePosition.h"
-#include "VisibleUnits.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/TextBoundaries.h"
 #include "core/platform/text/TextBreakIterator.h"
@@ -47,7 +48,6 @@
 #include "core/rendering/RenderTableRow.h"
 #include "core/rendering/RenderTextControl.h"
 #include "core/rendering/RenderTextFragment.h"
-#include "htmlediting.h"
 #include <wtf/text/CString.h>
 #include <wtf/unicode/CharacterNames.h>
 

@@ -31,7 +31,7 @@
 #ifndef RenderedPosition_h
 #define RenderedPosition_h
 
-#include "TextAffinity.h"
+#include "core/editing/TextAffinity.h"
 #include "core/rendering/InlineBox.h"
 
 namespace WebCore {

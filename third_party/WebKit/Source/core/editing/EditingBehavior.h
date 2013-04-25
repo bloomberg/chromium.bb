@@ -21,7 +21,7 @@
 #ifndef EditingBehavior_h
 #define EditingBehavior_h
 
-#include "EditingBehaviorTypes.h"
+#include "core/editing/EditingBehaviorTypes.h"
 
 namespace WebCore {
 

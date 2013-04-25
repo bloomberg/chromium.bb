@@ -28,9 +28,9 @@
 
 #include "Element.h"
 #include "Node.h"
-#include "VisiblePosition.h"
 #include "WebElement.h"
 #include "WebNode.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/platform/KURL.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/RenderObject.h"

@@ -22,7 +22,6 @@
 #include "TouchAdjustment.h"
 
 #include "ContainerNode.h"
-#include "Editor.h"
 #include "FrameView.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
@@ -32,6 +31,7 @@
 #include "NodeRenderStyle.h"
 #include "ShadowRoot.h"
 #include "Text.h"
+#include "core/editing/Editor.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/IntPoint.h"

@@ -55,7 +55,6 @@
       '../dom',
       '../dom/default',
       '../dom/default/chromium',
-      '../editing',
       '../fileapi',
       '../history',
       '../html',

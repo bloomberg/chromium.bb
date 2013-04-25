@@ -24,13 +24,11 @@
  */
 
 #include "config.h"
-#include "DeleteSelectionCommand.h"
+#include "core/editing/DeleteSelectionCommand.h"
 
 #include "Document.h"
 #include "DocumentFragment.h"
 #include "DocumentMarkerController.h"
-#include "EditingBoundary.h"
-#include "Editor.h"
 #include "EditorClient.h"
 #include "Element.h"
 #include "Frame.h"
@@ -39,9 +37,11 @@
 #include "HTMLTextAreaElement.h"
 #include "NodeTraversal.h"
 #include "Text.h"
-#include "VisibleUnits.h"
+#include "core/editing/EditingBoundary.h"
+#include "core/editing/Editor.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/rendering/RenderTableCell.h"
-#include "htmlediting.h"
 
 namespace WebCore {
 

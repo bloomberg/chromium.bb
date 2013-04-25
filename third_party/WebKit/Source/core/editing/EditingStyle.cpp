@@ -25,20 +25,16 @@
  */
 
 #include "config.h"
-#include "EditingStyle.h"
+#include "core/editing/EditingStyle.h"
 
-#include "ApplyStyleCommand.h"
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSParser.h"
 #include "CSSRuleList.h"
 #include "CSSStyleRule.h"
 #include "CSSValueKeywords.h"
 #include "CSSValueList.h"
-#include "Editor.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "HTMLFontElement.h"
-#include "HTMLInterchange.h"
 #include "HTMLNames.h"
 #include "Node.h"
 #include "NodeTraversal.h"
@@ -48,9 +44,13 @@
 #include "StyleResolver.h"
 #include "StyleRule.h"
 #include "StyledElement.h"
-#include "VisibleUnits.h"
+#include "core/editing/ApplyStyleCommand.h"
+#include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/HTMLInterchange.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/rendering/style/RenderStyle.h"
-#include "htmlediting.h"
 #include <wtf/HashSet.h>
 
 namespace WebCore {

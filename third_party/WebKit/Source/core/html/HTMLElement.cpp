@@ -52,11 +52,11 @@
 #include "Settings.h"
 #include "StylePropertySet.h"
 #include "Text.h"
-#include "TextIterator.h"
 #include "XMLNames.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/markup.h"
 #include "core/loader/FrameLoader.h"
 #include "core/rendering/RenderWordBreak.h"
-#include "markup.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 

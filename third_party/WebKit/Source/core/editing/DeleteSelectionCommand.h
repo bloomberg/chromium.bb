@@ -26,7 +26,7 @@
 #ifndef DeleteSelectionCommand_h
 #define DeleteSelectionCommand_h
 
-#include "CompositeEditCommand.h"
+#include "core/editing/CompositeEditCommand.h"
 
 namespace WebCore {
 

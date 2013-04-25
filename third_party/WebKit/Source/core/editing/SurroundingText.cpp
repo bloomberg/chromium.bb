@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "SurroundingText.h"
+#include "core/editing/SurroundingText.h"
 
 #include "Document.h"
 #include "Range.h"
-#include "TextIterator.h"
-#include "VisiblePosition.h"
-#include "VisibleSelection.h"
-#include "VisibleUnits.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleSelection.h"
+#include "core/editing/VisibleUnits.h"
 
 namespace WebCore {
 

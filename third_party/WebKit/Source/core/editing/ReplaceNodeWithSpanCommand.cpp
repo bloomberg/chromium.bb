@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "ReplaceNodeWithSpanCommand.h"
+#include "core/editing/ReplaceNodeWithSpanCommand.h"
 
-#include "htmlediting.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
+#include "core/editing/htmlediting.h"
 
 #include <wtf/Assertions.h>
 

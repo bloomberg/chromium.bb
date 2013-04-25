@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "HTMLInterchange.h"
+#include "core/editing/HTMLInterchange.h"
 
 #include "Text.h"
-#include "TextIterator.h"
+#include "core/editing/TextIterator.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

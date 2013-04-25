@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SetNodeAttributeCommand.h"
+#include "core/editing/SetNodeAttributeCommand.h"
 
 #include "Element.h"
 #include <wtf/Assertions.h>

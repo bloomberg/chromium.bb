@@ -35,12 +35,12 @@
 #include "DraggedIsolatedFileSystem.h"
 #include "Frame.h"
 #include "Range.h"
+#include "core/editing/markup.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
-#include "markup.h"
 #include <wtf/text/WTFString.h>
 
 #include <public/Platform.h>

@@ -33,8 +33,8 @@
 #include "RuntimeEnabledFeatures.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/editing/markup.h"
 #include "core/platform/HistogramSupport.h"
-#include "markup.h"
 
 namespace WebCore {
 

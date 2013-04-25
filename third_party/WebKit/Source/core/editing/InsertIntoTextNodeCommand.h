@@ -26,7 +26,7 @@
 #ifndef InsertIntoTextNodeCommand_h
 #define InsertIntoTextNodeCommand_h
 
-#include "EditCommand.h"
+#include "core/editing/EditCommand.h"
 
 namespace WebCore {
 

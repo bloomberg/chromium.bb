@@ -27,8 +27,8 @@
 #ifndef Settings_h
 #define Settings_h
 
-#include "EditingBehaviorTypes.h"
 #include "SettingsMacros.h"
+#include "core/editing/EditingBehaviorTypes.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/FontRenderingMode.h"

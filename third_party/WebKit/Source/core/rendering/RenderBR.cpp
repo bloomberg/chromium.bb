@@ -23,7 +23,7 @@
 #include "core/rendering/RenderBR.h"
 
 #include "Document.h"
-#include "VisiblePosition.h"
+#include "core/editing/VisiblePosition.h"
 #include "core/rendering/InlineTextBox.h"
 
 namespace WebCore {

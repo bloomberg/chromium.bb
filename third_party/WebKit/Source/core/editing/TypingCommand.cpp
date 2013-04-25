@@ -24,24 +24,24 @@
  */
 
 #include "config.h"
-#include "TypingCommand.h"
+#include "core/editing/TypingCommand.h"
 
-#include "BreakBlockquoteCommand.h"
-#include "DeleteSelectionCommand.h"
 #include "Document.h"
-#include "Editor.h"
 #include "Element.h"
 #include "Frame.h"
-#include "FrameSelection.h"
 #include "HTMLNames.h"
-#include "InsertLineBreakCommand.h"
-#include "InsertParagraphSeparatorCommand.h"
-#include "InsertTextCommand.h"
-#include "TextIterator.h"
-#include "VisiblePosition.h"
-#include "VisibleUnits.h"
+#include "core/editing/BreakBlockquoteCommand.h"
+#include "core/editing/DeleteSelectionCommand.h"
+#include "core/editing/Editor.h"
+#include "core/editing/FrameSelection.h"
+#include "core/editing/InsertLineBreakCommand.h"
+#include "core/editing/InsertParagraphSeparatorCommand.h"
+#include "core/editing/InsertTextCommand.h"
+#include "core/editing/TextIterator.h"
+#include "core/editing/VisiblePosition.h"
+#include "core/editing/VisibleUnits.h"
+#include "core/editing/htmlediting.h"
 #include "core/rendering/RenderObject.h"
-#include "htmlediting.h"
 
 namespace WebCore {
 

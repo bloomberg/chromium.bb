@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DictationAlternative.h"
+#include "core/editing/DictationAlternative.h"
 
 namespace WebCore {
 

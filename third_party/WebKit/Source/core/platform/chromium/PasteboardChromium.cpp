@@ -33,20 +33,20 @@
 
 #include "Document.h"
 #include "DocumentFragment.h"
-#include "Editor.h"
 #include "Element.h"
 #include "Frame.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "NativeImageSkia.h"
 #include "Range.h"
+#include "core/editing/Editor.h"
+#include "core/editing/markup.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/KURL.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderImage.h"
-#include "markup.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"
