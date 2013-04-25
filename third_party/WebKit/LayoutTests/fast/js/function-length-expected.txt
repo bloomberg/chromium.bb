@@ -9,6 +9,13 @@ PASS window.showModalDialog.length is 1
 PASS window.setTimeout.length is 1
 PASS window.clearTimeout.length is 0
 PASS window.addEventListener.length is 2
+PASS window.postMessage.length is 2
+PASS window.dispatchEvent.length is 1
+PASS window.openDatabase.length is 4
+PASS window.history.pushState.length is 2
+PASS window.history.length is 1
+PASS window.URL.createObjectURL.length is 1
+PASS window.Storage.prototype.key.length is 1
 PASS Array.prototype.concat.length is 1
 PASS Array.prototype.join.length is 1
 PASS Array.prototype.push.length is 1
