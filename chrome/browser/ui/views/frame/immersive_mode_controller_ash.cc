@@ -61,10 +61,13 @@ void MoveMouse(views::View* view, bool hovered) {
 // Returns true if the currently active window is a transient child of
 // |toplevel|.
 bool IsActiveWindowTransientChildOf(aura::Window* toplevel) {
+  if (!toplevel)
+    return false;
+
   aura::Window* active_window = aura::client::GetActivationClient(
       toplevel->GetRootWindow())->GetActiveWindow();
 
-  if (!toplevel || !active_window)
+  if (!active_window)
     return false;
 
   for (aura::Window* window = active_window; window;
@@ -77,13 +80,13 @@ bool IsActiveWindowTransientChildOf(aura::Window* toplevel) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class RevealedLockAsh : public ImmersiveModeController::RevealedLock {
+class RevealedLockAsh : public ImmersiveRevealedLock {
  public:
-  explicit RevealedLockAsh(
-      const base::WeakPtr<ImmersiveModeControllerAsh>& controller)
+  RevealedLockAsh(const base::WeakPtr<ImmersiveModeControllerAsh>& controller,
+                  ImmersiveModeController::AnimateReveal animate_reveal)
       : controller_(controller) {
     DCHECK(controller_);
-    controller_->LockRevealedState();
+    controller_->LockRevealedState(animate_reveal);
   }
 
   ~RevealedLockAsh() {
@@ -157,7 +160,7 @@ class ImmersiveModeControllerAsh::AnchoredWidgetManager
 
   // Lock which keeps the top-of-window views revealed based on the visible
   // anchored widgets.
-  scoped_ptr<ImmersiveModeController::RevealedLock> revealed_lock_;
+  scoped_ptr<ImmersiveRevealedLock> revealed_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AnchoredWidgetManager);
 };
@@ -241,8 +244,10 @@ void ImmersiveModeControllerAsh::AnchoredWidgetManager::UpdateRevealedLock() {
       controller_->MaybeRevealWithoutAnimation();
     }
 
-    if (!revealed_lock_.get())
-      revealed_lock_.reset(controller_->GetRevealedLock());
+    if (!revealed_lock_.get()) {
+      revealed_lock_.reset(controller_->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_YES));
+    }
   }
 }
 
@@ -345,17 +350,21 @@ ImmersiveModeControllerAsh::~ImmersiveModeControllerAsh() {
   EnableWindowObservers(false);
 }
 
-void ImmersiveModeControllerAsh::LockRevealedState() {
+void ImmersiveModeControllerAsh::LockRevealedState(
+      AnimateReveal animate_reveal) {
   ++revealed_lock_count_;
-  if (revealed_lock_count_ == 1)
-    MaybeStartReveal(ANIMATE_FAST);
+  Animate animate = (animate_reveal == ANIMATE_REVEAL_YES) ?
+      ANIMATE_FAST : ANIMATE_NO;
+  MaybeStartReveal(animate);
 }
 
 void ImmersiveModeControllerAsh::UnlockRevealedState() {
   --revealed_lock_count_;
   DCHECK_GE(revealed_lock_count_, 0);
-  if (revealed_lock_count_ == 0)
+  if (revealed_lock_count_ == 0) {
+    // Always animate ending the reveal fast.
     MaybeEndReveal(ANIMATE_FAST);
+  }
 }
 
 void ImmersiveModeControllerAsh::MaybeRevealWithoutAnimation() {
@@ -452,9 +461,9 @@ void ImmersiveModeControllerAsh::MaybeStackViewAtTop() {
   }
 }
 
-ImmersiveModeControllerAsh::RevealedLock*
-    ImmersiveModeControllerAsh::GetRevealedLock() {
-  return new RevealedLockAsh(weak_ptr_factory_.GetWeakPtr());
+ImmersiveRevealedLock* ImmersiveModeControllerAsh::GetRevealedLock(
+    AnimateReveal animate_reveal) {
+  return new RevealedLockAsh(weak_ptr_factory_.GetWeakPtr(), animate_reveal);
 }
 
 void ImmersiveModeControllerAsh::AnchorWidgetToTopContainer(
@@ -642,7 +651,7 @@ void ImmersiveModeControllerAsh::UpdateMouseRevealedLock(bool maybe_drag) {
 
 void ImmersiveModeControllerAsh::AcquireMouseRevealedLock() {
   if (!mouse_revealed_lock_.get())
-    mouse_revealed_lock_.reset(GetRevealedLock());
+    mouse_revealed_lock_.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
 }
 
 void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
@@ -671,7 +680,7 @@ void ImmersiveModeControllerAsh::UpdateFocusRevealedLock() {
 
   if (hold_lock) {
     if (!focus_revealed_lock_.get())
-      focus_revealed_lock_.reset(GetRevealedLock());
+      focus_revealed_lock_.reset(GetRevealedLock(ANIMATE_REVEAL_YES));
   } else {
     focus_revealed_lock_.reset();
   }

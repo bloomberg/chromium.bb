@@ -90,7 +90,7 @@ class TabScrubber : public ui::EventHandler,
   // Set if activation_delay had been explicitly set.
   bool use_default_activation_delay_;
   // Forces the tabs to be revealed if we are in immersive fullscreen.
-  scoped_ptr<ImmersiveModeController::RevealedLock> immersive_reveal_lock_;
+  scoped_ptr<ImmersiveRevealedLock> immersive_reveal_lock_;
 
   content::NotificationRegistrar registrar_;
   base::WeakPtrFactory<TabScrubber> weak_ptr_factory_;

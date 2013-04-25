@@ -287,8 +287,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, Focus) {
   browser_view->SetFocusToLocationBar(false);
   EXPECT_TRUE(controller->IsRevealed());
   chrome::ToggleFullscreenMode(browser());
-  scoped_ptr<ImmersiveModeController::RevealedLock> lock(
-      controller->GetRevealedLock());
+  scoped_ptr<ImmersiveRevealedLock> lock(
+      controller->GetRevealedLock(ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_FALSE(controller->IsRevealed());
   browser_view->GetTabContentsContainerView()->RequestFocus();
   chrome::ToggleFullscreenMode(browser());
@@ -325,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   ImmersiveModeControllerAsh* controller =
       static_cast<ImmersiveModeControllerAsh*>(
           browser_view->immersive_mode_controller());
-  scoped_ptr<ImmersiveModeController::RevealedLock> lock(NULL);
+  scoped_ptr<ImmersiveRevealedLock> lock(NULL);
 
   // 1) Test that if the mouse becomes hovered without the mouse moving due to a
   // lock causing the top-of-window views to be revealed (and the mouse
@@ -333,7 +333,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   // hide till the mouse moves off of the top-of-window views.
   controller->SetMouseHoveredForTest(true);
   EXPECT_FALSE(controller->IsRevealed());
-  lock.reset(controller->GetRevealedLock());
+  lock.reset(controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(controller->IsRevealed());
   lock.reset();
   EXPECT_TRUE(controller->IsRevealed());
@@ -356,7 +357,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
   // not hide till the mouse moves off of the top-of-window views.
   chrome::ToggleFullscreenMode(browser());
   controller->SetMouseHoveredForTest(true);
-  lock.reset(controller->GetRevealedLock());
+  lock.reset(controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_FALSE(controller->IsRevealed());
   chrome::ToggleFullscreenMode(browser());
   EXPECT_TRUE(controller->IsRevealed());
@@ -368,8 +370,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest,
 
 // GetRevealedLock() specific tests.
 IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
-  scoped_ptr<ImmersiveModeController::RevealedLock> lock1(NULL);
-  scoped_ptr<ImmersiveModeController::RevealedLock> lock2(NULL);
+  scoped_ptr<ImmersiveRevealedLock> lock1(NULL);
+  scoped_ptr<ImmersiveRevealedLock> lock2(NULL);
 
   ui::ScopedAnimationDurationScaleMode zero_duration_mode(
       ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
@@ -389,7 +391,8 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
   // 1) Test acquiring and releasing a revealed state lock while immersive mode
   // is disabled. Acquiring or releasing the lock should have no effect till
   // immersive mode is enabled.
-  lock1.reset(controller->GetRevealedLock());
+  lock1.reset(controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_FALSE(controller->IsEnabled());
   EXPECT_FALSE(controller->IsRevealed());
   EXPECT_FALSE(controller->ShouldHideTopViews());
@@ -420,12 +423,14 @@ IN_PROC_BROWSER_TEST_F(ImmersiveModeControllerAshTest, RevealedLock) {
   // 2) Test that acquiring a revealed state lock reveals the top-of-window
   // views if they are hidden.
   EXPECT_FALSE(controller->IsRevealed());
-  lock1.reset(controller->GetRevealedLock());
+  lock1.reset(controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
   EXPECT_TRUE(controller->IsRevealed());
 
   // 3) Test that the top-of-window views are only hidden when all of the locks
   // are released.
-  lock2.reset(controller->GetRevealedLock());
+  lock2.reset(controller->GetRevealedLock(
+      ImmersiveModeController::ANIMATE_REVEAL_NO));
   lock1.reset();
   EXPECT_TRUE(controller->IsRevealed());
 

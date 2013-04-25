@@ -25,8 +25,8 @@ class ImmersiveModeControllerStub : public ImmersiveModeController {
   virtual bool ShouldHideTopViews() const OVERRIDE;
   virtual bool IsRevealed() const OVERRIDE;
   virtual void MaybeStackViewAtTop() OVERRIDE;
-  virtual ImmersiveModeController::RevealedLock*
-      GetRevealedLock() OVERRIDE WARN_UNUSED_RESULT;
+  virtual ImmersiveRevealedLock* GetRevealedLock(
+      AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
   virtual void AnchorWidgetToTopContainer(views::Widget* widget,
                                           int y_offset) OVERRIDE;
   virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;

@@ -13,6 +13,14 @@ namespace views {
 class Widget;
 }
 
+// Base class for a lock which keeps the top-of-window views revealed for the
+// duration of its lifetime. See ImmersiveModeController::GetRevealedLock() for
+// more details.
+class ImmersiveRevealedLock {
+ public:
+  virtual ~ImmersiveRevealedLock() {}
+};
+
 // Controller for an "immersive mode" similar to MacOS presentation mode where
 // the top-of-window views are hidden until the mouse hits the top of the
 // screen. The tab strip is optionally painted with miniature "tab indicator"
@@ -20,11 +28,9 @@ class Widget;
 // Currently, immersive mode is only available for Chrome OS.
 class ImmersiveModeController {
  public:
-  // Base class for a lock which keeps the top-of-window views revealed for the
-  // duration of its lifetime. See GetRevealedLock() for more details.
-  class RevealedLock {
-   public:
-    virtual ~RevealedLock() {}
+  enum AnimateReveal {
+    ANIMATE_REVEAL_YES,
+    ANIMATE_REVEAL_NO
   };
 
   virtual ~ImmersiveModeController() {}
@@ -57,8 +63,11 @@ class ImmersiveModeController {
   // This method always returns a valid lock regardless of whether immersive
   // mode is enabled. The lock's lifetime can span immersive mode being
   // enabled / disabled.
+  // If acquiring the lock causes a reveal, the top-of-window views will animate
+  // according to |animate_reveal|.
   // The caller takes ownership of the returned lock.
-  virtual RevealedLock* GetRevealedLock() WARN_UNUSED_RESULT = 0;
+  virtual ImmersiveRevealedLock* GetRevealedLock(
+      AnimateReveal animate_reveal) WARN_UNUSED_RESULT = 0;
 
   // Anchor |widget| to the top-of-window views. This repositions |widget| such
   // that it stays |y_offset| below the top-of-window views when the

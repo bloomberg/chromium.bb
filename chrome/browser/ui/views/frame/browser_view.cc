@@ -954,8 +954,9 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
   // that the location bar view is visible and is considered focusable. If the
   // location bar view gains focus, |immersive_mode_controller_| will keep the
   // top-of-window views revealed.
-  scoped_ptr<ImmersiveModeController::RevealedLock> focus_reveal_lock(
-      immersive_mode_controller_->GetRevealedLock());
+  scoped_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+      immersive_mode_controller_->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_YES));
 
   LocationBarView* location_bar = GetLocationBarView();
   if (location_bar->IsLocationEntryFocusableInRootView()) {
@@ -985,8 +986,9 @@ void BrowserView::FocusToolbar() {
   // that the toolbar is visible and is considered focusable. If the
   // toolbar gains focus, |immersive_mode_controller_| will keep the
   // top-of-window views revealed.
-  scoped_ptr<ImmersiveModeController::RevealedLock> focus_reveal_lock(
-      immersive_mode_controller_->GetRevealedLock());
+  scoped_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+      immersive_mode_controller_->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_YES));
 
   // Start the traversal within the main toolbar. SetPaneFocus stores
   // the current focused view before changing focus.
@@ -1159,6 +1161,15 @@ void BrowserView::ShowUpdateChromeDialog() {
 }
 
 void BrowserView::ShowBookmarkBubble(const GURL& url, bool already_bookmarked) {
+  // Reveal the top-of-window views immediately (if they are not already
+  // revealed) because it looks weird to show the bookmark bubble while the
+  // top-of-window views are still animating. If the bookmark bubble gains
+  // focus, |immersive_mode_controller_| will keep the top-of-window views
+  // revealed.
+  scoped_ptr<ImmersiveRevealedLock> focus_reveal_lock(
+      immersive_mode_controller_->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+
   chrome::ShowBookmarkBubbleView(GetToolbarView()->GetBookmarkBubbleAnchor(),
                                  bookmark_bar_view_.get(), browser_->profile(),
                                  url, !already_bookmarked);
@@ -1254,6 +1265,11 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
 }
 
 void BrowserView::ShowAppMenu() {
+  // Keep the top-of-window views revealed as long as the app menu is visible.
+  scoped_ptr<ImmersiveRevealedLock> revealed_lock(
+      immersive_mode_controller_->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_NO));
+
   toolbar_->app_menu()->Activate();
 }
 

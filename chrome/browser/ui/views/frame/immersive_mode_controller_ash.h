@@ -44,7 +44,7 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   // If immersive mode is enabled, a transition from 1 to 0 in
   // |revealed_lock_count_| closes the top-of-window views and a transition
   // from 0 to 1 in |revealed_lock_count_| reveals the top-of-window views.
-  void LockRevealedState();
+  void LockRevealedState(AnimateReveal animate_reveal);
   void UnlockRevealedState();
 
   // Shows the reveal view without any animations if immersive mode is enabled.
@@ -58,8 +58,8 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
   virtual bool ShouldHideTopViews() const OVERRIDE;
   virtual bool IsRevealed() const OVERRIDE;
   virtual void MaybeStackViewAtTop() OVERRIDE;
-  virtual ImmersiveModeController::RevealedLock*
-      GetRevealedLock() OVERRIDE WARN_UNUSED_RESULT;
+  virtual ImmersiveRevealedLock* GetRevealedLock(
+      AnimateReveal animate_reveal) OVERRIDE WARN_UNUSED_RESULT;
   virtual void AnchorWidgetToTopContainer(views::Widget* widget,
                                           int y_offset) OVERRIDE;
   virtual void UnanchorWidgetFromTopContainer(views::Widget* widget) OVERRIDE;
@@ -173,11 +173,11 @@ class ImmersiveModeControllerAsh : public ImmersiveModeController,
 
   // Lock which keeps the top-of-window views revealed based on the current
   // mouse state.
-  scoped_ptr<RevealedLock> mouse_revealed_lock_;
+  scoped_ptr<ImmersiveRevealedLock> mouse_revealed_lock_;
 
   // Lock which keeps the top-of-window views revealed based on the focused view
   // and the active widget.
-  scoped_ptr<RevealedLock> focus_revealed_lock_;
+  scoped_ptr<ImmersiveRevealedLock> focus_revealed_lock_;
 
   // Native window for the browser, needed to clean up observers.
   aura::Window* native_window_;

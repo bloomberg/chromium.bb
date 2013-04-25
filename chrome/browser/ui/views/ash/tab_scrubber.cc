@@ -126,8 +126,10 @@ void TabScrubber::OnScrollEvent(ui::ScrollEvent* event) {
     swipe_y_ = start_point.y();
     ImmersiveModeController* immersive_controller =
         browser_view->immersive_mode_controller();
-    if (immersive_controller->IsEnabled())
-      immersive_reveal_lock_.reset(immersive_controller->GetRevealedLock());
+    if (immersive_controller->IsEnabled()) {
+      immersive_reveal_lock_.reset(immersive_controller->GetRevealedLock(
+          ImmersiveModeController::ANIMATE_REVEAL_YES));
+    }
     tab_strip->AddObserver(this);
   } else if (highlighted_tab_ == -1) {
     Direction direction = (x_offset < 0) ? LEFT : RIGHT;
