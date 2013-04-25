@@ -45,7 +45,10 @@ class DateTimeChooserAndroid {
  private:
   class DateTimeIPCSender;
 
-  scoped_ptr<DateTimeIPCSender> sender_;
+  // The DateTimeIPCSender class is a render view observer, so it will take care
+  // of its own deletion.
+  DateTimeIPCSender* sender_;
+
   base::android::ScopedJavaGlobalRef<jobject> j_date_time_chooser_;
 
   DISALLOW_COPY_AND_ASSIGN(DateTimeChooserAndroid);

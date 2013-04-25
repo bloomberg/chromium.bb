@@ -55,7 +55,8 @@ void DateTimeChooserAndroid::DateTimeIPCSender::CancelDialog() {
 }
 
 // DateTimeChooserAndroid implementation
-DateTimeChooserAndroid::DateTimeChooserAndroid() {
+DateTimeChooserAndroid::DateTimeChooserAndroid()
+  : sender_(NULL) {
 }
 
 DateTimeChooserAndroid::~DateTimeChooserAndroid() {
@@ -89,7 +90,10 @@ void DateTimeChooserAndroid::ShowDialog(
     ContentViewCore* content, RenderViewHost* sender,
     int type, int year, int month, int day,
     int hour, int minute, int second) {
-  sender_.reset(new DateTimeIPCSender(sender));
+  if (sender_)
+    delete sender_;
+  sender_ = new DateTimeIPCSender(sender);
+
   JNIEnv* env = AttachCurrentThread();
   j_date_time_chooser_.Reset(Java_DateTimeChooserAndroid_createDateTimeChooser(
       env, content->GetJavaObject().obj(),
