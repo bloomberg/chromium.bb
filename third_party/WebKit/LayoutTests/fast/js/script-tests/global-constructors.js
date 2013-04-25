@@ -2,7 +2,9 @@ description("This test documents our set of global constructors we expose on the
 
 var constructorNames = [];
 
-for (var name in window) {
+var windowProperties = Object.getOwnPropertyNames(window);
+for (var i = 0; i < windowProperties.length; i++) {
+    var name = windowProperties[i];
     var value = window[name];
     var re = new RegExp("Constructor]$");
     var isConstructor = re.exec(value);

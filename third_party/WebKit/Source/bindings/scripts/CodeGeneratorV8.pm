@@ -2630,11 +2630,15 @@ sub GenerateSingleBatchedAttribute
     my $setterForMainWorld;
     my $propAttr = "v8::None";
 
+    my $isConstructor = ($attribute->signature->type =~ /Constructor$/);
+
     # Check attributes.
-    if ($attrExt->{"NotEnumerable"}) {
+    # As per Web IDL specification, constructor properties on the ECMAScript global object should be
+    # configurable and should not be enumerable.
+    if ($attrExt->{"NotEnumerable"} || $isConstructor) {
         $propAttr .= " | v8::DontEnum";
     }
-    if ($attrExt->{"Unforgeable"}) {
+    if ($attrExt->{"Unforgeable"} && !$isConstructor) {
         $propAttr .= " | v8::DontDelete";
     }
 
@@ -2642,7 +2646,7 @@ sub GenerateSingleBatchedAttribute
     my $data = "0 /* no data */";
 
     # Constructor
-    if ($attribute->signature->type =~ /Constructor$/) {
+    if ($isConstructor) {
         my $constructorType = $attribute->signature->type;
         $constructorType =~ s/Constructor$//;
         # $constructorType ~= /Constructor$/ indicates that it is NamedConstructor.
