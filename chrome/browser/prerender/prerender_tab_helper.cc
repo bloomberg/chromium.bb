@@ -224,9 +224,14 @@ void PrerenderTabHelper::DidStartProvisionalLoadForFrame(
 void PrerenderTabHelper::DidNavigateAnyFrame(
       const content::LoadCommittedDetails& details,
       const content::FrameNavigateParams& params) {
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (params.password_form.origin.is_valid() && prerender_manager) {
-    prerender_manager->RecordLikelyLoginOnURL(params.url);
+  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_table =
+      MaybeGetLoggedInTable();
+  if (params.password_form.origin.is_valid() && logged_in_table.get()) {
+    content::BrowserThread::PostTask(
+        content::BrowserThread::DB, FROM_HERE,
+        base::Bind(&predictors::LoggedInPredictorTable::Add,
+                   logged_in_table,
+                   params.url));
     RecordEvent(EVENT_LOGIN_ACTION_ADDED);
   }
 }
@@ -234,6 +239,20 @@ void PrerenderTabHelper::DidNavigateAnyFrame(
 PrerenderManager* PrerenderTabHelper::MaybeGetPrerenderManager() const {
   return PrerenderManagerFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents()->GetBrowserContext()));
+}
+
+scoped_refptr<predictors::LoggedInPredictorTable>
+PrerenderTabHelper::MaybeGetLoggedInTable() const {
+  RecordEvent(EVENT_LOGGED_IN_TABLE_REQUESTED);
+  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
+  if (prerender_manager) {
+    predictors::LoggedInPredictorTable* result =
+        prerender_manager->logged_in_predictor_table();
+    if (result)
+      RecordEvent(EVENT_LOGGED_IN_TABLE_PRESENT);
+    return result;
+  }
+  return NULL;
 }
 
 bool PrerenderTabHelper::IsPrerendering() {
@@ -277,17 +296,21 @@ void PrerenderTabHelper::RecordEvent(PrerenderTabHelper::Event event) const {
 
 void PrerenderTabHelper::RecordEventIfLoggedInURL(
     PrerenderTabHelper::Event event, const GURL& url) {
-  PrerenderManager* prerender_manager = MaybeGetPrerenderManager();
-  if (!prerender_manager)
+  scoped_refptr<predictors::LoggedInPredictorTable> logged_in_table =
+      MaybeGetLoggedInTable();
+  if (!logged_in_table.get())
     return;
   scoped_ptr<bool> is_present(new bool);
   scoped_ptr<bool> lookup_succeeded(new bool);
   bool* is_present_ptr = is_present.get();
   bool* lookup_succeeded_ptr = lookup_succeeded.get();
-  prerender_manager->CheckIfLikelyLoggedInOnURL(
-      url,
-      is_present_ptr,
-      lookup_succeeded_ptr,
+  content::BrowserThread::PostTaskAndReply(
+      content::BrowserThread::DB, FROM_HERE,
+      base::Bind(&predictors::LoggedInPredictorTable::HasUserLoggedIn,
+                 logged_in_table,
+                 url,
+                 is_present_ptr,
+                 lookup_succeeded_ptr),
       base::Bind(&PrerenderTabHelper::RecordEventIfLoggedInURLResult,
                  weak_factory_.GetWeakPtr(),
                  event,

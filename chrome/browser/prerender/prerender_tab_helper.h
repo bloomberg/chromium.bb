@@ -83,6 +83,10 @@ class PrerenderTabHelper
   // Retrieves the PrerenderManager, or NULL, if none was found.
   PrerenderManager* MaybeGetPrerenderManager() const;
 
+  // Retrieves the LoggedInPredictorTable, or NULL, if none was found.
+  scoped_refptr<predictors::LoggedInPredictorTable>
+  MaybeGetLoggedInTable() const;
+
   // Returns whether the WebContents being observed is currently prerendering.
   bool IsPrerendering();
 
