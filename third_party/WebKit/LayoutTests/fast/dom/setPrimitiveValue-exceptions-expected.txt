@@ -48,17 +48,17 @@ PASS left.getRGBColorValue() threw exception Error: InvalidAccessError: DOM Exce
 PASS left.getFloatValue(CSSPrimitiveValue.CSS_NUMBER) is 10
 PASS left.getFloatValue(CSSPrimitiveValue.CSS_DIMENSION) is 10
 PASS left.getFloatValue(CSSPrimitiveValue.CSS_PX) is 10
-FAIL fontFamily.getStringValue() should be Times. Threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.getStringValue')
-PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_STRING, 'Hi there!') threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.setStringValue').
-PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_ATTR, "G'day!") threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.setStringValue').
-PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_UNKNOWN, 'Hi there!') threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.setStringValue').
-PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_DIMENSION, "G'day!") threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.setStringValue').
-PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_COUNTER, 'Hello, world!') threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.setStringValue').
-PASS fontFamily.getFloatValue() threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.getFloatValue').
-PASS fontFamily.getCounterValue() threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.getCounterValue').
-PASS fontFamily.getRectValue() threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.getRectValue').
-PASS fontFamily.getRGBColorValue() threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.getRGBColorValue').
-FAIL fontFamily.getStringValue() should be Times. Threw exception TypeError: 'undefined' is not an object (evaluating 'fontFamily.getStringValue')
+FAIL fontFamily.getStringValue() should be Times. Threw exception TypeError: Cannot call method 'getStringValue' of undefined
+PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_STRING, 'Hi there!') threw exception TypeError: Cannot call method 'setStringValue' of undefined.
+PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_ATTR, "G'day!") threw exception TypeError: Cannot call method 'setStringValue' of undefined.
+PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_UNKNOWN, 'Hi there!') threw exception TypeError: Cannot call method 'setStringValue' of undefined.
+PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_DIMENSION, "G'day!") threw exception TypeError: Cannot call method 'setStringValue' of undefined.
+PASS fontFamily.setStringValue(CSSPrimitiveValue.CSS_COUNTER, 'Hello, world!') threw exception TypeError: Cannot call method 'setStringValue' of undefined.
+PASS fontFamily.getFloatValue() threw exception TypeError: Cannot call method 'getFloatValue' of undefined.
+PASS fontFamily.getCounterValue() threw exception TypeError: Cannot call method 'getCounterValue' of undefined.
+PASS fontFamily.getRectValue() threw exception TypeError: Cannot call method 'getRectValue' of undefined.
+PASS fontFamily.getRGBColorValue() threw exception TypeError: Cannot call method 'getRGBColorValue' of undefined.
+FAIL fontFamily.getStringValue() should be Times. Threw exception TypeError: Cannot call method 'getStringValue' of undefined
 PASS successfullyParsed is true
 
 TEST COMPLETE

@@ -33,8 +33,8 @@ Testing regexp: /a\_/
 PASS regexp.test('a_') is true
 
 Testing regexp: [invalid \ variations]
-PASS /\/ threw exception SyntaxError: Unexpected token '/'.
-PASS /a\/ threw exception SyntaxError: Unexpected token '/'.
+PASS /\/ threw exception SyntaxError: Invalid regular expression: missing /.
+PASS /a\/ threw exception SyntaxError: Invalid regular expression: missing /.
 
 Testing regexp: /./
 PASS regexp.test('a') is true
@@ -51,8 +51,8 @@ PASS regexp.test('aaba') is true
 PASS regexp.lastIndex is 2
 
 Testing regexp: [invalid * variations]
-PASS /*/ threw exception SyntaxError: Multiline comment was not closed properly.
-PASS /^*/ threw exception SyntaxError: Invalid regular expression: nothing to repeat.
+PASS /*/ threw exception SyntaxError: Unexpected token ILLEGAL.
+PASS /^*/ threw exception SyntaxError: Invalid regular expression: /^*/: Nothing to repeat.
 
 Testing regexp: /a+/gm
 PASS regexp.test('b') is false
@@ -60,7 +60,7 @@ PASS regexp.test('aaba') is true
 PASS regexp.lastIndex is 2
 
 Testing regexp: [invalid + variations]
-PASS /+/ threw exception SyntaxError: Invalid regular expression: nothing to repeat.
+PASS /+/ threw exception SyntaxError: Invalid regular expression: /+/: Nothing to repeat.
 
 Testing regexp: /a?/gm
 PASS regexp.test('b') is true
@@ -69,21 +69,21 @@ PASS regexp.test('aaba') is true
 PASS regexp.lastIndex is 1
 
 Testing regexp: [invalid ? variations]
-PASS /?/ threw exception SyntaxError: Invalid regular expression: nothing to repeat.
+PASS /?/ threw exception SyntaxError: Invalid regular expression: /?/: Nothing to repeat.
 
 Testing regexp: [invalid ( variations]
-PASS /(/ threw exception SyntaxError: Invalid regular expression: missing ).
-PASS /a(/ threw exception SyntaxError: Invalid regular expression: missing ).
+PASS /(/ threw exception SyntaxError: Invalid regular expression: /(/: Unterminated group.
+PASS /a(/ threw exception SyntaxError: Invalid regular expression: /a(/: Unterminated group.
 
 Testing regexp: [invalid ) variations]
-PASS /)/ threw exception SyntaxError: Invalid regular expression: unmatched parentheses.
-PASS /a)/ threw exception SyntaxError: Invalid regular expression: unmatched parentheses.
+PASS /)/ threw exception SyntaxError: Invalid regular expression: /)/: Unmatched ')'.
+PASS /a)/ threw exception SyntaxError: Invalid regular expression: /a)/: Unmatched ')'.
 
 Testing regexp: [invalid [ variations]
-PASS /[/ threw exception SyntaxError: Unexpected token '/'.
-PASS /a[/ threw exception SyntaxError: Unexpected token '/'.
-PASS /[b-a]/ threw exception SyntaxError: Invalid regular expression: range out of order in character class.
-PASS /a[b-a]/ threw exception SyntaxError: Invalid regular expression: range out of order in character class.
+PASS /[/ threw exception SyntaxError: Invalid regular expression: missing /.
+PASS /a[/ threw exception SyntaxError: Invalid regular expression: missing /.
+PASS /[b-a]/ threw exception SyntaxError: Invalid regular expression: /[b-a]/: Range out of order in character class.
+PASS /a[b-a]/ threw exception SyntaxError: Invalid regular expression: /a[b-a]/: Range out of order in character class.
 
 Testing regexp: /]/gm
 PASS regexp.test(']') is true
@@ -144,9 +144,9 @@ PASS regexp.test('b') is true
 PASS regexp.lastIndex is 0
 
 Testing regexp: [invalid {} variations]
-PASS /{0}/ threw exception SyntaxError: Invalid regular expression: nothing to repeat.
-PASS /{1,0}/ threw exception SyntaxError: Invalid regular expression: numbers out of order in {} quantifier.
-PASS /a{1,0}/ threw exception SyntaxError: Invalid regular expression: numbers out of order in {} quantifier.
+PASS /{0}/ threw exception SyntaxError: Invalid regular expression: /{0}/: Nothing to repeat.
+PASS /{1,0}/ threw exception SyntaxError: Invalid regular expression: /{1,0}/: Nothing to repeat.
+PASS /a{1,0}/ threw exception SyntaxError: Invalid regular expression: /a{1,0}/: numbers out of order in {} quantifier..
 
 Testing regexp: /}/gm
 PASS regexp.test('}') is true

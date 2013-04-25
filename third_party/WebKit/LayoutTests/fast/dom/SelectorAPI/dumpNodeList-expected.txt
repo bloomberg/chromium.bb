@@ -47,38 +47,38 @@ length: 0
 Document.querySelector
 
 [object HTMLDivElement]
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
 [object HTMLDivElement]
 [object HTMLDivElement]
 Error: SyntaxError: DOM Exception 12
 Error: SyntaxError: DOM Exception 12
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
+TypeError: Cannot call method 'dump' of null
 
 Element.querySelector
 
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
 [object HTMLDivElement]
 [object HTMLDivElement]
 Error: SyntaxError: DOM Exception 12
 Error: SyntaxError: DOM Exception 12
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
+TypeError: Cannot call method 'dump' of null
 
 DocumentFragment.querySelector
 
 [object HTMLDivElement]
 [object HTMLDivElement]
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
 [object HTMLDivElement]
 [object HTMLDivElement]
 [object HTMLDivElement]
 Error: SyntaxError: DOM Exception 12
 Error: SyntaxError: DOM Exception 12
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
-TypeError: 'null' is not an object (evaluating 'node.querySelector(selectorString).dump')
+TypeError: Cannot call method 'dump' of null
+TypeError: Cannot call method 'dump' of null
 
