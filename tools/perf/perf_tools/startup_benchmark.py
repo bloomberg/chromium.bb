@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import json
+
 from telemetry.page import page_benchmark
 
 # Test how long Chrome takes to load when warm.
@@ -17,6 +19,7 @@ class PerfWarm(page_benchmark.PageBenchmark):
   def MeasurePage(self, page, tab, results):
     result = tab.EvaluateJavaScript("""
       domAutomationController.getBrowserHistogram(
-          "Startup.BrowserMessageLoopStartTimeFromMainEntry")
+          "Startup.BrowserMessageLoopStartTimeFromMainEntry_Exact")
       """)
-    results.Add('startup_time', 'ms', result)
+    result = json.loads(result)
+    results.Add('startup_time', 'ms', result['params']['max'])
