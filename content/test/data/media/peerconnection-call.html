@@ -345,9 +345,9 @@
   }
 
   function onRemoteStream(e, target) {
-    if (gTestWithoutMsidAndBundle && e.stream.label != "default") {
+    if (gTestWithoutMsidAndBundle && e.stream.id != "default") {
       document.title = 'a default remote stream was expected but instead ' +
-          e.stream.label + ' was received.';
+          e.stream.id + ' was received.';
       return;
     }
     var remoteStreamUrl = webkitURL.createObjectURL(e.stream);
