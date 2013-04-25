@@ -284,12 +284,11 @@ void InspectorOverlay::update()
     IntSize viewportSize = enclosingIntRect(view->visibleContentRect()).size();
     IntSize frameViewFullSize = enclosingIntRect(view->visibleContentRect(ScrollableArea::IncludeScrollbars)).size();
     IntSize size = m_size.isEmpty() ? frameViewFullSize : m_size;
-    overlayPage()->setPageScaleFactor(m_page->pageScaleFactor(), IntPoint());
     size.scale(m_page->pageScaleFactor());
     overlayView->resize(size);
 
     // Clear canvas and paint things.
-    reset(viewportSize, m_size.isEmpty() ? IntSize() : frameViewFullSize);
+    reset(size, m_size.isEmpty() ? IntSize() : frameViewFullSize);
 
     // Include scrollbars to avoid masking them by the gutter.
     drawGutter();
@@ -475,6 +474,7 @@ Page* InspectorOverlay::overlayPage()
 void InspectorOverlay::reset(const IntSize& viewportSize, const IntSize& frameViewFullSize)
 {
     RefPtr<InspectorObject> resetData = InspectorObject::create();
+    resetData->setNumber("pageScaleFactor", m_page->pageScaleFactor());
     resetData->setNumber("deviceScaleFactor", m_page->deviceScaleFactor());
     resetData->setObject("viewportSize", buildObjectForSize(viewportSize));
     resetData->setObject("frameViewFullSize", buildObjectForSize(frameViewFullSize));
