@@ -34,7 +34,7 @@ class MEDIA_EXPORT VideoDecoder {
   // Note:
   // 1) No VideoDecoder calls should be made before |status_cb| is executed.
   // 2) DemuxerStream should not be accessed after the VideoDecoder is stopped.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;
 

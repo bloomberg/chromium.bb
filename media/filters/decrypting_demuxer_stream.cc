@@ -20,10 +20,9 @@
 namespace media {
 
 #define BIND_TO_LOOP(function) \
-    media::BindToLoop(message_loop_, base::Bind(function, this))
+    media::BindToLoop(message_loop_, base::Bind(function, weak_this_))
 
-static bool IsStreamValidAndEncrypted(
-    const scoped_refptr<DemuxerStream>& stream) {
+static bool IsStreamValidAndEncrypted(DemuxerStream* stream) {
   return ((stream->type() == DemuxerStream::AUDIO &&
            stream->audio_decoder_config().IsValidConfig() &&
            stream->audio_decoder_config().is_encrypted()) ||
@@ -36,20 +35,23 @@ DecryptingDemuxerStream::DecryptingDemuxerStream(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const SetDecryptorReadyCB& set_decryptor_ready_cb)
     : message_loop_(message_loop),
+      weak_factory_(this),
       state_(kUninitialized),
+      demuxer_stream_(NULL),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decrypt_pending_(false) {
 }
 
 void DecryptingDemuxerStream::Initialize(
-    const scoped_refptr<DemuxerStream>& stream,
+    DemuxerStream* stream,
     const PipelineStatusCB& status_cb) {
   DVLOG(2) << "Initialize()";
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kUninitialized) << state_;
 
   DCHECK(!demuxer_stream_);
+  weak_this_ = weak_factory_.GetWeakPtr();
   demuxer_stream_ = stream;
   init_cb_ = status_cb;
 
@@ -70,7 +72,7 @@ void DecryptingDemuxerStream::Read(const ReadCB& read_cb) {
   read_cb_ = read_cb;
   state_ = kPendingDemuxerRead;
   demuxer_stream_->Read(
-      base::Bind(&DecryptingDemuxerStream::DecryptBuffer, this));
+      base::Bind(&DecryptingDemuxerStream::DecryptBuffer, weak_this_));
 }
 
 void DecryptingDemuxerStream::Reset(const base::Closure& closure) {

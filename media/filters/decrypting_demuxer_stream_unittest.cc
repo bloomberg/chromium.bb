@@ -87,7 +87,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   void InitializeAudioAndExpectStatus(const AudioDecoderConfig& config,
                                       PipelineStatus status) {
     input_audio_stream_->set_audio_decoder_config(config);
-    demuxer_stream_->Initialize(input_audio_stream_,
+    demuxer_stream_->Initialize(input_audio_stream_.get(),
                                 NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
@@ -95,7 +95,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
   void InitializeVideoAndExpectStatus(const VideoDecoderConfig& config,
                                       PipelineStatus status) {
     input_video_stream_->set_video_decoder_config(config);
-    demuxer_stream_->Initialize(input_video_stream_,
+    demuxer_stream_->Initialize(input_video_stream_.get(),
                                 NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
   }
@@ -213,10 +213,10 @@ class DecryptingDemuxerStreamTest : public testing::Test {
                                  const scoped_refptr<DecoderBuffer>&));
 
   base::MessageLoop message_loop_;
-  scoped_refptr<DecryptingDemuxerStream> demuxer_stream_;
+  scoped_ptr<DecryptingDemuxerStream> demuxer_stream_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > input_audio_stream_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > input_video_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > input_audio_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > input_video_stream_;
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
   Decryptor::NewKeyCB key_added_cb_;

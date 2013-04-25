@@ -9,6 +9,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/filters/audio_decoder_selector.h"
+#include "media/filters/decrypting_demuxer_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -41,13 +42,12 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
-               void(AudioDecoder*,
-                    const scoped_refptr<DecryptingDemuxerStream>&));
+               void(AudioDecoder*, DecryptingDemuxerStream*));
 
   void MockOnDecoderSelected(
       scoped_ptr<AudioDecoder> decoder,
-      const scoped_refptr<DecryptingDemuxerStream>& stream) {
-    OnDecoderSelected(decoder.get(), stream);
+      scoped_ptr<DecryptingDemuxerStream> stream) {
+    OnDecoderSelected(decoder.get(), stream.get());
   }
 
   void UseClearStream() {
@@ -97,7 +97,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   void SelectDecoder() {
     decoder_selector_->SelectAudioDecoder(
-        demuxer_stream_,
+        demuxer_stream_.get(),
         base::Bind(&AudioDecoderSelectorTest::OnStatistics,
                    base::Unretained(this)),
         base::Bind(&AudioDecoderSelectorTest::MockOnDecoderSelected,
@@ -107,7 +107,7 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   // Fixture members.
   scoped_ptr<AudioDecoderSelector> decoder_selector_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;

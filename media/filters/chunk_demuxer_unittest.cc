@@ -664,7 +664,7 @@ class ChunkDemuxerTest : public testing::Test {
   void ReadUntilNotOkOrEndOfStream(DemuxerStream::Type type,
                                    DemuxerStream::Status* status,
                                    base::TimeDelta* last_timestamp) {
-    scoped_refptr<DemuxerStream> stream = demuxer_->GetStream(type);
+    DemuxerStream* stream = demuxer_->GetStream(type);
     scoped_refptr<DecoderBuffer> buffer;
 
     *last_timestamp = kNoTimestamp();
@@ -812,8 +812,7 @@ TEST_F(ChunkDemuxerTest, TestInit) {
     ASSERT_TRUE(InitDemuxerWithEncryptionInfo(
         has_audio, has_video, is_audio_encrypted, is_video_encrypted));
 
-    scoped_refptr<DemuxerStream> audio_stream =
-        demuxer_->GetStream(DemuxerStream::AUDIO);
+    DemuxerStream* audio_stream = demuxer_->GetStream(DemuxerStream::AUDIO);
     if (has_audio) {
       ASSERT_TRUE(audio_stream);
 
@@ -831,8 +830,7 @@ TEST_F(ChunkDemuxerTest, TestInit) {
       EXPECT_FALSE(audio_stream);
     }
 
-    scoped_refptr<DemuxerStream> video_stream =
-        demuxer_->GetStream(DemuxerStream::VIDEO);
+    DemuxerStream* video_stream = demuxer_->GetStream(DemuxerStream::VIDEO);
     if (has_video) {
       EXPECT_TRUE(video_stream);
       EXPECT_EQ(is_video_encrypted,
@@ -1135,10 +1133,8 @@ class EndOfStreamHelper {
     EXPECT_FALSE(audio_read_done_);
     EXPECT_FALSE(video_read_done_);
 
-    scoped_refptr<DemuxerStream> audio =
-        demuxer_->GetStream(DemuxerStream::AUDIO);
-    scoped_refptr<DemuxerStream> video =
-        demuxer_->GetStream(DemuxerStream::VIDEO);
+    DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
+    DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
 
     audio->Read(base::Bind(&OnEndOfStreamReadDone, &audio_read_done_));
     video->Read(base::Bind(&OnEndOfStreamReadDone, &video_read_done_));
@@ -2133,8 +2129,7 @@ TEST_F(ChunkDemuxerTest, TestConfigChange_Video) {
   DemuxerStream::Status status;
   base::TimeDelta last_timestamp;
 
-  scoped_refptr<DemuxerStream> video =
-      demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
 
   // Fetch initial video config and verify it matches what we expect.
   const VideoDecoderConfig& video_config_1 = video->video_decoder_config();
@@ -2181,8 +2176,7 @@ TEST_F(ChunkDemuxerTest, TestConfigChange_Audio) {
   DemuxerStream::Status status;
   base::TimeDelta last_timestamp;
 
-  scoped_refptr<DemuxerStream> audio =
-      demuxer_->GetStream(DemuxerStream::AUDIO);
+  DemuxerStream* audio = demuxer_->GetStream(DemuxerStream::AUDIO);
 
   // Fetch initial audio config and verify it matches what we expect.
   const AudioDecoderConfig& audio_config_1 = audio->audio_decoder_config();
@@ -2226,8 +2220,7 @@ TEST_F(ChunkDemuxerTest, TestConfigChange_Seek) {
 
   ASSERT_TRUE(InitDemuxerWithConfigChangeData());
 
-  scoped_refptr<DemuxerStream> video =
-      demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* video = demuxer_->GetStream(DemuxerStream::VIDEO);
 
   // Fetch initial video config and verify it matches what we expect.
   const VideoDecoderConfig& video_config_1 = video->video_decoder_config();
@@ -2449,6 +2442,27 @@ TEST_F(ChunkDemuxerTest, TestShutdownBeforeInitialize) {
   demuxer_->Initialize(
       &host_, CreateInitDoneCB(DEMUXER_ERROR_COULD_NOT_OPEN));
   message_loop_.RunUntilIdle();
+}
+
+TEST_F(ChunkDemuxerTest, ReadAfterAudioDisabled) {
+  ASSERT_TRUE(InitDemuxer(true, true));
+  scoped_ptr<Cluster> cluster(kDefaultFirstCluster());
+  AppendData(cluster->data(), cluster->size());
+
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::AUDIO);
+  ASSERT_TRUE(stream);
+
+  // The stream should no longer be present.
+  demuxer_->OnAudioRendererDisabled();
+  ASSERT_FALSE(demuxer_->GetStream(DemuxerStream::AUDIO));
+
+  // Normally this would return an audio buffer at timestamp zero, but
+  // all reads should return EOS buffers when disabled.
+  bool audio_read_done = false;
+  stream->Read(base::Bind(&OnReadDone_EOSExpected, &audio_read_done));
+  message_loop_.RunUntilIdle();
+
+  EXPECT_TRUE(audio_read_done);
 }
 
 }  // namespace media

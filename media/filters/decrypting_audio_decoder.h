@@ -40,7 +40,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   virtual ~DecryptingAudioDecoder();
 
   // AudioDecoder implementation.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
@@ -117,7 +117,7 @@ class MEDIA_EXPORT DecryptingAudioDecoder : public AudioDecoder {
   base::Closure reset_cb_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
-  scoped_refptr<DemuxerStream> demuxer_stream_;
+  DemuxerStream* demuxer_stream_;
 
   // Callback to request/cancel decryptor creation notification.
   SetDecryptorReadyCB set_decryptor_ready_cb_;

@@ -28,7 +28,6 @@ class MessageLoopProxy;
 namespace media {
 
 class DecryptingDemuxerStream;
-class VideoDecoderSelector;
 
 // VideoRendererBase creates its own thread for the sole purpose of timing frame
 // presentation.  It handles reading from the decoder and stores the results in
@@ -66,7 +65,7 @@ class MEDIA_EXPORT VideoRendererBase
   virtual ~VideoRendererBase();
 
   // VideoRenderer implementation.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const TimeCB& max_time_cb,
@@ -141,13 +140,11 @@ class MEDIA_EXPORT VideoRendererBase
   base::WeakPtrFactory<VideoRendererBase> weak_factory_;
   base::WeakPtr<VideoRendererBase> weak_this_;
 
-  scoped_ptr<VideoDecoderSelector> decoder_selector_;
-
   // Used for accessing data members.
   base::Lock lock_;
 
   // Provides video frames to VideoRendererBase.
-  scoped_refptr<VideoFrameStream> video_frame_stream_;
+  VideoFrameStream video_frame_stream_;
 
   // Queue of incoming frames yet to be painted.
   typedef std::deque<scoped_refptr<VideoFrame> > VideoFrameQueue;

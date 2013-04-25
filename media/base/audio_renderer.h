@@ -40,10 +40,10 @@ class MEDIA_EXPORT AudioRenderer {
   //
   // |disabled_cb| is executed when audio rendering has been disabled due to
   // external factors (i.e., device was removed). |time_cb| will no longer be
-  // executed.
+  // executed. TODO(scherkus): this might not be needed http://crbug.com/234708
   //
   // |error_cb| is executed if an error was encountered.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const base::Closure& underflow_cb,

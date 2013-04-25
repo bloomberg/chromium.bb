@@ -141,7 +141,7 @@ class PipelineTest : public ::testing::Test {
 
     // Configure the demuxer to return the streams.
     for (size_t i = 0; i < streams->size(); ++i) {
-      scoped_refptr<DemuxerStream> stream((*streams)[i]);
+      DemuxerStream* stream = (*streams)[i];
       EXPECT_CALL(*demuxer_, GetStream(stream->type()))
           .WillRepeatedly(Return(stream));
     }
@@ -152,14 +152,15 @@ class PipelineTest : public ::testing::Test {
     InitializeDemuxer(streams, base::TimeDelta::FromSeconds(10));
   }
 
-  StrictMock<MockDemuxerStream>* CreateStream(DemuxerStream::Type type) {
-    StrictMock<MockDemuxerStream>* stream =
-        new StrictMock<MockDemuxerStream>(type);
-    return stream;
+  scoped_ptr<StrictMock<MockDemuxerStream> > CreateStream(
+      DemuxerStream::Type type) {
+    scoped_ptr<StrictMock<MockDemuxerStream> > stream(
+        new StrictMock<MockDemuxerStream>(type));
+    return stream.Pass();
   }
 
   // Sets up expectations to allow the video renderer to initialize.
-  void InitializeVideoRenderer(const scoped_refptr<DemuxerStream>& stream) {
+  void InitializeVideoRenderer(DemuxerStream* stream) {
     EXPECT_CALL(*video_renderer_, Initialize(stream, _, _, _, _, _, _, _, _))
         .WillOnce(RunCallback<1>(PIPELINE_OK));
     EXPECT_CALL(*video_renderer_, SetPlaybackRate(0.0f));
@@ -172,7 +173,7 @@ class PipelineTest : public ::testing::Test {
   }
 
   // Sets up expectations to allow the audio renderer to initialize.
-  void InitializeAudioRenderer(const scoped_refptr<DemuxerStream>& stream,
+  void InitializeAudioRenderer(DemuxerStream* stream,
                                bool disable_after_init_cb) {
     if (disable_after_init_cb) {
       EXPECT_CALL(*audio_renderer_, Initialize(stream, _, _, _, _, _, _, _))
@@ -229,11 +230,11 @@ class PipelineTest : public ::testing::Test {
   }
 
   MockDemuxerStream* audio_stream() {
-    return audio_stream_;
+    return audio_stream_.get();
   }
 
   MockDemuxerStream* video_stream() {
-    return video_stream_;
+    return video_stream_.get();
   }
 
   void ExpectSeek(const base::TimeDelta& seek_time) {
@@ -294,8 +295,8 @@ class PipelineTest : public ::testing::Test {
   scoped_ptr<MockDemuxer> demuxer_;
   MockVideoRenderer* video_renderer_;
   MockAudioRenderer* audio_renderer_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > audio_stream_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > video_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > audio_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > video_stream_;
   AudioRenderer::TimeCB audio_time_cb_;
   VideoDecoderConfig video_decoder_config_;
 

@@ -30,8 +30,8 @@ VideoRendererBase::VideoRendererBase(
     bool drop_frames)
     : message_loop_(message_loop),
       weak_factory_(this),
-      video_frame_stream_(new VideoFrameStream(
-          message_loop, decoders.Pass(), set_decryptor_ready_cb)),
+      video_frame_stream_(
+          message_loop, decoders.Pass(), set_decryptor_ready_cb),
       received_end_of_stream_(false),
       frame_available_(&lock_),
       state_(kUninitialized),
@@ -78,7 +78,7 @@ void VideoRendererBase::Flush(const base::Closure& callback) {
   // needs to drain it before flushing it.
   ready_frames_.clear();
   received_end_of_stream_ = false;
-  video_frame_stream_->Reset(base::Bind(
+  video_frame_stream_.Reset(base::Bind(
       &VideoRendererBase::OnVideoFrameStreamResetDone, weak_this_));
 }
 
@@ -113,7 +113,7 @@ void VideoRendererBase::Stop(const base::Closure& callback) {
     base::PlatformThread::Join(thread_to_join);
   }
 
-  video_frame_stream_->Stop(callback);
+  video_frame_stream_.Stop(callback);
 }
 
 void VideoRendererBase::SetPlaybackRate(float playback_rate) {
@@ -136,7 +136,7 @@ void VideoRendererBase::Preroll(base::TimeDelta time,
   AttemptRead_Locked();
 }
 
-void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
+void VideoRendererBase::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const TimeCB& max_time_cb,
@@ -169,7 +169,7 @@ void VideoRendererBase::Initialize(const scoped_refptr<DemuxerStream>& stream,
   get_duration_cb_ = get_duration_cb;
   state_ = kInitializing;
 
-  video_frame_stream_->Initialize(
+  video_frame_stream_.Initialize(
       stream,
       statistics_cb,
       base::Bind(&VideoRendererBase::OnVideoFrameStreamInitialized,
@@ -396,7 +396,7 @@ void VideoRendererBase::FrameReady(VideoDecoder::Status status,
   AddReadyFrame_Locked(frame);
 
   if (state_ == kPrerolling) {
-    if (!video_frame_stream_->HasOutputFrameAvailable() ||
+    if (!video_frame_stream_.HasOutputFrameAvailable() ||
         ready_frames_.size() >= static_cast<size_t>(limits::kMaxVideoFrames)) {
       TransitionToPrerolled_Locked();
     }
@@ -460,8 +460,8 @@ void VideoRendererBase::AttemptRead_Locked() {
     case kPrerolling:
     case kPlaying:
       pending_read_ = true;
-      video_frame_stream_->ReadFrame(base::Bind(&VideoRendererBase::FrameReady,
-                                                weak_this_));
+      video_frame_stream_.ReadFrame(base::Bind(&VideoRendererBase::FrameReady,
+                                               weak_this_));
       return;
 
     case kUninitialized:

@@ -78,7 +78,7 @@ class MEDIA_EXPORT GpuVideoDecoder
                   const scoped_refptr<Factories>& factories);
 
   // VideoDecoder implementation.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
@@ -166,7 +166,7 @@ class MEDIA_EXPORT GpuVideoDecoder
   StatisticsCB statistics_cb_;
 
   // Pointer to the demuxer stream that will feed us compressed buffers.
-  scoped_refptr<DemuxerStream> demuxer_stream_;
+  DemuxerStream* demuxer_stream_;
 
   // Message loop on which to fire callbacks and trampoline calls to this class
   // if they arrive on other loops.

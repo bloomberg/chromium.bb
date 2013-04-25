@@ -83,7 +83,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
                                      PipelineStatus status) {
     demuxer_->set_video_decoder_config(config);
-    decoder_->Initialize(demuxer_, NewExpectedStatusCB(status),
+    decoder_->Initialize(demuxer_.get(), NewExpectedStatusCB(status),
                          base::Bind(&MockStatisticsCB::OnStatistics,
                                     base::Unretained(&statistics_cb_)));
 
@@ -197,7 +197,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_ptr<FFmpegVideoDecoder> decoder_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
   VideoDecoderConfig config_;
 

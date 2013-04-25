@@ -39,7 +39,7 @@ class MEDIA_EXPORT VideoDecoderSelector {
   // calling VideoDecoder::Reset() to release any pending decryption or read.
   typedef base::Callback<
       void(scoped_ptr<VideoDecoder>,
-           const scoped_refptr<DecryptingDemuxerStream>&)> SelectDecoderCB;
+           scoped_ptr<DecryptingDemuxerStream>)> SelectDecoderCB;
 
   // |decoders| contains the VideoDecoders to use when initializing.
   //
@@ -54,7 +54,7 @@ class MEDIA_EXPORT VideoDecoderSelector {
   // Initializes and selects an VideoDecoder that can decode the |stream|.
   // Selected VideoDecoder (and DecryptingDemuxerStream) is returned via
   // the |select_decoder_cb|.
-  void SelectVideoDecoder(const scoped_refptr<DemuxerStream>& stream,
+  void SelectVideoDecoder(DemuxerStream* stream,
                           const StatisticsCB& statistics_cb,
                           const SelectDecoderCB& select_decoder_cb);
 
@@ -69,12 +69,12 @@ class MEDIA_EXPORT VideoDecoderSelector {
   ScopedVector<VideoDecoder> decoders_;
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
-  scoped_refptr<DemuxerStream> input_stream_;
+  DemuxerStream* input_stream_;
   StatisticsCB statistics_cb_;
   SelectDecoderCB select_decoder_cb_;
 
   scoped_ptr<VideoDecoder> video_decoder_;
-  scoped_refptr<DecryptingDemuxerStream> decrypted_stream_;
+  scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;
 
   base::WeakPtrFactory<VideoDecoderSelector> weak_ptr_factory_;
 

@@ -95,7 +95,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .WillOnce(RunCallbackIfNotNull(decryptor_.get()));
 
-    decoder_->Initialize(demuxer_, NewExpectedStatusCB(status),
+    decoder_->Initialize(demuxer_.get(), NewExpectedStatusCB(status),
                          base::Bind(&MockStatisticsCB::OnStatistics,
                                     base::Unretained(&statistics_cb_)));
     message_loop_.RunUntilIdle();
@@ -236,7 +236,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
   base::MessageLoop message_loop_;
   scoped_ptr<DecryptingVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDecryptor> > decryptor_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
 
   DemuxerStream::ReadCB pending_demuxer_read_cb_;
@@ -581,7 +581,7 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
   DecryptorReadyCB decryptor_ready_cb;
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
-  decoder_->Initialize(demuxer_,
+  decoder_->Initialize(demuxer_.get(),
                        NewExpectedStatusCB(DECODER_ERROR_NOT_SUPPORTED),
                        base::Bind(&MockStatisticsCB::OnStatistics,
                                   base::Unretained(&statistics_cb_)));

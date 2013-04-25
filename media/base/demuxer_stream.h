@@ -16,8 +16,7 @@ class AudioDecoderConfig;
 class DecoderBuffer;
 class VideoDecoderConfig;
 
-class MEDIA_EXPORT DemuxerStream
-    : public base::RefCountedThreadSafe<DemuxerStream> {
+class MEDIA_EXPORT DemuxerStream {
  public:
   enum Type {
     UNKNOWN,
@@ -70,7 +69,7 @@ class MEDIA_EXPORT DemuxerStream
   virtual void EnableBitstreamConverter() = 0;
 
  protected:
-  friend class base::RefCountedThreadSafe<DemuxerStream>;
+  // Only allow concrete implementations to get deleted.
   virtual ~DemuxerStream();
 };
 

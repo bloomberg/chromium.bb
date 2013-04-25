@@ -48,7 +48,7 @@ static void NeedKey(const std::string& type, scoped_ptr<uint8[]> init_data,
   LOG(INFO) << "File is encrypted.";
 }
 
-typedef std::vector<scoped_refptr<media::DemuxerStream> > Streams;
+typedef std::vector<media::DemuxerStream* > Streams;
 
 // Simulates playback reading requirements by reading from each stream
 // present in |demuxer| in as-close-to-monotonically-increasing timestamp order.
@@ -84,8 +84,8 @@ class StreamReader {
 };
 
 StreamReader::StreamReader(media::Demuxer* demuxer) {
-  scoped_refptr<media::DemuxerStream> stream;
-  stream = demuxer->GetStream(media::DemuxerStream::AUDIO);
+  media::DemuxerStream* stream =
+      demuxer->GetStream(media::DemuxerStream::AUDIO);
   if (stream) {
     streams_.push_back(stream);
     end_of_stream_.push_back(false);
@@ -114,7 +114,7 @@ void StreamReader::Read() {
       base::MessageLoop::current(), &end_of_stream, &timestamp));
   base::MessageLoop::current()->Run();
 
-  CHECK(timestamp != media::kNoTimestamp());
+  CHECK(end_of_stream || timestamp != media::kNoTimestamp());
   end_of_stream_[index] = end_of_stream;
   last_read_timestamp_[index] = timestamp;
   counts_[index]++;
@@ -137,7 +137,7 @@ void StreamReader::OnReadDone(
   CHECK_EQ(status, media::DemuxerStream::kOk);
   CHECK(buffer);
   *end_of_stream = buffer->IsEndOfStream();
-  *timestamp = buffer->GetTimestamp();
+  *timestamp = *end_of_stream ? media::kNoTimestamp() : buffer->GetTimestamp();
   message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitWhenIdleClosure());
 }
 
@@ -202,7 +202,7 @@ int main(int argc, char** argv) {
   // Results.
   std::cout << "Time: " << (end - start).InMillisecondsF() << " ms\n";
   for (int i = 0; i < stream_reader.number_of_streams(); ++i) {
-    scoped_refptr<media::DemuxerStream> stream = stream_reader.streams()[i];
+    media::DemuxerStream* stream = stream_reader.streams()[i];
     std::cout << "Stream #" << i << ": ";
 
     if (stream->type() == media::DemuxerStream::AUDIO) {

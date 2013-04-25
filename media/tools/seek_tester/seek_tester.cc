@@ -83,10 +83,10 @@ int main(int argc, char** argv) {
 
   uint64 audio_seeked_to_ms;
   uint64 video_seeked_to_ms;
-  scoped_refptr<media::DemuxerStream> audio_stream(
-      demuxer->GetStream(media::DemuxerStream::AUDIO));
-  scoped_refptr<media::DemuxerStream> video_stream(
-      demuxer->GetStream(media::DemuxerStream::VIDEO));
+  media::DemuxerStream* audio_stream =
+      demuxer->GetStream(media::DemuxerStream::AUDIO);
+  media::DemuxerStream* video_stream =
+      demuxer->GetStream(media::DemuxerStream::VIDEO);
   LOG(INFO) << "Requested: " << seek_target_ms << "ms";
   if (audio_stream) {
     audio_stream->Read(base::Bind(

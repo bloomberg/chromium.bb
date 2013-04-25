@@ -56,10 +56,11 @@ class MEDIA_EXPORT Demuxer {
   // need to react to this event.
   //
   // TODO(acolwell): Change to generic DisableStream(DemuxerStream::Type).
+  // TODO(scherkus): this might not be needed http://crbug.com/234708
   virtual void OnAudioRendererDisabled();
 
   // Returns the given stream type, or NULL if that type is not present.
-  virtual scoped_refptr<DemuxerStream> GetStream(DemuxerStream::Type type) = 0;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) = 0;
 
   // Returns the starting time for the media file.
   virtual base::TimeDelta GetStartTime() const = 0;

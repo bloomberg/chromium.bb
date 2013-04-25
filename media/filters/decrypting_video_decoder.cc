@@ -26,6 +26,7 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
     : message_loop_(message_loop),
       weak_factory_(this),
       state_(kUninitialized),
+      demuxer_stream_(NULL),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
       decryptor_(NULL),
       key_added_while_decode_pending_(false),
@@ -33,7 +34,7 @@ DecryptingVideoDecoder::DecryptingVideoDecoder(
 }
 
 void DecryptingVideoDecoder::Initialize(
-    const scoped_refptr<DemuxerStream>& stream,
+    DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
   DVLOG(2) << "Initialize()";

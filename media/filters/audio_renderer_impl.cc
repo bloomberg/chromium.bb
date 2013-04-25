@@ -179,7 +179,7 @@ void AudioRendererImpl::Preroll(base::TimeDelta time,
   sink_->Pause();
 }
 
-void AudioRendererImpl::Initialize(const scoped_refptr<DemuxerStream>& stream,
+void AudioRendererImpl::Initialize(DemuxerStream* stream,
                                    const PipelineStatusCB& init_cb,
                                    const StatisticsCB& statistics_cb,
                                    const base::Closure& underflow_cb,
@@ -217,7 +217,7 @@ void AudioRendererImpl::Initialize(const scoped_refptr<DemuxerStream>& stream,
 
 void AudioRendererImpl::OnDecoderSelected(
     scoped_ptr<AudioDecoder> decoder,
-    const scoped_refptr<DecryptingDemuxerStream>& decrypting_demuxer_stream) {
+    scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   scoped_ptr<AudioDecoderSelector> deleter(decoder_selector_.Pass());
 
@@ -232,7 +232,7 @@ void AudioRendererImpl::OnDecoderSelected(
   }
 
   decoder_ = decoder.Pass();
-  decrypting_demuxer_stream_ = decrypting_demuxer_stream;
+  decrypting_demuxer_stream_ = decrypting_demuxer_stream.Pass();
 
   int sample_rate = decoder_->samples_per_second();
   int buffer_size = GetHighLatencyOutputBufferSize(sample_rate);

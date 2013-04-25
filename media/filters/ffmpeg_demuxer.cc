@@ -378,13 +378,12 @@ void FFmpegDemuxer::Initialize(DemuxerHost* host,
       base::Bind(&FFmpegDemuxer::OnOpenContextDone, weak_this_, status_cb));
 }
 
-scoped_refptr<DemuxerStream> FFmpegDemuxer::GetStream(
-    DemuxerStream::Type type) {
+DemuxerStream* FFmpegDemuxer::GetStream(DemuxerStream::Type type) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   return GetFFmpegStream(type);
 }
 
-scoped_refptr<FFmpegDemuxerStream> FFmpegDemuxer::GetFFmpegStream(
+FFmpegDemuxerStream* FFmpegDemuxer::GetFFmpegStream(
     DemuxerStream::Type type) const {
   StreamVector::const_iterator iter;
   for (iter = streams_.begin(); iter != streams_.end(); ++iter) {
@@ -506,11 +505,8 @@ void FFmpegDemuxer::OnFindStreamInfoDone(const PipelineStatusCB& status_cb,
     }
 
     AVStream* stream = format_context->streams[i];
-    scoped_refptr<FFmpegDemuxerStream> demuxer_stream(
-        new FFmpegDemuxerStream(this, stream));
-
-    streams_[i] = demuxer_stream;
-    max_duration = std::max(max_duration, demuxer_stream->duration());
+    streams_[i] = new FFmpegDemuxerStream(this, stream);
+    max_duration = std::max(max_duration, streams_[i]->duration());
 
     if (stream->first_dts != static_cast<int64_t>(AV_NOPTS_VALUE)) {
       const base::TimeDelta first_dts = ConvertFromTimeBase(
@@ -742,10 +738,9 @@ void FFmpegDemuxer::NotifyCapacityAvailable() {
 void FFmpegDemuxer::NotifyBufferingChanged() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   Ranges<base::TimeDelta> buffered;
-  scoped_refptr<FFmpegDemuxerStream> audio =
+  FFmpegDemuxerStream* audio =
       audio_disabled_ ? NULL : GetFFmpegStream(DemuxerStream::AUDIO);
-  scoped_refptr<FFmpegDemuxerStream> video =
-      GetFFmpegStream(DemuxerStream::VIDEO);
+  FFmpegDemuxerStream* video = GetFFmpegStream(DemuxerStream::VIDEO);
   if (audio && video) {
     buffered = audio->GetBufferedRanges().IntersectionWith(
         video->GetBufferedRanges());

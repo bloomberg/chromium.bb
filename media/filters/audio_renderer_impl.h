@@ -59,7 +59,7 @@ class MEDIA_EXPORT AudioRendererImpl
   virtual ~AudioRendererImpl();
 
   // AudioRenderer implementation.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& init_cb,
                           const StatisticsCB& statistics_cb,
                           const base::Closure& underflow_cb,
@@ -160,7 +160,7 @@ class MEDIA_EXPORT AudioRendererImpl
   // created to help decrypt the encrypted stream.
   void OnDecoderSelected(
       scoped_ptr<AudioDecoder> decoder,
-      const scoped_refptr<DecryptingDemuxerStream>& decrypting_demuxer_stream);
+      scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   void ResetDecoder(const base::Closure& callback);
 
@@ -179,7 +179,7 @@ class MEDIA_EXPORT AudioRendererImpl
 
   // These two will be set by AudioDecoderSelector::SelectAudioDecoder().
   scoped_ptr<AudioDecoder> decoder_;
-  scoped_refptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
+  scoped_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
   // AudioParameters constructed during Initialize() based on |decoder_|.
   AudioParameters audio_parameters_;

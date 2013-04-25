@@ -9,6 +9,7 @@
 #include "media/base/gmock_callback_support.h"
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
+#include "media/filters/decrypting_demuxer_stream.h"
 #include "media/filters/video_decoder_selector.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -60,13 +61,12 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
   MOCK_METHOD1(SetDecryptorReadyCallback, void(const media::DecryptorReadyCB&));
   MOCK_METHOD2(OnDecoderSelected,
-               void(VideoDecoder*,
-                    const scoped_refptr<DecryptingDemuxerStream>&));
+               void(VideoDecoder*, DecryptingDemuxerStream*));
 
   void MockOnDecoderSelected(
       scoped_ptr<VideoDecoder> decoder,
-      const scoped_refptr<DecryptingDemuxerStream>& stream) {
-    OnDecoderSelected(decoder.get(), stream);
+      scoped_ptr<DecryptingDemuxerStream> stream) {
+    OnDecoderSelected(decoder.get(), stream.get());
     selected_decoder_ = decoder.Pass();
   }
 
@@ -117,7 +117,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   void SelectDecoder() {
     decoder_selector_->SelectVideoDecoder(
-        demuxer_stream_,
+        demuxer_stream_.get(),
         base::Bind(&VideoDecoderSelectorTest::OnStatistics,
                    base::Unretained(this)),
         base::Bind(&VideoDecoderSelectorTest::MockOnDecoderSelected,
@@ -127,7 +127,7 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   // Fixture members.
   scoped_ptr<VideoDecoderSelector> decoder_selector_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;

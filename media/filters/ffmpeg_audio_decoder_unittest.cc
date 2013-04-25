@@ -65,7 +65,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
                               vorbis_extradata_->GetDataSize(),
                               false);  // Not encrypted.
     demuxer_->set_audio_decoder_config(config);
-    decoder_->Initialize(demuxer_,
+    decoder_->Initialize(demuxer_.get(),
                          NewExpectedStatusCB(PIPELINE_OK),
                          base::Bind(&MockStatisticsCB::OnStatistics,
                                     base::Unretained(&statistics_cb_)));
@@ -108,7 +108,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   base::MessageLoop message_loop_;
   scoped_ptr<FFmpegAudioDecoder> decoder_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
 
   scoped_refptr<DecoderBuffer> vorbis_extradata_;

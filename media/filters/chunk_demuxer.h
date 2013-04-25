@@ -53,8 +53,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   virtual void Stop(const base::Closure& callback) OVERRIDE;
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB&  cb) OVERRIDE;
   virtual void OnAudioRendererDisabled() OVERRIDE;
-  virtual scoped_refptr<DemuxerStream> GetStream(
-      DemuxerStream::Type type) OVERRIDE;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual base::TimeDelta GetStartTime() const OVERRIDE;
 
   // Methods used by an external object to control this demuxer.
@@ -157,7 +156,7 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   // |stream|.
   void IncreaseDurationIfNecessary(
       const StreamParser::BufferQueue& buffers,
-      const scoped_refptr<ChunkDemuxerStream>& stream);
+      ChunkDemuxerStream* stream);
 
   // Decreases |duration_| if the buffered region is less than |duration_| when
   // EndOfStream() is called.
@@ -183,8 +182,11 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   PipelineStatusCB init_cb_;
   PipelineStatusCB seek_cb_;
 
-  scoped_refptr<ChunkDemuxerStream> audio_;
-  scoped_refptr<ChunkDemuxerStream> video_;
+  scoped_ptr<ChunkDemuxerStream> audio_;
+  scoped_ptr<ChunkDemuxerStream> video_;
+
+  // Keeps |audio_| alive when audio has been disabled.
+  scoped_ptr<ChunkDemuxerStream> disabled_audio_;
 
   base::TimeDelta duration_;
 

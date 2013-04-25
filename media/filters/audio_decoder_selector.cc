@@ -24,13 +24,14 @@ AudioDecoderSelector::AudioDecoderSelector(
     : message_loop_(message_loop),
       decoders_(decoders.Pass()),
       set_decryptor_ready_cb_(set_decryptor_ready_cb),
+      input_stream_(NULL),
       weak_ptr_factory_(this) {
 }
 
 AudioDecoderSelector::~AudioDecoderSelector() {}
 
 void AudioDecoderSelector::SelectAudioDecoder(
-    const scoped_refptr<DemuxerStream>& stream,
+    DemuxerStream* stream,
     const StatisticsCB& statistics_cb,
     const SelectDecoderCB& select_decoder_cb) {
   DVLOG(2) << "SelectAudioDecoder()";
@@ -44,7 +45,7 @@ void AudioDecoderSelector::SelectAudioDecoder(
   if (!config.IsValidConfig()) {
     DLOG(ERROR) << "Invalid audio stream config.";
     base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), NULL);
+        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
     return;
   }
 
@@ -59,7 +60,7 @@ void AudioDecoderSelector::SelectAudioDecoder(
   // This could happen if Encrypted Media Extension (EME) is not enabled.
   if (set_decryptor_ready_cb_.is_null()) {
     base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), NULL);
+        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
     return;
   }
 
@@ -79,14 +80,15 @@ void AudioDecoderSelector::DecryptingAudioDecoderInitDone(
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status == PIPELINE_OK) {
-    base::ResetAndReturn(&select_decoder_cb_).Run(audio_decoder_.Pass(), NULL);
+    base::ResetAndReturn(&select_decoder_cb_).Run(
+        audio_decoder_.Pass(), scoped_ptr<DecryptingDemuxerStream>());
     return;
   }
 
   audio_decoder_.reset();
 
-  decrypted_stream_ = new DecryptingDemuxerStream(
-      message_loop_, set_decryptor_ready_cb_);
+  decrypted_stream_.reset(new DecryptingDemuxerStream(
+      message_loop_, set_decryptor_ready_cb_));
 
   decrypted_stream_->Initialize(
       input_stream_,
@@ -100,14 +102,14 @@ void AudioDecoderSelector::DecryptingDemuxerStreamInitDone(
   DCHECK(message_loop_->BelongsToCurrentThread());
 
   if (status != PIPELINE_OK) {
-    decrypted_stream_ = NULL;
+    decrypted_stream_.reset();
     base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), NULL);
+        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
     return;
   }
 
   DCHECK(!decrypted_stream_->audio_decoder_config().is_encrypted());
-  input_stream_ = decrypted_stream_;
+  input_stream_ = decrypted_stream_.get();
   InitializeDecoder(decoders_.begin());
 }
 
@@ -117,7 +119,7 @@ void AudioDecoderSelector::InitializeDecoder(
 
   if (iter == decoders_.end()) {
     base::ResetAndReturn(&select_decoder_cb_).Run(
-        scoped_ptr<AudioDecoder>(), NULL);
+        scoped_ptr<AudioDecoder>(), scoped_ptr<DecryptingDemuxerStream>());
     return;
   }
 
@@ -143,7 +145,7 @@ void AudioDecoderSelector::DecoderInitDone(
   decoders_.weak_erase(iter);
 
   base::ResetAndReturn(&select_decoder_cb_).Run(audio_decoder.Pass(),
-                                                decrypted_stream_);
+                                                decrypted_stream_.Pass());
 }
 
 }  // namespace media

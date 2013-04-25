@@ -27,6 +27,7 @@
 
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
+#include "base/memory/scoped_vector.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -63,6 +64,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   // Keeps a copy of |demuxer| and initializes itself using information
   // inside |stream|.  Both parameters must outlive |this|.
   FFmpegDemuxerStream(FFmpegDemuxer* demuxer, AVStream* stream);
+  virtual ~FFmpegDemuxerStream();
 
   // Enqueues the given AVPacket. It is invalid to queue a |packet| after
   // SetEndOfStream() has been called.
@@ -97,9 +99,6 @@ class FFmpegDemuxerStream : public DemuxerStream {
 
   // Returns true if this stream has capacity for additional data.
   bool HasAvailableCapacity();
-
- protected:
-  virtual ~FFmpegDemuxerStream();
 
  private:
   friend class FFmpegDemuxerTest;
@@ -148,8 +147,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   virtual void Seek(base::TimeDelta time, const PipelineStatusCB& cb) OVERRIDE;
   virtual void OnAudioRendererDisabled() OVERRIDE;
   virtual void SetPlaybackRate(float playback_rate) OVERRIDE;
-  virtual scoped_refptr<DemuxerStream> GetStream(
-      DemuxerStream::Type type) OVERRIDE;
+  virtual DemuxerStream* GetStream(DemuxerStream::Type type) OVERRIDE;
   virtual base::TimeDelta GetStartTime() const OVERRIDE;
 
   // Calls |need_key_cb_| with the initialization data encountered in the file.
@@ -191,8 +189,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
 
   // Returns the stream from |streams_| that matches |type| as an
   // FFmpegDemuxerStream.
-  scoped_refptr<FFmpegDemuxerStream> GetFFmpegStream(
-      DemuxerStream::Type type) const;
+  FFmpegDemuxerStream* GetFFmpegStream(DemuxerStream::Type type) const;
 
   DemuxerHost* host_;
 
@@ -222,7 +219,7 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   //
   // Once initialized, operations on FFmpegDemuxerStreams should be carried out
   // on the demuxer thread.
-  typedef std::vector<scoped_refptr<FFmpegDemuxerStream> > StreamVector;
+  typedef ScopedVector<FFmpegDemuxerStream> StreamVector;
   StreamVector streams_;
 
   // Reference to the data source. Asynchronous read requests are submitted to

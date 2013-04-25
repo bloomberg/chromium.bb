@@ -38,11 +38,11 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
-    video_frame_stream_ = new VideoFrameStream(
+    video_frame_stream_.reset(new VideoFrameStream(
         message_loop_.message_loop_proxy(),
         decoders.Pass(),
         base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
-                   base::Unretained(this)));
+                   base::Unretained(this))));
 
     VideoDecoderConfig video_config(
         kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
@@ -88,7 +88,7 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
     EXPECT_CALL(*decoder_, Initialize(_, _, _))
         .WillOnce(SaveArg<1>(&decoder_init_cb_));
     video_frame_stream_->Initialize(
-        demuxer_stream_,
+        demuxer_stream_.get(),
         base::Bind(&VideoFrameStreamTest::OnStatistics, base::Unretained(this)),
         base::Bind(&VideoFrameStreamTest::OnInitialized,
                    base::Unretained(this)));
@@ -188,8 +188,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
  private:
   base::MessageLoop message_loop_;
 
-  scoped_refptr<VideoFrameStream> video_frame_stream_;
-  scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
+  scoped_ptr<VideoFrameStream> video_frame_stream_;
+  scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().
   scoped_ptr<NiceMock<MockDecryptor> > decryptor_;

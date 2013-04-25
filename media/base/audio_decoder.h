@@ -31,7 +31,7 @@ class MEDIA_EXPORT AudioDecoder {
   // Initialize an AudioDecoder with the given DemuxerStream, executing the
   // callback upon completion.
   // statistics_cb is used to update global pipeline statistics.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) = 0;
 

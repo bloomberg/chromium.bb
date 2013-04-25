@@ -38,24 +38,23 @@ class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
-      : demuxer_stream_(new MockDemuxerStream(DemuxerStream::AUDIO)),
+      : demuxer_stream_(DemuxerStream::AUDIO),
         decoder_(new MockAudioDecoder()) {
     AudioDecoderConfig audio_config(kCodecVorbis, kSampleFormatPlanarF32,
         CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false);
-    demuxer_stream_->set_audio_decoder_config(audio_config);
+    demuxer_stream_.set_audio_decoder_config(audio_config);
 
     // Used to save callbacks and run them at a later time.
     EXPECT_CALL(*decoder_, Read(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ReadDecoder));
 
     // Set up audio properties.
-    const AudioDecoderConfig& config = demuxer_stream_->audio_decoder_config();
     EXPECT_CALL(*decoder_, bits_per_channel())
-        .WillRepeatedly(Return(config.bits_per_channel()));
+        .WillRepeatedly(Return(audio_config.bits_per_channel()));
     EXPECT_CALL(*decoder_, channel_layout())
         .WillRepeatedly(Return(CHANNEL_LAYOUT_MONO));
     EXPECT_CALL(*decoder_, samples_per_second())
-        .WillRepeatedly(Return(config.samples_per_second()));
+        .WillRepeatedly(Return(audio_config.samples_per_second()));
 
     ScopedVector<AudioDecoder> decoders;
     decoders.push_back(decoder_);
@@ -120,7 +119,7 @@ class AudioRendererImplTest : public ::testing::Test {
 
     WaitableMessageLoopEvent event;
     renderer_->Initialize(
-        demuxer_stream_,
+        &demuxer_stream_,
         event.GetPipelineStatusCB(),
         base::Bind(&AudioRendererImplTest::OnStatistics,
                    base::Unretained(this)),
@@ -363,7 +362,7 @@ class AudioRendererImplTest : public ::testing::Test {
     base::ResetAndReturn(&read_cb_).Run(status, buffer);
   }
 
-  scoped_refptr<MockDemuxerStream> demuxer_stream_;
+  MockDemuxerStream demuxer_stream_;
   MockAudioDecoder* decoder_;
 
   // Used for stubbing out time in the audio callback thread.

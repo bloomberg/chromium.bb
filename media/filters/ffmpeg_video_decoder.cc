@@ -61,7 +61,8 @@ FFmpegVideoDecoder::FFmpegVideoDecoder(
       weak_factory_(this),
       state_(kUninitialized),
       codec_context_(NULL),
-      av_frame_(NULL) {
+      av_frame_(NULL),
+      demuxer_stream_(NULL) {
 }
 
 int FFmpegVideoDecoder::GetVideoBuffer(AVCodecContext* codec_context,
@@ -130,7 +131,7 @@ static void ReleaseVideoBufferImpl(AVCodecContext* s, AVFrame* frame) {
   frame->opaque = NULL;
 }
 
-void FFmpegVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
+void FFmpegVideoDecoder::Initialize(DemuxerStream* stream,
                                     const PipelineStatusCB& status_cb,
                                     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());

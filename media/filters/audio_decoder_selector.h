@@ -38,7 +38,7 @@ class MEDIA_EXPORT AudioDecoderSelector {
   // calling AudioDecoder::Reset() to release any pending decryption or read.
   typedef base::Callback<
       void(scoped_ptr<AudioDecoder>,
-           const scoped_refptr<DecryptingDemuxerStream>&)> SelectDecoderCB;
+           scoped_ptr<DecryptingDemuxerStream>)> SelectDecoderCB;
 
   // |decoders| contains the AudioDecoders to use when initializing.
   //
@@ -53,7 +53,7 @@ class MEDIA_EXPORT AudioDecoderSelector {
   // Initializes and selects an AudioDecoder that can decode the |stream|.
   // Selected AudioDecoder (and DecryptingDemuxerStream) is returned via
   // the |select_decoder_cb|.
-  void SelectAudioDecoder(const scoped_refptr<DemuxerStream>& stream,
+  void SelectAudioDecoder(DemuxerStream* stream,
                           const StatisticsCB& statistics_cb,
                           const SelectDecoderCB& select_decoder_cb);
 
@@ -68,12 +68,12 @@ class MEDIA_EXPORT AudioDecoderSelector {
   ScopedVector<AudioDecoder> decoders_;
   SetDecryptorReadyCB set_decryptor_ready_cb_;
 
-  scoped_refptr<DemuxerStream> input_stream_;
+  DemuxerStream* input_stream_;
   StatisticsCB statistics_cb_;
   SelectDecoderCB select_decoder_cb_;
 
   scoped_ptr<AudioDecoder> audio_decoder_;
-  scoped_refptr<DecryptingDemuxerStream> decrypted_stream_;
+  scoped_ptr<DecryptingDemuxerStream> decrypted_stream_;
 
   base::WeakPtrFactory<AudioDecoderSelector> weak_ptr_factory_;
 

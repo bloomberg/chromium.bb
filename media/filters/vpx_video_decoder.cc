@@ -61,6 +61,7 @@ VpxVideoDecoder::VpxVideoDecoder(
     : message_loop_(message_loop),
       weak_factory_(this),
       state_(kUninitialized),
+      demuxer_stream_(NULL),
       vpx_codec_(NULL),
       vpx_codec_alpha_(NULL) {
 }
@@ -71,7 +72,7 @@ VpxVideoDecoder::~VpxVideoDecoder() {
 }
 
 void VpxVideoDecoder::Initialize(
-    const scoped_refptr<DemuxerStream>& stream,
+    DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());

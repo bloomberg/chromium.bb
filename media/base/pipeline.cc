@@ -931,8 +931,7 @@ void Pipeline::InitializeAudioRenderer(const PipelineStatusCB& done_cb) {
 void Pipeline::InitializeVideoRenderer(const PipelineStatusCB& done_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());
 
-  scoped_refptr<DemuxerStream> stream =
-      demuxer_->GetStream(DemuxerStream::VIDEO);
+  DemuxerStream* stream = demuxer_->GetStream(DemuxerStream::VIDEO);
 
   {
     // Get an initial natural size so we have something when we signal

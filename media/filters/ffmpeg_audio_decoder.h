@@ -34,7 +34,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   virtual ~FFmpegAudioDecoder();
 
   // AudioDecoder implementation.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
@@ -59,7 +59,7 @@ class MEDIA_EXPORT FFmpegAudioDecoder : public AudioDecoder {
   base::WeakPtrFactory<FFmpegAudioDecoder> weak_factory_;
   base::WeakPtr<FFmpegAudioDecoder> weak_this_;
 
-  scoped_refptr<DemuxerStream> demuxer_stream_;
+  DemuxerStream* demuxer_stream_;
   StatisticsCB statistics_cb_;
   AVCodecContext* codec_context_;
 

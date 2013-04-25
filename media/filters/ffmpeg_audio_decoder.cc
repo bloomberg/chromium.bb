@@ -41,6 +41,7 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop)
     : message_loop_(message_loop),
       weak_factory_(this),
+      demuxer_stream_(NULL),
       codec_context_(NULL),
       bits_per_channel_(0),
       channel_layout_(CHANNEL_LAYOUT_NONE),
@@ -54,7 +55,7 @@ FFmpegAudioDecoder::FFmpegAudioDecoder(
 }
 
 void FFmpegAudioDecoder::Initialize(
-    const scoped_refptr<DemuxerStream>& stream,
+    DemuxerStream* stream,
     const PipelineStatusCB& status_cb,
     const StatisticsCB& statistics_cb) {
   DCHECK(message_loop_->BelongsToCurrentThread());

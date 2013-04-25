@@ -160,7 +160,8 @@ GpuVideoDecoder::BufferData::~BufferData() {}
 GpuVideoDecoder::GpuVideoDecoder(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
     const scoped_refptr<Factories>& factories)
-    : gvd_loop_proxy_(message_loop),
+    : demuxer_stream_(NULL),
+      gvd_loop_proxy_(message_loop),
       weak_factory_(this),
       vda_loop_proxy_(factories->GetMessageLoop()),
       factories_(factories),
@@ -216,7 +217,7 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
   BindToCurrentLoop(closure).Run();
 }
 
-void GpuVideoDecoder::Initialize(const scoped_refptr<DemuxerStream>& stream,
+void GpuVideoDecoder::Initialize(DemuxerStream* stream,
                                  const PipelineStatusCB& orig_status_cb,
                                  const StatisticsCB& statistics_cb) {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());

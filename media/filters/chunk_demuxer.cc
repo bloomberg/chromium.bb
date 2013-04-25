@@ -173,6 +173,7 @@ class ChunkDemuxerStream : public DemuxerStream {
                      const LogCB& log_cb);
   ChunkDemuxerStream(const VideoDecoderConfig& video_config,
                      const LogCB& log_cb);
+  virtual ~ChunkDemuxerStream();
 
   void StartWaitingForSeek();
   void Seek(TimeDelta time);
@@ -212,9 +213,6 @@ class ChunkDemuxerStream : public DemuxerStream {
   virtual void EnableBitstreamConverter() OVERRIDE;
   virtual const AudioDecoderConfig& audio_decoder_config() OVERRIDE;
   virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
-
- protected:
-  virtual ~ChunkDemuxerStream();
 
  private:
   enum State {
@@ -615,18 +613,18 @@ void ChunkDemuxer::Seek(TimeDelta time, const PipelineStatusCB& cb) {
 
 void ChunkDemuxer::OnAudioRendererDisabled() {
   base::AutoLock auto_lock(lock_);
-  audio_ = NULL;
+  audio_->Shutdown();
+  disabled_audio_ = audio_.Pass();
 }
 
 // Demuxer implementation.
-scoped_refptr<DemuxerStream> ChunkDemuxer::GetStream(
-    DemuxerStream::Type type) {
+DemuxerStream* ChunkDemuxer::GetStream(DemuxerStream::Type type) {
   base::AutoLock auto_lock(lock_);
   if (type == DemuxerStream::VIDEO)
-    return video_;
+    return video_.get();
 
   if (type == DemuxerStream::AUDIO)
-    return audio_;
+    return audio_.get();
 
   return NULL;
 }
@@ -1142,7 +1140,7 @@ bool ChunkDemuxer::OnNewConfigs(bool has_audio, bool has_video,
     if (audio_) {
       success &= audio_->UpdateAudioConfig(audio_config);
     } else {
-      audio_ = new ChunkDemuxerStream(audio_config, log_cb_);
+      audio_.reset(new ChunkDemuxerStream(audio_config, log_cb_));
     }
   }
 
@@ -1150,7 +1148,7 @@ bool ChunkDemuxer::OnNewConfigs(bool has_audio, bool has_video,
     if (video_) {
       success &= video_->UpdateVideoConfig(video_config);
     } else {
-      video_ = new ChunkDemuxerStream(video_config, log_cb_);
+      video_.reset(new ChunkDemuxerStream(video_config, log_cb_));
     }
   }
 
@@ -1169,7 +1167,7 @@ bool ChunkDemuxer::OnAudioBuffers(const StreamParser::BufferQueue& buffers) {
   if (!audio_->Append(buffers))
     return false;
 
-  IncreaseDurationIfNecessary(buffers, audio_);
+  IncreaseDurationIfNecessary(buffers, audio_.get());
   return true;
 }
 
@@ -1184,7 +1182,7 @@ bool ChunkDemuxer::OnVideoBuffers(const StreamParser::BufferQueue& buffers) {
   if (!video_->Append(buffers))
     return false;
 
-  IncreaseDurationIfNecessary(buffers, video_);
+  IncreaseDurationIfNecessary(buffers, video_.get());
   return true;
 }
 
@@ -1227,7 +1225,7 @@ void ChunkDemuxer::UpdateDuration(base::TimeDelta new_duration) {
 
 void ChunkDemuxer::IncreaseDurationIfNecessary(
     const StreamParser::BufferQueue& buffers,
-    const scoped_refptr<ChunkDemuxerStream>& stream) {
+    ChunkDemuxerStream* stream) {
   DCHECK(!buffers.empty());
   if (buffers.back()->GetTimestamp() <= duration_)
     return;

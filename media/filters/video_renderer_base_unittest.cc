@@ -41,7 +41,7 @@ class VideoRendererBaseTest : public ::testing::Test {
  public:
   VideoRendererBaseTest()
       : decoder_(new MockVideoDecoder()),
-        demuxer_stream_(new MockDemuxerStream(DemuxerStream::VIDEO)) {
+        demuxer_stream_(DemuxerStream::VIDEO) {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
@@ -56,7 +56,7 @@ class VideoRendererBaseTest : public ::testing::Test {
     VideoDecoderConfig video_config(
         kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
         kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-    demuxer_stream_->set_video_decoder_config(video_config);
+    demuxer_stream_.set_video_decoder_config(video_config);
 
     // We expect these to be called but we don't care how/when.
     EXPECT_CALL(*decoder_, Stop(_))
@@ -120,7 +120,7 @@ class VideoRendererBaseTest : public ::testing::Test {
 
   void CallInitialize(const PipelineStatusCB& status_cb) {
     renderer_->Initialize(
-        demuxer_stream_,
+        &demuxer_stream_,
         status_cb,
         base::Bind(&MockStatisticsCB::OnStatistics,
                    base::Unretained(&statistics_cb_object_)),
@@ -294,7 +294,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   // Fixture members.
   scoped_ptr<VideoRendererBase> renderer_;
   MockVideoDecoder* decoder_;  // Owned by |renderer_|.
-  scoped_refptr<MockDemuxerStream> demuxer_stream_;
+  MockDemuxerStream demuxer_stream_;
   MockStatisticsCB statistics_cb_object_;
 
  private:

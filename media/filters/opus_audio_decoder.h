@@ -30,7 +30,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   virtual ~OpusAudioDecoder();
 
   // AudioDecoder implementation.
-  virtual void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  virtual void Initialize(DemuxerStream* stream,
                           const PipelineStatusCB& status_cb,
                           const StatisticsCB& statistics_cb) OVERRIDE;
   virtual void Read(const ReadCB& read_cb) OVERRIDE;
@@ -56,7 +56,7 @@ class MEDIA_EXPORT OpusAudioDecoder : public AudioDecoder {
   base::WeakPtrFactory<OpusAudioDecoder> weak_factory_;
   base::WeakPtr<OpusAudioDecoder> weak_this_;
 
-  scoped_refptr<DemuxerStream> demuxer_stream_;
+  DemuxerStream* demuxer_stream_;
   StatisticsCB statistics_cb_;
   OpusMSDecoder* opus_decoder_;
 

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "media/base/decryptor.h"
 #include "media/base/demuxer_stream.h"
 
@@ -27,8 +28,9 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   DecryptingDemuxerStream(
       const scoped_refptr<base::MessageLoopProxy>& message_loop,
       const SetDecryptorReadyCB& set_decryptor_ready_cb);
+  virtual ~DecryptingDemuxerStream();
 
-  void Initialize(const scoped_refptr<DemuxerStream>& stream,
+  void Initialize(DemuxerStream* stream,
                   const PipelineStatusCB& status_cb);
   void Reset(const base::Closure& closure);
 
@@ -38,9 +40,6 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
   virtual Type type() OVERRIDE;
   virtual void EnableBitstreamConverter() OVERRIDE;
-
- protected:
-  virtual ~DecryptingDemuxerStream();
 
  private:
   // For a detailed state diagram please see this link: http://goo.gl/8jAok
@@ -84,6 +83,8 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   void InitializeDecoderConfig();
 
   scoped_refptr<base::MessageLoopProxy> message_loop_;
+  base::WeakPtrFactory<DecryptingDemuxerStream> weak_factory_;
+  base::WeakPtr<DecryptingDemuxerStream> weak_this_;
 
   State state_;
 
@@ -92,7 +93,7 @@ class MEDIA_EXPORT DecryptingDemuxerStream : public DemuxerStream {
   base::Closure reset_cb_;
 
   // Pointer to the input demuxer stream that will feed us encrypted buffers.
-  scoped_refptr<DemuxerStream> demuxer_stream_;
+  DemuxerStream* demuxer_stream_;
 
   scoped_ptr<AudioDecoderConfig> audio_config_;
   scoped_ptr<VideoDecoderConfig> video_config_;
