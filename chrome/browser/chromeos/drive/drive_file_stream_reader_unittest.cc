@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/fake_drive_file_system.h"
+#include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/task_util.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -47,38 +48,44 @@ TEST(LocalReaderProxyTest, Read) {
   MessageLoopForIO io_loop;
   content::TestBrowserThread io_thread(BrowserThread::IO, &io_loop);
 
-  // Open the file first.
-  scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
-  net::TestCompletionCallback callback;
-  int result = file_stream->Open(
-      google_apis::test_util::GetTestFilePath("chromeos/drive/applist.json"),
-      base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
-      base::PLATFORM_FILE_ASYNC,
-      callback.callback());
-  ASSERT_EQ(net::OK, callback.GetResult(result));
+  {
+    // Open the file first.
+    scoped_ptr<net::FileStream> file_stream(new net::FileStream(NULL));
+    net::TestCompletionCallback callback;
+    int result = file_stream->Open(
+        google_apis::test_util::GetTestFilePath("chromeos/drive/applist.json"),
+        base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ |
+        base::PLATFORM_FILE_ASYNC,
+        callback.callback());
+    ASSERT_EQ(net::OK, callback.GetResult(result));
 
-  // Test instance.
-  LocalReaderProxy proxy(file_stream.Pass());
+    // Test instance.
+    LocalReaderProxy proxy(file_stream.Pass());
 
-  // Prepare the buffer, whose size is smaller than the whole data size.
-  const int kBufferSize = 10;
-  ASSERT_LE(static_cast<size_t>(kBufferSize), expected_content.size());
-  scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
+    // Prepare the buffer, whose size is smaller than the whole data size.
+    const int kBufferSize = 10;
+    ASSERT_LE(static_cast<size_t>(kBufferSize), expected_content.size());
+    scoped_refptr<net::IOBuffer> buffer(new net::IOBuffer(kBufferSize));
 
-  // Read repeatedly, until it is finished.
-  std::string concatenated_content;
-  while (concatenated_content.size() < expected_content.size()) {
-    result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
-    result = callback.GetResult(result);
+    // Read repeatedly, until it is finished.
+    std::string concatenated_content;
+    while (concatenated_content.size() < expected_content.size()) {
+      result = proxy.Read(buffer.get(), kBufferSize, callback.callback());
+      result = callback.GetResult(result);
 
-    // The read content size should be smaller than the buffer size.
-    ASSERT_GT(result, 0);
-    ASSERT_LE(result, kBufferSize);
-    concatenated_content.append(buffer->data(), result);
+      // The read content size should be smaller than the buffer size.
+      ASSERT_GT(result, 0);
+      ASSERT_LE(result, kBufferSize);
+      concatenated_content.append(buffer->data(), result);
+    }
+
+    // Make sure the read contant is as same as the file.
+    EXPECT_EQ(expected_content, concatenated_content);
   }
 
-  // Make sure the read contant is as same as the file.
-  EXPECT_EQ(expected_content, concatenated_content);
+  // For graceful shutdown, we wait for that the FileStream used above is
+  // actually closed.
+  test_util::WaitForFileStreamClosed();
 }
 
 TEST(NetworkReaderProxyTest, EmptyFile) {

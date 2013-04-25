@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop.h"
+#include "base/threading/worker_pool.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
@@ -72,6 +73,22 @@ bool LoadChangeFeed(const std::string& relative_path,
   google_apis::test_util::RunBlockingPoolTask();
 
   return true;
+}
+
+void WaitForFileStreamClosed() {
+  // Post a task to WorkerPool with setting |task_is_slow| true so that the
+  // task will send to the WorkerPool where FileStream closing task is running.
+  // Assuming the there is no other worker pool task, the task sent here
+  // will run on the same thread.
+  const bool posted = base::WorkerPool::PostTaskAndReply(
+      FROM_HERE,
+      base::Bind(&base::DoNothing),
+      base::Bind(base::MessageLoop::QuitClosure()),
+      true /* task_is_slow */);
+  DCHECK(posted);
+
+  // Wait for the task sent above.
+  MessageLoop::current()->Run();
 }
 
 }  // namespace test_util
