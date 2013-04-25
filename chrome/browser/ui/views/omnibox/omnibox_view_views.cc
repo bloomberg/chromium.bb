@@ -361,6 +361,9 @@ void OmniboxViewViews::OnBlur() {
   // Tell the model to reset itself.
   model()->OnKillFocus();
   controller()->OnKillFocus();
+
+  // Make sure the beginning of the text is visible.
+  SelectRange(ui::Range(0));
 }
 
 ////////////////////////////////////////////////////////////////////////////////

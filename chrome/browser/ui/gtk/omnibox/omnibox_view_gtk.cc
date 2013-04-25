@@ -1132,6 +1132,9 @@ gboolean OmniboxViewGtk::HandleViewFocusOut(GtkWidget* sender,
   model()->OnKillFocus();
   controller()->OnKillFocus();
 
+  // Make sure the beginning of the text is visible.
+  SetSelectedRange(CharRange());
+
   g_signal_handlers_disconnect_by_func(
       gdk_keymap_get_for_display(gtk_widget_get_display(text_view_)),
       reinterpret_cast<gpointer>(&HandleKeymapDirectionChangedThunk), this);
