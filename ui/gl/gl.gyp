@@ -267,8 +267,6 @@
           'sources': [
             'async_pixel_transfer_delegate_android.cc',
             'async_pixel_transfer_delegate_android.h',
-            'android_native_window.cc',
-            'android_native_window.h',
             'gl_image_egl.cc',
             'gl_image_egl.h',
           ],
