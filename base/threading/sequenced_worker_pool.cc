@@ -1094,8 +1094,7 @@ SequencedWorkerPool::SequencedWorkerPool(
     size_t max_threads,
     const std::string& thread_name_prefix)
     : constructor_message_loop_(MessageLoopProxy::current()),
-      inner_(new Inner(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                       max_threads, thread_name_prefix, NULL)) {
+      inner_(new Inner(this, max_threads, thread_name_prefix, NULL)) {
 }
 
 SequencedWorkerPool::SequencedWorkerPool(
@@ -1103,8 +1102,7 @@ SequencedWorkerPool::SequencedWorkerPool(
     const std::string& thread_name_prefix,
     TestingObserver* observer)
     : constructor_message_loop_(MessageLoopProxy::current()),
-      inner_(new Inner(ALLOW_THIS_IN_INITIALIZER_LIST(this),
-                       max_threads, thread_name_prefix, observer)) {
+      inner_(new Inner(this, max_threads, thread_name_prefix, observer)) {
 }
 
 SequencedWorkerPool::~SequencedWorkerPool() {}

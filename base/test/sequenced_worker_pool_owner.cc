@@ -13,9 +13,7 @@ SequencedWorkerPoolOwner::SequencedWorkerPoolOwner(
     size_t max_threads,
     const std::string& thread_name_prefix)
     : constructor_message_loop_(MessageLoop::current()),
-      pool_(new SequencedWorkerPool(
-          max_threads, thread_name_prefix,
-          ALLOW_THIS_IN_INITIALIZER_LIST(this))),
+      pool_(new SequencedWorkerPool(max_threads, thread_name_prefix, this)),
       has_work_call_count_(0) {}
 
 SequencedWorkerPoolOwner::~SequencedWorkerPoolOwner() {

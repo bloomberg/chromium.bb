@@ -41,7 +41,7 @@ Watchdog::Watchdog(const TimeDelta& duration,
     state_(DISARMED),
     duration_(duration),
     thread_watched_name_(thread_watched_name),
-    ALLOW_THIS_IN_INITIALIZER_LIST(delegate_(this)) {
+    delegate_(this) {
   if (!enabled_)
     return;  // Don't start thread, or doing anything really.
   enabled_ = PlatformThread::Create(0,  // Default stack size.

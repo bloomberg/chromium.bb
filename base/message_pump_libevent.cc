@@ -57,7 +57,7 @@ MessagePumpLibevent::FileDescriptorWatcher::FileDescriptorWatcher()
     : event_(NULL),
       pump_(NULL),
       watcher_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
 }
 
 MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher() {

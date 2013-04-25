@@ -106,7 +106,7 @@ class AddRemoveThread : public PlatformThread::Delegate,
         count_observes_(0),
         count_addtask_(0),
         do_notifies_(notify),
-        ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+        weak_factory_(this) {
   }
 
   virtual ~AddRemoveThread() {

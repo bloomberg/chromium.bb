@@ -26,7 +26,7 @@ class FileUtilProxyTest : public testing::Test {
         created_(false),
         file_(kInvalidPlatformFileValue),
         bytes_written_(-1),
-        weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+        weak_factory_(this) {}
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(dir_.CreateUniqueTempDir());

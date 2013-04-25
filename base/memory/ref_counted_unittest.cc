@@ -24,9 +24,7 @@ class CheckDerivedMemberAccess : public scoped_refptr<SelfAssign> {
 
 class ScopedRefPtrToSelf : public base::RefCounted<ScopedRefPtrToSelf> {
  public:
-  ScopedRefPtrToSelf()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_(this)) {
-  }
+  ScopedRefPtrToSelf() : self_ptr_(this) {}
 
   static bool was_destroyed() { return was_destroyed_; }
 

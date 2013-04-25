@@ -58,11 +58,11 @@ class CancelableCallback;
 template <>
 class CancelableCallback<void(void)> {
  public:
-  CancelableCallback() : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+  CancelableCallback() : weak_factory_(this) {}
 
   // |callback| must not be null.
   explicit CancelableCallback(const base::Callback<void(void)>& callback)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      : weak_factory_(this),
         callback_(callback) {
     DCHECK(!callback.is_null());
     InitializeForwarder();
@@ -128,11 +128,11 @@ class CancelableCallback<void(void)> {
 template <typename A1>
 class CancelableCallback<void(A1)> {
  public:
-  CancelableCallback() : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {}
+  CancelableCallback() : weak_factory_(this) {}
 
   // |callback| must not be null.
   explicit CancelableCallback(const base::Callback<void(A1)>& callback)
-      : ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)),
+      : weak_factory_(this),
         callback_(callback) {
     DCHECK(!callback.is_null());
     InitializeForwarder();
