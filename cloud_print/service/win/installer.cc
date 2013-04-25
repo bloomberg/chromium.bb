@@ -125,8 +125,17 @@ HRESULT ProcessInstallerSwitches() {
   return S_FALSE;
 }
 
-int main(int argc, char** argv) {
-  CommandLine::Init(argc, argv);
+class CloudPrintServiceSetupModule
+    : public ATL::CAtlExeModuleT<CloudPrintServiceSetupModule> {
+};
+
+CloudPrintServiceSetupModule _AtlModule;
+
+int WINAPI WinMain(__in  HINSTANCE hInstance,
+                   __in  HINSTANCE hPrevInstance,
+                   __in  LPSTR lpCmdLine,
+                   __in  int nCmdShow) {
   base::AtExitManager at_exit;
+  CommandLine::Init(0, NULL);
   return ProcessInstallerSwitches();
 }

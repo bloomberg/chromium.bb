@@ -166,7 +166,7 @@
       ],
       'msvs_settings': {
         'VCLinkerTool': {
-          'SubSystem': '1',         # Set /SUBSYSTEM:CONSOLE
+          'SubSystem': '2',         # Set /SUBSYSTEM:WINDOWS
           'UACExecutionLevel': '2', # /level='requireAdministrator'
           'AdditionalDependencies': [
               'secur32.lib',

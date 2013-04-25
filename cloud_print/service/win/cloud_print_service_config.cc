@@ -413,11 +413,11 @@ void SetupDialog::Uninstall() {
   UpdateState();
 }
 
-class CloudPrintServiceSetupModule
-    : public ATL::CAtlExeModuleT<CloudPrintServiceSetupModule> {
+class CloudPrintServiceConfigModule
+    : public ATL::CAtlExeModuleT<CloudPrintServiceConfigModule> {
 };
 
-CloudPrintServiceSetupModule _AtlModule;
+CloudPrintServiceConfigModule _AtlModule;
 
 int WINAPI WinMain(__in  HINSTANCE hInstance,
                    __in  HINSTANCE hPrevInstance,
