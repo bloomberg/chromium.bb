@@ -100,16 +100,20 @@ std::string DOMAction::PrettyPrintForDebug() {
 
 std::string DOMAction::VerbAsString() const {
   switch (verb_) {
-    case MODIFIED:
-      return "MODIFIED";
-    case READ:
-      return "READ";
+    case GETTER:
+      return "GETTER";
+    case SETTER:
+      return "SETTER";
+    case METHOD:
+      return "METHOD";
     case INSERTED:
       return "INSERTED";
     case XHR:
       return "XHR";
     case WEBREQUEST:
       return "WEBREQUEST";
+    case MODIFIED:    // legacy
+      return "MODIFIED";
     default:
       NOTREACHED();
       return NULL;
@@ -118,16 +122,22 @@ std::string DOMAction::VerbAsString() const {
 
 DOMAction::DOMActionType DOMAction::StringAsDOMActionType(
     const std::string& str) {
-  if (str == "MODIFIED") {
-    return MODIFIED;
-  } else if (str == "READ") {
-    return READ;
+  if (str == "GETTER") {
+    return GETTER;
+  } else if (str == "SETTER") {
+    return SETTER;
+  } else if (str == "METHOD") {
+    return METHOD;
   } else if (str == "INSERTED") {
     return INSERTED;
   } else if (str == "XHR") {
     return XHR;
   } else if (str == "WEBREQUEST") {
     return WEBREQUEST;
+  } else if (str == "MODIFIED") {   // legacy
+    return MODIFIED;
+  } else if (str == "READ") {       // legacy
+    return GETTER;
   } else {
     NOTREACHED();
     return MODIFIED;  // this should never happen!

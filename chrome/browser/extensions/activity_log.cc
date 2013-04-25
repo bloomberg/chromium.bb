@@ -347,13 +347,24 @@ void ActivityLog::LogDOMAction(const Extension* extension,
                                const ListValue* args,
                                const std::string& extra) {
   if (!IsLogEnabled()) return;
+  DOMAction::DOMActionType action = DOMAction::MODIFIED;
+  if (extra == "Getter") {
+    action = DOMAction::GETTER;
+  } else if (extra == "Setter") {
+    action = DOMAction::SETTER;
+  } else if (api_call == "XMLHttpRequest.open") {
+    // Has to come before the Method check because XHR is also a Method.
+    action = DOMAction::XHR;
+  } else if (extra == "Method") {
+    action = DOMAction::METHOD;
+  }
   LogDOMActionInternal(extension,
                        url,
                        url_title,
                        api_call,
                        args,
                        extra,
-                       DOMAction::MODIFIED);
+                       action);
 }
 
 void ActivityLog::LogWebRequestAction(const Extension* extension,
