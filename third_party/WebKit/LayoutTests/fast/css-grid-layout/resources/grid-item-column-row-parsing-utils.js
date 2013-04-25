@@ -40,6 +40,30 @@ window.testColumnRowJSParsing = function(columnValue, rowValue, expectedColumnVa
     document.body.removeChild(gridItem);
 }
 
+window.testStartBeforeJSParsing = function(startValue, beforeValue)
+{
+    var gridItem = document.createElement("div");
+    document.body.appendChild(gridItem);
+    gridItem.style.webkitGridStart = startValue;
+    gridItem.style.webkitGridBefore = beforeValue;
+
+    checkColumnRowValues(gridItem, startValue + " / auto", beforeValue + " / auto");
+
+    document.body.removeChild(gridItem);
+}
+
+window.testEndAfterJSParsing = function(endValue, afterValue)
+{
+    var gridItem = document.createElement("div");
+    document.body.appendChild(gridItem);
+    gridItem.style.webkitGridEnd = endValue;
+    gridItem.style.webkitGridAfter = afterValue;
+
+    checkColumnRowValues(gridItem, "auto / " + endValue, "auto / " + afterValue);
+
+    document.body.removeChild(gridItem);
+}
+
 window.testColumnRowInvalidJSParsing = function(columnValue, rowValue)
 {
     var gridItem = document.createElement("div");
