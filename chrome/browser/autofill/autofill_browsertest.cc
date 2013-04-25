@@ -581,7 +581,7 @@ IN_PROC_BROWSER_TEST_F(AutofillTest, MAYBE_AutofillViaDownArrow) {
   ExpectFilledTestForm();
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillTest, AutofillSelectViaTab) {
+IN_PROC_BROWSER_TEST_F(AutofillTest, DISABLED_AutofillSelectViaTab) {
   CreateTestProfile();
 
   // Load the test page.
