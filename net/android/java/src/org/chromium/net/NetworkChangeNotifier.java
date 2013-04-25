@@ -67,6 +67,10 @@ public class NetworkChangeNotifier {
         return sInstance;
     }
 
+    public static boolean isInitialized() {
+        return sInstance != null;
+    }
+
     static void resetInstanceForTests(Context context) {
         sInstance = new NetworkChangeNotifier(context);
     }

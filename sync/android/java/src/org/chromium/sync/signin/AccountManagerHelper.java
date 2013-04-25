@@ -246,7 +246,8 @@ public class AccountManagerHelper {
             @Override
             public void onPostExecute(String authToken) {
                 if (authToken != null || !errorEncountered.get() ||
-                        numTries.incrementAndGet() == MAX_TRIES) {
+                        numTries.incrementAndGet() == MAX_TRIES ||
+                        !NetworkChangeNotifier.isInitialized()) {
                     callback.tokenAvailable(authToken);
                     return;
                 }
