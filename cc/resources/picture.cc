@@ -4,8 +4,13 @@
 
 #include "cc/resources/picture.h"
 
+#include <algorithm>
+#include <limits>
+#include <set>
+
 #include "base/base64.h"
 #include "base/debug/trace_event.h"
+#include "cc/base/util.h"
 #include "cc/debug/rendering_stats.h"
 #include "cc/layers/content_layer_client.h"
 #include "skia/ext/analysis_canvas.h"
@@ -21,8 +26,10 @@
 namespace {
 // URI label for a lazily decoded SkPixelRef.
 const char kLabelLazyDecoded[] = "lazy";
+
 // Version ID; to be used in serialization.
 const int kPictureVersion = 1;
+
 // Minimum size of a decoded stream that we need.
 // 4 bytes for version, 4 * 4 for each of the 2 rects.
 const unsigned int kMinPictureSizeBytes = 36;
@@ -101,10 +108,12 @@ Picture::Picture(const std::string& encoded_string, bool* success) {
 
 Picture::Picture(const skia::RefPtr<SkPicture>& picture,
                  gfx::Rect layer_rect,
-                 gfx::Rect opaque_rect) :
+                 gfx::Rect opaque_rect,
+                 const PixelRefMap& pixel_refs) :
     layer_rect_(layer_rect),
     opaque_rect_(opaque_rect),
-    picture_(picture) {
+    picture_(picture),
+    pixel_refs_(pixel_refs) {
 }
 
 Picture::~Picture() {
@@ -130,7 +139,8 @@ void Picture::CloneForDrawing(int num_threads) {
     scoped_refptr<Picture> clone = make_scoped_refptr(
         new Picture(skia::AdoptRef(new SkPicture(clones[i])),
                     layer_rect_,
-                    opaque_rect_));
+                    opaque_rect_,
+                    pixel_refs_));
     clones_.push_back(clone);
   }
 }
@@ -182,6 +192,15 @@ void Picture::Record(ContentLayerClient* painter,
   picture_->endRecording();
 
   opaque_rect_ = gfx::ToEnclosedRect(opaque_layer_rect);
+
+  cell_size_ = gfx::Size(
+      tile_grid_info.fTileInterval.width() +
+          2 * tile_grid_info.fMargin.width(),
+      tile_grid_info.fTileInterval.height() +
+          2 * tile_grid_info.fMargin.height());
+  DCHECK_GT(cell_size_.width(), 0);
+  DCHECK_GT(cell_size_.height(), 0);
+  GatherAllPixelRefs();
 }
 
 void Picture::Raster(
@@ -207,32 +226,34 @@ void Picture::Raster(
   canvas->restore();
 }
 
-void Picture::GatherPixelRefs(gfx::Rect layer_rect,
-                              std::list<skia::LazyPixelRef*>& pixel_ref_list) {
+void Picture::GatherPixelRefsFromSkia(
+    gfx::Rect query_rect,
+    PixelRefs* pixel_refs) {
   DCHECK(picture_);
-  SkData* pixel_refs = SkPictureUtils::GatherPixelRefs(
-      picture_.get(), SkRect::MakeXYWH(layer_rect.x(),
-                                       layer_rect.y(),
-                                       layer_rect.width(),
-                                       layer_rect.height()));
-  if (!pixel_refs)
+  SkData* pixel_ref_data = SkPictureUtils::GatherPixelRefs(
+      picture_.get(),
+      SkRect::MakeXYWH(query_rect.x() - layer_rect_.x(),
+                       query_rect.y() - layer_rect_.y(),
+                       query_rect.width(),
+                       query_rect.height()));
+  if (!pixel_ref_data)
     return;
 
-  void* data = const_cast<void*>(pixel_refs->data());
+  void* data = const_cast<void*>(pixel_ref_data->data());
   if (!data) {
-    pixel_refs->unref();
+    pixel_ref_data->unref();
     return;
   }
 
   SkPixelRef** refs = reinterpret_cast<SkPixelRef**>(data);
-  for (size_t i = 0; i < pixel_refs->size() / sizeof(*refs); ++i) {
+  for (size_t i = 0; i < pixel_ref_data->size() / sizeof(*refs); ++i) {
     if (*refs && (*refs)->getURI() && !strncmp(
         (*refs)->getURI(), kLabelLazyDecoded, 4)) {
-      pixel_ref_list.push_back(static_cast<skia::LazyPixelRef*>(*refs));
+      pixel_refs->push_back(static_cast<skia::LazyPixelRef*>(*refs));
     }
     refs++;
   }
-  pixel_refs->unref();
+  pixel_ref_data->unref();
 }
 
 void Picture::AsBase64String(std::string* output) const {
@@ -260,6 +281,142 @@ void Picture::AsBase64String(std::string* output) const {
   stream.copyTo(serialized_picture.get());
   base::Base64Encode(std::string(serialized_picture.get(), serialized_size),
                      output);
+}
+
+void Picture::GatherAllPixelRefs() {
+  int min_x = std::numeric_limits<int>::max();
+  int min_y = std::numeric_limits<int>::max();
+  int max_x = 0;
+  int max_y = 0;
+
+  // Capture pixel refs for this picture in a grid
+  // with cell_size_ sized cells.
+  for (int y = layer_rect_.y();
+      y < layer_rect_.bottom();
+      y += cell_size_.height()) {
+    for (int x = layer_rect_.x();
+        x < layer_rect_.right();
+        x += cell_size_.width()) {
+      gfx::Rect rect(gfx::Point(x, y), cell_size_);
+      rect.Intersect(layer_rect_);
+
+      PixelRefs pixel_refs;
+      GatherPixelRefsFromSkia(rect, &pixel_refs);
+
+      // Only capture non-empty cells.
+      if (!pixel_refs.empty()) {
+        pixel_refs_[PixelRefMapKey(x, y)].swap(pixel_refs);
+        min_x = std::min(min_x, x);
+        min_y = std::min(min_y, y);
+        max_x = std::max(max_x, x);
+        max_y = std::max(max_y, y);
+      }
+    }
+  }
+
+  min_pixel_cell_ = gfx::Point(min_x, min_y);
+  max_pixel_cell_ = gfx::Point(max_x, max_y);
+}
+
+base::LazyInstance<Picture::PixelRefs>
+    Picture::PixelRefIterator::empty_pixel_refs_;
+
+Picture::PixelRefIterator::PixelRefIterator()
+    : picture_(NULL),
+      current_pixel_refs_(empty_pixel_refs_.Pointer()),
+      current_index_(0),
+      min_point_(-1, -1),
+      max_point_(-1, -1),
+      current_x_(0),
+      current_y_(0) {
+}
+
+Picture::PixelRefIterator::PixelRefIterator(
+    gfx::Rect query_rect,
+    const Picture* picture)
+    : picture_(picture),
+      current_pixel_refs_(empty_pixel_refs_.Pointer()),
+      current_index_(0) {
+  gfx::Rect layer_rect = picture->layer_rect_;
+  gfx::Size cell_size = picture->cell_size_;
+
+  // Early out if the query rect doesn't intersect this picture
+  if (!query_rect.Intersects(layer_rect)) {
+    min_point_ = gfx::Point(0, 0);
+    max_point_ = gfx::Point(0, 0);
+    current_x_ = 1;
+    current_y_ = 1;
+    return;
+  }
+
+  // We have to find a cell_size aligned point that
+  // corresponds to query_rect. First, subtract the layer origin,
+  // then ensure the point is a multiple of cell_size,
+  // and finally, add the layer origin back.
+  min_point_ = gfx::Point(
+      RoundDown(query_rect.x() - layer_rect.x(), cell_size.width())
+          + layer_rect.x(),
+      RoundDown(query_rect.y() - layer_rect.y(), cell_size.height())
+          + layer_rect.y());
+  max_point_ = gfx::Point(
+      RoundDown(query_rect.right() - layer_rect.x() - 1, cell_size.width())
+          + layer_rect.x(),
+      RoundDown(query_rect.bottom() - layer_rect.y() - 1, cell_size.height())
+          + layer_rect.y());
+
+  // Limit the points to known pixel ref boundaries.
+  min_point_ = gfx::Point(
+      std::max(min_point_.x(), picture->min_pixel_cell_.x()),
+      std::max(min_point_.y(), picture->min_pixel_cell_.y()));
+  max_point_ = gfx::Point(
+      std::min(max_point_.x(), picture->max_pixel_cell_.x()),
+      std::min(max_point_.y(), picture->max_pixel_cell_.y()));
+
+  // Make the current x be cell_size.width() less than min point, so that
+  // the first increment will point at min_point_.
+  current_x_ = min_point_.x() - cell_size.width();
+  current_y_ = min_point_.y();
+  if (current_y_ <= max_point_.y())
+    ++(*this);
+}
+
+Picture::PixelRefIterator::~PixelRefIterator() {
+}
+
+Picture::PixelRefIterator& Picture::PixelRefIterator::operator++() {
+  ++current_index_;
+  // If we're not at the end of the list, then we have the next item.
+  if (current_index_ < current_pixel_refs_->size())
+    return *this;
+
+  DCHECK(current_y_ <= max_point_.y());
+  while (true) {
+    gfx::Size cell_size = picture_->cell_size_;
+
+    // Advance the current grid cell.
+    current_x_ += cell_size.width();
+    if (current_x_ > max_point_.x()) {
+      current_y_ += cell_size.height();
+      current_x_ = min_point_.x();
+      if (current_y_ > max_point_.y()) {
+        current_pixel_refs_ = empty_pixel_refs_.Pointer();
+        current_index_ = 0;
+        break;
+      }
+    }
+
+    // If there are no pixel refs at this grid cell, keep incrementing.
+    PixelRefMapKey key(current_x_, current_y_);
+    PixelRefMap::const_iterator iter = picture_->pixel_refs_.find(key);
+    if (iter == picture_->pixel_refs_.end())
+      continue;
+
+    // We found a non-empty list: store it and get the first pixel ref.
+    current_pixel_refs_ = &iter->second;
+    current_index_ = 0;
+    break;
+  }
+  return *this;
 }
 
 }  // namespace cc

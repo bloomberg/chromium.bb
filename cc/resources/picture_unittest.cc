@@ -5,17 +5,43 @@
 #include "cc/resources/picture.h"
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/test/fake_content_layer_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkGraphics.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkTileGridPicture.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/skia_util.h"
 
 namespace cc {
 namespace {
+
+class TestLazyPixelRef : public skia::LazyPixelRef {
+ public:
+  // Pure virtual implementation.
+  TestLazyPixelRef(int width, int height)
+    : pixels_(new char[4 * width * height]) {}
+  virtual SkFlattenable::Factory getFactory() OVERRIDE { return NULL; }
+  virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE {
+      return pixels_.get();
+  }
+  virtual void onUnlockPixels() OVERRIDE {}
+  virtual bool PrepareToDecode(const PrepareParams& params) OVERRIDE {
+    return true;
+  }
+  virtual SkPixelRef* deepCopy(
+      SkBitmap::Config config,
+      const SkIRect* subset) OVERRIDE {
+    this->ref();
+    return this;
+  }
+  virtual void Decode() OVERRIDE {}
+ private:
+  scoped_ptr<char[]> pixels_;
+};
 
 void DrawPicture(unsigned char* buffer,
                  gfx::Rect layer_rect,
@@ -29,6 +55,17 @@ void DrawPicture(unsigned char* buffer,
   SkCanvas canvas(&device);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
   picture->Raster(&canvas, layer_rect, 1.0f, false);
+}
+
+void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {
+  SkAutoTUnref<TestLazyPixelRef> lazy_pixel_ref;
+  lazy_pixel_ref.reset(new TestLazyPixelRef(size.width(), size.height()));
+  lazy_pixel_ref->setURI(uri);
+
+  bitmap->setConfig(SkBitmap::kARGB_8888_Config,
+                    size.width(),
+                    size.height());
+  bitmap->setPixelRef(lazy_pixel_ref);
 }
 
 TEST(PictureTest, AsBase64String) {
@@ -120,5 +157,277 @@ TEST(PictureTest, AsBase64String) {
       memcmp(two_rect_buffer, two_rect_buffer_check, 4 * 100 * 100) == 0);
 }
 
+TEST(PictureTest, PixelRefIterator) {
+  gfx::Rect layer_rect(2048, 2048);
+
+  SkTileGridPicture::TileGridInfo tile_grid_info;
+  tile_grid_info.fTileInterval = SkISize::Make(512, 512);
+  tile_grid_info.fMargin.setEmpty();
+  tile_grid_info.fOffset.setZero();
+
+  FakeContentLayerClient content_layer_client;
+
+  // Lazy pixel refs are found in the following grids:
+  // |---|---|---|---|
+  // |   | x |   | x |
+  // |---|---|---|---|
+  // | x |   | x |   |
+  // |---|---|---|---|
+  // |   | x |   | x |
+  // |---|---|---|---|
+  // | x |   | x |   |
+  // |---|---|---|---|
+  SkBitmap lazy_bitmap[4][4];
+  for (int y = 0; y < 4; ++y) {
+    for (int x = 0; x < 4; ++x) {
+      if ((x + y) & 1) {
+        CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        content_layer_client.add_draw_bitmap(
+            lazy_bitmap[y][x],
+            gfx::Point(x * 512 + 6, y * 512 + 6));
+      }
+    }
+  }
+
+  scoped_refptr<Picture> picture = Picture::Create(layer_rect);
+  picture->Record(&content_layer_client, NULL, tile_grid_info);
+
+  // Default iterator does not have any pixel refs
+  {
+    Picture::PixelRefIterator iterator;
+    EXPECT_FALSE(iterator);
+  }
+  for (int y = 0; y < 4; ++y) {
+    for (int x = 0; x < 4; ++x) {
+      Picture::PixelRefIterator iterator(
+          gfx::Rect(x * 512, y * 512, 500, 500),
+          picture);
+      if ((x + y) & 1) {
+        EXPECT_TRUE(iterator) << x << " " << y;
+        EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef()) << x << " " << y;
+        EXPECT_FALSE(++iterator) << x << " " << y;
+      } else {
+        EXPECT_FALSE(iterator) << x << " " << y;
+      }
+    }
+  }
+  // Capture 4 pixel refs.
+  {
+    Picture::PixelRefIterator iterator(
+        gfx::Rect(512, 512, 2048, 2048),
+        picture);
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+    EXPECT_FALSE(++iterator);
+  }
+
+  // Copy test.
+  Picture::PixelRefIterator iterator(
+        gfx::Rect(512, 512, 2048, 2048),
+        picture);
+  EXPECT_TRUE(iterator);
+  EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+  EXPECT_TRUE(++iterator);
+  EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+
+  // copy now points to the same spot as iterator,
+  // but both can be incremented independently.
+  Picture::PixelRefIterator copy = iterator;
+  EXPECT_TRUE(++iterator);
+  EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+  EXPECT_TRUE(++iterator);
+  EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+  EXPECT_FALSE(++iterator);
+
+  EXPECT_TRUE(copy);
+  EXPECT_TRUE(*copy == lazy_bitmap[2][1].pixelRef());
+  EXPECT_TRUE(++copy);
+  EXPECT_TRUE(*copy == lazy_bitmap[2][3].pixelRef());
+  EXPECT_TRUE(++copy);
+  EXPECT_TRUE(*copy == lazy_bitmap[3][2].pixelRef());
+  EXPECT_FALSE(++copy);
+}
+
+TEST(PictureTest, PixelRefIteratorNonZeroLayer) {
+  gfx::Rect layer_rect(1024, 0, 2048, 2048);
+
+  SkTileGridPicture::TileGridInfo tile_grid_info;
+  tile_grid_info.fTileInterval = SkISize::Make(512, 512);
+  tile_grid_info.fMargin.setEmpty();
+  tile_grid_info.fOffset.setZero();
+
+  FakeContentLayerClient content_layer_client;
+
+  // Lazy pixel refs are found in the following grids:
+  // |---|---|---|---|
+  // |   | x |   | x |
+  // |---|---|---|---|
+  // | x |   | x |   |
+  // |---|---|---|---|
+  // |   | x |   | x |
+  // |---|---|---|---|
+  // | x |   | x |   |
+  // |---|---|---|---|
+  SkBitmap lazy_bitmap[4][4];
+  for (int y = 0; y < 4; ++y) {
+    for (int x = 0; x < 4; ++x) {
+      if ((x + y) & 1) {
+        CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        content_layer_client.add_draw_bitmap(
+            lazy_bitmap[y][x],
+            gfx::Point(1024 + x * 512 + 6, y * 512 + 6));
+      }
+    }
+  }
+
+  scoped_refptr<Picture> picture = Picture::Create(layer_rect);
+  picture->Record(&content_layer_client, NULL, tile_grid_info);
+
+  // Default iterator does not have any pixel refs
+  {
+    Picture::PixelRefIterator iterator;
+    EXPECT_FALSE(iterator);
+  }
+  for (int y = 0; y < 4; ++y) {
+    for (int x = 0; x < 4; ++x) {
+      Picture::PixelRefIterator iterator(
+          gfx::Rect(1024 + x * 512, y * 512, 500, 500),
+          picture);
+      if ((x + y) & 1) {
+        EXPECT_TRUE(iterator) << x << " " << y;
+        EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef());
+        EXPECT_FALSE(++iterator) << x << " " << y;
+      } else {
+        EXPECT_FALSE(iterator) << x << " " << y;
+      }
+    }
+  }
+  // Capture 4 pixel refs.
+  {
+    Picture::PixelRefIterator iterator(
+        gfx::Rect(1024 + 512, 512, 2048, 2048),
+        picture);
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+    EXPECT_FALSE(++iterator);
+  }
+
+  // Copy test.
+  {
+    Picture::PixelRefIterator iterator(
+          gfx::Rect(1024 + 512, 512, 2048, 2048),
+          picture);
+    EXPECT_TRUE(iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[1][2].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[2][1].pixelRef());
+
+    // copy now points to the same spot as iterator,
+    // but both can be incremented independently.
+    Picture::PixelRefIterator copy = iterator;
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(++iterator);
+    EXPECT_TRUE(*iterator == lazy_bitmap[3][2].pixelRef());
+    EXPECT_FALSE(++iterator);
+
+    EXPECT_TRUE(copy);
+    EXPECT_TRUE(*copy == lazy_bitmap[2][1].pixelRef());
+    EXPECT_TRUE(++copy);
+    EXPECT_TRUE(*copy == lazy_bitmap[2][3].pixelRef());
+    EXPECT_TRUE(++copy);
+    EXPECT_TRUE(*copy == lazy_bitmap[3][2].pixelRef());
+    EXPECT_FALSE(++copy);
+  }
+
+  // Non intersecting rects
+  {
+    Picture::PixelRefIterator iterator(
+        gfx::Rect(0, 0, 1000, 1000),
+        picture);
+    EXPECT_FALSE(iterator);
+  }
+  {
+    Picture::PixelRefIterator iterator(
+        gfx::Rect(3500, 0, 1000, 1000),
+        picture);
+    EXPECT_FALSE(iterator);
+  }
+  {
+    Picture::PixelRefIterator iterator(
+        gfx::Rect(0, 1100, 1000, 1000),
+        picture);
+    EXPECT_FALSE(iterator);
+  }
+  {
+    Picture::PixelRefIterator iterator(
+        gfx::Rect(3500, 1100, 1000, 1000),
+        picture);
+    EXPECT_FALSE(iterator);
+  }
+}
+
+TEST(PictureTest, PixelRefIteratorOnePixelQuery) {
+  gfx::Rect layer_rect(2048, 2048);
+
+  SkTileGridPicture::TileGridInfo tile_grid_info;
+  tile_grid_info.fTileInterval = SkISize::Make(512, 512);
+  tile_grid_info.fMargin.setEmpty();
+  tile_grid_info.fOffset.setZero();
+
+  FakeContentLayerClient content_layer_client;
+
+  // Lazy pixel refs are found in the following grids:
+  // |---|---|---|---|
+  // |   | x |   | x |
+  // |---|---|---|---|
+  // | x |   | x |   |
+  // |---|---|---|---|
+  // |   | x |   | x |
+  // |---|---|---|---|
+  // | x |   | x |   |
+  // |---|---|---|---|
+  SkBitmap lazy_bitmap[4][4];
+  for (int y = 0; y < 4; ++y) {
+    for (int x = 0; x < 4; ++x) {
+      if ((x + y) & 1) {
+        CreateBitmap(gfx::Size(500, 500), "lazy", &lazy_bitmap[y][x]);
+        content_layer_client.add_draw_bitmap(
+            lazy_bitmap[y][x],
+            gfx::Point(x * 512 + 6, y * 512 + 6));
+      }
+    }
+  }
+
+  scoped_refptr<Picture> picture = Picture::Create(layer_rect);
+  picture->Record(&content_layer_client, NULL, tile_grid_info);
+
+  for (int y = 0; y < 4; ++y) {
+    for (int x = 0; x < 4; ++x) {
+      Picture::PixelRefIterator iterator(
+          gfx::Rect(x * 512, y * 512 + 256, 1, 1),
+          picture);
+      if ((x + y) & 1) {
+        EXPECT_TRUE(iterator) << x << " " << y;
+        EXPECT_TRUE(*iterator == lazy_bitmap[y][x].pixelRef());
+        EXPECT_FALSE(++iterator) << x << " " << y;
+      } else {
+        EXPECT_FALSE(iterator) << x << " " << y;
+      }
+    }
+  }
+}
 }  // namespace
 }  // namespace cc

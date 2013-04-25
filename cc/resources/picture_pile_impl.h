@@ -37,11 +37,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       gfx::Rect canvas_rect,
       float contents_scale);
 
-  void GatherPixelRefs(
-      gfx::Rect content_rect,
-      float contents_scale,
-      std::list<skia::LazyPixelRef*>& pixel_refs);
-
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
   struct CC_EXPORT Analysis {
@@ -61,8 +56,33 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
                      float contents_scale,
                      Analysis* analysis);
 
+  class CC_EXPORT PixelRefIterator {
+   public:
+    PixelRefIterator(gfx::Rect content_rect,
+                     float contents_scale,
+                     const PicturePileImpl* picture_pile);
+    ~PixelRefIterator();
+
+    skia::LazyPixelRef* operator->() const { return *pixel_ref_iterator_; }
+    skia::LazyPixelRef* operator*() const { return *pixel_ref_iterator_; }
+    PixelRefIterator& operator++();
+    operator bool() const { return pixel_ref_iterator_; }
+
+   private:
+    bool AdvanceToTileWithPictures();
+    void AdvanceToPictureWithPixelRefs();
+
+    const PicturePileImpl* picture_pile_;
+    gfx::Rect layer_rect_;
+    TilingData::Iterator tile_iterator_;
+    Picture::PixelRefIterator pixel_ref_iterator_;
+    const PictureList* picture_list_;
+    PictureList::const_iterator picture_list_iterator_;
+  };
+
  protected:
   friend class PicturePile;
+  friend class PixelRefIterator;
 
   explicit PicturePileImpl(bool enable_lcd_text);
   PicturePileImpl(const PicturePileBase* other, bool enable_lcd_text);

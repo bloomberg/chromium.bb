@@ -5,6 +5,7 @@
 #include "cc/test/fake_content_layer_client.h"
 
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -20,16 +21,22 @@ void FakeContentLayerClient::PaintContents(SkCanvas* canvas,
   if (paint_all_opaque_)
     *opaque_rect = rect;
 
+  canvas->clipRect(gfx::RectToSkRect(rect));
   for (RectPaintVector::const_iterator it = draw_rects_.begin();
-      it < draw_rects_.end(); ++it) {
+      it != draw_rects_.end(); ++it) {
     gfx::Rect rect = it->first;
-    SkPaint paint = it->second;
+    const SkPaint& paint = it->second;
     SkRect draw_rect = SkRect::MakeXYWH(
         rect.x(),
         rect.y(),
         rect.width(),
         rect.height());
     canvas->drawRect(draw_rect, paint);
+  }
+
+  for (BitmapVector::const_iterator it = draw_bitmaps_.begin();
+      it != draw_bitmaps_.end(); ++it) {
+    canvas->drawBitmap(it->first, it->second.x(), it->second.y());
   }
 }
 

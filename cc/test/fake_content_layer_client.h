@@ -10,6 +10,7 @@
 
 #include "base/compiler_specific.h"
 #include "cc/layers/content_layer_client.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/gfx/rect.h"
 
@@ -31,11 +32,17 @@ class FakeContentLayerClient : public cc::ContentLayerClient {
     draw_rects_.push_back(std::make_pair(rect, paint));
   }
 
+  void add_draw_bitmap(const SkBitmap& bitmap, gfx::Point point) {
+    draw_bitmaps_.push_back(std::make_pair(bitmap, point));
+  }
+
  private:
   typedef std::vector<std::pair<gfx::Rect, SkPaint> > RectPaintVector;
+  typedef std::vector<std::pair<SkBitmap, gfx::Point> > BitmapVector;
 
   bool paint_all_opaque_;
   RectPaintVector draw_rects_;
+  BitmapVector draw_bitmaps_;
 };
 
 }  // namespace cc

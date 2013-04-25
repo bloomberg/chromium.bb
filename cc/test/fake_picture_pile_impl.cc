@@ -59,6 +59,13 @@ void FakePicturePileImpl::AddRecordingAt(int x, int y) {
   UpdateRecordedRegion();
 }
 
+void FakePicturePileImpl::AddPictureToRecording(
+    int x,
+    int y,
+    scoped_refptr<Picture> picture) {
+  picture_list_map_[std::pair<int, int>(x, y)].push_back(picture);
+}
+
 void FakePicturePileImpl::RemoveRecordingAt(int x, int y) {
   EXPECT_GE(x, 0);
   EXPECT_GE(y, 0);

@@ -686,15 +686,21 @@ void TileManager::AnalyzeTile(Tile* tile) {
 }
 
 void TileManager::GatherPixelRefsForTile(Tile* tile) {
+  // TODO(vmpstr): Remove this function and pending_pixel_refs
+  // when reveman's improvements to worker pool go in.
   TRACE_EVENT0("cc", "TileManager::GatherPixelRefsForTile");
   ManagedTileState& managed_tile_state = tile->managed_state();
   if (managed_tile_state.need_to_gather_pixel_refs) {
     base::TimeTicks start_time =
         rendering_stats_instrumentation_->StartRecording();
-    tile->picture_pile()->GatherPixelRefs(
-        tile->content_rect_,
-        tile->contents_scale_,
-        managed_tile_state.pending_pixel_refs);
+    for (PicturePileImpl::PixelRefIterator pixel_ref_iter(
+            tile->content_rect(),
+            tile->contents_scale(),
+            tile->picture_pile());
+        pixel_ref_iter;
+        ++pixel_ref_iter) {
+      managed_tile_state.pending_pixel_refs.push_back(*pixel_ref_iter);
+    }
     managed_tile_state.need_to_gather_pixel_refs = false;
     base::TimeDelta duration =
         rendering_stats_instrumentation_->EndRecording(start_time);

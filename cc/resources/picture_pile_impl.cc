@@ -198,31 +198,6 @@ int64 PicturePileImpl::Raster(
   return total_pixels_rasterized;
 }
 
-void PicturePileImpl::GatherPixelRefs(
-    gfx::Rect content_rect,
-    float contents_scale,
-    std::list<skia::LazyPixelRef*>& pixel_refs) {
-  std::list<skia::LazyPixelRef*> result;
-
-  gfx::Rect layer_rect = gfx::ToEnclosingRect(
-      gfx::ScaleRect(content_rect, 1.f / contents_scale));
-
-  for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
-       tile_iter; ++tile_iter) {
-    PictureListMap::iterator map_iter =
-        picture_list_map_.find(tile_iter.index());
-    if (map_iter == picture_list_map_.end())
-      continue;
-
-    PictureList& pic_list = map_iter->second;
-    for (PictureList::const_iterator i = pic_list.begin();
-         i != pic_list.end(); ++i) {
-      (*i)->GatherPixelRefs(layer_rect, result);
-      pixel_refs.splice(pixel_refs.end(), result);
-    }
-  }
-}
-
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
   TRACE_EVENT0("cc", "PicturePileImpl::GetFlattenedPicture");
 
@@ -275,6 +250,67 @@ PicturePileImpl::Analysis::Analysis()
 }
 
 PicturePileImpl::Analysis::~Analysis() {
+}
+
+PicturePileImpl::PixelRefIterator::PixelRefIterator(
+    gfx::Rect content_rect,
+    float contents_scale,
+    const PicturePileImpl* picture_pile)
+    : picture_pile_(picture_pile),
+      layer_rect_(gfx::ToEnclosingRect(
+          gfx::ScaleRect(content_rect, 1.f / contents_scale))),
+      tile_iterator_(&picture_pile_->tiling_, layer_rect_),
+      picture_list_(NULL) {
+  // Early out if there isn't a single tile.
+  if (!tile_iterator_)
+    return;
+
+  if (AdvanceToTileWithPictures())
+    AdvanceToPictureWithPixelRefs();
+}
+
+PicturePileImpl::PixelRefIterator::~PixelRefIterator() {
+}
+
+PicturePileImpl::PixelRefIterator&
+    PicturePileImpl::PixelRefIterator::operator++() {
+  ++pixel_ref_iterator_;
+  if (pixel_ref_iterator_)
+    return *this;
+
+  ++picture_list_iterator_;
+  AdvanceToPictureWithPixelRefs();
+  return *this;
+}
+
+bool PicturePileImpl::PixelRefIterator::AdvanceToTileWithPictures() {
+  for (; tile_iterator_; ++tile_iterator_) {
+    PictureListMap::const_iterator map_iterator =
+        picture_pile_->picture_list_map_.find(tile_iterator_.index());
+    if (map_iterator != picture_pile_->picture_list_map_.end()) {
+      picture_list_ = &map_iterator->second;
+      picture_list_iterator_ = picture_list_->begin();
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void PicturePileImpl::PixelRefIterator::AdvanceToPictureWithPixelRefs() {
+  DCHECK(tile_iterator_);
+  do {
+    for (;
+         picture_list_iterator_ != picture_list_->end();
+         ++picture_list_iterator_) {
+      pixel_ref_iterator_ = Picture::PixelRefIterator(
+          layer_rect_,
+          *picture_list_iterator_);
+      if (pixel_ref_iterator_)
+        return;
+    }
+    ++tile_iterator_;
+  } while (AdvanceToTileWithPictures());
 }
 
 }  // namespace cc

@@ -27,8 +27,17 @@ class FakePicturePileImpl : public PicturePileImpl {
 
   void RemoveRecordingAt(int x, int y);
 
+  void AddPictureToRecording(
+      int x,
+      int y,
+      scoped_refptr<Picture> picture);
+
   void add_draw_rect(gfx::Rect rect) {
     client_.add_draw_rect(rect, default_paint_);
+  }
+
+  void add_draw_bitmap(const SkBitmap& bitmap, gfx::Point point) {
+    client_.add_draw_bitmap(bitmap, point);
   }
 
   void add_draw_rect_with_paint(gfx::Rect rect, const SkPaint& paint) {

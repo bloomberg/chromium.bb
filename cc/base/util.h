@@ -8,7 +8,13 @@
 namespace cc {
 
 template <typename T> T RoundUp(T n, T mul) {
-  return ((n + mul - 1) / mul) * mul;
+  return (n > 0) ? ((n + mul - 1) / mul) * mul
+                 : (n / mul) * mul;
+}
+
+template <typename T> T RoundDown(T n, T mul) {
+  return (n > 0) ? (n / mul) * mul
+                 : ((n - mul + 1) / mul) * mul;
 }
 
 }  // namespace cc
