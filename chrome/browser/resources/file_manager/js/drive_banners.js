@@ -41,8 +41,8 @@ function FileListBannerController(
   util.storage.onChanged.addListener(this.onStorageChange_.bind(this));
   this.welcomeHeaderCounter_ = WELCOME_HEADER_COUNTER_LIMIT;
   this.warningDismissedCounter_ = 0;
-  util.storage.sync.get([WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
-                          function(values) {
+  util.storage.local.get([WELCOME_HEADER_COUNTER_KEY, WARNING_DISMISSED_KEY],
+                         function(values) {
     this.welcomeHeaderCounter_ =
         parseInt(values[WELCOME_HEADER_COUNTER_KEY]) || 0;
     this.warningDismissedCounter_ =
