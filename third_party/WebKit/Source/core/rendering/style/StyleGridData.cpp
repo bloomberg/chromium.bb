@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "StyleGridData.h"
+#include "core/rendering/style/StyleGridData.h"
 
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

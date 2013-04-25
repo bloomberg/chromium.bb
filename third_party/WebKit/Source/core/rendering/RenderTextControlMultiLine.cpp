@@ -27,8 +27,8 @@
 #include "HTMLTextAreaElement.h"
 #include "HitTestResult.h"
 #include "ShadowRoot.h"
-#include "StyleInheritedData.h"
 #include "TextControlInnerElements.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

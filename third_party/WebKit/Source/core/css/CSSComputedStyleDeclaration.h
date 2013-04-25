@@ -22,7 +22,7 @@
 #define CSSComputedStyleDeclaration_h
 
 #include "CSSStyleDeclaration.h"
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/RefPtr.h>
 #include <wtf/text/WTFString.h>
 

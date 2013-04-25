@@ -25,8 +25,8 @@
 #ifndef CursorData_h
 #define CursorData_h
 
-#include "StyleImage.h"
 #include "core/platform/graphics/IntPoint.h"
+#include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
 

@@ -41,9 +41,6 @@
 #if ENABLE(CSS_IMAGE_ORIENTATION)
 #include "core/platform/graphics/ImageOrientation.h"
 #endif
-#include "LineClampValue.h"
-#include "RenderStyleConstants.h"
-#include "SVGRenderStyleDefs.h"
 #include "core/platform/Length.h"
 #include "core/platform/ThemeTypes.h"
 #include "core/platform/graphics/Path.h"
@@ -51,6 +48,9 @@
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/UnicodeBidi.h"
 #include "core/platform/text/WritingMode.h"
+#include "core/rendering/style/LineClampValue.h"
+#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/style/SVGRenderStyleDefs.h"
 
 #include <wtf/MathExtras.h>
 

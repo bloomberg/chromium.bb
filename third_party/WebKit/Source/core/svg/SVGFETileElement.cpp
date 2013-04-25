@@ -27,8 +27,8 @@
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
-#include "SVGRenderStyle.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 namespace WebCore {
 

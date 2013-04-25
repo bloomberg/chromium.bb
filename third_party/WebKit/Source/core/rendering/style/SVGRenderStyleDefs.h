@@ -31,7 +31,7 @@
 #if ENABLE(SVG)
 #include "SVGLength.h"
 #include "SVGPaint.h"
-#include "ShadowData.h"
+#include "core/rendering/style/ShadowData.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

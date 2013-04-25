@@ -39,11 +39,11 @@
 #include "RenderSelectionInfo.h"
 #include "RenderWidget.h"
 #include "RenderWidgetProtector.h"
-#include "StyleInheritedData.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 #if USE(3D_GRAPHICS)
 #include "core/platform/graphics/filters/custom/CustomFilterGlobalContext.h"

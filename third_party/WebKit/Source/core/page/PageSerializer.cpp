@@ -47,8 +47,6 @@
 #include "HTMLStyleElement.h"
 #include "MarkupAccumulator.h"
 #include "Page.h"
-#include "StyleCachedImage.h"
-#include "StyleImage.h"
 #include "StylePropertySet.h"
 #include "StyleRule.h"
 #include "StyleSheetContents.h"
@@ -57,6 +55,8 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/text/TextEncoding.h"
+#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleImage.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

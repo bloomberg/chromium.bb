@@ -24,19 +24,19 @@
  */
 
 #include "config.h"
-#include "RenderTableSection.h"
+#include <limits>
 #include "CachedImage.h"
 #include "Document.h"
-#include "HitTestResult.h"
 #include "HTMLNames.h"
+#include "HitTestResult.h"
 #include "PaintInfo.h"
 #include "RenderTableCell.h"
 #include "RenderTableCol.h"
 #include "RenderTableRow.h"
+#include "RenderTableSection.h"
 #include "RenderView.h"
-#include "StyleInheritedData.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include <limits>
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/HashSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

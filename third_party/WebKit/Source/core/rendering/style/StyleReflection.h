@@ -26,8 +26,8 @@
 #define StyleReflection_h
 
 #include "CSSReflectionDirection.h"
-#include "NinePieceImage.h"
 #include "core/platform/Length.h"
+#include "core/rendering/style/NinePieceImage.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

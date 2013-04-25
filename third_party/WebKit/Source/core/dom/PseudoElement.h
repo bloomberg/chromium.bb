@@ -29,7 +29,7 @@
 
 #include "Element.h"
 #include "Event.h"
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

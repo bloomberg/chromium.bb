@@ -38,12 +38,12 @@
 #include "RenderBox.h"
 #include "RenderObject.h"
 #include "RenderPart.h"
-#include "RenderStyle.h"
 #include "RenderView.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntPoint.h"
+#include "core/rendering/style/RenderStyle.h"
 
 using namespace WebCore;
 

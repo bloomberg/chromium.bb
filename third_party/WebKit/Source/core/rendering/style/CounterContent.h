@@ -25,7 +25,7 @@
 #ifndef CounterContent_h
 #define CounterContent_h
 
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

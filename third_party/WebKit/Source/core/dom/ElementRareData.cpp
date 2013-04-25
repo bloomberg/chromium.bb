@@ -31,8 +31,8 @@
 #include "config.h"
 #include "ElementRareData.h"
 
-#include "RenderStyle.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

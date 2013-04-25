@@ -26,7 +26,6 @@
 #include "StyleBuilder.h"
 
 #include "BasicShapeFunctions.h"
-#include "BasicShapes.h"
 #include "CSSAspectRatioValue.h"
 #include "CSSCalculationValue.h"
 #include "CSSCursorImageValue.h"
@@ -34,21 +33,22 @@
 #include "CSSToStyleMap.h"
 #include "CSSValueList.h"
 #include "ClipPathOperation.h"
-#include "CursorList.h"
 #include "Document.h"
 #include "Element.h"
 #include "Pair.h"
 #include "Rect.h"
 #include "RenderObject.h"
-#include "RenderStyle.h"
 #include "RenderView.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/rendering/style/BasicShapes.h"
+#include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/UnusedParam.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
-#include "ExclusionShapeValue.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
 #endif
 
 using namespace std;

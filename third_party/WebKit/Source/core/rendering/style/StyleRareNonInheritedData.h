@@ -25,15 +25,15 @@
 #ifndef StyleRareNonInheritedData_h
 #define StyleRareNonInheritedData_h
 
-#include "BasicShapes.h"
 #include "ClipPathOperation.h"
-#include "CounterDirectives.h"
-#include "CursorData.h"
-#include "DataRef.h"
-#include "ExclusionShapeValue.h"
-#include "FillLayer.h"
-#include "LineClampValue.h"
-#include "NinePieceImage.h"
+#include "core/rendering/style/BasicShapes.h"
+#include "core/rendering/style/CounterDirectives.h"
+#include "core/rendering/style/CursorData.h"
+#include "core/rendering/style/DataRef.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
+#include "core/rendering/style/FillLayer.h"
+#include "core/rendering/style/LineClampValue.h"
+#include "core/rendering/style/NinePieceImage.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>

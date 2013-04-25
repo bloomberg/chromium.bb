@@ -38,11 +38,11 @@
 #include "SVGElementInstance.h"
 #include "SVGElementRareData.h"
 #include "SVGNames.h"
-#include "SVGRenderStyle.h"
 #include "SVGRenderSupport.h"
 #include "SVGSVGElement.h"
 #include "SVGUseElement.h"
 #include "ShadowRoot.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/StdLibExtras.h>

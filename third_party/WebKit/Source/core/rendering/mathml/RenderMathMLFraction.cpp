@@ -28,7 +28,7 @@
 
 #if ENABLE(MATHML)
 
-#include "RenderMathMLFraction.h"
+#include "core/rendering/mathml/RenderMathMLFraction.h"
 
 #include "MathMLNames.h"
 #include "PaintInfo.h"

@@ -30,9 +30,9 @@
 #ifndef ExclusionShape_h
 #define ExclusionShape_h
 
-#include "BasicShapes.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/text/WritingMode.h"
+#include "core/rendering/style/BasicShapes.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 

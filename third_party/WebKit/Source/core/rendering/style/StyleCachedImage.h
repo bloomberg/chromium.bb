@@ -26,7 +26,7 @@
 
 #include "CachedImageClient.h"
 #include "CachedResourceHandle.h"
-#include "StyleImage.h"
+#include "core/rendering/style/StyleImage.h"
 
 namespace WebCore {
 

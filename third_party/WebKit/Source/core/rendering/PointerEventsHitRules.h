@@ -21,7 +21,7 @@
 #define PointerEventsHitRules_h
 
 #include "HitTestRequest.h"
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 

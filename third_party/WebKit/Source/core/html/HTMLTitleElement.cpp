@@ -26,9 +26,9 @@
 #include "Document.h"
 #include "HTMLNames.h"
 #include "NodeRenderingContext.h"
-#include "RenderStyle.h"
-#include "StyleInheritedData.h"
 #include "Text.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

@@ -26,10 +26,10 @@
 #include "HitTestResult.h"
 #include "RenderText.h"
 #include "RenderTheme.h"
-#include "StyleInheritedData.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "core/platform/ScrollbarTheme.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/unicode/CharacterNames.h>
 
 using namespace std;

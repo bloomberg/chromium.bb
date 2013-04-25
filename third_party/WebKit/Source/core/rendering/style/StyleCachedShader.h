@@ -31,7 +31,7 @@
 #define StyleCachedShader_h
 
 #include "CachedResourceHandle.h"
-#include "StyleShader.h"
+#include "core/rendering/style/StyleShader.h"
 
 namespace WebCore {
 

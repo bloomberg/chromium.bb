@@ -20,10 +20,10 @@
  */
 
 #include "config.h"
-#include "StyleBackgroundData.h"
+#include "core/rendering/style/StyleBackgroundData.h"
 
-#include "RenderStyle.h"
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 

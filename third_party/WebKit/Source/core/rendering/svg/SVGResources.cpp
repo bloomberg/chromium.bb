@@ -30,8 +30,8 @@
 #include "SVGNames.h"
 #include "SVGPaint.h"
 #include "SVGPatternElement.h"
-#include "SVGRenderStyle.h"
 #include "SVGURIReference.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

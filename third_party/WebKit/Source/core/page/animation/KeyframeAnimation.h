@@ -31,7 +31,7 @@
 
 #include "AnimationBase.h"
 #include "Document.h"
-#include "KeyframeList.h"
+#include "core/rendering/style/KeyframeList.h"
 
 namespace WebCore {
 

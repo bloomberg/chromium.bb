@@ -28,7 +28,7 @@
 #include "config.h"
 
 #if ENABLE(SVG)
-#include "SVGRenderStyle.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 #include "CSSPrimitiveValue.h"
 #include "CSSValueList.h"

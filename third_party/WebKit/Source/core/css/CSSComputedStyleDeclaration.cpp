@@ -26,7 +26,6 @@
 
 #include "AnimationController.h"
 #include "BasicShapeFunctions.h"
-#include "BasicShapes.h"
 #include "CSSAspectRatioValue.h"
 #include "CSSBasicShapes.h"
 #include "CSSBorderImage.h"
@@ -41,9 +40,6 @@
 #include "CSSTimingFunctionValue.h"
 #include "CSSValueList.h"
 #include "CSSValuePool.h"
-#include "ContentData.h"
-#include "CounterContent.h"
-#include "CursorList.h"
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "FontFeatureValue.h"
@@ -53,10 +49,8 @@
 #include "PseudoElement.h"
 #include "Rect.h"
 #include "RenderBox.h"
-#include "RenderStyle.h"
 #include "RenderView.h"
 #include "ShadowValue.h"
-#include "StyleInheritedData.h"
 #include "StylePropertySet.h"
 #include "StylePropertyShorthand.h"
 #include "StyleResolver.h"
@@ -64,10 +58,16 @@
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
+#include "core/rendering/style/BasicShapes.h"
+#include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/CounterContent.h"
+#include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/StringBuilder.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
-#include "ExclusionShapeValue.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
 #endif
 
 #include "WebKitCSSArrayFunctionValue.h"
@@ -78,8 +78,8 @@
 #include "core/platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "core/platform/graphics/filters/custom/CustomFilterTransformParameter.h"
 
-#include "StyleCustomFilterProgram.h"
 #include "WebKitCSSFilterValue.h"
+#include "core/rendering/style/StyleCustomFilterProgram.h"
 
 namespace WebCore {
 

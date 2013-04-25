@@ -33,13 +33,13 @@
 #include "Pair.h"
 #include "RGBColor.h"
 #include "Rect.h"
-#include "RenderStyle.h"
 #include "StyleSheetContents.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/CalculationValue.h"
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/Font.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/DecimalNumber.h>
 #include <wtf/StdLibExtras.h>

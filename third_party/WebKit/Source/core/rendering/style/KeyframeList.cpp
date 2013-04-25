@@ -20,8 +20,8 @@
  */
 
 #include "config.h"
-#include "KeyframeList.h"
 #include "RenderObject.h"
+#include "core/rendering/style/KeyframeList.h"
 
 namespace WebCore {
 

@@ -31,14 +31,14 @@
 #include "core/mathml/MathMLInlineContainerElement.h"
 
 #include "MathMLNames.h"
-#include "RenderMathMLBlock.h"
-#include "RenderMathMLFenced.h"
-#include "RenderMathMLFraction.h"
-#include "RenderMathMLRoot.h"
-#include "RenderMathMLRow.h"
-#include "RenderMathMLSquareRoot.h"
-#include "RenderMathMLSubSup.h"
-#include "RenderMathMLUnderOver.h"
+#include "core/rendering/mathml/RenderMathMLBlock.h"
+#include "core/rendering/mathml/RenderMathMLFenced.h"
+#include "core/rendering/mathml/RenderMathMLFraction.h"
+#include "core/rendering/mathml/RenderMathMLRoot.h"
+#include "core/rendering/mathml/RenderMathMLRow.h"
+#include "core/rendering/mathml/RenderMathMLSquareRoot.h"
+#include "core/rendering/mathml/RenderMathMLSubSup.h"
+#include "core/rendering/mathml/RenderMathMLUnderOver.h"
 
 namespace WebCore {
     

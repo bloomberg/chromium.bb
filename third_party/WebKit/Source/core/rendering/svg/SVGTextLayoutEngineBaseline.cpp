@@ -24,10 +24,10 @@
 
 #include "RenderObject.h"
 #include "SVGLengthContext.h"
-#include "SVGRenderStyle.h"
 #include "SVGTextMetrics.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/text/UnicodeRange.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 namespace WebCore {
 

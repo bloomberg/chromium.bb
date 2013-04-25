@@ -31,7 +31,7 @@
 #include "core/mathml/MathMLTextElement.h"
 
 #include "MathMLNames.h"
-#include "RenderMathMLOperator.h"
+#include "core/rendering/mathml/RenderMathMLOperator.h"
 
 namespace WebCore {
     

@@ -25,8 +25,8 @@
 #ifndef StyleSurroundData_h
 #define StyleSurroundData_h
 
-#include "BorderData.h"
 #include "core/platform/LengthBox.h"
+#include "core/rendering/style/BorderData.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

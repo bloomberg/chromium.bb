@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
-#include "StyleTransformData.h"
+#include "core/rendering/style/StyleTransformData.h"
 
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

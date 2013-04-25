@@ -28,7 +28,7 @@
 
 #if ENABLE(MATHML)
 
-#include "RenderMathMLOperator.h"
+#include "core/rendering/mathml/RenderMathMLOperator.h"
 
 #include "MathMLNames.h"
 #include "RenderText.h"

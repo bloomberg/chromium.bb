@@ -33,14 +33,14 @@
 #include "RenderSVGInline.h"
 #include "RenderSVGInlineText.h"
 #include "RenderSVGResource.h"
-#include "ShadowRoot.h"
 #include "SVGDocument.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "StyleInheritedData.h"
+#include "ShadowRoot.h"
 #include "Text.h"
 #include "UseCounter.h"
 #include "XLinkNames.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

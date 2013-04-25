@@ -29,10 +29,10 @@
 #include "RenderSVGText.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
-#include "SVGRenderStyle.h"
 #include "SVGTSpanElement.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 namespace WebCore {
 

@@ -25,7 +25,6 @@
 #include "config.h"
 #include "RenderTableCell.h"
 
-#include "CollapsedBorderValue.h"
 #include "HTMLNames.h"
 #include "HTMLTableCellElement.h"
 #include "PaintInfo.h"
@@ -35,6 +34,7 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/style/CollapsedBorderValue.h"
 
 #if ENABLE(MATHML)
 #include "MathMLNames.h"

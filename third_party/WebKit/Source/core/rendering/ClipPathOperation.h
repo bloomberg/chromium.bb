@@ -30,8 +30,8 @@
 #ifndef ClipPathOperation_h
 #define ClipPathOperation_h
 
-#include "BasicShapes.h"
 #include "core/platform/graphics/Path.h"
+#include "core/rendering/style/BasicShapes.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

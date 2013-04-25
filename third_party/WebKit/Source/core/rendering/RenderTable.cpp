@@ -27,12 +27,11 @@
 #include "RenderTable.h"
 
 #include "AutoTableLayout.h"
-#include "CollapsedBorderValue.h"
 #include "Document.h"
 #include "FixedTableLayout.h"
 #include "FrameView.h"
-#include "HitTestResult.h"
 #include "HTMLNames.h"
+#include "HitTestResult.h"
 #include "LayoutRepainter.h"
 #include "RenderLayer.h"
 #include "RenderTableCaption.h"
@@ -40,7 +39,8 @@
 #include "RenderTableCol.h"
 #include "RenderTableSection.h"
 #include "RenderView.h"
-#include "StyleInheritedData.h"
+#include "core/rendering/style/CollapsedBorderValue.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;
 

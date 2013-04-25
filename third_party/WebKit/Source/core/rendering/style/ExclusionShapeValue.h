@@ -30,7 +30,7 @@
 #ifndef ExclusionShapeValue_h
 #define ExclusionShapeValue_h
 
-#include "BasicShapes.h"
+#include "core/rendering/style/BasicShapes.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

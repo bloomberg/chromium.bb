@@ -79,8 +79,6 @@
 #include "NodeList.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "RenderStyle.h"
-#include "RenderStyleConstants.h"
 #include "RenderView.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
@@ -94,6 +92,8 @@
 #include "core/platform/Pasteboard.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 #include "htmlediting.h"
 #include "markup.h"

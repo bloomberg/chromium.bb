@@ -26,8 +26,8 @@
 #include "HTMLNames.h"
 #include "RenderTextFragment.h"
 #include "RenderTheme.h"
-#include "StyleInheritedData.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {
 

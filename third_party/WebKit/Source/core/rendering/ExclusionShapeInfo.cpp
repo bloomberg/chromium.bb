@@ -36,7 +36,7 @@
 #include "RenderBlock.h"
 #include "RenderBox.h"
 #include "RenderRegion.h"
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 template<class RenderType, ExclusionShapeValue* (RenderStyle::*shapeGetter)() const, void (ExclusionShape::*intervalGetter)(float, float, SegmentList&) const>

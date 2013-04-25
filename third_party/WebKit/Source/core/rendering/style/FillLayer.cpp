@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "FillLayer.h"
+#include "core/rendering/style/FillLayer.h"
 
 namespace WebCore {
 

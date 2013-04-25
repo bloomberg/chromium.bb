@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "ShadowData.h"
+#include "core/rendering/style/ShadowData.h"
 
 #include "core/platform/graphics/LayoutRect.h"
 

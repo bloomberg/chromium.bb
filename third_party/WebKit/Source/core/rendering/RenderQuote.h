@@ -22,10 +22,10 @@
 #ifndef RenderQuote_h
 #define RenderQuote_h
 
-#include "QuotesData.h"
-#include "RenderStyle.h"
-#include "RenderStyleConstants.h"
 #include "RenderText.h"
+#include "core/rendering/style/QuotesData.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 namespace WebCore {
 

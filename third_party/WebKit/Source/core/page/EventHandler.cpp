@@ -32,7 +32,6 @@
 #include "CachedImage.h"
 #include "Chrome.h"
 #include "ChromeClient.h"
-#include "CursorList.h"
 #include "Document.h"
 #include "DocumentEventQueue.h"
 #include "DragController.h"
@@ -69,7 +68,6 @@
 #include "ShadowRoot.h"
 #include "SpatialNavigation.h"
 #include "StaticHashSetNodeList.h"
-#include "StyleCachedImage.h"
 #include "TextEvent.h"
 #include "TextIterator.h"
 #include "TouchAdjustment.h"
@@ -93,6 +91,8 @@
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/StyleCachedImage.h"
 #include "htmlediting.h"
 #include <wtf/Assertions.h>
 #include <wtf/CurrentTime.h>
@@ -107,7 +107,7 @@
 #endif
 
 #if ENABLE(CSS_IMAGE_SET)
-#include "StyleCachedImageSet.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
 #endif
 
 namespace WebCore {

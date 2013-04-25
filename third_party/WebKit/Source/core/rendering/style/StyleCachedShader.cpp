@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "StyleCachedShader.h"
+#include "core/rendering/style/StyleCachedShader.h"
 
 #include "CSSPrimitiveValue.h"
 #include "CachedShader.h"

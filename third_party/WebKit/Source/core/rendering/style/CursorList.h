@@ -25,7 +25,7 @@
 #ifndef CursorList_h
 #define CursorList_h
 
-#include "CursorData.h"
+#include "core/rendering/style/CursorData.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 

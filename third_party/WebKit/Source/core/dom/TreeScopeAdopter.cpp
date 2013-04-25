@@ -31,8 +31,8 @@
 #include "ElementShadow.h"
 #include "NodeRareData.h"
 #include "NodeTraversal.h"
-#include "RenderStyle.h"
 #include "ShadowRoot.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

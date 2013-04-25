@@ -33,8 +33,8 @@
 #include "RenderRuby.h"
 
 #include "RenderRubyRun.h"
-#include "RenderStyle.h"
-#include "StyleInheritedData.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

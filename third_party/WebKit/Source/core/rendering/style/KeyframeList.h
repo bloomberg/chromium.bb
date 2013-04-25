@@ -26,11 +26,11 @@
 #define KeyframeList_h
 
 #include "CSSPropertyNames.h"
-#include "StyleInheritedData.h"
-#include <wtf/Vector.h>
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/HashSet.h>
 #include <wtf/RefPtr.h>
 #include <wtf/text/AtomicString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -30,7 +30,7 @@
 
 #include "CachedImage.h"
 #include "RenderObject.h"
-#include "StyleCachedImage.h"
+#include "core/rendering/style/StyleCachedImage.h"
 
 namespace WebCore {
 

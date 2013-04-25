@@ -22,10 +22,10 @@
 #include "CSSProperty.h"
 
 #include "CSSValueList.h"
-#include "RenderStyleConstants.h"
+#include "CSSVariableValue.h"
 #include "StylePropertyShorthand.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include "CSSVariableValue.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 
 #include <wtf/text/StringBuilder.h>
 

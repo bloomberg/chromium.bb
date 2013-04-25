@@ -36,9 +36,9 @@
 #include "CachedResourceRequestInitiators.h"
 #include "Document.h"
 #include "Page.h"
-#include "StyleCachedImageSet.h"
-#include "StylePendingImage.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
+#include "core/rendering/style/StylePendingImage.h"
 #include <wtf/MemoryInstrumentationVector.h>
 
 namespace WebCore {

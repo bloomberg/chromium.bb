@@ -23,8 +23,8 @@
 #include "SVGTextLayoutEngineSpacing.h"
 
 #include "SVGLengthContext.h"
-#include "SVGRenderStyle.h"
 #include "core/platform/graphics/Font.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 #if ENABLE(SVG_FONTS)
 #include "SVGFontData.h"

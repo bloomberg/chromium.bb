@@ -35,8 +35,8 @@
 #include "CompositeAnimation.h"
 #include "EventNames.h"
 #include "RenderBoxModelObject.h"
-#include "RenderStyle.h"
 #include "StyleResolver.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/UnusedParam.h>
 
 using namespace std;

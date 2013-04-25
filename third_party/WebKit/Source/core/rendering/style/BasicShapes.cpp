@@ -29,10 +29,10 @@
 
 #include "config.h"
 
-#include "BasicShapes.h"
 #include "LengthFunctions.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/Path.h"
+#include "core/rendering/style/BasicShapes.h"
 
 namespace WebCore {
 

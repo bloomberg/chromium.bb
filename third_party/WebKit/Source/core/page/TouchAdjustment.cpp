@@ -32,7 +32,6 @@
 #include "NodeRenderStyle.h"
 #include "RenderBox.h"
 #include "RenderObject.h"
-#include "RenderStyle.h"
 #include "RenderText.h"
 #include "ShadowRoot.h"
 #include "Text.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/text/TextBreakIterator.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

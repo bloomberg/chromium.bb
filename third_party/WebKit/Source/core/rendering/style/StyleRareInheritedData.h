@@ -31,8 +31,8 @@
 #include <wtf/RefCounted.h>
 #include <wtf/text/AtomicString.h>
 
-#include "DataRef.h"
-#include "StyleVariableData.h"
+#include "core/rendering/style/DataRef.h"
+#include "core/rendering/style/StyleVariableData.h"
 
 namespace WebCore {
 

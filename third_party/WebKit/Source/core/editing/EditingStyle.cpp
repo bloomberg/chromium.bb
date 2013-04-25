@@ -44,12 +44,12 @@
 #include "NodeTraversal.h"
 #include "Position.h"
 #include "QualifiedName.h"
-#include "RenderStyle.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "StyleRule.h"
 #include "StyledElement.h"
 #include "VisibleUnits.h"
+#include "core/rendering/style/RenderStyle.h"
 #include "htmlediting.h"
 #include <wtf/HashSet.h>
 

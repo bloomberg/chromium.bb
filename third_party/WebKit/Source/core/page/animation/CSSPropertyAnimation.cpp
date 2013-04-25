@@ -40,15 +40,15 @@
 #include "CachedImage.h"
 #include "ClipPathOperation.h"
 #include "RenderBox.h"
-#include "RenderStyle.h"
-#include "StyleCachedImage.h"
-#include "StyleGeneratedImage.h"
 #include "StylePropertyShorthand.h"
 #include "StyleResolver.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/transforms/IdentityTransformOperation.h"
 #include "core/platform/graphics/transforms/Matrix3DTransformOperation.h"
 #include "core/platform/graphics/transforms/MatrixTransformOperation.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleGeneratedImage.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/RefCounted.h>
 

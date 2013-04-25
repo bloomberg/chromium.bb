@@ -31,8 +31,6 @@
 #include <algorithm>
 #include "AnimationController.h"
 #include "Chrome.h"
-#include "ContentData.h"
-#include "CursorList.h"
 #include "EditingBoundary.h"
 #include "EventHandler.h"
 #include "FlowThreadController.h"
@@ -76,6 +74,8 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/CursorList.h"
 #include "htmlediting.h"
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/UnusedParam.h>

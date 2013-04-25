@@ -25,15 +25,15 @@
 #include "CSSImageValue.h"
 #include "CachedImage.h"
 #include "CachedResourceLoader.h"
-#include "StyleCachedImage.h"
-#include "StyleImage.h"
-#include "StylePendingImage.h"
 #include "TreeScope.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StyleImage.h"
+#include "core/rendering/style/StylePendingImage.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
-#include <wtf/UnusedParam.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/UnusedParam.h>
 
 #if ENABLE(SVG)
 #include "SVGCursorElement.h"
@@ -44,7 +44,7 @@
 
 #if ENABLE(CSS_IMAGE_SET)
 #include "CSSImageSetValue.h"
-#include "StyleCachedImageSet.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
 #endif
 
 namespace WebCore {

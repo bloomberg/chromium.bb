@@ -34,7 +34,7 @@
 #include "NamedFlowCollection.h"
 #include "RenderFlowThread.h"
 #include "RenderNamedFlowThread.h"
-#include "StyleInheritedData.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

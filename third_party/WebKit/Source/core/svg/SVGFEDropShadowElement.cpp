@@ -23,12 +23,12 @@
 #include "SVGFEDropShadowElement.h"
 
 #include "Attribute.h"
-#include "RenderStyle.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
-#include "SVGRenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 namespace WebCore {
 

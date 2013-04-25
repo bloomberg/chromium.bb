@@ -27,7 +27,6 @@
 #if ENABLE(SVG)
 #include "SVGRenderingContext.h"
 
-#include "BasicShapes.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "RenderLayer.h"
@@ -38,6 +37,7 @@
 #include "RenderSVGResourceMasker.h"
 #include "SVGResources.h"
 #include "SVGResourcesCache.h"
+#include "core/rendering/style/BasicShapes.h"
 
 static int kMaxImageBufferSize = 4096;
 

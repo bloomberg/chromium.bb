@@ -25,33 +25,10 @@
 #ifndef RenderStyle_h
 #define RenderStyle_h
 
-#include "BorderValue.h"
 #include "CSSLineBoxContainValue.h"
 #include "CSSPrimitiveValue.h"
 #include "CSSPropertyNames.h"
-#include "CounterDirectives.h"
-#include "DataRef.h"
-#include "ExclusionShapeValue.h"
 #include "LengthFunctions.h"
-#include "LineClampValue.h"
-#include "NinePieceImage.h"
-#include "OutlineValue.h"
-#include "RenderStyleConstants.h"
-#include "ShadowData.h"
-#include "StyleBackgroundData.h"
-#include "StyleBoxData.h"
-#include "StyleDeprecatedFlexibleBoxData.h"
-#include "StyleFlexibleBoxData.h"
-#include "StyleGridData.h"
-#include "StyleGridItemData.h"
-#include "StyleMarqueeData.h"
-#include "StyleMultiColData.h"
-#include "StyleRareInheritedData.h"
-#include "StyleRareNonInheritedData.h"
-#include "StyleReflection.h"
-#include "StyleSurroundData.h"
-#include "StyleTransformData.h"
-#include "StyleVisualData.h"
 #include "core/platform/Length.h"
 #include "core/platform/LengthBox.h"
 #include "core/platform/LengthSize.h"
@@ -67,17 +44,40 @@
 #include "core/platform/graphics/transforms/TransformOperations.h"
 #include "core/platform/text/TextDirection.h"
 #include "core/platform/text/UnicodeBidi.h"
+#include "core/rendering/style/BorderValue.h"
+#include "core/rendering/style/CounterDirectives.h"
+#include "core/rendering/style/DataRef.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
+#include "core/rendering/style/LineClampValue.h"
+#include "core/rendering/style/NinePieceImage.h"
+#include "core/rendering/style/OutlineValue.h"
+#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/style/ShadowData.h"
+#include "core/rendering/style/StyleBackgroundData.h"
+#include "core/rendering/style/StyleBoxData.h"
+#include "core/rendering/style/StyleDeprecatedFlexibleBoxData.h"
+#include "core/rendering/style/StyleFlexibleBoxData.h"
+#include "core/rendering/style/StyleGridData.h"
+#include "core/rendering/style/StyleGridItemData.h"
+#include "core/rendering/style/StyleMarqueeData.h"
+#include "core/rendering/style/StyleMultiColData.h"
+#include "core/rendering/style/StyleRareInheritedData.h"
+#include "core/rendering/style/StyleRareNonInheritedData.h"
+#include "core/rendering/style/StyleReflection.h"
+#include "core/rendering/style/StyleSurroundData.h"
+#include "core/rendering/style/StyleTransformData.h"
+#include "core/rendering/style/StyleVisualData.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>
 
-#include "StyleFilterData.h"
+#include "core/rendering/style/StyleFilterData.h"
 
 #if ENABLE(SVG)
 #include "SVGPaint.h"
-#include "SVGRenderStyle.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 #endif
 
 template<typename T, typename U> inline bool compareEqual(const T& t, const U& u) { return t == static_cast<T>(u); }

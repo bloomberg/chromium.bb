@@ -31,9 +31,9 @@
 #include "Document.h"
 #include "Element.h"
 #include "MemoryCache.h"
-#include "StyleCachedImage.h"
-#include "StylePendingImage.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/style/StyleCachedImage.h"
+#include "core/rendering/style/StylePendingImage.h"
 
 namespace WebCore {
 

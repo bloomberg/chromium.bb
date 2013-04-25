@@ -30,11 +30,11 @@
 #include "config.h"
 #include "BasicShapeFunctions.h"
 
-#include "BasicShapes.h"
 #include "CSSBasicShapes.h"
 #include "CSSPrimitiveValueMappings.h"
 #include "CSSValuePool.h"
 #include "StyleResolver.h"
+#include "core/rendering/style/BasicShapes.h"
 
 namespace WebCore {
 

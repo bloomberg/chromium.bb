@@ -30,8 +30,8 @@
 #include "ExceptionCode.h"
 #include "FrameView.h"
 #include "RenderBlock.h"
-#include "RenderStyle.h"
 #include "StyleResolver.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

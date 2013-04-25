@@ -61,7 +61,6 @@
 #include "RenderPart.h"
 #include "RenderScrollbar.h"
 #include "RenderScrollbarPart.h"
-#include "RenderStyle.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
 #include "ScrollingCoordinator.h"
@@ -75,6 +74,7 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/style/RenderStyle.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/TemporaryChange.h>

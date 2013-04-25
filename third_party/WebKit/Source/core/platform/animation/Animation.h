@@ -26,8 +26,8 @@
 #define Animation_h
 
 #include "CSSPropertyNames.h"
-#include "RenderStyleConstants.h"
 #include "core/platform/animation/TimingFunction.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

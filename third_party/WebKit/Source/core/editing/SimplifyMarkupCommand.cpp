@@ -30,7 +30,7 @@
 #include "NodeTraversal.h"
 #include "RenderInline.h"
 #include "RenderObject.h"
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

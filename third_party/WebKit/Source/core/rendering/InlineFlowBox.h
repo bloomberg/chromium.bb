@@ -23,7 +23,7 @@
 
 #include "InlineBox.h"
 #include "RenderOverflow.h"
-#include "ShadowData.h"
+#include "core/rendering/style/ShadowData.h"
 
 namespace WebCore {
 

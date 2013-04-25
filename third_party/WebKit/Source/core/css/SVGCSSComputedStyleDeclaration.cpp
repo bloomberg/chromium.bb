@@ -26,8 +26,8 @@
 #include "CSSPrimitiveValueMappings.h"
 #include "CSSPropertyNames.h"
 #include "Document.h"
-#include "RenderStyle.h"
 #include "SVGPaint.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

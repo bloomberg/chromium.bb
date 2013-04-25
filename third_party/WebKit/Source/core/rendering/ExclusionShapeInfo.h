@@ -33,10 +33,10 @@
 #if ENABLE(CSS_EXCLUSIONS)
 
 #include "ExclusionShape.h"
-#include "ExclusionShapeValue.h"
-#include "RenderStyle.h"
 #include "core/platform/LayoutUnit.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
 

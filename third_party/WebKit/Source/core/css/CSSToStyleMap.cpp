@@ -33,11 +33,11 @@
 #include "CSSPrimitiveValueMappings.h"
 #include "CSSTimingFunctionValue.h"
 #include "CSSValueKeywords.h"
-#include "FillLayer.h"
 #include "Pair.h"
 #include "Rect.h"
 #include "StyleResolver.h"
 #include "core/platform/animation/Animation.h"
+#include "core/rendering/style/FillLayer.h"
 
 namespace WebCore {
 

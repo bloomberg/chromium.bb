@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
-#include "StyleMultiColData.h"
+#include "core/rendering/style/StyleMultiColData.h"
 
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

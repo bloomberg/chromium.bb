@@ -27,7 +27,7 @@
 
 #include "LabelsNodeList.h"
 #include "NodeRareData.h"
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

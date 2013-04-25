@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "QuotesData.h"
+#include "core/rendering/style/QuotesData.h"
 
 namespace WebCore {
 

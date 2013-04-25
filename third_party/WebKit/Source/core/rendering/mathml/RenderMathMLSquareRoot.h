@@ -28,7 +28,7 @@
 
 #if ENABLE(MATHML)
 
-#include "RenderMathMLRoot.h"
+#include "core/rendering/mathml/RenderMathMLRoot.h"
 
 namespace WebCore {
     

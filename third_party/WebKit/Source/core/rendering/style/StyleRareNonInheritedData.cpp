@@ -20,17 +20,17 @@
  */
 
 #include "config.h"
-#include "StyleRareNonInheritedData.h"
+#include "core/rendering/style/StyleRareNonInheritedData.h"
 
-#include "ContentData.h"
 #include "RenderCounter.h"
-#include "RenderStyle.h"
-#include "ShadowData.h"
-#include "StyleFilterData.h"
-#include "StyleTransformData.h"
-#include "StyleImage.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/ShadowData.h"
+#include "core/rendering/style/StyleFilterData.h"
+#include "core/rendering/style/StyleImage.h"
+#include "core/rendering/style/StyleTransformData.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>

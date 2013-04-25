@@ -31,8 +31,8 @@
 #define StylePendingShader_h
 
 #include "CSSValue.h"
-#include "StyleShader.h"
 #include "WebKitCSSShaderValue.h"
+#include "core/rendering/style/StyleShader.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

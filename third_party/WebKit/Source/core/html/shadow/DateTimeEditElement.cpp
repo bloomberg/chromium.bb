@@ -34,13 +34,13 @@
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
-#include "RenderStyle.h"
 #include "StyleResolver.h"
 #include "Text.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/DateMath.h>
 #include <wtf/text/StringBuilder.h>
 

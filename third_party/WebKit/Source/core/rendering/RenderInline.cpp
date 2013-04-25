@@ -35,12 +35,12 @@
 #include "RenderLayer.h"
 #include "RenderTheme.h"
 #include "RenderView.h"
-#include "StyleInheritedData.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;
 

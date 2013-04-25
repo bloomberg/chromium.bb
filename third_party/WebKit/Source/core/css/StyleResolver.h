@@ -28,7 +28,6 @@
 #include "DocumentRuleSets.h"
 #include "InspectorCSSOMWrappers.h"
 #include "MediaQueryExp.h"
-#include "RenderStyle.h"
 #include "RuleFeature.h"
 #include "RuleSet.h"
 #include "RuntimeEnabledFeatures.h"
@@ -36,10 +35,11 @@
 #include "SelectorChecker.h"
 #include "SelectorFilter.h"
 #include "SiblingTraversalStrategies.h"
-#include "StyleInheritedData.h"
 #include "ViewportStyleResolver.h"
 #include "core/platform/LinkHash.h"
 #include "core/platform/ScrollTypes.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #if ENABLE(SVG)
 #include "WebKitCSSSVGDocumentValue.h"
 #endif

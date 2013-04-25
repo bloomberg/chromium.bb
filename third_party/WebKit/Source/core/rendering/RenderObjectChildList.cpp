@@ -29,9 +29,9 @@
 
 #include "RenderCounter.h"
 #include "RenderObject.h"
-#include "RenderStyle.h"
 #include "RenderView.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

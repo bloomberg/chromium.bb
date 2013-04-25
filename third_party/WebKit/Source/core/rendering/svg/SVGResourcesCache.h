@@ -21,7 +21,7 @@
 #define SVGResourcesCache_h
 
 #if ENABLE(SVG)
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
 

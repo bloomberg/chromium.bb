@@ -28,11 +28,11 @@
 
 #if ENABLE(MATHML)
 
-#include "RenderMathMLRoot.h"
+#include "core/rendering/mathml/RenderMathMLRoot.h"
 
 #include "PaintInfo.h"
-#include "RenderMathMLRow.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/mathml/RenderMathMLRow.h"
 
 using namespace std;
 

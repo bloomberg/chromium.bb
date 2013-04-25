@@ -24,9 +24,9 @@
 #include "SVGFEFloodElement.h"
 
 #include "Attribute.h"
-#include "RenderStyle.h"
 #include "SVGNames.h"
-#include "SVGRenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/SVGRenderStyle.h"
 
 namespace WebCore {
 

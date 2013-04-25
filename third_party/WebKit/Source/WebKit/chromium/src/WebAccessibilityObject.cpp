@@ -37,7 +37,6 @@
 #include "FrameView.h"
 #include "HTMLNames.h"
 #include "Node.h"
-#include "RenderStyle.h"
 #include "WebDocument.h"
 #include "WebNode.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -47,6 +46,7 @@
 #include "core/accessibility/AccessibilityTableColumn.h"
 #include "core/accessibility/AccessibilityTableRow.h"
 #include "core/platform/PlatformKeyboardEvent.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <public/WebPoint.h>
 #include <public/WebRect.h>
 #include <public/WebString.h>

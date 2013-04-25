@@ -26,8 +26,8 @@
 #ifndef StyleGridData_h
 #define StyleGridData_h
 
-#include "GridTrackSize.h"
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/GridTrackSize.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

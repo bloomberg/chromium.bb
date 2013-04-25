@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
-#include "StyleDeprecatedFlexibleBoxData.h"
+#include "core/rendering/style/StyleDeprecatedFlexibleBoxData.h"
 
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

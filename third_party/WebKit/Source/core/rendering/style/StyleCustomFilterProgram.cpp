@@ -29,9 +29,9 @@
 
 #include "config.h"
 
-#include "StyleCustomFilterProgram.h"
+#include "core/rendering/style/StyleCustomFilterProgram.h"
 
-#include "StyleCustomFilterProgramCache.h"
+#include "core/rendering/style/StyleCustomFilterProgramCache.h"
 
 namespace WebCore {
 

@@ -42,9 +42,9 @@
 #include "RenderText.h"
 #include "RenderView.h"
 #include "ShadowRoot.h"
-#include "StyleInheritedData.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

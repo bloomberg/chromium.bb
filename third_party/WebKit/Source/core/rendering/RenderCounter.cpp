@@ -30,8 +30,8 @@
 #include "NodeTraversal.h"
 #include "RenderListItem.h"
 #include "RenderListMarker.h"
-#include "RenderStyle.h"
 #include "RenderView.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/StdLibExtras.h>
 
 #ifndef NDEBUG

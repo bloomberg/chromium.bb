@@ -28,7 +28,7 @@
 #include "NamedNodeMap.h"
 #include "NodeRareData.h"
 #include "PseudoElement.h"
-#include "StyleInheritedData.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

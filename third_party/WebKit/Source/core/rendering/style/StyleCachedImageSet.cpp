@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "StyleCachedImageSet.h"
+#include "core/rendering/style/StyleCachedImageSet.h"
 
 #if ENABLE(CSS_IMAGE_SET)
 

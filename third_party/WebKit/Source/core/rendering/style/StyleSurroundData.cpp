@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "StyleSurroundData.h"
+#include "core/rendering/style/StyleSurroundData.h"
 
 namespace WebCore {
 

@@ -25,7 +25,6 @@
 #include "SVGFESpecularLightingElement.h"
 
 #include "Attribute.h"
-#include "RenderStyle.h"
 #include "SVGColor.h"
 #include "SVGElementInstance.h"
 #include "SVGFELightElement.h"
@@ -33,6 +32,7 @@
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

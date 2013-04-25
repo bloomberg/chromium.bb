@@ -31,13 +31,13 @@
 #include "Element.h"
 #include "PaintPhase.h"
 #include "RenderObjectChildList.h"
-#include "RenderStyle.h"
 #include "ScrollBehavior.h"
-#include "StyleInheritedData.h"
 #include "TextAffinity.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/LayoutRect.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/HashSet.h>
 #include <wtf/StackStats.h>
 #include <wtf/UnusedParam.h>

@@ -36,7 +36,7 @@
 #include "RenderRubyText.h"
 #include "RenderText.h"
 #include "RenderView.h"
-#include "StyleInheritedData.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;
 

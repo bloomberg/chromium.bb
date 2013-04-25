@@ -35,7 +35,6 @@
 #include "Page.h"
 #include "PaintInfo.h"
 #include "RenderMeter.h"
-#include "RenderStyle.h"
 #include "RenderView.h"
 #include "Settings.h"
 #include "SpinButtonElement.h"
@@ -46,6 +45,7 @@
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/StringTruncator.h"
+#include "core/rendering/style/RenderStyle.h"
 
 #if ENABLE(INPUT_SPEECH)
 #include "RenderInputSpeech.h"

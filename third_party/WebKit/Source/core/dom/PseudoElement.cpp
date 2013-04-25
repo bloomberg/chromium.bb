@@ -27,11 +27,11 @@
 #include "config.h"
 #include "PseudoElement.h"
 
-#include "ContentData.h"
 #include "InspectorInstrumentation.h"
 #include "NodeRenderingContext.h"
 #include "RenderObject.h"
 #include "RenderQuote.h"
+#include "core/rendering/style/ContentData.h"
 
 namespace WebCore {
 

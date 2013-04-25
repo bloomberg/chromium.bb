@@ -38,7 +38,6 @@
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "InspectorInstrumentation.h"
-#include "KeyframeList.h"
 #include "PluginViewBase.h"
 #include "RenderApplet.h"
 #include "RenderEmbeddedObject.h"
@@ -54,6 +53,7 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/rendering/style/KeyframeList.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/text/StringBuilder.h>
 

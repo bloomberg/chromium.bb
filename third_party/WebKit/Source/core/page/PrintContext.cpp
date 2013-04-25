@@ -24,8 +24,8 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "RenderView.h"
-#include "StyleInheritedData.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

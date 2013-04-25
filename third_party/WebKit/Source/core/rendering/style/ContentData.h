@@ -25,8 +25,8 @@
 #ifndef ContentData_h
 #define ContentData_h
 
-#include "CounterContent.h"
-#include "StyleImage.h"
+#include "core/rendering/style/CounterContent.h"
+#include "core/rendering/style/StyleImage.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 

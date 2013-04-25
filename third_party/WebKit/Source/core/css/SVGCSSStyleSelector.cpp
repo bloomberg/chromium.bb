@@ -31,19 +31,19 @@
 #if ENABLE(SVG)
 #include "StyleResolver.h"
 
+#include <stdlib.h>
 #include "CSSPrimitiveValueMappings.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueList.h"
 #include "Document.h"
-#include "ShadowValue.h"
 #include "SVGColor.h"
 #include "SVGNames.h"
 #include "SVGPaint.h"
-#include "SVGRenderStyle.h"
-#include "SVGRenderStyleDefs.h"
 #include "SVGStyledElement.h"
 #include "SVGURIReference.h"
-#include <stdlib.h>
+#include "ShadowValue.h"
+#include "core/rendering/style/SVGRenderStyle.h"
+#include "core/rendering/style/SVGRenderStyleDefs.h"
 #include <wtf/MathExtras.h>
 
 #define HANDLE_INHERIT(prop, Prop) \

@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "StyleGeneratedImage.h"
+#include "core/rendering/style/StyleGeneratedImage.h"
 
 #include "CSSImageGeneratorValue.h"
 #include "RenderObject.h"

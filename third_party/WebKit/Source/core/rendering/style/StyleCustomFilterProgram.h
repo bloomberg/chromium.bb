@@ -33,9 +33,9 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "CachedShader.h"
-#include "StyleShader.h"
 #include "core/platform/KURL.h"
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
+#include "core/rendering/style/StyleShader.h"
 #include <wtf/FastAllocBase.h>
 
 namespace WebCore {

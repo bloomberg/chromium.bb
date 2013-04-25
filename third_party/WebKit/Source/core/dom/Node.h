@@ -29,13 +29,13 @@
 #include "EventTarget.h"
 #include "FocusDirection.h"
 #include "MutationObserver.h"
-#include "RenderStyleConstants.h"
 #include "ScriptWrappable.h"
 #include "SimulatedClickOptions.h"
 #include "TreeScope.h"
 #include "core/platform/KURLHash.h"
 #include "core/platform/TreeShared.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/Forward.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/text/AtomicString.h>

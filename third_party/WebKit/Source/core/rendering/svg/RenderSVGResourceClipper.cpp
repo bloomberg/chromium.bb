@@ -31,7 +31,6 @@
 #include "HitTestResult.h"
 #include "RenderObject.h"
 #include "RenderSVGResource.h"
-#include "RenderStyle.h"
 #include "SVGClipPathElement.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
@@ -48,6 +47,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <wtf/UnusedParam.h>
 
 namespace WebCore {

@@ -26,8 +26,8 @@
 #define RenderTable_h
 
 #include "CSSPropertyNames.h"
-#include "CollapsedBorderValue.h"
 #include "RenderBlock.h"
+#include "core/rendering/style/CollapsedBorderValue.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

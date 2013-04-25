@@ -21,25 +21,25 @@
  */
 
 #include "config.h"
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 #include <algorithm>
 #include "CSSPropertyNames.h"
-#include "ContentData.h"
-#include "CursorList.h"
-#include "QuotesData.h"
 #include "RenderArena.h"
 #include "RenderObject.h"
 #include "RenderTheme.h"
-#include "ShadowData.h"
-#include "StyleImage.h"
-#include "StyleInheritedData.h"
 #include "StyleResolver.h"
 #include "TextAutosizer.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"
+#include "core/rendering/style/ContentData.h"
+#include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/QuotesData.h"
+#include "core/rendering/style/ShadowData.h"
+#include "core/rendering/style/StyleImage.h"
+#include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/MemoryObjectInfo.h>

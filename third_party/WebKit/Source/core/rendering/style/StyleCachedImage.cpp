@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "StyleCachedImage.h"
+#include "core/rendering/style/StyleCachedImage.h"
 
 #include "CachedImage.h"
 #include "RenderObject.h"

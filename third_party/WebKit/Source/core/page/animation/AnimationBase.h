@@ -30,8 +30,8 @@
 #define AnimationBase_h
 
 #include "CSSPropertyNames.h"
-#include "RenderStyleConstants.h"
 #include "core/platform/animation/Animation.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/RefCounted.h>

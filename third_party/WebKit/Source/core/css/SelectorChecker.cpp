@@ -47,13 +47,13 @@
 #include "Page.h"
 #include "RenderObject.h"
 #include "RenderScrollbar.h"
-#include "RenderStyle.h"
 #include "ShadowRoot.h"
 #include "SiblingTraversalStrategies.h"
 #include "StyledElement.h"
 #include "Text.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
+#include "core/rendering/style/RenderStyle.h"
 
 #include "WebVTTElement.h"
 

@@ -25,13 +25,13 @@
 
 #if ENABLE(SVG)
 #include "CSSValueList.h"
-#include "DataRef.h"
 #include "ExceptionCodePlaceholder.h"
-#include "RenderStyleConstants.h"
 #include "SVGPaint.h"
-#include "SVGRenderStyleDefs.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
+#include "core/rendering/style/DataRef.h"
+#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/style/SVGRenderStyleDefs.h"
 
 namespace WebCore {
 

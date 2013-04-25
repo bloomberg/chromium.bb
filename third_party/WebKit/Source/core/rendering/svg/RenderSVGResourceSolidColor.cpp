@@ -26,9 +26,9 @@
 #include "FrameView.h"
 #include "PlatformContextSkia.h"
 #include "RenderSVGShape.h"
-#include "RenderStyle.h"
 #include "SVGRenderSupport.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

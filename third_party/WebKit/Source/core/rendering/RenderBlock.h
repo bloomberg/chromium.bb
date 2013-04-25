@@ -36,7 +36,7 @@
 
 #if ENABLE(CSS_EXCLUSIONS)
 #include "ExclusionShapeInsideInfo.h"
-#include "ExclusionShapeValue.h"
+#include "core/rendering/style/ExclusionShapeValue.h"
 #endif
 
 namespace WebCore {

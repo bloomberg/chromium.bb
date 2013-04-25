@@ -26,12 +26,12 @@
 #include "HTMLElement.h"
 #include "InspectorInstrumentation.h"
 #include "RenderObject.h"
-#include "RenderStyle.h"
 #include "RenderText.h"
 #include "RenderView.h"
 #include "Settings.h"
-#include "StyleInheritedData.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 #include <algorithm>
 #include <wtf/StdLibExtras.h>

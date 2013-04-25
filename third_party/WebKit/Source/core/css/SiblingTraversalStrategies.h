@@ -30,7 +30,7 @@
 #define SiblingTraversalStrategies_h
 
 #include "Element.h"
-#include "RenderStyle.h"
+#include "core/rendering/style/RenderStyle.h"
 
 #include <wtf/UnusedParam.h>
 

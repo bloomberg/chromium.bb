@@ -33,7 +33,6 @@
 #include "DocumentLoader.h"
 #include "FrameView.h"
 #include "RenderSVGRoot.h"
-#include "RenderStyle.h"
 #include "SVGDocument.h"
 #include "SVGImageChromeClient.h"
 #include "SVGSVGElement.h"
@@ -41,6 +40,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/ImageObserver.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {
 

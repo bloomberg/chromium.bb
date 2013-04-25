@@ -44,10 +44,10 @@
 #include "Node.h"
 #include "Range.h"
 #include "RenderObject.h"
-#include "RenderStyle.h"
 #include "TextIterator.h"
 #include "WebFrameImpl.h"
 #include "core/platform/graphics/Font.h"
+#include "core/rendering/style/RenderStyle.h"
 #include <public/WebRect.h>
 
 using namespace WebCore;

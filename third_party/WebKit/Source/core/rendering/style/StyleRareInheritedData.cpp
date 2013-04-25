@@ -20,15 +20,15 @@
  */
 
 #include "config.h"
-#include "StyleRareInheritedData.h"
+#include "core/rendering/style/StyleRareInheritedData.h"
 
-#include "CursorList.h"
-#include "QuotesData.h"
-#include "RenderStyle.h"
-#include "RenderStyleConstants.h"
-#include "ShadowData.h"
-#include "StyleImage.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/style/CursorList.h"
+#include "core/rendering/style/QuotesData.h"
+#include "core/rendering/style/RenderStyle.h"
+#include "core/rendering/style/RenderStyleConstants.h"
+#include "core/rendering/style/ShadowData.h"
+#include "core/rendering/style/StyleImage.h"
 #include <wtf/MemoryObjectInfo.h>
 
 namespace WebCore {

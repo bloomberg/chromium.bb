@@ -30,7 +30,7 @@
 #define CSSPropertyAnimation_h
 
 #include "CSSPropertyNames.h"
-#include "RenderStyleConstants.h"
+#include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/HashSet.h>
 
 namespace WebCore {

@@ -28,7 +28,7 @@
 
 #include "RenderMultiColumnFlowThread.h"
 #include "RenderMultiColumnSet.h"
-#include "StyleInheritedData.h"
+#include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;
 
