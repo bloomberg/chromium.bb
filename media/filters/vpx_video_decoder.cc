@@ -174,6 +174,11 @@ void VpxVideoDecoder::Read(const ReadCB& read_cb) {
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
   read_cb_ = BindToCurrentLoop(read_cb);
 
+  if (state_ == kError) {
+    read_cb.Run(kDecodeError, NULL);
+    return;
+  }
+
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
     read_cb.Run(kOk, VideoFrame::CreateEmptyFrame());
@@ -213,6 +218,7 @@ void VpxVideoDecoder::Stop(const base::Closure& closure) {
 void VpxVideoDecoder::ReadFromDemuxerStream() {
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_NE(state_, kError);
   DCHECK(!read_cb_.is_null());
 
   demuxer_stream_->Read(base::Bind(
@@ -244,6 +250,7 @@ void VpxVideoDecoder::DoDecryptOrDecodeBuffer(
 
   if (status == DemuxerStream::kConfigChanged) {
     if (!ConfigureDecoder()) {
+      state_ = kError;
       base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
       return;
     }
@@ -261,6 +268,7 @@ void VpxVideoDecoder::DecodeBuffer(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_NE(state_, kError);
   DCHECK(reset_cb_.is_null());
   DCHECK(!read_cb_.is_null());
   DCHECK(buffer);
@@ -274,7 +282,7 @@ void VpxVideoDecoder::DecodeBuffer(
 
   scoped_refptr<VideoFrame> video_frame;
   if (!Decode(buffer, &video_frame)) {
-    state_ = kDecodeFinished;
+    state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
   }

@@ -165,6 +165,11 @@ void FFmpegVideoDecoder::Read(const ReadCB& read_cb) {
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
   read_cb_ = BindToCurrentLoop(read_cb);
 
+  if (state_ == kError) {
+    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    return;
+  }
+
   // Return empty frames if decoding has finished.
   if (decoded_frames_.empty() && state_ == kDecodeFinished) {
     base::ResetAndReturn(&read_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
@@ -225,6 +230,7 @@ void FFmpegVideoDecoder::ReturnFrameOrReadFromDemuxerStream() {
 
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_NE(state_, kError);
   DCHECK(!read_cb_.is_null());
   demuxer_stream_->Read(base::Bind(
       &FFmpegVideoDecoder::BufferReady, weak_this_));
@@ -235,6 +241,7 @@ void FFmpegVideoDecoder::BufferReady(
     const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_NE(state_, kError);
   DCHECK_EQ(status != DemuxerStream::kOk, !buffer) << status;
 
   if (state_ == kUninitialized)
@@ -253,8 +260,8 @@ void FFmpegVideoDecoder::BufferReady(
     }
 
     if (!ConfigureDecoder()) {
+      state_ = kError;
       base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
-      state_ = kDecodeFinished;
       if (!reset_cb_.is_null())
         base::ResetAndReturn(&reset_cb_).Run();
       return;
@@ -288,6 +295,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_NE(state_, kUninitialized);
   DCHECK_NE(state_, kDecodeFinished);
+  DCHECK_NE(state_, kError);
   DCHECK(reset_cb_.is_null());
   DCHECK(!read_cb_.is_null());
   DCHECK(buffer);
@@ -305,15 +313,18 @@ void FFmpegVideoDecoder::DecodeBuffer(
   //                until no more data is returned to flush out remaining
   //                frames. The input buffer is ignored at this point.
   //   kDecodeFinished: All calls return empty frames.
+  //   kError: Unexpected error happened.
   //
   // These are the possible state transitions.
   //
   // kNormal -> kFlushCodec:
   //     When buffer->IsEndOfStream() is first true.
-  // kNormal -> kDecodeFinished:
+  // kNormal -> kError:
   //     A decoding error occurs and decoding needs to stop.
   // kFlushCodec -> kDecodeFinished:
-  //     When avcodec_decode_video2() returns 0 data or errors out.
+  //     When avcodec_decode_video2() returns 0 data.
+  // kFlushCodec -> kError:
+  //     When avcodec_decode_video2() errors out.
   // (any state) -> kNormal:
   //     Any time Reset() is called.
 
@@ -324,7 +335,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
 
   scoped_refptr<VideoFrame> video_frame;
   if (!Decode(buffer, &video_frame)) {
-    state_ = kDecodeFinished;
+    state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
   }

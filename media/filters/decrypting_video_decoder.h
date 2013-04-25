@@ -53,7 +53,8 @@ class MEDIA_EXPORT DecryptingVideoDecoder : public VideoDecoder {
     kPendingDecode,
     kWaitingForKey,
     kDecodeFinished,
-    kStopped
+    kStopped,
+    kError
   };
 
   // Callback for DecryptorHost::RequestDecryptor().

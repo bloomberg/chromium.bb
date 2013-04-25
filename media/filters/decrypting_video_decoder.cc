@@ -69,10 +69,17 @@ void DecryptingVideoDecoder::Initialize(
 void DecryptingVideoDecoder::Read(const ReadCB& read_cb) {
   DVLOG(3) << "Read()";
   DCHECK(message_loop_->BelongsToCurrentThread());
-  DCHECK(state_ == kIdle || state_ == kDecodeFinished) << state_;
+  DCHECK(state_ == kIdle ||
+         state_ == kDecodeFinished ||
+         state_ == kError) << state_;
   DCHECK(!read_cb.is_null());
   CHECK(read_cb_.is_null()) << "Overlapping decodes are not supported.";
   read_cb_ = BindToCurrentLoop(read_cb);
+
+  if (state_ == kError) {
+    base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
+    return;
+  }
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
@@ -92,7 +99,8 @@ void DecryptingVideoDecoder::Reset(const base::Closure& closure) {
          state_ == kPendingDemuxerRead ||
          state_ == kPendingDecode ||
          state_ == kWaitingForKey ||
-         state_ == kDecodeFinished) << state_;
+         state_ == kDecodeFinished ||
+         state_ == kError) << state_;
   DCHECK(init_cb_.is_null());  // No Reset() during pending initialization.
   DCHECK(reset_cb_.is_null());
 
@@ -208,8 +216,8 @@ void DecryptingVideoDecoder::FinishConfigChange(bool success) {
   DCHECK(!read_cb_.is_null());
 
   if (!success) {
+    state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
-    state_ = kDecodeFinished;
     if (!reset_cb_.is_null())
       base::ResetAndReturn(&reset_cb_).Run();
     return;
@@ -327,7 +335,7 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   if (status == Decryptor::kError) {
     DVLOG(2) << "DeliverFrame() - kError";
-    state_ = kDecodeFinished;
+    state_ = kError;
     base::ResetAndReturn(&read_cb_).Run(kDecodeError, NULL);
     return;
   }

@@ -107,6 +107,7 @@ class MEDIA_EXPORT GpuVideoDecoder
     kNormal,
     kDrainingDecoder,
     kDecoderDrained,
+    kError
   };
 
   // If no demuxer read is in flight and no bitstream buffers are in the
@@ -234,9 +235,6 @@ class MEDIA_EXPORT GpuVideoDecoder
   std::list<scoped_refptr<VideoFrame> > ready_video_frames_;
   int32 next_picture_buffer_id_;
   int32 next_bitstream_buffer_id_;
-
-  // Indicates decoding error occurred.
-  bool error_occured_;
 
   // Set during ProvidePictureBuffers(), used for checking and implementing
   // HasAvailableOutputFrames().

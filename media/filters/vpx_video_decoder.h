@@ -39,7 +39,8 @@ class MEDIA_EXPORT VpxVideoDecoder : public VideoDecoder {
     kUninitialized,
     kNormal,
     kFlushCodec,
-    kDecodeFinished
+    kDecodeFinished,
+    kError
   };
 
   // Handles (re-)initializing the decoder with a (new) config.

@@ -169,7 +169,6 @@ GpuVideoDecoder::GpuVideoDecoder(
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
       next_bitstream_buffer_id_(0),
-      error_occured_(false),
       available_pictures_(-1) {
   DCHECK(factories_);
 }
@@ -330,11 +329,13 @@ void GpuVideoDecoder::Read(const ReadCB& read_cb) {
   DCHECK(pending_read_cb_.is_null());
   pending_read_cb_ = BindToCurrentLoop(read_cb);
 
-  if (error_occured_) {
+  if (state_ == kError) {
     base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
     return;
   }
 
+  // TODO(xhwang): It's odd that we return kOk after VDA has been released.
+  // Fix this and simplify cases.
   if (!vda_) {
     base::ResetAndReturn(&pending_read_cb_).Run(
         kOk, VideoFrame::CreateEmptyFrame());
@@ -357,6 +358,9 @@ void GpuVideoDecoder::Read(const ReadCB& read_cb) {
       // Do nothing.  Will be satisfied either by a PictureReady or
       // NotifyFlushDone below.
       break;
+    case kError:
+      NOTREACHED();
+      break;
   }
 }
 
@@ -372,19 +376,24 @@ void GpuVideoDecoder::RequestBufferDecode(
 
   demuxer_read_in_progress_ = false;
 
-  if (status != DemuxerStream::kOk) {
+  if (status == DemuxerStream::kAborted) {
     if (pending_read_cb_.is_null())
       return;
-
-    // TODO(acolwell): Add support for reinitializing the decoder when
-    // |status| == kConfigChanged. For now we just trigger a decode error.
-    Status decoder_status =
-        (status == DemuxerStream::kAborted) ? kOk : kDecodeError;
-    gvd_loop_proxy_->PostTask(FROM_HERE, base::Bind(
-        pending_read_cb_, decoder_status, scoped_refptr<VideoFrame>()));
-    pending_read_cb_.Reset();
+    base::ResetAndReturn(&pending_read_cb_).Run(kOk, NULL);
     return;
   }
+
+  if (status == DemuxerStream::kAborted) {
+    if (pending_read_cb_.is_null())
+      return;
+    // TODO(acolwell): Add support for reinitializing the decoder when
+    // |status| == kConfigChanged. For now we just trigger a decode error.
+    state_ = kError;
+    base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);
+    return;
+  }
+
+  DCHECK_EQ(status, DemuxerStream::kOk);
 
   if (!vda_) {
     EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
@@ -697,7 +706,7 @@ void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {
   DLOG(ERROR) << "VDA Error: " << error;
   DestroyVDA();
 
-  error_occured_ = true;
+  state_ = kError;
 
   if (!pending_read_cb_.is_null()) {
     base::ResetAndReturn(&pending_read_cb_).Run(kDecodeError, NULL);

@@ -309,6 +309,9 @@ TEST_F(DecryptingVideoDecoderTest, DecryptAndDecode_DecodeError) {
                                    scoped_refptr<VideoFrame>(NULL)));
 
   ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
+
+  // After a decode error occurred, all following read returns kDecodeError.
+  ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
 }
 
 // Test the case where the decryptor returns kNeedMoreData to ask for more
@@ -379,6 +382,9 @@ TEST_F(DecryptingVideoDecoderTest, DemuxerRead_ConfigChangeFailed) {
                                scoped_refptr<DecoderBuffer>()))
       .WillRepeatedly(ReturnBuffer(encrypted_buffer_));
 
+  ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
+
+  // After a decode error occurred, all following read returns kDecodeError.
   ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
 }
 
@@ -498,6 +504,9 @@ TEST_F(DecryptingVideoDecoderTest, Reset_DuringDemuxerRead_ConfigChangeFailed) {
   base::ResetAndReturn(&pending_demuxer_read_cb_)
       .Run(DemuxerStream::kConfigChanged, NULL);
   message_loop_.RunUntilIdle();
+
+  // After a decode error occurred, all following read returns kDecodeError.
+  ReadAndExpectFrameReadyWith(VideoDecoder::kDecodeError, null_video_frame_);
 }
 
 // Test resetting when the decoder is in kPendingConfigChange state.

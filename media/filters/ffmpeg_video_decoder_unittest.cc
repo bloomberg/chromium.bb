@@ -373,6 +373,11 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
   Read(&status, &video_frame);
   EXPECT_EQ(VideoDecoder::kDecodeError, status);
   EXPECT_FALSE(video_frame);
+
+  // After a decode error occurred, all following read will return kDecodeError.
+  Read(&status, &video_frame);
+  EXPECT_EQ(VideoDecoder::kDecodeError, status);
+  EXPECT_FALSE(video_frame);
 }
 
 // Multi-threaded decoders have different behavior than single-threaded
@@ -579,7 +584,11 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailed) {
   scoped_refptr<VideoFrame> video_frame;
 
   Read(&status, &video_frame);
+  EXPECT_EQ(VideoDecoder::kDecodeError, status);
+  ASSERT_FALSE(video_frame);
 
+  // After config change failure, all read returns kDecodeError.
+  Read(&status, &video_frame);
   EXPECT_EQ(VideoDecoder::kDecodeError, status);
   ASSERT_FALSE(video_frame);
 }
@@ -639,7 +648,8 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailedDuringReset) {
   // Request a read on the decoder and ensure the demuxer has been called.
   DemuxerStream::ReadCB read_cb;
   EXPECT_CALL(*demuxer_, Read(_))
-      .WillOnce(SaveArg<0>(&read_cb));
+      .WillOnce(SaveArg<0>(&read_cb))
+      .WillRepeatedly(RunCallback<0>(DemuxerStream::kOk, i_frame_buffer_));
   decoder_->Read(read_cb_);
   ASSERT_FALSE(read_cb.is_null());
 
@@ -655,6 +665,13 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailedDuringReset) {
   // Signal a config change.
   base::ResetAndReturn(&read_cb).Run(DemuxerStream::kConfigChanged, NULL);
   message_loop_.RunUntilIdle();
+
+  // After config change failure, all read returns kDecodeError.
+  VideoDecoder::Status status;
+  scoped_refptr<VideoFrame> video_frame;
+  Read(&status, &video_frame);
+  EXPECT_EQ(VideoDecoder::kDecodeError, status);
+  ASSERT_FALSE(video_frame);
 }
 
 }  // namespace media

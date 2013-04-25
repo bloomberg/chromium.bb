@@ -47,7 +47,8 @@ class MEDIA_EXPORT FFmpegVideoDecoder : public VideoDecoder {
     kUninitialized,
     kNormal,
     kFlushCodec,
-    kDecodeFinished
+    kDecodeFinished,
+    kError
   };
 
   // Reads from the demuxer stream and corresponding read callback.
