@@ -652,6 +652,10 @@
         }],
       ],
 
+      # Set this to 1 to enable use of concatenated impulse responses
+      # for the HRTF panner in WebAudio.
+      'use_concatenated_impulse_responses': 0,
+
       # Set this to 1 to use the Google-internal file containing
       # official API keys for Google Chrome even in a developer build.
       # Setting this variable explicitly to 1 will cause your build to
@@ -1499,6 +1503,9 @@
       }],
       ['enable_google_now==1', {
         'grit_defines': ['-D', 'enable_google_now'],
+      }],
+      ['use_concatenated_impulse_responses==1', {
+        'grit_defines': ['-D', 'use_concatenated_impulse_responses'],
       }],
       ['clang_use_chrome_plugins==1 and OS!="win"', {
         'clang_chrome_plugins_flags': [
