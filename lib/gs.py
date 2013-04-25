@@ -97,6 +97,8 @@ class GSContext(object):
       gsutil_bin = cls.DEFAULT_GSUTIL_BUILDER_BIN
       if not os.path.exists(gsutil_bin):
         gsutil_bin = osutils.Which('gsutil')
+      if gsutil_bin is None:
+        gsutil_bin = 'gsutil'
       cls.DEFAULT_GSUTIL_BIN = gsutil_bin
     return cls.DEFAULT_GSUTIL_BIN
 
@@ -151,12 +153,17 @@ class GSContext(object):
     """
     if gsutil_bin is None:
       gsutil_bin = self.GetDefaultGSUtilBin()
-    self._CheckFile('gsutil not found', gsutil_bin)
+    else:
+      self._CheckFile('gsutil not found', gsutil_bin)
     self.gsutil_bin = gsutil_bin
 
     # Prefer boto_file if specified, else prefer the env then the default.
+    default_boto = False
     if boto_file is None:
-      boto_file = os.environ.get('BOTO_CONFIG', self.DEFAULT_BOTO_FILE)
+      boto_file = os.environ.get('BOTO_CONFIG')
+      if boto_file is None:
+        default_boto = True
+        boto_file = self.DEFAULT_BOTO_FILE
     self.boto_file = boto_file
 
     if acl_file is not None:
@@ -169,7 +176,9 @@ class GSContext(object):
 
     if init_boto:
       self._InitBoto()
-    self._CheckFile('Boto credentials not found', self.boto_file)
+
+    if not default_boto:
+      self._CheckFile('Boto credentials not found', boto_file)
 
   def _CheckFile(self, errmsg, afile):
     """Pre-flight check for valid inputs.

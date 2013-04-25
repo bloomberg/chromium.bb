@@ -186,8 +186,8 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testBadGSUtilBin(self):
     """Test exception thrown for bad gsutil paths."""
-    with PatchGS('DEFAULT_GSUTIL_BIN', new=self.bad_path):
-      self.assertRaises(gs.GSContextException, gs.GSContext)
+    self.assertRaises(gs.GSContextException, gs.GSContext,
+                      gsutil_bin=self.bad_path)
 
   def testInitBotoFileEnv(self):
     os.environ['BOTO_CONFIG'] = self.gsutil_bin
@@ -207,8 +207,8 @@ class GSContextInitTest(cros_test_lib.MockTempDirTestCase):
 
   def testInitBotoFileError(self):
     """Test bad boto file."""
-    with PatchGS('DEFAULT_GSUTIL_BIN', self.bad_path):
-      self.assertRaises(gs.GSContextException, gs.GSContext)
+    self.assertRaises(gs.GSContextException, gs.GSContext,
+                      boto_file=self.bad_path)
 
   def testInitAclFile(self):
     """Test ACL selection logic in __init__."""
