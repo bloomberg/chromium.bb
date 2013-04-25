@@ -82,10 +82,6 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
     stub_wifi_.reset(new WifiNetwork(kDefaultWifiServicePath));
     EXPECT_CALL(*mock_network_library_, SetDefaultCheckPortalList())
         .Times(1);
-    EXPECT_CALL(*mock_network_library_, Connected())
-        .Times(1)  // also called by NetworkMenu::InitMenuItems()
-        .WillRepeatedly((Return(false)))
-        .RetiresOnSaturation();
     EXPECT_CALL(*mock_network_library_, AddNetworkManagerObserver(_))
         .Times(1)
         .RetiresOnSaturation();
