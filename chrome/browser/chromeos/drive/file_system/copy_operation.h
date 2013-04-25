@@ -26,7 +26,7 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveFileSystemInterface;
-class DriveScheduler;
+class JobScheduler;
 
 namespace file_system {
 
@@ -38,7 +38,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class CopyOperation {
  public:
-  CopyOperation(DriveScheduler* drive_scheduler,
+  CopyOperation(JobScheduler* job_scheduler,
                 DriveFileSystemInterface* drive_file_system,
                 DriveResourceMetadata* metadata,
                 scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
@@ -197,7 +197,7 @@ class CopyOperation {
                                  const FileOperationCallback& callback,
                                  const std::string& resource_id);
 
-  DriveScheduler* drive_scheduler_;
+  JobScheduler* job_scheduler_;
   DriveFileSystemInterface* drive_file_system_;
   DriveResourceMetadata* metadata_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;

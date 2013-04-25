@@ -8,8 +8,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -21,7 +21,7 @@ namespace file_system {
 UpdateOperation::UpdateOperation(
     DriveCache* cache,
     DriveResourceMetadata* metadata,
-    DriveScheduler* scheduler,
+    JobScheduler* scheduler,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
     : cache_(cache),

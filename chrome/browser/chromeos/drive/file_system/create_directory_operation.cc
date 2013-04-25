@@ -6,8 +6,8 @@
 
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
@@ -74,10 +74,10 @@ struct CreateDirectoryOperation::FindFirstMissingParentDirectoryParams {
 };
 
 CreateDirectoryOperation::CreateDirectoryOperation(
-    DriveScheduler* drive_scheduler,
+    JobScheduler* job_scheduler,
     DriveResourceMetadata* metadata,
     OperationObserver* observer)
-    : drive_scheduler_(drive_scheduler),
+    : job_scheduler_(job_scheduler),
       metadata_(metadata),
       observer_(observer),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -142,7 +142,7 @@ void CreateDirectoryOperation::CreateDirectoryAfterFindFirstMissingPath(
     return;
   }
 
-  drive_scheduler_->AddNewDirectory(
+  job_scheduler_->AddNewDirectory(
       result.last_dir_resource_id,
       result.first_missing_parent_path.BaseName().AsUTF8Unsafe(),
       base::Bind(&CreateDirectoryOperation::AddNewDirectory,

@@ -9,9 +9,9 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/change_list_loader.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -56,7 +56,7 @@ class CreateDirectoryOperationTest
     ASSERT_EQ(FILE_ERROR_OK, error);
 
     scheduler_.reset(
-        new DriveScheduler(profile_.get(), fake_drive_service_.get()));
+        new JobScheduler(profile_.get(), fake_drive_service_.get()));
 
     DriveWebAppsRegistry drive_web_apps_registry;
     ChangeListLoader change_list_loader(
@@ -104,7 +104,7 @@ class CreateDirectoryOperationTest
 
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests> metadata_;
-  scoped_ptr<DriveScheduler> scheduler_;
+  scoped_ptr<JobScheduler> scheduler_;
 
   scoped_ptr<CreateDirectoryOperation> operation_;
 };

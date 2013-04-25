@@ -18,8 +18,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/chromeos/drive/search_metadata.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -209,7 +209,7 @@ DriveFileSystem::DriveFileSystem(
     Profile* profile,
     DriveCache* cache,
     google_apis::DriveServiceInterface* drive_service,
-    DriveScheduler* scheduler,
+    JobScheduler* scheduler,
     DriveWebAppsRegistry* webapps_registry,
     DriveResourceMetadata* resource_metadata,
     base::SequencedTaskRunner* blocking_task_runner)
@@ -670,7 +670,7 @@ void DriveFileSystem::GetFileContentByPathAfterGetEntry(
 void DriveFileSystem::CancelGetFile(const base::FilePath& drive_file_path) {
   // Currently the task is managed on DriveServiceInterface, so we directly
   // call its method here.
-  // Note: the task management will be moved to DriveScheduler, an the we
+  // Note: the task management will be moved to JobScheduler, an the we
   // can cancel the job via the |scheduler_|.
   drive_service_->CancelForFilePath(drive_file_path);
 }

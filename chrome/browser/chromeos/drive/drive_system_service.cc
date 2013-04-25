@@ -125,7 +125,7 @@ DriveSystemService::DriveSystemService(
         GURL(google_apis::GDataWapiUrlGenerator::kBaseUrlForProduction),
         GetDriveUserAgent()));
   }
-  scheduler_.reset(new DriveScheduler(profile_, drive_service_.get()));
+  scheduler_.reset(new JobScheduler(profile_, drive_service_.get()));
   cache_.reset(new DriveCache(!test_cache_root.empty() ? test_cache_root :
                               DriveCache::GetCacheRootPath(profile),
                               blocking_task_runner_,

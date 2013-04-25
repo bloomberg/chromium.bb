@@ -22,7 +22,7 @@ namespace drive {
 class DriveCache;
 class DriveEntryProto;
 class DriveResourceMetadata;
-class DriveScheduler;
+class JobScheduler;
 
 namespace file_system {
 
@@ -33,7 +33,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class MoveOperation {
  public:
-  MoveOperation(DriveScheduler* drive_scheduler,
+  MoveOperation(JobScheduler* job_scheduler,
                 DriveResourceMetadata* metadata,
                 OperationObserver* observer);
   virtual ~MoveOperation();
@@ -118,7 +118,7 @@ class MoveOperation {
   void RemoveFromDirectoryCompleted(const FileOperationCallback& callback,
                                     google_apis::GDataErrorCode status);
 
-  DriveScheduler* drive_scheduler_;
+  JobScheduler* job_scheduler_;
   DriveResourceMetadata* metadata_;
   OperationObserver* observer_;
 

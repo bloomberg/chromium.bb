@@ -336,7 +336,7 @@ class DriveFileSystemInterface {
   // GetEntryInfoByResourceId.
   // The currently the running task is identified by file path on drive,
   // so this method takes it as a task identifier.
-  // Note that we will moving tha task managing into DriveScheduler, and
+  // Note that we will moving tha task managing into JobScheduler, and
   // currently it is planned to use some task ID at that time.
   // Once it is done, we can use the ID from this method.
   // Also note that the interface looks a little bit weird because the task

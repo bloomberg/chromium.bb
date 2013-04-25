@@ -18,7 +18,7 @@ namespace drive {
 
 class DriveCache;
 class DriveFileSystemInterface;
-class DriveScheduler;
+class JobScheduler;
 
 namespace file_system {
 
@@ -36,7 +36,7 @@ class DriveOperations {
   ~DriveOperations();
 
   // Allocates the operation objects and initializes the operation pointers.
-  void Init(DriveScheduler* drive_scheduler,
+  void Init(JobScheduler* job_scheduler,
             DriveFileSystemInterface* drive_file_system,
             DriveCache* cache,
             DriveResourceMetadata* metadata,

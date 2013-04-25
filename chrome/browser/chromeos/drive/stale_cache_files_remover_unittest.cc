@@ -15,9 +15,9 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/mock_drive_cache_observer.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
@@ -69,8 +69,8 @@ class StaleCacheFilesRemoverTest : public testing::Test {
 
     fake_free_disk_space_getter_.reset(new FakeFreeDiskSpaceGetter);
 
-    scheduler_.reset(new DriveScheduler(profile_.get(),
-                                        fake_drive_service_.get()));
+    scheduler_.reset(new JobScheduler(profile_.get(),
+                                      fake_drive_service_.get()));
 
     scoped_refptr<base::SequencedWorkerPool> pool =
         content::BrowserThread::GetBlockingPool();
@@ -137,7 +137,7 @@ class StaleCacheFilesRemoverTest : public testing::Test {
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
   DriveFileSystem* file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
-  scoped_ptr<DriveScheduler> scheduler_;
+  scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;

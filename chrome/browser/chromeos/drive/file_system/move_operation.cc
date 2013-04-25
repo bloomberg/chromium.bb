@@ -7,8 +7,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -16,10 +16,10 @@ using content::BrowserThread;
 namespace drive {
 namespace file_system {
 
-MoveOperation::MoveOperation(DriveScheduler* drive_scheduler,
+MoveOperation::MoveOperation(JobScheduler* job_scheduler,
                              DriveResourceMetadata* metadata,
                              OperationObserver* observer)
-  : drive_scheduler_(drive_scheduler),
+  : job_scheduler_(job_scheduler),
     metadata_(metadata),
     observer_(observer),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -153,13 +153,13 @@ void MoveOperation::Rename(const std::string& src_id,
       new_name_has_hosted_extension ? new_name.RemoveExtension() : new_name);
 
   // Rename on the server.
-  drive_scheduler_->RenameResource(src_id,
-                                   new_name_arg.AsUTF8Unsafe(),
-                                   base::Bind(&MoveOperation::RenameLocally,
-                                              weak_ptr_factory_.GetWeakPtr(),
-                                              src_path,
-                                              new_name_arg,
-                                              callback));
+  job_scheduler_->RenameResource(src_id,
+                                 new_name_arg.AsUTF8Unsafe(),
+                                 base::Bind(&MoveOperation::RenameLocally,
+                                            weak_ptr_factory_.GetWeakPtr(),
+                                            src_path,
+                                            new_name_arg,
+                                            callback));
 }
 
 void MoveOperation::RenameLocally(const base::FilePath& src_path,
@@ -184,7 +184,7 @@ void MoveOperation::AddToDirectory(const std::string& src_id,
                                    const FileMoveCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive_scheduler_->AddResourceToDirectory(
+  job_scheduler_->AddResourceToDirectory(
       dest_dir_id, src_id,
       base::Bind(&MoveOperation::AddToDirectoryLocally,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -213,7 +213,7 @@ void MoveOperation::RemoveFromDirectory(
     const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  drive_scheduler_->RemoveResourceFromDirectory(
+  job_scheduler_->RemoveResourceFromDirectory(
       directory_resource_id,
       resource_id,
       base::Bind(&MoveOperation::RemoveFromDirectoryCompleted,

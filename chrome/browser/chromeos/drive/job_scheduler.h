@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_
 
 #include <list>
 #include <vector>
@@ -21,16 +21,16 @@ class Profile;
 
 namespace drive {
 
-// The DriveScheduler is responsible for queuing and scheduling drive
+// The JobScheduler is responsible for queuing and scheduling drive
 // operations.  It is responsible for handling retry logic, rate limiting, as
 // concurrency as appropriate.
-class DriveScheduler
+class JobScheduler
     : public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public JobListInterface {
  public:
-  DriveScheduler(Profile* profile,
-                 google_apis::DriveServiceInterface* drive_service);
-  virtual ~DriveScheduler();
+  JobScheduler(Profile* profile,
+               google_apis::DriveServiceInterface* drive_service);
+  virtual ~JobScheduler();
 
   // JobListInterface overrides.
   virtual std::vector<JobInfo> GetJobInfoList() OVERRIDE;
@@ -145,7 +145,7 @@ class DriveScheduler
       const google_apis::UploadCompletionCallback& upload_completion_callback);
 
  private:
-  friend class DriveSchedulerTest;
+  friend class JobSchedulerTest;
 
   enum QueueType {
     METADATA_QUEUE,
@@ -408,10 +408,10 @@ class DriveScheduler
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<DriveScheduler> weak_ptr_factory_;
-  DISALLOW_COPY_AND_ASSIGN(DriveScheduler);
+  base::WeakPtrFactory<JobScheduler> weak_ptr_factory_;
+  DISALLOW_COPY_AND_ASSIGN(JobScheduler);
 };
 
 }  // namespace drive
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_SCHEDULER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_JOB_SCHEDULER_H_

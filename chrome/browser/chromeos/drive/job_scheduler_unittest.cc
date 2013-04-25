@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 
 #include <set>
 
@@ -98,9 +98,9 @@ class JobListLogger : public JobListObserver {
 
 }  // namespace
 
-class DriveSchedulerTest : public testing::Test {
+class JobSchedulerTest : public testing::Test {
  public:
-  DriveSchedulerTest()
+  JobSchedulerTest()
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         profile_(new TestingProfile) {
   }
@@ -116,8 +116,8 @@ class DriveSchedulerTest : public testing::Test {
     fake_drive_service_->LoadAppListForDriveApi(
         "chromeos/drive/applist.json");
 
-    scheduler_.reset(new DriveScheduler(profile_.get(),
-                                        fake_drive_service_.get()));
+    scheduler_.reset(new JobScheduler(profile_.get(),
+                                      fake_drive_service_.get()));
     scheduler_->SetDisableThrottling(true);
   }
 
@@ -164,12 +164,12 @@ class DriveSchedulerTest : public testing::Test {
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<DriveScheduler> scheduler_;
+  scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<FakeNetworkChangeNotifier> fake_network_change_notifier_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
 };
 
-TEST_F(DriveSchedulerTest, GetAboutResource) {
+TEST_F(JobSchedulerTest, GetAboutResource) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -182,7 +182,7 @@ TEST_F(DriveSchedulerTest, GetAboutResource) {
   ASSERT_TRUE(about_resource);
 }
 
-TEST_F(DriveSchedulerTest, GetAppList) {
+TEST_F(JobSchedulerTest, GetAppList) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -196,7 +196,7 @@ TEST_F(DriveSchedulerTest, GetAppList) {
   ASSERT_TRUE(app_list);
 }
 
-TEST_F(DriveSchedulerTest, GetAccountMetadata) {
+TEST_F(JobSchedulerTest, GetAccountMetadata) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -211,7 +211,7 @@ TEST_F(DriveSchedulerTest, GetAccountMetadata) {
   ASSERT_TRUE(account_metadata);
 }
 
-TEST_F(DriveSchedulerTest, GetAllResourceList) {
+TEST_F(JobSchedulerTest, GetAllResourceList) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -226,7 +226,7 @@ TEST_F(DriveSchedulerTest, GetAllResourceList) {
   ASSERT_TRUE(resource_list);
 }
 
-TEST_F(DriveSchedulerTest, GetResourceListInDirectory) {
+TEST_F(JobSchedulerTest, GetResourceListInDirectory) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -242,7 +242,7 @@ TEST_F(DriveSchedulerTest, GetResourceListInDirectory) {
   ASSERT_TRUE(resource_list);
 }
 
-TEST_F(DriveSchedulerTest, Search) {
+TEST_F(JobSchedulerTest, Search) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -258,7 +258,7 @@ TEST_F(DriveSchedulerTest, Search) {
   ASSERT_TRUE(resource_list);
 }
 
-TEST_F(DriveSchedulerTest, GetChangeList) {
+TEST_F(JobSchedulerTest, GetChangeList) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -289,7 +289,7 @@ TEST_F(DriveSchedulerTest, GetChangeList) {
   ASSERT_TRUE(resource_list);
 }
 
-TEST_F(DriveSchedulerTest, ContinueGetResourceList) {
+TEST_F(JobSchedulerTest, ContinueGetResourceList) {
   ConnectToWifi();
   fake_drive_service_->set_default_max_results(2);
 
@@ -323,7 +323,7 @@ TEST_F(DriveSchedulerTest, ContinueGetResourceList) {
   ASSERT_TRUE(resource_list);
 }
 
-TEST_F(DriveSchedulerTest, GetResourceEntry) {
+TEST_F(JobSchedulerTest, GetResourceEntry) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -339,7 +339,7 @@ TEST_F(DriveSchedulerTest, GetResourceEntry) {
   ASSERT_TRUE(entry);
 }
 
-TEST_F(DriveSchedulerTest, DeleteResource) {
+TEST_F(JobSchedulerTest, DeleteResource) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -352,7 +352,7 @@ TEST_F(DriveSchedulerTest, DeleteResource) {
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, CopyHostedDocument) {
+TEST_F(JobSchedulerTest, CopyHostedDocument) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -368,7 +368,7 @@ TEST_F(DriveSchedulerTest, CopyHostedDocument) {
   ASSERT_TRUE(entry);
 }
 
-TEST_F(DriveSchedulerTest, RenameResource) {
+TEST_F(JobSchedulerTest, RenameResource) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -382,7 +382,7 @@ TEST_F(DriveSchedulerTest, RenameResource) {
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
+TEST_F(JobSchedulerTest, AddResourceToDirectory) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -396,7 +396,7 @@ TEST_F(DriveSchedulerTest, AddResourceToDirectory) {
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, RemoveResourceFromDirectory) {
+TEST_F(JobSchedulerTest, RemoveResourceFromDirectory) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -410,7 +410,7 @@ TEST_F(DriveSchedulerTest, RemoveResourceFromDirectory) {
   ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
 }
 
-TEST_F(DriveSchedulerTest, AddNewDirectory) {
+TEST_F(JobSchedulerTest, AddNewDirectory) {
   ConnectToWifi();
 
   google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
@@ -426,7 +426,7 @@ TEST_F(DriveSchedulerTest, AddNewDirectory) {
   ASSERT_TRUE(entry);
 }
 
-TEST_F(DriveSchedulerTest, GetResourceEntryPriority) {
+TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
   // Disconnect from the network to prevent jobs from starting.
   ConnectToNone();
 
@@ -472,7 +472,7 @@ TEST_F(DriveSchedulerTest, GetResourceEntryPriority) {
   ASSERT_EQ(resource_ids[3], resource_2);
 }
 
-TEST_F(DriveSchedulerTest, GetResourceEntryNoConnection) {
+TEST_F(JobSchedulerTest, GetResourceEntryNoConnection) {
   ConnectToNone();
 
   std::string resource("file:1_file_resource_id");
@@ -497,7 +497,7 @@ TEST_F(DriveSchedulerTest, GetResourceEntryNoConnection) {
   ASSERT_EQ(resource_ids[0], resource);
 }
 
-TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
+TEST_F(JobSchedulerTest, DownloadFileCellularDisabled) {
   ConnectToCellular();
 
   // Disable fetching over cellular network.
@@ -551,7 +551,7 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularDisabled) {
   EXPECT_EQ("xxxxxxxxxx", content);
 }
 
-TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
+TEST_F(JobSchedulerTest, DownloadFileWimaxDisabled) {
   ConnectToWimax();
 
   // Disable fetching over cellular network.
@@ -605,7 +605,7 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxDisabled) {
   EXPECT_EQ("xxxxxxxxxx", content);
 }
 
-TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
+TEST_F(JobSchedulerTest, DownloadFileCellularEnabled) {
   ConnectToCellular();
 
   // Enable fetching over cellular network.
@@ -651,7 +651,7 @@ TEST_F(DriveSchedulerTest, DownloadFileCellularEnabled) {
   EXPECT_EQ("xxxxxxxxxx", content);
 }
 
-TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
+TEST_F(JobSchedulerTest, DownloadFileWimaxEnabled) {
   ConnectToWimax();
 
   // Enable fetching over cellular network.
@@ -697,7 +697,7 @@ TEST_F(DriveSchedulerTest, DownloadFileWimaxEnabled) {
   EXPECT_EQ("xxxxxxxxxx", content);
 }
 
-TEST_F(DriveSchedulerTest, JobInfo) {
+TEST_F(JobSchedulerTest, JobInfo) {
   JobListLogger logger;
   scheduler_->AddObserver(&logger);
 
@@ -813,7 +813,7 @@ TEST_F(DriveSchedulerTest, JobInfo) {
 }
 
 
-TEST_F(DriveSchedulerTest, JobInfoProgress) {
+TEST_F(JobSchedulerTest, JobInfoProgress) {
   JobListLogger logger;
   scheduler_->AddObserver(&logger);
 

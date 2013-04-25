@@ -14,8 +14,8 @@
 #include "base/observer_list.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_errors.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
 #include "sync/notifier/invalidation_handler.h"
@@ -163,7 +163,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<DriveCache, util::DestroyHelper> cache_;
   scoped_ptr<google_apis::DriveServiceInterface> drive_service_;
-  scoped_ptr<DriveScheduler> scheduler_;
+  scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> webapps_registry_;
   scoped_ptr<DriveResourceMetadata, util::DestroyHelper> resource_metadata_;
   scoped_ptr<DriveFileSystemInterface> file_system_;

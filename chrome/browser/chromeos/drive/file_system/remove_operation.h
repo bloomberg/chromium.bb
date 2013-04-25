@@ -25,7 +25,7 @@ namespace drive {
 class DriveCache;
 class DriveEntryProto;
 class DriveFileSystem;
-class DriveScheduler;
+class JobScheduler;
 
 namespace file_system {
 
@@ -36,7 +36,7 @@ class OperationObserver;
 // metadata to reflect the new state.
 class RemoveOperation {
  public:
-  RemoveOperation(DriveScheduler* drive_scheduler,
+  RemoveOperation(JobScheduler* job_scheduler,
                   DriveCache* cache,
                   DriveResourceMetadata* metadata,
                   OperationObserver* observer);
@@ -72,7 +72,7 @@ class RemoveOperation {
       FileError error,
       const base::FilePath& directory_path);
 
-  DriveScheduler* drive_scheduler_;
+  JobScheduler* job_scheduler_;
   DriveCache* cache_;
   DriveResourceMetadata* metadata_;
   OperationObserver* observer_;

@@ -12,9 +12,9 @@
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/move_operation.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
 #include "chrome/browser/google_apis/drive_upload_error.h"
 #include "content/public/browser/browser_thread.h"
@@ -75,17 +75,17 @@ struct CopyOperation::StartFileUploadParams {
 };
 
 CopyOperation::CopyOperation(
-    DriveScheduler* drive_scheduler,
+    JobScheduler* job_scheduler,
     DriveFileSystemInterface* drive_file_system,
     DriveResourceMetadata* metadata,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
     OperationObserver* observer)
-  : drive_scheduler_(drive_scheduler),
+  : job_scheduler_(job_scheduler),
     drive_file_system_(drive_file_system),
     metadata_(metadata),
     blocking_task_runner_(blocking_task_runner),
     observer_(observer),
-    move_operation_(new MoveOperation(drive_scheduler,
+    move_operation_(new MoveOperation(job_scheduler,
                                       metadata,
                                       observer)),
     weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
@@ -201,7 +201,7 @@ void CopyOperation::CopyHostedDocumentToDirectory(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  drive_scheduler_->CopyHostedDocument(
+  job_scheduler_->CopyHostedDocument(
       resource_id,
       base::FilePath(new_name).AsUTF8Unsafe(),
       base::Bind(&CopyOperation::OnCopyHostedDocumentCompleted,
@@ -359,7 +359,7 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
   }
   DCHECK(entry_proto.get());
 
-  drive_scheduler_->UploadNewFile(
+  job_scheduler_->UploadNewFile(
       entry_proto->resource_id(),
       params.remote_file_path,
       params.local_file_path,

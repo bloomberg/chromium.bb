@@ -24,7 +24,7 @@ namespace drive {
 
 class DriveEntryProto;
 class DriveResourceMetadata;
-class DriveScheduler;
+class JobScheduler;
 
 namespace file_system {
 
@@ -35,7 +35,7 @@ class OperationObserver;
 // local state and metadata to reflect the new state.
 class CreateDirectoryOperation {
  public:
-  CreateDirectoryOperation(DriveScheduler* drive_scheduler,
+  CreateDirectoryOperation(JobScheduler* job_scheduler,
                            DriveResourceMetadata* metadata,
                            OperationObserver* observer);
   ~CreateDirectoryOperation();
@@ -141,7 +141,7 @@ class CreateDirectoryOperation {
       FileError error,
       scoped_ptr<DriveEntryProto> entry_proto);
 
-  DriveScheduler* drive_scheduler_;
+  JobScheduler* job_scheduler_;
   DriveResourceMetadata* metadata_;
   OperationObserver* observer_;
 

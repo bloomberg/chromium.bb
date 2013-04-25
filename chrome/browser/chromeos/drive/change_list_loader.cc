@@ -11,8 +11,8 @@
 #include "chrome/browser/chromeos/drive/change_list_loader_observer.h"
 #include "chrome/browser/chromeos/drive/change_list_processor.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
 #include "content/public/browser/browser_thread.h"
@@ -23,7 +23,7 @@ using content::BrowserThread;
 namespace drive {
 
 ChangeListLoader::ChangeListLoader(DriveResourceMetadata* resource_metadata,
-                                   DriveScheduler* scheduler,
+                                   JobScheduler* scheduler,
                                    DriveWebAppsRegistry* webapps_registry)
     : resource_metadata_(resource_metadata),
       scheduler_(scheduler),

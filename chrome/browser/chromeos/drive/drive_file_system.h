@@ -38,9 +38,9 @@ class ChangeList;
 class ChangeListLoader;
 class DriveCacheEntry;
 class DriveResourceMetadata;
-class DriveScheduler;
 class DriveWebAppsRegistry;
 class FileSystemObserver;
+class JobScheduler;
 
 // The production implementation of DriveFileSystemInterface.
 class DriveFileSystem : public DriveFileSystemInterface,
@@ -50,7 +50,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   DriveFileSystem(Profile* profile,
                   DriveCache* cache,
                   google_apis::DriveServiceInterface* drive_service,
-                  DriveScheduler* scheduler,
+                  JobScheduler* scheduler,
                   DriveWebAppsRegistry* webapps_registry,
                   DriveResourceMetadata* resource_metadata,
                   base::SequencedTaskRunner* blocking_task_runner);
@@ -476,7 +476,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   // Sub components owned by DriveSystemService.
   DriveCache* cache_;
   google_apis::DriveServiceInterface* drive_service_;
-  DriveScheduler* scheduler_;
+  JobScheduler* scheduler_;
   DriveWebAppsRegistry* webapps_registry_;
   DriveResourceMetadata* resource_metadata_;
 

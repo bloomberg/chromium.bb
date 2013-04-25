@@ -22,7 +22,7 @@ namespace drive {
 
 class DriveCache;
 class DriveEntryProto;
-class DriveScheduler;
+class JobScheduler;
 
 namespace file_system {
 
@@ -35,7 +35,7 @@ class UpdateOperation {
  public:
   UpdateOperation(DriveCache* cache,
                   DriveResourceMetadata* metadata,
-                  DriveScheduler* scheduler,
+                  JobScheduler* scheduler,
                   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner,
                   OperationObserver* observer);
   virtual ~UpdateOperation();
@@ -96,7 +96,7 @@ class UpdateOperation {
 
   DriveCache* cache_;
   DriveResourceMetadata* metadata_;
-  DriveScheduler* scheduler_;
+  JobScheduler* scheduler_;
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   OperationObserver* observer_;
 

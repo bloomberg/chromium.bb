@@ -7,8 +7,8 @@
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/chromeos/drive/drive_scheduler.h"
 #include "chrome/browser/chromeos/drive/file_system/operation_observer.h"
+#include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;
@@ -23,11 +23,11 @@ void EmptyFileOperationCallback(FileError error) {}
 }  // namespace
 
 RemoveOperation::RemoveOperation(
-    DriveScheduler* drive_scheduler,
+    JobScheduler* job_scheduler,
     DriveCache* cache,
     DriveResourceMetadata* metadata,
     OperationObserver* observer)
-  : drive_scheduler_(drive_scheduler),
+  : job_scheduler_(job_scheduler),
     cache_(cache),
     metadata_(metadata),
     observer_(observer),
@@ -68,7 +68,7 @@ void RemoveOperation::RemoveAfterGetEntryInfo(
   }
   DCHECK(entry_proto.get());
 
-  drive_scheduler_->DeleteResource(
+  job_scheduler_->DeleteResource(
       entry_proto->resource_id(),
       base::Bind(&RemoveOperation::RemoveResourceLocally,
                  weak_ptr_factory_.GetWeakPtr(),
