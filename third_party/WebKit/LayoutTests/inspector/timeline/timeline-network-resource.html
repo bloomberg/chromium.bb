@@ -61,8 +61,6 @@ function test()
     function printRecord(record)
     {
         InspectorTest.addResult("");
-        // The network time changes from run to run. Delete it so we get consistent expected output.
-        delete record.data.networkTime;
         InspectorTest.printTimelineRecordProperties(record);
     }
 

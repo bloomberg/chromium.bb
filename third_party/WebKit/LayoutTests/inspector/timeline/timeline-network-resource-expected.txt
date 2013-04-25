@@ -39,6 +39,7 @@ ResourceFinish Properties:
     counters : <object>
     data : {
         didFail : false
+        networkTime : <number>
         requestId : <string>
     }
     frameId : <string>
