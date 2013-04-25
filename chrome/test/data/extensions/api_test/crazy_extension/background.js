@@ -13,21 +13,21 @@ chrome.test.runTests([
     iframe.addEventListener('load', function() {
       switch (iteration) {
         case 0: {
-          // First test is that chrome.webstore doesn't even get defined if it
-          // was never accessed.
+          // First test is that chrome.app doesn't even get defined if it was
+          // never accessed.
           var iframeChrome = iframe.contentWindow.chrome;
           document.body.removeChild(iframe);
-          chrome.test.assertEq(undefined, iframeChrome.webstore);
+          chrome.test.assertEq(undefined, iframeChrome.app);
           document.body.appendChild(iframe);
           break;
         }
         case 1: {
           // Second test is that it does if accessed before removal.
           var iframeChrome = iframe.contentWindow.chrome;
-          var iframeChromeWebstore = iframeChrome.webstore;
-          chrome.test.assertTrue(typeof(iframeChromeWebstore) == 'object');
+          var iframeChromeApp = iframeChrome.app;
+          chrome.test.assertTrue(typeof(iframeChromeApp) == 'object');
           document.body.removeChild(iframe);
-          chrome.test.assertTrue(typeof(iframeChrome.webstore) == 'object');
+          chrome.test.assertTrue(typeof(iframeChrome.app) == 'object');
           document.body.appendChild(iframe);
           break;
         }

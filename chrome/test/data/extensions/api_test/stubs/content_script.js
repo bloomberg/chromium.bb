@@ -31,7 +31,11 @@ chrome.extension.sendRequest("getApi", function(apis) {
         }
 
         var path = namespace + "." + entry.name;
-        if (module.unprivileged || entry.unprivileged) {
+        // TODO(cduvall): Make this inspect _api_features.json.
+        // http://crbug.com/232247
+        // Manually add chrome.app to the unprivileged APIs since it uses the
+        // feature system now.
+        if (module.unprivileged || entry.unprivileged || namespace == 'app') {
           unprivilegedPaths.push(path);
         } else {
           privilegedPaths.push(path);

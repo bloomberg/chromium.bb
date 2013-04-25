@@ -194,8 +194,7 @@ class Dispatcher : public content::RenderProcessObserver {
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ChromeV8Context* context);
   void RegisterSchemaGeneratedBindings(ModuleSystem* module_system,
-                                       ChromeV8Context* context,
-                                       v8::Handle<v8::Context> v8_context);
+                                       ChromeV8Context* context);
 
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();
