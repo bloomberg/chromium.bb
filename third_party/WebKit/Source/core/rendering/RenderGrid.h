@@ -52,6 +52,11 @@ private:
     LayoutUnit computePreferredTrackWidth(const Length&, size_t) const;
 
     struct GridSpan {
+        static PassOwnPtr<GridSpan> create(size_t initialPosition, size_t finalPosition)
+        {
+            return adoptPtr(new GridSpan(initialPosition, finalPosition));
+        }
+
         GridSpan(size_t initialPosition, size_t finalPosition)
             : initialPositionIndex(initialPosition)
             , finalPositionIndex(finalPosition)
@@ -129,6 +134,7 @@ private:
         AfterSide
     };
     size_t resolveGridPositionFromStyle(const GridPosition&, GridPositionSide) const;
+    PassOwnPtr<GridSpan> resolveGridPositionAgainstOppositePosition(size_t resolvedOppositePosition, const GridPosition&, GridPositionSide) const;
 
     LayoutUnit gridAreaBreadthForChild(const RenderBox* child, TrackSizingDirection, const Vector<GridTrack>&) const;
 
