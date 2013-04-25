@@ -329,10 +329,6 @@ bool WebMediaPlayerImpl::supportsSave() const {
   return supports_save_;
 }
 
-void WebMediaPlayerImpl::seekFloat(float seconds) {
-  seek(seconds);
-}
-
 void WebMediaPlayerImpl::seek(double seconds) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -363,21 +359,6 @@ void WebMediaPlayerImpl::seek(double seconds) {
       BIND_TO_RENDER_LOOP(&WebMediaPlayerImpl::OnPipelineSeek));
 }
 
-void WebMediaPlayerImpl::setEndTimeFloat(float seconds) {
-  setEndTime(seconds);
-}
-
-void WebMediaPlayerImpl::setEndTime(double seconds) {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // TODO(hclam): add method call when it has been implemented.
-  return;
-}
-
-void WebMediaPlayerImpl::setRateFloat(float rate) {
-  setRate(rate);
-}
-
 void WebMediaPlayerImpl::setRate(double rate) {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -398,10 +379,6 @@ void WebMediaPlayerImpl::setRate(double rate) {
   if (!paused_) {
     pipeline_->SetPlaybackRate(rate);
   }
-}
-
-void WebMediaPlayerImpl::setVolumeFloat(float volume) {
-  setVolume(volume);
 }
 
 void WebMediaPlayerImpl::setVolume(double volume) {
@@ -474,29 +451,6 @@ bool WebMediaPlayerImpl::seeking() const {
   return seeking_;
 }
 
-float WebMediaPlayerImpl::durationFloat() const {
-  if (ready_state_ == WebMediaPlayer::ReadyStateHaveNothing)
-    return std::numeric_limits<float>::quiet_NaN();
-
-  double result = duration();
-
-  // Make sure super small durations don't get truncated to 0 and
-  // large durations don't get converted to infinity by the double -> float
-  // conversion.
-  //
-  // TODO(acolwell): Remove when WebKit is changed to report duration as a
-  // double.
-  if (result > 0.0 && result < std::numeric_limits<double>::infinity()) {
-    result = std::max(result,
-                      static_cast<double>(std::numeric_limits<float>::min()));
-    result = std::min(result,
-                      static_cast<double>(std::numeric_limits<float>::max()));
-  }
-
-  return static_cast<float>(result);
-
-}
-
 double WebMediaPlayerImpl::duration() const {
   DCHECK(main_loop_->BelongsToCurrentThread());
 
@@ -507,10 +461,6 @@ double WebMediaPlayerImpl::duration() const {
     return chunk_demuxer_->GetDuration();
 
   return GetPipelineDuration();
-}
-
-float WebMediaPlayerImpl::currentTimeFloat() const {
-  return static_cast<float>(currentTime());
 }
 
 double WebMediaPlayerImpl::currentTime() const {
@@ -541,20 +491,6 @@ const WebKit::WebTimeRanges& WebMediaPlayerImpl::buffered() {
       ConvertToWebTimeRanges(pipeline_->GetBufferedTimeRanges()));
   buffered_.swap(web_ranges);
   return buffered_;
-}
-
-float WebMediaPlayerImpl::maxTimeSeekableFloat() const {
-  DCHECK(main_loop_->BelongsToCurrentThread());
-
-  // If we haven't even gotten to ReadyStateHaveMetadata yet then just
-  // return 0 so that the seekable range is empty.
-  if (ready_state_ < WebMediaPlayer::ReadyStateHaveMetadata)
-    return 0.0f;
-
-  // We don't support seeking in streaming media.
-  if (data_source_ && data_source_->IsStreaming())
-    return 0.0f;
-  return durationFloat();
 }
 
 double WebMediaPlayerImpl::maxTimeSeekable() const {
@@ -633,10 +569,6 @@ WebMediaPlayer::MovieLoadType WebMediaPlayerImpl::movieLoadType() const {
   if (data_source_ && data_source_->IsStreaming())
     return WebMediaPlayer::MovieLoadTypeLiveStream;
   return WebMediaPlayer::MovieLoadTypeUnknown;
-}
-
-float WebMediaPlayerImpl::mediaTimeForTimeValueFloat(float timeValue) const {
-  return mediaTimeForTimeValue(timeValue);
 }
 
 double WebMediaPlayerImpl::mediaTimeForTimeValue(double timeValue) const {

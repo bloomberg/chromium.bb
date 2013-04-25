@@ -74,19 +74,13 @@ class WebMediaPlayerMS
   virtual void pause() OVERRIDE;
   virtual bool supportsFullscreen() const OVERRIDE;
   virtual bool supportsSave() const OVERRIDE;
-  virtual void seekFloat(float seconds);
   virtual void seek(double seconds);
-  virtual void setEndTimeFloat(float seconds);
-  virtual void setEndTime(double seconds);
-  virtual void setRateFloat(float rate);
   virtual void setRate(double rate);
-  virtual void setVolumeFloat(float volume);
   virtual void setVolume(double volume);
   virtual void setVisible(bool visible) OVERRIDE;
   virtual void setPreload(WebKit::WebMediaPlayer::Preload preload) OVERRIDE;
   virtual bool totalBytesKnown() OVERRIDE;
   virtual const WebKit::WebTimeRanges& buffered() OVERRIDE;
-  virtual float maxTimeSeekableFloat() const;
   virtual double maxTimeSeekable() const;
 
   // Methods for painting.
@@ -106,9 +100,7 @@ class WebMediaPlayerMS
   // Getters of playback state.
   virtual bool paused() const OVERRIDE;
   virtual bool seeking() const OVERRIDE;
-  virtual float durationFloat() const;
   virtual double duration() const;
-  virtual float currentTimeFloat() const;
   virtual double currentTime() const;
 
   // Get rate of loading the resource.
@@ -125,7 +117,6 @@ class WebMediaPlayerMS
   virtual bool didPassCORSAccessCheck() const OVERRIDE;
   virtual WebKit::WebMediaPlayer::MovieLoadType movieLoadType() const OVERRIDE;
 
-  virtual float mediaTimeForTimeValueFloat(float timeValue) const;
   virtual double mediaTimeForTimeValue(double timeValue) const;
 
   virtual unsigned decodedFrameCount() const OVERRIDE;

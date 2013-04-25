@@ -184,32 +184,12 @@ bool WebMediaPlayerMS::supportsSave() const {
   return false;
 }
 
-void WebMediaPlayerMS::seekFloat(float seconds) {
-  seek(seconds);
-}
-
 void WebMediaPlayerMS::seek(double seconds) {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
-void WebMediaPlayerMS::setEndTimeFloat(float seconds) {
-  setEndTime(seconds);
-}
-
-void WebMediaPlayerMS::setEndTime(double seconds) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void WebMediaPlayerMS::setRateFloat(float rate) {
-  setRate(rate);
-}
-
 void WebMediaPlayerMS::setRate(double rate) {
   DCHECK(thread_checker_.CalledOnValidThread());
-}
-
-void WebMediaPlayerMS::setVolumeFloat(float volume) {
-  setVolume(volume);
 }
 
 void WebMediaPlayerMS::setVolume(double volume) {
@@ -263,17 +243,9 @@ bool WebMediaPlayerMS::seeking() const {
   return false;
 }
 
-float WebMediaPlayerMS::durationFloat() const {
-  return duration();
-}
-
 double WebMediaPlayerMS::duration() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::numeric_limits<double>::infinity();
-}
-
-float WebMediaPlayerMS::currentTimeFloat() const {
-  return currentTime();
 }
 
 double WebMediaPlayerMS::currentTime() const {
@@ -306,10 +278,6 @@ WebMediaPlayer::ReadyState WebMediaPlayerMS::readyState() const {
 const WebKit::WebTimeRanges& WebMediaPlayerMS::buffered() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return buffered_;
-}
-
-float WebMediaPlayerMS::maxTimeSeekableFloat() const {
-  return maxTimeSeekable();
 }
 
 double WebMediaPlayerMS::maxTimeSeekable() const {
@@ -361,10 +329,6 @@ bool WebMediaPlayerMS::didPassCORSAccessCheck() const {
 WebMediaPlayer::MovieLoadType WebMediaPlayerMS::movieLoadType() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return WebMediaPlayer::MovieLoadTypeUnknown;
-}
-
-float WebMediaPlayerMS::mediaTimeForTimeValueFloat(float timeValue) const {
-  return mediaTimeForTimeValue(timeValue);
 }
 
 double WebMediaPlayerMS::mediaTimeForTimeValue(double timeValue) const {
