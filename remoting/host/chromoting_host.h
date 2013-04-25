@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "net/base/backoff_entry.h"
 #include "remoting/host/client_session.h"
@@ -60,13 +59,14 @@ class DesktopEnvironmentFactory;
 //    all pending tasks to complete. After all of that completed we
 //    return to the idle state. We then go to step (2) if there a new
 //    incoming connection.
-class ChromotingHost : public base::NonThreadSafe,
+class ChromotingHost : public base::RefCountedThreadSafe<ChromotingHost>,
                        public ClientSession::EventHandler,
                        public protocol::SessionManager::Listener,
                        public HostStatusMonitor {
  public:
-  // Both |signal_strategy| and |desktop_environment_factory| should outlive
-  // this object.
+  // The caller must ensure that |signal_strategy| and
+  // |desktop_environment_factory| remain valid at least until the
+  // |shutdown_task| supplied to Shutdown() has been notified.
   ChromotingHost(
       SignalStrategy* signal_strategy,
       DesktopEnvironmentFactory* desktop_environment_factory,
@@ -77,15 +77,18 @@ class ChromotingHost : public base::NonThreadSafe,
       scoped_refptr<base::SingleThreadTaskRunner> video_encode_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> network_task_runner,
       scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);
-  virtual ~ChromotingHost();
 
-  // Asynchronously starts the host.
+  // Asynchronously start the host process.
   //
   // After this is invoked, the host process will connect to the talk
   // network and start listening for incoming connections.
   //
   // This method can only be called once during the lifetime of this object.
   void Start(const std::string& xmpp_login);
+
+  // Asynchronously shutdown the host process. |shutdown_task| is
+  // called after shutdown is completed.
+  void Shutdown(const base::Closure& shutdown_task);
 
   // HostStatusMonitor interface.
   virtual void AddStatusObserver(HostStatusObserver* observer) OVERRIDE;
@@ -131,9 +134,10 @@ class ChromotingHost : public base::NonThreadSafe,
   // Sets desired configuration for the protocol. Must be called before Start().
   void set_protocol_config(scoped_ptr<protocol::CandidateSessionConfig> config);
 
-  // Immediately disconnects all active clients. Host-internal components may
-  // shutdown asynchronously, but the caller is guaranteed not to receive
-  // callbacks for disconnected clients after this call returns.
+  // Disconnects all active clients. Clients are disconnected
+  // asynchronously when this method is called on a thread other than
+  // the network thread. Potentically this may cause disconnection of
+  // clients that were not connected when this method is called.
   void DisconnectAllClients();
 
   base::WeakPtr<ChromotingHost> AsWeakPtr() {
@@ -141,9 +145,22 @@ class ChromotingHost : public base::NonThreadSafe,
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ChromotingHost>;
   friend class ChromotingHostTest;
 
   typedef std::list<ClientSession*> ClientList;
+
+  enum State {
+    kInitial,
+    kStarted,
+    kStopping,
+    kStopped,
+  };
+
+  virtual ~ChromotingHost();
+
+  // Called from Shutdown() to finish shutdown.
+  void ShutdownFinish();
 
   // Unless specified otherwise all members of this class must be
   // used on the network thread only.
@@ -167,8 +184,8 @@ class ChromotingHost : public base::NonThreadSafe,
   // The connections to remote clients.
   ClientList clients_;
 
-  // True if the host has been started.
-  bool started_;
+  // Tracks the internal state of the host.
+  State state_;
 
   // Configuration of the protocol.
   scoped_ptr<protocol::CandidateSessionConfig> protocol_config_;
@@ -179,6 +196,10 @@ class ChromotingHost : public base::NonThreadSafe,
   // Flags used for RejectAuthenticatingClient().
   bool authenticating_client_;
   bool reject_authenticating_client_;
+
+  // Stores list of tasks that should be executed when we finish
+  // shutdown. Used only while |state_| is set to kStopping.
+  std::vector<base::Closure> shutdown_tasks_;
 
   // The maximum duration of any session.
   base::TimeDelta max_session_duration_;

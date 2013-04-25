@@ -282,7 +282,7 @@ class HostProcess
   scoped_ptr<LogToServer> log_to_server_;
   scoped_ptr<HostEventLogger> host_event_logger_;
 
-  scoped_ptr<ChromotingHost> host_;
+  scoped_refptr<ChromotingHost> host_;
 
   // Used to keep this HostProcess alive until it is shutdown.
   scoped_refptr<HostProcess> self_;
@@ -950,7 +950,7 @@ void HostProcess::StartHost() {
     network_settings.max_port = NetworkSettings::kDefaultMaxPort;
   }
 
-  host_.reset(new ChromotingHost(
+  host_ = new ChromotingHost(
       signal_strategy_.get(),
       desktop_environment_factory_.get(),
       CreateHostSessionManager(network_settings,
@@ -960,7 +960,7 @@ void HostProcess::StartHost() {
       context_->video_capture_task_runner(),
       context_->video_encode_task_runner(),
       context_->network_task_runner(),
-      context_->ui_task_runner()));
+      context_->ui_task_runner());
 
   // TODO(simonmorris): Get the maximum session duration from a policy.
 #if defined(OS_LINUX)
@@ -1041,7 +1041,7 @@ void HostProcess::RestartHost() {
   DCHECK_EQ(state_, HOST_STARTED);
 
   state_ = HOST_STOPPING_TO_RESTART;
-  ShutdownOnNetworkThread();
+  host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
 }
 
 void HostProcess::ShutdownHost(int exit_code) {
@@ -1051,9 +1051,13 @@ void HostProcess::ShutdownHost(int exit_code) {
 
   switch (state_) {
     case HOST_INITIALIZING:
-    case HOST_STARTED:
       state_ = HOST_STOPPING;
       ShutdownOnNetworkThread();
+      break;
+
+    case HOST_STARTED:
+      state_ = HOST_STOPPING;
+      host_->Shutdown(base::Bind(&HostProcess::ShutdownOnNetworkThread, this));
       break;
 
     case HOST_STOPPING_TO_RESTART:
@@ -1070,7 +1074,7 @@ void HostProcess::ShutdownHost(int exit_code) {
 void HostProcess::ShutdownOnNetworkThread() {
   DCHECK(context_->network_task_runner()->BelongsToCurrentThread());
 
-  host_.reset();
+  host_ = NULL;
   curtaining_host_observer_.reset();
   host_event_logger_.reset();
   log_to_server_.reset();
@@ -1099,7 +1103,8 @@ void HostProcess::ShutdownOnNetworkThread() {
         FROM_HERE,
         base::Bind(&HostProcess::ShutdownOnUiThread, this));
   } else {
-    // This method is only called in STOPPING_TO_RESTART and STOPPING states.
+    // This method is used as a callback for ChromotingHost::Shutdown() which is
+    // called only in STOPPING_TO_RESTART and STOPPING states.
     NOTREACHED();
   }
 }
