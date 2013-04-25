@@ -358,6 +358,7 @@ def main(argv):
         passes += ['-lowerinvoke',
                    '-simplifycfg']
       passes += ['-expand-varargs',
+                 '-expand-byval',
                  '-nacl-expand-ctors',
                  '-resolve-aliases',
                  '-nacl-expand-tls',

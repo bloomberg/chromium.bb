@@ -39,7 +39,13 @@ DO_FOR_TYPE(FLOAT_FLOAT)
 DO_FOR_TYPE(STRUCT_STRUCT)
 DO_FOR_TYPE(DOUBLE_DOUBLE)
 DO_FOR_TYPE(CHAR_BOOL_I32_BOOL)
-DO_FOR_TYPE(I32_ALIGN16)
+/*
+ * pnacl-clang does not align struct arguments correctly when the
+ * struct type is declared with __attribute__((aligned)).  This causes
+ * this test to fault on an unaligned "movaps" instruction on x86.
+ * See https://code.google.com/p/nativeclient/issues/detail?id=3403
+ */
+/* DO_FOR_TYPE(I32_ALIGN16) */
 DO_FOR_TYPE(I32_CHAR12)
 DO_FOR_TYPE(ARRAY_I32_4)
 DO_FOR_TYPE(ARRAY_FLOAT_4)
@@ -49,7 +55,11 @@ DO_FOR_TYPE(CHAR_I64_I32)
 DO_FOR_TYPE(BITFIELD_STRADDLE)
 DO_FOR_TYPE(NONBITFIELD_STRADDLE)
 
-DO_FOR_TYPE(I32_CHAR_ALIGN32)
+/*
+ * pnacl-clang does not align __attribute__((aligned)) structs
+ * correctly.  See above.
+ */
+/* DO_FOR_TYPE(I32_CHAR_ALIGN32) */
 
 DO_FOR_TYPE(U_I64_DOUBLE)
 DO_FOR_TYPE(U_DOUBLE_I64)
