@@ -25,7 +25,10 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     MessageCenter::Initialize();
     collection_.reset(
         new MessagePopupCollection(GetContext(), MessageCenter::Get()));
-    collection_->SetWorkAreaForTest(gfx::Rect(0, 0, 1280, 1024));
+    // This size fits test machines resolution and also can keep a few toasts
+    // w/o ill effects of hitting the screen overflow. This allows us to assume
+    // and verify normal layout of the toast stack.
+    collection_->SetWorkAreaForTest(gfx::Rect(0, 0, 600, 400));
     id_ = 0;
   }
 
@@ -42,7 +45,7 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
   }
 
   bool IsToastShown(const std::string& id) {
-    views::Widget* widget = collection_->GetWidgetForId(id);
+    views::Widget* widget = collection_->GetWidgetForTest(id);
     return widget && widget->IsVisible();
   }
 
@@ -55,174 +58,88 @@ class MessagePopupCollectionTest : public views::ViewsTestBase {
     return id;
   }
 
+  // Assumes there is non-zero pending work.
+  void WaitForTransitionsDone() {
+    collection_->RunLoopForTest();
+  }
+
+  void CloseAllToastsAndWait() {
+    // Assumes there is at least one toast to close.
+    EXPECT_TRUE(GetToastCounts() > 0);
+    MessageCenter::Get()->RemoveAllNotifications(false);
+    WaitForTransitionsDone();
+  }
+
+  gfx::Rect GetToastRectAt(size_t index) {
+    return collection_->GetToastRectAt(index);
+  }
+
  private:
   scoped_ptr<MessagePopupCollection> collection_;
   int id_;
 };
 
-class MessagePopupCollectionWidgetsTest : public views::ViewsTestBase {
- public:
-  virtual void SetUp() OVERRIDE {
-    views::ViewsTestBase::SetUp();
-    collection_.reset(new MessagePopupCollection(NULL, &message_center_));
-    collection_->SetWorkAreaForTest(gfx::Rect(0, 0, 200, 200));
-  }
-
-  virtual void TearDown() OVERRIDE {
-    collection_->CloseAllWidgets();
-    views::ViewsTestBase::TearDown();
-  }
-
- protected:
-  void CreateWidgets(const std::vector<gfx::Rect>& rects) {
-    for (std::vector<gfx::Rect>::const_iterator iter = rects.begin();
-         iter != rects.end(); ++iter) {
-      views::Widget* widget = new views::Widget();
-      views::Widget::InitParams params = CreateParams(
-          views::Widget::InitParams::TYPE_POPUP);
-      params.keep_on_top = true;
-      params.top_level = true;
-      params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-      widget->Init(params);
-      widget->SetBounds(*iter);
-      collection_->widgets_.push_back(widget);
-    }
-  }
-
-  void RepositionWidgets() {
-    collection_->RepositionWidgets();
-  }
-
-  void SetRepositionTarget(const gfx::Rect& target_rect) {
-    collection_->reposition_target_ = target_rect;
-  }
-
-  void RepositionWidgetsWithTarget(const gfx::Rect& target_rect) {
-    SetRepositionTarget(target_rect);
-    collection_->RepositionWidgetsWithTarget();
-  }
-
-  gfx::Rect GetWidgetRectAt(size_t index) {
-    size_t i = 0;
-    for (std::list<views::Widget*>::const_iterator iter =
-             collection_->widgets_.begin();
-         iter != collection_->widgets_.end(); ++iter) {
-      if (i++ == index)
-        return (*iter)->GetWindowBoundsInScreen();
-    }
-    return gfx::Rect();
-  }
-
- private:
-  FakeMessageCenter message_center_;
-  scoped_ptr<MessagePopupCollection> collection_;
-};
-
 TEST_F(MessagePopupCollectionTest, DismissOnClick) {
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
+  WaitForTransitionsDone();
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_TRUE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotification(id2);
-  RunPendingMessages();
+  WaitForTransitionsDone();
   EXPECT_EQ(1u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
 
   MessageCenter::Get()->ClickOnNotificationButton(id1, 0);
-  RunPendingMessages();
+  WaitForTransitionsDone();
   EXPECT_EQ(0u, GetToastCounts());
   EXPECT_FALSE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
 }
 
-TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgets) {
-  std::vector<gfx::Rect> rects;
-  std::list<views::Widget*> widgets;
-  rects.push_back(gfx::Rect(0, 0, 10, 10));
-  rects.push_back(gfx::Rect(0, 0, 10, 20));
-  rects.push_back(gfx::Rect(0, 0, 10, 30));
-  rects.push_back(gfx::Rect(0, 0, 10, 40));
-  CreateWidgets(rects);
-  RepositionWidgets();
+TEST_F(MessagePopupCollectionTest, DefaultPositioning) {
+  std::string id0 = AddNotification();
+  std::string id1 = AddNotification();
+  std::string id2 = AddNotification();
+  std::string id3 = AddNotification();
+  WaitForTransitionsDone();
 
-  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,110 10x30", GetWidgetRectAt(2).ToString());
-  EXPECT_EQ("0,60 10x40", GetWidgetRectAt(3).ToString());
+  gfx::Rect r0 = GetToastRectAt(0);
+  gfx::Rect r1 = GetToastRectAt(1);
+  gfx::Rect r2 = GetToastRectAt(2);
+  gfx::Rect r3 = GetToastRectAt(3);
+
+  // 3 toasts are shown, equal size, vertical stack.
+  EXPECT_TRUE(IsToastShown(id0));
+  EXPECT_TRUE(IsToastShown(id1));
+  EXPECT_TRUE(IsToastShown(id2));
+
+  EXPECT_EQ(r0.width(), r1.width());
+  EXPECT_EQ(r1.width(), r2.width());
+
+  EXPECT_EQ(r0.height(), r1.height());
+  EXPECT_EQ(r1.height(), r2.height());
+
+  EXPECT_GT(r0.y(), r1.y());
+  EXPECT_GT(r1.y(), r2.y());
+
+  EXPECT_EQ(r0.x(), r1.x());
+  EXPECT_EQ(r1.x(), r2.x());
+
+  // The 4th toast is not shown yet.
+  EXPECT_FALSE(IsToastShown(id3));
+  EXPECT_EQ(0, r3.width());
+  EXPECT_EQ(0, r3.height());
+
+  CloseAllToastsAndWait();
+  EXPECT_EQ(0u, GetToastCounts());
 }
 
-TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetDown) {
-  std::vector<gfx::Rect> rects;
-  std::list<views::Widget*> widgets;
-  rects.push_back(gfx::Rect(0, 180, 10, 10));
-  rects.push_back(gfx::Rect(0, 150, 10, 20));
-  rects.push_back(gfx::Rect(0, 60, 10, 40));
-  CreateWidgets(rects);
-  RepositionWidgetsWithTarget(gfx::Rect(0, 110, 10, 30));
-
-  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,110 10x40", GetWidgetRectAt(2).ToString());
-}
-
-TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetDownAll) {
-  std::vector<gfx::Rect> rects;
-  std::list<views::Widget*> widgets;
-  rects.push_back(gfx::Rect(0, 150, 10, 20));
-  rects.push_back(gfx::Rect(0, 110, 10, 30));
-  rects.push_back(gfx::Rect(0, 60, 10, 40));
-  CreateWidgets(rects);
-  RepositionWidgetsWithTarget(gfx::Rect(0, 180, 10, 10));
-
-  EXPECT_EQ("0,180 10x20", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,140 10x30", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,90 10x40", GetWidgetRectAt(2).ToString());
-}
-
-TEST_F(MessagePopupCollectionWidgetsTest, RepositionWidgetsWithTargetUp) {
-  std::vector<gfx::Rect> rects;
-  std::list<views::Widget*> widgets;
-  rects.push_back(gfx::Rect(0, 180, 10, 10));
-  rects.push_back(gfx::Rect(0, 150, 10, 20));
-  rects.push_back(gfx::Rect(0, 110, 10, 30));
-  CreateWidgets(rects);
-  RepositionWidgetsWithTarget(gfx::Rect(0, 60, 10, 40));
-
-  EXPECT_EQ("0,130 10x10", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,100 10x20", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,60 10x30", GetWidgetRectAt(2).ToString());
-}
-
-TEST_F(MessagePopupCollectionWidgetsTest, RepositionAfterSettingTarget) {
-  std::vector<gfx::Rect> rects;
-  std::list<views::Widget*> widgets;
-  rects.push_back(gfx::Rect(0, 180, 10, 10));
-  rects.push_back(gfx::Rect(0, 150, 10, 20));
-  rects.push_back(gfx::Rect(0, 60, 10, 40));
-  CreateWidgets(rects);
-  SetRepositionTarget(gfx::Rect(0, 110, 10, 30));
-
-  RepositionWidgets();
-  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,110 10x40", GetWidgetRectAt(2).ToString());
-
-  RepositionWidgets();
-  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,110 10x40", GetWidgetRectAt(2).ToString());
-
-  // Clear the target.
-  SetRepositionTarget(gfx::Rect());
-  RepositionWidgets();
-  EXPECT_EQ("0,180 10x10", GetWidgetRectAt(0).ToString());
-  EXPECT_EQ("0,150 10x20", GetWidgetRectAt(1).ToString());
-  EXPECT_EQ("0,100 10x40", GetWidgetRectAt(2).ToString());
-
-}
+// TODO(dimich): Test repositioning - both normal one and when user is closing
+// the toasts.
 
 }  // namespace test
 }  // namespace message_center
