@@ -1081,6 +1081,13 @@ const Experiment kExperiments[] = {
     kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kDisableFullscreenApp),
   },
+  {
+    "disable-quickoffice-component-app",
+    IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_NAME,
+    IDS_FLAGS_DISABLE_QUICKOFFICE_COMPONENT_APP_DESCRIPTION,
+    kOsCrOS,
+    SINGLE_VALUE_TYPE(chromeos::switches::kDisableQuickofficeComponentApp),
+  },
 #endif  // defined(OS_CHROMEOS)
   {
     "views-textfield",

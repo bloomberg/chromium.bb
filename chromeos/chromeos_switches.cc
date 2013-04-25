@@ -13,6 +13,11 @@ const char kChromeOSReleaseBoard[] = "chromeos-release-board";
 // Forces the stub implementation of dbus clients.
 const char kDbusStub[] = "dbus-stub";
 
+// Disable Quickoffice component app thus handlers won't be registered so
+// it will be possible to install another version as normal app for testing.
+const char kDisableQuickofficeComponentApp[] =
+    "disable-quickoffice-component-app";
+
 // Disables fetching online CrOS EULA page, only static version is shown.
 const char kDisableOnlineEULA[] = "disable-cros-online-eula";
 

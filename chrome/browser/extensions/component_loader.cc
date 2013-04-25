@@ -442,7 +442,8 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
         base::FilePath(FILE_PATH_LITERAL("chromeos/wallpaper_manager")));
 
 #if defined(GOOGLE_CHROME_BUILD)
-    if (browser_defaults::enable_component_quick_office) {
+    if (!command_line->HasSwitch(
+            chromeos::switches::kDisableQuickofficeComponentApp)) {
       std::string id = Add(IDR_QUICK_OFFICE_MANIFEST, base::FilePath(
           FILE_PATH_LITERAL("/usr/share/chromeos-assets/quick_office")));
       if (command_line->HasSwitch(chromeos::switches::kGuestSession)) {

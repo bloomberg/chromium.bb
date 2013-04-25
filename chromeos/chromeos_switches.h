@@ -22,6 +22,7 @@ namespace switches {
 // Please keep alphabetized.
 CHROMEOS_EXPORT extern const char kChromeOSReleaseBoard[];
 CHROMEOS_EXPORT extern const char kDbusStub[];
+CHROMEOS_EXPORT extern const char kDisableQuickofficeComponentApp[];
 CHROMEOS_EXPORT extern const char kDisableOnlineEULA[];
 CHROMEOS_EXPORT extern const char kDisableOOBEBlockingUpdate[];
 CHROMEOS_EXPORT extern const char kDisableStubEthernet[];

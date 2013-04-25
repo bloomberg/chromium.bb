@@ -118,8 +118,6 @@ const bool kAlwaysCreateTabbedBrowserOnSessionRestore = true;
 
 bool bookmarks_enabled = true;
 
-bool enable_component_quick_office = true;
-
 bool enable_help_app = true;
 
 }  // namespace browser_defaults
