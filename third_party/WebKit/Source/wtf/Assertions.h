@@ -27,18 +27,20 @@
 #define WTF_Assertions_h
 
 /*
-   no namespaces because this file has to be includable from C and Objective-C
+   No namespaces because this file has to be includable from C and Objective-C.
 
    Note, this file uses many GCC extensions, but it should be compatible with
    C, Objective C, C++, and Objective C++.
 
-   For non-debug builds, everything is disabled by default.
+   For non-debug builds, everything is disabled by default, except for the
+   RELEASE_ASSERT family of macros.
+
    Defining any of the symbols explicitly prevents this from having any effect.
-   
+
    MSVC7 note: variadic macro support was added in MSVC8, so for now we disable
-   those macros in MSVC7. For more info, see the MSDN document on variadic 
+   those macros in MSVC7. For more info, see the MSDN document on variadic
    macros here:
-   
+
    http://msdn2.microsoft.com/en-us/library/ms177415(VS.80).aspx
 */
 
@@ -189,12 +191,10 @@ WTF_EXPORT_PRIVATE void WTFInstallReportBacktraceOnCrashHook();
 #define NO_RETURN_DUE_TO_CRASH
 #endif
 
-
 /* BACKTRACE
 
   Print a backtrace to the same location as ASSERT messages.
 */
-
 #if BACKTRACE_DISABLED
 
 #define BACKTRACE() ((void)0)
@@ -212,7 +212,6 @@ WTF_EXPORT_PRIVATE void WTFInstallReportBacktraceOnCrashHook();
   These macros are compiled out of release builds.
   Expressions inside them are evaluated in debug builds only.
 */
-
 #if OS(WINDOWS)
 /* FIXME: Change to use something other than ASSERT to avoid this conflict with the underlying platform */
 #undef ASSERT
@@ -259,12 +258,12 @@ inline void assertUnused(T& x) { (void)x; }
 #endif
 
 /* ASSERT_WITH_SECURITY_IMPLICATION
-   
-   Failure of this assertion indicates a possible security vulnerability.
-   Class of vulnerabilities that it tests include bad casts, out of bounds
-   accesses, use-after-frees, etc. Please file a bug using the security
-   template - https://bugs.webkit.org/enter_bug.cgi?product=Security.
 
+   Use in places where failure of the assertion indicates a possible security
+   vulnerability. Classes of these vulnerabilities include bad casts, out of
+   bounds accesses, use-after-frees, etc. Please be sure to file bugs for these
+   failures using the security template:
+      http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
 */
 #ifdef ADDRESS_SANITIZER
 
@@ -315,8 +314,7 @@ inline void assertWithMessageUnused(T& x) { (void)x; }
     } \
 while (0)
 #endif
-                        
-                        
+
 /* ASSERT_ARG */
 
 #if ASSERT_ARG_DISABLED
@@ -394,8 +392,8 @@ while (0)
 /* UNREACHABLE_FOR_PLATFORM */
 
 #if COMPILER(CLANG)
-// This would be a macro except that its use of #pragma works best around
-// a function. Hence it uses macro naming convention.
+/* This would be a macro except that its use of #pragma works best around
+   a function. Hence it uses macro naming convention. */
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wmissing-noreturn"
 static inline void UNREACHABLE_FOR_PLATFORM()
@@ -406,6 +404,14 @@ static inline void UNREACHABLE_FOR_PLATFORM()
 #else
 #define UNREACHABLE_FOR_PLATFORM() ASSERT_NOT_REACHED()
 #endif
+
+/* RELEASE_ASSERT
+
+   Use in places where failure of an assertion indicates a definite security
+   vulnerability from which execution must not continue even in a release build.
+   Please sure to file bugs for these failures using the security template:
+      http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
+*/
 
 #if ASSERT_DISABLED
 #define RELEASE_ASSERT(assertion) (UNLIKELY(!(assertion)) ? (IMMEDIATE_CRASH()) : (void)0)
