@@ -1584,6 +1584,8 @@
         'browser/renderer_host/offline_resource_throttle.h',
         'browser/renderer_host/pepper/chrome_browser_pepper_host_factory.cc',
         'browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h',
+        'browser/renderer_host/pepper/device_id_fetcher.h',
+        'browser/renderer_host/pepper/device_id_fetcher.cc',
         'browser/renderer_host/pepper/pepper_broker_message_filter.cc',
         'browser/renderer_host/pepper/pepper_broker_message_filter.h',
         'browser/renderer_host/pepper/pepper_flash_browser_host.cc',

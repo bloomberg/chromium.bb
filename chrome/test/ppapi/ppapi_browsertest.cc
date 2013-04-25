@@ -1252,6 +1252,10 @@ TEST_PPAPI_OUT_OF_PROCESS(FlashFile)
 TEST_PPAPI_OUT_OF_PROCESS(MAYBE_FlashFullscreen)
 
 TEST_PPAPI_OUT_OF_PROCESS(PDF)
+// Only implemented on Windows and ChromeOS currently.
+#if (defined(OS_WIN) && defined(ENABLE_RLZ)) || defined(OS_CHROMEOS)
+TEST_PPAPI_OUT_OF_PROCESS(FlashDeviceID)
+#endif
 
 TEST_PPAPI_IN_PROCESS(TalkPrivate)
 TEST_PPAPI_OUT_OF_PROCESS(TalkPrivate)

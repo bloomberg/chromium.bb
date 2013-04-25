@@ -509,7 +509,7 @@ void BrowsingDataRemover::RemoveImpl(int remove_mask,
           new PepperFlashSettingsManager(this, profile_));
     }
     deauthorize_content_licenses_request_id_ =
-        pepper_flash_settings_manager_->DeauthorizeContentLicenses();
+        pepper_flash_settings_manager_->DeauthorizeContentLicenses(prefs);
   }
 #endif
 

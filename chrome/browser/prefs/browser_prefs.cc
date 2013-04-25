@@ -62,6 +62,7 @@
 #include "chrome/browser/profiles/profile_impl.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/browser/renderer_host/web_cache_manager.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
@@ -337,6 +338,7 @@ void RegisterUserPrefs(PrefRegistrySyncable* registry) {
 #if !defined(OS_ANDROID)
   TabsCaptureVisibleTabFunction::RegisterUserPrefs(registry);
   ChromeToMobileService::RegisterUserPrefs(registry);
+  DeviceIDFetcher::RegisterUserPrefs(registry);
   DevToolsWindow::RegisterUserPrefs(registry);
   extensions::CommandService::RegisterUserPrefs(registry);
   ExtensionSettingsHandler::RegisterUserPrefs(registry);

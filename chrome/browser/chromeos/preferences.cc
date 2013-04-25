@@ -22,7 +22,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/chromeos/system/drm_settings.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/statistics_provider.h"
 #include "chrome/browser/download/download_util.h"
@@ -273,12 +272,6 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
                                "0.0.0.0",
                                PrefRegistrySyncable::SYNCABLE_PREF);
 
-  // TODO(wad): Once UI is connected, a final default can be set. At that point
-  // change this pref from UNSYNCABLE to SYNCABLE.
-  registry->RegisterBooleanPref(prefs::kEnableCrosDRM,
-                                true,
-                                PrefRegistrySyncable::UNSYNCABLE_PREF);
-
   registry->RegisterBooleanPref(prefs::kExternalStorageDisabled,
                                 false,
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
@@ -425,8 +418,6 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kLanguageXkbAutoRepeatInterval, prefs, callback);
 
   enable_screen_lock_.Init(prefs::kEnableScreenLock, prefs, callback);
-
-  enable_drm_.Init(prefs::kEnableCrosDRM, prefs, callback);
 
   power_ac_screen_dim_delay_ms_.Init(
       prefs::kPowerAcScreenDimDelayMs, prefs, callback);
@@ -748,11 +739,6 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
           language_prefs::kMozcIntegerPrefs[i].ibus_config_name,
           mozc_integer_prefs_[i].GetValue());
     }
-  }
-
-  // Init or update protected content (DRM) support.
-  if (!pref_name || *pref_name == prefs::kEnableCrosDRM) {
-    system::ToggleDrm(enable_drm_.GetValue());
   }
 
   // Change the download directory to the default value if a Drive directory is

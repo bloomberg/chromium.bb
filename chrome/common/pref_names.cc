@@ -795,12 +795,8 @@ const char kChromeOSReleaseNotesVersion[] = "settings.release_notes.version";
 // A boolean pref that uses shared proxies.
 const char kUseSharedProxies[] = "settings.use_shared_proxies";
 
-// A boolean pref that enables the (private) pepper GetID() call.
-const char kEnableCrosDRM[] = "settings.privacy.drm_enabled";
-
 // Power state of the current displays from the last run.
 const char kDisplayPowerState[] = "settings.display.power_state";
-
 // A dictionary pref that stores per display preferences.
 const char kDisplayProperties[] = "settings.display.properties";
 
@@ -2426,5 +2422,10 @@ extern const char kLastAppListLaunchPing[] = "app_list.last_launch_ping";
 // ping and the time of the last ping.
 extern const char kAppListAppLaunchCount[] = "app_list.app_launch_count";
 extern const char kLastAppListAppLaunchPing[] = "app_list.last_app_launch_ping";
+
+// A string pref for storing the salt used to compute the pepper device ID.
+const char kDRMSalt[] = "settings.privacy.drm_salt";
+// A boolean pref that enables the (private) pepper GetDeviceID() call.
+const char kEnableDRM[] = "settings.privacy.drm_enabled";
 
 }  // namespace prefs

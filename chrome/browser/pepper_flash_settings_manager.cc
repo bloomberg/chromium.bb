@@ -10,11 +10,13 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/file_util.h"
 #include "base/prefs/pref_service.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/renderer_host/pepper/device_id_fetcher.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/browser_context.h"
@@ -124,6 +126,10 @@ class PepperFlashSettingsManager::Core
 
   void InitializeOnIOThread();
   void DeauthorizeContentLicensesOnIOThread(uint32 request_id);
+  void DeauthorizeContentLicensesOnBlockingPool(
+      uint32 request_id,
+      const base::FilePath& profile_path);
+  void DeauthorizeContentLicensesInPlugin(uint32 request_id, bool success);
   void GetPermissionSettingsOnIOThread(
       uint32 request_id,
       PP_Flash_BrowserOperations_SettingType setting_type);
@@ -436,6 +442,41 @@ void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnIOThread(
     return;
   }
 
+#if defined(OS_CHROMEOS)
+  BrowserThread::PostBlockingPoolTask(FROM_HERE,
+      base::Bind(&Core::DeauthorizeContentLicensesOnBlockingPool, this,
+                 request_id, browser_context_path_));
+#else
+  DeauthorizeContentLicensesInPlugin(request_id, true);
+#endif
+}
+
+// TODO(raymes): This is temporary code to migrate ChromeOS devices to the new
+// scheme for generating device IDs. Delete this once we are sure most ChromeOS
+// devices have been migrated.
+void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesOnBlockingPool(
+    uint32 request_id,
+    const base::FilePath& profile_path) {
+  // ChromeOS used to store the device ID in a file but this is no longer used.
+  // Wipe that file.
+  const base::FilePath& device_id_path =
+      chrome::DeviceIDFetcher::GetLegacyDeviceIDPath(profile_path);
+  bool success = file_util::Delete(device_id_path, false);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&Core::DeauthorizeContentLicensesInPlugin, this, request_id,
+                 success));
+}
+
+void PepperFlashSettingsManager::Core::DeauthorizeContentLicensesInPlugin(
+    uint32 request_id,
+    bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  if (!success) {
+    NotifyErrorFromIOThread();
+    return;
+  }
   IPC::Message* msg =
       new PpapiMsg_DeauthorizeContentLicenses(request_id, plugin_data_path_);
   if (!channel_->Send(msg)) {
@@ -939,8 +980,14 @@ void PepperFlashSettingsManager::RegisterUserPrefs(
                                 PrefRegistrySyncable::UNSYNCABLE_PREF);
 }
 
-uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses() {
+uint32 PepperFlashSettingsManager::DeauthorizeContentLicenses(
+    PrefService* prefs) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  // Clear the device ID salt which has the effect of regenerating a device
+  // ID. Since this happens synchronously (and on the UI thread), we don't have
+  // to add it to a pending request.
+  prefs->ClearPref(prefs::kDRMSalt);
 
   EnsureCoreExists();
   uint32 id = GetNextRequestId();

@@ -492,6 +492,8 @@
       'tests/test_flash.h',
       'tests/test_flash_clipboard.cc',
       'tests/test_flash_clipboard.h',
+      'tests/test_flash_device_id.cc',
+      'tests/test_flash_device_id.h',
       'tests/test_flash_file.cc',
       'tests/test_flash_file.h',
       'tests/test_flash_fullscreen.cc',

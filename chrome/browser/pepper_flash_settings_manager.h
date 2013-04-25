@@ -13,6 +13,7 @@
 
 class PluginPrefs;
 class PrefRegistrySyncable;
+class PrefService;
 
 namespace content {
 class BrowserContext;
@@ -69,7 +70,7 @@ class PepperFlashSettingsManager {
   // operation is completed.
   // The return value is the same as the request ID passed into
   // Client::OnDeauthorizeContentLicensesCompleted().
-  uint32 DeauthorizeContentLicenses();
+  uint32 DeauthorizeContentLicenses(PrefService* prefs);
 
   // Gets permission settings.
   // Client::OnGetPermissionSettingsCompleted() will be called when the

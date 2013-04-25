@@ -294,7 +294,6 @@ extern const char kShowPlanNotifications[];
 extern const char kShow3gPromoNotification[];
 extern const char kChromeOSReleaseNotesVersion[];
 extern const char kUseSharedProxies[];
-extern const char kEnableCrosDRM[];
 extern const char kDisplayPowerState[];
 extern const char kDisplayProperties[];
 extern const char kPrimaryDisplayID[];
@@ -906,6 +905,9 @@ extern const char kLastAppListLaunchPing[];
 extern const char kAppListLaunchCount[];
 extern const char kLastAppListAppLaunchPing[];
 extern const char kAppListAppLaunchCount[];
+
+extern const char kDRMSalt[];
+extern const char kEnableDRM[];
 
 }  // namespace prefs
 
