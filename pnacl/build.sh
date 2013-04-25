@@ -3290,7 +3290,6 @@ driver-install-python() {
   cp $@ driver_log.py driver_env.py *tools.py loader.py "${pydir}"
 
   # Install redirector shell/batch scripts
-  cp findpython.sh "${destdir}"
   for name in $@; do
     local dest="${destdir}/${name/.py}"
     # In some situations cygwin cp messes up the permissions of the redirector

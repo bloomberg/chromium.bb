@@ -81,10 +81,7 @@ EXTRA_ENV = {
     '${STATIC ? --end-group} ' +
     '${CRTEND}',
 
-  # TODO(pdox): To simplify translation, reduce from 3 to 2 cases.
-  # BUG= http://code.google.com/p/nativeclient/issues/detail?id=2423
-  'DEFAULTLIBS':
-    '${LIBGCC_EH} -l:libgcc.a ${MISC_LIBS}',
+  'DEFAULTLIBS': '${LIBGCC_EH} -l:libgcc.a ${MISC_LIBS}',
 
   'MISC_LIBS':
     # TODO(pdox):

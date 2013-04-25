@@ -9,5 +9,8 @@
 DRIVER_BIN="`dirname "$0"`"
 TOOLNAME="`basename "$0"`"
 PYDIR="${DRIVER_BIN}/pydir"
-. "${DRIVER_BIN}"/findpython.sh
-${PYTHON} "${PYDIR}/loader.py" "${TOOLNAME}" "$@"
+
+# Expect to find python in the PATH. It can be overridden with PNACLPYTHON.
+PNACLPYTHON="${PNACLPYTHON:-python}"
+${PNACLPYTHON} "${PYDIR}/loader.py" "${TOOLNAME}" "$@"
+
