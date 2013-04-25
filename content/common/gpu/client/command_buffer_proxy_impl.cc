@@ -144,7 +144,7 @@ bool CommandBufferProxyImpl::Initialize() {
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the Initialize IPC below.
   base::SharedMemoryHandle handle =
-      channel_->ShareToGpuProcess(shared_state_shm_.get());
+      channel_->ShareToGpuProcess(shared_state_shm_->handle());
   if (!base::SharedMemory::IsHandleValid(handle))
     return false;
 
@@ -266,7 +266,7 @@ gpu::Buffer CommandBufferProxyImpl::CreateTransferBuffer(size_t size,
   // will leak. In otherwords, do not early out on error between here and the
   // sending of the RegisterTransferBuffer IPC below.
   base::SharedMemoryHandle handle =
-      channel_->ShareToGpuProcess(shared_memory.get());
+      channel_->ShareToGpuProcess(shared_memory->handle());
   if (!base::SharedMemory::IsHandleValid(handle))
     return gpu::Buffer();
 

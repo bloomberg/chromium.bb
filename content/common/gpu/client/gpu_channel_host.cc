@@ -8,6 +8,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop.h"
 #include "base/message_loop_proxy.h"
+#include "base/posix/eintr_wrapper.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/common/gpu/client/command_buffer_proxy_impl.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -251,28 +252,31 @@ void GpuChannelHost::RemoveRoute(int route_id) {
 }
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
-    base::SharedMemory* shared_memory) {
+    base::SharedMemoryHandle source_handle) {
   AutoLock lock(context_lock_);
 
   if (!channel_)
     return base::SharedMemory::NULLHandle();
 
-  base::SharedMemoryHandle handle;
 #if defined(OS_WIN)
   // Windows needs to explicitly duplicate the handle out to another process.
-  if (!BrokerDuplicateHandle(shared_memory->handle(),
+  base::SharedMemoryHandle target_handle;
+  if (!BrokerDuplicateHandle(source_handle,
                              channel_->peer_pid(),
-                             &handle,
-                             FILE_MAP_WRITE,
-                             0)) {
+                             &target_handle,
+                             0,
+                             DUPLICATE_SAME_ACCESS)) {
     return base::SharedMemory::NULLHandle();
   }
-#else
-  if (!shared_memory->ShareToProcess(channel_->peer_pid(), &handle))
-    return base::SharedMemory::NULLHandle();
-#endif
 
-  return handle;
+  return target_handle;
+#else
+  int duped_handle = HANDLE_EINTR(dup(source_handle.fd));
+  if (duped_handle < 0)
+    return base::SharedMemory::NULLHandle();
+
+  return base::FileDescriptor(duped_handle, true);
+#endif
 }
 
 bool GpuChannelHost::GenerateMailboxNames(unsigned num,

@@ -71,19 +71,16 @@ void GpuVideoDecodeAcceleratorHost::Decode(
   // Can happen if a decode task was posted before an error was delivered.
   if (!channel_)
     return;
-  base::SharedMemoryHandle buffer_handle = bitstream_buffer.handle();
-#if defined(OS_WIN)
-  if (!BrokerDuplicateHandle(bitstream_buffer.handle(),
-                             channel_->gpu_pid(),
-                             &buffer_handle, 0,
-                             DUPLICATE_SAME_ACCESS)) {
+
+  base::SharedMemoryHandle handle = channel_->ShareToGpuProcess(
+      bitstream_buffer.handle());
+  if (!base::SharedMemory::IsHandleValid(handle)) {
     NOTREACHED() << "Failed to duplicate buffer handler";
     return;
   }
-#endif  // OS_WIN
 
   Send(new AcceleratedVideoDecoderMsg_Decode(
-      decoder_route_id_, buffer_handle, bitstream_buffer.id(),
+      decoder_route_id_, handle, bitstream_buffer.id(),
       bitstream_buffer.size()));
 }
 

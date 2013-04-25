@@ -157,18 +157,13 @@ class GpuChannelHost : public IPC::Sender,
   GpuChannelHostFactory* factory() const { return factory_; }
   int gpu_host_id() const { return gpu_host_id_; }
 
-  // Do not use this function! It does not take the context lock and even
-  // if it did the PID might become invalid immediately after releasing it
-  // TODO(apatrick): Make all callers use ShareToGpuProcess().
-  base::ProcessId gpu_pid() const { return channel_->peer_pid(); }
-
   int client_id() const { return client_id_; }
 
   // Returns a handle to the shared memory that can be sent via IPC to the
   // GPU process. The caller is responsible for ensuring it is closed. Returns
   // an invalid handle on failure.
   base::SharedMemoryHandle ShareToGpuProcess(
-      base::SharedMemory* shared_memory);
+      base::SharedMemoryHandle source_handle);
 
   // Generates n unique mailbox names that can be used with
   // GL_texture_mailbox_CHROMIUM. Unlike genMailboxCHROMIUM, this IPC is
