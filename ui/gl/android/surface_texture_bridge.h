@@ -10,6 +10,7 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gl/gl_export.h"
 
 struct ANativeWindow;
 
@@ -17,7 +18,7 @@ namespace gfx {
 
 // This class serves as a bridge for native code to call java functions inside
 // android SurfaceTexture class.
-class SurfaceTextureBridge
+class GL_EXPORT SurfaceTextureBridge
     : public base::RefCountedThreadSafe<SurfaceTextureBridge>{
  public:
   explicit SurfaceTextureBridge(int texture_id);

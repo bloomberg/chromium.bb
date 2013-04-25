@@ -8,6 +8,7 @@
 #include <jni.h>
 
 #include "base/android/scoped_java_ref.h"
+#include "ui/gl/gl_export.h"
 
 namespace gfx {
 
@@ -16,7 +17,7 @@ class SurfaceTextureBridge;
 // A helper class for holding a scoped reference to a Java Surface instance.
 // When going out of scope, Surface.release() is called on the Java object to
 // make sure server-side references (esp. wrt graphics memory) are released.
-class ScopedJavaSurface {
+class GL_EXPORT ScopedJavaSurface {
  public:
   ScopedJavaSurface();
 

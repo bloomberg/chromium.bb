@@ -8,6 +8,7 @@
 #include <jni.h>
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gl/gl_export.h"
 
 namespace base {
 class MessageLoopProxy;
@@ -16,7 +17,7 @@ class MessageLoopProxy;
 namespace gfx {
 
 // Listener class for all the callbacks from android SurfaceTexture.
-class SurfaceTextureListener {
+class GL_EXPORT SurfaceTextureListener {
 public:
   // Destroy this listener.
   void Destroy(JNIEnv* env, jobject obj);
