@@ -48,7 +48,7 @@ public class PerfTraceEvent {
         INSTANT("I");
 
         // The string understood by the trace scripts.
-        private String mTypeStr;
+        private final String mTypeStr;
 
         EventType(String typeStr) {
             mTypeStr = typeStr;
@@ -82,7 +82,7 @@ public class PerfTraceEvent {
      *
      * @param strings Event names we will record.
      */
-    public static void setFilter(List<String> strings) {
+    public static synchronized void setFilter(List<String> strings) {
         sFilter = new LinkedList<String>(strings);
     }
 
@@ -143,7 +143,7 @@ public class PerfTraceEvent {
      * It is safe to call trace methods without checking if PerfTraceEvent
      * is enabled.
      */
-    public static boolean enabled() {
+    public static synchronized boolean enabled() {
         return sEnabled;
     }
 
@@ -333,7 +333,7 @@ public class PerfTraceEvent {
      * @param file Which file to append the performance data to.  If {@code null}, the performance
      *             data will be sent to STDOUT.
      */
-    public static void setOutputFile(File file) {
+    public static synchronized void setOutputFile(File file) {
         sOutputFile = file;
     }
 
