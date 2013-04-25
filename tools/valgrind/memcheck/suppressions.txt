@@ -4026,7 +4026,7 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN16ProcessSingletonC1E*
-   fun:_ZN22ChromeBrowserMainParts20PreCreateThreadsImplEv
+   fun:_ZN22ChromeProcessSingletonC1E*
 }
 {
    bug_104806_a
