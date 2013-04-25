@@ -49,7 +49,7 @@ private:
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
 
-    LayoutUnit computePreferredTrackWidth(const Length&, size_t) const;
+    LayoutUnit computePreferredTrackWidth(const GridLength&, size_t) const;
 
     struct GridSpan {
         static PassOwnPtr<GridSpan> create(size_t initialPosition, size_t finalPosition)
@@ -89,8 +89,8 @@ private:
     class GridIterator;
     enum TrackSizingDirection { ForColumns, ForRows };
     void computedUsedBreadthOfGridTracks(TrackSizingDirection, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks);
-    LayoutUnit computeUsedBreadthOfMinLength(TrackSizingDirection, const Length&) const;
-    LayoutUnit computeUsedBreadthOfMaxLength(TrackSizingDirection, const Length&) const;
+    LayoutUnit computeUsedBreadthOfMinLength(TrackSizingDirection, const GridLength&) const;
+    LayoutUnit computeUsedBreadthOfMaxLength(TrackSizingDirection, const GridLength&) const;
     LayoutUnit computeUsedBreadthOfSpecifiedLength(TrackSizingDirection, const Length&) const;
     void resolveContentBasedTrackSizingFunctions(TrackSizingDirection, Vector<GridTrack>& columnTracks, Vector<GridTrack>& rowTracks, LayoutUnit& availableLogicalSpace);
 

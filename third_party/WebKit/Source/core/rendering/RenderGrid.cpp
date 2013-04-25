@@ -229,8 +229,10 @@ void RenderGrid::computePreferredLogicalWidths()
     setPreferredLogicalWidthsDirty(false);
 }
 
-LayoutUnit RenderGrid::computePreferredTrackWidth(const Length& length, size_t trackIndex) const
+LayoutUnit RenderGrid::computePreferredTrackWidth(const GridLength& gridLength, size_t trackIndex) const
 {
+    const Length& length = gridLength.length();
+
     if (length.isFixed()) {
         // Grid areas don't have borders, margins or paddings so we don't need to account for them.
         return length.intValue();
@@ -268,8 +270,8 @@ void RenderGrid::computedUsedBreadthOfGridTracks(TrackSizingDirection direction,
     for (size_t i = 0; i < tracks.size(); ++i) {
         GridTrack& track = tracks[i];
         const GridTrackSize& trackSize = gridTrackSize(direction, i);
-        const Length& minTrackBreadth = trackSize.minTrackBreadth();
-        const Length& maxTrackBreadth = trackSize.maxTrackBreadth();
+        const GridLength& minTrackBreadth = trackSize.minTrackBreadth();
+        const GridLength& maxTrackBreadth = trackSize.maxTrackBreadth();
 
         track.m_usedBreadth = computeUsedBreadthOfMinLength(direction, minTrackBreadth);
         track.m_maxBreadth = computeUsedBreadthOfMaxLength(direction, maxTrackBreadth);
@@ -291,8 +293,9 @@ void RenderGrid::computedUsedBreadthOfGridTracks(TrackSizingDirection direction,
     distributeSpaceToTracks(tracksForDistribution, 0, &GridTrack::usedBreadth, &GridTrack::growUsedBreadth, availableLogicalSpace);
 }
 
-LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(TrackSizingDirection direction, const Length& trackLength) const
+LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(TrackSizingDirection direction, const GridLength& gridLength) const
 {
+    const Length& trackLength = gridLength.length();
     if (trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage())
         return computeUsedBreadthOfSpecifiedLength(direction, trackLength);
 
@@ -300,8 +303,9 @@ LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(TrackSizingDirection direct
     return 0;
 }
 
-LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(TrackSizingDirection direction, const Length& trackLength) const
+LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(TrackSizingDirection direction, const GridLength& gridLength) const
 {
+    const Length& trackLength = gridLength.length();
     if (trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage()) {
         LayoutUnit computedBreadth = computeUsedBreadthOfSpecifiedLength(direction, trackLength);
         // FIXME: We should ASSERT that computedBreadth cannot return infinity but it's currently
@@ -499,7 +503,7 @@ bool RenderGrid::tracksAreWiderThanMinTrackBreadth(TrackSizingDirection directio
 {
     for (size_t i = 0; i < tracks.size(); ++i) {
         const GridTrackSize& trackSize = gridTrackSize(direction, i);
-        const Length& minTrackBreadth = trackSize.minTrackBreadth();
+        const GridLength& minTrackBreadth = trackSize.minTrackBreadth();
         if (computeUsedBreadthOfMinLength(direction, minTrackBreadth) > tracks[i].m_usedBreadth)
             return false;
     }

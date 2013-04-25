@@ -1001,13 +1001,14 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForGridTrackBreadth(const Length& trackBreadth, const RenderStyle* style, RenderView *renderView)
+static PassRefPtr<CSSValue> valueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle* style, RenderView* renderView)
 {
-    if (trackBreadth.isAuto())
+    const Length& trackBreadthLength = trackBreadth.length();
+    if (trackBreadthLength.isAuto())
         return cssValuePool().createIdentifierValue(CSSValueAuto);
-    if (trackBreadth.isViewportPercentage())
-        return zoomAdjustedPixelValue(valueForLength(trackBreadth, 0, renderView), style);
-    return zoomAdjustedPixelValueForLength(trackBreadth, style);
+    if (trackBreadthLength.isViewportPercentage())
+        return zoomAdjustedPixelValue(valueForLength(trackBreadthLength, 0, renderView), style);
+    return zoomAdjustedPixelValueForLength(trackBreadthLength, style);
 }
 
 static PassRefPtr<CSSValue> valueForGridTrackSize(const GridTrackSize& trackSize, const RenderStyle* style, RenderView* renderView)
