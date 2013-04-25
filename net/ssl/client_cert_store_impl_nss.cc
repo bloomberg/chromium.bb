@@ -14,13 +14,40 @@ namespace net {
 
 namespace {
 
+// Examines the certificates in |cert_list| to find all certificates that match
+// the client certificate request in |request|, storing the matching
+// certificates in |selected_certs|.
+// If |query_nssdb| is true, NSS will be queried to construct full certificate
+// chains. If it is false, only the certificate will be considered.
 bool GetClientCertsImpl(CERTCertList* cert_list,
                         const SSLCertRequestInfo& request,
+                        bool query_nssdb,
                         CertificateList* selected_certs) {
   DCHECK(cert_list);
   DCHECK(selected_certs);
 
   selected_certs->clear();
+
+  // Create a "fake" CERTDistNames structure. No public API exists to create
+  // one from a list of issuers.
+  CERTDistNames ca_names;
+  ca_names.arena = NULL;
+  ca_names.nnames = 0;
+  ca_names.names = NULL;
+  ca_names.head = NULL;
+
+  std::vector<SECItem> ca_names_items(request.cert_authorities.size());
+  for (size_t i = 0; i < request.cert_authorities.size(); ++i) {
+    const std::string& authority = request.cert_authorities[i];
+    ca_names_items[i].type = siBuffer;
+    ca_names_items[i].data =
+        reinterpret_cast<unsigned char*>(const_cast<char*>(authority.data()));
+    ca_names_items[i].len = static_cast<unsigned int>(authority.size());
+  }
+  ca_names.nnames = static_cast<int>(ca_names_items.size());
+  if (!ca_names_items.empty())
+    ca_names.names = &ca_names_items[0];
+
   for (CERTCertListNode* node = CERT_LIST_HEAD(cert_list);
        !CERT_LIST_END(node, cert_list);
        node = CERT_LIST_NEXT(node)) {
@@ -34,11 +61,13 @@ bool GetClientCertsImpl(CERTCertList* cert_list,
         node->cert, X509Certificate::OSCertHandles());
 
     // Check if the certificate issuer is allowed by the server.
-    if (!request.cert_authorities.empty() &&
-        !cert->IsIssuedByEncoded(request.cert_authorities)) {
-      continue;
+    if (request.cert_authorities.empty() ||
+        (!query_nssdb &&
+         cert->IsIssuedByEncoded(request.cert_authorities)) ||
+        (query_nssdb &&
+         NSS_CmpCertChainWCANames(node->cert, &ca_names) == SECSuccess)) {
+      selected_certs->push_back(cert);
     }
-    selected_certs->push_back(cert);
   }
 
   std::sort(selected_certs->begin(), selected_certs->end(),
@@ -57,7 +86,7 @@ bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
   if (!client_certs)
     return true;
 
-  bool rv = GetClientCertsImpl(client_certs, request, selected_certs);
+  bool rv = GetClientCertsImpl(client_certs, request, true, selected_certs);
   CERT_DestroyCertList(client_certs);
   return rv;
 }
@@ -73,7 +102,7 @@ bool ClientCertStoreImpl::SelectClientCerts(const CertificateList& input_certs,
         cert_list, CERT_DupCertificate(input_certs[i]->os_cert_handle()));
   }
 
-  bool rv = GetClientCertsImpl(cert_list, request, selected_certs);
+  bool rv = GetClientCertsImpl(cert_list, request, false, selected_certs);
   CERT_DestroyCertList(cert_list);
   return rv;
 }

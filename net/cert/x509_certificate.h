@@ -279,9 +279,6 @@ class NET_EXPORT X509Certificate
   // Does this certificate's usage allow SSL client authentication?
   bool SupportsSSLClientAuth() const;
 
-  // Creates the chain of certs to use for this client identity cert.
-  CFArrayRef CreateClientCertificateChain() const;
-
   // Returns a new CFArrayRef containing this certificate and its intermediate
   // certificates in the form expected by Security.framework and Keychain
   // Services, or NULL on failure.

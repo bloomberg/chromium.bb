@@ -21,6 +21,7 @@
 #include "crypto/mac_security_services_lock.h"
 #include "net/base/host_port_pair.h"
 #include "net/cert/x509_util.h"
+#include "net/cert/x509_util_mac.h"
 
 using base::mac::ScopedCFTypeRef;
 
@@ -28,9 +29,103 @@ namespace net {
 
 namespace {
 
+// Gets the issuer for a given cert, starting with the cert itself and
+// including the intermediate and finally root certificates (if any).
+// This function calls SecTrust but doesn't actually pay attention to the trust
+// result: it shouldn't be used to determine trust, just to traverse the chain.
+// Caller is responsible for releasing the value stored into *out_cert_chain.
+OSStatus CopyCertChain(SecCertificateRef cert_handle,
+                       CFArrayRef* out_cert_chain) {
+  DCHECK(cert_handle);
+  DCHECK(out_cert_chain);
+
+  // Create an SSL policy ref configured for client cert evaluation.
+  SecPolicyRef ssl_policy;
+  OSStatus result = x509_util::CreateSSLClientPolicy(&ssl_policy);
+  if (result)
+    return result;
+  ScopedCFTypeRef<SecPolicyRef> scoped_ssl_policy(ssl_policy);
+
+  // Create a SecTrustRef.
+  ScopedCFTypeRef<CFArrayRef> input_certs(CFArrayCreate(
+      NULL, const_cast<const void**>(reinterpret_cast<void**>(&cert_handle)),
+      1, &kCFTypeArrayCallBacks));
+  SecTrustRef trust_ref = NULL;
+  {
+    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+    result = SecTrustCreateWithCertificates(input_certs, ssl_policy,
+                                            &trust_ref);
+  }
+  if (result)
+    return result;
+  ScopedCFTypeRef<SecTrustRef> trust(trust_ref);
+
+  // Evaluate trust, which creates the cert chain.
+  SecTrustResultType status;
+  CSSM_TP_APPLE_EVIDENCE_INFO* status_chain;
+  {
+    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+    result = SecTrustEvaluate(trust, &status);
+  }
+  if (result)
+    return result;
+  {
+    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+    result = SecTrustGetResult(trust, &status, out_cert_chain, &status_chain);
+  }
+  return result;
+}
+
+// Returns true if |*cert| is issued by an authority in |valid_issuers|
+// according to Keychain Services, rather than using |cert|'s intermediate
+// certificates. If it is, |*cert| is updated to point to the completed
+// certificate
+bool IsIssuedByInKeychain(const std::vector<std::string>& valid_issuers,
+                          scoped_refptr<X509Certificate>* cert) {
+  DCHECK(cert);
+  DCHECK(*cert);
+
+  X509Certificate::OSCertHandle cert_handle = (*cert)->os_cert_handle();
+  CFArrayRef cert_chain = NULL;
+  OSStatus result = CopyCertChain(cert_handle, &cert_chain);
+  if (result) {
+    OSSTATUS_LOG(ERROR, result) << "CopyCertChain error";
+    return false;
+  }
+
+  if (!cert_chain)
+    return false;
+
+  X509Certificate::OSCertHandles intermediates;
+  for (CFIndex i = 1, chain_count = CFArrayGetCount(cert_chain);
+       i < chain_count; ++i) {
+    SecCertificateRef cert = reinterpret_cast<SecCertificateRef>(
+        const_cast<void*>(CFArrayGetValueAtIndex(cert_chain, i)));
+    intermediates.push_back(cert);
+  }
+
+  scoped_refptr<X509Certificate> new_cert(X509Certificate::CreateFromHandle(
+      cert_handle, intermediates));
+  CFRelease(cert_chain);  // Also frees |intermediates|.
+
+  if (!new_cert->IsIssuedByEncoded(valid_issuers))
+    return false;
+
+  cert->swap(new_cert);
+  return true;
+}
+
+// Examines the certificates in |preferred_cert| and |regular_certs| to find
+// all certificates that match the client certificate request in |request|,
+// storing the matching certificates in |selected_certs|.
+// If |query_keychain| is true, Keychain Services will be queried to construct
+// full certificate chains. If it is false, only the the certificates and their
+// intermediates (available via X509Certificate::GetIntermediateCertificates())
+// will be considered.
 bool GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
                         const CertificateList& regular_certs,
                         const SSLCertRequestInfo& request,
+                        bool query_keychain,
                         CertificateList* selected_certs) {
   CertificateList preliminary_list;
   if (preferred_cert)
@@ -55,11 +150,12 @@ bool GetClientCertsImpl(const scoped_refptr<X509Certificate>& preferred_cert,
       continue;
 
     // Check if the certificate issuer is allowed by the server.
-    if (!request.cert_authorities.empty() &&
-        !cert->IsIssuedByEncoded(request.cert_authorities)) {
-      continue;
+    if (request.cert_authorities.empty() ||
+        cert->IsIssuedByEncoded(request.cert_authorities) ||
+        (query_keychain &&
+         IsIssuedByInKeychain(request.cert_authorities, &cert))) {
+      selected_certs->push_back(cert);
     }
-    selected_certs->push_back(cert);
   }
 
   // Preferred cert should appear first in the ui, so exclude it from the
@@ -147,14 +243,14 @@ bool ClientCertStoreImpl::GetClientCerts(const SSLCertRequestInfo& request,
     return false;
   }
 
-  return GetClientCertsImpl(preferred_cert, regular_certs, request,
+  return GetClientCertsImpl(preferred_cert, regular_certs, request, true,
                             selected_certs);
 }
 
 bool ClientCertStoreImpl::SelectClientCerts(const CertificateList& input_certs,
                                             const SSLCertRequestInfo& request,
                                             CertificateList* selected_certs) {
-  return GetClientCertsImpl(NULL, input_certs, request,
+  return GetClientCertsImpl(NULL, input_certs, request, false,
                             selected_certs);
 }
 
@@ -164,7 +260,7 @@ bool ClientCertStoreImpl::SelectClientCertsGivenPreferred(
       const CertificateList& regular_certs,
       const SSLCertRequestInfo& request,
       CertificateList* selected_certs) {
-  return GetClientCertsImpl(preferred_cert, regular_certs, request,
+  return GetClientCertsImpl(preferred_cert, regular_certs, request, false,
                             selected_certs);
 }
 #endif

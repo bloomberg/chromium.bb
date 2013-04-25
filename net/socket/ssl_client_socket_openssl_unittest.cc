@@ -219,7 +219,7 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, SendEmptyCert) {
   TestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   ssl_options.client_authorities.push_back(
-      GetTestClientCertsDirectory().AppendASCII("client_1_root.pem"));
+      GetTestClientCertsDirectory().AppendASCII("client_1_ca.pem"));
 
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 
@@ -241,7 +241,7 @@ TEST_F(SSLClientSocketOpenSSLClientAuthTest, SendGoodCert) {
   TestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   ssl_options.client_authorities.push_back(
-      GetTestClientCertsDirectory().AppendASCII("client_1_root.pem"));
+      GetTestClientCertsDirectory().AppendASCII("client_1_ca.pem"));
 
   ASSERT_TRUE(ConnectToTestServer(ssl_options));
 

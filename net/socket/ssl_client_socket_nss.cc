@@ -112,7 +112,10 @@
 #include <Security/SecBase.h>
 #include <Security/SecCertificate.h>
 #include <Security/SecIdentity.h>
+
 #include "base/mac/mac_logging.h"
+#include "base/synchronization/lock.h"
+#include "crypto/mac_security_services_lock.h"
 #elif defined(USE_NSS)
 #include <dlfcn.h>
 #endif
@@ -1397,29 +1400,31 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
       OSStatus os_error = noErr;
       SecIdentityRef identity = NULL;
       SecKeyRef private_key = NULL;
-      CFArrayRef chain =
-          core->ssl_config_.client_cert->CreateClientCertificateChain();
-      if (chain) {
-        identity = reinterpret_cast<SecIdentityRef>(
-            const_cast<void*>(CFArrayGetValueAtIndex(chain, 0)));
+      X509Certificate::OSCertHandles chain;
+      {
+        base::AutoLock lock(crypto::GetMacSecurityServicesLock());
+        os_error = SecIdentityCreateWithCertificate(
+            NULL, core->ssl_config_.client_cert->os_cert_handle(), &identity);
       }
-      if (identity)
+      if (os_error == noErr) {
         os_error = SecIdentityCopyPrivateKey(identity, &private_key);
+        CFRelease(identity);
+      }
 
-      if (chain && identity && os_error == noErr) {
+      if (os_error == noErr) {
         // TODO(rsleevi): Error checking for NSS allocation errors.
         *result_certs = CERT_NewCertList();
         *result_private_key = private_key;
 
-        for (CFIndex i = 0; i < CFArrayGetCount(chain); ++i) {
+        chain.push_back(core->ssl_config_.client_cert->os_cert_handle());
+        const X509Certificate::OSCertHandles& intermediates =
+            core->ssl_config_.client_cert->GetIntermediateCertificates();
+        if (!intermediates.empty())
+          chain.insert(chain.end(), intermediates.begin(), intermediates.end());
+
+        for (size_t i = 0, chain_count = chain.size(); i < chain_count; ++i) {
           CSSM_DATA cert_data;
-          SecCertificateRef cert_ref;
-          if (i == 0) {
-            cert_ref = core->ssl_config_.client_cert->os_cert_handle();
-          } else {
-            cert_ref = reinterpret_cast<SecCertificateRef>(
-                const_cast<void*>(CFArrayGetValueAtIndex(chain, i)));
-          }
+          SecCertificateRef cert_ref = chain[i];
           os_error = SecCertificateGetData(cert_ref, &cert_data);
           if (os_error != noErr)
             break;
@@ -1431,23 +1436,20 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
           CERTCertificate* nss_cert = CERT_NewTempCertificate(
               CERT_GetDefaultCertDB(), &der_cert, NULL, PR_FALSE, PR_TRUE);
           if (!nss_cert) {
-            // In the event of an NSS error we make up an OS error and reuse
-            // the error handling, below.
+            // In the event of an NSS error, make up an OS error and reuse
+            // the error handling below.
             os_error = errSecCreateChainFailed;
             break;
           }
           CERT_AddCertToListTail(*result_certs, nss_cert);
         }
       }
+
       if (os_error == noErr) {
-        int cert_count = 0;
-        if (chain) {
-          cert_count = CFArrayGetCount(chain);
-          CFRelease(chain);
-        }
-        core->AddCertProvidedEvent(cert_count);
+        core->AddCertProvidedEvent(chain.size());
         return SECSuccess;
       }
+
       OSSTATUS_LOG(WARNING, os_error)
           << "Client cert found, but could not be used";
       if (*result_certs) {
@@ -1458,8 +1460,6 @@ SECStatus SSLClientSocketNSS::Core::PlatformClientAuthHandler(
         *result_private_key = NULL;
       if (private_key)
         CFRelease(private_key);
-      if (chain)
-        CFRelease(chain);
     }
 
     // Send no client certificate.

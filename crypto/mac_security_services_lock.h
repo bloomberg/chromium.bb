@@ -11,7 +11,6 @@ namespace base {
 class Lock;
 }
 
-
 namespace crypto {
 
 // The Mac OS X certificate and key management wrappers over CSSM are not

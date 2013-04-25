@@ -113,53 +113,6 @@ std::string GetCertSerialNumber(
       serial_number.field()->Length);
 }
 
-// Gets the issuer for a given cert, starting with the cert itself and
-// including the intermediate and finally root certificates (if any).
-// This function calls SecTrust but doesn't actually pay attention to the trust
-// result: it shouldn't be used to determine trust, just to traverse the chain.
-// Caller is responsible for releasing the value stored into *out_cert_chain.
-OSStatus CopyCertChain(SecCertificateRef cert_handle,
-                       CFArrayRef* out_cert_chain) {
-  DCHECK(cert_handle);
-  DCHECK(out_cert_chain);
-
-  // Create an SSL policy ref configured for client cert evaluation.
-  SecPolicyRef ssl_policy;
-  OSStatus result = x509_util::CreateSSLClientPolicy(&ssl_policy);
-  if (result)
-    return result;
-  ScopedCFTypeRef<SecPolicyRef> scoped_ssl_policy(ssl_policy);
-
-  // Create a SecTrustRef.
-  ScopedCFTypeRef<CFArrayRef> input_certs(CFArrayCreate(
-      NULL, const_cast<const void**>(reinterpret_cast<void**>(&cert_handle)),
-      1, &kCFTypeArrayCallBacks));
-  SecTrustRef trust_ref = NULL;
-  {
-    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-    result = SecTrustCreateWithCertificates(input_certs, ssl_policy,
-                                            &trust_ref);
-  }
-  if (result)
-    return result;
-  ScopedCFTypeRef<SecTrustRef> trust(trust_ref);
-
-  // Evaluate trust, which creates the cert chain.
-  SecTrustResultType status;
-  CSSM_TP_APPLE_EVIDENCE_INFO* status_chain;
-  {
-    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-    result = SecTrustEvaluate(trust, &status);
-  }
-  if (result)
-    return result;
-  {
-    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-    result = SecTrustGetResult(trust, &status, out_cert_chain, &status_chain);
-  }
-  return result;
-}
-
 // Returns true if |purpose| is listed as allowed in |usage|. This
 // function also considers the "Any" purpose. If the attribute is
 // present and empty, we return false.
@@ -710,43 +663,6 @@ bool X509Certificate::SupportsSSLClientAuth() const {
       return false;
   }
   return true;
-}
-
-CFArrayRef X509Certificate::CreateClientCertificateChain() const {
-  // Initialize the result array with just the IdentityRef of the receiver:
-  SecIdentityRef identity;
-  OSStatus result;
-  {
-    base::AutoLock lock(crypto::GetMacSecurityServicesLock());
-    result = SecIdentityCreateWithCertificate(NULL, cert_handle_, &identity);
-  }
-  if (result) {
-    OSSTATUS_LOG(ERROR, result) << "SecIdentityCreateWithCertificate error";
-    return NULL;
-  }
-  ScopedCFTypeRef<CFMutableArrayRef> chain(
-      CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks));
-  CFArrayAppendValue(chain, identity);
-
-  CFArrayRef cert_chain = NULL;
-  result = CopyCertChain(cert_handle_, &cert_chain);
-  ScopedCFTypeRef<CFArrayRef> scoped_cert_chain(cert_chain);
-  if (result) {
-    OSSTATUS_LOG(ERROR, result) << "CreateIdentityCertificateChain error";
-    return chain.release();
-  }
-
-  // Append the intermediate certs from SecTrust to the result array:
-  if (cert_chain) {
-    int chain_count = CFArrayGetCount(cert_chain);
-    if (chain_count > 1) {
-      CFArrayAppendArray(chain,
-                         cert_chain,
-                         CFRangeMake(1, chain_count - 1));
-    }
-  }
-
-  return chain.release();
 }
 
 CFArrayRef X509Certificate::CreateOSCertChainForCert() const {
