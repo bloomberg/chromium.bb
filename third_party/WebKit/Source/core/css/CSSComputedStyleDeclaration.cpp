@@ -55,6 +55,7 @@
 #include "WebKitCSSTransformValue.h"
 #include "WebKitFontFamilyNames.h"
 #include "core/page/animation/AnimationController.h"
+#include "core/page/RuntimeCSSEnabled.h"
 #include "core/platform/graphics/FontFeatureSettings.h"
 #include "core/rendering/RenderBox.h"
 #include "core/rendering/RenderView.h"
@@ -84,7 +85,9 @@
 namespace WebCore {
 
 // List of all properties we know how to compute, omitting shorthands.
-static const CSSPropertyID computedProperties[] = {
+// NOTE: Do not use this list, use computableProperties() instead
+// to respect runtime enabling of CSS properties.
+static const CSSPropertyID staticComputableProperties[] = {
     CSSPropertyBackgroundAttachment,
 #if ENABLE(CSS_COMPOSITING)
     CSSPropertyBackgroundBlendMode,
@@ -403,7 +406,13 @@ static const CSSPropertyID computedProperties[] = {
 #endif
 };
 
-const unsigned numComputedProperties = WTF_ARRAY_LENGTH(computedProperties);
+static const Vector<CSSPropertyID>& computableProperties()
+{
+    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+    if (properties.isEmpty())
+        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticComputableProperties, WTF_ARRAY_LENGTH(staticComputableProperties), properties);
+    return properties;
+}
 
 static int valueForRepeatRule(int rule)
 {
@@ -1183,13 +1192,14 @@ void CSSComputedStyleDeclaration::deref()
 String CSSComputedStyleDeclaration::cssText() const
 {
     StringBuilder result;
+    const Vector<CSSPropertyID>& properties = computableProperties();
 
-    for (unsigned i = 0; i < numComputedProperties; i++) {
+    for (unsigned i = 0; i < properties.size(); i++) {
         if (i)
             result.append(' ');
-        result.append(getPropertyName(computedProperties[i]));
+        result.append(getPropertyName(properties[i]));
         result.append(": ", 2);
-        result.append(getPropertyValue(computedProperties[i]));
+        result.append(getPropertyValue(properties[i]));
         result.append(';');
     }
 
@@ -2820,7 +2830,7 @@ unsigned CSSComputedStyleDeclaration::length() const
     if (!style)
         return 0;
 
-    return numComputedProperties;
+    return computableProperties().size();
 }
 
 String CSSComputedStyleDeclaration::item(unsigned i) const
@@ -2828,7 +2838,7 @@ String CSSComputedStyleDeclaration::item(unsigned i) const
     if (i >= length())
         return "";
 
-    return getPropertyNameString(computedProperties[i]);
+    return getPropertyNameString(computableProperties()[i]);
 }
 
 bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, const CSSValue* propertyValue) const
@@ -2849,7 +2859,7 @@ bool CSSComputedStyleDeclaration::cssPropertyMatches(CSSPropertyID propertyID, c
 
 PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copy() const
 {
-    return copyPropertiesInSet(computedProperties, numComputedProperties);
+    return copyPropertiesInSet(computableProperties());
 }
 
 PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForShorthandProperties(const StylePropertyShorthand& shorthand) const
@@ -2900,14 +2910,14 @@ PassRefPtr<CSSValueList> CSSComputedStyleDeclaration::getCSSPropertyValuesForGri
     return list.release();
 }
 
-PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const CSSPropertyID* set, unsigned length) const
+PassRefPtr<StylePropertySet> CSSComputedStyleDeclaration::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     Vector<CSSProperty, 256> list;
-    list.reserveInitialCapacity(length);
-    for (unsigned i = 0; i < length; ++i) {
-        RefPtr<CSSValue> value = getPropertyCSSValue(set[i]);
+    list.reserveInitialCapacity(properties.size());
+    for (unsigned i = 0; i < properties.size(); ++i) {
+        RefPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
         if (value)
-            list.append(CSSProperty(set[i], value.release(), false));
+            list.append(CSSProperty(properties[i], value.release(), false));
     }
     return StylePropertySet::create(list.data(), list.size());
 }

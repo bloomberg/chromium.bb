@@ -50,6 +50,7 @@
 #include "core/editing/VisibleUnits.h"
 #include "core/editing/htmlediting.h"
 #include "core/page/Frame.h"
+#include "core/page/RuntimeCSSEnabled.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/HashSet.h>
 
@@ -57,7 +58,12 @@ namespace WebCore {
 
 // Editing style properties must be preserved during editing operation.
 // e.g. when a user inserts a new paragraph, all properties listed here must be copied to the new paragraph.
-static const CSSPropertyID editingProperties[] = {
+// NOTE: Use editingProperties() to respect runtime enabling of properties.
+static const unsigned nonInheritedStaticPropertiesCount = 2;
+
+static const CSSPropertyID staticEditingProperties[] = {
+    // NOTE: inheritableEditingProperties depends on these two properties being first.
+    // If you change this list, make sure to update nonInheritedPropertyCount.
     CSSPropertyBackgroundColor,
     CSSPropertyTextDecoration,
 
@@ -85,21 +91,33 @@ static const CSSPropertyID editingProperties[] = {
 
 enum EditingPropertiesType { OnlyInheritableEditingProperties, AllEditingProperties };
 
+static const Vector<CSSPropertyID>& allEditingProperties()
+{
+    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+    if (properties.isEmpty())
+        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticEditingProperties, WTF_ARRAY_LENGTH(staticEditingProperties), properties);
+    return properties;
+}
+
+static const Vector<CSSPropertyID>& inheritableEditingProperties()
+{
+    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+    if (properties.isEmpty())
+        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticEditingProperties + nonInheritedStaticPropertiesCount, WTF_ARRAY_LENGTH(staticEditingProperties) - nonInheritedStaticPropertiesCount, properties);
+    return properties;
+}
+
 template <class StyleDeclarationType>
 static PassRefPtr<StylePropertySet> copyEditingProperties(StyleDeclarationType* style, EditingPropertiesType type = OnlyInheritableEditingProperties)
 {
     if (type == AllEditingProperties)
-        return style->copyPropertiesInSet(editingProperties, WTF_ARRAY_LENGTH(editingProperties));
-    return style->copyPropertiesInSet(editingProperties + 2, WTF_ARRAY_LENGTH(editingProperties) - 2);
+        return style->copyPropertiesInSet(allEditingProperties());
+    return style->copyPropertiesInSet(inheritableEditingProperties());
 }
 
 static inline bool isEditingProperty(int id)
 {
-    for (size_t i = 0; i < WTF_ARRAY_LENGTH(editingProperties); ++i) {
-        if (editingProperties[i] == id)
-            return true;
-    }
-    return false;
+    return allEditingProperties().contains(static_cast<CSSPropertyID>(id));
 }
 
 static PassRefPtr<StylePropertySet> editingStyleFromComputedStyle(PassRefPtr<CSSComputedStyleDeclaration> style, EditingPropertiesType type = OnlyInheritableEditingProperties)

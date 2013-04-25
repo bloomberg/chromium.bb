@@ -37,6 +37,7 @@
 #include "core/css/CSSStyleDeclaration.h"
 #include "core/css/CSSValue.h"
 #include "core/dom/EventTarget.h"
+#include "core/page/RuntimeCSSEnabled.h"
 
 #include "bindings/v8/V8Binding.h"
 
@@ -99,7 +100,7 @@ public:
 // Also, certain prefixes such as 'pos', 'css-' and 'pixel-' are stripped
 // and the hadPixelOrPosPrefix out parameter is used to indicate whether or
 // not the property name was prefixed with 'pos-' or 'pixel-'.
-static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String>v8PropertyName)
+static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String> v8PropertyName)
 {
     String propertyName = toWebCoreString(v8PropertyName);
     typedef HashMap<String, CSSPropertyInfo*> CSSPropertyInfoMap;
@@ -141,7 +142,7 @@ static CSSPropertyInfo* cssPropertyInfo(v8::Handle<v8::String>v8PropertyName)
 
         String propName = builder.toString();
         CSSPropertyID propertyID = cssPropertyID(propName);
-        if (propertyID) {
+        if (propertyID && RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID)) {
             propInfo = new CSSPropertyInfo();
             propInfo->hadPixelOrPosPrefix = hadPixelOrPosPrefix;
             propInfo->propID = propertyID;
@@ -158,8 +159,11 @@ v8::Handle<v8::Array> V8CSSStyleDeclaration::namedPropertyEnumerator(const v8::A
     static unsigned propertyNamesLength = 0;
 
     if (propertyNames.isEmpty()) {
-        for (int id = firstCSSProperty; id < firstCSSProperty + numCSSProperties; ++id)
-            propertyNames.append(getJSPropertyName(static_cast<CSSPropertyID>(id)));
+        for (int id = firstCSSProperty; id <= lastCSSProperty; ++id) {
+            CSSPropertyID propertyId = static_cast<CSSPropertyID>(id);
+            if (RuntimeCSSEnabled::isCSSPropertyEnabled(propertyId))
+                propertyNames.append(getJSPropertyName(propertyId));
+        }
         sort(propertyNames.begin(), propertyNames.end(), codePointCompareLessThan);
         propertyNamesLength = propertyNames.size();
     }
@@ -176,6 +180,8 @@ v8::Handle<v8::Array> V8CSSStyleDeclaration::namedPropertyEnumerator(const v8::A
 
 v8::Handle<v8::Integer> V8CSSStyleDeclaration::namedPropertyQuery(v8::Local<v8::String> v8Name, const v8::AccessorInfo& info)
 {
+    // NOTE: cssPropertyInfo lookups incur several mallocs.
+    // Successful lookups have the same cost the first time, but are cached.
     if (cssPropertyInfo(v8Name))
         return v8Integer(0, info.GetIsolate());
 

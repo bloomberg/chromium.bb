@@ -65,6 +65,7 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     WebKit::WebString defaultTextEncodingName;
     bool experimentalWebGLEnabled;
     bool experimentalCSSRegionsEnabled;
+    bool experimentalCSSExclusionsEnabled;
     bool experimentalCSSGridLayoutEnabled;
     bool javaEnabled;
     bool javaScriptCanAccessClipboard;

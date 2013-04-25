@@ -1284,6 +1284,8 @@ bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID property
 
 bool CSSParser::parseValue(StylePropertySet* declaration, CSSPropertyID propertyID, const String& string, bool important, StyleSheetContents* contextStyleSheet)
 {
+    // FIXME: Check RuntimeCSSEnabled::isPropertyEnabled or isValueEnabledForProperty.
+
     setStyleSheet(contextStyleSheet);
 
     setupParser("@-internal-value{", string, "} ");

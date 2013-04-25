@@ -68,7 +68,7 @@ public:
     PassRefPtr<CSSValue> getSVGPropertyCSSValue(CSSPropertyID, EUpdateLayout) const;
 #endif
 
-    PassRefPtr<StylePropertySet> copyPropertiesInSet(const CSSPropertyID* set, unsigned length) const;
+    PassRefPtr<StylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 

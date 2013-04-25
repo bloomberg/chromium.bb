@@ -143,7 +143,7 @@ public:
     void removeEquivalentProperties(const StylePropertySet*);
     void removeEquivalentProperties(const CSSStyleDeclaration*);
 
-    PassRefPtr<StylePropertySet> copyPropertiesInSet(const CSSPropertyID* set, unsigned length) const;
+    PassRefPtr<StylePropertySet> copyPropertiesInSet(const Vector<CSSPropertyID>&) const;
     
     String asText() const;
 

@@ -82,6 +82,7 @@ void WebPreferences::reset()
     authorAndUserStylesEnabled = true;
     defaultTextEncodingName = WebString::fromUTF8("ISO-8859-1");
     experimentalWebGLEnabled = false;
+    experimentalCSSExclusionsEnabled = true;
     experimentalCSSRegionsEnabled = true;
     experimentalCSSGridLayoutEnabled = false;
     javaEnabled = false;
@@ -152,6 +153,7 @@ void WebPreferences::applyTo(WebView* webView)
     settings->setDefaultTextEncodingName(defaultTextEncodingName);
     settings->setExperimentalWebGLEnabled(experimentalWebGLEnabled);
     WebRuntimeFeatures::enableCSSRegions(experimentalCSSRegionsEnabled);
+    WebRuntimeFeatures::enableCSSExclusions(experimentalCSSExclusionsEnabled);
     settings->setExperimentalCSSGridLayoutEnabled(experimentalCSSGridLayoutEnabled);
     settings->setExperimentalCSSCustomFilterEnabled(cssCustomFilterEnabled);
     settings->setJavaEnabled(javaEnabled);

@@ -22,6 +22,7 @@
 #include "config.h"
 #include "StylePropertySet.h"
 
+#include "core/page/RuntimeCSSEnabled.h"
 #include "CSSParser.h"
 #include "CSSValueKeywords.h"
 #include "CSSValueList.h"
@@ -1065,7 +1066,7 @@ bool StylePropertySet::hasFailedOrCanceledSubresources() const
 
 // This is the list of properties we want to copy in the copyBlockProperties() function.
 // It is the list of CSS properties that apply specially to block-level elements.
-static const CSSPropertyID blockProperties[] = {
+static const CSSPropertyID staticBlockProperties[] = {
     CSSPropertyOrphans,
     CSSPropertyOverflow, // This can be also be applied to replaced elements
     CSSPropertyWebkitAspectRatio,
@@ -1094,22 +1095,28 @@ static const CSSPropertyID blockProperties[] = {
     CSSPropertyWidows
 };
 
+static const Vector<CSSPropertyID>& blockProperties()
+{
+    DEFINE_STATIC_LOCAL(Vector<CSSPropertyID>, properties, ());
+    if (properties.isEmpty())
+        RuntimeCSSEnabled::filterEnabledCSSPropertiesIntoVector(staticBlockProperties, WTF_ARRAY_LENGTH(staticBlockProperties), properties);
+    return properties;
+}
+
 void StylePropertySet::clear()
 {
     ASSERT(isMutable());
     mutablePropertyVector().clear();
 }
 
-const unsigned numBlockProperties = WTF_ARRAY_LENGTH(blockProperties);
-
 PassRefPtr<StylePropertySet> StylePropertySet::copyBlockProperties() const
 {
-    return copyPropertiesInSet(blockProperties, numBlockProperties);
+    return copyPropertiesInSet(blockProperties());
 }
 
 void StylePropertySet::removeBlockProperties()
 {
-    removePropertiesInSet(blockProperties, numBlockProperties);
+    removePropertiesInSet(blockProperties().data(), blockProperties().size());
 }
 
 bool StylePropertySet::removePropertiesInSet(const CSSPropertyID* set, unsigned length)
@@ -1203,14 +1210,14 @@ PassRefPtr<StylePropertySet> StylePropertySet::copy() const
     return adoptRef(new MutableStylePropertySet(*this));
 }
 
-PassRefPtr<StylePropertySet> StylePropertySet::copyPropertiesInSet(const CSSPropertyID* set, unsigned length) const
+PassRefPtr<StylePropertySet> StylePropertySet::copyPropertiesInSet(const Vector<CSSPropertyID>& properties) const
 {
     Vector<CSSProperty, 256> list;
-    list.reserveInitialCapacity(length);
-    for (unsigned i = 0; i < length; ++i) {
-        RefPtr<CSSValue> value = getPropertyCSSValue(set[i]);
+    list.reserveInitialCapacity(properties.size());
+    for (unsigned i = 0; i < properties.size(); ++i) {
+        RefPtr<CSSValue> value = getPropertyCSSValue(properties[i]);
         if (value)
-            list.append(CSSProperty(set[i], value.release(), false));
+            list.append(CSSProperty(properties[i], value.release(), false));
     }
     return StylePropertySet::create(list.data(), list.size());
 }

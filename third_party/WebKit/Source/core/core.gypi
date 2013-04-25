@@ -1176,6 +1176,8 @@
             'page/PointerLockController.h',
             'page/PopupOpeningObserver.h',
             'page/PrintContext.cpp',
+            'page/RuntimeCSSEnabled.cpp',
+            'page/RuntimeCSSEnabled.h',
             'page/RuntimeEnabledFeatures.cpp',
             'page/RuntimeEnabledFeatures.h',
             'page/Screen.cpp',

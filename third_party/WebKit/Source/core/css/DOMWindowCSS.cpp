@@ -31,6 +31,7 @@
 #include "DOMWindowCSS.h"
 
 #include "CSSParser.h"
+#include "core/page/RuntimeCSSEnabled.h"
 #include "StylePropertySet.h"
 #include <wtf/text/WTFString.h>
 
@@ -58,8 +59,10 @@ static String valueWithoutImportant(const String& value)
 bool DOMWindowCSS::supports(const String& property, const String& value) const
 {
     CSSPropertyID propertyID = cssPropertyID(property.stripWhiteSpace());
-
     if (propertyID == CSSPropertyInvalid)
+        return false;
+
+    if (!RuntimeCSSEnabled::isCSSPropertyEnabled(propertyID))
         return false;
 
     // CSSParser::parseValue() won't work correctly if !important is present,
