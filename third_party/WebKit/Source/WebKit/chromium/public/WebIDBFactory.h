@@ -52,15 +52,12 @@ public:
 
     virtual ~WebIDBFactory() { }
 
-    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebSecurityOrigin& origin, WebFrame* frame, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { getDatabaseNames(callbacks, WebSecurityOrigin::createFromDatabaseIdentifier(databaseIdentifier), 0, dataDir); }
+    virtual void getDatabaseNames(WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { }
 
     // The WebKit implementation of open ignores the WebFrame* parameter.
-    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebSecurityOrigin& origin, WebFrame* frame, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier, const WebString& dataDir) { open(name, version, transactionId, callbacks, databaseCallbacks, WebSecurityOrigin::createFromDatabaseIdentifier(databaseIdentifier), 0, dataDir); }
+    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks* callbacks, WebIDBDatabaseCallbacks* databaseCallbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
 
-    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks*, const WebSecurityOrigin&, WebFrame*, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
-    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { deleteDatabase(name, callbacks, WebSecurityOrigin::createFromDatabaseIdentifier(databaseIdentifier), 0, dataDir); }
+    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks* callbacks, const WebString& databaseIdentifier, const WebString& dataDir) { WEBKIT_ASSERT_NOT_REACHED(); }
 };
 
 // Initializes IndexedDB support.

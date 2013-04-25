@@ -41,11 +41,8 @@ public:
     WebIDBFactoryImpl();
     virtual ~WebIDBFactoryImpl();
 
-    virtual void getDatabaseNames(WebIDBCallbacks*, const WebSecurityOrigin&, WebFrame*, const WebString& dataDir);
     virtual void getDatabaseNames(WebIDBCallbacks*, const WebString& databaseIdentifier, const WebString& dataDir);
-    virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks*, WebIDBDatabaseCallbacks*, const WebSecurityOrigin&, WebFrame*, const WebString& dataDir);
     virtual void open(const WebString& name, long long version, long long transactionId, WebIDBCallbacks*, WebIDBDatabaseCallbacks*, const WebString& databaseIdentifier, const WebString& dataDir);
-    virtual void deleteDatabase(const WebString& name, WebIDBCallbacks*, const WebSecurityOrigin&, WebFrame*, const WebString& dataDir);
     virtual void deleteDatabase(const WebString& name, WebIDBCallbacks*, const WebString& databaseIdentifier, const WebString& dataDir);
 
 private:
