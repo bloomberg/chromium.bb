@@ -5,6 +5,7 @@
 #include "ash/wm/workspace/workspace_layout_manager.h"
 
 #include "ash/root_window_controller.h"
+#include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -31,11 +32,31 @@ TEST_F(WorkspaceLayoutManagerTest, RestoreFromMinimizeKeepsRestore) {
       CreateTestWindowInShellWithBounds(gfx::Rect(1, 2, 3, 4)));
   gfx::Rect bounds(10, 15, 25, 35);
   window->SetBounds(bounds);
+  // This will not be used for un-minimizing window.
   SetRestoreBoundsInScreen(window.get(), gfx::Rect(0, 0, 100, 100));
   wm::MinimizeWindow(window.get());
   wm::RestoreWindow(window.get());
   EXPECT_EQ("0,0 100x100", GetRestoreBoundsInScreen(window.get())->ToString());
   EXPECT_EQ("10,15 25x35", window.get()->bounds().ToString());
+
+  UpdateDisplay("400x300,500x400");
+  window->SetBoundsInScreen(gfx::Rect(600, 0, 100, 100),
+                            ScreenAsh::GetSecondaryDisplay());
+  EXPECT_EQ(Shell::GetAllRootWindows()[1], window->GetRootWindow());
+  wm::MinimizeWindow(window.get());
+  // This will not be used for un-minimizing window.
+  SetRestoreBoundsInScreen(window.get(), gfx::Rect(0, 0, 100, 100));
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ("600,0 100x100", window->GetBoundsInScreen().ToString());
+
+  // Make sure the unminimized window moves inside the display when
+  // 2nd display is disconnected.
+  wm::MinimizeWindow(window.get());
+  UpdateDisplay("400x300");
+  wm::RestoreWindow(window.get());
+  EXPECT_EQ(Shell::GetPrimaryRootWindow(), window->GetRootWindow());
+  EXPECT_TRUE(
+      Shell::GetPrimaryRootWindow()->bounds().Intersects(window->bounds()));
 }
 
 // WindowObserver implementation used by DontClobberRestoreBoundsWindowObserver.

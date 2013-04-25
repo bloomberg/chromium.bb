@@ -191,7 +191,7 @@ void WorkspaceLayoutManager::OnWindowPropertyChanged(Window* window,
         GetRestoreBoundsInScreen(window) &&
         !GetWindowAlwaysRestoresToRestoreBounds(window)) {
       restore = *GetRestoreBoundsInScreen(window);
-      SetRestoreBoundsInScreen(window, window->bounds());
+      SetRestoreBoundsInScreen(window, window->GetBoundsInScreen());
     }
 
     // If maximizing or restoring, clone the layer. WorkspaceManager will use it
