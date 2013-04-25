@@ -6013,6 +6013,7 @@
    fun:_ZN6WebKit*WebIDBFactory*create*
    fun:_ZN17TestWebIDBFactory*GetFactory*
    fun:_ZN17TestWebIDBFactory*open*
+   ...
    fun:_ZN6WebKit*IDBFactoryBackendProxy*open*
    fun:_ZN7WebCore*IDBFactory*openInternal*
    fun:_ZN7WebCore*IDBFactory*open*
@@ -6027,6 +6028,7 @@
    fun:_ZN6WebKit*WebIDBFactory*create*
    fun:_ZN17TestWebIDBFactory*GetFactory*
    fun:_ZN17TestWebIDBFactory*deleteDatabase*
+   ...
    fun:_ZN6WebKit*IDBFactoryBackendProxy*deleteDatabase*
    fun:_ZN7WebCore*IDBFactory*deleteDatabase*
 }
