@@ -13,11 +13,11 @@ cr.define('print_preview.ticket_items', function() {
    * @param {!print_preview.DestinationStore} destinationStore Used to determine
    *     whether fit to page should be available.
    * @constructor
-   * @extends {print_preview.ticket_items.DestDependentTicketItem}
+   * @extends {print_preview.ticket_items.TicketItem}
    */
   function FitToPage(documentInfo, destinationStore) {
-    print_preview.ticket_items.DestDependentTicketItem.call(
-        this, destinationStore);
+    print_preview.ticket_items.TicketItem.call(
+        this, null /*appState*/, null /*field*/, destinationStore);
 
     /**
      * Information about the document to print.
@@ -28,7 +28,7 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   FitToPage.prototype = {
-    __proto__: print_preview.ticket_items.DestDependentTicketItem.prototype,
+    __proto__: print_preview.ticket_items.TicketItem.prototype,
 
     /** @override */
     wouldValueBeValid: function(value) {

@@ -12,15 +12,15 @@ cr.define('print_preview.ticket_items', function() {
    * @param {!print_preview.DestinationStore} destinationStore Destination store
    *     used determine if a destination has the copies capability.
    * @constructor
-   * @extends {print_preview.ticket_items.DestDependentTicketItem}
+   * @extends {print_preview.ticket_items.TicketItem}
    */
   function Copies(destinationStore) {
-    print_preview.ticket_items.DestDependentTicketItem.call(
-        this, destinationStore);
+    print_preview.ticket_items.TicketItem.call(
+        this, null /*appState*/, null /*field*/, destinationStore);
   };
 
   Copies.prototype = {
-    __proto__: print_preview.ticket_items.DestDependentTicketItem.prototype,
+    __proto__: print_preview.ticket_items.TicketItem.prototype,
 
     /** @override */
     wouldValueBeValid: function(value) {

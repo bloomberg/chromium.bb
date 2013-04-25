@@ -13,18 +13,18 @@ cr.define('print_preview.ticket_items', function() {
    * @param {!print_preview.DestinationStore} destinationStore Destination store
    *     used determine if a destination has the collate capability.
    * @constructor
-   * @extends {print_preview.ticket_items.DestDependentTicketItem}
+   * @extends {print_preview.ticket_items.TicketItem}
    */
   function Duplex(appState, destinationStore) {
-    print_preview.ticket_items.DestDependentTicketItem.call(
+    print_preview.ticket_items.TicketItem.call(
         this,
-        destinationStore,
         appState,
-        print_preview.AppState.Field.IS_DUPLEX_ENABLED);
+        print_preview.AppState.Field.IS_DUPLEX_ENABLED,
+        destinationStore);
   };
 
   Duplex.prototype = {
-    __proto__: print_preview.ticket_items.DestDependentTicketItem.prototype,
+    __proto__: print_preview.ticket_items.TicketItem.prototype,
 
     /** @override */
     wouldValueBeValid: function(value) {

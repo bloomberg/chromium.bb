@@ -891,7 +891,6 @@ cr.define('print_preview', function() {
 <include src="data/app_state.js"/>
 
 <include src="data/ticket_items/ticket_item.js"/>
-<include src="data/ticket_items/dest_dependent_ticket_item.js"/>
 
 <include src="data/ticket_items/custom_margins.js"/>
 <include src="data/ticket_items/collate.js"/>

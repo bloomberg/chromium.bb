@@ -14,9 +14,16 @@ cr.define('print_preview.ticket_items', function() {
    *     when ticket items update.
    * @param {print_preview.AppState.Field=} field Field of the app state to
    *     update when ticket item is updated.
+   * @param {print_preview.DestinationStore=} destinationStore Used listen for
+   *     changes in the currently selected destination's capabilities. Since
+   *     this is a common dependency of ticket items, it's handled in the base
+   *     class.
+   * @param {print_preview.DocumentInfo=} documentInfo Used to listen for
+   *     changes in the document. Since this is a common dependency of ticket
+   *     items, it's handled in the base class.
    * @constructor
    */
-  function TicketItem(appState, field) {
+  function TicketItem(appState, field, destinationStore, documentInfo) {
     cr.EventTarget.call(this);
 
     /**
@@ -34,6 +41,21 @@ cr.define('print_preview.ticket_items', function() {
     this.field_ = field || null;
 
     /**
+     * Used listen for changes in the currently selected destination's
+     * capabilities.
+     * @type {print_preview.DestinationStore}
+     * @private
+     */
+    this.destinationStore_ = destinationStore || null;
+
+    /**
+     * Used to listen for changes in the document.
+     * @type {print_preview.DocumentInfo}
+     * @private
+     */
+    this.documentInfo_ = documentInfo || null;
+
+    /**
      * Backing store of the print ticket item.
      * @type {Object}
      * @private
@@ -46,6 +68,8 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     this.tracker_ = new EventTracker();
+
+    this.addEventHandlers_();
   };
 
   /**
@@ -146,7 +170,54 @@ cr.define('print_preview.ticket_items', function() {
      */
     getTrackerInternal: function() {
       return this.tracker_;
-    }
+    },
+
+    /**
+     * @return {print_preview.Destination} Selected destination from the
+     *     destination store, or {@code null} if no destination is selected.
+     * @protected
+     */
+    getSelectedDestInternal: function() {
+      return this.destinationStore_ ?
+          this.destinationStore_.selectedDestination : null;
+    },
+
+    /**
+     * @return {print_preview.DocumentInfo} Document data model.
+     * @protected
+     */
+    getDocumentInfoInternal: function() {
+      return this.documentInfo_;
+    },
+
+    /**
+     * Dispatches a CHANGE event.
+     * @protected
+     */
+    dispatchChangeEventInternal: function() {
+      cr.dispatchSimpleEvent(
+          this, print_preview.ticket_items.TicketItem.EventType.CHANGE);
+    },
+
+    /**
+     * Adds event handlers for this class.
+     * @private
+     */
+    addEventHandlers_: function() {
+      if (this.destinationStore_) {
+        this.tracker_.add(
+            this.destinationStore_,
+            print_preview.DestinationStore.EventType.
+                SELECTED_DESTINATION_CAPABILITIES_READY,
+            this.dispatchChangeEventInternal.bind(this));
+      }
+      if (this.documentInfo_) {
+        this.tracker_.add(
+            this.documentInfo_,
+            print_preview.DocumentInfo.EventType.CHANGE,
+            this.dispatchChangeEventInternal.bind(this));
+      }
+    },
   };
 
   // Export
