@@ -70,6 +70,8 @@ class DockedPanelCollection :
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
+  virtual gfx::Rect GetInitialPanelBounds(
+      const gfx::Rect& requested_bounds) const OVERRIDE;
 
   // Returns true if we should bring up the titlebars, given the current mouse
   // point.
@@ -77,10 +79,6 @@ class DockedPanelCollection :
 
   // Brings up or down the titlebars for all minimized panels.
   void BringUpOrDownTitlebars(bool bring_up);
-
-  // Compute default bounds for a panel of |full_size| that would be used
-  // when adding the panel to the collection.
-  gfx::Point GetDefaultPositionForPanel(const gfx::Size& full_size) const;
 
   // Returns the bottom position for the panel per its expansion state. If auto-
   // hide bottom bar is present, we want to move the minimized panel to the
@@ -160,6 +158,10 @@ class DockedPanelCollection :
   // The callback for a delyed task, checks if it still need to perform
   // the delayed action.
   void DelayedBringUpOrDownTitlebarsCheck();
+
+  // Compute default bounds for a panel of |full_size| that would be used
+  // when adding the panel to the collection.
+  gfx::Point GetDefaultPositionForPanel(const gfx::Size& full_size) const;
 
   int GetRightMostAvailablePosition() const;
 

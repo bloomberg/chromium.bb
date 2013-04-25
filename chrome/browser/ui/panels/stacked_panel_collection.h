@@ -58,6 +58,8 @@ class StackedPanelCollection : public PanelCollection {
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
+  virtual gfx::Rect GetInitialPanelBounds(
+      const gfx::Rect& requested_bounds) const OVERRIDE;
 
   Panel* GetPanelAbove(Panel* panel) const;
   Panel* GetPanelBelow(Panel* panel) const;
@@ -105,6 +107,10 @@ class StackedPanelCollection : public PanelCollection {
   // multiple displays, return the work area of the display that most closely
   // intersects the stack.
   gfx::Rect GetWorkArea() const;
+
+  // Refresh all panel layouts, with top panel poisitoned at |start_y|
+  // coordinate.
+  void RefreshLayoutWithTopPanelStartingAt(int start_y);
 
   // Tries to collapse panels in the least recently active order in order to get
   // enough bottom space for |needed_space|. Returns the current available space

@@ -494,35 +494,33 @@ panel::Resizability Panel::CanResizeByMouse() const {
   return collection_->GetPanelResizability(this);
 }
 
-void Panel::Initialize(Profile* profile, const GURL& url,
-                       const gfx::Rect& bounds) {
+void Panel::Initialize(const GURL& url, const gfx::Rect& bounds) {
   DCHECK(!initialized_);
   DCHECK(!collection_);  // Cannot be added to a collection until fully created.
   DCHECK_EQ(EXPANDED, expansion_state_);
   DCHECK(!bounds.IsEmpty());
   initialized_ = true;
-  profile_ = profile;
   full_size_ = bounds.size();
   native_panel_ = CreateNativePanel(this, bounds);
 
   extension_window_controller_.reset(
-      new panel_internal::PanelExtensionWindowController(this, profile));
+      new panel_internal::PanelExtensionWindowController(this, profile_));
 
   InitCommandState();
 
   // Set up hosting for web contents.
-  panel_host_.reset(new PanelHost(this, profile));
+  panel_host_.reset(new PanelHost(this, profile_));
   panel_host_->Init(url);
   native_panel_->AttachWebContents(GetWebContents());
 
   // Close when the extension is unloaded or the browser is exiting.
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
-                 content::Source<Profile>(profile));
+                 content::Source<Profile>(profile_));
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(
-                    ThemeServiceFactory::GetForProfile(profile)));
+                    ThemeServiceFactory::GetForProfile(profile_)));
 
   // Prevent the browser process from shutting down while this window is open.
   chrome::StartKeepAlive();
@@ -790,10 +788,10 @@ void Panel::MinimizeBySystem() {
   native_panel_->MinimizePanelBySystem();
 }
 
-Panel::Panel(const std::string& app_name,
+Panel::Panel(Profile* profile, const std::string& app_name,
              const gfx::Size& min_size, const gfx::Size& max_size)
     : app_name_(app_name),
-      profile_(NULL),
+      profile_(profile),
       collection_(NULL),
       initialized_(false),
       min_size_(min_size),

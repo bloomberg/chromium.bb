@@ -198,7 +198,7 @@ class Panel : public BaseWindow,
   // Panel must be initialized to be "fully created" and ready for use.
   // Only called by PanelManager.
   bool initialized() const { return initialized_; }
-  void Initialize(Profile* profile, const GURL& url, const gfx::Rect& bounds);
+  void Initialize(const GURL& url, const gfx::Rect& bounds);
 
   // This is different from BaseWindow::SetBounds():
   // * SetPanelBounds() is only called by PanelManager to manage its position.
@@ -313,7 +313,7 @@ class Panel : public BaseWindow,
   // |app_name| is the default title for Panels when the page content does not
   // provide a title. For extensions, this is usually the application name
   // generated from the extension id.
-  Panel(const std::string& app_name,
+  Panel(Profile* profile, const std::string& app_name,
         const gfx::Size& min_size, const gfx::Size& max_size);
 
  private:

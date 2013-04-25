@@ -56,6 +56,8 @@ class DetachedPanelCollection : public PanelCollection {
   virtual void UpdatePanelOnCollectionChange(Panel* panel) OVERRIDE;
   virtual void OnPanelExpansionStateChanged(Panel* panel) OVERRIDE;
   virtual void OnPanelActiveStateChanged(Panel* panel) OVERRIDE;
+  virtual gfx::Rect GetInitialPanelBounds(
+      const gfx::Rect& requested_bounds) const OVERRIDE;
 
   bool HasPanel(Panel* panel) const;
 

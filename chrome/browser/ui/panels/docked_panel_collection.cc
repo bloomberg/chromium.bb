@@ -783,6 +783,14 @@ void DockedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {
   ScheduleLayoutRefresh();
 }
 
+gfx::Rect DockedPanelCollection::GetInitialPanelBounds(
+      const gfx::Rect& requested_bounds) const {
+  gfx::Rect initial_bounds = requested_bounds;
+  initial_bounds.set_origin(
+      GetDefaultPositionForPanel(requested_bounds.size()));
+  return initial_bounds;
+}
+
 bool DockedPanelCollection::HasPanel(Panel* panel) const {
   return find(panels_.begin(), panels_.end(), panel) != panels_.end();
 }

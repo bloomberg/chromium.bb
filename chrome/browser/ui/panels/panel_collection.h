@@ -142,6 +142,10 @@ class PanelCollection {
   // what properties should be applied to a newly-added panel.
   virtual void UpdatePanelOnCollectionChange(Panel* panel) = 0;
 
+  // Returns the initial bounds to show the panel based on the requested bounds.
+  virtual gfx::Rect GetInitialPanelBounds(
+      const gfx::Rect& requested_bounds) const = 0;
+
  protected:
   explicit PanelCollection(Type type);
   virtual ~PanelCollection();

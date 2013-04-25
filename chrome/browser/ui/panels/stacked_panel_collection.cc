@@ -71,19 +71,32 @@ void StackedPanelCollection::OnDisplayChanged() {
 }
 
 void StackedPanelCollection::RefreshLayout() {
-  if (panels_.size() <= 1)
+  if (panels_.empty())
+    return;
+  RefreshLayoutWithTopPanelStartingAt(top_panel()->GetBounds().y());
+}
+
+void StackedPanelCollection::RefreshLayoutWithTopPanelStartingAt(int start_y) {
+  if (panels_.empty())
     return;
 
-  Panels::const_iterator iter = panels_.begin();
-  Panel* top_panel = *iter;
-  gfx::Rect top_panel_bounds = top_panel->GetBounds();
-  int common_width = top_panel_bounds.width();
-  int common_x = top_panel_bounds.x();
-  int y = top_panel_bounds.bottom();
-  top_panel->UpdateMinimizeRestoreButtonVisibility();
+  // If only one panel is left in the stack, we only need to check if it should
+  // be moved to |start_y| position.
+  if (panels_.size() == 1) {
+    Panel* panel = panels_.front();
+    gfx::Rect bounds = panel->GetBounds();
+    if (bounds.y() != start_y) {
+      bounds.set_y(start_y);
+      panel->SetPanelBounds(bounds);
+    }
+    return;
+  }
 
-  ++iter;
-  for (; iter != panels_.end(); ++iter) {
+  int y = start_y;
+  int common_x = 0;
+  int common_width = 0;
+  for (Panels::const_iterator iter = panels_.begin();
+       iter != panels_.end(); ++iter) {
     Panel* panel = *iter;
 
     // The visibility of minimize button might need to be updated due to that
@@ -91,17 +104,33 @@ void StackedPanelCollection::RefreshLayout() {
     // the stack.
     panel->UpdateMinimizeRestoreButtonVisibility();
 
-    // Don't update the stacked panel that is in preview mode.
+    // All panels are aligned based on the top panel.
     gfx::Rect bounds = panel->GetBounds();
-    if (!panel->in_preview_mode()) {
-      bounds.set_x(common_x);
-      bounds.set_y(y);
-      bounds.set_width(common_width);
-      panel->SetPanelBounds(bounds);
-      gfx::Size full_size = panel->full_size();
-      full_size.set_width(common_width);
-      panel->set_full_size(full_size);
+    if (iter == panels_.begin()) {
+      common_x = bounds.x();
+      common_width = bounds.width();
     }
+
+    // Don't update the stacked panel that is in preview mode.
+    if (panel->in_preview_mode()) {
+      y += bounds.height();
+      continue;
+    }
+
+    // Update the restored size.
+    gfx::Size full_size = panel->full_size();
+    full_size.set_width(common_width);
+    panel->set_full_size(full_size);
+
+    // Recompute the bounds.
+    bounds.SetRect(
+        common_x,
+        y,
+        common_width,
+        panel->expansion_state() == Panel::EXPANDED ?
+            panel->full_size().height() : panel->TitleOnlyHeight());
+
+    panel->SetPanelBounds(bounds);
 
     y += bounds.height();
   }
@@ -201,18 +230,6 @@ void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
       UpdatePanelCornerStyle(new_bottom_panel);
   }
 
-  // Now move the new top panel up to be at the same y position of the old
-  // top panel. The subsequent RefreshLayout call will take care of moving all
-  // other panels up.
-  if (top_panel_closed) {
-    Panel* new_top_panel = top_panel();
-    if (new_top_panel) {
-      gfx::Rect bounds = new_top_panel->GetBounds();
-      bounds.set_y(top_y);
-      new_top_panel->SetPanelBounds(bounds);
-    }
-  }
-
   // If an active panel is being closed, try to focus the next recently active
   // panel in the stack.
   if (reason == PanelCollection::PANEL_CLOSED &&
@@ -221,7 +238,12 @@ void StackedPanelCollection::RemovePanel(Panel* panel, RemovalReason reason) {
     most_recently_active_panels_.front()->Activate();
   }
 
-  RefreshLayout();
+  // If the top panel is closed, move up all other panels to stay at the same
+  // y position as the top panel being closed.
+  if (top_panel_closed)
+    RefreshLayoutWithTopPanelStartingAt(top_y);
+  else
+    RefreshLayout();
 
   native_stack_->RemovePanel(panel);
 }
@@ -537,11 +559,6 @@ void StackedPanelCollection::UpdatePanelOnCollectionChange(Panel* panel) {
 void StackedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
   DCHECK_NE(Panel::MINIMIZED, panel->expansion_state());
 
-  gfx::Rect bounds = panel->GetBounds();
-  bounds.set_height(panel->expansion_state() == Panel::EXPANDED ?
-      panel->full_size().height() : panel->TitleOnlyHeight());
-  panel->SetPanelBounds(bounds);
-
   // Ensure minimized panel does not get the focus. If minimizing all,
   // the active panel will be deactivated once when all panels are minimized
   // rather than per minimized panel.
@@ -550,6 +567,7 @@ void StackedPanelCollection::OnPanelExpansionStateChanged(Panel* panel) {
     panel->Deactivate();
   }
 
+  // The bounds change per expansion state will be done in RefreshLayout.
   RefreshLayout();
 }
 
@@ -568,6 +586,16 @@ void StackedPanelCollection::OnPanelActiveStateChanged(Panel* panel) {
   // Move the panel to the front.
   most_recently_active_panels_.erase(iter);
   most_recently_active_panels_.push_front(panel);
+}
+
+gfx::Rect StackedPanelCollection::GetInitialPanelBounds(
+      const gfx::Rect& requested_bounds) const {
+  DCHECK(!panels_.empty());
+  gfx::Rect bottom_panel_bounds = bottom_panel()->GetBounds();
+  return gfx::Rect(bottom_panel_bounds.x(),
+                   bottom_panel_bounds.bottom(),
+                   bottom_panel_bounds.width(),
+                   requested_bounds.height());
 }
 
 Panel* StackedPanelCollection::GetPanelAbove(Panel* panel) const {
