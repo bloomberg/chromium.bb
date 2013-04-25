@@ -878,4 +878,29 @@ TEST_F(AutofillDialogControllerTest, HideWalletEmail) {
   ASSERT_LT(i, form_structure()->field_count());
 }
 
+TEST_F(AutofillDialogControllerTest, SaveDetailsInChrome) {
+  EXPECT_CALL(*controller()->GetView(), ModelChanged()).Times(2);
+
+  AutofillProfile full_profile(test::GetFullProfile());
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  CreditCard card;
+  test::SetCreditCardInfo(
+      &card, "Donald Trump", "4111-1111-1111-1111", "10", "2025");
+  controller()->GetTestingManager()->AddTestingCreditCard(&card);
+  EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
+
+  controller()->EditClickedForSection(SECTION_EMAIL);
+  EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
+
+  controller()->EditCancelledForSection(SECTION_EMAIL);
+  EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
+
+  controller()->MenuModelForSection(SECTION_EMAIL)->ActivatedAt(1);
+  EXPECT_TRUE(controller()->ShouldOfferToSaveInChrome());
+
+  profile()->set_incognito(true);
+  EXPECT_FALSE(controller()->ShouldOfferToSaveInChrome());
+}
+
 }  // namespace autofill

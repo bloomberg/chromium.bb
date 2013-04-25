@@ -483,7 +483,8 @@ string16 AutofillDialogControllerImpl::SignInLinkText() const {
 }
 
 bool AutofillDialogControllerImpl::ShouldOfferToSaveInChrome() const {
-  return !IsPayingWithWallet() && IsManuallyEditingAnySection();
+  return !IsPayingWithWallet() && !profile_->IsOffTheRecord() &&
+      IsManuallyEditingAnySection();
 }
 
 bool AutofillDialogControllerImpl::AutocheckoutIsRunning() const {

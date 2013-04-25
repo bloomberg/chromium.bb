@@ -19,8 +19,18 @@ void TestPersonalDataManager::AddTestingProfile(AutofillProfile* profile) {
                     OnPersonalDataChanged());
 }
 
+void TestPersonalDataManager::AddTestingCreditCard(CreditCard* credit_card) {
+  credit_cards_.push_back(credit_card);
+  FOR_EACH_OBSERVER(PersonalDataManagerObserver, observers_,
+                    OnPersonalDataChanged());
+}
+
 const std::vector<AutofillProfile*>& TestPersonalDataManager::GetProfiles() {
   return profiles_;
+}
+
+const std::vector<CreditCard*>& TestPersonalDataManager::credit_cards() const {
+  return credit_cards_;
 }
 
 void TestPersonalDataManager::SaveImportedProfile(
