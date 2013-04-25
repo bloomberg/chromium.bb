@@ -66,7 +66,24 @@ public class WebContentsDelegateAndroid {
         onLoadProgressChanged(mMostRecentProgress);
     }
 
+    /**
+     * @param progress The load progress [0, 100] for the current web contents.
+     */
     public void onLoadProgressChanged(int progress) {
+    }
+
+    /**
+     * Signaled when the renderer has been deemed to be unresponsive.
+     */
+    @CalledByNative
+    public void rendererUnresponsive() {
+    }
+
+    /**
+     * Signaled when the render has been deemed to be responsive.
+     */
+    @CalledByNative
+    public void rendererResponsive() {
     }
 
     @CalledByNative

@@ -69,6 +69,8 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
   virtual void LoadingStateChanged(content::WebContents* source) OVERRIDE;
   virtual void LoadProgressChanged(content::WebContents* source,
                                    double load_progress) OVERRIDE;
+  virtual void RendererUnresponsive(content::WebContents* source) OVERRIDE;
+  virtual void RendererResponsive(content::WebContents* source) OVERRIDE;
   virtual void CloseContents(content::WebContents* source) OVERRIDE;
   virtual void MoveContents(content::WebContents* source,
                             const gfx::Rect& pos) OVERRIDE;
