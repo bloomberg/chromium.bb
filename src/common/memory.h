@@ -35,6 +35,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include <algorithm>
+
 #ifdef __APPLE__
 #define sys_mmap mmap
 #define sys_mmap2 mmap
@@ -159,7 +161,7 @@ class wasteful_vector {
 
   void push_back(const T& new_element) {
     if (used_ == allocated_)
-      Realloc(allocated_ * 2);
+      Realloc(std::max(allocated_ * 2, 1u));
     a_[used_++] = new_element;
   }
 
