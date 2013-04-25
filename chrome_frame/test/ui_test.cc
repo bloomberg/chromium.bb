@@ -360,7 +360,12 @@ void NavigateToCurrentUrl(MockIEEventSink* mock) {
 
 // Tests that Chrome gets re-instantiated after crash if we reload via
 // the address bar or via a new navigation.
+#if defined(USE_AURA)
+// Renderer doesn't have focus; see http://crbug.com/235411.
+TEST_P(FullTabUITest, DISABLED_TabCrashReload) {
+#else
 TEST_P(FullTabUITest, TabCrashReload) {
+#endif
   using testing::DoAll;
 
   if (!GetParam().invokes_cf()) {

@@ -337,7 +337,7 @@ void IEEventSink::ExpectRendererWindowHasFocus() {
 
   ASSERT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, TRUE));
   HWND focus_window = GetFocus();
-  EXPECT_TRUE(focus_window == renderer_window);
+  EXPECT_EQ(renderer_window, focus_window);
   EXPECT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, FALSE));
 }
 
