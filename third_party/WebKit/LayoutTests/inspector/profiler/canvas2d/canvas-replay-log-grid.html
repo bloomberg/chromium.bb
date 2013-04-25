@@ -124,16 +124,19 @@ function test()
         InspectorTest.assertEquals(frameNodes[0], dataGrid.selectedNode);
 
         InspectorTest.addResult("Testing ReplayNextStepClick");
-        for (var i = 1; i < allNodesFlat.length + 5; ++i) {
+        for (var i = 0; i < nodes.length + 5; ++i) {
             profileView._onReplayStepClick(true);
-            InspectorTest.assertEquals(allNodesFlat[i] || allNodesFlat.peekLast(), dataGrid.selectedNode, "error on index " + i);
+            InspectorTest.assertEquals(nodes[i] || nodes.peekLast(), dataGrid.selectedNode, "error on index " + i);
         }
 
         InspectorTest.addResult("Testing ReplayPreviousStepClick");
-        for (var i = allNodesFlat.length - 2; i >= -5; --i) {
+        for (var i = nodes.length - 2; i >= -5; --i) {
             profileView._onReplayStepClick(false);
-            InspectorTest.assertEquals(allNodesFlat[i] || allNodesFlat[0], dataGrid.selectedNode, "error on index " + i);
+            InspectorTest.assertEquals(nodes[i] || nodes[0], dataGrid.selectedNode, "error on index " + i);
         }
+
+        allNodesFlat[0].revealAndSelect();
+        InspectorTest.assertEquals(allNodesFlat[0], dataGrid.selectedNode, "Expected to select the first node before testing ReplayNextDrawingCallClick");
 
         InspectorTest.addResult("Testing ReplayNextDrawingCallClick starting on a frame node");
         for (var i = 1; i < frameNodes.length + 5; ++i) {
@@ -150,7 +153,7 @@ function test()
             InspectorTest.assertEquals(frameNodes[i] || frameNodes[0], dataGrid.selectedNode, "error on index " + i);
         }
 
-        profileView._onReplayStepClick(true);
+        drawCallGroups[0].revealAndSelect();
         InspectorTest.assertEquals(drawCallGroups[0], dataGrid.selectedNode, "Expected to move to the first draw call group");
 
         InspectorTest.addResult("Testing ReplayNextDrawingCallClick starting on a draw call group");
