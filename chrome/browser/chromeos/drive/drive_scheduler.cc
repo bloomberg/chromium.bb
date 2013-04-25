@@ -10,7 +10,9 @@
 #include "base/prefs/pref_service.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/profiles/profile.h"
@@ -394,6 +396,9 @@ void DriveScheduler::QueueJob(scoped_ptr<QueueEntry> job) {
 
   JobInfo* job_info = job_map_.Lookup(job->job_id);
   DCHECK(job_info);
+  util::Log("Queue job: %s [%d]",
+            JobTypeToString(job_info->job_type).c_str(),
+            job_info->job_id);
 
   QueueType queue_type = GetJobQueueType(job_info->job_type);
   std::list<QueueEntry*>& queue = queue_[queue_type];
@@ -431,11 +436,15 @@ void DriveScheduler::DoJobLoop(QueueType queue_type) {
   JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
   DCHECK(job_info);
   job_info->state = STATE_RUNNING;
+  job_info->start_time = base::Time::Now();
   NotifyJobUpdated(*job_info);
 
   // The some arguments are evaluated after bind, so we copy the pointer to the
   // QueueEntry
   QueueEntry* entry = queue_entry.get();
+  util::Log("Start job: %s [%d]",
+            JobTypeToString(job_info->job_type).c_str(),
+            job_info->job_id);
 
   switch (job_info->job_type) {
     case TYPE_GET_ABOUT_RESOURCE: {
@@ -708,6 +717,13 @@ scoped_ptr<DriveScheduler::QueueEntry> DriveScheduler::OnJobDone(
   JobInfo* job_info = job_map_.Lookup(queue_entry->job_id);
   DCHECK(job_info);
   QueueType queue_type = GetJobQueueType(job_info->job_type);
+
+  const base::TimeDelta elapsed = base::Time::Now() - job_info->start_time;
+  util::Log("Job done: %s [%d] => %s (elapsed time: %sms)",
+            JobTypeToString(job_info->job_type).c_str(),
+            job_info->job_id,
+            FileErrorToString(error).c_str(),
+            base::Int64ToString(elapsed.InMilliseconds()).c_str());
 
   // Decrement the number of jobs for this queue.
   --jobs_running_[queue_type];

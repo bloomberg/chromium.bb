@@ -58,13 +58,7 @@ typedef int32 JobID;
 
 // Information about a specific job that is visible to other systems.
 struct JobInfo {
-  explicit JobInfo(JobType in_job_type)
-      : job_type(in_job_type),
-        job_id(-1),
-        state(STATE_NONE),
-        num_completed_bytes(0),
-        num_total_bytes(0) {
-  }
+  explicit JobInfo(JobType job_type);
 
   // Type of the job.
   JobType job_type;
@@ -86,6 +80,9 @@ struct JobInfo {
 
   // Drive path of the file that this job acts on.
   base::FilePath file_path;
+
+  // Time when the job is started (i.e. the request is sent to the server).
+  base::Time start_time;
 };
 
 // The interface for observing JobListInterface.

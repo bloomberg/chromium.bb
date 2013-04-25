@@ -64,4 +64,13 @@ std::string JobStateToString(JobState state) {
   return "(unknown job state)";
 }
 
+
+JobInfo::JobInfo(JobType in_job_type)
+    : job_type(in_job_type),
+      job_id(-1),
+      state(STATE_NONE),
+      num_completed_bytes(0),
+      num_total_bytes(0) {
+}
+
 }  // namespace drive

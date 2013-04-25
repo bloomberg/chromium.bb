@@ -314,7 +314,7 @@ void DriveSystemService::AddDriveMountPoint() {
       drive_mount_point);
 
   if (success) {
-    util::Log("AddDriveMountPoint");
+    util::Log("Drive mount point is added");
     FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
                       OnFileSystemMounted());
   }
@@ -338,7 +338,7 @@ void DriveSystemService::RemoveDriveMountPoint() {
     file_system_proxy_->DetachFromFileSystem();
     file_system_proxy_ = NULL;
   }
-  util::Log("RemoveDriveMountPoint");
+  util::Log("Drive mount point is removed");
 }
 
 void DriveSystemService::InitializeAfterCacheInitialized(bool success) {
