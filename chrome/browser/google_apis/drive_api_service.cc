@@ -230,10 +230,8 @@ DriveAPIService::DriveAPIService(
 
 DriveAPIService::~DriveAPIService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (runner_.get()) {
-    runner_->operation_registry()->RemoveObserver(this);
+  if (runner_.get())
     runner_->auth_service()->RemoveObserver(this);
-  }
 }
 
 void DriveAPIService::Initialize(Profile* profile) {
@@ -250,7 +248,6 @@ void DriveAPIService::Initialize(Profile* profile) {
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);
-  runner_->operation_registry()->AddObserver(this);
 }
 
 void DriveAPIService::AddObserver(DriveServiceObserver* observer) {
@@ -275,11 +272,6 @@ void DriveAPIService::CancelAll() {
 bool DriveAPIService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->CancelForFilePath(file_path);
-}
-
-OperationProgressStatusList DriveAPIService::GetProgressStatusList() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return operation_registry()->GetProgressStatusList();
 }
 
 std::string DriveAPIService::GetRootResourceId() const {
@@ -726,13 +718,6 @@ void DriveAPIService::OnOAuth2RefreshTokenChanged() {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnRefreshTokenInvalid());
   }
-}
-
-void DriveAPIService::OnProgressUpdate(
-    const OperationProgressStatusList& list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
 }  // namespace google_apis

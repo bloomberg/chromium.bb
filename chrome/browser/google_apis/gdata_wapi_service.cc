@@ -106,10 +106,8 @@ GDataWapiService::GDataWapiService(
 
 GDataWapiService::~GDataWapiService() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (runner_.get()) {
-    runner_->operation_registry()->RemoveObserver(this);
+  if (runner_.get())
     runner_->auth_service()->RemoveObserver(this);
-  }
 }
 
 AuthService* GDataWapiService::auth_service_for_testing() {
@@ -132,7 +130,6 @@ void GDataWapiService::Initialize(Profile* profile) {
   runner_->Initialize();
 
   runner_->auth_service()->AddObserver(this);
-  runner_->operation_registry()->AddObserver(this);
 }
 
 void GDataWapiService::AddObserver(DriveServiceObserver* observer) {
@@ -157,11 +154,6 @@ void GDataWapiService::CancelAll() {
 bool GDataWapiService::CancelForFilePath(const base::FilePath& file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return operation_registry()->CancelForFilePath(file_path);
-}
-
-OperationProgressStatusList GDataWapiService::GetProgressStatusList() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return operation_registry()->GetProgressStatusList();
 }
 
 std::string GDataWapiService::GetRootResourceId() const {
@@ -596,13 +588,6 @@ void GDataWapiService::OnOAuth2RefreshTokenChanged() {
     FOR_EACH_OBSERVER(
         DriveServiceObserver, observers_, OnRefreshTokenInvalid());
   }
-}
-
-void GDataWapiService::OnProgressUpdate(
-    const OperationProgressStatusList& list) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  FOR_EACH_OBSERVER(
-      DriveServiceObserver, observers_, OnProgressUpdate(list));
 }
 
 }  // namespace google_apis

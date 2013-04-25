@@ -193,11 +193,6 @@ bool FakeDriveService::CancelForFilePath(const base::FilePath& file_path) {
   return true;
 }
 
-OperationProgressStatusList FakeDriveService::GetProgressStatusList() const {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  return OperationProgressStatusList();
-}
-
 bool FakeDriveService::HasAccessToken() const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   return true;

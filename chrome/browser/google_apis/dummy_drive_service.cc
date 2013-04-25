@@ -24,10 +24,6 @@ bool DummyDriveService::CancelForFilePath(const base::FilePath& file_path) {
   return true;
 }
 
-OperationProgressStatusList DummyDriveService::GetProgressStatusList() const {
-  return OperationProgressStatusList();
-}
-
 bool DummyDriveService::HasAccessToken() const { return true; }
 
 bool DummyDriveService::HasRefreshToken() const { return true; }

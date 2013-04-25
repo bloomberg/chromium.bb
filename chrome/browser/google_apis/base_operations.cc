@@ -106,9 +106,8 @@ UrlFetchOperationBase::UrlFetchOperationBase(
 UrlFetchOperationBase::UrlFetchOperationBase(
     OperationRegistry* registry,
     net::URLRequestContextGetter* url_request_context_getter,
-    OperationType type,
     const base::FilePath& path)
-    : OperationRegistry::Operation(registry, type, path),
+    : OperationRegistry::Operation(registry, path),
       url_request_context_getter_(url_request_context_getter),
       re_authenticate_count_(0),
       started_(false),
@@ -390,7 +389,6 @@ InitiateUploadOperationBase::InitiateUploadOperationBase(
     int64 content_length)
     : UrlFetchOperationBase(registry,
                             url_request_context_getter,
-                            OPERATION_UPLOAD,
                             drive_file_path),
       callback_(callback),
       drive_file_path_(drive_file_path),
@@ -469,7 +467,6 @@ UploadRangeOperationBase::UploadRangeOperationBase(
     const GURL& upload_url)
     : UrlFetchOperationBase(registry,
                             url_request_context_getter,
-                            OPERATION_UPLOAD,
                             drive_file_path),
       upload_mode_(upload_mode),
       drive_file_path_(drive_file_path),
@@ -642,12 +639,6 @@ bool ResumeUploadOperationBase::GetContentData(
   return true;
 }
 
-void ResumeUploadOperationBase::OnURLFetchUploadProgress(
-    const URLFetcher* source, int64 current, int64 total) {
-  // Adjust the progress values according to the range currently uploaded.
-  NotifyProgress(start_position_ + current, content_length_);
-}
-
 //============================ DownloadFileOperation ===========================
 
 DownloadFileOperation::DownloadFileOperation(
@@ -661,7 +652,6 @@ DownloadFileOperation::DownloadFileOperation(
     const base::FilePath& output_file_path)
     : UrlFetchOperationBase(registry,
                             url_request_context_getter,
-                            OPERATION_DOWNLOAD,
                             drive_file_path),
       download_action_callback_(download_action_callback),
       get_content_callback_(get_content_callback),
@@ -687,7 +677,6 @@ GURL DownloadFileOperation::GetURL() const {
 void DownloadFileOperation::OnURLFetchDownloadProgress(const URLFetcher* source,
                                                        int64 current,
                                                        int64 total) {
-  NotifyProgress(current, total);
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }

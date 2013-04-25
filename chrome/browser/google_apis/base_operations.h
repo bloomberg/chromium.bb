@@ -106,7 +106,6 @@ class UrlFetchOperationBase : public AuthenticatedOperationInterface,
   UrlFetchOperationBase(
       OperationRegistry* registry,
       net::URLRequestContextGetter* url_request_context_getter,
-      OperationType type,
       const base::FilePath& drive_file_path);
   virtual ~UrlFetchOperationBase();
 
@@ -427,10 +426,6 @@ class ResumeUploadOperationBase : public UploadRangeOperationBase {
   virtual std::vector<std::string> GetExtraRequestHeaders() const OVERRIDE;
   virtual bool GetContentData(std::string* upload_content_type,
                               std::string* upload_content) OVERRIDE;
-
-  // content::UrlFetcherDelegate overrides.
-  virtual void OnURLFetchUploadProgress(const net::URLFetcher* source,
-                                        int64 current, int64 total) OVERRIDE;
 
  private:
   // The parameters for the request. See ResumeUploadParams for the details.

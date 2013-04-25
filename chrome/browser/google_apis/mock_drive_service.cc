@@ -23,8 +23,6 @@ using ::testing::Return;
 namespace google_apis {
 
 MockDriveService::MockDriveService() {
-  ON_CALL(*this, GetProgressStatusList())
-      .WillByDefault(Return(OperationProgressStatusList()));
   ON_CALL(*this, GetChangeList(_, _))
       .WillByDefault(Invoke(this, &MockDriveService::GetChangeListStub));
   ON_CALL(*this, GetAccountMetadata(_))

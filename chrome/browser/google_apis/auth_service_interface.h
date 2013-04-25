@@ -15,7 +15,6 @@ class Profile;
 namespace google_apis {
 
 class AuthServiceObserver;
-class OperationRegistry;
 
 // Called when fetching of access token is complete.
 typedef base::Callback<void(GDataErrorCode error,

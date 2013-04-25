@@ -32,9 +32,6 @@ class DriveServiceObserver {
   // Triggered when the service gets ready to perform operations.
   virtual void OnReadyToPerformOperations() {}
 
-  // Called when an operation started, made some progress, or finished.
-  virtual void OnProgressUpdate(const OperationProgressStatusList& list) {}
-
   // Called when the refresh token was found to be invalid.
   virtual void OnRefreshTokenInvalid() {}
 
@@ -107,9 +104,6 @@ class DriveServiceInterface {
   // Cancels ongoing operation for a given virtual |file_path|. Returns true if
   // the operation was found and canceled.
   virtual bool CancelForFilePath(const base::FilePath& file_path) = 0;
-
-  // Obtains the list of currently active operations.
-  virtual OperationProgressStatusList GetProgressStatusList() const = 0;
 
   // Authentication service:
 

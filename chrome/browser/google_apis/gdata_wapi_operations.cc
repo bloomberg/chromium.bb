@@ -713,7 +713,6 @@ void ResumeUploadOperation::OnRangeOperationComplete(
 
 void ResumeUploadOperation::OnURLFetchUploadProgress(
     const URLFetcher* source, int64 current, int64 total) {
-  ResumeUploadOperationBase::OnURLFetchUploadProgress(source, current, total);
   if (!progress_callback_.is_null())
     progress_callback_.Run(current, total);
 }

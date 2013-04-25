@@ -34,8 +34,6 @@ class MockDriveService : public DriveServiceInterface {
   MOCK_CONST_METHOD0(CanStartOperation, bool());
   MOCK_METHOD0(CancelAll, void(void));
   MOCK_METHOD1(CancelForFilePath, bool(const base::FilePath& file_path));
-  MOCK_CONST_METHOD0(GetProgressStatusList,
-      OperationProgressStatusList());
   MOCK_CONST_METHOD0(GetRootResourceId, std::string());
   MOCK_METHOD1(GetAllResourceList,
       void(const GetResourceListCallback& callback));
