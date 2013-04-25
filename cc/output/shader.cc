@@ -498,9 +498,9 @@ FragmentTexColorMatrixAlphaBinding::FragmentTexColorMatrixAlphaBinding()
 
 void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
                                               unsigned program,
-                                              bool usingBindUniform,
-                                              int* baseUniformIndex) {
-    static const char* shaderUniforms[] = {
+                                              bool using_bind_uniform,
+                                              int* base_uniform_index) {
+    static const char* shader_uniforms[] = {
         "s_texture",
         "alpha",
         "colorMatrix",
@@ -510,12 +510,12 @@ void FragmentTexColorMatrixAlphaBinding::Init(WebGraphicsContext3D* context,
 
     GetProgramUniformLocations(context,
                                program,
-                               shaderUniforms,
-                               arraysize(shaderUniforms),
+                               shader_uniforms,
+                               arraysize(shader_uniforms),
                                arraysize(locations),
                                locations,
-                               usingBindUniform,
-                               baseUniformIndex);
+                               using_bind_uniform,
+                               base_uniform_index);
 
     sampler_location_ = locations[0];
     alpha_location_ = locations[1];
@@ -1002,9 +1002,9 @@ FragmentShaderRGBATexAlphaMaskColorMatrixAA::
 void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
     WebGraphicsContext3D* context,
     unsigned program,
-    bool usingBindUniform,
-    int* baseUniformIndex) {
-  static const char* shaderUniforms[] = {
+    bool using_bind_uniform,
+    int* base_uniform_index) {
+  static const char* shader_uniforms[] = {
     "s_texture",
     "s_mask",
     "alpha",
@@ -1018,12 +1018,12 @@ void FragmentShaderRGBATexAlphaMaskColorMatrixAA::Init(
 
   GetProgramUniformLocations(context,
                              program,
-                             shaderUniforms,
-                             arraysize(shaderUniforms),
+                             shader_uniforms,
+                             arraysize(shader_uniforms),
                              arraysize(locations),
                              locations,
-                             usingBindUniform,
-                             baseUniformIndex);
+                             using_bind_uniform,
+                             base_uniform_index);
 
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
@@ -1088,9 +1088,11 @@ FragmentShaderRGBATexAlphaColorMatrixAA::
           color_offset_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
-      WebGraphicsContext3D* context, unsigned program, bool usingBindUniform,
-      int* baseUniformIndex) {
-  static const char* shaderUniforms[] = {
+      WebGraphicsContext3D* context,
+      unsigned program,
+      bool using_bind_uniform,
+      int* base_uniform_index) {
+  static const char* shader_uniforms[] = {
     "s_texture",
     "alpha",
     "edge",
@@ -1101,12 +1103,12 @@ void FragmentShaderRGBATexAlphaColorMatrixAA::Init(
 
   GetProgramUniformLocations(context,
                              program,
-                             shaderUniforms,
-                             arraysize(shaderUniforms),
+                             shader_uniforms,
+                             arraysize(shader_uniforms),
                              arraysize(locations),
                              locations,
-                             usingBindUniform,
-                             baseUniformIndex);
+                             using_bind_uniform,
+                             base_uniform_index);
 
   sampler_location_ = locations[0];
   alpha_location_ = locations[1];
@@ -1158,9 +1160,11 @@ FragmentShaderRGBATexAlphaMaskColorMatrix::
           mask_tex_coord_scale_location_(-1) {}
 
 void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
-    WebGraphicsContext3D* context, unsigned program, bool usingBindUniform,
-    int* baseUniformIndex) {
-  static const char* shaderUniforms[] = {
+    WebGraphicsContext3D* context,
+    unsigned program,
+    bool using_bind_uniform,
+    int* base_uniform_index) {
+  static const char* shader_uniforms[] = {
     "s_texture",
     "s_mask",
     "alpha",
@@ -1173,12 +1177,12 @@ void FragmentShaderRGBATexAlphaMaskColorMatrix::Init(
 
   GetProgramUniformLocations(context,
                              program,
-                             shaderUniforms,
-                             arraysize(shaderUniforms),
+                             shader_uniforms,
+                             arraysize(shader_uniforms),
                              arraysize(locations),
                              locations,
-                             usingBindUniform,
-                             baseUniformIndex);
+                             using_bind_uniform,
+                             base_uniform_index);
 
   sampler_location_ = locations[0];
   mask_sampler_location_ = locations[1];
