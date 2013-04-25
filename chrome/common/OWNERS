@@ -38,3 +38,6 @@ per-file search_types.*=dhollowa@chromium.org
 per-file search_types.*=jered@chromium.org
 per-file search_types.*=samarth@chromium.org
 per-file search_types.*=sreeram@chromium.org
+
+# Debugging crash keys.
+per-file crash_keys.*=rsesek@chromium.org
