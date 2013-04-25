@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/drive/drive_file_system_proxy.h"
+#include "chrome/browser/chromeos/drive/file_system_proxy.h"
 
 #include <string>
 #include <vector>
@@ -46,7 +46,7 @@ void OnPlatformFileOpened(
 }
 
 // Helper function to run OpenFileCallback from
-// DriveFileSystemProxy::OpenFile().
+// FileSystemProxy::OpenFile().
 void OnGetFileByPathForOpen(
     const FileSystemOperation::OpenFileCallback& callback,
     int file_flags,
@@ -79,7 +79,7 @@ void OnGetFileByPathForOpen(
 }
 
 // Helper function to run SnapshotFileCallback from
-// DriveFileSystemProxy::CreateSnapshotFile().
+// FileSystemProxy::CreateSnapshotFile().
 void CallSnapshotFileCallback(
     const FileSystemOperation::SnapshotFileCallback& callback,
     const base::PlatformFileInfo& file_info,
@@ -162,29 +162,31 @@ base::FileUtilProxy::Entry DriveEntryProtoToFileUtilProxyEntry(
   return entry;
 }
 
-// DriveFileSystemProxy class implementation.
+// FileSystemProxy class implementation.
 
-DriveFileSystemProxy::DriveFileSystemProxy(
+FileSystemProxy::FileSystemProxy(
     DriveFileSystemInterface* file_system)
     : file_system_(file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
-void DriveFileSystemProxy::DetachFromFileSystem() {
+void FileSystemProxy::DetachFromFileSystem() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   file_system_ = NULL;
 }
 
-void DriveFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
+void FileSystemProxy::GetFileInfo(
+    const FileSystemURL& file_url,
     const FileSystemOperation::GetMetadataCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    base::PlatformFileInfo(),
-                    base::FilePath()));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::PlatformFileInfo(),
+                   base::FilePath()));
     return;
   }
 
@@ -193,13 +195,14 @@ void DriveFileSystemProxy::GetFileInfo(const FileSystemURL& file_url,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnGetMetadata,
+                     base::Bind(&FileSystemProxy::OnGetMetadata,
                                 this,
                                 file_path,
                                 callback))));
 }
 
-void DriveFileSystemProxy::Copy(const FileSystemURL& src_file_url,
+void FileSystemProxy::Copy(
+    const FileSystemURL& src_file_url,
     const FileSystemURL& dest_file_url,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -207,8 +210,9 @@ void DriveFileSystemProxy::Copy(const FileSystemURL& src_file_url,
   base::FilePath src_file_path, dest_file_path;
   if (!ValidateUrl(src_file_url, &src_file_path) ||
       !ValidateUrl(dest_file_url, &dest_file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -218,12 +222,13 @@ void DriveFileSystemProxy::Copy(const FileSystemURL& src_file_url,
                  src_file_path,
                  dest_file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnStatusCallback,
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
                                 this,
                                 callback))));
 }
 
-void DriveFileSystemProxy::Move(const FileSystemURL& src_file_url,
+void FileSystemProxy::Move(
+    const FileSystemURL& src_file_url,
     const FileSystemURL& dest_file_url,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -231,8 +236,9 @@ void DriveFileSystemProxy::Move(const FileSystemURL& src_file_url,
   base::FilePath src_file_path, dest_file_path;
   if (!ValidateUrl(src_file_url, &src_file_path) ||
       !ValidateUrl(dest_file_url, &dest_file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -242,12 +248,13 @@ void DriveFileSystemProxy::Move(const FileSystemURL& src_file_url,
                  src_file_path,
                  dest_file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnStatusCallback,
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
                                 this,
                                 callback))));
 }
 
-void DriveFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
+void FileSystemProxy::ReadDirectory(
+    const FileSystemURL& file_url,
     const FileSystemOperation::ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
@@ -267,19 +274,22 @@ void DriveFileSystemProxy::ReadDirectory(const FileSystemURL& file_url,
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnReadDirectory,
+                     base::Bind(&FileSystemProxy::OnReadDirectory,
                                 this,
                                 callback))));
 }
 
-void DriveFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
+void FileSystemProxy::Remove(
+    const FileSystemURL& file_url,
+    bool recursive,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -289,12 +299,12 @@ void DriveFileSystemProxy::Remove(const FileSystemURL& file_url, bool recursive,
                  file_path,
                  recursive,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnStatusCallback,
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
                                 this,
                                 callback))));
 }
 
-void DriveFileSystemProxy::CreateDirectory(
+void FileSystemProxy::CreateDirectory(
     const FileSystemURL& file_url,
     bool exclusive,
     bool recursive,
@@ -303,8 +313,9 @@ void DriveFileSystemProxy::CreateDirectory(
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -315,12 +326,12 @@ void DriveFileSystemProxy::CreateDirectory(
                  exclusive,
                  recursive,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnStatusCallback,
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
                                 this,
                                 callback))));
 }
 
-void DriveFileSystemProxy::CreateFile(
+void FileSystemProxy::CreateFile(
     const FileSystemURL& file_url,
     bool exclusive,
     const FileSystemOperation::StatusCallback& callback) {
@@ -328,8 +339,9 @@ void DriveFileSystemProxy::CreateFile(
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -339,26 +351,29 @@ void DriveFileSystemProxy::CreateFile(
                  file_path,
                  exclusive,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnStatusCallback,
+                     base::Bind(&FileSystemProxy::OnStatusCallback,
                                 this,
                                 callback))));
 }
 
-void DriveFileSystemProxy::Truncate(
-    const FileSystemURL& file_url, int64 length,
+void FileSystemProxy::Truncate(
+    const FileSystemURL& file_url,
+    int64 length,
     const FileSystemOperation::StatusCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (length < 0) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
         base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
     return;
   }
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback, base::PLATFORM_FILE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -370,14 +385,14 @@ void DriveFileSystemProxy::Truncate(
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnFileOpenedForTruncate,
+                     base::Bind(&FileSystemProxy::OnFileOpenedForTruncate,
                                 this,
                                 file_path,
                                 length,
                                 callback))));
 }
 
-void DriveFileSystemProxy::OnOpenFileForWriting(
+void FileSystemProxy::OnOpenFileForWriting(
     int file_flags,
     base::ProcessHandle peer_handle,
     const FileSystemOperation::OpenFileCallback& callback,
@@ -410,7 +425,7 @@ void DriveFileSystemProxy::OnOpenFileForWriting(
   DCHECK(posted);
 }
 
-void DriveFileSystemProxy::OnCreateFileForOpen(
+void FileSystemProxy::OnCreateFileForOpen(
     const base::FilePath& file_path,
     int file_flags,
     base::ProcessHandle peer_handle,
@@ -439,14 +454,14 @@ void DriveFileSystemProxy::OnCreateFileForOpen(
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnOpenFileForWriting,
+                     base::Bind(&FileSystemProxy::OnOpenFileForWriting,
                                 this,
                                 file_flags,
                                 peer_handle,
                                 callback))));
 }
 
-void DriveFileSystemProxy::OnFileOpenedForTruncate(
+void FileSystemProxy::OnFileOpenedForTruncate(
     const base::FilePath& virtual_path,
     int64 length,
     const fileapi::FileSystemOperation::StatusCallback& callback,
@@ -466,14 +481,14 @@ void DriveFileSystemProxy::OnFileOpenedForTruncate(
       base::Bind(&DoTruncateOnBlockingPool,
                  local_cache_path,
                  length),
-      base::Bind(&DriveFileSystemProxy::DidTruncate,
+      base::Bind(&FileSystemProxy::DidTruncate,
                  this,
                  virtual_path,
                  callback));
   DCHECK(posted);
 }
 
-void DriveFileSystemProxy::DidTruncate(
+void FileSystemProxy::DidTruncate(
     const base::FilePath& virtual_path,
     const FileSystemOperation::StatusCallback& callback,
     base::PlatformFileError truncate_result) {
@@ -491,7 +506,7 @@ void DriveFileSystemProxy::DidTruncate(
                                 truncate_result))));
 }
 
-void DriveFileSystemProxy::OpenFile(
+void FileSystemProxy::OpenFile(
     const FileSystemURL& file_url,
     int file_flags,
     base::ProcessHandle peer_handle,
@@ -500,11 +515,12 @@ void DriveFileSystemProxy::OpenFile(
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    base::kInvalidPlatformFileValue,
-                    peer_handle));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::kInvalidPlatformFileValue,
+                   peer_handle));
     return;
   }
 
@@ -512,11 +528,12 @@ void DriveFileSystemProxy::OpenFile(
   if ((file_flags & base::PLATFORM_FILE_DELETE_ON_CLOSE)) {
     NOTIMPLEMENTED() << "File create/write operations not yet supported "
                      << file_path.value();
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_FAILED,
-                    base::kInvalidPlatformFileValue,
-                    peer_handle));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_FAILED,
+                   base::kInvalidPlatformFileValue,
+                   peer_handle));
     return;
   }
 
@@ -533,7 +550,7 @@ void DriveFileSystemProxy::OpenFile(
                      base::Unretained(file_system_),
                      file_path,
                      google_apis::CreateRelayCallback(
-                         base::Bind(&DriveFileSystemProxy::OnOpenFileForWriting,
+                         base::Bind(&FileSystemProxy::OnOpenFileForWriting,
                                     this,
                                     file_flags,
                                     peer_handle,
@@ -559,7 +576,7 @@ void DriveFileSystemProxy::OpenFile(
                    file_path,
                    file_flags & base::PLATFORM_FILE_EXCLUSIVE_WRITE,
                    google_apis::CreateRelayCallback(
-                       base::Bind(&DriveFileSystemProxy::OnCreateFileForOpen,
+                       base::Bind(&FileSystemProxy::OnCreateFileForOpen,
                                   this,
                                   file_path,
                                   file_flags,
@@ -567,15 +584,16 @@ void DriveFileSystemProxy::OpenFile(
                                   callback))));
   } else {
     NOTREACHED() << "Unhandled file flags combination " << file_flags;
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_FAILED,
-                    base::kInvalidPlatformFileValue,
-                    peer_handle));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_FAILED,
+                   base::kInvalidPlatformFileValue,
+                   peer_handle));
   }
 }
 
-void DriveFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
+void FileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
   base::FilePath file_path;
   if (!ValidateUrl(url, &file_path))
     return;
@@ -589,7 +607,7 @@ void DriveFileSystemProxy::NotifyCloseFile(const FileSystemURL& url) {
                                 file_path))));
 }
 
-void DriveFileSystemProxy::TouchFile(
+void FileSystemProxy::TouchFile(
     const fileapi::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
@@ -598,23 +616,25 @@ void DriveFileSystemProxy::TouchFile(
 
   // TODO(kinaba,kochi): crbug.com/144369. Support this operations once we have
   // migrated to the new Drive API.
-  MessageLoopProxy::current()->PostTask(FROM_HERE,
-       base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
+  MessageLoopProxy::current()->PostTask(
+      FROM_HERE,
+      base::Bind(callback, base::PLATFORM_FILE_ERROR_INVALID_OPERATION));
 }
 
-void DriveFileSystemProxy::CreateSnapshotFile(
+void FileSystemProxy::CreateSnapshotFile(
     const FileSystemURL& file_url,
     const FileSystemOperation::SnapshotFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    base::PlatformFileInfo(),
-                    base::FilePath(),
-                    scoped_refptr<ShareableFileReference>(NULL)));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::PlatformFileInfo(),
+                   base::FilePath(),
+                   scoped_refptr<ShareableFileReference>(NULL)));
     return;
   }
 
@@ -623,13 +643,13 @@ void DriveFileSystemProxy::CreateSnapshotFile(
                  base::Unretained(file_system_),
                  file_path,
                  google_apis::CreateRelayCallback(
-                     base::Bind(&DriveFileSystemProxy::OnGetEntryInfoByPath,
+                     base::Bind(&FileSystemProxy::OnGetEntryInfoByPath,
                                 this,
                                 file_path,
                                 callback))));
 }
 
-void DriveFileSystemProxy::OnGetEntryInfoByPath(
+void FileSystemProxy::OnGetEntryInfoByPath(
     const base::FilePath& entry_path,
     const FileSystemOperation::SnapshotFileCallback& callback,
     FileError error,
@@ -657,18 +677,19 @@ void DriveFileSystemProxy::OnGetEntryInfoByPath(
                                 file_info))));
 }
 
-void DriveFileSystemProxy::CreateWritableSnapshotFile(
+void FileSystemProxy::CreateWritableSnapshotFile(
     const FileSystemURL& file_url,
     const fileapi::WritableSnapshotFile& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   base::FilePath file_path;
   if (!ValidateUrl(file_url, &file_path)) {
-    MessageLoopProxy::current()->PostTask(FROM_HERE,
-         base::Bind(callback,
-                    base::PLATFORM_FILE_ERROR_NOT_FOUND,
-                    base::FilePath(),
-                    scoped_refptr<ShareableFileReference>(NULL)));
+    MessageLoopProxy::current()->PostTask(
+        FROM_HERE,
+        base::Bind(callback,
+                   base::PLATFORM_FILE_ERROR_NOT_FOUND,
+                   base::FilePath(),
+                   scoped_refptr<ShareableFileReference>(NULL)));
     return;
   }
 
@@ -678,37 +699,37 @@ void DriveFileSystemProxy::CreateWritableSnapshotFile(
                  file_path,
                  google_apis::CreateRelayCallback(
                      base::Bind(
-                         &DriveFileSystemProxy::OnCreateWritableSnapshotFile,
+                         &FileSystemProxy::OnCreateWritableSnapshotFile,
                          this,
                          file_path,
                          callback))));
 }
 
-DriveFileSystemProxy::~DriveFileSystemProxy() {
+FileSystemProxy::~FileSystemProxy() {
   // Should be deleted from the CrosMountPointProvider on UI thread.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 }
 
 // static.
-bool DriveFileSystemProxy::ValidateUrl(
+bool FileSystemProxy::ValidateUrl(
     const FileSystemURL& url, base::FilePath* file_path) {
   *file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   return !file_path->empty();
 }
 
-void DriveFileSystemProxy::CallDriveFileSystemMethodOnUIThread(
+void FileSystemProxy::CallDriveFileSystemMethodOnUIThread(
     const base::Closure& method_call) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
       base::Bind(
-          &DriveFileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal,
+          &FileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal,
           this,
           method_call));
 }
 
-void DriveFileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal(
+void FileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal(
     const base::Closure& method_call) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   // If |file_system_| is NULL, it means the file system has already shut down.
@@ -716,13 +737,13 @@ void DriveFileSystemProxy::CallDriveFileSystemMethodOnUIThreadInternal(
     method_call.Run();
 }
 
-void DriveFileSystemProxy::OnStatusCallback(
+void FileSystemProxy::OnStatusCallback(
     const fileapi::FileSystemOperation::StatusCallback& callback,
     FileError error) {
   callback.Run(FileErrorToPlatformError(error));
 }
 
-void DriveFileSystemProxy::OnGetMetadata(
+void FileSystemProxy::OnGetMetadata(
     const base::FilePath& file_path,
     const FileSystemOperation::GetMetadataCallback& callback,
     FileError error,
@@ -743,7 +764,7 @@ void DriveFileSystemProxy::OnGetMetadata(
   callback.Run(base::PLATFORM_FILE_OK, file_info, file_path);
 }
 
-void DriveFileSystemProxy::OnReadDirectory(
+void FileSystemProxy::OnReadDirectory(
     const FileSystemOperation::ReadDirectoryCallback&
     callback,
     FileError error,
@@ -774,7 +795,7 @@ void DriveFileSystemProxy::OnReadDirectory(
   callback.Run(base::PLATFORM_FILE_OK, entries, false);
 }
 
-void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
+void FileSystemProxy::OnCreateWritableSnapshotFile(
     const base::FilePath& virtual_path,
     const fileapi::WritableSnapshotFile& callback,
     FileError result,
@@ -789,7 +810,7 @@ void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
         ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE,
         BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE));
     file_ref->AddFinalReleaseCallback(
-        base::Bind(&DriveFileSystemProxy::CloseWritableSnapshotFile,
+        base::Bind(&FileSystemProxy::CloseWritableSnapshotFile,
                    this,
                    virtual_path));
   }
@@ -797,7 +818,7 @@ void DriveFileSystemProxy::OnCreateWritableSnapshotFile(
   callback.Run(FileErrorToPlatformError(result), local_path, file_ref);
 }
 
-void DriveFileSystemProxy::CloseWritableSnapshotFile(
+void FileSystemProxy::CloseWritableSnapshotFile(
     const base::FilePath& virtual_path,
     const base::FilePath& local_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

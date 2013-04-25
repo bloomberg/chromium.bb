@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
-#define CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
+#ifndef CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_PROXY_H_
+#define CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_PROXY_H_
 
 #include "chrome/browser/chromeos/drive/file_errors.h"
 #include "webkit/fileapi/remote_file_system_proxy.h"
@@ -20,10 +20,10 @@ class DriveFileSystemInterface;
 typedef std::vector<DriveEntryProto> DriveEntryProtoVector;
 
 // Implementation of File API's remote file system proxy for Drive file system.
-class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
+class FileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
  public:
   // |file_system| is the DriveFileSystem instance owned by DriveSystemService.
-  explicit DriveFileSystemProxy(DriveFileSystemInterface* file_system);
+  explicit FileSystemProxy(DriveFileSystemInterface* file_system);
 
   // Detaches this instance from |file_system_|.
   // Method calls may result in no-op after calling this method.
@@ -89,7 +89,7 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
           OVERRIDE;
 
  protected:
-  virtual ~DriveFileSystemProxy();
+  virtual ~FileSystemProxy();
 
  private:
   // Checks if a given |url| belongs to this file system. If it does,
@@ -202,4 +202,4 @@ class DriveFileSystemProxy : public fileapi::RemoteFileSystemProxyInterface {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_DRIVE_FILE_SYSTEM_PROXY_H_
+#endif  // CHROME_BROWSER_CHROMEOS_DRIVE_FILE_SYSTEM_PROXY_H_

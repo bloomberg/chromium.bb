@@ -33,10 +33,10 @@ namespace drive {
 class DownloadHandler;
 class DriveCache;
 class DriveFileSystemInterface;
-class DriveFileSystemProxy;
 class DrivePrefetcher;
 class DriveResourceMetadata;
 class DriveWebAppsRegistry;
+class FileSystemProxy;
 class FileWriteHelper;
 class JobListInterface;
 class StaleCacheFilesRemover;
@@ -172,7 +172,7 @@ class DriveSystemService : public ProfileKeyedService,
   scoped_ptr<SyncClient> sync_client_;
   scoped_ptr<DrivePrefetcher> prefetcher_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
-  scoped_refptr<DriveFileSystemProxy> file_system_proxy_;
+  scoped_refptr<FileSystemProxy> file_system_proxy_;
 
   ObserverList<DriveSystemServiceObserver> observers_;
 

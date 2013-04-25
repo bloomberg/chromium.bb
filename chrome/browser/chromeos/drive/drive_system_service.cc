@@ -11,10 +11,10 @@
 #include "chrome/browser/chromeos/drive/download_handler.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_prefetcher.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
+#include "chrome/browser/chromeos/drive/file_system_proxy.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
@@ -305,7 +305,7 @@ void DriveSystemService::AddDriveMountPoint() {
       BrowserContext::GetMountPoints(profile_);
   DCHECK(mount_points);
 
-  file_system_proxy_ = new DriveFileSystemProxy(file_system_.get());
+  file_system_proxy_ = new FileSystemProxy(file_system_.get());
 
   bool success = mount_points->RegisterRemoteFileSystem(
       drive_mount_point.BaseName().AsUTF8Unsafe(),
