@@ -217,6 +217,11 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
   bool IsBlacklistedExtensionAcknowledged(const std::string& extension_id);
   void AcknowledgeBlacklistedExtension(const std::string& extension_id);
 
+  // Whether the external extension was installed during the first run
+  // of this profile.
+  bool IsExternalInstallFirstRun(const std::string& extension_id);
+  void SetExternalInstallFirstRun(const std::string& extension_id);
+
   // Returns true if the extension notification code has already run for the
   // first time for this profile. Currently we use this flag to mean that any
   // extensions that would trigger notifications should get silently

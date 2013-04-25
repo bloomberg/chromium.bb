@@ -132,6 +132,7 @@ using extensions::ExtensionSystem;
 using extensions::FeatureSwitch;
 using extensions::Manifest;
 using extensions::PermissionSet;
+using extensions::TestExtensionSystem;
 using extensions::URLPatternSet;
 
 namespace keys = extension_manifest_keys;
@@ -412,6 +413,11 @@ class MockProviderVisitor
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
 };
 
+ExtensionServiceTestBase::ExtensionServiceInitParams::
+ExtensionServiceInitParams()
+ : autoupdate_enabled(false), is_first_run(true) {
+}
+
 // Our message loop may be used in tests which require it to be an IO loop.
 ExtensionServiceTestBase::ExtensionServiceTestBase()
     : loop_(MessageLoop::TYPE_IO),
@@ -443,27 +449,32 @@ ExtensionServiceTestBase::~ExtensionServiceTestBase() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionService(
-    const base::FilePath& profile_path,
-    const base::FilePath& pref_file,
-    const base::FilePath& extensions_install_dir,
-    bool autoupdate_enabled) {
+    const ExtensionServiceTestBase::ExtensionServiceInitParams& params) {
   TestingProfile::Builder profile_builder;
   // Create a PrefService that only contains user defined preference values.
   PrefServiceMockBuilder builder;
   builder.WithUserFilePrefs(
-      pref_file, loop_.message_loop_proxy());
+      params.pref_file, loop_.message_loop_proxy());
   scoped_refptr<PrefRegistrySyncable> registry(new PrefRegistrySyncable);
   scoped_ptr<PrefServiceSyncable> prefs(builder.CreateSyncable(registry));
   chrome::RegisterUserPrefs(registry);
   profile_builder.SetPrefService(prefs.Pass());
-  profile_builder.SetPath(profile_path);
+  profile_builder.SetPath(params.profile_path);
   profile_ = profile_builder.Build();
 
-  service_ = static_cast<extensions::TestExtensionSystem*>(
-      ExtensionSystem::Get(profile_.get()))->CreateExtensionService(
-          CommandLine::ForCurrentProcess(),
-          extensions_install_dir,
-          autoupdate_enabled);
+  TestExtensionSystem* system = static_cast<TestExtensionSystem*>(
+      ExtensionSystem::Get(profile_.get()));
+  if (!params.is_first_run) {
+    ExtensionPrefs* prefs = system->CreateExtensionPrefs(
+        CommandLine::ForCurrentProcess(),
+        params.extensions_install_dir);
+    prefs->SetAlertSystemFirstRun();
+  }
+
+  service_ = system->CreateExtensionService(
+      CommandLine::ForCurrentProcess(),
+      params.extensions_install_dir,
+      params.autoupdate_enabled);
   service_->SetFileTaskRunnerForTesting(loop_.message_loop_proxy());
   service_->set_extensions_enabled(true);
   service_->set_show_extensions_prompts(false);
@@ -501,11 +512,15 @@ void ExtensionServiceTestBase::InitializeInstalledExtensionService(
   file_util::Delete(extensions_install_dir_, true);
   file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
 
-  InitializeExtensionService(path, temp_prefs, extensions_install_dir_, false);
+  ExtensionServiceInitParams params;
+  params.profile_path = path;
+  params.pref_file = temp_prefs;
+  params.extensions_install_dir = extensions_install_dir_;
+  InitializeExtensionService(params);
 }
 
 void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
-  InitializeExtensionServiceHelper(false);
+  InitializeExtensionServiceHelper(false, true);
 }
 
 void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
@@ -515,12 +530,12 @@ void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
 }
 
 void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
-  InitializeExtensionServiceHelper(true);
+  InitializeExtensionServiceHelper(true, true);
   service_->updater()->Start();
 }
 
 void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
-    bool autoupdate_enabled) {
+    bool autoupdate_enabled, bool is_first_run) {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   base::FilePath path = temp_dir_.path();
   path = path.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
@@ -532,8 +547,13 @@ void ExtensionServiceTestBase::InitializeExtensionServiceHelper(
   file_util::Delete(extensions_install_dir_, true);
   file_util::CreateDirectory(extensions_install_dir_);
 
-  InitializeExtensionService(path, prefs_filename, extensions_install_dir_,
-                             autoupdate_enabled);
+  ExtensionServiceInitParams params;
+  params.profile_path = path;
+  params.pref_file = prefs_filename;
+  params.extensions_install_dir = extensions_install_dir_;
+  params.autoupdate_enabled = autoupdate_enabled;
+  params.is_first_run = is_first_run;
+  InitializeExtensionService(params);
 }
 
 void ExtensionServiceTestBase::InitializeRequestContext() {
@@ -5893,15 +5913,14 @@ TEST_F(ExtensionServiceTest, ExternalInstallMultiple) {
 }
 
 // Test that there is a bubble for external extensions that update
-// from the webstore.
-TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstore) {
+// from the webstore if the profile is not new.
+TEST_F(ExtensionServiceTest, ExternalInstallUpdatesFromWebstoreOldProfile) {
   FeatureSwitch::ScopedOverride prompt(
       FeatureSwitch::prompt_for_external_extensions(), true);
 
-  InitializeEmptyExtensionService();
-  // Check for external extensions here without any providers so that
-  // the profile is no longer new.
-  service_->CheckForExternalUpdates();
+  // This sets up the ExtensionPrefs used by our ExtensionService to be
+  // post-first run.
+  InitializeExtensionServiceHelper(false, false);
 
   base::FilePath crx_path = temp_dir_.path().AppendASCII("webstore.crx");
   PackCRX(data_dir_.AppendASCII("update_from_webstore"),

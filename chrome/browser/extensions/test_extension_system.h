@@ -26,11 +26,18 @@ class TestExtensionSystem : public ExtensionSystem {
   // ProfileKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
 
+  // Creates an ExtensionPrefs with the testing profile and returns it.
+  // Useful for tests that need to modify prefs before creating the
+  // ExtensionService.
+  ExtensionPrefs* CreateExtensionPrefs(const CommandLine* command_line,
+                                       const base::FilePath& install_directory);
+
   // Creates an ExtensionService initialized with the testing profile and
-  // returns it.
-  ExtensionService* CreateExtensionService(const CommandLine* command_line,
-                                           const base::FilePath& install_directory,
-                                           bool autoupdate_enabled);
+  // returns it, and creates ExtensionPrefs if it hasn't been created yet.
+  ExtensionService* CreateExtensionService(
+      const CommandLine* command_line,
+      const base::FilePath& install_directory,
+      bool autoupdate_enabled);
 
   // Creates an ExtensionProcessManager. If not invoked, the
   // ExtensionProcessManager is NULL.

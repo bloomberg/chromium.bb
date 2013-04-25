@@ -418,6 +418,8 @@ ExtensionService::ExtensionService(Profile* profile,
   // cause syncs if required.
   extension_prefs_->extension_sorting()->SetExtensionService(this);
 
+  is_first_run_ = !extension_prefs_->SetAlertSystemFirstRun();
+
 #if defined(ENABLE_EXTENSIONS)
   extension_action_storage_manager_.reset(
       new extensions::ExtensionActionStorageManager(profile_));
@@ -1761,7 +1763,6 @@ void ExtensionService::IdentifyAlertableExtensions() {
   // notification.
   extension_error_ui_.reset(ExtensionErrorUI::Create(this));
 
-  is_first_run_ = !extension_prefs_->SetAlertSystemFirstRun();
   bool did_show_alert = false;
   if (PopulateExtensionErrorUI(extension_error_ui_.get())) {
     if (!is_first_run_) {
@@ -1877,7 +1878,13 @@ void ExtensionService::UpdateExternalExtensionAlert() {
                                   EXTERNAL_EXTENSION_BUCKET_BOUNDARY);
         return;
       }
-      extensions::AddExternalInstallError(this, extension, is_first_run_);
+      if (is_first_run_)
+        extension_prefs_->SetExternalInstallFirstRun(extension->id());
+      // first_run is true if the extension was installed during a first run
+      // (even if it's post-first run now).
+      bool first_run = extension_prefs_->IsExternalInstallFirstRun(
+          extension->id());
+      extensions::AddExternalInstallError(this, extension, first_run);
     }
   } else {
     extensions::RemoveExternalInstallError(this);

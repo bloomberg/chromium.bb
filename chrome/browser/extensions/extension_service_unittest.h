@@ -31,13 +31,20 @@ class ManagementPolicy;
 
 class ExtensionServiceTestBase : public extensions::ExtensionTest {
  public:
+  struct ExtensionServiceInitParams {
+    base::FilePath profile_path;
+    base::FilePath pref_file;
+    base::FilePath extensions_install_dir;
+    bool autoupdate_enabled;
+    bool is_first_run;
+
+    ExtensionServiceInitParams();
+  };
+
   ExtensionServiceTestBase();
   virtual ~ExtensionServiceTestBase();
 
-  void InitializeExtensionService(const base::FilePath& profile_path,
-                                  const base::FilePath& pref_file,
-                                  const base::FilePath& extensions_install_dir,
-                                  bool autoupdate_enabled);
+  void InitializeExtensionService(const ExtensionServiceInitParams& params);
 
   void InitializeInstalledExtensionService(
       const base::FilePath& prefs_file,
@@ -60,7 +67,8 @@ class ExtensionServiceTestBase : public extensions::ExtensionTest {
   }
 
  protected:
-  void InitializeExtensionServiceHelper(bool autoupdate_enabled);
+  void InitializeExtensionServiceHelper(bool autoupdate_enabled,
+                                        bool is_first_run);
 
   MessageLoop loop_;
   base::ShadowingAtExitManager at_exit_manager_;

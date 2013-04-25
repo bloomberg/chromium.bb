@@ -82,6 +82,10 @@ const char kPrefAcknowledgePromptCount[] = "ack_prompt_count";
 const char kPrefExternalAcknowledged[] = "ack_external";
 const char kPrefBlacklistAcknowledged[] = "ack_blacklist";
 
+// Indicates whether the external extension was installed during the first
+// run of this profile.
+const char kPrefExternalInstallFirstRun[] = "external_first_run";
+
 // Indicates whether to show an install warning when the user enables.
 const char kExtensionDidEscalatePermissions[] = "install_warning_on_enable";
 
@@ -625,6 +629,18 @@ void ExtensionPrefs::AcknowledgeBlacklistedExtension(
   UpdateExtensionPref(extension_id, kPrefBlacklistAcknowledged,
                       Value::CreateBooleanValue(true));
   UpdateExtensionPref(extension_id, kPrefAcknowledgePromptCount, NULL);
+}
+
+bool ExtensionPrefs::IsExternalInstallFirstRun(
+    const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id, kPrefExternalInstallFirstRun);
+}
+
+void ExtensionPrefs::SetExternalInstallFirstRun(
+    const std::string& extension_id) {
+  DCHECK(Extension::IdIsValid(extension_id));
+  UpdateExtensionPref(extension_id, kPrefExternalInstallFirstRun,
+                      Value::CreateBooleanValue(true));
 }
 
 bool ExtensionPrefs::SetAlertSystemFirstRun() {

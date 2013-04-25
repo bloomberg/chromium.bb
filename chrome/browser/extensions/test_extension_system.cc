@@ -62,10 +62,9 @@ void TestExtensionSystem::CreateSocketManager() {
   socket_manager_.reset(new ApiResourceManager<Socket>(id));
 }
 
-ExtensionService* TestExtensionSystem::CreateExtensionService(
+ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
     const CommandLine* command_line,
-    const base::FilePath& install_directory,
-    bool autoupdate_enabled) {
+    const base::FilePath& install_directory) {
   bool extensions_disabled =
       command_line && command_line->HasSwitch(switches::kDisableExtensions);
 
@@ -79,6 +78,15 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
       install_directory,
       ExtensionPrefValueMapFactory::GetForProfile(profile_),
       extensions_disabled);
+  return extension_prefs_.get();
+}
+
+ExtensionService* TestExtensionSystem::CreateExtensionService(
+    const CommandLine* command_line,
+    const base::FilePath& install_directory,
+    bool autoupdate_enabled) {
+  if (!extension_prefs_)
+    CreateExtensionPrefs(command_line, install_directory);
   state_store_.reset(new StateStore(profile_, new TestingValueStore()));
   shell_window_geometry_cache_.reset(
       new ShellWindowGeometryCache(profile_, extension_prefs_.get()));
