@@ -777,6 +777,10 @@ other types of suffix sets.
   <summary>The version of glibc used. (Linux only)</summary>
 </histogram>
 
+<histogram name="Media.AudioRendererEvents" enum="AudioRendererEvents">
+  <summary>Captures statistics for various AudioRendererImpl events.</summary>
+</histogram>
+
 <histogram name="Media.DetectedAudioCodec" enum="FFmpegCodecs">
   <summary>Audio codec used in HTML5 media.</summary>
 </histogram>
@@ -4140,6 +4144,11 @@ other types of suffix sets.
 <enum name="Abandoned" type="int">
   <int value="0" label="Finished"/>
   <int value="1" label="Abandoned"/>
+</enum>
+
+<enum name="AudioRendererEvents" type="int">
+  <int value="0" label="Initialized"/>
+  <int value="1" label="Runtime error"/>
 </enum>
 
 <enum name="AutocheckoutBubble" type="int">

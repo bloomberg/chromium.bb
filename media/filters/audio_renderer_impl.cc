@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "media/audio/audio_util.h"
 #include "media/base/audio_splicer.h"
 #include "media/base/bind_to_loop.h"
@@ -24,6 +25,20 @@
 #include "media/filters/decrypting_demuxer_stream.h"
 
 namespace media {
+
+namespace {
+
+enum AudioRendererEvent {
+  INITIALIZED,
+  RENDER_ERROR,
+  MAX_EVENTS
+};
+
+void HistogramRendererEvent(AudioRendererEvent event) {
+  UMA_HISTOGRAM_ENUMERATION("Media.AudioRendererEvents", event, MAX_EVENTS);
+}
+
+}  // namespace
 
 AudioRendererImpl::AudioRendererImpl(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
@@ -283,6 +298,8 @@ void AudioRendererImpl::OnDecoderSelected(
   algorithm_->Initialize(0, audio_parameters_);
 
   state_ = kPaused;
+
+  HistogramRendererEvent(INITIALIZED);
 
   sink_->Initialize(audio_parameters_, weak_this_);
   sink_->Start();
@@ -629,6 +646,7 @@ void AudioRendererImpl::UpdateEarliestEndTime_Locked(
 }
 
 void AudioRendererImpl::OnRenderError() {
+  HistogramRendererEvent(RENDER_ERROR);
   disabled_cb_.Run();
 }
 
