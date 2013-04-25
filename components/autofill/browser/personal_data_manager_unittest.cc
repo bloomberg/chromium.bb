@@ -103,6 +103,10 @@ class PersonalDataManagerTest : public testing::Test {
     MessageLoop::current()->Run();
   }
 
+  void MakeProfileIncognito() {
+    profile_->set_incognito(true);
+  }
+
   MessageLoopForUI message_loop_;
   content::TestBrowserThread ui_thread_;
   content::TestBrowserThread db_thread_;
@@ -2037,6 +2041,76 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
 
   ASSERT_EQ(1U, results2.size());
   EXPECT_EQ(0, expected.Compare(*results2[0]));
+}
+
+TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
+  ASSERT_TRUE(personal_data_->GetProfiles().empty());
+  ASSERT_TRUE(personal_data_->credit_cards().empty());
+
+  AutofillProfile steve_jobs;
+  test::SetProfileInfo(&steve_jobs, "Steven", "Paul", "Jobs", "sjobs@apple.com",
+      "Apple Computer, Inc.", "1 Infinite Loop", "", "Cupertino", "CA", "95014",
+      "US", "(800) 275-2273");
+  personal_data_->AddProfile(steve_jobs);
+
+  CreditCard bill_gates;
+  test::SetCreditCardInfo(
+      &bill_gates, "William H. Gates", "5555555555554444", "1", "2020");
+  personal_data_->AddCreditCard(bill_gates);
+
+  ResetPersonalDataManager();
+  ASSERT_EQ(1U, personal_data_->GetProfiles().size());
+  ASSERT_EQ(1U, personal_data_->credit_cards().size());
+
+  // After this point no adds, saves, or updates should take effect.
+  MakeProfileIncognito();
+  EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
+
+  // Add profiles or credit card shouldn't work.
+  personal_data_->AddProfile(test::GetFullProfile());
+
+  CreditCard larry_page;
+  test::SetCreditCardInfo(
+      &larry_page, "Lawrence Page", "4111111111111111", "10", "2025");
+  personal_data_->AddCreditCard(larry_page);
+
+  ResetPersonalDataManager();
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(1U, personal_data_->credit_cards().size());
+
+  // Saving or creating profiles from imported profiles shouldn't work.
+  steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
+  personal_data_->SaveImportedProfile(steve_jobs);
+
+  bill_gates.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Bill Gates"));
+  personal_data_->SaveImportedCreditCard(bill_gates);
+
+  ResetPersonalDataManager();
+  EXPECT_EQ(ASCIIToUTF16("Steven"),
+            personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("William H. Gates"),
+            personal_data_->credit_cards()[0]->GetRawInfo(CREDIT_CARD_NAME));
+
+  // Updating existing profiles shouldn't work.
+  steve_jobs.SetRawInfo(NAME_FIRST, ASCIIToUTF16("Steve"));
+  personal_data_->UpdateProfile(steve_jobs);
+
+  bill_gates.SetRawInfo(CREDIT_CARD_NAME, ASCIIToUTF16("Bill Gates"));
+  personal_data_->UpdateCreditCard(bill_gates);
+
+  ResetPersonalDataManager();
+  EXPECT_EQ(ASCIIToUTF16("Steven"),
+            personal_data_->GetProfiles()[0]->GetRawInfo(NAME_FIRST));
+  EXPECT_EQ(ASCIIToUTF16("William H. Gates"),
+            personal_data_->credit_cards()[0]->GetRawInfo(CREDIT_CARD_NAME));
+
+  // Removing shouldn't work.
+  personal_data_->RemoveByGUID(steve_jobs.guid());
+  personal_data_->RemoveByGUID(bill_gates.guid());
+
+  ResetPersonalDataManager();
+  EXPECT_EQ(1U, personal_data_->GetProfiles().size());
+  EXPECT_EQ(1U, personal_data_->credit_cards().size());
 }
 
 }  // namespace autofill

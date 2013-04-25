@@ -82,4 +82,8 @@ ProfileKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
   return service;
 }
 
+bool PersonalDataManagerFactory::ServiceHasOwnInstanceInIncognito() const {
+  return true;
+}
+
 }  // namespace autofill

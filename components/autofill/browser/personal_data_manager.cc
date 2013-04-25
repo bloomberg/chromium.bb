@@ -142,7 +142,9 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
 
 void PersonalDataManager::Init(BrowserContext* browser_context) {
   browser_context_ = browser_context;
-  metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
+
+  if (!browser_context_->IsOffTheRecord())
+    metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
   scoped_refptr<AutofillWebDataService> autofill_data(
       AutofillWebDataService::FromBrowserContext(browser_context_));
@@ -936,12 +938,8 @@ void PersonalDataManager::CancelPendingQuery(
 
 void PersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
-  if (browser_context_->IsOffTheRecord()) {
-    // The |IsOffTheRecord| check should happen earlier in the import process,
-    // upon form submission.
-    NOTREACHED();
+  if (browser_context_->IsOffTheRecord())
     return;
-  }
 
   // Don't save a web profile if the data in the profile is a subset of an
   // auxiliary profile.
@@ -961,12 +959,8 @@ void PersonalDataManager::SaveImportedProfile(
 void PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_card) {
   DCHECK(!imported_card.number().empty());
-  if (browser_context_->IsOffTheRecord()) {
-    // The |IsOffTheRecord| check should happen earlier in the import process,
-    // upon form submission.
-    NOTREACHED();
+  if (browser_context_->IsOffTheRecord())
     return;
-  }
 
   // Set to true if |imported_card| is merged into the credit card list.
   bool merged = false;
