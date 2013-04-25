@@ -175,12 +175,15 @@ bool IsAcceleratedVideoDecodeEnabled() {
   return is_enabled;
 }
 
-intptr_t GpuOpenSIGSYS_Handler(const struct arch_seccomp_data& args,
-                               void* aux_broker_process) {
+intptr_t GpuSIGSYS_Handler(const struct arch_seccomp_data& args,
+                           void* aux_broker_process) {
   RAW_CHECK(aux_broker_process);
   BrokerProcess* broker_process =
       static_cast<BrokerProcess*>(aux_broker_process);
   switch(args.nr) {
+    case __NR_access:
+      return broker_process->Access(reinterpret_cast<const char*>(args.args[0]),
+                                    static_cast<int>(args.args[1]));
     case __NR_open:
       return broker_process->Open(reinterpret_cast<const char*>(args.args[0]),
                                   static_cast<int>(args.args[1]));
@@ -1283,7 +1286,7 @@ ErrorCode GpuProcessPolicy(Sandbox *sandbox, int sysno,
       return ErrorCode(ErrorCode::ERR_ALLOWED);
     case __NR_open:
     case __NR_openat:
-      return sandbox->Trap(GpuOpenSIGSYS_Handler, broker_process);
+      return sandbox->Trap(GpuSIGSYS_Handler, broker_process);
     default:
 #if defined(__x86_64__) || defined(__arm__)
       if (IsSystemVSharedMemory(sysno))
@@ -1318,7 +1321,6 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
   switch(sysno) {
     case __NR_ioctl:
 #if defined(__arm__)
-    case __NR_access:   // TODO(jorgelo): broker this out (crbug.com/232077).
     // ARM GPU sandbox is started earlier so we need to allow networking
     // in the sandbox.
     // TODO(jorgelo): tighten this up.
@@ -1331,9 +1333,10 @@ ErrorCode ArmMaliGpuProcessPolicy(Sandbox *sandbox, int sysno,
     case __NR_uname:
 #endif  // defined(__arm__)
       return ErrorCode(ErrorCode::ERR_ALLOWED);
+    case __NR_access:
     case __NR_open:
     case __NR_openat:
-      return sandbox->Trap(GpuOpenSIGSYS_Handler, broker_process);
+      return sandbox->Trap(GpuSIGSYS_Handler, broker_process);
     default:
 #if defined(__arm__)
       if (IsSystemVSharedMemory(sysno))
@@ -1354,6 +1357,7 @@ ErrorCode ArmMaliGpuBrokerProcessPolicy(Sandbox *sandbox,
   // "aux" would typically be NULL, when called from
   // "EnableGpuBrokerPolicyCallBack"
   switch(sysno) {
+    case __NR_access:
     case __NR_open:
     case __NR_openat:
       return ErrorCode(ErrorCode::ERR_ALLOWED);
