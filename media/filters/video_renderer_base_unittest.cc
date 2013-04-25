@@ -26,7 +26,6 @@ using ::testing::InSequence;
 using ::testing::Invoke;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::StrictMock;
 
 namespace media {
@@ -42,9 +41,7 @@ class VideoRendererBaseTest : public ::testing::Test {
  public:
   VideoRendererBaseTest()
       : decoder_(new MockVideoDecoder()),
-        demuxer_stream_(new MockDemuxerStream()),
-        video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-                      kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false) {
+        demuxer_stream_(new MockDemuxerStream(DemuxerStream::VIDEO)) {
     ScopedVector<VideoDecoder> decoders;
     decoders.push_back(decoder_);
 
@@ -56,10 +53,10 @@ class VideoRendererBaseTest : public ::testing::Test {
         base::Bind(&VideoRendererBaseTest::OnSetOpaque, base::Unretained(this)),
         true));
 
-    EXPECT_CALL(*demuxer_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::VIDEO));
-    EXPECT_CALL(*demuxer_stream_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(video_config_));
+    VideoDecoderConfig video_config(
+        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
+        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
+    demuxer_stream_->set_video_decoder_config(video_config);
 
     // We expect these to be called but we don't care how/when.
     EXPECT_CALL(*decoder_, Stop(_))
@@ -353,8 +350,6 @@ class VideoRendererBaseTest : public ::testing::Test {
   }
 
   base::MessageLoop message_loop_;
-
-  VideoDecoderConfig video_config_;
 
   // Used to protect |time_| and |current_frame_|.
   base::Lock lock_;

@@ -29,7 +29,6 @@ using ::testing::InvokeWithoutArgs;
 using ::testing::Mock;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 using ::testing::WithArg;
@@ -155,9 +154,7 @@ class PipelineTest : public ::testing::Test {
 
   StrictMock<MockDemuxerStream>* CreateStream(DemuxerStream::Type type) {
     StrictMock<MockDemuxerStream>* stream =
-        new StrictMock<MockDemuxerStream>();
-    EXPECT_CALL(*stream, type())
-        .WillRepeatedly(Return(type));
+        new StrictMock<MockDemuxerStream>(type);
     return stream;
   }
 
@@ -228,8 +225,7 @@ class PipelineTest : public ::testing::Test {
 
   void CreateVideoStream() {
     video_stream_ = CreateStream(DemuxerStream::VIDEO);
-    EXPECT_CALL(*video_stream_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(video_decoder_config_));
+    video_stream_->set_video_decoder_config(video_decoder_config_);
   }
 
   MockDemuxerStream* audio_stream() {

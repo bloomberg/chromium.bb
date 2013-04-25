@@ -17,7 +17,6 @@ using ::testing::AtMost;
 using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
@@ -31,10 +30,8 @@ static const gfx::Size kNaturalSize(320, 240);
 class VideoFrameStreamTest : public testing::TestWithParam<bool> {
  public:
   VideoFrameStreamTest()
-      : video_config_(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-                      kCodedSize, kVisibleRect, kNaturalSize, NULL, 0,
-                      GetParam()),
-        demuxer_stream_(new StrictMock<MockDemuxerStream>()),
+      : demuxer_stream_(
+            new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_(new StrictMock<MockVideoDecoder>()),
         is_initialized_(false) {
@@ -47,10 +44,11 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
                    base::Unretained(this)));
 
-    EXPECT_CALL(*demuxer_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::VIDEO));
-    EXPECT_CALL(*demuxer_stream_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(video_config_));
+    VideoDecoderConfig video_config(
+        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
+        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, GetParam());
+    demuxer_stream_->set_video_decoder_config(video_config);
+
     EXPECT_CALL(*demuxer_stream_, Read(_))
         .WillRepeatedly(RunCallback<0>(DemuxerStream::kOk,
                                        scoped_refptr<DecoderBuffer>()));
@@ -191,7 +189,6 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
   base::MessageLoop message_loop_;
 
   scoped_refptr<VideoFrameStream> video_frame_stream_;
-  VideoDecoderConfig video_config_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().

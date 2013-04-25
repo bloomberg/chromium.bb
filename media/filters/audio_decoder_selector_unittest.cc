@@ -16,7 +16,6 @@ using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::StrictMock;
 
 namespace media {
@@ -30,21 +29,13 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   };
 
   AudioDecoderSelectorTest()
-      : clear_audio_config_(
-            kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
-            NULL, 0, false),
-        encrypted_audio_config_(
-            kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
-            NULL, 0, true),
-        demuxer_stream_(new StrictMock<MockDemuxerStream>()),
+      : demuxer_stream_(
+            new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_1_(new StrictMock<MockAudioDecoder>()),
         decoder_2_(new StrictMock<MockAudioDecoder>()) {
     all_decoders_.push_back(decoder_1_);
     all_decoders_.push_back(decoder_2_);
-
-    EXPECT_CALL(*demuxer_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::AUDIO));
   }
 
   MOCK_METHOD1(OnStatistics, void(const PipelineStatistics&));
@@ -60,13 +51,17 @@ class AudioDecoderSelectorTest : public ::testing::Test {
   }
 
   void UseClearStream() {
-    EXPECT_CALL(*demuxer_stream_, audio_decoder_config())
-        .WillRepeatedly(ReturnRef(clear_audio_config_));
+    AudioDecoderConfig clear_audio_config(
+        kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+        NULL, 0, false);
+    demuxer_stream_->set_audio_decoder_config(clear_audio_config);
   }
 
   void UseEncryptedStream() {
-    EXPECT_CALL(*demuxer_stream_, audio_decoder_config())
-        .WillRepeatedly(ReturnRef(encrypted_audio_config_));
+    AudioDecoderConfig encrypted_audio_config(
+        kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 44100,
+        NULL, 0, true);
+    demuxer_stream_->set_audio_decoder_config(encrypted_audio_config);
   }
 
   void InitializeDecoderSelector(DecryptorCapability decryptor_capability,
@@ -112,8 +107,6 @@ class AudioDecoderSelectorTest : public ::testing::Test {
 
   // Fixture members.
   scoped_ptr<AudioDecoderSelector> decoder_selector_;
-  AudioDecoderConfig clear_audio_config_;
-  AudioDecoderConfig encrypted_audio_config_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().

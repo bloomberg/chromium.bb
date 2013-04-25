@@ -24,7 +24,6 @@ using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::NiceMock;
 using ::testing::StrictMock;
 
@@ -39,26 +38,24 @@ class AudioRendererImplTest : public ::testing::Test {
  public:
   // Give the decoder some non-garbage media properties.
   AudioRendererImplTest()
-      : demuxer_stream_(new MockDemuxerStream()),
-        decoder_(new MockAudioDecoder()),
-        audio_config_(kCodecVorbis, kSampleFormatPlanarF32,
-                      CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false) {
-    EXPECT_CALL(*demuxer_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::AUDIO));
-    EXPECT_CALL(*demuxer_stream_, audio_decoder_config())
-        .WillRepeatedly(ReturnRef(audio_config_));
+      : demuxer_stream_(new MockDemuxerStream(DemuxerStream::AUDIO)),
+        decoder_(new MockAudioDecoder()) {
+    AudioDecoderConfig audio_config(kCodecVorbis, kSampleFormatPlanarF32,
+        CHANNEL_LAYOUT_STEREO, 44100, NULL, 0, false);
+    demuxer_stream_->set_audio_decoder_config(audio_config);
 
     // Used to save callbacks and run them at a later time.
     EXPECT_CALL(*decoder_, Read(_))
         .WillRepeatedly(Invoke(this, &AudioRendererImplTest::ReadDecoder));
 
     // Set up audio properties.
+    const AudioDecoderConfig& config = demuxer_stream_->audio_decoder_config();
     EXPECT_CALL(*decoder_, bits_per_channel())
-        .WillRepeatedly(Return(audio_config_.bits_per_channel()));
+        .WillRepeatedly(Return(config.bits_per_channel()));
     EXPECT_CALL(*decoder_, channel_layout())
         .WillRepeatedly(Return(CHANNEL_LAYOUT_MONO));
     EXPECT_CALL(*decoder_, samples_per_second())
-        .WillRepeatedly(Return(audio_config_.samples_per_second()));
+        .WillRepeatedly(Return(config.samples_per_second()));
 
     ScopedVector<AudioDecoder> decoders;
     decoders.push_back(decoder_);
@@ -376,7 +373,6 @@ class AudioRendererImplTest : public ::testing::Test {
   // Used for satisfying reads.
   AudioDecoder::ReadCB read_cb_;
   scoped_ptr<AudioTimestampHelper> next_timestamp_;
-  AudioDecoderConfig audio_config_;
 
   WaitableMessageLoopEvent ended_event_;
 

@@ -28,7 +28,6 @@ using ::testing::AtLeast;
 using ::testing::InSequence;
 using ::testing::IsNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
@@ -51,7 +50,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
  public:
   FFmpegVideoDecoderTest()
       : decoder_(new FFmpegVideoDecoder(message_loop_.message_loop_proxy())),
-        demuxer_(new StrictMock<MockDemuxerStream>()),
+        demuxer_(new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         read_cb_(base::Bind(&FFmpegVideoDecoderTest::FrameReady,
                             base::Unretained(this))) {
     FFmpegGlue::InitializeFFmpeg();
@@ -83,9 +82,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
   void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
                                      PipelineStatus status) {
-    EXPECT_CALL(*demuxer_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(config));
-
+    demuxer_->set_video_decoder_config(config);
     decoder_->Initialize(demuxer_, NewExpectedStatusCB(status),
                          base::Bind(&MockStatisticsCB::OnStatistics,
                                     base::Unretained(&statistics_cb_)));
@@ -547,8 +544,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChange) {
   VideoDecoderConfig new_config(
       kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  EXPECT_CALL(*demuxer_, video_decoder_config())
-      .WillRepeatedly(ReturnRef(new_config));
+  demuxer_->set_video_decoder_config(new_config);
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()))
@@ -574,8 +570,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailed) {
   VideoDecoderConfig invalid_config(
       kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, VideoFrame::INVALID,
       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  EXPECT_CALL(*demuxer_, video_decoder_config())
-      .WillRepeatedly(ReturnRef(invalid_config));
+  demuxer_->set_video_decoder_config(invalid_config);
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()));
@@ -612,9 +607,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeDuringReset) {
   VideoDecoderConfig new_config(
       kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  EXPECT_CALL(*demuxer_, video_decoder_config())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(new_config));
+  demuxer_->set_video_decoder_config(new_config);
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, IsNull()));
 
   // Signal a config change.
@@ -656,9 +649,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailedDuringReset) {
   VideoDecoderConfig invalid_config(
       kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, VideoFrame::INVALID,
       kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  EXPECT_CALL(*demuxer_, video_decoder_config())
-      .Times(AtLeast(1))
-      .WillRepeatedly(ReturnRef(invalid_config));
+  demuxer_->set_video_decoder_config(invalid_config);
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kDecodeError, IsNull()));
 
   // Signal a config change.

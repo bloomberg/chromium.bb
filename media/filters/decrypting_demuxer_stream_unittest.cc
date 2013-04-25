@@ -19,7 +19,6 @@
 using ::testing::_;
 using ::testing::IsNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::SaveArg;
 using ::testing::StrictMock;
 
@@ -77,19 +76,17 @@ class DecryptingDemuxerStreamTest : public testing::Test {
                 &DecryptingDemuxerStreamTest::RequestDecryptorNotification,
                 base::Unretained(this)))),
         decryptor_(new StrictMock<MockDecryptor>()),
-        input_audio_stream_(new StrictMock<MockDemuxerStream>()),
-        input_video_stream_(new StrictMock<MockDemuxerStream>()),
+        input_audio_stream_(
+            new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)),
+        input_video_stream_(
+            new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
         decrypted_buffer_(new DecoderBuffer(kFakeBufferSize)) {
   }
 
   void InitializeAudioAndExpectStatus(const AudioDecoderConfig& config,
                                       PipelineStatus status) {
-    EXPECT_CALL(*input_audio_stream_, audio_decoder_config())
-        .WillRepeatedly(ReturnRef(config));
-    EXPECT_CALL(*input_audio_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::AUDIO));
-
+    input_audio_stream_->set_audio_decoder_config(config);
     demuxer_stream_->Initialize(input_audio_stream_,
                                 NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
@@ -97,11 +94,7 @@ class DecryptingDemuxerStreamTest : public testing::Test {
 
   void InitializeVideoAndExpectStatus(const VideoDecoderConfig& config,
                                       PipelineStatus status) {
-    EXPECT_CALL(*input_video_stream_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(config));
-    EXPECT_CALL(*input_video_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::VIDEO));
-
+    input_video_stream_->set_video_decoder_config(config);
     demuxer_stream_->Initialize(input_video_stream_,
                                 NewExpectedStatusCB(status));
     message_loop_.RunUntilIdle();
@@ -416,9 +409,7 @@ TEST_F(DecryptingDemuxerStreamTest, DemuxerRead_ConfigChanged) {
   AudioDecoderConfig new_config(
       kCodecVorbis, kSampleFormatPlanarF32, CHANNEL_LAYOUT_STEREO, 88200, NULL,
       0, true);
-
-  EXPECT_CALL(*input_audio_stream_, audio_decoder_config())
-      .WillRepeatedly(ReturnRef(new_config));
+  input_audio_stream_->set_audio_decoder_config(new_config);
 
   EXPECT_CALL(*input_audio_stream_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,

@@ -17,7 +17,6 @@ using ::testing::IsNull;
 using ::testing::NiceMock;
 using ::testing::NotNull;
 using ::testing::Return;
-using ::testing::ReturnRef;
 using ::testing::StrictMock;
 
 namespace media {
@@ -36,21 +35,13 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   };
 
   VideoDecoderSelectorTest()
-      : clear_video_config_(
-            kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-            kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false),
-        encrypted_video_config_(
-            kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-            kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, true),
-        demuxer_stream_(new StrictMock<MockDemuxerStream>()),
+      : demuxer_stream_(
+            new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         decryptor_(new NiceMock<MockDecryptor>()),
         decoder_1_(new StrictMock<MockVideoDecoder>()),
         decoder_2_(new StrictMock<MockVideoDecoder>()) {
     all_decoders_.push_back(decoder_1_);
     all_decoders_.push_back(decoder_2_);
-
-    EXPECT_CALL(*demuxer_stream_, type())
-        .WillRepeatedly(Return(DemuxerStream::VIDEO));
 
     EXPECT_CALL(*decoder_1_, Stop(_))
       .WillRepeatedly(RunClosure<0>());
@@ -80,13 +71,17 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   }
 
   void UseClearStream() {
-    EXPECT_CALL(*demuxer_stream_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(clear_video_config_));
+    VideoDecoderConfig clear_video_config(
+        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
+        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
+    demuxer_stream_->set_video_decoder_config(clear_video_config);
   }
 
   void UseEncryptedStream() {
-    EXPECT_CALL(*demuxer_stream_, video_decoder_config())
-        .WillRepeatedly(ReturnRef(encrypted_video_config_));
+    VideoDecoderConfig encrypted_video_config(
+        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
+        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, true);
+    demuxer_stream_->set_video_decoder_config(encrypted_video_config);
   }
 
   void InitializeDecoderSelector(DecryptorCapability decryptor_capability,
@@ -132,8 +127,6 @@ class VideoDecoderSelectorTest : public ::testing::Test {
 
   // Fixture members.
   scoped_ptr<VideoDecoderSelector> decoder_selector_;
-  VideoDecoderConfig clear_video_config_;
-  VideoDecoderConfig encrypted_video_config_;
   scoped_refptr<StrictMock<MockDemuxerStream> > demuxer_stream_;
   // Use NiceMock since we don't care about most of calls on the decryptor, e.g.
   // RegisterNewKeyCB().

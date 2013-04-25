@@ -44,19 +44,26 @@ class MockDemuxer : public Demuxer {
 
 class MockDemuxerStream : public DemuxerStream {
  public:
-  MockDemuxerStream();
+  MockDemuxerStream(DemuxerStream::Type type);
 
   // DemuxerStream implementation.
-  MOCK_METHOD0(type, Type());
+  virtual Type type() OVERRIDE;
   MOCK_METHOD1(Read, void(const ReadCB& read_cb));
-  MOCK_METHOD0(audio_decoder_config, const AudioDecoderConfig&());
-  MOCK_METHOD0(video_decoder_config, const VideoDecoderConfig&());
+  virtual const AudioDecoderConfig& audio_decoder_config() OVERRIDE;
+  virtual const VideoDecoderConfig& video_decoder_config() OVERRIDE;
   MOCK_METHOD0(EnableBitstreamConverter, void());
+
+  void set_audio_decoder_config(const AudioDecoderConfig& config);
+  void set_video_decoder_config(const VideoDecoderConfig& config);
 
  protected:
   virtual ~MockDemuxerStream();
 
  private:
+  DemuxerStream::Type type_;
+  AudioDecoderConfig audio_decoder_config_;
+  VideoDecoderConfig video_decoder_config_;
+
   DISALLOW_COPY_AND_ASSIGN(MockDemuxerStream);
 };
 

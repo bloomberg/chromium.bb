@@ -18,7 +18,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
-using ::testing::ReturnRef;
 using ::testing::StrictMock;
 
 namespace media {
@@ -31,7 +30,7 @@ class FFmpegAudioDecoderTest : public testing::Test {
  public:
   FFmpegAudioDecoderTest()
       : decoder_(new FFmpegAudioDecoder(message_loop_.message_loop_proxy())),
-        demuxer_(new StrictMock<MockDemuxerStream>()) {
+        demuxer_(new StrictMock<MockDemuxerStream>(DemuxerStream::AUDIO)) {
     FFmpegGlue::InitializeFFmpeg();
 
     vorbis_extradata_ = ReadTestDataFile("vorbis-extradata");
@@ -53,23 +52,19 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
     // Push in an EOS buffer.
     encoded_audio_.push_back(DecoderBuffer::CreateEOSBuffer());
-
-    config_.Initialize(kCodecVorbis,
-                       kSampleFormatPlanarF32,
-                       CHANNEL_LAYOUT_STEREO,
-                       44100,
-                       vorbis_extradata_->GetData(),
-                       vorbis_extradata_->GetDataSize(),
-                       false,  // Not encrypted.
-                       true);
   }
 
   virtual ~FFmpegAudioDecoderTest() {}
 
   void Initialize() {
-    EXPECT_CALL(*demuxer_, audio_decoder_config())
-        .WillRepeatedly(ReturnRef(config_));
-
+    AudioDecoderConfig config(kCodecVorbis,
+                              kSampleFormatPlanarF32,
+                              CHANNEL_LAYOUT_STEREO,
+                              44100,
+                              vorbis_extradata_->GetData(),
+                              vorbis_extradata_->GetDataSize(),
+                              false);  // Not encrypted.
+    demuxer_->set_audio_decoder_config(config);
     decoder_->Initialize(demuxer_,
                          NewExpectedStatusCB(PIPELINE_OK),
                          base::Bind(&MockStatisticsCB::OnStatistics,
@@ -120,16 +115,15 @@ class FFmpegAudioDecoderTest : public testing::Test {
 
   std::deque<scoped_refptr<DecoderBuffer> > encoded_audio_;
   std::deque<scoped_refptr<DataBuffer> > decoded_audio_;
-
-  AudioDecoderConfig config_;
 };
 
 TEST_F(FFmpegAudioDecoderTest, Initialize) {
   Initialize();
 
-  EXPECT_EQ(config_.bits_per_channel(), decoder_->bits_per_channel());
-  EXPECT_EQ(config_.channel_layout(), decoder_->channel_layout());
-  EXPECT_EQ(config_.samples_per_second(), decoder_->samples_per_second());
+  const AudioDecoderConfig& config = demuxer_->audio_decoder_config();
+  EXPECT_EQ(config.bits_per_channel(), decoder_->bits_per_channel());
+  EXPECT_EQ(config.channel_layout(), decoder_->channel_layout());
+  EXPECT_EQ(config.samples_per_second(), decoder_->samples_per_second());
 }
 
 TEST_F(FFmpegAudioDecoderTest, ProduceAudioSamples) {
