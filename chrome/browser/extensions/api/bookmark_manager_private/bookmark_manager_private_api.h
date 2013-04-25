@@ -59,7 +59,7 @@ class ClipboardBookmarkManagerFunction : public extensions::BookmarksFunction {
  protected:
   virtual ~ClipboardBookmarkManagerFunction() {}
 
-  bool CopyOrCut(bool cut);
+  bool CopyOrCut(bool cut, const std::vector<std::string>& id_list);
 };
 
 class BookmarkManagerPrivateCopyFunction
