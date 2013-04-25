@@ -20,7 +20,8 @@ AwDrawGLFunctionTable* g_gl_draw_functions = NULL;
 GpuMemoryBufferImpl::GpuMemoryBufferImpl(gfx::Size size)
     : buffer_id_(g_gl_draw_functions->create_graphic_buffer(
           size.width(), size.height())),
-      size_(size) {
+      size_(size),
+      mapped_(false) {
 }
 
 GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
@@ -32,14 +33,18 @@ GpuMemoryBufferImpl::~GpuMemoryBufferImpl() {
 void GpuMemoryBufferImpl::Map(gpu::GpuMemoryBuffer::AccessMode mode,
     void** vaddr) {
   DCHECK(buffer_id_ != 0);
+  DCHECK(!mapped_);
   int err = g_gl_draw_functions->lock(buffer_id_, mode, vaddr);
   DCHECK(err == 0);
+  mapped_ = true;
 }
 
 void GpuMemoryBufferImpl::Unmap() {
   DCHECK(buffer_id_ != 0);
+  DCHECK(mapped_);
   int err = g_gl_draw_functions->unlock(buffer_id_);
   DCHECK(err == 0);
+  mapped_ = false;
 }
 
 void* GpuMemoryBufferImpl::GetNativeBuffer() {

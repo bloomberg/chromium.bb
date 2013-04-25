@@ -30,6 +30,7 @@ class GpuMemoryBufferImpl : public gpu::GpuMemoryBuffer {
  private:
   int buffer_id_;
   gfx::Size size_;
+  bool mapped_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuMemoryBufferImpl);
 };
