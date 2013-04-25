@@ -32,7 +32,7 @@ function test()
         if (node)
             InspectorTest.log("SUCCESS: found " + node.name());
         else
-            return fail("cannot find detached DOM trees root");
+            return InspectorTest.fail("cannot find detached DOM trees root");
 
         var detachedDOMTreeRE = /^Detached DOM tree/;
         var detachedDomTreeFound = false;
@@ -41,12 +41,12 @@ function test()
             if (detachedDOMTreeRE.test(node.className())) {
                 if ("Detached DOM tree / 4 entries" === node.name()) {
                     if (detachedDomTreeFound)
-                        return fail("second " + node.name());
+                        return InspectorTest.fail("second " + node.name());
                     detachedDomTreeFound = true;
                     InspectorTest.log("SUCCESS: found " + node.name());
                     checkDetachedDOMTreeNodes(node);
                 } else
-                    return fail("unexpected detached DOM tree: " + node.name());
+                    return InspectorTest.fail("unexpected detached DOM tree: " + node.name());
             }
         }
     }
@@ -59,18 +59,13 @@ function test()
             if (node.name() === "HTMLDivElement")
                 ++divCount;
             else
-                return fail("unexpected DOM wrapper: " + node.name());
+                return InspectorTest.fail("unexpected DOM wrapper: " + node.name());
         }
         if (divCount === 3)
             InspectorTest.log("SUCCESS: found " + divCount + " DIVs in " + treeNode.name());
         else
-            return fail("unexpected DIV count: " + divCount);
+            return InspectorTest.fail("unexpected DIV count: " + divCount);
 
-    }
-
-    function fail(message) {
-        InspectorTest.log("FAIL: " + message);
-        InspectorTest.completeTest();
     }
 
     InspectorTest.takeHeapSnapshot(checkHeapSnapshot);

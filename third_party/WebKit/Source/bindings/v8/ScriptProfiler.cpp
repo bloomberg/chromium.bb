@@ -43,6 +43,7 @@
 #include "core/inspector/BindingVisitors.h"
 
 #include <v8-profiler.h>
+#include <v8.h>
 
 #include "wtf/ThreadSpecific.h"
 
@@ -198,6 +199,54 @@ private:
 };
 
 } // namespace
+
+void ScriptProfiler::startTrackingHeapObjects()
+{
+    v8::Isolate::GetCurrent()->GetHeapProfiler()->StartTrackingHeapObjects();
+}
+
+namespace {
+
+class HeapStatsStream : public v8::OutputStream {
+public:
+    HeapStatsStream(ScriptProfiler::OutputStream* stream) : m_stream(stream) { }
+    virtual void EndOfStream() OVERRIDE { }
+
+    virtual WriteResult WriteAsciiChunk(char* data, int size) OVERRIDE
+    {
+        ASSERT(false);
+        return kAbort;
+    }
+
+    virtual WriteResult WriteHeapStatsChunk(v8::HeapStatsUpdate* updateData, int count) OVERRIDE
+    {
+        Vector<uint32_t> rawData(count * 3);
+        for (int i = 0; i < count; ++i) {
+            int offset = i * 3;
+            rawData[offset] = updateData[i].index;
+            rawData[offset + 1] = updateData[i].count;
+            rawData[offset + 2] = updateData[i].size;
+        }
+        m_stream->write(rawData.data(), rawData.size());
+        return kContinue;
+    }
+
+private:
+    ScriptProfiler::OutputStream* m_stream;
+};
+
+}
+
+unsigned ScriptProfiler::requestHeapStatsUpdate(ScriptProfiler::OutputStream* stream)
+{
+    HeapStatsStream heapStatsStream(stream);
+    return v8::Isolate::GetCurrent()->GetHeapProfiler()->GetHeapStats(&heapStatsStream);
+}
+
+void ScriptProfiler::stopTrackingHeapObjects()
+{
+    v8::Isolate::GetCurrent()->GetHeapProfiler()->StopTrackingHeapObjects();
+}
 
 // FIXME: This method should receive a ScriptState, from which we should retrieve an Isolate.
 PassRefPtr<ScriptHeapSnapshot> ScriptProfiler::takeHeapSnapshot(const String& title, HeapSnapshotProgress* control)

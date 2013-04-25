@@ -61,6 +61,12 @@ public:
         virtual bool isCanceled() = 0;
     };
 
+    class OutputStream {
+    public:
+        virtual ~OutputStream() { }
+        virtual void write(const uint32_t* chunk, const int size) = 0;
+    };
+
     static void collectGarbage();
     static ScriptObject objectByHeapObjectId(unsigned id);
     static unsigned getHeapObjectId(const ScriptValue&);
@@ -71,6 +77,9 @@ public:
     static PassRefPtr<ScriptProfile> stopForPage(Page*, const String& title);
     static PassRefPtr<ScriptProfile> stopForWorkerContext(WorkerContext*, const String& title);
     static PassRefPtr<ScriptHeapSnapshot> takeHeapSnapshot(const String& title, HeapSnapshotProgress*);
+    static void startTrackingHeapObjects();
+    static void stopTrackingHeapObjects();
+    static unsigned requestHeapStatsUpdate(OutputStream*);
     static void initialize();
     static void visitNodeWrappers(WrappedNodeVisitor*);
     static void visitExternalStrings(ExternalStringVisitor*);

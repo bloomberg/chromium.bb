@@ -1,0 +1,76 @@
+<html>
+<head>
+<script type="text/javascript" src="../../http/tests/inspector-protocol/resources/protocol-test.js"></script>
+<script>
+
+if (window.testRunner) {
+    testRunner.dumpAsText();
+    testRunner.waitUntilDone();
+}
+
+function junkGenerator()
+{
+    var junkArray = new Array(1000);
+    for (var i = 0; i < junkArray.length; ++i)
+        junkArray[i] = "42 " + i;
+    window.junkArray = junkArray;
+}
+
+function setupIntervalAndRunTest()
+{
+    setInterval(junkGenerator, 0);
+    runTest();
+}
+
+function test()
+{
+    InspectorTest.importScript("../../../../inspector-protocol/heap-profiler/resources/heap-snapshot-common.js");
+
+    function trackingStarted()
+    {
+        InspectorTest.log("SUCCESS: tracking started");
+    }
+
+    function trackingStopped()
+    {
+        InspectorTest.log("SUCCESS: tracking stopped");
+        InspectorTest.completeTest();
+    }
+
+    var fragments = [];
+    InspectorTest.eventHandler["HeapProfiler.lastSeenObjectId"] = function(messageObject)
+    {
+        InspectorTest.log("SUCCESS: lastSeenObjectId arrived");
+        var params = messageObject["params"];
+        InspectorTest.assert(params, "no params found in event HeapProfiler.lastSeenObjectId");
+        InspectorTest.assert(params.lastSeenObjectId, "lastSeenObjectId is missing in event HeapProfiler.lastSeenObjectId");
+        InspectorTest.assert(params.timestamp, "timestamp is missing in event HeapProfiler.lastSeenObjectId");
+        InspectorTest.assert(fragments.length, "a heap stats fragment didn't arrive before HeapProfiler.lastSeenObjectId");
+        InspectorTest.sendCommand("HeapProfiler.stopTrackingHeapObjects", {}, trackingStopped);
+    }
+
+    InspectorTest.eventHandler["HeapProfiler.heapStatsUpdate"] = function(messageObject)
+    {
+        InspectorTest.log("SUCCESS: heapStatsUpdate arrived");
+        var params = messageObject["params"];
+        InspectorTest.assert(params, "no params found in event HeapProfiler.heapStatsUpdate");
+        var statsUpdate = params.statsUpdate;
+        InspectorTest.assert(statsUpdate, "statsUpdata is missing in event HeapProfiler.heapStatsUpdate");
+        InspectorTest.assert(statsUpdate.length, "statsUpdate should have non zero length");
+        InspectorTest.assert(!(statsUpdate.length % 3), "statsUpdate length must be a multiple of three");
+        InspectorTest.assert(!(statsUpdate.length % 3), "statsUpdate length must be a multiple of three");
+        InspectorTest.assert(!statsUpdate[0], "statsUpdate: first fragmentIndex in first update has to be zero");
+        InspectorTest.assert(statsUpdate[1], "statsUpdate: total count of objects should be not zero");
+        InspectorTest.assert(statsUpdate[2], "statsUpdate: total size of objects should be not zero");
+        fragments.push(statsUpdate);
+    }
+
+    InspectorTest.sendCommand("HeapProfiler.startTrackingHeapObjects", {}, trackingStarted);
+    //@ sourceURL=heap-objects-tracking.html
+}
+</script>
+</head>
+<body onload="setupIntervalAndRunTest()">
+<p>Test that heap tracking actually reports data fragments.</p>
+</body>
+</html>

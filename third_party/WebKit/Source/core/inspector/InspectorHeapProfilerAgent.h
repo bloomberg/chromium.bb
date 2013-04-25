@@ -37,12 +37,15 @@
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
+#include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {
 
+class HeapObjectsStatsStream;
 class InjectedScriptManager;
+class HeapStatsUpdateTask;
 class ScriptHeapSnapshot;
 class ScriptProfile;
 
@@ -60,6 +63,8 @@ public:
     virtual void getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::HeapProfiler::ProfileHeader> >&);
     virtual void getHeapSnapshot(ErrorString*, int uid);
     virtual void removeProfile(ErrorString*, int uid);
+    virtual void startTrackingHeapObjects(ErrorString*);
+    virtual void stopTrackingHeapObjects(ErrorString*);
 
     virtual void setFrontend(InspectorFrontend*);
     virtual void clearFrontend();
@@ -72,12 +77,18 @@ public:
 
     virtual void reportMemoryUsage(MemoryObjectInfo*) const OVERRIDE;
 
+
 private:
+    class HeapStatsStream;
+    class HeapStatsUpdateTask;
+
     InspectorHeapProfilerAgent(InstrumentingAgents*, InspectorCompositeState*, InjectedScriptManager*);
 
     typedef HashMap<unsigned, RefPtr<ScriptHeapSnapshot> > IdToHeapSnapshotMap;
 
     void resetFrontendProfiles();
+    void requestHeapStatsUpdate();
+    void pushHeapStatsUpdate(const uint32_t* const data, const int size);
 
     PassRefPtr<TypeBuilder::HeapProfiler::ProfileHeader> createSnapshotHeader(const ScriptHeapSnapshot&);
 
@@ -85,6 +96,7 @@ private:
     InspectorFrontend::HeapProfiler* m_frontend;
     unsigned m_nextUserInitiatedHeapSnapshotNumber;
     IdToHeapSnapshotMap m_snapshots;
+    OwnPtr<HeapStatsUpdateTask> m_heapStatsUpdateTask;
 };
 
 } // namespace WebCore

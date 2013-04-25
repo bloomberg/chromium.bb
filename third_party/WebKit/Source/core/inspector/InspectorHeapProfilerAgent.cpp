@@ -37,6 +37,8 @@
 #include "InstrumentingAgents.h"
 #include "ScriptProfiler.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/platform/Timer.h"
+#include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 
 namespace WebCore {
@@ -46,6 +48,18 @@ static const char profileHeadersRequested[] = "profileHeadersRequested";
 }
 
 static const char* const UserInitiatedProfileNameHeap = "org.webkit.profiles.user-initiated";
+
+class InspectorHeapProfilerAgent::HeapStatsUpdateTask {
+public:
+    HeapStatsUpdateTask(InspectorHeapProfilerAgent*);
+    void startTimer();
+    void resetTimer() { m_timer.stop(); }
+    void onTimer(Timer<HeapStatsUpdateTask>*);
+
+private:
+    InspectorHeapProfilerAgent* m_heapProfilerAgent;
+    Timer<HeapStatsUpdateTask> m_timer;
+};
 
 PassOwnPtr<InspectorHeapProfilerAgent> InspectorHeapProfilerAgent::create(InstrumentingAgents* instrumentingAgents, InspectorCompositeState* inspectorState, InjectedScriptManager* injectedScriptManager)
 {
@@ -76,6 +90,7 @@ void InspectorHeapProfilerAgent::clearProfiles(ErrorString*)
 
 void InspectorHeapProfilerAgent::resetFrontendProfiles()
 {
+    stopTrackingHeapObjects(0);
     if (!m_frontend)
         return;
     if (!m_state->getBoolean(HeapProfilerAgentState::profileHeadersRequested))
@@ -112,6 +127,79 @@ PassRefPtr<TypeBuilder::HeapProfiler::ProfileHeader> InspectorHeapProfilerAgent:
         .setTitle(snapshot.title());
     header->setMaxJSObjectId(snapshot.maxSnapshotJSObjectId());
     return header.release();
+}
+
+InspectorHeapProfilerAgent::HeapStatsUpdateTask::HeapStatsUpdateTask(InspectorHeapProfilerAgent* heapProfilerAgent)
+    : m_heapProfilerAgent(heapProfilerAgent)
+    , m_timer(this, &HeapStatsUpdateTask::onTimer)
+{
+}
+
+void InspectorHeapProfilerAgent::HeapStatsUpdateTask::onTimer(Timer<HeapStatsUpdateTask>*)
+{
+    // The timer is stopped on m_heapProfilerAgent destruction,
+    // so this method will never be called after m_heapProfilerAgent has been destroyed.
+    m_heapProfilerAgent->requestHeapStatsUpdate();
+}
+
+void InspectorHeapProfilerAgent::HeapStatsUpdateTask::startTimer()
+{
+    ASSERT(!m_timer.isActive());
+    m_timer.startRepeating(0.05);
+}
+
+class InspectorHeapProfilerAgent::HeapStatsStream : public ScriptProfiler::OutputStream {
+public:
+    HeapStatsStream(InspectorHeapProfilerAgent* heapProfilerAgent)
+        : m_heapProfilerAgent(heapProfilerAgent)
+    {
+    }
+
+    virtual void write(const uint32_t* chunk, const int size) OVERRIDE
+    {
+        ASSERT(chunk);
+        ASSERT(size > 0);
+        m_heapProfilerAgent->pushHeapStatsUpdate(chunk, size);
+    }
+private:
+    InspectorHeapProfilerAgent* m_heapProfilerAgent;
+};
+
+void InspectorHeapProfilerAgent::startTrackingHeapObjects(ErrorString*)
+{
+    if (m_heapStatsUpdateTask)
+        return;
+    ScriptProfiler::startTrackingHeapObjects();
+    m_heapStatsUpdateTask = adoptPtr(new HeapStatsUpdateTask(this));
+    m_heapStatsUpdateTask->startTimer();
+}
+
+void InspectorHeapProfilerAgent::requestHeapStatsUpdate()
+{
+    if (!m_frontend)
+        return;
+    HeapStatsStream stream(this);
+    SnapshotObjectId lastSeenObjectId = ScriptProfiler::requestHeapStatsUpdate(&stream);
+    m_frontend->lastSeenObjectId(lastSeenObjectId, WTF::currentTimeMS());
+}
+
+void InspectorHeapProfilerAgent::pushHeapStatsUpdate(const uint32_t* const data, const int size)
+{
+    if (!m_frontend)
+        return;
+    RefPtr<TypeBuilder::Array<int> > statsDiff = TypeBuilder::Array<int>::create();
+    for (int i = 0; i < size; ++i)
+        statsDiff->addItem(data[i]);
+    m_frontend->heapStatsUpdate(statsDiff.release());
+}
+
+void InspectorHeapProfilerAgent::stopTrackingHeapObjects(ErrorString*)
+{
+    if (!m_heapStatsUpdateTask)
+        return;
+    ScriptProfiler::stopTrackingHeapObjects();
+    m_heapStatsUpdateTask->resetTimer();
+    m_heapStatsUpdateTask.clear();
 }
 
 void InspectorHeapProfilerAgent::getProfileHeaders(ErrorString*, RefPtr<TypeBuilder::Array<TypeBuilder::HeapProfiler::ProfileHeader> >& headers)

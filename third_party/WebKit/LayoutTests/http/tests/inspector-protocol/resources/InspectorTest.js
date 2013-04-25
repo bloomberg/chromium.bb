@@ -98,7 +98,7 @@ InspectorTest.importScript = function(scriptName)
     var xhr = new XMLHttpRequest();
     xhr.open("GET", scriptName, false);
     xhr.send(null);
-    window.eval(xhr.responseText);
+    window.eval(xhr.responseText + "\n//@ sourceURL=" + scriptName);
 }
 
 window.addEventListener("message", function(event) {

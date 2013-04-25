@@ -7,6 +7,18 @@ if (!window.WebInspector)
 InspectorTest.importScript("../../../../../Source/devtools/front_end/HeapSnapshot.js");
 InspectorTest.importScript("../../../../../Source/devtools/front_end/JSHeapSnapshot.js");
 
+InspectorTest.fail = function(message)
+{
+    InspectorTest.log("FAIL: " + message);
+    InspectorTest.completeTest();
+}
+
+InspectorTest.assert = function(result, message)
+{
+    if (!result)
+        InspectorTest.fail(message);
+}
+
 InspectorTest.takeHeapSnapshot = function(callback)
 {
     InspectorTest.eventHandler["HeapProfiler.addProfileHeader"] = function(messageObject)
