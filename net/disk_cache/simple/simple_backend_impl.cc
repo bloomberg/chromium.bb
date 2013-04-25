@@ -9,8 +9,10 @@
 #include "base/file_util.h"
 #include "base/location.h"
 #include "base/message_loop_proxy.h"
+#include "base/metrics/histogram.h"
 #include "base/sys_info.h"
 #include "base/threading/worker_pool.h"
+#include "base/time.h"
 #include "net/base/net_errors.h"
 #include "net/disk_cache/backend_impl.h"
 #include "net/disk_cache/simple/simple_entry_format.h"
@@ -113,6 +115,15 @@ void CallCompletionCallback(const net::CompletionCallback& callback,
   callback.Run(*result);
 }
 
+void RecordIndexLoad(base::TimeTicks constructed_since, int result) {
+  const base::TimeDelta creation_to_index = base::TimeTicks::Now() -
+                                            constructed_since;
+  if (result == net::OK)
+    UMA_HISTOGRAM_TIMES("SimpleCache.CreationToIndex", creation_to_index);
+  else
+    UMA_HISTOGRAM_TIMES("SimpleCache.CreationToIndexFail", creation_to_index);
+}
+
 }  // namespace
 
 namespace disk_cache {
@@ -123,12 +134,14 @@ SimpleBackendImpl::SimpleBackendImpl(
     net::CacheType type,
     base::SingleThreadTaskRunner* cache_thread,
     net::NetLog* net_log)
-  : path_(path),
-    index_(new SimpleIndex(cache_thread,
-                           MessageLoopProxy::current(),  // io_thread
-                           path)),
-    cache_thread_(cache_thread),
-    orig_max_size_(max_bytes) {
+    : path_(path),
+      index_(new SimpleIndex(cache_thread,
+                             MessageLoopProxy::current(),  // io_thread
+                             path)),
+      cache_thread_(cache_thread),
+      orig_max_size_(max_bytes) {
+  index_->ExecuteWhenReady(base::Bind(&RecordIndexLoad,
+                                      base::TimeTicks::Now()));
 }
 
 SimpleBackendImpl::~SimpleBackendImpl() {
