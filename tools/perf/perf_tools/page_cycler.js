@@ -29,8 +29,6 @@ function __onbeforeunload() {
     window.gc();
     window.gc();
   }
-
-  __set_cookie("__pc_load_time", "");
 }
 
 // The function |__onload| is used by the DHTML tests.
@@ -42,11 +40,13 @@ window.__onload = function() {
 
   var unused = document.body.offsetHeight;  // force layout
 
-  __set_cookie("__pc_load_time", window.performance.now());
+  testComplete(window.performance.now());
 };
 
 // The function |testComplete| is used by the Indexed DB tests.
-window.testComplete = __onload;
+window.testComplete = function(time) {
+  window.__pc_load_time = time;
+};
 
 // The function |__eval_later| now is only used by the DHTML tests.
 window.__eval_later = function(expression) {
@@ -54,6 +54,7 @@ window.__eval_later = function(expression) {
 };
 
 if (window.parent == window) {  // Ignore subframes.
+  window.__pc_load_time = null;
   addEventListener("load", __onload);
   addEventListener("beforeunload", __onbeforeunload);
 }

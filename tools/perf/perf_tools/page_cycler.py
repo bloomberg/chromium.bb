@@ -200,13 +200,13 @@ class PageCycler(page_benchmark.PageBenchmark):
 
   def MeasurePage(self, page, tab, results):
     def _IsDone():
-      return bool(tab.GetCookieByName('__pc_load_time'))
+      return bool(tab.EvaluateJavaScript('__pc_load_time'))
     util.WaitFor(_IsDone, 1200)
 
     for h in self.histograms:
       h.GetValue(page, tab, results)
 
-    results.Add('t', 'ms', int(float(tab.GetCookieByName('__pc_load_time'))),
+    results.Add('t', 'ms', int(float(tab.EvaluateJavaScript('__pc_load_time'))),
                 chart_name='times')
 
   def DidRunPageSet(self, tab, results):
