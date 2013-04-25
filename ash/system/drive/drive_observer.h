@@ -11,7 +11,7 @@ namespace ash {
 
 class DriveObserver {
  public:
-  virtual void OnDriveRefresh(const DriveOperationStatusList& list) = 0;
+  virtual void OnDriveJobUpdated(const DriveOperationStatus& status) = 0;
 
  protected:
   virtual ~DriveObserver() {}

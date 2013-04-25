@@ -40,7 +40,7 @@ class TrayDrive : public TrayImageItem,
   virtual void UpdateAfterLoginStatusChange(user::LoginStatus status) OVERRIDE;
 
   // Overridden from DriveObserver.
-  virtual void OnDriveRefresh(const DriveOperationStatusList& list) OVERRIDE;
+  virtual void OnDriveJobUpdated(const DriveOperationStatus& status) OVERRIDE;
 
   // Delayed hiding of the tray item after encountering an empty operation list.
   void HideIfNoOperations();

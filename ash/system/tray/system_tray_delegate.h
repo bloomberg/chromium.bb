@@ -57,21 +57,21 @@ typedef std::vector<BluetoothDeviceInfo> BluetoothDeviceList;
 struct ASH_EXPORT DriveOperationStatus {
   enum OperationType {
     OPERATION_UPLOAD,
-    OPERATION_DOWNLOAD,
-    OPERATION_OTHER,
+    OPERATION_DOWNLOAD
   };
 
   enum OperationState {
     OPERATION_NOT_STARTED,
-    OPERATION_STARTED,
     OPERATION_IN_PROGRESS,
     OPERATION_COMPLETED,
     OPERATION_FAILED,
-    OPERATION_SUSPENDED,
   };
 
   DriveOperationStatus();
   ~DriveOperationStatus();
+
+  // Unique ID for the operation.
+  int32 id;
 
   // File path.
   base::FilePath file_path;
@@ -239,7 +239,7 @@ class SystemTrayDelegate {
   virtual void ActivateIMEProperty(const std::string& key) = 0;
 
   // Cancels ongoing drive operation.
-  virtual void CancelDriveOperation(const base::FilePath& file_path) = 0;
+  virtual void CancelDriveOperation(int32 operation_id) = 0;
 
   // Returns information about the ongoing drive operations.
   virtual void GetDriveOperationStatusList(

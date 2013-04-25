@@ -218,7 +218,7 @@ void TestSystemTrayDelegate::SwitchIME(const std::string& ime_id) {
 void TestSystemTrayDelegate::ActivateIMEProperty(const std::string& key) {
 }
 
-void TestSystemTrayDelegate::CancelDriveOperation(const base::FilePath&) {
+void TestSystemTrayDelegate::CancelDriveOperation(int32 operation_id) {
 }
 
 void TestSystemTrayDelegate::GetDriveOperationStatusList(

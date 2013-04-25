@@ -65,7 +65,7 @@ class TestSystemTrayDelegate : public SystemTrayDelegate {
   virtual void GetCurrentIMEProperties(IMEPropertyInfoList* list) OVERRIDE;
   virtual void SwitchIME(const std::string& ime_id) OVERRIDE;
   virtual void ActivateIMEProperty(const std::string& key) OVERRIDE;
-  virtual void CancelDriveOperation(const base::FilePath&) OVERRIDE;
+  virtual void CancelDriveOperation(int32 operation_id) OVERRIDE;
   virtual void GetDriveOperationStatusList(
       ash::DriveOperationStatusList*) OVERRIDE;
   virtual void GetMostRelevantNetworkIcon(NetworkIconInfo* info,

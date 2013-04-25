@@ -233,10 +233,11 @@ void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
                     OnSystemClockTimeUpdated());
 }
 
-void SystemTrayNotifier::NotifyRefreshDrive(DriveOperationStatusList& list) {
+void SystemTrayNotifier::NotifyDriveJobUpdated(
+    const DriveOperationStatus& status) {
   FOR_EACH_OBSERVER(DriveObserver,
                     drive_observers_,
-                    OnDriveRefresh(list));
+                    OnDriveJobUpdated(status));
 }
 
 void SystemTrayNotifier::NotifyRefreshIME(bool show_message) {

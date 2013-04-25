@@ -54,12 +54,13 @@ base::string16 GetTrayLabel(const ash::DriveOperationStatusList& list) {
       base::IntToString16(static_cast<int>(list.size())));
 }
 
-ash::DriveOperationStatusList* GetCurrentOperationList() {
+scoped_ptr<ash::DriveOperationStatusList> GetCurrentOperationList() {
   ash::SystemTrayDelegate* delegate =
       ash::Shell::GetInstance()->system_tray_delegate();
-  ash::DriveOperationStatusList* list = new ash::DriveOperationStatusList();
-  delegate->GetDriveOperationStatusList(list);
-  return list;
+  scoped_ptr<ash::DriveOperationStatusList> list(
+      new ash::DriveOperationStatusList);
+  delegate->GetDriveOperationStatusList(list.get());
+  return list.Pass();
 }
 
 }
@@ -143,14 +144,15 @@ class DriveDetailedView : public TrayDetailsView,
     RowView(DriveDetailedView* parent,
             ash::DriveOperationStatus::OperationState state,
             double progress,
-            const base::FilePath& file_path)
+            const base::FilePath& file_path,
+            int32 operation_id)
         : HoverHighlightView(parent),
           container_(parent),
           status_img_(NULL),
           label_container_(NULL),
           progress_bar_(NULL),
           cancel_button_(NULL),
-          file_path_(file_path) {
+          operation_id_(operation_id) {
       // Status image.
       status_img_ = new views::ImageView();
       AddChildView(status_img_);
@@ -189,8 +191,8 @@ class DriveDetailedView : public TrayDetailsView,
       status_img_->SetImage(container_->GetImageForState(state));
       progress_bar_->SetValue(progress);
       cancel_button_->SetVisible(
-          state == ash::DriveOperationStatus::OPERATION_IN_PROGRESS ||
-          state == ash::DriveOperationStatus::OPERATION_SUSPENDED);
+          state == ash::DriveOperationStatus::OPERATION_NOT_STARTED ||
+          state == ash::DriveOperationStatus::OPERATION_IN_PROGRESS);
     }
 
    private:
@@ -251,7 +253,7 @@ class DriveDetailedView : public TrayDetailsView,
     virtual void ButtonPressed(views::Button* sender,
                                const ui::Event& event) OVERRIDE {
       DCHECK(sender == cancel_button_);
-      container_->OnCancelOperation(file_path_);
+      container_->OnCancelOperation(operation_id_);
     }
 
     DriveDetailedView* container_;
@@ -259,7 +261,7 @@ class DriveDetailedView : public TrayDetailsView,
     views::View* label_container_;
     views::ProgressBar* progress_bar_;
     views::ImageButton* cancel_button_;
-    base::FilePath file_path_;
+    int32 operation_id_;
 
     DISALLOW_COPY_AND_ASSIGN(RowView);
   };
@@ -274,9 +276,7 @@ class DriveDetailedView : public TrayDetailsView,
       ash::DriveOperationStatus::OperationState state) {
     switch (state) {
       case ash::DriveOperationStatus::OPERATION_NOT_STARTED:
-      case ash::DriveOperationStatus::OPERATION_STARTED:
       case ash::DriveOperationStatus::OPERATION_IN_PROGRESS:
-      case ash::DriveOperationStatus::OPERATION_SUSPENDED:
         return in_progress_img_;
       case ash::DriveOperationStatus::OPERATION_COMPLETED:
         return done_img_;
@@ -286,9 +286,9 @@ class DriveDetailedView : public TrayDetailsView,
     return failed_img_;
   }
 
-  virtual void OnCancelOperation(const base::FilePath& file_path) {
+  void OnCancelOperation(int32 operation_id) {
     SystemTrayDelegate* delegate = Shell::GetInstance()->system_tray_delegate();
-    delegate->CancelDriveOperation(file_path);
+    delegate->CancelDriveOperation(operation_id);
   }
 
   void AppendOperationList(const DriveOperationStatusList* list) {
@@ -313,7 +313,8 @@ class DriveDetailedView : public TrayDetailsView,
         RowView* row_view = new RowView(this,
                                         operation.state,
                                         operation.progress,
-                                        operation.file_path);
+                                        operation.file_path,
+                                        operation.id);
 
         update_map_[operation.file_path] = row_view;
         scroll_content()->AddChildView(row_view);
@@ -446,9 +447,39 @@ void TrayDrive::UpdateAfterLoginStatusChange(user::LoginStatus status) {
   DestroyDetailedView();
 }
 
-void TrayDrive::OnDriveRefresh(const DriveOperationStatusList& list) {
-  if (list.empty()) {
-    // If the list becomes empty, the tray item will be hidden after a certain
+void TrayDrive::OnDriveJobUpdated(const DriveOperationStatus& status) {
+  // The Drive job list manager changed its notification interface *not* to send
+  // the whole list of operations each time, to clarify which operation is
+  // updated and to reduce redundancy.
+  //
+  // TrayDrive should be able to benefit from the change, but for now, to
+  // incrementally migrate to the new way with minimum diffs, we still get the
+  // list of operations each time the event is fired.
+  // TODO(kinaba) http://crbug.com/128079 clean it up.
+  scoped_ptr<DriveOperationStatusList> list(GetCurrentOperationList());
+  bool is_new_item = true;
+  for (size_t i = 0; i < list->size(); ++i) {
+    if ((*list)[i].id == status.id) {
+      (*list)[i] = status;
+      is_new_item = false;
+      break;
+    }
+  }
+  if (is_new_item)
+    list->push_back(status);
+
+  // Check if all the operations are in the finished state.
+  bool all_jobs_finished = true;
+  for (size_t i = 0; i < list->size(); ++i) {
+    if ((*list)[i].state != DriveOperationStatus::OPERATION_COMPLETED &&
+        (*list)[i].state != DriveOperationStatus::OPERATION_FAILED) {
+      all_jobs_finished = false;
+      break;
+    }
+  }
+
+  if (all_jobs_finished) {
+    // If all the jobs ended, the tray item will be hidden after a certain
     // amount of delay. This is to avoid flashes between sequentially executed
     // Drive operations (see crbug/165679).
     hide_timer_.Start(FROM_HERE,
@@ -463,9 +494,9 @@ void TrayDrive::OnDriveRefresh(const DriveOperationStatusList& list) {
 
   tray_view()->SetVisible(true);
   if (default_)
-    default_->Update(&list);
+    default_->Update(list.get());
   if (detailed_)
-    detailed_->Update(&list);
+    detailed_->Update(list.get());
 }
 
 void TrayDrive::HideIfNoOperations() {

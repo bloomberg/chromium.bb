@@ -118,10 +118,6 @@ const int kSessionLengthLimitMinMs = 30 * 1000;  // 30 seconds.
 // The maximum session length limit that can be set.
 const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 
-// Time delay for rechecking gdata operation when we suspect that there will
-// be no upcoming activity notifications that need to be pushed to UI.
-const int kGDataOperationRecheckDelayMs = 5000;
-
 ash::NetworkIconInfo CreateNetworkIconInfo(const Network* network) {
   ash::NetworkIconInfo info;
   info.name = network->type() == TYPE_ETHERNET ?
@@ -156,22 +152,54 @@ gfx::NativeWindow GetNativeWindowByStatus(
                                   container_id);
 }
 
-ash::DriveOperationStatusList GetDriveStatusList(
-    const google_apis::OperationProgressStatusList& list) {
+// Converts drive::JobInfo to ash::DriveOperationStatus.
+// If the job is not of type that ash tray is interested, returns false.
+bool ConvertToDriveOperationStatus(const drive::JobInfo& info,
+                                   ash::DriveOperationStatus* status) {
+  if (info.job_type == drive::TYPE_DOWNLOAD_FILE) {
+    status->type = ash::DriveOperationStatus::OPERATION_DOWNLOAD;
+  } else if (info.job_type == drive::TYPE_UPLOAD_NEW_FILE ||
+           info.job_type == drive::TYPE_UPLOAD_EXISTING_FILE) {
+    status->type = ash::DriveOperationStatus::OPERATION_UPLOAD;
+  } else {
+    return false;
+  }
+
+  if (info.state == drive::STATE_NONE)
+    status->state = ash::DriveOperationStatus::OPERATION_NOT_STARTED;
+  else
+    status->state = ash::DriveOperationStatus::OPERATION_IN_PROGRESS;
+
+  status->id = info.job_id;
+  status->file_path = info.file_path;
+  status->progress = info.num_total_bytes == 0 ? 0.0 :
+      static_cast<double>(info.num_completed_bytes) /
+          static_cast<double>(info.num_total_bytes);
+  return true;
+}
+
+// Converts drive::JobInfo that has finished in |error| state
+// to ash::DriveOperationStatus.
+// If the job is not of type that ash tray is interested, returns false.
+bool ConvertToFinishedDriveOperationStatus(const drive::JobInfo& info,
+                                           drive::FileError error,
+                                           ash::DriveOperationStatus* status) {
+  if (!ConvertToDriveOperationStatus(info, status))
+    return false;
+  status->state = (error == drive::FILE_ERROR_OK) ?
+      ash::DriveOperationStatus::OPERATION_COMPLETED :
+      ash::DriveOperationStatus::OPERATION_FAILED;
+  return true;
+}
+
+// Converts a list of drive::JobInfo to a list of ash::DriveOperationStatusList.
+ash::DriveOperationStatusList ConvertToDriveStatusList(
+    const std::vector<drive::JobInfo>& list) {
   ash::DriveOperationStatusList results;
-  for (google_apis::OperationProgressStatusList::const_iterator it =
-           list.begin();
-       it != list.end(); ++it) {
+  for (size_t i = 0; i < list.size(); ++i) {
     ash::DriveOperationStatus status;
-    status.file_path = it->file_path;
-    status.progress = it->progress_total == 0 ? 0.0 :
-        static_cast<double>(it->progress_current) /
-            static_cast<double>(it->progress_total);
-    status.type = static_cast<ash::DriveOperationStatus::OperationType>(
-        it->operation_type);
-    status.state = static_cast<ash::DriveOperationStatus::OperationState>(
-        it->transfer_state);
-    results.push_back(status);
+    if (ConvertToDriveOperationStatus(list[i], &status))
+      results.push_back(status);
   }
   return results;
 }
@@ -209,7 +237,7 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
                            public NetworkMenu::Delegate,
                            public NetworkLibrary::NetworkManagerObserver,
                            public NetworkLibrary::NetworkObserver,
-                           public google_apis::DriveServiceObserver,
+                           public drive::JobListObserver,
                            public content::NotificationObserver,
                            public input_method::InputMethodManager::Observer,
                            public system::TimezoneSettings::Observer,
@@ -356,9 +384,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
     // Stop observing gdata operations.
     DriveSystemService* system_service = FindDriveSystemService();
-    if (system_service) {
-      system_service->drive_service()->RemoveObserver(this);
-    }
+    if (system_service)
+      system_service->job_list()->RemoveObserver(this);
 
     policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
         g_browser_process->browser_policy_connector()->
@@ -698,12 +725,12 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         ActivateInputMethodProperty(key);
   }
 
-  virtual void CancelDriveOperation(const base::FilePath& file_path) OVERRIDE {
+  virtual void CancelDriveOperation(int32 operation_id) OVERRIDE {
     DriveSystemService* system_service = FindDriveSystemService();
     if (!system_service)
       return;
 
-    system_service->drive_service()->CancelForFilePath(file_path);
+    system_service->job_list()->CancelJob(operation_id);
   }
 
   virtual void GetDriveOperationStatusList(
@@ -712,8 +739,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     if (!system_service)
       return;
 
-    *list = GetDriveStatusList(
-        system_service->drive_service()->GetProgressStatusList());
+    *list = ConvertToDriveStatusList(
+        system_service->job_list()->GetJobInfoList());
   }
 
 
@@ -1060,10 +1087,8 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
 
   void ObserveGDataUpdates() {
     DriveSystemService* system_service = FindDriveSystemService();
-    if (!system_service)
-      return;
-
-    system_service->drive_service()->AddObserver(this);
+    if (system_service)
+      system_service->job_list()->AddObserver(this);
   }
 
   void UpdateClockType() {
@@ -1356,49 +1381,22 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
     GetSystemTrayNotifier()->NotifyRefreshIME(false);
   }
 
-  // google_apis::DriveServiceObserver overrides.
-  virtual void OnProgressUpdate(
-      const google_apis::OperationProgressStatusList& list) OVERRIDE {
-    std::vector<ash::DriveOperationStatus> ui_list = GetDriveStatusList(list);
-    GetSystemTrayNotifier()->NotifyRefreshDrive(ui_list);
-
-    // If we have something to report right now (i.e. completion status only),
-    // we need to delayed re-check the status in few seconds to ensure we
-    // raise events that will let us properly clear the uber tray state.
-    if (list.size() > 0) {
-      bool has_in_progress_items = false;
-      for (google_apis::OperationProgressStatusList::const_iterator it =
-               list.begin();
-           it != list.end(); ++it) {
-        if (it->transfer_state == google_apis::OPERATION_STARTED ||
-            it->transfer_state == google_apis::OPERATION_IN_PROGRESS ||
-            it->transfer_state == google_apis::OPERATION_SUSPENDED) {
-          has_in_progress_items = true;
-          break;
-        }
-      }
-
-      if (!has_in_progress_items) {
-        content::BrowserThread::PostDelayedTask(
-            content::BrowserThread::UI,
-            FROM_HERE,
-            base::Bind(&SystemTrayDelegate::RecheckGDataOperations,
-                       ui_weak_ptr_factory_->GetWeakPtr()),
-            base::TimeDelta::FromMilliseconds(kGDataOperationRecheckDelayMs));
-      }
-    }
+  // drive::JobListObserver overrides.
+  virtual void OnJobAdded(const drive::JobInfo& job_info) {
+    OnJobUpdated(job_info);
   }
 
-  // Pulls the list of ongoing drive operations and initiates status update.
-  // This method is needed to ensure delayed cleanup of the latest reported
-  // status in UI in cases when there are no new changes coming (i.e. when the
-  // last set of transfer operations completed).
-  void RecheckGDataOperations() {
-    DriveSystemService* system_service = FindDriveSystemService();
-    if (!system_service)
-      return;
+  virtual void OnJobDone(const drive::JobInfo& job_info,
+                         drive::FileError error) {
+    ash::DriveOperationStatus status;
+    if (ConvertToFinishedDriveOperationStatus(job_info, error, &status))
+      GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
+  }
 
-    OnProgressUpdate(system_service->drive_service()->GetProgressStatusList());
+  virtual void OnJobUpdated(const drive::JobInfo& job_info) {
+    ash::DriveOperationStatus status;
+    if (ConvertToDriveOperationStatus(job_info, &status))
+      GetSystemTrayNotifier()->NotifyDriveJobUpdated(status);
   }
 
   DriveSystemService* FindDriveSystemService() {
