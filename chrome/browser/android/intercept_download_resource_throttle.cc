@@ -38,8 +38,11 @@ void InterceptDownloadResourceThrottle::ProcessDownloadRequest() {
       request_->response_info().did_use_http_auth)
     return;
 
-  if (request_->url_chain().empty() ||
-      request_->url_chain().back().SchemeIsFileSystem())
+  if (request_->url_chain().empty())
+    return;
+
+  GURL url = request_->url_chain().back();
+  if (!url.SchemeIs("http") && !url.SchemeIs("https"))
     return;
 
   content::DownloadControllerAndroid::Get()->CreateGETDownload(
