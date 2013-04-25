@@ -96,9 +96,11 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   // has focus, otherwise the focused node.
   notification.id = node_has_focus ? next_id_ : 1;
 
-  // Always include the root of the tree, the document. It always has id 1.
-  notification.nodes.push_back(AccessibilityNodeData());
+  notification.nodes.resize(2);
   AccessibilityNodeData& root = notification.nodes[0];
+  AccessibilityNodeData& child = notification.nodes[1];
+
+  // Always include the root of the tree, the document. It always has id 1.
   root.id = 1;
   root.role = AccessibilityNodeData::ROLE_ROOT_WEB_AREA;
   root.state =
@@ -109,8 +111,6 @@ void RendererAccessibilityFocusOnly::HandleFocusedNodeChanged(
   root.location = gfx::Rect(render_view_->size());
   root.child_ids.push_back(next_id_);
 
-  notification.nodes.push_back(AccessibilityNodeData());
-  AccessibilityNodeData& child = notification.nodes[1];
   child.id = next_id_;
   child.role = AccessibilityNodeData::ROLE_GROUP;
 
