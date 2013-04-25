@@ -467,7 +467,7 @@ void MessageCenterView::OnNotificationUpdated(const std::string& id) {
        ++iter, ++index) {
     DCHECK((*iter)->id() == message_views_[index]->notification_id());
     if ((*iter)->id() == id) {
-      delete *iter;
+      delete message_views_[index];
       message_views_.erase(message_views_.begin() + index);
       AddNotificationAt(*(*iter), index);
       NotificationsChanged();
