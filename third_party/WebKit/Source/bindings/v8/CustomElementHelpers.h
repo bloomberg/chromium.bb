@@ -45,8 +45,6 @@
 
 namespace WebCore {
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 class CustomElementConstructor;
 class CustomElementInvocation;
 class Element;
@@ -99,8 +97,6 @@ inline bool CustomElementHelpers::isValidPrototypeParameter(const ScriptValue& v
     AtomicString namespaceURI;
     return isValidPrototypeParameter(value, state, namespaceURI);
 }
-
-#endif // ENABLE(CUSTOM_ELEMENTS)
 
 } // namespace WebCore
 

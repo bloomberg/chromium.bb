@@ -47,9 +47,7 @@ void V8RecursionScope::didLeaveScriptContext()
 
     if (m_isDocumentContext) {
         MutationObserver::deliverAllMutations();
-#if ENABLE(CUSTOM_ELEMENTS)
         CustomElementRegistry::deliverAllLifecycleCallbacks();
-#endif
     }
 }
 

@@ -875,12 +875,10 @@ void Element::attributeChanged(const QualifiedName& name, const AtomicString& ne
 
 inline void Element::attributeChangedFromParserOrByCloning(const QualifiedName& name, const AtomicString& newValue, AttributeModificationReason reason)
 {
-#if ENABLE(CUSTOM_ELEMENTS)
     if (name == isAttr) {
         if (CustomElementRegistry* registry = document()->registry())
             registry->didGiveTypeExtension(this);
     }
-#endif
     attributeChanged(name, newValue, reason);
 }
 

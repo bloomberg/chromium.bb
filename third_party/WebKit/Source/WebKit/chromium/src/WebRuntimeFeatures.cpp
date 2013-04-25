@@ -359,20 +359,12 @@ bool WebRuntimeFeatures::isExperimentalShadowDOMEnabled()
 
 void WebRuntimeFeatures::enableCustomDOMElements(bool enable)
 {
-#if ENABLE(CUSTOM_ELEMENTS)
     RuntimeEnabledFeatures::setCustomDOMElements(enable);
-#else
-    UNUSED_PARAM(enable);
-#endif
 }
 
 bool WebRuntimeFeatures::isCustomDOMElementsEnabled()
 {
-#if ENABLE(CUSTOM_ELEMENTS)
     return RuntimeEnabledFeatures::customDOMElementsEnabled();
-#else
-    return false;
-#endif
 }
 
 

@@ -31,8 +31,6 @@
 #ifndef CustomElementConstructor_h
 #define CustomElementConstructor_h
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 #include "ContextDestructionObserver.h"
 #include "Document.h"
 #include "QualifiedName.h"
@@ -73,7 +71,5 @@ private:
 };
 
 }
-
-#endif // ENABLE(CUSTOM_ELEMENTS)
 
 #endif // CustomElementConstructor_h

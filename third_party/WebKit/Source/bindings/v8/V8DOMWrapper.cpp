@@ -138,8 +138,6 @@ bool V8DOMWrapper::isWrapperOfType(v8::Handle<v8::Value> value, WrapperTypeInfo*
     return typeInfo == type;
 }
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 v8::Handle<v8::Function> V8DOMWrapper::toFunction(v8::Handle<v8::Value> object)
 {
     return V8AdaptorFunction::get(v8::Handle<v8::Object>::Cast(object));
@@ -156,7 +154,5 @@ v8::Handle<v8::Object> V8DOMWrapper::fromFunction(v8::Handle<v8::Object> object)
         return object;
     return V8AdaptorFunction::unwrap(v8::Handle<v8::Function>::Cast(object));
 }
-
-#endif // ENABLE(CUSTOM_ELEMENTS)
 
 }  // namespace WebCore

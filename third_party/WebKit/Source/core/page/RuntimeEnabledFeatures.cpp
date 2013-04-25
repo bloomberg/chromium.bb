@@ -157,9 +157,7 @@ bool RuntimeEnabledFeatures::isExperimentalShadowDOMEnabled = false;
 
 bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
 
-#if ENABLE(CUSTOM_ELEMENTS)
 bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;
-#endif
 
 bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
 

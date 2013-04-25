@@ -31,8 +31,6 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 #include "ContextDestructionObserver.h"
 #include "ExceptionCode.h"
 #include "QualifiedName.h"
@@ -124,5 +122,4 @@ inline CustomElementRegistry::InstanceSet& CustomElementRegistry::activeCustomEl
 
 } // namespace WebCore
 
-#endif // ENABLE(CUSTOM_ELEMENTS)
 #endif

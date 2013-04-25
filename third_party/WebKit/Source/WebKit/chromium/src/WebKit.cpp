@@ -69,9 +69,7 @@ public:
     virtual void willProcessTask() { }
     virtual void didProcessTask()
     {
-#if ENABLE(CUSTOM_ELEMENTS)
         WebCore::CustomElementRegistry::deliverAllLifecycleCallbacks();
-#endif
         WebCore::MutationObserver::deliverAllMutations();
     }
 };

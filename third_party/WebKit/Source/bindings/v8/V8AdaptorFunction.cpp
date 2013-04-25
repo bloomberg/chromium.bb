@@ -34,8 +34,6 @@
 #include "bindings/v8/V8PerIsolateData.h"
 #include "wtf/Vector.h"
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 namespace WebCore {
 
 WrapperTypeInfo V8AdaptorFunction::info = { V8AdaptorFunction::getTemplate, 0, 0, 0, 0, 0, 0, WrapperTypeObjectPrototype };
@@ -86,5 +84,3 @@ v8::Handle<v8::Function> V8AdaptorFunction::wrap(v8::Handle<v8::Object> object, 
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(CUSTOM_ELEMENTS)

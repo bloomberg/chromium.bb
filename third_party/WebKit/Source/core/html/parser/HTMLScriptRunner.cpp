@@ -130,9 +130,7 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(PendingScript& pendi
         stopWatchingForLoad(pendingScript);
 
     if (!isExecutingScript()) {
-#if ENABLE(CUSTOM_ELEMENTS)
         CustomElementRegistry::deliverAllLifecycleCallbacks();
-#endif
         MutationObserver::deliverAllMutations();
     }
 
@@ -298,9 +296,7 @@ void HTMLScriptRunner::runScript(Element* script, const TextPosition& scriptStar
         // unfortuantely no obvious way to tell if prepareScript is going to
         // execute the script from out here.
         if (!isExecutingScript()) {
-#if ENABLE(CUSTOM_ELEMENTS)
             CustomElementRegistry::deliverAllLifecycleCallbacks();
-#endif
             MutationObserver::deliverAllMutations();
         }
 

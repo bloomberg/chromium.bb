@@ -23,7 +23,6 @@
  */
 
 [
-    Conditional=CUSTOM_ELEMENTS,
     EnabledAtRuntime=customDOMElements,
     WrapAsFunction,
     CustomCall

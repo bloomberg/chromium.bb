@@ -36,8 +36,6 @@
 #include "bindings/v8/WrapperTypeInfo.h"
 #include "wtf/PassRefPtr.h"
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 namespace WebCore {
 
 //
@@ -78,5 +76,4 @@ inline v8::Handle<v8::Function> V8AdaptorFunction::get(v8::Handle<v8::Object> ob
 
 } // namespace WebCore
 
-#endif // ENABLE(CUSTOM_ELEMENTS)
 #endif // V8AdaptorFunction_h

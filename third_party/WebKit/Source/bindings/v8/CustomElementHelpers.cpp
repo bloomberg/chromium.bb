@@ -42,8 +42,6 @@
 
 namespace WebCore {
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 v8::Handle<v8::Object> CustomElementHelpers::createWrapper(PassRefPtr<Element> impl, v8::Handle<v8::Object> creationContext, PassRefPtr<CustomElementConstructor> constructor, v8::Isolate* isolate)
 {
     ASSERT(impl);
@@ -232,7 +230,5 @@ void CustomElementHelpers::invokeReadyCallbacksIfNeeded(ScriptExecutionContext* 
         invokeReadyCallbackIfNeeded(invocations[i].element(), context);
     }
 }
-
-#endif // ENABLE(CUSTOM_ELEMENTS)
 
 } // namespace WebCore

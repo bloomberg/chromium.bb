@@ -1375,11 +1375,9 @@ sub GenerateCustomElementInvocationScopeIfNeeded
             die "IDL error: [Reflect] and [DeliverCustomElementCallbacks] cannot coexist yet";
         }
 
-        AddToImplIncludes("CustomElementRegistry.h", "CUSTOM_ELEMENTS");
+        AddToImplIncludes("CustomElementRegistry.h");
         $code .= <<END;
-#if ENABLE(CUSTOM_ELEMENTS)
     CustomElementRegistry::CallbackDeliveryScope deliveryScope;
-#endif
 END
     }
     return $code;

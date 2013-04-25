@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 #include "CustomElementRegistry.h"
 
 #include "CustomElementConstructor.h"
@@ -265,5 +263,3 @@ void CustomElementRegistry::deliverAllLifecycleCallbacks()
 }
 
 }
-
-#endif // ENABLE(CUSTOM_ELEMENTS)

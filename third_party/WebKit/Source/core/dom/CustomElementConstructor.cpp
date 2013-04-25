@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(CUSTOM_ELEMENTS)
-
 #include "CustomElementConstructor.h"
 
 #include "CustomElementHelpers.h"
@@ -96,5 +94,3 @@ PassRefPtr<Element> setTypeExtension(PassRefPtr<Element> element, const AtomicSt
 }
 
 }
-
-#endif // ENABLE(CUSTOM_ELEMENTS)
