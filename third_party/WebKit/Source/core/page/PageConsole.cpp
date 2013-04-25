@@ -31,6 +31,7 @@
 
 #include <stdio.h>
 #include "ConsoleAPITypes.h"
+#include "DOMWindow.h"
 #include "Document.h"
 #include "InspectorConsoleInstrumentation.h"
 #include "InspectorController.h"
@@ -59,11 +60,16 @@ int muteCount = 0;
 
 // Ensure that this stays in sync with the DeprecatedFeature enum.
 static const char* const deprecationMessages[] = {
+    // CSP
     "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.",
 
     // HTMLMediaElement
     "'HTMLMediaElement.webkitAddKey()' is deprecated. Please use 'MediaKeySession.update()' instead.",
     "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated. Please use 'MediaKeys.createSession()' instead.",
+
+    // Performance
+    "'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.",
+    "'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.",
 
     // Quota
     "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.",
@@ -134,6 +140,13 @@ void PageConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
+}
+
+void PageConsole::reportDeprecation(DOMWindow* window, DeprecatedFeature feature)
+{
+    if (!window)
+        return;
+    PageConsole::reportDeprecation(window->document(), feature);
 }
 
 // static

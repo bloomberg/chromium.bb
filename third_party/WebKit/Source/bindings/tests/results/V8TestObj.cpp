@@ -27,6 +27,7 @@
 #include "Dictionary.h"
 #include "ExceptionCode.h"
 #include "HTMLNames.h"
+#include "PageConsole.h"
 #include "SVGPropertyTearOff.h"
 #include "SVGStaticPropertyTearOff.h"
 #include "ScriptController.h"
@@ -2261,6 +2262,91 @@ static void activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallbackForMainWor
     TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetterForMainWorld(name, value, info);
 }
 
+static v8::Handle<v8::Value> deprecatedStaticReadOnlyAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    return v8Integer(TestObj::deprecatedStaticReadOnlyAttr(), info.GetIsolate());
+}
+
+static v8::Handle<v8::Value> deprecatedStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticReadonlyAttribute);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticReadonlyAttribute);
+    return TestObjV8Internal::deprecatedStaticReadOnlyAttrAttrGetter(name, info);
+}
+
+static v8::Handle<v8::Value> deprecatedStaticAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    return v8Integer(TestObj::deprecatedStaticAttr(), info.GetIsolate());
+}
+
+static v8::Handle<v8::Value> deprecatedStaticAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticAttribute);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticAttribute);
+    return TestObjV8Internal::deprecatedStaticAttrAttrGetter(name, info);
+}
+
+static void deprecatedStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    V8TRYCATCH_VOID(int, v, toInt32(value));
+    TestObj::setDeprecatedStaticAttr(v);
+    return;
+}
+
+static void deprecatedStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticAttribute);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticAttribute);
+    TestObjV8Internal::deprecatedStaticAttrAttrSetter(name, value, info);
+}
+
+static v8::Handle<v8::Value> deprecatedReadonlyAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObj::toNative(info.Holder());
+    return v8Integer(imp->deprecatedReadonlyAttr(), info.GetIsolate());
+}
+
+static v8::Handle<v8::Value> deprecatedReadonlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::ReadonlyAttribute);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::ReadonlyAttribute);
+    return TestObjV8Internal::deprecatedReadonlyAttrAttrGetter(name, info);
+}
+
+static v8::Handle<v8::Value> deprecatedAttrAttrGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObj::toNative(info.Holder());
+    return v8Integer(imp->deprecatedAttr(), info.GetIsolate());
+}
+
+static v8::Handle<v8::Value> deprecatedAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::Attribute);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::Attribute);
+    return TestObjV8Internal::deprecatedAttrAttrGetter(name, info);
+}
+
+static void deprecatedAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    TestObj* imp = V8TestObj::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, v, toInt32(value));
+    imp->setDeprecatedAttr(v);
+    return;
+}
+
+static void deprecatedAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::Attribute);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::Attribute);
+    TestObjV8Internal::deprecatedAttrAttrSetter(name, value, info);
+}
+
 static v8::Handle<v8::Value> TestObjConstructorGetter(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
     v8::Handle<v8::Value> data = info.Data();
@@ -3870,6 +3956,35 @@ static v8::Handle<v8::Value> overloadedActivityLoggedMethodMethodCallbackForMain
     return TestObjV8Internal::overloadedActivityLoggedMethodMethodForMainWorld(args);
 }
 
+static v8::Handle<v8::Value> deprecatedMethodMethod(const v8::Arguments& args)
+{
+    TestObj* imp = V8TestObj::toNative(args.Holder());
+    imp->deprecatedMethod();
+    return v8Undefined();
+}
+
+static v8::Handle<v8::Value> deprecatedMethodMethodCallback(const v8::Arguments& args)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::Method);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::Method);
+    return TestObjV8Internal::deprecatedMethodMethod(args);
+}
+
+static v8::Handle<v8::Value> deprecatedStaticMethodMethod(const v8::Arguments& args)
+{
+    TestObj::deprecatedStaticMethod();
+    return v8Undefined();
+}
+
+static v8::Handle<v8::Value> deprecatedStaticMethodMethodCallback(const v8::Arguments& args)
+{
+    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticMethod);
+
+    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticMethod);
+    return TestObjV8Internal::deprecatedStaticMethodMethod(args);
+}
+
 static v8::Handle<v8::Value> constructor(const v8::Arguments& args)
 {
     if (args.Length() < 1)
@@ -4060,6 +4175,14 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     {"activityLoggedAttrGetter2", TestObjV8Internal::activityLoggedAttrGetter2AttrGetterCallback, TestObjV8Internal::activityLoggedAttrGetter2AttrSetterCallback, TestObjV8Internal::activityLoggedAttrGetter2AttrGetterCallbackForMainWorld, TestObjV8Internal::activityLoggedAttrGetter2AttrSetterCallbackForMainWorld, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'activityLoggedInIsolatedWorldsAttrGetter' (Type: 'attribute' ExtAttr: 'PerWorldBindings ActivityLog')
     {"activityLoggedInIsolatedWorldsAttrGetter", TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrGetterCallback, TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallback, TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrGetterCallbackForMainWorld, TestObjV8Internal::activityLoggedInIsolatedWorldsAttrGetterAttrSetterCallbackForMainWorld, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'deprecatedStaticReadOnlyAttr' (Type: 'readonly attribute' ExtAttr: 'DeprecateAs')
+    {"deprecatedStaticReadOnlyAttr", TestObjV8Internal::deprecatedStaticReadOnlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'deprecatedStaticAttr' (Type: 'attribute' ExtAttr: 'DeprecateAs')
+    {"deprecatedStaticAttr", TestObjV8Internal::deprecatedStaticAttrAttrGetterCallback, TestObjV8Internal::deprecatedStaticAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'deprecatedReadonlyAttr' (Type: 'readonly attribute' ExtAttr: 'DeprecateAs')
+    {"deprecatedReadonlyAttr", TestObjV8Internal::deprecatedReadonlyAttrAttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    // Attribute 'deprecatedAttr' (Type: 'attribute' ExtAttr: 'DeprecateAs')
+    {"deprecatedAttr", TestObjV8Internal::deprecatedAttrAttrGetterCallback, TestObjV8Internal::deprecatedAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 };
 
 static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
@@ -4120,6 +4243,7 @@ static const V8DOMConfiguration::BatchedMethod V8TestObjMethods[] = {
     {"activityLoggedMethod2", TestObjV8Internal::activityLoggedMethod2MethodCallback, TestObjV8Internal::activityLoggedMethod2MethodCallbackForMainWorld, 1},
     {"activityLoggedInIsolatedWorldMethod", TestObjV8Internal::activityLoggedInIsolatedWorldMethodMethodCallback, TestObjV8Internal::activityLoggedInIsolatedWorldMethodMethodCallbackForMainWorld, 1},
     {"overloadedActivityLoggedMethod", TestObjV8Internal::overloadedActivityLoggedMethodMethodCallback, TestObjV8Internal::overloadedActivityLoggedMethodMethodCallbackForMainWorld, 1},
+    {"deprecatedMethod", TestObjV8Internal::deprecatedMethodMethodCallback, 0, 0},
 };
 
 static const V8DOMConfiguration::BatchedConstant V8TestObjConsts[] = {
@@ -4138,6 +4262,7 @@ static const V8DOMConfiguration::BatchedConstant V8TestObjConsts[] = {
     {"CONST_VALUE_13", 0X20},
     {"CONST_VALUE_14", 6844},
     {"CONST_JAVASCRIPT", 15},
+    {"DEPRECATED_CONSTANT", 1},
 };
 
 
@@ -4156,6 +4281,7 @@ COMPILE_ASSERT(0x01 == TestObj::CONST_VALUE_12, TestObjEnumCONST_VALUE_12IsWrong
 COMPILE_ASSERT(0X20 == TestObj::CONST_VALUE_13, TestObjEnumCONST_VALUE_13IsWrongUseDoNotCheckConstants);
 COMPILE_ASSERT(0x1abc == TestObj::CONST_VALUE_14, TestObjEnumCONST_VALUE_14IsWrongUseDoNotCheckConstants);
 COMPILE_ASSERT(15 == TestObj::CONST_IMPL, TestObjEnumCONST_IMPLIsWrongUseDoNotCheckConstants);
+COMPILE_ASSERT(1 == TestObj::DEPRECATED_CONSTANT, TestObjEnumDEPRECATED_CONSTANTIsWrongUseDoNotCheckConstants);
 
 v8::Handle<v8::Value> V8TestObj::constructorCallback(const v8::Arguments& args)
 {
@@ -4285,6 +4411,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
     v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType) };
     v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(desc, variadicNodeMethodArgc, variadicNodeMethodArgv);
     proto->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature));
+    desc->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
     V8DOMConfiguration::batchConfigureConstants(desc, proto, V8TestObjConsts, WTF_ARRAY_LENGTH(V8TestObjConsts), isolate);
 
     // Custom toString template

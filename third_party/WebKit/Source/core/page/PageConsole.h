@@ -38,6 +38,7 @@
 
 namespace WebCore {
 
+class DOMWindow;
 class Document;
 class Page;
 class ScriptExecutionContext;
@@ -51,6 +52,10 @@ public:
         // HTMLMediaElement
         PrefixedMediaAddKey,
         PrefixedMediaGenerateKeyRequest,
+
+        // Performance
+        PrefixedPerformanceTimeline,
+        PrefixedUserTiming,
 
         // Quota
         PrefixedStorageInfo,
@@ -69,6 +74,7 @@ public:
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
     void addMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0, Document* = 0);
 
+    static void reportDeprecation(DOMWindow*, DeprecatedFeature);
     static void reportDeprecation(ScriptExecutionContext*, DeprecatedFeature);
     static void reportDeprecation(Document*, DeprecatedFeature);
 

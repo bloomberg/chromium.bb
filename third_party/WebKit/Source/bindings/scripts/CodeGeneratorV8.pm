@@ -964,6 +964,16 @@ sub GenerateFeatureObservation
     return "";
 }
 
+sub GenerateDeprecationNotification
+{
+    my $deprecateAs = shift;
+    if ($deprecateAs) {
+        AddToImplIncludes("PageConsole.h");
+        return GenerateFeatureObservation($deprecateAs) . "\n    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::${deprecateAs});\n";
+    }
+    return "";
+}
+
 sub GenerateActivityLogging
 {
     my $accessType = shift;
@@ -1024,6 +1034,7 @@ sub GenerateNormalAttrGetterCallback
     $code .= "static v8::Handle<v8::Value> ${attrName}AttrGetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
+    $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Getter")) {
         $code .= GenerateActivityLogging("Getter", $interface, "${attrName}");
     }
@@ -1331,6 +1342,7 @@ sub GenerateReplaceableAttrSetterCallback
     $code .= "static void ${interfaceName}ReplaceableAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
+    $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
     if (HasActivityLogging("", $interface->extendedAttributes, "Setter")) {
          die "IDL error: ActivityLog attribute cannot exist on a ReplacableAttrSetterCallback";
     }
@@ -1402,6 +1414,7 @@ sub GenerateNormalAttrSetterCallback
     $code .= "static void ${attrName}AttrSetterCallback${forMainWorldSuffix}(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)\n";
     $code .= "{\n";
     $code .= GenerateFeatureObservation($attrExt->{"MeasureAs"});
+    $code .= GenerateDeprecationNotification($attrExt->{"DeprecateAs"});
     if (HasActivityLogging($forMainWorldSuffix, $attrExt, "Setter")) {
         $code .= GenerateActivityLogging("Setter", $interface, "${attrName}");
     }
@@ -1716,6 +1729,7 @@ static v8::Handle<v8::Value> ${name}Method${forMainWorldSuffix}(const v8::Argume
 {
 END
     $code .= GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"});
+    $code .= GenerateDeprecationNotification($function->signature->extendedAttributes->{"DeprecateAs"});
 
     foreach my $overload (@{$function->{overloads}}) {
         my ($numMandatoryParams, $parametersCheck) = GenerateFunctionParametersCheck($overload);
@@ -1754,6 +1768,7 @@ static v8::Handle<v8::Value> ${name}MethodCallback${forMainWorldSuffix}(const v8
 {
 END
     $code .= GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"});
+    $code .= GenerateDeprecationNotification($function->signature->extendedAttributes->{"DeprecateAs"});
     if (HasActivityLogging($forMainWorldSuffix, $function->signature->extendedAttributes, "Access")) {
         $code .= GenerateActivityLogging("Method", $interface, "${name}");
     }
@@ -2309,6 +2324,7 @@ sub GenerateConstructorCallback
     $code .= "v8::Handle<v8::Value> V8${interfaceName}::constructorCallback(const v8::Arguments& args)\n";
     $code .= "{\n";
     $code .= GenerateFeatureObservation($interface->extendedAttributes->{"MeasureAs"});
+    $code .= GenerateDeprecationNotification($interface->extendedAttributes->{"DeprecateAs"});
     $code .= GenerateConstructorHeader();
     if (HasCustomConstructor($interface)) {
         $code .= "    return V8${interfaceName}::constructorCustom(args);\n";
@@ -2429,6 +2445,7 @@ sub GenerateNamedConstructor
     }
 
     my $maybeObserveFeature = GenerateFeatureObservation($function->signature->extendedAttributes->{"MeasureAs"});
+    my $maybeDeprecateFeature = GenerateDeprecationNotification($function->signature->extendedAttributes->{"DeprecateAs"});
 
     my @beforeArgumentList;
     my @afterArgumentList;
@@ -2454,6 +2471,7 @@ END
 static v8::Handle<v8::Value> ${v8InterfaceName}ConstructorCallback(const v8::Arguments& args)
 {
     ${maybeObserveFeature}
+    ${maybeDeprecateFeature}
 END
     $code .= GenerateConstructorHeader();
     AddToImplIncludes("V8Document.h");

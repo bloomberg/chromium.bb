@@ -48,6 +48,7 @@ CustomToJSObject
 Default=NullString|Undefined
 DeliverCustomElementCallbacks
 DependentLifetime
+DeprecateAs=*
 DoNotCheckConstants
 DoNotCheckSecurity
 DoNotCheckSecurityOnGetter
