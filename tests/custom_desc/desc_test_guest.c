@@ -8,10 +8,10 @@
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/nacl_imc_api.h>
 #include <unistd.h>
 
 #include "native_client/src/include/nacl_macros.h"
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 
@@ -21,25 +21,27 @@
 
 void test_sendmsg_data_only(void) {
   char *data = "test_sending_data_only";
-  struct NaClImcMsgIoVec iov = { data, strlen(data) };
-  struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
+  struct NaClAbiNaClImcMsgIoVec iov = { data, strlen(data) };
+  struct NaClAbiNaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
   int rc = imc_sendmsg(EXAMPLE_DESC, &msg, 0);
   assert(rc == 101);
 }
 
 void test_sendmsg_with_descs(void) {
   char *data = "test_sending_descs";
-  struct NaClImcMsgIoVec iov = { data, strlen(data) };
+  struct NaClAbiNaClImcMsgIoVec iov = { data, strlen(data) };
   int descs[] = { EXAMPLE_DESC, EXAMPLE_DESC };
-  struct NaClImcMsgHdr msg = { &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0 };
+  struct NaClAbiNaClImcMsgHdr msg = {
+    &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0
+  };
   int rc = imc_sendmsg(EXAMPLE_DESC, &msg, 0);
   assert(rc == 102);
 }
 
 void test_sendmsg_bad_destination_desc(void) {
   char *data = "blah";
-  struct NaClImcMsgIoVec iov = { data, strlen(data) };
-  struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
+  struct NaClAbiNaClImcMsgIoVec iov = { data, strlen(data) };
+  struct NaClAbiNaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
   int rc = imc_sendmsg(BAD_DESC, &msg, 0);
   assert(rc == -1);
   assert(errno == EBADF);
@@ -47,13 +49,15 @@ void test_sendmsg_bad_destination_desc(void) {
 
 void test_sendmsg_bad_desc_args(void) {
   char *data = "blah";
-  struct NaClImcMsgIoVec iov = { data, strlen(data) };
+  struct NaClAbiNaClImcMsgIoVec iov = { data, strlen(data) };
   /*
    * Including EXAMPLE_DESC in the array before the invalid descriptor
    * number means that we test for refcount leaks on the error path.
    */
   int descs[] = { EXAMPLE_DESC, BAD_DESC, EXAMPLE_DESC };
-  struct NaClImcMsgHdr msg = { &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0 };
+  struct NaClAbiNaClImcMsgHdr msg = {
+    &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0
+  };
   int rc = imc_sendmsg(EXAMPLE_DESC, &msg, 0);
   assert(rc == -1);
   assert(errno == EBADF);
@@ -66,8 +70,8 @@ void test_sendmsg_bad_desc_args(void) {
  * want to receive.
  */
 void send_simple_request(char *data) {
-  struct NaClImcMsgIoVec iov = { data, strlen(data) };
-  struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
+  struct NaClAbiNaClImcMsgIoVec iov = { data, strlen(data) };
+  struct NaClAbiNaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
   int rc = imc_sendmsg(EXAMPLE_DESC, &msg, 0);
   assert(rc == 200);
 }
@@ -76,8 +80,8 @@ void test_recvmsg_data_only(void) {
   send_simple_request("request_receiving_data_only");
 
   char buf[100];
-  struct NaClImcMsgIoVec iov = { buf, sizeof(buf) };
-  struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
+  struct NaClAbiNaClImcMsgIoVec iov = { buf, sizeof(buf) };
+  struct NaClAbiNaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
   int rc = imc_recvmsg(EXAMPLE_DESC, &msg, 0);
   char *expected = "test_receiving_data_only";
   assert(rc == strlen(expected));
@@ -90,9 +94,11 @@ void test_recvmsg_with_descs(void) {
   send_simple_request("request_receiving_descs");
 
   char buf[100];
-  struct NaClImcMsgIoVec iov = { buf, sizeof(buf) };
+  struct NaClAbiNaClImcMsgIoVec iov = { buf, sizeof(buf) };
   int descs[8];
-  struct NaClImcMsgHdr msg = { &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0 };
+  struct NaClAbiNaClImcMsgHdr msg = {
+    &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0
+  };
   int rc = imc_recvmsg(EXAMPLE_DESC, &msg, 0);
   char *expected = "test_receiving_descs";
   assert(rc == strlen(expected));
@@ -111,14 +117,16 @@ void test_recvmsg_truncated_descs(void) {
   send_simple_request("request_receiving_descs");
 
   char buf[100];
-  struct NaClImcMsgIoVec iov = { buf, sizeof(buf) };
+  struct NaClAbiNaClImcMsgIoVec iov = { buf, sizeof(buf) };
   int descs[1];
-  struct NaClImcMsgHdr msg = { &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0 };
+  struct NaClAbiNaClImcMsgHdr msg = {
+    &iov, 1, descs, NACL_ARRAY_SIZE(descs), 0
+  };
   int rc = imc_recvmsg(EXAMPLE_DESC, &msg, 0);
   char *expected = "test_receiving_descs";
   assert(rc == strlen(expected));
   assert(memcmp(buf, expected, strlen(expected)) == 0);
-  assert(msg.flags == RECVMSG_DESC_TRUNCATED);
+  assert(msg.flags == NACL_ABI_RECVMSG_DESC_TRUNCATED);
 
   assert(msg.desc_length == 1);
   rc = close(msg.descv[0]);

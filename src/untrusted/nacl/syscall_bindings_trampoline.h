@@ -22,7 +22,7 @@ extern "C" {
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
 struct NaClExceptionContext;
-struct NaClImcMsgHdr;
+struct NaClAbiNaClImcMsgHdr;
 struct NaClMemMappingInfo;
 struct stat;
 struct timespec;
@@ -81,10 +81,10 @@ typedef int (*TYPE_nacl_stat) (const char *file, struct stat *st);
 /* ============================================================ */
 
 typedef int (*TYPE_nacl_imc_recvmsg) (int desc,
-                                      struct NaClImcMsgHdr *nmhp,
+                                      struct NaClAbiNaClImcMsgHdr *nmhp,
                                       int flags);
 typedef int (*TYPE_nacl_imc_sendmsg) (int desc,
-                                      struct NaClImcMsgHdr const *nmhp,
+                                      struct NaClAbiNaClImcMsgHdr const *nmhp,
                                       int flags);
 typedef int (*TYPE_nacl_imc_accept) (int d);
 

@@ -60,7 +60,7 @@
 #include <sys/mman.h>
 #include <pthread.h>
 
-#include <sys/nacl_imc_api.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #define DEFAULT_PREYIELD_COUNT 8
@@ -96,8 +96,8 @@ struct TestState {
 void *thread_main(void *p) {
   struct TestState        *tp = (struct TestState *) p;
   int                     d = -1;
-  struct NaClImcMsgHdr    h;
-  struct NaClImcMsgIoVec  v;
+  struct NaClAbiNaClImcMsgHdr h;
+  struct NaClAbiNaClImcMsgIoVec v;
   ssize_t                 rv;
 
   switch (tp->mode) {

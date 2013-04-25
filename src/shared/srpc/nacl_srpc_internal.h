@@ -27,14 +27,13 @@ EXTERN_C_BEGIN
 #ifdef __native_client__
 typedef int SRPC_IMC_DESC_TYPE;
 #define NACL_INVALID_DESCRIPTOR (-1)
-#define SRPC_DESC_MAX    IMC_USER_DESC_MAX
-#define SRPC_IOVEC_MAX   IMC_IOVEC_MAX
 #else
 typedef struct NaClDesc* SRPC_IMC_DESC_TYPE;
 #define NACL_INVALID_DESCRIPTOR NULL
+#endif
+
 #define SRPC_DESC_MAX    NACL_ABI_IMC_USER_DESC_MAX
 #define SRPC_IOVEC_MAX   NACL_ABI_IMC_IOVEC_MAX
-#endif
 
 /* Initialize the logging facility. Returns 1 on success, 0 on failure. */
 int NaClSrpcLogInit(void);

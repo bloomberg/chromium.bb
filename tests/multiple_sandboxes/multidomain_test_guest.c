@@ -8,8 +8,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/nacl_imc_api.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 
@@ -21,8 +21,8 @@
 
 void domain1(void) {
   char *message = "hello";
-  struct NaClImcMsgIoVec iov = { message, strlen(message) };
-  struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
+  struct NaClAbiNaClImcMsgIoVec iov = { message, strlen(message) };
+  struct NaClAbiNaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
   int sent;
 
   printf("In domain 1: Sending message, \"%s\"\n", message);
@@ -32,8 +32,8 @@ void domain1(void) {
 
 void domain2(void) {
   char buffer[100];
-  struct NaClImcMsgIoVec iov = { buffer, sizeof(buffer) - 1 };
-  struct NaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
+  struct NaClAbiNaClImcMsgIoVec iov = { buffer, sizeof(buffer) - 1 };
+  struct NaClAbiNaClImcMsgHdr msg = { &iov, 1, NULL, 0, 0 };
   int got = imc_recvmsg(RECEIVE_DESC, &msg, 0);
   assert(got >= 0);
 

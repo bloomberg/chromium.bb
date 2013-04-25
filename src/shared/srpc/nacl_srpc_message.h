@@ -16,7 +16,7 @@ EXTERN_C_BEGIN
 
 #ifdef __native_client__
 #include <sys/types.h>
-#include <sys/nacl_imc_api.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #else  /* __native_client__ */
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
@@ -48,7 +48,7 @@ void NaClSrpcMessageChannelDelete(struct NaClSrpcMessageChannel* channel);
  */
 #ifdef __native_client__
 /* In untrusted code, NaClSrpcMessageHeader uses untrusted IMC directly. */
-typedef struct NaClImcMsgHdr                   NaClSrpcMessageHeader;
+typedef struct NaClAbiNaClImcMsgHdr            NaClSrpcMessageHeader;
 #define NACL_SRPC_MESSAGE_HEADER_DESCV         descv
 #define NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH   desc_length
 #else  /* trusted code */

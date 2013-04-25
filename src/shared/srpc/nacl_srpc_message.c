@@ -23,6 +23,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc_internal.h"
 
 #ifdef __native_client__
+# define NaClImcMsgIoVec NaClAbiNaClImcMsgIoVec
 /*
  * We cannot currently #include service_runtime/include/sys/errno.h
  * with nacl-glibc because it #includes sys/reent.h, which is a
@@ -35,8 +36,6 @@
  * after all other types headers.
  */
 #include <machine/_types.h>
-# define NACL_ABI_RECVMSG_DATA_TRUNCATED RECVMSG_DATA_TRUNCATED
-# define NACL_ABI_RECVMSG_DESC_TRUNCATED RECVMSG_DESC_TRUNCATED
 # define NACL_ABI_EIO EIO
 # define NACL_ABI_EINVAL EINVAL
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
@@ -171,9 +170,9 @@ size_t const kFragmentOverhead[] = {
 struct NaClSrpcMessageChannel {
   struct PortableDesc desc;
   /* The below members are used to buffer a single message, for use by peek. */
-  char bytes[IMC_USER_BYTES_MAX];
+  char bytes[NACL_ABI_IMC_USER_BYTES_MAX];
   size_t byte_count;
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
   size_t desc_count;
 };
 

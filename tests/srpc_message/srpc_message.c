@@ -46,17 +46,13 @@
  *  checks the return values.
  */
 
-#if !defined(__native_client__)
-#define IMC_IOVEC_MAX           NACL_ABI_IMC_IOVEC_MAX
-#define IMC_USER_DESC_MAX       NACL_ABI_IMC_USER_DESC_MAX
-#define RECVMSG_DATA_TRUNCATED  NACL_ABI_RECVMSG_DATA_TRUNCATED
-#define RECVMSG_DESC_TRUNCATED  NACL_ABI_RECVMSG_DESC_TRUNCATED
-
+#if defined(__native_client__)
+#define NaClImcMsgIoVec NaClAbiNaClImcMsgIoVec
 #endif
 
 /* TODO(sehr): test larger than IMC_IOVEC_MAX / 2 iov entries. */
-#define kIovEntryCount        (IMC_IOVEC_MAX / 2)
-#define kDescCount            (4 * IMC_USER_DESC_MAX)
+#define kIovEntryCount        (NACL_ABI_IMC_IOVEC_MAX / 2)
+#define kDescCount            (4 * NACL_ABI_IMC_USER_DESC_MAX)
 
 #define ARRAY_SIZE(a)         (sizeof a / sizeof a[0])
 
@@ -115,7 +111,7 @@ void SendShortMessage(struct NaClSrpcMessageChannel* channel) {
 void ReceiveShortMessage(struct NaClSrpcMessageChannel* channel) {
   NaClSrpcMessageHeader header;
   struct NaClImcMsgIoVec iovec[1];
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -144,7 +140,7 @@ void PeekShortMessage(struct NaClSrpcMessageChannel* channel,
                       int expected_flags) {
   NaClSrpcMessageHeader header;
   struct NaClImcMsgIoVec iovec[1];
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
   size_t i;
 
   /*
@@ -194,7 +190,7 @@ void SendLongMessage(struct NaClSrpcMessageChannel* channel) {
 void ReceiveLongMessage(struct NaClSrpcMessageChannel* channel) {
   NaClSrpcMessageHeader header;
   struct NaClImcMsgIoVec iovec[1];
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -243,7 +239,7 @@ void ReceiveMessageOfLength(struct NaClSrpcMessageChannel* channel,
                             size_t message_bytes) {
   NaClSrpcMessageHeader header;
   struct NaClImcMsgIoVec iovec[1];
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -272,7 +268,7 @@ void ReceiveMessageOfLength(struct NaClSrpcMessageChannel* channel,
 void ReceiveShorterMessage(struct NaClSrpcMessageChannel* channel) {
   NaClSrpcMessageHeader header;
   struct NaClImcMsgIoVec iovec[1];
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
 
   /*
    * One iov entry pointing to a buffer large enough to read the expected
@@ -294,7 +290,7 @@ void ReceiveShorterMessage(struct NaClSrpcMessageChannel* channel) {
   assert(memcmp(header.iov[0].base, gTestArray, header.iov[0].length) == 0);
   /* Check that one descriptor was received. */
   assert(header.NACL_SRPC_MESSAGE_HEADER_DESC_LENGTH == 1);
-  assert(header.flags == RECVMSG_DATA_TRUNCATED);
+  assert(header.flags == NACL_ABI_RECVMSG_DATA_TRUNCATED);
 }
 
 void SendLotsOfIovs(struct NaClSrpcMessageChannel* channel) {
@@ -326,7 +322,7 @@ void SendLotsOfIovs(struct NaClSrpcMessageChannel* channel) {
 void ReceiveLotsOfIovs(struct NaClSrpcMessageChannel* channel) {
   NaClSrpcMessageHeader header;
   struct NaClImcMsgIoVec iovec[kIovEntryCount];
-  NaClSrpcMessageDesc descs[IMC_USER_DESC_MAX];
+  NaClSrpcMessageDesc descs[NACL_ABI_IMC_USER_DESC_MAX];
   char* buf_chunk;
   char* test_chunk;
   size_t i;
@@ -429,7 +425,7 @@ void ReceiveFewerDescs(struct NaClSrpcMessageChannel* channel) {
   for (i = 0; i < ARRAY_SIZE(descs); ++i) {
     assert(descs[i] == g_bogus_desc);
   }
-  assert(header.flags == RECVMSG_DESC_TRUNCATED);
+  assert(header.flags == NACL_ABI_RECVMSG_DESC_TRUNCATED);
 }
 
 void InitArrays(size_t large_array_size) {
@@ -535,7 +531,7 @@ static void Receiver(void* arg) {
   PeekShortMessage(recv_channel, 0);
   ReceiveShortMessage(recv_channel);
   /* Test send/receive of message that requires multiple messages. */
-  PeekShortMessage(recv_channel, RECVMSG_DATA_TRUNCATED);
+  PeekShortMessage(recv_channel, NACL_ABI_RECVMSG_DATA_TRUNCATED);
   ReceiveLongMessage(recv_channel);
   /* Test that fragmentation sets data truncated flag. */
   ReceiveShorterMessage(recv_channel);

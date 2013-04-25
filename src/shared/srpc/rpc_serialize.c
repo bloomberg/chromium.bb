@@ -21,6 +21,7 @@
 #include "native_client/src/shared/srpc/nacl_srpc_message.h"
 
 #ifdef __native_client__
+#define NaClImcMsgIoVec NaClAbiNaClImcMsgIoVec
 #define NACL_ABI_EIO EIO
 #define NACL_ABI_EINVAL EINVAL
 #else

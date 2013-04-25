@@ -21,7 +21,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <sys/nacl_imc_api.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /*
@@ -30,8 +30,8 @@
 void send_imc_msg(int         channel,
                   char const  *msg,
                   int         desc) {
-  struct NaClImcMsgHdr    msg_hdr;
-  struct NaClImcMsgIoVec  iov;
+  struct NaClAbiNaClImcMsgHdr msg_hdr;
+  struct NaClAbiNaClImcMsgIoVec iov;
   int                     nbytes;
   int                     rv;
 
@@ -52,8 +52,8 @@ int recv_imc_msg(int  channel,
                  char *recvbuf,
                  int  bufsize,
                  int  *descp) {
-  struct NaClImcMsgHdr    msg_hdr;
-  struct NaClImcMsgIoVec  iov;
+  struct NaClAbiNaClImcMsgHdr msg_hdr;
+  struct NaClAbiNaClImcMsgIoVec iov;
   int                     rv;
 
   msg_hdr.iov = &iov;
@@ -68,8 +68,8 @@ int recv_imc_msg(int  channel,
     fprintf(stderr, "errno %d\n", errno);
     exit(1);
   }
-  if (0 != (msg_hdr.flags & (RECVMSG_DATA_TRUNCATED
-                             | RECVMSG_DESC_TRUNCATED))) {
+  if (0 != (msg_hdr.flags & (NACL_ABI_RECVMSG_DATA_TRUNCATED
+                             | NACL_ABI_RECVMSG_DESC_TRUNCATED))) {
     fprintf(stderr, "imc_recvmsg truncated: %d\n", msg_hdr.flags);
     exit(1);
   }
@@ -120,7 +120,7 @@ int main(int ac, char **av) {
   int                         subchannel;
   int                         rv;
   char                        data_buffer[4096];
-  int                         desc_buffer[IMC_USER_DESC_MAX];
+  int                         desc_buffer[NACL_ABI_IMC_USER_DESC_MAX];
   size_t                      i;
   unsigned long               loop_iter = 1;
   unsigned int                sleep_seconds = 0;

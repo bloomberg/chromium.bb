@@ -32,7 +32,7 @@ extern "C" {
 
 struct timeval;  /* sys/time.h */
 struct timezone;
-struct NaClImcMsgHdr;  /* sys/nacl_imc_api.h */
+struct NaClAbiNaClImcMsgHdr;  /* sys/nacl_imc_api.h */
 
 /*
  * TODO(mseaborn): Many of the functions here are defined in other,
@@ -319,7 +319,8 @@ extern int imc_connect(int desc);
  *  The returned descriptor may be used to transfer data and descriptors
  *  but is itself not transferable.
  */
-extern int imc_sendmsg(int desc, struct NaClImcMsgHdr const *nmhp, int flags);
+extern int imc_sendmsg(int desc, struct NaClAbiNaClImcMsgHdr const *nmhp,
+                       int flags);
 /**
  *  @nacl
  *  Receives a message over a specified IMC socket descriptor.
@@ -330,7 +331,7 @@ extern int imc_sendmsg(int desc, struct NaClImcMsgHdr const *nmhp, int flags);
  *  @return On success, imc_recvmsg returns a non-negative number of bytes
  *  read. On failure, it returns -1 and sets errno appropriately.
  */
-extern int imc_recvmsg(int desc, struct NaClImcMsgHdr *nmhp, int flags);
+extern int imc_recvmsg(int desc, struct NaClAbiNaClImcMsgHdr *nmhp, int flags);
 /**
  *  @nacl
  *  Creates an IMC shared memory region, returning a file descriptor.

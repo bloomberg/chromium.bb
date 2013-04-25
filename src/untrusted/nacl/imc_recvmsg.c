@@ -14,7 +14,7 @@
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 #include "native_client/src/untrusted/nacl/syscall_bindings_trampoline.h"
 
-int imc_recvmsg(int desc, struct NaClImcMsgHdr *nmhp, int flags) {
+int imc_recvmsg(int desc, struct NaClAbiNaClImcMsgHdr *nmhp, int flags) {
   int retval = NACL_SYSCALL(imc_recvmsg)(desc, nmhp, flags);
   if (retval < 0) {
     errno = -retval;

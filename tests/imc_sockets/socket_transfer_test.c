@@ -10,9 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/nacl_imc_api.h>
 #include <unistd.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 /* TODO(mseaborn): This should really be in an IMC header file. */
@@ -69,8 +69,8 @@ void make_socket_pair(int pair[2]) {
 
 int send_message(int sock_fd, char *data, size_t data_size,
                  int *fds, int fds_size) {
-  struct NaClImcMsgIoVec iov;
-  struct NaClImcMsgHdr msg;
+  struct NaClAbiNaClImcMsgIoVec iov;
+  struct NaClAbiNaClImcMsgHdr msg;
   iov.base = data;
   iov.length = data_size;
   msg.iov = &iov;
@@ -82,8 +82,8 @@ int send_message(int sock_fd, char *data, size_t data_size,
 
 int receive_message(int sock_fd, char *data, size_t data_size,
                     int *fds, int fds_size, int *fds_got) {
-  struct NaClImcMsgIoVec iov;
-  struct NaClImcMsgHdr msg;
+  struct NaClAbiNaClImcMsgIoVec iov;
+  struct NaClAbiNaClImcMsgHdr msg;
   int received;
   iov.base = data;
   iov.length = data_size;
@@ -208,7 +208,7 @@ void test_special_invalid_fd(void) {
   int received;
   int fd_to_send;
   char data_buf[10];
-  int fds_buf[IMC_DESC_MAX];
+  int fds_buf[NACL_ABI_IMC_DESC_MAX];
   int fds_got;
 
   printf("Test sending and receiving the special 'invalid' descriptor...\n");
@@ -218,7 +218,7 @@ void test_special_invalid_fd(void) {
   sent = send_message(sock_pair[0], "", 0, &fd_to_send, 1);
   assert(sent == 0);
   received = receive_message(sock_pair[1], data_buf, sizeof(data_buf),
-                             fds_buf, IMC_DESC_MAX, &fds_got);
+                             fds_buf, NACL_ABI_IMC_DESC_MAX, &fds_got);
   assert(received == 0);
   assert(fds_got == 1);
   assert(fds_buf[0] == kKnownInvalidDescNumber);
@@ -244,8 +244,8 @@ void test_sending_and_receiving_max_fd_count(void) {
   int sent;
   int received;
   char data_buf[10];
-  int fds_send_buf[IMC_DESC_MAX + 1];
-  int fds_receive_buf[IMC_DESC_MAX];
+  int fds_send_buf[NACL_ABI_IMC_DESC_MAX + 1];
+  int fds_receive_buf[NACL_ABI_IMC_DESC_MAX];
   int fds_got;
   int i;
 
@@ -253,24 +253,25 @@ void test_sending_and_receiving_max_fd_count(void) {
   make_socket_pair(sock_pair);
 
   /* Test exactly the maximum. */
-  for (i = 0; i < IMC_DESC_MAX; i++) {
+  for (i = 0; i < NACL_ABI_IMC_DESC_MAX; i++) {
     fds_send_buf[i] = kKnownInvalidDescNumber;
   }
-  sent = send_message(sock_pair[0], "", 0, fds_send_buf, IMC_DESC_MAX);
+  sent = send_message(sock_pair[0], "", 0, fds_send_buf, NACL_ABI_IMC_DESC_MAX);
   assert(sent == 0);
   received = receive_message(sock_pair[1], data_buf, sizeof(data_buf),
-                             fds_receive_buf, IMC_DESC_MAX, &fds_got);
+                             fds_receive_buf, NACL_ABI_IMC_DESC_MAX, &fds_got);
   assert(received == 0);
-  assert(fds_got == IMC_DESC_MAX);
-  for (i = 0; i < IMC_DESC_MAX; i++) {
+  assert(fds_got == NACL_ABI_IMC_DESC_MAX);
+  for (i = 0; i < NACL_ABI_IMC_DESC_MAX; i++) {
     assert(fds_receive_buf[i] == kKnownInvalidDescNumber);
   }
 
   /* Test above the maximum. */
-  for (i = 0; i < IMC_DESC_MAX + 1; i++) {
+  for (i = 0; i < NACL_ABI_IMC_DESC_MAX + 1; i++) {
     fds_send_buf[i] = kKnownInvalidDescNumber;
   }
-  sent = send_message(sock_pair[0], "", 0, fds_send_buf, IMC_DESC_MAX + 1);
+  sent = send_message(sock_pair[0], "", 0, fds_send_buf,
+                      NACL_ABI_IMC_DESC_MAX + 1);
   assert(sent == -1);
   assert(errno == EINVAL);
 

@@ -22,7 +22,7 @@
 #include <errno.h>
 
 /* NOTE(robertm): no errno magic here, why? */
-#include <sys/nacl_imc_api.h>
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 int                         debug = 0;
@@ -62,10 +62,10 @@ void server_side(int channel,
   struct timeval          time_start;
   struct timeval          time_end;
 
-  struct NaClImcMsgHdr    msg_hdr;
-  struct NaClImcMsgIoVec  iov[1];
+  struct NaClAbiNaClImcMsgHdr msg_hdr;
+  struct NaClAbiNaClImcMsgIoVec iov[1];
   char                    data_buffer[4096];
-  int                     desc_buffer[IMC_USER_DESC_MAX];
+  int                     desc_buffer[NACL_ABI_IMC_USER_DESC_MAX];
 
   gettimeofday(&time_start, (void *) NULL);
 
@@ -124,10 +124,10 @@ void client_side(int channel,
   struct timeval          time_start;
   struct timeval          time_end;
 
-  struct NaClImcMsgHdr    msg_hdr;
-  struct NaClImcMsgIoVec  iov[1];
+  struct NaClAbiNaClImcMsgHdr msg_hdr;
+  struct NaClAbiNaClImcMsgIoVec iov[1];
   char                    data_buffer[4096];
-  int                     desc_buffer[IMC_USER_DESC_MAX];
+  int                     desc_buffer[NACL_ABI_IMC_USER_DESC_MAX];
 
   iov[0].base = data_buffer;
   iov[0].length = 0;
@@ -220,7 +220,7 @@ int main(int  ac,
   if (server) {
     channel = imc_accept(3);
 
-    for (i = 0; i < IMC_USER_DESC_MAX; ++i) {
+    for (i = 0; i < NACL_ABI_IMC_USER_DESC_MAX; ++i) {
       server_side(channel, num_rep);
     }
 
@@ -251,7 +251,7 @@ int main(int  ac,
       return 104;
     }
 
-    for (i = 1; i <= IMC_USER_DESC_MAX; ++i) {
+    for (i = 1; i <= NACL_ABI_IMC_USER_DESC_MAX; ++i) {
       client_side(channel, num_rep, i, xfer_fd);
     }
   }

@@ -8,10 +8,10 @@
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/nacl_imc_api.h>
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_syscalls.h"
 
 #define BOUND_SOCKET  3
@@ -36,8 +36,8 @@ struct worker_state {
  */
 static void ReceiveRequest(int d) {
   char recvbuf[kBufferSize];
-  struct NaClImcMsgHdr header;
-  struct NaClImcMsgIoVec iovec[1];
+  struct NaClAbiNaClImcMsgHdr header;
+  struct NaClAbiNaClImcMsgIoVec iovec[1];
   int retval;
   /* Construct the IO vector to have one data payload. */
   iovec[0].base = recvbuf;
@@ -69,8 +69,8 @@ static const uint8_t kRequestHeader[] = {
  * Send a bad response (a request, actually).
  */
 static void SendBadResponse(int d) {
-  struct NaClImcMsgHdr header;
-  struct NaClImcMsgIoVec iovec[1];
+  struct NaClAbiNaClImcMsgHdr header;
+  struct NaClAbiNaClImcMsgIoVec iovec[1];
   /* Construct the IO vector to have one data payload. */
   iovec[0].base = (char*) kRequestHeader;
   iovec[0].length = sizeof(kRequestHeader);

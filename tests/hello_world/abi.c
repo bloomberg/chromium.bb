@@ -14,10 +14,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <sys/nacl_imc_api.h>
 #include <sys/stat.h>
 #include <sys/time.h>
+
+#include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
 
 
 int Assert(int actual, int expected, const char* mesg) {
@@ -87,7 +87,7 @@ int CheckSizes(void) {
 
   CHECK_SIZEOF(struct stat, 104);
 
-  CHECK_SIZEOF(struct NaClImcMsgHdr, 20);
+  CHECK_SIZEOF(struct NaClAbiNaClImcMsgHdr, 20);
 
   CHECK_SIZEOF(va_list, 16);
 #ifdef PNACL_ABI_TEST
