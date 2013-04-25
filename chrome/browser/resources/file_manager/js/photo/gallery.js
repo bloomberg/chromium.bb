@@ -859,7 +859,8 @@ Gallery.prototype.updateShareMenu_ = function() {
 
   var api = Gallery.getFileBrowserPrivate();
   var mimeTypes = [];  // TODO(kaznacheev) Collect mime types properly.
-  api.getFileTasks(urls, mimeTypes, function(tasks) {
+
+  var createShareMenu = function(tasks) {
     var wasHidden = this.shareMenu_.hidden;
     this.shareMenu_.hidden = true;
     var items = this.shareMenu_.querySelectorAll('.item');
@@ -883,7 +884,14 @@ Gallery.prototype.updateShareMenu_ = function() {
     var empty = this.shareMenu_.querySelector('.item') == null;
     ImageUtil.setAttribute(this.shareButton_, 'disabled', empty);
     this.shareMenu_.hidden = wasHidden || empty;
-  }.bind(this));
+  }.bind(this);
+
+  // Create or update the share menu with a list of sharing tasks and show
+  // or hide the share button.
+  if (!urls.length)
+    createShareMenu([]);  // Empty list of tasks, since there is no selection.
+  else
+    api.getFileTasks(urls, mimeTypes, createShareMenu);
 };
 
 /**
