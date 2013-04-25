@@ -136,6 +136,8 @@ class BrowserViewRendererImpl
   // Used to observe frame metadata updates.
   content::ContentViewCore::UpdateFrameInfoCallback update_frame_info_callback_;
 
+  bool prevent_client_invalidate_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserViewRendererImpl);
 };
 

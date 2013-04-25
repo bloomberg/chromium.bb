@@ -147,7 +147,8 @@ BrowserViewRendererImpl::BrowserViewRendererImpl(
       web_contents_(NULL),
       update_frame_info_callback_(
           base::Bind(&BrowserViewRendererImpl::OnFrameInfoUpdated,
-                     base::Unretained(ALLOW_THIS_IN_INITIALIZER_LIST(this)))) {
+                     base::Unretained(ALLOW_THIS_IN_INITIALIZER_LIST(this)))),
+      prevent_client_invalidate_(false) {
 
   DCHECK(java_helper);
 
@@ -233,7 +234,15 @@ void BrowserViewRendererImpl::DrawGL(AwDrawGLInfo* draw_info) {
   }
 
   compositor_->SetWindowBounds(gfx::Size(draw_info->width, draw_info->height));
+
+  // We need to trigger a compositor invalidate because otherwise, if nothing
+  // has changed since last draw the compositor will early out (Android may
+  // trigger a draw at anytime). However, we don't want to trigger a client
+  // (i.e. Android View system) invalidate as a result of this (otherwise we'll
+  // end up in a loop of DrawGL calls).
+  prevent_client_invalidate_ = true;
   compositor_->SetNeedsRedraw();
+  prevent_client_invalidate_ = false;
 
   if (draw_info->is_layer) {
     // When rendering into a separate layer no view clipping, transform,
@@ -441,7 +450,9 @@ void BrowserViewRendererImpl::ScheduleComposite() {
     return;
 
   is_composite_pending_ = true;
-  Invalidate();
+
+  if (!prevent_client_invalidate_)
+    Invalidate();
 }
 
 skia::RefPtr<SkPicture> BrowserViewRendererImpl::GetLastCapturedPicture() {
