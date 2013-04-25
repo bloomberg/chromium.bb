@@ -29,7 +29,9 @@
  */
 
 // http://www.w3.org/TR/ime-api/
-interface Composition {
+[
+  ImplementationLacksVTable
+] interface Composition {
     readonly attribute Node text;
     readonly attribute Range caret;
 };
