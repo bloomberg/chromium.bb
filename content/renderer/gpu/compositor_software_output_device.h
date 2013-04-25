@@ -9,7 +9,6 @@
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/software_output_device.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/surface/transport_dib.h"
 
 namespace content {
 
@@ -30,14 +29,40 @@ public:
   virtual void ReclaimDIB(const TransportDIB::Id& id) OVERRIDE;
 
 private:
-  TransportDIB* CreateDIB();
+  class DIB {
+   public:
+    explicit DIB(size_t size);
+    ~DIB();
+
+    TransportDIB* dib() const {
+      return dib_;
+    }
+
+   private:
+    TransportDIB* dib_;
+
+    DISALLOW_COPY_AND_ASSIGN(DIB);
+  };
+
+  class CompareById {
+   public:
+    CompareById(const TransportDIB::Id& id) : id_(id) {}
+
+    bool operator()(const DIB* dib) const {
+      return dib->dib() && dib->dib()->id() == id_;
+    }
+
+   private:
+    TransportDIB::Id id_;
+  };
+
+  DIB* CreateDIB();
 
   int front_buffer_;
   int num_free_buffers_;
-  ScopedVector<TransportDIB> dibs_;
-  ScopedVector<TransportDIB> awaiting_ack_;
+  ScopedVector<DIB> dibs_;
+  ScopedVector<DIB> awaiting_ack_;
   SkBitmap bitmap_;
-  uint32 sequence_num_;
 };
 
 }  // namespace content

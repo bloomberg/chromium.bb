@@ -6,35 +6,31 @@
 
 #include "base/logging.h"
 #include "cc/output/software_frame_data.h"
+#include "content/renderer/render_process.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkDevice.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/surface/transport_dib.h"
 
 namespace content {
 
-namespace {
+CompositorSoftwareOutputDevice::DIB::DIB(size_t size) {
+  RenderProcess* render_process = RenderProcess::current();
+  dib_ = render_process->CreateTransportDIB(size);
+  CHECK(dib_);
+  bool success = dib_->Map();
+  CHECK(success);
+}
 
-class CompareById {
- public:
-  CompareById(const TransportDIB::Id& id)
-      : id_(id) {
-  }
-
-  bool operator()(const TransportDIB* dib) const {
-    return dib->id() == id_;
-  }
-
- private:
-  TransportDIB::Id id_;
-};
-
-}  // namespace
+CompositorSoftwareOutputDevice::DIB::~DIB() {
+  RenderProcess* render_process = RenderProcess::current();
+  render_process->FreeTransportDIB(dib_);
+}
 
 CompositorSoftwareOutputDevice::CompositorSoftwareOutputDevice()
     : front_buffer_(-1),
-      num_free_buffers_(0),
-      sequence_num_(0) {
+      num_free_buffers_(0) {
   DetachFromThread();
 }
 
@@ -42,13 +38,10 @@ CompositorSoftwareOutputDevice::~CompositorSoftwareOutputDevice() {
   DCHECK(CalledOnValidThread());
 }
 
-TransportDIB* CompositorSoftwareOutputDevice::CreateDIB() {
-  const size_t size = 4 * viewport_size_.GetArea();
-  TransportDIB* dib = TransportDIB::Create(size, sequence_num_++);
-  CHECK(dib);
-  bool success = dib->Map();
-  CHECK(success);
-  return dib;
+CompositorSoftwareOutputDevice::DIB*
+CompositorSoftwareOutputDevice::CreateDIB() {
+  const size_t size =  4 * viewport_size_.GetArea();
+  return new DIB(size);
 }
 
 void CompositorSoftwareOutputDevice::Resize(gfx::Size viewport_size) {
@@ -87,7 +80,7 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
   }
   front_buffer_ = (front_buffer_ + 1) % dibs_.size();
 
-  TransportDIB* front_dib = dibs_[front_buffer_];
+  TransportDIB* front_dib = dibs_[front_buffer_]->dib();
   DCHECK(front_dib);
   DCHECK(front_dib->memory());
 
@@ -101,7 +94,7 @@ SkCanvas* CompositorSoftwareOutputDevice::BeginPaint(gfx::Rect damage_rect) {
 
   // Copy over previous damage.
   if (last_buffer != -1) {
-    TransportDIB* last_dib = dibs_[last_buffer];
+    TransportDIB* last_dib = dibs_[last_buffer]->dib();
     SkBitmap back_bitmap;
     back_bitmap.setConfig(SkBitmap::kARGB_8888_Config,
                           viewport_size_.width(),
@@ -127,7 +120,7 @@ void CompositorSoftwareOutputDevice::EndPaint(
   if (frame_data) {
     frame_data->size = viewport_size_;
     frame_data->damage_rect = damage_rect_;
-    frame_data->dib_id = dibs_[front_buffer_]->id();
+    frame_data->dib_id = dibs_[front_buffer_]->dib()->id();
   }
 }
 
@@ -139,7 +132,7 @@ void CompositorSoftwareOutputDevice::ReclaimDIB(const TransportDIB::Id& id) {
 
   // The reclaimed dib id might not be among the currently
   // active dibs if we got a resize event in the mean time.
-  ScopedVector<TransportDIB>::iterator it =
+  ScopedVector<DIB>::iterator it =
       std::find_if(dibs_.begin(), dibs_.end(), CompareById(id));
   if (it != dibs_.end()) {
     ++num_free_buffers_;
