@@ -144,7 +144,6 @@ CanvasRenderingContext2D::~CanvasRenderingContext2D()
 #if !ASSERT_DISABLED
     unwindStateStack();
 #endif
-    ScriptWrappable::init(this);
 }
 
 bool CanvasRenderingContext2D::isAccelerated() const
