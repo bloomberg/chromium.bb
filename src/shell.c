@@ -435,16 +435,23 @@ focus_state_surface_destroy(struct wl_listener *listener, void *data)
 						 struct focus_state,
 						 surface_destroy_listener);
 	struct desktop_shell *shell;
+	struct weston_surface *main_surface;
 	struct weston_surface *surface, *next;
+
+	main_surface = weston_surface_get_main_surface(state->keyboard_focus);
 
 	next = NULL;
 	wl_list_for_each(surface, &state->ws->layer.surface_list, layer_link) {
-		if (surface == state->keyboard_focus)
+		if (surface == main_surface)
 			continue;
 
 		next = surface;
 		break;
 	}
+
+	/* if the focus was a sub-surface, activate its main surface */
+	if (main_surface != state->keyboard_focus)
+		next = main_surface;
 
 	if (next) {
 		shell = state->seat->compositor->shell_interface.shell;
@@ -883,6 +890,9 @@ move_surface_to_workspace(struct desktop_shell *shell,
 	struct workspace *from;
 	struct workspace *to;
 	struct weston_seat *seat;
+	struct weston_surface *focus;
+
+	assert(weston_surface_get_main_surface(surface) == surface);
 
 	if (workspace == shell->workspaces.current)
 		return;
@@ -897,9 +907,14 @@ move_surface_to_workspace(struct desktop_shell *shell,
 	wl_list_insert(&to->layer.surface_list, &surface->layer_link);
 
 	drop_focus_state(shell, from, surface);
-	wl_list_for_each(seat, &shell->compositor->seat_list, link)
-		if (seat->keyboard && seat->keyboard->focus == surface)
+	wl_list_for_each(seat, &shell->compositor->seat_list, link) {
+		if (!seat->keyboard)
+			continue;
+
+		focus = weston_surface_get_main_surface(seat->keyboard->focus);
+		if (focus == surface)
 			weston_keyboard_set_focus(seat->keyboard, NULL);
+	}
 
 	weston_surface_damage_below(surface);
 }
@@ -909,13 +924,13 @@ take_surface_to_workspace_by_seat(struct desktop_shell *shell,
 				  struct weston_seat *seat,
 				  unsigned int index)
 {
-	struct weston_surface *surface =
-		(struct weston_surface *) seat->keyboard->focus;
+	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 	struct workspace *from;
 	struct workspace *to;
 	struct focus_state *state;
 
+	surface = weston_surface_get_main_surface(seat->keyboard->focus);
 	if (surface == NULL ||
 	    index == shell->workspaces.current)
 		return;
@@ -973,8 +988,10 @@ workspace_manager_move_surface(struct wl_client *client,
 	struct desktop_shell *shell = resource->data;
 	struct weston_surface *surface =
 		(struct weston_surface *) surface_resource;
+	struct weston_surface *main_surface;
 
-	move_surface_to_workspace(shell, surface, workspace);
+	main_surface = weston_surface_get_main_surface(surface);
+	move_surface_to_workspace(shell, main_surface, workspace);
 }
 
 static const struct workspace_manager_interface workspace_manager_implementation = {
@@ -2505,10 +2522,12 @@ get_shell_surface_type(struct weston_surface *surface)
 static void
 move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *surface =
+	struct weston_surface *focus =
 		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *surface;
 	struct shell_surface *shsurf;
 
+	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
 		return;
 
@@ -2523,12 +2542,14 @@ move_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *dat
 static void
 resize_binding(struct weston_seat *seat, uint32_t time, uint32_t button, void *data)
 {
-	struct weston_surface *surface =
+	struct weston_surface *focus =
 		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *surface;
 	uint32_t edges = 0;
 	int32_t x, y;
 	struct shell_surface *shsurf;
 
+	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
 		return;
 
@@ -2565,9 +2586,12 @@ surface_opacity_binding(struct weston_seat *seat, uint32_t time, uint32_t axis,
 {
 	float step = 0.005;
 	struct shell_surface *shsurf;
-	struct weston_surface *surface =
+	struct weston_surface *focus =
 		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *surface;
 
+	/* XXX: broken for windows containing sub-surfaces */
+	surface = weston_surface_get_main_surface(focus);
 	if (surface == NULL)
 		return;
 
@@ -2784,10 +2808,12 @@ static void
 rotate_binding(struct weston_seat *seat, uint32_t time, uint32_t button,
 	       void *data)
 {
-	struct weston_surface *base_surface =
+	struct weston_surface *focus =
 		(struct weston_surface *) seat->pointer->focus;
+	struct weston_surface *base_surface;
 	struct shell_surface *surface;
 
+	base_surface = weston_surface_get_main_surface(focus);
 	if (base_surface == NULL)
 		return;
 
@@ -2816,8 +2842,11 @@ static void
 activate(struct desktop_shell *shell, struct weston_surface *es,
 	 struct weston_seat *seat)
 {
+	struct weston_surface *main_surface;
 	struct focus_state *state;
 	struct workspace *ws;
+
+	main_surface = weston_surface_get_main_surface(es);
 
 	weston_surface_activate(es, seat);
 
@@ -2830,15 +2859,15 @@ activate(struct desktop_shell *shell, struct weston_surface *es,
 	wl_signal_add(&es->resource.destroy_signal,
 		      &state->surface_destroy_listener);
 
-	switch (get_shell_surface_type(es)) {
+	switch (get_shell_surface_type(main_surface)) {
 	case SHELL_SURFACE_FULLSCREEN:
 		/* should on top of panels */
-		shell_stack_fullscreen(get_shell_surface(es));
-		shell_configure_fullscreen(get_shell_surface(es));
+		shell_stack_fullscreen(get_shell_surface(main_surface));
+		shell_configure_fullscreen(get_shell_surface(main_surface));
 		break;
 	default:
 		ws = get_current_workspace(shell);
-		weston_surface_restack(es, &ws->layer.surface_list);
+		weston_surface_restack(main_surface, &ws->layer.surface_list);
 		break;
 	}
 }
@@ -2867,16 +2896,17 @@ click_to_activate_binding(struct weston_seat *seat, uint32_t time, uint32_t butt
 	struct weston_seat *ws = (struct weston_seat *) seat;
 	struct desktop_shell *shell = data;
 	struct weston_surface *focus;
-	struct weston_surface *upper;
+	struct weston_surface *main_surface;
 
 	focus = (struct weston_surface *) seat->pointer->focus;
 	if (!focus)
 		return;
 
-	if (is_black_surface(focus, &upper))
-		focus = upper;
+	if (is_black_surface(focus, &main_surface))
+		focus = main_surface;
 
-	if (get_shell_surface_type(focus) == SHELL_SURFACE_NONE)
+	main_surface = weston_surface_get_main_surface(focus);
+	if (get_shell_surface_type(main_surface) == SHELL_SURFACE_NONE)
 		return;
 
 	if (seat->pointer->grab == &seat->pointer->default_grab)

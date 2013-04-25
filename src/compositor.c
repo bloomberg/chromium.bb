@@ -1924,6 +1924,17 @@ weston_surface_to_subsurface(struct weston_surface *surface)
 	return NULL;
 }
 
+WL_EXPORT struct weston_surface *
+weston_surface_get_main_surface(struct weston_surface *surface)
+{
+	struct weston_subsurface *sub;
+
+	while (surface && (sub = weston_surface_to_subsurface(surface)))
+		surface = sub->parent;
+
+	return surface;
+}
+
 static void
 subsurface_set_position(struct wl_client *client,
 			struct wl_resource *resource, int32_t x, int32_t y)
