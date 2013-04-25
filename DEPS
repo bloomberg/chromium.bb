@@ -49,7 +49,7 @@ vars = {
   # and whatever else without interference from each other.
   "openssl_revision": "194187",
 
-  "ios_webkit_trunk": "http://svn.webkit.org/repository/webkit/trunk",
+  "ios_webkit_trunk": "http://src.chromium.org/blink/trunk",
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openssl
   # and whatever else without interference from each other.
