@@ -17,22 +17,6 @@
         android:layout_gravity="fill_horizontal"
         android:layout_columnSpan="4"/>
     <TextView
-        android:id="@+id/email_label"
-        android:layout_marginLeft="@dimen/autofill_steady_margin"
-        android:layout_columnSpan="2"
-        android:textStyle="bold"
-        android:textSize="@dimen/autofill_steady_text_size"/>
-    <Space
-        android:layout_gravity="fill"
-        android:layout_columnSpan="2"/>
-    <Spinner
-        android:layout_margin="@dimen/autofill_steady_margin"
-        android:id="@+id/email_spinner"
-        android:padding="@dimen/autofill_menu_item_padding"
-        android:layout_gravity="fill_horizontal"
-        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
-        android:layout_columnSpan="4"/>
-    <TextView
         android:id="@+id/cc_billing_label"
         android:layout_marginLeft="@dimen/autofill_steady_margin"
         android:layout_columnSpan="2"
@@ -93,6 +77,22 @@
     <Spinner
         android:layout_margin="@dimen/autofill_steady_margin"
         android:id="@+id/address_spinner"
+        android:padding="@dimen/autofill_menu_item_padding"
+        android:layout_gravity="fill_horizontal"
+        android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"
+        android:layout_columnSpan="4"/>
+    <TextView
+        android:id="@+id/email_label"
+        android:layout_marginLeft="@dimen/autofill_steady_margin"
+        android:layout_columnSpan="2"
+        android:textStyle="bold"
+        android:textSize="@dimen/autofill_steady_text_size"/>
+    <Space
+        android:layout_gravity="fill"
+        android:layout_columnSpan="2"/>
+    <Spinner
+        android:layout_margin="@dimen/autofill_steady_margin"
+        android:id="@+id/email_spinner"
         android:padding="@dimen/autofill_menu_item_padding"
         android:layout_gravity="fill_horizontal"
         android:dropDownVerticalOffset="@dimen/autofill_spinner_offset"

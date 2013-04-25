@@ -17,13 +17,14 @@ public class AutofillDialogConstants {
     // Section ID constants. This list should be kept in sync with enum DialogSection in
     // autofill_dialog_types.h
 
-    public static final int SECTION_EMAIL = 0;
     // The Autofill-backed dialog uses separate CC and billing sections.
-    public static final int SECTION_CC = 1;
-    public static final int SECTION_BILLING = 2;
+    public static final int SECTION_CC = 0;
+    public static final int SECTION_BILLING = 1;
     // The wallet-backed dialog uses a combined CC and billing section.
-    public static final int SECTION_CC_BILLING = 3;
-    public static final int SECTION_SHIPPING = 4;
+    public static final int SECTION_CC_BILLING = 2;
+    public static final int SECTION_SHIPPING = 3;
+    // The email section is not shown in the Wallet dialog.
+    public static final int SECTION_EMAIL = 4;
     public static final int NUM_SECTIONS = 5;
 
 
