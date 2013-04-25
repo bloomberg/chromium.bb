@@ -35,6 +35,7 @@ var test = function()
     dumpRequest({"Content-Type": "application/json"}, "{\"a\":1}");
     dumpRequest({"Content-Type": "application/binary"}, "1234\r\n\x30\x30\2\3\4\5\'\"!");  // expected content length: 15
     dumpRequest({"Content-Type": "application/binary"}, "1234\r\n\1\x30\x30\2\3\4\5\'\"!");  // expected content length: 16
+    dumpRequest({"Content-Type": "application/binary"}, "\x7F\x80\x90\xFF\u0009\u0700");
     
     InspectorTest.completeTest();
 }
