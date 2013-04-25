@@ -67,7 +67,6 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'RenderedWebElementTest.testShouldAllowInheritedStylesToBeUsed',
     'RenderedWebElementTest.testShouldHandleNonIntegerPositionAndSize',
     'RenderedWebElementTest.testShouldPickUpStyleOfAnElement',
-    'SessionHandlingTest.callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException',
     'SessionHandlingTest.callingQuitAfterClosingTheLastWindowIsANoOp',
     # Broken because AddWebStorage.java is broken.
     'SessionStorageTest.*',
@@ -158,6 +157,7 @@ _OS_NEGATIVE_FILTER['android'] = [
     'SelectElementTest.shouldAllowOptionsToBeDeselectedByReturnedValue',
     'SelectElementTest.shouldAllowUserToDeselectAllWhenSelectSupportsMultipleSelections',
     'SelectElementTest.shouldAllowUserToDeselectOptionsByVisibleText',
+    'SessionHandlingTest.callingAnyOperationAfterClosingTheLastWindowShouldThrowAnException',
     'TakesScreenshotTest.testCaptureToBase64',
     'TakesScreenshotTest.testSaveScreenshotAsFile',
     'TextHandlingTest.testShouldBeAbleToEnterDatesAfterFillingInOtherValuesFirst',
