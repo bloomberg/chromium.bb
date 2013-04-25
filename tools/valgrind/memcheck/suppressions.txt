@@ -6941,8 +6941,8 @@
    fun:_ZN3WTF9BitVector15resizeOutOfLineEm
    fun:_ZN3WTF9BitVector10ensureSizeEm
    fun:_ZN3WTF9BitVectorC1Em
-   fun:_ZN7WebCore15FeatureObserver10didObserveENS0_7FeatureE
-   fun:_ZN7WebCore15FeatureObserver7observeEPNS_8DocumentENS0_7FeatureE
+   fun:_ZN7WebCore10UseCounter10didObserveENS0_7FeatureE
+   fun:_ZN7WebCore10UseCounter7observeEPNS_8DocumentENS0_7FeatureE
 }
 {
    bug_224747
