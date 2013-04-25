@@ -25,10 +25,6 @@ using ::testing::StrictMock;
 namespace media {
 
 static const int kFakeBufferSize = 16;
-static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
-static const gfx::Size kCodedSize(320, 240);
-static const gfx::Rect kVisibleRect(320, 240);
-static const gfx::Size kNaturalSize(320, 240);
 static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
 static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 
@@ -241,24 +237,25 @@ TEST_F(DecryptingDemuxerStreamTest, Initialize_NormalVideo) {
   EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-  VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, true);
-  InitializeVideoAndExpectStatus(config, PIPELINE_OK);
+  VideoDecoderConfig input_config = TestVideoConfig::NormalEncrypted();
+  InitializeVideoAndExpectStatus(input_config, PIPELINE_OK);
 
   const VideoDecoderConfig& output_config =
       demuxer_stream_->video_decoder_config();
   EXPECT_EQ(DemuxerStream::VIDEO, demuxer_stream_->type());
   EXPECT_FALSE(output_config.is_encrypted());
-  EXPECT_EQ(kCodecVP8, output_config.codec());
-  EXPECT_EQ(kVideoFormat, output_config.format());
-  EXPECT_EQ(VIDEO_CODEC_PROFILE_UNKNOWN, output_config.profile());
-  EXPECT_EQ(kCodedSize, output_config.coded_size());
-  EXPECT_EQ(kVisibleRect, output_config.visible_rect());
-  EXPECT_EQ(kNaturalSize, output_config.natural_size());
-  EXPECT_FALSE(output_config.extra_data());
-  EXPECT_EQ(0u, output_config.extra_data_size());
+  EXPECT_EQ(input_config.codec(), output_config.codec());
+  EXPECT_EQ(input_config.format(), output_config.format());
+  EXPECT_EQ(input_config.profile(), output_config.profile());
+  EXPECT_EQ(input_config.coded_size(), output_config.coded_size());
+  EXPECT_EQ(input_config.visible_rect(), output_config.visible_rect());
+  EXPECT_EQ(input_config.natural_size(), output_config.natural_size());
+  ASSERT_EQ(input_config.extra_data_size(), output_config.extra_data_size());
+  if (input_config.extra_data_size() > 0) {
+    EXPECT_FALSE(output_config.extra_data());
+    EXPECT_EQ(0, memcmp(output_config.extra_data(), input_config.extra_data(),
+                        input_config.extra_data_size()));
+  }
 }
 
 // Test normal read case.

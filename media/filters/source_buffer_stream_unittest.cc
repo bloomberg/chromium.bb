@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "media/base/data_buffer.h"
 #include "media/base/media_log.h"
+#include "media/base/test_helpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -21,14 +22,11 @@ static const int kDefaultKeyframesPerSecond = 6;
 static const uint8 kDataA = 0x11;
 static const uint8 kDataB = 0x33;
 static const int kDataSize = 1;
-static const gfx::Size kCodedSize(320, 240);
 
 class SourceBufferStreamTest : public testing::Test {
  protected:
   SourceBufferStreamTest() {
-    config_.Initialize(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                       VideoFrame::YV12, kCodedSize, gfx::Rect(kCodedSize),
-                       kCodedSize, NULL, 0, false, false);
+    config_ = TestVideoConfig::Normal();
     stream_.reset(new SourceBufferStream(config_, LogCB()));
     SetStreamInfo(kDefaultFramesPerSecond, kDefaultKeyframesPerSecond);
   }
@@ -2471,10 +2469,7 @@ TEST_F(SourceBufferStreamTest, GarbageCollection_Performance) {
 }
 
 TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
-  gfx::Size kNewCodedSize(kCodedSize.width() * 2, kCodedSize.height() * 2);
-  VideoDecoderConfig new_config(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, VideoFrame::YV12, kNewCodedSize,
-      gfx::Rect(kNewCodedSize), kNewCodedSize, NULL, 0, false);
+  VideoDecoderConfig new_config = TestVideoConfig::Large();
   ASSERT_FALSE(new_config.Matches(config_));
 
   Seek(0);
@@ -2518,10 +2513,7 @@ TEST_F(SourceBufferStreamTest, ConfigChange_Basic) {
 
 TEST_F(SourceBufferStreamTest, ConfigChange_Seek) {
   scoped_refptr<StreamParserBuffer> buffer;
-  gfx::Size kNewCodedSize(kCodedSize.width() * 2, kCodedSize.height() * 2);
-  VideoDecoderConfig new_config(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, VideoFrame::YV12, kNewCodedSize,
-      gfx::Rect(kNewCodedSize), kNewCodedSize, NULL, 0, false);
+  VideoDecoderConfig new_config = TestVideoConfig::Large();
 
   Seek(0);
   NewSegmentAppend(0, 5, &kDataA);

@@ -22,11 +22,6 @@ using ::testing::StrictMock;
 
 namespace media {
 
-static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
-static const gfx::Size kCodedSize(320, 240);
-static const gfx::Rect kVisibleRect(320, 240);
-static const gfx::Size kNaturalSize(320, 240);
-
 class VideoDecoderSelectorTest : public ::testing::Test {
  public:
   enum DecryptorCapability {
@@ -71,17 +66,12 @@ class VideoDecoderSelectorTest : public ::testing::Test {
   }
 
   void UseClearStream() {
-    VideoDecoderConfig clear_video_config(
-        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-    demuxer_stream_->set_video_decoder_config(clear_video_config);
+    demuxer_stream_->set_video_decoder_config(TestVideoConfig::Normal());
   }
 
   void UseEncryptedStream() {
-    VideoDecoderConfig encrypted_video_config(
-        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, true);
-    demuxer_stream_->set_video_decoder_config(encrypted_video_config);
+    demuxer_stream_->set_video_decoder_config(
+        TestVideoConfig::NormalEncrypted());
   }
 
   void InitializeDecoderSelector(DecryptorCapability decryptor_capability,

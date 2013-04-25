@@ -32,10 +32,6 @@ namespace media {
 
 static const int kFrameDurationInMs = 10;
 static const int kVideoDurationInMs = kFrameDurationInMs * 100;
-static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
-static const gfx::Size kCodedSize(16u, 16u);
-static const gfx::Rect kVisibleRect(16u, 16u);
-static const gfx::Size kNaturalSize(16u, 16u);
 
 class VideoRendererBaseTest : public ::testing::Test {
  public:
@@ -53,10 +49,7 @@ class VideoRendererBaseTest : public ::testing::Test {
         base::Bind(&VideoRendererBaseTest::OnSetOpaque, base::Unretained(this)),
         true));
 
-    VideoDecoderConfig video_config(
-        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-    demuxer_stream_.set_video_decoder_config(video_config);
+    demuxer_stream_.set_video_decoder_config(TestVideoConfig::Normal());
 
     // We expect these to be called but we don't care how/when.
     EXPECT_CALL(*decoder_, Stop(_))
@@ -104,7 +97,8 @@ class VideoRendererBaseTest : public ::testing::Test {
     InitializeRenderer(PIPELINE_OK);
 
     // We expect the video size to be set.
-    EXPECT_CALL(*this, OnNaturalSizeChanged(kNaturalSize));
+    EXPECT_CALL(*this,
+                OnNaturalSizeChanged(TestVideoConfig::NormalCodedSize()));
 
     // Start prerolling.
     QueuePrerollFrames(0);
@@ -184,8 +178,9 @@ class VideoRendererBaseTest : public ::testing::Test {
     DCHECK_LT(next_frame_timestamp_.InMicroseconds(),
               duration_.InMicroseconds());
 
+    gfx::Size natural_size = TestVideoConfig::NormalCodedSize();
     scoped_refptr<VideoFrame> frame = VideoFrame::CreateFrame(
-        VideoFrame::RGB32, kNaturalSize, gfx::Rect(kNaturalSize), kNaturalSize,
+        VideoFrame::RGB32, natural_size, gfx::Rect(natural_size), natural_size,
         next_frame_timestamp_);
     decode_results_.push_back(std::make_pair(
         VideoDecoder::kOk, frame));

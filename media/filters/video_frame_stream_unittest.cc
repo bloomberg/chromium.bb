@@ -22,11 +22,6 @@ using ::testing::StrictMock;
 
 namespace media {
 
-static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
-static const gfx::Size kCodedSize(320, 240);
-static const gfx::Rect kVisibleRect(320, 240);
-static const gfx::Size kNaturalSize(320, 240);
-
 class VideoFrameStreamTest : public testing::TestWithParam<bool> {
  public:
   VideoFrameStreamTest()
@@ -44,10 +39,8 @@ class VideoFrameStreamTest : public testing::TestWithParam<bool> {
         base::Bind(&VideoFrameStreamTest::SetDecryptorReadyCallback,
                    base::Unretained(this))));
 
-    VideoDecoderConfig video_config(
-        kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-        kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, GetParam());
-    demuxer_stream_->set_video_decoder_config(video_config);
+    demuxer_stream_->set_video_decoder_config(GetParam() ?
+        TestVideoConfig::NormalEncrypted() : TestVideoConfig::Normal());
 
     EXPECT_CALL(*demuxer_stream_, Read(_))
         .WillRepeatedly(RunCallback<0>(DemuxerStream::kOk,

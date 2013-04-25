@@ -37,10 +37,6 @@ static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
 static const gfx::Size kCodedSize(320, 240);
 static const gfx::Rect kVisibleRect(320, 240);
 static const gfx::Size kNaturalSize(320, 240);
-static const VideoFrame::Format kInitVideoFormat = VideoFrame::RGB32;
-static const gfx::Size kInitCodedSize(100, 100);
-static const gfx::Rect kInitVisibleRect(100, 100);
-static const gfx::Size kInitNaturalSize(100, 100);
 
 ACTION_P(ReturnBuffer, buffer) {
   arg0.Run(buffer ? DemuxerStream::kOk : DemuxerStream::kAborted, buffer);
@@ -67,10 +63,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   }
 
   void Initialize() {
-    config_.Initialize(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-                       kCodedSize, kVisibleRect, kNaturalSize,
-                       NULL, 0, false, true);
-    InitializeWithConfig(config_);
+    InitializeWithConfig(TestVideoConfig::Normal());
   }
 
   void InitializeWithConfigAndStatus(const VideoDecoderConfig& config,
@@ -88,11 +81,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
   }
 
   void Reinitialize() {
-    gfx::Size new_coded_size(640, 480);
-    VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                              kVideoFormat, new_coded_size, kVisibleRect,
-                              kNaturalSize, NULL, 0, false);
-    InitializeWithConfig(config);
+    InitializeWithConfig(TestVideoConfig::Large());
   }
 
   void Reset() {
@@ -200,7 +189,6 @@ class FFmpegVideoDecoderTest : public testing::Test {
   scoped_ptr<FFmpegVideoDecoder> decoder_;
   scoped_ptr<StrictMock<MockDemuxerStream> > demuxer_;
   MockStatisticsCB statistics_cb_;
-  VideoDecoderConfig config_;
 
   VideoDecoder::ReadCB read_cb_;
 
@@ -220,11 +208,8 @@ TEST_F(FFmpegVideoDecoderTest, Initialize_Normal) {
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedDecoder) {
   // Test avcodec_find_decoder() returning NULL.
-  VideoDecoderConfig config(kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigAndStatus(TestVideoConfig::Invalid(),
+                                DECODER_ERROR_NOT_SUPPORTED);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Initialize_UnsupportedPixelFormat) {
@@ -309,12 +294,8 @@ TEST_F(FFmpegVideoDecoderTest, Reinitialize_Normal) {
 
 TEST_F(FFmpegVideoDecoderTest, Reinitialize_Failure) {
   Initialize();
-
-  VideoDecoderConfig config(kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, false);
-  InitializeWithConfigAndStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeWithConfigAndStatus(TestVideoConfig::Invalid(),
+                                DECODER_ERROR_NOT_SUPPORTED);
 }
 
 TEST_F(FFmpegVideoDecoderTest, Reinitialize_AfterDecodeFrame) {
@@ -567,18 +548,9 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_AbortedDuringReset) {
 
 // Test config change on the demuxer stream.
 TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChange) {
-  // TODO(xhwang): Ideally we should use a codec other than VP8 in the init
-  // config. Theora is the only codec that's supported on all platforms but it
-  // needs extra data to be initialized properly.
-  VideoDecoderConfig init_config(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kInitVideoFormat,
-      kInitCodedSize, kInitVisibleRect, kInitNaturalSize, NULL, 0, false);
-  InitializeWithConfig(init_config);
+  InitializeWithConfig(TestVideoConfig::Large());
 
-  VideoDecoderConfig new_config(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-      kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  demuxer_->set_video_decoder_config(new_config);
+  demuxer_->set_video_decoder_config(TestVideoConfig::Normal());
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()))
@@ -601,10 +573,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChange) {
 TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailed) {
   Initialize();
 
-  VideoDecoderConfig invalid_config(
-      kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, VideoFrame::INVALID,
-      kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  demuxer_->set_video_decoder_config(invalid_config);
+  demuxer_->set_video_decoder_config(TestVideoConfig::Invalid());
   EXPECT_CALL(*demuxer_, Read(_))
       .WillOnce(RunCallback<0>(DemuxerStream::kConfigChanged,
                                scoped_refptr<DecoderBuffer>()));
@@ -624,13 +593,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailed) {
 
 // Test config change on the demuxer stream during pending reset.
 TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeDuringReset) {
-  // TODO(xhwang): Ideally we should use a codec other than VP8 in the init
-  // config. Theora is the only codec that's supported on all platforms but it
-  // needs extra data to be initialized properly.
-  VideoDecoderConfig init_config(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kInitVideoFormat,
-      kInitCodedSize, kInitVisibleRect, kInitNaturalSize, NULL, 0, false);
-  InitializeWithConfig(init_config);
+  InitializeWithConfig(TestVideoConfig::Large());
 
   // Request a read on the decoder and ensure the demuxer has been called.
   DemuxerStream::ReadCB read_cb;
@@ -642,9 +605,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeDuringReset) {
   // Reset while there is still an outstanding read on the demuxer.
   Reset();
 
-  VideoDecoderConfig new_config(
-      kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN, kVideoFormat,
-      kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
+  VideoDecoderConfig new_config = TestVideoConfig::Normal();
   demuxer_->set_video_decoder_config(new_config);
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kOk, IsNull()));
 
@@ -685,10 +646,7 @@ TEST_F(FFmpegVideoDecoderTest, DemuxerRead_ConfigChangeFailedDuringReset) {
   // Reset while there is still an outstanding read on the demuxer.
   Reset();
 
-  VideoDecoderConfig invalid_config(
-      kUnknownVideoCodec, VIDEO_CODEC_PROFILE_UNKNOWN, VideoFrame::INVALID,
-      kCodedSize, kVisibleRect, kNaturalSize, NULL, 0, false);
-  demuxer_->set_video_decoder_config(invalid_config);
+  demuxer_->set_video_decoder_config(TestVideoConfig::Invalid());
   EXPECT_CALL(*this, FrameReady(VideoDecoder::kDecodeError, IsNull()));
 
   // Signal a config change.

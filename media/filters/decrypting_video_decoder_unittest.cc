@@ -26,10 +26,6 @@ using ::testing::StrictMock;
 
 namespace media {
 
-static const VideoFrame::Format kVideoFormat = VideoFrame::YV12;
-static const gfx::Size kCodedSize(320, 240);
-static const gfx::Rect kVisibleRect(320, 240);
-static const gfx::Size kNaturalSize(320, 240);
 static const uint8 kFakeKeyId[] = { 0x4b, 0x65, 0x79, 0x20, 0x49, 0x44 };
 static const uint8 kFakeIv[DecryptConfig::kDecryptionKeySize] = { 0 };
 
@@ -80,7 +76,8 @@ class DecryptingVideoDecoderTest : public testing::Test {
         decryptor_(new StrictMock<MockDecryptor>()),
         demuxer_(new StrictMock<MockDemuxerStream>(DemuxerStream::VIDEO)),
         encrypted_buffer_(CreateFakeEncryptedBuffer()),
-        decoded_video_frame_(VideoFrame::CreateBlackFrame(kCodedSize)),
+        decoded_video_frame_(VideoFrame::CreateBlackFrame(
+            TestVideoConfig::NormalCodedSize())),
         null_video_frame_(scoped_refptr<VideoFrame>()),
         end_of_stream_video_frame_(VideoFrame::CreateEmptyFrame()) {
   }
@@ -108,11 +105,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
     EXPECT_CALL(*decryptor_, RegisterNewKeyCB(Decryptor::kVideo, _))
         .WillOnce(SaveArg<1>(&key_added_cb_));
 
-    VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                              kVideoFormat,
-                              kCodedSize, kVisibleRect, kNaturalSize,
-                              NULL, 0, true);
-    InitializeAndExpectStatus(config, PIPELINE_OK);
+    InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(), PIPELINE_OK);
   }
 
   void ReadAndExpectFrameReadyWith(
@@ -260,22 +253,13 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_Normal) {
 
 // Ensure that DecryptingVideoDecoder only accepts encrypted video.
 TEST_F(DecryptingVideoDecoderTest, Initialize_UnencryptedVideoConfig) {
-  VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, false);
-
-  InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectStatus(TestVideoConfig::Normal(),
+                            DECODER_ERROR_NOT_SUPPORTED);
 }
 
 // Ensure decoder handles invalid video configs without crashing.
 TEST_F(DecryptingVideoDecoderTest, Initialize_InvalidVideoConfig) {
-  VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            VideoFrame::INVALID,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, true);
-
-  InitializeAndExpectStatus(config, PIPELINE_ERROR_DECODE);
+  InitializeAndExpectStatus(TestVideoConfig::Invalid(), PIPELINE_ERROR_DECODE);
 }
 
 // Ensure decoder handles unsupported video configs without crashing.
@@ -283,12 +267,8 @@ TEST_F(DecryptingVideoDecoderTest, Initialize_UnsupportedVideoConfig) {
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(RunCallback<1>(false));
 
-  VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, true);
-
-  InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
+                            DECODER_ERROR_NOT_SUPPORTED);
 }
 
 // Test normal decrypt and decode case.
@@ -572,12 +552,7 @@ TEST_F(DecryptingVideoDecoderTest, Reset_AfterReset) {
 
 // Test stopping when the decoder is in kDecryptorRequested state.
 TEST_F(DecryptingVideoDecoderTest, Stop_DuringDecryptorRequested) {
-  VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, true);
-  demuxer_->set_video_decoder_config(config);
-
+  demuxer_->set_video_decoder_config(TestVideoConfig::NormalEncrypted());
   DecryptorReadyCB decryptor_ready_cb;
   EXPECT_CALL(*this, RequestDecryptorNotification(_))
       .WillOnce(SaveArg<0>(&decryptor_ready_cb));
@@ -602,11 +577,8 @@ TEST_F(DecryptingVideoDecoderTest, Stop_DuringPendingDecoderInit) {
   EXPECT_CALL(*decryptor_, InitializeVideoDecoder(_, _))
       .WillOnce(SaveArg<1>(&pending_init_cb_));
 
-  VideoDecoderConfig config(kCodecVP8, VIDEO_CODEC_PROFILE_UNKNOWN,
-                            kVideoFormat,
-                            kCodedSize, kVisibleRect, kNaturalSize,
-                            NULL, 0, true);
-  InitializeAndExpectStatus(config, DECODER_ERROR_NOT_SUPPORTED);
+  InitializeAndExpectStatus(TestVideoConfig::NormalEncrypted(),
+                            DECODER_ERROR_NOT_SUPPORTED);
   EXPECT_FALSE(pending_init_cb_.is_null());
 
   Stop();
