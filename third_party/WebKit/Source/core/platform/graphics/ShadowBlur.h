@@ -31,15 +31,11 @@
 
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
-#include "core/platform/graphics/FloatRect.h"
-#include "core/platform/graphics/RoundedRect.h"
+#include "core/platform/graphics/FloatSize.h"
+
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {
-
-class AffineTransform;
-class GraphicsContext;
-class ImageBuffer;
 
 class ShadowBlur {
     WTF_MAKE_NONCOPYABLE(ShadowBlur);
@@ -51,53 +47,11 @@ public:
     };
 
     ShadowBlur(const FloatSize& radius, const FloatSize& offset, const Color&, ColorSpace);
-    ShadowBlur();
-
-    void setShadowValues(const FloatSize&, const FloatSize& , const Color&, ColorSpace, bool ignoreTransforms = false);
-
-    void setShadowsIgnoreTransforms(bool ignoreTransforms) { m_shadowsIgnoreTransforms = ignoreTransforms; }
-    bool shadowsIgnoreTransforms() const { return m_shadowsIgnoreTransforms; }
-
-    GraphicsContext* beginShadowLayer(GraphicsContext*, const FloatRect& layerArea);
-    void endShadowLayer(GraphicsContext*);
-
-    void drawRectShadow(GraphicsContext*, const FloatRect&, const RoundedRect::Radii&);
-    void drawInsetShadow(GraphicsContext*, const FloatRect&, const FloatRect& holeRect, const RoundedRect::Radii& holeRadii);
 
     void blurLayerImage(unsigned char*, const IntSize&, int stride);
 
-    void clear();
-
-    ShadowType type() const { return m_type; }
-
 private:
     void updateShadowBlurValues();
-
-    void drawShadowBuffer(GraphicsContext*);
-
-    void adjustBlurRadius(GraphicsContext*);
-    
-    enum ShadowDirection {
-        OuterShadow,
-        InnerShadow
-    };
-    
-    IntRect calculateLayerBoundingRect(GraphicsContext*, const FloatRect& layerArea, const IntRect& clipRect);
-    IntSize templateSize(const IntSize& blurredEdgeSize, const RoundedRect::Radii&) const;
-
-    void drawRectShadowWithoutTiling(GraphicsContext*, const FloatRect&, const RoundedRect::Radii&, const IntRect& layerRect);
-    void drawRectShadowWithTiling(GraphicsContext*, const FloatRect&, const RoundedRect::Radii&, const IntSize& shadowTemplateSize, const IntSize& blurredEdgeSize);
-
-    void drawInsetShadowWithoutTiling(GraphicsContext*, const FloatRect&, const FloatRect& holeRect, const RoundedRect::Radii&, const IntRect& layerRect);
-    void drawInsetShadowWithTiling(GraphicsContext*, const FloatRect&, const FloatRect& holeRect, const RoundedRect::Radii&, const IntSize& shadowTemplateSize, const IntSize& blurredEdgeSize);
-    
-    void drawLayerPieces(GraphicsContext*, const FloatRect& shadowBounds, const RoundedRect::Radii&, const IntSize& roundedRadius, const IntSize& templateSize, ShadowDirection);
-    
-    void blurShadowBuffer(const IntSize& templateSize);
-    void blurAndColorShadowBuffer(const IntSize& templateSize);
-    
-    IntSize blurredEdgeSize() const;
-    
     
     ShadowType m_type;
 
@@ -105,13 +59,6 @@ private:
     ColorSpace m_colorSpace;
     FloatSize m_blurRadius;
     FloatSize m_offset;
-
-    ImageBuffer* m_layerImage; // Buffer to where the temporary shadow will be drawn to.
-
-    FloatRect m_sourceRect; // Sub-rect of m_layerImage that contains the shadow pixels.
-    FloatPoint m_layerOrigin; // Top-left corner of the (possibly clipped) bounding rect to draw the shadow to.
-    FloatSize m_layerSize; // Size of m_layerImage pixels that need blurring.
-    FloatSize m_layerContextTranslation; // Translation to apply to m_layerContext for the shadow to be correctly clipped.
 
     bool m_shadowsIgnoreTransforms;
 };

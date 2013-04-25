@@ -1335,12 +1335,6 @@ void GraphicsContext::clipToImageBuffer(ImageBuffer* buffer, const FloatRect& re
     buffer->clip(this, rect);
 }
 
-IntRect GraphicsContext::clipBounds() const
-{
-    ASSERT_NOT_REACHED();
-    return IntRect();
-}
-
 void GraphicsContext::canvasClip(const Path& pathToClip, WindRule clipRule)
 {
     if (paintingDisabled())
