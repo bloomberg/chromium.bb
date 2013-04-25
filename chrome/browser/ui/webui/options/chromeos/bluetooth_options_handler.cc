@@ -304,7 +304,7 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
       VLOG(1) << "Connect: " << address;
       device->Connect(
           delegate,
-          base::Bind(&BluetoothOptionsHandler::DismissDisplayOrConfirm,
+          base::Bind(&BluetoothOptionsHandler::Connected,
                      weak_ptr_factory_.GetWeakPtr()),
           base::Bind(&BluetoothOptionsHandler::ConnectError,
                      weak_ptr_factory_.GetWeakPtr(),
@@ -339,6 +339,15 @@ void BluetoothOptionsHandler::UpdateDeviceCallback(
   } else {
     LOG(WARNING) << "Unknown updateBluetoothDevice command: " << command;
   }
+}
+
+void BluetoothOptionsHandler::Connected() {
+  // Invalidate the local cache.
+  pairing_device_address_.clear();
+  pairing_device_entered_ = kInvalidEntered;
+
+  web_ui()->CallJavascriptFunction(
+      "options.BluetoothPairing.dismissDialog");
 }
 
 void BluetoothOptionsHandler::ConnectError(
@@ -502,12 +511,18 @@ void BluetoothOptionsHandler::ConfirmPasskey(device::BluetoothDevice* device,
 }
 
 void BluetoothOptionsHandler::DismissDisplayOrConfirm() {
-  // Invalidate the local cache.
-  pairing_device_address_.clear();
-  pairing_device_entered_ = kInvalidEntered;
+  DCHECK(adapter_);
 
-  web_ui()->CallJavascriptFunction(
-      "options.BluetoothPairing.dismissDialog");
+  // We can receive this delegate call when we haven't been asked to display or
+  // confirm anything; we can determine that by checking whether we've saved
+  // pairing information for the device. This is also a handy way to get the
+  // BluetoothDevice object we need.
+  if (!pairing_device_address_.empty()) {
+    device::BluetoothDevice* device =
+        adapter_->GetDevice(pairing_device_address_);
+    DCHECK(device);
+    DeviceConnecting(device);
+  }
 }
 
 void BluetoothOptionsHandler::ReportError(

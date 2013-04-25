@@ -166,6 +166,10 @@ class BluetoothOptionsHandler
   // remove the adapter from discovery mode.
   void StopDiscoveryError();
 
+  // Called by device::BluetoothDevice on a successful pairing and connection
+  // to a device.
+  void Connected();
+
   // Called by device::BluetoothDevice in response to a failure to
   // connect to the device with bluetooth address |address| due to an error
   // encoded in |error_code|.
