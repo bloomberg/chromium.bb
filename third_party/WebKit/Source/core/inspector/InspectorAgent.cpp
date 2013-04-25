@@ -32,7 +32,6 @@
 #include "InspectorAgent.h"
 
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "Frame.h"
 #include "InjectedScriptHost.h"
 #include "InjectedScriptManager.h"
@@ -48,6 +47,7 @@
 #include "ScriptObject.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/PassRefPtr.h>

@@ -33,16 +33,16 @@
 #define FrameLoader_h
 
 #include "CachePolicy.h"
-#include "FrameLoaderStateMachine.h"
-#include "FrameLoaderTypes.h"
-#include "HistoryController.h"
-#include "IconController.h"
 #include "IconURL.h"
 #include "LayoutMilestones.h"
-#include "MixedContentChecker.h"
-#include "ResourceLoadNotifier.h"
 #include "SecurityContext.h"
-#include "SubframeLoader.h"
+#include "core/loader/FrameLoaderStateMachine.h"
+#include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/HistoryController.h"
+#include "core/loader/IconController.h"
+#include "core/loader/MixedContentChecker.h"
+#include "core/loader/ResourceLoadNotifier.h"
+#include "core/loader/SubframeLoader.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <wtf/Forward.h>

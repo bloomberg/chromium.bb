@@ -27,7 +27,7 @@
 #include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "TextResourceDecoder.h"
+#include "core/loader/TextResourceDecoder.h"
 
 namespace WebCore {
 

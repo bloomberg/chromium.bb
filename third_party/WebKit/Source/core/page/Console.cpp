@@ -36,7 +36,6 @@
 #include "ConsoleTypes.h"
 #include "Document.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "FrameTree.h"
 #include "InspectorConsoleInstrumentation.h"
 #include "InspectorController.h"
@@ -52,6 +51,7 @@
 #include "ScriptValue.h"
 #include "ScriptableDocumentParser.h"
 #include "Settings.h"
+#include "core/loader/FrameLoader.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/UnusedParam.h>

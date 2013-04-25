@@ -26,13 +26,10 @@
 #include "ImageDocument.h"
 
 #include "CachedImage.h"
-#include "DocumentLoader.h"
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "FrameView.h"
 #include "HTMLHtmlElement.h"
 #include "HTMLImageElement.h"
@@ -41,6 +38,9 @@
 #include "Page.h"
 #include "RawDataDocumentParser.h"
 #include "Settings.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/NotImplemented.h"
 

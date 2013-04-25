@@ -29,21 +29,21 @@
  */
 
 #include "config.h"
-#include "HistoryController.h"
+#include "core/loader/HistoryController.h"
 
 #include "BackForwardController.h"
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
-#include "FrameLoaderStateMachine.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HistoryItem.h"
 #include "Page.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/loader/FrameLoaderStateMachine.h"
 #include "core/platform/Logging.h"
 #include <wtf/text/CString.h>
 

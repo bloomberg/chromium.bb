@@ -29,9 +29,9 @@
 #define Frame_h
 
 #include "AdjustViewSizeOrNot.h"
-#include "FrameLoader.h"
 #include "FrameTree.h"
-#include "NavigationScheduler.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/NavigationScheduler.h"
 #include "core/platform/DragImage.h"
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/graphics/IntRect.h"

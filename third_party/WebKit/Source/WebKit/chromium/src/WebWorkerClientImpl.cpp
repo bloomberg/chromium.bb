@@ -36,7 +36,6 @@
 #include "Document.h"
 #include "ErrorEvent.h"
 #include "Frame.h"
-#include "FrameLoaderClient.h"
 #include "GroupSettings.h"
 #include "InspectorInstrumentation.h"
 #include "MessageEvent.h"
@@ -48,8 +47,9 @@
 #include "ScriptExecutionContext.h"
 #include "Worker.h"
 #include "WorkerContext.h"
-#include "WorkerScriptController.h"
 #include "WorkerMessagingProxy.h"
+#include "WorkerScriptController.h"
+#include "core/loader/FrameLoaderClient.h"
 #include <wtf/Threading.h>
 
 #include "FrameLoaderClientImpl.h"

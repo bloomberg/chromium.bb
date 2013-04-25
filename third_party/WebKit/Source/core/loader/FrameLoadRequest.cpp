@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "FrameLoadRequest.h"
+#include "core/loader/FrameLoadRequest.h"
 
 #include "Document.h"
 #include "Frame.h"

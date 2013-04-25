@@ -30,11 +30,11 @@
 #include "DocumentStyleSheetCollection.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "XSLStyleSheet.h"
-#include "XMLDocumentParser.h" // for parseAttributes()
 #include "MediaList.h"
 #include "StyleSheetContents.h"
+#include "XMLDocumentParser.h" // for parseAttributes()
+#include "XSLStyleSheet.h"
+#include "core/loader/FrameLoader.h"
 
 namespace WebCore {
 

@@ -28,14 +28,14 @@
 
 #include "ApplicationCacheHost.h"
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "Event.h"
 #include "EventException.h"
 #include "EventListener.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameLoader.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
 
 namespace WebCore {
 

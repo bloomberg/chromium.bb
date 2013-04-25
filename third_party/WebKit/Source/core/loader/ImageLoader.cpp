@@ -20,12 +20,11 @@
  */
 
 #include "config.h"
-#include "ImageLoader.h"
+#include "core/loader/ImageLoader.h"
 
 #include "CachedImage.h"
 #include "CachedResourceLoader.h"
 #include "CachedResourceRequest.h"
-#include "CrossOriginAccessControl.h"
 #include "Document.h"
 #include "Element.h"
 #include "Event.h"
@@ -37,6 +36,7 @@
 #include "ScriptCallStack.h"
 #include "SecurityOrigin.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/CrossOriginAccessControl.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderVideo.h"
 

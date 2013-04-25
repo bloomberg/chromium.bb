@@ -29,7 +29,6 @@
 #include "EventNames.h"
 #include "FocusController.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
@@ -37,6 +36,7 @@
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
 #include "core/rendering/RenderPart.h"
 

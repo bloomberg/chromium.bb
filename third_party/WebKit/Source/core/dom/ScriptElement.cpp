@@ -28,12 +28,10 @@
 #include "CachedResourceRequest.h"
 #include "CachedScript.h"
 #include "ContentSecurityPolicy.h"
-#include "CrossOriginAccessControl.h"
 #include "Document.h"
 #include "DocumentParser.h"
 #include "Event.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "HTMLScriptElement.h"
@@ -48,6 +46,8 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "Text.h"
+#include "core/loader/CrossOriginAccessControl.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

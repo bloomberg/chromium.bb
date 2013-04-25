@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "CachedMetadata.h"
+#include "core/loader/CachedMetadata.h"
 
 #include "WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationVector.h>

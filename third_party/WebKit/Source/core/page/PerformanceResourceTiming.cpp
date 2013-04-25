@@ -33,9 +33,9 @@
 #include "PerformanceResourceTiming.h"
 
 #include "Document.h"
-#include "DocumentLoadTiming.h"
-#include "DocumentLoader.h"
 #include "SecurityOrigin.h"
+#include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

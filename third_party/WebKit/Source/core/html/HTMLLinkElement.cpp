@@ -35,8 +35,6 @@
 #include "Event.h"
 #include "EventSender.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
@@ -49,6 +47,8 @@
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "StyleSheetContents.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

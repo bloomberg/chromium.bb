@@ -33,8 +33,8 @@
 #include "Document.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "SecurityOrigin.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
 
 namespace WebCore {

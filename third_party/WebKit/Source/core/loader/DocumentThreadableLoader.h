@@ -33,8 +33,8 @@
 
 #include "CachedRawResource.h"
 #include "CachedResourceHandle.h"
-#include "FrameLoaderTypes.h"
-#include "ThreadableLoader.h"
+#include "core/loader/FrameLoaderTypes.h"
+#include "core/loader/ThreadableLoader.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>

@@ -27,10 +27,10 @@
  */
 
 #include "config.h"
-#include "NavigationAction.h"
+#include "core/loader/NavigationAction.h"
 
 #include "Event.h"
-#include "FrameLoader.h"
+#include "core/loader/FrameLoader.h"
 
 namespace WebCore {
 

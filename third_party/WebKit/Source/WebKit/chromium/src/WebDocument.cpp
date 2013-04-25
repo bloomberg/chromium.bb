@@ -33,7 +33,6 @@
 
 #include "CSSParserMode.h"
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "DocumentStyleSheetCollection.h"
 #include "DocumentType.h"
 #include "Element.h"
@@ -55,6 +54,7 @@
 #include "WebNodeCollection.h"
 #include "WebNodeList.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>

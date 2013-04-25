@@ -32,10 +32,10 @@
 #include "CrossThreadTask.h"
 #include "ScriptExecutionContext.h"
 #include "SecurityOrigin.h"
-#include "TextResourceDecoder.h"
 #include "WorkerContext.h"
 #include "WorkerScriptLoaderClient.h"
-#include "WorkerThreadableLoader.h"
+#include "core/loader/TextResourceDecoder.h"
+#include "core/loader/WorkerThreadableLoader.h"
 #include "core/platform/network/ResourceResponse.h"
 
 #include <wtf/OwnPtr.h>

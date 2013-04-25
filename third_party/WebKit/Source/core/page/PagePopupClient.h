@@ -33,7 +33,7 @@
 
 #if ENABLE(PAGE_POPUP)
 
-#include "DocumentWriter.h"
+#include "core/loader/DocumentWriter.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/text/WTFString.h>
 

@@ -27,7 +27,7 @@
 
 #include "Document.h"
 #include "Frame.h"
-#include "FrameLoader.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/text/TextEncoding.h"
 
 #include <limits>

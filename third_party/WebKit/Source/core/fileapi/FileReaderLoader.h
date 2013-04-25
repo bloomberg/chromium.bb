@@ -32,7 +32,7 @@
 #define FileReaderLoader_h
 
 #include "FileError.h"
-#include "ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/KURL.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/Forward.h>

@@ -37,13 +37,13 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "InspectorInstrumentation.h"
 #include "MessageEvent.h"
 #include "UseCounter.h"
 #include "WorkerContextProxy.h"
 #include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/MainThread.h>
 

@@ -31,7 +31,7 @@
 
 #include "CachedResource.h"
 #include "DOMImplementation.h"
-#include "TextResourceDecoder.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/MemoryInstrumentationHashMap.h>

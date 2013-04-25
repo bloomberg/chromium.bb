@@ -32,11 +32,11 @@
 #include "PerformanceTiming.h"
 
 #include "Document.h"
-#include "DocumentLoadTiming.h"
-#include "DocumentLoader.h"
 #include "DocumentTiming.h"
 #include "Frame.h"
-#include "FrameLoader.h"
+#include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/network/ResourceLoadTiming.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>

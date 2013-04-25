@@ -36,9 +36,9 @@
 #include "BlobURL.h"
 #include "FileReaderLoaderClient.h"
 #include "ScriptExecutionContext.h"
-#include "TextResourceDecoder.h"
 #include "ThreadableBlobRegistry.h"
-#include "ThreadableLoader.h"
+#include "core/loader/TextResourceDecoder.h"
+#include "core/loader/ThreadableLoader.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/ArrayBuffer.h>

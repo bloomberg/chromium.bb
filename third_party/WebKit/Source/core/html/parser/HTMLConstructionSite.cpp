@@ -33,8 +33,6 @@
 #include "DocumentType.h"
 #include "Element.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "HTMLDocument.h"
 #include "HTMLElementFactory.h"
 #include "HTMLFormElement.h"
@@ -49,6 +47,8 @@
 #include "HTMLTokenizer.h"
 #include "Settings.h"
 #include "Text.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/NotImplemented.h"
 #include <wtf/UnusedParam.h>

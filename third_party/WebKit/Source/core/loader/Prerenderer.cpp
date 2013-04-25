@@ -30,14 +30,14 @@
  */
 
 #include "config.h"
-#include "Prerenderer.h"
+#include "core/loader/Prerenderer.h"
 
 #include "Document.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "PrerendererClient.h"
 #include "SecurityPolicy.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/PrerendererClient.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/ReferrerPolicy.h"
 

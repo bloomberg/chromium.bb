@@ -26,13 +26,13 @@
  */
 
 #include "config.h"
-#include "EmptyClients.h"
+#include "core/loader/EmptyClients.h"
 
-#include "DocumentLoader.h"
-#include "FormState.h"
 #include "Frame.h"
-#include "FrameNetworkingContext.h"
 #include "HTMLFormElement.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FormState.h"
+#include "core/loader/FrameNetworkingContext.h"
 #include "core/platform/DateTimeChooser.h"
 #include "core/platform/FileChooser.h"
 

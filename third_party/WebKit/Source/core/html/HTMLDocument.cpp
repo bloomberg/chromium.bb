@@ -54,13 +54,10 @@
 #include "HTMLDocument.h"
 
 #include "CSSPropertyNames.h"
-#include "CookieJar.h"
-#include "DocumentLoader.h"
 #include "DocumentType.h"
 #include "ExceptionCode.h"
 #include "FocusController.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLBodyElement.h"
@@ -73,6 +70,9 @@
 #include "ScriptController.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/loader/CookieJar.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/HashTools.h"
 #include "core/platform/KURL.h"
 #include <wtf/text/CString.h>

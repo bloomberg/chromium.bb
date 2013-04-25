@@ -25,11 +25,8 @@
 #include "config.h"
 #include "PluginDocument.h"
 
-#include "DocumentLoader.h"
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "FrameView.h"
 #include "HTMLEmbedElement.h"
 #include "HTMLHtmlElement.h"
@@ -38,6 +35,9 @@
 #include "Page.h"
 #include "RawDataDocumentParser.h"
 #include "Settings.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 
 namespace WebCore {

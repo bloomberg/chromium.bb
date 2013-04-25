@@ -32,8 +32,8 @@
 #include "CachedStyleSheetClient.h"
 #include "MemoryCache.h"
 #include "StyleSheetContents.h"
-#include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/HTTPParsers.h"
 #include <wtf/CurrentTime.h>

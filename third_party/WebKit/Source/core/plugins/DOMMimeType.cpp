@@ -21,11 +21,11 @@
 
 #include "DOMPlugin.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "Page.h"
 #include "PluginData.h"
 #include "Settings.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

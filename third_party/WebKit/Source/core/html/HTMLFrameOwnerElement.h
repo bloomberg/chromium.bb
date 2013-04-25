@@ -21,8 +21,8 @@
 #ifndef HTMLFrameOwnerElement_h
 #define HTMLFrameOwnerElement_h
 
-#include "FrameLoaderTypes.h"
 #include "HTMLElement.h"
+#include "core/loader/FrameLoaderTypes.h"
 
 namespace WebCore {
 

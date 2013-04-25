@@ -33,13 +33,13 @@
 #include "Performance.h"
 
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "MemoryInfo.h"
 #include "PerformanceEntry.h"
 #include "PerformanceNavigation.h"
 #include "PerformanceResourceTiming.h"
 #include "PerformanceTiming.h"
 #include "PerformanceUserTiming.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/CurrentTime.h>
 

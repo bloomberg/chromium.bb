@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "LinkLoader.h"
+#include "core/loader/LinkLoader.h"
 
 #include "CSSStyleSheet.h"
 #include "CachedCSSStyleSheet.h"
@@ -41,9 +41,9 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "LinkRelAttribute.h"
-#include "Prerenderer.h"
 #include "Settings.h"
 #include "StyleResolver.h"
+#include "core/loader/Prerenderer.h"
 #include "core/platform/PrerenderHandle.h"
 #include "core/platform/network/DNS.h"
 

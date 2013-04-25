@@ -31,12 +31,12 @@
 #ifndef SubframeLoader_h
 #define SubframeLoader_h
 
-#include "FrameLoaderTypes.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/Noncopyable.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -30,8 +30,8 @@
 #include "config.h"
 
 #include "CachedShader.h"
-#include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/platform/SharedBuffer.h"
 #include <wtf/text/StringBuilder.h>
 

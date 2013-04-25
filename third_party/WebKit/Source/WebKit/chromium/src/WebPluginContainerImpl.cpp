@@ -47,9 +47,7 @@
 
 #include "EventNames.h"
 #include "FocusController.h"
-#include "FormState.h"
 #include "Frame.h"
-#include "FrameLoadRequest.h"
 #include "FrameView.h"
 #include "GestureEvent.h"
 #include "HTMLFormElement.h"
@@ -65,6 +63,8 @@
 #include "UserGestureIndicator.h"
 #include "WebPrintParams.h"
 #include "WheelEvent.h"
+#include "core/loader/FormState.h"
+#include "core/loader/FrameLoadRequest.h"
 #include "core/platform/HostWindow.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/ScrollAnimator.h"

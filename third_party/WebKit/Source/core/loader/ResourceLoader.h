@@ -29,8 +29,8 @@
 #ifndef ResourceLoader_h
 #define ResourceLoader_h
 
-#include "ResourceLoaderOptions.h"
-#include "ResourceLoaderTypes.h"
+#include "core/loader/ResourceLoaderOptions.h"
+#include "core/loader/ResourceLoaderTypes.h"
 #include "core/platform/network/ResourceHandleClient.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

@@ -26,11 +26,11 @@
 
 #include "ApplicationCacheHost.h"
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "DocumentParser.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "HTMLNames.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
 
 namespace WebCore {
 

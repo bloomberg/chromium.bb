@@ -25,9 +25,9 @@
 #define HTMLFormElement_h
 
 #include "CheckedRadioButtons.h"
-#include "FormState.h"
-#include "FormSubmission.h"
 #include "HTMLElement.h"
+#include "core/loader/FormState.h"
+#include "core/loader/FormSubmission.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

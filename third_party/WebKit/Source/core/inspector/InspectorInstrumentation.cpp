@@ -39,7 +39,6 @@
 #include "DOMWrapperWorld.h"
 #include "Database.h"
 #include "DeviceOrientationData.h"
-#include "DocumentLoader.h"
 #include "Event.h"
 #include "EventContext.h"
 #include "InspectorAgent.h"
@@ -74,6 +73,7 @@
 #include "WorkerRuntimeAgent.h"
 #include "WorkerThread.h"
 #include "XMLHttpRequest.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

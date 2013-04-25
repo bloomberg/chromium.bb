@@ -24,19 +24,19 @@
 
 #include "XSLTProcessor.h"
 
-#include "DOMImplementation.h"
 #include "CachedResourceLoader.h"
 #include "ContentSecurityPolicy.h"
+#include "DOMImplementation.h"
 #include "DocumentFragment.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "FrameView.h"
 #include "HTMLBodyElement.h"
 #include "HTMLDocument.h"
 #include "Page.h"
 #include "SecurityOrigin.h"
 #include "Text.h"
-#include "TextResourceDecoder.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "markup.h"
 
 #include <wtf/Assertions.h>

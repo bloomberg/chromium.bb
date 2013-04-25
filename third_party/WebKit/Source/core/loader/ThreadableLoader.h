@@ -31,8 +31,8 @@
 #ifndef ThreadableLoader_h
 #define ThreadableLoader_h
 
-#include "ResourceLoaderOptions.h"
 #include "SecurityOrigin.h"
+#include "core/loader/ResourceLoaderOptions.h"
 #include "core/platform/network/ResourceHandle.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>

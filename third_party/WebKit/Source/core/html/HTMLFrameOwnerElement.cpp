@@ -23,7 +23,7 @@
 
 #include "DOMWindow.h"
 #include "Frame.h"
-#include "FrameLoader.h"
+#include "core/loader/FrameLoader.h"
 #include "core/rendering/RenderPart.h"
 
 #if ENABLE(SVG)

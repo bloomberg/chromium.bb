@@ -29,9 +29,7 @@
 #include "config.h"
 #include "InspectorOverlay.h"
 
-#include "DocumentLoader.h"
 #include "Element.h"
-#include "EmptyClients.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "InspectorClient.h"
@@ -45,6 +43,8 @@
 #include "Settings.h"
 #include "StyledElement.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/EmptyClients.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/RenderInline.h"

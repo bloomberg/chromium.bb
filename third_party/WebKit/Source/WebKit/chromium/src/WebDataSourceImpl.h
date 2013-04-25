@@ -31,9 +31,9 @@
 #ifndef WebDataSourceImpl_h
 #define WebDataSourceImpl_h
 
-#include "DocumentLoader.h"
 #include "WebDataSource.h"
 #include "WebPluginLoadObserver.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/platform/KURL.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"

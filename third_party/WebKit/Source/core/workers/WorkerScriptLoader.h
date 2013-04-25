@@ -28,8 +28,8 @@
 #ifndef WorkerScriptLoader_h
 #define WorkerScriptLoader_h
 
-#include "ThreadableLoader.h"
-#include "ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoader.h"
+#include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 

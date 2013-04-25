@@ -30,16 +30,16 @@
  */
 
 #include "config.h"
-#include "PingLoader.h"
+#include "core/loader/PingLoader.h"
 
 #include "Document.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceHandle.h"

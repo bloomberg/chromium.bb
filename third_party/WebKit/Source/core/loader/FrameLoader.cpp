@@ -33,7 +33,7 @@
  */
 
 #include "config.h"
-#include "FrameLoader.h"
+#include "core/loader/FrameLoader.h"
 
 #include "ApplicationCacheHost.h"
 #include "BackForwardController.h"
@@ -48,20 +48,13 @@
 #include "DOMWrapperWorld.h"
 #include "DatabaseManager.h"
 #include "Document.h"
-#include "DocumentLoadTiming.h"
-#include "DocumentLoader.h"
 #include "Editor.h"
 #include "EditorClient.h"
 #include "Element.h"
 #include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
-#include "FormState.h"
-#include "FormSubmission.h"
 #include "Frame.h"
-#include "FrameLoadRequest.h"
-#include "FrameLoaderClient.h"
-#include "FrameNetworkingContext.h"
 #include "FrameTree.h"
 #include "FrameView.h"
 #include "HTMLAnchorElement.h"
@@ -79,7 +72,6 @@
 #include "PageTransitionEvent.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
-#include "ProgressTracker.h"
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"
@@ -87,11 +79,19 @@
 #include "SecurityPolicy.h"
 #include "SerializedScriptValue.h"
 #include "Settings.h"
-#include "TextResourceDecoder.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "WindowFeatures.h"
 #include "XMLDocumentParser.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/loader/DocumentLoadTiming.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FormState.h"
+#include "core/loader/FormSubmission.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/loader/FrameNetworkingContext.h"
+#include "core/loader/ProgressTracker.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/loader/UniqueIdentifier.h"
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -155,7 +155,7 @@ bool isBackForwardLoadType(FrameLoadType type)
 // This is not in the FrameLoader class to emphasize that it does not depend on
 // private FrameLoader data, and to avoid increasing the number of public functions
 // with access to private data.  Since only this .cpp file needs it, making it
-// non-member lets us exclude it from the header file, thus keeping FrameLoader.h's
+// non-member lets us exclude it from the header file, thus keeping core/loader/FrameLoader.h's
 // API simpler.
 //
 static bool isDocumentSandboxed(Frame* frame, SandboxFlags mask)

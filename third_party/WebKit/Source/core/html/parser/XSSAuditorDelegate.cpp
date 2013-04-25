@@ -29,14 +29,14 @@
 #include "Console.h"
 #include "DOMWindow.h"
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "HTMLParserIdioms.h"
 #include "InspectorValues.h"
-#include "PingLoader.h"
 #include "SecurityOrigin.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/loader/PingLoader.h"
 #include "core/platform/network/FormData.h"
 #include <wtf/text/StringBuilder.h>
 

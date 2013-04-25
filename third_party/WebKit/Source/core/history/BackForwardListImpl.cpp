@@ -28,11 +28,11 @@
 #include "BackForwardListImpl.h"
 
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "HistoryItem.h"
 #include "Page.h"
 #include "SerializedScriptValue.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/platform/Logging.h"
 
 using namespace std;

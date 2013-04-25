@@ -34,7 +34,7 @@
 
 #include "ActiveDOMObject.h"
 #include "EventTarget.h"
-#include "ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Timer.h"
 #include <wtf/RefPtr.h>

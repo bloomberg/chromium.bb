@@ -30,18 +30,12 @@
  */
 
 #include "config.h"
-#include "NavigationScheduler.h"
+#include "core/loader/NavigationScheduler.h"
 
 #include "BackForwardController.h"
 #include "DOMWindow.h"
-#include "DocumentLoader.h"
 #include "Event.h"
-#include "FormState.h"
-#include "FormSubmission.h"
 #include "Frame.h"
-#include "FrameLoadRequest.h"
-#include "FrameLoader.h"
-#include "FrameLoaderStateMachine.h"
 #include "HTMLFormElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HistoryItem.h"
@@ -49,6 +43,12 @@
 #include "Page.h"
 #include "ScriptController.h"
 #include "UserGestureIndicator.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FormState.h"
+#include "core/loader/FormSubmission.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderStateMachine.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

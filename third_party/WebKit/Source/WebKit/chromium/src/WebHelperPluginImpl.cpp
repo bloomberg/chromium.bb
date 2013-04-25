@@ -31,8 +31,6 @@
 #include "config.h"
 #include "WebHelperPluginImpl.h"
 
-#include "DocumentLoader.h"
-#include "EmptyClients.h"
 #include "FocusController.h"
 #include "FrameView.h"
 #include "HTMLPlugInElement.h"
@@ -47,6 +45,8 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/EmptyClients.h"
 
 using namespace WebCore;
 

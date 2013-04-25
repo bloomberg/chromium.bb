@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebCrossOriginPreflightResultCache.h"
 
-#include "CrossOriginPreflightResultCache.h"
+#include "core/loader/CrossOriginPreflightResultCache.h"
 
 namespace WebKit {
 

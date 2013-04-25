@@ -29,15 +29,15 @@
 #if ENABLE(PAGE_POPUP)
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "DocumentLoader.h"
-#include "DocumentWriter.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "HTMLIFrameElement.h"
 #include "PagePopup.h"
 #include "PagePopupClient.h"
 #include "PagePopupController.h"
 #include "WebCoreTestSupport.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/DocumentWriter.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/Timer.h"
 
 namespace WebCore {

@@ -23,7 +23,7 @@
 #ifndef HTMLImageLoader_h
 #define HTMLImageLoader_h
 
-#include "ImageLoader.h"
+#include "core/loader/ImageLoader.h"
 
 namespace WebCore {
 

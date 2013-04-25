@@ -27,14 +27,11 @@
  */
 
 #include "config.h"
-#include "DocumentWriter.h"
+#include "core/loader/DocumentWriter.h"
 
 #include "DOMImplementation.h"
 #include "DOMWindow.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
-#include "FrameLoaderStateMachine.h"
 #include "FrameView.h"
 #include "PluginDocument.h"
 #include "RawDataDocumentParser.h"
@@ -42,8 +39,11 @@
 #include "ScriptableDocumentParser.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
-#include "SinkDocument.h"
-#include "TextResourceDecoder.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
+#include "core/loader/FrameLoaderStateMachine.h"
+#include "core/loader/SinkDocument.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {

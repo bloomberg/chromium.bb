@@ -28,8 +28,8 @@
 #include "EventTarget.h"
 #include "ScriptWrappable.h"
 #include "SecurityOrigin.h"
-#include "ThreadableLoaderClient.h"
 #include "XMLHttpRequestProgressEventThrottle.h"
+#include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/network/FormData.h"
 #include "core/platform/network/ResourceResponse.h"
 #include <wtf/OwnPtr.h>

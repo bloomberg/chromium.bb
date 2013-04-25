@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebPageSerializer.h"
 
-#include "DocumentLoader.h"
 #include "Element.h"
 #include "Frame.h"
 #include "HTMLAllCollection.h"
@@ -46,6 +45,7 @@
 #include "WebPageSerializerImpl.h"
 #include "WebView.h"
 #include "WebViewImpl.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/platform/KURL.h"
 #include <public/WebCString.h>
 #include <public/WebString.h>

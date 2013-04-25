@@ -30,7 +30,7 @@
  */
 
 #include "config.h"
-#include "PrerendererClient.h"
+#include "core/loader/PrerendererClient.h"
 
 #include "Page.h"
 #include "core/platform/Supplementable.h"

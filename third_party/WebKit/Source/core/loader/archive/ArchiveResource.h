@@ -29,7 +29,7 @@
 #ifndef ArchiveResource_h
 #define ArchiveResource_h
 
-#include "SubstituteResource.h"
+#include "core/loader/SubstituteResource.h"
 
 namespace WebCore {
 

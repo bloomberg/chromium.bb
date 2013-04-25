@@ -33,7 +33,7 @@
  */
 
 #include "config.h"
-#include "IconController.h"
+#include "core/loader/IconController.h"
 
 #include "Document.h"
 #include "Frame.h"

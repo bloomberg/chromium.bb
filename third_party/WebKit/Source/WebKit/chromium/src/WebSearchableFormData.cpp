@@ -32,7 +32,6 @@
 #include "WebSearchableFormData.h"
 
 #include "Document.h"
-#include "DocumentLoader.h"
 #include "FormDataList.h"
 #include "Frame.h"
 #include "HTMLFormControlElement.h"
@@ -44,6 +43,7 @@
 #include "HTMLSelectElement.h"
 #include "WebFormElement.h"
 #include "WebInputElement.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/platform/network/FormDataBuilder.h"
 #include "core/platform/text/TextEncoding.h"
 

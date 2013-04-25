@@ -30,15 +30,15 @@
 
 #include "config.h"
 
-#include "WorkerThreadableLoader.h"
+#include "core/loader/WorkerThreadableLoader.h"
 
 #include "CrossThreadTask.h"
 #include "Document.h"
-#include "DocumentThreadableLoader.h"
-#include "ThreadableLoader.h"
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/loader/DocumentThreadableLoader.h"
+#include "core/loader/ThreadableLoader.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"

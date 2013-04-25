@@ -50,8 +50,8 @@
 #include "WorkerObjectProxy.h"
 #include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
-#include "WorkerThreadableLoader.h"
 #include "XMLHttpRequestException.h"
+#include "core/loader/WorkerThreadableLoader.h"
 #include "core/platform/KURL.h"
 #include "core/platform/NotImplemented.h"
 #include <wtf/RefPtr.h>

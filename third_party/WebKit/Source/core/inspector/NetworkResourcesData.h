@@ -30,7 +30,7 @@
 #define NetworkResourcesData_h
 
 #include "InspectorPageAgent.h"
-#include "TextResourceDecoder.h"
+#include "core/loader/TextResourceDecoder.h"
 #include "core/platform/network/HTTPHeaderMap.h"
 #include <wtf/Deque.h>
 #include <wtf/HashMap.h>

@@ -30,7 +30,7 @@
 #define NavigationAction_h
 
 #include "Event.h"
-#include "FrameLoaderTypes.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/Forward.h>

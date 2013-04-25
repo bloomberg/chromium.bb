@@ -32,10 +32,10 @@
 
 #include "FrameLoaderClientImpl.h"
 
-#include "FrameLoader.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
 
 #include <gtest/gtest.h>

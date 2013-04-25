@@ -31,9 +31,9 @@
 #include "config.h"
 #include "PerformanceNavigation.h"
 
-#include "DocumentLoader.h"
 #include "Frame.h"
-#include "FrameLoaderTypes.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoaderTypes.h"
 
 namespace WebCore {
 

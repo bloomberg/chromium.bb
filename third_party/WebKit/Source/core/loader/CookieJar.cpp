@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "CookieJar.h"
+#include "core/loader/CookieJar.h"
 
 #include "Document.h"
 #include "Frame.h"

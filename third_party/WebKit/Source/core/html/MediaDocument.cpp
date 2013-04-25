@@ -27,12 +27,9 @@
 
 #include "MediaDocument.h"
 
-#include "DocumentLoader.h"
 #include "EventNames.h"
 #include "ExceptionCodePlaceholder.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "HTMLEmbedElement.h"
 #include "HTMLHtmlElement.h"
 #include "HTMLNames.h"
@@ -42,6 +39,9 @@
 #include "NodeList.h"
 #include "RawDataDocumentParser.h"
 #include "ScriptController.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 
 namespace WebCore {
 

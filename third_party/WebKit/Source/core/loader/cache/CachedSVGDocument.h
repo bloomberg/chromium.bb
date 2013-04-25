@@ -28,7 +28,7 @@
 #include "CachedResourceClient.h"
 #include "CachedResourceHandle.h"
 #include "SVGDocument.h"
-#include "TextResourceDecoder.h"
+#include "core/loader/TextResourceDecoder.h"
 
 namespace WebCore {
 

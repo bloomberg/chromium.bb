@@ -29,7 +29,6 @@
 #include "Document.h"
 #include "EventListener.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "Page.h"
 #include "SMILTimeContainer.h"
 #include "SVGElement.h"
@@ -37,6 +36,7 @@
 #include "SVGSVGElement.h"
 #include "ScriptableDocumentParser.h"
 #include "XLinkNames.h"
+#include "core/loader/FrameLoader.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
 #include <wtf/text/AtomicString.h>
 

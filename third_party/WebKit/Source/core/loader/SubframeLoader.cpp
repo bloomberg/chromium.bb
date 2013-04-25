@@ -31,15 +31,13 @@
  */
 
 #include "config.h"
-#include "SubframeLoader.h"
+#include "core/loader/SubframeLoader.h"
 
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "ContentSecurityPolicy.h"
 #include "DiagnosticLoggingKeys.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "HTMLAppletElement.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
@@ -51,6 +49,8 @@
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderView.h"

@@ -27,16 +27,16 @@
  */
 
 #include "config.h"
-#include "MixedContentChecker.h"
+#include "core/loader/MixedContentChecker.h"
 
 #include "Console.h"
 #include "DOMWindow.h"
 #include "Document.h"
 #include "Frame.h"
-#include "FrameLoader.h"
-#include "FrameLoaderClient.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
+#include "core/loader/FrameLoader.h"
+#include "core/loader/FrameLoaderClient.h"
 #include "core/platform/SchemeRegistry.h"
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>

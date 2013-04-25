@@ -31,16 +31,16 @@
 #ifndef WorkerThreadableLoader_h
 #define WorkerThreadableLoader_h
 
-#include "ThreadableLoader.h"
-#include "ThreadableLoaderClient.h"
-#include "ThreadableLoaderClientWrapper.h"
+#include "core/loader/ThreadableLoader.h"
+#include "core/loader/ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoaderClientWrapper.h"
 
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Threading.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Threading.h>
 
 namespace WebCore {
 

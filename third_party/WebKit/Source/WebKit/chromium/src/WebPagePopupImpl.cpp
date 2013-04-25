@@ -34,8 +34,6 @@
 #include "Chrome.h"
 #include "ContextFeatures.h"
 #include "DOMWindowPagePopup.h"
-#include "DocumentLoader.h"
-#include "EmptyClients.h"
 #include "EventHandler.h"
 #include "FocusController.h"
 #include "FrameView.h"
@@ -50,6 +48,8 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/EmptyClients.h"
 
 using namespace WebCore;
 using namespace std;

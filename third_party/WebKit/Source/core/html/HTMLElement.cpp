@@ -37,7 +37,6 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "HTMLBRElement.h"
 #include "HTMLCollection.h"
 #include "HTMLDocument.h"
@@ -55,6 +54,7 @@
 #include "Text.h"
 #include "TextIterator.h"
 #include "XMLNames.h"
+#include "core/loader/FrameLoader.h"
 #include "core/rendering/RenderWordBreak.h"
 #include "markup.h"
 #include <wtf/StdLibExtras.h>

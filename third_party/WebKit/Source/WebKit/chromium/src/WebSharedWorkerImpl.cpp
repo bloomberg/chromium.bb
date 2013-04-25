@@ -34,8 +34,6 @@
 #include "CrossThreadTask.h"
 #include "DatabaseTask.h"
 #include "Document.h"
-#include "FrameLoadRequest.h"
-#include "FrameLoader.h"
 #include "GroupSettings.h"
 #include "MessageEvent.h"
 #include "MessagePortChannel.h"
@@ -58,6 +56,8 @@
 #include "WorkerInspectorController.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/loader/FrameLoadRequest.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/KURL.h"
 #include <public/WebFileError.h>
 #include <public/WebMessagePortChannel.h>

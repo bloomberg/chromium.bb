@@ -27,7 +27,7 @@
 #define CachedResourceRequest_h
 
 #include "Element.h"
-#include "ResourceLoaderOptions.h"
+#include "core/loader/ResourceLoaderOptions.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/RefPtr.h>

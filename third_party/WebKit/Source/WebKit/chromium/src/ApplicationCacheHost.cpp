@@ -33,9 +33,7 @@
 
 #include "ApplicationCacheHostInternal.h"
 #include "DOMApplicationCache.h"
-#include "DocumentLoader.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "InspectorApplicationCacheAgent.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
@@ -43,6 +41,8 @@
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "WebFrameImpl.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"
 #include "core/platform/chromium/support/WrappedResourceResponse.h"
 #include <public/WebURL.h>

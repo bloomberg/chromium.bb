@@ -21,7 +21,7 @@
 #define SVGImageLoader_h
 
 #if ENABLE(SVG)
-#include "ImageLoader.h"
+#include "core/loader/ImageLoader.h"
 
 namespace WebCore {
 

@@ -31,7 +31,7 @@
 #ifndef DocumentThreadableLoaderClient_h
 #define DocumentThreadableLoaderClient_h
 
-#include "ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoaderClient.h"
 
 namespace WebCore {
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "SinkDocument.h"
+#include "core/loader/SinkDocument.h"
 
 #include "RawDataDocumentParser.h"
 

@@ -26,9 +26,7 @@
 
 #include "Attribute.h"
 #include "CSSPropertyNames.h"
-#include "DocumentLoader.h"
 #include "Frame.h"
-#include "FrameLoader.h"
 #include "HTMLDocument.h"
 #include "HTMLImageLoader.h"
 #include "HTMLNames.h"
@@ -36,6 +34,8 @@
 #include "HTMLParserIdioms.h"
 #include "PluginDocument.h"
 #include "Settings.h"
+#include "core/loader/DocumentLoader.h"
+#include "core/loader/FrameLoader.h"
 #include "core/rendering/RenderEmbeddedObject.h"
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderWidget.h"

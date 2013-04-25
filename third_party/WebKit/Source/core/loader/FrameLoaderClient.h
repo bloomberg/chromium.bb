@@ -30,9 +30,9 @@
 #ifndef FrameLoaderClient_h
 #define FrameLoaderClient_h
 
-#include "FrameLoaderTypes.h"
 #include "IconURL.h"
 #include "LayoutMilestones.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include <wtf/Forward.h>
 #include <wtf/Vector.h>

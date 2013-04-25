@@ -32,7 +32,7 @@
 #ifndef PrerendererClientImpl_h
 #define PrerendererClientImpl_h
 
-#include "PrerendererClient.h"
+#include "core/loader/PrerendererClient.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
 

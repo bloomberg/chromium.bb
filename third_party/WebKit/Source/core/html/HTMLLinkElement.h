@@ -30,9 +30,9 @@
 #include "DOMSettableTokenList.h"
 #include "HTMLElement.h"
 #include "IconURL.h"
-#include "LinkLoader.h"
-#include "LinkLoaderClient.h"
 #include "LinkRelAttribute.h"
+#include "core/loader/LinkLoader.h"
+#include "core/loader/LinkLoaderClient.h"
 #include "core/platform/Timer.h"
 
 namespace WebCore {

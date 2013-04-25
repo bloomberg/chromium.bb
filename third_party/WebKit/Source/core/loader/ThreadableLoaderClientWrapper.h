@@ -31,7 +31,7 @@
 #ifndef ThreadableLoaderClientWrapper_h
 #define ThreadableLoaderClientWrapper_h
 
-#include "ThreadableLoaderClient.h"
+#include "core/loader/ThreadableLoaderClient.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Threading.h>
