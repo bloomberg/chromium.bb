@@ -1785,7 +1785,11 @@ void WebViewImpl::animate(double monotonicFrameBeginTime)
             if (m_layerTreeView)
                 m_layerTreeView->didStopFlinging();
 
-            mainFrameImpl()->frame()->eventHandler()->clearGestureScrollNodes();
+            PlatformGestureEvent endScrollEvent(PlatformEvent::GestureScrollEnd,
+                m_positionOnFlingStart, m_globalPositionOnFlingStart, 0, 0, 0,
+                false, false, false, false);
+
+            mainFrameImpl()->frame()->eventHandler()->handleGestureScrollEnd(endScrollEvent);
         }
     }
 
