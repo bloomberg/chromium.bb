@@ -507,6 +507,10 @@ void WebsiteSettingsPopupGtk::SetIdentityInfo(
           l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
       color = &kGdkGreen;
       break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
+      identity_status_text =
+          l10n_util::GetStringUTF8(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
+      break;
     default:
       identity_status_text =
           l10n_util::GetStringUTF8(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);

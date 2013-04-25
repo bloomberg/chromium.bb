@@ -61,6 +61,9 @@ class WebsiteSettings : public TabSpecificContentSettings::SiteDataObserver {
     SITE_IDENTITY_STATUS_ERROR,
     // The site is a trusted internal chrome page.
     SITE_IDENTITY_STATUS_INTERNAL_PAGE,
+    // The profile has accessed data using an administrator-provided
+    // certificate, so the site might be able to intercept data.
+    SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT,
   };
 
   // Creates a WebsiteSettings for the passed |url| using the given |ssl| status

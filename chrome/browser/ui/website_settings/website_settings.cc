@@ -45,6 +45,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#endif
+
 using content::BrowserThread;
 
 namespace {
@@ -257,7 +261,17 @@ void WebsiteSettings::Init(Profile* profile,
       (!net::IsCertStatusError(ssl.cert_status) ||
        net::IsCertStatusMinorError(ssl.cert_status))) {
     // There are no major errors. Check for minor errors.
-    if (net::IsCertStatusMinorError(ssl.cert_status)) {
+    bool used_policy_certificates = false;
+#if defined(ENABLE_CONFIGURATION_POLICY)
+    used_policy_certificates =
+        policy::BrowserPolicyConnector::UsedPolicyCertificates(profile);
+#endif
+    if (used_policy_certificates) {
+      site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
+      site_identity_details_ =
+          l10n_util::GetStringFUTF16(IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE,
+                                     UTF8ToUTF16(url.host()));
+    } else if (net::IsCertStatusMinorError(ssl.cert_status)) {
       site_identity_status_ = SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN;
       string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));
       if (issuer_name.empty()) {
@@ -443,7 +457,8 @@ void WebsiteSettings::Init(Profile* profile,
   if (site_connection_status_ == SITE_CONNECTION_STATUS_ENCRYPTED_ERROR ||
       site_connection_status_ == SITE_CONNECTION_STATUS_MIXED_CONTENT ||
       site_identity_status_ == SITE_IDENTITY_STATUS_ERROR ||
-      site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN)
+      site_identity_status_ == SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN ||
+      site_identity_status_ == SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT)
     tab_id = WebsiteSettingsUI::TAB_ID_CONNECTION;
   ui_->SetSelectedTab(tab_id);
 }

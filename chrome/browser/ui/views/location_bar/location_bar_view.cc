@@ -358,6 +358,7 @@ SkColor LocationBarView::GetColor(ToolbarModel::SecurityLevel security_level,
           break;
 
         case ToolbarModel::SECURITY_WARNING:
+        case ToolbarModel::SECURITY_POLICY_WARNING:
           return GetColor(security_level, DEEMPHASIZED_TEXT);
           break;
 

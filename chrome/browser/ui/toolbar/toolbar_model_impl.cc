@@ -34,6 +34,10 @@
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/browser_policy_connector.h"
+#endif
+
 using content::NavigationController;
 using content::NavigationEntry;
 using content::SSLStatus;
@@ -66,6 +70,11 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
       return SECURITY_ERROR;
 
     case content::SECURITY_STYLE_AUTHENTICATED:
+#if defined(ENABLE_CONFIGURATION_POLICY)
+      if (policy::BrowserPolicyConnector::UsedPolicyCertificates(
+          Profile::FromBrowserContext(web_contents->GetBrowserContext())))
+        return SECURITY_POLICY_WARNING;
+#endif
       if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
         return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status)) {
@@ -190,6 +199,7 @@ int ToolbarModelImpl::GetIcon() const {
     IDR_OMNIBOX_HTTPS_VALID,
     IDR_OMNIBOX_HTTPS_VALID,
     IDR_OMNIBOX_HTTPS_WARNING,
+    IDR_OMNIBOX_HTTPS_POLICY_WARNING,
     IDR_OMNIBOX_HTTPS_INVALID,
   };
   DCHECK(arraysize(icon_ids) == NUM_SECURITY_LEVELS);

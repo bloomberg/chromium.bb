@@ -91,6 +91,10 @@ string16 WebsiteSettingsUI::IdentityInfo::GetIdentityStatusText() const {
       identity_status ==  WebsiteSettings::SITE_IDENTITY_STATUS_EV_CERT) {
     return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_VERIFIED);
   }
+  if (identity_status ==
+          WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT) {
+    return l10n_util::GetStringUTF16(IDS_CERT_POLICY_PROVIDED_CERT_HEADER);
+  }
   return l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_IDENTITY_NOT_VERIFIED);
 }
 
@@ -248,6 +252,9 @@ const gfx::Image& WebsiteSettingsUI::GetIdentityIcon(
       break;
     case WebsiteSettings::SITE_IDENTITY_STATUS_ERROR:
       resource_id = IDR_PAGEINFO_BAD;
+      break;
+    case WebsiteSettings::SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT:
+      resource_id = IDR_CONTROLLED_SETTING_MANDATORY_LARGE;
       break;
     default:
       NOTREACHED();
