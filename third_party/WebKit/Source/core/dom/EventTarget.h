@@ -54,6 +54,7 @@ namespace WebCore {
     class IDBTransaction;
     class ScriptProcessorNode;
     class LocalMediaStream;
+    class MIDIPort;
     class MediaController;
     class MediaSource;
     class MediaStream;

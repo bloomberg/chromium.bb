@@ -58,6 +58,7 @@ namespace WebCore {
     macro(devicemotion) \
     macro(deviceorientation) \
     macro(dischargingtimechange) \
+    macro(disconnect) \
     macro(display) \
     macro(downloading) \
     macro(drag) \
