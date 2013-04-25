@@ -124,6 +124,9 @@ class DriveFileStreamReader {
       const DriveFileSystemGetter& drive_file_system_getter);
   ~DriveFileStreamReader();
 
+  // Returns true if the reader is initialized.
+  bool IsInitialized() const;
+
   // Initializes the stream for the |drive_file_path|.
   // |callback| must not be null.
   // TODO(hidehiko): Support reading range (crbug.com/168258).

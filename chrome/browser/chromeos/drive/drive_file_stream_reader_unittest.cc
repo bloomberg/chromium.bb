@@ -305,6 +305,8 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   scoped_ptr<DriveFileStreamReader> reader(
       new DriveFileStreamReader(GetDriveFileSystemGetter()));
 
+  EXPECT_FALSE(reader->IsInitialized());
+
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;
   reader->Initialize(
@@ -316,6 +318,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   message_loop_.Run();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
+  EXPECT_TRUE(reader->IsInitialized());
 
   // Read data from the reader.
   size_t content_size = entry->file_info().size();
@@ -333,6 +336,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   // In this case, the file should be cached one.
   reader.reset(
       new DriveFileStreamReader(GetDriveFileSystemGetter()));
+  EXPECT_FALSE(reader->IsInitialized());
 
   error = FILE_ERROR_FAILED;
   entry.reset();
@@ -345,6 +349,7 @@ TEST_F(DriveFileStreamReaderTest, Read) {
   message_loop_.Run();
   EXPECT_EQ(FILE_ERROR_OK, error);
   ASSERT_TRUE(entry);
+  EXPECT_TRUE(reader->IsInitialized());
 
   // The size should be same.
   EXPECT_EQ(content_size,

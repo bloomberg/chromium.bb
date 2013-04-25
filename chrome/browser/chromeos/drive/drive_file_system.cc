@@ -852,10 +852,13 @@ void DriveFileSystem::GetResolvedFileByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(params);
 
-  if (!params->entry_proto->has_file_specific_info()) {
-    params->OnError(FILE_ERROR_NOT_FOUND);
+  if (params->entry_proto->file_info().is_directory()) {
+    params->OnError(FILE_ERROR_NOT_A_FILE);
     return;
   }
+
+  // The file's entry should have its file specific info.
+  DCHECK(params->entry_proto->has_file_specific_info());
 
   // For a hosted document, we create a special JSON file to represent the
   // document instead of fetching the document content in one of the exported

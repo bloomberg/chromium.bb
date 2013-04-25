@@ -263,6 +263,11 @@ DriveFileStreamReader::DriveFileStreamReader(
 DriveFileStreamReader::~DriveFileStreamReader() {
 }
 
+bool DriveFileStreamReader::IsInitialized() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return reader_proxy_.get() != NULL;
+}
+
 void DriveFileStreamReader::Initialize(
     const base::FilePath& drive_file_path,
     const InitializeCompletionCallback& callback) {

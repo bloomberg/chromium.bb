@@ -159,6 +159,24 @@ TEST_F(FakeDriveFileSystemTest, GetFileContentByPath) {
   EXPECT_EQ(content, cache_file_content);
 }
 
+TEST_F(FakeDriveFileSystemTest, GetFileContentByPath_Directory) {
+  FileError initialize_error = FILE_ERROR_FAILED;
+  scoped_ptr<DriveEntryProto> entry_proto;
+  base::FilePath cache_file_path;
+  google_apis::test_util::TestGetContentCallback get_content_callback;
+  FileError completion_error = FILE_ERROR_FAILED;
+
+  fake_drive_file_system_->GetFileContentByPath(
+      util::GetDriveMyDriveRootPath(),
+      google_apis::test_util::CreateCopyResultCallback(
+          &initialize_error, &entry_proto, &cache_file_path),
+      get_content_callback.callback(),
+      google_apis::test_util::CreateCopyResultCallback(&completion_error));
+  google_apis::test_util::RunBlockingPoolTask();
+
+  EXPECT_EQ(FILE_ERROR_NOT_A_FILE, completion_error);
+}
+
 TEST_F(FakeDriveFileSystemTest, GetEntryInfoByPath) {
   FileError error = FILE_ERROR_FAILED;
   scoped_ptr<DriveEntryProto> entry;

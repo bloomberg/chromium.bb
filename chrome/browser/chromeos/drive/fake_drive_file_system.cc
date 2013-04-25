@@ -387,6 +387,12 @@ void FakeDriveFileSystem::GetFileContentByPathAfterGetEntryInfo(
   }
   DCHECK(entry_proto);
 
+  // We're only interested in a file.
+  if (entry_proto->file_info().is_directory()) {
+    completion_callback.Run(FILE_ERROR_NOT_A_FILE);
+    return;
+  }
+
   base::FilePath cache_path =
       cache_dir_.path().AppendASCII(entry_proto->resource_id());
   if (file_util::PathExists(cache_path)) {
