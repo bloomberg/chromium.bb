@@ -99,4 +99,10 @@ IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
   RunLoadTest(FILE_PATH_LITERAL("pnacl_options.html?use_nmf=time_passes"));
 }
 
+IN_PROC_BROWSER_TEST_F(NaClBrowserTestPnacl,
+                       MAYBE_PNACL(PnaclDyncodeSyscallDisabled)) {
+  RunNaClIntegrationTest(FILE_PATH_LITERAL(
+      "pnacl_dyncode_syscall_disabled.html"));
+}
+
 }  // namespace anonymous
