@@ -1002,6 +1002,44 @@ TEST_F(HistoryBackendTest, AddPageVisitSource) {
   EXPECT_EQ(0x7, sources);
 }
 
+TEST_F(HistoryBackendTest, AddPageVisitNotLastVisit) {
+  ASSERT_TRUE(backend_.get());
+
+  GURL url("http://www.google.com");
+
+  // Clear all history.
+  backend_->DeleteAllHistory();
+
+  // Create visit times
+  base::Time recent_time = base::Time::Now();
+  base::TimeDelta visit_age = base::TimeDelta::FromDays(3);
+  base::Time older_time = recent_time - visit_age;
+
+  // Visit the url with recent time.
+  backend_->AddPageVisit(url, recent_time, 0,
+      content::PageTransitionFromInt(
+          content::PageTransitionGetQualifier(content::PAGE_TRANSITION_TYPED)),
+      history::SOURCE_BROWSED);
+
+  // Add to the url a visit with older time (could be syncing from another
+  // client, etc.).
+  backend_->AddPageVisit(url, older_time, 0,
+      content::PageTransitionFromInt(
+          content::PageTransitionGetQualifier(content::PAGE_TRANSITION_TYPED)),
+      history::SOURCE_SYNCED);
+
+  // Fetch the row information about url from history db.
+  VisitVector visits;
+  URLRow row;
+  URLID row_id = backend_->db_->GetRowForURL(url, &row);
+  backend_->db_->GetVisitsForURL(row_id, &visits);
+
+  // Last visit time should be the most recent time, not the most recently added
+  // visit.
+  ASSERT_EQ(2U, visits.size());
+  ASSERT_EQ(recent_time, row.last_visit());
+}
+
 TEST_F(HistoryBackendTest, AddPageArgsSource) {
   ASSERT_TRUE(backend_.get());
 
