@@ -34,8 +34,8 @@
 
 #include "HTMLDivElement.h"
 #include "HTMLNames.h"
-#include "RenderBlock.h"
 #include "core/platform/graphics/FloatPoint.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/Forward.h>
 

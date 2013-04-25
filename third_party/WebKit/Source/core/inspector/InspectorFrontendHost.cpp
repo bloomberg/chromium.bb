@@ -38,12 +38,10 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "HTMLFrameOwnerElement.h"
-#include "HitTestResult.h"
 #include "InspectorAgent.h"
 #include "InspectorController.h"
 #include "InspectorFrontendClient.h"
 #include "Page.h"
-#include "RenderTheme.h"
 #include "ScriptFunctionCall.h"
 #include "UserGestureIndicator.h"
 #include "core/platform/ContextMenu.h"
@@ -52,6 +50,8 @@
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>
 
 using namespace std;

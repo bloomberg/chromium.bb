@@ -25,12 +25,12 @@
 
 #include "core/platform/graphics/filters/FEFlood.h"
 
-#include "RenderTreeAsText.h"
 #include "SkFlattenableBuffers.h"
 #include "SkImageFilter.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderTreeAsText.h"
 
 namespace {
 

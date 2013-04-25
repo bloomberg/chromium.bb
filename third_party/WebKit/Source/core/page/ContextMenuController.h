@@ -26,7 +26,7 @@
 #ifndef ContextMenuController_h
 #define ContextMenuController_h
 
-#include "HitTestResult.h"
+#include "core/rendering/HitTestResult.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>

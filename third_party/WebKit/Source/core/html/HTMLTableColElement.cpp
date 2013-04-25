@@ -29,8 +29,8 @@
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "HTMLTableElement.h"
-#include "RenderTableCol.h"
 #include "Text.h"
+#include "core/rendering/RenderTableCol.h"
 
 namespace WebCore {
 

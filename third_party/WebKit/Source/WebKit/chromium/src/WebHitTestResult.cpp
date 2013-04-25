@@ -27,13 +27,13 @@
 #include "WebHitTestResult.h"
 
 #include "Element.h"
-#include "HitTestResult.h"
 #include "Node.h"
-#include "RenderObject.h"
 #include "VisiblePosition.h"
 #include "WebElement.h"
 #include "WebNode.h"
 #include "core/platform/KURL.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderObject.h"
 #include <public/WebPoint.h>
 #include <public/WebURL.h>
 

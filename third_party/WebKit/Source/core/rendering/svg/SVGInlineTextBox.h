@@ -23,7 +23,7 @@
 #define SVGInlineTextBox_h
 
 #if ENABLE(SVG)
-#include "InlineTextBox.h"
+#include "core/rendering/InlineTextBox.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 
 namespace WebCore {

@@ -27,7 +27,7 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "RenderListItem.h"
+#include "core/rendering/RenderListItem.h"
 
 namespace WebCore {
 

@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "ExclusionPolygon.h"
+#include "core/rendering/ExclusionPolygon.h"
 
 #include <wtf/MathExtras.h>
 

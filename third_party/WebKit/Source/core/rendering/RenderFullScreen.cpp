@@ -24,10 +24,10 @@
 
 #include "config.h"
 
-#include "RenderFullScreen.h"
+#include "core/rendering/RenderFullScreen.h"
 
-#include "RenderLayer.h"
-#include "RenderLayerCompositor.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderLayerCompositor.h"
 
 using namespace WebCore;
 

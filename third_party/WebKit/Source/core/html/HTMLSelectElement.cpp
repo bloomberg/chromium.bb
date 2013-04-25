@@ -47,14 +47,14 @@
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "RenderListBox.h"
-#include "RenderMenuList.h"
-#include "RenderTheme.h"
 #include "ScriptEventListener.h"
 #include "SpatialNavigation.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformMouseEvent.h"
+#include "core/rendering/RenderListBox.h"
+#include "core/rendering/RenderMenuList.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/Unicode.h>
 

@@ -20,17 +20,17 @@
  */
 
 #include "config.h"
-#include "RenderCounter.h"
+#include "core/rendering/RenderCounter.h"
 
-#include "CounterNode.h"
 #include "Document.h"
 #include "Element.h"
 #include "HTMLNames.h"
 #include "HTMLOListElement.h"
 #include "NodeTraversal.h"
-#include "RenderListItem.h"
-#include "RenderListMarker.h"
-#include "RenderView.h"
+#include "core/rendering/CounterNode.h"
+#include "core/rendering/RenderListItem.h"
+#include "core/rendering/RenderListMarker.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/StdLibExtras.h>
 

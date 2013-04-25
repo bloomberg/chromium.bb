@@ -23,17 +23,17 @@
  */
 
 #include "config.h"
-#include "RenderTableCell.h"
+#include "core/rendering/RenderTableCell.h"
 
 #include "HTMLNames.h"
 #include "HTMLTableCellElement.h"
-#include "PaintInfo.h"
-#include "RenderTableCol.h"
-#include "RenderView.h"
 #include "StylePropertySet.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderTableCol.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
 
 #if ENABLE(MATHML)

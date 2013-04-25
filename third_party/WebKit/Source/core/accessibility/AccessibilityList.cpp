@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityList.h"
 
-#include "RenderObject.h"
+#include "core/rendering/RenderObject.h"
 
 using namespace std;
 

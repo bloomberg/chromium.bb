@@ -28,8 +28,8 @@
 
 #include "NodeRenderStyle.h"
 #include "NodeTraversal.h"
-#include "RenderInline.h"
-#include "RenderObject.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

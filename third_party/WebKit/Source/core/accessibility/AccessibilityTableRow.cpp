@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityTableRow.h"
 
-#include "RenderTableRow.h"
 #include "core/accessibility/AccessibilityTableCell.h"
+#include "core/rendering/RenderTableRow.h"
 
 using namespace std;
 

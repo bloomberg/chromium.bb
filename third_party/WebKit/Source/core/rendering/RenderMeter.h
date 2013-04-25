@@ -21,8 +21,8 @@
 #ifndef RenderMeter_h
 #define RenderMeter_h
 
-#include "RenderBlock.h"
-#include "RenderWidget.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderWidget.h"
 
 namespace WebCore {
 

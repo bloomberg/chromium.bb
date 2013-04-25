@@ -29,10 +29,10 @@
 
 #include "config.h"
 
-#include "RenderLayerFilterInfo.h"
+#include "core/rendering/RenderLayerFilterInfo.h"
 
-#include "FilterEffectRenderer.h"
-#include "RenderLayer.h"
+#include "core/rendering/FilterEffectRenderer.h"
+#include "core/rendering/RenderLayer.h"
 
 #if ENABLE(SVG)
 #include "CachedSVGDocument.h"

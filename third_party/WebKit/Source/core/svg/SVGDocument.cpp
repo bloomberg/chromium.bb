@@ -26,13 +26,13 @@
 #include "ExceptionCode.h"
 #include "FrameView.h"
 #include "NodeRenderingContext.h"
-#include "RenderView.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
 #include "SVGViewSpec.h"
 #include "SVGZoomAndPan.h"
 #include "SVGZoomEvent.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

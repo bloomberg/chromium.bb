@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RenderThemeChromiumFontProvider.h"
+#include "core/rendering/RenderThemeChromiumFontProvider.h"
 
 #include "CSSValueKeywords.h"
 #include "HWndDC.h"

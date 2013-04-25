@@ -34,7 +34,7 @@
 
 #include "HTMLNames.h"
 #include "HTMLProgressElement.h"
-#include "RenderProgress.h"
+#include "core/rendering/RenderProgress.h"
 
 namespace WebCore {
 

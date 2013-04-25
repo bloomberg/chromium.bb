@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "RenderMenuList.h"
+#include "core/rendering/RenderMenuList.h"
 
 #include <math.h>
 #include "CSSFontSelector.h"
@@ -36,9 +36,6 @@
 #include "HTMLSelectElement.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "RenderBR.h"
-#include "RenderScrollbar.h"
-#include "RenderTheme.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -46,6 +43,9 @@
 #include "core/platform/PopupMenu.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/rendering/RenderBR.h"
+#include "core/rendering/RenderScrollbar.h"
+#include "core/rendering/RenderTheme.h"
 
 using namespace std;
 

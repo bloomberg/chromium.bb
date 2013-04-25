@@ -40,7 +40,6 @@
 #include "DocumentSharedObjectPool.h"
 #include "ElementRareData.h"
 #include "ExceptionCode.h"
-#include "FlowThreadController.h"
 #include "FocusController.h"
 #include "Frame.h"
 #include "FrameSelection.h"
@@ -67,9 +66,6 @@
 #include "Page.h"
 #include "PointerLockController.h"
 #include "PseudoElement.h"
-#include "RenderRegion.h"
-#include "RenderView.h"
-#include "RenderWidget.h"
 #include "SelectorQuery.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
@@ -82,6 +78,10 @@
 #include "XMLNSNames.h"
 #include "XMLNames.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/FlowThreadController.h"
+#include "core/rendering/RenderRegion.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/RenderWidget.h"
 #include "htmlediting.h"
 #include <wtf/BitVector.h>
 #include <wtf/MemoryInstrumentationVector.h>

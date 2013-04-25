@@ -26,7 +26,7 @@
 #ifndef RenderMedia_h
 #define RenderMedia_h
 
-#include "RenderImage.h"
+#include "core/rendering/RenderImage.h"
 
 namespace WebCore {
 

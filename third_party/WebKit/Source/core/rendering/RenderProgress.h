@@ -21,7 +21,7 @@
 #ifndef RenderProgress_h
 #define RenderProgress_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

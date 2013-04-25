@@ -45,20 +45,20 @@
 #include "HTMLAreaElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "KeyboardEvent.h"
 #include "NodeRenderingTraversal.h"
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "Range.h"
-#include "RenderObject.h"
-#include "RenderWidget.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "SpatialNavigation.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/Widget.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderWidget.h"
 #include "htmlediting.h" // For firstPositionInOrBeforeNode
 
 namespace WebCore {

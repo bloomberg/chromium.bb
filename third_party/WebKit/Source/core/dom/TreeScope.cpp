@@ -41,18 +41,18 @@
 #include "HTMLLabelElement.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "IdTargetObserverRegistry.h"
 #include "InsertionPoint.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "RenderView.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ShadowRoot.h"
 #include "TreeScopeAdopter.h"
-#include <wtf/Vector.h>
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/CString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

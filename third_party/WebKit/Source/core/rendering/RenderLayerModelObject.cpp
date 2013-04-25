@@ -23,11 +23,11 @@
  */
 
 #include "config.h"
-#include "RenderLayerModelObject.h"
+#include "core/rendering/RenderLayerModelObject.h"
 
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

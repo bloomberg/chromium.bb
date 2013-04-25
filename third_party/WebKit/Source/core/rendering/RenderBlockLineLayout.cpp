@@ -22,32 +22,32 @@
 
 #include "config.h"
 
-#include "InlineIterator.h"
-#include "InlineTextBox.h"
-#include "RenderArena.h"
-#include "RenderCombineText.h"
-#include "RenderCounter.h"
-#include "RenderFlowThread.h"
-#include "RenderInline.h"
-#include "RenderLayer.h"
-#include "RenderListMarker.h"
-#include "RenderRegion.h"
-#include "RenderRubyRun.h"
-#include "RenderView.h"
 #include "Settings.h"
-#include "TrailingFloatsRootInlineBox.h"
-#include "VerticalPositionCache.h"
-#include "break_lines.h"
 #include "core/platform/Logging.h"
 #include "core/platform/text/BidiResolver.h"
 #include "core/platform/text/Hyphenation.h"
+#include "core/rendering/InlineIterator.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderArena.h"
+#include "core/rendering/RenderCombineText.h"
+#include "core/rendering/RenderCounter.h"
+#include "core/rendering/RenderFlowThread.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderListMarker.h"
+#include "core/rendering/RenderRegion.h"
+#include "core/rendering/RenderRubyRun.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/TrailingFloatsRootInlineBox.h"
+#include "core/rendering/VerticalPositionCache.h"
+#include "core/rendering/break_lines.h"
 #include <wtf/RefCountedLeakCounter.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>
 #include <wtf/Vector.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
-#include "ExclusionShapeInsideInfo.h"
+#include "core/rendering/ExclusionShapeInsideInfo.h"
 #endif
 
 #if ENABLE(SVG)

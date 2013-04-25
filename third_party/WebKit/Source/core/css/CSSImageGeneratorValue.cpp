@@ -29,9 +29,9 @@
 #include "CSSCanvasValue.h"
 #include "CSSCrossfadeValue.h"
 #include "CSSGradientValue.h"
-#include "RenderObject.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/text/WTFString.h>

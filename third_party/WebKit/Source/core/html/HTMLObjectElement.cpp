@@ -44,14 +44,14 @@
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "PluginViewBase.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderImage.h"
-#include "RenderWidget.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "Text.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/Widget.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderWidget.h"
 
 namespace WebCore {
 

@@ -30,17 +30,17 @@
 #include "Event.h"
 #include "EventHandler.h"
 #include "EventNames.h"
-#include "UseCounter.h"
 #include "Frame.h"
 #include "HTMLFieldSetElement.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLLegendElement.h"
-#include "RenderBox.h"
-#include "RenderTheme.h"
 #include "ScriptEventListener.h"
+#include "UseCounter.h"
 #include "ValidationMessage.h"
 #include "ValidityState.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

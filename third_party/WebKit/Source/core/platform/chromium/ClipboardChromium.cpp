@@ -40,7 +40,6 @@
 #include "HTMLParserIdioms.h"
 #include "NamedNodeMap.h"
 #include "Range.h"
-#include "RenderImage.h"
 #include "StringCallback.h"
 #include "core/platform/DragData.h"
 #include "core/platform/MIMETypeRegistry.h"
@@ -49,6 +48,7 @@
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/RenderImage.h"
 #include "markup.h"
 
 #include <wtf/text/WTFString.h>

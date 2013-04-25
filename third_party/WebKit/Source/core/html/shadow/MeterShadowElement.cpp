@@ -35,10 +35,10 @@
 #include "CSSPropertyNames.h"
 #include "HTMLMeterElement.h"
 #include "HTMLNames.h"
-#include "RenderMeter.h"
-#include "RenderTheme.h"
 #include "ShadowRoot.h"
 #include "StylePropertySet.h"
+#include "core/rendering/RenderMeter.h"
+#include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
 

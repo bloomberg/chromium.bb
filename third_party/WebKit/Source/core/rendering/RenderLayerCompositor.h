@@ -28,8 +28,8 @@
 
 #include "ChromeClient.h"
 #include "Frame.h"
-#include "RenderLayer.h"
 #include "core/platform/graphics/GraphicsLayerClient.h"
+#include "core/rendering/RenderLayer.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

@@ -31,10 +31,10 @@
 #include "config.h"
 #include "RenderedPosition.h"
 
-#include "InlineBox.h"
-#include "InlineTextBox.h"
 #include "Position.h"
 #include "VisiblePosition.h"
+#include "core/rendering/InlineBox.h"
+#include "core/rendering/InlineTextBox.h"
 
 namespace WebCore {
 

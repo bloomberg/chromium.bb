@@ -38,12 +38,12 @@
 #include "FrameView.h"
 #include "HTMLInputElement.h"
 #include "Page.h"
-#include "RenderTheme.h"
 #include "StyleResolver.h"
 #include "WebAutofillClient.h"
 #include "WebNode.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/rendering/RenderTheme.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>
 

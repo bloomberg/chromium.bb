@@ -41,11 +41,11 @@
 #include "HTMLParserIdioms.h"
 #include "NativeImageSkia.h"
 #include "Range.h"
-#include "RenderImage.h"
 #include "core/platform/KURL.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/RenderImage.h"
 #include "markup.h"
 
 #if ENABLE(SVG)

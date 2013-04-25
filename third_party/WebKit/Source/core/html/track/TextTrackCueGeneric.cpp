@@ -31,11 +31,11 @@
 #include "CSSValueKeywords.h"
 #include "HTMLDivElement.h"
 #include "HTMLNames.h"
-#include "RenderObject.h"
-#include "RenderTextTrackCue.h"
 #include "ScriptExecutionContext.h"
 #include "TextTrackCue.h"
 #include "core/platform/graphics/InbandTextTrackPrivateClient.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderTextTrackCue.h"
 
 namespace WebCore {
 

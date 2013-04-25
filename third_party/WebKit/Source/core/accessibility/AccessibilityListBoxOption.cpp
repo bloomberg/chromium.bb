@@ -32,8 +32,8 @@
 #include "HTMLOptGroupElement.h"
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
-#include "RenderListBox.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/RenderListBox.h"
 
 using namespace std;
 

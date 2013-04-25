@@ -31,7 +31,7 @@
 
 #include "MediaList.h"
 #include "MediaQueryEvaluator.h"
-#include "RenderObject.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

@@ -31,8 +31,8 @@
 #include "core/rendering/mathml/RenderMathMLBlock.h"
 
 #include "MathMLNames.h"
-#include "RenderView.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
     

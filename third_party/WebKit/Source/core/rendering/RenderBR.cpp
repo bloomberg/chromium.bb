@@ -20,11 +20,11 @@
  */
 
 #include "config.h"
-#include "RenderBR.h"
+#include "core/rendering/RenderBR.h"
 
 #include "Document.h"
-#include "InlineTextBox.h"
 #include "VisiblePosition.h"
+#include "core/rendering/InlineTextBox.h"
 
 namespace WebCore {
 

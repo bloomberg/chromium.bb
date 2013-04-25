@@ -33,8 +33,8 @@
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "RenderImage.h"
 #include "ScriptEventListener.h"
+#include "core/rendering/RenderImage.h"
 
 using namespace std;
 

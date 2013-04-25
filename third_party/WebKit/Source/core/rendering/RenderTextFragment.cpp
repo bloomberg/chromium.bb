@@ -21,10 +21,10 @@
  */
 
 #include "config.h"
-#include "RenderTextFragment.h"
+#include "core/rendering/RenderTextFragment.h"
 
-#include "RenderBlock.h"
 #include "Text.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

@@ -31,7 +31,7 @@
 #define RenderFlowThread_h
 
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 #include <wtf/HashCountedSet.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>

@@ -27,11 +27,11 @@
 
 #include "ExceptionCode.h"
 #include "NodeRenderingContext.h"
-#include "RenderInline.h"
 #include "SVGAltGlyphDefElement.h"
 #include "SVGGlyphElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
+#include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGTSpan.h"
 
 namespace WebCore {

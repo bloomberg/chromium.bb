@@ -29,11 +29,11 @@
 
 #include "config.h"
 
-#include "FlowThreadController.h"
+#include "core/rendering/FlowThreadController.h"
 
 #include "NamedFlowCollection.h"
-#include "RenderFlowThread.h"
-#include "RenderNamedFlowThread.h"
+#include "core/rendering/RenderFlowThread.h"
+#include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/AtomicString.h>
 

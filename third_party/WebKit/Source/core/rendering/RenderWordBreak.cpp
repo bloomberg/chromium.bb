@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "RenderWordBreak.h"
+#include "core/rendering/RenderWordBreak.h"
 
 #include "HTMLElement.h"
 

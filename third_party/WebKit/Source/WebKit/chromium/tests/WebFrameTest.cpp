@@ -39,10 +39,8 @@
 #include "FrameSelection.h"
 #include "FrameTestHelpers.h"
 #include "FrameView.h"
-#include "HitTestResult.h"
 #include "PlatformContextSkia.h"
 #include "Range.h"
-#include "RenderView.h"
 #include "Settings.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
@@ -68,6 +66,8 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/ResourceError.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderView.h"
 #include "v8.h"
 #include <public/Platform.h>
 #include <public/WebFloatRect.h>

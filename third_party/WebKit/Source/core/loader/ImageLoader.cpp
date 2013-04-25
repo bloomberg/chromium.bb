@@ -34,11 +34,11 @@
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
-#include "RenderImage.h"
-#include "RenderVideo.h"
 #include "ScriptCallStack.h"
 #include "SecurityOrigin.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderVideo.h"
 
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGImage.h"

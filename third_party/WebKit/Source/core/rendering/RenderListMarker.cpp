@@ -23,16 +23,16 @@
  */
 
 #include "config.h"
-#include "RenderListMarker.h"
+#include "core/rendering/RenderListMarker.h"
 
 #include "CachedImage.h"
 #include "Document.h"
-#include "RenderLayer.h"
-#include "RenderListItem.h"
-#include "RenderView.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderListItem.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>
 

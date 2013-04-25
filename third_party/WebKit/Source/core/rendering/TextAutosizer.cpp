@@ -20,16 +20,16 @@
 
 #include "config.h"
 
-#include "TextAutosizer.h"
+#include "core/rendering/TextAutosizer.h"
 
 #include "Document.h"
 #include "HTMLElement.h"
 #include "InspectorInstrumentation.h"
-#include "RenderObject.h"
-#include "RenderText.h"
-#include "RenderView.h"
 #include "Settings.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 

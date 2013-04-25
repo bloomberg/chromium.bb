@@ -29,19 +29,19 @@
 
 #include "config.h"
 
-#include "RenderFlowThread.h"
+#include "core/rendering/RenderFlowThread.h"
 
-#include "FlowThreadController.h"
-#include "HitTestRequest.h"
-#include "HitTestResult.h"
 #include "Node.h"
-#include "PaintInfo.h"
-#include "RenderBoxRegionInfo.h"
-#include "RenderLayer.h"
-#include "RenderRegion.h"
-#include "RenderView.h"
 #include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/FlowThreadController.h"
+#include "core/rendering/HitTestRequest.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderBoxRegionInfo.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderRegion.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

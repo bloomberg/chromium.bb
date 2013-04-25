@@ -23,19 +23,19 @@
 #ifndef RenderBlock_h
 #define RenderBlock_h
 
-#include "ColumnInfo.h"
-#include "GapRects.h"
-#include "RenderBox.h"
-#include "RenderLineBoxList.h"
-#include "RootInlineBox.h"
 #include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/text/TextBreakIterator.h"
+#include "core/rendering/ColumnInfo.h"
+#include "core/rendering/GapRects.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderLineBoxList.h"
+#include "core/rendering/RootInlineBox.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
 
 #if ENABLE(CSS_EXCLUSIONS)
-#include "ExclusionShapeInsideInfo.h"
+#include "core/rendering/ExclusionShapeInsideInfo.h"
 #include "core/rendering/style/ExclusionShapeValue.h"
 #endif
 

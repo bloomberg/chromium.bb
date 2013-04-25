@@ -29,7 +29,7 @@
 #ifndef RenderReplica_h
 #define RenderReplica_h
 
-#include "RenderBox.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 

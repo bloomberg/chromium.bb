@@ -21,11 +21,11 @@
 #include "core/rendering/svg/SVGTextQuery.h"
 
 #if ENABLE(SVG)
-#include "InlineFlowBox.h"
-#include "RenderBlock.h"
-#include "RenderInline.h"
 #include "VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
+#include "core/rendering/InlineFlowBox.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderInline.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"
 #include "core/rendering/svg/SVGTextMetrics.h"

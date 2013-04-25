@@ -22,12 +22,12 @@
 #include "config.h"
 #include "core/rendering/style/ContentData.h"
 
-#include "RenderCounter.h"
-#include "RenderImage.h"
-#include "RenderImageResource.h"
-#include "RenderImageResourceStyleImage.h"
-#include "RenderQuote.h"
-#include "RenderTextFragment.h"
+#include "core/rendering/RenderCounter.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderImageResource.h"
+#include "core/rendering/RenderImageResourceStyleImage.h"
+#include "core/rendering/RenderQuote.h"
+#include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 

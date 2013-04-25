@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "RenderScrollbarPart.h"
+#include "core/rendering/RenderScrollbarPart.h"
 
-#include "PaintInfo.h"
-#include "RenderScrollbar.h"
-#include "RenderScrollbarTheme.h"
-#include "RenderView.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderScrollbar.h"
+#include "core/rendering/RenderScrollbarTheme.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

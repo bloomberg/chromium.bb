@@ -26,7 +26,7 @@
 #ifndef RenderVideo_h
 #define RenderVideo_h
 
-#include "RenderMedia.h"
+#include "core/rendering/RenderMedia.h"
 
 namespace WebCore {
     

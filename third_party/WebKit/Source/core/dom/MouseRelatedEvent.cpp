@@ -27,8 +27,8 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "RenderLayer.h"
-#include "RenderObject.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

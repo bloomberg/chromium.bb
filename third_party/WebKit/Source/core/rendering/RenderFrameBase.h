@@ -26,7 +26,7 @@
 #ifndef RenderFrameBase_h
 #define RenderFrameBase_h
 
-#include "RenderPart.h"
+#include "core/rendering/RenderPart.h"
 
 namespace WebCore {
 

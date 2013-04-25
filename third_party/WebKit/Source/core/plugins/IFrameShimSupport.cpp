@@ -37,9 +37,9 @@
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "RenderBox.h"
-#include "RenderObject.h"
 #include "core/platform/Widget.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderObject.h"
 
 #include <wtf/HashSet.h>
 

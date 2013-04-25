@@ -30,7 +30,7 @@
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "NodeTraversal.h"
-#include "RenderFieldset.h"
+#include "core/rendering/RenderFieldset.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

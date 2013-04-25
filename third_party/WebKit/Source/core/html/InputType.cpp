@@ -60,8 +60,6 @@
 #include "PasswordInputType.h"
 #include "RadioInputType.h"
 #include "RangeInputType.h"
-#include "RenderObject.h"
-#include "RenderTheme.h"
 #include "ResetInputType.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SearchInputType.h"
@@ -76,6 +74,8 @@
 #include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/TextBreakIterator.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>

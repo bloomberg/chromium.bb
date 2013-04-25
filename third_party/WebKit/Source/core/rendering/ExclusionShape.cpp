@@ -28,14 +28,14 @@
  */
 
 #include "config.h"
-#include "ExclusionShape.h"
+#include "core/rendering/ExclusionShape.h"
 
 #include "BasicShapeFunctions.h"
-#include "ExclusionPolygon.h"
-#include "ExclusionRectangle.h"
 #include "LengthFunctions.h"
 #include "core/platform/graphics/FloatSize.h"
 #include "core/platform/graphics/WindRule.h"
+#include "core/rendering/ExclusionPolygon.h"
+#include "core/rendering/ExclusionRectangle.h"
 #include <wtf/MathExtras.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

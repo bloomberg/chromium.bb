@@ -29,7 +29,6 @@
 #include "CSSCalculationValue.h"
 #include "CSSValueKeywords.h"
 #include "NodeRenderStyle.h"
-#include "RenderObject.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/GeneratorGeneratedImage.h"
@@ -37,6 +36,7 @@
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/IntSizeHash.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

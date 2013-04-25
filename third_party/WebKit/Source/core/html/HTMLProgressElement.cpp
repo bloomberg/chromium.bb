@@ -30,8 +30,8 @@
 #include "HTMLParserIdioms.h"
 #include "NodeRenderingContext.h"
 #include "ProgressShadowElement.h"
-#include "RenderProgress.h"
 #include "ShadowRoot.h"
+#include "core/rendering/RenderProgress.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

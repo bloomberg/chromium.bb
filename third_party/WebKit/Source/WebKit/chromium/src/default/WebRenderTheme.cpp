@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebRenderTheme.h"
 
-#include "RenderThemeChromiumDefault.h"
 #include "WebView.h"
+#include "core/rendering/RenderThemeChromiumDefault.h"
 
 using WebCore::RenderTheme;
 using WebCore::RenderThemeChromiumDefault;

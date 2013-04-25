@@ -35,7 +35,7 @@
 #include "Chrome.h"
 #include "Event.h"
 #include "Page.h"
-#include "RenderDetailsMarker.h"
+#include "core/rendering/RenderDetailsMarker.h"
 
 using namespace WTF::Unicode;
 

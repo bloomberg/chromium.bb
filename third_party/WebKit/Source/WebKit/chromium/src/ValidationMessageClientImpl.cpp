@@ -28,9 +28,9 @@
 
 #include "Element.h"
 #include "FrameView.h"
-#include "RenderObject.h"
 #include "WebTextDirection.h"
 #include "WebValidationMessageClient.h"
+#include "core/rendering/RenderObject.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

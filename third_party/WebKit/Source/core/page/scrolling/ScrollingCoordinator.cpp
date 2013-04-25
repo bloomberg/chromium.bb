@@ -32,9 +32,6 @@
 #include "FrameView.h"
 #include "Page.h"
 #include "PluginViewBase.h"
-#include "RenderLayerBacking.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
 #include "core/platform/PlatformWheelEvent.h"
 #include "core/platform/ScrollAnimator.h"
 #include "core/platform/ScrollbarThemeComposite.h"
@@ -44,6 +41,9 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/Region.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 #include <public/Platform.h>
 #include <public/WebCompositorSupport.h>
 #include <public/WebLayerPositionConstraint.h>

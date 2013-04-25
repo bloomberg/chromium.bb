@@ -19,9 +19,9 @@
  */
 
 #include "config.h"
-#include "RenderCombineText.h"
+#include "core/rendering/RenderCombineText.h"
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

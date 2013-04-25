@@ -37,10 +37,10 @@
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "Page.h"
-#include "RenderImage.h"
-#include "RenderVideo.h"
 #include "ScriptController.h"
 #include "Settings.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderVideo.h"
 
 namespace WebCore {
 

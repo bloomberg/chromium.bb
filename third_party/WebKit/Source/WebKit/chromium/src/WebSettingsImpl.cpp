@@ -39,7 +39,7 @@
 #include <wtf/UnusedParam.h>
 
 #if defined(OS_WIN)
-#include "RenderThemeChromiumWin.h"
+#include "core/rendering/RenderThemeChromiumWin.h"
 #endif
 
 using namespace WebCore;

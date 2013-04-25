@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityMenuList.h"
 
-#include "RenderMenuList.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityMenuListPopup.h"
+#include "core/rendering/RenderMenuList.h"
 
 namespace WebCore {
 

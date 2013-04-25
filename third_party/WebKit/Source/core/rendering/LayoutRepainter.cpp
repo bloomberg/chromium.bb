@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "LayoutRepainter.h"
+#include "core/rendering/LayoutRepainter.h"
 
-#include "RenderObject.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

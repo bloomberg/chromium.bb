@@ -18,24 +18,24 @@
  */
 
 #include "config.h"
-#include "RootInlineBox.h"
+#include "core/rendering/RootInlineBox.h"
 
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "Document.h"
-#include "EllipsisBox.h"
 #include "Frame.h"
-#include "HitTestResult.h"
-#include "InlineTextBox.h"
 #include "Page.h"
-#include "PaintInfo.h"
-#include "RenderArena.h"
-#include "RenderBlock.h"
-#include "RenderFlowThread.h"
-#include "RenderView.h"
-#include "VerticalPositionCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/text/BidiResolver.h"
+#include "core/rendering/EllipsisBox.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderArena.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderFlowThread.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/VerticalPositionCache.h"
 #include <wtf/unicode/Unicode.h>
 
 using namespace std;

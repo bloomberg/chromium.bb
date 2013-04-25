@@ -74,9 +74,6 @@
 #include "PlatformContextSkia.h"
 #include "PointerLockController.h"
 #include "PrerendererClientImpl.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
-#include "RenderWidget.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
@@ -143,6 +140,9 @@
 #include "core/platform/graphics/chromium/LayerPainterChromium.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/network/ResourceHandle.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/RenderWidget.h"
 #include "painting/ContinuousPainter.h"
 #include "painting/GraphicsContextBuilder.h"
 #include "src/WebActiveGestureAnimation.h"
@@ -166,16 +166,16 @@
 #include <wtf/Uint8ClampedArray.h>
 
 #if ENABLE(DEFAULT_RENDER_THEME)
-#include "RenderThemeChromiumDefault.h"
 #include "core/platform/chromium/PlatformThemeChromiumDefault.h"
+#include "core/rendering/RenderThemeChromiumDefault.h"
 #endif
 
 #if OS(WINDOWS)
 #if !ENABLE(DEFAULT_RENDER_THEME)
-#include "RenderThemeChromiumWin.h"
+#include "core/rendering/RenderThemeChromiumWin.h"
 #endif
 #else
-#include "RenderTheme.h"
+#include "core/rendering/RenderTheme.h"
 #endif
 
 // Get rid of WTF's pow define so we can use std::pow.

@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "ExclusionRectangle.h"
+#include "core/rendering/ExclusionRectangle.h"
 
 #include <wtf/MathExtras.h>
 

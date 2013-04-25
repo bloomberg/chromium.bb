@@ -28,9 +28,6 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "RenderLayerBacking.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
 #include "URLTestHelpers.h"
 #include "WebCompositorInitializer.h"
 #include "WebFrameClient.h"
@@ -39,6 +36,9 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 #include <public/Platform.h>
 #include <public/WebLayer.h>
 #include <public/WebLayerTreeView.h>

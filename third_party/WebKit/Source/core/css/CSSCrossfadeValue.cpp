@@ -29,10 +29,10 @@
 #include "CSSImageValue.h"
 #include "CachedImage.h"
 #include "CachedResourceLoader.h"
-#include "RenderObject.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"
 #include "core/platform/graphics/ImageBuffer.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/StyleCachedImage.h"
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include <wtf/text/StringBuilder.h>

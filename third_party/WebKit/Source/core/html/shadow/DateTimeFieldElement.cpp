@@ -29,11 +29,11 @@
 
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
-#include "RenderObject.h"
 #include "Text.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

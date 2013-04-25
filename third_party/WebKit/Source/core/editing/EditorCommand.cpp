@@ -49,7 +49,6 @@
 #include "IndentOutdentCommand.h"
 #include "InsertListCommand.h"
 #include "Page.h"
-#include "RenderBox.h"
 #include "ReplaceSelectionCommand.h"
 #include "Settings.h"
 #include "StylePropertySet.h"
@@ -60,6 +59,7 @@
 #include "core/platform/Pasteboard.h"
 #include "core/platform/Scrollbar.h"
 #include "core/platform/Sound.h"
+#include "core/rendering/RenderBox.h"
 #include "htmlediting.h"
 #include "markup.h"
 #include <wtf/text/AtomicString.h>

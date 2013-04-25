@@ -55,8 +55,6 @@
 #include "InsertionPoint.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
-#include "RenderTextControlSingleLine.h"
-#include "RenderTheme.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScopedEventQueue.h"
 #include "ScriptEventListener.h"
@@ -71,6 +69,8 @@
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/text/PlatformLocale.h"
+#include "core/rendering/RenderTextControlSingleLine.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

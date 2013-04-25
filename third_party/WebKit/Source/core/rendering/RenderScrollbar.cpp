@@ -24,14 +24,14 @@
  */
 
 #include "config.h"
-#include "RenderScrollbar.h"
+#include "core/rendering/RenderScrollbar.h"
 
 #include "Frame.h"
 #include "FrameView.h"
-#include "RenderPart.h"
-#include "RenderScrollbarPart.h"
-#include "RenderScrollbarTheme.h"
 #include "StyleResolver.h"
+#include "core/rendering/RenderPart.h"
+#include "core/rendering/RenderScrollbarPart.h"
+#include "core/rendering/RenderScrollbarTheme.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

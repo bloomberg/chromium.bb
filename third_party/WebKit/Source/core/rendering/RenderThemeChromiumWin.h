@@ -24,7 +24,7 @@
 #ifndef RenderThemeChromiumWin_h
 #define RenderThemeChromiumWin_h
 
-#include "RenderThemeChromiumSkia.h"
+#include "core/rendering/RenderThemeChromiumSkia.h"
 
 #if WIN32
 typedef void* HANDLE;

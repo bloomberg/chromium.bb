@@ -20,9 +20,9 @@
  */
 
 #include "config.h"
-#include "RenderQuote.h"
+#include "core/rendering/RenderQuote.h"
 
-#include "RenderView.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/text/AtomicString.h>
 
 #define U(x) ((const UChar*)L##x)

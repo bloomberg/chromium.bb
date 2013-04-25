@@ -20,7 +20,7 @@
 #ifndef RenderTableCaption_h
 #define RenderTableCaption_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

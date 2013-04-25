@@ -48,7 +48,6 @@
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "RenderTextControl.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
@@ -56,6 +55,7 @@
 #include "core/platform/FileSystem.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/network/FormData.h"
+#include "core/rendering/RenderTextControl.h"
 
 using namespace std;
 

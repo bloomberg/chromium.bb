@@ -28,8 +28,8 @@
 #include "CSSValueKeywords.h"
 #include "ExceptionCode.h"
 #include "HTMLNames.h"
-#include "RenderLayer.h"
-#include "RenderMarquee.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderMarquee.h"
 
 namespace WebCore {
 

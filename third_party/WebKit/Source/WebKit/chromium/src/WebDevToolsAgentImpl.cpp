@@ -44,7 +44,6 @@
 #include "Page.h"
 #include "PageGroup.h"
 #include "PageScriptDebugServer.h"
-#include "RenderView.h"
 #include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8Utilities.h"
@@ -58,6 +57,7 @@
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/rendering/RenderView.h"
 #include "painting/GraphicsContextBuilder.h"
 #include <public/Platform.h>
 #include <public/WebRect.h>

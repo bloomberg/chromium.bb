@@ -23,9 +23,9 @@
 #ifndef InlineIterator_h
 #define InlineIterator_h
 
-#include "BidiRun.h"
-#include "RenderBlock.h"
-#include "RenderText.h"
+#include "core/rendering/BidiRun.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderText.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

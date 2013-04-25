@@ -36,9 +36,9 @@
 #include "CompositeAnimation.h"
 #include "Document.h"
 #include "EventNames.h"
-#include "RenderBox.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/UnitBezier.h"
+#include "core/rendering/RenderBox.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/CurrentTime.h>
 

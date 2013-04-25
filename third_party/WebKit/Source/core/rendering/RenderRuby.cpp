@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "RenderRuby.h"
+#include "core/rendering/RenderRuby.h"
 
-#include "RenderRubyRun.h"
+#include "core/rendering/RenderRubyRun.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/RefPtr.h>

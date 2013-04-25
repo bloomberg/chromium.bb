@@ -19,7 +19,7 @@
  */
 
 #import "config.h"
-#import "RenderThemeChromiumMac.h"
+#import "core/rendering/RenderThemeChromiumMac.h"
 
 #import "CSSValueKeywords.h"
 #import "CSSValueList.h"
@@ -35,15 +35,6 @@
 #import "HTMLPlugInImageElement.h"
 #import "LocalCurrentGraphicsContext.h"
 #import "MediaControlElements.h"
-#import "PaintInfo.h"
-#import "RenderLayer.h"
-#import "RenderMedia.h"
-#import "RenderMediaControls.h"
-#import "RenderMediaControlsChromium.h"
-#import "RenderMeter.h"
-#import "RenderProgress.h"
-#import "RenderSlider.h"
-#import "RenderView.h"
 #import "StyleResolver.h"
 #import "ThemeMac.h"
 #import "TimeRanges.h"
@@ -58,6 +49,15 @@
 #import "core/platform/graphics/ImageBuffer.h"
 #import "core/platform/graphics/StringTruncator.h"
 #import "core/platform/graphics/cg/GraphicsContextCG.h"
+#import "core/rendering/PaintInfo.h"
+#import "core/rendering/RenderLayer.h"
+#import "core/rendering/RenderMedia.h"
+#import "core/rendering/RenderMediaControls.h"
+#import "core/rendering/RenderMediaControlsChromium.h"
+#import "core/rendering/RenderMeter.h"
+#import "core/rendering/RenderProgress.h"
+#import "core/rendering/RenderSlider.h"
+#import "core/rendering/RenderView.h"
 
 #import <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>

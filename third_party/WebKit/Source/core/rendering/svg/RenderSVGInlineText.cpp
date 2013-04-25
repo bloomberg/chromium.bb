@@ -27,12 +27,12 @@
 #include "core/rendering/svg/RenderSVGInlineText.h"
 
 #include "CSSFontSelector.h"
-#include "RenderBlock.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "VisiblePosition.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatQuad.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/RenderSVGText.h"
 #include "core/rendering/svg/SVGInlineTextBox.h"

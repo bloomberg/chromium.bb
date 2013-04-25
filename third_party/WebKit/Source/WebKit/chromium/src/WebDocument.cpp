@@ -44,7 +44,6 @@
 #include "HTMLFormElement.h"
 #include "HTMLHeadElement.h"
 #include "NodeList.h"
-#include "RenderObject.h"
 #include "SecurityOrigin.h"
 #include "StyleSheetContents.h"
 #include "WebAccessibilityObject.h"
@@ -56,6 +55,7 @@
 #include "WebNodeCollection.h"
 #include "WebNodeList.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/RenderObject.h"
 #include <public/WebURL.h>
 #include <wtf/PassRefPtr.h>
 

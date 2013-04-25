@@ -28,10 +28,10 @@
 #include "HTMLCollection.h"
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "NodeTraversal.h"
-#include "RenderObject.h"
 #include "core/platform/graphics/IntSize.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderObject.h"
 
 using namespace std;
 

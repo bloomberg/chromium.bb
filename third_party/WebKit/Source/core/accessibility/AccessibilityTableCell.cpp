@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityTableCell.h"
 
-#include "RenderTableCell.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/RenderTableCell.h"
 
 using namespace std;
 

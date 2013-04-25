@@ -23,16 +23,16 @@
  */
 
 #include "config.h"
-#include "RenderTableRow.h"
+#include "core/rendering/RenderTableRow.h"
 
 #include "CachedImage.h"
 #include "Document.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
-#include "PaintInfo.h"
-#include "RenderTableCell.h"
-#include "RenderView.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderTableCell.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

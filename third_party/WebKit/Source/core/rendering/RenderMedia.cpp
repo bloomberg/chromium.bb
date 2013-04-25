@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "RenderMedia.h"
+#include "core/rendering/RenderMedia.h"
 
 #include "HTMLMediaElement.h"
-#include "RenderFlowThread.h"
-#include "RenderView.h"
+#include "core/rendering/RenderFlowThread.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

@@ -20,7 +20,7 @@
 */
 
 #include "config.h"
-#include "HitTestResult.h"
+#include "core/rendering/HitTestResult.h"
 
 #include "CachedImage.h"
 #include "DocumentMarkerController.h"
@@ -36,11 +36,11 @@
 #include "HTMLParserIdioms.h"
 #include "HTMLPlugInImageElement.h"
 #include "HTMLVideoElement.h"
-#include "HitTestLocation.h"
-#include "RenderBlock.h"
-#include "RenderImage.h"
-#include "RenderInline.h"
 #include "core/platform/Scrollbar.h"
+#include "core/rendering/HitTestLocation.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderInline.h"
 
 #if ENABLE(SVG)
 #include "SVGNames.h"

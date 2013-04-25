@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "RenderGrid.h"
+#include "core/rendering/RenderGrid.h"
 
-#include "LayoutRepainter.h"
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "core/platform/NotImplemented.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

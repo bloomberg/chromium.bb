@@ -32,17 +32,17 @@
 
 #include "TouchDisambiguation.h"
 
+#include <algorithm>
+#include <cmath>
 #include "Document.h"
 #include "Element.h"
 #include "EventHandler.h"
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "NodeTraversal.h"
-#include "RenderBlock.h"
-#include <algorithm>
-#include <cmath>
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderBlock.h"
 
 using namespace std;
 

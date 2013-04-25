@@ -24,12 +24,12 @@
 
 #include "core/platform/graphics/filters/FEMerge.h"
 
-#include "RenderTreeAsText.h"
 #include "SkMergeImageFilter.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderTreeAsText.h"
 #include <wtf/OwnArrayPtr.h>
 
 namespace WebCore {

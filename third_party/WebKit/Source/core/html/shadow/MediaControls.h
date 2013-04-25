@@ -34,8 +34,8 @@
 #include "MediaControlElements.h"
 #include "MouseEvent.h"
 #include "Page.h"
-#include "RenderTheme.h"
 #include "Text.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/RefPtr.h>
 
 #include "TextTrackCue.h"

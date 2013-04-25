@@ -28,14 +28,14 @@
  */
 
 #include "config.h"
-#include "ExclusionShapeInfo.h"
+#include "core/rendering/ExclusionShapeInfo.h"
 
 #if ENABLE(CSS_EXCLUSIONS)
 
-#include "ExclusionShape.h"
-#include "RenderBlock.h"
-#include "RenderBox.h"
-#include "RenderRegion.h"
+#include "core/rendering/ExclusionShape.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderRegion.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

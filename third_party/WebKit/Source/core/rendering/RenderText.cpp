@@ -23,28 +23,28 @@
  */
 
 #include "config.h"
-#include "RenderText.h"
+#include "core/rendering/RenderText.h"
 
-#include "EllipsisBox.h"
 #include "FrameView.h"
-#include "InlineTextBox.h"
 #include "Range.h"
-#include "RenderArena.h"
-#include "RenderBlock.h"
-#include "RenderCombineText.h"
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "Settings.h"
 #include "Text.h"
 #include "TextResourceDecoder.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
-#include "break_lines.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/text/Hyphenation.h"
 #include "core/platform/text/TextBreakIterator.h"
 #include "core/platform/text/transcoder/FontTranscoder.h"
+#include "core/rendering/EllipsisBox.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderArena.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderCombineText.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/break_lines.h"
 #include <wtf/text/StringBuffer.h>
 #include <wtf/unicode/CharacterNames.h>
 

@@ -8,8 +8,6 @@
 #include "Frame.h"
 #include "HTMLMediaElement.h"
 #include "PlatformContextSkia.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
 #include "TimeRanges.h"
 #include "WebAudioSourceProvider.h"
 #include "WebDocument.h"
@@ -29,6 +27,8 @@
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 #include <public/Platform.h>
 #include <public/WebCanvas.h>
 #include <public/WebCompositorSupport.h>

@@ -21,18 +21,18 @@
  */
 
 #include "config.h"
-#include "RenderWidget.h"
+#include "core/rendering/RenderWidget.h"
 
 #include "AnimationController.h"
 #include "Frame.h"
-#include "HitTestResult.h"
-#include "RenderCounter.h"
-#include "RenderLayer.h"
-#include "RenderLayerBacking.h"
-#include "RenderView.h"
-#include "RenderWidgetProtector.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderCounter.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/RenderWidgetProtector.h"
 
 
 using namespace std;

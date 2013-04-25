@@ -26,9 +26,9 @@
 
 #include "core/platform/graphics/filters/FEConvolveMatrix.h"
 
-#include "RenderTreeAsText.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderTreeAsText.h"
 
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/ParallelJobs.h>

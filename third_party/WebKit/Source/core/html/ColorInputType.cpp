@@ -41,11 +41,11 @@
 #include "HTMLOptionElement.h"
 #include "InputTypeNames.h"
 #include "MouseEvent.h"
-#include "RenderObject.h"
-#include "RenderView.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
 #include "core/platform/graphics/Color.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/WTFString.h>
 

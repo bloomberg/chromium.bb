@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "RenderTextTrackCue.h"
+#include "core/rendering/RenderTextTrackCue.h"
 
 #include "TextTrackCue.h"
 #include "TextTrackCueGeneric.h"

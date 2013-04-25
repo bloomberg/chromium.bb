@@ -36,8 +36,6 @@
 #include "Page.h"
 #include "PlugInClient.h"
 #include "PluginViewBase.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderImage.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
@@ -48,6 +46,8 @@
 #include "core/platform/Logging.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderImage.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

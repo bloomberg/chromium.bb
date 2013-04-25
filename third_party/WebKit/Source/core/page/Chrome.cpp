@@ -31,12 +31,10 @@
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
 #include "PageGroupLoadDeferrer.h"
 #include "PopupOpeningObserver.h"
-#include "RenderObject.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "WindowFeatures.h"
@@ -47,6 +45,8 @@
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/network/DNS.h"
 #include "core/platform/network/ResourceHandle.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderObject.h"
 #include "core/storage/StorageNamespace.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

@@ -26,10 +26,10 @@
 
 #include "core/platform/graphics/filters/FEOffset.h"
 
-#include "RenderTreeAsText.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderTreeAsText.h"
 
 #include "SkOffsetImageFilter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"

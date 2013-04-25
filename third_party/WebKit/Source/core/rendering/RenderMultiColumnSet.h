@@ -27,7 +27,7 @@
 #ifndef RenderMultiColumnSet_h
 #define RenderMultiColumnSet_h
 
-#include "RenderRegionSet.h"
+#include "core/rendering/RenderRegionSet.h"
 
 namespace WebCore {
 

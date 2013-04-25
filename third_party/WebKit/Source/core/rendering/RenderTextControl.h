@@ -22,8 +22,8 @@
 #ifndef RenderTextControl_h
 #define RenderTextControl_h
 
-#include "RenderBlock.h"
-#include "RenderFlexibleBox.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderFlexibleBox.h"
 
 namespace WebCore {
 

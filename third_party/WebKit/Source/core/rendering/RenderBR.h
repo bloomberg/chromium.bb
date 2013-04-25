@@ -21,7 +21,7 @@
 #ifndef RenderBR_h
 #define RenderBR_h
 
-#include "RenderText.h"
+#include "core/rendering/RenderText.h"
 
 /*
  * The whole class here is a hack to get <br> working, as long as we don't have support for

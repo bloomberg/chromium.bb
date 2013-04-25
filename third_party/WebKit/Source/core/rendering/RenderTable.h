@@ -26,7 +26,7 @@
 #define RenderTable_h
 
 #include "CSSPropertyNames.h"
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 #include "core/rendering/style/CollapsedBorderValue.h"
 #include <wtf/Vector.h>
 

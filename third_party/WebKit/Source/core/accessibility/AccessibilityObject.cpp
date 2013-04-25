@@ -32,9 +32,6 @@
 #include "Editor.h"
 #include "FrameSelection.h"
 #include "NodeTraversal.h"
-#include "RenderListItem.h"
-#include "RenderTheme.h"
-#include "RenderView.h"
 #include "RenderedPosition.h"
 #include "TextCheckingHelper.h"
 #include "UserGestureIndicator.h"
@@ -43,6 +40,9 @@
 #include "core/accessibility/AccessibilityTable.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/TextCheckerClient.h"
+#include "core/rendering/RenderListItem.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

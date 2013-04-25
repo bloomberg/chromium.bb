@@ -22,7 +22,7 @@
 #define RenderSVGInline_h
 
 #if ENABLE(SVG)
-#include "RenderInline.h"
+#include "core/rendering/RenderInline.h"
 
 #include "core/rendering/svg/SVGRenderSupport.h"
 

@@ -21,8 +21,8 @@
 #ifndef FixedTableLayout_h
 #define FixedTableLayout_h
 
-#include "TableLayout.h"
 #include "core/platform/Length.h"
+#include "core/rendering/TableLayout.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

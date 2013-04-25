@@ -36,7 +36,6 @@
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
 #include "Page.h"
-#include "RenderObject.h"
 #include "Settings.h"
 #include "SpellChecker.h"
 #include "UndoStep.h"
@@ -60,6 +59,7 @@
 #include "core/platform/NotImplemented.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/chromium/KeyboardCodes.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/text/WTFString.h>
 
 using namespace WebCore;

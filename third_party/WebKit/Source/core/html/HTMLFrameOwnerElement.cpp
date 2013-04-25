@@ -24,7 +24,7 @@
 #include "DOMWindow.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "RenderPart.h"
+#include "core/rendering/RenderPart.h"
 
 #if ENABLE(SVG)
 #include "ExceptionCode.h"

@@ -28,11 +28,11 @@
 #include "CSSParser.h"
 #include "CSSPropertyNames.h"
 #include "QualifiedName.h"
-#include "RenderObject.h"
 #include "SVGAnimatorFactory.h"
 #include "SVGNames.h"
 #include "SVGStyledElement.h"
 #include "StylePropertySet.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

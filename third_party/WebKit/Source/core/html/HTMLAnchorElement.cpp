@@ -38,7 +38,6 @@
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "PingLoader.h"
-#include "RenderImage.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
@@ -46,6 +45,7 @@
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/network/DNS.h"
 #include "core/platform/network/ResourceRequest.h"
+#include "core/rendering/RenderImage.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

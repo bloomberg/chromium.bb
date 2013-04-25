@@ -37,13 +37,13 @@
 #include "FrameView.h"
 #include "InputTypeNames.h"
 #include "PickerCommon.h"
-#include "RenderTheme.h"
 #include "WebViewImpl.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/DateTimeChooserClient.h"
 #include "core/platform/Language.h"
 #include "core/platform/NotImplemented.h"
 #include "core/platform/text/PlatformLocale.h"
+#include "core/rendering/RenderTheme.h"
 #include <public/Platform.h>
 #include <public/WebLocalizedString.h>
 

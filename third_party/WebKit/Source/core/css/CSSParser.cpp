@@ -66,7 +66,6 @@
 #include "PageConsole.h"
 #include "Pair.h"
 #include "Rect.h"
-#include "RenderTheme.h"
 #include "RuntimeEnabledFeatures.h"
 #include "SVGParserUtilities.h"
 #include "Settings.h"
@@ -84,6 +83,7 @@
 #include "core/platform/HashTools.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/text/TextEncoding.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/BitArray.h>
 #include <wtf/dtoa.h>
 #include <wtf/HexNumber.h>

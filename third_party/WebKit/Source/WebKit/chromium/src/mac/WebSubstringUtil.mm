@@ -43,10 +43,10 @@
 #include "HTMLElement.h"
 #include "Node.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "TextIterator.h"
 #include "WebFrameImpl.h"
 #include "core/platform/graphics/Font.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <public/WebRect.h>
 

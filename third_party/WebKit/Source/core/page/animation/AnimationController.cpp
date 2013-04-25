@@ -39,8 +39,8 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "PseudoElement.h"
-#include "RenderView.h"
 #include "TransitionEvent.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/UnusedParam.h>
 

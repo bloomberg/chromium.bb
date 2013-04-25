@@ -48,7 +48,6 @@
 #include "NamedFlowCollection.h"
 #include "Node.h"
 #include "NodeList.h"
-#include "RenderRegion.h"
 #include "SVGStyleElement.h"
 #include "StylePropertySet.h"
 #include "StylePropertyShorthand.h"
@@ -56,12 +55,13 @@
 #include "StyleRule.h"
 #include "StyleSheet.h"
 #include "StyleSheetList.h"
+#include "core/rendering/RenderRegion.h"
 
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>
-#include <wtf/Vector.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/StringConcatenate.h>
+#include <wtf/Vector.h>
 
 namespace CSSAgentState {
 static const char cssAgentEnabled[] = "cssAgentEnabled";

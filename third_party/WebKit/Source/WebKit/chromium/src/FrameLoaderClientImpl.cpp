@@ -46,7 +46,6 @@
 #include "HTMLFormElement.h"  // needed by FormState.h
 #include "HTMLNames.h"
 #include "HistoryItem.h"
-#include "HitTestResult.h"
 #include "MessageEvent.h"
 #include "MouseEvent.h"
 #include "Page.h"
@@ -56,6 +55,7 @@
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/network/HTTPParsers.h"
 #include "core/platform/network/ResourceHandleInternal.h"
+#include "core/rendering/HitTestResult.h"
 #if ENABLE(MEDIA_STREAM)
 #include "core/platform/mediastream/chromium/RTCPeerConnectionHandlerChromium.h"
 #endif

@@ -29,12 +29,12 @@
 #include "CachedResourceLoader.h"
 #include "CachedResourceRequest.h"
 #include "Document.h"
-#include "RenderObject.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGPreserveAspectRatio.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/Image.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {

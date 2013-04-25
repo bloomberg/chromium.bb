@@ -31,9 +31,9 @@
 #include "core/rendering/mathml/RenderMathMLOperator.h"
 
 #include "MathMLNames.h"
-#include "RenderText.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/FontSelector.h"
+#include "core/rendering/RenderText.h"
 
 namespace WebCore {
     

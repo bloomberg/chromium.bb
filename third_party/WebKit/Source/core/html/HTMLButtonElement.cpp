@@ -32,8 +32,8 @@
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "KeyboardEvent.h"
-#include "RenderButton.h"
 #include "ScriptEventListener.h"
+#include "core/rendering/RenderButton.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

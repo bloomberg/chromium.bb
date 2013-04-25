@@ -19,14 +19,14 @@
  */
 
 #include "config.h"
-#include "RenderButton.h"
+#include "core/rendering/RenderButton.h"
 
 #include "Document.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "RenderTextFragment.h"
-#include "RenderTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderTextFragment.h"
+#include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

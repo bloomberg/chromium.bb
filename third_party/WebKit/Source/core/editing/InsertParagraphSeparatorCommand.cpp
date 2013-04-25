@@ -33,9 +33,9 @@
 #include "HTMLNames.h"
 #include "InsertLineBreakCommand.h"
 #include "NodeTraversal.h"
-#include "RenderObject.h"
 #include "Text.h"
 #include "VisibleUnits.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 
 namespace WebCore {

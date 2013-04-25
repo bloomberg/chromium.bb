@@ -29,13 +29,13 @@
  */
 
 #include "config.h"
-#include "WebElement.h"
-#include "WebDocument.h"
 #include "Element.h"
 #include "NamedNodeMap.h"
-#include "RenderBoxModelObject.h"
-#include "RenderObject.h"
 #include "ShadowRoot.h"
+#include "WebDocument.h"
+#include "WebElement.h"
+#include "core/rendering/RenderBoxModelObject.h"
+#include "core/rendering/RenderObject.h"
 #include <public/WebRect.h>
 #include <wtf/PassRefPtr.h>
 

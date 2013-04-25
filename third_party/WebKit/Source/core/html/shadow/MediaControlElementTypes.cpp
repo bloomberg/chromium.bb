@@ -35,9 +35,9 @@
 #include "ExceptionCodePlaceholder.h"
 #include "HTMLNames.h"
 #include "MouseEvent.h"
-#include "RenderMedia.h"
-#include "RenderMediaControlElements.h"
 #include "StylePropertySet.h"
+#include "core/rendering/RenderMedia.h"
+#include "core/rendering/RenderMediaControlElements.h"
 
 namespace WebCore {
 

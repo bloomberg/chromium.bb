@@ -75,7 +75,6 @@
       '../page/scrolling',
       '../platform/graphics/skia',
       '../plugins',
-      '../rendering',
       '../svg',
       '../svg/animation',
       '../svg/graphics',

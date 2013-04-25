@@ -28,12 +28,12 @@
  */
 
 #include "config.h"
-#include "ExclusionShapeInsideInfo.h"
+#include "core/rendering/ExclusionShapeInsideInfo.h"
 
 #if ENABLE(CSS_EXCLUSIONS)
 
-#include "InlineIterator.h"
-#include "RenderBlock.h"
+#include "core/rendering/InlineIterator.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

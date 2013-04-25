@@ -26,10 +26,10 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGContainer.h"
 
-#include "LayoutRepainter.h"
-#include "RenderView.h"
 #include "SVGStyledElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 #include "core/rendering/svg/SVGRenderingContext.h"

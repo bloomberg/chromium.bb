@@ -33,8 +33,8 @@
 
 #include "ContainerNode.h"
 #include "EventHandler.h"
-#include "HitTestResult.h"
 #include "Node.h"
+#include "core/rendering/HitTestResult.h"
 
 #if ENABLE(VIEWPORT)
 

@@ -26,7 +26,7 @@
 #ifndef RenderTableCol_h
 #define RenderTableCol_h
 
-#include "RenderBox.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 

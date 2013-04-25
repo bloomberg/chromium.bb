@@ -22,7 +22,7 @@
 #ifndef RenderQuote_h
 #define RenderQuote_h
 
-#include "RenderText.h"
+#include "core/rendering/RenderText.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/RenderStyleConstants.h"

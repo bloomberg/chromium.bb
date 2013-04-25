@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "ExclusionInterval.h"
+#include "core/rendering/ExclusionInterval.h"
 
 #include <wtf/MathExtras.h>
 

@@ -28,8 +28,8 @@
 #else
 #include "core/platform/ThemeTypes.h"
 #endif
-#include "RenderObject.h"
 #include "core/platform/ScrollTypes.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

@@ -21,7 +21,7 @@
 #ifndef RenderDetailsMarker_h
 #define RenderDetailsMarker_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

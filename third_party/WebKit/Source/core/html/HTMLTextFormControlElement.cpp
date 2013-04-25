@@ -38,14 +38,14 @@
 #include "HTMLNames.h"
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
-#include "RenderBox.h"
-#include "RenderTextControl.h"
-#include "RenderTheme.h"
 #include "ScriptEventListener.h"
 #include "Text.h"
 #include "TextIterator.h"
 #include "UseCounter.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderTextControl.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

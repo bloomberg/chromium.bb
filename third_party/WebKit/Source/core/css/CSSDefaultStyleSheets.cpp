@@ -33,10 +33,10 @@
 #include "ChromeClient.h"
 #include "MediaQueryEvaluator.h"
 #include "Page.h"
-#include "RenderTheme.h"
 #include "RuleSet.h"
 #include "StyleSheetContents.h"
 #include "UserAgentStyleSheets.h"
+#include "core/rendering/RenderTheme.h"
 
 namespace WebCore {
 

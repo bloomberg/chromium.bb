@@ -32,12 +32,12 @@
 #include "FrameView.h"
 #include "MemoryCache.h"
 #include "Page.h"
-#include "RenderObject.h"
 #include "ResourceLoader.h"
 #include "RuntimeEnabledFeatures.h"
 #include "Settings.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/BitmapImage.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryObjectInfo.h>

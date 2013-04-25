@@ -20,11 +20,11 @@
 
 #include "config.h"
 
-#include "RenderMeter.h"
+#include "core/rendering/RenderMeter.h"
 
 #include "HTMLMeterElement.h"
 #include "HTMLNames.h"
-#include "RenderTheme.h"
+#include "core/rendering/RenderTheme.h"
 
 using namespace std;
 

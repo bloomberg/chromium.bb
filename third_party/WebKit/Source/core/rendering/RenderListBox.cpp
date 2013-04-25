@@ -28,7 +28,7 @@
  */
 
 #include "config.h"
-#include "RenderListBox.h"
+#include "core/rendering/RenderListBox.h"
 
 #include <math.h>
 #include "CSSFontSelector.h"
@@ -43,15 +43,8 @@
 #include "HTMLOptGroupElement.h"
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
-#include "HitTestResult.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "PaintInfo.h"
-#include "RenderLayer.h"
-#include "RenderScrollbar.h"
-#include "RenderText.h"
-#include "RenderTheme.h"
-#include "RenderView.h"
 #include "SpatialNavigation.h"
 #include "StyleResolver.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -59,6 +52,13 @@
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderScrollbar.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

@@ -44,13 +44,13 @@
 
 #include "config.h"
 
-#include "RenderMarquee.h"
+#include "core/rendering/RenderMarquee.h"
 
 #include "FrameView.h"
 #include "HTMLMarqueeElement.h"
 #include "HTMLNames.h"
-#include "RenderLayer.h"
-#include "RenderView.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

@@ -54,12 +54,10 @@
 #include "Geolocation.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "NavigationAction.h"
 #include "Node.h"
 #include "Page.h"
 #include "PagePopupDriver.h"
-#include "RenderWidget.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
@@ -79,6 +77,8 @@
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderWidget.h"
 #if ENABLE(INPUT_TYPE_COLOR)
 #include "WebColorChooser.h"
 #endif

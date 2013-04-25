@@ -28,9 +28,9 @@
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
-#include "RenderBlock.h"
 #include "ShadowRoot.h"
 #include "core/platform/PlatformMouseEvent.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

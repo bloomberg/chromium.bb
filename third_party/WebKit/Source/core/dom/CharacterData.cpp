@@ -31,10 +31,10 @@
 #include "MutationObserverInterestGroup.h"
 #include "MutationRecord.h"
 #include "NodeRenderingContext.h"
-#include "RenderText.h"
 #include "Text.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/text/TextBreakIterator.h"
+#include "core/rendering/RenderText.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;

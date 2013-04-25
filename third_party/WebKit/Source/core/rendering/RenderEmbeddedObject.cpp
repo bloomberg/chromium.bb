@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "RenderEmbeddedObject.h"
+#include "core/rendering/RenderEmbeddedObject.h"
 
 #include "CSSValueKeywords.h"
 #include "Chrome.h"
@@ -36,14 +36,9 @@
 #include "HTMLObjectElement.h"
 #include "HTMLParamElement.h"
 #include "HTMLPlugInElement.h"
-#include "HitTestResult.h"
 #include "MouseEvent.h"
 #include "Page.h"
-#include "PaintInfo.h"
 #include "PluginViewBase.h"
-#include "RenderTheme.h"
-#include "RenderView.h"
-#include "RenderWidgetProtector.h"
 #include "Settings.h"
 #include "Text.h"
 #include "core/platform/Cursor.h"
@@ -55,6 +50,11 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
+#include "core/rendering/RenderWidgetProtector.h"
 
 namespace WebCore {
 

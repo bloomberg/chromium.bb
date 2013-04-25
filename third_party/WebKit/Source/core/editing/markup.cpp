@@ -52,8 +52,6 @@
 #include "MarkupAccumulator.h"
 #include "NodeTraversal.h"
 #include "Range.h"
-#include "RenderBlock.h"
-#include "RenderObject.h"
 #include "Settings.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
@@ -62,6 +60,8 @@
 #include "VisibleUnits.h"
 #include "XMLNSNames.h"
 #include "core/platform/KURL.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

@@ -29,7 +29,7 @@
 #include "EventHandler.h"
 #include "Frame.h"
 #include "MouseEvent.h"
-#include "RenderView.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

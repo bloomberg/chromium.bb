@@ -32,7 +32,6 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
-#include "InlineTextBox.h"
 #include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
 #include "MemoryCache.h"
@@ -40,13 +39,14 @@
 #include "NodeRenderStyle.h"
 #include "NodeTraversal.h"
 #include "Page.h"
-#include "RenderBox.h"
-#include "RenderTheme.h"
-#include "RenderWidget.h"
-#include "RootInlineBox.h"
 #include "TemplateContentDocumentFragment.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/graphics/FloatRect.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderWidget.h"
+#include "core/rendering/RootInlineBox.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/Vector.h>
 

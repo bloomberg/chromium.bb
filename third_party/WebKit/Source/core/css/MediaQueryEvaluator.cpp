@@ -44,14 +44,14 @@
 #include "MediaQueryExp.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
 #include "Screen.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "core/platform/PlatformScreen.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/HashMap.h>
 

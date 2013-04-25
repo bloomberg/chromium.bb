@@ -23,7 +23,7 @@
 #ifndef RenderFrameSet_h
 #define RenderFrameSet_h
 
-#include "RenderBox.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 

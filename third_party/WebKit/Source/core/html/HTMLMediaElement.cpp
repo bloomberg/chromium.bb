@@ -66,9 +66,6 @@
 #include "NodeRenderingContext.h"
 #include "Page.h"
 #include "PageGroup.h"
-#include "RenderLayerCompositor.h"
-#include "RenderVideo.h"
-#include "RenderView.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "SecurityOrigin.h"
@@ -82,6 +79,9 @@
 #include "core/platform/Logging.h"
 #include "core/platform/MIMETypeRegistry.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderVideo.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MathExtras.h>
 #include <wtf/MemoryInstrumentationVector.h>

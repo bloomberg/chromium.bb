@@ -21,8 +21,8 @@
 #ifndef RootInlineBox_h
 #define RootInlineBox_h
 
-#include "InlineFlowBox.h"
 #include "core/platform/text/BidiContext.h"
+#include "core/rendering/InlineFlowBox.h"
 
 namespace WebCore {
 

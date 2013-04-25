@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "RenderLayerBacking.h"
+#include "core/rendering/RenderLayerBacking.h"
 
 #include "AnimationController.h"
 #include "CSSPropertyNames.h"
@@ -39,13 +39,6 @@
 #include "HTMLNames.h"
 #include "InspectorInstrumentation.h"
 #include "PluginViewBase.h"
-#include "RenderApplet.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderIFrame.h"
-#include "RenderImage.h"
-#include "RenderLayerCompositor.h"
-#include "RenderVideo.h"
-#include "RenderView.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
 #include "StyleResolver.h"
@@ -53,12 +46,19 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
+#include "core/rendering/RenderApplet.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderIFrame.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderVideo.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/KeyframeList.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/text/StringBuilder.h>
 
-#include "FilterEffectRenderer.h"
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
+#include "core/rendering/FilterEffectRenderer.h"
 
 #include "core/platform/graphics/GraphicsContext3D.h"
 

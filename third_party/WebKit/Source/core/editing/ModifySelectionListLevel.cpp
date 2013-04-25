@@ -30,7 +30,7 @@
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "HTMLElement.h"
-#include "RenderObject.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 
 namespace WebCore {

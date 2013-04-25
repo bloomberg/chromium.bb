@@ -25,13 +25,13 @@
 #include "SVGFELightElement.h"
 
 #include "Attribute.h"
-#include "RenderObject.h"
 #include "SVGElementInstance.h"
 #include "SVGFEDiffuseLightingElement.h"
 #include "SVGFESpecularLightingElement.h"
 #include "SVGFilterElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 
 namespace WebCore {

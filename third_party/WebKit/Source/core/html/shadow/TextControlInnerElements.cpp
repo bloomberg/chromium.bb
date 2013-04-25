@@ -37,14 +37,14 @@
 #include "HTMLTextAreaElement.h"
 #include "MouseEvent.h"
 #include "Page.h"
-#include "RenderSearchField.h"
-#include "RenderTextControl.h"
-#include "RenderView.h"
 #include "ScriptController.h"
 #include "SpeechInput.h"
 #include "SpeechInputEvent.h"
 #include "TextEvent.h"
 #include "TextEventInputType.h"
+#include "core/rendering/RenderSearchField.h"
+#include "core/rendering/RenderTextControl.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

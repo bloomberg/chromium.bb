@@ -48,10 +48,8 @@
 #include "HTMLNames.h"
 #include "HTMLPlugInImageElement.h"
 #include "HistoryItem.h"
-#include "HitTestResult.h"
 #include "MediaError.h"
 #include "Page.h"
-#include "RenderWidget.h"
 #include "Settings.h"
 #include "WebContextMenuData.h"
 #include "WebDataSourceImpl.h"
@@ -68,6 +66,8 @@
 #include "core/platform/KURL.h"
 #include "core/platform/Widget.h"
 #include "core/platform/text/TextBreakIterator.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderWidget.h"
 #include <public/WebPoint.h>
 #include <public/WebString.h>
 #include <public/WebURL.h>

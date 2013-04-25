@@ -19,12 +19,12 @@
  */
 
 #include "config.h"
-#include "RenderDetailsMarker.h"
+#include "core/rendering/RenderDetailsMarker.h"
 
 #include "Element.h"
 #include "HTMLNames.h"
-#include "PaintInfo.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/PaintInfo.h"
 
 namespace WebCore {
 

@@ -22,7 +22,7 @@
 #ifndef RenderTextControlMultiLine_h
 #define RenderTextControlMultiLine_h
 
-#include "RenderTextControl.h"
+#include "core/rendering/RenderTextControl.h"
 
 namespace WebCore {
 

@@ -23,7 +23,7 @@
  */
 
 #include "config.h"
-#include "RenderThemeChromiumWin.h"
+#include "core/rendering/RenderThemeChromiumWin.h"
 
 #include <windows.h>
 #include <uxtheme.h>
@@ -33,12 +33,7 @@
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "MediaControlElements.h"
-#include "PaintInfo.h"
 #include "PlatformContextSkia.h"
-#include "RenderBox.h"
-#include "RenderProgress.h"
-#include "RenderSlider.h"
-#include "RenderThemeChromiumCommon.h"
 #include "SystemInfo.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"
@@ -46,6 +41,11 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/chromium/FontUtilsChromiumWin.h"
 #include "core/platform/graphics/chromium/TransparencyWin.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderProgress.h"
+#include "core/rendering/RenderSlider.h"
+#include "core/rendering/RenderThemeChromiumCommon.h"
 #include <public/Platform.h>
 #include <public/WebColor.h>
 #include <public/WebRect.h>

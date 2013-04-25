@@ -30,9 +30,9 @@
 #include "Node.h"
 #include "NodeTraversal.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "RenderedDocumentMarker.h"
 #include "TextIterator.h"
+#include "core/rendering/RenderObject.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

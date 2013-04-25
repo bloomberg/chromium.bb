@@ -24,7 +24,7 @@
 #define SVGRootInlineBox_h
 
 #if ENABLE(SVG)
-#include "RootInlineBox.h"
+#include "core/rendering/RootInlineBox.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 #include "core/rendering/svg/SVGTextLayoutEngine.h"
 

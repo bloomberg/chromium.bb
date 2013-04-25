@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "RenderTextControlSingleLine.h"
+#include "core/rendering/RenderTextControlSingleLine.h"
 
 #include "CSSFontSelector.h"
 #include "CSSValueKeywords.h"
@@ -31,17 +31,17 @@
 #include "FrameSelection.h"
 #include "FrameView.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "Page.h"
-#include "RenderLayer.h"
-#include "RenderScrollbar.h"
-#include "RenderTheme.h"
 #include "Settings.h"
 #include "StyleResolver.h"
 #include "TextControlInnerElements.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/PlatformKeyboardEvent.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderScrollbar.h"
+#include "core/rendering/RenderTheme.h"
 
 using namespace std;
 

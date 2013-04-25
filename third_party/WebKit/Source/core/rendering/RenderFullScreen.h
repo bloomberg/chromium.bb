@@ -25,7 +25,7 @@
 #ifndef RenderFullScreen_h
 #define RenderFullScreen_h
 
-#include "RenderFlexibleBox.h"
+#include "core/rendering/RenderFlexibleBox.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

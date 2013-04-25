@@ -23,9 +23,9 @@
 #define RenderView_h
 
 #include "FrameView.h"
-#include "LayoutState.h"
-#include "RenderBlock.h"
 #include "core/platform/PODFreeListArena.h"
+#include "core/rendering/LayoutState.h"
+#include "core/rendering/RenderBlock.h"
 #include <wtf/OwnPtr.h>
 
 namespace WebCore {

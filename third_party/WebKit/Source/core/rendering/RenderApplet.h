@@ -22,7 +22,7 @@
 #ifndef RenderApplet_h
 #define RenderApplet_h
 
-#include "RenderEmbeddedObject.h"
+#include "core/rendering/RenderEmbeddedObject.h"
 
 namespace WebCore {
 

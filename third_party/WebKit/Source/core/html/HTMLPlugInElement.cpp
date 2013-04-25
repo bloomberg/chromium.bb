@@ -36,11 +36,11 @@
 #include "HTMLNames.h"
 #include "Page.h"
 #include "PluginViewBase.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderWidget.h"
 #include "ScriptController.h"
 #include "Settings.h"
 #include "core/platform/Widget.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderWidget.h"
 #include "npruntime_impl.h"
 #include <wtf/UnusedParam.h>
 

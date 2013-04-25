@@ -30,7 +30,7 @@
 #ifndef FlowThreadController_h
 #define FlowThreadController_h
 
-#include "RenderView.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/OwnPtr.h>
 

@@ -24,9 +24,9 @@
 
 #include "core/platform/graphics/filters/FESpecularLighting.h"
 
-#include "RenderTreeAsText.h"
 #include "core/platform/graphics/filters/LightSource.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderTreeAsText.h"
 
 namespace WebCore {
 

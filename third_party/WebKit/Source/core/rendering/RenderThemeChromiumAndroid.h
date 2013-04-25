@@ -26,7 +26,7 @@
 #ifndef RenderThemeChromiumAndroid_h
 #define RenderThemeChromiumAndroid_h
 
-#include "RenderThemeChromiumDefault.h"
+#include "core/rendering/RenderThemeChromiumDefault.h"
 
 namespace WebCore {
 

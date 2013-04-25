@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "RenderFrameBase.h"
+#include "core/rendering/RenderFrameBase.h"
 
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLFrameElementBase.h"
-#include "RenderView.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
     

@@ -21,7 +21,7 @@
 #ifndef RenderFileUploadControl_h
 #define RenderFileUploadControl_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

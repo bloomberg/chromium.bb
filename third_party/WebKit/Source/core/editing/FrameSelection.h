@@ -28,11 +28,11 @@
 
 #include "EditingStyle.h"
 #include "Range.h"
-#include "ScrollBehavior.h"
 #include "VisibleSelection.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/LayoutRect.h"
+#include "core/rendering/ScrollBehavior.h"
 #include <wtf/Noncopyable.h>
 
 namespace WebCore {

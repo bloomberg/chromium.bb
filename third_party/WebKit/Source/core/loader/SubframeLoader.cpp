@@ -47,13 +47,13 @@
 #include "Page.h"
 #include "PluginData.h"
 #include "PluginDocument.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderView.h"
 #include "ScriptController.h"
 #include "SecurityOrigin.h"
 #include "SecurityPolicy.h"
 #include "Settings.h"
 #include "core/platform/MIMETypeRegistry.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
     

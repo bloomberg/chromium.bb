@@ -28,10 +28,10 @@
 
 #include "Document.h"
 #include "ExceptionCodePlaceholder.h"
-#include "RenderText.h"
 #include "Settings.h"
 #include "Text.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/RenderText.h"
 
 namespace WebCore {
 

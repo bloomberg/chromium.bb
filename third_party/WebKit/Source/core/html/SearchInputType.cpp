@@ -35,9 +35,9 @@
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
 #include "KeyboardEvent.h"
-#include "RenderSearchField.h"
 #include "ShadowRoot.h"
 #include "TextControlInnerElements.h"
+#include "core/rendering/RenderSearchField.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

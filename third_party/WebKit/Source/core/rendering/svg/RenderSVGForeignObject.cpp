@@ -24,14 +24,14 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGForeignObject.h"
 
-#include "HitTestResult.h"
-#include "LayoutRepainter.h"
-#include "RenderObject.h"
-#include "RenderView.h"
 #include "SVGForeignObjectElement.h"
 #include "SVGSVGElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

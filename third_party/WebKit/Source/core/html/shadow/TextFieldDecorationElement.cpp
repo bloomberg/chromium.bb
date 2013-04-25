@@ -38,9 +38,9 @@
 #include "HTMLInputElement.h"
 #include "HTMLShadowElement.h"
 #include "NodeRenderStyle.h"
-#include "RenderImage.h"
 #include "ShadowRoot.h"
 #include "StyleResolver.h"
+#include "core/rendering/RenderImage.h"
 
 namespace WebCore {
 

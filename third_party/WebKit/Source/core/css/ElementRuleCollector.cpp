@@ -36,12 +36,12 @@
 #include "CSSSelectorList.h"
 #include "CSSValueKeywords.h"
 #include "HTMLElement.h"
-#include "RenderRegion.h"
 #include "SVGElement.h"
 #include "SelectorCheckerFastPath.h"
 #include "SiblingTraversalStrategies.h"
 #include "StylePropertySet.h"
 #include "StyledElement.h"
+#include "core/rendering/RenderRegion.h"
 
 #include <wtf/TemporaryChange.h>
 

@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
-#include "RenderCounter.h"
 #include "StyleResolver.h"
 #include "WebCoreMemoryInstrumentation.h"
+#include "core/rendering/RenderCounter.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/ShadowData.h"

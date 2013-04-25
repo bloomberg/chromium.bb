@@ -24,24 +24,24 @@
  */
 
 #include "config.h"
-#include "RenderBoxModelObject.h"
+#include "core/rendering/RenderBoxModelObject.h"
 
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "ImageQualityController.h"
 #include "Page.h"
-#include "RenderBlock.h"
-#include "RenderInline.h"
-#include "RenderLayer.h"
-#include "RenderLayerBacking.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
 #include "ScrollingConstraints.h"
 #include "Settings.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/ImageQualityController.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/CurrentTime.h>
 
 using namespace std;

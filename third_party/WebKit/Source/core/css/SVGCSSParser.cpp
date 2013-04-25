@@ -29,8 +29,8 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "CSSValueList.h"
-#include "RenderTheme.h"
 #include "SVGPaint.h"
+#include "core/rendering/RenderTheme.h"
 
 using namespace std;
 

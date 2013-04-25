@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "RenderApplet.h"
+#include "core/rendering/RenderApplet.h"
 
 #include "HTMLAppletElement.h"
 

@@ -28,7 +28,7 @@
 
 #include "HTMLNames.h"
 #include "Node.h"
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 #include "htmlediting.h"
 
 namespace WebCore {

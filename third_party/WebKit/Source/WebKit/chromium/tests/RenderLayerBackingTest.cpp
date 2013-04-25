@@ -25,8 +25,9 @@
 
 #include "config.h"
 
-#include "RenderLayerBacking.h"
+#include "core/rendering/RenderLayerBacking.h"
 
+#include <gtest/gtest.h>
 #include "Document.h"
 #include "FrameTestHelpers.h"
 #include "FrameView.h"
@@ -39,7 +40,6 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include <gtest/gtest.h>
 #include <public/Platform.h>
 #include <public/WebUnitTestSupport.h>
 

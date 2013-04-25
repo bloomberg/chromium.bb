@@ -31,7 +31,7 @@
 #ifndef RenderRubyRun_h
 #define RenderRubyRun_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

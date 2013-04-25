@@ -48,7 +48,6 @@
 #include "HTMLTemplateElement.h"
 #include "HTMLTextFormControlElement.h"
 #include "NodeTraversal.h"
-#include "RenderWordBreak.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
@@ -56,6 +55,7 @@
 #include "Text.h"
 #include "TextIterator.h"
 #include "XMLNames.h"
+#include "core/rendering/RenderWordBreak.h"
 #include "markup.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>

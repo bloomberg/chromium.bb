@@ -33,10 +33,10 @@
 #include "EventHandler.h"
 #include "Frame.h"
 #include "FrameView.h"
-#include "HitTestResult.h"
 #include "Page.h"
-#include "RenderBox.h"
 #include "core/platform/ScrollView.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderBox.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

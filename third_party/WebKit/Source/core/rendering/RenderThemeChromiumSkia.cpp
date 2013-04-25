@@ -22,20 +22,13 @@
  */
 
 #include "config.h"
-#include "RenderThemeChromiumSkia.h"
+#include "core/rendering/RenderThemeChromiumSkia.h"
 
 #include "CSSValueKeywords.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "MediaControlElements.h"
-#include "PaintInfo.h"
 #include "PlatformContextSkia.h"
-#include "RenderBox.h"
-#include "RenderMediaControlsChromium.h"
-#include "RenderObject.h"
-#include "RenderProgress.h"
-#include "RenderSlider.h"
-#include "RenderThemeChromiumFontProvider.h"
 #include "TimeRanges.h"
 #include "UserAgentStyleSheets.h"
 #include "core/platform/LayoutTestSupport.h"
@@ -44,6 +37,13 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/transforms/TransformationMatrix.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderMediaControlsChromium.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderProgress.h"
+#include "core/rendering/RenderSlider.h"
+#include "core/rendering/RenderThemeChromiumFontProvider.h"
 
 #include <wtf/CurrentTime.h>
 

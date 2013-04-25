@@ -30,10 +30,10 @@
 #ifndef ExclusionRectangle_h
 #define ExclusionRectangle_h
 
-#include "ExclusionShape.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/FloatSize.h"
+#include "core/rendering/ExclusionShape.h"
 #include <wtf/Assertions.h>
 #include <wtf/Vector.h>
 

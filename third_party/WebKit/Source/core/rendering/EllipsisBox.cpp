@@ -18,17 +18,17 @@
  */
 
 #include "config.h"
-#include "EllipsisBox.h"
+#include "core/rendering/EllipsisBox.h"
 
 #include "Document.h"
-#include "HitTestResult.h"
-#include "InlineTextBox.h"
-#include "PaintInfo.h"
-#include "RenderBlock.h"
-#include "RootInlineBox.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/InlineTextBox.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RootInlineBox.h"
 
 namespace WebCore {
 

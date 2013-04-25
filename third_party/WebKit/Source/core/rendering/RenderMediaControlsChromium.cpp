@@ -26,14 +26,14 @@
  */
 
 #include "config.h"
-#include "RenderMediaControlsChromium.h"
+#include "core/rendering/RenderMediaControlsChromium.h"
 
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "PaintInfo.h"
 #include "TimeRanges.h"
 #include "core/platform/graphics/Gradient.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/PaintInfo.h"
 
 namespace WebCore {
 

@@ -34,14 +34,14 @@
 #include "EditorClient.h"
 #include "Element.h"
 #include "Frame.h"
-#include "htmlediting.h"
 #include "HTMLInputElement.h"
-#include "HTMLTextAreaElement.h"
 #include "HTMLNames.h"
+#include "HTMLTextAreaElement.h"
 #include "NodeTraversal.h"
-#include "RenderTableCell.h"
 #include "Text.h"
 #include "VisibleUnits.h"
+#include "core/rendering/RenderTableCell.h"
+#include "htmlediting.h"
 
 namespace WebCore {
 

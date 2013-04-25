@@ -23,8 +23,8 @@
 #ifndef RenderText_h
 #define RenderText_h
 
-#include "RenderObject.h"
-#include "RenderView.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

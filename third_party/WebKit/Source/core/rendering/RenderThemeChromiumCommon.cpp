@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RenderThemeChromiumCommon.h"
+#include "core/rendering/RenderThemeChromiumCommon.h"
 
 #include "InputTypeNames.h"
 #include "core/platform/LayoutUnit.h"

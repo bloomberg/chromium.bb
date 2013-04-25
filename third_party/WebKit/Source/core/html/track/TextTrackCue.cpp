@@ -41,12 +41,12 @@
 #include "HTMLMediaElement.h"
 #include "HTMLSpanElement.h"
 #include "NodeTraversal.h"
-#include "RenderTextTrackCue.h"
 #include "Text.h"
 #include "TextTrack.h"
 #include "TextTrackCueList.h"
 #include "WebVTTElement.h"
 #include "WebVTTParser.h"
+#include "core/rendering/RenderTextTrackCue.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>
 

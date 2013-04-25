@@ -25,7 +25,6 @@
 #include "SVGAnimateMotionElement.h"
 
 #include "Attribute.h"
-#include "RenderObject.h"
 #include "SVGElementInstance.h"
 #include "SVGMPathElement.h"
 #include "SVGNames.h"
@@ -33,6 +32,7 @@
 #include "SVGPathElement.h"
 #include "SVGPathUtilities.h"
 #include "SVGTransformList.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"
 #include <wtf/MathExtras.h>

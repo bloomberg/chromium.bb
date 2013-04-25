@@ -18,7 +18,7 @@
 */
 
 #include "config.h"
-#include "PointerEventsHitRules.h"
+#include "core/rendering/PointerEventsHitRules.h"
 
 namespace WebCore {
 

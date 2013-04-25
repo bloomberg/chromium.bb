@@ -51,8 +51,6 @@
 #include "HTMLVideoElement.h"
 #include "ImageData.h"
 #include "Page.h"
-#include "RenderHTMLCanvas.h"
-#include "RenderLayer.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "StylePropertySet.h"
@@ -66,6 +64,8 @@
 #include "core/platform/graphics/StrokeStyleApplier.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/RenderHTMLCanvas.h"
+#include "core/rendering/RenderLayer.h"
 
 #include <wtf/CheckedArithmetic.h>
 #include <wtf/MathExtras.h>

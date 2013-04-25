@@ -39,9 +39,6 @@
 #include "InspectorValues.h"
 #include "Node.h"
 #include "Page.h"
-#include "RenderBoxModelObject.h"
-#include "RenderInline.h"
-#include "RenderObject.h"
 #include "ScriptController.h"
 #include "ScriptSourceCode.h"
 #include "ScriptValue.h"
@@ -49,6 +46,9 @@
 #include "StyledElement.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderBoxModelObject.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

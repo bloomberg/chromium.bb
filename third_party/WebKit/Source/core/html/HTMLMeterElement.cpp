@@ -26,15 +26,15 @@
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "FormDataList.h"
-#include "NodeRenderingContext.h"
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "MeterShadowElement.h"
+#include "NodeRenderingContext.h"
 #include "Page.h"
-#include "RenderMeter.h"
-#include "RenderTheme.h"
 #include "ShadowRoot.h"
+#include "core/rendering/RenderMeter.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

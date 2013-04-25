@@ -44,7 +44,6 @@
 #include "NodeTraversal.h"
 #include "PositionIterator.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "ShadowRoot.h"
 #include "Text.h"
 #include "TextIterator.h"
@@ -52,6 +51,7 @@
 #include "VisibleSelection.h"
 #include "VisibleUnits.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>

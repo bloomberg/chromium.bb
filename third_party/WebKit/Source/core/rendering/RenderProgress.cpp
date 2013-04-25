@@ -20,12 +20,12 @@
 
 #include "config.h"
 
-#include "RenderProgress.h"
+#include "core/rendering/RenderProgress.h"
 
 #include "HTMLNames.h"
 #include "HTMLProgressElement.h"
-#include "PaintInfo.h"
-#include "RenderTheme.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/RefPtr.h>
 

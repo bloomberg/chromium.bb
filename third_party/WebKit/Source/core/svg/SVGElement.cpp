@@ -32,7 +32,6 @@
 #include "Event.h"
 #include "HTMLNames.h"
 #include "NodeRenderingContext.h"
-#include "RenderObject.h"
 #include "SVGCursorElement.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGElementInstance.h"
@@ -43,6 +42,7 @@
 #include "SVGTextElement.h"
 #include "ScriptEventListener.h"
 #include "XMLNames.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

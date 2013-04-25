@@ -26,10 +26,10 @@
 #include "HTMLSummaryElement.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
-#include "RenderBlock.h"
 #include "ShadowRoot.h"
 #include "Text.h"
 #include "core/platform/LocalizedStrings.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

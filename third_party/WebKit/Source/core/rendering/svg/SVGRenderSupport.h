@@ -25,7 +25,7 @@
 #define SVGRenderSupport_h
 
 #if ENABLE(SVG)
-#include "PaintInfo.h"
+#include "core/rendering/PaintInfo.h"
 
 namespace WebCore {
 

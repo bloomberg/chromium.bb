@@ -84,10 +84,6 @@
 #include "ProgressEvent.h"
 #include "RadioNodeList.h"
 #include "RegisteredEventListener.h"
-#include "RenderBlock.h"
-#include "RenderBox.h"
-#include "RenderTextControl.h"
-#include "RenderView.h"
 #include "ScopedEventQueue.h"
 #include "SelectorQuery.h"
 #include "Settings.h"
@@ -111,6 +107,10 @@
 #include "core/platform/Logging.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/platform/PlatformWheelEvent.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBox.h"
+#include "core/rendering/RenderTextControl.h"
+#include "core/rendering/RenderView.h"
 #include "core/storage/StorageEvent.h"
 #include "htmlediting.h"
 #include <wtf/HashSet.h>
@@ -122,7 +122,7 @@
 #include <wtf/Vector.h>
 
 #ifndef NDEBUG
-#include "RenderLayer.h"
+#include "core/rendering/RenderLayer.h"
 #endif
 
 using namespace std;

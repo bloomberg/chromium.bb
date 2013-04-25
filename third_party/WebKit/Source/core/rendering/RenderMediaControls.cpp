@@ -25,13 +25,13 @@
 
 #include "config.h"
 
-#include "RenderMediaControls.h"
+#include "core/rendering/RenderMediaControls.h"
 
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
-#include "PaintInfo.h"
-#include "RenderTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderTheme.h"
 
 // FIXME: Unify more of the code for Mac and Win.
 

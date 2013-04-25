@@ -25,12 +25,12 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGViewportContainer.h"
 
-#include "RenderView.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
 #include "SVGUseElement.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

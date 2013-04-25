@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ImageQualityController.h"
+#include "core/rendering/ImageQualityController.h"
 
 #include "Frame.h"
 #include "FrameView.h"

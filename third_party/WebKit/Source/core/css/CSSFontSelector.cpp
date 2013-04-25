@@ -42,7 +42,6 @@
 #include "Document.h"
 #include "Frame.h"
 #include "FrameLoader.h"
-#include "RenderObject.h"
 #include "Settings.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
@@ -50,6 +49,7 @@
 #include "WebKitFontFamilyNames.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/SimpleFontData.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/text/AtomicString.h>
 
 #if ENABLE(SVG)

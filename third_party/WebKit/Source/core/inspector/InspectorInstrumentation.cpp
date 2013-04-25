@@ -63,7 +63,6 @@
 #include "InstrumentingAgents.h"
 #include "PageDebuggerAgent.h"
 #include "PageRuntimeAgent.h"
-#include "RenderObject.h"
 #include "ScriptArguments.h"
 #include "ScriptCallStack.h"
 #include "ScriptController.h"
@@ -75,6 +74,7 @@
 #include "WorkerRuntimeAgent.h"
 #include "WorkerThread.h"
 #include "XMLHttpRequest.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 

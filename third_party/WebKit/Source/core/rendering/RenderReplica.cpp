@@ -27,9 +27,9 @@
  */
 
 #include "config.h"
-#include "RenderReplica.h"
+#include "core/rendering/RenderReplica.h"
 
-#include "RenderLayer.h"
+#include "core/rendering/RenderLayer.h"
 
 namespace WebCore {
 

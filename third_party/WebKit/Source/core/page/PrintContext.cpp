@@ -23,8 +23,8 @@
 
 #include "Frame.h"
 #include "FrameView.h"
-#include "RenderView.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/text/WTFString.h>
 

@@ -40,7 +40,6 @@
 #include "Element.h"
 #include "EventContext.h"
 #include "Frame.h"
-#include "HitTestResult.h"
 #include "Page.h"
 #include "ScriptExecutionContext.h"
 #include "ScriptState.h"
@@ -48,6 +47,7 @@
 #include "WebSocketHandshakeRequest.h"
 #include "WebSocketHandshakeResponse.h"
 #include "core/platform/network/FormData.h"
+#include "core/rendering/HitTestResult.h"
 #include "core/storage/StorageArea.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>

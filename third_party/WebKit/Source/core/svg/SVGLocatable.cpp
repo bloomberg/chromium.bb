@@ -25,10 +25,10 @@
 #if ENABLE(SVG)
 #include "SVGLocatable.h"
 
-#include "RenderObject.h"
 #include "SVGException.h"
 #include "SVGNames.h"
 #include "SVGStyledLocatableElement.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
 

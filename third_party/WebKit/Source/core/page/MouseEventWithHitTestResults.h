@@ -21,8 +21,8 @@
 #ifndef MouseEventWithHitTestResults_h
 #define MouseEventWithHitTestResults_h
 
-#include "HitTestResult.h"
 #include "core/platform/PlatformMouseEvent.h"
+#include "core/rendering/HitTestResult.h"
 
 namespace WebCore {
 

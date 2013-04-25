@@ -24,18 +24,18 @@
  */
 
 #include "config.h"
-#include "RenderThemeChromiumAndroid.h"
+#include "core/rendering/RenderThemeChromiumAndroid.h"
 
 #include "CSSValueKeywords.h"
-#include "PaintInfo.h"
-#include "RenderMediaControlsChromium.h"
-#include "RenderObject.h"
-#include "RenderProgress.h"
-#include "RenderSlider.h"
 #include "UserAgentStyleSheets.h"
 #include "core/platform/LayoutTestSupport.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/Color.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderMediaControlsChromium.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderProgress.h"
+#include "core/rendering/RenderSlider.h"
 
 #include <public/android/WebThemeEngine.h>
 #include <public/Platform.h>

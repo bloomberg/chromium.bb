@@ -27,9 +27,9 @@
 
 #include "core/platform/graphics/filters/FETurbulence.h"
 
-#include "RenderTreeAsText.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/text/TextStream.h"
+#include "core/rendering/RenderTreeAsText.h"
 
 #include <wtf/MathExtras.h>
 #include <wtf/ParallelJobs.h>

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RenderThemeChromiumFontProvider.h"
+#include "core/rendering/RenderThemeChromiumFontProvider.h"
 
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/WTFString.h>

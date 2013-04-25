@@ -32,7 +32,7 @@
 #include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
 #include "MouseEvent.h"
-#include "RenderImage.h"
+#include "core/rendering/RenderImage.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

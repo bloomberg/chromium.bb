@@ -33,7 +33,6 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "InputTypeNames.h"
-#include "RenderFileUploadControl.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScriptController.h"
 #include "ShadowRoot.h"
@@ -41,6 +40,7 @@
 #include "core/platform/FileSystem.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Icon.h"
+#include "core/rendering/RenderFileUploadControl.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>

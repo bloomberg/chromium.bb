@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "RenderFrameSet.h"
+#include "core/rendering/RenderFrameSet.h"
 
 #include "Document.h"
 #include "EventHandler.h"
@@ -30,17 +30,17 @@
 #include "Frame.h"
 #include "FrameView.h"
 #include "HTMLFrameSetElement.h"
-#include "HitTestRequest.h"
-#include "HitTestResult.h"
 #include "MouseEvent.h"
-#include "PaintInfo.h"
-#include "RenderFrame.h"
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "Settings.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/Cursor.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/HitTestRequest.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderFrame.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/MemoryInstrumentationVector.h>
 
 namespace WebCore {

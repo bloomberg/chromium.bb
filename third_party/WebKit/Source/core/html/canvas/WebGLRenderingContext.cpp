@@ -47,7 +47,6 @@
 #include "OESTextureHalfFloat.h"
 #include "OESVertexArrayObject.h"
 #include "Page.h"
-#include "RenderBox.h"
 #include "Settings.h"
 #include "WebGLActiveInfo.h"
 #include "WebGLBuffer.h"
@@ -73,6 +72,7 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/IntSize.h"
 #include "core/platform/graphics/gpu/DrawingBuffer.h"
+#include "core/rendering/RenderBox.h"
 
 #include <wtf/OwnArrayPtr.h>
 #include <wtf/PassOwnArrayPtr.h>

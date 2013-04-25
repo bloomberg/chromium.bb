@@ -20,15 +20,15 @@
  */
 
 #include "config.h"
-#include "RenderTextControl.h"
+#include "core/rendering/RenderTextControl.h"
 
 #include "HTMLTextFormControlElement.h"
-#include "HitTestResult.h"
-#include "RenderText.h"
-#include "RenderTheme.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "core/platform/ScrollbarTheme.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderTheme.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/unicode/CharacterNames.h>
 

@@ -42,12 +42,12 @@
 #include "Frame.h"
 #include "FrameSelection.h"
 #include "HTMLNames.h"
-#include "RenderTextControlMultiLine.h"
 #include "ShadowRoot.h"
 #include "Text.h"
 #include "TextControlInnerElements.h"
 #include "TextIterator.h"
 #include "core/platform/LocalizedStrings.h"
+#include "core/rendering/RenderTextControlMultiLine.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 

@@ -34,11 +34,11 @@
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "Page.h"
-#include "RenderPart.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "Settings.h"
 #include "core/platform/KURL.h"
+#include "core/rendering/RenderPart.h"
 
 namespace WebCore {
 

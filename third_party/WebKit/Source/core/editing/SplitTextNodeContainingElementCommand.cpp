@@ -28,7 +28,7 @@
 
 #include "Element.h"
 #include "Text.h"
-#include "RenderObject.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

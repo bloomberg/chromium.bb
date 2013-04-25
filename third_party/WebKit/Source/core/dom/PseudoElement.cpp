@@ -29,8 +29,8 @@
 
 #include "InspectorInstrumentation.h"
 #include "NodeRenderingContext.h"
-#include "RenderObject.h"
-#include "RenderQuote.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderQuote.h"
 #include "core/rendering/style/ContentData.h"
 
 namespace WebCore {

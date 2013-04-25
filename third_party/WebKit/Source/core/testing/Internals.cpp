@@ -76,9 +76,6 @@
 #include "PrintContext.h"
 #include "PseudoElement.h"
 #include "Range.h"
-#include "RenderMenuList.h"
-#include "RenderObject.h"
-#include "RenderTreeAsText.h"
 #include "RuntimeEnabledFeatures.h"
 #include "ScrollingCoordinator.h"
 #include "SelectRuleFeatureSet.h"
@@ -96,6 +93,9 @@
 #include "core/platform/Language.h"
 #include "core/platform/SchemeRegistry.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/rendering/RenderMenuList.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderTreeAsText.h"
 #include <wtf/dtoa.h>
 #include <wtf/text/StringBuffer.h>
 
@@ -111,11 +111,11 @@
 #include "PagePopupController.h"
 #endif
 
-#include "RenderLayerBacking.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/graphics/filters/FilterOperations.h"
+#include "core/rendering/RenderLayerBacking.h"
 
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 #include "CDM.h"

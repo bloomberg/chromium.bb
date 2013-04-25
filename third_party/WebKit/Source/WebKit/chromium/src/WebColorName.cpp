@@ -32,8 +32,8 @@
 #include "WebColorName.h"
 
 #include "CSSValueKeywords.h"
-#include "RenderTheme.h"
 #include "core/platform/graphics/Color.h"
+#include "core/rendering/RenderTheme.h"
 #include <public/WebColor.h>
 #include <wtf/UnusedParam.h>
 

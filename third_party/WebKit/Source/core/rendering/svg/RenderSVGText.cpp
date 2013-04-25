@@ -29,10 +29,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGText.h"
 
-#include "HitTestRequest.h"
-#include "HitTestResult.h"
-#include "LayoutRepainter.h"
-#include "PointerEventsHitRules.h"
 #include "SVGLengthList.h"
 #include "SVGTextElement.h"
 #include "SVGTransformList.h"
@@ -44,6 +40,10 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/SimpleFontData.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/HitTestRequest.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGInlineText.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGRoot.h"

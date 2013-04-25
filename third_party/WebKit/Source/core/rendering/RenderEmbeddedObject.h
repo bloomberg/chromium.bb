@@ -23,7 +23,7 @@
 #ifndef RenderEmbeddedObject_h
 #define RenderEmbeddedObject_h
 
-#include "RenderPart.h"
+#include "core/rendering/RenderPart.h"
 
 namespace WebCore {
 

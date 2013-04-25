@@ -41,11 +41,11 @@
 #include "HTMLInputElement.h"
 #include "HTMLParserIdioms.h"
 #include "MouseEvent.h"
-#include "RenderFlexibleBox.h"
-#include "RenderSlider.h"
-#include "RenderTheme.h"
 #include "ShadowRoot.h"
 #include "StepRange.h"
+#include "core/rendering/RenderFlexibleBox.h"
+#include "core/rendering/RenderSlider.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/MathExtras.h>
 
 using namespace std;

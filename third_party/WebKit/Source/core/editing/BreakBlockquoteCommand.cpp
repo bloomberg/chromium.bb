@@ -29,9 +29,9 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "NodeTraversal.h"
-#include "RenderListItem.h"
 #include "Text.h"
 #include "VisiblePosition.h"
+#include "core/rendering/RenderListItem.h"
 #include "htmlediting.h"
 
 namespace WebCore {

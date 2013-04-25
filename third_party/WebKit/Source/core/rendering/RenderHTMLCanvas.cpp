@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "RenderHTMLCanvas.h"
+#include "core/rendering/RenderHTMLCanvas.h"
 
 #include "CanvasRenderingContext.h"
 #include "Document.h"
@@ -33,9 +33,9 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLNames.h"
 #include "Page.h"
-#include "PaintInfo.h"
-#include "RenderView.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

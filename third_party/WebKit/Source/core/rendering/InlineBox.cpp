@@ -18,18 +18,18 @@
  */
 
 #include "config.h"
-#include "InlineBox.h"
+#include "core/rendering/InlineBox.h"
 
 #include "Frame.h"
-#include "HitTestResult.h"
-#include "InlineFlowBox.h"
 #include "Page.h"
-#include "PaintInfo.h"
-#include "RenderArena.h"
-#include "RenderBlock.h"
-#include "RootInlineBox.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/FontMetrics.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/InlineFlowBox.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderArena.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RootInlineBox.h"
 
 #ifndef NDEBUG
 #include <stdio.h>

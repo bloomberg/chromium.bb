@@ -21,8 +21,8 @@
 #ifndef InlineFlowBox_h
 #define InlineFlowBox_h
 
-#include "InlineBox.h"
-#include "RenderOverflow.h"
+#include "core/rendering/InlineBox.h"
+#include "core/rendering/RenderOverflow.h"
 #include "core/rendering/style/ShadowData.h"
 
 namespace WebCore {

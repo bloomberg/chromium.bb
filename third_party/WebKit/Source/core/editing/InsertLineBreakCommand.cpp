@@ -33,10 +33,10 @@
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "Text.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 
 namespace WebCore {

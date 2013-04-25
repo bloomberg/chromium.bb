@@ -39,9 +39,9 @@
 #include "HTMLTableRowElement.h"
 #include "HTMLTableRowsCollection.h"
 #include "HTMLTableSectionElement.h"
-#include "RenderTable.h"
 #include "StylePropertySet.h"
 #include "Text.h"
+#include "core/rendering/RenderTable.h"
 
 namespace WebCore {
 

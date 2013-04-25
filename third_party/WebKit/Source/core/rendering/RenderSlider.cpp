@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "RenderSlider.h"
+#include "core/rendering/RenderSlider.h"
 
 #include "CSSPropertyNames.h"
 #include "Document.h"
@@ -33,13 +33,13 @@
 #include "MediaControlElements.h"
 #include "MouseEvent.h"
 #include "Node.h"
-#include "RenderLayer.h"
-#include "RenderTheme.h"
-#include "RenderView.h"
 #include "ShadowRoot.h"
 #include "SliderThumbElement.h"
 #include "StepRange.h"
 #include "StyleResolver.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/MathExtras.h>
 
 using std::min;

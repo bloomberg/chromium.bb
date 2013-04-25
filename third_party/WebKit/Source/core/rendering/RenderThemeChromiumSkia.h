@@ -28,8 +28,8 @@
 #ifndef RenderThemeChromiumSkia_h
 #define RenderThemeChromiumSkia_h
 
-#include "RenderTheme.h"
-#include "RenderThemeChromiumCommon.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderThemeChromiumCommon.h"
 
 namespace WebCore {
 

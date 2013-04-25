@@ -32,11 +32,11 @@
 #include "InsertLineBreakCommand.h"
 #include "InsertListCommand.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "SplitElementCommand.h"
 #include "Text.h"
 #include "TextIterator.h"
 #include "VisibleUnits.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 

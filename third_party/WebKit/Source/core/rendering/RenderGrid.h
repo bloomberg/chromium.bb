@@ -26,7 +26,7 @@
 #ifndef RenderGrid_h
 #define RenderGrid_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

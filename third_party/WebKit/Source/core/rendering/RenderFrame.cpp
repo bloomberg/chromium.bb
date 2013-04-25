@@ -22,11 +22,11 @@
  */
 
 #include "config.h"
-#include "RenderFrame.h"
+#include "core/rendering/RenderFrame.h"
 
 #include "FrameView.h"
 #include "HTMLFrameElement.h"
-#include "RenderView.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

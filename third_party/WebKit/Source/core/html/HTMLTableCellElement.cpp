@@ -30,7 +30,7 @@
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "HTMLTableElement.h"
-#include "RenderTableCell.h"
+#include "core/rendering/RenderTableCell.h"
 
 using std::max;
 using std::min;

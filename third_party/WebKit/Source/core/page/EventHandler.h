@@ -28,7 +28,6 @@
 
 #include "DragActions.h"
 #include "FocusDirection.h"
-#include "HitTestRequest.h"
 #include "TextEventInputType.h"
 #include "TextGranularity.h"
 #include "UserGestureIndicator.h"
@@ -38,6 +37,7 @@
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/LayoutPoint.h"
+#include "core/rendering/HitTestRequest.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/OwnPtr.h>

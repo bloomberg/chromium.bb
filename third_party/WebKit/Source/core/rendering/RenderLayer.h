@@ -44,12 +44,12 @@
 #ifndef RenderLayer_h
 #define RenderLayer_h
 
-#include "PaintInfo.h"
-#include "RenderBox.h"
 #include "core/platform/ScrollableArea.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderBox.h"
 #include <wtf/OwnPtr.h>
 
-#include "RenderLayerFilterInfo.h"
+#include "core/rendering/RenderLayerFilterInfo.h"
 
 namespace WebCore {
 

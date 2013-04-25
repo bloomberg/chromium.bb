@@ -22,7 +22,6 @@
 #if ENABLE(SVG_FONTS)
 #include "SVGFontData.h"
 
-#include "RenderObject.h"
 #include "SVGAltGlyphElement.h"
 #include "SVGFontElement.h"
 #include "SVGNames.h"
@@ -30,6 +29,7 @@
 #include "core/platform/graphics/SVGGlyph.h"
 #include "core/platform/graphics/TextRun.h"
 #include "core/platform/graphics/WidthIterator.h"
+#include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/SVGTextRunRenderingContext.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>

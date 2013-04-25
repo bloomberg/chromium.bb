@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "RenderLayerCompositor.h"
+#include "core/rendering/RenderLayerCompositor.h"
 
 #include "AnimationController.h"
 #include "CSSPropertyNames.h"
@@ -37,19 +37,9 @@
 #include "HTMLCanvasElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
 #include "InspectorInstrumentation.h"
 #include "NodeList.h"
 #include "Page.h"
-#include "RenderApplet.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderFullScreen.h"
-#include "RenderGeometryMap.h"
-#include "RenderIFrame.h"
-#include "RenderLayerBacking.h"
-#include "RenderReplica.h"
-#include "RenderVideo.h"
-#include "RenderView.h"
 #include "ScrollingConstraints.h"
 #include "ScrollingCoordinator.h"
 #include "Settings.h"
@@ -60,6 +50,16 @@
 #include "core/platform/chromium/TraceEvent.h"
 #include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderApplet.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderFullScreen.h"
+#include "core/rendering/RenderGeometryMap.h"
+#include "core/rendering/RenderIFrame.h"
+#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderReplica.h"
+#include "core/rendering/RenderVideo.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/TemporaryChange.h>
 
@@ -68,7 +68,7 @@
 #endif
 
 #ifndef NDEBUG
-#include "RenderTreeAsText.h"
+#include "core/rendering/RenderTreeAsText.h"
 #endif
 
 #define WTF_USE_COMPOSITING_FOR_SMALL_CANVASES 1

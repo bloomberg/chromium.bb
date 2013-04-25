@@ -20,7 +20,7 @@
  */
 
 #include "config.h"
-#include "RenderTheme.h"
+#include "core/rendering/RenderTheme.h"
 
 #include "CSSValueKeywords.h"
 #include "Document.h"
@@ -33,9 +33,6 @@
 #include "HTMLNames.h"
 #include "MediaControlElements.h"
 #include "Page.h"
-#include "PaintInfo.h"
-#include "RenderMeter.h"
-#include "RenderView.h"
 #include "Settings.h"
 #include "SpinButtonElement.h"
 #include "TextControlInnerElements.h"
@@ -45,10 +42,13 @@
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/StringTruncator.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderMeter.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/RenderStyle.h"
 
 #if ENABLE(INPUT_SPEECH)
-#include "RenderInputSpeech.h"
+#include "core/rendering/RenderInputSpeech.h"
 #endif
 
 #if ENABLE(DATALIST_ELEMENT)

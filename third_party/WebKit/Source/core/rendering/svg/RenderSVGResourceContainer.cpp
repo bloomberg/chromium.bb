@@ -22,9 +22,9 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "SVGStyledTransformableElement.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGRenderingContext.h"
 #include "core/rendering/svg/SVGResourcesCache.h"

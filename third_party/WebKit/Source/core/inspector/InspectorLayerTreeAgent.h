@@ -33,11 +33,11 @@
 #include "InspectorBaseAgent.h"
 #include "InspectorFrontend.h"
 #include "InspectorTypeBuilder.h"
-#include "RenderLayer.h"
+#include "core/rendering/RenderLayer.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -37,8 +37,8 @@
 #include "InspectorFrontend.h"
 #include "InspectorOverlay.h"
 #include "InspectorValues.h"
-#include "RenderLayer.h"
 #include "core/platform/Timer.h"
+#include "core/rendering/RenderLayer.h"
 
 #include <wtf/Deque.h>
 #include <wtf/HashMap.h>

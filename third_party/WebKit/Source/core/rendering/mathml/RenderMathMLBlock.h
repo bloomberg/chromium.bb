@@ -29,8 +29,8 @@
 
 #if ENABLE(MATHML)
 
-#include "RenderFlexibleBox.h"
-#include "RenderTable.h"
+#include "core/rendering/RenderFlexibleBox.h"
+#include "core/rendering/RenderTable.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 namespace WebCore {

@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityARIAGrid.h"
 
-#include "RenderObject.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityTableColumn.h"
 #include "core/accessibility/AccessibilityTableRow.h"
+#include "core/rendering/RenderObject.h"
 
 using namespace std;
 

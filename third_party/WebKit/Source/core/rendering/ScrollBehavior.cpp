@@ -42,7 +42,7 @@
  */
 
 #include "config.h"
-#include "ScrollBehavior.h"
+#include "core/rendering/ScrollBehavior.h"
 
 namespace WebCore {
 

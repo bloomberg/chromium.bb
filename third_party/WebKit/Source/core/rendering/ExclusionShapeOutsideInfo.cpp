@@ -31,9 +31,9 @@
 
 #if ENABLE(CSS_EXCLUSIONS)
 
-#include "ExclusionShapeOutsideInfo.h"
+#include "core/rendering/ExclusionShapeOutsideInfo.h"
 
-#include "RenderBox.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 bool ExclusionShapeOutsideInfo::isEnabledFor(const RenderBox* box)

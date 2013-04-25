@@ -27,8 +27,8 @@
 #include "Event.h"
 #include "EventNames.h"
 #include "HTMLParserIdioms.h"
-#include "RenderImage.h"
 #include "SVGImageElement.h"
+#include "core/rendering/RenderImage.h"
 
 namespace WebCore {
 

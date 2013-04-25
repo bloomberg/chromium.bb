@@ -30,9 +30,6 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGShape.h"
 
-#include "HitTestRequest.h"
-#include "LayoutRepainter.h"
-#include "PointerEventsHitRules.h"
 #include "SVGStyledTransformableElement.h"
 #include "SVGTransformList.h"
 #include "SVGURIReference.h"
@@ -40,6 +37,9 @@
 #include "core/platform/graphics/FloatQuad.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/StrokeStyleApplier.h"
+#include "core/rendering/HitTestRequest.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/PointerEventsHitRules.h"
 #include "core/rendering/svg/RenderSVGContainer.h"
 #include "core/rendering/svg/RenderSVGResourceMarker.h"
 #include "core/rendering/svg/RenderSVGResourceSolidColor.h"

@@ -32,7 +32,7 @@
 
 #include "core/platform/graphics/filters/DistantLightSource.h"
 
-#include "RenderTreeAsText.h"
+#include "core/rendering/RenderTreeAsText.h"
 
 namespace WebCore {
 

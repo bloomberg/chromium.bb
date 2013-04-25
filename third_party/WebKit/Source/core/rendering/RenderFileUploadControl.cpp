@@ -19,17 +19,13 @@
  */
 
 #include "config.h"
-#include "RenderFileUploadControl.h"
+#include "core/rendering/RenderFileUploadControl.h"
 
 #include <math.h>
 #include "ElementShadow.h"
 #include "FileList.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "PaintInfo.h"
-#include "RenderButton.h"
-#include "RenderText.h"
-#include "RenderTheme.h"
 #include "ShadowRoot.h"
 #include "VisiblePosition.h"
 #include "core/platform/LocalizedStrings.h"
@@ -37,6 +33,10 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/Icon.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderButton.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderTheme.h"
 
 using namespace std;
 

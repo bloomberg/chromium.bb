@@ -25,8 +25,8 @@
 #ifndef RenderTableCell_h
 #define RenderTableCell_h
 
-#include "RenderTableRow.h"
-#include "RenderTableSection.h"
+#include "core/rendering/RenderTableRow.h"
+#include "core/rendering/RenderTableSection.h"
 
 namespace WebCore {
 

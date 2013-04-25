@@ -1,8 +1,8 @@
 #include "config.h"
 
+#include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
 #include "FrameView.h"
-#include "RenderView.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
@@ -14,7 +14,7 @@
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
-#include <gtest/gtest.h>
+#include "core/rendering/RenderView.h"
 #include <public/Platform.h>
 #include <public/WebUnitTestSupport.h>
 

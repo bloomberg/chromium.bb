@@ -22,7 +22,7 @@
 #ifndef RenderCounter_h
 #define RenderCounter_h
 
-#include "RenderText.h"
+#include "core/rendering/RenderText.h"
 #include "core/rendering/style/CounterContent.h"
 
 namespace WebCore {

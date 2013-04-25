@@ -32,11 +32,11 @@
 
 #include "EventNames.h"
 #include "NamedFlowCollection.h"
-#include "RenderNamedFlowThread.h"
-#include "RenderRegion.h"
 #include "ScriptExecutionContext.h"
 #include "StaticNodeList.h"
 #include "UIEvent.h"
+#include "core/rendering/RenderNamedFlowThread.h"
+#include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
 

@@ -33,7 +33,6 @@
 #include <ctype.h>
 #include <limits>
 #include "CSSValueKeywords.h"
-#include "RenderTheme.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/PlatformGestureEvent.h"
 #include "core/platform/PlatformKeyboardEvent.h"
@@ -53,6 +52,7 @@
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/graphics/StringTruncator.h"
 #include "core/platform/graphics/TextRun.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/CurrentTime.h>
 
 namespace WebCore {

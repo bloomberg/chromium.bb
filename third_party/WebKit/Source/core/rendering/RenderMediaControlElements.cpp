@@ -27,10 +27,10 @@
 
 #include "config.h"
 
-#include "RenderMediaControlElements.h"
+#include "core/rendering/RenderMediaControlElements.h"
 
-#include "RenderTheme.h"
-#include "RenderView.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

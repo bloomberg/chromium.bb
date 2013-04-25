@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebCoreMemoryInstrumentation.h"
 
-#include "RenderBlock.h"
-#include "RenderBox.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBox.h"
 
 namespace WebCore {
 

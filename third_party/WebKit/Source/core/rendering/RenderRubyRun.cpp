@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "RenderRubyRun.h"
+#include "core/rendering/RenderRubyRun.h"
 
-#include "RenderRubyBase.h"
-#include "RenderRubyText.h"
-#include "RenderText.h"
-#include "RenderView.h"
+#include "core/rendering/RenderRubyBase.h"
+#include "core/rendering/RenderRubyText.h"
+#include "core/rendering/RenderText.h"
+#include "core/rendering/RenderView.h"
 #include "core/rendering/style/StyleInheritedData.h"
 
 using namespace std;

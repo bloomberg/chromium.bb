@@ -41,13 +41,13 @@
 #include "NodeList.h"
 #include "NodeTraversal.h"
 #include "Range.h"
-#include "RenderObject.h"
-#include "RenderText.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "Text.h"
 #include "TextIterator.h"
 #include "VisibleUnits.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderText.h"
 #include "htmlediting.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>

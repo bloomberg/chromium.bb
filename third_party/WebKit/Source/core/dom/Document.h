@@ -34,7 +34,6 @@
 #include "DocumentEventQueue.h"
 #include "DocumentTiming.h"
 #include "FocusDirection.h"
-#include "HitTestRequest.h"
 #include "IconURL.h"
 #include "InspectorCounters.h"
 #include "MutationObserver.h"
@@ -50,6 +49,7 @@
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/text/StringWithDirection.h"
+#include "core/rendering/HitTestRequest.h"
 #include <wtf/Deque.h>
 #include <wtf/FixedArray.h>
 #include <wtf/HashSet.h>

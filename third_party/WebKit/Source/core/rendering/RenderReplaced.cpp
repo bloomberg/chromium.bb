@@ -22,18 +22,18 @@
  */
 
 #include "config.h"
-#include "RenderReplaced.h"
+#include "core/rendering/RenderReplaced.h"
 
 #include "Frame.h"
-#include "LayoutRepainter.h"
 #include "Page.h"
-#include "RenderBlock.h"
-#include "RenderLayer.h"
-#include "RenderTheme.h"
-#include "RenderView.h"
 #include "VisiblePosition.h"
 #include "WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderTheme.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

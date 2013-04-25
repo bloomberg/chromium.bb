@@ -30,9 +30,9 @@
 #ifndef ExclusionPolygon_h
 #define ExclusionPolygon_h
 
-#include "ExclusionInterval.h"
-#include "ExclusionShape.h"
 #include "core/platform/graphics/FloatPolygon.h"
+#include "core/rendering/ExclusionInterval.h"
+#include "core/rendering/ExclusionShape.h"
 
 namespace WebCore {
 

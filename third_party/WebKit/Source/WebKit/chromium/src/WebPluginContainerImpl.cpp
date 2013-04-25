@@ -55,12 +55,10 @@
 #include "HTMLFormElement.h"
 #include "HTMLNames.h"
 #include "HTMLPlugInElement.h"
-#include "HitTestResult.h"
 #include "IFrameShimSupport.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
 #include "Page.h"
-#include "RenderBox.h"
 #include "ScriptController.h"
 #include "ScrollingCoordinator.h"
 #include "TouchEvent.h"
@@ -75,6 +73,8 @@
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/chromium/GraphicsLayerChromium.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderBox.h"
 #include <public/Platform.h>
 #include <public/WebClipboard.h>
 #include <public/WebCompositorSupport.h>

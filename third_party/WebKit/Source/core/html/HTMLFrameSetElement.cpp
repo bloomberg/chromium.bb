@@ -35,10 +35,10 @@
 #include "HTMLNames.h"
 #include "MouseEvent.h"
 #include "NodeRenderingContext.h"
-#include "RenderFrameSet.h"
 #include "ScriptEventListener.h"
 #include "Text.h"
 #include "core/platform/Length.h"
+#include "core/rendering/RenderFrameSet.h"
 
 namespace WebCore {
 

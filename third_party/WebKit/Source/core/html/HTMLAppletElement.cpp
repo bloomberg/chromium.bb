@@ -30,10 +30,10 @@
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "HTMLParamElement.h"
-#include "RenderApplet.h"
 #include "SecurityOrigin.h"
 #include "Settings.h"
 #include "core/platform/Widget.h"
+#include "core/rendering/RenderApplet.h"
 
 namespace WebCore {
 

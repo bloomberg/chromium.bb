@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "RenderGeometryMap.h"
+#include "core/rendering/RenderGeometryMap.h"
 
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/TemporaryChange.h>
 
 namespace WebCore {

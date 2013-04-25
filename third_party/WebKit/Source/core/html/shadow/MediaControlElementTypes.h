@@ -34,7 +34,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLMediaElement.h"
 #include "MediaControllerInterface.h"
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

@@ -31,8 +31,8 @@
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "NodeRenderingContext.h"
-#include "RenderIFrame.h"
 #include "ScriptableDocumentParser.h"
+#include "core/rendering/RenderIFrame.h"
 #include <wtf/text/TextPosition.h>
 
 namespace WebCore {

@@ -22,7 +22,7 @@
 #define RenderSVGGradientStop_h
 
 #if ENABLE(SVG)
-#include "RenderObject.h"
+#include "core/rendering/RenderObject.h"
 
 namespace WebCore {
     

@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "RenderDeprecatedFlexibleBox.h"
+#include "core/rendering/RenderDeprecatedFlexibleBox.h"
 
-#include "LayoutRepainter.h"
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include "UseCounter.h"
 #include "core/platform/graphics/Font.h"
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/unicode/CharacterNames.h>
 

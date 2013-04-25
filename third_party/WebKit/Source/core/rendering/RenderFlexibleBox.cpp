@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "RenderFlexibleBox.h"
+#include "core/rendering/RenderFlexibleBox.h"
 
-#include "LayoutRepainter.h"
-#include "RenderLayer.h"
-#include "RenderView.h"
 #include <limits>
+#include "core/rendering/LayoutRepainter.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderView.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

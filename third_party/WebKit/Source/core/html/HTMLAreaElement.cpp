@@ -27,11 +27,11 @@
 #include "HTMLImageElement.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
-#include "HitTestResult.h"
-#include "RenderImage.h"
-#include "RenderView.h"
 #include "core/platform/graphics/Path.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
+#include "core/rendering/HitTestResult.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderView.h"
 
 using namespace std;
 

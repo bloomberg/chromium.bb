@@ -37,11 +37,11 @@
 #include "Page.h"
 #include "PositionIterator.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "Settings.h"
 #include "TextCheckingHelper.h"
 #include "TextIterator.h"
 #include "core/platform/text/TextCheckerClient.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 
 namespace WebCore {

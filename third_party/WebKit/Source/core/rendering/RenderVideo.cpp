@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "RenderVideo.h"
+#include "core/rendering/RenderVideo.h"
 
 #include "Document.h"
 #include "Frame.h"
@@ -33,11 +33,11 @@
 #include "HTMLNames.h"
 #include "HTMLVideoElement.h"
 #include "Page.h"
-#include "PaintInfo.h"
-#include "RenderFullScreen.h"
-#include "RenderView.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/MediaPlayer.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderFullScreen.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

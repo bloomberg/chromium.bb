@@ -27,7 +27,6 @@
 #include "DatabaseDetails.h"
 #include "FocusDirection.h"
 #include "FrameLoader.h"
-#include "RenderEmbeddedObject.h"
 #include "WebCoreKeyboardUIMode.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/platform/Cursor.h"
@@ -37,6 +36,7 @@
 #include "core/platform/ScrollTypes.h"
 #include "core/platform/SearchPopupMenu.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "core/rendering/RenderEmbeddedObject.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/UnusedParam.h>

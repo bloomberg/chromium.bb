@@ -30,9 +30,9 @@
 
 #include "config.h"
 
-#include "RenderRubyBase.h"
-#include "RenderRubyRun.h"
-#include "RenderRubyText.h"
+#include "core/rendering/RenderRubyBase.h"
+#include "core/rendering/RenderRubyRun.h"
+#include "core/rendering/RenderRubyText.h"
 
 using namespace std;
 

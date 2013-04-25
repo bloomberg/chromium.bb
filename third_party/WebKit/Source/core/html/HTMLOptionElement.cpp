@@ -37,14 +37,14 @@
 #include "NodeRenderStyle.h"
 #include "NodeRenderingContext.h"
 #include "NodeTraversal.h"
-#include "RenderMenuList.h"
-#include "RenderTheme.h"
 #include "ScriptElement.h"
 #include "StyleResolver.h"
 #include "Text.h"
+#include "core/rendering/RenderMenuList.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

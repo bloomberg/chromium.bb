@@ -38,10 +38,10 @@
 #include "HTMLNames.h"
 #include "Node.h"
 #include "Page.h"
-#include "RenderInline.h"
-#include "RenderLayer.h"
 #include "Settings.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderLayer.h"
 
 namespace WebCore {
 

@@ -31,8 +31,8 @@
 #ifndef RenderRuby_h
 #define RenderRuby_h
 
-#include "RenderBlock.h"
-#include "RenderInline.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderInline.h"
 
 namespace WebCore {
 

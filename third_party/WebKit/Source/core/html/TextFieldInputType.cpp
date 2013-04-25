@@ -45,14 +45,14 @@
 #include "KeyboardEvent.h"
 #include "NodeRenderStyle.h"
 #include "Page.h"
-#include "RenderLayer.h"
-#include "RenderTextControlSingleLine.h"
-#include "RenderTheme.h"
 #include "ShadowRoot.h"
 #include "TextControlInnerElements.h"
 #include "TextEvent.h"
 #include "TextIterator.h"
 #include "WheelEvent.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderTextControlSingleLine.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

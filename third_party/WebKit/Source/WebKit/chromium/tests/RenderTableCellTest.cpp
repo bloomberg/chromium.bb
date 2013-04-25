@@ -25,15 +25,15 @@
 
 #include "config.h"
 
-#include "RenderTableCell.h"
+#include "core/rendering/RenderTableCell.h"
 
 #include "Document.h"
 #include "Frame.h"
 #include "FrameTestHelpers.h"
-#include "RenderArena.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/rendering/RenderArena.h"
 
 #include <gtest/gtest.h>
 

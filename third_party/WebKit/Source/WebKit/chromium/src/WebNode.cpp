@@ -39,8 +39,6 @@
 #include "FrameLoaderClientImpl.h"
 #include "Node.h"
 #include "NodeList.h"
-#include "RenderObject.h"
-#include "RenderWidget.h"
 #include "WebDOMEvent.h"
 #include "WebDOMEventListener.h"
 #include "WebDocument.h"
@@ -50,6 +48,8 @@
 #include "WebPluginContainer.h"
 #include "WebPluginContainerImpl.h"
 #include "core/platform/Widget.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderWidget.h"
 #include "markup.h"
 #include <public/WebString.h>
 #include <public/WebVector.h>

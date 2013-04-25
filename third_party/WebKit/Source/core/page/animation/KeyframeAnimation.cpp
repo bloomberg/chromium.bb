@@ -34,8 +34,8 @@
 #include "CSSPropertyNames.h"
 #include "CompositeAnimation.h"
 #include "EventNames.h"
-#include "RenderBoxModelObject.h"
 #include "StyleResolver.h"
+#include "core/rendering/RenderBoxModelObject.h"
 #include "core/rendering/style/RenderStyle.h"
 #include <wtf/UnusedParam.h>
 

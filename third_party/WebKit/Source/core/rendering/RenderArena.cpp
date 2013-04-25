@@ -34,11 +34,11 @@
  */
 
 #include "config.h"
-#include "RenderArena.h"
+#include "core/rendering/RenderArena.h"
 
-#include <limits>
 #include <stdlib.h>
 #include <string.h>
+#include <limits>
 #include <wtf/Assertions.h>
 #include <wtf/CryptographicallyRandomNumber.h>
 

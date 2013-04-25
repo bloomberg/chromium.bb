@@ -40,13 +40,13 @@
 #include "HTMLFormControlElement.h"
 #include "HTMLNames.h"
 #include "Page.h"
-#include "RenderBlock.h"
-#include "RenderObject.h"
 #include "Settings.h"
 #include "ShadowRoot.h"
 #include "StyleResolver.h"
 #include "Text.h"
 #include "ValidationMessageClient.h"
+#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderObject.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

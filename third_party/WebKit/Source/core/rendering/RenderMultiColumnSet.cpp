@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "RenderMultiColumnSet.h"
+#include "core/rendering/RenderMultiColumnSet.h"
 
-#include "PaintInfo.h"
-#include "RenderLayer.h"
-#include "RenderMultiColumnBlock.h"
-#include "RenderMultiColumnFlowThread.h"
+#include "core/rendering/PaintInfo.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderMultiColumnBlock.h"
+#include "core/rendering/RenderMultiColumnFlowThread.h"
 
 using namespace std;
 

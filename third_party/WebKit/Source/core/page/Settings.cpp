@@ -38,8 +38,8 @@
 #include "HistoryItem.h"
 #include "InspectorInstrumentation.h"
 #include "Page.h"
-#include "TextAutosizer.h"
 #include "core/platform/network/ResourceHandle.h"
+#include "core/rendering/TextAutosizer.h"
 
 using namespace std;
 

@@ -30,9 +30,9 @@
 #include "core/rendering/mathml/RenderMathMLFenced.h"
 
 #include "MathMLNames.h"
-#include "RenderInline.h"
-#include "RenderText.h"
 #include "core/platform/graphics/FontSelector.h"
+#include "core/rendering/RenderInline.h"
+#include "core/rendering/RenderText.h"
 #include "core/rendering/mathml/RenderMathMLOperator.h"
 #include <wtf/text/StringBuilder.h>
 

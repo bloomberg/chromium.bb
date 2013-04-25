@@ -27,8 +27,8 @@
 #ifndef RenderRegionSet_h
 #define RenderRegionSet_h
 
-#include "RenderRegion.h"
-#include "RenderBoxRegionInfo.h"
+#include "core/rendering/RenderBoxRegionInfo.h"
+#include "core/rendering/RenderRegion.h"
 
 namespace WebCore {
 

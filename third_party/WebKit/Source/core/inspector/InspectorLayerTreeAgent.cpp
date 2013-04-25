@@ -38,11 +38,11 @@
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
 #include "PseudoElement.h"
-#include "RenderLayer.h"
-#include "RenderLayerBacking.h"
-#include "RenderLayerCompositor.h"
-#include "RenderView.h"
 #include "core/platform/graphics/IntRect.h"
+#include "core/rendering/RenderLayer.h"
+#include "core/rendering/RenderLayerBacking.h"
+#include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderView.h"
 
 namespace WebCore {
 

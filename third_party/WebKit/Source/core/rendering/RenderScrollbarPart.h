@@ -26,8 +26,8 @@
 #ifndef RenderScrollbarPart_h
 #define RenderScrollbarPart_h
 
-#include "RenderBlock.h"
 #include "core/platform/ScrollTypes.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

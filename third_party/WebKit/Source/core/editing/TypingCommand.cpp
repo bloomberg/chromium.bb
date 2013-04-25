@@ -37,10 +37,10 @@
 #include "InsertLineBreakCommand.h"
 #include "InsertParagraphSeparatorCommand.h"
 #include "InsertTextCommand.h"
-#include "RenderObject.h"
 #include "TextIterator.h"
 #include "VisiblePosition.h"
 #include "VisibleUnits.h"
+#include "core/rendering/RenderObject.h"
 #include "htmlediting.h"
 
 namespace WebCore {

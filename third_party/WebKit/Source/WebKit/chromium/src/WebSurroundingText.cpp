@@ -28,11 +28,11 @@
 #include "Element.h"
 #include "Node.h"
 #include "Range.h"
-#include "RenderObject.h"
 #include "SurroundingText.h"
 #include "Text.h"
 #include "VisiblePosition.h"
 #include "WebHitTestResult.h"
+#include "core/rendering/RenderObject.h"
 #include <public/WebPoint.h>
 
 using namespace WebCore;

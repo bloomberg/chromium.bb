@@ -24,8 +24,8 @@
 #ifndef RenderThemeChromiumMac_h
 #define RenderThemeChromiumMac_h
 
-#import "RenderTheme.h"
-#import "RenderThemeChromiumCommon.h"
+#import "core/rendering/RenderTheme.h"
+#import "core/rendering/RenderThemeChromiumCommon.h"
 
 #import <wtf/HashMap.h>
 #import <wtf/RetainPtr.h>

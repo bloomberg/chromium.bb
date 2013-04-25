@@ -35,10 +35,10 @@
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
 #include "PluginDocument.h"
-#include "RenderEmbeddedObject.h"
-#include "RenderImage.h"
-#include "RenderWidget.h"
 #include "Settings.h"
+#include "core/rendering/RenderEmbeddedObject.h"
+#include "core/rendering/RenderImage.h"
+#include "core/rendering/RenderWidget.h"
 
 namespace WebCore {
 

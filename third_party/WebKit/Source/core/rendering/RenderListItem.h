@@ -23,7 +23,7 @@
 #ifndef RenderListItem_h
 #define RenderListItem_h
 
-#include "RenderBlock.h"
+#include "core/rendering/RenderBlock.h"
 
 namespace WebCore {
 

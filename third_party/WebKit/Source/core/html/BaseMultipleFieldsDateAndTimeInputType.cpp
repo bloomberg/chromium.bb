@@ -44,12 +44,12 @@
 #include "NodeTraversal.h"
 #include "Page.h"
 #include "PickerIndicatorElement.h"
-#include "RenderTheme.h"
 #include "ShadowRoot.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/DateTimeFormat.h"
 #include "core/platform/text/PlatformLocale.h"
+#include "core/rendering/RenderTheme.h"
 #include <wtf/DateMath.h>
 
 namespace WebCore {

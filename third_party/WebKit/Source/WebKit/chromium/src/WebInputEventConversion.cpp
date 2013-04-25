@@ -35,7 +35,6 @@
 #include "GestureEvent.h"
 #include "KeyboardEvent.h"
 #include "MouseEvent.h"
-#include "RenderObject.h"
 #include "Touch.h"
 #include "TouchEvent.h"
 #include "TouchList.h"
@@ -47,6 +46,7 @@
 #include "core/platform/ScrollView.h"
 #include "core/platform/Widget.h"
 #include "core/platform/chromium/KeyboardCodes.h"
+#include "core/rendering/RenderObject.h"
 
 using namespace WebCore;
 

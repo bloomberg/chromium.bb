@@ -28,10 +28,10 @@
 #include "core/rendering/svg/SVGRenderSupport.h"
 
 #include "NodeRenderStyle.h"
-#include "RenderGeometryMap.h"
-#include "RenderLayer.h"
 #include "SVGStyledElement.h"
 #include "core/platform/graphics/transforms/TransformState.h"
+#include "core/rendering/RenderGeometryMap.h"
+#include "core/rendering/RenderLayer.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGResourceClipper.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"

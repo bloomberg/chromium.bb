@@ -43,14 +43,14 @@
 #include "InspectorPageAgent.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "RenderObject.h"
-#include "RenderView.h"
 #include "TimelineRecordFactory.h"
 #include "TimelineTraceEventProcessor.h"
 #include "core/platform/MemoryUsageSupport.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/platform/network/ResourceRequest.h"
 #include "core/platform/network/ResourceResponse.h"
+#include "core/rendering/RenderObject.h"
+#include "core/rendering/RenderView.h"
 
 #include <wtf/CurrentTime.h>
 
