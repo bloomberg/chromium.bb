@@ -18,6 +18,9 @@ class WebURLLoaderImpl : public WebKit::WebURLLoader {
   explicit WebURLLoaderImpl(WebKitPlatformSupportImpl* platform);
   virtual ~WebURLLoaderImpl();
 
+  static WebKit::WebURLError CreateError(const WebKit::WebURL& unreachable_url,
+                                         int reason);
+
   // WebURLLoader methods:
   virtual void loadSynchronously(
       const WebKit::WebURLRequest& request,

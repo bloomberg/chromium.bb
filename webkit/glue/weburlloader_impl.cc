@@ -735,17 +735,7 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
 
   if (client_) {
     if (error_code != net::OK) {
-      WebURLError error;
-      if (error_code == net::ERR_ABORTED) {
-        error.isCancellation = true;
-      } else if (error_code == net::ERR_TEMPORARILY_THROTTLED) {
-        error.localizedDescription = WebString::fromUTF8(
-            kThrottledErrorDescription);
-      }
-      error.domain = WebString::fromUTF8(net::kErrorDomain);
-      error.reason = error_code;
-      error.unreachableURL = request_.url();
-      client_->didFail(loader_, error);
+      client_->didFail(loader_, CreateError(request_.url(), error_code));
     } else {
       client_->didFinishLoading(
           loader_, (completion_time - TimeTicks()).InSecondsF());
@@ -812,6 +802,21 @@ WebURLLoaderImpl::WebURLLoaderImpl(WebKitPlatformSupportImpl* platform)
 
 WebURLLoaderImpl::~WebURLLoaderImpl() {
   cancel();
+}
+
+WebURLError WebURLLoaderImpl::CreateError(const WebURL& unreachable_url,
+                                          int reason) {
+  WebURLError error;
+  error.domain = WebString::fromUTF8(net::kErrorDomain);
+  error.reason = reason;
+  error.unreachableURL = unreachable_url;
+  if (reason == net::ERR_ABORTED) {
+    error.isCancellation = true;
+  } else if (reason == net::ERR_TEMPORARILY_THROTTLED) {
+    error.localizedDescription = WebString::fromUTF8(
+        kThrottledErrorDescription);
+  }
+  return error;
 }
 
 void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,

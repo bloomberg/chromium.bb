@@ -69,6 +69,7 @@ using WebKit::WebString;
 using WebKit::WebSocketStreamHandle;
 using WebKit::WebThemeEngine;
 using WebKit::WebURL;
+using WebKit::WebURLError;
 using WebKit::WebURLLoader;
 using WebKit::WebVector;
 
@@ -399,8 +400,9 @@ WebString WebKitPlatformSupportImpl::userAgent(const WebURL& url) {
   return WebString::fromUTF8(webkit_glue::GetUserAgent(url));
 }
 
-int WebKitPlatformSupportImpl::cancelledErrorCode() const {
-  return net::ERR_ABORTED;
+WebURLError WebKitPlatformSupportImpl::cancelledError(
+    const WebURL& unreachableURL) const {
+  return WebURLLoaderImpl::CreateError(unreachableURL, net::ERR_ABORTED);
 }
 
 void WebKitPlatformSupportImpl::getPluginList(bool refresh,

@@ -11,6 +11,7 @@
 #include "base/threading/thread_local_storage.h"
 #include "base/timer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/Platform.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebURLError.h"
 #include "ui/base/layout.h"
 #include "webkit/glue/resource_loader_bridge.h"
 #include "webkit/glue/webkit_glue_export.h"
@@ -83,7 +84,7 @@ class WEBKIT_GLUE_EXPORT WebKitPlatformSupportImpl :
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
-  virtual int cancelledErrorCode() const;
+  virtual WebKit::WebURLError cancelledError(const WebKit::WebURL& url) const;
   virtual void getPluginList(bool refresh, WebKit::WebPluginListBuilder*);
   virtual void decrementStatsCounter(const char* name);
   virtual void incrementStatsCounter(const char* name);
