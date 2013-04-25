@@ -79,6 +79,7 @@ webkit.org/b/102464 [ Debug ] virtual/deferred/fast/images/webgl-teximage2d.html
 webkit.org/b/103744 svg/dom/viewspec-parser-7.html [ Pass Timeout ]
 webkit.org/b/103744 svg/dom/viewspec-parser-6.html [ Pass Timeout ]
 crbug.com/24182 [ Linux Win Debug ] inspector/styles/device-metrics-fit-window.html [ Slow ]
+crbug.com/24182 [ Win Mac Debug ] inspector/styles/stylesheet-tracking.html [ Slow ]
 webkit.org/b/105785 [ Release ] http/tests/inspector/indexeddb [ Slow ]
 crbug.com/24182 [ Debug ] virtual/gpu/fast/hidpi/image-set-background-dynamic.html [ Slow ]
 webkit.org/b/106606 fast/canvas/webgl/context-release-upon-reload.html [ Slow ]
@@ -3093,8 +3094,6 @@ crbug.com/234758 [ Debug ] storage/indexeddb/dont-wedge.html [ Pass Crash ]
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
-
-crbug.com/234758 [ Debug ] inspector/styles/stylesheet-tracking.html [ Pass Timeout ]
 
 crbug.com/169374 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
 crbug.com/169374 compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
