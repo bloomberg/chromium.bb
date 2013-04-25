@@ -6,12 +6,17 @@
 #define ASH_TOUCH_TOUCH_OBSERVER_HUD_H_
 
 #include "ash/ash_export.h"
+#include "ash/display/display_controller.h"
 #include "ash/shell.h"
 #include "base/values.h"
 #include "ui/base/events/event_handler.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget_observer.h"
+
+#if defined(OS_CHROMEOS)
+#include "chromeos/display/output_configurator.h"
+#endif  // defined(OS_CHROMEOS)
 
 namespace aura {
 class Window;
@@ -32,13 +37,18 @@ namespace internal {
 
 class TouchHudCanvas;
 
-// An event filter which handles system level gesture events.
-class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
-                                    public views::WidgetObserver,
-                                    public gfx::DisplayObserver {
+// An event filter which handles system level gesture events. Objects of this
+// class manage their own lifetime.
+class ASH_EXPORT TouchObserverHUD
+    : public ui::EventHandler,
+      public views::WidgetObserver,
+      public gfx::DisplayObserver,
+#if defined(OS_CHROMEOS)
+      public chromeos::OutputConfigurator::Observer,
+#endif  // defined(OS_CHROMEOS)
+      public DisplayController::Observer {
  public:
-  explicit TouchObserverHUD(const gfx::Display& display);
-  virtual ~TouchObserverHUD();
+  explicit TouchObserverHUD(aura::RootWindow* initial_root);
 
   // Returns the log of touch events as a dictionary mapping id of each display
   // to its touch log.
@@ -57,6 +67,10 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   scoped_ptr<ListValue> GetLogAsList() const;
 
  private:
+  friend class TouchHudTest;
+
+  virtual ~TouchObserverHUD();
+
   void UpdateTouchPointLabel(int index);
 
   // Overriden from ui::EventHandler:
@@ -65,14 +79,24 @@ class ASH_EXPORT TouchObserverHUD : public ui::EventHandler,
   // Overridden from views::WidgetObserver:
   virtual void OnWidgetDestroying(views::Widget* widget) OVERRIDE;
 
-  // Overridden from gfx::DisplayObserver.
+  // Overridden from gfx::DisplayObserver:
   virtual void OnDisplayBoundsChanged(const gfx::Display& display) OVERRIDE;
   virtual void OnDisplayAdded(const gfx::Display& new_display) OVERRIDE;
   virtual void OnDisplayRemoved(const gfx::Display& old_display) OVERRIDE;
 
+#if defined(OS_CHROMEOS)
+  // Overriden from chromeos::OutputConfigurator::Observer:
+  virtual void OnDisplayModeChanged() OVERRIDE;
+#endif  // defined(OS_CHROMEOS)
+
+  // Overriden form DisplayController::Observer:
+  virtual void OnDisplayConfigurationChanging() OVERRIDE;
+  virtual void OnDisplayConfigurationChanged() OVERRIDE;
+
   static const int kMaxTouchPoints = 32;
 
   const int64 display_id_;
+  aura::RootWindow* root_window_;
 
   views::Widget* widget_;
   TouchHudCanvas* canvas_;
