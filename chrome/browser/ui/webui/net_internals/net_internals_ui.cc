@@ -1310,8 +1310,8 @@ void NetInternalsMessageHandler::IOThreadImpl::OnGetHttpCacheInfo(
     std::vector<std::pair<std::string, std::string> > stats;
     disk_cache->GetStats(&stats);
     for (size_t i = 0; i < stats.size(); ++i) {
-      stats_dict->Set(stats[i].first,
-                      Value::CreateStringValue(stats[i].second));
+      stats_dict->SetStringWithoutPathExpansion(
+          stats[i].first, stats[i].second);
     }
   }
 
