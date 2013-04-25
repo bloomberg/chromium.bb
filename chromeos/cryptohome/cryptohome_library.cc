@@ -315,9 +315,9 @@ static CryptohomeLibrary* g_test_cryptohome_library = NULL;
 void CryptohomeLibrary::Initialize() {
   CHECK(!g_cryptohome_library);
   if (base::chromeos::IsRunningOnChromeOS())
-    g_cryptohome_library = new CryptohomeLibraryStubImpl();
-  else
     g_cryptohome_library = new CryptohomeLibraryImpl();
+  else
+    g_cryptohome_library = new CryptohomeLibraryStubImpl();
 }
 
 // static
