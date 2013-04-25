@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
@@ -215,7 +216,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   void UpdateFileSystemContentsSection();
   void UpdateLocalStorageUsageSection();
   void UpdateCacheContentsSection(drive::DriveCache* cache);
-  void UpdateEventLogSection(google_apis::EventLogger* event_logger);
+  void UpdateEventLogSection();
 
   // Called when GetGCacheContents() is complete.
   void OnGetGCacheContents(base::ListValue* gcache_contents,
@@ -381,7 +382,7 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   // is called again). In that case, we have to forget the last sent ID here,
   // and resent whole the logs to the page.
   last_sent_event_id_ = -1;
-  UpdateEventLogSection(system_service->event_logger());
+  UpdateEventLogSection();
 }
 
 void DriveInternalsWebUIHandler::UpdateDriveRelatedFlagsSection() {
@@ -619,10 +620,9 @@ void DriveInternalsWebUIHandler::UpdateCacheContentsSection(
                  base::Bind(&base::DoNothing));
 }
 
-void DriveInternalsWebUIHandler::UpdateEventLogSection(
-    google_apis::EventLogger* event_logger) {
+void DriveInternalsWebUIHandler::UpdateEventLogSection() {
   const std::vector<google_apis::EventLogger::Event> log =
-      event_logger->GetHistory();
+      drive::util::GetLogHistory();
 
   base::ListValue list;
   for (size_t i = 0; i < log.size(); ++i) {
@@ -729,7 +729,7 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
     return;
 
   UpdateInFlightOperationsSection(system_service->job_list());
-  UpdateEventLogSection(system_service->event_logger());
+  UpdateEventLogSection();
 }
 
 }  // namespace

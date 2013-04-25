@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/drive/drive_prefetcher.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/file_write_helper.h"
+#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/chromeos/drive/sync_client.h"
 #include "chrome/browser/download/download_service.h"
@@ -24,7 +25,6 @@
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/drive_api_service.h"
 #include "chrome/browser/google_apis/drive_api_util.h"
-#include "chrome/browser/google_apis/event_logger.h"
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
@@ -111,7 +111,6 @@ DriveSystemService::DriveSystemService(
   blocking_task_runner_ = blocking_pool->GetSequencedTaskRunner(
       blocking_pool->GetSequenceToken());
 
-  event_logger_.reset(new google_apis::EventLogger);
   if (test_drive_service) {
     drive_service_.reset(test_drive_service);
   } else if (google_apis::util::IsDriveV2ApiEnabled()) {
@@ -152,7 +151,6 @@ DriveSystemService::DriveSystemService(
                                               file_system()));
   sync_client_.reset(new SyncClient(file_system(), cache()));
   prefetcher_.reset(new DrivePrefetcher(file_system(),
-                                        event_logger(),
                                         DrivePrefetcherOptions()));
   stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system(),
                                                               cache()));
@@ -316,7 +314,7 @@ void DriveSystemService::AddDriveMountPoint() {
       drive_mount_point);
 
   if (success) {
-    event_logger_->Log("AddDriveMountPoint");
+    util::Log("AddDriveMountPoint");
     FOR_EACH_OBSERVER(DriveSystemServiceObserver, observers_,
                       OnFileSystemMounted());
   }
@@ -340,7 +338,7 @@ void DriveSystemService::RemoveDriveMountPoint() {
     file_system_proxy_->DetachFromFileSystem();
     file_system_proxy_ = NULL;
   }
-  event_logger_->Log("RemoveDriveMountPoint");
+  util::Log("RemoveDriveMountPoint");
 }
 
 void DriveSystemService::InitializeAfterCacheInitialized(bool success) {

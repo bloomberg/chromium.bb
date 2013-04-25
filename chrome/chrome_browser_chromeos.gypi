@@ -269,6 +269,8 @@
         'browser/chromeos/drive/file_write_helper.h',
         'browser/chromeos/drive/job_list.cc',
         'browser/chromeos/drive/job_list.h',
+        'browser/chromeos/drive/logging.h',
+        'browser/chromeos/drive/logging.cc',
         'browser/chromeos/drive/resource_entry_conversion.cc',
         'browser/chromeos/drive/resource_entry_conversion.h',
         'browser/chromeos/drive/search_metadata.cc',

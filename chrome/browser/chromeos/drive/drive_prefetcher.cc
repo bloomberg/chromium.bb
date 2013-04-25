@@ -9,7 +9,7 @@
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_util.h"
-#include "chrome/browser/google_apis/event_logger.h"
+#include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -54,14 +54,12 @@ DrivePrefetcherOptions::DrivePrefetcherOptions()
 }
 
 DrivePrefetcher::DrivePrefetcher(DriveFileSystemInterface* file_system,
-                                 google_apis::EventLogger* event_logger,
                                  const DrivePrefetcherOptions& options)
     : latest_files_(&ComparePrefetchPriority),
       number_of_inflight_traversals_(0),
       initial_prefetch_count_(options.initial_prefetch_count),
       prefetch_file_size_limit_(options.prefetch_file_size_limit),
       file_system_(file_system),
-      event_logger_(event_logger),
       weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -104,8 +102,7 @@ void DrivePrefetcher::DoPrefetch() {
   for (LatestFileSet::reverse_iterator it = latest_files_.rbegin();
       it != latest_files_.rend(); ++it) {
     const std::string& resource_id = it->resource_id();
-    event_logger_->Log("Prefetcher: Enqueue prefetching %s",
-                       resource_id.c_str());
+    util::Log("Prefetcher: Enqueue prefetching %s", resource_id.c_str());
     file_system_->GetFileByResourceId(
         resource_id,
         DriveClientContext(PREFETCH),
@@ -124,9 +121,9 @@ void DrivePrefetcher::OnPrefetchFinished(const std::string& resource_id,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (error != FILE_ERROR_OK)
     LOG(WARNING) << "Prefetch failed: " << FileErrorToString(error);
-  event_logger_->Log("Prefetcher: Finish fetching (%s) %s",
-                     FileErrorToString(error).c_str(),
-                     resource_id.c_str());
+  util::Log("Prefetcher: Finish fetching (%s) %s",
+            FileErrorToString(error).c_str(),
+            resource_id.c_str());
 }
 
 void DrivePrefetcher::VisitFile(const DriveEntryProto& entry) {
