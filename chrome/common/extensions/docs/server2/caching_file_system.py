@@ -60,7 +60,7 @@ class CachingFileSystem(FileSystem):
     else:
       version = dir_stat.child_versions.get(path.split('/')[-1], None)
       if version is None:
-        raise FileNotFoundError('Version was None for %s' % path)
+        raise FileNotFoundError('No stat found for %s in %s' % (path, dir_path))
     mapping = { path: version }
 
     for child_path, child_version in dir_stat.child_versions.iteritems():

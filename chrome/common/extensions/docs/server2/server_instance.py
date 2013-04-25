@@ -5,6 +5,7 @@
 from fnmatch import fnmatch
 import logging
 import mimetypes
+import traceback
 import os
 
 from api_data_source import APIDataSource
@@ -243,7 +244,7 @@ class ServerInstance(object):
       elif path.endswith('.html'):
         content = templates.Render(path)
     except FileNotFoundError as e:
-      logging.warning(e)
+      logging.warning(traceback.format_exc())
 
     response.headers['x-frame-options'] = 'sameorigin'
     if content is None:

@@ -5,8 +5,10 @@
 import logging
 import os
 from StringIO import StringIO
+import traceback
 
-from appengine_wrappers import IsDevServer, memcache, urlfetch, webapp
+from appengine_wrappers import (
+    DeadlineExceededError, IsDevServer, logservice, memcache, urlfetch, webapp)
 from branch_utility import BranchUtility
 from server_instance import ServerInstance
 import svn_constants
@@ -99,7 +101,9 @@ class Handler(webapp.RequestHandler):
       start_time = time.time()
       files = [f for f in server_instance.content_cache.GetFromFileListing(d)
                if not f.endswith('/')]
-      for f in files:
+      logging.info('cron/%s: rendering %s files from %s...' % (
+          channel, len(files), d))
+      for i, f in enumerate(files):
         error = None
         path = '%s%s' % (path_prefix, f)
         try:
@@ -107,27 +111,38 @@ class Handler(webapp.RequestHandler):
           server_instance.Get(path, MockRequest(path), response)
           if response.status != 200:
             error = 'Got %s response' % response.status
+        except DeadlineExceededError:
+          logging.error(
+              'cron/%s: deadline exceeded rendering %s (%s of %s): %s' % (
+                  channel, path, i + 1, len(files), traceback.format_exc()))
+          raise
         except error:
           pass
         if error:
           logging.error('cron/%s: error rendering %s: %s' % (
               channel, path, error))
           success = False
-      logging.info('cron/%s: rendering %s files took %s seconds' % (
-          channel, len(files), time.time() - start_time))
+      logging.info('cron/%s: rendering %s files from %s took %s seconds' % (
+          channel, len(files), d, time.time() - start_time))
       return success
 
-    # Don't use "or" since we want to evaluate everything no matter what.
-    success = any((
+    success = True
+    for path, path_prefix in (
         # Note: rendering the public templates will pull in all of the private
         # templates.
-        run_cron_for_dir(svn_constants.PUBLIC_TEMPLATE_PATH),
-        run_cron_for_dir(svn_constants.STATIC_PATH, path_prefix='static/'),
+        (svn_constants.PUBLIC_TEMPLATE_PATH, ''),
         # Note: rendering the public templates will have pulled in the .js and
         # manifest.json files (for listing examples on the API reference pages),
         # but there are still images, CSS, etc.
-        run_cron_for_dir(svn_constants.EXAMPLES_PATH,
-                         path_prefix='extensions/examples/')))
+        (svn_constants.STATIC_PATH, 'static/'),
+        (svn_constants.EXAMPLES_PATH, 'extensions/examples/')):
+      try:
+        # Note: don't try to short circuit any of this stuff. We want to run
+        # the cron for all the directories regardless of intermediate failures.
+        success = run_cron_for_dir(path, path_prefix=path_prefix) and success
+      except DeadlineExceededError:
+        success = False
+        break
 
     if success:
       self.response.status = 200
@@ -184,7 +199,13 @@ class Handler(webapp.RequestHandler):
       return
 
     if path.startswith('/cron'):
-      self._HandleCron(path)
+      # Crons often time out, and when they do *and* then eventually try to
+      # flush logs they die. Turn off autoflush and manually do so at the end.
+      logservice.AUTOFLUSH_ENABLED = False
+      try:
+        self._HandleCron(path)
+      finally:
+        logservice.flush()
       return
 
     # Redirect paths like "directory" to "directory/". This is so relative

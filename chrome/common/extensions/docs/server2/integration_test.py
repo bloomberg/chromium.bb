@@ -8,13 +8,16 @@
 import build_server
 build_server.main()
 
-from handler import Handler
-from local_renderer import LocalRenderer
+import logging
 import optparse
 import os
 import sys
 import time
 import unittest
+
+from handler import Handler
+from local_renderer import LocalRenderer
+from test_util import DisableLogging
 
 # Arguments set up if __main__ specifies them.
 _BASE_PATH = os.path.join(
@@ -81,7 +84,6 @@ class IntegrationTest(unittest.TestCase):
     '''
     if _EXPLICIT_TEST_FILES is None:
       return
-    print('Rendering %s explicit files...' % len(_EXPLICIT_TEST_FILES))
     for filename in _EXPLICIT_TEST_FILES:
       print('Rendering %s...' % filename)
       start_time = time.time()
@@ -93,9 +95,10 @@ class IntegrationTest(unittest.TestCase):
       finally:
         print('Took %s seconds' % (time.time() - start_time))
 
+  @DisableLogging('warning')
   def testFileNotFound(self):
     render_content, render_status, _ = self._renderer.Render(
-        '/extensions/notfound.html')
+        '/extensions/notfound.html', always_online=True)
     self.assertEqual(404, render_status)
 
 if __name__ == '__main__':

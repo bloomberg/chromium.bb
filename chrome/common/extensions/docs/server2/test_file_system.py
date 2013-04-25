@@ -43,13 +43,11 @@ class TestFileSystem(FileSystem):
     return self._ReadImpl(paths, binary=binary)
 
   def _ReadImpl(self, paths, binary=False):
-    try:
-      result = {}
-      for path in paths:
-        result[path] = self._ResolvePath(path)
-      return Future(value=result)
-    except FileNotFoundError as error:
-      return Future(error=error)
+    test_fs = self
+    class Delegate(object):
+      def Get(self):
+        return dict((path, test_fs._ResolvePath(path)) for path in paths)
+    return Future(delegate=Delegate())
 
   def _ResolvePath(self, path):
     def Resolve(parts):

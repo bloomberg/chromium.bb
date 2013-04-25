@@ -4,10 +4,11 @@
 
 import logging
 import os
+import traceback
 
 from branch_utility import BranchUtility
-from docs_server_utils import FormatKey
 import compiled_file_system as compiled_fs
+from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
 import url_constants
@@ -144,5 +145,5 @@ class TemplateDataSource(object):
       return self._cache.GetFromFile(
           '/'.join((base_path, FormatKey(template_name))))
     except FileNotFoundError as e:
-      logging.error(e)
+      logging.warning(traceback.format_exc())
       return None

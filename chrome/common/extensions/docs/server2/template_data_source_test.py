@@ -14,6 +14,7 @@ from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
 from template_data_source import TemplateDataSource
+from test_util import DisableLogging
 from third_party.handlebar import Handlebar
 
 class _FakeRequest(object):
@@ -59,17 +60,20 @@ class TemplateDataSourceTest(unittest.TestCase):
         api_data_factory,
         self._fake_api_list_data_source_factory,
         ObjectStoreCreator.TestFactory())
-    return (TemplateDataSource.Factory('fake_channel',
-                                       api_data_factory,
-                                       self._fake_api_list_data_source_factory,
-                                       self._fake_intro_data_source_factory,
-                                       self._fake_samples_data_source_factory,
-                                       self._fake_sidenav_data_source_factory,
-                                       compiled_fs_factory,
-                                       reference_resolver_factory,
-                                       '.',
-                                       '.')
-            .Create(_FakeRequest(), 'extensions/foo'))
+    @DisableLogging('error')  # "was never set" error
+    def create_from_factory(factory):
+      return factory.Create(_FakeRequest(), 'extensions/foo')
+    return create_from_factory(TemplateDataSource.Factory(
+        'fake_channel',
+        api_data_factory,
+        self._fake_api_list_data_source_factory,
+        self._fake_intro_data_source_factory,
+        self._fake_samples_data_source_factory,
+        self._fake_sidenav_data_source_factory,
+        compiled_fs_factory,
+        reference_resolver_factory,
+        '.',
+        '.'))
 
   def testSimple(self):
     self._base_path = os.path.join(self._base_path, 'simple')
@@ -88,6 +92,16 @@ class TemplateDataSourceTest(unittest.TestCase):
     self.assertEqual(template_a2.render({}, {'templates': {}}).text,
         t_data_source.get('test2').render({}, {'templates': {}}).text)
 
+  @DisableLogging('warning')
+  def testNotFound(self):
+    self._base_path = os.path.join(self._base_path, 'simple')
+    fetcher = LocalFileSystem(self._base_path)
+    compiled_fs_factory = CompiledFileSystem.Factory(
+        fetcher,
+        ObjectStoreCreator.TestFactory())
+    t_data_source = self._CreateTemplateDataSource(
+        compiled_fs_factory,
+        ObjectStoreCreator.TestFactory())
     self.assertEqual(None, t_data_source.get('junk.html'))
 
   def testPartials(self):

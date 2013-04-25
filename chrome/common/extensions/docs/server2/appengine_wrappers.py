@@ -23,13 +23,15 @@ def IsDevServer():
 # This will attempt to import the actual App Engine modules, and if it fails,
 # they will be replaced with fake modules. This is useful during testing.
 try:
+  import google.appengine.api.files as files
+  import google.appengine.api.logservice as logservice
+  import google.appengine.api.memcache as memcache
+  import google.appengine.api.urlfetch as urlfetch
   import google.appengine.ext.blobstore as blobstore
   from google.appengine.ext.blobstore.blobstore import BlobReferenceProperty
   import google.appengine.ext.db as db
   import google.appengine.ext.webapp as webapp
-  import google.appengine.api.files as files
-  import google.appengine.api.memcache as memcache
-  import google.appengine.api.urlfetch as urlfetch
+  from google.appengine.runtime import DeadlineExceededError
 except ImportError:
   import re
   from StringIO import StringIO
@@ -65,6 +67,9 @@ except ImportError:
     def wait(self):
       pass
 
+  class DeadlineExceededError(Exception):
+    pass
+
   class FakeUrlFetch(object):
     """A fake urlfetch module that uses the current
     |FAKE_URL_FETCHER_CONFIGURATION| to map urls to fake fetchers.
@@ -90,10 +95,6 @@ except ImportError:
     def make_fetch_call(self, rpc, url, **kwargs):
       rpc.result = self.fetch(url)
   urlfetch = FakeUrlFetch()
-
-  class NotImplemented(object):
-    def __getattr__(self, attr):
-      raise NotImplementedError()
 
   _BLOBS = {}
   class FakeBlobstore(object):
@@ -145,6 +146,14 @@ except ImportError:
       pass
 
   files = FakeFiles()
+
+  class Logservice(object):
+    AUTOFLUSH_ENABLED = True
+
+    def flush(self):
+      pass
+
+  logservice = Logservice()
 
   class InMemoryMemcache(object):
     """An in-memory memcache implementation.
