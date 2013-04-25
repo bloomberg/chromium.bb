@@ -627,11 +627,10 @@ bool WebMediaPlayerClientImpl::copyVideoTextureToPlatformTexture(WebCore::Graphi
     if (!context || !m_webMediaPlayer)
         return false;
     Extensions3D* extensions = context->getExtensions();
-    if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy")
-        || !extensions->canUseCopyTextureCHROMIUM(internalFormat, type, level) || !context->makeContextCurrent())
+    if (!extensions || !extensions->supports("GL_CHROMIUM_copy_texture") || !extensions->supports("GL_CHROMIUM_flipy") || !context->makeContextCurrent())
         return false;
     WebGraphicsContext3D* webGraphicsContext3D = GraphicsContext3DPrivate::extractWebGraphicsContext3D(context);
-    return m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, texture, level, internalFormat, type, premultiplyAlpha, flipY);
+    return m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, texture, level, internalFormat, premultiplyAlpha, flipY);
 }
 
 void WebMediaPlayerClientImpl::setPreload(MediaPlayer::Preload preload)

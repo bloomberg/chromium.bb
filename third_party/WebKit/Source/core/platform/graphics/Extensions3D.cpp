@@ -175,20 +175,9 @@ void Extensions3D::getQueryObjectuivEXT(Platform3DObject query, GC3Denum pname, 
     m_private->webContext()->getQueryObjectuivEXT(query, pname, params);
 }
 
-bool Extensions3D::canUseCopyTextureCHROMIUM(GC3Denum destFormat, GC3Denum destType, GC3Dint level)
+void Extensions3D::copyTextureCHROMIUM(GC3Denum target, Platform3DObject sourceId, Platform3DObject destId, GC3Dint level, GC3Denum internalFormat)
 {
-    // FIXME: restriction of (RGB || RGBA)/UNSIGNED_BYTE/(Level 0) should be lifted when
-    // WebGraphicsContext3D::copyTextureCHROMIUM(...) are fully functional.
-    if ((destFormat == GraphicsContext3D::RGB || destFormat == GraphicsContext3D::RGBA)
-        && destType == GraphicsContext3D::UNSIGNED_BYTE
-        && !level)
-        return true;
-    return false;
-}
-
-void Extensions3D::copyTextureCHROMIUM(GC3Denum target, Platform3DObject sourceId, Platform3DObject destId, GC3Dint level, GC3Denum internalFormat, GC3Denum destType)
-{
-    m_private->webContext()->copyTextureCHROMIUM(target, sourceId, destId, level, internalFormat, destType);
+    m_private->webContext()->copyTextureCHROMIUM(target, sourceId, destId, level, internalFormat);
 }
 
 void Extensions3D::shallowFlushCHROMIUM()
