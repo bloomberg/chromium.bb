@@ -1517,10 +1517,7 @@ std::string ExtensionPrefs::GetVersionString(const std::string& extension_id) {
     return std::string();
 
   std::string version;
-  if (!extension->GetString(kPrefVersion, &version)) {
-    LOG(ERROR) << "Bad or missing pref 'version' for extension '"
-               << extension_id << "'";
-  }
+  extension->GetString(kPrefVersion, &version);
 
   return version;
 }
