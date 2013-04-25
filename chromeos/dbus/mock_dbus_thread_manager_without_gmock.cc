@@ -11,6 +11,7 @@
 #include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_cros_disks_client.h"
+#include "chromeos/dbus/fake_shill_manager_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_config_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_engine_factory_service.h"
@@ -29,6 +30,7 @@ MockDBusThreadManagerWithoutGMock::MockDBusThreadManagerWithoutGMock()
     fake_bluetooth_profile_manager_client_(
         new FakeBluetoothProfileManagerClient()),
     fake_cros_disks_client_(new FakeCrosDisksClient),
+    fake_shill_manager_client_(new FakeShillManagerClient),
     mock_ibus_client_(new MockIBusClient),
     mock_ibus_input_context_client_(new MockIBusInputContextClient),
     ibus_bus_(NULL) {
@@ -156,8 +158,7 @@ ShillIPConfigClient*
 
 ShillManagerClient*
     MockDBusThreadManagerWithoutGMock::GetShillManagerClient() {
-  NOTIMPLEMENTED();
-  return NULL;
+  return fake_shill_manager_client_.get();;
 }
 
 ShillProfileClient*
