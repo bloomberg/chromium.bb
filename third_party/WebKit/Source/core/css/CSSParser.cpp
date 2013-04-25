@@ -1401,7 +1401,7 @@ bool CSSParser::parseDeclaration(StylePropertySet* declaration, const String& st
     setupParser("@-internal-decls{", string, "} ");
     if (m_sourceDataHandler) {
         m_sourceDataHandler->startRuleHeader(CSSRuleSourceData::STYLE_RULE, 0);
-        m_sourceDataHandler->endRuleHeader(0);
+        m_sourceDataHandler->endRuleHeader(1);
         m_sourceDataHandler->startRuleBody(0);
     }
     cssyyparse(this);
@@ -10632,6 +10632,10 @@ restartAfterComment:
     case CharacterSlash:
         // Ignore comments. They are not even considered as white spaces.
         if (*currentCharacter<SrcCharacterType>() == '*') {
+            if (m_sourceDataHandler) {
+                unsigned startOffset = (is8BitSource() ? currentCharacter<LChar>() - m_dataStart8.get() : currentCharacter<UChar>() - m_dataStart16.get()) - 1; // Start with a slash.
+                m_sourceDataHandler->startComment(startOffset - m_parsedTextPrefixLength);
+            }
             ++currentCharacter<SrcCharacterType>();
             while (currentCharacter<SrcCharacterType>()[0] != '*' || currentCharacter<SrcCharacterType>()[1] != '/') {
                 if (*currentCharacter<SrcCharacterType>() == '\n')
@@ -10644,6 +10648,11 @@ restartAfterComment:
                 ++currentCharacter<SrcCharacterType>();
             }
             currentCharacter<SrcCharacterType>() += 2;
+            if (m_sourceDataHandler) {
+                unsigned endOffset = is8BitSource() ? currentCharacter<LChar>() - m_dataStart8.get() : currentCharacter<UChar>() - m_dataStart16.get();
+                unsigned userTextEndOffset = static_cast<unsigned>(m_length - 1 - m_parsedTextSuffixLength);
+                m_sourceDataHandler->endComment(min(endOffset, userTextEndOffset) - m_parsedTextPrefixLength);
+            }
             goto restartAfterComment;
         }
         break;
@@ -11351,10 +11360,10 @@ void CSSParser::startProperty()
         m_sourceDataHandler->startProperty(safeUserStringTokenOffset());
 }
 
-void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed)
+void CSSParser::endProperty(bool isImportantFound, bool isPropertyParsed, SyntaxErrorType errorType)
 {
     if (m_sourceDataHandler)
-        m_sourceDataHandler->endProperty(isImportantFound, isPropertyParsed, safeUserStringTokenOffset());
+        m_sourceDataHandler->endProperty(isImportantFound, isPropertyParsed, safeUserStringTokenOffset(), errorType);
 }
 
 void CSSParser::startEndUnknownRule()
@@ -11365,7 +11374,7 @@ void CSSParser::startEndUnknownRule()
 
 unsigned CSSParser::safeUserStringTokenOffset()
 {
-    return std::min(tokenStartOffset(), static_cast<unsigned>(m_length - 1 - m_parsedTextSuffixLength)) - m_parsedTextPrefixLength;
+    return min(tokenStartOffset(), static_cast<unsigned>(m_length - 1 - m_parsedTextSuffixLength)) - m_parsedTextPrefixLength;
 }
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)

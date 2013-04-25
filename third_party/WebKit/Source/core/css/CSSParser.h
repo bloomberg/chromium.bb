@@ -74,6 +74,7 @@ public:
     struct Location;
     class SourceDataHandler;
     enum SyntaxErrorType {
+        NoSyntaxError,
         PropertyDeclarationError,
         GeneralSyntaxError
     };
@@ -385,7 +386,7 @@ public:
     void startRuleBody();
     void endRuleBody(bool discard = false);
     void startProperty();
-    void endProperty(bool isImportantFound, bool isPropertyParsed);
+    void endProperty(bool isImportantFound, bool isPropertyParsed, SyntaxErrorType = NoSyntaxError);
     void startEndUnknownRule();
     void syntaxError(const Location&, SyntaxErrorType = GeneralSyntaxError);
 
@@ -661,7 +662,9 @@ public:
     virtual void endRuleBody(unsigned offset, bool error) = 0;
     virtual void startEndUnknownRule() = 0;
     virtual void startProperty(unsigned offset) = 0;
-    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset) = 0;
+    virtual void endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::SyntaxErrorType) = 0;
+    virtual void startComment(unsigned offset) = 0;
+    virtual void endComment(unsigned offset) = 0;
 };
 
 String quoteCSSString(const String&);

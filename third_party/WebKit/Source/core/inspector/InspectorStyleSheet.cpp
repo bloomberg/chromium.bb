@@ -163,7 +163,9 @@ private:
     virtual void endRuleBody(unsigned, bool) OVERRIDE;
     virtual void startEndUnknownRule() OVERRIDE { addNewRuleToSourceTree(CSSRuleSourceData::createUnknown()); }
     virtual void startProperty(unsigned) OVERRIDE;
-    virtual void endProperty(bool, bool, unsigned) OVERRIDE;
+    virtual void endProperty(bool, bool, unsigned, CSSParser::SyntaxErrorType) OVERRIDE;
+    virtual void startComment(unsigned) OVERRIDE;
+    virtual void endComment(unsigned) OVERRIDE;
 
     void addNewRuleToSourceTree(PassRefPtr<CSSRuleSourceData>);
     PassRefPtr<CSSRuleSourceData> popRuleData();
@@ -331,8 +333,11 @@ void StyleSheetHandler::startProperty(unsigned offset)
     m_propertyRangeStart = offset;
 }
 
-void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset)
+void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned offset, CSSParser::SyntaxErrorType errorType)
 {
+    if (errorType != CSSParser::NoSyntaxError)
+        m_propertyRangeStart = UINT_MAX;
+
     if (m_propertyRangeStart == UINT_MAX || m_currentRuleDataStack.isEmpty() || !m_currentRuleDataStack.last()->styleSourceData)
         return;
 
@@ -356,6 +361,18 @@ void StyleSheetHandler::endProperty(bool isImportant, bool isParsed, unsigned of
     m_currentRuleDataStack.last()->styleSourceData->propertyData.append(
         CSSPropertySourceData(name, value, isImportant, isParsed, SourceRange(start - topRuleBodyRangeStart, end - topRuleBodyRangeStart)));
     m_propertyRangeStart = UINT_MAX;
+}
+
+void StyleSheetHandler::startComment(unsigned offset)
+{
+    UNUSED_PARAM(offset);
+    // Do nothing.
+}
+
+void StyleSheetHandler::endComment(unsigned offset)
+{
+    ASSERT_UNUSED(offset, offset <= m_parsedText.length());
+    // Do nothing.
 }
 
 } // namespace
