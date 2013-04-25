@@ -1276,11 +1276,11 @@ const Experiment kExperiments[] = {
   },
 #endif
   {
-    "full-history-sync",
+    "disable-full-history-sync",
     IDS_FLAGS_FULL_HISTORY_SYNC_NAME,
     IDS_FLAGS_FULL_HISTORY_SYNC_DESCRIPTION,
     kOsAll,
-    SINGLE_VALUE_TYPE(switches::kHistoryEnableFullHistorySync)
+    SINGLE_VALUE_TYPE(switches::kHistoryDisableFullHistorySync)
   },
   {
     "enable-usermedia-screen-capture",

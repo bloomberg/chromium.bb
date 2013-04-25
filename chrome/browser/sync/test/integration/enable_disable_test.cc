@@ -111,10 +111,12 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     ASSERT_TRUE(GetClient(0)->DisableSyncForDatatype(it.Get()));
 
     // AUTOFILL_PROFILE is lumped together with AUTOFILL.
-    // SESSIONS is lumped together with PROXY_TABS and
-    // HISTORY_DELETE_DIRECTIVES.
+    // SESSIONS is lumped together with PROXY_TABS and TYPED_URLS.
+    // HISTORY_DELETE_DIRECTIVES is lumped together with TYPED_URLS.
     // PRIORITY_PREFERENCES is lumped together with PREFERENCES.
-    if (it.Get() == syncer::AUTOFILL_PROFILE || it.Get() == syncer::SESSIONS ||
+    if (it.Get() == syncer::AUTOFILL_PROFILE ||
+        it.Get() == syncer::SESSIONS ||
+        it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
         it.Get() == syncer::PRIORITY_PREFERENCES) {
       continue;
     }
@@ -125,14 +127,19 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, DisableOneAtATime) {
     ASSERT_FALSE(DoesTopLevelNodeExist(user_share, it.Get()))
         << syncer::ModelTypeToString(it.Get());
 
-    // AUTOFILL_PROFILE is lumped together with AUTOFILL.
     if (it.Get() == syncer::AUTOFILL) {
+      // AUTOFILL_PROFILE is lumped together with AUTOFILL.
+      ASSERT_FALSE(DoesTopLevelNodeExist(user_share, syncer::AUTOFILL_PROFILE));
+    } else if (it.Get() == syncer::TYPED_URLS) {
       ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
-                                         syncer::AUTOFILL_PROFILE));
-    } else if (it.Get() == syncer::HISTORY_DELETE_DIRECTIVES ||
-               it.Get() == syncer::PROXY_TABS) {
-      ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
-                                         syncer::SESSIONS));
+                                         syncer::HISTORY_DELETE_DIRECTIVES));
+      // SESSIONS should be enabled only if PROXY_TABS is.
+      ASSERT_EQ(GetClient(0)->IsTypePreferred(syncer::PROXY_TABS),
+                DoesTopLevelNodeExist(user_share, syncer::SESSIONS));
+    } else if (it.Get() == syncer::PROXY_TABS) {
+      // SESSIONS should be enabled only if TYPED_URLS is.
+      ASSERT_EQ(GetClient(0)->IsTypePreferred(syncer::TYPED_URLS),
+                DoesTopLevelNodeExist(user_share, syncer::SESSIONS));
     } else if (it.Get() == syncer::PREFERENCES) {
       ASSERT_FALSE(DoesTopLevelNodeExist(user_share,
                                          syncer::PRIORITY_PREFERENCES));

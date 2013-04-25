@@ -102,8 +102,10 @@ class RequestImpl : public WebHistoryService::Request,
     }
     url_fetcher_->GetResponseAsString(&response_body_);
     url_fetcher_.reset();
-    callback_.Run(this, true);
     is_pending_ = false;
+    callback_.Run(this, true);
+    // It is valid for the callback to delete |this|, so do not access any
+    // members below here.
   }
 
   // OAuth2TokenService::Consumer interface.
@@ -124,9 +126,10 @@ class RequestImpl : public WebHistoryService::Request,
       const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) OVERRIDE {
     token_request_.reset();
-    LOG(WARNING) << "Failed to get OAuth token: " << error.ToString();
-    callback_.Run(this, false);
     is_pending_ = false;
+    callback_.Run(this, false);
+    // It is valid for the callback to delete |this|, so do not access any
+    // members below here.
   }
 
   // Helper for creating a new URLFetcher for the API request.

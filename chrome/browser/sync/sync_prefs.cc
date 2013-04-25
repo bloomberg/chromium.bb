@@ -411,8 +411,8 @@ void SyncPrefs::RegisterPrefGroups() {
   pref_groups_[syncer::PREFERENCES].Put(syncer::SEARCH_ENGINES);
 
   pref_groups_[syncer::TYPED_URLS].Put(syncer::HISTORY_DELETE_DIRECTIVES);
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kHistoryEnableFullHistorySync)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kHistoryDisableFullHistorySync)) {
     pref_groups_[syncer::TYPED_URLS].Put(syncer::SESSIONS);
     pref_groups_[syncer::TYPED_URLS].Put(syncer::FAVICON_IMAGES);
     pref_groups_[syncer::TYPED_URLS].Put(syncer::FAVICON_TRACKING);

@@ -984,12 +984,6 @@ void ProfileSyncService::OnExperimentsChanged(
                                       true);
   }
 
-  if (experiments.full_history_sync) {
-    about_flags::SetExperimentEnabled(g_browser_process->local_state(),
-                                      syncer::kFullHistorySyncFlag,
-                                      true);
-  }
-
   if (experiments.favicon_sync) {
     about_flags::SetExperimentEnabled(g_browser_process->local_state(),
                                       syncer::kFaviconSyncFlag,
