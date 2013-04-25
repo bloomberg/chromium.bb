@@ -19,26 +19,13 @@
 </style>
 
 <div id=proxy-view-tab-content class=content-box>
-  <h4>
-    Current proxy settings
-    <input type=button value="Re-apply settings" id=proxy-view-reload-settings class="hide-when-not-capturing">
-  </h4>
+ <input type=button value="Re-apply settings" id=proxy-view-reload-settings class="hide-when-not-capturing">
 
-  <table><tr>
-
-  <td valign=top>
-  <h3>Effective settings</h3>
+  <h4>Effective proxy settings</h4>
   <pre id=proxy-view-effective-settings></pre>
-  </td>
 
-  <td style='width: 30px'>&nbsp;</td>
-
-  <td valign=top>
-  <h3>Original settings</h3>
+  <h4>Original proxy settings</h4>
   <pre id=proxy-view-original-settings></pre>
-  </td>
-
-  </tr></table>
 
   <div id=proxy-view-socks-hints>
     Note that some traffic such as DNS prefetching will NOT go through the proxy

@@ -1,35 +1,26 @@
 <div id=capture-view-tab-content class=content-box>
-  <h2>Capture options</h2>
-
-  <p>
-  <input id=capture-view-limit-checkbox type=checkbox>
-  <label for='capture-view-limit-checkbox'>
-    Discard old data under memory pressure.
-    <i>(If you capture all events for a long time, it is possible to exhaust memory and crash. Throwing out older data avoids this problem.)</i>
-  </label>
-  </p>
-
-  <p>
-  <input id=capture-view-byte-logging-checkbox type=checkbox>
-  <label for='capture-view-byte-logging-checkbox'>
-    Include the actual bytes sent/received.
-    <i>(This will result in huge log files, and can expose sensitive data)</i>
-  </label>
-  </p>
-
-  <ul>
-    <li>
-    <b>TIP</b>: <a href="#" id=capture-view-tip-anchor>logging from the command line</a>.
-
-    <div style="display:none; margin-top: 10px" id=capture-view-tip-div>
-      Another way to capture network events is by using the command line flag:
-      <blockquote>
-        --log-net-log=<i>FILENAME</i> [ --net-log-level=<i>NUMBER</i> ]
-      </blockquote>
-      This will stream the network events directly to a file of your choosing. If you additionally want it to log the network bytes, then pass --net-log-level=0.
+  <div>
+    <input id=capture-view-limit-checkbox type=checkbox>
+    <label for='capture-view-limit-checkbox'>
+      Discard old data under memory pressure.
+    </label>
+    <span id=capture-view-limit-help-hover class=mouse-over-help-hover>(?)</span>
+    <!-- Inline filter help -->
+    <div id=capture-view-limit-help class=mouse-over-help>
+      If you capture all events for a long time, it is possible to exhaust memory
+      and crash. Throwing out older data avoids this problem.
     </div>
+  </div>
 
-    </li>
-  </ul>
+  <div>
+    <input id=capture-view-byte-logging-checkbox type=checkbox>
+    <label for='capture-view-byte-logging-checkbox'>
+      Include the actual bytes sent/received.
+    </label>
+    <span id=capture-view-byte-logging-help-hover class=mouse-over-help-hover>(?)</span>
+    <div id=capture-view-byte-logging-help class=mouse-over-help>
+      This will result in huge log files, and can expose sensitive data.
+    </div>
+  </div>
 
 </div>

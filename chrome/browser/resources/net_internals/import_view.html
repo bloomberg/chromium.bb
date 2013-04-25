@@ -33,6 +33,11 @@
 </style>
 
 <div id=import-view-tab-content class=content-box>
+  <div>
+    <div style='margin-bottom:20px'><b>TIP</b>: Drag-and-drop files into this window.</div>
+    <input type=file value="Load log from file" id=import-view-load-log-file></input>
+    <pre id=import-view-load-status-text></pre>
+  </div>
 
   <div id=import-view-loaded-div style="display: none">
     <h2>Data Loaded</h2>
@@ -58,13 +63,5 @@
       <td><pre id=import-view-user-comments></pre></td>
     </tr>
     </table>
-  </div>
-  <div>
-    <h2>Load data</h2>
-    <p><input type=file value="Load log from file" id=import-view-load-log-file></p>
-    <ul>
-      <li><b>TIP</b>: Try drag-and-drop into this window!</li>
-    </ul>
-    <pre id=import-view-load-status-text></pre>
   </div>
 </div>

@@ -22,33 +22,29 @@
 </style>
 
 <div id=export-view-tab-content class=content-box>
-
-  <h2>Dump data</h2>
-  <div style="margin: 8px">
-    <p><input id=export-view-privacy-stripping-checkbox type=checkbox checked=yes>
-       <label id=export-view-privacy-stripping-checkbox>
-         Strip private information (cookies and credentials).
-       </label>
-       <div id=export-view-privacy-warning style="display:none">
-         <b>WARNING</b>: Events were captured while full byte logging was enabled.
-         This means the dump may contain private information.
-       </div>
-    </p>
-    <textarea cols=50 rows=5 placeholder="Explain what went wrong here. (These notes will be included in the dump file. Be sure to mention the specific URLs, so investigators know what to look for!)" id=export-view-user-comments></textarea>
-    <div>
-      <button id=export-view-save-log-file>Dump to file</button>
+  <div>
+    <input id=export-view-privacy-stripping-checkbox type=checkbox checked=yes>
+    <label for=export-view-privacy-stripping-checkbox>
+      Strip private information (cookies and credentials).
+    </label>
+    <div id=export-view-privacy-warning style="display:none">
+      <b>WARNING</b>: Events were captured while full byte logging was enabled.
+      This means the dump may contain private information.
     </div>
+
+    <div style='margin-top:10px; margin-bottom: 5px'>
+      <textarea cols=50 rows=5 placeholder="Explain what went wrong here. (These notes will be included in the dump file. Be sure to mention the specific URLs, so investigators know what to look for!)" id=export-view-user-comments></textarea>
+    </div>
+    <button id=export-view-save-log-file>Save to file</button>
+
     <pre id=export-view-save-status-text></pre>
 
-    <ul>
-      <li><b>IMPORTANT</b>: First reproduce the problem while in recording mode.</li>
-    </ul>
-    <p>
-      For more information see: 
+    <div style='margin-top: 10px; margin-left: 10px;'>
       <a href="https://sites.google.com/a/chromium.org/dev/for-testers/providing-network-details" target="_blank">
-        Providing network details for bug reports
+        How to provide data for bug reports
       </a>
-    </p>
+    </div>
+
   </div>
 
   <a style="display: none" id=export-view-download-anchor download="net-internals-log.json"></a>

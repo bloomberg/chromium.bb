@@ -77,6 +77,15 @@ var ExportView = (function() {
       return true;
     },
 
+    show: function(isVisible) {
+      superClass.prototype.show.call(this, isVisible);
+
+      // Focus the text area if it is empty.
+      if (isVisible && this.userCommentsTextArea_.value == '') {
+        this.userCommentsTextArea_.focus();
+      }
+    },
+
     /**
      * Sets the save to file status text, displayed below the save to file
      * button, to |text|.  Also enables or disables the save button based on the
@@ -173,6 +182,7 @@ var ExportView = (function() {
         this.userCommentsTextArea_.className =
             'export-view-explanation-warning';
         alert('Please fill in the text field!');
+        this.userCommentsTextArea_.focus();
         return undefined;
       }
 
