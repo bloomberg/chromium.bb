@@ -1255,14 +1255,16 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_NAME,
     IDS_FLAGS_ENABLE_TOUCH_DRAG_DROP_DESCRIPTION,
     kOsWin | kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableTouchDragDrop)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchDragDrop,
+                              switches::kDisableTouchDragDrop)
   },
   {
     "enable-touch-editing",
     IDS_FLAGS_ENABLE_TOUCH_EDITING_NAME,
     IDS_FLAGS_ENABLE_TOUCH_EDITING_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(switches::kEnableTouchEditing)
+    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableTouchEditing,
+                              switches::kDisableTouchEditing)
   },
 #if defined(ENABLE_MESSAGE_CENTER)
   {
