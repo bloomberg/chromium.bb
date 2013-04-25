@@ -121,14 +121,10 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
       out = landing_page.GeneratePage(index_template)
       fh.write(out)
 
-  #
-  # TODO(noelallen) Add back in once we move examples
-  # Generate master example make
-  # example_targets = ['api', 'demos', 'getting_started', 'tutorials']
-  # example_targets = [x for x in example_targets if 'examples/'+x in desc_tree]
-  # print 'Example targets: ' + str(example_targets)
-  # generate_make.GenerateMasterMakefile(os.path.join(pepperdir, 'examples'),
-  #                                     example_targets, 2)
+  targets = ['api', 'demos', 'getting_started', 'tutorials']
+  targets = [x for x in targets if 'examples/'+x in project_tree]
+  generate_make.GenerateMasterMakefile(os.path.join(pepperdir, 'examples'),
+                                       targets, 2)
 
 
 def BuildProjects(pepperdir, platform, project_tree, deps=True,

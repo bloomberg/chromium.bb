@@ -27,7 +27,7 @@ BASIC_DESC = {
       'SOURCES' : ['hello_world.c'],
     },
   ],
-  'DEST' : 'examples'
+  'DEST' : 'examples/api'
 }
 
 class TestValidateFormat(unittest.TestCase):
