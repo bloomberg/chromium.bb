@@ -820,6 +820,8 @@ shm_surface_leaf_release(struct shm_surface_leaf *leaf)
 	memset(leaf, 0, sizeof *leaf);
 }
 
+#define MAX_LEAVES 3
+
 struct shm_surface {
 	struct toysurface base;
 	struct display *display;
@@ -827,7 +829,7 @@ struct shm_surface {
 	uint32_t flags;
 	int dx, dy;
 
-	struct shm_surface_leaf leaf[2];
+	struct shm_surface_leaf leaf[MAX_LEAVES];
 	struct shm_surface_leaf *current;
 };
 
@@ -841,16 +843,32 @@ static void
 shm_surface_buffer_release(void *data, struct wl_buffer *buffer)
 {
 	struct shm_surface *surface = data;
+	struct shm_surface_leaf *leaf;
+	int i;
+	int free_found;
 
-	if (surface->leaf[0].data->buffer == buffer)
-		surface->leaf[0].busy = 0;
-	else if (surface->leaf[1].data->buffer == buffer)
-		surface->leaf[1].busy = 0;
-	else
-		assert(0 && "shm_surface_buffer_release: unknown buffer");
+	for (i = 0; i < MAX_LEAVES; i++) {
+		leaf = &surface->leaf[i];
+		if (leaf->data && leaf->data->buffer == buffer) {
+			leaf->busy = 0;
+			break;
+		}
+	}
+	assert(i < MAX_LEAVES && "unknown buffer released");
 
-	if (!surface->leaf[0].busy && !surface->leaf[1].busy)
-		shm_surface_leaf_release(&surface->leaf[1]);
+	/* Leave one free leaf with storage, release others */
+	free_found = 0;
+	for (i = 0; i < MAX_LEAVES; i++) {
+		leaf = &surface->leaf[i];
+
+		if (!leaf->cairo_surface || leaf->busy)
+			continue;
+
+		if (!free_found)
+			free_found = 1;
+		else
+			shm_surface_leaf_release(leaf);
+	}
 }
 
 static const struct wl_buffer_listener shm_surface_buffer_listener = {
@@ -864,25 +882,22 @@ shm_surface_prepare(struct toysurface *base, int dx, int dy,
 	int resize_hint = !!(flags & SURFACE_HINT_RESIZE);
 	struct shm_surface *surface = to_shm_surface(base);
 	struct rectangle rect = { 0, 0, width, height };
-	struct shm_surface_leaf *leaf;
+	struct shm_surface_leaf *leaf = NULL;
+	int i;
 
 	surface->dx = dx;
 	surface->dy = dy;
 
-	/* See shm_surface_buffer_release() */
-	if (!surface->leaf[0].busy && !surface->leaf[1].busy &&
-	    surface->leaf[1].cairo_surface) {
-		fprintf(stderr, "window.c:%s: TODO: release leaf[1]\n",
-			__func__);
-	}
+	/* pick a free buffer, preferrably one that already has storage */
+	for (i = 0; i < MAX_LEAVES; i++) {
+		if (surface->leaf[i].busy)
+			continue;
 
-	/* pick a free buffer from the two */
-	if (!surface->leaf[0].busy)
-		leaf = &surface->leaf[0];
-	else if (!surface->leaf[1].busy)
-		leaf = &surface->leaf[1];
-	else {
-		fprintf(stderr, "%s: both buffers are held by the server.\n",
+		if (!leaf || surface->leaf[i].cairo_surface)
+			leaf = &surface->leaf[i];
+	}
+	if (!leaf) {
+		fprintf(stderr, "%s: all buffers are held by the server.\n",
 			__func__);
 		return NULL;
 	}
@@ -964,9 +979,10 @@ static void
 shm_surface_destroy(struct toysurface *base)
 {
 	struct shm_surface *surface = to_shm_surface(base);
+	int i;
 
-	shm_surface_leaf_release(&surface->leaf[0]);
-	shm_surface_leaf_release(&surface->leaf[1]);
+	for (i = 0; i < MAX_LEAVES; i++)
+		shm_surface_leaf_release(&surface->leaf[i]);
 
 	free(surface);
 }
