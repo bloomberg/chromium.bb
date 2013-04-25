@@ -6,15 +6,26 @@ import collections
 
 import easy_template
 
+def CmpByName(x, y):
+  return cmp(x['NAME'], y['NAME'])
+  
 class LandingPage(object):
   def __init__(self):
-    self.section_list = ['Tools', 'API', 'Concepts']
+    self.section_list = ['Getting Started', 'API', 'Demo', 'Tutorial']
     self.section_map = collections.defaultdict(list)
 
   def GeneratePage(self, template_path):
     with open(template_path) as template_file:
       template = template_file.read()
-    template_dict = { 'section_map': self.section_map }
+
+    sec_map = {}
+    for section_name in self.section_map:
+      items = self.section_map[section_name]
+      items = sorted(items, cmp=CmpByName)
+      sec_map[section_name] = items
+      print 'Add section ' + section_name
+
+    template_dict = { 'section_map': sec_map }
     return easy_template.RunTemplateString(template, template_dict)
 
   def AddDesc(self, desc):

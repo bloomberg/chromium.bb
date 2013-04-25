@@ -20,10 +20,12 @@
       <div class="left-border"></div>
       <div class="nav-wrapper">
         <div class="nav">
-[[for section in 'Tools', 'API', 'Concepts':]]
+[[for section in section_map:]]
           <div class="nav-group-header">{{section}}</div>
 [[  for desc in section_map[section]:]]
-          <div class="nav-item" data-href="{{desc['NAME']}}/index.html">
+[[    index_path = (desc['DEST'] + '/' + desc['NAME'])]]
+[[    index_path = '/'.join(index_path.split('/')[1:])]]
+          <div class="nav-item" data-href="{{index_path}}/index.html">
             <div class="nav-title">
               {{desc['TITLE']}}
             </div>

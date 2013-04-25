@@ -17,7 +17,8 @@ Trace.verbose = False
 
 
 def ShouldProcessHTML(desc):
-  return desc['DEST'] in ('examples', 'tests')
+  dest = desc['DEST']
+  return dest.startswith('examples') or dest.startswith('tests')
 
 
 def GenerateSourceCopyList(desc):
@@ -114,9 +115,11 @@ def IsNexe(desc):
 
 def ProcessHTML(srcroot, dstroot, desc, toolchains, configs, first_toolchain):
   name = desc['NAME']
+  nmf = desc['TARGETS'][0]['NAME']
   outdir = os.path.join(dstroot, desc['DEST'], name)
   srcpath = os.path.join(srcroot, 'index.html')
   dstpath = os.path.join(outdir, 'index.html')
+  
   tools = GetPlatforms(toolchains, desc['TOOLS'], first_toolchain)
 
   path = "{tc}/{config}"
@@ -124,7 +127,7 @@ def ProcessHTML(srcroot, dstroot, desc, toolchains, configs, first_toolchain):
     'title': desc['TITLE'],
     'attrs':
         'data-name="%s" data-tools="%s" data-configs="%s" data-path="%s"' % (
-        name, ' '.join(tools), ' '.join(configs), path),
+        nmf, ' '.join(tools), ' '.join(configs), path),
   }
   RunTemplateFileIfChanged(srcpath, dstpath, replace)
 
@@ -152,7 +155,7 @@ def ProcessProject(srcroot, dstroot, desc, toolchains, configs=None,
   name = desc['NAME']
   out_dir = os.path.join(dstroot, desc['DEST'], name)
   buildbot_common.MakeDir(out_dir)
-  srcdirs = desc.get('SEARCH', ['.', '..'])
+  srcdirs = desc.get('SEARCH', ['.', '..', '../..'])
 
   # Copy sources to example directory
   sources = GenerateSourceCopyList(desc)

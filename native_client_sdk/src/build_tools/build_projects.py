@@ -87,6 +87,7 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
         buildbot_common.RemoveDir(dirpath)
       buildbot_common.MakeDir(dirpath)
 
+  landing_page = None
   for branch, projects in project_tree.iteritems():
     dirpath = os.path.join(pepperdir, branch)
     if clobber:
@@ -99,7 +100,7 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
     generate_make.GenerateMasterMakefile(os.path.join(pepperdir, branch),
                                          targets, depth)
 
-    if branch == 'examples':
+    if branch.startswith('examples') and not landing_page:
       landing_page = LandingPage()
 
     # Generate individual projects
@@ -107,19 +108,18 @@ def UpdateProjects(pepperdir, platform, project_tree, toolchains,
       srcroot = os.path.dirname(desc['FILEPATH'])
       generate_make.ProcessProject(srcroot, pepperdir, desc, toolchains)
 
-      if branch == 'examples':
+      if branch.startswith('examples'):
         landing_page.AddDesc(desc)
 
-    if branch == 'examples':
-      # Generate the landing page text file.
-      index_html = os.path.join(pepperdir, 'examples', 'index.html')
-      example_resources_dir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
-      index_template = os.path.join(example_resources_dir,
-                                    'index.html.template')
-      with open(index_html, 'w') as fh:
-        out = landing_page.GeneratePage(index_template)
-        fh.write(out)
-      print 'Generated landing page.'
+  if landing_page:
+    # Generate the landing page text file.
+    index_html = os.path.join(pepperdir, 'examples', 'index.html')
+    example_resources_dir = os.path.join(SDK_EXAMPLE_DIR, 'resources')
+    index_template = os.path.join(example_resources_dir,
+                                  'index.html.template')
+    with open(index_html, 'w') as fh:
+      out = landing_page.GeneratePage(index_template)
+      fh.write(out)
 
   #
   # TODO(noelallen) Add back in once we move examples
