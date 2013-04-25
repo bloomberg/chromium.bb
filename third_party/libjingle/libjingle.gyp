@@ -899,6 +899,9 @@
               },
               'product_dir': '<(PRODUCT_DIR)/Libraries',
             }],
+            ['OS=="android"', {
+              'standalone_static_library': 1,
+            }],
           ],
         },  # target peerconnection
       ],
