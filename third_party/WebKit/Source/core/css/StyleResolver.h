@@ -77,6 +77,7 @@ class CustomFilterProgram;
 struct CustomFilterProgramMixSettings;
 class Document;
 class Element;
+class ElementRuleCollector;
 class Frame;
 class FrameView;
 class KURL;
@@ -356,6 +357,16 @@ public:
 
         void addMatchedProperties(const StylePropertySet* properties, StyleRule* = 0, unsigned linkMatchType = SelectorChecker::MatchAll, PropertyWhitelistType = PropertyWhitelistNone);
     };
+
+private:
+    void matchUARules(ElementRuleCollector&, RuleSet*);
+    void matchAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchShadowDistributedRules(ElementRuleCollector&, bool includeEmptyRules, RuleRange&);
+    void matchHostRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchScopedAuthorRules(ElementRuleCollector&, bool includeEmptyRules);
+    void matchAllRules(ElementRuleCollector&, bool matchAuthorAndUserStyles, bool includeSMILProperties);
+    void matchUARules(ElementRuleCollector&);
+    void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
 
 private:
     // This function fixes up the default font size if it detects that the current generic font family has changed. -dwh

@@ -43,11 +43,8 @@ class ElementRuleCollector {
 public:
     ElementRuleCollector(StyleResolver* styleResolver, const StyleResolver::State& state)
         : m_state(state)
-        , m_ruleSets(styleResolver->ruleSets())
         , m_selectorFilter(styleResolver->selectorFilter())
         , m_inspectorCSSOMWrappers(styleResolver->inspectorCSSOMWrappers())
-        , m_scopeResolver(styleResolver->scopeResolver())
-        , m_isPrintStyle(false)
         , m_regionForStyling(0)
         , m_pseudoStyleRequest(NOPSEUDO)
         , m_sameOriginOnly(false)
@@ -55,58 +52,52 @@ public:
         , m_canUseFastReject(m_selectorFilter.parentStackIsConsistent(state.parentNode()))
         , m_behaviorAtBoundary(SelectorChecker::DoesNotCrossBoundary) { }
 
-    void matchAllRules(bool matchAuthorAndUserStyles, bool includeSMILProperties);
-    void matchUARules();
-    void matchAuthorRules(bool includeEmptyRules);
-    void matchUserRules(bool includeEmptyRules);
+    void setBehaviorAtBoundary(SelectorChecker::BehaviorAtBoundary boundary) { m_behaviorAtBoundary = boundary; }
+    SelectorChecker::BehaviorAtBoundary behaviorAtBoundary() const { return m_behaviorAtBoundary; }
+    void setCanUseFastReject(bool canUseFastReject) { m_canUseFastReject = canUseFastReject; }
+    bool canUseFastReject() const { return m_canUseFastReject; }
 
     void setMode(SelectorChecker::Mode mode) { m_mode = mode; }
     void setPseudoStyleRequest(const PseudoStyleRequest& request) { m_pseudoStyleRequest = request; }
     void setSameOriginOnly(bool f) { m_sameOriginOnly = f; } 
     void setRegionForStyling(RenderRegion* regionForStyling) { m_regionForStyling = regionForStyling; }
-    void setMedium(const MediaQueryEvaluator* medium) { m_isPrintStyle = medium->mediaTypeMatchSpecific("print"); }
 
+    void setMatchingUARules(bool matchingUARules) { m_matchingUARules = matchingUARules; }
     bool hasAnyMatchingRules(RuleSet*);
 
     StyleResolver::MatchResult& matchedResult();
     PassRefPtr<CSSRuleList> matchedRuleList();
 
-private:
-    Document* document() { return m_state.document(); }
-    void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
-
-    void matchUARules(RuleSet*);
-    void matchShadowDistributedRules(bool includeEmptyRules, StyleResolver::RuleRange&);
-    void matchScopedAuthorRules(bool includeEmptyRules);
-    void matchHostRules(bool includeEmptyRules);
-
     void collectMatchingRules(const MatchRequest&, StyleResolver::RuleRange&);
     void collectMatchingRulesForRegion(const MatchRequest&, StyleResolver::RuleRange&);
+    void sortAndTransferMatchedRules();
+    void clearMatchedRules();
+    void addElementStyleProperties(const StylePropertySet*, bool isCacheable = true);
+
+private:
+    Document* document() { return m_state.document(); }
+
     void collectMatchingRulesForList(const Vector<RuleData>*, const MatchRequest&, StyleResolver::RuleRange&);
     bool ruleMatches(const RuleData&, const ContainerNode* scope, PseudoId&);
 
     void sortMatchedRules();
-    void sortAndTransferMatchedRules();
 
     void addMatchedRule(const RuleData*);
-    void clearMatchedRules();
 
     StaticCSSRuleList* ensureRuleList();
         
 private:
     const StyleResolver::State& m_state;
-    DocumentRuleSets& m_ruleSets;
     SelectorFilter& m_selectorFilter;
     InspectorCSSOMWrappers& m_inspectorCSSOMWrappers;
-    ScopedStyleResolver* m_scopeResolver;
 
-    bool m_isPrintStyle;
     RenderRegion* m_regionForStyling;
     PseudoStyleRequest m_pseudoStyleRequest;
     bool m_sameOriginOnly;
     SelectorChecker::Mode m_mode;
     bool m_canUseFastReject;
     SelectorChecker::BehaviorAtBoundary m_behaviorAtBoundary;
+    bool m_matchingUARules;
 
     OwnPtr<Vector<const RuleData*, 32> > m_matchedRules;
 

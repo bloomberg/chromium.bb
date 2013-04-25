@@ -47,25 +47,8 @@
 
 namespace WebCore {
 
-static StylePropertySet* leftToRightDeclaration()
-{
-    DEFINE_STATIC_LOCAL(RefPtr<StylePropertySet>, leftToRightDecl, (StylePropertySet::create()));
-    if (leftToRightDecl->isEmpty())
-        leftToRightDecl->setProperty(CSSPropertyDirection, CSSValueLtr);
-    return leftToRightDecl.get();
-}
-
-static StylePropertySet* rightToLeftDeclaration()
-{
-    DEFINE_STATIC_LOCAL(RefPtr<StylePropertySet>, rightToLeftDecl, (StylePropertySet::create()));
-    if (rightToLeftDecl->isEmpty())
-        rightToLeftDecl->setProperty(CSSPropertyDirection, CSSValueRtl);
-    return rightToLeftDecl.get();
-}
-
 StyleResolver::MatchResult& ElementRuleCollector::matchedResult()
 {
-    ASSERT(m_mode == SelectorChecker::ResolvingStyle);
     return m_result;
 }
 
@@ -82,7 +65,7 @@ inline void ElementRuleCollector::addMatchedRule(const RuleData* rule)
     m_matchedRules->append(rule);
 }
 
-inline void ElementRuleCollector::clearMatchedRules()
+void ElementRuleCollector::clearMatchedRules()
 {
     if (!m_matchedRules)
         return;
@@ -96,7 +79,7 @@ inline StaticCSSRuleList* ElementRuleCollector::ensureRuleList()
     return m_ruleList.get();
 }
 
-inline void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* propertySet, bool isCacheable)
+void ElementRuleCollector::addElementStyleProperties(const StylePropertySet* propertySet, bool isCacheable)
 {
     if (!propertySet)
         return;
@@ -107,35 +90,6 @@ inline void ElementRuleCollector::addElementStyleProperties(const StylePropertyS
     if (!isCacheable)
         m_result.isCacheable = false;
 }
-
-class MatchingUARulesScope {
-public:
-    MatchingUARulesScope();
-    ~MatchingUARulesScope();
-
-    static bool isMatchingUARules();
-
-private:
-    static bool m_matchingUARules;
-};
-
-MatchingUARulesScope::MatchingUARulesScope()
-{
-    ASSERT(!m_matchingUARules);
-    m_matchingUARules = true;
-}
-
-MatchingUARulesScope::~MatchingUARulesScope()
-{
-    m_matchingUARules = false;
-}
-
-inline bool MatchingUARulesScope::isMatchingUARules()
-{
-    return m_matchingUARules;
-}
-
-bool MatchingUARulesScope::m_matchingUARules = false;
 
 void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest, StyleResolver::RuleRange& ruleRange)
 {
@@ -158,7 +112,7 @@ void ElementRuleCollector::collectMatchingRules(const MatchRequest& matchRequest
     // b) the tree scope allows author rules
     // c) the rules comes from a scoped style sheet within the same tree scope
     TreeScope* treeScope = element->treeScope();
-    if (!MatchingUARulesScope::isMatchingUARules()
+    if (!m_matchingUARules
         && !treeScope->applyAuthorStyles()
         && (!matchRequest.scope || matchRequest.scope->treeScope() != treeScope)
         && (m_behaviorAtBoundary & SelectorChecker::BoundaryBehaviorMask) == SelectorChecker::DoesNotCrossBoundary)
@@ -217,143 +171,8 @@ void ElementRuleCollector::sortAndTransferMatchedRules()
     for (unsigned i = 0; i < matchedRules.size(); i++) {
         if (state.style() && matchedRules[i]->containsUncommonAttributeSelector())
             state.style()->setUnique();
-        m_result.addMatchedProperties(matchedRules[i]->rule()->properties(), matchedRules[i]->rule(), matchedRules[i]->linkMatchType(), matchedRules[i]->propertyWhitelistType(MatchingUARulesScope::isMatchingUARules()));
+        m_result.addMatchedProperties(matchedRules[i]->rule()->properties(), matchedRules[i]->rule(), matchedRules[i]->linkMatchType(), matchedRules[i]->propertyWhitelistType(m_matchingUARules));
     }
-}
-
-void ElementRuleCollector::matchScopedAuthorRules(bool includeEmptyRules)
-{
-    if (!m_scopeResolver)
-        return;
-
-    // Match scoped author rules by traversing the scoped element stack (rebuild it if it got inconsistent).
-    if (m_scopeResolver->hasScopedStyles() && m_scopeResolver->ensureStackConsistency(m_state.element())) {
-        bool applyAuthorStyles = m_state.element()->treeScope()->applyAuthorStyles();
-        bool documentScope = true;
-
-        unsigned scopeSize = m_scopeResolver->stackSize();
-        for (unsigned i = 0; i < scopeSize; ++i) {
-            clearMatchedRules();
-            m_result.ranges.lastAuthorRule = m_result.matchedProperties.size() - 1;
-
-            const ScopedStyleResolver::StackFrame& frame = m_scopeResolver->stackFrameAt(i);
-            documentScope = documentScope && !frame.m_scope->isInShadowTree();
-            if (documentScope) {
-                if (!applyAuthorStyles)
-                    continue;
-            } else {
-                if (!m_scopeResolver->matchesStyleBounds(frame))
-                    continue;
-            }
-
-            MatchRequest matchRequest(frame.m_ruleSet, includeEmptyRules, frame.m_scope);
-            StyleResolver::RuleRange ruleRange = m_result.ranges.authorRuleRange();
-            collectMatchingRules(matchRequest, ruleRange);
-            collectMatchingRulesForRegion(matchRequest, ruleRange);
-            sortAndTransferMatchedRules();
-        }
-    }
-
-    matchHostRules(includeEmptyRules);
-}
-
-void ElementRuleCollector::matchHostRules(bool includeEmptyRules)
-{
-    ASSERT(m_scopeResolver);
-
-    clearMatchedRules();
-    m_result.ranges.lastAuthorRule = m_result.matchedProperties.size() - 1;
-
-    Vector<RuleSet*> matchedRules;
-    m_scopeResolver->matchHostRules(m_state.element(), matchedRules);
-    if (matchedRules.isEmpty())
-        return;
-
-    for (unsigned i = matchedRules.size(); i > 0; --i) {
-        StyleResolver::RuleRange ruleRange = m_result.ranges.authorRuleRange();
-        collectMatchingRules(MatchRequest(matchedRules.at(i-1), includeEmptyRules, m_state.element()), ruleRange);
-    }
-    sortAndTransferMatchedRules();
-}
-
-inline void ElementRuleCollector::matchShadowDistributedRules(bool includeEmptyRules, StyleResolver::RuleRange& ruleRange)
-{
-    if (m_ruleSets.shadowDistributedRules().isEmpty())
-        return;
-
-    TemporaryChange<bool> canUseFastReject(m_canUseFastReject, false);
-    TemporaryChange<SelectorChecker::BehaviorAtBoundary> behaviorAtBoundary(m_behaviorAtBoundary, static_cast<SelectorChecker::BehaviorAtBoundary>(SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement));
-
-    Vector<MatchRequest> matchRequests;
-    m_ruleSets.shadowDistributedRules().collectMatchRequests(includeEmptyRules, matchRequests);
-    for (size_t i = 0; i < matchRequests.size(); ++i)
-        collectMatchingRules(matchRequests[i], ruleRange);
-}
-
-void ElementRuleCollector::matchAuthorRules(bool includeEmptyRules)
-{
-    clearMatchedRules();
-    m_result.ranges.lastAuthorRule = m_result.matchedProperties.size() - 1;
-
-    if (!m_state.element())
-        return;
-
-    // Match global author rules.
-    MatchRequest matchRequest(m_ruleSets.authorStyle(), includeEmptyRules);
-    StyleResolver::RuleRange ruleRange = m_result.ranges.authorRuleRange();
-    collectMatchingRules(matchRequest, ruleRange);
-    collectMatchingRulesForRegion(matchRequest, ruleRange);
-    matchShadowDistributedRules(includeEmptyRules, ruleRange);
-    sortAndTransferMatchedRules();
-
-    matchScopedAuthorRules(includeEmptyRules);
-}
-
-void ElementRuleCollector::matchUserRules(bool includeEmptyRules)
-{
-    if (!m_ruleSets.userStyle())
-        return;
-    
-    clearMatchedRules();
-
-    m_result.ranges.lastUserRule = m_result.matchedProperties.size() - 1;
-    MatchRequest matchRequest(m_ruleSets.userStyle(), includeEmptyRules);
-    StyleResolver::RuleRange ruleRange = m_result.ranges.userRuleRange();
-    collectMatchingRules(matchRequest, ruleRange);
-    collectMatchingRulesForRegion(matchRequest, ruleRange);
-
-    sortAndTransferMatchedRules();
-}
-
-void ElementRuleCollector::matchUARules()
-{
-    MatchingUARulesScope scope;
-
-    // First we match rules from the user agent sheet.
-    if (CSSDefaultStyleSheets::simpleDefaultStyleSheet)
-        m_result.isCacheable = false;
-    RuleSet* userAgentStyleSheet = m_isPrintStyle
-        ? CSSDefaultStyleSheets::defaultPrintStyle : CSSDefaultStyleSheets::defaultStyle;
-    matchUARules(userAgentStyleSheet);
-
-    // In quirks mode, we match rules from the quirks user agent sheet.
-    if (document()->inQuirksMode())
-        matchUARules(CSSDefaultStyleSheets::defaultQuirksStyle);
-
-    // If document uses view source styles (in view source mode or in xml viewer mode), then we match rules from the view source style sheet.
-    if (document()->isViewSource())
-        matchUARules(CSSDefaultStyleSheets::viewSourceStyle());
-}
-
-void ElementRuleCollector::matchUARules(RuleSet* rules)
-{
-    clearMatchedRules();
-    
-    m_result.ranges.lastUARule = m_result.matchedProperties.size() - 1;
-    StyleResolver::RuleRange ruleRange = m_result.ranges.UARuleRange();
-    collectMatchingRules(MatchRequest(rules), ruleRange);
-
-    sortAndTransferMatchedRules();
 }
 
 inline bool ElementRuleCollector::ruleMatches(const RuleData& ruleData, const ContainerNode* scope, PseudoId& dynamicPseudo)
@@ -460,53 +279,6 @@ void ElementRuleCollector::sortMatchedRules()
 {
     ASSERT(m_matchedRules);
     std::sort(m_matchedRules->begin(), m_matchedRules->end(), compareRules);
-}
-
-void ElementRuleCollector::matchAllRules(bool matchAuthorAndUserStyles, bool includeSMILProperties)
-{
-    matchUARules();
-
-    // Now we check user sheet rules.
-    if (matchAuthorAndUserStyles)
-        matchUserRules(false);
-
-    // Now check author rules, beginning first with presentational attributes mapped from HTML.
-    if (m_state.styledElement()) {
-        addElementStyleProperties(m_state.styledElement()->presentationAttributeStyle());
-
-        // Now we check additional mapped declarations.
-        // Tables and table cells share an additional mapped rule that must be applied
-        // after all attributes, since their mapped style depends on the values of multiple attributes.
-        addElementStyleProperties(m_state.styledElement()->additionalPresentationAttributeStyle());
-
-        if (m_state.styledElement()->isHTMLElement()) {
-            bool isAuto;
-            TextDirection textDirection = toHTMLElement(m_state.styledElement())->directionalityIfhasDirAutoAttribute(isAuto);
-            if (isAuto)
-                m_result.addMatchedProperties(textDirection == LTR ? leftToRightDeclaration() : rightToLeftDeclaration());
-        }
-    }
-    
-    // Check the rules in author sheets next.
-    if (matchAuthorAndUserStyles)
-        matchAuthorRules(false);
-
-    // Now check our inline style attribute.
-    if (matchAuthorAndUserStyles && m_state.styledElement() && m_state.styledElement()->inlineStyle()) {
-        // Inline style is immutable as long as there is no CSSOM wrapper.
-        // FIXME: Media control shadow trees seem to have problems with caching.
-        bool isInlineStyleCacheable = !m_state.styledElement()->inlineStyle()->isMutable() && !m_state.styledElement()->isInShadowTree();
-        // FIXME: Constify.
-        addElementStyleProperties(m_state.styledElement()->inlineStyle(), isInlineStyleCacheable);
-    }
-
-#if ENABLE(SVG)
-    // Now check SMIL animation override style.
-    if (includeSMILProperties && matchAuthorAndUserStyles && m_state.styledElement() && m_state.styledElement()->isSVGElement())
-        addElementStyleProperties(toSVGElement(m_state.styledElement())->animatedSMILStyleProperties(), false /* isCacheable */);
-#else
-    UNUSED_PARAM(includeSMILProperties);
-#endif
 }
 
 bool ElementRuleCollector::hasAnyMatchingRules(RuleSet* ruleSet)
