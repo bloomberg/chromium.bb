@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-#if USE(OPENTYPE_SANITIZER)
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
 #include "core/platform/SharedBuffer.h"
@@ -65,5 +64,3 @@ PassRefPtr<SharedBuffer> OpenTypeSanitizer::sanitize()
 }
 
 } // namespace WebCore
-
-#endif // USE(OPENTYPE_SANITIZER)

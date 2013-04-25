@@ -31,7 +31,6 @@
 #ifndef OpenTypeSanitizer_h
 #define OpenTypeSanitizer_h
 
-#if USE(OPENTYPE_SANITIZER)
 #include <wtf/Forward.h>
 
 namespace WebCore {
@@ -53,5 +52,4 @@ private:
 
 } // namespace WebCore
 
-#endif // USE(OPENTYPE_SANITIZER)
 #endif // OpenTypeSanitizer_h

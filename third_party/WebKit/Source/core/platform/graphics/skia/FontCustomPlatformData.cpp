@@ -170,13 +170,11 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 {
     ASSERT_ARG(buffer, buffer);
 
-#if USE(OPENTYPE_SANITIZER)
     OpenTypeSanitizer sanitizer(buffer);
     RefPtr<SharedBuffer> transcodeBuffer = sanitizer.sanitize();
     if (!transcodeBuffer)
         return 0; // validation failed.
     buffer = transcodeBuffer.get();
-#endif
 
 #if OS(WINDOWS)
     // Introduce the font to GDI. AddFontMemResourceEx should be used with care, because it will pollute the process's
@@ -202,11 +200,7 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 
 bool FontCustomPlatformData::supportsFormat(const String& format)
 {
-    return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype")
-#if USE(OPENTYPE_SANITIZER)
-        || equalIgnoringCase(format, "woff")
-#endif
-    ;
+    return equalIgnoringCase(format, "truetype") || equalIgnoringCase(format, "opentype") || equalIgnoringCase(format, "woff");
 }
 
 }

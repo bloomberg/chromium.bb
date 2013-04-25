@@ -24,7 +24,6 @@
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/graphics/FontPlatformData.h"
-#include "core/platform/graphics/WOFFFileFormat.h"
 #include "core/platform/graphics/opentype/OpenTypeSanitizer.h"
 
 #if USE(SKIA_ON_MAC_CHROMIUM)
@@ -93,23 +92,11 @@ FontCustomPlatformData* createFontCustomPlatformData(SharedBuffer* buffer)
 {
     ASSERT_ARG(buffer, buffer);
 
-#if USE(OPENTYPE_SANITIZER)
     OpenTypeSanitizer sanitizer(buffer);
     RefPtr<SharedBuffer> transcodeBuffer = sanitizer.sanitize();
     if (!transcodeBuffer)
         return 0; // validation failed.
     buffer = transcodeBuffer.get();
-#else
-    RefPtr<SharedBuffer> sfntBuffer;
-    if (isWOFF(buffer)) {
-        Vector<char> sfnt;
-        if (!convertWOFFToSfnt(buffer, sfnt))
-            return 0;
-
-        sfntBuffer = SharedBuffer::adoptVector(sfnt);
-        buffer = sfntBuffer.get();
-    }
-#endif
 
     ATSFontContainerRef containerRef = 0;
 

@@ -2757,8 +2757,6 @@
             'platform/graphics/TextTrackRepresentation.cpp',
             'platform/graphics/TextTrackRepresentation.h',
             'platform/graphics/UnitBezier.h',
-            'platform/graphics/WOFFFileFormat.cpp',
-            'platform/graphics/WOFFFileFormat.h',
             'platform/graphics/WidthIterator.cpp',
             'platform/graphics/WidthIterator.h',
             'platform/graphics/cg/FloatPointCG.cpp',
