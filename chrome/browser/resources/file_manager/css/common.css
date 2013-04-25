@@ -165,12 +165,6 @@ body:not([new-ui]) .buttonbar button {
   z-index: 1;
 }
 
-body[new-ui] .cr-dialog-buttons button,
-body[new-ui] .buttonbar button {
-  height: 27px;
-  line-height: 27px;
-}
-
 body:not([new-ui]) .buttonbar button:hover {
   -webkit-transition: all 0;
   background-image: -webkit-linear-gradient(top, #F8F8F8, #F1F1F1);
@@ -428,6 +422,9 @@ body[new-ui] select {
   box-sizing: content-box;
   color: rgb(34, 34, 34);
   cursor: default;
+  line-height: 27px;
+  margin: 0;
+  min-height: 27px;
   min-width: 60px;
   padding: 0 10px;
   position: relative;

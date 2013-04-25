@@ -259,13 +259,12 @@ body[new-ui] .dialog-sidebar-header {
   -webkit-app-region: drag;
   -webkit-box-flex: 0;
   display: -webkit-box;
-  height: 30px;  /* Keep in sync with #dialog-header. */
-  line-height: 30px;
-  margin: 7px;
+  height: 45px;  /* Keep in sync with #dialog-header. */
+  line-height: 45px;
 }
 
 body[new-ui] .dialog-sidebar-header #app-name {
-  -webkit-margin-start: 10px;
+  -webkit-margin-start: 15px;
   color: #303030;
   font-size: 130%;
 }
@@ -515,9 +514,12 @@ body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
 .dialog-header {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  -webkit-margin-end: 7px;
   -webkit-transition: all 180ms ease;
   display: -webkit-box;
+}
+
+body:not([new-ui]) .dialog-header {
+  -webkit-margin-end: 7px;
   height: 30px;
   margin-bottom: 7px;
   margin-top: 7px;
@@ -525,7 +527,9 @@ body[new-ui] #directory-tree:focus:hover .tree-row[anchor]:hover {
 
 body[new-ui] .dialog-header {
   -webkit-app-region: drag;
-  -webkit-margin-start: 7px;
+  -webkit-margin-end: 10px;
+  -webkit-margin-start: 10px;
+  height: 45px;
 }
 
 body[new-ui] .dialog-header #search-box,
@@ -588,13 +592,17 @@ body[new-ui] .dialog-middlebar-contents {
 .dialog-footer {
   -webkit-box-align: center;
   -webkit-box-orient: horizontal;
-  border-top: 1px solid #d2d2d2;
   display: -webkit-box;
+}
+
+body:not([new-ui]) .dialog-footer {
+  border-top: 1px solid #d2d2d2;
   padding: 10px 17px 14px 15px;
 }
 
 body[new-ui] .dialog-footer {
   border-top: 1px solid rgb(225, 225, 225);
+  padding: 10px;
 }
 
 .dialog-footer:not([progress]) .progress-bar,
