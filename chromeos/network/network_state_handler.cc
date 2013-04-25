@@ -71,6 +71,13 @@ std::string ValueAsString(const base::Value& value) {
   return "";
 }
 
+bool ConnectionStateChanged(chromeos::NetworkState* network,
+                            const std::string& prev_connection_state) {
+  return (network->connection_state() != prev_connection_state) &&
+         (network->connection_state() != flimflam::kStateIdle ||
+          !prev_connection_state.empty());
+}
+
 }  // namespace
 
 namespace chromeos {
@@ -408,7 +415,7 @@ void NetworkStateHandler::UpdateManagedStateProperties(
     NetworkState* network = managed->AsNetworkState();
     DCHECK(network);
     // Signal connection state changed after all properties have been updated.
-    if (network->connection_state() != prev_connection_state)
+    if (ConnectionStateChanged(network, prev_connection_state))
       OnNetworkConnectionStateChanged(network);
     NetworkPropertiesUpdated(network);
   }
@@ -425,21 +432,22 @@ void NetworkStateHandler::UpdateNetworkServiceProperty(
   if (!network->PropertyChanged(key, value))
     return;
 
-  std::string detail = network->name() + "." + key;
-  std::string vstr = ValueAsString(value);
-  if (!vstr.empty())
-    detail += " = " + vstr;
-  network_event_log::AddEntry(kLogModule, "NetworkPropertyUpdated", detail);
-
-  if (network->connection_state() != prev_connection_state) {
-    OnNetworkConnectionStateChanged(network);
-  } else if (network->path() == default_network_path_ &&
-           key != flimflam::kSignalStrengthProperty) {
-    // WiFi signal strength updates are too noisy, so don't
-    // trigger default network updates for those changes.
-    OnDefaultNetworkChanged();
+  if (key == flimflam::kStateProperty) {
+    if (ConnectionStateChanged(network, prev_connection_state))
+      OnNetworkConnectionStateChanged(network);
+  } else {
+    if (network->path() == default_network_path_ &&
+        key != flimflam::kSignalStrengthProperty) {
+      // WiFi signal strength updates are too noisy, so don't
+      // trigger default network updates for those changes.
+      OnDefaultNetworkChanged();
+    }
+    std::string detail = network->name() + "." + key;
+    std::string vstr = ValueAsString(value);
+    if (!vstr.empty())
+      detail += " = " + vstr;
+    network_event_log::AddEntry(kLogModule, "NetworkPropertyUpdated", detail);
   }
-
   NetworkPropertiesUpdated(network);
 }
 
