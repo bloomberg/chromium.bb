@@ -57,8 +57,6 @@
     },
     'indexed_db': {
       'filepath': 'Source/modules/indexeddb/' \
-                  '|Source/bindings/.*IDB' \
-                  '|Source/bindings/.*SerializedScriptValue' \
                   '|Source/WebKit/chromium/.*IDB' \
                   '|Source/core/platform/leveldb' \
                   '|LayoutTests/storage/indexeddb'
@@ -131,6 +129,7 @@
                   'caseq+blink@chromium.org'],
     'bindings': [ 'abarth@chromium.org',
                   'japhet@chromium.org',
+                  'jsbell@chromium.org',
                   'haraken@chromium.org' ],
     'layers': [ 'blink-layers@chromium.org' ],
     'loader': [ 'japhet@chromium.org', 'gavinp+loader@chromium.org' ],
