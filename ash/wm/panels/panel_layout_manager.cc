@@ -121,6 +121,10 @@ bool CompareWindowMajor(const VisiblePanelPositionInfo& win1,
 void FanOutPanels(std::vector<VisiblePanelPositionInfo>::iterator first,
                   std::vector<VisiblePanelPositionInfo>::iterator last) {
   int num_panels = last - first;
+  if (num_panels == 1) {
+    (*first).major_pos = std::max((*first).min_major, std::min(
+        (*first).max_major, (*first).major_pos));
+  }
   if (num_panels <= 1)
     return;
 
