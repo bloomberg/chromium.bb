@@ -2570,6 +2570,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Net.TcpFastOpenSocketConnection" enum="TcpSocketStatus">
+  <summary>
+    For sockets for which a TCP Fast Open protocol might be used, the result of
+    trying to use it.
+  </summary>
+</histogram>
+
 <histogram name="Net.TCPForSOCKSSocketIdleTimeBeforeNextUse_ReusedSocket">
   <obsolete>
     see SocketIdleTimeBeforeNextUse_ReusedSocket_TCPforSOCKS
@@ -6710,6 +6717,19 @@ other types of suffix sets.
 <enum name="SpdySettingsSent" type="int">
   <int value="0" label="not sent"/>
   <int value="1" label="sent"/>
+</enum>
+
+<enum name="TcpSocketStatus" type="int">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Fast Connection Return"/>
+  <int value="2" label="Slow Connection Return"/>
+  <int value="3" label="Connection Error"/>
+  <int value="4" label="Syn Data Acknowledged"/>
+  <int value="5" label="Syn Data Nacked"/>
+  <int value="6" label="Syn Data Probe Failed"/>
+  <int value="7" label="No syn data + ack (can't happen)"/>
+  <int value="8" label="No syn data + nack"/>
+  <int value="9" label="No syn data + probe failed"/>
 </enum>
 
 <enum name="TLSRenegotiationPatched" type="int">
