@@ -132,7 +132,7 @@ class IsolateServerTest(unittest.TestCase):
     try:
       isolateserver_archive.randomness = lambda: 'not_really_random'
       content_type, body = isolateserver_archive.encode_multipart_formdata(
-                  [('token', 'foo bar')], [('hash_contents', s, compressed)])
+                  [('token', 'foo bar')], [('content', s, compressed)])
 
       self._requests = [
         ((path + 'content/get_token',), {}, StringIO.StringIO('foo bar')),

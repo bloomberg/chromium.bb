@@ -135,7 +135,7 @@ def upload_hash_content_to_blobstore(
 
   # TODO(maruel): Support large files.
   content_type, body = encode_multipart_formdata(
-       data, [('hash_contents', hash_key, content)])
+       data, [('content', hash_key, content)])
   return url_open(upload_url, body, content_type=content_type)
 
 
