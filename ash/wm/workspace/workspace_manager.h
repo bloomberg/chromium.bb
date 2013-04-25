@@ -118,6 +118,8 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
     SWITCH_VISIBILITY_CHANGED,
     SWITCH_MINIMIZED,
     SWITCH_MAXIMIZED_OR_RESTORED,
+    // Switch a normal window in a maximized workspace to maximized.
+    SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE,
     SWITCH_TRACKED_BY_WORKSPACE_CHANGED,
 
     // Switch as the result of DoInitialAnimation(). This isn't a real switch,
@@ -221,7 +223,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
   void OnTrackedByWorkspaceChanged(Workspace* workspace,
                                    aura::Window* window);
 
-  aura::Window* contents_view_;
+  aura::Window* contents_window_;
 
   Workspace* active_workspace_;
 
@@ -231,7 +233,7 @@ class ASH_EXPORT WorkspaceManager : public ash::ShellObserver {
 
   // The set of workspaces not currently active. Workspaces ended up here in
   // two scenarios:
-  // . Prior to adding a window a new worskpace is created for it. The
+  // . Prior to adding a window a new workspace is created for it. The
   //   Workspace is added to this set.
   // . When the maximized window is minimized the workspace is added here.
   // Once any window in the workspace is activated the workspace is moved to

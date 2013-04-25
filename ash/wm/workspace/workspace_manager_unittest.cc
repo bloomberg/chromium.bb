@@ -35,6 +35,7 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/screen.h"
+#include "ui/views/corewm/window_animations.h"
 #include "ui/views/widget/widget.h"
 
 using aura::Window;
@@ -99,6 +100,18 @@ class WorkspaceManagerTest : public test::AshTestBase {
     window->SetType(aura::client::WINDOW_TYPE_NORMAL);
     window->Init(ui::LAYER_TEXTURED);
     SetDefaultParentByPrimaryRootWindow(window);
+    return window;
+  }
+
+  aura::Window* CreateAppTestWindow(aura::Window* parent) {
+    aura::Window* window = new aura::Window(NULL);
+    window->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+    window->SetType(aura::client::WINDOW_TYPE_POPUP);
+    window->Init(ui::LAYER_TEXTURED);
+    if (!parent)
+      SetDefaultParentByPrimaryRootWindow(window);
+    else
+      parent->AddChild(window);
     return window;
   }
 
@@ -364,6 +377,88 @@ TEST_F(WorkspaceManagerTest, TwoMaximized) {
   // The last stacked window (|w2|) should be last since it was maximized last.
   EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
   EXPECT_EQ(w2.get(), workspaces()[2]->window()->children()[0]);
+}
+
+// Get the index of the layer inside its parent. This index can be used to
+// determine the z-order / draw-order of objects in the render tree.
+size_t IndexOfLayerInParent(ui::Layer* layer) {
+  ui::Layer* parent = layer->parent();
+  for (size_t i = 0; i < parent->children().size(); i++) {
+    if (layer == parent->children()[i])
+      return i;
+  }
+  // This should never be reached.
+  NOTREACHED();
+  return 0;
+}
+
+// Make sure that the layer z-order is correct for the time of the animation
+// when in a workspace with a normal and a maximized window the normal window
+// gets maximized. See crbug.com/232399.
+TEST_F(WorkspaceManagerTest, MaximizeSecondInWorkspace) {
+  // Create a maximized window.
+  scoped_ptr<Window> w1(CreateTestWindow());
+  ASSERT_EQ(1U, w1->layer()->parent()->children().size());
+  w1->SetBounds(gfx::Rect(0, 0, 250, 251));
+  w1->Show();
+  wm::ActivateWindow(w1.get());
+  w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+  wm::ActivateWindow(w1.get());
+  // There are two workspaces: A normal and a maximized one.
+  ASSERT_EQ("0 M1 active=1", StateString());
+
+  // Create a second window and make it part of the maximized workspace.
+  scoped_ptr<Window> w2(CreateAppTestWindow(w1->parent()));
+  w2->SetBounds(gfx::Rect(0, 0, 50, 51));
+  w2->Show();
+  wm::ActivateWindow(w2.get());
+  // There are still two workspaces and two windows in the (maximized)
+  // workspace.
+  ASSERT_EQ("0 M2 active=1", StateString());
+  ASSERT_EQ(w1->layer()->parent()->children()[0], w1->layer());
+  ASSERT_EQ(w1->layer()->parent()->children()[1], w2->layer());
+
+  // Now we need to enable all animations since the incorrect layer ordering we
+  // want to test against happens only while the animation is going on.
+  scoped_ptr<ui::ScopedAnimationDurationScaleMode> animation_duration(
+      new ui::ScopedAnimationDurationScaleMode(
+          ui::ScopedAnimationDurationScaleMode::FAST_DURATION));
+
+  ui::Layer* old_w2_layer = w2->layer();
+
+  // Maximize the second window and make sure that the workspace changes.
+  w2->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
+
+  // Check the correct window hierarchy - (|w2|) should be last since it was
+  // maximized last.
+  ASSERT_EQ("0 M1 M1 active=2", StateString());
+  EXPECT_EQ(3U, workspaces().size());
+  EXPECT_EQ(w1.get(), workspaces()[1]->window()->children()[0]);
+  EXPECT_EQ(w2.get(), workspaces()[2]->window()->children()[0]);
+
+  // Check the workspace layer visibility.
+  EXPECT_EQ(1, workspaces()[1]->window()->layer()->opacity());
+  EXPECT_EQ(1, workspaces()[2]->window()->layer()->opacity());
+
+  // Check that |w2| got a new layer and that the old layer is still visible,
+  // while the new one is not. Further and foremost the old layer should be a
+  // member of the workspace's window and it should be the second last of the
+  // list to be properly stacked while the animation is going on.
+  EXPECT_NE(w2->layer(), old_w2_layer);
+  EXPECT_EQ(0, w2->layer()->opacity());
+  EXPECT_EQ(1, old_w2_layer->opacity());
+
+  // For the animation to look right we need the following ordering:
+  // workspace_1_layer_index < old_layer_index < workspace_2_layer_index.
+  ASSERT_EQ(workspaces()[1]->window()->parent()->layer(),
+            old_w2_layer->parent());
+  const size_t workspace_1_layer_index = IndexOfLayerInParent(
+      workspaces()[1]->window()->layer());
+  const size_t workspace_2_layer_index = IndexOfLayerInParent(
+      workspaces()[2]->window()->layer());
+  const size_t old_layer_index = IndexOfLayerInParent(old_w2_layer);
+  EXPECT_LT(workspace_1_layer_index, old_layer_index);
+  EXPECT_LT(old_layer_index, workspace_2_layer_index);
 }
 
 // Makes sure requests to change the bounds of a normal window go through.

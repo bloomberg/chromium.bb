@@ -76,11 +76,12 @@ void ReparentWindow(Window* window,
 // Workspace -------------------------------------------------------------------
 
 // LayoutManager installed on the parent window of all the Workspace window (eg
-// |WorkspaceManager::contents_view_|).
+// |WorkspaceManager::contents_window_|).
 class WorkspaceManager::LayoutManagerImpl : public BaseLayoutManager {
  public:
   explicit LayoutManagerImpl(WorkspaceManager* workspace_manager)
-      : BaseLayoutManager(workspace_manager->contents_view_->GetRootWindow()),
+      : BaseLayoutManager(
+            workspace_manager->contents_window_->GetRootWindow()),
         workspace_manager_(workspace_manager) {
   }
   virtual ~LayoutManagerImpl() {}
@@ -98,7 +99,7 @@ class WorkspaceManager::LayoutManagerImpl : public BaseLayoutManager {
   }
 
  private:
-  aura::Window* window() { return workspace_manager_->contents_view_; }
+  aura::Window* window() { return workspace_manager_->contents_window_; }
 
   WorkspaceManager* workspace_manager_;
 
@@ -107,8 +108,8 @@ class WorkspaceManager::LayoutManagerImpl : public BaseLayoutManager {
 
 // WorkspaceManager -----------------------------------------------------------
 
-WorkspaceManager::WorkspaceManager(Window* contents_view)
-    : contents_view_(contents_view),
+WorkspaceManager::WorkspaceManager(Window* contents_window)
+    : contents_window_(contents_window),
       active_workspace_(NULL),
       shelf_(NULL),
       in_move_(false),
@@ -119,9 +120,9 @@ WorkspaceManager::WorkspaceManager(Window* contents_view)
       creating_fade_(false),
       workspace_cycler_(NULL) {
   // Clobber any existing event filter.
-  contents_view->SetEventFilter(NULL);
-  // |contents_view| takes ownership of LayoutManagerImpl.
-  contents_view->SetLayoutManager(new LayoutManagerImpl(this));
+  contents_window->SetEventFilter(NULL);
+  // |contents_window| takes ownership of LayoutManagerImpl.
+  contents_window->SetLayoutManager(new LayoutManagerImpl(this));
   active_workspace_ = CreateWorkspace(false);
   workspaces_.push_back(active_workspace_);
   active_workspace_->window()->Show();
@@ -133,7 +134,7 @@ WorkspaceManager::WorkspaceManager(Window* contents_view)
 
 WorkspaceManager::~WorkspaceManager() {
   Shell::GetInstance()->RemoveShellObserver(this);
-  // Release the windows, they'll be destroyed when |contents_view_| is
+  // Release the windows, they'll be destroyed when |contents_window_| is
   // destroyed.
   std::for_each(workspaces_.begin(), workspaces_.end(),
                 std::mem_fun(&Workspace::ReleaseWindow));
@@ -301,7 +302,7 @@ void WorkspaceManager::SetActiveWorkspaceFromCycler(Workspace* workspace) {
 void WorkspaceManager::DoInitialAnimation() {
   if (active_workspace_->is_maximized()) {
     RootWindowController* root_controller = GetRootWindowController(
-        contents_view_->GetRootWindow());
+        contents_window_->GetRootWindow());
     if (root_controller) {
       aura::Window* background = root_controller->GetContainer(
           kShellWindowId_DesktopBackgroundContainer);
@@ -350,8 +351,8 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
   // it always stays at the bottom.
   if (workspace != desktop_workspace() &&
       FindWorkspace(workspace) == workspaces_.end()) {
-    contents_view_->StackChildAbove(workspace->window(),
-                                    workspaces_.back()->window());
+    contents_window_->StackChildAbove(workspace->window(),
+                                      workspaces_.back()->window());
     workspaces_.push_back(workspace);
   }
 
@@ -369,13 +370,15 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
   if (is_unminimizing_maximized_window) {
     // If we're unminimizing a window it needs to be on the top, otherwise you
     // won't see the animation.
-    contents_view_->StackChildAtTop(active_workspace_->window());
-  } else if (active_workspace_->is_maximized() && last_active->is_maximized()) {
+    contents_window_->StackChildAtTop(active_workspace_->window());
+  } else if (active_workspace_->is_maximized() &&
+             last_active->is_maximized() &&
+             reason != SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE) {
     // When switching between maximized windows we need the last active
     // workspace on top of the new, otherwise the animations won't look
     // right. Since only one workspace is visible at a time stacking order of
     // the workspace windows ultimately doesn't matter.
-    contents_view_->StackChildAtTop(last_active->window());
+    contents_window_->StackChildAtTop(last_active->window());
   }
 
   UpdateShelfVisibility();
@@ -385,7 +388,7 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
   ShowWorkspace(workspace, last_active, reason);
 
   RootWindowController* root_controller = GetRootWindowController(
-      contents_view_->GetRootWindow());
+      contents_window_->GetRootWindow());
   if (root_controller) {
     aura::Window* background = root_controller->GetContainer(
         kShellWindowId_DesktopBackgroundContainer);
@@ -398,7 +401,7 @@ void WorkspaceManager::SetActiveWorkspace(Workspace* workspace,
 
   // Showing or hiding a workspace may change the "solo window" status of
   // a window, requiring the header to be updated.
-  FramePainter::UpdateSoloWindowHeader(contents_view_->GetRootWindow());
+  FramePainter::UpdateSoloWindowHeader(contents_window_->GetRootWindow());
 }
 
 WorkspaceManager::Workspaces::iterator
@@ -407,7 +410,7 @@ WorkspaceManager::FindWorkspace(Workspace* workspace)  {
 }
 
 Workspace* WorkspaceManager::CreateWorkspace(bool maximized) {
-  return new Workspace(this, contents_view_, maximized);
+  return new Workspace(this, contents_window_, maximized);
 }
 
 void WorkspaceManager::MoveWorkspaceToPendingOrDelete(
@@ -524,7 +527,7 @@ void WorkspaceManager::FadeDesktop(aura::Window* window,
     stack_above = window;
   } else {
     direction = DesktopBackgroundFadeController::FADE_OUT;
-    parent = contents_view_;
+    parent = contents_window_;
     stack_above = desktop_workspace()->window();
     DCHECK_EQ(kCrossFadeSwitchTimeMS,
               static_cast<int>(duration.InMilliseconds()));
@@ -549,6 +552,7 @@ void WorkspaceManager::ShowOrHideDesktopBackground(
       // The workspace cycler has already animated the desktop background's
       // opacity. Do not do any further animation.
       break;
+    case SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE:
     case SWITCH_MAXIMIZED_OR_RESTORED:
       // FadeDesktop() fades the desktop background by animating the opacity of
       // a black window immediately above the desktop background. Set the
@@ -628,6 +632,7 @@ void WorkspaceManager::HideWorkspace(
       details.animate_scale = true;
       break;
 
+    case SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE:
     case SWITCH_MAXIMIZED_OR_RESTORED:
       if (active_workspace_->is_maximized()) {
         // Delay the hide until the animation is done.
@@ -766,7 +771,10 @@ void WorkspaceManager::OnWorkspaceWindowShowStateChanged(
       // WorkspaceLayoutManager::OnWindowPropertyChanged() the window is made
       // active.
       if (old_layer) {
-        SetActiveWorkspace(new_workspace, SWITCH_MAXIMIZED_OR_RESTORED,
+        SetActiveWorkspace(new_workspace,
+                           max_count >= 2 ?
+                               SWITCH_MAXIMIZED_FROM_MAXIMIZED_WORKSPACE :
+                               SWITCH_MAXIMIZED_OR_RESTORED,
                            duration);
         CrossFadeWindowBetweenWorkspaces(new_workspace->window(), child,
                                          old_layer);
