@@ -164,6 +164,16 @@ class VIEWS_EXPORT ImageGrid {
                 scoped_ptr<ui::Layer>* layer_ptr,
                 scoped_ptr<ImagePainter>* painter_ptr);
 
+  // Sets the scaling for the transform applied to a layer.  The left, top,
+  // right and bottom layers are stretched to the height or width of the
+  // center image.
+  void ScaleWidth(gfx::Size center,
+                  ui::Layer* layer,
+                  gfx::Transform& transform);
+  void ScaleHeight(gfx::Size center,
+                   ui::Layer* layer,
+                   gfx::Transform& transform);
+
   // Layer that contains all of the image layers.
   scoped_ptr<ui::Layer> layer_;
 

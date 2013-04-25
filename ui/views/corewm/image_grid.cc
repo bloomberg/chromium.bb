@@ -8,10 +8,13 @@
 
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkXfermode.h"
+#include "ui/compositor/dip_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/rect_conversions.h"
+#include "ui/gfx/size.h"
+#include "ui/gfx/size_conversions.h"
 #include "ui/gfx/transform.h"
 
 using std::max;
@@ -104,12 +107,17 @@ void ImageGrid::SetSize(const gfx::Size& size) {
   int center_width = std::max(size.width() - left - right, 0);
   int center_height = std::max(size.height() - top - bottom, 0);
 
+  // At non-integer scale factors, the ratio of dimensions in DIP is not
+  // necessarily the same as the ratio in physical pixels due to rounding.  Set
+  // the transform on each of the layers based on dimensions in pixels.
+  gfx::Size center_size_in_pixels = gfx::ToFlooredSize(gfx::ScaleSize(
+      gfx::Size(center_width, center_height), layer_->device_scale_factor()));
+
   if (top_layer_.get()) {
     if (center_width > 0) {
       gfx::Transform transform;
       transform.Translate(left, 0);
-      transform.Scale(
-          static_cast<float>(center_width) / top_layer_->bounds().width(), 1);
+      ScaleWidth(center_size_in_pixels, top_layer_.get(), transform);
       top_layer_->SetTransform(transform);
     }
     top_layer_->SetVisible(center_width > 0);
@@ -119,9 +127,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
       gfx::Transform transform;
       transform.Translate(
           left, size.height() - bottom_layer_->bounds().height());
-      transform.Scale(
-          static_cast<float>(center_width) / bottom_layer_->bounds().width(),
-          1.0);
+      ScaleWidth(center_size_in_pixels, bottom_layer_.get(), transform);
       bottom_layer_->SetTransform(transform);
     }
     bottom_layer_->SetVisible(center_width > 0);
@@ -130,9 +136,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
     if (center_height > 0) {
       gfx::Transform transform;
       transform.Translate(0, top);
-      transform.Scale(
-          1.0,
-          (static_cast<float>(center_height) / left_layer_->bounds().height()));
+      ScaleHeight(center_size_in_pixels, left_layer_.get(), transform);
       left_layer_->SetTransform(transform);
     }
     left_layer_->SetVisible(center_height > 0);
@@ -142,9 +146,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
       gfx::Transform transform;
       transform.Translate(
           size.width() - right_layer_->bounds().width(), top);
-      transform.Scale(
-          1.0,
-          static_cast<float>(center_height) / right_layer_->bounds().height());
+      ScaleHeight(center_size_in_pixels, right_layer_.get(), transform);
       right_layer_->SetTransform(transform);
     }
     right_layer_->SetVisible(center_height > 0);
@@ -209,6 +211,7 @@ void ImageGrid::SetSize(const gfx::Size& size) {
 }
 
 void ImageGrid::SetContentBounds(const gfx::Rect& content_bounds) {
+
   SetSize(gfx::Size(
       content_bounds.width() + left_image_width_ + right_image_width_,
       content_bounds.height() + top_image_height_ +
@@ -281,6 +284,24 @@ void ImageGrid::SetImage(const gfx::Image* image,
   layer_ptr->get()->SetFillsBoundsOpaquely(false);
   layer_ptr->get()->SetVisible(true);
   layer_->Add(layer_ptr->get());
+}
+
+void ImageGrid::ScaleWidth(gfx::Size center,
+                           ui::Layer* layer,
+                           gfx::Transform& transform) {
+  int layer_width = ConvertSizeToPixel(layer,
+                                       layer->bounds().size()).width();
+  float scale = static_cast<float>(center.width()) / layer_width;
+  transform.Scale(scale, 1.0);
+}
+
+void ImageGrid::ScaleHeight(gfx::Size center,
+                            ui::Layer* layer,
+                            gfx::Transform& transform) {
+  int layer_height = ConvertSizeToPixel(layer,
+                                       layer->bounds().size()).height();
+  float scale = static_cast<float>(center.height()) / layer_height;
+  transform.Scale(1.0, scale);
 }
 
 }  // namespace corewm
