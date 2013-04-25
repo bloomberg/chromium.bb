@@ -795,6 +795,9 @@ class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
 
     layer_tree_host()->SetRootLayer(root_layer_);
 
+    ASSERT_TRUE(layer_tree_host()->InitializeRendererIfNeeded());
+    ResourceUpdateQueue queue;
+    layer_tree_host()->UpdateLayers(&queue, std::numeric_limits<size_t>::max());
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1225,6 +1228,8 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestFinishAllRendering);
 
 class LayerTreeHostTestCompositeAndReadbackCleanup : public LayerTreeHostTest {
  public:
+  LayerTreeHostTestCompositeAndReadbackCleanup() {}
+
   virtual void BeginTest() OVERRIDE {
     Layer* root_layer = layer_tree_host()->root_layer();
 
@@ -1695,10 +1700,9 @@ class LayerTreeHostWithProxy : public LayerTreeHost {
  public:
   LayerTreeHostWithProxy(FakeLayerTreeHostClient* client,
                          const LayerTreeSettings& settings,
-                         scoped_ptr<FakeProxy> proxy)
+                         scoped_ptr<Proxy> proxy)
       : LayerTreeHost(client, settings) {
-        proxy->SetLayerTreeHost(this);
-    EXPECT_TRUE(InitializeForTesting(proxy.PassAs<Proxy>()));
+    EXPECT_TRUE(InitializeForTesting(proxy.Pass()));
   }
 };
 
@@ -1715,8 +1719,8 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     LayerTreeSettings settings;
     settings.max_partial_texture_updates = 10;
 
-    LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
-    EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
+    LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
+    EXPECT_TRUE(host.InitializeRendererIfNeeded());
 
     EXPECT_EQ(0u, host.settings().max_partial_texture_updates);
   }
@@ -1734,8 +1738,8 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     LayerTreeSettings settings;
     settings.max_partial_texture_updates = 10;
 
-    LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
-    EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
+    LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
+    EXPECT_TRUE(host.InitializeRendererIfNeeded());
 
     EXPECT_EQ(5u, host.settings().max_partial_texture_updates);
   }
@@ -1753,8 +1757,8 @@ TEST(LayerTreeHostTest, LimitPartialUpdates) {
     LayerTreeSettings settings;
     settings.max_partial_texture_updates = 10;
 
-    LayerTreeHostWithProxy host(&client, settings, proxy.Pass());
-    EXPECT_TRUE(host.InitializeOutputSurfaceIfNeeded());
+    LayerTreeHostWithProxy host(&client, settings, proxy.PassAs<Proxy>());
+    EXPECT_TRUE(host.InitializeRendererIfNeeded());
 
     EXPECT_EQ(10u, host.settings().max_partial_texture_updates);
   }
@@ -1768,7 +1772,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithGLRenderer) {
 
   scoped_ptr<LayerTreeHost> host =
       LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  EXPECT_TRUE(host->InitializeRendererIfNeeded());
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
 
@@ -1780,7 +1784,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithSoftwareRenderer) {
 
   scoped_ptr<LayerTreeHost> host =
       LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  EXPECT_TRUE(host->InitializeRendererIfNeeded());
   EXPECT_EQ(4u, host->settings().max_partial_texture_updates);
 }
 
@@ -1792,7 +1796,7 @@ TEST(LayerTreeHostTest, PartialUpdatesWithDelegatingRendererAndGLContent) {
 
   scoped_ptr<LayerTreeHost> host =
       LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  EXPECT_TRUE(host->InitializeRendererIfNeeded());
   EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
 }
 
@@ -1805,7 +1809,7 @@ TEST(LayerTreeHostTest,
 
   scoped_ptr<LayerTreeHost> host =
       LayerTreeHost::Create(&client, settings, scoped_ptr<Thread>());
-  EXPECT_TRUE(host->InitializeOutputSurfaceIfNeeded());
+  EXPECT_TRUE(host->InitializeRendererIfNeeded());
   EXPECT_EQ(0u, host->settings().max_partial_texture_updates);
 }
 
@@ -1843,6 +1847,7 @@ class LayerTreeHostTestCapturePicture : public LayerTreeHostTest {
     layer_tree_host()->SetViewportSize(bounds_);
     layer_tree_host()->SetRootLayer(layer_);
 
+    EXPECT_TRUE(layer_tree_host()->InitializeRendererIfNeeded());
     PostSetNeedsCommitToMainThread();
   }
 

@@ -25,8 +25,8 @@ Scheduler::Scheduler(SchedulerClient* client,
 
 Scheduler::~Scheduler() { frame_rate_controller_->SetActive(false); }
 
-void Scheduler::SetCanStart() {
-  state_machine_.SetCanStart();
+void Scheduler::SetCanBeginFrame(bool can) {
+  state_machine_.SetCanBeginFrame(can);
   ProcessScheduledActions();
 }
 
@@ -111,10 +111,10 @@ void Scheduler::DidLoseOutputSurface() {
   ProcessScheduledActions();
 }
 
-void Scheduler::DidCreateAndInitializeOutputSurface() {
-  TRACE_EVENT0("cc", "Scheduler::DidCreateAndInitializeOutputSurface");
+void Scheduler::DidRecreateOutputSurface() {
+  TRACE_EVENT0("cc", "Scheduler::DidRecreateOutputSurface");
   frame_rate_controller_->DidAbortAllPendingFrames();
-  state_machine_.DidCreateAndInitializeOutputSurface();
+  state_machine_.DidRecreateOutputSurface();
   ProcessScheduledActions();
 }
 
@@ -184,8 +184,8 @@ void Scheduler::ProcessScheduledActions() {
           frame_rate_controller_->DidBeginFrame();
         break;
       }
-      case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
-        client_->ScheduledActionBeginOutputSurfaceCreation();
+      case SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION:
+        client_->ScheduledActionBeginContextRecreation();
         break;
       case SchedulerStateMachine::ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
         client_->ScheduledActionAcquireLayerTexturesForMainThread();

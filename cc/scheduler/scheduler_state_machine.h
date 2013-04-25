@@ -46,7 +46,7 @@ class CC_EXPORT SchedulerStateMachine {
   enum OutputSurfaceState {
     OUTPUT_SURFACE_ACTIVE,
     OUTPUT_SURFACE_LOST,
-    OUTPUT_SURFACE_CREATING,
+    OUTPUT_SURFACE_RECREATING,
   };
 
   bool CommitPending() const {
@@ -64,7 +64,7 @@ class CC_EXPORT SchedulerStateMachine {
     ACTION_ACTIVATE_PENDING_TREE_IF_NEEDED,
     ACTION_DRAW_IF_POSSIBLE,
     ACTION_DRAW_FORCED,
-    ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+    ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
     ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD,
   };
   Action NextAction() const;
@@ -122,8 +122,8 @@ class CC_EXPORT SchedulerStateMachine {
   // textures to the impl thread by committing the layers.
   void SetMainThreadNeedsLayerTextures();
 
-  // Set that we can create the first OutputSurface and start the scheduler.
-  void SetCanStart() { can_start_ = true; }
+  // Indicates whether we can successfully begin a frame at this time.
+  void SetCanBeginFrame(bool can) { can_begin_frame_ = can; }
 
   // Indicates whether drawing would, at this time, make sense.
   // CanDraw can be used to supress flashes or checkerboarding
@@ -139,8 +139,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool has_pending_tree() const { return has_pending_tree_; }
 
   void DidLoseOutputSurface();
-  void DidCreateAndInitializeOutputSurface();
-  bool HasInitializedOutputSurface() const;
+  void DidRecreateOutputSurface();
 
   // Exposed for testing purposes.
   void SetMaximumNumberOfFailedDrawsBeforeDrawIsForced(int num_draws);
@@ -182,13 +181,12 @@ class CC_EXPORT SchedulerStateMachine {
   bool main_thread_needs_layer_textures_;
   bool inside_vsync_;
   bool visible_;
-  bool can_start_;
+  bool can_begin_frame_;
   bool can_draw_;
   bool has_pending_tree_;
   bool draw_if_possible_failed_;
   TextureState texture_state_;
   OutputSurfaceState output_surface_state_;
-  bool did_create_and_initialize_first_output_surface_;
 
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);
 };

@@ -5,7 +5,6 @@
 #include "cc/trees/layer_tree_host.h"
 
 #include "base/basictypes.h"
-#include "cc/base/thread_impl.h"
 #include "cc/layers/content_layer.h"
 #include "cc/layers/heads_up_display_layer.h"
 #include "cc/layers/io_surface_layer.h"
@@ -21,7 +20,6 @@
 #include "cc/test/fake_context_provider.h"
 #include "cc/test/fake_delegated_renderer_layer.h"
 #include "cc/test/fake_delegated_renderer_layer_impl.h"
-#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_scrollbar_layer.h"
 #include "cc/test/fake_scrollbar_theme_painter.h"
@@ -60,11 +58,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
         times_to_lose_on_recreate_(0),
         times_to_fail_create_offscreen_(0),
         times_to_fail_recreate_offscreen_(0),
-        times_to_expect_create_failed_(0),
-        times_create_failed_(0),
+        times_to_expect_recreate_retried_(0),
+        times_recreate_retried_(0),
         times_offscreen_created_(0),
-        committed_at_least_once_(false),
-        context_should_support_io_surface_(false) {
+        committed_at_least_once_(false) {
     media::InitializeMediaLibraryForTesting();
   }
 
@@ -81,17 +78,12 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   virtual scoped_ptr<OutputSurface> CreateOutputSurface() OVERRIDE {
     if (times_to_fail_create_) {
       --times_to_fail_create_;
-      ExpectCreateToFail();
+      ExpectRecreateToRetry();
       return scoped_ptr<OutputSurface>();
     }
 
     scoped_ptr<TestWebGraphicsContext3D> context3d = CreateContext3d();
     context3d_ = context3d.get();
-
-    if (context_should_support_io_surface_) {
-      context3d_->set_have_extension_io_surface(true);
-      context3d_->set_have_extension_egl_image(true);
-    }
 
     if (times_to_fail_initialize_) {
       --times_to_fail_initialize_;
@@ -99,11 +91,11 @@ class LayerTreeHostContextTest : public LayerTreeTest {
       // The number of times MakeCurrent succeeds is not important, and
       // can be changed if needed to make this pass with future changes.
       context3d_->set_times_make_current_succeeds(2);
-      ExpectCreateToFail();
+      ExpectRecreateToRetry();
     } else if (times_to_lose_on_create_) {
       --times_to_lose_on_create_;
       LoseContext();
-      ExpectCreateToFail();
+      ExpectRecreateToRetry();
     }
 
     return FakeOutputSurface::Create3d(
@@ -118,7 +110,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
     if (times_to_fail_create_offscreen_) {
       --times_to_fail_create_offscreen_;
-      ExpectCreateToFail();
+      ExpectRecreateToRetry();
       return scoped_ptr<TestWebGraphicsContext3D>();
     }
 
@@ -161,8 +153,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
   virtual bool PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
                                      LayerTreeHostImpl::FrameData* frame,
-                                     bool result) OVERRIDE {
-    EXPECT_TRUE(result);
+                                     bool result)
+      OVERRIDE {
+    bool expect_success = !frame->has_no_damage;
+    EXPECT_EQ(expect_success, result);
     if (!times_to_lose_during_draw_)
       return result;
 
@@ -199,17 +193,18 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     times_to_fail_recreate_offscreen_ = 0;
   }
 
-  virtual void DidFailToInitializeOutputSurface() OVERRIDE {
-    ++times_create_failed_;
+  virtual void WillRetryRecreateOutputSurface() OVERRIDE {
+    ++times_recreate_retried_;
   }
 
   virtual void TearDown() OVERRIDE {
     LayerTreeTest::TearDown();
-    EXPECT_EQ(times_to_expect_create_failed_, times_create_failed_);
+    EXPECT_EQ(times_to_expect_recreate_retried_, times_recreate_retried_);
   }
 
-  void ExpectCreateToFail() {
-    ++times_to_expect_create_failed_;
+  void ExpectRecreateToRetry() {
+    if (committed_at_least_once_)
+      ++times_to_expect_recreate_retried_;
   }
 
  protected:
@@ -224,11 +219,10 @@ class LayerTreeHostContextTest : public LayerTreeTest {
   int times_to_lose_on_recreate_;
   int times_to_fail_create_offscreen_;
   int times_to_fail_recreate_offscreen_;
-  int times_to_expect_create_failed_;
-  int times_create_failed_;
+  int times_to_expect_recreate_retried_;
+  int times_recreate_retried_;
   int times_offscreen_created_;
   bool committed_at_least_once_;
-  bool context_should_support_io_surface_;
 
   scoped_refptr<FakeContextProvider> offscreen_contexts_main_thread_;
   scoped_refptr<FakeContextProvider> offscreen_contexts_compositor_thread_;
@@ -241,8 +235,7 @@ class LayerTreeHostContextTestLostContextSucceeds
       : LayerTreeHostContextTest(),
         test_case_(0),
         num_losses_(0),
-        recovered_context_(true),
-        first_initialized_(false) {}
+        recovered_context_(true) {}
 
   virtual void BeginTest() OVERRIDE {
     PostSetNeedsCommitToMainThread();
@@ -250,12 +243,7 @@ class LayerTreeHostContextTestLostContextSucceeds
 
   virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_TRUE(succeeded);
-
-    if (first_initialized_)
-      ++num_losses_;
-    else
-      first_initialized_ = true;
-
+    ++num_losses_;
     recovered_context_ = true;
   }
 
@@ -393,7 +381,6 @@ class LayerTreeHostContextTestLostContextSucceeds
   size_t test_case_;
   int num_losses_;
   bool recovered_context_;
-  bool first_initialized_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestLostContextSucceeds);
@@ -537,9 +524,6 @@ class LayerTreeHostContextTestOffscreenContextFails
     cc::ContextProvider* contexts =
         host_impl->resource_provider()->offscreen_context_provider();
     EXPECT_FALSE(contexts);
-
-    // This did not lead to create failure.
-    times_to_expect_create_failed_ = 0;
     EndTest();
   }
 
@@ -558,8 +542,7 @@ class LayerTreeHostContextTestLostContextFails
  public:
   LayerTreeHostContextTestLostContextFails()
       : LayerTreeHostContextTest(),
-        num_commits_(0),
-        first_initialized_(false) {
+        num_commits_(0) {
     times_to_lose_during_commit_ = 1;
   }
 
@@ -568,12 +551,8 @@ class LayerTreeHostContextTestLostContextFails
   }
 
   virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
-    if (first_initialized_) {
-      EXPECT_FALSE(succeeded);
-      EndTest();
-    } else {
-      first_initialized_ = true;
-    }
+    EXPECT_FALSE(succeeded);
+    EndTest();
   }
 
   virtual void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) OVERRIDE {
@@ -598,7 +577,6 @@ class LayerTreeHostContextTestLostContextFails
 
  private:
   int num_commits_;
-  bool first_initialized_;
 };
 
 TEST_F(LayerTreeHostContextTestLostContextFails,
@@ -654,26 +632,18 @@ class LayerTreeHostContextTestFinishAllRenderingAfterLoss
  public:
   virtual void BeginTest() OVERRIDE {
     // Lose the context until the compositor gives up on it.
-    first_initialized_ = false;
     times_to_lose_during_commit_ = 1;
     times_to_fail_reinitialize_ = 10;
     PostSetNeedsCommitToMainThread();
   }
 
   virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
-    if (first_initialized_) {
-      EXPECT_FALSE(succeeded);
-      layer_tree_host()->FinishAllRendering();
-      EndTest();
-    } else {
-      first_initialized_ = true;
-    }
+    EXPECT_FALSE(succeeded);
+    layer_tree_host()->FinishAllRendering();
+    EndTest();
   }
 
   virtual void AfterTest() OVERRIDE {}
-
- private:
-  bool first_initialized_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
@@ -920,6 +890,9 @@ class LayerTreeHostContextTestDontUseLostResources
     : public LayerTreeHostContextTest {
  public:
   virtual void SetupTree() OVERRIDE {
+    context3d_->set_have_extension_io_surface(true);
+    context3d_->set_have_extension_egl_image(true);
+
     scoped_refptr<Layer> root_ = Layer::Create();
     root_->SetBounds(gfx::Size(10, 10));
     root_->SetAnchorPoint(gfx::PointF());
@@ -1009,7 +982,6 @@ class LayerTreeHostContextTestDontUseLostResources
   }
 
   virtual void BeginTest() OVERRIDE {
-    context_should_support_io_surface_ = true;
     PostSetNeedsCommitToMainThread();
   }
 
@@ -1129,112 +1101,36 @@ class LayerTreeHostContextTestDontUseLostResources
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestDontUseLostResources);
 
-class LayerTreeHostContextTestLosesFirstOutputSurface
+class LayerTreeHostContextTestFailsImmediately
     : public LayerTreeHostContextTest {
  public:
-  LayerTreeHostContextTestLosesFirstOutputSurface() {
-    // Always fail. This needs to be set before LayerTreeHost is created.
-    times_to_lose_on_create_ = 1000;
-  }
+  LayerTreeHostContextTestFailsImmediately()
+      : LayerTreeHostContextTest() {}
+
+  virtual ~LayerTreeHostContextTestFailsImmediately() {}
 
   virtual void BeginTest() OVERRIDE {
     PostSetNeedsCommitToMainThread();
   }
 
   virtual void AfterTest() OVERRIDE {}
+
+  virtual scoped_ptr<TestWebGraphicsContext3D> CreateContext3d() OVERRIDE {
+    scoped_ptr<TestWebGraphicsContext3D> context =
+        LayerTreeHostContextTest::CreateContext3d();
+    context->loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
+                                 GL_INNOCENT_CONTEXT_RESET_ARB);
+    return context.Pass();
+  }
 
   virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
     EXPECT_FALSE(succeeded);
-
     // If we make it this far without crashing, we pass!
     EndTest();
   }
-
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
-    EXPECT_TRUE(false);
-  }
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestLosesFirstOutputSurface);
-
-class LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds
-    : public LayerTreeHostContextTest {
- public:
-  virtual void AfterTest() OVERRIDE {}
-
-  virtual void BeginTest() OVERRIDE {
-    times_to_fail_initialize_ = 2;
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
-    EndTest();
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds);
-
-class LayerTreeHostContextTestRetryWorksWithForcedInit
-    : public LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds {
- public:
-  virtual void DidFailToInitializeOutputSurface() OVERRIDE {
-    LayerTreeHostContextTestRetriesFirstInitializationAndSucceeds
-        ::DidFailToInitializeOutputSurface();
-
-    if (times_create_failed_ == 1) {
-      // CompositeAndReadback force recreates the output surface, which should
-      // fail.
-      char pixels[4];
-      EXPECT_FALSE(layer_tree_host()->CompositeAndReadback(
-            &pixels, gfx::Rect(1, 1)));
-    }
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestRetryWorksWithForcedInit);
-
-class LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit
-    : public LayerTreeHostContextTest {
- public:
-  virtual void BeginTest() OVERRIDE {
-    // This must be called immediately after creating LTH, before the first
-    // OutputSurface is initialized.
-    ASSERT_TRUE(layer_tree_host()->output_surface_lost());
-
-    times_output_surface_created_ = 0;
-
-    char pixels[4];
-    EXPECT_TRUE(layer_tree_host()->CompositeAndReadback(
-          &pixels, gfx::Rect(1, 1)));
-    EXPECT_EQ(1, times_output_surface_created_);
-
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DidRecreateOutputSurface(bool succeeded) OVERRIDE {
-    EXPECT_TRUE(succeeded);
-    ++times_output_surface_created_;
-  }
-
-  virtual void DidCommitAndDrawFrame() OVERRIDE {
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {
-    // Should not try to create output surface again after successfully
-    // created by CompositeAndReadback.
-    EXPECT_EQ(1, times_output_surface_created_);
-  }
-
- private:
-  int times_output_surface_created_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostContextTestCompositeAndReadbackBeforeOutputSurfaceInit);
+SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestFailsImmediately);
 
 class ImplSidePaintingLayerTreeHostContextTest
     : public LayerTreeHostContextTest {
@@ -1364,39 +1260,6 @@ class LayerTreeHostContextTestFailsToCreateSurface
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostContextTestFailsToCreateSurface);
-
-// Not reusing LayerTreeTest because it expects creating LTH to always succeed.
-class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
-    : public testing::Test,
-      public FakeLayerTreeHostClient {
- public:
-  LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface()
-      : FakeLayerTreeHostClient(FakeLayerTreeHostClient::DIRECT_3D) {}
-
-  // FakeLayerTreeHostClient
-  virtual scoped_ptr<OutputSurface> CreateOutputSurface() {
-    return scoped_ptr<OutputSurface>();
-  }
-
-  void RunTest(bool threaded) {
-    scoped_ptr<base::Thread> impl_thread;
-    scoped_ptr<cc::Thread> impl_ccthread(NULL);
-    if (threaded) {
-      impl_thread.reset(new base::Thread("LayerTreeTest"));
-      impl_ccthread = cc::ThreadImpl::CreateForDifferentThread(
-          impl_thread->message_loop_proxy());
-      ASSERT_TRUE(impl_ccthread);
-    }
-
-    LayerTreeSettings settings;
-    scoped_ptr<LayerTreeHost> layer_tree_host =
-        LayerTreeHost::Create(this, settings, impl_ccthread.Pass());
-    EXPECT_FALSE(layer_tree_host);
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface);
 
 }  // namespace
 }  // namespace cc

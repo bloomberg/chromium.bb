@@ -39,7 +39,7 @@ class SchedulerClient {
   virtual void ScheduledActionCommit() = 0;
   virtual void ScheduledActionCheckForCompletedTileUploads() = 0;
   virtual void ScheduledActionActivatePendingTreeIfNeeded() = 0;
-  virtual void ScheduledActionBeginOutputSurfaceCreation() = 0;
+  virtual void ScheduledActionBeginContextRecreation() = 0;
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() = 0;
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks time) = 0;
 
@@ -59,7 +59,7 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
 
   virtual ~Scheduler();
 
-  void SetCanStart();
+  void SetCanBeginFrame(bool can);
 
   void SetVisible(bool visible);
   void SetCanDraw(bool can_draw);
@@ -91,10 +91,7 @@ class CC_EXPORT Scheduler : FrameRateControllerClient {
   void DidSwapBuffersComplete();
 
   void DidLoseOutputSurface();
-  void DidCreateAndInitializeOutputSurface();
-  bool HasInitializedOutputSurface() const {
-    return state_machine_.HasInitializedOutputSurface();
-  }
+  void DidRecreateOutputSurface();
 
   bool CommitPending() const { return state_machine_.CommitPending(); }
   bool RedrawPending() const { return state_machine_.RedrawPending(); }
