@@ -23,6 +23,7 @@ public class AwBrowserContext {
 
     private AwGeolocationPermissions mGeolocationPermissions;
     private AwCookieManager mCookieManager;
+    private AwFormDatabase mFormDatabase;
 
     public AwBrowserContext(SharedPreferences sharedPreferences) {
         mSharedPreferences = sharedPreferences;
@@ -40,6 +41,13 @@ public class AwBrowserContext {
             mCookieManager = new AwCookieManager();
         }
         return mCookieManager;
+    }
+
+    public AwFormDatabase getFormDatabase() {
+        if (mFormDatabase == null) {
+            mFormDatabase = new AwFormDatabase();
+        }
+        return mFormDatabase;
     }
 
     /**
