@@ -378,7 +378,6 @@
       'type': 'static_library',
       'dependencies': [
         '../build/linux/system.gyp:dbus',
-        '../dbus/dbus.gyp:dbus_test_support',
         'chromeos',
         'power_manager_proto',
       ],

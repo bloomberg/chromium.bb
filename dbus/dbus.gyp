@@ -59,8 +59,8 @@
       'includes': [ '../build/protoc.gypi' ],
     },
     {
-      # This target contains mocks and fakes that can be used to write unit
-      # tests without issuing actual D-Bus calls.
+      # This target contains mocks that can be used to write unit tests
+      # without issuing actual D-Bus calls.
       'target_name': 'dbus_test_support',
       'type': 'static_library',
       'dependencies': [
@@ -69,8 +69,6 @@
         'dbus',
       ],
       'sources': [
-        'fake_bus.cc',
-        'fake_bus.h',
         'mock_bus.cc',
         'mock_bus.h',
         'mock_exported_object.cc',

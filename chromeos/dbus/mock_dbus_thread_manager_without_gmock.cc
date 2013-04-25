@@ -19,7 +19,6 @@
 #include "chromeos/dbus/ibus/mock_ibus_engine_service.h"
 #include "chromeos/dbus/ibus/mock_ibus_input_context_client.h"
 #include "chromeos/dbus/ibus/mock_ibus_panel_service.h"
-#include "dbus/fake_bus.h"
 
 namespace chromeos {
 
@@ -62,8 +61,8 @@ void MockDBusThreadManagerWithoutGMock::RemoveObserver(
 void MockDBusThreadManagerWithoutGMock::InitIBusBus(
     const std::string& ibus_address,
     const base::Closure& closure) {
-  dbus::Bus::Options options;
-  ibus_bus_ = new dbus::FakeBus(options);
+  // Non-null bus address is used to ensure the connection to ibus-daemon.
+  ibus_bus_ = reinterpret_cast<dbus::Bus*>(0xdeadbeef);
 }
 
 dbus::Bus* MockDBusThreadManagerWithoutGMock::GetSystemBus() {
