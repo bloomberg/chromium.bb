@@ -723,8 +723,6 @@ void Pipeline::OnUpdateStatistics(const PipelineStatistics& stats) {
   statistics_.video_bytes_decoded += stats.video_bytes_decoded;
   statistics_.video_frames_decoded += stats.video_frames_decoded;
   statistics_.video_frames_dropped += stats.video_frames_dropped;
-  media_log_->AddEvent(
-      media_log_->CreatePipelineStatisticsChangedEvent(statistics_));
 }
 
 void Pipeline::StartTask(scoped_ptr<FilterCollection> filter_collection,

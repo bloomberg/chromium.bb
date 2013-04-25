@@ -56,8 +56,6 @@ const char* MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "BUFFERED_EXTENTS_CHANGED";
     case MediaLogEvent::MEDIA_SOURCE_ERROR:
       return "MEDIA_SOURCE_ERROR";
-    case MediaLogEvent::PIPELINE_STATISTICS_CHANGED:
-      return "PIPELINE_STATISTICS_CHANGED";
   }
   NOTREACHED();
   return NULL;
@@ -198,14 +196,4 @@ scoped_ptr<MediaLogEvent> MediaLog::CreateMediaSourceErrorEvent(
   return event.Pass();
 }
 
-scoped_ptr<MediaLogEvent> MediaLog::CreatePipelineStatisticsChangedEvent(
-    const PipelineStatistics& stats) {
-  scoped_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::PIPELINE_STATISTICS_CHANGED));
-  event->params.SetInteger("decoded_audio_bytes", stats.audio_bytes_decoded);
-  event->params.SetInteger("decoded_video_bytes", stats.video_bytes_decoded);
-  event->params.SetInteger("decoded_video_frames", stats.video_frames_decoded);
-  event->params.SetInteger("dropped_video_frames", stats.video_frames_dropped);
-  return event.Pass();
-}
 }  //namespace media

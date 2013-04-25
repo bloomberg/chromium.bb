@@ -72,13 +72,6 @@ struct MediaLogEvent {
     // Errors reported by Media Source Extensions code.
     MEDIA_SOURCE_ERROR,
     // params: "error": Error string describing the error detected.
-
-   // Statistics for pipeline.
-   // params: "decoded_audio_bytes": <decoded audio bytes of the video>
-   //         "decoded_video_bytes": <decoded video bytes of the video>
-   //         "decoded_video_frames": <decoded video frames of the video>
-   //         "dropped_video_frames": <dropped video frames of the video>
-   PIPELINE_STATISTICS_CHANGED,
   };
 
   int32 id;

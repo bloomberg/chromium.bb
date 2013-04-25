@@ -67,8 +67,6 @@ class MEDIA_EXPORT MediaLog : public base::RefCountedThreadSafe<MediaLog> {
       size_t start, size_t current, size_t end);
   scoped_ptr<MediaLogEvent> CreateMediaSourceErrorEvent(
       const std::string& error);
-  scoped_ptr<MediaLogEvent> CreatePipelineStatisticsChangedEvent(
-      const PipelineStatistics& stats);
 
  protected:
   friend class base::RefCountedThreadSafe<MediaLog>;
