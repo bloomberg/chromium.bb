@@ -197,6 +197,7 @@ struct surface {
 	struct widget *widget;
 	int redraw_needed;
 	struct wl_callback *frame_cb;
+	uint32_t last_time;
 
 	struct rectangle allocation;
 	struct rectangle server_allocation;
@@ -1545,6 +1546,33 @@ widget_cairo_create(struct widget *widget)
 	cairo_translate(cr, -surface->allocation.x, -surface->allocation.y);
 
 	return cr;
+}
+
+struct wl_surface *
+widget_get_wl_surface(struct widget *widget)
+{
+	return widget->surface->surface;
+}
+
+uint32_t
+widget_get_last_time(struct widget *widget)
+{
+	return widget->surface->last_time;
+}
+
+void
+widget_input_region_add(struct widget *widget, const struct rectangle *rect)
+{
+	struct wl_compositor *comp = widget->window->display->compositor;
+	struct surface *surface = widget->surface;
+
+	if (!surface->input_region)
+		surface->input_region = wl_compositor_create_region(comp);
+
+	if (rect) {
+		wl_region_add(surface->input_region,
+			      rect->x, rect->y, rect->width, rect->height);
+	}
 }
 
 void
@@ -3461,6 +3489,8 @@ frame_callback(void *data, struct wl_callback *callback, uint32_t time)
 	assert(callback == surface->frame_cb);
 	wl_callback_destroy(callback);
 	surface->frame_cb = NULL;
+
+	surface->last_time = time;
 
 	if (surface->redraw_needed || surface->window->redraw_needed)
 		window_schedule_redraw_task(surface->window);

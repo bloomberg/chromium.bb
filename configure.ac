@@ -268,6 +268,9 @@ AM_CONDITIONAL(HAVE_PANGO, test "x$have_pango" = "xyes")
 AM_CONDITIONAL(BUILD_FULL_GL_CLIENTS,
 	       test x$cairo_modules = "xcairo-gl" -a "x$have_cairo_egl" = "xyes" -a "x$enable_egl" = "xyes")
 
+AM_CONDITIONAL(BUILD_SUBSURFACES_CLIENT,
+	       [test '(' "x$have_cairo_egl" != "xyes" -o "x$cairo_modules" = "xcairo-glesv2" ')' -a "x$enable_simple_egl_clients" = "xyes"])
+
 AM_CONDITIONAL(ENABLE_DESKTOP_SHELL, true)
 
 AC_ARG_ENABLE(tablet-shell,

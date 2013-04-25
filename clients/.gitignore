@@ -22,6 +22,7 @@ simple-touch
 smoke
 subsurface-client-protocol.h
 subsurface-protocol.c
+subsurfaces
 tablet-shell-client-protocol.h
 tablet-shell-protocol.c
 text-client-protocol.h

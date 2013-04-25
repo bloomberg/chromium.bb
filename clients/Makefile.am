@@ -64,6 +64,7 @@ clients_programs =				\
 	clickdot				\
 	transformed				\
 	calibrator				\
+	$(subsurfaces)				\
 	$(full_gl_client_programs)
 
 desktop_shell = weston-desktop-shell
@@ -130,6 +131,13 @@ transformed_LDADD = libtoytoolkit.la
 
 calibrator_SOURCES = calibrator.c ../shared/matrix.c ../shared/matrix.h
 calibrator_LDADD = libtoytoolkit.la
+
+if BUILD_SUBSURFACES_CLIENT
+subsurfaces = subsurfaces
+subsurfaces_SOURCES = subsurfaces.c
+subsurfaces_CPPFLAGS = $(AM_CPPFLAGS) $(SIMPLE_EGL_CLIENT_CFLAGS)
+subsurfaces_LDADD = libtoytoolkit.la $(SIMPLE_EGL_CLIENT_LIBS) -lm
+endif
 
 if HAVE_PANGO
 pango_programs = editor
