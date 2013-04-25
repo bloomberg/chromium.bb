@@ -67,7 +67,7 @@ void UpdateScreenHandler::Show() {
   }
   ShowScreen(OobeUI::kScreenOobeUpdate, NULL);
 #if !defined(OFFICIAL_BUILD)
-  CallJS("oobe.UpdateScreen.enableUpdateCancel");
+  CallJS("login.UpdateScreen.enableUpdateCancel");
 #endif
 }
 

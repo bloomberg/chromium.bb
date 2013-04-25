@@ -67,7 +67,7 @@ void NetworkScreenHandler::Hide() {
 }
 
 void NetworkScreenHandler::ShowError(const string16& message) {
-  CallJS("oobe.NetworkScreen.showError", message);
+  CallJS("login.NetworkScreen.showError", message);
 }
 
 void NetworkScreenHandler::ClearErrors() {

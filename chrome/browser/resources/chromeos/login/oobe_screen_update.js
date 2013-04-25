@@ -6,29 +6,11 @@
  * @fileoverview Oobe update screen implementation.
  */
 
-cr.define('oobe', function() {
-  /**
-   * Creates a new oobe screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var UpdateScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  UpdateScreen.register = function() {
-    var screen = $('update');
-    UpdateScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  UpdateScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
-
-    /** @override */
-    decorate: function() {
-    },
+login.createScreen('UpdateScreen', 'update', function() {
+  return {
+    EXTERNAL_API: [
+      'enableUpdateCancel'
+    ],
 
     /**
      * Header text of the screen.
@@ -49,16 +31,13 @@ cr.define('oobe', function() {
           loadTimeData.getString('cancelledUpdateMessage');
       chrome.send('cancelUpdate');
     },
-  };
 
-  /**
-   * Makes 'press Escape to cancel update' hint visible.
-   */
-  UpdateScreen.enableUpdateCancel = function() {
-    $('update-cancel-hint').hidden = false;
-  };
-
-  return {
-    UpdateScreen: UpdateScreen
+    /**
+     * Makes 'press Escape to cancel update' hint visible.
+     */
+    enableUpdateCancel: function() {
+      $('update-cancel-hint').hidden = false;
+    }
   };
 });
+

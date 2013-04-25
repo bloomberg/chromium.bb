@@ -6,59 +6,42 @@
  * @fileoverview Oobe Terms of Service screen implementation.
  */
 
-cr.define('oobe', function() {
-  /**
-   * Create a new Terms of Service screen.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var TermsOfServiceScreen = cr.ui.define('div');
+login.createScreen('TermsOfServiceScreen', 'terms-of-service',
+  function() { return {
+    EXTERNAL_API: [
+      'setDomain',
+      'setTermsOfService'
+    ],
 
-  /**
-   * Register with Oobe.
-   */
-  TermsOfServiceScreen.register = function() {
-    var screen = $('terms-of-service');
-    TermsOfServiceScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
+    /**
+     * Updates headings on the screen to indicate that the Terms of Service
+     * being shown belong to |domain|.
+     * @param {string} domain The domain whose Terms of Service are being shown.
+     */
+    setDomain: function(domain) {
+      $('tos-heading').textContent =
+          loadTimeData.getStringF('termsOfServiceScreenHeading', domain);
+      $('tos-subheading').textContent =
+          loadTimeData.getStringF('termsOfServiceScreenSubheading', domain);
+      $('tos-content-heading').textContent =
+          loadTimeData.getStringF('termsOfServiceContentHeading', domain);
+    },
 
-  /**
-   * Updates headings on the screen to indicate that the Terms of Service being
-   * shown belong to |domain|.
-   * @param {string} domain The domain whose Terms of Service are being shown.
-   */
-  TermsOfServiceScreen.setDomain = function(domain) {
-    $('tos-heading').textContent =
-        loadTimeData.getStringF('termsOfServiceScreenHeading', domain);
-    $('tos-subheading').textContent =
-        loadTimeData.getStringF('termsOfServiceScreenSubheading', domain);
-    $('tos-content-heading').textContent =
-        loadTimeData.getStringF('termsOfServiceContentHeading', domain);
-  };
-
-  /**
-   * Displays the given |termsOfService|, enables the accept button and moves
-   * the focus to it.
-   * @param {string} termsOfService The terms of service, as plain text.
-   */
-  TermsOfServiceScreen.setTermsOfService = function(termsOfService) {
-    $('terms-of-service').classList.remove('tos-loading');
-    $('tos-content-main').textContent = termsOfService;
-    $('tos-accept-button').disabled = false;
-    // Initially, the back button is focused and the accept button is disabled.
-    // Move the focus to the accept button now but only if the user has not
-    // moved the focus anywhere in the meantime.
-    if (!$('tos-back-button').blurred)
-      $('tos-accept-button').focus();
-  };
-
-  TermsOfServiceScreen.prototype = {
-    // Set up the prototype chain.
-    __proto__: HTMLDivElement.prototype,
-
-    /** @override */
-    decorate: function() {
+    /**
+     * Displays the given |termsOfService|, enables the accept button and moves
+     * the focus to it.
+     * @param {string} termsOfService The terms of service, as plain text.
+     */
+    setTermsOfService: function(termsOfService) {
+      this.classList.remove('tos-loading');
+      $('tos-content-main').textContent = termsOfService;
+      $('tos-accept-button').disabled = false;
+      // Initially, the back button is focused and the accept button is
+      // disabled.
+      // Move the focus to the accept button now but only if the user has not
+      // moved the focus anywhere in the meantime.
+      if (!$('tos-back-button').blurred)
+        $('tos-accept-button').focus();
     },
 
     /**
@@ -112,10 +95,7 @@ cr.define('oobe', function() {
      */
     onBeforeShow: function(data) {
       Oobe.getInstance().headerHidden = true;
-    },
-  };
-
-  return {
-    TermsOfServiceScreen: TermsOfServiceScreen
+    }
   };
 });
+

@@ -6,6 +6,7 @@
  * @fileoverview Common OOBE controller methods.
  */
 
+<include src="screen.js"></include>
 <include src="../user_images_grid.js"></include>
 <include src="apps_menu.js"></include>
 <include src="bubble.js"></include>
@@ -217,7 +218,7 @@ cr.define('cr.ui', function() {
    * @param {string} domain The domain name.
    */
   Oobe.setTermsOfServiceDomain = function(domain) {
-    oobe.TermsOfServiceScreen.setDomain(domain);
+    login.TermsOfServiceScreen.setDomain(domain);
   };
 
   /**
@@ -234,7 +235,7 @@ cr.define('cr.ui', function() {
    * @param {string} termsOfService The terms of service, as plain text.
    */
   Oobe.setTermsOfService = function(termsOfService) {
-    oobe.TermsOfServiceScreen.setTermsOfService(termsOfService);
+    login.TermsOfServiceScreen.setTermsOfService(termsOfService);
   };
 
   /**
@@ -260,3 +261,4 @@ disableTextSelectAndDrag(function(e) {
          src instanceof HTMLInputElement &&
          /text|password|search/.test(src.type);
 });
+

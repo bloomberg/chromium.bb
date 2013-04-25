@@ -6,25 +6,11 @@
  * @fileoverview Oobe network screen implementation.
  */
 
-cr.define('oobe', function() {
-  /**
-   * Creates a new oobe screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var NetworkScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  NetworkScreen.register = function() {
-    var screen = $('connect');
-    NetworkScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  NetworkScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+login.createScreen('NetworkScreen', 'connect', function() {
+  return {
+    EXTERNAL_API: [
+      'showError'
+    ],
 
     /**
      * Dropdown element for networks selection.
@@ -85,26 +71,23 @@ cr.define('oobe', function() {
      */
     get defaultControl() {
       return $('language-select');
+    },
+
+    /**
+     * Shows the network error message.
+     * @param {string} message Message to be shown.
+     */
+    showError: function(message) {
+      var error = document.createElement('div');
+      var messageDiv = document.createElement('div');
+      messageDiv.className = 'error-message-bubble';
+      messageDiv.textContent = message;
+      error.appendChild(messageDiv);
+
+      $('bubble').showContentForElement($('networks-list'),
+                                        cr.ui.Bubble.Attachment.BOTTOM,
+                                        error);
     }
   };
-
-  /**
-   * Shows the network error message.
-   * @param {string} message Message to be shown.
-   */
-  NetworkScreen.showError = function(message) {
-    var error = document.createElement('div');
-    var messageDiv = document.createElement('div');
-    messageDiv.className = 'error-message-bubble';
-    messageDiv.textContent = message;
-    error.appendChild(messageDiv);
-
-    $('bubble').showContentForElement($('networks-list'),
-                                      cr.ui.Bubble.Attachment.BOTTOM,
-                                      error);
-  };
-
-  return {
-    NetworkScreen: NetworkScreen
-  };
 });
+

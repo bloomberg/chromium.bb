@@ -6,25 +6,11 @@
  * @fileoverview Password changed screen implementation.
  */
 
-cr.define('login', function() {
-  /**
-   * Creates a new password changed screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var PasswordChangedScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  PasswordChangedScreen.register = function() {
-    var screen = $('password-changed');
-    PasswordChangedScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  PasswordChangedScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+login.createScreen('PasswordChangedScreen', 'password-changed', function() {
+  return {
+    EXTERNAL_API: [
+      'show'
+    ],
 
     /** @override */
     decorate: function() {
@@ -159,29 +145,26 @@ cr.define('login', function() {
     resync: function() {
       this.disabled = true;
       chrome.send('resyncUserData');
+    },
+
+    /**
+     * Show password changed screen.
+     * @param {boolean} showError Whether to show the incorrect password error.
+     */
+    show: function(showError) {
+      // We'll get here after the successful online authentication.
+      // It assumes session is about to start so hides login screen controls.
+      Oobe.getInstance().headerHidden = false;
+      var screen = $('password-changed');
+      screen.classList.toggle('password-error', showError);
+      screen.classList.add('migrate');
+      screen.classList.remove('resync');
+      $('old-password').value = '';
+      $('password-changed').disabled = false;
+
+      Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
+      $('password-changed-ok-button').disabled = true;
     }
   };
-
-  /**
-   * Show password changed screen.
-   * @param {boolean} showError Whether to show the incorrect password error.
-   */
-  PasswordChangedScreen.show = function(showError) {
-    // We'll get here after the successful online authentication.
-    // It assumes session is about to start so hides login screen controls.
-    Oobe.getInstance().headerHidden = false;
-    var screen = $('password-changed');
-    screen.classList.toggle('password-error', showError);
-    screen.classList.add('migrate');
-    screen.classList.remove('resync');
-    $('old-password').value = '';
-    $('password-changed').disabled = false;
-
-    Oobe.showScreen({id: SCREEN_PASSWORD_CHANGED});
-    $('password-changed-ok-button').disabled = true;
-  };
-
-  return {
-    PasswordChangedScreen: PasswordChangedScreen
-  };
 });
+

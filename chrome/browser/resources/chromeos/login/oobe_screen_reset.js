@@ -6,30 +6,8 @@
  * @fileoverview Oobe reset screen implementation.
  */
 
-cr.define('oobe', function() {
-  /**
-   * Creates a new screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var ResetScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  ResetScreen.register = function() {
-    var screen = $('reset');
-    ResetScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  ResetScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
-
-    /** @override */
-    decorate: function() {
-    },
-
+login.createScreen('ResetScreen', 'reset', function() {
+  return {
     /**
      * Header text of the screen.
      * @type {string}
@@ -78,10 +56,7 @@ cr.define('oobe', function() {
      */
     cancel: function() {
       chrome.send('resetOnCancel');
-    },
-  };
-
-  return {
-    ResetScreen: ResetScreen
+    }
   };
 });
+

@@ -6,26 +6,8 @@
  * @fileoverview Oobe eula screen implementation.
  */
 
-cr.define('oobe', function() {
-  /**
-   * Creates a new oobe screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var EulaScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  EulaScreen.register = function() {
-    var screen = $('eula');
-    EulaScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  EulaScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
-
+login.createScreen('EulaScreen', 'eula', function() {
+  return {
     /** @override */
     decorate: function() {
       $('stats-help-link').addEventListener('click', function(event) {
@@ -75,7 +57,7 @@ cr.define('oobe', function() {
 
     /**
      * Buttons in oobe wizard's button strip.
-     * @type {array} Array of Buttons.
+     * @type {Array} Array of Buttons.
      */
     get buttons() {
       var buttons = [];
@@ -115,14 +97,15 @@ cr.define('oobe', function() {
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
-      if ($('cros-eula-frame').src != '')
+      // Force iframes to refresh. It's only available method because we have
+      // no access to iframe.contentWindow.
+      if ($('cros-eula-frame').src) {
         $('cros-eula-frame').src = $('cros-eula-frame').src;
-      if ($('oem-eula-frame').src != '')
+      }
+      if ($('oem-eula-frame').src) {
         $('oem-eula-frame').src = $('oem-eula-frame').src;
+      }
     }
   };
-
-  return {
-    EulaScreen: EulaScreen
-  };
 });
+

@@ -99,18 +99,18 @@ void UserImageScreenHandler::RegisterMessages() {
 
 void UserImageScreenHandler::SelectImage(int index) {
   if (page_is_ready())
-    CallJS("oobe.UserImageScreen.setSelectedImage", GetDefaultImageUrl(index));
+    CallJS("login.UserImageScreen.setSelectedImage", GetDefaultImageUrl(index));
 }
 
 void UserImageScreenHandler::SendProfileImage(const std::string& data_url) {
   if (page_is_ready())
-    CallJS("oobe.UserImageScreen.setProfileImage", data_url);
+    CallJS("login.UserImageScreen.setProfileImage", data_url);
 }
 
 void UserImageScreenHandler::OnProfileImageAbsent() {
   if (page_is_ready()) {
     scoped_ptr<base::Value> null_value(base::Value::CreateNullValue());
-    CallJS("oobe.UserImageScreen.setProfileImage", *null_value);
+    CallJS("login.UserImageScreen.setProfileImage", *null_value);
   }
 }
 
@@ -127,7 +127,7 @@ void UserImageScreenHandler::HandleGetImages() {
     image_data->SetString("title", GetDefaultImageDescription(i));
     image_urls.Append(image_data.release());
   }
-  CallJS("oobe.UserImageScreen.setDefaultImages", image_urls);
+  CallJS("login.UserImageScreen.setDefaultImages", image_urls);
   if (!screen_)
     return;
   if (screen_->selected_image() != User::kInvalidImageIndex)
@@ -175,11 +175,11 @@ void UserImageScreenHandler::HandleScreenShown() {
 }
 
 void UserImageScreenHandler::SetCameraPresent(bool present) {
-  CallJS("oobe.UserImageScreen.setCameraPresent", present);
+  CallJS("login.UserImageScreen.setCameraPresent", present);
 }
 
 void UserImageScreenHandler::SetProfilePictureEnabled(bool enabled) {
-  CallJS("oobe.UserImageScreen.setProfilePictureEnabled", enabled);
+  CallJS("login.UserImageScreen.setProfilePictureEnabled", enabled);
 }
 
 }  // namespace chromeos

@@ -6,8 +6,8 @@
  * @fileoverview Locally managed user creation flow screen.
  */
 
-cr.define('login', function() {
-
+login.createScreen('LocallyManagedUserCreationScreen',
+                   'managed-user-creation-flow', function() {
   var ManagerPod = cr.ui.define(function() {
     var node = $('managed-user-creation-flow-manager-template').cloneNode(true);
     node.removeAttribute('id');
@@ -191,24 +191,20 @@ cr.define('login', function() {
     },
   };
 
-  /**
-   * Creates a new screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var LocallyManagedUserCreationScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  LocallyManagedUserCreationScreen.register = function() {
-    var screen = $('managed-user-creation-flow');
-    LocallyManagedUserCreationScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  LocallyManagedUserCreationScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+  return {
+    EXTERNAL_API: [
+      'loadManagers',
+      'managedUserNameError',
+      'managedUserNameOk',
+      'showErrorPage',
+      'showIntroPage',
+      'showManagerPage',
+      'showManagerPasswordError',
+      'showPasswordError',
+      'showProgressPage',
+      'showTutorialPage',
+      'showUsernamePage',
+    ],
 
     lastVerifiedName_: null,
     lastIncorrectUserName_: null,
@@ -527,22 +523,6 @@ cr.define('login', function() {
     },
 
     /**
-     * Show final splash screen with success message.
-     */
-
-    /**
-     * Show error message.
-     * @param {string} errorText Text to be displayed.
-     * @param {boolean} recoverable Indicates if error was transiend and process
-     *     can be retried.
-     */
-    showErrorMessage: function(errorText, recoverable) {
-      $('managed-user-creation-flow-error-value').innerHTML = errorText;
-      this.setVisiblePage_('error');
-      this.setVisibleButtons_(['cancel']);
-    },
-
-    /**
      * Enables one particular subpage and hides the rest.
      * @param {string} visiblePage - name of subpage.
      * @private
@@ -713,85 +693,53 @@ cr.define('login', function() {
       $('managed-user-creation-flow-tutorial-instructions-text').innerHTML =
           loadTimeData.getStringF('managedUserInstructionTemplate',
               boldEmail);
+    },
+
+    showIntroPage: function() {
+      $('managed-user-creation-flow-password').value = '';
+      $('managed-user-creation-flow-password-confirm').value = '';
+      $('managed-user-creation-flow-name').value = '';
+
+      this.lastVerifiedName_ = null;
+      this.lastIncorrectUserName_ = null;
+      this.passwordErrorVisible = false;
+      this.nameErrorVisible = false;
+
+      this.setVisiblePage_('intro');
+      this.setVisibleButtons_(['start', 'cancel']);
+    },
+
+    showProgressPage: function() {
+      this.setVisiblePage_('progress');
+      this.setVisibleButtons_(['cancel']);
+    },
+
+    showManagerPage: function() {
+      this.setVisiblePage_('manager');
+      this.setVisibleButtons_(['cancel']);
+    },
+
+    showUsernamePage: function() {
+      this.setVisiblePage_('username');
+      this.setVisibleButtons_(['next', 'cancel']);
+    },
+
+    showTutorialPage: function() {
+      this.setVisiblePage_('tutorial');
+      this.setVisibleButtons_(['finish']);
+    },
+
+    showErrorPage: function(errorText, recoverable) {
+      this.disabled = false;
+      $('managed-user-creation-flow-error-value').innerHTML = errorText;
+      this.setVisiblePage_('error');
+      this.setVisibleButtons_(['cancel']);
+    },
+
+    showManagerPasswordError: function() {
+      this.disabled = false;
+      this.showSelectedManagerPasswordError_();
     }
-
-  };
-
-  LocallyManagedUserCreationScreen.showIntroPage = function() {
-    var screen = $('managed-user-creation-flow');
-
-    $('managed-user-creation-flow-password').value = '';
-    $('managed-user-creation-flow-password-confirm').value = '';
-    $('managed-user-creation-flow-name').value = '';
-
-    screen.lastVerifiedName_ = null;
-    screen.lastIncorrectUserName_ = null;
-    screen.passwordErrorVisible = false;
-    screen.nameErrorVisible = false;
-
-    screen.setVisiblePage_('intro');
-    screen.setVisibleButtons_(['start', 'cancel']);
-  };
-
-  LocallyManagedUserCreationScreen.showProgressPage = function() {
-    var screen = $('managed-user-creation-flow');
-    screen.setVisiblePage_('progress');
-    screen.setVisibleButtons_(['cancel']);
-  };
-
-  LocallyManagedUserCreationScreen.showManagerPage = function() {
-    var screen = $('managed-user-creation-flow');
-    screen.setVisiblePage_('manager');
-    screen.setVisibleButtons_(['cancel']);
-  };
-
-  LocallyManagedUserCreationScreen.showUsernamePage = function() {
-    var screen = $('managed-user-creation-flow');
-    screen.setVisiblePage_('username');
-    screen.setVisibleButtons_(['next', 'cancel']);
-  };
-
-  LocallyManagedUserCreationScreen.showTutorialPage = function() {
-    var screen = $('managed-user-creation-flow');
-    screen.setVisiblePage_('tutorial');
-    screen.setVisibleButtons_(['finish']);
-  };
-
-  LocallyManagedUserCreationScreen.showManagerPasswordError = function() {
-    var screen = $('managed-user-creation-flow');
-    screen.disabled = false;
-    screen.showSelectedManagerPasswordError_();
-  };
-
-  LocallyManagedUserCreationScreen.showErrorPage = function(errorText,
-                                                            recoverable) {
-    var screen = $('managed-user-creation-flow');
-    screen.disabled = false;
-    screen.showErrorPage(errorText, recoverable);
-  };
-
-  LocallyManagedUserCreationScreen.managedUserNameOk = function(name) {
-    var screen = $('managed-user-creation-flow');
-    screen.managedUserNameOk(name);
-  };
-
-  LocallyManagedUserCreationScreen.managedUserNameError =
-      function(name, error) {
-    var screen = $('managed-user-creation-flow');
-    screen.managedUserNameError(name, error);
-  };
-
-  LocallyManagedUserCreationScreen.showPasswordError = function(error) {
-    var screen = $('managed-user-creation-flow');
-    screen.showPasswordError(error);
-  };
-
-  LocallyManagedUserCreationScreen.loadManagers = function(userList) {
-    var screen = $('managed-user-creation-flow');
-    screen.loadManagers(userList);
-  };
-
-  return {
-    LocallyManagedUserCreationScreen: LocallyManagedUserCreationScreen
   };
 });
+

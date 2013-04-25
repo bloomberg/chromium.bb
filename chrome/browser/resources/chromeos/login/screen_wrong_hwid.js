@@ -6,26 +6,8 @@
  * @fileoverview wrong HWID screen implementation.
  */
 
-cr.define('oobe', function() {
-  /**
-   * Creates a new screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var WrongHWIDScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  WrongHWIDScreen.register = function() {
-    var screen = $('wrong-hwid');
-    WrongHWIDScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  WrongHWIDScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
-
+login.createScreen('WrongHWIDScreen', 'wrong-hwid', function() {
+  return {
     /** @override */
     decorate: function() {
       $('skip-hwid-warning-link').addEventListener('click', function(event) {
@@ -52,12 +34,7 @@ cr.define('oobe', function() {
           '</p><p>' +
           loadTimeData.getString('wrongHWIDMessageSecondPart') +
           '</p>';
-    },
-
-  };
-
-  return {
-    WrongHWIDScreen: WrongHWIDScreen
+    }
   };
 });
 

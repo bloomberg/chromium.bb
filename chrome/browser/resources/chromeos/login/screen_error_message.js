@@ -6,7 +6,7 @@
  * @fileoverview Offline message screen implementation.
  */
 
-cr.define('login', function() {
+login.createScreen('ErrorMessageScreen', 'error-message', function() {
   // Link which starts guest session for captive portal fixing.
   /** @const */ var FIX_CAPTIVE_PORTAL_ID = 'captive-portal-fix-link';
 
@@ -36,7 +36,7 @@ cr.define('login', function() {
     AUTH_EXT_TIMEOUT: 'error-state-auth-ext-timeout'
   };
 
-  // Possible UI states of the screen. Must be in the same order as
+  // Possible error states of the screen. Must be in the same order as
   // ErrorScreen::ErrorState enum values.
   /** @const */ var ERROR_STATES = [
     ERROR_STATE.UNKNOWN,
@@ -46,24 +46,16 @@ cr.define('login', function() {
     ERROR_STATE.AUTH_EXT_TIMEOUT
   ];
 
-  /**
-   * Creates a new offline message screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var ErrorMessageScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  ErrorMessageScreen.register = function() {
-    var screen = $('error-message');
-    ErrorMessageScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  ErrorMessageScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+  return {
+    EXTERNAL_API: [
+      'updateLocalizedContent',
+      'onBeforeShow',
+      'onBeforeHide',
+      'allowGuestSignin',
+      'allowOfflineLogin',
+      'setUIState',
+      'setErrorState'
+    ],
 
     // Error screen initial UI state.
     ui_state_: ERROR_SCREEN_UI_STATE.UNKNOWN,
@@ -74,13 +66,13 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       cr.ui.DropDown.decorate($('offline-networks-list'));
-      this.updateLocalizedContent_();
+      this.updateLocalizedContent();
     },
 
     /**
      * Updates localized content of the screen that is not updated via template.
      */
-    updateLocalizedContent_: function() {
+    updateLocalizedContent: function() {
       $('captive-portal-message-text').innerHTML = loadTimeData.getStringF(
         'captivePortalMessage',
         '<b id="' + CURRENT_NETWORK_NAME_ID + '"></b>',
@@ -195,7 +187,7 @@ cr.define('login', function() {
      * Prepares error screen to show guest signin link.
      * @private
      */
-    allowGuestSignin_: function(allowed) {
+    allowGuestSignin: function(allowed) {
       this.classList.toggle('allow-guest-signin', allowed);
       this.onContentChange_();
     },
@@ -204,64 +196,29 @@ cr.define('login', function() {
      * Prepares error screen to show offline login link.
      * @private
      */
-    allowOfflineLogin_: function(allowed) {
+    allowOfflineLogin: function(allowed) {
       this.classList.toggle('allow-offline-login', allowed);
       this.onContentChange_();
     },
-  };
 
-  /**
-    * Sets current UI state of the screen.
-    * @param {number} ui_state New UI state of the screen.
-    * @private
-    */
-  ErrorMessageScreen.setUIState = function(ui_state) {
-    $('error-message').setUIState_(UI_STATES[ui_state]);
-  };
+    /**
+      * Sets current UI state of the screen.
+      * @param {number} ui_state New UI state of the screen.
+      * @private
+      */
+    setUIState: function(ui_state) {
+      this.setUIState_(UI_STATES[ui_state]);
+    },
 
-  /**
-    * Sets current error state of the screen.
-    * @param {number} error_state New error state of the screen.
-    * @param {string} network Name of the current network
-    * @private
-    */
-  ErrorMessageScreen.setErrorState = function(error_state, network) {
-    $('error-message').setErrorState_(ERROR_STATES[error_state], network);
-  };
-
-  /**
-    * Prepares error screen to show guest signin link.
-    * @param {boolean} allowed True if signin link should be visible.
-    */
-  ErrorMessageScreen.allowGuestSignin = function(allowed) {
-    $('error-message').allowGuestSignin_(allowed);
-  };
-
-  /**
-    * Prepares error screen to show offline login link.
-    * @param {boolean} allowed True if login link should be visible.
-    */
-  ErrorMessageScreen.allowOfflineLogin = function(allowed) {
-    $('error-message').allowOfflineLogin_(allowed);
-  };
-
-  ErrorMessageScreen.onBeforeShow = function(lastNetworkType) {
-    $('error-message').onBeforeShow(lastNetworkType);
-  };
-
-  ErrorMessageScreen.onBeforeHide = function() {
-    $('error-message').onBeforeHide();
-  };
-
-  /**
-   * Updates screen localized content like links since they're not updated
-   * via template.
-   */
-  ErrorMessageScreen.updateLocalizedContent = function() {
-    $('error-message').updateLocalizedContent_();
-  };
-
-  return {
-    ErrorMessageScreen: ErrorMessageScreen
+    /**
+      * Sets current error state of the screen.
+      * @param {number} error_state New error state of the screen.
+      * @param {string} network Name of the current network
+      * @private
+      */
+    setErrorState: function(error_state, network) {
+      this.setErrorState_(ERROR_STATES[error_state], network);
+    }
   };
 });
+

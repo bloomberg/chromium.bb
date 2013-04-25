@@ -6,7 +6,7 @@
  * @fileoverview Oobe user image screen implementation.
  */
 
-cr.define('oobe', function() {
+cr.define('login', function() {
   var UserImagesGrid = options.UserImagesGrid;
   var ButtonImages = UserImagesGrid.ButtonImages;
 
@@ -31,7 +31,7 @@ cr.define('oobe', function() {
    * @constructor
    * @extends {HTMLDivElement}
    */
-  var UserImageScreen = cr.ui.define('div');
+  var UserImageScreen = cr.ui.define(login.Screen);
 
   /**
    * Registers with Oobe.
@@ -51,7 +51,7 @@ cr.define('oobe', function() {
   };
 
   UserImageScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+    __proto__: login.Screen.prototype,
 
     /**
      * Currently selected user image index (take photo button is with zero
@@ -442,3 +442,4 @@ cr.define('oobe', function() {
     UserImageScreen: UserImageScreen
   };
 });
+

@@ -53,20 +53,20 @@ cr.define('cr.ui.Oobe', function() {
      */
     initialize: function() {
       cr.ui.login.DisplayManager.initialize();
-      oobe.WrongHWIDScreen.register();
-      oobe.NetworkScreen.register();
-      oobe.EulaScreen.register();
-      oobe.UpdateScreen.register();
-      oobe.OAuthEnrollmentScreen.register();
-      oobe.ResetScreen.register();
+      login.WrongHWIDScreen.register();
+      login.NetworkScreen.register();
+      login.EulaScreen.register();
+      login.UpdateScreen.register();
+      login.OAuthEnrollmentScreen.register();
+      login.ResetScreen.register();
       login.AccountPickerScreen.register();
       login.GaiaSigninScreen.register();
-      oobe.UserImageScreen.register(/* lazyInit= */ false);
+      login.UserImageScreen.register(/* lazyInit= */ false);
       login.ErrorMessageScreen.register();
       login.TPMErrorMessageScreen.register();
       login.PasswordChangedScreen.register();
       login.LocallyManagedUserCreationScreen.register();
-      oobe.TermsOfServiceScreen.register();
+      login.TermsOfServiceScreen.register();
 
       cr.ui.Bubble.decorate($('bubble'));
       login.HeaderBar.decorate($('login-header-bar'));
@@ -308,3 +308,4 @@ cr.define('cr.ui.Oobe', function() {
 });
 
 document.addEventListener('DOMContentLoaded', cr.ui.Oobe.initialize);
+

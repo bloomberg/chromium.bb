@@ -6,7 +6,7 @@
  * @fileoverview Oobe signin screen implementation.
  */
 
-cr.define('login', function() {
+login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // Gaia loading time after which error message must be displayed and
   // lazy portal check should be fired.
   /** @const */ var GAIA_LOADING_PORTAL_SUSSPECT_TIME_SEC = 7;
@@ -19,26 +19,13 @@ cr.define('login', function() {
     ABORTED_BY_USER: 3
   };
 
-  /**
-   * Creates a new sign in screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var GaiaSigninScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  GaiaSigninScreen.register = function() {
-    var screen = $('gaia-signin');
-    GaiaSigninScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-    window.addEventListener('message',
-                            screen.onMessage_.bind(screen), false);
-  };
-
-  GaiaSigninScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+  return {
+    EXTERNAL_API: [
+      'loadAuthExtension',
+      'updateAuthExtension',
+      'doReload',
+      'onFrameError',
+    ],
 
     // Frame loading error code (0 - no error).
     error_: 0,
@@ -69,6 +56,8 @@ cr.define('login', function() {
       this.frame_ = $('signin-frame');
 
       this.updateLocalizedContent();
+      window.addEventListener('message',
+          this.onMessage_.bind(this), false);
     },
 
     /**
@@ -199,12 +188,12 @@ cr.define('login', function() {
      * @param {Object} data Extension parameters bag.
      * @private
      */
-    loadAuthExtension_: function(data) {
+    loadAuthExtension: function(data) {
       this.silentLoad_ = data.silentLoad;
       this.isLocal = data.isLocal;
       this.email = '';
 
-      this.updateAuthExtension_(data);
+      this.updateAuthExtension(data);
 
       var params = [];
       if (data.gaiaOrigin)
@@ -256,7 +245,7 @@ cr.define('login', function() {
      * @param {Object} data New extension parameters bag.
      * @private
      */
-    updateAuthExtension_: function(data) {
+    updateAuthExtension: function(data) {
       var reasonLabel = $('gaia-signin-reason');
       if (data.passwordChanged) {
         reasonLabel.textContent =
@@ -380,14 +369,6 @@ cr.define('login', function() {
     },
 
     /**
-     * This method is called when a frame loading error appears.
-     * @param {int} error Error code.
-     */
-    onFrameError: function(error) {
-      this.error_ = error;
-    },
-
-    /**
      * Updates localized content of the screen that is not updated via template.
      */
     updateLocalizedContent: function() {
@@ -452,47 +433,25 @@ cr.define('login', function() {
       $('pod-row').loadLastWallpaper();
       Oobe.showScreen({id: SCREEN_ACCOUNT_PICKER});
       Oobe.resetSigninUI(true);
+    },
+
+    /**
+     * Handler for iframe's error notification coming from the outside.
+     * For more info see C++ class 'SnifferObserver' which calls this method.
+     * @param {number} error Error code.
+     */
+    onFrameError: function(error) {
+      console.log('Gaia frame error = ' + error);
+      if (error == NET_ERROR.ABORTED_BY_USER) {
+        // Gaia frame was reloaded. Nothing to do here.
+        return;
+      }
+      this.error_ = error;
+      // Check current network state if currentScreen is a Gaia signin.
+      var currentScreen = Oobe.getInstance().currentScreen;
+      if (currentScreen.id == SCREEN_GAIA_SIGNIN)
+        chrome.send('showGaiaFrameError', [error]);
     }
-  };
-
-  /**
-   * Loads the authentication extension into the iframe.
-   * @param {Object} data Extension parameters bag.
-   */
-  GaiaSigninScreen.loadAuthExtension = function(data) {
-    $('gaia-signin').loadAuthExtension_(data);
-  };
-
-  /**
-   * Updates the authentication extension with new parameters, if needed.
-   * @param {Object} data New extension parameters bag.
-   */
-  GaiaSigninScreen.updateAuthExtension = function(data) {
-    $('gaia-signin').updateAuthExtension_(data);
-  };
-
-  GaiaSigninScreen.doReload = function() {
-    $('gaia-signin').doReload();
-  };
-
-  /**
-   * Handler for iframe's error notification coming from the outside.
-   * For more info see C++ class 'SnifferObserver' which calls this method.
-   * @param {number} error Error code.
-   */
-  GaiaSigninScreen.onFrameError = function(error) {
-    console.log('Gaia frame error = ' + error);
-    if (error == NET_ERROR.ABORTED_BY_USER) {
-      // Gaia frame was reloaded. Nothing to do here.
-      return;
-    }
-    // Check current network state if currentScreen is a Gaia signin.
-    var currentScreen = Oobe.getInstance().currentScreen;
-    if (currentScreen.id == SCREEN_GAIA_SIGNIN)
-      chrome.send('showGaiaFrameError', [error]);
-  };
-
-  return {
-    GaiaSigninScreen: GaiaSigninScreen
   };
 });
+

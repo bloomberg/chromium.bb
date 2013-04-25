@@ -6,7 +6,7 @@
  * @fileoverview Account picker screen implementation.
  */
 
-cr.define('login', function() {
+login.createScreen('AccountPickerScreen', 'account-picker', function() {
   /**
    * Maximum number of offline login failures before online login.
    * @type {number}
@@ -20,24 +20,14 @@ cr.define('login', function() {
    */
   var PRESELECT_FIRST_POD = true;
 
-  /**
-   * Creates a new account picker screen div.
-   * @constructor
-   * @extends {HTMLDivElement}
-   */
-  var AccountPickerScreen = cr.ui.define('div');
-
-  /**
-   * Registers with Oobe.
-   */
-  AccountPickerScreen.register = function() {
-    var screen = $('account-picker');
-    AccountPickerScreen.decorate(screen);
-    Oobe.getInstance().registerScreen(screen);
-  };
-
-  AccountPickerScreen.prototype = {
-    __proto__: HTMLDivElement.prototype,
+  return {
+    EXTERNAL_API: [
+      'loadUsers',
+      'updateUserImage',
+      'updateUserGaiaNeeded',
+      'setCapsLockState',
+      'forceLockedUserPodFocus'
+    ],
 
     /** @override */
     decorate: function() {
@@ -140,54 +130,51 @@ cr.define('login', function() {
                                           error,
                                           BUBBLE_OFFSET, BUBBLE_PADDING);
       }
+    },
+
+    /**
+     * Loads givens users in pod row.
+     * @param {array} users Array of user.
+     * @param {boolean} animated Whether to use init animation.
+     * @param {boolean} showGuest Whether to show guest session button.
+     */
+    loadUsers: function(users, animated, showGuest) {
+      $('pod-row').loadPods(users, animated);
+      $('login-header-bar').showGuestButton = showGuest;
+    },
+
+    /**
+     * Updates current image of a user.
+     * @param {string} username User for which to update the image.
+     */
+    updateUserImage: function(username) {
+      $('pod-row').updateUserImage(username);
+    },
+
+    /**
+     * Updates user to use gaia login.
+     * @param {string} username User for which to state the state.
+     */
+    updateUserGaiaNeeded: function(username) {
+      $('pod-row').resetUserOAuthTokenStatus(username);
+    },
+
+    /**
+     * Updates Caps Lock state (for Caps Lock hint in password input field).
+     * @param {boolean} enabled Whether Caps Lock is on.
+     */
+    setCapsLockState: function(enabled) {
+      $('pod-row').classList.toggle('capslock-on', enabled);
+    },
+
+    /**
+     * Enforces focus on user pod of locked user.
+     */
+    forceLockedUserPodFocus: function() {
+      var row = $('pod-row');
+      if (row.lockedPod)
+        row.focusPod(row.lockedPod, true);
     }
   };
-
-  /**
-   * Loads givens users in pod row.
-   * @param {array} users Array of user.
-   * @param {boolean} animated Whether to use init animation.
-   * @param {boolean} showGuest Whether to show guest session button.
-   */
-  AccountPickerScreen.loadUsers = function(users, animated, showGuest) {
-    $('pod-row').loadPods(users, animated);
-    $('login-header-bar').showGuestButton = showGuest;
-  };
-
-  /**
-   * Updates current image of a user.
-   * @param {string} username User for which to update the image.
-   */
-  AccountPickerScreen.updateUserImage = function(username) {
-    $('pod-row').updateUserImage(username);
-  };
-
-  /**
-   * Updates user to use gaia login.
-   * @param {string} username User for which to state the state.
-   */
-  AccountPickerScreen.updateUserGaiaNeeded = function(username) {
-    $('pod-row').resetUserOAuthTokenStatus(username);
-  };
-
-  /**
-   * Updates Caps Lock state (for Caps Lock hint in password input field).
-   * @param {boolean} enabled Whether Caps Lock is on.
-   */
-  AccountPickerScreen.setCapsLockState = function(enabled) {
-    $('pod-row').classList.toggle('capslock-on', enabled);
-  };
-
-  /**
-   * Enforces focus on user pod of locked user.
-   */
-  AccountPickerScreen.forceLockedUserPodFocus = function() {
-    var row = $('pod-row');
-    if (row.lockedPod)
-      row.focusPod(row.lockedPod, true);
-  };
-
-  return {
-    AccountPickerScreen: AccountPickerScreen
-  };
 });
+
