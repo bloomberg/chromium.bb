@@ -75,6 +75,10 @@ class VIEWS_EXPORT Shadow : public ui::ImplicitAnimationObserver {
   // Bounds of the content that the shadow encloses.
   gfx::Rect content_bounds_;
 
+  // The interior inset of the shadow images. The content bounds of the image
+  // grid should be set to |content_bounds_| inset by this amount.
+  int interior_inset_;
+
   DISALLOW_COPY_AND_ASSIGN(Shadow);
 };
 

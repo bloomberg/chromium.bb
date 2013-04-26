@@ -16,6 +16,11 @@ const float kActiveShadowOpacity = 1.0f;
 const float kInactiveShadowOpacity = 0.2f;
 const float kSmallShadowOpacity = 1.0f;
 
+// Interior inset for different styles.
+const int kActiveInteriorInset = 0;
+const int kInactiveInteriorInset = 0;
+const int kSmallInteriorInset = 5;
+
 // Duration for opacity animation in milliseconds.
 const int kShadowAnimationDurationMs = 100;
 
@@ -27,10 +32,20 @@ float GetOpacityForStyle(views::corewm::Shadow::Style style) {
       return kInactiveShadowOpacity;
     case views::corewm::Shadow::STYLE_SMALL:
       return kSmallShadowOpacity;
-    default:
-      NOTREACHED() << "Unhandled style " << style;
   }
   return 1.0f;
+}
+
+int GetInteriorInsetForStyle(views::corewm::Shadow::Style style) {
+  switch (style) {
+    case views::corewm::Shadow::STYLE_ACTIVE:
+      return kActiveInteriorInset;
+    case views::corewm::Shadow::STYLE_INACTIVE:
+      return kInactiveInteriorInset;
+    case views::corewm::Shadow::STYLE_SMALL:
+      return kSmallInteriorInset;
+  }
+  return 0;
 }
 
 }  // namespace
@@ -38,7 +53,7 @@ float GetOpacityForStyle(views::corewm::Shadow::Style style) {
 namespace views {
 namespace corewm {
 
-Shadow::Shadow() : style_(STYLE_ACTIVE) {
+Shadow::Shadow() : style_(STYLE_ACTIVE), interior_inset_(0) {
 }
 
 Shadow::~Shadow() {
@@ -162,13 +177,18 @@ void Shadow::UpdateImagesForStyle() {
       break;
   }
 
+  // Update interior inset for style.
+  interior_inset_ = GetInteriorInsetForStyle(style_);
+
   // Image sizes may have changed.
   UpdateImageGridBounds();
 }
 
 void Shadow::UpdateImageGridBounds() {
   // Update bounds based on content bounds and image sizes.
-  image_grid_->SetContentBounds(content_bounds_);
+  gfx::Rect image_grid_bounds = content_bounds_;
+  image_grid_bounds.Inset(interior_inset_, interior_inset_);
+  image_grid_->SetContentBounds(image_grid_bounds);
 }
 
 }  // namespace corewm
