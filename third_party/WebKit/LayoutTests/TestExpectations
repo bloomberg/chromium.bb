@@ -1633,7 +1633,8 @@ webkit.org/b/111023 fast/dom/Window/Location/set-location-after-close.html [ Pas
 webkit.org/b/111043 fast/encoding/script-in-head.html [ Pass Timeout ]
 webkit.org/b/111044 fast/loader/display-image-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]
 webkit.org/b/111044 fast/loader/images-enabled-unset-can-block-image-and-can-reload-in-place.html [ Pass Timeout ]
-webkit.org/b/110907 inspector/timeline/timeline-script-tag-1.html [ Pass Failure ]
+webkit.org/b/110907 [ Release ] inspector/timeline/timeline-script-tag-1.html [ Pass Failure ]
+webkit.org/b/110907 [ Debug ] inspector/timeline/timeline-script-tag-1.html [ Pass Failure Timeout ]
 
 webkit.org/b/70988 [ Mac Win Debug ] fast/forms/submit-to-blank-multiple-times.html [ Failure Pass ]
 webkit.org/b/70988 [ Mac Debug ] fast/overflow/003.xml [ Failure Pass ]
@@ -2869,6 +2870,7 @@ crbug.com/234758 [ Debug ] storage/indexeddb/dont-wedge.html [ Pass Crash ]
 crbug.com/234758 [ Mac Debug ] http/tests/security/isolatedWorld/all-window-prototypes.html [ Failure Timeout Pass ]
 crbug.com/234758 [ Debug ] fast/workers/worker-document-leak.html [ Pass Timeout ]
 crbug.com/234758 webaudio/audiobuffersource-multi-channels.html [ Pass Crash ]
+crbug.com/234758 [ Debug ] virtual/gpu/fast/canvas/canvas-strokePath-gradient-shadow.html [ Pass Timeout ]
 
 crbug.com/169374 compositing/backface-visibility/backface-visibility-non3d.html [ ImageOnlyFailure ]
 crbug.com/169374 compositing/culling/tile-occlusion-boundaries.html [ ImageOnlyFailure ]
