@@ -32,18 +32,19 @@
 
 namespace WebCore {
 
-class BackForwardList;
+class BackForwardClient;
 class HistoryItem;
 class Page;
 
+// FIXME: Why does this class exist? It seems to delegate almost entirely to Page, and perhaps should be part of Page's implementation.
 class BackForwardController {
     WTF_MAKE_NONCOPYABLE(BackForwardController); WTF_MAKE_FAST_ALLOCATED;
 public:
     ~BackForwardController();
 
-    static PassOwnPtr<BackForwardController> create(Page*, PassRefPtr<BackForwardList>);
+    static PassOwnPtr<BackForwardController> create(Page*, BackForwardClient*);
 
-    BackForwardList* client() const { return m_client.get(); }
+    BackForwardClient* client() const { return m_client; }
 
     bool canGoBackOrForward(int distance) const;
     void goBackOrForward(int distance);
@@ -69,10 +70,10 @@ public:
     HistoryItem* forwardItem() { return itemAtIndex(1); }
 
 private:
-    BackForwardController(Page*, PassRefPtr<BackForwardList>);
+    BackForwardController(Page*, BackForwardClient*);
 
     Page* m_page;
-    RefPtr<BackForwardList> m_client;
+    BackForwardClient* m_client;
 };
 
 } // namespace WebCore

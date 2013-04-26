@@ -58,6 +58,9 @@ void fillWithEmptyClients(Page::PageClients& pageClients)
 
     static InspectorClient* dummyInspectorClient = adoptPtr(new EmptyInspectorClient).leakPtr();
     pageClients.inspectorClient = dummyInspectorClient;
+
+    static BackForwardClient* dummyBackForwardClient = adoptPtr(new EmptyBackForwardClient).leakPtr();
+    pageClients.backForwardClient = dummyBackForwardClient;
 }
 
 class EmptyPopupMenu : public PopupMenu {

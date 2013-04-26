@@ -23,7 +23,6 @@
 
 #include "core/dom/ViewportArguments.h"
 #include "core/editing/FindOptions.h"
-#include "core/history/BackForwardList.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/page/PageVisibilityState.h"
@@ -46,6 +45,7 @@
 namespace WebCore {
 
 class AlternativeTextClient;
+class BackForwardClient;
 class BackForwardController;
 class Chrome;
 class ChromeClient;
@@ -119,7 +119,7 @@ public:
         DragClient* dragClient;
         InspectorClient* inspectorClient;
         PlugInClient* plugInClient;
-        RefPtr<BackForwardList> backForwardClient;
+        BackForwardClient* backForwardClient;
     };
 
     explicit Page(PageClients&);

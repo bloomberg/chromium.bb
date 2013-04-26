@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "BackForwardListChromium.h"
+#include "BackForwardClientImpl.h"
 
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
@@ -42,21 +42,16 @@ namespace WebKit {
 
 const char backForwardNavigationScheme[] = "chrome-back-forward";
 
-PassRefPtr<BackForwardListChromium> BackForwardListChromium::create(WebViewImpl* webView)
-{
-    return adoptRef(new BackForwardListChromium(webView));
-}
-
-BackForwardListChromium::BackForwardListChromium(WebViewImpl* webView)
+BackForwardClientImpl::BackForwardClientImpl(WebViewImpl* webView)
     : m_webView(webView)
 {
 }
 
-BackForwardListChromium::~BackForwardListChromium()
+BackForwardClientImpl::~BackForwardClientImpl()
 {
 }
 
-void BackForwardListChromium::addItem(PassRefPtr<HistoryItem> item)
+void BackForwardClientImpl::addItem(PassRefPtr<HistoryItem> item)
 {
     m_currentItem = item;
 
@@ -68,7 +63,7 @@ void BackForwardListChromium::addItem(PassRefPtr<HistoryItem> item)
         m_webView->client()->didAddHistoryItem();
 }
 
-void BackForwardListChromium::goToItem(HistoryItem* item)
+void BackForwardClientImpl::goToItem(HistoryItem* item)
 {
     m_currentItem = item;
 
@@ -76,7 +71,7 @@ void BackForwardListChromium::goToItem(HistoryItem* item)
         m_pendingHistoryItem = 0;
 }
 
-HistoryItem* BackForwardListChromium::itemAtIndex(int index)
+HistoryItem* BackForwardClientImpl::itemAtIndex(int index)
 {
     if (!m_webView->client())
         return 0;
@@ -101,7 +96,7 @@ HistoryItem* BackForwardListChromium::itemAtIndex(int index)
     return m_pendingHistoryItem.get();
 }
 
-int BackForwardListChromium::backListCount()
+int BackForwardClientImpl::backListCount()
 {
     if (!m_webView->client())
         return 0;
@@ -109,7 +104,7 @@ int BackForwardListChromium::backListCount()
     return m_webView->client()->historyBackListCount();
 }
 
-int BackForwardListChromium::forwardListCount()
+int BackForwardClientImpl::forwardListCount()
 {
     if (!m_webView->client())
         return 0;
@@ -117,12 +112,12 @@ int BackForwardListChromium::forwardListCount()
     return m_webView->client()->historyForwardListCount();
 }
 
-bool BackForwardListChromium::isActive()
+bool BackForwardClientImpl::isActive()
 {
     return m_webView->client();
 }
 
-void BackForwardListChromium::close()
+void BackForwardClientImpl::close()
 {
     m_currentItem = 0;
     m_pendingHistoryItem = 0;

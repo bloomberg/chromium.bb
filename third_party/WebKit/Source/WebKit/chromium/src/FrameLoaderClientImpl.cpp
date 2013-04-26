@@ -32,7 +32,6 @@
 #include "config.h"
 #include "FrameLoaderClientImpl.h"
 
-#include "BackForwardListChromium.h"
 #include "FrameNetworkingContextImpl.h"
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"  // needed by core/loader/FormState.h

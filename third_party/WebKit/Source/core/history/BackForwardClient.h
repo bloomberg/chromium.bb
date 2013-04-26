@@ -22,31 +22,28 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BackForwardList_h
-#define BackForwardList_h
+#ifndef BackForwardClient_h
+#define BackForwardClient_h
 
+#include "core/history/HistoryItem.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 
 namespace WebCore {
 
-class HistoryItem;
-
-// FIXME: Rename this class to BackForwardClient, and rename the
-// getter in Page accordingly.
-class BackForwardList : public RefCounted<BackForwardList> {
-public: 
-    virtual ~BackForwardList()
+class BackForwardClient {
+public:
+    virtual ~BackForwardClient()
     {
     }
 
     virtual void addItem(PassRefPtr<HistoryItem>) = 0;
 
     virtual void goToItem(HistoryItem*) = 0;
-        
+
     virtual HistoryItem* itemAtIndex(int) = 0;
     virtual int backListCount() = 0;
     virtual int forwardListCount() = 0;
@@ -54,14 +51,8 @@ public:
     virtual bool isActive() = 0;
 
     virtual void close() = 0;
-
-    // FIXME: Delete these once all callers are using BackForwardController
-    // instead of calling this directly.
-    HistoryItem* backItem() { return itemAtIndex(-1); }
-    HistoryItem* currentItem() { return itemAtIndex(0); }
-    HistoryItem* forwardItem() { return itemAtIndex(1); }
 };
 
 } // namespace WebCore
 
-#endif // BackForwardList_h
+#endif // BackForwardClient_h

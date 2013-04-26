@@ -32,7 +32,6 @@
 #include "WebViewImpl.h"
 
 #include "AutofillPopupMenuClient.h"
-#include "BackForwardListChromium.h"
 #include "BatteryClientImpl.h"
 #include "BatteryController.h"
 #include "CSSValueKeywords.h"
@@ -382,6 +381,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_dragClientImpl(this)
     , m_editorClientImpl(this)
     , m_inspectorClientImpl(this)
+    , m_backForwardClientImpl(this)
     , m_shouldAutoResize(false)
     , m_observedNewNavigation(false)
 #ifndef NDEBUG
@@ -463,7 +463,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     pageClients.editorClient = &m_editorClientImpl;
     pageClients.dragClient = &m_dragClientImpl;
     pageClients.inspectorClient = &m_inspectorClientImpl;
-    pageClients.backForwardClient = BackForwardListChromium::create(this);
+    pageClients.backForwardClient = &m_backForwardClientImpl;
 
     m_page = adoptPtr(new Page(pageClients));
 #if ENABLE(MEDIA_STREAM)

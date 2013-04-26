@@ -1043,7 +1043,6 @@ void FrameLoader::prepareForHistoryNavigation()
     RefPtr<HistoryItem> currentItem = history()->currentItem();
     if (!currentItem) {
         currentItem = HistoryItem::create();
-        currentItem->setLastVisitWasFailure(true);
         history()->setCurrentItem(currentItem.get());
         frame()->page()->backForward()->setCurrentItem(currentItem.get());
 

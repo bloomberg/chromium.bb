@@ -556,9 +556,6 @@ void HistoryController::initializeItem(HistoryItem* item)
     item->setTitle(title.string());
     item->setOriginalURLString(originalURL.string());
 
-    if (!unreachableURL.isEmpty() || documentLoader->response().httpStatusCode() >= 400)
-        item->setLastVisitWasFailure(true);
-
     // Save form state if this is a POST
     item->setFormInfoFromRequest(documentLoader->request());
 }

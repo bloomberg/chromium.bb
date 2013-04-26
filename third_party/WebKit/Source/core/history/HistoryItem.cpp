@@ -32,14 +32,10 @@
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/CurrentTime.h>
-#include <wtf/Decoder.h>
-#include <wtf/Encoder.h>
 #include <wtf/MathExtras.h>
 #include <wtf/text/CString.h>
 
 namespace WebCore {
-
-const uint32_t backForwardTreeEncodingVersion = 2;
 
 static long long generateSequenceNumber()
 {
@@ -49,17 +45,9 @@ static long long generateSequenceNumber()
     return ++next;
 }
 
-static void defaultNotifyHistoryItemChanged(HistoryItem*)
-{
-}
-
-void (*notifyHistoryItemChanged)(HistoryItem*) = defaultNotifyHistoryItemChanged;
-
 HistoryItem::HistoryItem()
     : m_lastVisitedTime(0)
-    , m_lastVisitWasHTTPNonGet(false)
     , m_pageScaleFactor(0)
-    , m_lastVisitWasFailure(false)
     , m_isTargetItem(false)
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
@@ -72,9 +60,7 @@ HistoryItem::HistoryItem(const String& urlString, const String& title, double ti
     , m_originalURLString(urlString)
     , m_title(title)
     , m_lastVisitedTime(time)
-    , m_lastVisitWasHTTPNonGet(false)
     , m_pageScaleFactor(0)
-    , m_lastVisitWasFailure(false)
     , m_isTargetItem(false)
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
@@ -88,9 +74,7 @@ HistoryItem::HistoryItem(const String& urlString, const String& title, const Str
     , m_title(title)
     , m_displayTitle(alternateTitle)
     , m_lastVisitedTime(time)
-    , m_lastVisitWasHTTPNonGet(false)
     , m_pageScaleFactor(0)
-    , m_lastVisitWasFailure(false)
     , m_isTargetItem(false)
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
@@ -105,9 +89,7 @@ HistoryItem::HistoryItem(const KURL& url, const String& target, const String& pa
     , m_parent(parent)
     , m_title(title)
     , m_lastVisitedTime(0)
-    , m_lastVisitWasHTTPNonGet(false)
     , m_pageScaleFactor(0)
-    , m_lastVisitWasFailure(false)
     , m_isTargetItem(false)
     , m_visitCount(0)
     , m_itemSequenceNumber(generateSequenceNumber())
@@ -129,14 +111,10 @@ inline HistoryItem::HistoryItem(const HistoryItem& item)
     , m_title(item.m_title)
     , m_displayTitle(item.m_displayTitle)
     , m_lastVisitedTime(item.m_lastVisitedTime)
-    , m_lastVisitWasHTTPNonGet(item.m_lastVisitWasHTTPNonGet)
     , m_scrollPoint(item.m_scrollPoint)
     , m_pageScaleFactor(item.m_pageScaleFactor)
-    , m_lastVisitWasFailure(item.m_lastVisitWasFailure)
     , m_isTargetItem(item.m_isTargetItem)
     , m_visitCount(item.m_visitCount)
-    , m_dailyVisitCounts(item.m_dailyVisitCounts)
-    , m_weeklyVisitCounts(item.m_weeklyVisitCounts)
     , m_itemSequenceNumber(item.m_itemSequenceNumber)
     , m_documentSequenceNumber(item.m_documentSequenceNumber)
     , m_formContentType(item.m_formContentType)
@@ -148,9 +126,6 @@ inline HistoryItem::HistoryItem(const HistoryItem& item)
     m_children.reserveInitialCapacity(size);
     for (unsigned i = 0; i < size; ++i)
         m_children.uncheckedAppend(item.m_children[i]->copy());
-
-    if (item.m_redirectURLs)
-        m_redirectURLs = adoptPtr(new Vector<String>(*item.m_redirectURLs));
 }
 
 PassRefPtr<HistoryItem> HistoryItem::copy() const
@@ -169,15 +144,9 @@ void HistoryItem::reset()
     m_displayTitle = String();
 
     m_lastVisitedTime = 0;
-    m_lastVisitWasHTTPNonGet = false;
 
-    m_lastVisitWasFailure = false;
     m_isTargetItem = false;
     m_visitCount = 0;
-    m_dailyVisitCounts.clear();
-    m_weeklyVisitCounts.clear();
-
-    m_redirectURLs.clear();
 
     m_itemSequenceNumber = generateSequenceNumber();
 
@@ -245,14 +214,12 @@ const String& HistoryItem::parent() const
 void HistoryItem::setAlternateTitle(const String& alternateTitle)
 {
     m_displayTitle = alternateTitle;
-    notifyHistoryItemChanged(this);
 }
 
 void HistoryItem::setURLString(const String& urlString)
 {
     if (m_urlString != urlString)
         m_urlString = urlString;
-    notifyHistoryItemChanged(this);
 }
 
 void HistoryItem::setURL(const KURL& url)
@@ -264,25 +231,21 @@ void HistoryItem::setURL(const KURL& url)
 void HistoryItem::setOriginalURLString(const String& urlString)
 {
     m_originalURLString = urlString;
-    notifyHistoryItemChanged(this);
 }
 
 void HistoryItem::setReferrer(const String& referrer)
 {
     m_referrer = referrer;
-    notifyHistoryItemChanged(this);
 }
 
 void HistoryItem::setTitle(const String& title)
 {
     m_title = title;
-    notifyHistoryItemChanged(this);
 }
 
 void HistoryItem::setTarget(const String& target)
 {
     m_target = target;
-    notifyHistoryItemChanged(this);
 }
 
 void HistoryItem::setParent(const String& parent)
@@ -290,57 +253,12 @@ void HistoryItem::setParent(const String& parent)
     m_parent = parent;
 }
 
-static inline int timeToDay(double time)
-{
-    static const double secondsPerDay = 60 * 60 * 24;
-    return static_cast<int>(ceil(time / secondsPerDay));
-}
-
-void HistoryItem::padDailyCountsForNewVisit(double time)
-{
-    if (m_dailyVisitCounts.isEmpty())
-        m_dailyVisitCounts.prepend(m_visitCount);
-
-    int daysElapsed = timeToDay(time) - timeToDay(m_lastVisitedTime);
-
-    if (daysElapsed < 0)
-      daysElapsed = 0;
-
-    Vector<int> padding;
-    padding.fill(0, daysElapsed);
-    m_dailyVisitCounts.prepend(padding);
-}
-
-static const size_t daysPerWeek = 7;
-static const size_t maxDailyCounts = 2 * daysPerWeek - 1;
-static const size_t maxWeeklyCounts = 5;
-
-void HistoryItem::collapseDailyVisitsToWeekly()
-{
-    while (m_dailyVisitCounts.size() > maxDailyCounts) {
-        int oldestWeekTotal = 0;
-        for (size_t i = 0; i < daysPerWeek; i++)
-            oldestWeekTotal += m_dailyVisitCounts[m_dailyVisitCounts.size() - daysPerWeek + i];
-        m_dailyVisitCounts.shrink(m_dailyVisitCounts.size() - daysPerWeek);
-        m_weeklyVisitCounts.prepend(oldestWeekTotal);
-    }
-
-    if (m_weeklyVisitCounts.size() > maxWeeklyCounts)
-        m_weeklyVisitCounts.shrink(maxWeeklyCounts);
-}
-
 void HistoryItem::recordVisitAtTime(double time, VisitCountBehavior visitCountBehavior)
 {
-    padDailyCountsForNewVisit(time);
-
     m_lastVisitedTime = time;
 
-    if (visitCountBehavior == IncreaseVisitCount) {
+    if (visitCountBehavior == IncreaseVisitCount)
         ++m_visitCount;
-        ++m_dailyVisitCounts[0];
-    }
-
-    collapseDailyVisitsToWeekly();
 }
 
 void HistoryItem::setLastVisitedTime(double time)
@@ -369,14 +287,6 @@ void HistoryItem::recordInitialVisit()
 void HistoryItem::setVisitCount(int count)
 {
     m_visitCount = count;
-}
-
-void HistoryItem::adoptVisitCounts(Vector<int>& dailyCounts, Vector<int>& weeklyCounts)
-{
-    m_dailyVisitCounts.clear();
-    m_dailyVisitCounts.swap(dailyCounts);
-    m_weeklyVisitCounts.clear();
-    m_weeklyVisitCounts.swap(weeklyCounts);
 }
 
 const IntPoint& HistoryItem::scrollPoint() const
@@ -473,25 +383,6 @@ HistoryItem* HistoryItem::childItemWithDocumentSequenceNumber(long long number) 
             return m_children[i].get();
     }
     return 0;
-}
-
-// <rdar://problem/4895849> HistoryItem::findTargetItem() should be replaced with a non-recursive method.
-HistoryItem* HistoryItem::findTargetItem()
-{
-    if (m_isTargetItem)
-        return this;
-    unsigned size = m_children.size();
-    for (unsigned i = 0; i < size; ++i) {
-        if (HistoryItem* match = m_children[i]->targetItem())
-            return match;
-    }
-    return 0;
-}
-
-HistoryItem* HistoryItem::targetItem()
-{
-    HistoryItem* foundItem = findTargetItem();
-    return foundItem ? foundItem : this;
 }
 
 const HistoryItemVector& HistoryItem::children() const
@@ -615,211 +506,6 @@ bool HistoryItem::isCurrentDocument(Document* doc) const
 {
     // FIXME: We should find a better way to check if this is the current document.
     return equalIgnoringFragmentIdentifier(url(), doc->url());
-}
-
-void HistoryItem::mergeAutoCompleteHints(HistoryItem* otherItem)
-{
-    // FIXME: this is broken - we should be merging the daily counts
-    // somehow.  but this is to support API that's not really used in
-    // practice so leave it broken for now.
-    ASSERT(otherItem);
-    if (otherItem != this)
-        m_visitCount += otherItem->m_visitCount;
-}
-
-void HistoryItem::addRedirectURL(const String& url)
-{
-    if (!m_redirectURLs)
-        m_redirectURLs = adoptPtr(new Vector<String>);
-
-    // Our API allows us to store all the URLs in the redirect chain, but for
-    // now we only have a use for the final URL.
-    (*m_redirectURLs).resize(1);
-    (*m_redirectURLs)[0] = url;
-}
-
-Vector<String>* HistoryItem::redirectURLs() const
-{
-    return m_redirectURLs.get();
-}
-
-void HistoryItem::setRedirectURLs(PassOwnPtr<Vector<String> > redirectURLs)
-{
-    m_redirectURLs = redirectURLs;
-}
-
-void HistoryItem::encodeBackForwardTree(Encoder& encoder) const
-{
-    encoder.encodeUInt32(backForwardTreeEncodingVersion);
-
-    encodeBackForwardTreeNode(encoder);
-}
-
-void HistoryItem::encodeBackForwardTreeNode(Encoder& encoder) const
-{
-    size_t size = m_children.size();
-    encoder.encodeUInt64(size);
-    for (size_t i = 0; i < size; ++i) {
-        const HistoryItem& child = *m_children[i];
-
-        encoder.encodeString(child.m_originalURLString);
-
-        encoder.encodeString(child.m_urlString);
-
-        child.encodeBackForwardTreeNode(encoder);
-    }
-
-    encoder.encodeInt64(m_documentSequenceNumber);
-
-    size = m_documentState.size();
-    encoder.encodeUInt64(size);
-    for (size_t i = 0; i < size; ++i)
-        encoder.encodeString(m_documentState[i]);
-
-    encoder.encodeString(m_formContentType);
-
-    encoder.encodeBool(m_formData);
-    if (m_formData)
-        m_formData->encode(encoder);
-
-    encoder.encodeInt64(m_itemSequenceNumber);
-
-    encoder.encodeString(m_referrer);
-
-    encoder.encodeInt32(m_scrollPoint.x());
-    encoder.encodeInt32(m_scrollPoint.y());
-    
-    encoder.encodeFloat(m_pageScaleFactor);
-
-    encoder.encodeBool(m_stateObject);
-    if (m_stateObject)
-        encoder.encodeString(m_stateObject->toWireString());
-
-    encoder.encodeString(m_target);
-}
-
-struct DecodeRecursionStackElement {
-    RefPtr<HistoryItem> node;
-    size_t i;
-    uint64_t size;
-
-    DecodeRecursionStackElement(PassRefPtr<HistoryItem> node, size_t i, uint64_t size)
-        : node(node)
-        , i(i)
-        , size(size)
-    {
-    }
-};
-
-PassRefPtr<HistoryItem> HistoryItem::decodeBackForwardTree(const String& topURLString, const String& topTitle, const String& topOriginalURLString, Decoder& decoder)
-{
-    // Since the data stream is not trusted, the decode has to be non-recursive.
-    // We don't want bad data to cause a stack overflow.
-
-    uint32_t version;
-    if (!decoder.decodeUInt32(version))
-        return 0;
-    if (version != backForwardTreeEncodingVersion)
-        return 0;
-
-    String urlString = topURLString;
-    String title = topTitle;
-    String originalURLString = topOriginalURLString;
-
-    Vector<DecodeRecursionStackElement, 16> recursionStack;
-
-recurse:
-    RefPtr<HistoryItem> node = create(urlString, title, 0);
-
-    node->setOriginalURLString(originalURLString);
-
-    title = String();
-
-    uint64_t size;
-    if (!decoder.decodeUInt64(size))
-        return 0;
-    size_t i;
-    RefPtr<HistoryItem> child;
-    for (i = 0; i < size; ++i) {
-        if (!decoder.decodeString(originalURLString))
-            return 0;
-
-        if (!decoder.decodeString(urlString))
-            return 0;
-
-        recursionStack.append(DecodeRecursionStackElement(node.release(), i, size));
-        goto recurse;
-
-resume:
-        node->m_children.append(child.release());
-    }
-
-    if (!decoder.decodeInt64(node->m_documentSequenceNumber))
-        return 0;
-
-    if (!decoder.decodeUInt64(size))
-        return 0;
-    for (i = 0; i < size; ++i) {
-        String state;
-        if (!decoder.decodeString(state))
-            return 0;
-        node->m_documentState.append(state);
-    }
-
-    if (!decoder.decodeString(node->m_formContentType))
-        return 0;
-
-    bool hasFormData;
-    if (!decoder.decodeBool(hasFormData))
-        return 0;
-    if (hasFormData) {
-        node->m_formData = FormData::decode(decoder);
-        if (!node->m_formData)
-            return 0;
-    }
-
-    if (!decoder.decodeInt64(node->m_itemSequenceNumber))
-        return 0;
-
-    if (!decoder.decodeString(node->m_referrer))
-        return 0;
-
-    int32_t x;
-    if (!decoder.decodeInt32(x))
-        return 0;
-    int32_t y;
-    if (!decoder.decodeInt32(y))
-        return 0;
-    node->m_scrollPoint = IntPoint(x, y);
-    
-    if (!decoder.decodeFloat(node->m_pageScaleFactor))
-        return 0;
-
-    bool hasStateObject;
-    if (!decoder.decodeBool(hasStateObject))
-        return 0;
-    if (hasStateObject) {
-        String string;
-        if (!decoder.decodeString(string))
-            return 0;
-        node->m_stateObject = SerializedScriptValue::createFromWire(string);
-    }
-
-    if (!decoder.decodeString(node->m_target))
-        return 0;
-
-    // Simulate recursion with our own stack.
-    if (!recursionStack.isEmpty()) {
-        DecodeRecursionStackElement& element = recursionStack.last();
-        child = node.release();
-        node = element.node.release();
-        i = element.i;
-        size = element.size;
-        recursionStack.removeLast();
-        goto resume;
-    }
-
-    return node.release();
 }
 
 #ifndef NDEBUG

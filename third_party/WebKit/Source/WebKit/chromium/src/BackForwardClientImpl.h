@@ -28,10 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef BackForwardListChromium_h
-#define BackForwardListChromium_h
+#ifndef BackForwardClientImpl_h
+#define BackForwardClientImpl_h
 
-#include "core/history/BackForwardList.h"
+#include "core/history/BackForwardClient.h"
 #include "core/history/HistoryItem.h"
 
 namespace WebKit {
@@ -39,14 +39,12 @@ class WebViewImpl;
 
 extern const char backForwardNavigationScheme[];
 
-class BackForwardListChromium : public WebCore::BackForwardList {
+class BackForwardClientImpl : public WebCore::BackForwardClient {
 public:
-    static PassRefPtr<BackForwardListChromium> create(WebViewImpl*);
-    virtual ~BackForwardListChromium();
+    explicit BackForwardClientImpl(WebViewImpl*);
+    virtual ~BackForwardClientImpl();
 
 private:
-    BackForwardListChromium(WebViewImpl*);
-
     // WebCore::BackForwardList methods:
     virtual void addItem(PassRefPtr<WebCore::HistoryItem>);
     virtual void goToItem(WebCore::HistoryItem*);

@@ -31,6 +31,7 @@
 #ifndef WebViewImpl_h
 #define WebViewImpl_h
 
+#include "BackForwardClientImpl.h"
 #include "ChromeClientImpl.h"
 #include "ContextMenuClientImpl.h"
 #include "DragClientImpl.h"
@@ -677,6 +678,7 @@ private:
     DragClientImpl m_dragClientImpl;
     EditorClientImpl m_editorClientImpl;
     InspectorClientImpl m_inspectorClientImpl;
+    BackForwardClientImpl m_backForwardClientImpl;
 
     WebSize m_size;
     // If true, automatically resize the render view around its content.

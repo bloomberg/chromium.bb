@@ -31,6 +31,7 @@
 
 #include "InspectorClient.h"
 #include "core/dom/DeviceOrientationClient.h"
+#include "core/history/BackForwardClient.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
@@ -472,6 +473,17 @@ public:
     virtual void setController(DeviceOrientationController*) { }
     virtual DeviceOrientationData* lastOrientation() const { return 0; }
     virtual void deviceOrientationControllerDestroyed() { }
+};
+
+class EmptyBackForwardClient : public BackForwardClient {
+public:
+    virtual void addItem(PassRefPtr<HistoryItem>) { }
+    virtual void goToItem(HistoryItem*) { }
+    virtual HistoryItem* itemAtIndex(int) { return 0; }
+    virtual int backListCount() { return 0; }
+    virtual int forwardListCount() { return 0; }
+    virtual bool isActive() { return false; }
+    virtual void close() { }
 };
 
 void fillWithEmptyClients(Page::PageClients&);

@@ -26,25 +26,24 @@
 #include "config.h"
 #include "core/history/BackForwardController.h"
 
-#include "core/history/BackForwardListImpl.h"
+#include "core/history/BackForwardClient.h"
 #include "core/history/HistoryItem.h"
 #include "core/page/Page.h"
 
 namespace WebCore {
 
-BackForwardController::BackForwardController(Page* page, PassRefPtr<BackForwardList> client)
+BackForwardController::BackForwardController(Page* page, BackForwardClient* client)
     : m_page(page)
     , m_client(client)
 {
-    if (!m_client)
-        m_client = BackForwardListImpl::create(page);
+    ASSERT(m_client);
 }
 
 BackForwardController::~BackForwardController()
 {
 }
 
-PassOwnPtr<BackForwardController> BackForwardController::create(Page* page, PassRefPtr<BackForwardList> client)
+PassOwnPtr<BackForwardController> BackForwardController::create(Page* page, BackForwardClient* client)
 {
     return adoptPtr(new BackForwardController(page, client));
 }

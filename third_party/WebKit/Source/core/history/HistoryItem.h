@@ -46,8 +46,6 @@ class ResourceRequest;
 
 typedef Vector<RefPtr<HistoryItem> > HistoryItemVector;
 
-extern void (*notifyHistoryItemChanged)(HistoryItem*);
-
 enum VisitCountBehavior {
     IncreaseVisitCount,
     DoNotIncreaseVisitCount
@@ -75,9 +73,6 @@ public:
 
     // Resets the HistoryItem to its initial state, as returned by create().
     void reset();
-    
-    void encodeBackForwardTree(Encoder&) const;
-    static PassRefPtr<HistoryItem> decodeBackForwardTree(const String& urlString, const String& title, const String& originalURLString, Decoder&);
 
     const String& originalURLString() const;
     const String& urlString() const;
@@ -99,11 +94,7 @@ public:
     String formContentType() const;
     
     int visitCount() const;
-    bool lastVisitWasFailure() const { return m_lastVisitWasFailure; }
-    bool lastVisitWasHTTPNonGet() const { return m_lastVisitWasHTTPNonGet; }
 
-    void mergeAutoCompleteHints(HistoryItem* otherItem);
-    
     const IntPoint& scrollPoint() const;
     void setScrollPoint(const IntPoint&);
     void clearScrollPoint();
@@ -140,14 +131,11 @@ public:
     void recordInitialVisit();
 
     void setVisitCount(int);
-    void setLastVisitWasFailure(bool wasFailure) { m_lastVisitWasFailure = wasFailure; }
-    void setLastVisitWasHTTPNonGet(bool wasNotGet) { m_lastVisitWasHTTPNonGet = wasNotGet; }
 
     void addChildItem(PassRefPtr<HistoryItem>);
     void setChildItem(PassRefPtr<HistoryItem>);
     HistoryItem* childItemWithTarget(const String&) const;
     HistoryItem* childItemWithDocumentSequenceNumber(long long number) const;
-    HistoryItem* targetItem();
     const HistoryItemVector& children() const;
     bool hasChildren() const;
     void clearChildren();
@@ -156,8 +144,6 @@ public:
     bool shouldDoSameDocumentNavigationTo(HistoryItem* otherItem) const;
     bool hasSameFrames(HistoryItem* otherItem) const;
 
-    // This should not be called directly for HistoryItems that are already included
-    // in GlobalHistory. The WebKit api for this is to use -[WebHistory setLastVisitedTimeInterval:forItem:] instead.
     void setLastVisitedTime(double);
     void visited(const String& title, double time, VisitCountBehavior);
 
@@ -172,10 +158,6 @@ public:
     int showTreeWithIndent(unsigned indentLevel) const;
 #endif
 
-    void adoptVisitCounts(Vector<int>& dailyCounts, Vector<int>& weeklyCounts);
-    const Vector<int>& dailyVisitCounts() const { return m_dailyVisitCounts; }
-    const Vector<int>& weeklyVisitCounts() const { return m_weeklyVisitCounts; }
-
 private:
     HistoryItem();
     HistoryItem(const String& urlString, const String& title, double lastVisited);
@@ -184,15 +166,9 @@ private:
 
     explicit HistoryItem(const HistoryItem&);
 
-    void padDailyCountsForNewVisit(double time);
-    void collapseDailyVisitsToWeekly();
     void recordVisitAtTime(double, VisitCountBehavior = IncreaseVisitCount);
     
     bool hasSameDocumentTree(HistoryItem* otherItem) const;
-
-    HistoryItem* findTargetItem();
-
-    void encodeBackForwardTreeNode(Encoder&) const;
 
     String m_urlString;
     String m_originalURLString;
@@ -203,7 +179,6 @@ private:
     String m_displayTitle;
     
     double m_lastVisitedTime;
-    bool m_lastVisitWasHTTPNonGet;
 
     IntPoint m_scrollPoint;
     float m_pageScaleFactor;
@@ -211,13 +186,8 @@ private:
     
     HistoryItemVector m_children;
     
-    bool m_lastVisitWasFailure;
     bool m_isTargetItem;
     int m_visitCount;
-    Vector<int> m_dailyVisitCounts;
-    Vector<int> m_weeklyVisitCounts;
-
-    OwnPtr<Vector<String> > m_redirectURLs;
 
     // If two HistoryItems have the same item sequence number, then they are
     // clones of one another.  Traversing history from one such HistoryItem to
