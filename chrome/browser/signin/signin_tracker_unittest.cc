@@ -40,7 +40,7 @@ class MockTokenService : public TokenService {
   MOCK_CONST_METHOD1(HasTokenForService, bool(const char*));
 };
 
-ProfileKeyedService* BuildMockTokenService(Profile* profile) {
+ProfileKeyedService* BuildMockTokenService(content::BrowserContext* profile) {
   return new MockTokenService;
 }
 

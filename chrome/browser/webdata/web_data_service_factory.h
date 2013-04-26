@@ -69,7 +69,7 @@ class WebDataServiceFactory : public ProfileKeyedServiceFactory {
   // |ProfileKeyedBaseFactory| methods:
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(WebDataServiceFactory);

@@ -44,9 +44,9 @@ FaviconServiceFactory::FaviconServiceFactory()
 FaviconServiceFactory::~FaviconServiceFactory() {}
 
 ProfileKeyedService* FaviconServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   HistoryService* history_service = HistoryServiceFactory::GetForProfile(
-      profile, Profile::EXPLICIT_ACCESS);
+      static_cast<Profile*>(profile), Profile::EXPLICIT_ACCESS);
   return new FaviconService(history_service);
 }
 

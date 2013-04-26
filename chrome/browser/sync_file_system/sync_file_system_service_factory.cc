@@ -45,7 +45,9 @@ SyncFileSystemServiceFactory::SyncFileSystemServiceFactory()
 SyncFileSystemServiceFactory::~SyncFileSystemServiceFactory() {}
 
 ProfileKeyedService* SyncFileSystemServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
+
   SyncFileSystemService* service = new SyncFileSystemService(profile);
 
   scoped_ptr<LocalFileSyncService> local_file_service(

@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/system_indicator/system_indicator_manager.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace extensions {
@@ -32,13 +33,14 @@ SystemIndicatorManagerFactory::SystemIndicatorManagerFactory()
 SystemIndicatorManagerFactory::~SystemIndicatorManagerFactory() {}
 
 ProfileKeyedService* SystemIndicatorManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
 
   StatusTray* status_tray = g_browser_process->status_tray();
   if (status_tray == NULL)
     return NULL;
 
-  return new SystemIndicatorManager(profile, status_tray);
+  return new SystemIndicatorManager(static_cast<Profile*>(profile),
+                                    status_tray);
 }
 
 }  // namespace extensions

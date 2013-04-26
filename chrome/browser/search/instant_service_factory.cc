@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search/instant_service_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search/instant_service.h"
 
@@ -32,6 +33,6 @@ bool InstantServiceFactory::ServiceHasOwnInstanceInIncognito() const {
 }
 
 ProfileKeyedService* InstantServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new InstantService(profile);
+    content::BrowserContext* profile) const {
+  return new InstantService(static_cast<Profile*>(profile));
 }

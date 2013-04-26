@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_EXTENSIONS_API_PROFILE_KEYED_API_FACTORY_H_
 
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 #include "chrome/browser/profiles/profile_keyed_service_factory.h"
@@ -86,8 +87,8 @@ class ProfileKeyedAPIFactory : public ProfileKeyedServiceFactory {
  private:
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE {
-    return new T(profile);
+      content::BrowserContext* profile) const OVERRIDE {
+    return new T(static_cast<Profile*>(profile));
   }
 
   // ProfileKeyedBaseFactory implementation.

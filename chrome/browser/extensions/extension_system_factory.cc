@@ -42,8 +42,8 @@ ExtensionSystemSharedFactory::~ExtensionSystemSharedFactory() {
 }
 
 ProfileKeyedService* ExtensionSystemSharedFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new ExtensionSystemImpl::Shared(profile);
+    content::BrowserContext* profile) const {
+  return new ExtensionSystemImpl::Shared(static_cast<Profile*>(profile));
 }
 
 bool ExtensionSystemSharedFactory::ServiceRedirectedInIncognito() const {
@@ -74,8 +74,8 @@ ExtensionSystemFactory::~ExtensionSystemFactory() {
 }
 
 ProfileKeyedService* ExtensionSystemFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new ExtensionSystemImpl(profile);
+    content::BrowserContext* profile) const {
+  return new ExtensionSystemImpl(static_cast<Profile*>(profile));
 }
 
 bool ExtensionSystemFactory::ServiceHasOwnInstanceInIncognito() const {

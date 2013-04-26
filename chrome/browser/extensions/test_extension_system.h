@@ -14,6 +14,10 @@ class FilePath;
 class Time;
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace extensions {
 
 // Test ExtensionSystem, for use with TestingProfile.
@@ -70,7 +74,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual Blacklist* blacklist() OVERRIDE;
 
   // Factory method for tests to use with SetTestingProfile.
-  static ProfileKeyedService* Build(Profile* profile);
+  static ProfileKeyedService* Build(content::BrowserContext* profile);
 
  protected:
   Profile* profile_;

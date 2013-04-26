@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/ash/app_sync_ui_state_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/ash/app_sync_ui_state.h"
@@ -32,7 +33,8 @@ AppSyncUIStateFactory::~AppSyncUIStateFactory() {
 }
 
 ProfileKeyedService* AppSyncUIStateFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
   DCHECK(AppSyncUIState::ShouldObserveAppSyncForProfile(profile));
   return new AppSyncUIState(profile);
 }

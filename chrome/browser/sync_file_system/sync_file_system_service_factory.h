@@ -38,7 +38,7 @@ class SyncFileSystemServiceFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory overrides.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 
   mutable scoped_ptr<RemoteFileSyncService> mock_remote_file_service_;
 };

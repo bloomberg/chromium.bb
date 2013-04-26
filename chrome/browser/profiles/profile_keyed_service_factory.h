@@ -29,18 +29,20 @@ class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   // A function that supplies the instance of a ProfileKeyedService for a given
   // Profile. This is used primarily for testing, where we want to feed a
   // specific mock into the PKSF system.
-  typedef ProfileKeyedService* (*FactoryFunction)(Profile* profile);
+  typedef ProfileKeyedService*
+      (*FactoryFunction)(content::BrowserContext* profile);
 
   // Associates |factory| with |profile| so that |factory| is used to create
   // the ProfileKeyedService when requested.  |factory| can be NULL to signal
   // that ProfileKeyedService should be NULL. Multiple calls to
   // SetTestingFactory() are allowed; previous services will be shut down.
-  void SetTestingFactory(Profile* profile, FactoryFunction factory);
+  void SetTestingFactory(content::BrowserContext* profile,
+                         FactoryFunction factory);
 
   // Associates |factory| with |profile| and immediately returns the created
   // ProfileKeyedService. Since the factory will be used immediately, it may
   // not be NULL.
-  ProfileKeyedService* SetTestingFactoryAndUse(Profile* profile,
+  ProfileKeyedService* SetTestingFactoryAndUse(content::BrowserContext* profile,
                                                FactoryFunction factory);
 
  protected:
@@ -63,15 +65,17 @@ class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   // through the GetProfileToUse() method on the base.  If |create| is true,
   // the service will be created using BuildServiceInstanceFor() if it doesn't
   // already exist.
-  ProfileKeyedService* GetServiceForProfile(Profile* profile, bool create);
+  ProfileKeyedService* GetServiceForProfile(content::BrowserContext* profile,
+                                            bool create);
 
   // Maps |profile| to |service| with debug checks to prevent duplication.
-  void Associate(Profile* profile, ProfileKeyedService* service);
+  void Associate(content::BrowserContext* profile,
+                 ProfileKeyedService* service);
 
   // All subclasses of ProfileKeyedServiceFactory must return a
   // ProfileKeyedService instead of just a ProfileKeyedBase.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const = 0;
+      content::BrowserContext* profile) const = 0;
 
   // A helper object actually listens for notifications about Profile
   // destruction, calculates the order in which things are destroyed and then
@@ -84,24 +88,27 @@ class ProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   //
   // Secondly, ProfileDestroyed() is called on every ServiceFactory and the
   // default implementation removes it from |mapping_| and deletes the pointer.
-  virtual void ProfileShutdown(Profile* profile) OVERRIDE;
-  virtual void ProfileDestroyed(Profile* profile) OVERRIDE;
+  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE;
+  virtual void ProfileDestroyed(content::BrowserContext* profile) OVERRIDE;
 
-  virtual void SetEmptyTestingFactory(Profile* profile) OVERRIDE;
-  virtual void CreateServiceNow(Profile* profile) OVERRIDE;
+  virtual void SetEmptyTestingFactory(
+      content::BrowserContext* profile) OVERRIDE;
+  virtual void CreateServiceNow(content::BrowserContext* profile) OVERRIDE;
 
  private:
   friend class ProfileDependencyManager;
   friend class ProfileDependencyManagerUnittests;
 
-  typedef std::map<Profile*, ProfileKeyedService*> ProfileKeyedServices;
-  typedef std::map<Profile*, FactoryFunction> ProfileOverriddenFunctions;
+  typedef std::map<content::BrowserContext*, ProfileKeyedService*>
+      ProfileKeyedServices;
+  typedef std::map<content::BrowserContext*, FactoryFunction>
+      ProfileOverriddenFunctions;
 
   // The mapping between a Profile and its service.
-  std::map<Profile*, ProfileKeyedService*> mapping_;
+  std::map<content::BrowserContext*, ProfileKeyedService*> mapping_;
 
   // The mapping between a Profile and its overridden FactoryFunction.
-  std::map<Profile*, FactoryFunction> factories_;
+  std::map<content::BrowserContext*, FactoryFunction> factories_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileKeyedServiceFactory);
 };

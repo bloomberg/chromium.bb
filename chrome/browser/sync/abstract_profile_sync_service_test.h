@@ -48,7 +48,9 @@ class AbstractProfileSyncServiceTest : public testing::Test {
 
   bool CreateRoot(syncer::ModelType model_type);
 
-  static ProfileKeyedService* BuildTokenService(Profile* profile);
+  static ProfileKeyedService* BuildTokenService(
+      content::BrowserContext* profile);
+
  protected:
   MessageLoopForUI ui_loop_;
   content::TestBrowserThread ui_thread_;

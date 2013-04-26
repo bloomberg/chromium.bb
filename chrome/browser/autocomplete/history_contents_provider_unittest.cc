@@ -68,8 +68,9 @@ class HistoryContentsProviderTest : public testing::Test,
   virtual bool BodyOnly() { return false; }
 
  private:
-  static ProfileKeyedService* CreateTemplateURLService(Profile* profile) {
-    return new TemplateURLService(profile);
+  static ProfileKeyedService* CreateTemplateURLService(
+      content::BrowserContext* profile) {
+    return new TemplateURLService(static_cast<Profile*>(profile));
   }
 
   // testing::Test

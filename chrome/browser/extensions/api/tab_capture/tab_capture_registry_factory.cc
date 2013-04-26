@@ -7,6 +7,7 @@
 #include "chrome/browser/extensions/api/tab_capture/tab_capture_registry.h"
 #include "chrome/browser/extensions/api/discovery/suggested_links_registry.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace extensions {
@@ -36,8 +37,8 @@ TabCaptureRegistryFactory::~TabCaptureRegistryFactory() {
 }
 
 ProfileKeyedService* TabCaptureRegistryFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new TabCaptureRegistry(profile);
+    content::BrowserContext* profile) const {
+  return new TabCaptureRegistry(static_cast<Profile*>(profile));
 }
 
 bool TabCaptureRegistryFactory::ServiceRedirectedInIncognito() const {

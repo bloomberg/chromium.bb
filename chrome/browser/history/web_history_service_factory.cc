@@ -45,7 +45,9 @@ history::WebHistoryService* WebHistoryServiceFactory::GetForProfile(
 }
 
 ProfileKeyedService* WebHistoryServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
+
   // Ensure that the service is not instantiated or used if the user is not
   // signed into sync, or if web history is not enabled.
   return IsHistorySyncEnabled(profile) ?

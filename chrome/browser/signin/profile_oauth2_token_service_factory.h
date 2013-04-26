@@ -34,7 +34,7 @@ class ProfileOAuth2TokenServiceFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileOAuth2TokenServiceFactory);
 };

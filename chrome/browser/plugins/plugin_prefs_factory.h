@@ -26,14 +26,14 @@ class PluginPrefsFactory : public RefcountedProfileKeyedServiceFactory {
 
   // Helper method for PluginPrefs::GetForTestingProfile.
   static scoped_refptr<RefcountedProfileKeyedService> CreateForTestingProfile(
-      Profile* profile);
+      content::BrowserContext* profile);
 
   PluginPrefsFactory();
   virtual ~PluginPrefsFactory();
 
   // RefcountedProfileKeyedServiceFactory methods:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 
   // ProfileKeyedServiceFactory methods:
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/token_cache/token_cache_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 // static
@@ -29,6 +30,6 @@ TokenCacheServiceFactory::~TokenCacheServiceFactory() {
 }
 
 ProfileKeyedService* TokenCacheServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new extensions::TokenCacheService(profile);
+    content::BrowserContext* profile) const {
+  return new extensions::TokenCacheService(static_cast<Profile*>(profile));
 }

@@ -29,19 +29,20 @@ class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   // Profile. This is used primarily for testing, where we want to feed a
   // specific mock into the PKSF system.
   typedef scoped_refptr<RefcountedProfileKeyedService>
-      (*FactoryFunction)(Profile* profile);
+      (*FactoryFunction)(content::BrowserContext* profile);
 
   // Associates |factory| with |profile| so that |factory| is used to create
   // the ProfileKeyedService when requested.  |factory| can be NULL to signal
   // that ProfileKeyedService should be NULL. Multiple calls to
   // SetTestingFactory() are allowed; previous services will be shut down.
-  void SetTestingFactory(Profile* profile, FactoryFunction factory);
+  void SetTestingFactory(content::BrowserContext* profile,
+                         FactoryFunction factory);
 
   // Associates |factory| with |profile| and immediately returns the created
   // ProfileKeyedService. Since the factory will be used immediately, it may
   // not be NULL.
   scoped_refptr<RefcountedProfileKeyedService> SetTestingFactoryAndUse(
-      Profile* profile,
+      content::BrowserContext* profile,
       FactoryFunction factory);
 
  protected:
@@ -50,27 +51,30 @@ class RefcountedProfileKeyedServiceFactory : public ProfileKeyedBaseFactory {
   virtual ~RefcountedProfileKeyedServiceFactory();
 
   scoped_refptr<RefcountedProfileKeyedService> GetServiceForProfile(
-      Profile* profile,
+      content::BrowserContext* profile,
       bool create);
 
   // Maps |profile| to |service| with debug checks to prevent duplication.
-  void Associate(Profile* profile,
+  void Associate(content::BrowserContext* profile,
                  const scoped_refptr<RefcountedProfileKeyedService>& service);
 
   // All subclasses of RefcountedProfileKeyedServiceFactory must return a
   // RefcountedProfileKeyedService instead of just a ProfileKeyedBase.
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      Profile* profile) const = 0;
+      content::BrowserContext* profile) const = 0;
 
-  virtual void ProfileShutdown(Profile* profile) OVERRIDE;
-  virtual void ProfileDestroyed(Profile* profile) OVERRIDE;
-  virtual void SetEmptyTestingFactory(Profile* profile) OVERRIDE;
-  virtual void CreateServiceNow(Profile* profile) OVERRIDE;
+  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE;
+  virtual void ProfileDestroyed(content::BrowserContext* profile) OVERRIDE;
+  virtual void SetEmptyTestingFactory(
+      content::BrowserContext* profile) OVERRIDE;
+  virtual void CreateServiceNow(content::BrowserContext* profile) OVERRIDE;
 
  private:
-  typedef std::map<Profile*, scoped_refptr<RefcountedProfileKeyedService> >
+  typedef std::map<content::BrowserContext*,
+                   scoped_refptr<RefcountedProfileKeyedService> >
       RefCountedStorage;
-  typedef std::map<Profile*, FactoryFunction> ProfileOverriddenFunctions;
+  typedef std::map<content::BrowserContext*,
+                   FactoryFunction> ProfileOverriddenFunctions;
 
   // The mapping between a Profile and its refcounted service.
   RefCountedStorage mapping_;

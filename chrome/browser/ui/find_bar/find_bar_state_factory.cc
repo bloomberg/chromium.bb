@@ -41,7 +41,7 @@ FindBarStateFactory::FindBarStateFactory()
 FindBarStateFactory::~FindBarStateFactory() {}
 
 ProfileKeyedService* FindBarStateFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   return new FindBarState;
 }
 

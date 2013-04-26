@@ -23,7 +23,7 @@ class ExtensionPrefValueMapFactory : public ProfileKeyedServiceFactory {
   virtual ~ExtensionPrefValueMapFactory();
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PREF_VALUE_MAP_FACTORY_H_

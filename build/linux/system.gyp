@@ -43,7 +43,7 @@
           },
           'conditions': [
             ['_toolset=="target"', {
-              'direct_dependent_settings': {
+              'all_dependent_settings': {
                 'cflags': [
                   '<!@(<(pkg-config) --cflags <(gtk_packages))',
                 ],
@@ -57,7 +57,7 @@
                 ],
               },
             }, {
-              'direct_dependent_settings': {
+              'all_dependent_settings': {
                 'cflags': [
                   '<!@(pkg-config --cflags <(gtk_packages))',
                 ],

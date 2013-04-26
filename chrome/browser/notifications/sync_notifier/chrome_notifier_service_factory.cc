@@ -30,11 +30,13 @@ ChromeNotifierServiceFactory::~ChromeNotifierServiceFactory() {
 }
 
 ProfileKeyedService*
-ChromeNotifierServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
+ChromeNotifierServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* profile) const {
   NotificationUIManager* notification_manager =
       g_browser_process->notification_ui_manager();
   ChromeNotifierService* chrome_notifier_service =
-      new ChromeNotifierService(profile, notification_manager);
+      new ChromeNotifierService(static_cast<Profile*>(profile),
+                                notification_manager);
   return chrome_notifier_service;
 }
 

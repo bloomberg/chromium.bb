@@ -41,8 +41,8 @@ AutocompleteActionPredictorFactory::ServiceHasOwnInstanceInIncognito() const {
 
 ProfileKeyedService*
     AutocompleteActionPredictorFactory::BuildServiceInstanceFor(
-        Profile* profile) const {
-  return new AutocompleteActionPredictor(profile);
+        content::BrowserContext* profile) const {
+  return new AutocompleteActionPredictor(static_cast<Profile*>(profile));
 }
 
 }  // namespace predictors

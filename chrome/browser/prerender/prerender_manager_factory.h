@@ -33,7 +33,7 @@ class PrerenderManagerFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
   // Prerendering is allowed in incognito.
   virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;

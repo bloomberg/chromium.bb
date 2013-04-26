@@ -30,8 +30,9 @@ DownloadServiceFactory::~DownloadServiceFactory() {
 }
 
 ProfileKeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  DownloadService* service = new DownloadService(profile);
+    content::BrowserContext* profile) const {
+  DownloadService* service =
+      new DownloadService(static_cast<Profile*>(profile));
 
   // No need for initialization; initialization can be done on first
   // use of service.

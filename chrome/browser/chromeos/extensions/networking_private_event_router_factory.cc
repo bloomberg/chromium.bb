@@ -36,8 +36,8 @@ NetworkingPrivateEventRouterFactory::~NetworkingPrivateEventRouterFactory() {
 
 ProfileKeyedService*
 NetworkingPrivateEventRouterFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new NetworkingPrivateEventRouter(profile);
+    content::BrowserContext* profile) const {
+  return new NetworkingPrivateEventRouter(static_cast<Profile*>(profile));
 }
 
 bool

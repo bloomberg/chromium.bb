@@ -28,6 +28,6 @@ TokenServiceFactory* TokenServiceFactory::GetInstance() {
 }
 
 ProfileKeyedService* TokenServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   return new TokenService();
 }

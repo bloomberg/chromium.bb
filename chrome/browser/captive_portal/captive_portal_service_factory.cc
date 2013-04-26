@@ -31,8 +31,8 @@ CaptivePortalServiceFactory::~CaptivePortalServiceFactory() {
 }
 
 ProfileKeyedService* CaptivePortalServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new CaptivePortalService(profile);
+    content::BrowserContext* profile) const {
+  return new CaptivePortalService(static_cast<Profile*>(profile));
 }
 
 bool CaptivePortalServiceFactory::ServiceHasOwnInstanceInIncognito() const {

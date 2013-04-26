@@ -71,9 +71,9 @@ WhitelistManagerFactory::~WhitelistManagerFactory() {
 
 ProfileKeyedService*
 WhitelistManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   WhitelistManagerService* service =
-      new WhitelistManagerServiceImpl(profile);
+      new WhitelistManagerServiceImpl(static_cast<Profile*>(profile));
   return service;
 }
 

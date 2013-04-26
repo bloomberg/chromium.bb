@@ -21,7 +21,7 @@ class FakeSigninManagerBase : public SigninManagerBase {
   virtual void SignOut() OVERRIDE;
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
-  static ProfileKeyedService* Build(Profile* profile);
+  static ProfileKeyedService* Build(content::BrowserContext* profile);
 };
 
 #if !defined(OS_CHROMEOS)
@@ -49,7 +49,7 @@ class FakeSigninManager : public SigninManager {
                                           const std::string& password) OVERRIDE;
 
   // Helper function to be used with ProfileKeyedService::SetTestingFactory().
-  static ProfileKeyedService* Build(Profile* profile);
+  static ProfileKeyedService* Build(content::BrowserContext* profile);
 };
 
 #endif  // !defined (OS_CHROMEOS)

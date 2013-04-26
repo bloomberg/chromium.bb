@@ -63,9 +63,10 @@ class UserCloudPolicyManagerFactory : public ProfileKeyedBaseFactory {
       bool force_immediate_load);
 
   // ProfileKeyedBaseFactory:
-  virtual void ProfileShutdown(Profile* profile) OVERRIDE;
-  virtual void SetEmptyTestingFactory(Profile* profile) OVERRIDE;
-  virtual void CreateServiceNow(Profile* profile) OVERRIDE;
+  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE;
+  virtual void SetEmptyTestingFactory(
+      content::BrowserContext* profile) OVERRIDE;
+  virtual void CreateServiceNow(content::BrowserContext* profile) OVERRIDE;
 
   // Invoked by UserCloudPolicyManager to register/unregister instances.
   void Register(Profile* profile, UserCloudPolicyManager* instance);

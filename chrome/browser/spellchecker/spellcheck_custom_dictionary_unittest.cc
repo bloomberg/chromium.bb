@@ -53,8 +53,9 @@ syncer::SyncDataList GetAllSyncDataNoLimit(
 
 }  // namespace
 
-static ProfileKeyedService* BuildSpellcheckService(Profile* profile) {
-  return new SpellcheckService(profile);
+static ProfileKeyedService* BuildSpellcheckService(
+    content::BrowserContext* profile) {
+  return new SpellcheckService(static_cast<Profile*>(profile));
 }
 
 class SpellcheckCustomDictionaryTest : public testing::Test {

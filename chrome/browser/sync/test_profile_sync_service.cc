@@ -228,7 +228,8 @@ TestProfileSyncService::~TestProfileSyncService() {
 
 // static
 ProfileKeyedService* TestProfileSyncService::BuildAutoStartAsyncInit(
-    Profile* profile) {
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
   SigninManagerBase* signin =
       SigninManagerFactory::GetForProfile(profile);
   ProfileSyncComponentsFactoryMock* factory =

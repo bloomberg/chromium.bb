@@ -4,6 +4,7 @@
 
 #include "chrome/browser/geolocation/chrome_geolocation_permission_context_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 #include "components/user_prefs/pref_registry_syncable.h"
@@ -67,8 +68,8 @@ ChromeGeolocationPermissionContextFactory::
 
 ProfileKeyedService*
 ChromeGeolocationPermissionContextFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new Service(profile);
+    content::BrowserContext* profile) const {
+  return new Service(static_cast<Profile*>(profile));
 }
 
 void ChromeGeolocationPermissionContextFactory::RegisterUserPrefs(

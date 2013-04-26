@@ -327,8 +327,9 @@ class SigninManagerBaseMock : public FakeSigninManagerBase {
   MOCK_CONST_METHOD1(IsAllowedUsername, bool(const std::string& username));
 };
 
-static ProfileKeyedService* BuildSigninManagerBaseMock(Profile* profile) {
-  return new SigninManagerBaseMock(profile);
+static ProfileKeyedService* BuildSigninManagerBaseMock(
+    content::BrowserContext* profile) {
+  return new SigninManagerBaseMock(static_cast<Profile*>(profile));
 }
 
 // The boolean parameter indicates whether the test is run with ClientOAuth
@@ -668,8 +669,9 @@ class SigninManagerMock : public FakeSigninManager {
 };
 }
 
-static ProfileKeyedService* BuildSigninManagerMock(Profile* profile) {
-  return new SigninManagerMock(profile);
+static ProfileKeyedService* BuildSigninManagerMock(
+    content::BrowserContext* profile) {
+  return new SigninManagerMock(static_cast<Profile*>(profile));
 }
 
 class SyncSetupHandlerNonCrosTest : public SyncSetupHandlerTest {

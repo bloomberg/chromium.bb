@@ -26,7 +26,7 @@ class ExtensionSyncEventObserverFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 };
 
 }  // namespace extensions

@@ -9,13 +9,16 @@
 #include "content/public/common/password_form.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class Profile;
+namespace content {
+class BrowserContext;
+}
 
 class MockPasswordStore : public PasswordStore {
  public:
   MockPasswordStore();
 
-  static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile);
+  static scoped_refptr<RefcountedProfileKeyedService> Build(
+      content::BrowserContext* profile);
 
   MOCK_METHOD1(RemoveLogin, void(const content::PasswordForm&));
   MOCK_METHOD2(GetLogins,

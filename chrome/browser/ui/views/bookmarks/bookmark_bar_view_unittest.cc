@@ -50,8 +50,9 @@ class BookmarkBarViewInstantExtendedTest : public BrowserWithTestWindowTest {
   }
 
  private:
-  static ProfileKeyedService* CreateTemplateURLService(Profile* profile) {
-    return new TemplateURLService(profile);
+  static ProfileKeyedService* CreateTemplateURLService(
+      content::BrowserContext* profile) {
+    return new TemplateURLService(static_cast<Profile*>(profile));
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewInstantExtendedTest);

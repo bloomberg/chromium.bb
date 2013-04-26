@@ -90,8 +90,8 @@ KioskAppUpdateServiceFactory* KioskAppUpdateServiceFactory::GetInstance() {
 }
 
 ProfileKeyedService* KioskAppUpdateServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new KioskAppUpdateService(profile);
+    content::BrowserContext* profile) const {
+  return new KioskAppUpdateService(static_cast<Profile*>(profile));
 }
 
 }  // namespace chromeos

@@ -112,14 +112,14 @@ class ProfileSyncServiceStartupTest : public testing::Test {
         content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   }
 
-  static ProfileKeyedService* BuildService(Profile* profile) {
+  static ProfileKeyedService* BuildService(content::BrowserContext* profile) {
     SigninManagerBase* signin = static_cast<SigninManagerBase*>(
         SigninManagerFactory::GetInstance()->SetTestingFactoryAndUse(
             profile, FakeSigninManagerBase::Build));
     signin->SetAuthenticatedUsername("test_user");
     return new TestProfileSyncService(
         new ProfileSyncComponentsFactoryMock(),
-        profile,
+        static_cast<Profile*>(profile),
         signin,
         ProfileSyncService::MANUAL_START,
         true);
@@ -153,17 +153,19 @@ class ProfileSyncServiceStartupTest : public testing::Test {
 
 class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
  public:
-    static ProfileKeyedService* BuildCrosService(Profile* profile) {
-      SigninManagerBase* signin =
-           SigninManagerFactory::GetForProfile(profile);
-      signin->SetAuthenticatedUsername("test_user");
-      return new TestProfileSyncService(
-          new ProfileSyncComponentsFactoryMock(),
-          profile,
-          signin,
-          ProfileSyncService::AUTO_START,
-          true);
-    }
+  static ProfileKeyedService* BuildCrosService(
+      content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
+    SigninManagerBase* signin =
+        SigninManagerFactory::GetForProfile(profile);
+    signin->SetAuthenticatedUsername("test_user");
+    return new TestProfileSyncService(
+        new ProfileSyncComponentsFactoryMock(),
+        profile,
+        signin,
+        ProfileSyncService::AUTO_START,
+        true);
+  }
 
  protected:
   virtual void CreateSyncService() OVERRIDE {
@@ -213,7 +215,7 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   EXPECT_TRUE(sync_->ShouldPushChanges());
 }
 
-ProfileKeyedService* BuildFakeTokenService(Profile* profile) {
+ProfileKeyedService* BuildFakeTokenService(content::BrowserContext* profile) {
   return new FakeTokenService();
 }
 

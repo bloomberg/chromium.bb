@@ -354,8 +354,8 @@ GesturePrefsObserverFactoryAura::GesturePrefsObserverFactoryAura()
 GesturePrefsObserverFactoryAura::~GesturePrefsObserverFactoryAura() {}
 
 ProfileKeyedService* GesturePrefsObserverFactoryAura::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new GesturePrefsObserver(profile->GetPrefs());
+    content::BrowserContext* profile) const {
+  return new GesturePrefsObserver(static_cast<Profile*>(profile)->GetPrefs());
 }
 
 void GesturePrefsObserverFactoryAura::RegisterOverscrollPrefs(

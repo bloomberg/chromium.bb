@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 
@@ -27,8 +28,8 @@ GlobalErrorServiceFactory::~GlobalErrorServiceFactory() {
 }
 
 ProfileKeyedService* GlobalErrorServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new GlobalErrorService(profile);
+    content::BrowserContext* profile) const {
+  return new GlobalErrorService(static_cast<Profile*>(profile));
 }
 
 bool GlobalErrorServiceFactory::ServiceRedirectedInIncognito() const {

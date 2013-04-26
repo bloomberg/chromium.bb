@@ -28,7 +28,7 @@ class AppSyncUIStateFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory overrides:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* context) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AppSyncUIStateFactory);
 };

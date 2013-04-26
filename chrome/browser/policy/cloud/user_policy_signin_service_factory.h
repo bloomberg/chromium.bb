@@ -28,7 +28,7 @@ class UserPolicySigninServiceFactory : public ProfileKeyedServiceFactory {
  protected:
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
   // Overridden to cause this object to be created when the profile is created.
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;

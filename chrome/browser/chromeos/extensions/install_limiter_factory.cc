@@ -6,6 +6,7 @@
 
 #include "chrome/browser/chromeos/extensions/install_limiter.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace extensions {
@@ -31,7 +32,7 @@ InstallLimiterFactory::~InstallLimiterFactory() {
 }
 
 ProfileKeyedService* InstallLimiterFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   return new InstallLimiter();
 }
 

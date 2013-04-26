@@ -11,7 +11,7 @@
 #include "chrome/browser/profiles/refcounted_profile_keyed_service.h"
 
 void RefcountedProfileKeyedServiceFactory::SetTestingFactory(
-    Profile* profile,
+    content::BrowserContext* profile,
     FactoryFunction factory) {
   // Destroying the profile may cause us to lose data about whether |profile|
   // has our preferences registered on it (since the profile object itself
@@ -33,7 +33,7 @@ void RefcountedProfileKeyedServiceFactory::SetTestingFactory(
 
 scoped_refptr<RefcountedProfileKeyedService>
 RefcountedProfileKeyedServiceFactory::SetTestingFactoryAndUse(
-    Profile* profile,
+    content::BrowserContext* profile,
     FactoryFunction factory) {
   DCHECK(factory);
   SetTestingFactory(profile, factory);
@@ -52,7 +52,7 @@ RefcountedProfileKeyedServiceFactory::~RefcountedProfileKeyedServiceFactory() {
 
 scoped_refptr<RefcountedProfileKeyedService>
 RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
-    Profile* profile,
+    content::BrowserContext* profile,
     bool create) {
   profile = GetProfileToUse(profile);
   if (!profile)
@@ -88,19 +88,21 @@ RefcountedProfileKeyedServiceFactory::GetServiceForProfile(
 }
 
 void RefcountedProfileKeyedServiceFactory::Associate(
-    Profile* profile,
+    content::BrowserContext* profile,
     const scoped_refptr<RefcountedProfileKeyedService>& service) {
   DCHECK(!ContainsKey(mapping_, profile));
   mapping_.insert(std::make_pair(profile, service));
 }
 
-void RefcountedProfileKeyedServiceFactory::ProfileShutdown(Profile* profile) {
+void RefcountedProfileKeyedServiceFactory::ProfileShutdown(
+    content::BrowserContext* profile) {
   RefCountedStorage::iterator it = mapping_.find(profile);
   if (it != mapping_.end() && it->second)
     it->second->ShutdownOnUIThread();
 }
 
-void RefcountedProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
+void RefcountedProfileKeyedServiceFactory::ProfileDestroyed(
+    content::BrowserContext* profile) {
   // We "merely" drop our reference to the service. Hopefully this will cause
   // the service to be destroyed. If not, oh well.
   mapping_.erase(profile);
@@ -115,10 +117,11 @@ void RefcountedProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
 }
 
 void RefcountedProfileKeyedServiceFactory::SetEmptyTestingFactory(
-    Profile* profile) {
+    content::BrowserContext* profile) {
   SetTestingFactory(profile, NULL);
 }
 
-void RefcountedProfileKeyedServiceFactory::CreateServiceNow(Profile* profile) {
+void RefcountedProfileKeyedServiceFactory::CreateServiceNow(
+    content::BrowserContext* profile) {
   GetServiceForProfile(profile, true);
 }

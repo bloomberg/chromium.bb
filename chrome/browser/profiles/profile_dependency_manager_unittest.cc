@@ -36,12 +36,12 @@ class TestService : public ProfileKeyedServiceFactory {
   }
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE {
+      content::BrowserContext* profile) const OVERRIDE {
     ADD_FAILURE() << "This isn't part of the tests!";
     return NULL;
   }
 
-  virtual void ProfileShutdown(Profile* profile) OVERRIDE {
+  virtual void ProfileShutdown(content::BrowserContext* profile) OVERRIDE {
     fill_on_shutdown_->push_back(name_);
   }
 

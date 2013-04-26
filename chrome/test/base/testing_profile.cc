@@ -142,9 +142,10 @@ class TestExtensionURLRequestContextGetter
   scoped_ptr<net::URLRequestContext> context_;
 };
 
-ProfileKeyedService* CreateTestDesktopNotificationService(Profile* profile) {
+ProfileKeyedService* CreateTestDesktopNotificationService(
+    content::BrowserContext* profile) {
 #if defined(ENABLE_NOTIFICATIONS)
-  return new DesktopNotificationService(profile, NULL);
+  return new DesktopNotificationService(static_cast<Profile*>(profile), NULL);
 #else
   return NULL;
 #endif
@@ -275,6 +276,8 @@ void TestingProfile::CreateTempProfileDir() {
 void TestingProfile::Init() {
   if (prefs_.get())
     components::UserPrefs::Set(this, prefs_.get());
+  else
+    CreateTestingPrefService();
 
   if (!file_util::PathExists(profile_path_))
     file_util::CreateDirectory(profile_path_);
@@ -316,9 +319,11 @@ TestingProfile::~TestingProfile() {
     pref_proxy_config_tracker_->DetachFromPrefService();
 }
 
-static ProfileKeyedService* BuildFaviconService(Profile* profile) {
+static ProfileKeyedService* BuildFaviconService(
+    content::BrowserContext* profile) {
   return new FaviconService(
-      HistoryServiceFactory::GetForProfileWithoutCreating(profile));
+      HistoryServiceFactory::GetForProfileWithoutCreating(
+          static_cast<Profile*>(profile)));
 }
 
 void TestingProfile::CreateFaviconService() {
@@ -327,8 +332,9 @@ void TestingProfile::CreateFaviconService() {
       this, BuildFaviconService);
 }
 
-static ProfileKeyedService* BuildHistoryService(Profile* profile) {
-  return new HistoryService(profile);
+static ProfileKeyedService* BuildHistoryService(
+    content::BrowserContext* profile) {
+  return new HistoryService(static_cast<Profile*>(profile));
 }
 
 void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
@@ -393,7 +399,9 @@ void TestingProfile::DestroyTopSites() {
   }
 }
 
-static ProfileKeyedService* BuildBookmarkModel(Profile* profile) {
+static ProfileKeyedService* BuildBookmarkModel(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
   bookmark_model->Load(profile->GetIOTaskRunner());
   return bookmark_model;
@@ -420,8 +428,8 @@ void TestingProfile::CreateBookmarkModel(bool delete_file) {
 }
 
 static ProfileKeyedService* BuildWebDataService(
-    Profile* profile) {
-  return new WebDataServiceWrapper(profile);
+    content::BrowserContext* profile) {
+  return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }
 
 void TestingProfile::CreateWebDataService() {

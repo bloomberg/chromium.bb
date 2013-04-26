@@ -77,7 +77,9 @@ bool CookieSettings::Factory::ServiceRedirectedInIncognito() const {
 }
 
 scoped_refptr<RefcountedProfileKeyedService>
-CookieSettings::Factory::BuildServiceInstanceFor(Profile* profile) const {
+CookieSettings::Factory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
   return new CookieSettings(profile->GetHostContentSettingsMap(),
                             profile->GetPrefs());
 }

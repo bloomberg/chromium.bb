@@ -44,8 +44,8 @@ class ExtensionActionManagerFactory : public ProfileKeyedServiceFactory {
   }
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE {
-    return new ExtensionActionManager(profile);
+      content::BrowserContext* profile) const OVERRIDE {
+    return new ExtensionActionManager(static_cast<Profile*>(profile));
   }
 
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE {

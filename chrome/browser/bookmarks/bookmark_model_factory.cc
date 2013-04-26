@@ -39,7 +39,8 @@ BookmarkModelFactory::BookmarkModelFactory()
 BookmarkModelFactory::~BookmarkModelFactory() {}
 
 ProfileKeyedService* BookmarkModelFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
   BookmarkModel* bookmark_model = new BookmarkModel(profile);
   bookmark_model->Load(StartupTaskRunnerServiceFactory::GetForProfile(profile)->
       GetBookmarkTaskRunner());

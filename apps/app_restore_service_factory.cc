@@ -5,6 +5,7 @@
 #include "apps/app_restore_service_factory.h"
 
 #include "apps/app_restore_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace apps {
@@ -35,8 +36,8 @@ AppRestoreServiceFactory::~AppRestoreServiceFactory() {
 }
 
 ProfileKeyedService* AppRestoreServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new AppRestoreService(profile);
+    content::BrowserContext* profile) const {
+  return new AppRestoreService(static_cast<Profile*>(profile));
 }
 
 bool AppRestoreServiceFactory::ServiceIsCreatedWithProfile() const {

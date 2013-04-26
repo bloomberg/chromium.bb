@@ -29,12 +29,12 @@ class ShortcutsBackendFactory : public RefcountedProfileKeyedServiceFactory {
 
   // Creates and returns a backend for testing purposes.
   static scoped_refptr<RefcountedProfileKeyedService>
-      BuildProfileForTesting(Profile* profile);
+      BuildProfileForTesting(content::BrowserContext* profile);
 
   // Creates and returns a backend but without creating its persistent database
   // for testing purposes.
   static scoped_refptr<RefcountedProfileKeyedService>
-      BuildProfileNoDatabaseForTesting(Profile* profile);
+      BuildProfileNoDatabaseForTesting(content::BrowserContext* profile);
 
  private:
   friend struct DefaultSingletonTraits<ShortcutsBackendFactory>;
@@ -44,7 +44,7 @@ class ShortcutsBackendFactory : public RefcountedProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
 };
 

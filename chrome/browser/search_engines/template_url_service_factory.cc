@@ -26,8 +26,8 @@ TemplateURLServiceFactory* TemplateURLServiceFactory::GetInstance() {
 
 // static
 ProfileKeyedService* TemplateURLServiceFactory::BuildInstanceFor(
-    Profile* profile) {
-  return new TemplateURLService(profile);
+    content::BrowserContext* profile) {
+  return new TemplateURLService(static_cast<Profile*>(profile));
 }
 
 TemplateURLServiceFactory::TemplateURLServiceFactory()
@@ -41,8 +41,8 @@ TemplateURLServiceFactory::TemplateURLServiceFactory()
 TemplateURLServiceFactory::~TemplateURLServiceFactory() {}
 
 ProfileKeyedService* TemplateURLServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return BuildInstanceFor(profile);
+    content::BrowserContext* profile) const {
+  return BuildInstanceFor(static_cast<Profile*>(profile));
 }
 
 void TemplateURLServiceFactory::RegisterUserPrefs(
@@ -96,7 +96,8 @@ bool TemplateURLServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 
-void TemplateURLServiceFactory::ProfileShutdown(Profile* profile) {
+void TemplateURLServiceFactory::ProfileShutdown(
+    content::BrowserContext* profile) {
   // We shutdown AND destroy the TemplateURLService during this pass.
   // TemplateURLService schedules a task on the WebDataService from its
   // destructor. Delete it first to ensure the task gets scheduled before we
@@ -105,6 +106,7 @@ void TemplateURLServiceFactory::ProfileShutdown(Profile* profile) {
   ProfileKeyedServiceFactory::ProfileDestroyed(profile);
 }
 
-void TemplateURLServiceFactory::ProfileDestroyed(Profile* profile) {
+void TemplateURLServiceFactory::ProfileDestroyed(
+    content::BrowserContext* profile) {
   // Don't double delete.
 }

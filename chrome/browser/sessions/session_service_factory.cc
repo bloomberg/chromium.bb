@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sessions/session_service_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sessions/session_service.h"
 
@@ -58,9 +59,9 @@ SessionServiceFactory::~SessionServiceFactory() {
 }
 
 ProfileKeyedService* SessionServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   SessionService* service = NULL;
-  service = new SessionService(profile);
+  service = new SessionService(static_cast<Profile*>(profile));
   service->ResetFromCurrentBrowsers();
   return service;
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/browser/extensions/api/bluetooth/bluetooth_api.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace extensions {
@@ -31,8 +32,8 @@ BluetoothAPIFactory::~BluetoothAPIFactory() {
 }
 
 ProfileKeyedService* BluetoothAPIFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new BluetoothAPI(profile);
+    content::BrowserContext* profile) const {
+  return new BluetoothAPI(static_cast<Profile*>(profile));
 }
 
 bool BluetoothAPIFactory::ServiceRedirectedInIncognito() const {

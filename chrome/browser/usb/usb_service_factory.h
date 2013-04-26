@@ -25,7 +25,7 @@ class UsbServiceFactory : public ProfileKeyedServiceFactory {
   virtual ~UsbServiceFactory();
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_USB_USB_SERVICE_FACTORY_H_

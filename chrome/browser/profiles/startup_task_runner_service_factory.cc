@@ -4,6 +4,7 @@
 
 #include "chrome/browser/profiles/startup_task_runner_service_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/startup_task_runner_service.h"
 
@@ -28,6 +29,6 @@ StartupTaskRunnerServiceFactory*
 }
 
 ProfileKeyedService* StartupTaskRunnerServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new StartupTaskRunnerService(profile);
+    content::BrowserContext* profile) const {
+  return new StartupTaskRunnerService(static_cast<Profile*>(profile));
 }

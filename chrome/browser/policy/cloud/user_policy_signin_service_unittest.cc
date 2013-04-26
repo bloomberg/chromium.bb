@@ -73,8 +73,8 @@ class SigninManagerFake : public FakeSigninManager {
     SignOut();
   }
 
-  static ProfileKeyedService* Build(Profile* profile) {
-    return new SigninManagerFake(profile);
+  static ProfileKeyedService* Build(content::BrowserContext* profile) {
+    return new SigninManagerFake(static_cast<Profile*>(profile));
   }
 };
 }  // namespace

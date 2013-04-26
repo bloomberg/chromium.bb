@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/drive_notification_manager_factory.h"
 
 #include "chrome/browser/google_apis/drive_notification_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
@@ -36,8 +37,8 @@ DriveNotificationManagerFactory::DriveNotificationManagerFactory()
 DriveNotificationManagerFactory::~DriveNotificationManagerFactory() {}
 
 ProfileKeyedService* DriveNotificationManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new DriveNotificationManager(profile);
+    content::BrowserContext* profile) const {
+  return new DriveNotificationManager(static_cast<Profile*>(profile));
 }
 
 }  // namespace google_apis

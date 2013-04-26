@@ -245,8 +245,8 @@ ShellWindowRegistry::Factory::~Factory() {
 }
 
 ProfileKeyedService* ShellWindowRegistry::Factory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new ShellWindowRegistry(profile);
+    content::BrowserContext* profile) const {
+  return new ShellWindowRegistry(static_cast<Profile*>(profile));
 }
 
 bool ShellWindowRegistry::Factory::ServiceIsCreatedWithProfile() const {

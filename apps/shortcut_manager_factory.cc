@@ -5,6 +5,7 @@
 #include "apps/shortcut_manager_factory.h"
 
 #include "apps/shortcut_manager.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace apps {
@@ -35,8 +36,8 @@ ShortcutManagerFactory::~ShortcutManagerFactory() {
 }
 
 ProfileKeyedService* ShortcutManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new ShortcutManager(profile);
+    content::BrowserContext* profile) const {
+  return new ShortcutManager(static_cast<Profile*>(profile));
 }
 
 bool ShortcutManagerFactory::ServiceIsCreatedWithProfile() const {

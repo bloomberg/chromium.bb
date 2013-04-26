@@ -10,10 +10,15 @@
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/profiles/dependency_node.h"
 
+namespace content {
+class BrowserContext;
+};
+
 class PrefRegistrySyncable;
 class PrefService;
-class Profile;
 class ProfileDependencyManager;
+
+class Profile;
 
 // Base class for Factories that take a Profile object and return some service.
 //
@@ -29,7 +34,7 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
   // |profile|. This is the public interface and is safe to be called multiple
   // times because testing code can have multiple services of the same type
   // attached to a single |profile|.
-  void RegisterUserPrefsOnProfile(Profile* profile);
+  void RegisterUserPrefsOnProfile(content::BrowserContext* profile);
 
 #ifndef NDEBUG
   // Returns our name. We don't keep track of this in release mode.
@@ -46,7 +51,7 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
   void DependsOn(ProfileKeyedBaseFactory* rhs);
 
   // Finds which profile (if any) to use using the Service.*Incognito methods.
-  Profile* GetProfileToUse(Profile* profile);
+  content::BrowserContext* GetProfileToUse(content::BrowserContext* profile);
 
   // Interface for people building a concrete FooServiceFactory: --------------
 
@@ -91,14 +96,14 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
   //   should delete/deref/do other final memory management things during this
   //   phase. You must also call the base class method as the last thing you
   //   do.
-  virtual void ProfileShutdown(Profile* profile) = 0;
-  virtual void ProfileDestroyed(Profile* profile);
+  virtual void ProfileShutdown(content::BrowserContext* profile) = 0;
+  virtual void ProfileDestroyed(content::BrowserContext* profile);
 
   // Returns whether we've registered the preferences on this profile.
-  bool ArePreferencesSetOn(Profile* profile) const;
+  bool ArePreferencesSetOn(content::BrowserContext* profile) const;
 
   // Mark profile as Preferences set.
-  void MarkPreferencesSetOn(Profile* profile);
+  void MarkPreferencesSetOn(content::BrowserContext* profile);
 
  private:
   friend class ProfileDependencyManager;
@@ -109,11 +114,11 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
 
   // Because of ServiceIsNULLWhileTesting(), we need a way to tell different
   // subclasses that they should disable testing.
-  virtual void SetEmptyTestingFactory(Profile* profile) = 0;
+  virtual void SetEmptyTestingFactory(content::BrowserContext* profile) = 0;
 
   // We also need a generalized, non-returning method that generates the object
   // now for when we're creating the profile.
-  virtual void CreateServiceNow(Profile* profile) = 0;
+  virtual void CreateServiceNow(content::BrowserContext* profile) = 0;
 
   // Which ProfileDependencyManager we should communicate with. In real code,
   // this will always be ProfileDependencyManager::GetInstance(), but unit
@@ -121,7 +126,7 @@ class ProfileKeyedBaseFactory : public base::NonThreadSafe,
   ProfileDependencyManager* dependency_manager_;
 
   // Profiles that have this service's preferences registered on them.
-  std::set<Profile*> registered_preferences_;
+  std::set<content::BrowserContext*> registered_preferences_;
 
 #if !defined(NDEBUG)
   // A static string passed in to our constructor. Should be unique across all

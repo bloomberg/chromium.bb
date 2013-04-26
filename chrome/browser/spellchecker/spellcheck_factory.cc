@@ -34,7 +34,9 @@ SpellcheckServiceFactory::SpellcheckServiceFactory()
 SpellcheckServiceFactory::~SpellcheckServiceFactory() {}
 
 ProfileKeyedService* SpellcheckServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
+
   // Many variables are initialized from the profile in the SpellcheckService.
   DCHECK(profile);
   SpellcheckService* spellcheck = new SpellcheckService(profile);

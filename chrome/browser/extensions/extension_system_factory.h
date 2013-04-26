@@ -31,7 +31,7 @@ class ExtensionSystemSharedFactory : public ProfileKeyedServiceFactory {
   virtual ~ExtensionSystemSharedFactory();
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 };
 
@@ -50,7 +50,7 @@ class ExtensionSystemFactory : public ProfileKeyedServiceFactory {
   virtual ~ExtensionSystemFactory();
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
   virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;
   virtual bool ServiceIsCreatedWithProfile() const OVERRIDE;
 };

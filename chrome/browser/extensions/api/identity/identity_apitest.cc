@@ -182,8 +182,8 @@ class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   OAuth2MintTokenFlow::Delegate* delegate_;
 };
 
-ProfileKeyedService* IdentityAPITestFactory(Profile* profile) {
-  return new IdentityAPI(profile);
+ProfileKeyedService* IdentityAPITestFactory(content::BrowserContext* profile) {
+  return new IdentityAPI(static_cast<Profile*>(profile));
 }
 
 }  // namespace

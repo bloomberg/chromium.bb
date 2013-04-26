@@ -130,8 +130,8 @@ ActivityLogFactory* ActivityLogFactory::GetInstance() {
 }
 
 ProfileKeyedService* ActivityLogFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new ActivityLog(profile);
+    content::BrowserContext* profile) const {
+  return new ActivityLog(static_cast<Profile*>(profile));
 }
 
 bool ActivityLogFactory::ServiceRedirectedInIncognito() const {

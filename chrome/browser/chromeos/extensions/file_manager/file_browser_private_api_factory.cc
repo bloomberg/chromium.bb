@@ -34,9 +34,9 @@ FileBrowserPrivateAPIFactory::FileBrowserPrivateAPIFactory()
 FileBrowserPrivateAPIFactory::~FileBrowserPrivateAPIFactory() {
 }
 
-ProfileKeyedService*
-FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(Profile* profile) const {
-  return new FileBrowserPrivateAPI(profile);
+ProfileKeyedService* FileBrowserPrivateAPIFactory::BuildServiceInstanceFor(
+    content::BrowserContext* profile) const {
+  return new FileBrowserPrivateAPI(static_cast<Profile*>(profile));
 }
 
 bool FileBrowserPrivateAPIFactory::ServiceHasOwnInstanceInIncognito() const {

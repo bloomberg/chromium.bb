@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace policy {
@@ -53,15 +54,21 @@ scoped_ptr<UserCloudPolicyManager>
       new policy::UserCloudPolicyManager(profile, store.Pass()));
 }
 
-void UserCloudPolicyManagerFactory::ProfileShutdown(Profile* profile) {
-  UserCloudPolicyManager* manager = GetManagerForProfile(profile);
+void UserCloudPolicyManagerFactory::ProfileShutdown(
+    content::BrowserContext* profile) {
+  UserCloudPolicyManager* manager =
+      GetManagerForProfile(static_cast<Profile*>(profile));
   if (manager)
     manager->Shutdown();
 }
 
-void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(Profile* profile) {}
+void UserCloudPolicyManagerFactory::SetEmptyTestingFactory(
+    content::BrowserContext* profile) {
+}
 
-void UserCloudPolicyManagerFactory::CreateServiceNow(Profile* profile) {}
+void UserCloudPolicyManagerFactory::CreateServiceNow(
+    content::BrowserContext* profile) {
+}
 
 void UserCloudPolicyManagerFactory::Register(Profile* profile,
                                              UserCloudPolicyManager* instance) {

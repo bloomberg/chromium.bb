@@ -78,15 +78,13 @@ void SigninManagerFactory::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 ProfileKeyedService* SigninManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-
+    content::BrowserContext* profile) const {
   SigninManagerBase* service = NULL;
 #if defined(OS_CHROMEOS)
   service = new SigninManagerBase();
 #else
   service = new SigninManager();
 #endif
-
-  service->Initialize(profile);
+  service->Initialize(static_cast<Profile*>(profile));
   return service;
 }

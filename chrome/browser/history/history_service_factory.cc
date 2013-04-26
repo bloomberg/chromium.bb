@@ -64,7 +64,9 @@ HistoryServiceFactory::~HistoryServiceFactory() {
 }
 
 ProfileKeyedService*
-HistoryServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
+HistoryServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
   HistoryService* history_service = new HistoryService(profile);
   if (!history_service->Init(profile->GetPath(),
                              BookmarkModelFactory::GetForProfile(profile))) {

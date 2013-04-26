@@ -72,8 +72,8 @@ void AboutSigninInternalsFactory::RegisterUserPrefs(
 }
 
 ProfileKeyedService* AboutSigninInternalsFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   AboutSigninInternals* service = new AboutSigninInternals();
-  service->Initialize(profile);
+  service->Initialize(static_cast<Profile*>(profile));
   return service;
 }

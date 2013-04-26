@@ -417,7 +417,9 @@ DriveSystemServiceFactory::~DriveSystemServiceFactory() {
 }
 
 ProfileKeyedService* DriveSystemServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
+
   DriveSystemService* service = NULL;
   if (factory_for_test_.is_null())
     service = new DriveSystemService(profile, NULL, base::FilePath(), NULL);

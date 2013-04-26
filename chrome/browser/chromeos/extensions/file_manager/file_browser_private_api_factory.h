@@ -33,8 +33,8 @@ class FileBrowserPrivateAPIFactory : public ProfileKeyedServiceFactory {
   virtual ~FileBrowserPrivateAPIFactory();
 
   // ProfileKeyedServiceFactory:
-  virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile)
-      const OVERRIDE;
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* profile) const OVERRIDE;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_FILE_MANAGER_FILE_BROWSER_PRIVATE_API_FACTORY_H_

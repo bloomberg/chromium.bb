@@ -95,7 +95,10 @@ LocalProfileId PasswordStoreFactory::GetLocalProfileId(
 #endif
 
 scoped_refptr<RefcountedProfileKeyedService>
-PasswordStoreFactory::BuildServiceInstanceFor(Profile* profile) const {
+PasswordStoreFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
+
   scoped_refptr<PasswordStore> ps;
   base::FilePath login_db_file_path = profile->GetPath();
   login_db_file_path = login_db_file_path.Append(chrome::kLoginDataFileName);

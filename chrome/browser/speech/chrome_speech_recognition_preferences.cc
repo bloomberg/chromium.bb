@@ -60,9 +60,10 @@ ChromeSpeechRecognitionPreferences::Factory::~Factory() {
 
 ProfileKeyedService*
 ChromeSpeechRecognitionPreferences::Factory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   DCHECK(profile);
-  return new ChromeSpeechRecognitionPreferences::Service(profile);
+  return new ChromeSpeechRecognitionPreferences::Service(
+      static_cast<Profile*>(profile));
 }
 
 void ChromeSpeechRecognitionPreferences::Factory::RegisterUserPrefs(

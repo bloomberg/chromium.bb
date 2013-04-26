@@ -28,8 +28,8 @@ PinnedTabServiceFactory::~PinnedTabServiceFactory() {
 }
 
 ProfileKeyedService* PinnedTabServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new PinnedTabService(profile);
+    content::BrowserContext* profile) const {
+  return new PinnedTabService(static_cast<Profile*>(profile));
 }
 
 bool PinnedTabServiceFactory::ServiceIsCreatedWithProfile() const {

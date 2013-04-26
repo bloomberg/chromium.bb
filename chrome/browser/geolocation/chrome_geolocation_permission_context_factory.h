@@ -30,7 +30,7 @@ class ChromeGeolocationPermissionContextFactory
 
   // |ProfileKeyedBaseFactory| methods:
   virtual ProfileKeyedService*
-      BuildServiceInstanceFor(Profile* profile) const OVERRIDE;
+      BuildServiceInstanceFor(content::BrowserContext* profile) const OVERRIDE;
   virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceHasOwnInstanceInIncognito() const OVERRIDE;

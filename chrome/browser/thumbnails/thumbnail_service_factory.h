@@ -36,7 +36,7 @@ class ThumbnailServiceFactory : public RefcountedProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory:
   virtual scoped_refptr<RefcountedProfileKeyedService> BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ThumbnailServiceFactory);
 };

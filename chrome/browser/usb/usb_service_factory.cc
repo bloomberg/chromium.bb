@@ -5,6 +5,7 @@
 #include "chrome/browser/usb/usb_service_factory.h"
 
 #include "base/memory/singleton.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/usb/usb_service.h"
 
@@ -23,6 +24,6 @@ UsbServiceFactory::UsbServiceFactory() : ProfileKeyedServiceFactory(
 UsbServiceFactory::~UsbServiceFactory() {}
 
 ProfileKeyedService* UsbServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   return new UsbService();
 }

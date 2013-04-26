@@ -34,8 +34,8 @@ BackgroundContentsServiceFactory::~BackgroundContentsServiceFactory() {
 }
 
 ProfileKeyedService* BackgroundContentsServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new BackgroundContentsService(profile,
+    content::BrowserContext* profile) const {
+  return new BackgroundContentsService(static_cast<Profile*>(profile),
                                        CommandLine::ForCurrentProcess());
 }
 

@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/image_loader_factory.h"
 
 #include "chrome/browser/extensions/image_loader.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 
 namespace extensions {
@@ -35,7 +36,7 @@ ImageLoaderFactory::~ImageLoaderFactory() {
 }
 
 ProfileKeyedService* ImageLoaderFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   return new ImageLoader;
 }
 

@@ -12,8 +12,8 @@
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/profiles/profile_keyed_service.h"
 
-void ProfileKeyedServiceFactory::SetTestingFactory(Profile* profile,
-                                                   FactoryFunction factory) {
+void ProfileKeyedServiceFactory::SetTestingFactory(
+    content::BrowserContext* profile, FactoryFunction factory) {
   // Destroying the profile may cause us to lose data about whether |profile|
   // has our preferences registered on it (since the profile object itself
   // isn't dead). See if we need to readd it once we've gone through normal
@@ -33,7 +33,7 @@ void ProfileKeyedServiceFactory::SetTestingFactory(Profile* profile,
 }
 
 ProfileKeyedService* ProfileKeyedServiceFactory::SetTestingFactoryAndUse(
-    Profile* profile,
+    content::BrowserContext* profile,
     FactoryFunction factory) {
   DCHECK(factory);
   SetTestingFactory(profile, factory);
@@ -50,7 +50,7 @@ ProfileKeyedServiceFactory::~ProfileKeyedServiceFactory() {
 }
 
 ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
-    Profile* profile,
+    content::BrowserContext* profile,
     bool create) {
   profile = GetProfileToUse(profile);
   if (!profile)
@@ -85,19 +85,21 @@ ProfileKeyedService* ProfileKeyedServiceFactory::GetServiceForProfile(
   return service;
 }
 
-void ProfileKeyedServiceFactory::Associate(Profile* profile,
+void ProfileKeyedServiceFactory::Associate(content::BrowserContext* profile,
                                            ProfileKeyedService* service) {
   DCHECK(!ContainsKey(mapping_, profile));
   mapping_.insert(std::make_pair(profile, service));
 }
 
-void ProfileKeyedServiceFactory::ProfileShutdown(Profile* profile) {
+void ProfileKeyedServiceFactory::ProfileShutdown(
+    content::BrowserContext* profile) {
   ProfileKeyedServices::iterator it = mapping_.find(profile);
   if (it != mapping_.end() && it->second)
     it->second->Shutdown();
 }
 
-void ProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
+void ProfileKeyedServiceFactory::ProfileDestroyed(
+    content::BrowserContext* profile) {
   ProfileKeyedServices::iterator it = mapping_.find(profile);
   if (it != mapping_.end()) {
     delete it->second;
@@ -114,10 +116,11 @@ void ProfileKeyedServiceFactory::ProfileDestroyed(Profile* profile) {
 }
 
 void ProfileKeyedServiceFactory::SetEmptyTestingFactory(
-    Profile* profile) {
+    content::BrowserContext* profile) {
   SetTestingFactory(profile, NULL);
 }
 
-void ProfileKeyedServiceFactory::CreateServiceNow(Profile* profile) {
+void ProfileKeyedServiceFactory::CreateServiceNow(
+    content::BrowserContext* profile) {
   GetServiceForProfile(profile, true);
 }

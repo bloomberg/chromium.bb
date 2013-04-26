@@ -39,7 +39,7 @@ class ProtocolHandlerRegistryFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedServiceFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(ProtocolHandlerRegistryFactory);
 };

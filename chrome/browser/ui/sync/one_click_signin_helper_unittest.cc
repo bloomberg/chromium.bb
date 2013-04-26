@@ -155,8 +155,8 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
 
    // Helper routine to be used in conjunction with
    // ProfileKeyedServiceFactory::SetTestingFactory().
-   static ProfileKeyedService* Build(Profile* profile) {
-     return new OneClickTestProfileSyncService(profile);
+   static ProfileKeyedService* Build(content::BrowserContext* profile) {
+     return new OneClickTestProfileSyncService(static_cast<Profile*>(profile));
    }
 
    // Need to control this for certain tests.
@@ -188,8 +188,9 @@ class OneClickTestProfileSyncService : public TestProfileSyncService {
    bool first_setup_in_progress_;
 };
 
-static ProfileKeyedService* BuildSigninManagerMock(Profile* profile) {
-  return new SigninManagerMock(profile);
+static ProfileKeyedService* BuildSigninManagerMock(
+    content::BrowserContext* profile) {
+  return new SigninManagerMock(static_cast<Profile*>(profile));
 }
 
 }  // namespace

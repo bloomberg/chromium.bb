@@ -7,6 +7,7 @@
 #include "chrome/browser/autocomplete/autocomplete_classifier.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/history/shortcuts_backend_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 
@@ -25,8 +26,8 @@ AutocompleteClassifierFactory* AutocompleteClassifierFactory::GetInstance() {
 
 // static
 ProfileKeyedService* AutocompleteClassifierFactory::BuildInstanceFor(
-    Profile* profile) {
-  return new AutocompleteClassifier(profile);
+    content::BrowserContext* profile) {
+  return new AutocompleteClassifier(static_cast<Profile*>(profile));
 }
 
 AutocompleteClassifierFactory::AutocompleteClassifierFactory()
@@ -51,6 +52,6 @@ bool AutocompleteClassifierFactory::ServiceIsNULLWhileTesting() const {
 }
 
 ProfileKeyedService* AutocompleteClassifierFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return BuildInstanceFor(profile);
+    content::BrowserContext* profile) const {
+  return BuildInstanceFor(static_cast<Profile*>(profile));
 }

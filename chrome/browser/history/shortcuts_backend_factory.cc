@@ -6,6 +6,7 @@
 
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/common/pref_names.h"
 
@@ -32,18 +33,21 @@ ShortcutsBackendFactory* ShortcutsBackendFactory::GetInstance() {
 
 // static
 scoped_refptr<RefcountedProfileKeyedService>
-ShortcutsBackendFactory::BuildProfileForTesting(Profile* profile) {
+ShortcutsBackendFactory::BuildProfileForTesting(
+    content::BrowserContext* profile) {
   scoped_refptr<history::ShortcutsBackend> backend(
-      new ShortcutsBackend(profile, false));
+      new ShortcutsBackend(static_cast<Profile*>(profile), false));
   if (backend->Init())
     return backend;
   return NULL;
 }
 
+// static
 scoped_refptr<RefcountedProfileKeyedService>
-ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting(Profile* profile) {
+ShortcutsBackendFactory::BuildProfileNoDatabaseForTesting(
+    content::BrowserContext* profile) {
   scoped_refptr<history::ShortcutsBackend> backend(
-      new ShortcutsBackend(profile, true));
+      new ShortcutsBackend(static_cast<Profile*>(profile), true));
   if (backend->Init())
     return backend;
   return NULL;
@@ -58,9 +62,10 @@ ShortcutsBackendFactory::ShortcutsBackendFactory()
 ShortcutsBackendFactory::~ShortcutsBackendFactory() {}
 
 scoped_refptr<RefcountedProfileKeyedService>
-ShortcutsBackendFactory::BuildServiceInstanceFor(Profile* profile) const {
+ShortcutsBackendFactory::BuildServiceInstanceFor(
+    content::BrowserContext* profile) const {
   scoped_refptr<history::ShortcutsBackend> backend(
-      new ShortcutsBackend(profile, false));
+      new ShortcutsBackend(static_cast<Profile*>(profile), false));
   if (backend->Init())
     return backend;
   return NULL;

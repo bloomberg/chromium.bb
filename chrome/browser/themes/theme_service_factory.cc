@@ -45,14 +45,14 @@ ThemeServiceFactory::ThemeServiceFactory()
 ThemeServiceFactory::~ThemeServiceFactory() {}
 
 ProfileKeyedService* ThemeServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   ThemeService* provider = NULL;
 #if defined(TOOLKIT_GTK)
   provider = new GtkThemeService;
 #else
   provider = new ThemeService;
 #endif
-  provider->Init(profile);
+  provider->Init(static_cast<Profile*>(profile));
 
   return provider;
 }

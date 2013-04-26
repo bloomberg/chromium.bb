@@ -26,7 +26,7 @@ class SystemIndicatorManagerFactory : public ProfileKeyedServiceFactory {
 
   // ProfileKeyedBaseFactory implementation.
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 };
 
 }  // namespace extensions

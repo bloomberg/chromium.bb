@@ -39,8 +39,8 @@ UserPolicySigninServiceFactory* UserPolicySigninServiceFactory::GetInstance() {
 }
 
 ProfileKeyedService* UserPolicySigninServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new UserPolicySigninService(profile);
+    content::BrowserContext* profile) const {
+  return new UserPolicySigninService(static_cast<Profile*>(profile));
 }
 
 bool UserPolicySigninServiceFactory::ServiceIsCreatedWithProfile() const {

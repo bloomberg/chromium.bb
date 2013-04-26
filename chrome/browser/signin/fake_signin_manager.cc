@@ -41,8 +41,9 @@ void FakeSigninManagerBase::SignOut() {
 }
 
 // static
-ProfileKeyedService* FakeSigninManagerBase::Build(Profile* profile) {
-  return new FakeSigninManagerBase(profile);
+ProfileKeyedService* FakeSigninManagerBase::Build(
+    content::BrowserContext* profile) {
+  return new FakeSigninManagerBase(static_cast<Profile*>(profile));
 }
 
 #if !defined (OS_CHROMEOS)
@@ -82,8 +83,9 @@ void FakeSigninManager::SignOut() {
 }
 
 // static
-ProfileKeyedService* FakeSigninManager::Build(Profile* profile) {
-  return new FakeSigninManager(profile);
+ProfileKeyedService* FakeSigninManager::Build(
+    content::BrowserContext* profile) {
+  return new FakeSigninManager(static_cast<Profile*>(profile));
 }
 
 #endif  // !defined (OS_CHROMEOS)

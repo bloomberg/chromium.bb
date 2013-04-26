@@ -25,6 +25,7 @@ void* UserDataKey() {
 // static
 PrefService* UserPrefs::Get(content::BrowserContext* context) {
   DCHECK(context);
+  DCHECK(context->GetUserData(UserDataKey()));
   return static_cast<UserPrefs*>(
       context->GetUserData(UserDataKey()))->prefs_;
 }

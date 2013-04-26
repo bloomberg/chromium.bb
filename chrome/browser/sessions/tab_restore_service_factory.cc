@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/sessions/tab_restore_service.h"
 

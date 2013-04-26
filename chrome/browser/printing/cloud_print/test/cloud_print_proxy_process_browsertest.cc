@@ -456,8 +456,9 @@ TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
 }
 
 ProfileKeyedService* CloudPrintProxyServiceFactoryForPolicyTest(
-    Profile* profile) {
-  CloudPrintProxyService* service = new CloudPrintProxyService(profile);
+    content::BrowserContext* profile) {
+  CloudPrintProxyService* service =
+      new CloudPrintProxyService(static_cast<Profile*>(profile));
   service->Initialize();
   return service;
 }

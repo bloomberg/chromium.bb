@@ -36,6 +36,6 @@ TestingProfile* ProfileSyncServiceMock::MakeSignedInTestingProfile() {
 
 // static
 ProfileKeyedService* ProfileSyncServiceMock::BuildMockProfileSyncService(
-    Profile* profile) {
-  return new ProfileSyncServiceMock(profile);
+    content::BrowserContext* profile) {
+  return new ProfileSyncServiceMock(static_cast<Profile*>(profile));
 }

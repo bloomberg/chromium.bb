@@ -29,6 +29,6 @@ LoginUIServiceFactory* LoginUIServiceFactory::GetInstance() {
 }
 
 ProfileKeyedService* LoginUIServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new LoginUIService(profile);
+    content::BrowserContext* profile) const {
+  return new LoginUIService(static_cast<Profile*>(profile));
 }

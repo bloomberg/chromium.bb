@@ -123,7 +123,8 @@ class CookieSettings
     virtual void RegisterUserPrefs(PrefRegistrySyncable* registry) OVERRIDE;
     virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
     virtual scoped_refptr<RefcountedProfileKeyedService>
-        BuildServiceInstanceFor(Profile* profile) const OVERRIDE;
+        BuildServiceInstanceFor(
+            content::BrowserContext* context) const OVERRIDE;
   };
 
  private:

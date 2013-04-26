@@ -34,7 +34,8 @@ ThumbnailServiceFactory* ThumbnailServiceFactory::GetInstance() {
 }
 
 scoped_refptr<RefcountedProfileKeyedService>
-    ThumbnailServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
+    ThumbnailServiceFactory::BuildServiceInstanceFor(
+        content::BrowserContext* profile) const {
   return scoped_refptr<RefcountedProfileKeyedService>(
-      new ThumbnailServiceImpl(profile));
+      new ThumbnailServiceImpl(static_cast<Profile*>(profile)));
 }

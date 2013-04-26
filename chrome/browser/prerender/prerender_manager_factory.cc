@@ -46,10 +46,10 @@ PrerenderManagerFactory::~PrerenderManagerFactory() {
 }
 
 ProfileKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   CHECK(g_browser_process->prerender_tracker());
   PrerenderManager* prerender_manager = new PrerenderManager(
-      profile, g_browser_process->prerender_tracker());
+      static_cast<Profile*>(profile), g_browser_process->prerender_tracker());
 #if defined(OS_CHROMEOS)
   if (chromeos::CrosLibrary::Get()) {
     prerender_manager->AddCondition(

@@ -30,6 +30,6 @@ ExtensionPrefValueMapFactory* ExtensionPrefValueMapFactory::GetInstance() {
 }
 
 ProfileKeyedService* ExtensionPrefValueMapFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   return new ExtensionPrefValueMap();
 }

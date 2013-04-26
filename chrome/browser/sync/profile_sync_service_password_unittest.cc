@@ -85,7 +85,8 @@ class NullPasswordStore : public MockPasswordStore {
  public:
   NullPasswordStore() {}
 
-  static scoped_refptr<RefcountedProfileKeyedService> Build(Profile* profile) {
+  static scoped_refptr<RefcountedProfileKeyedService> Build(
+      content::BrowserContext* profile) {
     return scoped_refptr<RefcountedProfileKeyedService>();
   }
 
@@ -128,7 +129,8 @@ class PasswordTestProfileSyncService : public TestProfileSyncService {
     QuitMessageLoop();
   }
 
-  static ProfileKeyedService* Build(Profile* profile) {
+  static ProfileKeyedService* Build(content::BrowserContext* context) {
+    Profile* profile = static_cast<Profile*>(context);
     SigninManagerBase* signin =
         SigninManagerFactory::GetForProfile(profile);
     ProfileSyncComponentsFactoryMock* factory =

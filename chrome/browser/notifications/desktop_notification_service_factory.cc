@@ -35,9 +35,9 @@ DesktopNotificationServiceFactory::~DesktopNotificationServiceFactory() {
 }
 
 ProfileKeyedService* DesktopNotificationServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   DesktopNotificationService* service =
-      new DesktopNotificationService(profile, NULL);
+      new DesktopNotificationService(static_cast<Profile*>(profile), NULL);
   return service;
 }
 

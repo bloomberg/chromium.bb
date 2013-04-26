@@ -47,9 +47,9 @@ class TtsExtensionLoaderChromeOsFactory : public ProfileKeyedServiceFactory {
     return true;
   }
 
-  virtual ProfileKeyedService* BuildServiceInstanceFor(Profile* profile) const
-      OVERRIDE {
-    return new TtsExtensionLoaderChromeOs(profile);
+  virtual ProfileKeyedService* BuildServiceInstanceFor(
+      content::BrowserContext* profile) const OVERRIDE {
+    return new TtsExtensionLoaderChromeOs(static_cast<Profile*>(profile));
   }
 };
 

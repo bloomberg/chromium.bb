@@ -21,7 +21,8 @@ class AutocompleteClassifierFactory : public ProfileKeyedServiceFactory {
 
   static AutocompleteClassifierFactory* GetInstance();
 
-  static ProfileKeyedService* BuildInstanceFor(Profile* profile);
+  static ProfileKeyedService* BuildInstanceFor(
+      content::BrowserContext* profile);
 
  private:
   friend struct DefaultSingletonTraits<AutocompleteClassifierFactory>;
@@ -33,7 +34,7 @@ class AutocompleteClassifierFactory : public ProfileKeyedServiceFactory {
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
   virtual bool ServiceIsNULLWhileTesting() const OVERRIDE;
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteClassifierFactory);
 };

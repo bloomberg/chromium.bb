@@ -237,7 +237,7 @@ class ActivityLogFactory : public ProfileKeyedServiceFactory {
   virtual ~ActivityLogFactory() {}
 
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
   virtual bool ServiceRedirectedInIncognito() const OVERRIDE;
 

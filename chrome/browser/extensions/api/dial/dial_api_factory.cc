@@ -30,8 +30,9 @@ DialAPIFactory::~DialAPIFactory() {
 }
 
 scoped_refptr<RefcountedProfileKeyedService>
-    DialAPIFactory::BuildServiceInstanceFor(Profile* profile) const {
-  return scoped_refptr<DialAPI>(new DialAPI(profile));
+    DialAPIFactory::BuildServiceInstanceFor(
+        content::BrowserContext* profile) const {
+  return scoped_refptr<DialAPI>(new DialAPI(static_cast<Profile*>(profile)));
 }
 
 bool DialAPIFactory::ServiceRedirectedInIncognito() const {

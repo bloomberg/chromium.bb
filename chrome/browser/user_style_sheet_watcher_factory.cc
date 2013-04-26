@@ -30,7 +30,9 @@ UserStyleSheetWatcherFactory::~UserStyleSheetWatcherFactory() {
 }
 
 scoped_refptr<RefcountedProfileKeyedService>
-UserStyleSheetWatcherFactory::BuildServiceInstanceFor(Profile* profile) const {
+UserStyleSheetWatcherFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
   scoped_refptr<UserStyleSheetWatcher> user_style_sheet_watcher(
       new UserStyleSheetWatcher(profile, profile->GetPath()));
   user_style_sheet_watcher->Init();

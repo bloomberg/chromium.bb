@@ -22,7 +22,7 @@ class ChromeToMobileServiceFactory : public ProfileKeyedServiceFactory {
  protected:
   // ProfileKeyedServiceFactory overrides:
   virtual ProfileKeyedService* BuildServiceInstanceFor(
-      Profile* profile) const OVERRIDE;
+      content::BrowserContext* profile) const OVERRIDE;
 
  private:
   friend struct DefaultSingletonTraits<ChromeToMobileServiceFactory>;

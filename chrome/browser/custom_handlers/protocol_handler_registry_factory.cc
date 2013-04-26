@@ -50,9 +50,9 @@ bool ProtocolHandlerRegistryFactory::ServiceIsNULLWhileTesting() const {
 }
 
 ProfileKeyedService* ProtocolHandlerRegistryFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   ProtocolHandlerRegistry* registry = new ProtocolHandlerRegistry(
-      profile, new ProtocolHandlerRegistry::Delegate());
+      static_cast<Profile*>(profile), new ProtocolHandlerRegistry::Delegate());
 
 #if defined(OS_CHROMEOS)
   // If installing defaults, they must be installed prior calling

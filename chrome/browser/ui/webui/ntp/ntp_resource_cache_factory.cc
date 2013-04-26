@@ -31,8 +31,8 @@ NTPResourceCacheFactory::NTPResourceCacheFactory()
 NTPResourceCacheFactory::~NTPResourceCacheFactory() {}
 
 ProfileKeyedService* NTPResourceCacheFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new NTPResourceCache(profile);
+    content::BrowserContext* profile) const {
+  return new NTPResourceCache(static_cast<Profile*>(profile));
 }
 
 bool NTPResourceCacheFactory::ServiceRedirectedInIncognito() const {

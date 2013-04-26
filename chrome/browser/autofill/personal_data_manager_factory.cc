@@ -76,9 +76,9 @@ PersonalDataManagerFactory::~PersonalDataManagerFactory() {
 }
 
 ProfileKeyedService* PersonalDataManagerFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
+    content::BrowserContext* profile) const {
   PersonalDataManagerService* service =
-      new PersonalDataManagerServiceImpl(profile);
+      new PersonalDataManagerServiceImpl(static_cast<Profile*>(profile));
   return service;
 }
 

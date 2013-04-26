@@ -31,8 +31,8 @@ PredictorDatabaseFactory::~PredictorDatabaseFactory() {
 }
 
 ProfileKeyedService* PredictorDatabaseFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new PredictorDatabase(profile);
+    content::BrowserContext* profile) const {
+  return new PredictorDatabase(static_cast<Profile*>(profile));
 }
 
 }  // namespace predictors

@@ -28,7 +28,7 @@ scoped_refptr<PluginPrefs> PluginPrefsFactory::GetPrefsForProfile(
 
 // static
 scoped_refptr<RefcountedProfileKeyedService>
-PluginPrefsFactory::CreateForTestingProfile(Profile* profile) {
+PluginPrefsFactory::CreateForTestingProfile(content::BrowserContext* profile) {
   return static_cast<PluginPrefs*>(
       GetInstance()->BuildServiceInstanceFor(profile).get());
 }
@@ -41,7 +41,9 @@ PluginPrefsFactory::PluginPrefsFactory()
 PluginPrefsFactory::~PluginPrefsFactory() {}
 
 scoped_refptr<RefcountedProfileKeyedService>
-PluginPrefsFactory::BuildServiceInstanceFor(Profile* profile) const {
+PluginPrefsFactory::BuildServiceInstanceFor(
+    content::BrowserContext* context) const {
+  Profile* profile = static_cast<Profile*>(context);
   scoped_refptr<PluginPrefs> plugin_prefs(new PluginPrefs());
   plugin_prefs->set_profile(profile->GetOriginalProfile());
   plugin_prefs->SetPrefs(profile->GetPrefs());

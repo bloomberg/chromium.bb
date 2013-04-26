@@ -4,6 +4,7 @@
 
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -37,8 +38,8 @@ TemplateURLFetcherFactory::~TemplateURLFetcherFactory() {
 }
 
 ProfileKeyedService* TemplateURLFetcherFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new TemplateURLFetcher(profile);
+    content::BrowserContext* profile) const {
+  return new TemplateURLFetcher(static_cast<Profile*>(profile));
 }
 
 bool TemplateURLFetcherFactory::ServiceRedirectedInIncognito() const {

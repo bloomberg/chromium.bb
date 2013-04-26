@@ -975,6 +975,6 @@ void PersistentTabRestoreService::PruneEntries() {
 }
 
 ProfileKeyedService* TabRestoreServiceFactory::BuildServiceInstanceFor(
-    Profile* profile) const {
-  return new PersistentTabRestoreService(profile, NULL);
+    content::BrowserContext* profile) const {
+  return new PersistentTabRestoreService(static_cast<Profile*>(profile), NULL);
 }

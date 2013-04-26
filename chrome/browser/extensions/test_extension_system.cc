@@ -186,8 +186,9 @@ Blacklist* TestExtensionSystem::blacklist() {
 }
 
 // static
-ProfileKeyedService* TestExtensionSystem::Build(Profile* profile) {
-  return new TestExtensionSystem(profile);
+ProfileKeyedService* TestExtensionSystem::Build(
+    content::BrowserContext* profile) {
+  return new TestExtensionSystem(static_cast<Profile*>(profile));
 }
 
 }  // namespace extensions

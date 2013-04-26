@@ -186,9 +186,9 @@ bool WebDataServiceFactory::ServiceRedirectedInIncognito() const {
   return true;
 }
 
-ProfileKeyedService*
-WebDataServiceFactory::BuildServiceInstanceFor(Profile* profile) const {
-  return new WebDataServiceWrapper(profile);
+ProfileKeyedService* WebDataServiceFactory::BuildServiceInstanceFor(
+    content::BrowserContext* profile) const {
+  return new WebDataServiceWrapper(static_cast<Profile*>(profile));
 }
 
 bool WebDataServiceFactory::ServiceIsNULLWhileTesting() const {
