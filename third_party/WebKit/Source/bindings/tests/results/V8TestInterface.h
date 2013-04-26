@@ -21,7 +21,7 @@
 #ifndef V8TestInterface_h
 #define V8TestInterface_h
 
-#if ENABLE(Condition11) || ENABLE(Condition12)
+#if ENABLE(Condition1) || ENABLE(Condition2)
 #include "TestInterface.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
@@ -34,7 +34,7 @@ namespace WebCore {
 
 class V8TestInterface {
 public:
-    static const bool hasDependentLifetime = false;
+    static const bool hasDependentLifetime = true;
     static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
     static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Persistent<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
@@ -44,9 +44,9 @@ public:
     }
     static void derefObject(void*);
     static WrapperTypeInfo info;
-    static v8::Handle<v8::Value> supplementalMethod3MethodCustom(const v8::Arguments&);
-    static v8::Handle<v8::Value> supplementalStr3AttrGetterCustom(v8::Local<v8::String> name, const v8::AccessorInfo&);
-    static void supplementalStr3AttrSetterCustom(v8::Local<v8::String> name, v8::Local<v8::Value>, const v8::AccessorInfo&);
+    static ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object>);
+    static v8::Handle<v8::Value> constructorCallback(const v8::Arguments&);
+    static v8::Handle<v8::Value> namedPropertySetter(v8::Local<v8::String>, v8::Local<v8::Value>, const v8::AccessorInfo&);
     static const int internalFieldCount = v8DefaultWrapperInternalFieldCount + 0;
     static void installPerContextProperties(v8::Handle<v8::Object>, TestInterface*, v8::Isolate*) { }
     static void installPerContextPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
@@ -134,5 +134,5 @@ inline v8::Handle<v8::Value> toV8(PassRefPtr< TestInterface > impl, v8::Handle<v
 }
 
 #endif // V8TestInterface_h
-#endif // ENABLE(Condition11) || ENABLE(Condition12)
+#endif // ENABLE(Condition1) || ENABLE(Condition2)
 

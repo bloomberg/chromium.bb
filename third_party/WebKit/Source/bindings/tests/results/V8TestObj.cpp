@@ -2269,9 +2269,7 @@ static v8::Handle<v8::Value> deprecatedStaticReadOnlyAttrAttrGetter(v8::Local<v8
 
 static v8::Handle<v8::Value> deprecatedStaticReadOnlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticReadonlyAttribute);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticReadonlyAttribute);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::StaticReadonlyAttribute);
     return TestObjV8Internal::deprecatedStaticReadOnlyAttrAttrGetter(name, info);
 }
 
@@ -2282,9 +2280,7 @@ static v8::Handle<v8::Value> deprecatedStaticAttrAttrGetter(v8::Local<v8::String
 
 static v8::Handle<v8::Value> deprecatedStaticAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticAttribute);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticAttribute);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::StaticAttribute);
     return TestObjV8Internal::deprecatedStaticAttrAttrGetter(name, info);
 }
 
@@ -2297,9 +2293,7 @@ static void deprecatedStaticAttrAttrSetter(v8::Local<v8::String> name, v8::Local
 
 static void deprecatedStaticAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticAttribute);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticAttribute);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::StaticAttribute);
     TestObjV8Internal::deprecatedStaticAttrAttrSetter(name, value, info);
 }
 
@@ -2311,9 +2305,7 @@ static v8::Handle<v8::Value> deprecatedReadonlyAttrAttrGetter(v8::Local<v8::Stri
 
 static v8::Handle<v8::Value> deprecatedReadonlyAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::ReadonlyAttribute);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::ReadonlyAttribute);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::ReadonlyAttribute);
     return TestObjV8Internal::deprecatedReadonlyAttrAttrGetter(name, info);
 }
 
@@ -2325,9 +2317,7 @@ static v8::Handle<v8::Value> deprecatedAttrAttrGetter(v8::Local<v8::String> name
 
 static v8::Handle<v8::Value> deprecatedAttrAttrGetterCallback(v8::Local<v8::String> name, const v8::AccessorInfo& info)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::Attribute);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::Attribute);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::Attribute);
     return TestObjV8Internal::deprecatedAttrAttrGetter(name, info);
 }
 
@@ -2341,9 +2331,7 @@ static void deprecatedAttrAttrSetter(v8::Local<v8::String> name, v8::Local<v8::V
 
 static void deprecatedAttrAttrSetterCallback(v8::Local<v8::String> name, v8::Local<v8::Value> value, const v8::AccessorInfo& info)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::Attribute);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::Attribute);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::Attribute);
     TestObjV8Internal::deprecatedAttrAttrSetter(name, value, info);
 }
 
@@ -3965,9 +3953,7 @@ static v8::Handle<v8::Value> deprecatedMethodMethod(const v8::Arguments& args)
 
 static v8::Handle<v8::Value> deprecatedMethodMethodCallback(const v8::Arguments& args)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::Method);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::Method);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::Method);
     return TestObjV8Internal::deprecatedMethodMethod(args);
 }
 
@@ -3979,9 +3965,7 @@ static v8::Handle<v8::Value> deprecatedStaticMethodMethod(const v8::Arguments& a
 
 static v8::Handle<v8::Value> deprecatedStaticMethodMethodCallback(const v8::Arguments& args)
 {
-    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::StaticMethod);
-
-    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::StaticMethod);
+    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::StaticMethod);
     return TestObjV8Internal::deprecatedStaticMethodMethod(args);
 }
 
