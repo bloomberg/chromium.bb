@@ -14,6 +14,7 @@
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
+#include "webkit/fileapi/file_system_util.h"
 #include "webkit/fileapi/local_file_system_operation.h"
 #include "webkit/fileapi/syncable/file_change.h"
 #include "webkit/fileapi/syncable/local_file_change_tracker.h"
@@ -208,10 +209,26 @@ void LocalFileSyncContext::ApplyRemoteChange(
   switch (change.change()) {
     case FileChange::FILE_CHANGE_ADD_OR_UPDATE:
       switch (change.file_type()) {
-        case SYNC_FILE_TYPE_FILE:
+        case SYNC_FILE_TYPE_FILE: {
           DCHECK(!local_path.empty());
-          operation->CopyInForeignFile(local_path, url, operation_callback);
+          base::FilePath dir_path =
+              fileapi::VirtualPath::DirName(url.virtual_path());
+          if (dir_path.empty() ||
+              fileapi::VirtualPath::DirName(dir_path) == dir_path) {
+            // Copying into the root directory.
+            operation->CopyInForeignFile(local_path, url, operation_callback);
+          } else {
+            FileSystemURL dir_url =
+                file_system_context->CreateCrackedFileSystemURL(
+                    url.origin(), url.mount_type(), dir_path);
+            operation->CreateDirectory(
+                dir_url, false /* exclusive */, true /* recursive */,
+                base::Bind(&LocalFileSyncContext::DidCreateDirectoryForCopyIn,
+                           this, make_scoped_refptr(file_system_context),
+                           local_path, url, operation_callback));
+          }
           break;
+        }
         case SYNC_FILE_TYPE_DIRECTORY:
           operation->CreateDirectory(
               url, false /* exclusive */, true /* recursive */,
@@ -659,6 +676,23 @@ base::TimeDelta LocalFileSyncContext::NotifyChangesDuration() {
   if (mock_notify_changes_duration_in_sec_ >= 0)
     return base::TimeDelta::FromSeconds(mock_notify_changes_duration_in_sec_);
   return base::TimeDelta::FromSeconds(kNotifyChangesDurationInSec);
+}
+
+void LocalFileSyncContext::DidCreateDirectoryForCopyIn(
+    FileSystemContext* file_system_context,
+    const base::FilePath& local_path,
+    const FileSystemURL& dest_url,
+    const StatusCallback& callback,
+    base::PlatformFileError error) {
+  if (error != base::PLATFORM_FILE_OK) {
+    callback.Run(error);
+    return;
+  }
+
+  LocalFileSystemOperation* operation = CreateFileSystemOperationForSync(
+      file_system_context);
+  DCHECK(operation);
+  operation->CopyInForeignFile(local_path, dest_url, callback);
 }
 
 }  // namespace sync_file_system

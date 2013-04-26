@@ -608,4 +608,55 @@ TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate) {
   file_system.TearDown();
 }
 
+TEST_F(LocalFileSyncContextTest, ApplyRemoteChangeForAddOrUpdate_NoParent) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+
+  CannedSyncableFileSystem file_system(GURL(kOrigin1), kServiceName,
+                                       io_task_runner_, file_task_runner_);
+  file_system.SetUp();
+
+  sync_context_ = new LocalFileSyncContext(ui_task_runner_, io_task_runner_);
+  ASSERT_EQ(SYNC_STATUS_OK,
+            file_system.MaybeInitializeFileSystemContext(sync_context_));
+  ASSERT_EQ(base::PLATFORM_FILE_OK, file_system.OpenFileSystem());
+
+  const char kTestFileData[] = "Lorem ipsum!";
+  const FileSystemURL kDir(file_system.URL("dir"));
+  const FileSystemURL kFile(file_system.URL("dir/file"));
+
+  // Either kDir or kFile not exist yet.
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, file_system.FileExists(kDir));
+  EXPECT_EQ(base::PLATFORM_FILE_ERROR_NOT_FOUND, file_system.FileExists(kFile));
+
+  // Prepare a temporary file which represents remote file data.
+  const base::FilePath kFilePath(temp_dir.path().Append(FPL("file")));
+  ASSERT_EQ(static_cast<int>(arraysize(kTestFileData) - 1),
+            file_util::WriteFile(kFilePath, kTestFileData,
+                                 arraysize(kTestFileData) - 1));
+
+  // Calling ApplyChange's with kFilePath should create
+  // kFile along with kDir.
+  FileChange change(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                    SYNC_FILE_TYPE_FILE);
+  EXPECT_EQ(SYNC_STATUS_OK,
+            ApplyRemoteChange(file_system.file_system_context(),
+                              change, kFilePath, kFile,
+                              SYNC_FILE_TYPE_UNKNOWN));
+
+  // The changes applied by ApplyRemoteChange should not be recorded in
+  // the change tracker.
+  FileSystemURLSet urls;
+  urls.clear();
+  file_system.GetChangedURLsInTracker(&urls);
+  EXPECT_TRUE(urls.empty());
+
+  // Make sure kDir and kFile are created by ApplyRemoteChange.
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.FileExists(kFile));
+  EXPECT_EQ(base::PLATFORM_FILE_OK, file_system.DirectoryExists(kDir));
+
+  sync_context_->ShutdownOnUIThread();
+  file_system.TearDown();
+}
+
 }  // namespace sync_file_system

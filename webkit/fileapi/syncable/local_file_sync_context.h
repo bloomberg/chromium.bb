@@ -167,6 +167,7 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
   virtual void OnWriteEnabled(const fileapi::FileSystemURL& url) OVERRIDE;
 
  private:
+  typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
   typedef std::deque<SyncStatusCallback> StatusCallbackQueue;
   friend class base::RefCountedThreadSafe<LocalFileSyncContext>;
   friend class CannedSyncableFileSystem;
@@ -245,6 +246,13 @@ class WEBKIT_STORAGE_EXPORT LocalFileSyncContext
       const base::FilePath& platform_path);
 
   base::TimeDelta NotifyChangesDuration();
+
+  void DidCreateDirectoryForCopyIn(
+      fileapi::FileSystemContext* file_system_context,
+      const base::FilePath& local_file_path,
+      const fileapi::FileSystemURL& dest_url,
+      const StatusCallback& callback,
+      base::PlatformFileError error);
 
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
