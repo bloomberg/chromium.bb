@@ -33,6 +33,21 @@ class MockIBusEngineService : public IBusEngineService {
                                uint32 state) OVERRIDE;
   virtual void RequireSurroundingText() OVERRIDE;
   virtual void CommitText(const std::string& text) OVERRIDE;
+
+  IBusEngineHandlerInterface* GetEngine() const;
+
+ private:
+  int register_properties_call_count_;
+  int update_preedit_call_count_;
+  int update_auxiliary_text_call_count_;
+  int update_lookup_table_call_count_;
+  int update_property_call_count_;
+  int forward_key_event_call_count_;
+  int commit_text_call_count_;
+
+  IBusEngineHandlerInterface* current_engine_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockIBusEngineService);
 };
 
 }  // namespace chromeos
