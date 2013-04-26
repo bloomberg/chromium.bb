@@ -30,8 +30,7 @@
 
 namespace WebCore {
 
-// FIXME: make FINAL once MemoryInstrumentation does not use inheritance.
-class RenderFullScreen : public RenderFlexibleBox {
+class RenderFullScreen FINAL : public RenderFlexibleBox {
 public:
     static RenderFullScreen* createAnonymous(Document*);
 

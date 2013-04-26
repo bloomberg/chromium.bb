@@ -52,7 +52,32 @@ enum MemberType {
     LastMemberTypeEntry
 };
 
-template<typename T> void reportMemoryUsage(const T*, MemoryObjectInfo*);
+template <typename B, typename D>
+struct IsBaseOf {
+    typedef char (&Yes)[1];
+    typedef char (&No)[2];
+
+    template <typename U, typename V>
+    struct Host {
+        operator U*() const;
+        operator V*();
+    };
+
+    template <typename T> static Yes checkBase(D*, T);
+    static No checkBase(B*, int);
+
+    static const bool value = sizeof(checkBase(Host<B,D>(), int())) == sizeof(Yes);
+};
+
+template <bool B, class T = void>
+struct EnableIf {
+    typedef T Type;
+};
+
+template <class T>
+struct EnableIf<false, T> {};
+
+class MemoryReporterTag {};
 
 class MemoryInstrumentationClient {
 public:
@@ -81,6 +106,41 @@ public:
 
     template <typename T> void addRootObject(const OwnPtr<T>&, MemoryObjectType = 0); // Link time guard.
     template <typename T> void addRootObject(const RefPtr<T>&, MemoryObjectType = 0); // Link time guard.
+
+    template <int>
+    struct InstrumentationSelector {
+        template <typename T> static void reportObjectMemoryUsage(const T*, MemoryObjectInfo*);
+    };
+
+    template <typename Type>
+    class IsInstrumented {
+        class yes {
+            char m;
+        };
+
+        class no {
+            yes m[2];
+        };
+
+        struct BaseMixin {
+            void reportMemoryUsage(MemoryObjectInfo*) const { }
+        };
+
+        struct Base : public Type, public BaseMixin {
+            // Provide expicit destructor without definition to avoid MSVC warning "destructor could
+            // not be generated because a base class destructor is inaccessible."
+            ~Base();
+        };
+
+        template <typename T, T t> class Helper { };
+
+        template <typename U> static no deduce(U*, Helper<void (BaseMixin::*)(MemoryObjectInfo*) const, &U::reportMemoryUsage>* = 0);
+        static yes deduce(...);
+
+    public:
+        static const bool result = sizeof(yes) == sizeof(deduce((Base*)(0)));
+
+    };
 
 protected:
     class WrapperBase {
@@ -118,42 +178,6 @@ private:
 
     friend class MemoryObjectInfo;
     friend class MemoryClassInfo;
-    template<typename T> friend void reportMemoryUsage(const T*, MemoryObjectInfo*);
-
-    template <typename Type>
-    class IsInstrumented {
-        class yes {
-            char m;
-        };
-
-        class no {
-            yes m[2];
-        };
-
-        struct BaseMixin {
-            void reportMemoryUsage(MemoryObjectInfo*) const { }
-        };
-
-        struct Base : public Type, public BaseMixin {
-            // Provide expicit destructor without definition to avoid MSVC warning "destructor could
-            // not be generated because a base class destructor is inaccessible."
-            ~Base();
-        };
-
-        template <typename T, T t> class Helper { };
-
-        template <typename U> static no deduce(U*, Helper<void (BaseMixin::*)(MemoryObjectInfo*) const, &U::reportMemoryUsage>* = 0);
-        static yes deduce(...);
-
-    public:
-        static const bool result = sizeof(yes) == sizeof(deduce((Base*)(0)));
-
-    };
-
-    template <int>
-    struct InstrumentationSelector {
-        template <typename T> static void reportObjectMemoryUsage(const T*, MemoryObjectInfo*);
-    };
 
     template<typename T> class Wrapper : public WrapperBase {
     public:
@@ -274,9 +298,17 @@ void MemoryInstrumentation::InstrumentationSelector<false>::reportObjectMemoryUs
     MemoryClassInfo::callReportObjectInfo(memoryObjectInfo, object, fn<T>(), 0, sizeof(T));
 }
 
-template<typename T>
-void reportMemoryUsage(const T* object, MemoryObjectInfo* memoryObjectInfo)
+template <typename T>
+typename EnableIf<IsBaseOf<MemoryReporterTag, T>::value, void>::Type reportMemoryUsage(const T* object, MemoryObjectInfo* memoryObjectInfo)
 {
+    COMPILE_ASSERT(sizeof(T), WTF_MemoryInstrumentation_Need_Complete_Type);
+    object->reportMemoryUsage(memoryObjectInfo);
+}
+
+template <typename T>
+typename EnableIf<!IsBaseOf<MemoryReporterTag, T>::value, void>::Type reportMemoryUsage(const T* object, MemoryObjectInfo* memoryObjectInfo)
+{
+    COMPILE_ASSERT(sizeof(T), WTF_MemoryInstrumentation_Need_Complete_Type);
     MemoryInstrumentation::InstrumentationSelector<MemoryInstrumentation::IsInstrumented<T>::result>::reportObjectMemoryUsage(object, memoryObjectInfo);
 }
 
@@ -360,5 +392,7 @@ class URLString;
 void reportMemoryUsage(const URLString*, MemoryObjectInfo*);
 
 } // namespace WTF
+
+using WTF::MemoryReporterTag;
 
 #endif // !defined(MemoryInstrumentation_h)

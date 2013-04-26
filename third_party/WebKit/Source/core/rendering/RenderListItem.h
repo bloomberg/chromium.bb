@@ -29,8 +29,7 @@ namespace WebCore {
 
 class RenderListMarker;
 
-// FIXME: make FINAL once MemoryInstrumentation does not use inheritance.
-class RenderListItem : public RenderBlock {
+class RenderListItem FINAL : public RenderBlock {
 public:
     explicit RenderListItem(Element*);
 

@@ -137,7 +137,7 @@ const int showTreeCharacterOffset = 39;
 #endif
 
 // Base class for all rendering tree objects.
-class RenderObject : public CachedImageClient {
+class RenderObject : public CachedImageClient, public MemoryReporterTag {
     friend class RenderBlock;
     friend class RenderLayer;
     friend class RenderObjectChildList;
