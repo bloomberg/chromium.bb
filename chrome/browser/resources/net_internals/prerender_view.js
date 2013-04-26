@@ -21,11 +21,6 @@ var PrerenderView = (function() {
     superClass.call(this, PrerenderView.MAIN_BOX_ID);
 
     g_browser.addPrerenderInfoObserver(this, true);
-    this.prerenderEnabledSpan_ = $(PrerenderView.ENABLED_SPAN_ID);
-    this.prerenderOmniboxEnabledSpan_ =
-        $(PrerenderView.OMNIBOX_ENABLED_SPAN_ID);
-    this.prerenderHistoryDiv_ = $(PrerenderView.HISTORY_DIV_ID);
-    this.prerenderActiveDiv_ = $(PrerenderView.ACTIVE_DIV_ID);
   }
 
   PrerenderView.TAB_ID = 'tab-handle-prerender';
@@ -34,10 +29,10 @@ var PrerenderView = (function() {
 
   // IDs for special HTML elements in prerender_view.html
   PrerenderView.MAIN_BOX_ID = 'prerender-view-tab-content';
-  PrerenderView.ENABLED_SPAN_ID = 'prerender-view-enabled-span';
-  PrerenderView.OMNIBOX_ENABLED_SPAN_ID = 'prerender-view-omnibox-enabled-span';
-  PrerenderView.HISTORY_DIV_ID = 'prerender-view-history-div';
-  PrerenderView.ACTIVE_DIV_ID = 'prerender-view-active-div';
+
+  // Used in tests.
+  PrerenderView.HISTORY_TABLE_ID = 'prerender-view-history-table';
+  PrerenderView.ACTIVE_TABLE_ID = 'prerender-view-active-table';
 
   cr.addSingletonGetter(PrerenderView);
 
@@ -50,84 +45,13 @@ var PrerenderView = (function() {
     },
 
     onPrerenderInfoChanged: function(prerenderInfo) {
-      this.prerenderEnabledSpan_.textContent = '';
-      this.prerenderOmniboxEnabledSpan_.textContent = '';
-      this.prerenderHistoryDiv_.innerHTML = '';
-      this.prerenderActiveDiv_.innerHTML = '';
-
-      if (prerenderInfo && ('enabled' in prerenderInfo)) {
-        this.prerenderEnabledSpan_.textContent =
-            prerenderInfo.enabled.toString();
-        if (prerenderInfo.enabled_note) {
-          this.prerenderEnabledSpan_.textContent +=
-              ' ' + prerenderInfo.enabled_note;
-        }
-      }
-
-      if (prerenderInfo && ('omnibox_enabled' in prerenderInfo)) {
-        this.prerenderOmniboxEnabledSpan_.textContent =
-            prerenderInfo.omnibox_enabled.toString();
-      }
-
-      if (!isValidPrerenderInfo(prerenderInfo))
+      if (!prerenderInfo)
         return false;
-
-      var tabPrinter = createHistoryTablePrinter(prerenderInfo.history);
-      tabPrinter.toHTML(this.prerenderHistoryDiv_, 'styled-table');
-
-      var tabPrinter = createActiveTablePrinter(prerenderInfo.active);
-      tabPrinter.toHTML(this.prerenderActiveDiv_, 'styled-table');
-
+      var input = new JsEvalContext(prerenderInfo);
+      jstProcess(input, $(PrerenderView.MAIN_BOX_ID));
       return true;
     }
   };
-
-  function isValidPrerenderInfo(prerenderInfo) {
-    if (prerenderInfo == null) {
-      return false;
-    }
-    if (!('history' in prerenderInfo) ||
-        !('active' in prerenderInfo) ||
-        !('enabled' in prerenderInfo)) {
-      return false;
-    }
-    return true;
-  }
-
-  function createHistoryTablePrinter(prerenderHistory) {
-    var tablePrinter = new TablePrinter();
-    tablePrinter.addHeaderCell('Origin');
-    tablePrinter.addHeaderCell('URL');
-    tablePrinter.addHeaderCell('Final Status');
-    tablePrinter.addHeaderCell('Time');
-
-    for (var i = 0; i < prerenderHistory.length; i++) {
-      var historyEntry = prerenderHistory[i];
-      tablePrinter.addRow();
-      tablePrinter.addCell(historyEntry.origin);
-      tablePrinter.addCell(historyEntry.url);
-      tablePrinter.addCell(historyEntry.final_status);
-
-      var date = new Date(parseInt(historyEntry.end_time));
-      // TODO(eroman): Switch to addNodeWithDate()
-      tablePrinter.addCell(timeutil.dateToString(date));
-    }
-    return tablePrinter;
-  }
-
-  function createActiveTablePrinter(prerenderActive) {
-    var tablePrinter = new TablePrinter();
-    tablePrinter.addHeaderCell('URL');
-    tablePrinter.addHeaderCell('Duration');
-
-    for (var i = 0; i < prerenderActive.length; i++) {
-      var activeEntry = prerenderActive[i];
-      tablePrinter.addRow();
-      tablePrinter.addCell(activeEntry.url);
-      tablePrinter.addCell(activeEntry.duration);
-    }
-    return tablePrinter;
-  }
 
   return PrerenderView;
 })();

@@ -83,10 +83,10 @@ AddPipelineCapabilityTask.prototype = {
         var entry = httpPipelineStatus.pipelined_host_info[index];
         expectEquals(this.capability_, entry.capability);
 
-        var hostPortText = NetInternalsTest.getStyledTableText(
+        var hostPortText = NetInternalsTest.getTbodyText(
             HttpPipelineView.KNOWN_HOSTS_DIV_ID, index, 0);
         expectEquals(this.hostname_ + ":" + this.port_, hostPortText);
-        var capabilityText = NetInternalsTest.getStyledTableText(
+        var capabilityText = NetInternalsTest.getTbodyText(
             HttpPipelineView.KNOWN_HOSTS_DIV_ID, index, 1);
         expectEquals(this.capability_, capabilityText);
 

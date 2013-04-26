@@ -129,58 +129,72 @@ var NetInternalsTest = (function() {
   };
 
   /**
-   * Returns the first styled table body that's a descendent of |ancestorId|.
-   * If the specified node is itself a table body node, just returns that node.
+   * Returns the first tbody that's a descendant of |ancestorId|. If the
+   * specified node is itself a table body node, just returns that node.
    * Returns null if no such node is found.
-   * @param {string} ancestorId HTML element id containing a styled table.
+   * @param {string} ancestorId ID of an HTML element with a tbody descendant.
+   * @return {node} The tbody node, or null.
    */
-  NetInternalsTest.getStyledTableDescendent = function(ancestorId) {
+  NetInternalsTest.getTbodyDescendent = function(ancestorId) {
     if ($(ancestorId).nodeName == 'TBODY')
       return $(ancestorId);
     // The tbody element of the first styled table in |parentId|.
-    return document.querySelector('#' + ancestorId + ' .styled-table tbody');
+    return document.querySelector('#' + ancestorId + ' tbody');
   };
 
   /**
-   * Finds the first styled table body that's a descendent of |ancestorId|,
-   * including the |ancestorId| element itself, and returns the number of rows
-   * it has. Returns -1 if there's no such table.
-   * @param {string} ancestorId HTML element id containing a styled table.
+   * Finds the first tbody that's a descendant of |ancestorId|, including the
+   * |ancestorId| element itself, and returns the number of rows it has.
+   * Returns -1 if there's no such table.  Excludes hidden rows.
+   * @param {string} ancestorId ID of an HTML element with a tbody descendant.
    * @return {number} Number of rows the style table's body has.
    */
-  NetInternalsTest.getStyledTableNumRows = function(ancestorId) {
+  NetInternalsTest.getTbodyNumRows = function(ancestorId) {
     // The tbody element of the first styled table in |parentId|.
-    var tbody = NetInternalsTest.getStyledTableDescendent(ancestorId);
+    var tbody = NetInternalsTest.getTbodyDescendent(ancestorId);
     if (!tbody)
       return -1;
-    return tbody.children.length;
+    var visibleChildren = 0;
+    for (var i = 0; i < tbody.children.length; ++i) {
+      if (NetInternalsTest.nodeIsVisible(tbody.children[i]))
+        ++visibleChildren;
+    }
+    return visibleChildren;
   };
 
   /**
-   * Finds the first styled table body that's a descendent of |ancestorId|,
-   * including the |ancestorId| element itself, and checks if it has exactly
-   * |expectedRows| rows.  As only table bodies are considered, the header row
-   * will not be included in the count.
-   * @param {string} ancestorId HTML element id containing a styled table.
+   * Finds the first tbody that's a descendant of |ancestorId|, including the
+   * |ancestorId| element itself, and checks if it has exactly |expectedRows|
+   * rows.  Does not count hidden rows.
+   * @param {string} ancestorId ID of an HTML element with a tbody descendant.
    * @param {number} expectedRows Expected number of rows in the table.
    */
-  NetInternalsTest.checkStyledTableRows = function(ancestorId, expectedRows) {
+  NetInternalsTest.checkTbodyRows = function(ancestorId, expectedRows) {
     expectEquals(expectedRows,
-                 NetInternalsTest.getStyledTableNumRows(ancestorId),
+                 NetInternalsTest.getTbodyNumRows(ancestorId),
                  'Incorrect number of rows in ' + ancestorId);
   };
 
   /**
-   * Finds the first styled table body that's a descendent of |ancestorId|,
-   * including the |ancestorId| element itself, and returns the text of the
-   * specified cell.  If the cell does not exist, throws an exception.
-   * @param {string} ancestorId HTML element id containing a styled table.
+   * Finds the tbody that's a descendant of |ancestorId|, including the
+   * |ancestorId| element itself, and returns the text of the specified cell.
+   * If the cell does not exist, throws an exception.  Skips over hidden rows.
+   * @param {string} ancestorId ID of an HTML element with a tbody descendant.
    * @param {number} row Row of the value to retrieve.
    * @param {number} column Column of the value to retrieve.
    */
-  NetInternalsTest.getStyledTableText = function(ancestorId, row, column) {
-    var tbody = NetInternalsTest.getStyledTableDescendent(ancestorId);
-    return tbody.children[row].children[column].innerText;
+  NetInternalsTest.getTbodyText = function(ancestorId, row, column) {
+    var tbody = NetInternalsTest.getTbodyDescendent(ancestorId);
+    var currentChild = tbody.children[0];
+    while (currentChild) {
+      if (NetInternalsTest.nodeIsVisible(currentChild)) {
+        if (row == 0)
+          return currentChild.children[column].innerText;
+        --row;
+      }
+      currentChild = currentChild.nextElementSibling;
+    }
+    return 'invalid row';
   };
 
   /**

@@ -142,8 +142,7 @@ RunTestSuiteTask.prototype = {
  * @param {number} expectedRows Expected number of rows in the table.
  */
 function checkTestTableRows(expectedRows) {
-  NetInternalsTest.checkStyledTableRows(TestView.SUMMARY_DIV_ID,
-                                        expectedRows);
+  NetInternalsTest.checkTbodyRows(TestView.SUMMARY_DIV_ID, expectedRows);
 }
 
 /**

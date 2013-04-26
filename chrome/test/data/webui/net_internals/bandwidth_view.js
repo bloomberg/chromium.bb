@@ -52,7 +52,7 @@ BandwidthTask.prototype = {
    * |BandwidthView.BANDWIDTH_USAGE_TABLE| table.
    */
   getBandwidthTableCell_: function(row, col) {
-    return parseFloat(NetInternalsTest.getStyledTableText(
+    return parseFloat(NetInternalsTest.getTbodyText(
         BandwidthView.BANDWIDTH_USAGE_TABLE, row, col));
   },
 
@@ -88,7 +88,7 @@ BandwidthTask.prototype = {
   completeIfDone: function() {
     if (this.historicVerified && this.sessionVerified) {
       // Check number of rows in the table.
-      NetInternalsTest.checkStyledTableRows(
+      NetInternalsTest.checkTbodyRows(
           BandwidthView.BANDWIDTH_USAGE_TABLE, 4);
       this.onTaskDone();
     }
