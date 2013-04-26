@@ -545,8 +545,6 @@
         'gfx/vector2d_f.h',
         'gfx/vector3d_f.cc',
         'gfx/vector3d_f.h',
-        'gfx/video_decode_acceleration_support_mac.h',
-        'gfx/video_decode_acceleration_support_mac.mm',
         'webui/jstemplate_builder.cc',
         'webui/jstemplate_builder.h',
         'webui/web_ui_util.cc',

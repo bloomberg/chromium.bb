@@ -373,7 +373,6 @@
         'common/mac/font_descriptor_unittest.mm',
         'common/gpu/gpu_info_unittest.cc',
         'common/gpu/gpu_memory_manager_unittest.cc',
-        'common/gpu/media/avc_config_record_builder_unittest.cc',
         'common/indexed_db/indexed_db_dispatcher_unittest.cc',
         'common/indexed_db/proxy_webidbcursor_impl_unittest.cc',
         'common/inter_process_time_ticks_converter_unittest.cc',
@@ -947,7 +946,7 @@
         },
       ],
     }],
-    ['chromeos==1 or OS=="win" or OS=="mac"', {
+    ['chromeos==1 or OS=="win"', {
       # TODO(felipeg): Make video_decode_accelerator_unittest work on Android.
       # http://crbug.com/178647
       'targets': [
@@ -967,7 +966,6 @@
             ],
             'sources': [
               'common/gpu/media/rendering_helper.h',
-              'common/gpu/media/rendering_helper_mac.mm',
               'common/gpu/media/rendering_helper_gl.cc',
               'common/gpu/media/video_decode_accelerator_unittest.cc',
             ],
@@ -977,11 +975,6 @@
                   '<(DEPTH)/third_party/openmax/il',
                 ],
               }],
-              ['OS=="mac"', {
-                'sources!': [
-                  'common/gpu/media/rendering_helper_gl.cc',
-                ],
-              }],
               ['OS=="win"', {
                 'dependencies': [
                   '../third_party/angle/src/build_angle.gyp:libEGL',
@@ -989,7 +982,7 @@
                 ],
               }],
               ['(OS=="win" and win_use_allocator_shim==1) or '
-               '(os_posix == 1 and OS != "mac" and OS != "android" and '
+               '(os_posix == 1 and OS != "android" and '
                ' linux_use_tcmalloc==1)', {
                 'dependencies': [
                   '../base/allocator/allocator.gyp:allocator',

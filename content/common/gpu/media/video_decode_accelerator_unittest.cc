@@ -44,8 +44,6 @@
 
 #if defined(OS_WIN)
 #include "content/common/gpu/media/dxva_video_decode_accelerator.h"
-#elif defined(OS_MACOSX)
-#include "content/common/gpu/media/mac_video_decode_accelerator.h"
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
 #include "content/common/gpu/media/exynos_video_decode_accelerator.h"
@@ -78,14 +76,9 @@ namespace {
 //   (the latter tests just decode speed).
 // - |profile| is the media::VideoCodecProfile set during Initialization.
 // An empty value for a numeric field means "ignore".
-#if defined(OS_MACOSX)
-const base::FilePath::CharType* test_video_data =
-    FILE_PATH_LITERAL("test-25fps_high.h264:1280:720:250:252:50:100:4");
-#else
 const base::FilePath::CharType* test_video_data =
     // FILE_PATH_LITERAL("test-25fps.vp8:320:240:250:250:50:175:11");
     FILE_PATH_LITERAL("test-25fps.h264:320:240:250:258:50:175:1");
-#endif
 
 struct TestVideoFile {
   explicit TestVideoFile(base::FilePath::StringType file_name)
@@ -360,9 +353,7 @@ GLRenderingVDAClient::~GLRenderingVDAClient() {
   SetState(CS_DESTROYED);
 }
 
-#if !defined(OS_MACOSX)
 static bool DoNothingReturnTrue() { return true; }
-#endif
 
 void GLRenderingVDAClient::CreateDecoder() {
   CHECK(decoder_deleted());
@@ -370,9 +361,6 @@ void GLRenderingVDAClient::CreateDecoder() {
 #if defined(OS_WIN)
   decoder_.reset(new DXVAVideoDecodeAccelerator(
       this, base::Bind(&DoNothingReturnTrue)));
-#elif defined(OS_MACOSX)
-  decoder_.reset(new MacVideoDecodeAccelerator(
-      static_cast<CGLContextObj>(rendering_helper_->GetGLContext()), this));
 #elif defined(OS_CHROMEOS)
 #if defined(ARCH_CPU_ARMEL)
   decoder_.reset(
@@ -701,11 +689,7 @@ static void AssertWaitForStateOrDeleted(ClientStateNotification* note,
 // We assert a minimal number of concurrent decoders we expect to succeed.
 // Different platforms can support more concurrent decoders, so we don't assert
 // failure above this.
-#if defined(OS_MACOSX)
-enum { kMinSupportedNumConcurrentDecoders = 1 };
-#else
 enum { kMinSupportedNumConcurrentDecoders = 3 };
-#endif
 
 // Test the most straightforward case possible: data is decoded from a single
 // chunk and rendered to the screen.

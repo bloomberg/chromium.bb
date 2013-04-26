@@ -29,9 +29,6 @@
 #elif defined(OS_CHROMEOS) && defined(ARCH_CPU_X86_FAMILY) && defined(USE_X11)
 #include "ui/gl/gl_context_glx.h"
 #include "content/common/gpu/media/vaapi_video_decode_accelerator.h"
-#elif defined(OS_MACOSX)
-#include "gpu/command_buffer/service/texture_manager.h"
-#include "content/common/gpu/media/mac_video_decode_accelerator.h"
 #elif defined(OS_ANDROID)
 #include "content/common/gpu/media/android_video_decode_accelerator.h"
 #endif
@@ -205,11 +202,6 @@ void GpuVideoDecodeAccelerator::Initialize(
   video_decode_accelerator_.reset(new VaapiVideoDecodeAccelerator(
       glx_context->display(), glx_context_handle, this,
       make_context_current_));
-#elif defined(OS_MACOSX)
-  video_decode_accelerator_.reset(new MacVideoDecodeAccelerator(
-      static_cast<CGLContextObj>(
-          stub_->decoder()->GetGLContext()->GetHandle()),
-      this));
 #elif defined(OS_ANDROID)
   video_decode_accelerator_.reset(new AndroidVideoDecodeAccelerator(
       this,
