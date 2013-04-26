@@ -872,6 +872,12 @@ const char kPowerUseVideoActivity[] = "power.use_video_activity";
 const char kPowerPresentationIdleDelayFactor[] =
     "power.presentation_idle_delay_factor";
 
+// Amount by which the screen-dim delay should be scaled when user activity is
+// observed while the screen is dimmed or soon after the screen has been turned
+// off.  Values are limited to a minimum of 1.0.
+const char kPowerUserActivityScreenDimDelayFactor[] =
+    "power.user_activity_screen_dim_delay_factor";
+
 // The URL from which the Terms of Service can be downloaded. The value is only
 // honored for public accounts.
 const char kTermsOfServiceURL[] = "terms_of_service.url";

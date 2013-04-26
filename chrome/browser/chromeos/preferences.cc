@@ -321,6 +321,11 @@ void Preferences::RegisterUserPrefs(PrefRegistrySyncable* registry) {
   registry->RegisterDoublePref(prefs::kPowerPresentationIdleDelayFactor,
                                2.0,
                                PrefRegistrySyncable::UNSYNCABLE_PREF);
+  // TODO(derat): Change the default to 2.0 once a policy is added such
+  // that this can be set to 1.0 for public accounts.
+  registry->RegisterDoublePref(prefs::kPowerUserActivityScreenDimDelayFactor,
+                               1.0,
+                               PrefRegistrySyncable::UNSYNCABLE_PREF);
 
   registry->RegisterStringPref(prefs::kTermsOfServiceURL,
                                "",
@@ -446,6 +451,8 @@ void Preferences::InitUserPrefs(PrefServiceSyncable* prefs) {
       prefs::kPowerUseVideoActivity, prefs, callback);
   power_presentation_idle_delay_factor_.Init(
       prefs::kPowerPresentationIdleDelayFactor, prefs, callback);
+  power_user_activity_screen_dim_delay_factor_.Init(
+      prefs::kPowerUserActivityScreenDimDelayFactor, prefs, callback);
 }
 
 void Preferences::Init(PrefServiceSyncable* prefs) {
@@ -769,6 +776,7 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
       *pref_name == prefs::kPowerUseAudioActivity ||
       *pref_name == prefs::kPowerUseVideoActivity ||
       *pref_name == prefs::kPowerPresentationIdleDelayFactor ||
+      *pref_name == prefs::kPowerUserActivityScreenDimDelayFactor ||
       *pref_name == prefs::kEnableScreenLock) {
     PowerPolicyController::PrefValues values;
     values.ac_screen_dim_delay_ms = power_ac_screen_dim_delay_ms_.GetValue();
@@ -795,6 +803,8 @@ void Preferences::NotifyPrefChanged(const std::string* pref_name) {
     values.enable_screen_lock = enable_screen_lock_.GetValue();
     values.presentation_idle_delay_factor =
         power_presentation_idle_delay_factor_.GetValue();
+    values.user_activity_screen_dim_delay_factor =
+        power_user_activity_screen_dim_delay_factor_.GetValue();
 
     DBusThreadManager::Get()->GetPowerPolicyController()->ApplyPrefs(values);
   }

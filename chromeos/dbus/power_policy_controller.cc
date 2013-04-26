@@ -79,7 +79,8 @@ PowerPolicyController::PrefValues::PrefValues()
       use_audio_activity(true),
       use_video_activity(true),
       enable_screen_lock(false),
-      presentation_idle_delay_factor(2.0) {}
+      presentation_idle_delay_factor(2.0),
+      user_activity_screen_dim_delay_factor(1.0) {}
 
 // static
 std::string PowerPolicyController::GetPolicyDebugString(
@@ -100,6 +101,10 @@ std::string PowerPolicyController::GetPolicyDebugString(
   if (policy.has_presentation_idle_delay_factor()) {
     str += base::StringPrintf("presentation_idle_delay_factor=%f ",
         policy.presentation_idle_delay_factor());
+  }
+  if (policy.has_user_activity_screen_dim_delay_factor()) {
+    str += base::StringPrintf("user_activity_screen_dim_delay_factor=%f ",
+        policy.user_activity_screen_dim_delay_factor());
   }
   if (policy.has_reason())
     str += base::StringPrintf("reason=\"%s\" ", policy.reason().c_str());
@@ -166,6 +171,8 @@ void PowerPolicyController::ApplyPrefs(const PrefValues& values) {
   prefs_policy_.set_use_video_activity(values.use_video_activity);
   prefs_policy_.set_presentation_idle_delay_factor(
       values.presentation_idle_delay_factor);
+  prefs_policy_.set_user_activity_screen_dim_delay_factor(
+      values.user_activity_screen_dim_delay_factor);
 
   prefs_were_set_ = true;
   SendCurrentPolicy();

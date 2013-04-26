@@ -317,6 +317,7 @@ extern const char kPowerLidClosedAction[];
 extern const char kPowerUseAudioActivity[];
 extern const char kPowerUseVideoActivity[];
 extern const char kPowerPresentationIdleDelayFactor[];
+extern const char kPowerUserActivityScreenDimDelayFactor[];
 extern const char kTermsOfServiceURL[];
 extern const char kUsedPolicyCertificatesOnce[];
 extern const char kAttestationEnabled[];

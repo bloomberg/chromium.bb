@@ -53,7 +53,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
   prefs.use_audio_activity = true;
   prefs.use_video_activity = true;
   prefs.enable_screen_lock = false;
-  prefs.presentation_idle_delay_factor = 2.0;
+  prefs.presentation_idle_delay_factor = 3.0;
+  prefs.user_activity_screen_dim_delay_factor = 2.0;
   policy_controller_->ApplyPrefs(prefs);
 
   power_manager::PowerManagementPolicy expected_policy;
@@ -73,7 +74,8 @@ TEST_F(PowerPolicyControllerTest, Prefs) {
       power_manager::PowerManagementPolicy_Action_SHUT_DOWN);
   expected_policy.set_use_audio_activity(true);
   expected_policy.set_use_video_activity(true);
-  expected_policy.set_presentation_idle_delay_factor(2.0);
+  expected_policy.set_presentation_idle_delay_factor(3.0);
+  expected_policy.set_user_activity_screen_dim_delay_factor(2.0);
   expected_policy.set_reason("Prefs");
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(expected_policy),
             PowerPolicyController::GetPolicyDebugString(
