@@ -557,9 +557,6 @@ cr.define('options', function() {
         } else {
           section.style.height = 'auto';
         }
-        // Force an update of the list of paired Bluetooth devices.
-        if (cr.isChromeOS)
-          $('bluetooth-paired-devices-list').refresh();
       };
 
       // Delay starting the transition if animating so that hidden change will
@@ -1098,7 +1095,6 @@ cr.define('options', function() {
      * @private
      */
     handleAddBluetoothDevice_: function() {
-      $('bluetooth-unpaired-devices-list').clear();
       chrome.send('findBluetoothDevices');
       OptionsPage.showPageByName('bluetooth', false);
     },

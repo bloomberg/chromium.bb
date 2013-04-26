@@ -70,7 +70,6 @@ cr.define('options', function() {
     createDeviceList_: function() {
       this.deviceList_ = $('bluetooth-unpaired-devices-list');
       options.system.bluetooth.BluetoothDeviceList.decorate(this.deviceList_);
-      this.deviceList_.autoExpands = true;
     }
   };
 

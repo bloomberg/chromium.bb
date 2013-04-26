@@ -119,10 +119,13 @@ cr.define('options.system.bluetooth', function() {
     decorate: function() {
       DeletableItemList.prototype.decorate.call(this);
       // Force layout of all items even if not in the viewport to address
-      // calculation errors when the list is hidden.  The impact on performance
-      // should be minimal given that the list is not expected to grow very
-      // large.
-      this.autoExpand = true;
+      // errors in scroll positioning when the list is hidden during initial
+      // layout. The impact on performance should be minimal given that the
+      // list is not expected to grow very large. Fixed height items are also
+      // required to avoid caching incorrect sizes during layout of a hidden
+      // list.
+      this.autoExpands = true;
+      this.fixedHeight = true;
       this.addEventListener('blur', this.onBlur_);
       this.clear();
     },
@@ -170,16 +173,14 @@ cr.define('options.system.bluetooth', function() {
     },
 
     /**
-     * Forces a revailidation of the list content. Content added while the list
-     * is hidden is not properly rendered when the list becomes visible. In
-     * addition, deleting a single item from the list results in a stale cache
-     * requiring an invalidation.
+     * Forces a revailidation of the list content. Deleting a single item from
+     * the list results in a stale cache requiring an invalidation.
      * @param {string=} opt_selection Optional address of device to select
      *     after refreshing the list.
      */
     refresh: function(opt_selection) {
-      // TODO(kevers): Investigate if the root source of the problems can be
-      // fixed in cr.ui.list.
+      // TODO(kevers): Investigate if the stale cache issue can be fixed in
+      // cr.ui.list.
       var selectedDevice = opt_selection ? opt_selection :
           this.getSelectedDevice_();
       this.invalidate();
