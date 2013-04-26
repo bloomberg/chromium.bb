@@ -34,6 +34,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/page_transition_types.h"
 #include "net/base/escape.h"
@@ -776,6 +777,9 @@ void InterstitialPageImpl::InterstitialPageRVHDelegateView::UpdateDragCursor(
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::GotFocus() {
+  WebContents* web_contents = interstitial_page_->web_contents();
+  if (web_contents && web_contents->GetDelegate())
+    web_contents->GetDelegate()->WebContentsFocused(web_contents);
 }
 
 void InterstitialPageImpl::InterstitialPageRVHDelegateView::TakeFocus(
