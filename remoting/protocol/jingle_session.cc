@@ -437,8 +437,7 @@ void JingleSession::OnAccept(const JingleMessage& message,
   const buzz::XmlElement* auth_message =
       message.description->authenticator_message();
   if (!auth_message) {
-    DLOG(WARNING) << "Received session-accept without authentication message "
-                  << auth_message->Str();
+    DLOG(WARNING) << "Received session-accept without authentication message ";
     CloseInternal(INCOMPATIBLE_PROTOCOL);
     return;
   }
