@@ -44,7 +44,9 @@ v8.log
 /ash/resources/google_wallpapers/
 /breakpad/src/
 /build/Debug
+/build/Debug_x64
 /build/Release
+/build/Release_x64
 /build/ipch/
 /build/util/LASTCHANGE
 /build/util/support
