@@ -34,11 +34,11 @@
 
 #include "DebuggerScriptSource.h"
 #include "V8JavaScriptCallFrame.h"
-#include "bindings/v8/JavaScriptCallFrame.h"
 #include "bindings/v8/ScopedPersistent.h"
 #include "bindings/v8/ScriptObject.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8RecursionScope.h"
+#include "core/inspector/JavaScriptCallFrame.h"
 #include "core/inspector/ScriptDebugListener.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/Vector.h"

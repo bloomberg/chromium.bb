@@ -28,48 +28,62 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ScriptProfile_h
-#define ScriptProfile_h
+#include "config.h"
+#include "core/inspector/ScriptProfileNode.h"
 
-#include "InspectorTypeBuilder.h"
-#include "bindings/v8/ScriptProfileNode.h"
-#include "wtf/RefCounted.h"
-#include "wtf/text/WTFString.h"
+#include "bindings/v8/V8Binding.h"
 
-namespace v8 {
-class CpuProfile;
-}
+#include <v8-profiler.h>
 
 namespace WebCore {
 
-class InspectorObject;
+String ScriptProfileNode::functionName() const
+{
+    return toWebCoreString(m_profileNode->GetFunctionName());
+}
 
-class ScriptProfile : public RefCounted<ScriptProfile> {
-public:
-    static PassRefPtr<ScriptProfile> create(const v8::CpuProfile* profile, double idleTime)
-    {
-        return adoptRef(new ScriptProfile(profile, idleTime));
-    }
-    virtual ~ScriptProfile();
+String ScriptProfileNode::url() const
+{
+    return toWebCoreString(m_profileNode->GetScriptResourceName());
+}
 
-    String title() const;
-    unsigned int uid() const;
-    PassRefPtr<ScriptProfileNode> head() const;
-    double idleTime() const;
+unsigned long ScriptProfileNode::lineNumber() const
+{
+    return m_profileNode->GetLineNumber();
+}
 
-    PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
-    PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
+double ScriptProfileNode::totalTime() const
+{
+    return m_profileNode->GetTotalTime();
+}
 
-private:
-    ScriptProfile(const v8::CpuProfile* profile, double idleTime)
-        : m_profile(profile)
-        , m_idleTime(idleTime)
-    {}
+double ScriptProfileNode::selfTime() const
+{
+    return m_profileNode->GetSelfTime();
+}
 
-    const v8::CpuProfile* m_profile;
-    double m_idleTime;
-};
+unsigned long ScriptProfileNode::numberOfCalls() const
+{
+    return 0;
+}
+
+ProfileNodesList ScriptProfileNode::children() const
+{
+    const int childrenCount = m_profileNode->GetChildrenCount();
+    ProfileNodesList result(childrenCount);
+    for (int i = 0; i < childrenCount; ++i)
+        result[i] = ScriptProfileNode::create(m_profileNode->GetChild(i));
+    return result;
+}
+
+bool ScriptProfileNode::visible() const
+{
+    return true;
+}
+
+unsigned long ScriptProfileNode::callUID() const
+{
+    return m_profileNode->GetCallUid();
+}
 
 } // namespace WebCore
-
-#endif // ScriptProfile_h

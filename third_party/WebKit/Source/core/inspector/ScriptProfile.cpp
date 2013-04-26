@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "bindings/v8/ScriptProfile.h"
+#include "core/inspector/ScriptProfile.h"
 
 #include "bindings/v8/V8Binding.h"
 #include "core/inspector/InspectorValues.h"

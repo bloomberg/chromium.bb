@@ -28,63 +28,48 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef ScriptProfile_h
+#define ScriptProfile_h
 
-#include "bindings/v8/ScriptProfile.h"
+#include "InspectorTypeBuilder.h"
+#include "core/inspector/ScriptProfileNode.h"
+#include "wtf/RefCounted.h"
+#include "wtf/text/WTFString.h"
 
-#include "bindings/v8/V8Binding.h"
-
-#include <v8-profiler.h>
+namespace v8 {
+class CpuProfile;
+}
 
 namespace WebCore {
 
-String ScriptProfileNode::functionName() const
-{
-    return toWebCoreString(m_profileNode->GetFunctionName());
-}
+class InspectorObject;
 
-String ScriptProfileNode::url() const
-{
-    return toWebCoreString(m_profileNode->GetScriptResourceName());
-}
+class ScriptProfile : public RefCounted<ScriptProfile> {
+public:
+    static PassRefPtr<ScriptProfile> create(const v8::CpuProfile* profile, double idleTime)
+    {
+        return adoptRef(new ScriptProfile(profile, idleTime));
+    }
+    virtual ~ScriptProfile();
 
-unsigned long ScriptProfileNode::lineNumber() const
-{
-    return m_profileNode->GetLineNumber();
-}
+    String title() const;
+    unsigned int uid() const;
+    PassRefPtr<ScriptProfileNode> head() const;
+    double idleTime() const;
 
-double ScriptProfileNode::totalTime() const
-{
-    return m_profileNode->GetTotalTime();
-}
+    PassRefPtr<TypeBuilder::Profiler::CPUProfileNode> buildInspectorObjectForHead() const;
+    PassRefPtr<TypeBuilder::Array<int> > buildInspectorObjectForSamples() const;
 
-double ScriptProfileNode::selfTime() const
-{
-    return m_profileNode->GetSelfTime();
-}
+private:
+    ScriptProfile(const v8::CpuProfile* profile, double idleTime)
+        : m_profile(profile)
+        , m_idleTime(idleTime)
+    {}
 
-unsigned long ScriptProfileNode::numberOfCalls() const
-{
-    return 0;
-}
-
-ProfileNodesList ScriptProfileNode::children() const
-{
-    const int childrenCount = m_profileNode->GetChildrenCount();
-    ProfileNodesList result(childrenCount);
-    for (int i = 0; i < childrenCount; ++i)
-        result[i] = ScriptProfileNode::create(m_profileNode->GetChild(i));
-    return result;
-}
-
-bool ScriptProfileNode::visible() const
-{
-    return true;
-}
-
-unsigned long ScriptProfileNode::callUID() const
-{
-    return m_profileNode->GetCallUid();
-}
+    const v8::CpuProfile* m_profile;
+    double m_idleTime;
+};
 
 } // namespace WebCore
+
+#endif // ScriptProfile_h

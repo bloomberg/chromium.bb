@@ -53,15 +53,15 @@ public:
     int line() const;
     int column() const;
     String functionName() const;
-    
+
     v8::Handle<v8::Value> scopeChain() const;
     int scopeType(int scopeIndex) const;
     v8::Handle<v8::Value> thisObject() const;
-    
+
     v8::Handle<v8::Value> evaluate(const String& expression);
     v8::Handle<v8::Value> restart();
     v8::Handle<v8::Value> setVariableValue(int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);
-    
+
 private:
     JavaScriptCallFrame(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame);
 
