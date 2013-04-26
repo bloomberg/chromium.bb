@@ -60,6 +60,6 @@ class MTPDeviceObjectEnumerator
   DISALLOW_COPY_AND_ASSIGN(MTPDeviceObjectEnumerator);
 };
 
-}  // namepsace chrome
+}  // namespace chrome
 
 #endif  // CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_OBJECT_ENUMERATOR_H_
