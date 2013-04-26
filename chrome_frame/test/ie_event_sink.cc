@@ -201,12 +201,9 @@ _ATL_FUNC_INFO IEEventSink::kFileDownloadInfo = {
 bool IEEventSink::abnormal_shutdown_ = false;
 
 IEEventSink::IEEventSink()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(
-          onmessage_(this, &IEEventSink::OnMessage)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          onloaderror_(this, &IEEventSink::OnLoadError)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          onload_(this, &IEEventSink::OnLoad)),
+    : onmessage_(this, &IEEventSink::OnMessage),
+      onloaderror_(this, &IEEventSink::OnLoadError),
+      onload_(this, &IEEventSink::OnLoad),
       listener_(NULL),
       ie_process_id_(0),
       did_receive_on_quit_(false) {

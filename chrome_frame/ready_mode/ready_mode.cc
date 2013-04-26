@@ -155,7 +155,7 @@ BrowserObserver::BrowserObserver(ready_mode::Delegate* chrome_frame,
     : web_browser_(web_browser),
       chrome_frame_(chrome_frame),
       adapter_(adapter),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 void BrowserObserver::OnNavigateTo(const std::wstring& url) {

@@ -38,7 +38,7 @@ InfobarWindow::InfobarWindow(InfobarType type)
       current_width_(0),
       timer_id_(0),
       timer_stub_(NULL),
-      frame_impl_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      frame_impl_(this) {
   DCHECK(type_ >= FIRST_INFOBAR_TYPE);
   DCHECK(type_ < END_OF_INFOBAR_TYPE);
 }

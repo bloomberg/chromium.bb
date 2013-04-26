@@ -638,7 +638,7 @@ std::wstring AccObjectMatcher::GetDescription() const {
 
 // AccEventObserver methods
 AccEventObserver::AccEventObserver()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(event_handler_(new EventHandler(this))),
+    : event_handler_(new EventHandler(this)),
       is_watching_(false) {
   event_receiver_.SetListenerForEvents(this, EVENT_SYSTEM_MENUPOPUPSTART,
                                        EVENT_OBJECT_VALUECHANGE);

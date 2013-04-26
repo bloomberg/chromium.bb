@@ -30,7 +30,7 @@ ReadyPromptWindow::ReadyPromptWindow(
       ready_mode_state_(ready_mode_state),
       url_launcher_(url_launcher),
       icon_(NULL),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 ReadyPromptWindow::~ReadyPromptWindow() {
   if (icon_)

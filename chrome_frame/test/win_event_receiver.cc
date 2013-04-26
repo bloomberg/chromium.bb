@@ -105,7 +105,7 @@ WindowWatchdog::ProcessExitObserver::ProcessExitObserver(
     : window_watchdog_(window_watchdog),
       process_handle_(NULL),
       hwnd_(hwnd),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_factory_(this)) {
+      weak_factory_(this) {
   DWORD pid = 0;
   ::GetWindowThreadProcessId(hwnd, &pid);
   if (pid != 0) {
