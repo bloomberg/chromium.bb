@@ -27,6 +27,7 @@
 #include "ui/native_theme/native_theme_win.h"
 #include "ui/views/controls/menu/menu_2.h"
 #include "ui/views/controls/menu/menu_config.h"
+#include "ui/views/controls/menu/menu_insertion_delegate_win.h"
 #include "ui/views/controls/menu/menu_listener.h"
 
 using ui::NativeTheme;
@@ -469,7 +470,7 @@ void NativeMenuWin::CancelMenu() {
   EndMenu();
 }
 
-void NativeMenuWin::Rebuild(InsertionDelegate* delegate) {
+void NativeMenuWin::Rebuild(MenuInsertionDelegateWin* delegate) {
   ResetNativeMenu();
   items_.clear();
 

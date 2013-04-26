@@ -35,7 +35,7 @@ class VIEWS_EXPORT NativeMenuWin : public MenuWrapper {
   // Overridden from MenuWrapper:
   virtual void RunMenuAt(const gfx::Point& point, int alignment) OVERRIDE;
   virtual void CancelMenu() OVERRIDE;
-  virtual void Rebuild(InsertionDelegate* delegate) OVERRIDE;
+  virtual void Rebuild(MenuInsertionDelegateWin* delegate) OVERRIDE;
   virtual void UpdateStates() OVERRIDE;
   virtual HMENU GetNativeMenu() const OVERRIDE;
   virtual MenuAction GetMenuAction() const OVERRIDE;

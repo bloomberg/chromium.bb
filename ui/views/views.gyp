@@ -129,6 +129,7 @@
         'controls/menu/menu_host.h',
         'controls/menu/menu_host_root_view.cc',
         'controls/menu/menu_host_root_view.h',
+        'controls/menu/menu_insertion_delegate_win.h',
         'controls/menu/menu_item_view.cc',
         'controls/menu/menu_item_view.h',
         'controls/menu/menu_listener.cc',
@@ -478,6 +479,7 @@
             }],
             ['OS=="win"', {
               'sources/': [
+                ['include', 'controls/menu/menu_insertion_delegate_win.h'],
                 ['include', 'controls/menu/native_menu_win.cc'],
                 ['include', 'controls/menu/native_menu_win.h'],
                 ['include', 'widget/desktop_aura/desktop_screen_win.cc'],
