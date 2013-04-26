@@ -81,6 +81,7 @@ audio::-webkit-media-controls-overlay-enclosure {
 
 video::-webkit-media-controls-overlay-enclosure {
     display: -webkit-flex;
+    position: relative;
     -webkit-flex-direction: column;
     -webkit-justify-content: flex-end;
     -webkit-align-items: center;
