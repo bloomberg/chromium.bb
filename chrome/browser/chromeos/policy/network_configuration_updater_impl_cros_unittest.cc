@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/policy/network_configuration_updater_impl_cros.h"
 
-#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
@@ -14,7 +13,6 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_service_impl.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "content/public/test/test_browser_thread.h"
@@ -61,9 +59,6 @@ class NetworkConfigurationUpdaterTest
     PolicyServiceImpl::Providers providers;
     providers.push_back(&provider_);
     policy_service_.reset(new PolicyServiceImpl(providers));
-
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableWebTrustCerts);
   }
 
   virtual void TearDown() OVERRIDE {

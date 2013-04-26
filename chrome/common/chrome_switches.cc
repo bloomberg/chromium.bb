@@ -1542,11 +1542,6 @@ const char kEnableRequestTabletSite[]       = "enable-request-tablet-site";
 // default.
 const char kEnableStaticIPConfig[]          = "enable-static-ip-config";
 
-// Enables setting TRUST_SSL for server and CA certificates imported from user
-// ONC policy. This flag will be removed once the feature can be turned on by
-// default, which needs additional UI work.
-const char kEnableWebTrustCerts[]           = "enable-web-trust-certs";
-
 // If true, the Chromebook has a Chrome OS keyboard. Don't use the flag for
 // Chromeboxes.
 const char kHasChromeOSKeyboard[]           = "has-chromeos-keyboard";

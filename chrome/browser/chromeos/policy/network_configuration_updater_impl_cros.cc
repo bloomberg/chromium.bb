@@ -8,12 +8,10 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/policy/policy_map.h"
-#include "chrome/common/chrome_switches.h"
 #include "chromeos/network/onc/onc_constants.h"
 #include "chromeos/network/onc/onc_utils.h"
 #include "content/public/browser/browser_thread.h"
@@ -160,10 +158,8 @@ void NetworkConfigurationUpdaterImplCros::ApplyNetworkConfiguration(
     LOG(ERROR) << "Errors occurred during the ONC policy application.";
   }
 
-  CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (onc_source == chromeos::onc::ONC_SOURCE_USER_POLICY &&
-      allow_trusted_certificates_from_policy_ &&
-      command_line->HasSwitch(switches::kEnableWebTrustCerts)) {
+      allow_trusted_certificates_from_policy_) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&CrosTrustAnchorProvider::SetTrustAnchors,

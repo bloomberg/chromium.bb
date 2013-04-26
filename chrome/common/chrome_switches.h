@@ -426,7 +426,6 @@ extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kEnableKioskMode[];
 extern const char kEnableRequestTabletSite[];
 extern const char kEnableStaticIPConfig[];
-extern const char kEnableWebTrustCerts[];
 extern const char kHasChromeOSKeyboard[];
 extern const char kHasChromeOSDiamondKey[];
 extern const char kKioskModeScreensaverPath[];
