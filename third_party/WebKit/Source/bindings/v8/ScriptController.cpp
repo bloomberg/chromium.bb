@@ -34,7 +34,7 @@
 
 #include "V8DOMWindow.h"
 #include "V8Event.h"
-#include "V8HTMLEmbedElement.h"
+#include "V8HTMLElement.h"
 #include "bindings/v8/BindingState.h"
 #include "bindings/v8/NPObjectWrapper.h"
 #include "bindings/v8/NPV8Object.h"
@@ -57,6 +57,7 @@
 #include "core/dom/Node.h"
 #include "core/dom/ScriptableDocumentParser.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/html/HTMLPlugInElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/DocumentLoader.h"
@@ -79,7 +80,6 @@
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
 #include "wtf/text/TextPosition.h"
-
 
 namespace WebCore {
 
@@ -599,7 +599,7 @@ NPObject* ScriptController::createScriptObjectForPluginElement(HTMLPlugInElement
     v8::Context::Scope scope(v8Context);
 
     DOMWindow* window = m_frame->document()->domWindow();
-    v8::Handle<v8::Value> v8plugin = toV8(static_cast<HTMLEmbedElement*>(plugin), v8::Handle<v8::Object>(), v8Context->GetIsolate());
+    v8::Handle<v8::Value> v8plugin = toV8(plugin, v8::Handle<v8::Object>(), v8Context->GetIsolate());
     if (!v8plugin->IsObject())
         return createNoScriptObject();
 
