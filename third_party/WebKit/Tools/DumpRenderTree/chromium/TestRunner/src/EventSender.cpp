@@ -1297,11 +1297,9 @@ void EventSender::gestureEvent(WebInputEvent::Type type, const CppArgumentList& 
     }
 }
 
-void EventSender::gestureFlingCancel(const CppArgumentList& arguments, CppVariant* result)
+void EventSender::gestureFlingCancel(const CppArgumentList&, CppVariant* result)
 {
     result->setNull();
-    if (!arguments.size())
-        return;
 
     WebGestureEvent event;
     event.type = WebInputEvent::GestureFlingCancel;
