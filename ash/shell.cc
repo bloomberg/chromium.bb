@@ -293,6 +293,7 @@ Shell::~Shell() {
   visibility_controller_.reset();
   launcher_delegate_.reset();
   launcher_model_.reset();
+  video_detector_.reset();
 
   power_button_controller_.reset();
   session_state_controller_.reset();
@@ -317,6 +318,7 @@ Shell::~Shell() {
     output_configurator_->RemoveObserver(display_error_observer_.get());
   base::MessagePumpAuraX11::Current()->RemoveDispatcherForRootWindow(
       output_configurator());
+  display_change_observer_.reset();
 #endif  // defined(OS_CHROMEOS)
 
   DCHECK(instance_ == this);

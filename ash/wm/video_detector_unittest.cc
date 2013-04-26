@@ -143,6 +143,22 @@ TEST_F(VideoDetectorTest, Basic) {
   EXPECT_EQ(0, observer_->num_invocations());
 }
 
+TEST_F(VideoDetectorTest, Shutdown) {
+  gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
+  scoped_ptr<aura::Window> window(
+      CreateTestWindowInShell(SK_ColorRED, 12345, window_bounds));
+  gfx::Rect update_region(
+      gfx::Point(),
+      gfx::Size(VideoDetector::kMinUpdateWidth,
+                VideoDetector::kMinUpdateHeight));
+
+  // It should not detect video during the shutdown.
+  Shell::GetInstance()->OnAppTerminating();
+  for (int i = 0; i < VideoDetector::kMinFramesPerSecond; ++i)
+    detector_->OnWindowPaintScheduled(window.get(), update_region);
+  EXPECT_EQ(0, observer_->num_invocations());
+}
+
 TEST_F(VideoDetectorTest, WindowNotVisible) {
   gfx::Rect window_bounds(gfx::Point(), gfx::Size(1024, 768));
   scoped_ptr<aura::Window> window(

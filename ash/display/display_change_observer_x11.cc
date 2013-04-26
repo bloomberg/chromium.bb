@@ -124,9 +124,11 @@ DisplayChangeObserverX11::DisplayChangeObserverX11()
     }
   }
   XRRFreeScreenResources(screen_resources);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 DisplayChangeObserverX11::~DisplayChangeObserverX11() {
+  Shell::GetInstance()->RemoveShellObserver(this);
 }
 
 chromeos::OutputState DisplayChangeObserverX11::GetStateForOutputs(
@@ -221,6 +223,12 @@ void DisplayChangeObserverX11::OnDisplayModeChanged() {
 
   // DisplayManager can be null during the boot.
   Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
+}
+
+void DisplayChangeObserverX11::OnAppTerminating() {
+  // Stop handling display configuration events once the shutdown
+  // process starts. crbug.com/177014.
+  Shell::GetInstance()->output_configurator()->Stop();
 }
 
 }  // namespace internal

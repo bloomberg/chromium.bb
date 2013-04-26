@@ -41,10 +41,6 @@ void HandleAppExitingForPlatform() {
   views::Widget::CloseAllSecondaryWidgets();
 
 #if defined(OS_CHROMEOS)
-  // Stop handling display configuration events once the shutdown
-  // process starts. crbug.com/177014.
-  ash::Shell::GetInstance()->output_configurator()->Stop();
-
   if (!CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableZeroBrowsersOpenForTests)) {
     // App is exiting, call EndKeepAlive() on behalf of Aura Shell.

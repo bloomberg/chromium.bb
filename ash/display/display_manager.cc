@@ -39,7 +39,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "base/chromeos/chromeos_version.h"
-#include "chromeos/display/output_configurator.h"
 #endif
 
 #if defined(OS_WIN)

@@ -8,6 +8,7 @@
 #include <map>
 
 #include "ash/ash_export.h"
+#include "ash/shell_observer.h"
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/linked_ptr.h"
@@ -40,7 +41,8 @@ class ASH_EXPORT VideoDetectorObserver {
 // We err on the side of false positives and can be fooled by things like
 // continuous scrolling of a page.
 class ASH_EXPORT VideoDetector : public aura::EnvObserver,
-                                 public aura::WindowObserver {
+                                 public aura::WindowObserver,
+                                 public ShellObserver  {
  public:
   // Minimum dimensions in pixels that a window update must have to be
   // considered a potential video frame.
@@ -71,6 +73,9 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
                                       const gfx::Rect& region) OVERRIDE;
   virtual void OnWindowDestroyed(aura::Window* window) OVERRIDE;
 
+  // ShellObserver overrides.
+  virtual void OnAppTerminating() OVERRIDE;
+
  private:
   class WindowInfo;
   typedef std::map<aura::Window*, linked_ptr<WindowInfo> > WindowInfoMap;
@@ -93,6 +98,8 @@ class ASH_EXPORT VideoDetector : public aura::EnvObserver,
   base::TimeTicks now_for_test_;
 
   ScopedObserver<aura::Window, aura::WindowObserver> observer_manager_;
+
+  bool is_shutting_down_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoDetector);
 };

@@ -53,11 +53,14 @@ class VideoDetector::WindowInfo {
 };
 
 VideoDetector::VideoDetector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)) {
+    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
+      is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
+  Shell::GetInstance()->AddShellObserver(this);
 }
 
 VideoDetector::~VideoDetector() {
+  Shell::GetInstance()->RemoveShellObserver(this);
   aura::Env::GetInstance()->RemoveObserver(this);
 }
 
@@ -75,6 +78,8 @@ void VideoDetector::OnWindowInitialized(aura::Window* window) {
 
 void VideoDetector::OnWindowPaintScheduled(aura::Window* window,
                                            const gfx::Rect& region) {
+  if (is_shutting_down_)
+    return;
   linked_ptr<WindowInfo>& info = window_infos_[window];
   if (!info.get())
     info.reset(new WindowInfo);
@@ -88,6 +93,12 @@ void VideoDetector::OnWindowPaintScheduled(aura::Window* window,
 void VideoDetector::OnWindowDestroyed(aura::Window* window) {
   window_infos_.erase(window);
   observer_manager_.Remove(window);
+}
+
+void VideoDetector::OnAppTerminating() {
+  // Stop checking video activity once the shutdown
+  // process starts. crbug.com/231696.
+  is_shutting_down_ = true;
 }
 
 void VideoDetector::MaybeNotifyObservers(aura::Window* window,
