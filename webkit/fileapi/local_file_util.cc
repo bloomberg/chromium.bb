@@ -81,10 +81,14 @@ PlatformFileError LocalFileUtil::CreateOrOpen(
     FileSystemOperationContext* context,
     const FileSystemURL& url, int file_flags,
     base::PlatformFile* file_handle, bool* created) {
+  *created = false;
   base::FilePath file_path;
   PlatformFileError error = GetLocalFilePath(context, url, &file_path);
   if (error != base::PLATFORM_FILE_OK)
     return error;
+  // Disallow opening files in symlinked paths.
+  if (file_util::IsLink(file_path))
+    return base::PLATFORM_FILE_ERROR_NOT_FOUND;
   return NativeFileUtil::CreateOrOpen(
       file_path, file_flags, file_handle, created);
 }
