@@ -21,8 +21,9 @@ function classNameForObject(object)
 function constructorPropertiesOnWindow(globalObject)
 {
     var constructorNames = [];
-    for (var property in globalObject) {
-        var value = inner[property];
+    var propertyNames = Object.getOwnPropertyNames(window);
+    for (var i = 0; i < propertyNames.length; i++) {
+        var value = inner[propertyNames[i]];
         if (value == null)
             continue;
         var type = classNameForObject(value);
