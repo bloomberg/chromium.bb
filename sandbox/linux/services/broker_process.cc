@@ -20,7 +20,12 @@
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/posix/unix_domain_socket_linux.h"
+#include "build/build_config.h"
 #include "sandbox/linux/services/linux_syscalls.h"
+
+#if defined(OS_ANDROID) && !defined(MSG_CMSG_CLOEXEC)
+#define MSG_CMSG_CLOEXEC 0x40000000
+#endif
 
 namespace {
 
@@ -178,27 +183,7 @@ int BrokerProcess::Access(const char* pathname, int mode) const {
 }
 
 int BrokerProcess::Open(const char* pathname, int flags) const {
-  // Certain open flags can't be honored over an IPC, handle them locally.
-  // This function only supports O_CLOEXEC and will need to be modified if this
-  // mask changes.
-  RAW_CHECK(kCurrentProcessOpenFlagsMask == O_CLOEXEC);
-  int local_flags = flags & kCurrentProcessOpenFlagsMask;
-  flags &= ~local_flags;
-  int fd = PathAndFlagsSyscall(kCommandOpen, pathname, flags);
-  if (fd >= 0) {
-    if (local_flags & O_CLOEXEC) {
-      // There would be a race condition here if another thread was calling
-      // execve() before we call fcntl. We ask callers of Open() to be mindful
-      // of this.
-      // Note: F_SETFL would set a bit that is not actually used by the kernel.
-      int ret = fcntl(fd, F_SETFD, FD_CLOEXEC);
-      if (ret) {
-        HANDLE_EINTR(close(fd));
-        return -ENOMEM;
-      }
-    }
-  }
-  return fd;
+  return PathAndFlagsSyscall(kCommandOpen, pathname, flags);
 }
 
 // Make a remote system call over IPC for syscalls that take a path and flags
@@ -207,10 +192,23 @@ int BrokerProcess::Open(const char* pathname, int flags) const {
 // This function needs to be async signal safe.
 int BrokerProcess::PathAndFlagsSyscall(enum IPCCommands syscall_type,
                                        const char* pathname, int flags) const {
+  int recvmsg_flags = 0;
   RAW_CHECK(initialized_);  // async signal safe CHECK().
   RAW_CHECK(syscall_type == kCommandOpen || syscall_type == kCommandAccess);
   if (!pathname)
     return -EFAULT;
+
+  // For this "remote system call" to work, we need to handle any flag that
+  // cannot be sent over a Unix socket in a special way.
+  // See the comments around kCurrentProcessOpenFlagsMask.
+  if (syscall_type == kCommandOpen && (flags & kCurrentProcessOpenFlagsMask)) {
+    // This implementation only knows about O_CLOEXEC, someone needs to look at
+    // this code if other flags are added.
+    RAW_CHECK(kCurrentProcessOpenFlagsMask == O_CLOEXEC);
+    recvmsg_flags |= MSG_CMSG_CLOEXEC;
+    flags &= ~O_CLOEXEC;
+  }
+
   // There is no point in forwarding a request that we know will be denied.
   // Of course, the real security check needs to be on the other side of the
   // IPC.
@@ -233,15 +231,17 @@ int BrokerProcess::PathAndFlagsSyscall(enum IPCCommands syscall_type,
 
   int returned_fd = -1;
   uint8_t reply_buf[kMaxMessageLength];
+
   // Send a request (in write_pickle) as well that will include a new
   // temporary socketpair (created internally by SendRecvMsg()).
   // Then read the reply on this new socketpair in reply_buf and put an
   // eventual attached file descriptor in |returned_fd|.
-  ssize_t msg_len = UnixDomainSocket::SendRecvMsg(ipc_socketpair_,
-                                                  reply_buf,
-                                                  sizeof(reply_buf),
-                                                  &returned_fd,
-                                                  write_pickle);
+  ssize_t msg_len = UnixDomainSocket::SendRecvMsgWithFlags(ipc_socketpair_,
+                                                           reply_buf,
+                                                           sizeof(reply_buf),
+                                                           recvmsg_flags,
+                                                           &returned_fd,
+                                                           write_pickle);
   if (msg_len <= 0) {
     if (!quiet_failures_for_tests_)
       RAW_LOG(ERROR, "Could not make request to broker process");

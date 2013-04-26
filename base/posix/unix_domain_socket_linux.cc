@@ -58,6 +58,15 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
                                   void* buf,
                                   size_t length,
                                   std::vector<int>* fds) {
+  return UnixDomainSocket::RecvMsgWithFlags(fd, buf, length, 0, fds);
+}
+
+// static
+ssize_t UnixDomainSocket::RecvMsgWithFlags(int fd,
+                                           void* buf,
+                                           size_t length,
+                                           int flags,
+                                           std::vector<int>* fds) {
   fds->clear();
 
   struct msghdr msg = {};
@@ -69,7 +78,7 @@ ssize_t UnixDomainSocket::RecvMsg(int fd,
   msg.msg_control = control_buffer;
   msg.msg_controllen = sizeof(control_buffer);
 
-  const ssize_t r = HANDLE_EINTR(recvmsg(fd, &msg, 0));
+  const ssize_t r = HANDLE_EINTR(recvmsg(fd, &msg, flags));
   if (r == -1)
     return -1;
 
@@ -109,6 +118,18 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
                                       unsigned max_reply_len,
                                       int* result_fd,
                                       const Pickle& request) {
+  return UnixDomainSocket::SendRecvMsgWithFlags(fd, reply, max_reply_len,
+                                                0,  /* recvmsg_flags */
+                                                result_fd, request);
+}
+
+// static
+ssize_t UnixDomainSocket::SendRecvMsgWithFlags(int fd,
+                                               uint8_t* reply,
+                                               unsigned max_reply_len,
+                                               int recvmsg_flags,
+                                               int* result_fd,
+                                               const Pickle& request) {
   int fds[2];
 
   // This socketpair is only used for the IPC and is cleaned up before
@@ -128,7 +149,8 @@ ssize_t UnixDomainSocket::SendRecvMsg(int fd,
   fd_vector.clear();
   // When porting to OSX keep in mind it doesn't support MSG_NOSIGNAL, so the
   // sender might get a SIGPIPE.
-  const ssize_t reply_len = RecvMsg(fds[0], reply, max_reply_len, &fd_vector);
+  const ssize_t reply_len = RecvMsgWithFlags(fds[0], reply, max_reply_len,
+                                             recvmsg_flags, &fd_vector);
   close(fds[0]);
   if (reply_len == -1)
     return -1;

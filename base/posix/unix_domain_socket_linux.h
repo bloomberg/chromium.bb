@@ -55,6 +55,22 @@ class BASE_EXPORT UnixDomainSocket {
                              unsigned reply_len,
                              int* result_fd,
                              const Pickle& request);
+
+  // Similar to SendRecvMsg(), but |recvmsg_flags| allows to control the flags
+  // of the recvmsg(2) call.
+  static ssize_t SendRecvMsgWithFlags(int fd,
+                                      uint8_t* reply,
+                                      unsigned reply_len,
+                                      int recvmsg_flags,
+                                      int* result_fd,
+                                      const Pickle& request);
+ private:
+  // Similar to RecvMsg, but allows to specify |flags| for recvmsg(2).
+  static ssize_t RecvMsgWithFlags(int fd,
+                                  void* msg,
+                                  size_t length,
+                                  int flags,
+                                  std::vector<int>* fds);
 };
 
 #endif  // BASE_POSIX_UNIX_DOMAIN_SOCKET_LINUX_H_
