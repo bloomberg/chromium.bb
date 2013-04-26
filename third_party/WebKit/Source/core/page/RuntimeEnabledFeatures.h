@@ -131,11 +131,6 @@ public:
 
     static void setScriptedSpeechEnabled(bool isEnabled) { isScriptedSpeechEnabled = isEnabled; }
     static bool scriptedSpeechEnabled() { return isScriptedSpeechEnabled; }
-    static bool webkitSpeechRecognitionEnabled() { return isScriptedSpeechEnabled; }
-    static bool webkitSpeechRecognitionErrorEnabled() { return isScriptedSpeechEnabled; }
-    static bool webkitSpeechRecognitionEventEnabled() { return isScriptedSpeechEnabled; }
-    static bool webkitSpeechGrammarEnabled() { return isScriptedSpeechEnabled; }
-    static bool webkitSpeechGrammarListEnabled() { return isScriptedSpeechEnabled; }
 
     static void setFileSystemEnabled(bool isEnabled) { isFileSystemEnabled = isEnabled; }
     static bool fileSystemEnabled();
@@ -151,12 +146,11 @@ public:
 #if ENABLE(MEDIA_STREAM)
     static void setMediaStreamEnabled(bool isEnabled) { isMediaStreamEnabled = isEnabled; }
     static bool mediaStreamEnabled() { return isMediaStreamEnabled; }
-    static bool webkitGetUserMediaEnabled() { return isMediaStreamEnabled; }
-    static bool webkitMediaStreamEnabled() { return isMediaStreamEnabled; }
+#endif
 
+#if ENABLE(MEDIA_STREAM)
     static void setPeerConnectionEnabled(bool isEnabled) { isPeerConnectionEnabled = isEnabled; }
     static bool peerConnectionEnabled() { return isMediaStreamEnabled && isPeerConnectionEnabled; }
-    static bool webkitRTCPeerConnectionEnabled() { return peerConnectionEnabled(); }
 #endif
 
     static void setWebkitGetGamepadsEnabled(bool isEnabled) { isWebkitGetGamepadsEnabled = isEnabled; }
@@ -281,7 +275,6 @@ private:
     static bool isEncryptedMediaEnabled;
 #endif
     static bool isWebkitVideoTrackEnabled;
-    static bool isShadowDOMEnabled;
     static bool isExperimentalShadowDOMEnabled;
     static bool isAuthorShadowDOMForAnyElementEnabled;
     static bool isCustomDOMElementsEnabled;

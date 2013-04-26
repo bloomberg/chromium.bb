@@ -26,9 +26,9 @@
 [
     Supplemental=DOMWindow
 ] interface DOMWindowSpeech {
-    [EnabledAtRuntime] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
-    [EnabledAtRuntime] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
-    [EnabledAtRuntime] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
-    [EnabledAtRuntime] attribute SpeechGrammarConstructor webkitSpeechGrammar;
-    [EnabledAtRuntime] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
+    [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
+    [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
+    [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;
+    [EnabledAtRuntime=scriptedSpeech] attribute SpeechGrammarConstructor webkitSpeechGrammar;
+    [EnabledAtRuntime=scriptedSpeech] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;
 };

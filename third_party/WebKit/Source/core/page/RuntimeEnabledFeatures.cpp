@@ -83,7 +83,6 @@ bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
 bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;
 #endif
 bool RuntimeEnabledFeatures::isWebkitVideoTrackEnabled = true;
-bool RuntimeEnabledFeatures::isShadowDOMEnabled = true;
 bool RuntimeEnabledFeatures::isExperimentalShadowDOMEnabled = false;
 bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
 bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;
