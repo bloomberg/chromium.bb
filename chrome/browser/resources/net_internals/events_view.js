@@ -128,9 +128,6 @@ var EventsView = (function() {
     show: function(isVisible) {
       superClass.prototype.show.call(this, isVisible);
       this.splitterView_.show(isVisible);
-
-      if (isVisible)
-        this.filterInput_.focus();
     },
 
     getFilterText_: function() {

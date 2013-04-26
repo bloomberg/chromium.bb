@@ -61,29 +61,23 @@ var CaptureStatusView = (function() {
     },
 
     onSelectAction_: function() {
-      var kNameToAction = {
-        'stop': switchToViewOnlyMode_,
-        'reset': EventsTracker.getInstance().deleteAllLogEntries.bind(
-                     EventsTracker.getInstance()),
-        'clear-cache': g_browser.sendClearAllCache.bind(g_browser),
-        'flush-sockets': g_browser.sendFlushSocketPools.bind(g_browser),
-      };
-
-      // Execute the function for the action.
       var dropdown = this.getDropdown_();
-      kNameToAction[dropdown.value]();
+      var action = dropdown.value;
       dropdown.selectedIndex = -1;
+
+      if (action == 'stop') {
+        $(CaptureView.STOP_BUTTON_ID).click();
+      } else if (action == 'reset') {
+        $(CaptureView.RESET_BUTTON_ID).click();
+      } else if (action == 'clear-cache') {
+        g_browser.sendClearAllCache();
+      } else if (action == 'flush-sockets') {
+        g_browser.sendFlushSocketPools();
+      } else {
+        throw Error('Unrecognized action: ' + action);
+      }
     },
   };
-
-  /**
-   * Calls the corresponding function of MainView.  This is needed because we
-   * can't call MainView.getInstance() in the constructor, as it hasn't been
-   * created yet.
-   */
-  function switchToViewOnlyMode_() {
-    MainView.getInstance().switchToViewOnlyMode();
-  }
 
   return CaptureStatusView;
 })();

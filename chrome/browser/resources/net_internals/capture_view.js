@@ -25,6 +25,11 @@ var CaptureView = (function() {
 
     $(CaptureView.LIMIT_CHECKBOX_ID).onclick = this.onChangeLimit_.bind(this);
 
+    $(CaptureView.STOP_BUTTON_ID).onclick =
+        this.onStopButtonClicked_.bind(this);
+    $(CaptureView.RESET_BUTTON_ID).onclick =
+        this.onResetButtonClicked_.bind(this);
+
     if (byteLoggingCheckbox.checked) {
       // The code to display a warning on ExportView relies on bytelogging
       // being off by default. If this ever changes, the code will need to
@@ -54,6 +59,8 @@ var CaptureView = (function() {
   CaptureView.BYTE_LOGGING_HELP_ID = 'capture-view-byte-logging-help';
   CaptureView.BYTE_LOGGING_HELP_HOVER_ID =
       'capture-view-byte-logging-help-hover';
+  CaptureView.STOP_BUTTON_ID = 'capture-view-stop-button';
+  CaptureView.RESET_BUTTON_ID = 'capture-view-reset-button';
 
   cr.addSingletonGetter(CaptureView);
 
@@ -118,6 +125,14 @@ var CaptureView = (function() {
       }
 
       EventsTracker.getInstance().setLimits(softLimit, hardLimit);
+    },
+
+    onStopButtonClicked_: function() {
+      MainView.getInstance().switchToViewOnlyMode();
+    },
+
+    onResetButtonClicked_: function() {
+      EventsTracker.getInstance().deleteAllLogEntries();
     },
   };
 
