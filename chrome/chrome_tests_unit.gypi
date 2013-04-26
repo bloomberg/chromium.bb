@@ -1444,6 +1444,7 @@
         'browser/ui/gtk/status_icons/status_tray_gtk_unittest.cc',
         'browser/ui/gtk/tabs/tab_renderer_gtk_unittest.cc',
         'browser/ui/login/login_prompt_unittest.cc',
+        'browser/ui/omnibox/omnibox_controller_unittest.cc',
         'browser/ui/omnibox/omnibox_edit_unittest.cc',
         'browser/ui/omnibox/omnibox_view_unittest.cc',
         'browser/ui/panels/display_settings_provider_win_unittest.cc',

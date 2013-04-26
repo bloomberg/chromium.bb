@@ -12,6 +12,7 @@
 #include "base/time.h"
 #include "chrome/browser/autocomplete/autocomplete_controller_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
+#include "chrome/browser/ui/omnibox/omnibox_controller.h"
 #include "chrome/common/metrics/proto/omnibox_event.pb.h"
 #include "chrome/common/omnibox_focus_state.h"
 #include "content/public/common/page_transition_types.h"
@@ -57,7 +58,7 @@ enum EnteredKeywordModeMethod {
   ENTERED_KEYWORD_MODE_NUM_ITEMS
 };
 
-class OmniboxEditModel : public AutocompleteControllerDelegate {
+class OmniboxEditModel {
  public:
   struct State {
     State(bool user_input_in_progress,
@@ -81,8 +82,10 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                    Profile* profile);
   virtual ~OmniboxEditModel();
 
+  // TODO(beaudoin): Remove this accessor when the AutocompleteController has
+  //     completely moved to OmniboxController.
   AutocompleteController* autocomplete_controller() const {
-    return autocomplete_controller_.get();
+    return omnibox_controller_->autocomplete_controller();
   }
 
   void set_popup_model(OmniboxPopupModel* popup_model) {
@@ -315,6 +318,9 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // is in screen coordinates.
   void OnPopupBoundsChanged(const gfx::Rect& bounds);
 
+  // Called when the results have changed in the OmniboxController.
+  void OnResultChanged(bool default_match_changed);
+
  private:
   friend class InstantTestBase;
 
@@ -342,9 +348,6 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
                           // he simply hasn't released the key, rather than that
                           // he intended to hit "ctrl-enter".
   };
-
-  // AutocompleteControllerDelegate:
-  virtual void OnResultChanged(bool default_match_changed) OVERRIDE;
 
   // Returns true if a query to an autocomplete provider is currently
   // in progress.  This logic should in the future live in
@@ -434,7 +437,7 @@ class OmniboxEditModel : public AutocompleteControllerDelegate {
   // the view.
   void SetFocusState(OmniboxFocusState state, OmniboxFocusChangeReason reason);
 
-  scoped_ptr<AutocompleteController> autocomplete_controller_;
+  scoped_ptr<OmniboxController> omnibox_controller_;
 
   OmniboxView* view_;
 
