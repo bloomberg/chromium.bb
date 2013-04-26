@@ -147,10 +147,9 @@ public:
 
     class WebGraphicsSyncPointCallback {
     public:
-        virtual void onSyncPointReached() = 0;
-
-    protected:
         virtual ~WebGraphicsSyncPointCallback() { }
+
+        virtual void onSyncPointReached() = 0;
     };
 
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
@@ -189,7 +188,9 @@ public:
 
     virtual unsigned insertSyncPoint() { return 0; }
     virtual void waitSyncPoint(unsigned) { }
-    virtual void signalSyncPoint(unsigned syncPoint, WebGraphicsSyncPointCallback*) { }
+    // This call passes ownership of the WebGraphicsSyncPointCallback to the
+    // WebGraphicsContext3D implementation.
+    virtual void signalSyncPoint(unsigned syncPoint, WebGraphicsSyncPointCallback* callback) { delete callback; }
 
     // Helper for software compositing path. Reads back the frame buffer into
     // the memory region pointed to by "pixels" with size "bufferSize". It is
