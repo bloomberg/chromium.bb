@@ -113,16 +113,11 @@ namespace bluetooth {
   callback SizeCallback = void (long result);
   callback SocketCallback = void (Socket result);
 
-  // Options for the getDevices function. If neither |uuid| or |name| are
-  // provided, all devices known to the system are returned.
+  // Options for the getDevices function. If |profile| is not provided, all
+  // devices known to the system are returned.
   dictionary GetDevicesOptions {
-    // Only devices providing a service with a UUID that matches |uuid| will be
-    // returned.
-    DOMString? uuid;
-
-    // Only devices providing a service with a name that matches |name| will be
-    // returned.
-    DOMString? name;
+    // Only devices providing |profile| will be returned.
+    Profile? profile;
 
     // Called for each matching device.  Note that a service discovery request
     // must be made to each non-matching device before it can be definitively

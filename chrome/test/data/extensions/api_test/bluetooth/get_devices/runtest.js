@@ -7,9 +7,6 @@ function testGetDevices() {
   chrome.test.assertEq('d1', devices['all'][0].name);
   chrome.test.assertEq('d2', devices['all'][1].name);
 
-  chrome.test.assertEq(1, devices['name'].length);
-  chrome.test.assertEq('d1', devices['name'][0].name);
-
   chrome.test.assertEq(1, devices['uuid'].length);
   chrome.test.assertEq('d2', devices['uuid'][0].name);
 
@@ -18,9 +15,9 @@ function testGetDevices() {
 
 var devices = {
   'all': [],
-  'name': [],
   'uuid': []
 };
+
 function recordDevicesInto(arrayKey) {
   return function(device) {
     devices[arrayKey].push(device);
@@ -34,31 +31,19 @@ function failOnError() {
 }
 
 chrome.bluetooth.getDevices(
-    {
-      deviceCallback:recordDevicesInto('all')
-    },
-    function() {
-      failOnError();
-      chrome.bluetooth.getDevices(
-          {
-            name:'fooservice',
-            deviceCallback:recordDevicesInto('name')
-          },
-          function() {
-            failOnError();
-            chrome.bluetooth.getDevices(
-                {
-                  uuid:'00000010-0000-1000-8000-00805f9b34fb',
-                  deviceCallback:recordDevicesInto('uuid')
-                },
-                function() {
-                  failOnError();
-                  chrome.test.sendMessage('ready',
-                      function(message) {
-                        chrome.test.runTests([
-                            testGetDevices
-                        ]);
-                    });
-                });
+  {deviceCallback: recordDevicesInto('all')},
+  function() {
+    failOnError();
+    chrome.bluetooth.getDevices(
+      {
+        profile: {uuid: '00000010-0000-1000-8000-00805f9b34fb'},
+        deviceCallback: recordDevicesInto('uuid')
+      },
+      function() {
+        failOnError();
+        chrome.test.sendMessage('ready',
+          function(message) {
+            chrome.test.runTests([testGetDevices]);
           });
-    });
+      });
+  });

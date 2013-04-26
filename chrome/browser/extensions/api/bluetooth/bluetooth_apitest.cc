@@ -432,16 +432,12 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
 
   EXPECT_CALL(*device1_, ProvidesServiceWithUUID(testing::_))
       .WillOnce(testing::Return(false));
-  EXPECT_CALL(*device1_, ProvidesServiceWithName(testing::_, testing::_))
-      .WillOnce(testing::Invoke(CallProvidesServiceCallback<true>));
 
   EXPECT_CALL(*device2_, ProvidesServiceWithUUID(testing::_))
       .WillOnce(testing::Return(true));
-  EXPECT_CALL(*device2_, ProvidesServiceWithName(testing::_, testing::_))
-      .WillOnce(testing::Invoke(CallProvidesServiceCallback<false>));
 
   EXPECT_CALL(*mock_adapter_, GetDevices())
-      .Times(3)
+      .Times(2)
       .WillRepeatedly(testing::Return(devices));
 
   // Load and wait for setup
@@ -450,34 +446,6 @@ IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevices) {
       LoadExtension(test_data_dir_.AppendASCII("bluetooth/get_devices")));
   EXPECT_TRUE(listener.WaitUntilSatisfied());
 
-  listener.Reply("go");
-
-  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-}
-
-IN_PROC_BROWSER_TEST_F(BluetoothApiTest, GetDevicesConcurrently) {
-  ResultCatcher catcher;
-  catcher.RestrictToProfile(browser()->profile());
-
-  BluetoothAdapter::ConstDeviceList devices;
-  devices.push_back(device1_.get());
-
-  // Save the callback to delay execution so that we can force the calls to
-  // happen concurrently.  This will be called after the listener is satisfied.
-  BluetoothDevice::ProvidesServiceCallback callback;
-  EXPECT_CALL(*device1_, ProvidesServiceWithName(testing::_, testing::_))
-      .WillOnce(testing::SaveArg<1>(&callback));
-
-  EXPECT_CALL(*mock_adapter_, GetDevices())
-      .WillOnce(testing::Return(devices));
-
-  // Load and wait for setup
-  ExtensionTestMessageListener listener("ready", true);
-  ASSERT_TRUE(LoadExtension(
-        test_data_dir_.AppendASCII("bluetooth/get_devices_concurrently")));
-  EXPECT_TRUE(listener.WaitUntilSatisfied());
-
-  callback.Run(false);
   listener.Reply("go");
 
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

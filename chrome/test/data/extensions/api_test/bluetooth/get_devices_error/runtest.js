@@ -9,18 +9,16 @@ function testGetDevicesReturnsError() {
 
 var error = "";
 chrome.bluetooth.getDevices(
-    {
-      uuid:'this is nonsense',
-      deviceCallback:function() {}
-    },
-    function() {
-      if (chrome.runtime.lastError) {
-        error = chrome.runtime.lastError.message;
-      }
-      chrome.test.sendMessage('ready',
-          function(message) {
-            chrome.test.runTests([
-                testGetDevicesReturnsError
-            ]);
-        });
-    });
+  {
+    profile: {uuid:'this is nonsense'},
+    deviceCallback: function() {}
+  },
+  function() {
+    if (chrome.runtime.lastError) {
+      error = chrome.runtime.lastError.message;
+    }
+    chrome.test.sendMessage('ready',
+      function(message) {
+        chrome.test.runTests([testGetDevicesReturnsError]);
+      });
+  });

@@ -113,11 +113,8 @@ class BluetoothGetDevicesFunction : public BluetoothExtensionFunction {
 
  private:
   void DispatchDeviceSearchResult(const device::BluetoothDevice& device);
-  void ProvidesServiceCallback(const device::BluetoothDevice* device,
-                               bool providesService);
   void FinishDeviceSearch();
 
-  int callbacks_pending_;
   int device_events_sent_;
 };
 

@@ -131,8 +131,7 @@ bool BluetoothGetAdapterStateFunction::DoWork(
 }
 
 BluetoothGetDevicesFunction::BluetoothGetDevicesFunction()
-    : callbacks_pending_(0),
-      device_events_sent_(0) {}
+    : device_events_sent_(0) {}
 
 void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
     const BluetoothDevice& device) {
@@ -143,19 +142,6 @@ void BluetoothGetDevicesFunction::DispatchDeviceSearchResult(
       extension_device);
 
   device_events_sent_++;
-}
-
-void BluetoothGetDevicesFunction::ProvidesServiceCallback(
-    const BluetoothDevice* device, bool providesService) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  CHECK(device);
-  if (providesService)
-    DispatchDeviceSearchResult(*device);
-
-  callbacks_pending_--;
-  if (callbacks_pending_ == -1)
-    FinishDeviceSearch();
 }
 
 void BluetoothGetDevicesFunction::FinishDeviceSearch() {
@@ -181,8 +167,8 @@ bool BluetoothGetDevicesFunction::DoWork(
   const bluetooth::GetDevicesOptions& options = params->options;
 
   std::string uuid;
-  if (options.uuid.get() != NULL) {
-    uuid = *options.uuid.get();
+  if (options.profile.get() != NULL) {
+    uuid = options.profile->uuid;
     if (!BluetoothDevice::IsUUIDValid(uuid)) {
       SetError(kInvalidUuid);
       SendResponse(false);
@@ -190,36 +176,17 @@ bool BluetoothGetDevicesFunction::DoWork(
     }
   }
 
-  CHECK_EQ(0, callbacks_pending_);
-
   BluetoothAdapter::DeviceList devices = adapter->GetDevices();
-  for (BluetoothAdapter::DeviceList::iterator i = devices.begin();
-      i != devices.end(); ++i) {
-    BluetoothDevice* device = *i;
-    CHECK(device);
-
-    if (!uuid.empty() && !(device->ProvidesServiceWithUUID(uuid)))
-      continue;
-
-    if (options.name.get() == NULL) {
+  for (BluetoothAdapter::DeviceList::const_iterator iter = devices.begin();
+       iter != devices.end();
+       ++iter) {
+    const BluetoothDevice* device = *iter;
+    DCHECK(device);
+    if (uuid.empty() || device->ProvidesServiceWithUUID(uuid))
       DispatchDeviceSearchResult(*device);
-      continue;
-    }
-
-    callbacks_pending_++;
-    device->ProvidesServiceWithName(
-        *(options.name),
-        base::Bind(&BluetoothGetDevicesFunction::ProvidesServiceCallback,
-                   this,
-                   device));
   }
-  callbacks_pending_--;
 
-  // The count is checked for -1 because of the extra decrement after the
-  // for-loop, which ensures that all requests have been made before
-  // SendResponse happens.
-  if (callbacks_pending_ == -1)
-    FinishDeviceSearch();
+  FinishDeviceSearch();
 
   return true;
 }
