@@ -145,8 +145,7 @@ DragDropController::DragDropController()
       drag_window_(NULL),
       drag_source_window_(NULL),
       should_block_during_drag_drop_(true),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          drag_drop_window_delegate_(new DragDropTrackerDelegate(this))),
+      drag_drop_window_delegate_(new DragDropTrackerDelegate(this)),
       current_drag_event_source_(ui::DragDropTypes::DRAG_EVENT_SOURCE_MOUSE),
       weak_factory_(this) {
   Shell::GetInstance()->AddPreTargetHandler(this);

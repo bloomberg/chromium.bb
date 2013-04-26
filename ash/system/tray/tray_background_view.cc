@@ -166,12 +166,10 @@ TrayBackgroundView::TrayBackgroundView(
       tray_container_(NULL),
       shelf_alignment_(SHELF_ALIGNMENT_BOTTOM),
       background_(NULL),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hide_background_animator_(
-          this, 0, kTrayBackgroundAlpha)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(hover_background_animator_(
-          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(widget_observer_(
-          new TrayWidgetObserver(this))) {
+      hide_background_animator_(this, 0, kTrayBackgroundAlpha),
+      hover_background_animator_(
+          this, 0, kTrayBackgroundHoverAlpha - kTrayBackgroundAlpha),
+      widget_observer_(new TrayWidgetObserver(this)) {
   set_notify_enter_exit_on_child(true);
 
   // Initially we want to paint the background, but without the hover effect.

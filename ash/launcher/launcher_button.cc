@@ -79,7 +79,7 @@ class LauncherButtonAnimation : public ui::AnimationDelegate {
 
  private:
   LauncherButtonAnimation()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
+      : animation_(this) {
     animation_.SetThrobDuration(kAttentionThrobDurationMS);
     animation_.SetTweenType(ui::Tween::SMOOTH_IN_OUT);
   }

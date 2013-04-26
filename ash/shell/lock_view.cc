@@ -24,8 +24,8 @@ namespace shell {
 class LockView : public views::WidgetDelegateView,
                  public views::ButtonListener {
  public:
-  LockView() : unlock_button_(ALLOW_THIS_IN_INITIALIZER_LIST(
-                   new views::LabelButton(this, ASCIIToUTF16("Unlock")))) {
+  LockView()
+      : unlock_button_(new views::LabelButton(this, ASCIIToUTF16("Unlock"))) {
     unlock_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     AddChildView(unlock_button_);
     unlock_button_->set_focusable(true);

@@ -21,7 +21,7 @@ BackgroundAnimator::BackgroundAnimator(BackgroundAnimatorDelegate* delegate,
     : delegate_(delegate),
       min_alpha_(min_alpha),
       max_alpha_(max_alpha),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)),
+      animation_(this),
       paints_background_(false),
       alpha_(min_alpha) {
   animation_.SetSlideDuration(kBackgroundDurationMS);

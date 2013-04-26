@@ -95,14 +95,14 @@ WallpaperResizer::WallpaperResizer(const WallpaperInfo& info)
     : wallpaper_info_(info),
       wallpaper_image_(*(ui::ResourceBundle::GetSharedInstance().
           GetImageNamed(info.idr).ToImageSkia())),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 WallpaperResizer::WallpaperResizer(const WallpaperInfo& info,
                                    const gfx::ImageSkia& image)
     : wallpaper_info_(info),
       wallpaper_image_(image),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 WallpaperResizer::~WallpaperResizer() {

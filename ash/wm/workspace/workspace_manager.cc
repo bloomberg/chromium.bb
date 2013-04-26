@@ -113,8 +113,7 @@ WorkspaceManager::WorkspaceManager(Window* contents_window)
       active_workspace_(NULL),
       shelf_(NULL),
       in_move_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(
-          clear_unminimizing_workspace_factory_(this)),
+      clear_unminimizing_workspace_factory_(this),
       unminimizing_workspace_(NULL),
       app_terminating_(false),
       creating_fade_(false),

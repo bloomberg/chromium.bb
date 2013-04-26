@@ -53,7 +53,7 @@ class VideoDetector::WindowInfo {
 };
 
 VideoDetector::VideoDetector()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(observer_manager_(this)),
+    : observer_manager_(this),
       is_shutting_down_(false) {
   aura::Env::GetInstance()->AddObserver(this);
   Shell::GetInstance()->AddShellObserver(this);

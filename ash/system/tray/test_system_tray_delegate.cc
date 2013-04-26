@@ -57,8 +57,7 @@ TestSystemTrayDelegate::TestSystemTrayDelegate()
       cellular_enabled_(true),
       bluetooth_enabled_(true),
       caps_lock_enabled_(false),
-      volume_control_delegate_(
-          ALLOW_THIS_IN_INITIALIZER_LIST(new TestVolumeControlDelegate)) {
+      volume_control_delegate_(new TestVolumeControlDelegate) {
 }
 
 TestSystemTrayDelegate::~TestSystemTrayDelegate() {

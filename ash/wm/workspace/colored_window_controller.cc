@@ -53,7 +53,7 @@ views::View* ColoredWindowController::View::GetContentsView() {
 
 ColoredWindowController::ColoredWindowController(aura::Window* parent,
                                                  const std::string& window_name)
-    : ALLOW_THIS_IN_INITIALIZER_LIST(view_(new View(this))) {
+    : view_(new View(this)) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);

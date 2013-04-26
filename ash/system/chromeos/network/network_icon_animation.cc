@@ -14,7 +14,7 @@ namespace ash {
 namespace network_icon {
 
 NetworkIconAnimation::NetworkIconAnimation()
-    : ALLOW_THIS_IN_INITIALIZER_LIST(animation_(this)) {
+    : animation_(this) {
   // Set up the animation throbber.
   animation_.SetThrobDuration(kThrobDurationMs);
   animation_.SetTweenType(ui::Tween::LINEAR);
