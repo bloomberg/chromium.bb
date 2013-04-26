@@ -370,6 +370,9 @@ class InstantController : public InstantPage::Delegate,
   // Returns true if we should switch to using the local NTP.
   bool ShouldSwitchToLocalNTP() const;
 
+  // Returns true if the local page is being used.
+  bool UsingLocalPage() const;
+
   BrowserInstantController* const browser_;
 
   // Whether the extended API and regular API are enabled. If both are false,

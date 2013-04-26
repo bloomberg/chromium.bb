@@ -67,6 +67,33 @@ void RecordEventHistogram(InstantControllerEvent event) {
                             INSTANT_CONTROLLER_EVENT_MAX);
 }
 
+// For reporting Instant extended navigations.
+enum InstantNavigation {
+  INSTANT_NAVIGATION_LOCAL_CLICK = 0,
+  INSTANT_NAVIGATION_LOCAL_SUBMIT = 1,
+  INSTANT_NAVIGATION_ONLINE_CLICK = 2,
+  INSTANT_NAVIGATION_ONLINE_SUBMIT = 3,
+  INSTANT_NAVIGATION_MAX = 4
+};
+
+void RecordNavigationHistogram(bool is_local, bool is_click) {
+  InstantNavigation navigation;
+  if (is_local) {
+    if (is_click)
+      navigation = INSTANT_NAVIGATION_LOCAL_CLICK;
+    else
+      navigation = INSTANT_NAVIGATION_LOCAL_SUBMIT;
+  } else {
+    if (is_click)
+      navigation = INSTANT_NAVIGATION_ONLINE_CLICK;
+    else
+      navigation = INSTANT_NAVIGATION_ONLINE_SUBMIT;
+  }
+  UMA_HISTOGRAM_ENUMERATION("InstantExtended.InstantNavigation",
+                            navigation,
+                            INSTANT_NAVIGATION_MAX);
+}
+
 void AddSessionStorageHistogram(bool extended_enabled,
                                 const content::WebContents* tab1,
                                 const content::WebContents* tab2) {
@@ -570,12 +597,9 @@ void InstantController::HandleAutocompleteResults(
        provider != providers.end(); ++provider) {
     const bool from_search_provider =
         (*provider)->type() == AutocompleteProvider::TYPE_SEARCH;
-    const bool using_local_page =
-        (instant_tab_ && instant_tab_->IsLocal()) ||
-        (!instant_tab_ && overlay_ && overlay_->IsLocal());
     // Unless we are talking to a local page, skip SearchProvider, since it only
     // echoes suggestions.
-    if (from_search_provider && !using_local_page)
+    if (from_search_provider && !UsingLocalPage())
       continue;
     // Only send autocomplete results when all the providers are done. Skip
     // this check for the SearchProvider, since it isn't done until the page
@@ -679,7 +703,7 @@ void InstantController::OnCancel(const AutocompleteMatch& match,
 void InstantController::OmniboxNavigateToURL() {
   if (!extended_enabled_)
     return;
-
+  RecordNavigationHistogram(UsingLocalPage(), false);
   if (instant_tab_)
     instant_tab_->Submit(string16());
 }
@@ -1267,8 +1291,10 @@ void InstantController::NavigateToURL(const content::WebContents* contents,
   // has switched tabs).
   if (!extended_enabled_)
     return;
-  if (overlay_)
+  if (overlay_) {
+    RecordNavigationHistogram(UsingLocalPage(), true);
     HideOverlay();
+  }
 
   if (transition == content::PAGE_TRANSITION_AUTO_BOOKMARK) {
     content::RecordAction(
@@ -1686,4 +1712,9 @@ bool InstantController::ShouldSwitchToLocalNTP() const {
     return true;
 
   return chrome::IsAggressiveLocalNTPFallbackEnabled();
+}
+
+bool InstantController::UsingLocalPage() const {
+  return (instant_tab_ && instant_tab_->IsLocal()) ||
+      (!instant_tab_ && overlay_ && overlay_->IsLocal());
 }
