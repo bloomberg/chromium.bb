@@ -335,6 +335,10 @@ bool WebCompositorInputHandlerImpl::touchpadFlingScroll(const WebFloatSize& incr
     return false;
 }
 
+static WebFloatSize toClientScrollIncrement(const WebFloatSize& increment) {
+    return WebFloatSize(-increment.width, -increment.height);
+}
+
 void WebCompositorInputHandlerImpl::scrollBy(const WebFloatSize& increment)
 {
     if (increment == WebFloatSize())
@@ -349,7 +353,8 @@ void WebCompositorInputHandlerImpl::scrollBy(const WebFloatSize& increment)
         didScroll = touchpadFlingScroll(increment);
         break;
     case WebGestureEvent::Touchscreen:
-        didScroll = m_inputHandlerClient->scrollByIfPossible(m_flingParameters.point, WebFloatSize(-increment.width, -increment.height));
+        didScroll = m_inputHandlerClient->scrollByIfPossible(m_flingParameters.point,
+                                                             toClientScrollIncrement(increment));
         break;
     }
 
@@ -357,6 +362,12 @@ void WebCompositorInputHandlerImpl::scrollBy(const WebFloatSize& increment)
         m_flingParameters.cumulativeScroll.width += increment.width;
         m_flingParameters.cumulativeScroll.height += increment.height;
     }
+}
+
+void WebCompositorInputHandlerImpl::notifyCurrentFlingVelocity(const WebFloatSize& velocity)
+{
+    TRACE_EVENT2("webkit", "WebCompositorInputHandlerImpl::notifyCurrentFlingVelocity", "vx", velocity.width, "vy", velocity.height);
+    m_inputHandlerClient->notifyCurrentFlingVelocity(toClientScrollIncrement(velocity));
 }
 
 void WebCompositorInputHandlerImpl::mainThreadHasStoppedFlinging()

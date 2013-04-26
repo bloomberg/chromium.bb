@@ -34,6 +34,8 @@ class WebGestureCurveTarget {
 public:
     virtual void scrollBy(const WebFloatSize& delta) = 0;
 
+    virtual void notifyCurrentFlingVelocity(const WebFloatSize&) { }
+
 protected:
     virtual ~WebGestureCurveTarget() { }
 };

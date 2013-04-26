@@ -63,6 +63,9 @@ public:
     // direction.
     virtual bool scrollVerticallyByPageIfPossible(WebPoint origin, WebScrollbar::ScrollDirection) = 0;
 
+    // Push velocity updates for the duration of animated fling gestures.
+    virtual void notifyCurrentFlingVelocity(WebFloatSize velocity) { }
+
     // Stop scrolling the selected layer. Should only be called if scrollBegin()
     // returned ScrollStarted.
     virtual void scrollEnd() = 0;

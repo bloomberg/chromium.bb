@@ -67,6 +67,7 @@ public:
 
     // WebGestureCurveTarget implementation.
     virtual void scrollBy(const WebFloatSize&);
+    virtual void notifyCurrentFlingVelocity(const WebFloatSize&);
 
     int identifier() const { return m_identifier; }
 

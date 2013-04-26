@@ -74,6 +74,8 @@ private:
                                          float pageScale,
                                          double startTimeMs,
                                          double durationMs) OVERRIDE { }
+
+    virtual void notifyCurrentFlingVelocity(WebFloatSize velocity) OVERRIDE { }
 };
 
 class MockWebCompositorInputHandlerClient : public WebCompositorInputHandlerClient {
