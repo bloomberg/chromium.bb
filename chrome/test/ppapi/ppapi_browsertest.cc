@@ -1209,15 +1209,8 @@ TEST_PPAPI_IN_PROCESS(MouseCursor)
 TEST_PPAPI_OUT_OF_PROCESS(MouseCursor)
 TEST_PPAPI_NACL(MouseCursor)
 
-// On Windows XP, GetTableTags returns an empty list (too small read?).
-// TODO(bbudge) Fix implementations so tests pass on XP.
-#if defined(OS_WIN)
-#define MAYBE_TrueTypeFont DISABLED_TrueTypeFont
-#else
-#define MAYBE_TrueTypeFont TrueTypeFont
-#endif
-TEST_PPAPI_OUT_OF_PROCESS(MAYBE_TrueTypeFont)
-TEST_PPAPI_NACL(MAYBE_TrueTypeFont)
+TEST_PPAPI_OUT_OF_PROCESS(TrueTypeFont)
+TEST_PPAPI_NACL(TrueTypeFont)
 
 // PPB_Printing only implemented for out of process.
 TEST_PPAPI_OUT_OF_PROCESS(Printing)

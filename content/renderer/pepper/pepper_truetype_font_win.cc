@@ -13,6 +13,7 @@
 #include "base/utf_string_conversions.h"
 #include "base/win/scoped_hdc.h"
 #include "base/win/scoped_select_object.h"
+#include "content/public/renderer/render_thread.h"
 #include "ppapi/c/dev/ppb_truetype_font_dev.h"
 #include "ppapi/c/pp_errors.h"
 
@@ -36,6 +37,12 @@ class PepperTrueTypeFontWin : public PepperTrueTypeFont {
                            int32_t max_data_length,
                            std::string* data) OVERRIDE;
  private:
+  DWORD GetFontData(HDC hdc,
+                    DWORD table,
+                    DWORD offset,
+                    LPVOID buffer,
+                    DWORD length);
+
   HFONT font_;
 
   DISALLOW_COPY_AND_ASSIGN(PepperTrueTypeFontWin);
@@ -61,7 +68,7 @@ PepperTrueTypeFontWin::PepperTrueTypeFontWin(
       pitch_and_family |= FF_MODERN;
       break;
   }
-  // TODO weight, variant.
+  // TODO(bbudge) support widths (extended, condensed).
 
   font_ = CreateFont(0  /* height */,
                      0  /* width */,
@@ -113,7 +120,7 @@ int32_t PepperTrueTypeFontWin::Describe(
   desc->style = font_desc.lfItalic ? PP_TRUETYPEFONTSTYLE_ITALIC :
                                      PP_TRUETYPEFONTSTYLE_NORMAL;
   desc->weight = static_cast<PP_TrueTypeFontWeight_Dev>(font_desc.lfWeight);
-  desc->width = PP_TRUETYPEFONTWIDTH_NORMAL;  // TODO(bbudge) support widths.
+  desc->width = PP_TRUETYPEFONTWIDTH_NORMAL;
   desc->charset =
       static_cast<PP_TrueTypeFontCharset_Dev>(font_desc.lfCharSet);
 
@@ -129,6 +136,32 @@ int32_t PepperTrueTypeFontWin::Describe(
   return PP_OK;
 }
 
+DWORD PepperTrueTypeFontWin::GetFontData(HDC hdc,
+                                         DWORD table,
+                                         DWORD offset,
+                                         void* buffer,
+                                         DWORD length) {
+  // If this is a zero byte read, return a successful result.
+  if (buffer && !length)
+    return 0;
+
+  DWORD result = ::GetFontData(hdc, table, offset, buffer, length);
+  if (result == GDI_ERROR) {
+    // The font may not be cached by the OS, causing an attempt to read it in
+    // the renderer process to fail. Attempt to pre-cache it.
+    LOGFONTW logfont;
+    if (!::GetObject(font_, sizeof(LOGFONTW), &logfont))
+      return GDI_ERROR;
+    content::RenderThread* render_thread = content::RenderThread::Get();
+    if (!render_thread)
+      return GDI_ERROR;
+    render_thread->PreCacheFont(logfont);
+
+    result = ::GetFontData(hdc, table, offset, buffer, length);
+  }
+  return result;
+}
+
 int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
   base::win::ScopedCreateDC hdc(::CreateCompatibleDC(NULL));
   if (!hdc)
@@ -139,8 +172,9 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
   // Get the whole font header.
   static const DWORD kFontHeaderSize = 12;
   uint8_t header_buf[kFontHeaderSize];
-  if (::GetFontData(hdc, 0, 0, header_buf, kFontHeaderSize) != kFontHeaderSize)
+  if (GetFontData(hdc, 0, 0, header_buf, kFontHeaderSize) == GDI_ERROR)
     return PP_ERROR_FAILED;
+
   // The numTables follows a 4 byte scalerType tag. Font data is stored in
   // big-endian order.
   DWORD num_tables = (header_buf[4] << 8) | header_buf[5];
@@ -150,9 +184,9 @@ int32_t PepperTrueTypeFontWin::GetTableTags(std::vector<uint32_t>* tags) {
   DWORD directory_size = num_tables * kDirectoryEntrySize;
   scoped_ptr<uint8_t[]> directory(new uint8_t[directory_size]);
   // Get the table directory entries after the font header.
-  if (::GetFontData(hdc, 0 /* tag */, kFontHeaderSize,
-                    directory.get(),
-                    directory_size) != directory_size)
+  if (GetFontData(hdc, 0 /* tag */, kFontHeaderSize,
+                  directory.get(),
+                  directory_size) == GDI_ERROR)
     return PP_ERROR_FAILED;
 
   tags->resize(num_tables);
@@ -181,7 +215,7 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
   // Tags are byte swapped on Windows.
   table_tag = base::ByteSwap(table_tag);
   // Get the size of the font table first.
-  DWORD table_size = ::GetFontData(hdc, table_tag, 0, NULL, 0);
+  DWORD table_size = GetFontData(hdc, table_tag, 0, NULL, 0);
   if (table_size == GDI_ERROR)
     return PP_ERROR_FAILED;
 
@@ -189,9 +223,12 @@ int32_t PepperTrueTypeFontWin::GetTable(uint32_t table_tag,
   DWORD safe_length = std::min(table_size - safe_offset,
                                static_cast<DWORD>(max_data_length));
   data->resize(safe_length);
-  ::GetFontData(hdc, table_tag, safe_offset,
-                reinterpret_cast<uint8_t*>(&(*data)[0]), safe_length);
-  return static_cast<int32_t>(safe_length);
+  table_size = GetFontData(hdc, table_tag, safe_offset,
+                           reinterpret_cast<uint8_t*>(&(*data)[0]),
+                           safe_length);
+  if (table_size == GDI_ERROR)
+    return PP_ERROR_FAILED;
+  return static_cast<int32_t>(table_size);
 }
 
 }  // namespace
