@@ -79,8 +79,8 @@ ConnectivityStateHelper::~ConnectivityStateHelper() {
 // static
 void ConnectivityStateHelper::Initialize() {
   CHECK(!g_connectivity_state_helper);
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableNewNetworkChangeNotifier)) {
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableNewNetworkChangeNotifier)) {
     g_connectivity_state_helper = new ConnectivityStateHelperImpl();
   } else {
     g_connectivity_state_helper =

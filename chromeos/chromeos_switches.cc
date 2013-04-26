@@ -32,9 +32,9 @@ const char kDisableStubEthernet[] = "disable-stub-ethernet";
 // Enable experimental Bluetooth features.
 const char kEnableExperimentalBluetooth[] = "enable-experimental-bluetooth";
 
-// Enables the new NetworkChangeNotifier using the NetworkStateHandler class.
-const char kEnableNewNetworkChangeNotifier[] =
-    "enable-new-network-change-notifier";
+// Disables the new NetworkChangeNotifier which uses NetworkStateHandler.
+const char kDisableNewNetworkChangeNotifier[] =
+    "disable-new-network-change-notifier";
 
 // Enables screensaver extensions.
 const char kEnableScreensaverExtensions[] = "enable-screensaver-extensions";
