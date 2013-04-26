@@ -10,7 +10,6 @@
 class CommandLine;
 
 namespace base {
-class Clock;
 class FilePath;
 class Time;
 }
@@ -43,9 +42,6 @@ class TestExtensionSystem : public ExtensionSystem {
   // ExtensionProcessManager is NULL.
   void CreateExtensionProcessManager();
 
-  // Creates an AlarmManager. Will be NULL otherwise.
-  void CreateAlarmManager(base::Clock* clock);
-
   void CreateSocketManager();
 
   virtual void InitForRegularProfile(bool extensions_enabled) OVERRIDE {}
@@ -55,7 +51,6 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ManagementPolicy* management_policy() OVERRIDE;
   virtual UserScriptMaster* user_script_master() OVERRIDE;
   virtual ExtensionProcessManager* process_manager() OVERRIDE;
-  virtual AlarmManager* alarm_manager() OVERRIDE;
   virtual LocationManager* location_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
@@ -92,7 +87,6 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  scoped_ptr<AlarmManager> alarm_manager_;
   scoped_refptr<LocationManager> location_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
   scoped_ptr<ApiResourceManager<Socket> > socket_manager_;

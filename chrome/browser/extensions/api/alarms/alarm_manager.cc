@@ -6,9 +6,11 @@
 
 #include "base/bind.h"
 #include "base/json/json_writer.h"
+#include "base/lazy_instance.h"
 #include "base/message_loop.h"
 #include "base/time.h"
 #include "base/time/clock.h"
+#include "base/time/default_clock.h"
 #include "base/value_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
@@ -89,9 +91,9 @@ scoped_ptr<base::ListValue> AlarmsToValue(const std::vector<Alarm>& alarms) {
 
 // AlarmManager
 
-AlarmManager::AlarmManager(Profile* profile, base::Clock* clock)
+AlarmManager::AlarmManager(Profile* profile)
     : profile_(profile),
-      clock_(clock),
+      clock_(new base::DefaultClock()),
       delegate_(new DefaultAlarmDelegate(profile)) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile_));
@@ -164,6 +166,23 @@ void AlarmManager::RemoveAllAlarms(const std::string& extension_id) {
 
   CHECK(alarms_.find(extension_id) == alarms_.end());
   WriteToStorage(extension_id);
+}
+
+void AlarmManager::SetClockForTesting(base::Clock* clock) {
+  clock_.reset(clock);
+}
+
+static base::LazyInstance<ProfileKeyedAPIFactory<AlarmManager> >
+g_factory = LAZY_INSTANCE_INITIALIZER;
+
+// static
+ProfileKeyedAPIFactory<AlarmManager>* AlarmManager::GetFactoryInstance() {
+  return &g_factory.Get();
+}
+
+// static
+AlarmManager* AlarmManager::Get(Profile* profile) {
+  return ProfileKeyedAPIFactory<AlarmManager>::GetForProfile(profile);
 }
 
 void AlarmManager::RemoveAlarmIterator(const AlarmIterator& iter) {

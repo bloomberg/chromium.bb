@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/timer.h"
+#include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "content/public/browser/notification_observer.h"
@@ -46,7 +47,8 @@ struct Alarm {
 // Manages the currently pending alarms for every extension in a profile.
 // There is one manager per virtual Profile.
 class AlarmManager
-    : public content::NotificationObserver,
+    : public ProfileKeyedAPI,
+      public content::NotificationObserver,
       public base::SupportsWeakPtr<AlarmManager> {
  public:
   typedef std::vector<Alarm> AlarmList;
@@ -59,9 +61,7 @@ class AlarmManager
                          const Alarm& alarm) = 0;
   };
 
-  // |clock| is usually a base::DefaultClock, but can be something
-  // else for testing.
-  explicit AlarmManager(Profile* profile, base::Clock* clock);
+  explicit AlarmManager(Profile* profile);
   virtual ~AlarmManager();
 
   // Override the default delegate. Callee assumes onwership. Used for testing.
@@ -86,6 +86,15 @@ class AlarmManager
   // Cancels and removes all alarms for the given extension.
   void RemoveAllAlarms(const std::string& extension_id);
 
+  // Replaces AlarmManager's owned clock with |clock| and takes ownership of it.
+  void SetClockForTesting(base::Clock* clock);
+
+  // ProfileKeyedAPI implementation.
+  static ProfileKeyedAPIFactory<AlarmManager>* GetFactoryInstance();
+
+  // Convenience method to get the AlarmManager for a profile.
+  static AlarmManager* Get(Profile* profile);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsTest, CreateRepeating);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsTest, Clear);
@@ -94,6 +103,7 @@ class AlarmManager
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest,
                            ReleasedExtensionPollsInfrequently);
   FRIEND_TEST_ALL_PREFIXES(ExtensionAlarmsSchedulingTest, TimerRunning);
+  friend class ProfileKeyedAPIFactory<AlarmManager>;
 
   typedef std::string ExtensionId;
   typedef std::map<ExtensionId, AlarmList> AlarmMap;
@@ -137,8 +147,13 @@ class AlarmManager
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
+  // ProfileKeyedAPI implementation.
+  static const char* service_name() {
+    return "AlarmManager";
+  }
+
   Profile* const profile_;
-  base::Clock* const clock_;
+  scoped_ptr<base::Clock> clock_;
   content::NotificationRegistrar registrar_;
   scoped_ptr<Delegate> delegate_;
 

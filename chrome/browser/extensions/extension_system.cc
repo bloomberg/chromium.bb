@@ -12,7 +12,6 @@
 #include "base/strings/string_tokenizer.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings.h"
-#include "chrome/browser/extensions/api/alarms/alarm_manager.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/location/location_manager.h"
 #include "chrome/browser/extensions/api/messaging/message_service.h"
@@ -245,10 +244,6 @@ void ExtensionSystemImpl::Shared::Shutdown() {
     extension_service_->Shutdown();
 }
 
-base::Clock* ExtensionSystemImpl::Shared::clock() {
-  return &clock_;
-}
-
 StateStore* ExtensionSystemImpl::Shared::state_store() {
   return state_store_.get();
 }
@@ -343,7 +338,6 @@ void ExtensionSystemImpl::InitForRegularProfile(bool extensions_enabled) {
   shared_->info_map();
 
   extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
-  alarm_manager_.reset(new AlarmManager(profile_, shared_->clock()));
   location_manager_ = new LocationManager(profile_);
 
   serial_connection_manager_.reset(new ApiResourceManager<SerialConnection>(
@@ -385,9 +379,6 @@ ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
   return extension_process_manager_.get();
 }
 
-AlarmManager* ExtensionSystemImpl::alarm_manager() {
-  return alarm_manager_.get();
-}
 
 LocationManager* ExtensionSystemImpl::location_manager() {
   return location_manager_.get();

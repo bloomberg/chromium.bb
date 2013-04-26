@@ -9,7 +9,6 @@
 #include "base/time/default_clock.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/alarms/alarm_manager.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/api/alarms.h"
 #include "extensions/common/error_utils.h"
 
@@ -120,8 +119,7 @@ bool AlarmsCreateFunction::RunImpl() {
                   Manifest::IsUnpackedLocation(GetExtension()->location()) ?
                   kDevDelayMinimum : kReleaseDelayMinimum),
               clock_->Now());
-  ExtensionSystem::Get(profile())->alarm_manager()->AddAlarm(
-      extension_id(), alarm);
+  AlarmManager::Get(profile())->AddAlarm(extension_id(), alarm);
 
   return true;
 }
@@ -132,8 +130,7 @@ bool AlarmsGetFunction::RunImpl() {
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
   const Alarm* alarm =
-      ExtensionSystem::Get(profile())->alarm_manager()->GetAlarm(
-          extension_id(), name);
+      AlarmManager::Get(profile())->GetAlarm(extension_id(), name);
 
   if (!alarm) {
     error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
@@ -146,8 +143,7 @@ bool AlarmsGetFunction::RunImpl() {
 
 bool AlarmsGetAllFunction::RunImpl() {
   const AlarmManager::AlarmList* alarms =
-      ExtensionSystem::Get(profile())->alarm_manager()->GetAllAlarms(
-          extension_id());
+      AlarmManager::Get(profile())->GetAllAlarms(extension_id());
   if (alarms) {
     std::vector<linked_ptr<extensions::api::alarms::Alarm> > create_arg;
     create_arg.reserve(alarms->size());
@@ -167,8 +163,8 @@ bool AlarmsClearFunction::RunImpl() {
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
   std::string name = params->name.get() ? *params->name : kDefaultAlarmName;
-  bool success = ExtensionSystem::Get(profile())->alarm_manager()->RemoveAlarm(
-     extension_id(), name);
+  bool success = AlarmManager::Get(profile())->RemoveAlarm(extension_id(),
+                                                           name);
 
   if (!success) {
     error_ = ErrorUtils::FormatErrorMessage(kAlarmNotFound, name);
@@ -179,8 +175,7 @@ bool AlarmsClearFunction::RunImpl() {
 }
 
 bool AlarmsClearAllFunction::RunImpl() {
-  ExtensionSystem::Get(profile())->alarm_manager()->RemoveAllAlarms(
-     extension_id());
+  AlarmManager::Get(profile())->RemoveAllAlarms(extension_id());
   return true;
 }
 
