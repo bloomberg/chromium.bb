@@ -52,7 +52,7 @@ deps = {
     'src/third_party/flac':
         Var('git_url') + '/chromium/deps/flac.git@78a2e692ecce084e1bb2cd6fde2d44eae2045f0b',
     'src/third_party/hunspell':
-        Var('git_url') + '/chromium/deps/hunspell.git@5776f6b87d09c3e45edb58a3186fe482244bb6db',
+        Var('git_url') + '/chromium/deps/hunspell.git@51806048d1aaa26d8b156bf8f0b71354a4ff87d1',
     'src/third_party/hunspell_dictionaries':
         Var('git_url') + '/chromium/deps/hunspell_dictionaries.git@bc7edb352e97fa71e387b9a5522f1bbd5b11a5eb',
     'src/third_party/icu':
