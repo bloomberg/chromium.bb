@@ -115,7 +115,7 @@ def _CheckTestExpectations(input_api, output_api):
     if not errs:
       return [output_api.PresubmitError("lint-test-expectations failed "
                                         "to produce output; check by hand. ")]
-    if errs != 'Lint succeeded.\n':
+    if errs.strip() != 'Lint succeeded.':
       return [output_api.PresubmitError(errs)]
   return []
 
