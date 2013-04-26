@@ -183,6 +183,7 @@ void ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Write(Message* m,
   ParamTraits<int>::Write(m, p.file_system_type);
   ParamTraits<std::string>::Write(m, p.path);
   ParamTraits<std::string>::Write(m, p.name);
+  ParamTraits<PP_Resource>::Write(m, p.file_system_plugin_resource);
 }
 
 // static
@@ -193,7 +194,8 @@ bool ParamTraits<ppapi::PPB_FileRef_CreateInfo>::Read(const Message* m,
       ParamTraits<ppapi::HostResource>::Read(m, iter, &r->resource) &&
       ParamTraits<int>::Read(m, iter, &r->file_system_type) &&
       ParamTraits<std::string>::Read(m, iter, &r->path) &&
-      ParamTraits<std::string>::Read(m, iter, &r->name);
+      ParamTraits<std::string>::Read(m, iter, &r->name) &&
+      ParamTraits<PP_Resource>::Read(m, iter, &r->file_system_plugin_resource);
 }
 
 // static
