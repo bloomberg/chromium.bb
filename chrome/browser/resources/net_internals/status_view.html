@@ -7,9 +7,10 @@ found in the LICENSE file.
 <!-- Status bar at top of screen when in capture mode. -->
 <div id=capture-status-view style="display:none">
   <span style='-webkit-flex-grow: 1'>
-    Capturing network events
+    <a href='#capture' class=capture-status-view-link>capturing</a>
+    <a href='#events' class=capture-status-view-link>events
     (<span id=capture-status-view-captured-events-count
-           title='Number of events captured to this window'></span>)
+           title='Number of events captured to this window'></span>)</a>
   </span>
   <span class=capture-status-view-arrow>
     <select id=capture-status-view-actions>

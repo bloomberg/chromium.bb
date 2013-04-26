@@ -20,6 +20,18 @@
   display: -webkit-flex;
 }
 
+.capture-status-view-link,
+.capture-status-view-link:visited,
+.capture-status-view-link:active {
+  color: white;
+  text-decoration: none;
+}
+
+.capture-status-view-link:hover {
+  color: white;
+  text-decoration: underline;
+}
+
 /* Completely un-style the SELECT. Will place an arrow over it manually. */
 #capture-status-view-actions {
   -webkit-appearance: none;
