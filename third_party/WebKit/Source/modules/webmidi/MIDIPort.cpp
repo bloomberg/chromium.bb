@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "modules/webmidi/MIDIPort.h"
 
 namespace WebCore {
@@ -61,13 +60,13 @@ String MIDIPort::type() const
 {
     switch (m_type) {
     case MIDIPortTypeInput:
-        return "input";
+        return ASCIILiteral("input");
     case MIDIPortTypeOutput:
-        return "output";
+        return ASCIILiteral("output");
     default:
         ASSERT_NOT_REACHED();
     }
-    return "";
+    return emptyString();
 }
 
 } // namespace WebCore

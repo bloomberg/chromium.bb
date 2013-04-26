@@ -28,12 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// FIXME: IDL generator doesn't support readonly enum yet.
-// See also, http://crbug.com/234925
-//enum MIDIPortType {
-//    "input",
-//    "output"
-//};
+enum MIDIPortType {
+    "input",
+    "output"
+};
 
 [
     ActiveDOMObject,
@@ -42,7 +40,7 @@
     readonly attribute DOMString id;
     readonly attribute DOMString manufacturer;
     readonly attribute DOMString name;
-    readonly attribute DOMString type;
+    readonly attribute MIDIPortType type;
     readonly attribute DOMString version;
 
     attribute EventListener ondisconnect;

@@ -29,7 +29,6 @@
  */
 
 #include "config.h"
-
 #include "modules/webmidi/MIDIErrorCallback.h"
 
 #include "core/dom/DOMError.h"
