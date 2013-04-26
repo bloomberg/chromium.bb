@@ -8,9 +8,9 @@
 
 #include "base/time.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "chrome/browser/chromeos/login/login_display_host.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
-#include "chrome/browser/chromeos/net/connectivity_state_helper.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/models/menu_model.h"
 #include "ui/gfx/font.h"
@@ -114,8 +114,8 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
   network_menu_.reset(new NetworkMenuWebUI(this, web_ui));
   network_icon_.reset(
       new NetworkMenuIcon(this, NetworkMenuIcon::DROPDOWN_MODE));
-  ConnectivityStateHelper::Get()->AddNetworkManagerObserver(this);
-  ConnectivityStateHelper::Get()->RequestScan();
+  CrosLibrary::Get()->GetNetworkLibrary()->AddNetworkManagerObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RequestNetworkScan();
   Refresh();
   network_scan_timer_.Start(FROM_HERE,
       base::TimeDelta::FromSeconds(kNetworkScanIntervalSecs),
@@ -123,7 +123,7 @@ NetworkDropdown::NetworkDropdown(content::WebUI* web_ui,
 }
 
 NetworkDropdown::~NetworkDropdown() {
-  ConnectivityStateHelper::Get()->RemoveNetworkManagerObserver(this);
+  CrosLibrary::Get()->GetNetworkLibrary()->RemoveNetworkManagerObserver(this);
 }
 
 void NetworkDropdown::SetLastNetworkType(ConnectionType last_network_type) {
@@ -146,7 +146,7 @@ bool NetworkDropdown::ShouldOpenButtonOptions() const {
   return !oobe_;
 }
 
-void NetworkDropdown::NetworkManagerChanged() {
+void NetworkDropdown::OnNetworkManagerChanged(NetworkLibrary* cros) {
   Refresh();
 }
 
@@ -174,7 +174,7 @@ void NetworkDropdown::SetNetworkIconAndText() {
 }
 
 void NetworkDropdown::ForceNetworkScan() {
-  ConnectivityStateHelper::Get()->RequestScan();
+  CrosLibrary::Get()->GetNetworkLibrary()->RequestNetworkScan();
   Refresh();
 }
 
