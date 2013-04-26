@@ -903,7 +903,7 @@ ManagedNetworkConfigurationHandler::GetPoliciesForProfile(
 ManagedNetworkConfigurationHandler::ManagedNetworkConfigurationHandler()
     : user_policies_initialized_(false),
       device_policies_initialized_(false),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_ptr_factory_(this) {
 }
 
 ManagedNetworkConfigurationHandler::~ManagedNetworkConfigurationHandler() {

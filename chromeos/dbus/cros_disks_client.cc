@@ -404,7 +404,7 @@ class CrosDisksClientImpl : public CrosDisksClient {
 class CrosDisksClientStubImpl : public CrosDisksClient {
  public:
   CrosDisksClientStubImpl()
-      : weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      : weak_ptr_factory_(this) {}
 
   virtual ~CrosDisksClientStubImpl() {}
 

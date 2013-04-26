@@ -77,7 +77,7 @@ class IBusDaemonControllerImpl : public IBusDaemonController {
       ibus_daemon_status_(IBUS_DAEMON_STOP),
       ui_task_runner_(ui_task_runner),
       file_task_runner_(file_task_runner),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
   }
 
   virtual ~IBusDaemonControllerImpl() {}

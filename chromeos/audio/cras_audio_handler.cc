@@ -181,7 +181,7 @@ void CrasAudioHandler::SetActiveInputNode(uint64 node_id) {
 CrasAudioHandler::CrasAudioHandler(
     scoped_refptr<AudioPrefHandler> audio_pref_handler)
     : audio_pref_handler_(audio_pref_handler),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       output_mute_on_(false),
       input_mute_on_(false),
       output_volume_(0),
