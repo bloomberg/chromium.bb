@@ -54,6 +54,11 @@ class TestMountPointProvider::QuotaUtil
                                     FileSystemType type) OVERRIDE {
     // Do nothing.
   }
+  virtual void StickyInvalidateUsageCache(
+      const GURL& origin,
+      FileSystemType type) OVERRIDE {
+    // Do nothing.
+  }
 
   // FileUpdateObserver overrides.
   virtual void OnStartUpdate(const FileSystemURL& url) OVERRIDE {}

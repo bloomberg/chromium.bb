@@ -48,6 +48,8 @@ class WEBKIT_STORAGE_EXPORT FileSystemQuotaUtil {
 
   virtual void InvalidateUsageCache(const GURL& origin_url,
                                     fileapi::FileSystemType type) = 0;
+  virtual void StickyInvalidateUsageCache(const GURL& origin,
+                                          fileapi::FileSystemType type) = 0;
 };
 
 }  // namespace fileapi

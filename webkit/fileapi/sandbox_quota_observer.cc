@@ -91,6 +91,18 @@ void SandboxQuotaObserver::OnAccess(const FileSystemURL& url) {
   }
 }
 
+void SandboxQuotaObserver::SetUsageCacheEnabled(
+    const GURL& origin,
+    FileSystemType type,
+    bool enabled) {
+  if (quota_manager_proxy_) {
+    quota_manager_proxy_->SetUsageCacheEnabled(
+        quota::QuotaClient::kFileSystem,
+        origin, FileSystemTypeToQuotaStorageType(type),
+        enabled);
+  }
+}
+
 base::FilePath SandboxQuotaObserver::GetUsageCachePath(
     const FileSystemURL& url) {
   DCHECK(sandbox_file_util_);

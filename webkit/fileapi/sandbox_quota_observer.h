@@ -51,6 +51,10 @@ class SandboxQuotaObserver
   // FileAccessObserver overrides.
   virtual void OnAccess(const FileSystemURL& url) OVERRIDE;
 
+  void SetUsageCacheEnabled(const GURL& origin,
+                            FileSystemType type,
+                            bool enabled);
+
  private:
   void ApplyPendingUsageUpdate();
   void UpdateUsageCacheFile(const base::FilePath& usage_file_path, int64 delta);

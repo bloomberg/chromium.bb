@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
@@ -476,6 +477,11 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   if (!enable_usage_tracking_)
     return 0;
 
+  // Don't use usage cache and return recalculated usage for sticky invalidated
+  // origins.
+  if (ContainsKey(sticky_dirty_origins_, std::make_pair(origin_url, type)))
+    return RecalculateUsage(file_system_context, origin_url, type);
+
   base::FilePath base_path =
       GetBaseDirectoryForOriginAndType(origin_url, type, false);
   if (base_path.empty() || !file_util::DirectoryExists(base_path))
@@ -498,33 +504,33 @@ int64 SandboxMountPointProvider::GetOriginUsageOnFileThread(
   // The usage cache has not been initialized or the cache is dirty.
   // Get the directory size now and update the cache.
   file_system_usage_cache_->Delete(usage_file_path);
-  FileSystemOperationContext context(file_system_context);
-  FileSystemURL url = file_system_context->CreateCrackedFileSystemURL(
-      origin_url, type, base::FilePath());
-  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
-      sandbox_sync_file_util()->CreateFileEnumerator(&context, url, true));
 
-  base::FilePath file_path_each;
-  int64 usage = 0;
+  int64 usage = RecalculateUsage(file_system_context, origin_url, type);
 
-  while (!(file_path_each = enumerator->Next()).empty()) {
-    usage += enumerator->Size();
-    usage += ObfuscatedFileUtil::ComputeFilePathCost(file_path_each);
-  }
   // This clears the dirty flag too.
   file_system_usage_cache_->UpdateUsage(usage_file_path, usage);
   return usage;
 }
 
 void SandboxMountPointProvider::InvalidateUsageCache(
-    const GURL& origin_url, fileapi::FileSystemType type) {
+    const GURL& origin,
+    fileapi::FileSystemType type) {
   DCHECK(CanHandleType(type));
   base::PlatformFileError error = base::PLATFORM_FILE_OK;
   base::FilePath usage_file_path = GetUsageCachePathForOriginAndType(
-      sandbox_sync_file_util(), origin_url, type, &error);
+      sandbox_sync_file_util(), origin, type, &error);
   if (error != base::PLATFORM_FILE_OK)
     return;
   file_system_usage_cache_->IncrementDirty(usage_file_path);
+}
+
+void SandboxMountPointProvider::StickyInvalidateUsageCache(
+    const GURL& origin,
+    fileapi::FileSystemType type) {
+  DCHECK(CanHandleType(type));
+  sticky_dirty_origins_.insert(std::make_pair(origin, type));
+  quota_observer_->SetUsageCacheEnabled(origin, type, false);
+  InvalidateUsageCache(origin, type);
 }
 
 void SandboxMountPointProvider::CollectOpenFileSystemMetrics(
@@ -661,6 +667,27 @@ void SandboxMountPointProvider::InvalidateUsageCacheOnFileThread(
       file_util, origin, type, &error);
   if (error == base::PLATFORM_FILE_OK)
     usage_cache->IncrementDirty(usage_cache_path);
+}
+
+int64 SandboxMountPointProvider::RecalculateUsage(FileSystemContext* context,
+                                                  const GURL& origin,
+                                                  FileSystemType type) {
+  FileSystemOperationContext operation_context(context);
+  FileSystemURL url = context->CreateCrackedFileSystemURL(
+      origin, type, base::FilePath());
+  scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator> enumerator(
+      sandbox_sync_file_util()->CreateFileEnumerator(
+          &operation_context, url, true));
+
+  base::FilePath file_path_each;
+  int64 usage = 0;
+
+  while (!(file_path_each = enumerator->Next()).empty()) {
+    usage += enumerator->Size();
+    usage += ObfuscatedFileUtil::ComputeFilePathCost(file_path_each);
+  }
+
+  return usage;
 }
 
 }  // namespace fileapi

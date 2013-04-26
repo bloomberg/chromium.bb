@@ -160,6 +160,8 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
 
   virtual void InvalidateUsageCache(const GURL& origin_url,
                                     FileSystemType type) OVERRIDE;
+  virtual void StickyInvalidateUsageCache(const GURL& origin_url,
+                                          FileSystemType type) OVERRIDE;
 
   void CollectOpenFileSystemMetrics(base::PlatformFileError error_code);
 
@@ -214,6 +216,10 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       FileSystemType type,
       FileSystemUsageCache* usage_cache);
 
+  int64 RecalculateUsage(FileSystemContext* context,
+                         const GURL& origin,
+                         FileSystemType type);
+
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   const base::FilePath profile_path_;
@@ -239,6 +245,8 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   ChangeObserverList syncable_change_observers_;
 
   base::Time next_release_time_for_open_filesystem_stat_;
+
+  std::set<std::pair<GURL, FileSystemType> > sticky_dirty_origins_;
 
   // Indicates if the usage tracking for FileSystem is enabled or not.
   // The usage tracking is enabled by default and can be disabled by
