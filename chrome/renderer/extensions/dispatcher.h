@@ -5,6 +5,7 @@
 #ifndef CHROME_RENDERER_EXTENSIONS_DISPATCHER_H_
 #define CHROME_RENDERER_EXTENSIONS_DISPATCHER_H_
 
+#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -229,6 +230,10 @@ class Dispatcher : public content::RenderProcessObserver {
   // counterpart to ExtensionService in the browser. It contains information
   // about all extensions currently loaded by the browser.
   ExtensionSet extensions_;
+
+  // The IDs of extensions that failed to load, mapped to the error message
+  // generated on failure.
+  std::map<std::string, std::string> extension_load_errors_;
 
   // All the bindings contexts that are currently loaded for this renderer.
   // There is zero or one for each v8 context.

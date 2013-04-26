@@ -6,7 +6,9 @@
 
 #include "base/callback.h"
 #include "base/command_line.h"
+#include "base/debug/alias.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/string_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "chrome/common/child_process_logging.h"
@@ -590,15 +592,12 @@ void Dispatcher::OnLoaded(
     const std::vector<ExtensionMsg_Loaded_Params>& loaded_extensions) {
   std::vector<ExtensionMsg_Loaded_Params>::const_iterator i;
   for (i = loaded_extensions.begin(); i != loaded_extensions.end(); ++i) {
-    scoped_refptr<const Extension> extension(i->ConvertToExtension());
+    std::string error;
+    scoped_refptr<const Extension> extension = i->ConvertToExtension(&error);
     if (!extension) {
-      // This can happen if extension parsing fails for any reason. One reason
-      // this can legitimately happen is if the
-      // --enable-experimental-extension-apis changes at runtime, which happens
-      // during browser tests. Existing renderers won't know about the change.
+      extension_load_errors_[i->id] = error;
       continue;
     }
-
     extensions_.Insert(extension);
   }
 }
@@ -1134,9 +1133,22 @@ void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
 }
 
 void Dispatcher::OnActivateExtension(const std::string& extension_id) {
-  active_extension_ids_.insert(extension_id);
   const Extension* extension = extensions_.GetByID(extension_id);
-  CHECK(extension);
+  if (!extension) {
+    // Extension was activated but was never loaded. This probably means that
+    // the renderer failed to load it (or the browser failed to tell us when it
+    // did). Failures shouldn't happen, but instead of crashing there (which
+    // executes on all renderers) be conservative and only crash in the renderer
+    // of the extension which failed to load; this one.
+    std::string& error = extension_load_errors_[extension_id];
+    char minidump[256];
+    base::debug::Alias(&minidump);
+    base::snprintf(minidump, arraysize(minidump),
+        "e::dispatcher:%s:%s", extension_id.c_str(), error.c_str());
+    CHECK(extension) << extension_id << " was never loaded: " << error;
+  }
+
+  active_extension_ids_.insert(extension_id);
 
   // This is called when starting a new extension page, so start the idle
   // handler ticking.

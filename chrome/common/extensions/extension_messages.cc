@@ -37,21 +37,14 @@ ExtensionMsg_Loaded_Params::ExtensionMsg_Loaded_Params(
       creation_flags(extension->creation_flags()) {
 }
 
-scoped_refptr<Extension>
-    ExtensionMsg_Loaded_Params::ConvertToExtension() const {
-  std::string error;
-
-  scoped_refptr<Extension> extension(
-      Extension::Create(path, location, *manifest, creation_flags,
-                        &error));
-  if (!extension.get()) {
-    DLOG(ERROR) << "Error deserializing extension: " << error;
-    return extension;
+scoped_refptr<Extension> ExtensionMsg_Loaded_Params::ConvertToExtension(
+    std::string* error) const {
+  scoped_refptr<Extension> extension =
+      Extension::Create(path, location, *manifest, creation_flags, error);
+  if (extension) {
+    extension->SetActivePermissions(
+          new PermissionSet(apis, explicit_hosts, scriptable_hosts));
   }
-
-  extension->SetActivePermissions(
-        new PermissionSet(apis, explicit_hosts, scriptable_hosts));
-
   return extension;
 }
 
