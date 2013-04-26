@@ -658,7 +658,6 @@ bool JobScheduler::ShouldStopJobLoop(QueueType queue_type,
       should_stop_on_cellular_network = false;
       break;
     case BACKGROUND:
-    case PREFETCH:
       should_stop_on_cellular_network = (queue_type == FILE_QUEUE);
       break;
   }

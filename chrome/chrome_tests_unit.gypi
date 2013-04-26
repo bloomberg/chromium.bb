@@ -578,7 +578,6 @@
         'browser/chromeos/drive/drive_cache_unittest.cc',
         'browser/chromeos/drive/drive_file_stream_reader_unittest.cc',
         'browser/chromeos/drive/drive_file_system_unittest.cc',
-        'browser/chromeos/drive/drive_prefetcher_unittest.cc',
         'browser/chromeos/drive/drive_resource_metadata_unittest.cc',
         'browser/chromeos/drive/drive_system_service_unittest.cc',
         'browser/chromeos/drive/drive_url_request_job_unittest.cc',

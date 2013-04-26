@@ -1506,9 +1506,6 @@ const char kDisableChromeCaptivePortalDetector[] =
 // Disables Google Drive integration.
 const char kDisableDrive[]                  = "disable-drive";
 
-// Enables file prefetching in Google Drive Client for Chrome OS.
-const char kEnableDrivePrefetch[]           = "enable-drive-prefetch";
-
 // Disable policy-configured local accounts.
 const char kDisableLocalAccounts[]          = "disable-local-accounts";
 

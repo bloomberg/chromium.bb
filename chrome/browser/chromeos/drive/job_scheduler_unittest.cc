@@ -444,7 +444,7 @@ TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
                  resource_1));
   scheduler_->GetResourceEntry(
       resource_2,  // resource ID
-      DriveClientContext(PREFETCH),
+      DriveClientContext(BACKGROUND),
       base::Bind(&CopyResourceIdFromGetResourceEntryCallback,
                  &resource_ids,
                  resource_2));
@@ -468,8 +468,8 @@ TEST_F(JobSchedulerTest, GetResourceEntryPriority) {
   ASSERT_EQ(resource_ids.size(), 4ul);
   ASSERT_EQ(resource_ids[0], resource_1);
   ASSERT_EQ(resource_ids[1], resource_4);
-  ASSERT_EQ(resource_ids[2], resource_3);
-  ASSERT_EQ(resource_ids[3], resource_2);
+  ASSERT_EQ(resource_ids[2], resource_2);
+  ASSERT_EQ(resource_ids[3], resource_3);
 }
 
 TEST_F(JobSchedulerTest, GetResourceEntryNoConnection) {

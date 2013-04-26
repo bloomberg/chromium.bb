@@ -225,8 +225,6 @@
         'browser/chromeos/drive/drive_file_system_interface.h',
         'browser/chromeos/drive/drive_file_system_metadata.cc',
         'browser/chromeos/drive/drive_file_system_metadata.h',
-        'browser/chromeos/drive/drive_prefetcher.cc',
-        'browser/chromeos/drive/drive_prefetcher.h',
         'browser/chromeos/drive/drive_protocol_handler.cc',
         'browser/chromeos/drive/drive_protocol_handler.h',
         'browser/chromeos/drive/drive_resource_metadata.cc',

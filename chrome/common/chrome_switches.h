@@ -421,7 +421,6 @@ extern const char kDisableOobeAnimation[];
 extern const char kEnableBackgroundLoader[];
 extern const char kEnableCarrierSwitching[];
 extern const char kEnableChromeCaptivePortalDetector[];
-extern const char kEnableDrivePrefetch[];
 extern const char kEnableTouchpadThreeFingerClick[];
 extern const char kEnableTouchpadThreeFingerSwipe[];
 extern const char kEnableKioskMode[];
