@@ -14,14 +14,16 @@ FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context)
     : file_system_context_(context),
       task_runner_(file_system_context_->task_runners()->file_task_runner()),
-      allowed_bytes_growth_(0) {}
+      allowed_bytes_growth_(0),
+      quota_limit_type_(quota::kQuotaLimitTypeUnknown) {}
 
 FileSystemOperationContext::FileSystemOperationContext(
     FileSystemContext* context,
     base::SequencedTaskRunner* task_runner)
     : file_system_context_(context),
       task_runner_(task_runner),
-      allowed_bytes_growth_(0) {}
+      allowed_bytes_growth_(0),
+      quota_limit_type_(quota::kQuotaLimitTypeUnknown) {}
 
 FileSystemOperationContext::~FileSystemOperationContext() {}
 

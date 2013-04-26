@@ -332,7 +332,8 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
       (base::PLATFORM_FILE_ENUMERATE | base::PLATFORM_FILE_TEMPORARY |
        base::PLATFORM_FILE_HIDDEN))) {
     callback.Run(base::PLATFORM_FILE_ERROR_FAILED,
-                 base::PlatformFile(), base::ProcessHandle());
+                 base::kInvalidPlatformFileValue,
+                 base::kNullProcessHandle);
     return;
   }
   if (file_flags &
@@ -343,13 +344,17 @@ void LocalFileSystemOperation::OpenFile(const FileSystemURL& url,
        base::PLATFORM_FILE_WRITE_ATTRIBUTES)) {
     base::PlatformFileError result = SetUp(url, OPERATION_MODE_WRITE);
     if (result != base::PLATFORM_FILE_OK) {
-      callback.Run(result, base::PlatformFile(), base::ProcessHandle());
+      callback.Run(result,
+                   base::kInvalidPlatformFileValue,
+                   base::kNullProcessHandle);
       return;
     }
   } else {
     base::PlatformFileError result = SetUp(url, OPERATION_MODE_READ);
     if (result != base::PLATFORM_FILE_OK) {
-      callback.Run(result, base::PlatformFile(), base::ProcessHandle());
+      callback.Run(result,
+                   base::kInvalidPlatformFileValue,
+                   base::kNullProcessHandle);
       return;
     }
   }

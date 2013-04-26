@@ -452,12 +452,26 @@ void FileAPIMessageFilter::OnOpenFile(
     return;
   }
 
+  quota::QuotaLimitType quota_policy = quota::kQuotaLimitTypeUnknown;
+  quota::QuotaManagerProxy* quota_manager_proxy =
+      context_->quota_manager_proxy();
+  CHECK(quota_manager_proxy);
+  CHECK(quota_manager_proxy->quota_manager());
+
+  if (quota_manager_proxy->quota_manager()->IsStorageUnlimited(
+          url.origin(), FileSystemTypeToQuotaStorageType(url.type()))) {
+    quota_policy = quota::kQuotaLimitTypeUnlimited;
+  } else {
+    quota_policy = quota::kQuotaLimitTypeLimited;
+  }
+
   FileSystemOperation* operation = GetNewOperation(url, request_id);
   if (!operation)
     return;
   operation->OpenFile(
       url, file_flags, peer_handle(),
-      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id, path));
+      base::Bind(&FileAPIMessageFilter::DidOpenFile, this, request_id, path,
+                 quota_policy));
 }
 
 void FileAPIMessageFilter::OnNotifyCloseFile(const GURL& path) {
@@ -655,6 +669,7 @@ void FileAPIMessageFilter::DidReadDirectory(
 
 void FileAPIMessageFilter::DidOpenFile(int request_id,
                                        const GURL& path,
+                                       quota::QuotaLimitType quota_policy,
                                        base::PlatformFileError result,
                                        base::PlatformFile file,
                                        base::ProcessHandle peer_handle) {
@@ -664,19 +679,6 @@ void FileAPIMessageFilter::DidOpenFile(int request_id,
             IPC::GetFileHandleForProcess(file, peer_handle, true) :
             IPC::InvalidPlatformFileForTransit();
     open_filesystem_urls_.insert(path);
-
-    quota::QuotaLimitType quota_policy = quota::kQuotaLimitTypeUnknown;
-    quota::QuotaManagerProxy* quota_manager_proxy =
-        context_->quota_manager_proxy();
-    CHECK(quota_manager_proxy);
-    CHECK(quota_manager_proxy->quota_manager());
-    FileSystemURL url = context_->CrackURL(path);
-    if (quota_manager_proxy->quota_manager()->IsStorageUnlimited(
-            url.origin(), FileSystemTypeToQuotaStorageType(url.type()))) {
-      quota_policy = quota::kQuotaLimitTypeUnlimited;
-    } else {
-      quota_policy = quota::kQuotaLimitTypeLimited;
-    }
 
     Send(new FileSystemMsg_DidOpenFile(request_id,
                                        file_for_transit,

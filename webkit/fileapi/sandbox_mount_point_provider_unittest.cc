@@ -40,7 +40,8 @@ class SandboxMountPointProviderOriginEnumeratorTest : public testing::Test {
             NULL,
             base::MessageLoopProxy::current(),
             data_dir_.path(),
-            CreateAllowFileAccessOptions()));
+            CreateAllowFileAccessOptions(),
+            NULL));
   }
 
   SandboxMountPointProvider::OriginEnumerator* CreateEnumerator() const {
@@ -119,7 +120,7 @@ TEST(SandboxMountPointProviderTest, AccessPermissions) {
   MessageLoop message_loop_;
   SandboxMountPointProvider provider(
       NULL, base::MessageLoopProxy::current(), base::FilePath(),
-      CreateAllowFileAccessOptions());
+      CreateAllowFileAccessOptions(), NULL);
 
   // Any access should be allowed in sandbox directory.
   EXPECT_EQ(FILE_PERMISSION_ALWAYS_ALLOW,

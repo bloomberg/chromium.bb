@@ -19,6 +19,7 @@
 #include "webkit/fileapi/file_system_options.h"
 #include "webkit/fileapi/file_system_quota_util.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/quota/special_storage_policy.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -27,6 +28,7 @@ class SequencedTaskRunner;
 
 namespace quota {
 class QuotaManagerProxy;
+class SpecialStoragePolicy;
 }
 
 namespace sync_file_system {
@@ -75,7 +77,8 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
       quota::QuotaManagerProxy* quota_manager_proxy,
       base::SequencedTaskRunner* file_task_runner,
       const base::FilePath& profile_path,
-      const FileSystemOptions& file_system_options);
+      const FileSystemOptions& file_system_options,
+      quota::SpecialStoragePolicy* special_storage_policy);
   virtual ~SandboxMountPointProvider();
 
   // FileSystemMountPointProvider overrides.
@@ -241,6 +244,8 @@ class WEBKIT_STORAGE_EXPORT SandboxMountPointProvider
   // The usage tracking is enabled by default and can be disabled by
   // a command-line switch (--disable-file-system-usage-tracking).
   bool enable_usage_tracking_;
+
+  scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 
   base::WeakPtrFactory<SandboxMountPointProvider> weak_factory_;
 

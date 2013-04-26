@@ -141,7 +141,8 @@ SandboxMountPointProvider::SandboxMountPointProvider(
     quota::QuotaManagerProxy* quota_manager_proxy,
     base::SequencedTaskRunner* file_task_runner,
     const base::FilePath& profile_path,
-    const FileSystemOptions& file_system_options)
+    const FileSystemOptions& file_system_options,
+    quota::SpecialStoragePolicy* special_storage_policy)
     : file_task_runner_(file_task_runner),
       profile_path_(profile_path),
       file_system_options_(file_system_options),
@@ -159,6 +160,7 @@ SandboxMountPointProvider::SandboxMountPointProvider(
       enable_usage_tracking_(
           !CommandLine::ForCurrentProcess()->HasSwitch(
               kDisableUsageTracking)),
+      special_storage_policy_(special_storage_policy),
       weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // Set quota observers.
   UpdateObserverList::Source update_observers_src;
@@ -332,6 +334,14 @@ FileSystemOperation* SandboxMountPointProvider::CreateFileSystemOperation(
   // For regular sandboxed types.
   operation_context->set_update_observers(update_observers_);
   operation_context->set_access_observers(access_observers_);
+
+  if (special_storage_policy_ &&
+      special_storage_policy_->IsStorageUnlimited(url.origin())) {
+    operation_context->set_quota_limit_type(quota::kQuotaLimitTypeUnlimited);
+  } else {
+    operation_context->set_quota_limit_type(quota::kQuotaLimitTypeLimited);
+  }
+
   return new LocalFileSystemOperation(context, operation_context.Pass());
 }
 

@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "webkit/blob/blob_data.h"
 #include "webkit/fileapi/file_system_types.h"
+#include "webkit/quota/quota_types.h"
 
 class GURL;
 
@@ -141,6 +142,7 @@ class FileAPIMessageFilter : public BrowserMessageFilter {
                         bool has_more);
   void DidOpenFile(int request_id,
                    const GURL& path,
+                   quota::QuotaLimitType quota_policy,
                    base::PlatformFileError result,
                    base::PlatformFile file,
                    base::ProcessHandle peer_handle);

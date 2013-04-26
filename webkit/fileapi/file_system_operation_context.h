@@ -7,6 +7,7 @@
 
 #include "base/supports_user_data.h"
 #include "webkit/fileapi/task_runner_bound_observer_list.h"
+#include "webkit/quota/quota_types.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -45,6 +46,10 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
 
   // Returns the current remaining quota.
   int64 allowed_bytes_growth() const { return allowed_bytes_growth_; }
+
+  quota::QuotaLimitType quota_limit_type() const {
+    return quota_limit_type_;
+  }
 
   // Returns TaskRunner which the operation is performed on.
   base::SequencedTaskRunner* task_runner() const {
@@ -97,11 +102,15 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE FileSystemOperationContext
   void set_update_observers(const UpdateObserverList& list) {
     update_observers_ = list;
   }
+  void set_quota_limit_type(quota::QuotaLimitType limit_type) {
+    quota_limit_type_ = limit_type;
+  }
 
   FileSystemContext* file_system_context_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   int64 allowed_bytes_growth_;
+  quota::QuotaLimitType quota_limit_type_;
 
   AccessObserverList access_observers_;
   ChangeObserverList change_observers_;
