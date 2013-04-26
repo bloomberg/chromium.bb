@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "content/common/content_export.h"
 #include "content/common/media/media_stream_options.h"
+#include "content/renderer/media/media_stream_source_observer.h"
 #include "media/base/audio_capturer_source.h"
 #include "third_party/libjingle/source/talk/app/webrtc/videosourceinterface.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStreamSource.h"
@@ -17,12 +18,17 @@ namespace content {
 class CONTENT_EXPORT MediaStreamSourceExtraData
     : NON_EXPORTED_BASE(public WebKit::WebMediaStreamSource::ExtraData) {
  public:
-
-  explicit MediaStreamSourceExtraData(
-      const StreamDeviceInfo& device_info);
+  MediaStreamSourceExtraData(
+      const StreamDeviceInfo& device_info,
+      const WebKit::WebMediaStreamSource& webkit_source);
   explicit MediaStreamSourceExtraData(
       media::AudioCapturerSource* source);
   virtual ~MediaStreamSourceExtraData();
+
+  // Returns the WebMediaStreamSource object that owns this object.
+  const WebKit::WebMediaStreamSource& webkit_source() const {
+    return webkit_source_;
+  }
 
   // Return device information about the camera or microphone.
   const StreamDeviceInfo& device_info() const {
@@ -31,10 +37,13 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
 
   void SetVideoSource(webrtc::VideoSourceInterface* source) {
     video_source_ = source;
+    source_observer_.reset(new MediaStreamSourceObserver(source, this));
   }
 
   void SetLocalAudioSource(webrtc::AudioSourceInterface* source) {
     local_audio_source_ = source;
+    // TODO(perkj): Implement a local source observer for audio.
+    // See |source_observer_|.
   }
 
   webrtc::VideoSourceInterface* video_source() { return video_source_; }
@@ -45,6 +54,16 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
 
  private:
   StreamDeviceInfo device_info_;
+
+  // TODO(tommyw): Remove |webkit_source_| after WebMediaStreamSource::Owner()
+  // is implemented, which let us fetch the
+  // WebMediaStreamSource without increasing the reference count.
+  // |webkit_source_| will create a circular reference to WebMediaStreamSource.
+  // WebMediaStreamSource -> MediaStreamSourceExtraData -> WebMediaStreamSource
+  // Currently, we rely on manually releasing the MediaStreamSourceExtraData
+  // from WebMediaStreamSource like what
+  // MediaStreamImpl::~UserMediaRequestInfo() does.
+  WebKit::WebMediaStreamSource webkit_source_;
   scoped_refptr<webrtc::VideoSourceInterface> video_source_;
   scoped_refptr<media::AudioCapturerSource> audio_source_;
 
@@ -53,6 +72,7 @@ class CONTENT_EXPORT MediaStreamSourceExtraData
   // TODO(hclam): This should be merged with |audio_source_| such that it
   // carries audio options.
   scoped_refptr<webrtc::AudioSourceInterface> local_audio_source_;
+  scoped_ptr<MediaStreamSourceObserver> source_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaStreamSourceExtraData);
 };

@@ -148,8 +148,7 @@ webrtc::MediaSourceInterface::SourceState MockAudioSource::state() const {
 }
 
 MockVideoSource::MockVideoSource()
-    : observer_(NULL),
-      state_(MediaSourceInterface::kInitializing) {
+    : state_(MediaSourceInterface::kInitializing) {
 }
 
 MockVideoSource::~MockVideoSource() {}
@@ -168,26 +167,37 @@ void MockVideoSource::RemoveSink(cricket::VideoRenderer* output) {
 }
 
 void MockVideoSource::RegisterObserver(webrtc::ObserverInterface* observer) {
-  observer_ = observer;
+  observers_.push_back(observer);
 }
 
 void MockVideoSource::UnregisterObserver(webrtc::ObserverInterface* observer) {
-  DCHECK(observer_  == observer);
-  observer_ = NULL;
+  for (std::vector<ObserverInterface*>::iterator it = observers_.begin();
+       it != observers_.end(); ++it) {
+    if (*it == observer) {
+      observers_.erase(it);
+      break;
+    }
+  }
+}
+
+void MockVideoSource::FireOnChanged() {
+  std::vector<ObserverInterface*> observers(observers_);
+  for (std::vector<ObserverInterface*>::iterator it = observers.begin();
+       it != observers.end(); ++it) {
+    (*it)->OnChanged();
+  }
 }
 
 void MockVideoSource::SetLive() {
   DCHECK_EQ(MediaSourceInterface::kInitializing, state_);
   state_ = MediaSourceInterface::kLive;
-  if (observer_)
-    observer_->OnChanged();
+  FireOnChanged();
 }
 
 void MockVideoSource::SetEnded() {
   DCHECK_NE(MediaSourceInterface::kEnded, state_);
   state_ = MediaSourceInterface::kEnded;
-  if (observer_)
-    observer_->OnChanged();
+  FireOnChanged();
 }
 
 webrtc::MediaSourceInterface::SourceState MockVideoSource::state() const {

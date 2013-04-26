@@ -128,15 +128,11 @@ class CONTENT_EXPORT MediaStreamImpl
   // Structure for storing information about a WebKit request to create a
   // MediaStream.
   struct UserMediaRequestInfo {
-    UserMediaRequestInfo()
-        : request_id(0), generated(false), frame(NULL), request() {
-    }
+    UserMediaRequestInfo();
     UserMediaRequestInfo(int request_id,
                          WebKit::WebFrame* frame,
-                         const WebKit::WebUserMediaRequest& request)
-        : request_id(request_id), generated(false), frame(frame),
-          request(request) {
-    }
+                         const WebKit::WebUserMediaRequest& request);
+    ~UserMediaRequestInfo();
     int request_id;
     // True if MediaStreamDispatcher has generated the stream, see
     // OnStreamGenerated.
@@ -144,6 +140,8 @@ class CONTENT_EXPORT MediaStreamImpl
     WebKit::WebFrame* frame;  // WebFrame that requested the MediaStream.
     WebKit::WebMediaStream descriptor;
     WebKit::WebUserMediaRequest request;
+    WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources;
+    WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources;
   };
   typedef ScopedVector<UserMediaRequestInfo> UserMediaRequests;
 

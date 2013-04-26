@@ -49,6 +49,16 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
     dependency_factory_.reset(new MockMediaStreamDependencyFactory());
   }
 
+  virtual void TearDown() OVERRIDE {
+    // TODO(tommyw): Remove this once WebKit::MediaStreamSource::Owner has been
+    // implemented to fully avoid a circular dependency.
+    for (size_t i = 0; i < audio_sources_.size(); ++i)
+      audio_sources_[i].setExtraData(NULL);
+
+    for (size_t i = 0; i < video_sources_.size(); ++i)
+      video_sources_[i].setExtraData(NULL);
+  }
+
   WebKit::WebMediaStream CreateWebKitMediaStream(bool audio, bool video) {
     WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources(
         audio ? static_cast<size_t>(1) : 0);
@@ -66,7 +76,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                                   WebKit::WebMediaStreamSource::TypeAudio,
                                   "audio");
       audio_sources[0].setExtraData(
-              new MediaStreamSourceExtraData(info));
+          new MediaStreamSourceExtraData(info, audio_sources[0]));
+      audio_sources_.assign(audio_sources);
     }
     if (video) {
       StreamDeviceInfo info;
@@ -77,7 +88,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
                                   WebKit::WebMediaStreamSource::TypeVideo,
                                   "video");
       video_sources[0].setExtraData(
-              new MediaStreamSourceExtraData(info));
+          new MediaStreamSourceExtraData(info, video_sources[0]));
+      video_sources_.assign(video_sources);
     }
     WebKit::WebMediaStream stream_desc;
     stream_desc.initialize("media stream", audio_sources, video_sources);
@@ -123,6 +135,8 @@ class MediaStreamDependencyFactoryTest : public ::testing::Test {
 
  protected:
   scoped_ptr<MockMediaStreamDependencyFactory> dependency_factory_;
+  WebKit::WebVector<WebKit::WebMediaStreamSource> audio_sources_;
+  WebKit::WebVector<WebKit::WebMediaStreamSource> video_sources_;
 };
 
 TEST_F(MediaStreamDependencyFactoryTest, CreateRTCPeerConnectionHandler) {

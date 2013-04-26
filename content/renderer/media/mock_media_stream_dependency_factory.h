@@ -35,7 +35,9 @@ class MockVideoSource : public webrtc::VideoSourceInterface {
   virtual ~MockVideoSource();
 
  private:
-  webrtc::ObserverInterface* observer_;
+  void FireOnChanged();
+
+  std::vector<webrtc::ObserverInterface*> observers_;
   MediaSourceInterface::SourceState state_;
 };
 
