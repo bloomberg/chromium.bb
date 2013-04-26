@@ -39,7 +39,6 @@ void V8OscillatorNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Loca
     v8::Handle<v8::Object> holder = info.Holder();
     OscillatorNode* imp = V8OscillatorNode::toNative(holder);
 
-#if ENABLE(LEGACY_WEB_AUDIO)    
     if (value->IsNumber()) {
         bool ok = false;
         uint32_t type = toUInt32(value, ok);
@@ -47,7 +46,6 @@ void V8OscillatorNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Loca
             throwError(v8TypeError, "Illegal OscillatorNode type", info.GetIsolate());
         return;
     }
-#endif
 
     if (value->IsString()) {
         String type = toWebCoreString(value);

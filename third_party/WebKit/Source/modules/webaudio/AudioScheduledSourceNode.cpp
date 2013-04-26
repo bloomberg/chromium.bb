@@ -152,7 +152,6 @@ void AudioScheduledSourceNode::stop(double when)
     m_endTime = when;
 }
 
-#if ENABLE(LEGACY_WEB_AUDIO)
 void AudioScheduledSourceNode::noteOn(double when)
 {
     start(when);
@@ -162,7 +161,6 @@ void AudioScheduledSourceNode::noteOff(double when)
 {
     stop(when);
 }
-#endif
 
 void AudioScheduledSourceNode::finish()
 {

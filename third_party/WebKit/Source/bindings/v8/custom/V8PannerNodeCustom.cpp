@@ -38,7 +38,6 @@ void V8PannerNode::panningModelAttrSetterCustom(v8::Local<v8::String> name, v8::
 {
     PannerNode* imp = V8PannerNode::toNative(info.Holder());
 
-#if ENABLE(LEGACY_WEB_AUDIO)    
     if (value->IsNumber()) {
         bool ok = false;
         uint32_t model = toUInt32(value, ok);
@@ -47,7 +46,6 @@ void V8PannerNode::panningModelAttrSetterCustom(v8::Local<v8::String> name, v8::
             throwError(v8TypeError, "Illegal panningModel", info.GetIsolate());
         return;
     }
-#endif
 
     if (value->IsString()) {
         String model = toWebCoreString(value);
@@ -64,7 +62,6 @@ void V8PannerNode::distanceModelAttrSetterCustom(v8::Local<v8::String> name, v8:
 {
     PannerNode* imp = V8PannerNode::toNative(info.Holder());
 
-#if ENABLE(LEGACY_WEB_AUDIO)    
     if (value->IsNumber()) {
         bool ok = false;
         uint32_t model = toUInt32(value, ok);
@@ -73,7 +70,6 @@ void V8PannerNode::distanceModelAttrSetterCustom(v8::Local<v8::String> name, v8:
             throwError(v8TypeError, "Illegal distanceModel", info.GetIsolate());
         return;
     }
-#endif
 
     if (value->IsString()) {
         String model = toWebCoreString(value);

@@ -38,7 +38,6 @@ void V8BiquadFilterNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Lo
 {
     BiquadFilterNode* imp = V8BiquadFilterNode::toNative(info.Holder());
 
-#if ENABLE(LEGACY_WEB_AUDIO)    
     if (value->IsNumber()) {
         bool ok = false;
         uint32_t type = toUInt32(value, ok);
@@ -47,7 +46,6 @@ void V8BiquadFilterNode::typeAttrSetterCustom(v8::Local<v8::String> name, v8::Lo
             throwError(v8TypeError, "Illegal BiquadFilterNode type", info.GetIsolate());
         return;
     }
-#endif
 
     if (value->IsString()) {
         String type = toWebCoreString(value);

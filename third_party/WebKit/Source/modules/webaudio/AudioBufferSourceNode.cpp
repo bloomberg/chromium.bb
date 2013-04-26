@@ -415,12 +415,10 @@ void AudioBufferSourceNode::startGrain(double when, double grainOffset, double g
     m_playbackState = SCHEDULED_STATE;
 }
 
-#if ENABLE(LEGACY_WEB_AUDIO)
 void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration)
 {
     startGrain(when, grainOffset, grainDuration);
 }
-#endif
 
 double AudioBufferSourceNode::totalPitchRate()
 {

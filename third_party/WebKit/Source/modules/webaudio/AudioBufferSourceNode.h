@@ -65,9 +65,7 @@ public:
     void startGrain(double when, double grainOffset);
     void startGrain(double when, double grainOffset, double grainDuration);
 
-#if ENABLE(LEGACY_WEB_AUDIO)
     void noteGrainOn(double when, double grainOffset, double grainDuration);
-#endif
 
     // Note: the attribute was originally exposed as .looping, but to be more consistent in naming with <audio>
     // and with how it's described in the specification, the proper attribute name is .loop

@@ -56,16 +56,12 @@ v8::Handle<v8::Value> V8AudioContext::constructorCustom(const v8::Arguments& arg
         if (!audioContext.get())
             return throwError(v8SyntaxError, "audio resources unavailable for AudioContext construction", args.GetIsolate());
     } else {
-#if ENABLE(LEGACY_WEB_AUDIO)
         // Constructor for offline (render-target) AudioContext which renders into an AudioBuffer.
         // new AudioContext(in unsigned long numberOfChannels, in unsigned long numberOfFrames, in float sampleRate);
         document->addConsoleMessage(JSMessageSource, WarningMessageLevel,
             "Deprecated AudioContext constructor: use OfflineAudioContext instead");
 
         return V8OfflineAudioContext::constructorCallback(args);
-#else
-        return throwError(v8SyntaxError, "Illegal AudioContext constructor", args.GetIsolate());
-#endif
     }
 
     if (!audioContext.get())
