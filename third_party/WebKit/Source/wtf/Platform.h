@@ -366,9 +366,6 @@
 #define WTF_OS_WINDOWS 1
 #endif
 
-#define WTF_OS_WIN ERROR "USE WINDOWS WITH OS NOT WIN"
-#define WTF_OS_MAC ERROR "USE MAC_OS_X WITH OS NOT MAC"
-
 /* OS(UNIX) - Any Unix-like system */
 #if   OS(AIX)              \
     || OS(ANDROID)          \
@@ -387,23 +384,13 @@
 
 /* Operating environments */
 
-/* Graphics engines */
-
-#if OS(DARWIN)
-#define WTF_USE_ICCJPEG 1
-#define WTF_USE_QCMSLIB 1
-#elif OS(ANDROID)
+#if OS(ANDROID)
 #define WTF_USE_LOW_QUALITY_IMAGE_INTERPOLATION 1
 #define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_DITHERING 1
 #define WTF_USE_LOW_QUALITY_IMAGE_NO_JPEG_FANCY_UPSAMPLING 1
 #else
 #define WTF_USE_ICCJPEG 1
 #define WTF_USE_QCMSLIB 1
-#endif
-
-/* On Windows, use QueryPerformanceCounter by default */
-#if OS(WINDOWS)
-#define WTF_USE_QUERY_PERFORMANCE_COUNTER  1
 #endif
 
 #define WTF_USE_ICU_UNICODE 1
@@ -467,18 +454,14 @@
 #endif
 
 #if OS(DARWIN)
-
 #define HAVE_MERGESORT 1
 #define HAVE_SYS_TIMEB_H 1
 #define WTF_USE_ACCELERATE 1
-
 #define HAVE_DISPATCH_H 1
 #define HAVE_MADV_FREE 1
 #define HAVE_PTHREAD_SETNAME_NP 1
-
 #define HAVE_HOSTED_CORE_ANIMATION 1
 #define HAVE_MADV_FREE_REUSE 1
-
 #endif /* OS(DARWIN) */
 
 #if OS(WINDOWS)
