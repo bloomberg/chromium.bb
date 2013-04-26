@@ -188,7 +188,7 @@ def LoadProjectTree(srcpath, toolchains=None, verbose=False, filters=None,
     for filename in files:
       if fnmatch.fnmatch(filename, '*.dsc'):
         filepath = os.path.join(root, filename)
-        desc = LoadProject(filepath, ErrorMsg)
+        desc = LoadProject(filepath, ErrorMsg, verbose)
         if desc:
           key = desc['DEST']
           out[key].append(desc)

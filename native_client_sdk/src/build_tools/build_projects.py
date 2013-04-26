@@ -173,6 +173,7 @@ def main(args):
   parser.add_option('-p', '--project',
       help='Select which projects are valid.',
       action='append')
+  parser.add_option('-v', '--verbose', action='store_true')
 
   options, files = parser.parse_args(args[1:])
   if len(files):
@@ -203,7 +204,8 @@ def main(args):
     filters['NAME'] = options.project
     print 'Filter by name: ' + str(options.project)
 
-  project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, filters=filters)
+  project_tree = parse_dsc.LoadProjectTree(SDK_SRC_DIR, verbose=options.verbose,
+                                           filters=filters)
   parse_dsc.PrintProjectTree(project_tree)
 
   UpdateHelpers(pepperdir, platform, clobber=options.clobber)
