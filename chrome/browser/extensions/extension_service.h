@@ -450,10 +450,6 @@ class ExtensionService
   virtual const extensions::Extension* GetPendingExtensionUpdate(
       const std::string& extension_id) const OVERRIDE;
 
-  // Initializes the |extension|'s active permission set and disables the
-  // extension if the privilege level has increased (e.g., due to an upgrade).
-  void InitializePermissions(const extensions::Extension* extension);
-
   // Go through each extension and unload those that are not allowed to run by
   // management policy providers (ie. network admin and Google-managed
   // blacklist).
@@ -763,6 +759,16 @@ class ExtensionService
   void ReloadExtensionWithEvents(const std::string& extension_id,
                                 int events);
 
+  // Updates the |extension|'s active permission set to include only permissions
+  // currently requested by the extension and all the permissions required by
+  // the extension.
+  void UpdateActivePermissions(const extensions::Extension* extension);
+
+  // Disables the extension if the privilege level has increased
+  // (e.g., due to an upgrade).
+  void CheckPermissionsIncrease(const extensions::Extension* extension,
+                                bool is_upgrade);
+
   // Returns true if the app with id |extension_id| has any shell windows open.
   bool HasShellWindows(const std::string& extension_id);
 
@@ -908,11 +914,8 @@ class ExtensionService
   typedef std::map<std::string, base::FilePath> UnloadedExtensionPathMap;
   UnloadedExtensionPathMap unloaded_extension_paths_;
 
-  // Map disabled extensions' ids to their paths. When a temporarily loaded
-  // extension is disabled before it is reloaded, keep track of the path so that
-  // it can be re-enabled upon a successful load.
-  typedef std::map<std::string, base::FilePath> DisabledExtensionPathMap;
-  DisabledExtensionPathMap disabled_extension_paths_;
+  // Store the ids of reloading extensions.
+  std::set<std::string> reloading_extensions_;
 
   // Map of inspector cookies that are detached, waiting for an extension to be
   // reloaded.

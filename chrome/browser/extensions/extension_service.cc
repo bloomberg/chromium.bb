@@ -730,7 +730,7 @@ void ExtensionService::ReloadExtensionWithEvents(
 
     path = current_extension->path();
     DisableExtension(extension_id, Extension::DISABLE_RELOAD);
-    disabled_extension_paths_[extension_id] = path;
+    reloading_extensions_.insert(extension_id);
   } else {
     path = unloaded_extension_paths_[extension_id];
   }
@@ -1524,7 +1524,7 @@ bool ExtensionService::ProcessExtensionSyncDataHelper(
   // Set user settings.
   // If the extension has been disabled from sync, it may not have
   // been installed yet, so we don't know if the disable reason was a
-  // permissions increase.  That will be updated once InitializePermissions
+  // permissions increase.  That will be updated once CheckPermissionsIncrease
   // is called for it.
   if (extension_sync_data.enabled())
     EnableExtension(id);
@@ -1913,7 +1913,7 @@ void ExtensionService::UnloadExtension(
   unloaded_extension_paths_[extension->id()] = extension->path();
 
   // Clean up if the extension is meant to be enabled after a reload.
-  disabled_extension_paths_.erase(extension->id());
+  reloading_extensions_.erase(extension->id());
 
   // Clean up runtime data.
   extension_runtime_data_.erase(extension_id);
@@ -2041,7 +2041,16 @@ void ExtensionService::AddExtension(const Extension* extension) {
     return;
   }
 
-  SetBeingUpgraded(extension, false);
+  bool is_extension_upgrade = false;
+  if (const Extension* old = GetInstalledExtension(extension->id())) {
+    is_extension_upgrade = true;
+    DCHECK_NE(extension, old);
+    // Other than for unpacked extensions, CrxInstaller should have guaranteed
+    // that we aren't downgrading.
+    if (!Manifest::IsUnpackedLocation(extension->location()))
+      CHECK_GE(extension->version()->CompareTo(*(old->version())), 0);
+  }
+  SetBeingUpgraded(extension, is_extension_upgrade);
 
   // The extension is now loaded, remove its data from unloaded extension map.
   unloaded_extension_paths_.erase(extension->id());
@@ -2050,12 +2059,18 @@ void ExtensionService::AddExtension(const Extension* extension) {
   UntrackTerminatedExtension(extension->id());
 
   // If the extension was disabled for a reload, then enable it.
-  if (disabled_extension_paths_.erase(extension->id()) > 0)
+  if (reloading_extensions_.erase(extension->id()) > 0)
     EnableExtension(extension->id());
 
-  // Check if the extension's privileges have changed and disable the
-  // extension if necessary.
-  InitializePermissions(extension);
+  // Check if the extension's privileges have changed and mark the
+  // extension disabled if necessary.
+  CheckPermissionsIncrease(extension, is_extension_upgrade);
+
+  if (is_extension_upgrade) {
+    // To upgrade an extension in place, unload the old one and
+    // then load the new one.
+    UnloadExtension(extension->id(), extension_misc::UNLOAD_REASON_UPDATE);
+  }
 
   if (extension_prefs_->IsExtensionBlacklisted(extension->id())) {
     // Only prefs is checked for the blacklist. We rely on callers to check the
@@ -2093,6 +2108,7 @@ void ExtensionService::AddExtension(const Extension* extension) {
     NotifyExtensionLoaded(extension);
     DoPostLoadTasks(extension);
   }
+  SetBeingUpgraded(extension, false);
 }
 
 void ExtensionService::AddComponentExtension(const Extension* extension) {
@@ -2114,7 +2130,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
   AddExtension(extension);
 }
 
-void ExtensionService::InitializePermissions(const Extension* extension) {
+void ExtensionService::UpdateActivePermissions(const Extension* extension) {
   // If the extension has used the optional permissions API, it will have a
   // custom set of active permissions defined in the extension prefs. Here,
   // we update the extension's active permissions based on the prefs.
@@ -2143,6 +2159,11 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     extensions::PermissionsUpdater perms_updater(profile());
     perms_updater.UpdateActivePermissions(extension, adjusted_active);
   }
+}
+
+void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
+                                                bool is_extension_upgrade) {
+  UpdateActivePermissions(extension);
 
   // We keep track of all permissions the user has granted each extension.
   // This allows extensions to gracefully support backwards compatibility
@@ -2165,18 +2186,20 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
   // still remember that "omnibox" had been granted, so that if the
   // extension once again includes "omnibox" in an upgrade, the extension
   // can upgrade without requiring this user's approval.
-  const Extension* old = GetInstalledExtension(extension->id());
-  bool is_extension_upgrade = old != NULL;
-  bool is_privilege_increase = false;
-  bool previously_disabled = false;
   int disable_reasons = extension_prefs_->GetDisableReasons(extension->id());
 
-  // We only need to compare the granted permissions to the current permissions
-  // if the extension is not allowed to silently increase its permissions.
   bool is_default_app_install =
       (!is_extension_upgrade && extension->was_installed_by_default());
-  if (!(extension->CanSilentlyIncreasePermissions()
-        || is_default_app_install)) {
+  // Silently grant all active permissions to default apps only on install.
+  // After install they should behave like other apps.
+  if (is_default_app_install)
+    GrantPermissions(extension);
+
+  bool is_privilege_increase = false;
+  // We only need to compare the granted permissions to the current permissions
+  // if the extension is not allowed to silently increase its permissions.
+  if (!(extension->CanSilentlyIncreasePermissions() ||
+        is_default_app_install)) {
     // Add all the recognized permissions if the granted permissions list
     // hasn't been initialized yet.
     scoped_refptr<PermissionSet> granted_permissions =
@@ -2192,31 +2215,15 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
             extension->GetActivePermissions());
   }
 
-  // Silently grant all active permissions to default apps only on install.
-  // After install they should behave like other apps.
-  if (is_default_app_install)
-    GrantPermissions(extension);
-
   if (is_extension_upgrade) {
-    // Other than for unpacked extensions, CrxInstaller should have guaranteed
-    // that we aren't downgrading.
-    if (!Manifest::IsUnpackedLocation(extension->location()))
-      CHECK_GE(extension->version()->CompareTo(*(old->version())), 0);
-
-    // Extensions get upgraded if the privileges are allowed to increase or
-    // the privileges haven't increased.
-    if (!is_privilege_increase) {
-      SetBeingUpgraded(old, true);
-      SetBeingUpgraded(extension, true);
-    }
-
     // If the extension was already disabled, suppress any alerts for becoming
     // disabled on permissions increase.
-    previously_disabled = extension_prefs_->IsExtensionDisabled(old->id());
+    bool previously_disabled =
+        extension_prefs_->IsExtensionDisabled(extension->id());
     // Legacy disabled extensions do not have a disable reason. Infer that if
     // there was no permission increase, it was likely disabled by the user.
     if (previously_disabled && disable_reasons == Extension::DISABLE_NONE &&
-        !extension_prefs_->DidExtensionEscalatePermissions(old->id())) {
+        !extension_prefs_->DidExtensionEscalatePermissions(extension->id())) {
       disable_reasons |= Extension::DISABLE_USER_ACTION;
     }
     // Extensions that came to us disabled from sync need a similar inference,
@@ -2228,13 +2235,7 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
       if (!is_privilege_increase)
         disable_reasons |= Extension::DISABLE_USER_ACTION;
     }
-    if (disable_reasons != Extension::DISABLE_NONE)
-      disable_reasons &= ~Extension::DISABLE_UNKNOWN_FROM_SYNC;
-
-    // To upgrade an extension in place, unload the old one and
-    // then load the new one.
-    UnloadExtension(old->id(), extension_misc::UNLOAD_REASON_UPDATE);
-    old = NULL;
+    disable_reasons &= ~Extension::DISABLE_UNKNOWN_FROM_SYNC;
   }
 
   // Extension has changed permissions significantly. Disable it. A
@@ -2247,6 +2248,8 @@ void ExtensionService::InitializePermissions(const Extension* extension) {
     }
     extension_prefs_->SetExtensionState(extension->id(), Extension::DISABLED);
     extension_prefs_->SetDidExtensionEscalatePermissions(extension, true);
+  }
+  if (disable_reasons != Extension::DISABLE_NONE) {
     extension_prefs_->AddDisableReason(
         extension->id(),
         static_cast<Extension::DisableReason>(disable_reasons));
@@ -2788,7 +2791,7 @@ bool ExtensionService::IsBeingUpgraded(const Extension* extension) const {
 }
 
 void ExtensionService::SetBeingUpgraded(const Extension* extension,
-                                         bool value) {
+                                        bool value) {
   extension_runtime_data_[extension->id()].being_upgraded = value;
 }
 
