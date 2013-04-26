@@ -472,7 +472,7 @@ MetricsService::MetricsService()
       reporting_active_(false),
       test_mode_active_(false),
       state_(INITIALIZED),
-      low_entropy_source_(0),
+      low_entropy_source_(kLowEntropySourceNotSet),
       idle_since_last_transmission_(false),
       next_window_id_(0),
       ALLOW_THIS_IN_INITIALIZER_LIST(self_ptr_factory_(this)),
@@ -1024,9 +1024,9 @@ void MetricsService::FinishedReceivingProfilerData() {
 
 int MetricsService::GetLowEntropySource() {
   // Note that the default value for the low entropy source and the default pref
-  // value are both zero, which is used to identify if the value has been set
-  // or not. Valid values start at 1.
-  if (low_entropy_source_)
+  // value are both kLowEntropySourceNotSet, which is used to identify if the
+  // value has been set or not.
+  if (low_entropy_source_ != kLowEntropySourceNotSet)
     return low_entropy_source_;
 
   PrefService* pref = g_browser_process->local_state();

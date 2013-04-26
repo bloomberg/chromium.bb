@@ -5,8 +5,12 @@
 #include <ctype.h>
 #include <string>
 
+#include "base/message_loop.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/common/chrome_process_type.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Ensure the ClientId is formatted as expected.
@@ -30,4 +34,22 @@ TEST(MetricsServiceTest, IsPluginProcess) {
       MetricsService::IsPluginProcess(content::PROCESS_TYPE_PPAPI_PLUGIN));
   EXPECT_FALSE(
       MetricsService::IsPluginProcess(content::PROCESS_TYPE_GPU));
+}
+
+TEST(MetricsServiceTest, LowEntropySource0NotReset) {
+  MessageLoopForUI message_loop;
+  content::TestBrowserThread ui_thread(content::BrowserThread::UI,
+                                       &message_loop);
+  ScopedTestingLocalState testing_local_state(
+      TestingBrowserProcess::GetGlobal());
+  MetricsService service;
+
+  // Get the low entropy source once, to initialize it.
+  service.GetLowEntropySource();
+
+  // Now, set it to 0 and ensure it doesn't get reset.
+  service.low_entropy_source_ = 0;
+  EXPECT_EQ(0, service.GetLowEntropySource());
+  // Call it another time, just to make sure.
+  EXPECT_EQ(0, service.GetLowEntropySource());
 }
