@@ -25,7 +25,7 @@ BluetoothAdapterWin::BluetoothAdapterWin(const InitCallback& init_callback)
       powered_(false),
       discovery_status_(NOT_DISCOVERING),
       num_discovery_listeners_(0),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)) {
+      weak_ptr_factory_(this) {
 }
 
 BluetoothAdapterWin::~BluetoothAdapterWin() {
