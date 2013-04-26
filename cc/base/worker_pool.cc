@@ -158,7 +158,7 @@ WorkerPool::Inner::Inner(WorkerPool* worker_pool,
       lock_(),
       has_pending_tasks_cv_(&lock_),
       origin_loop_(base::MessageLoopProxy::current()),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       need_on_task_completed_callback_(need_on_task_completed_callback),
       on_task_completed_callback_(
           base::Bind(&WorkerPool::Inner::OnTaskCompletedOnOriginThread,
@@ -409,7 +409,7 @@ WorkerPool::WorkerPool(WorkerPoolClient* client,
                        const std::string& thread_name_prefix)
     : client_(client),
       origin_loop_(base::MessageLoopProxy::current()),
-      weak_ptr_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)),
+      weak_ptr_factory_(this),
       check_for_completed_tasks_delay_(check_for_completed_tasks_delay),
       check_for_completed_tasks_pending_(false),
       run_cheap_tasks_callback_(

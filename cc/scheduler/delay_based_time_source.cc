@@ -46,7 +46,7 @@ DelayBasedTimeSource::DelayBasedTimeSource(base::TimeDelta interval,
       next_parameters_(interval, base::TimeTicks()),
       state_(STATE_INACTIVE),
       thread_(thread),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {}
+      weak_factory_(this) {}
 
 DelayBasedTimeSource::~DelayBasedTimeSource() {}
 

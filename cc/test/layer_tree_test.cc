@@ -307,7 +307,7 @@ LayerTreeTest::LayerTreeTest()
       ended_(false),
       timeout_seconds_(0),
       impl_thread_(NULL),
-      weak_factory_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
+      weak_factory_(this) {
   main_thread_weak_ptr_ = weak_factory_.GetWeakPtr();
 
   // Tests should timeout quickly unless --cc-layer-tree-test-no-timeout was
