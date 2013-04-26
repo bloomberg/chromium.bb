@@ -28,6 +28,7 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 
 public class ImeTest extends ContentShellTestBase {
@@ -69,12 +70,7 @@ public class ImeTest extends ContentShellTestBase {
         mConnection = (TestAdapterInputConnection) getAdapterInputConnection();
         mImeAdapter = getImeAdapter();
 
-        assertWaitForSetEditableCallback(1, mConnection);
-        assertEquals("", mConnection.mText);
-        assertEquals(0, mConnection.mSelectionStart);
-        assertEquals(0, mConnection.mSelectionEnd);
-        assertEquals(-1, mConnection.mCompositionStart);
-        assertEquals(-1, mConnection.mCompositionEnd);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 0, "", 0, 0, -1, -1);
         assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
         assertEquals(0, mInputMethodManagerWrapper.mEditorInfo.initialSelStart);
         assertEquals(0, mInputMethodManagerWrapper.mEditorInfo.initialSelEnd);
@@ -83,79 +79,43 @@ public class ImeTest extends ContentShellTestBase {
     @MediumTest
     @Feature({"TextInput", "Main"})
     public void testKeyboardDismissedAfterClickingGo() throws Throwable {
-        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, false);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("hello", mConnection.mText);
-        assertEquals(5, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(5, mConnection.mCompositionEnd);
+        mConnection.setComposingText("hello", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, 0, 5);
 
         performGo(getAdapterInputConnection(), mCallbackContainer);
 
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("", mConnection.mText);
-        assertEquals(0, mConnection.mSelectionStart);
-        assertEquals(0, mConnection.mSelectionEnd);
-        assertEquals(-1, mConnection.mCompositionStart);
-        assertEquals(-1, mConnection.mCompositionEnd);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "", 0, 0, -1, -1);
         assertWaitForKeyboardStatus(false);
     }
 
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testGetTextUpdatesAfterEnteringText() throws Throwable {
-        mImeAdapter.checkCompositionQueueAndCallNative("h", 1, false);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("h", mConnection.mText);
-        assertEquals(1, mConnection.mSelectionStart);
-        assertEquals(1, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(1, mConnection.mCompositionEnd);
+        mConnection.setComposingText("h", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "h", 1, 1, 0, 1);
         assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
 
-        mImeAdapter.checkCompositionQueueAndCallNative("he", 1, false);
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("he", mConnection.mText);
-        assertEquals(2, mConnection.mSelectionStart);
-        assertEquals(2, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(2, mConnection.mCompositionEnd);
+        mConnection.setComposingText("he", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "he", 2, 2, 0, 2);
         assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
 
-        mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, false);
-        assertWaitForSetEditableCallback(4, mConnection);
-        assertEquals("hel", mConnection.mText);
-        assertEquals(3, mConnection.mSelectionStart);
-        assertEquals(3, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(3, mConnection.mCompositionEnd);
+        mConnection.setComposingText("hel", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hel", 3, 3, 0, 3);
         assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
 
-        mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, true);
-        assertWaitForSetEditableCallback(5, mConnection);
-        assertEquals("hel", mConnection.mText);
-        assertEquals(3, mConnection.mSelectionStart);
-        assertEquals(3, mConnection.mSelectionEnd);
-        assertEquals(-1, mConnection.mCompositionStart);
-        assertEquals(-1, mConnection.mCompositionEnd);
+        mConnection.commitText("hel", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "hel", 3, 3, -1, -1);
         assertEquals(1, mInputMethodManagerWrapper.mShowSoftInputCounter);
     }
 
     @SmallTest
     @Feature({"TextInput"})
     public void testImeCopy() throws Exception {
-        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("hello", mConnection.mText);
-        assertEquals(5, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        mConnection.commitText("hello", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
-        mImeAdapter.setEditableSelectionOffsets(2, 5);
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("hello", mConnection.mText);
-        assertEquals(2, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        mConnection.setSelection(2, 5);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 2, 5, -1, -1);
 
         mImeAdapter.copy();
         assertClipboardContents(getActivity(), "llo");
@@ -164,11 +124,8 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testEnterTextAndRefocus() throws Exception {
-        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("hello", mConnection.mText);
-        assertEquals(5, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        mConnection.commitText("hello", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
         DOMUtils.clickNode(this, mContentView, mCallbackContainer, "input_radio");
         assertWaitForKeyboardStatus(false);
@@ -182,23 +139,14 @@ public class ImeTest extends ContentShellTestBase {
     @SmallTest
     @Feature({"TextInput"})
     public void testImeCut() throws Exception {
-        mImeAdapter.checkCompositionQueueAndCallNative("snarful", 1, true);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("snarful", mConnection.mText);
-        assertEquals(7, mConnection.mSelectionStart);
-        assertEquals(7, mConnection.mSelectionEnd);
+        mConnection.commitText("snarful", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "snarful", 7, 7, -1, -1);
 
-        mImeAdapter.setEditableSelectionOffsets(1, 5);
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("snarful", mConnection.mText);
-        assertEquals(1, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        mConnection.setSelection(1, 5);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "snarful", 1, 5, -1, -1);
 
         mImeAdapter.cut();
-        assertWaitForSetEditableCallback(4, mConnection);
-        assertEquals("sul", mConnection.mText);
-        assertEquals(1, mConnection.mSelectionStart);
-        assertEquals(1, mConnection.mSelectionEnd);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "sul", 1, 1, -1, -1);
 
         assertClipboardContents(getActivity(), "narf");
     }
@@ -217,50 +165,32 @@ public class ImeTest extends ContentShellTestBase {
         });
 
         mImeAdapter.paste();
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("blarg", mConnection.mText);
-        assertEquals(5, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "blarg", 5, 5, -1, -1);
 
-        mImeAdapter.setEditableSelectionOffsets(3, 5);
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("blarg", mConnection.mText);
-        assertEquals(3, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        mConnection.setSelection(3, 5);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "blarg", 3, 5, -1, -1);
 
         mImeAdapter.paste();
-        assertWaitForSetEditableCallback(5, mConnection);
-        assertEquals("blablarg", mConnection.mText);
-        assertEquals(8, mConnection.mSelectionStart);
-        assertEquals(8, mConnection.mSelectionEnd);
+        // Paste is a two step process when there is a non-zero selection.
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "bla", 3, 3, -1, -1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "blablarg", 8, 8, -1, -1);
 
         mImeAdapter.paste();
-        assertWaitForSetEditableCallback(6, mConnection);
-        assertEquals("blablargblarg", mConnection.mText);
-        assertEquals(13, mConnection.mSelectionStart);
-        assertEquals(13, mConnection.mSelectionEnd);
+        waitAndVerifyEditableCallback(
+                mConnection.mImeUpdateQueue, 5, "blablargblarg", 13, 13, -1, -1);
     }
 
     @SmallTest
     @Feature({"TextInput"})
     public void testImeSelectAndUnSelectAll() throws Exception {
-        mImeAdapter.checkCompositionQueueAndCallNative("hello", 1, true);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("hello", mConnection.mText);
-        assertEquals(5, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        mConnection.commitText("hello", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hello", 5, 5, -1, -1);
 
         mImeAdapter.selectAll();
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("hello", mConnection.mText);
-        assertEquals(0, mConnection.mSelectionStart);
-        assertEquals(5, mConnection.mSelectionEnd);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hello", 0, 5, -1, -1);
 
         mImeAdapter.unselect();
-        assertWaitForSetEditableCallback(4, mConnection);
-        assertEquals("", mConnection.mText);
-        assertEquals(0, mConnection.mSelectionStart);
-        assertEquals(0, mConnection.mSelectionEnd);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "", 0, 0, -1, -1);
 
         assertWaitForKeyboardStatus(false);
     }
@@ -271,31 +201,16 @@ public class ImeTest extends ContentShellTestBase {
         mConnection.beginBatchEdit();
         assertWaitForSetIgnoreUpdates(true, mConnection);
 
-        mImeAdapter.checkCompositionQueueAndCallNative("h", 1, false);
-        assertWaitForSetEditableCallback(2, mConnection);
-        assertEquals("h", mConnection.mText);
-        assertEquals(1, mConnection.mSelectionStart);
-        assertEquals(1, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(1, mConnection.mCompositionEnd);
+        mConnection.setComposingText("h", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "h", 1, 1, 0, 1);
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
 
-        mImeAdapter.checkCompositionQueueAndCallNative("he", 1, false);
-        assertWaitForSetEditableCallback(3, mConnection);
-        assertEquals("he", mConnection.mText);
-        assertEquals(2, mConnection.mSelectionStart);
-        assertEquals(2, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(2, mConnection.mCompositionEnd);
+        mConnection.setComposingText("he", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "he", 2, 2, 0, 2);
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
 
-        mImeAdapter.checkCompositionQueueAndCallNative("hel", 1, false);
-        assertWaitForSetEditableCallback(4, mConnection);
-        assertEquals("hel", mConnection.mText);
-        assertEquals(3, mConnection.mSelectionStart);
-        assertEquals(3, mConnection.mSelectionEnd);
-        assertEquals(0, mConnection.mCompositionStart);
-        assertEquals(3, mConnection.mCompositionEnd);
+        mConnection.setComposingText("hel", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hel", 3, 3, 0, 3);
 
         assertEquals(0, mConnection.mUpdateSelectionCounter);
         assertTrue(mConnection.isIgnoringTextInputStateUpdates());
@@ -317,6 +232,27 @@ public class ImeTest extends ContentShellTestBase {
 
         performShowImeIfNeeded();
         assertWaitForKeyboardStatus(true);
+    }
+
+    @SmallTest
+    @Feature({"TextInput", "Main"})
+    public void testFinishComposingText() throws Throwable {
+        mConnection.commitText("hllo", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 1, "hllo", 4, 4, -1, -1);
+
+        mConnection.commitText(" ", 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 2, "hllo ", 5, 5, -1, -1);
+
+        mConnection.setSelection(1, 1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 3, "hllo ", 1, 1, -1, -1);
+
+        mConnection.setComposingRegion(0, 4);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 4, "hllo ", 1, 1, 0, 4);
+
+        mConnection.finishComposingText();
+        // finishComposingText() is a two step IME event.
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 5, "hllo ", 4, 4, -1, -1);
+        waitAndVerifyEditableCallback(mConnection.mImeUpdateQueue, 6, "hllo ", 1, 1, -1, -1);
     }
 
     private void performShowImeIfNeeded() {
@@ -361,14 +297,17 @@ public class ImeTest extends ContentShellTestBase {
         }));
     }
 
-    private void assertWaitForSetEditableCallback(final int callbackNumber,
-            final TestAdapterInputConnection connection) throws InterruptedException {
+    private void waitAndVerifyEditableCallback(final ArrayList<TestImeState> states,
+            final int index, String text, int selectionStart, int selectionEnd,
+            int compositionStart, int compositionEnd) throws InterruptedException {
         assertTrue(CriteriaHelper.pollForCriteria(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return callbackNumber == connection.mSetEditableTextCallCounter;
+                return states.size() > index;
             }
         }));
+        states.get(index).assertEqualState(
+                text, selectionStart, selectionEnd, compositionStart, compositionEnd);
     }
 
     private void assertClipboardContents(final Activity activity, final String expectedContents)
@@ -419,13 +358,8 @@ public class ImeTest extends ContentShellTestBase {
     }
 
     private static class TestAdapterInputConnection extends AdapterInputConnection {
-        private int mSetEditableTextCallCounter = 0;
         private int mUpdateSelectionCounter = 0;
-        private String mText;
-        private int mSelectionStart = INVALID_SELECTION;
-        private int mSelectionEnd = INVALID_SELECTION;
-        private int mCompositionStart = INVALID_COMPOSITION;
-        private int mCompositionEnd = INVALID_COMPOSITION;
+        private ArrayList<TestImeState> mImeUpdateQueue = new ArrayList<ImeTest.TestImeState>();
 
         public TestAdapterInputConnection(View view, ImeAdapter imeAdapter, EditorInfo outAttrs) {
             super(view, imeAdapter, outAttrs);
@@ -434,12 +368,8 @@ public class ImeTest extends ContentShellTestBase {
         @Override
         public void setEditableText(String text, int selectionStart, int selectionEnd,
                 int compositionStart, int compositionEnd) {
-            mText = text;
-            mSelectionStart = selectionStart;
-            mSelectionEnd = selectionEnd;
-            mCompositionStart = compositionStart;
-            mCompositionEnd = compositionEnd;
-            mSetEditableTextCallCounter++;
+            mImeUpdateQueue.add(new TestImeState(text, selectionStart, selectionEnd,
+                    compositionStart, compositionEnd));
             super.setEditableText(
                     text, selectionStart, selectionEnd, compositionStart, compositionEnd);
         }
@@ -494,6 +424,32 @@ public class ImeTest extends ContentShellTestBase {
         @Override
         public void updateSelection(View view, int selStart, int selEnd,
                 int candidatesStart, int candidatesEnd) {
+        }
+    }
+
+    private static class TestImeState {
+        private final String mText;
+        private final int mSelectionStart;
+        private final int mSelectionEnd;
+        private final int mCompositionStart;
+        private final int mCompositionEnd;
+
+        public TestImeState(String text, int selectionStart, int selectionEnd,
+                int compositionStart, int compositionEnd) {
+            mText = text;
+            mSelectionStart = selectionStart;
+            mSelectionEnd = selectionEnd;
+            mCompositionStart = compositionStart;
+            mCompositionEnd = compositionEnd;
+        }
+
+        public void assertEqualState(String text, int selectionStart, int selectionEnd,
+                int compositionStart, int compositionEnd) {
+            assertEquals("Text did not match", mText, text);
+            assertEquals("Selection start did not match", mSelectionStart, selectionStart);
+            assertEquals("Selection end did not match", mSelectionEnd, selectionEnd);
+            assertEquals("Composition start did not match", mCompositionStart, compositionStart);
+            assertEquals("Composition end did not match", mCompositionEnd, compositionEnd);
         }
     }
 }
