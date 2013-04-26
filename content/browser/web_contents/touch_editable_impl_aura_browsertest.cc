@@ -276,8 +276,9 @@ IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
   TestTouchSelectionOnLongPress();
 }
 
+// TODO(miu): Disabled test due to flakiness.  http://crbug.com/235991
 IN_PROC_BROWSER_TEST_F(TouchEditableImplAuraTest,
-                       TouchCursorInTextfieldTest) {
+                       DISABLED_TouchCursorInTextfieldTest) {
   TestTouchCursorInTextfield();
 }
 
