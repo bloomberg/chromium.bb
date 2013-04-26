@@ -28,12 +28,13 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       main_thread_needs_layer_textures_(false),
       inside_vsync_(false),
       visible_(false),
-      can_begin_frame_(false),
+      can_start_(false),
       can_draw_(false),
       has_pending_tree_(false),
       draw_if_possible_failed_(false),
       texture_state_(LAYER_TEXTURE_STATE_UNLOCKED),
-      output_surface_state_(OUTPUT_SURFACE_ACTIVE) {}
+      output_surface_state_(OUTPUT_SURFACE_LOST),
+      did_create_and_initialize_first_output_surface_(false) {}
 
 std::string SchedulerStateMachine::ToString() {
   std::string str;
@@ -79,7 +80,7 @@ std::string SchedulerStateMachine::ToString() {
                       main_thread_needs_layer_textures_);
   base::StringAppendF(&str, "inside_vsync_ = %d; ", inside_vsync_);
   base::StringAppendF(&str, "visible_ = %d; ", visible_);
-  base::StringAppendF(&str, "can_begin_frame_ = %d; ", can_begin_frame_);
+  base::StringAppendF(&str, "can_start_ = %d; ", can_start_);
   base::StringAppendF(&str, "can_draw_ = %d; ", can_draw_);
   base::StringAppendF(
       &str, "draw_if_possible_failed_ = %d; ", draw_if_possible_failed_);
@@ -180,9 +181,9 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
           needs_forced_commit_)
         // TODO(enne): Should probably drop the active tree on force commit.
         return has_pending_tree_ ? ACTION_NONE : ACTION_BEGIN_FRAME;
-      if (output_surface_state_ == OUTPUT_SURFACE_LOST)
-        return ACTION_BEGIN_OUTPUT_SURFACE_RECREATION;
-      if (output_surface_state_ == OUTPUT_SURFACE_RECREATING)
+      if (output_surface_state_ == OUTPUT_SURFACE_LOST && can_start_)
+        return ACTION_BEGIN_OUTPUT_SURFACE_CREATION;
+      if (output_surface_state_ == OUTPUT_SURFACE_CREATING)
         return ACTION_NONE;
       if (ShouldCheckForCompletedTileUploads())
         return ACTION_CHECK_FOR_COMPLETED_TILE_UPLOADS;
@@ -193,7 +194,8 @@ SchedulerStateMachine::Action SchedulerStateMachine::NextAction() const {
                                     : ACTION_DRAW_IF_POSSIBLE;
       }
       if (needs_commit_ &&
-          ((visible_ && can_begin_frame_) || needs_forced_commit_))
+          ((visible_ && output_surface_state_ == OUTPUT_SURFACE_ACTIVE)
+           || needs_forced_commit_))
         // TODO(enne): Should probably drop the active tree on force commit.
         return has_pending_tree_ ? ACTION_NONE : ACTION_BEGIN_FRAME;
       return ACTION_NONE;
@@ -304,10 +306,10 @@ void SchedulerStateMachine::UpdateState(Action action) {
         texture_state_ = LAYER_TEXTURE_STATE_UNLOCKED;
       return;
 
-    case ACTION_BEGIN_OUTPUT_SURFACE_RECREATION:
+    case ACTION_BEGIN_OUTPUT_SURFACE_CREATION:
       DCHECK_EQ(commit_state_, COMMIT_STATE_IDLE);
       DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_LOST);
-      output_surface_state_ = OUTPUT_SURFACE_RECREATING;
+      output_surface_state_ = OUTPUT_SURFACE_CREATING;
       return;
 
     case ACTION_ACQUIRE_LAYER_TEXTURES_FOR_MAIN_THREAD:
@@ -409,7 +411,7 @@ void SchedulerStateMachine::BeginFrameAborted() {
 
 void SchedulerStateMachine::DidLoseOutputSurface() {
   if (output_surface_state_ == OUTPUT_SURFACE_LOST ||
-      output_surface_state_ == OUTPUT_SURFACE_RECREATING)
+      output_surface_state_ == OUTPUT_SURFACE_CREATING)
     return;
   output_surface_state_ = OUTPUT_SURFACE_LOST;
 }
@@ -420,10 +422,20 @@ void SchedulerStateMachine::SetHasPendingTree(bool has_pending_tree) {
 
 void SchedulerStateMachine::SetCanDraw(bool can) { can_draw_ = can; }
 
-void SchedulerStateMachine::DidRecreateOutputSurface() {
-  DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_RECREATING);
+void SchedulerStateMachine::DidCreateAndInitializeOutputSurface() {
+  DCHECK_EQ(output_surface_state_, OUTPUT_SURFACE_CREATING);
   output_surface_state_ = OUTPUT_SURFACE_ACTIVE;
-  SetNeedsCommit();
+
+  if (did_create_and_initialize_first_output_surface_) {
+    // TODO(boliu): See if we can remove this when impl-side painting is always
+    // on. Does anything on the main thread need to update after recreate?
+    SetNeedsCommit();
+  }
+  did_create_and_initialize_first_output_surface_ = true;
+}
+
+bool SchedulerStateMachine::HasInitializedOutputSurface() const {
+  return output_surface_state_ == OUTPUT_SURFACE_ACTIVE;
 }
 
 void SchedulerStateMachine::SetMaximumNumberOfFailedDrawsBeforeDrawIsForced(

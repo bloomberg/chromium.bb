@@ -26,11 +26,9 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual bool CompositeAndReadback(void* pixels, gfx::Rect rect) OVERRIDE;
   virtual void FinishAllRendering() OVERRIDE;
   virtual bool IsStarted() const OVERRIDE;
-  virtual bool InitializeOutputSurface() OVERRIDE;
   virtual void SetSurfaceReady() OVERRIDE;
   virtual void SetVisible(bool visible) OVERRIDE;
-  virtual bool InitializeRenderer() OVERRIDE;
-  virtual bool RecreateOutputSurface() OVERRIDE;
+  virtual void CreateAndInitializeOutputSurface() OVERRIDE;
   virtual const RendererCapabilities& GetRendererCapabilities() const OVERRIDE;
   virtual void SetNeedsAnimate() OVERRIDE;
   virtual void SetNeedsCommit() OVERRIDE;
@@ -38,7 +36,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
   virtual void SetDeferCommits(bool defer_commits) OVERRIDE;
   virtual bool CommitRequested() const OVERRIDE;
   virtual void MainThreadHasStoppedFlinging() OVERRIDE {}
-  virtual void Start() OVERRIDE;
+  virtual void Start(scoped_ptr<OutputSurface> first_output_surface) OVERRIDE;
   virtual void Stop() OVERRIDE;
   virtual size_t MaxPartialTextureUpdates() const OVERRIDE;
   virtual void AcquireLayerTextures() OVERRIDE {}
@@ -81,6 +79,7 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
  private:
   explicit SingleThreadProxy(LayerTreeHost* layer_tree_host);
 
+  void OnOutputSurfaceInitializeAttempted(bool success);
   bool CommitAndComposite(base::TimeTicks frame_begin_time,
                           gfx::Rect device_viewport_damage_rect,
                           LayerTreeHostImpl::FrameData* frame);
@@ -96,17 +95,15 @@ class SingleThreadProxy : public Proxy, LayerTreeHostImplClient {
 
   // Accessed on main thread only.
   LayerTreeHost* layer_tree_host_;
-  bool output_surface_lost_;
   bool created_offscreen_context_provider_;
 
-  // Holds on to the context between initializeContext() and
-  // InitializeRenderer() calls. Shouldn't be used for anything else.
-  scoped_ptr<OutputSurface> output_surface_before_initialization_;
+  // Holds the first output surface passed from Start. Should not be used for
+  // anything else.
+  scoped_ptr<OutputSurface> first_output_surface_;
 
   // Used on the Thread, but checked on main thread during
   // initialization/shutdown.
   scoped_ptr<LayerTreeHostImpl> layer_tree_host_impl_;
-  bool renderer_initialized_;
   RendererCapabilities renderer_capabilities_for_main_thread_;
 
   bool next_frame_is_newly_committed_frame_;
