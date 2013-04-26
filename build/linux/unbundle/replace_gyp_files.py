@@ -15,7 +15,21 @@ import sys
 
 
 REPLACEMENTS = {
+  'use_system_bzip2': 'third_party/bzip2/bzip2.gyp',
+  'use_system_expat': 'third_party/expat/expat.gyp',
   'use_system_harfbuzz': 'third_party/harfbuzz-ng/harfbuzz.gyp',
+  'use_system_jsoncpp': 'third_party/jsoncpp/jsoncpp.gyp',
+  'use_system_libevent': 'third_party/libevent/libevent.gyp',
+  'use_system_libjpeg': 'third_party/libjpeg/libjpeg.gyp',
+  'use_system_libpng': 'third_party/libpng/libpng.gyp',
+  'use_system_libusb': 'third_party/libusb/libusb.gyp',
+  'use_system_libwebp': 'third_party/libwebp/libwebp.gyp',
+  'use_system_libxml': 'third_party/libxml/libxml.gyp',
+  'use_system_libxslt': 'third_party/libxslt/libxslt.gyp',
+  'use_system_opus': 'third_party/opus/opus.gyp',
+  'use_system_re2': 'third_party/re2/re2.gyp',
+  'use_system_sqlite': 'third_party/sqlite/sqlite.gyp',
+  'use_system_zlib': 'third_party/zlib/zlib.gyp',
 }
 
 

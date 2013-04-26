@@ -3,143 +3,88 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'conditions': [
-      [ 'OS=="none"', {
-        # Because we have a patched zlib, we cannot use the system libz.
-        # TODO(pvalchev): OpenBSD is purposefully left out, as the system
-        # zlib brings up an incompatibility that breaks rendering.
-        'use_system_zlib%': 1,
-      }, {
-        'use_system_zlib%': 0,
-      }],
-    ],
-    'use_system_minizip%': 0,
-  },
   'targets': [
     {
       'target_name': 'zlib',
       'type': 'static_library',
+      'sources': [
+        'adler32.c',
+        'compress.c',
+        'crc32.c',
+        'crc32.h',
+        'deflate.c',
+        'deflate.h',
+        'gzclose.c',
+        'gzguts.h',
+        'gzlib.c',
+        'gzread.c',
+        'gzwrite.c',
+        'infback.c',
+        'inffast.c',
+        'inffast.h',
+        'inffixed.h',
+        'inflate.c',
+        'inflate.h',
+        'inftrees.c',
+        'inftrees.h',
+        'mozzconf.h',
+        'trees.c',
+        'trees.h',
+        'uncompr.c',
+        'zconf.h',
+        'zlib.h',
+        'zutil.c',
+        'zutil.h',
+      ],
+      'include_dirs': [
+        '.',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '.',
+        ],
+      },
       'conditions': [
-        ['use_system_zlib==0', {
-          'sources': [
-            'adler32.c',
-            'compress.c',
-            'crc32.c',
-            'crc32.h',
-            'deflate.c',
-            'deflate.h',
-            'gzclose.c',
-            'gzguts.h',
-            'gzlib.c',
-            'gzread.c',
-            'gzwrite.c',
-            'infback.c',
-            'inffast.c',
-            'inffast.h',
-            'inffixed.h',
-            'inflate.c',
-            'inflate.h',
-            'inftrees.c',
-            'inftrees.h',
-            'mozzconf.h',
-            'trees.c',
-            'trees.h',
-            'uncompr.c',
-            'zconf.h',
-            'zlib.h',
-            'zutil.c',
-            'zutil.h',
-          ],
-          'include_dirs': [
-            '.',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '.',
-            ],
-          },
-          'conditions': [
-            ['OS!="win"', {
-              'product_name': 'chrome_zlib',
-            }], ['OS=="android"', {
-              'toolsets': ['target', 'host'],
-            }],
-          ],
-        }, {
-          'variables': {
-            'headers_root_path': '.',
-            'header_filenames': [
-              'zlib.h',
-            ],
-          },
-          'includes': [
-            '../../build/shim_headers.gypi',
-          ],
-          'direct_dependent_settings': {
-            'defines': [
-              'USE_SYSTEM_ZLIB',
-            ],
-          },
-          'link_settings': {
-            'libraries': [
-              '-lz',
-            ],
-          },
+        ['OS!="win"', {
+          'product_name': 'chrome_zlib',
+        }], ['OS=="android"', {
+          'toolsets': ['target', 'host'],
         }],
       ],
     },
     {
       'target_name': 'minizip',
       'type': 'static_library',
+      'sources': [
+        'contrib/minizip/ioapi.c',
+        'contrib/minizip/ioapi.h',
+        'contrib/minizip/iowin32.c',
+        'contrib/minizip/iowin32.h',
+        'contrib/minizip/unzip.c',
+        'contrib/minizip/unzip.h',
+        'contrib/minizip/zip.c',
+        'contrib/minizip/zip.h',
+      ],
+      'dependencies': [
+        'zlib',
+      ],
+      'include_dirs': [
+        '.',
+        '../..',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '.',
+        ],
+      },
       'conditions': [
-        ['use_system_minizip==0', {
-          'sources': [
-            'contrib/minizip/ioapi.c',
-            'contrib/minizip/ioapi.h',
-            'contrib/minizip/iowin32.c',
-            'contrib/minizip/iowin32.h',
-            'contrib/minizip/unzip.c',
-            'contrib/minizip/unzip.h',
-            'contrib/minizip/zip.c',
-            'contrib/minizip/zip.h',
+        ['OS!="win"', {
+          'sources!': [
+            'contrib/minizip/iowin32.c'
           ],
-          'dependencies': [
-            'zlib',
-          ],
-          'include_dirs': [
-            '.',
-            '../..',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '.',
-            ],
-          },
-          'conditions': [
-            ['OS!="win"', {
-              'sources!': [
-                'contrib/minizip/iowin32.c'
-              ],
-            }],
-            ['OS=="android"', {
-              'toolsets': ['target', 'host'],
-            }],
-          ],
-        }, {
-          'all_dependent_settings': {
-            'defines': [
-              'USE_SYSTEM_MINIZIP',
-            ],
-          },
-          'defines': [
-            'USE_SYSTEM_MINIZIP',
-          ],
-          'link_settings': {
-            'libraries': [
-              '-lminizip',
-            ],
-          },
+        }],
+        ['OS=="android"', {
+          'toolsets': ['target', 'host'],
         }],
         ['OS=="mac" or OS=="ios" or os_bsd==1 or OS=="android"', {
           # Mac, Android and the BSDs don't have fopen64, ftello64, or

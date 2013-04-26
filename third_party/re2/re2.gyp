@@ -3,121 +3,82 @@
 # found in the LICENSE file.
 
 {
-  'variables': {
-    'use_system_re2%': 0,
-  },
-  'conditions': [
-    ['use_system_re2==0', {
-      'targets': [
-        {
-          'target_name': 're2',
-          'type': 'static_library',
-          'include_dirs': [
-            '.',
-            '<(DEPTH)',
-          ],
-          'direct_dependent_settings': {
-            'include_dirs': [
-              '.',
-              '<(DEPTH)',
-            ],
-          },
-          'dependencies': [
-            '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
-          ],
+  'targets': [
+    {
+      'target_name': 're2',
+      'type': 'static_library',
+      'include_dirs': [
+        '.',
+        '<(DEPTH)',
+      ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '.',
+          '<(DEPTH)',
+        ],
+      },
+      'dependencies': [
+        '<(DEPTH)/base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+      ],
+      'sources': [
+        're2/bitstate.cc',
+        're2/compile.cc',
+        're2/dfa.cc',
+        're2/filtered_re2.cc',
+        're2/filtered_re2.h',
+        're2/mimics_pcre.cc',
+        're2/nfa.cc',
+        're2/onepass.cc',
+        're2/parse.cc',
+        're2/perl_groups.cc',
+        're2/prefilter.cc',
+        're2/prefilter.h',
+        're2/prefilter_tree.cc',
+        're2/prefilter_tree.h',
+        're2/prog.cc',
+        're2/prog.h',
+        're2/re2.cc',
+        're2/re2.h',
+        're2/regexp.cc',
+        're2/regexp.h',
+        're2/set.cc',
+        're2/set.h',
+        're2/simplify.cc',
+        're2/stringpiece.h',
+        're2/tostring.cc',
+        're2/unicode_casefold.cc',
+        're2/unicode_casefold.h',
+        're2/unicode_groups.cc',
+        're2/unicode_groups.h',
+        're2/variadic_function.h',
+        're2/walker-inl.h',
+        'util/arena.cc',
+        'util/arena.h',
+        'util/atomicops.h',
+        'util/flags.h',
+        'util/hash.cc',
+        'util/logging.h',
+        'util/mutex.h',
+        'util/rune.cc',
+        'util/sparse_array.h',
+        'util/sparse_set.h',
+        'util/stringpiece.cc',
+        'util/stringprintf.cc',
+        'util/strutil.cc',
+        'util/utf.h',
+        'util/util.h',
+      ],
+      'conditions': [
+        ['OS=="win"', {
           'sources': [
-            're2/bitstate.cc',
-            're2/compile.cc',
-            're2/dfa.cc',
-            're2/filtered_re2.cc',
-            're2/filtered_re2.h',
-            're2/mimics_pcre.cc',
-            're2/nfa.cc',
-            're2/onepass.cc',
-            're2/parse.cc',
-            're2/perl_groups.cc',
-            're2/prefilter.cc',
-            're2/prefilter.h',
-            're2/prefilter_tree.cc',
-            're2/prefilter_tree.h',
-            're2/prog.cc',
-            're2/prog.h',
-            're2/re2.cc',
-            're2/re2.h',
-            're2/regexp.cc',
-            're2/regexp.h',
-            're2/set.cc',
-            're2/set.h',
-            're2/simplify.cc',
-            're2/stringpiece.h',
-            're2/tostring.cc',
-            're2/unicode_casefold.cc',
-            're2/unicode_casefold.h',
-            're2/unicode_groups.cc',
-            're2/unicode_groups.h',
-            're2/variadic_function.h',
-            're2/walker-inl.h',
-            'util/arena.cc',
-            'util/arena.h',
-            'util/atomicops.h',
-            'util/flags.h',
-            'util/hash.cc',
-            'util/logging.h',
-            'util/mutex.h',
-            'util/rune.cc',
-            'util/sparse_array.h',
-            'util/sparse_set.h',
-            'util/stringpiece.cc',
-            'util/stringprintf.cc',
-            'util/strutil.cc',
-            'util/utf.h',
-            'util/util.h',
+            'mswin/stdint.h'
           ],
-          'conditions': [
-            ['OS=="win"', {
-              'sources': [
-                'mswin/stdint.h'
-              ],
-              'include_dirs': [
-                'mswin'
-              ],
-              'msvs_disabled_warnings': [ 4018, 4722, 4267 ],
-            }]
-          ]
-        },
-      ],
-    }, { # use_system_re2==1
-      'targets': [
-        {
-          'target_name': 're2',
-          'type': 'none',
-          'variables': {
-            'headers_root_path': '.',
-            'header_filenames': [
-              're2/filtered_re2.h',
-              're2/re2.h',
-              're2/set.h',
-              're2/stringpiece.h',
-              're2/variadic_function.h',
-            ],
-            'shim_generator_additional_args': [
-              # Chromium copy of re2 is patched to rename POSIX to POSIX_SYNTAX
-              # because of collision issues that break the build.
-              # Upstream refuses to make changes:
-              # http://code.google.com/p/re2/issues/detail?id=73 .
-              '--define', 'POSIX=POSIX_SYNTAX',
-            ],
-          },
-          'includes': [
-            '../../build/shim_headers.gypi',
+          'include_dirs': [
+            'mswin'
           ],
-          'link_settings': {
-            'libraries': [
-              '-lre2',
-            ],
-          },
-        }
-      ],
-    }],
+          'msvs_disabled_warnings': [ 4018, 4722, 4267 ],
+        }]
+      ]
+    },
   ],
 }
