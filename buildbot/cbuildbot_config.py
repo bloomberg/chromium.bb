@@ -723,6 +723,7 @@ asan = _config(
   profile='asan',
   useflags=['asan'], # see profile for more
   disk_layout='2gb-rootfs',
+  disk_vm_layout='2gb-rootfs-updatable',
 )
 
 _config.add_raw_config('refresh-packages',
