@@ -22,4 +22,18 @@ class PerfWarm(page_benchmark.PageBenchmark):
           "Startup.BrowserMessageLoopStartTimeFromMainEntry_Exact")
       """)
     result = json.loads(result)
-    results.Add('startup_time', 'ms', result['params']['max'])
+    startup_time_ms = 0
+    if 'params' in result:
+      startup_time_ms = result['params']['max']
+    else:
+      # Support old reference builds that don't contain the new
+      # Startup.BrowserMessageLoopStartTimeFromMainEntry_Exact histogram.
+      result = tab.EvaluateJavaScript("""
+        domAutomationController.getBrowserHistogram(
+            "Startup.BrowserMessageLoopStartTimeFromMainEntry")
+        """)
+      result = json.loads(result)
+      startup_time_ms = \
+          (result['buckets'][0]['high'] + result['buckets'][0]['low']) / 2
+
+    results.Add('startup_time', 'ms', startup_time_ms)
