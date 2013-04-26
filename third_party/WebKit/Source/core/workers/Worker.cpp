@@ -58,7 +58,7 @@ inline Worker::Worker(ScriptExecutionContext* context)
 PassRefPtr<Worker> Worker::create(ScriptExecutionContext* context, const String& url, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
-    UseCounter::observe(static_cast<Document*>(context)->domWindow(), UseCounter::WorkerStart);
+    UseCounter::count(static_cast<Document*>(context)->domWindow(), UseCounter::WorkerStart);
 
     RefPtr<Worker> worker = adoptRef(new Worker(context));
 

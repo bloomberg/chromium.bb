@@ -958,7 +958,7 @@ sub GenerateFeatureObservation
 
     if ($measureAs) {
         AddToImplIncludes("core/page/UseCounter.h");
-        return "    UseCounter::observe(activeDOMWindow(BindingState::instance()), UseCounter::${measureAs});\n";
+        return "    UseCounter::count(activeDOMWindow(BindingState::instance()), UseCounter::${measureAs});\n";
     }
 
     return "";
@@ -969,7 +969,7 @@ sub GenerateDeprecationNotification
     my $deprecateAs = shift;
     if ($deprecateAs) {
         AddToImplIncludes("PageConsole.h");
-        return "    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::${deprecateAs});\n";
+        return "    UseCounter::countDeprecation(activeDOMWindow(BindingState::instance()), UseCounter::${deprecateAs});\n";
     }
     return "";
 }

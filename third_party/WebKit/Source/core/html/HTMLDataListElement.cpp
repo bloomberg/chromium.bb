@@ -47,7 +47,7 @@ inline HTMLDataListElement::HTMLDataListElement(const QualifiedName& tagName, Do
 
 PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(const QualifiedName& tagName, Document* document)
 {
-    UseCounter::observe(document, UseCounter::DataListElement);
+    UseCounter::count(document, UseCounter::DataListElement);
     return adoptRef(new HTMLDataListElement(tagName, document));
 }
 

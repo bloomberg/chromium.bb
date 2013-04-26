@@ -594,7 +594,7 @@ void DocumentLoader::responseReceived(CachedResource* resource, const ResourceRe
         setupForReplace();
         m_mainResource->clear();
     } else if (response.isMultipart()) {
-        UseCounter::observe(m_frame->document(), UseCounter::MultipartMainResource);
+        UseCounter::count(m_frame->document(), UseCounter::MultipartMainResource);
         m_isLoadingMultipartContent = true;
     }
 

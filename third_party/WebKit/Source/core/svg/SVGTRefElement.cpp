@@ -140,7 +140,7 @@ inline SVGTRefElement::SVGTRefElement(const QualifiedName& tagName, Document* do
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGTRefElement();
 
-    UseCounter::observe(document, UseCounter::SVGTRefElement);
+    UseCounter::count(document, UseCounter::SVGTRefElement);
 }
 
 SVGTRefElement::~SVGTRefElement()

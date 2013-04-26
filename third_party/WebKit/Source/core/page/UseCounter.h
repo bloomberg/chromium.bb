@@ -134,24 +134,24 @@ public:
         NumberOfFeatures, // This enum value must be last.
     };
 
-    // "observe" sets the bit for this feature to 1. Repeated calls are ignored.
-    static void observe(Document*, Feature);
-    static void observe(DOMWindow*, Feature);
+    // "count" sets the bit for this feature to 1. Repeated calls are ignored.
+    static void count(Document*, Feature);
+    static void count(DOMWindow*, Feature);
 
-    // "measureDeprecatedFeature" sets the bit for this feature to 1, and sends a deprecation
+    // "countDeprecation" sets the bit for this feature to 1, and sends a deprecation
     // warning to the console. Repeated calls are ignored.
     //
     // Be considerate to developers' consoles: features should only send deprecation warnings
     // when we're actively interested in removing them from the platform.
-    static void measureDeprecatedFeature(DOMWindow*, Feature);
-    static void measureDeprecatedFeature(ScriptExecutionContext*, Feature);
-    static void measureDeprecatedFeature(Document*, Feature);
+    static void countDeprecation(DOMWindow*, Feature);
+    static void countDeprecation(ScriptExecutionContext*, Feature);
+    static void countDeprecation(Document*, Feature);
     String deprecationMessage(Feature);
 
     void didCommitLoad();
 
 private:
-    bool recordObservation(Feature feature)
+    bool recordMeasurement(Feature feature)
     {
         ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
         ASSERT(feature < NumberOfFeatures);

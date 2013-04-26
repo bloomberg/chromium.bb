@@ -69,7 +69,7 @@ void UseCounter::didCommitLoad()
     updateMeasurements();
 }
 
-void UseCounter::observe(Document* document, Feature feature)
+void UseCounter::count(Document* document, Feature feature)
 {
     if (!document)
         return;
@@ -79,30 +79,30 @@ void UseCounter::observe(Document* document, Feature feature)
         return;
 
     ASSERT(page->useCounter()->deprecationMessage(feature).isEmpty());
-    page->useCounter()->recordObservation(feature);
+    page->useCounter()->recordMeasurement(feature);
 }
 
-void UseCounter::observe(DOMWindow* domWindow, Feature feature)
+void UseCounter::count(DOMWindow* domWindow, Feature feature)
 {
     ASSERT(domWindow);
-    observe(domWindow->document(), feature);
+    count(domWindow->document(), feature);
 }
 
-void UseCounter::measureDeprecatedFeature(ScriptExecutionContext* context, Feature feature)
+void UseCounter::countDeprecation(ScriptExecutionContext* context, Feature feature)
 {
     if (!context || !context->isDocument())
         return;
-    UseCounter::measureDeprecatedFeature(toDocument(context), feature);
+    UseCounter::countDeprecation(toDocument(context), feature);
 }
 
-void UseCounter::measureDeprecatedFeature(DOMWindow* window, Feature feature)
+void UseCounter::countDeprecation(DOMWindow* window, Feature feature)
 {
     if (!window)
         return;
-    UseCounter::measureDeprecatedFeature(window->document(), feature);
+    UseCounter::countDeprecation(window->document(), feature);
 }
 
-void UseCounter::measureDeprecatedFeature(Document* document, Feature feature)
+void UseCounter::countDeprecation(Document* document, Feature feature)
 {
     if (!document)
         return;
@@ -111,7 +111,7 @@ void UseCounter::measureDeprecatedFeature(Document* document, Feature feature)
     if (!page)
         return;
 
-    if (page->useCounter()->recordObservation(feature)) {
+    if (page->useCounter()->recordMeasurement(feature)) {
         ASSERT(!page->useCounter()->deprecationMessage(feature).isEmpty());
         page->console()->addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter()->deprecationMessage(feature));
     }

@@ -2643,7 +2643,7 @@ void FrameLoader::applyUserAgent(ResourceRequest& request)
 
 bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, const KURL& url, unsigned long requestIdentifier)
 {
-    UseCounter::observe(m_frame->document(), UseCounter::XFrameOptions);
+    UseCounter::count(m_frame->document(), UseCounter::XFrameOptions);
 
     Frame* topFrame = m_frame->tree()->top();
     if (m_frame == topFrame)
@@ -2653,13 +2653,13 @@ bool FrameLoader::shouldInterruptLoadForXFrameOptions(const String& content, con
 
     switch (disposition) {
     case XFrameOptionsSameOrigin: {
-        UseCounter::observe(m_frame->document(), UseCounter::XFrameOptionsSameOrigin);
+        UseCounter::count(m_frame->document(), UseCounter::XFrameOptionsSameOrigin);
         RefPtr<SecurityOrigin> origin = SecurityOrigin::create(url);
         if (!origin->isSameSchemeHostPort(topFrame->document()->securityOrigin()))
             return true;
         for (Frame* frame = m_frame->tree()->parent(); frame; frame = frame->tree()->parent()) {
             if (!origin->isSameSchemeHostPort(frame->document()->securityOrigin())) {
-                UseCounter::observe(m_frame->document(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
+                UseCounter::count(m_frame->document(), UseCounter::XFrameOptionsSameOriginWithBadAncestorChain);
                 break;
             }
         }

@@ -1459,9 +1459,9 @@ void ContentSecurityPolicy::didReceiveHeader(const String& header, HeaderType ty
     if (m_scriptExecutionContext->isDocument()) {
         Document* document = toDocument(m_scriptExecutionContext);
         if (type == PrefixedReport || type == PrefixedEnforce)
-            UseCounter::measureDeprecatedFeature(document, getUseCounterType(type));
+            UseCounter::countDeprecation(document, getUseCounterType(type));
         else
-            UseCounter::observe(document, getUseCounterType(type));
+            UseCounter::count(document, getUseCounterType(type));
     }
 
     // RFC2616, section 4.2 specifies that headers appearing multiple times can

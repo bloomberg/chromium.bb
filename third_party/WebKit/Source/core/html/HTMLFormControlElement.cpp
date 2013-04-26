@@ -126,7 +126,7 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
 {
     if (name == formAttr) {
         formAttributeChanged();
-        UseCounter::observe(document(), UseCounter::FormAttribute);
+        UseCounter::count(document(), UseCounter::FormAttribute);
     } else if (name == disabledAttr) {
         bool oldDisabled = m_disabled;
         m_disabled = !value.isNull();
@@ -146,10 +146,10 @@ void HTMLFormControlElement::parseAttribute(const QualifiedName& name, const Ato
         m_isRequired = !value.isNull();
         if (wasRequired != m_isRequired)
             requiredAttributeChanged();
-        UseCounter::observe(document(), UseCounter::RequiredAttribute);
+        UseCounter::count(document(), UseCounter::RequiredAttribute);
     } else if (name == autofocusAttr) {
         HTMLElement::parseAttribute(name, value);
-        UseCounter::observe(document(), UseCounter::AutoFocusAttribute);
+        UseCounter::count(document(), UseCounter::AutoFocusAttribute);
     } else
         HTMLElement::parseAttribute(name, value);
 }

@@ -55,7 +55,7 @@ inline SharedWorker::SharedWorker(ScriptExecutionContext* context)
 PassRefPtr<SharedWorker> SharedWorker::create(ScriptExecutionContext* context, const String& url, const String& name, ExceptionCode& ec)
 {
     ASSERT(isMainThread());
-    UseCounter::observe(static_cast<Document*>(context)->domWindow(), UseCounter::SharedWorkerStart);
+    UseCounter::count(static_cast<Document*>(context)->domWindow(), UseCounter::SharedWorkerStart);
 
     RefPtr<SharedWorker> worker = adoptRef(new SharedWorker(context));
 

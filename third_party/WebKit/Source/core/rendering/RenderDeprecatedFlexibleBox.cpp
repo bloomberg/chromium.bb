@@ -128,11 +128,11 @@ RenderDeprecatedFlexibleBox::RenderDeprecatedFlexibleBox(Element* element)
     if (!isAnonymous()) {
         const KURL& url = document()->url();
         if (url.protocolIs("chrome"))
-            UseCounter::observe(document(), UseCounter::DeprecatedFlexboxChrome);
+            UseCounter::count(document(), UseCounter::DeprecatedFlexboxChrome);
         else if (url.protocolIs("chrome-extension"))
-            UseCounter::observe(document(), UseCounter::DeprecatedFlexboxChromeExtension);
+            UseCounter::count(document(), UseCounter::DeprecatedFlexboxChromeExtension);
         else
-            UseCounter::observe(document(), UseCounter::DeprecatedFlexboxWebContent);
+            UseCounter::count(document(), UseCounter::DeprecatedFlexboxWebContent);
     }
 }
 

@@ -1161,7 +1161,7 @@ OptionalCursor EventHandler::selectCursor(const MouseEventWithHitTestResults& ev
 
 #if ENABLE(CURSOR_VISIBILITY)
     if (style && style->cursorVisibility() == CursorVisibilityAutoHide) {
-        UseCounter::observe(m_frame->document(), UseCounter::CursorVisibility);
+        UseCounter::count(m_frame->document(), UseCounter::CursorVisibility);
         startAutoHideCursorTimer();
     } else
         cancelAutoHideCursorTimer();
