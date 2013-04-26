@@ -15,7 +15,7 @@ span : valueOf
 [span] : toString
 String(span) : toString
 String([span]) : toString
-span.toString : function () { return "toString"; }
+span.toString : function () { return "toString" }
 span.toString() (cached in variable) : toString
 span.toString() : toString
 [span].toString() : toString
@@ -47,16 +47,16 @@ span.valueOf() : [object Object]
 [span].valueOf() : toString
 
 span with modified toString and valueOf that returns an Object
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
 span.toString : function () { return new Object(); }
 span.toString() (cached in variable) : [object Object]
 span.toString() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 span.valueOf() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 
 span with modified toString that throws an exception
 span : valueOf
@@ -100,8 +100,8 @@ window : [object Window]
 [window] : [object Window]
 String(window) : [object Window]
 String([window]) : [object Window]
-window.toString : function toString() { [native code] }
-window.toString() (cached in variable) : [object Undefined]
+window.toString : function () { [native code] }
+window.toString() (cached in variable) : [object Window]
 window.toString() : [object Window]
 [window].toString() : [object Window]
 window.valueOf() : [object Window]
@@ -112,7 +112,7 @@ window : valueOf
 [window] : toString
 String(window) : toString
 String([window]) : toString
-window.toString : function () { return "toString"; }
+window.toString : function () { return "toString" }
 window.toString() (cached in variable) : toString
 window.toString() : toString
 [window].toString() : toString
@@ -144,16 +144,16 @@ window.valueOf() : [object Object]
 [window].valueOf() : toString
 
 window with modified toString and valueOf that returns an Object
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
 window.toString : function () { return new Object(); }
 window.toString() (cached in variable) : [object Object]
 window.toString() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 window.valueOf() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 
 window with modified toString that throws an exception
 window : valueOf
@@ -209,7 +209,7 @@ Navigator : valueOf
 [Navigator] : toString
 String(Navigator) : toString
 String([Navigator]) : toString
-Navigator.toString : function () { return "toString"; }
+Navigator.toString : function () { return "toString" }
 Navigator.toString() (cached in variable) : toString
 Navigator.toString() : toString
 [Navigator].toString() : toString
@@ -241,16 +241,16 @@ Navigator.valueOf() : [object Object]
 [Navigator].valueOf() : toString
 
 Navigator with modified toString and valueOf that returns an Object
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
 Navigator.toString : function () { return new Object(); }
 Navigator.toString() (cached in variable) : [object Object]
 Navigator.toString() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 Navigator.valueOf() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 
 Navigator with modified toString that throws an exception
 Navigator : valueOf
@@ -306,7 +306,7 @@ History : valueOf
 [History] : toString
 String(History) : toString
 String([History]) : toString
-History.toString : function () { return "toString"; }
+History.toString : function () { return "toString" }
 History.toString() (cached in variable) : toString
 History.toString() : toString
 [History].toString() : toString
@@ -338,16 +338,16 @@ History.valueOf() : [object Object]
 [History].valueOf() : toString
 
 History with modified toString and valueOf that returns an Object
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
 History.toString : function () { return new Object(); }
 History.toString() (cached in variable) : [object Object]
 History.toString() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 History.valueOf() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 
 History with modified toString that throws an exception
 History : valueOf
@@ -392,7 +392,7 @@ Selection :
 String(Selection) : 
 String([Selection]) : 
 Selection.toString : function toString() { [native code] }
-TypeError: Type error
+TypeError: Illegal invocation
 Selection.toString() : 
 [Selection].toString() : 
 Selection.valueOf() : 
@@ -403,7 +403,7 @@ Selection : valueOf
 [Selection] : toString
 String(Selection) : toString
 String([Selection]) : toString
-Selection.toString : function () { return "toString"; }
+Selection.toString : function () { return "toString" }
 Selection.toString() (cached in variable) : toString
 Selection.toString() : toString
 [Selection].toString() : toString
@@ -435,16 +435,16 @@ Selection.valueOf() : [object Object]
 [Selection].valueOf() : toString
 
 Selection with modified toString and valueOf that returns an Object
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
+TypeError: Cannot convert object to primitive value
 Selection.toString : function () { return new Object(); }
 Selection.toString() (cached in variable) : [object Object]
 Selection.toString() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 Selection.valueOf() : [object Object]
-TypeError: No default value
+TypeError: Cannot convert object to primitive value
 
 Selection with modified toString that throws an exception
 Selection : valueOf
