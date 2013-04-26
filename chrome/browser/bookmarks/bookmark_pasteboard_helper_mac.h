@@ -29,7 +29,7 @@ enum PasteboardType {
 void WriteToPasteboard(PasteboardType type,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const base::FilePath& profile_path,
-                       ui::Clipboard::SourceTag tag);
+                       ui::SourceTag tag);
 
 // Reads a set of bookmark elements from the specified pasteboard.
 bool ReadFromPasteboard(PasteboardType type,

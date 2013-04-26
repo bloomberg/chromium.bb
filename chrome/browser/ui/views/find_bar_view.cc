@@ -467,9 +467,9 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
 
 void FindBarView::OnAfterCutOrCopy() {
   Profile* profile = host()->browser_view()->browser()->profile();
-  ui::Clipboard::SourceTag source_tag =
+  ui::SourceTag source_tag =
       content::BrowserContext::GetMarkerForOffTheRecordContext(profile);
-  if (source_tag != ui::Clipboard::SourceTag()) {
+  if (source_tag != ui::SourceTag()) {
     // Overwrite the clipboard with the correct SourceTag
     ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
     string16 text;

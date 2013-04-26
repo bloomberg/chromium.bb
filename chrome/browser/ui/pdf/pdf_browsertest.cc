@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(PDFBrowserTest, MAYBE_FindAndCopy) {
   objects[ui::Clipboard::CBF_TEXT] = params;
   clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
                           objects,
-                          ui::Clipboard::SourceTag());
+                          ui::SourceTag());
 
   browser()->tab_strip_model()->GetActiveWebContents()->
       GetRenderViewHost()->Copy();

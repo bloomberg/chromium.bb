@@ -608,7 +608,7 @@ void Clipboard::ReadDataImpl(Buffer buffer,
   gtk_selection_data_free(data);
 }
 
-Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
   std::string result;
   ReadDataImpl(buffer, GetSourceTagFormatType(), &result);
   return Binary2SourceTag(result);

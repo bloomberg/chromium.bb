@@ -40,9 +40,9 @@ const float kRightEdgeOffset = 25;
 
 @interface FindTextFieldEditor : NSTextView {
  @private
-  ui::Clipboard::SourceTag sourceTag_;
+  ui::SourceTag sourceTag_;
 }
-- (id)initWithSourceTag:(ui::Clipboard::SourceTag)sourceTag;
+- (id)initWithSourceTag:(ui::SourceTag)sourceTag;
 
 - (void)copy:(id)sender;
 - (void)cut:(id)sender;
@@ -50,7 +50,7 @@ const float kRightEdgeOffset = 25;
 
 @implementation FindTextFieldEditor
 
-- (id)initWithSourceTag:(ui::Clipboard::SourceTag)sourceTag {
+- (id)initWithSourceTag:(ui::SourceTag)sourceTag {
   if (self = [super init]) {
     sourceTag_ = sourceTag;
   }
@@ -490,7 +490,7 @@ const float kRightEdgeOffset = 25;
     // same thread, so there is no race condition here.
     if (!customTextFieldEditor_) {
       Profile* profile = browser_ ? browser_->profile() : NULL;
-      ui::Clipboard::SourceTag tag =
+      ui::SourceTag tag =
           content::BrowserContext::GetMarkerForOffTheRecordContext(profile);
       customTextFieldEditor_.reset(
           [[FindTextFieldEditor alloc] initWithSourceTag:tag]);

@@ -106,15 +106,15 @@ class OffTheRecordClipboardDestroyer : public base::SupportsUserData::Data {
       ExamineClipboard(clipboard, ui::Clipboard::BUFFER_SELECTION);
   }
 
-  ui::Clipboard::SourceTag GetAsSourceTag() {
-    return ui::Clipboard::SourceTag(this);
+  ui::SourceTag GetAsSourceTag() {
+    return ui::SourceTag(this);
   }
 
  private:
   void ExamineClipboard(ui::Clipboard* clipboard,
                         ui::Clipboard::Buffer buffer) {
-    ui::Clipboard::SourceTag source_tag = clipboard->ReadSourceTag(buffer);
-    if (source_tag == ui::Clipboard::SourceTag(this))
+    ui::SourceTag source_tag = clipboard->ReadSourceTag(buffer);
+    if (source_tag == ui::SourceTag(this))
       clipboard->Clear(buffer);
   }
 };
@@ -311,7 +311,7 @@ void BrowserContext::PurgeMemory(BrowserContext* browser_context) {
                           base::Bind(&PurgeDOMStorageContextInPartition));
 }
 
-ui::Clipboard::SourceTag BrowserContext::GetMarkerForOffTheRecordContext(
+ui::SourceTag BrowserContext::GetMarkerForOffTheRecordContext(
     BrowserContext* context) {
   if (context && context->IsOffTheRecord()) {
     OffTheRecordClipboardDestroyer* clipboard_destroyer =
@@ -319,7 +319,7 @@ ui::Clipboard::SourceTag BrowserContext::GetMarkerForOffTheRecordContext(
 
     return clipboard_destroyer->GetAsSourceTag();
   }
-  return ui::Clipboard::SourceTag();
+  return ui::SourceTag();
 }
 #endif  // !OS_IOS
 

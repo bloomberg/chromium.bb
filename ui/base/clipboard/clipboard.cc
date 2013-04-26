@@ -92,12 +92,12 @@ static base::LazyInstance<ClipboardMap> g_clipboard_map =
 static base::LazyInstance<base::Lock>::Leaky
     g_clipboard_map_lock = LAZY_INSTANCE_INITIALIZER;
 
-const std::size_t kSourceTagSize = sizeof(Clipboard::SourceTag);
+const std::size_t kSourceTagSize = sizeof(SourceTag);
 
 // The union serves to easily convert SourceTag into its binary representation
 // and vice versa.
 union SourceTag2BinaryHelper {
-  Clipboard::SourceTag tag;
+  SourceTag tag;
   uint8 bytes[kSourceTagSize];
 };
 
@@ -120,7 +120,7 @@ Clipboard::ObjectMapParam Clipboard::SourceTag2Binary(SourceTag tag) {
 }
 
 // static
-Clipboard::SourceTag Clipboard::Binary2SourceTag(const std::string& binary) {
+SourceTag Clipboard::Binary2SourceTag(const std::string& binary) {
   if (binary.size() != kSourceTagSize)
     return SourceTag();
   SourceTag2BinaryHelper helper;

@@ -17,7 +17,7 @@ namespace chrome_common_net {
 void WriteURLToClipboard(const GURL& url,
                          const std::string& languages,
                          ui::Clipboard *clipboard,
-                         ui::Clipboard::SourceTag source_tag);
+                         ui::SourceTag source_tag);
 
 }  // namespace chrome_common_net
 

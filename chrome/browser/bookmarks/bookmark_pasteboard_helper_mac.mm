@@ -243,7 +243,7 @@ namespace bookmark_pasteboard_helper_mac {
 void WriteToPasteboard(PasteboardType type,
                        const std::vector<BookmarkNodeData::Element>& elements,
                        const base::FilePath& profile_path,
-                       ui::Clipboard::SourceTag tag) {
+                       ui::SourceTag tag) {
   if (elements.empty())
     return;
 

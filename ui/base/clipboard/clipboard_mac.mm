@@ -438,7 +438,7 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
     result->assign(static_cast<const char*>([data bytes]), [data length]);
 }
 
-Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   std::string result;
   ReadData(GetSourceTagFormatType(), &result);

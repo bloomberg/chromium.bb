@@ -49,7 +49,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
     string16 default_prompt;
     int message_width;
     int inter_row_vertical_spacing;
-    ui::Clipboard::SourceTag clipboard_source_tag;
+    ui::SourceTag clipboard_source_tag;
   };
 
   explicit MessageBoxView(const InitParams& params);
@@ -117,7 +117,7 @@ class VIEWS_EXPORT MessageBoxView : public View {
   int inter_row_vertical_spacing_;
 
   // Source tag to be written to the clipboard when Ctrl-C pressed.
-  ui::Clipboard::SourceTag source_tag_;
+  ui::SourceTag source_tag_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageBoxView);
 };

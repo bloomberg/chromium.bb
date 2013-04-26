@@ -25,7 +25,7 @@ namespace {
 void WriteObjectsWrapper(ui::Clipboard* clipboard,
                          const ui::Clipboard::ObjectMap& objects,
                          BrowserContext* browser_context) {
-  ui::Clipboard::SourceTag source_tag =
+  ui::SourceTag source_tag =
       BrowserContext::GetMarkerForOffTheRecordContext(browser_context);
   clipboard->WriteObjects(ui::Clipboard::BUFFER_STANDARD,
                           objects,

@@ -1037,9 +1037,9 @@ gboolean FindBarGtk::OnFocusOut(GtkWidget* entry, GdkEventFocus* event) {
 }
 
 void FindBarGtk::HandleAfterCopyOrCutClipboard(GtkWidget* sender) {
-  ui::Clipboard::SourceTag source_tag = content::BrowserContext::
+  ui::SourceTag source_tag = content::BrowserContext::
       GetMarkerForOffTheRecordContext(browser_->profile());
-  if (source_tag == ui::Clipboard::SourceTag())
+  if (source_tag == ui::SourceTag())
     return;
 
   ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();

@@ -706,7 +706,7 @@ void Clipboard::ReadDataImpl(Buffer buffer,
     data->AssignTo(result);
 }
 
-Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
   std::string result;
   ReadDataImpl(buffer, GetSourceTagFormatType(), &result);
   return Binary2SourceTag(result);

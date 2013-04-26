@@ -23,7 +23,7 @@ ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard,
 
 ScopedClipboardWriter::ScopedClipboardWriter(Clipboard* clipboard,
                                              Clipboard::Buffer buffer,
-                                             Clipboard::SourceTag source_tag)
+                                             SourceTag source_tag)
     : clipboard_(clipboard),
       buffer_(buffer),
       source_tag_(source_tag) {

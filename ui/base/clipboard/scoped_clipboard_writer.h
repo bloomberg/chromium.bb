@@ -32,7 +32,7 @@ class UI_EXPORT ScopedClipboardWriter {
 
   ScopedClipboardWriter(Clipboard* clipboard,
                         Clipboard::Buffer buffer,
-                        Clipboard::SourceTag source_tag);
+                        SourceTag source_tag);
 
   ~ScopedClipboardWriter();
 
@@ -82,7 +82,7 @@ class UI_EXPORT ScopedClipboardWriter {
   Clipboard::ObjectMap objects_;
   Clipboard* clipboard_;
   Clipboard::Buffer buffer_;
-  Clipboard::SourceTag source_tag_;
+  SourceTag source_tag_;
 
   // We keep around the UTF-8 text of the URL in order to pass it to
   // Clipboard::DidWriteURL().

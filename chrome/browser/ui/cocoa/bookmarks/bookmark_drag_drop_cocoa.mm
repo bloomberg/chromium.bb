@@ -149,7 +149,7 @@ void DragBookmarks(Profile* profile,
       bookmark_pasteboard_helper_mac::kDragPasteboard,
       elements,
       profile->GetPath(),
-      ui::Clipboard::SourceTag());
+      ui::SourceTag());
 
   // Synthesize an event for dragging, since we can't be sure that
   // [NSApp currentEvent] will return a valid dragging event.

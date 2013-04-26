@@ -666,7 +666,7 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   ::GlobalUnlock(data);
 }
 
-Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
   DCHECK_EQ(buffer, BUFFER_STANDARD);
   std::string result;
   ReadData(GetSourceTagFormatType(), &result);

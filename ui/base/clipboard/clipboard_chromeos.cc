@@ -120,8 +120,8 @@ class ClipboardData {
     format_ |= WEB;
   }
 
-  Clipboard::SourceTag source_tag() const { return source_tag_; }
-  void set_source_tag(Clipboard::SourceTag tag) {
+  SourceTag source_tag() const { return source_tag_; }
+  void set_source_tag(SourceTag tag) {
     source_tag_ = tag;
     format_ |= SOURCETAG;
   }
@@ -153,7 +153,7 @@ class ClipboardData {
   std::string custom_data_data_;
 
   // SourceTag.
-  Clipboard::SourceTag source_tag_;
+  SourceTag source_tag_;
 
   // WebKit smart paste data.
   bool web_smart_paste_;
@@ -307,9 +307,9 @@ class AuraClipboard {
     *result = data->custom_data_data();
   }
 
-  Clipboard::SourceTag ReadSourceTag() const {
+  SourceTag ReadSourceTag() const {
     if (!HasFormat(SOURCETAG))
-      return Clipboard::SourceTag();
+      return SourceTag();
     const ClipboardData* data = GetData();
     return data->source_tag();
   }
@@ -417,7 +417,7 @@ class ClipboardDataBuilder {
     data->SetCustomData(format, std::string(data_data, data_len));
   }
 
-  static void WriteSourceTag(Clipboard::SourceTag tag) {
+  static void WriteSourceTag(SourceTag tag) {
     ClipboardData* data = GetCurrentData();
     data->set_source_tag(tag);
   }
@@ -587,7 +587,7 @@ void Clipboard::ReadData(const FormatType& format, std::string* result) const {
   GetClipboard()->ReadData(format.ToString(), result);
 }
 
-Clipboard::SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
+SourceTag Clipboard::ReadSourceTag(Buffer buffer) const {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(BUFFER_STANDARD, buffer);
   return GetClipboard()->ReadSourceTag();
