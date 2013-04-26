@@ -3,41 +3,23 @@
 // found in the LICENSE file.
 
 #include <string>
-#include <vector>
 
-#include "base/bind.h"
-#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop.h"
-#include "base/stringprintf.h"
 #include "base/threading/sequenced_worker_pool.h"
-#include "base/values.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_file_system.h"
 #include "chrome/browser/chromeos/drive/drive_webapps_registry.h"
 #include "chrome/browser/chromeos/drive/fake_free_disk_space_getter.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
-#include "chrome/browser/chromeos/drive/mock_cache_observer.h"
-#include "chrome/browser/chromeos/drive/mock_directory_change_observer.h"
 #include "chrome/browser/chromeos/drive/stale_cache_files_remover.h"
 #include "chrome/browser/chromeos/drive/test_util.h"
-#include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/fake_drive_service.h"
 #include "chrome/browser/google_apis/test_util.h"
-#include "chrome/browser/google_apis/time_util.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::AtLeast;
-using ::testing::Eq;
-using ::testing::NotNull;
-using ::testing::Return;
-using ::testing::StrictMock;
-using ::testing::_;
 
 namespace drive {
 namespace {
@@ -49,12 +31,7 @@ const int64 kLotsOfSpace = kMinFreeSpace * 10;
 class StaleCacheFilesRemoverTest : public testing::Test {
  protected:
   StaleCacheFilesRemoverTest()
-      : ui_thread_(content::BrowserThread::UI, &message_loop_),
-        cache_(NULL),
-        file_system_(NULL),
-        fake_drive_service_(NULL),
-        drive_webapps_registry_(NULL),
-        root_feed_changestamp_(0) {
+      : ui_thread_(content::BrowserThread::UI, &message_loop_) {
   }
 
   virtual void SetUp() OVERRIDE {
@@ -77,7 +54,6 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     blocking_task_runner_ =
         pool->GetSequencedTaskRunner(pool->GetSequenceToken());
 
-    // Likewise, this will be owned by DriveFileSystem.
     cache_.reset(new DriveCache(DriveCache::GetCacheRootPath(profile_.get()),
                                 blocking_task_runner_,
                                 fake_free_disk_space_getter_.get()));
@@ -88,20 +64,13 @@ class StaleCacheFilesRemoverTest : public testing::Test {
         cache_->GetCacheDirectoryPath(DriveCache::CACHE_TYPE_META),
         blocking_task_runner_));
 
-    ASSERT_FALSE(file_system_);
-    file_system_ = new DriveFileSystem(profile_.get(),
-                                       cache_.get(),
-                                       fake_drive_service_.get(),
-                                       scheduler_.get(),
-                                       drive_webapps_registry_.get(),
-                                       resource_metadata_.get(),
-                                       blocking_task_runner_);
-
-    mock_cache_observer_.reset(new StrictMock<MockCacheObserver>);
-    cache_->AddObserver(mock_cache_observer_.get());
-
-    mock_directory_observer_.reset(new StrictMock<MockDirectoryChangeObserver>);
-    file_system_->AddObserver(mock_directory_observer_.get());
+    file_system_.reset(new DriveFileSystem(profile_.get(),
+                                           cache_.get(),
+                                           fake_drive_service_.get(),
+                                           scheduler_.get(),
+                                           drive_webapps_registry_.get(),
+                                           resource_metadata_.get(),
+                                           blocking_task_runner_));
 
     file_system_->Initialize();
     cache_->RequestInitializeForTesting();
@@ -113,40 +82,33 @@ class StaleCacheFilesRemoverTest : public testing::Test {
     google_apis::test_util::RunBlockingPoolTask();
     ASSERT_EQ(FILE_ERROR_OK, error);
 
-    stale_cache_files_remover_.reset(new StaleCacheFilesRemover(file_system_,
-                                                                cache_.get()));
+    stale_cache_files_remover_.reset(
+        new StaleCacheFilesRemover(file_system_.get(), cache_.get()));
 
     google_apis::test_util::RunBlockingPoolTask();
   }
 
   virtual void TearDown() OVERRIDE {
-    ASSERT_TRUE(file_system_);
     stale_cache_files_remover_.reset();
-    delete file_system_;
-    file_system_ = NULL;
+    file_system_.reset();
     cache_.reset();
-    profile_.reset(NULL);
+    profile_.reset();
   }
 
   MessageLoopForUI message_loop_;
-  // The order of the test threads is important, do not change the order.
-  // See also content/browser/browser_thread_impl.cc.
   content::TestBrowserThread ui_thread_;
+
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<DriveCache, test_util::DestroyHelperForTests> cache_;
-  DriveFileSystem* file_system_;
+  scoped_ptr<DriveFileSystem> file_system_;
   scoped_ptr<google_apis::FakeDriveService> fake_drive_service_;
   scoped_ptr<JobScheduler> scheduler_;
   scoped_ptr<DriveWebAppsRegistry> drive_webapps_registry_;
   scoped_ptr<DriveResourceMetadata, test_util::DestroyHelperForTests>
       resource_metadata_;
   scoped_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;
-  scoped_ptr<StrictMock<MockCacheObserver> > mock_cache_observer_;
-  scoped_ptr<StrictMock<MockDirectoryChangeObserver> > mock_directory_observer_;
   scoped_ptr<StaleCacheFilesRemover> stale_cache_files_remover_;
-
-  int root_feed_changestamp_;
 };
 
 TEST_F(StaleCacheFilesRemoverTest, RemoveStaleCacheFiles) {
