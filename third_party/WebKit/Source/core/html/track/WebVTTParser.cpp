@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "WebVTTParser.h"
+#include "core/html/track/WebVTTParser.h"
 
 #include "HTMLElement.h"
-#include "WebVTTElement.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/Text.h"
+#include "core/html/track/WebVTTElement.h"
 #include "core/platform/text/SegmentedString.h"
 #include <wtf/text/WTFString.h>
 

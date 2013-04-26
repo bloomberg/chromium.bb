@@ -25,8 +25,8 @@
 #include "config.h"
 #include "ClassList.h"
 
-#include "HTMLParserIdioms.h"
 #include "core/dom/SpaceSplitString.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

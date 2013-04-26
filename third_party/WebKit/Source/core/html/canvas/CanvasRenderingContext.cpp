@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "CanvasRenderingContext.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 
-#include "CanvasPattern.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLVideoElement.h"
+#include "core/html/canvas/CanvasPattern.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"

@@ -26,9 +26,9 @@
 #ifndef WebGLRenderingContext_h
 #define WebGLRenderingContext_h
 
-#include "CanvasRenderingContext.h"
-#include "WebGLGetInfo.h"
 #include "core/dom/ActiveDOMObject.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
+#include "core/html/canvas/WebGLGetInfo.h"
 #include "core/platform/Timer.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/ImageBuffer.h"

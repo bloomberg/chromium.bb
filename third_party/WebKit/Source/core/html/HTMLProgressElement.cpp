@@ -24,13 +24,13 @@
 
 #include "HTMLDivElement.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
-#include "ProgressShadowElement.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/shadow/ProgressShadowElement.h"
 #include "core/rendering/RenderProgress.h"
 #include <wtf/StdLibExtras.h>
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "ClearButtonElement.h"
+#include "core/html/shadow/ClearButtonElement.h"
 
 #include "core/dom/MouseEvent.h"
 #include "core/page/EventHandler.h"

@@ -26,7 +26,7 @@
 #ifndef HTMLTreeBuilderSimulator_h
 #define HTMLTreeBuilderSimulator_h
 
-#include "HTMLParserOptions.h"
+#include "core/html/parser/HTMLParserOptions.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "DetailsMarkerControl.h"
+#include "core/html/shadow/DetailsMarkerControl.h"
 
 #include "HTMLNames.h"
 #include "HTMLSummaryElement.h"

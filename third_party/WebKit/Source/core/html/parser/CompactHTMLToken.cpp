@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "CompactHTMLToken.h"
+#include "core/html/parser/CompactHTMLToken.h"
 
-#include "HTMLParserIdioms.h"
-#include "HTMLToken.h"
-#include "XSSAuditorDelegate.h"
 #include "core/dom/QualifiedName.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLToken.h"
+#include "core/html/parser/XSSAuditorDelegate.h"
 
 namespace WebCore {
 

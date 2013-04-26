@@ -26,15 +26,15 @@
 #ifndef CompactHTMLToken_h
 #define CompactHTMLToken_h
 
-#include "HTMLIdentifier.h"
-#include "HTMLToken.h"
+#include "core/html/parser/HTMLIdentifier.h"
+#include "core/html/parser/HTMLToken.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/TextPosition.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -28,7 +28,7 @@
 
 #if ENABLE(WEBVTT_REGIONS)
 
-#include "TextTrackRegion.h"
+#include "core/html/track/TextTrackRegion.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>

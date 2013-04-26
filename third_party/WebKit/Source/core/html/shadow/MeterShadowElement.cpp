@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "MeterShadowElement.h"
+#include "core/html/shadow/MeterShadowElement.h"
 
 #include "CSSPropertyNames.h"
 #include "HTMLMeterElement.h"

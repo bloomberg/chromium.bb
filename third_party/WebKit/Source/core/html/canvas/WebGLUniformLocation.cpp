@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "WebGLUniformLocation.h"
+#include "core/html/canvas/WebGLUniformLocation.h"
 
 namespace WebCore {
 

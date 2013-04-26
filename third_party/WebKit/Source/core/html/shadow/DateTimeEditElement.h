@@ -27,8 +27,8 @@
 #define DateTimeEditElement_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeFieldElement.h"
 #include "StepRange.h"
+#include "core/html/shadow/DateTimeFieldElement.h"
 #include "core/platform/DateComponents.h"
 
 namespace WebCore {

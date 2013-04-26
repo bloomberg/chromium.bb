@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "WebGLCompressedTextureATC.h"
+#include "core/html/canvas/WebGLCompressedTextureATC.h"
 
 #include "core/platform/graphics/Extensions3D.h"
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "BackgroundHTMLInputStream.h"
+#include "core/html/parser/BackgroundHTMLInputStream.h"
 
 namespace WebCore {
 

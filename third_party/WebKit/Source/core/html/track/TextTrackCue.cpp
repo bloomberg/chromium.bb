@@ -31,21 +31,21 @@
 
 #include "config.h"
 
-#include "TextTrackCue.h"
+#include "core/html/track/TextTrackCue.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLDivElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLSpanElement.h"
-#include "TextTrack.h"
-#include "TextTrackCueList.h"
-#include "WebVTTElement.h"
-#include "WebVTTParser.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Event.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/Text.h"
+#include "core/html/track/TextTrack.h"
+#include "core/html/track/TextTrackCueList.h"
+#include "core/html/track/WebVTTElement.h"
+#include "core/html/track/WebVTTParser.h"
 #include "core/rendering/RenderTextTrackCue.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>

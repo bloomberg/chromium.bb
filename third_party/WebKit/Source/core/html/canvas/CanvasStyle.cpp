@@ -27,14 +27,14 @@
  */
 
 #include "config.h"
-#include "CanvasStyle.h"
+#include "core/html/canvas/CanvasStyle.h"
 
 #include "CSSPropertyNames.h"
-#include "CanvasGradient.h"
-#include "CanvasPattern.h"
 #include "HTMLCanvasElement.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
+#include "core/html/canvas/CanvasGradient.h"
+#include "core/html/canvas/CanvasPattern.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include <wtf/Assertions.h>
 #include <wtf/PassRefPtr.h>

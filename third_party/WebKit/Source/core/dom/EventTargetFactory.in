@@ -33,9 +33,9 @@ core/workers/SharedWorkerContext
 SourceBufferList
 SpeechRecognition
 SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS
-TextTrack
-TextTrackCue
-TextTrackList
+core/html/track/TextTrack
+core/html/track/TextTrackCue
+core/html/track/TextTrackList
 WebKitNamedFlow interfaceName=NamedFlow
 WebSocket
 core/workers/Worker

@@ -27,7 +27,7 @@
 #ifndef MediaControlsChromium_h
 #define MediaControlsChromium_h
 
-#include "MediaControls.h"
+#include "core/html/shadow/MediaControls.h"
 
 namespace WebCore {
 

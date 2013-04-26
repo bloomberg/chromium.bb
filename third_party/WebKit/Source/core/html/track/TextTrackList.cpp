@@ -25,15 +25,15 @@
 
 #include "config.h"
 
-#include "TextTrackList.h"
+#include "core/html/track/TextTrackList.h"
 
 #include "HTMLMediaElement.h"
-#include "InbandTextTrack.h"
-#include "LoadableTextTrack.h"
-#include "TextTrack.h"
-#include "TrackEvent.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/html/track/InbandTextTrack.h"
+#include "core/html/track/LoadableTextTrack.h"
+#include "core/html/track/TextTrack.h"
+#include "core/html/track/TrackEvent.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 
 using namespace WebCore;

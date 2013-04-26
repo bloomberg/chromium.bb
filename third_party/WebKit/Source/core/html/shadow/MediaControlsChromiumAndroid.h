@@ -26,8 +26,8 @@
 #ifndef MediaControlsChromiumAndroid_h
 #define MediaControlsChromiumAndroid_h
 
-#include "MediaControls.h"
-#include "MediaControlsChromium.h"
+#include "core/html/shadow/MediaControls.h"
+#include "core/html/shadow/MediaControlsChromium.h"
 
 namespace WebCore {
 

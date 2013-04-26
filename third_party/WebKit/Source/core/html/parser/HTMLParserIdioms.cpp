@@ -23,11 +23,11 @@
  */
 
 #include "config.h"
-#include "HTMLParserIdioms.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 #include <limits>
-#include "HTMLIdentifier.h"
 #include "core/dom/QualifiedName.h"
+#include "core/html/parser/HTMLIdentifier.h"
 #include "core/platform/Decimal.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/AtomicString.h>

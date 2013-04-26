@@ -48,7 +48,7 @@
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>
 
-#include "TextTrackCue.h"
+#include "core/html/track/TextTrackCue.h"
 
 namespace WebCore {
 

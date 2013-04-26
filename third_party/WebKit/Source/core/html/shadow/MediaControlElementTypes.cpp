@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "MediaControlElementTypes.h"
+#include "core/html/shadow/MediaControlElementTypes.h"
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"

@@ -24,7 +24,6 @@
 #include "core/dom/ContainerNode.h"
 
 #include "HTMLNames.h"
-#include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ChildListMutationScope.h"
@@ -35,6 +34,7 @@
 #include "core/dom/NodeRenderStyle.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/TemplateContentDocumentFragment.h"
+#include "core/html/shadow/InsertionPoint.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"

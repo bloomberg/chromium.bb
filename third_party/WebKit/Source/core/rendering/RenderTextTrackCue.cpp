@@ -27,8 +27,8 @@
 
 #include "core/rendering/RenderTextTrackCue.h"
 
-#include "TextTrackCue.h"
-#include "TextTrackCueGeneric.h"
+#include "core/html/track/TextTrackCue.h"
+#include "core/html/track/TextTrackCueGeneric.h"
 
 namespace WebCore {
 

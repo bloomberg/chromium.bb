@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "WebGLDepthTexture.h"
+#include "core/html/canvas/WebGLDepthTexture.h"
 
 #include "core/platform/graphics/Extensions3D.h"
 

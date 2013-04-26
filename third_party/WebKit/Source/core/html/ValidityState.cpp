@@ -28,7 +28,7 @@
 #include "HTMLNames.h"
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"
-#include "HTMLTreeBuilder.h"
+#include "core/html/parser/HTMLTreeBuilder.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/StdLibExtras.h>
 

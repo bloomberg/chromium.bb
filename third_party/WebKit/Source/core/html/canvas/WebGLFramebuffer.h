@@ -26,8 +26,8 @@
 #ifndef WebGLFramebuffer_h
 #define WebGLFramebuffer_h
 
-#include "WebGLContextObject.h"
-#include "WebGLSharedObject.h"
+#include "core/html/canvas/WebGLContextObject.h"
+#include "core/html/canvas/WebGLSharedObject.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

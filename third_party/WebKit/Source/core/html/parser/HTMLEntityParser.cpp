@@ -26,10 +26,10 @@
  */
 
 #include "config.h"
-#include "HTMLEntityParser.h"
+#include "core/html/parser/HTMLEntityParser.h"
 
-#include "HTMLEntitySearch.h"
-#include "HTMLEntityTable.h"
+#include "core/html/parser/HTMLEntitySearch.h"
+#include "core/html/parser/HTMLEntityTable.h"
 #include "core/xml/parser/CharacterReferenceParserInlines.h"
 #include <wtf/text/StringBuilder.h>
 

@@ -35,7 +35,6 @@
 
 #include "DOMEditor.h"
 #include "HTMLDocument.h"
-#include "HTMLDocumentParser.h"
 #include "HTMLElement.h"
 #include "HTMLHeadElement.h"
 #include "HTMLNames.h"
@@ -45,6 +44,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/Node.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
 #include <wtf/Deque.h>

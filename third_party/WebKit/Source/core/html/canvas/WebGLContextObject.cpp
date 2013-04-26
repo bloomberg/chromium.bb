@@ -25,9 +25,9 @@
 
 #include "config.h"
 
-#include "WebGLContextObject.h"
+#include "core/html/canvas/WebGLContextObject.h"
 
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 
 namespace WebCore {
 

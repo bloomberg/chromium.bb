@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebTextFieldDecoratorClient.h"
 
-#include "TextFieldDecorationElement.h"
 #include "TextFieldDecoratorImpl.h"
+#include "core/html/shadow/TextFieldDecorationElement.h"
 
 using namespace WebCore;
 

@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "CanvasPattern.h"
+#include "core/html/canvas/CanvasPattern.h"
 
 #include "core/dom/ExceptionCode.h"
 #include <wtf/text/WTFString.h>

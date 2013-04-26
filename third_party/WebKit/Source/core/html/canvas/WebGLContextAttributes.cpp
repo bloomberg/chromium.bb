@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "WebGLContextAttributes.h"
+#include "core/html/canvas/WebGLContextAttributes.h"
 
 namespace WebCore {
 

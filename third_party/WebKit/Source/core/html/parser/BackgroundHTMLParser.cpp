@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "BackgroundHTMLParser.h"
+#include "core/html/parser/BackgroundHTMLParser.h"
 
-#include "HTMLDocumentParser.h"
-#include "HTMLParserIdioms.h"
-#include "HTMLParserThread.h"
-#include "HTMLTokenizer.h"
-#include "XSSAuditor.h"
+#include "core/html/parser/HTMLDocumentParser.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLParserThread.h"
+#include "core/html/parser/HTMLTokenizer.h"
+#include "core/html/parser/XSSAuditor.h"
 #include <wtf/MainThread.h>
 #include <wtf/text/TextPosition.h>
 

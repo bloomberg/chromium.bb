@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "WebGLShaderPrecisionFormat.h"
+#include "core/html/canvas/WebGLShaderPrecisionFormat.h"
 
 namespace WebCore {
 

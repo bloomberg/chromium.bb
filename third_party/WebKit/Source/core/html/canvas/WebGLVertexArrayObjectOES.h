@@ -26,8 +26,8 @@
 #ifndef WebGLVertexArrayObjectOES_h
 #define WebGLVertexArrayObjectOES_h
 
-#include "WebGLBuffer.h"
-#include "WebGLContextObject.h"
+#include "core/html/canvas/WebGLBuffer.h"
+#include "core/html/canvas/WebGLContextObject.h"
 
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

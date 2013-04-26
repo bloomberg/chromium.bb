@@ -36,13 +36,13 @@
 #include "HTMLTableElement.h"
 #include "HTMLTableRowElement.h"
 #include "HTMLTableSectionElement.h"
-#include "HTMLToken.h"
-#include "HTMLViewSourceParser.h"
-#include "TextViewSourceParser.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/DOMImplementation.h"
 #include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/dom/Text.h"
+#include "core/html/parser/HTMLToken.h"
+#include "core/html/parser/HTMLViewSourceParser.h"
+#include "core/html/parser/TextViewSourceParser.h"
 #include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {

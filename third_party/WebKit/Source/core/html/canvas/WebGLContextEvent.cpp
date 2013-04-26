@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "WebGLContextEvent.h"
+#include "core/html/canvas/WebGLContextEvent.h"
 
 #include "core/dom/EventNames.h"
 

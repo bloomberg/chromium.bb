@@ -22,7 +22,7 @@
 #include "StepRange.h"
 
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/WTFString.h>
 

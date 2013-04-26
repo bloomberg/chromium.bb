@@ -33,8 +33,8 @@
 #include "core/page/MediaCanStartListener.h"
 #include "core/platform/graphics/MediaPlayer.h"
 
-#include "TextTrack.h"
-#include "TextTrackCue.h"
+#include "core/html/track/TextTrack.h"
+#include "core/html/track/TextTrackCue.h"
 #include "core/platform/PODIntervalTree.h"
 
 namespace WebCore {

@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "WebGLFramebuffer.h"
+#include "core/html/canvas/WebGLFramebuffer.h"
 
-#include "EXTDrawBuffers.h"
-#include "WebGLContextGroup.h"
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/EXTDrawBuffers.h"
+#include "core/html/canvas/WebGLContextGroup.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {

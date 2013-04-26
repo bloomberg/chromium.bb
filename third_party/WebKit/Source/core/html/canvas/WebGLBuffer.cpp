@@ -25,11 +25,11 @@
 
 #include "config.h"
 
-#include "WebGLBuffer.h"
+#include "core/html/canvas/WebGLBuffer.h"
 
-#include "CheckedInt.h"
-#include "WebGLContextGroup.h"
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/CheckedInt.h"
+#include "core/html/canvas/WebGLContextGroup.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include <wtf/ArrayBufferView.h>
 
 namespace WebCore {

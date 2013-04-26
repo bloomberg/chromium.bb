@@ -27,19 +27,19 @@
 #ifndef WebGLGetInfo_h
 #define WebGLGetInfo_h
 
-#include "WebGLBuffer.h"
-#include "WebGLFramebuffer.h"
-#include "WebGLProgram.h"
-#include "WebGLRenderbuffer.h"
-#include "WebGLTexture.h"
-#include "WebGLVertexArrayObjectOES.h"
+#include "core/html/canvas/WebGLBuffer.h"
+#include "core/html/canvas/WebGLFramebuffer.h"
+#include "core/html/canvas/WebGLProgram.h"
+#include "core/html/canvas/WebGLRenderbuffer.h"
+#include "core/html/canvas/WebGLTexture.h"
+#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include <wtf/Float32Array.h>
 #include <wtf/Int32Array.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
+#include <wtf/text/WTFString.h>
 #include <wtf/Uint32Array.h>
 #include <wtf/Uint8Array.h>
-#include <wtf/text/WTFString.h>
 
 namespace WebCore {
 

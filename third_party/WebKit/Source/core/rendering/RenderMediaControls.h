@@ -26,7 +26,7 @@
 #ifndef RenderMediaControls_h
 #define RenderMediaControls_h
 
-#include "MediaControlElements.h"
+#include "core/html/shadow/MediaControlElements.h"
 
 namespace WebCore {
 

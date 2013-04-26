@@ -24,12 +24,9 @@
  */
 
 #include "config.h"
-#include "HTMLScriptRunner.h"
+#include "core/html/parser/HTMLScriptRunner.h"
 
-#include "HTMLInputStream.h"
 #include "HTMLNames.h"
-#include "HTMLScriptRunnerHost.h"
-#include "NestingLevelIncrementer.h"
 #include "ScriptSourceCode.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/CustomElementRegistry.h"
@@ -38,6 +35,9 @@
 #include "core/dom/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/dom/MutationObserver.h"
 #include "core/dom/ScriptElement.h"
+#include "core/html/parser/HTMLInputStream.h"
+#include "core/html/parser/HTMLScriptRunnerHost.h"
+#include "core/html/parser/NestingLevelIncrementer.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/Frame.h"

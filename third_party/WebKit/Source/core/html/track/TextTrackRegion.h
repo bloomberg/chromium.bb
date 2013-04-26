@@ -33,7 +33,7 @@
 
 #if ENABLE(WEBVTT_REGIONS)
 
-#include "TextTrack.h"
+#include "core/html/track/TextTrack.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>

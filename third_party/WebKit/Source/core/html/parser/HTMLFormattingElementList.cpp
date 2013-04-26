@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLFormattingElementList.h"
+#include "core/html/parser/HTMLFormattingElementList.h"
 
 #include "core/dom/Element.h"
 #include "core/platform/NotImplemented.h"

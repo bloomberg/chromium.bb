@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "OESTextureHalfFloat.h"
+#include "core/html/canvas/OESTextureHalfFloat.h"
 
 namespace WebCore {
 

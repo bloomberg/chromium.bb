@@ -32,10 +32,10 @@
 #define WebVTTParser_h
 
 #include "HTMLNames.h"
-#include "TextTrackCue.h"
-#include "TextTrackRegion.h"
-#include "WebVTTTokenizer.h"
 #include "core/dom/DocumentFragment.h"
+#include "core/html/track/TextTrackCue.h"
+#include "core/html/track/TextTrackRegion.h"
+#include "core/html/track/WebVTTTokenizer.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 

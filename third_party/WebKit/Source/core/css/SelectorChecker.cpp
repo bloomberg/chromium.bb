@@ -35,7 +35,6 @@
 #include "HTMLOptionElement.h"
 #include "HTMLProgressElement.h"
 #include "HTMLStyleElement.h"
-#include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
@@ -46,6 +45,7 @@
 #include "core/dom/StyledElement.h"
 #include "core/dom/Text.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/shadow/InsertionPoint.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -55,7 +55,7 @@
 #include "core/rendering/RenderScrollbar.h"
 #include "core/rendering/style/RenderStyle.h"
 
-#include "WebVTTElement.h"
+#include "core/html/track/WebVTTElement.h"
 
 namespace WebCore {
 

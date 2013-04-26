@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLIdentifier.h"
+#include "core/html/parser/HTMLIdentifier.h"
 
 #include "HTMLNames.h"
 #include <wtf/HashMap.h>

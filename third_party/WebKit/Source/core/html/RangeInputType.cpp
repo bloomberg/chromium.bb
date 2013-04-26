@@ -36,9 +36,7 @@
 #include "HTMLDivElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
-#include "SliderThumbElement.h"
 #include "StepRange.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ElementShadow.h"
@@ -50,6 +48,8 @@
 #include "core/dom/Touch.h"
 #include "core/dom/TouchEvent.h"
 #include "core/dom/TouchList.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/shadow/SliderThumbElement.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/rendering/RenderSlider.h"
 #include <wtf/MathExtras.h>

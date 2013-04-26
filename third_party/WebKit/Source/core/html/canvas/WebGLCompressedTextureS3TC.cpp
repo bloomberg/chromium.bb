@@ -25,9 +25,9 @@
 
 #include "config.h"
 
-#include "WebGLCompressedTextureS3TC.h"
+#include "core/html/canvas/WebGLCompressedTextureS3TC.h"
 
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/graphics/Extensions3D.h"
 
 #include <wtf/Int32Array.h>

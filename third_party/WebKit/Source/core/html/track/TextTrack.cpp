@@ -31,15 +31,15 @@
 
 #include "config.h"
 
-#include "TextTrack.h"
+#include "core/html/track/TextTrack.h"
 
 #include "HTMLMediaElement.h"
-#include "TextTrackCueList.h"
-#include "TextTrackList.h"
-#include "TextTrackRegionList.h"
-#include "TrackBase.h"
 #include "core/dom/Event.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/track/TextTrackCueList.h"
+#include "core/html/track/TextTrackList.h"
+#include "core/html/track/TextTrackRegionList.h"
+#include "core/html/track/TrackBase.h"
 
 namespace WebCore {
 

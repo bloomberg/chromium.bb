@@ -26,7 +26,7 @@
 #ifndef LoadableTextTrack_h
 #define LoadableTextTrack_h
 
-#include "TextTrack.h"
+#include "core/html/track/TextTrack.h"
 #include "core/loader/TextTrackLoader.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/Vector.h>

@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "OESStandardDerivatives.h"
+#include "core/html/canvas/OESStandardDerivatives.h"
 
 namespace WebCore {
 

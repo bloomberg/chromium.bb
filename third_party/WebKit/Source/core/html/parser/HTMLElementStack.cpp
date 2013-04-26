@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "HTMLElementStack.h"
+#include "core/html/parser/HTMLElementStack.h"
 
 #include "HTMLNames.h"
 #include "MathMLNames.h"

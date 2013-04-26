@@ -32,7 +32,6 @@
 #include "core/platform/Pasteboard.h"
 
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "NativeImageSkia.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -40,6 +39,7 @@
 #include "core/dom/Range.h"
 #include "core/editing/Editor.h"
 #include "core/editing/markup.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"
 #include "core/platform/KURL.h"

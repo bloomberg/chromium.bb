@@ -29,7 +29,6 @@
 
 #include "HTMLDataListElement.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "HTMLSelectElement.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/Attribute.h"
@@ -40,6 +39,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ScriptElement.h"
 #include "core/dom/Text.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderMenuList.h"
 #include "core/rendering/RenderTheme.h"
 #include <wtf/StdLibExtras.h>

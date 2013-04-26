@@ -21,14 +21,14 @@
 #include "config.h"
 #include "HTMLSummaryElement.h"
 
-#include "DetailsMarkerControl.h"
-#include "HTMLContentElement.h"
 #include "HTMLDetailsElement.h"
 #include "HTMLNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/shadow/DetailsMarkerControl.h"
+#include "core/html/shadow/HTMLContentElement.h"
 #include "core/platform/PlatformMouseEvent.h"
 #include "core/rendering/RenderBlock.h"
 

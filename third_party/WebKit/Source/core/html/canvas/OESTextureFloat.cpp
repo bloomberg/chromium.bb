@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "OESTextureFloat.h"
+#include "core/html/canvas/OESTextureFloat.h"
 
 namespace WebCore {
 

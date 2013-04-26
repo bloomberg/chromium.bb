@@ -26,7 +26,7 @@
 #ifndef HTMLSourceTracker_h
 #define HTMLSourceTracker_h
 
-#include "HTMLToken.h"
+#include "core/html/parser/HTMLToken.h"
 #include "core/platform/text/SegmentedString.h"
 #include <wtf/text/StringBuilder.h>
 

@@ -25,13 +25,13 @@
  */
 
 #include "config.h"
-#include "ContentSelectorQuery.h"
+#include "core/html/shadow/ContentSelectorQuery.h"
 
-#include "InsertionPoint.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/shadow/InsertionPoint.h"
 
 namespace WebCore {
 

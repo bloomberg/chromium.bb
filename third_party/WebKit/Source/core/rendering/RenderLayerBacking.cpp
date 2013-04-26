@@ -28,7 +28,6 @@
 #include "core/rendering/RenderLayerBacking.h"
 
 #include "CSSPropertyNames.h"
-#include "CanvasRenderingContext.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLIFrameElement.h"
 #include "HTMLMediaElement.h"
@@ -37,6 +36,7 @@
 #include "PluginViewBase.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Chrome.h"
 #include "core/page/FrameView.h"

@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "HTMLContentElement.h"
+#include "core/html/shadow/HTMLContentElement.h"
 
-#include "ContentDistributor.h"
-#include "ContentSelectorQuery.h"
 #include "HTMLNames.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/shadow/ContentDistributor.h"
+#include "core/html/shadow/ContentSelectorQuery.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/StdLibExtras.h>
 

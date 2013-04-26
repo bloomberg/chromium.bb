@@ -26,7 +26,7 @@
 #ifndef EXTDrawBuffers_h
 #define EXTDrawBuffers_h
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

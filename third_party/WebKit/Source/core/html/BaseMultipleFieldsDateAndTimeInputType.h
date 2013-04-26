@@ -34,10 +34,10 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "BaseDateAndTimeInputType.h"
 
-#include "ClearButtonElement.h"
-#include "DateTimeEditElement.h"
-#include "PickerIndicatorElement.h"
-#include "SpinButtonElement.h"
+#include "core/html/shadow/ClearButtonElement.h"
+#include "core/html/shadow/DateTimeEditElement.h"
+#include "core/html/shadow/PickerIndicatorElement.h"
+#include "core/html/shadow/SpinButtonElement.h"
 
 namespace WebCore {
 

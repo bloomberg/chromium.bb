@@ -24,9 +24,9 @@
 #include "HTMLBaseElement.h"
 
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/TextResourceDecoder.h"
 
 namespace WebCore {

@@ -25,14 +25,14 @@
 
 #include "config.h"
 
-#include "TextTrackCueGeneric.h"
+#include "core/html/track/TextTrackCueGeneric.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLDivElement.h"
 #include "HTMLNames.h"
-#include "TextTrackCue.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/html/track/TextTrackCue.h"
 #include "core/platform/graphics/InbandTextTrackPrivateClient.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderTextTrackCue.h"

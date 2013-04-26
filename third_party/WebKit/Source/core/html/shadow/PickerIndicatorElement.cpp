@@ -30,7 +30,7 @@
 
 #include "config.h"
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "PickerIndicatorElement.h"
+#include "core/html/shadow/PickerIndicatorElement.h"
 
 #include "core/dom/Event.h"
 #include "core/page/Chrome.h"

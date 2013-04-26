@@ -27,7 +27,7 @@
 
 #if ENABLE(WEBVTT_REGIONS)
 
-#include "TextTrackRegionList.h"
+#include "core/html/track/TextTrackRegionList.h"
 
 namespace WebCore {
 

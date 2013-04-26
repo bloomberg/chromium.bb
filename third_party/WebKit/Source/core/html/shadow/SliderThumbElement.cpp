@@ -31,16 +31,16 @@
 
 
 #include "config.h"
-#include "SliderThumbElement.h"
+#include "core/html/shadow/SliderThumbElement.h"
 
 #include "CSSValueKeywords.h"
 #include "HTMLInputElement.h"
-#include "HTMLParserIdioms.h"
 #include "StepRange.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/Event.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderFlexibleBox.h"

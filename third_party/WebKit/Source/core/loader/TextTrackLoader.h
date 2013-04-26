@@ -26,7 +26,7 @@
 #ifndef TextTrackLoader_h
 #define TextTrackLoader_h
 
-#include "WebVTTParser.h"
+#include "core/html/track/WebVTTParser.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/loader/cache/CachedTextTrack.h"

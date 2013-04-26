@@ -29,7 +29,6 @@
 
 #include <libxml/parser.h>
 #include <libxml/parserInternals.h>
-#include "HTMLEntityParser.h"
 #include "HTMLHtmlElement.h"
 #include "HTMLLinkElement.h"
 #include "HTMLNames.h"
@@ -47,6 +46,7 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptElement.h"
 #include "core/dom/TransformSource.h"
+#include "core/html/parser/HTMLEntityParser.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceLoader.h"

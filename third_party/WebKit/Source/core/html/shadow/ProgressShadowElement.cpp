@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "ProgressShadowElement.h"
+#include "core/html/shadow/ProgressShadowElement.h"
 
 #include "HTMLNames.h"
 #include "HTMLProgressElement.h"

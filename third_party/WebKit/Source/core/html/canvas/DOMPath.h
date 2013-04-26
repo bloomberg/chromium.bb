@@ -28,7 +28,7 @@
 #ifndef DOMPath_h
 #define DOMPath_h
 
-#include "CanvasPathMethods.h"
+#include "core/html/canvas/CanvasPathMethods.h"
 #if ENABLE(SVG)
 #include "SVGPathUtilities.h"
 #endif

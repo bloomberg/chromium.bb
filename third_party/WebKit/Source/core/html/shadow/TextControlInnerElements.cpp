@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "TextControlInnerElements.h"
+#include "core/html/shadow/TextControlInnerElements.h"
 
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"

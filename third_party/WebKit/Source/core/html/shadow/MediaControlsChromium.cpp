@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "MediaControlsChromium.h"
+#include "core/html/shadow/MediaControlsChromium.h"
 
 #include "core/dom/ExceptionCodePlaceholder.h"
 

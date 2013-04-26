@@ -25,9 +25,9 @@
 
 #include "config.h"
 
-#include "WebVTTElement.h"
+#include "core/html/track/WebVTTElement.h"
 
-#include "TextTrack.h"
+#include "core/html/track/TextTrack.h"
 
 namespace WebCore {
 

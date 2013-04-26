@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "OESElementIndexUint.h"
+#include "core/html/canvas/OESElementIndexUint.h"
 
 namespace WebCore {
 

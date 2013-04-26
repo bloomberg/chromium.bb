@@ -27,9 +27,9 @@
 #ifndef HTMLTokenizer_h
 #define HTMLTokenizer_h
 
-#include "HTMLParserOptions.h"
-#include "HTMLToken.h"
-#include "InputStreamPreprocessor.h"
+#include "core/html/parser/HTMLParserOptions.h"
+#include "core/html/parser/HTMLToken.h"
+#include "core/html/parser/InputStreamPreprocessor.h"
 #include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {

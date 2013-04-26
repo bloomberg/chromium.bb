@@ -27,7 +27,6 @@
 #include "config.h"
 #include "core/css/ScopedStyleResolver.h"
 
-#include "ContentDistributor.h"
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
 #include "core/css/CSSStyleRule.h"
@@ -38,6 +37,7 @@
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/shadow/ContentDistributor.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>

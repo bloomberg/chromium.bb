@@ -25,9 +25,9 @@
 #include "config.h"
 #include "InspectorStyleTextEditor.h"
 
-#include "HTMLParserIdioms.h"
 #include "InspectorStyleSheet.h"
 #include "core/css/CSSPropertySourceData.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 namespace WebCore {
 

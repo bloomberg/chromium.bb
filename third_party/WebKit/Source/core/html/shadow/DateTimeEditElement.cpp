@@ -25,16 +25,16 @@
 
 #include "config.h"
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeEditElement.h"
+#include "core/html/shadow/DateTimeEditElement.h"
 
-#include "DateTimeFieldElements.h"
 #include "DateTimeFieldsState.h"
-#include "DateTimeSymbolicFieldElement.h"
 #include "HTMLNames.h"
 #include "core/css/StyleResolver.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/Text.h"
+#include "core/html/shadow/DateTimeFieldElements.h"
+#include "core/html/shadow/DateTimeSymbolicFieldElement.h"
 #include "core/page/EventHandler.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/graphics/FontCache.h"

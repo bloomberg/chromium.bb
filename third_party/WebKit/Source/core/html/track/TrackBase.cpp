@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "TrackBase.h"
+#include "core/html/track/TrackBase.h"
 
 namespace WebCore {
 

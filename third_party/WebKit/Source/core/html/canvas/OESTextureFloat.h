@@ -26,7 +26,7 @@
 #ifndef OESTextureFloat_h
 #define OESTextureFloat_h
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

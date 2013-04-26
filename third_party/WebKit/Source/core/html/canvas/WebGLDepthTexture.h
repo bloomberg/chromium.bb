@@ -26,7 +26,7 @@
 #ifndef WebGLDepthTexture_h
 #define WebGLDepthTexture_h
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

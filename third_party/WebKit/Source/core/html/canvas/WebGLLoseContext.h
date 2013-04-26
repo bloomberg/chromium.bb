@@ -26,7 +26,7 @@
 #ifndef WebGLLoseContext_h
 #define WebGLLoseContext_h
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

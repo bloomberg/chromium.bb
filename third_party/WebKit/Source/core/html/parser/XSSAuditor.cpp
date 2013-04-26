@@ -25,19 +25,19 @@
  */
 
 #include "config.h"
-#include "XSSAuditor.h"
+#include "core/html/parser/XSSAuditor.h"
 
 #include "FormDataList.h"
-#include "HTMLDocumentParser.h"
 #include "HTMLNames.h"
 #include "HTMLParamElement.h"
-#include "HTMLParserIdioms.h"
-#include "HTMLTokenizer.h"
 #include "InspectorInstrumentation.h"
 #include "InspectorValues.h"
 #include "XLinkNames.h"
-#include "XSSAuditorDelegate.h"
 #include "core/dom/Document.h"
+#include "core/html/parser/HTMLDocumentParser.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLTokenizer.h"
+#include "core/html/parser/XSSAuditorDelegate.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"
@@ -118,7 +118,7 @@ static bool startsMultiLineCommentAt(const String& string, size_t start)
     return (start + 1 < string.length() && string[start] == '/' && string[start+1] == '*');
 }
 
-// If other files need this, we should move this to HTMLParserIdioms.h
+// If other files need this, we should move this to core/html/parser/HTMLParserIdioms.h
 template<size_t inlineCapacity>
 bool threadSafeMatch(const Vector<UChar, inlineCapacity>& vector, const QualifiedName& qname)
 {

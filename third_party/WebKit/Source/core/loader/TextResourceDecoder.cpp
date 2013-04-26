@@ -23,9 +23,9 @@
 #include "config.h"
 #include "core/loader/TextResourceDecoder.h"
 
-#include "HTMLMetaCharsetParser.h"
 #include "HTMLNames.h"
 #include "core/dom/DOMImplementation.h"
+#include "core/html/parser/HTMLMetaCharsetParser.h"
 #include "core/platform/text/TextCodec.h"
 #include "core/platform/text/TextEncoding.h"
 #include "core/platform/text/TextEncodingDetector.h"

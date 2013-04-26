@@ -55,7 +55,6 @@
 
 #include "CSSPropertyNames.h"
 #include "HTMLBodyElement.h"
-#include "HTMLDocumentParser.h"
 #include "HTMLElementFactory.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
@@ -64,6 +63,7 @@
 #include "core/css/StyleResolver.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"

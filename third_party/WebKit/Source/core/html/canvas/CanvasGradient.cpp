@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "CanvasGradient.h"
+#include "core/html/canvas/CanvasGradient.h"
 
-#include "CanvasPattern.h"
-#include "CanvasStyle.h"
 #include "core/css/CSSParser.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/canvas/CanvasPattern.h"
+#include "core/html/canvas/CanvasStyle.h"
 
 namespace WebCore {
 

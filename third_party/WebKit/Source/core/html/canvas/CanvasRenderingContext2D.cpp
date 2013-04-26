@@ -31,13 +31,9 @@
  */
 
 #include "config.h"
-#include "CanvasRenderingContext2D.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
 
 #include "CSSPropertyNames.h"
-#include "CanvasGradient.h"
-#include "CanvasPattern.h"
-#include "CanvasStyle.h"
-#include "DOMPath.h"
 #include "HTMLCanvasElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLMediaElement.h"
@@ -51,6 +47,10 @@
 #include "core/css/StyleResolver.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/html/canvas/CanvasGradient.h"
+#include "core/html/canvas/CanvasPattern.h"
+#include "core/html/canvas/CanvasStyle.h"
+#include "core/html/canvas/DOMPath.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Console.h"
 #include "core/page/Page.h"

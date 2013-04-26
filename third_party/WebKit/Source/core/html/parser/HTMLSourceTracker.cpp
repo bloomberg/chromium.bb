@@ -24,8 +24,8 @@
  */
 
 #include "config.h"
-#include "HTMLSourceTracker.h"
-#include "HTMLTokenizer.h"
+#include "core/html/parser/HTMLSourceTracker.h"
+#include "core/html/parser/HTMLTokenizer.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

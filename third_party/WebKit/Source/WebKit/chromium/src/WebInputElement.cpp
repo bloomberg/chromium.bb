@@ -34,13 +34,13 @@
 #include "HTMLDataListElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "TextControlInnerElements.h"
-#include "TextFieldDecorationElement.h"
 #include "TextFieldDecoratorImpl.h"
 #include "WebNodeCollection.h"
 #include "WebTextFieldDecoratorClient.h"
 #include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/shadow/TextControlInnerElements.h"
+#include "core/html/shadow/TextFieldDecorationElement.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 

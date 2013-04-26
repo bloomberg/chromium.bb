@@ -25,8 +25,8 @@
 #include "EmailInputType.h"
 
 #include "HTMLInputElement.h"
-#include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/RegularExpression.h"
 #include <wtf/PassOwnPtr.h>

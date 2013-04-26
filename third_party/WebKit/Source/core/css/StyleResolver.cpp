@@ -38,7 +38,6 @@
 #include "HTMLProgressElement.h"
 #include "HTMLStyleElement.h"
 #include "HTMLTextAreaElement.h"
-#include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
 #include "MathMLNames.h"
 #include "SVGDocumentExtensions.h"
@@ -99,6 +98,7 @@
 #include "core/dom/VisitedLinkState.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/shadow/InsertionPoint.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
@@ -170,7 +170,7 @@
 #include "core/rendering/style/StyleCachedImageSet.h"
 #endif
 
-#include "WebVTTElement.h"
+#include "core/html/track/WebVTTElement.h"
 
 using namespace std;
 

@@ -25,14 +25,14 @@
 
 #include "config.h"
 
-#include "LoadableTextTrack.h"
+#include "core/html/track/LoadableTextTrack.h"
 
 #include "HTMLTrackElement.h"
 #include "ScriptEventListener.h"
-#include "TextTrackCueList.h"
-#include "TextTrackRegionList.h"
 #include "core/dom/Event.h"
 #include "core/dom/ScriptExecutionContext.h"
+#include "core/html/track/TextTrackCueList.h"
+#include "core/html/track/TextTrackRegionList.h"
 
 namespace WebCore {
 

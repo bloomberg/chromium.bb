@@ -26,12 +26,12 @@
 
 #include "HTMLImageElement.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/KeyboardEvent.h"
 #include "core/dom/MouseEvent.h"
 #include "core/editing/FrameSelection.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/FrameLoaderTypes.h"

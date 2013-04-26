@@ -26,7 +26,7 @@
 #ifndef EXTTextureFilterAnisotropic_h
 #define EXTTextureFilterAnisotropic_h
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

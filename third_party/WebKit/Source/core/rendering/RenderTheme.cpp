@@ -26,12 +26,12 @@
 #include "HTMLInputElement.h"
 #include "HTMLMeterElement.h"
 #include "HTMLNames.h"
-#include "MediaControlElements.h"
-#include "SpinButtonElement.h"
-#include "TextControlInnerElements.h"
 #include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/shadow/MediaControlElements.h"
+#include "core/html/shadow/SpinButtonElement.h"
+#include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -55,8 +55,8 @@
 #include "HTMLCollection.h"
 #include "HTMLDataListElement.h"
 #include "HTMLOptionElement.h"
-#include "HTMLParserIdioms.h"
 #include "core/dom/ElementShadow.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #endif
 
 // The methods in this file are shared by all themes on every platform.

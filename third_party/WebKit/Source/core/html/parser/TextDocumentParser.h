@@ -26,7 +26,7 @@
 #ifndef TextDocumentParser_h
 #define TextDocumentParser_h
 
-#include "HTMLDocumentParser.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 
 namespace WebCore {
 

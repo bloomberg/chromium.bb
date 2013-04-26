@@ -27,9 +27,9 @@
 #ifndef HTMLConstructionSite_h
 #define HTMLConstructionSite_h
 
-#include "HTMLElementStack.h"
-#include "HTMLFormattingElementList.h"
 #include "core/dom/FragmentScriptingPermission.h"
+#include "core/html/parser/HTMLElementStack.h"
+#include "core/html/parser/HTMLFormattingElementList.h"
 #include "core/platform/NotImplemented.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/PassRefPtr.h>

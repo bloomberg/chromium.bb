@@ -25,10 +25,10 @@
 
 #include "config.h"
 
-#include "WebGLContextGroup.h"
+#include "core/html/canvas/WebGLContextGroup.h"
 
-#include "WebGLRenderingContext.h"
-#include "WebGLSharedObject.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLSharedObject.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 
 namespace WebCore {

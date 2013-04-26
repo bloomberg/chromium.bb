@@ -26,7 +26,7 @@
 #ifndef TextViewSourceParser_h
 #define TextViewSourceParser_h
 
-#include "HTMLViewSourceParser.h"
+#include "core/html/parser/HTMLViewSourceParser.h"
 
 namespace WebCore {
 

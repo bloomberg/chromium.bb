@@ -24,15 +24,15 @@
  */
 
 #include "config.h"
-#include "HTMLTreeBuilderSimulator.h"
+#include "core/html/parser/HTMLTreeBuilderSimulator.h"
 
-#include "HTMLDocumentParser.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
-#include "HTMLTokenizer.h"
-#include "HTMLTreeBuilder.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
+#include "core/html/parser/HTMLDocumentParser.h"
+#include "core/html/parser/HTMLParserIdioms.h"
+#include "core/html/parser/HTMLTokenizer.h"
+#include "core/html/parser/HTMLTreeBuilder.h"
 
 namespace WebCore {
 

@@ -29,17 +29,17 @@
 
 #include "config.h"
 
-#include "MediaControlElements.h"
+#include "core/html/shadow/MediaControlElements.h"
 
 #include "DOMTokenList.h"
 #include "HTMLVideoElement.h"
-#include "MediaControls.h"
-#include "TextTrack.h"
-#include "TextTrackList.h"
 #include "core/dom/EventNames.h"
 #include "core/dom/EventTarget.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/MouseEvent.h"
+#include "core/html/shadow/MediaControls.h"
+#include "core/html/track/TextTrack.h"
+#include "core/html/track/TextTrackList.h"
 #include "core/page/CaptionUserPreferences.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

@@ -33,7 +33,7 @@
 #include "core/rendering/RenderInputSpeech.h"
 
 #include "HTMLNames.h"
-#include "TextControlInnerElements.h"
+#include "core/html/shadow/TextControlInnerElements.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderBox.h"

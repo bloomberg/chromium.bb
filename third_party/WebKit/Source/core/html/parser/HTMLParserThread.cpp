@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "HTMLParserThread.h"
+#include "core/html/parser/HTMLParserThread.h"
 
 namespace WebCore {
 

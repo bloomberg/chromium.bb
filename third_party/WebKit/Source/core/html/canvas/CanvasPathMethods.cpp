@@ -33,7 +33,7 @@
  */
 
 #include "config.h"
-#include "CanvasPathMethods.h"
+#include "core/html/canvas/CanvasPathMethods.h"
 
 #include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"

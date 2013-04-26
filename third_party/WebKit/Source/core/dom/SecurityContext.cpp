@@ -27,8 +27,8 @@
 #include "config.h"
 #include "core/dom/SecurityContext.h"
 
-#include "HTMLParserIdioms.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/SecurityOrigin.h"
 #include <wtf/text/StringBuilder.h>

@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "HTMLEntitySearch.h"
+#include "core/html/parser/HTMLEntitySearch.h"
 
-#include "HTMLEntityTable.h"
+#include "core/html/parser/HTMLEntityTable.h"
 
 namespace WebCore {
 

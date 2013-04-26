@@ -30,11 +30,6 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "CanvasContextAttributes.h"
-#include "CanvasGradient.h"
-#include "CanvasPattern.h"
-#include "CanvasRenderingContext2D.h"
-#include "CanvasStyle.h"
 #include "HTMLNames.h"
 #include "ImageData.h"
 #include "ScriptController.h"
@@ -42,6 +37,11 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/canvas/CanvasContextAttributes.h"
+#include "core/html/canvas/CanvasGradient.h"
+#include "core/html/canvas/CanvasPattern.h"
+#include "core/html/canvas/CanvasRenderingContext2D.h"
+#include "core/html/canvas/CanvasStyle.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
@@ -51,8 +51,8 @@
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderHTMLCanvas.h"
 
-#include "WebGLContextAttributes.h"
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLContextAttributes.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 
 #include <public/Platform.h>
 

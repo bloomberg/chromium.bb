@@ -28,8 +28,8 @@
 #include "core/loader/TextTrackLoader.h"
 
 #include "ScriptCallStack.h"
-#include "WebVTTParser.h"
 #include "core/dom/Document.h"
+#include "core/html/track/WebVTTParser.h"
 #include "core/loader/CrossOriginAccessControl.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

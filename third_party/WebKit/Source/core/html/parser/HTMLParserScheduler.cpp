@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "HTMLParserScheduler.h"
+#include "core/html/parser/HTMLParserScheduler.h"
 
-#include "HTMLDocumentParser.h"
 #include "core/dom/Document.h"
+#include "core/html/parser/HTMLDocumentParser.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 

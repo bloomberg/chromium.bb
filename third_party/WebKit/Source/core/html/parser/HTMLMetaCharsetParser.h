@@ -26,7 +26,7 @@
 #ifndef HTMLMetaCharsetParser_h
 #define HTMLMetaCharsetParser_h
 
-#include "HTMLToken.h"
+#include "core/html/parser/HTMLToken.h"
 #include "core/platform/text/SegmentedString.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/Noncopyable.h>

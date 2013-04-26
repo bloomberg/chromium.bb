@@ -28,9 +28,9 @@
 #include "HTMLImageLoader.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
 #include "core/dom/MouseEvent.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderImage.h"
 #include <wtf/PassOwnPtr.h>

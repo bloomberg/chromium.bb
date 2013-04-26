@@ -28,7 +28,7 @@
 #ifndef RenderMediaControlElements_h
 #define RenderMediaControlElements_h
 
-#include "MediaControlElements.h"
+#include "core/html/shadow/MediaControlElements.h"
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderFlexibleBox.h"
 

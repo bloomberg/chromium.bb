@@ -26,8 +26,8 @@
 #ifndef CanvasRenderingContext2D_h
 #define CanvasRenderingContext2D_h
 
-#include "CanvasPathMethods.h"
-#include "CanvasRenderingContext.h"
+#include "core/html/canvas/CanvasPathMethods.h"
+#include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/platform/graphics/Color.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/DashArray.h"

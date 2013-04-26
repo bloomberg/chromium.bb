@@ -26,7 +26,7 @@
 
 #include "config.h"
 
-#include "MediaControls.h"
+#include "core/html/shadow/MediaControls.h"
 
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/page/Settings.h"

@@ -27,8 +27,8 @@
 #define HTMLTrackElement_h
 
 #include "HTMLElement.h"
-#include "LoadableTextTrack.h"
-#include "TextTrack.h"
+#include "core/html/track/LoadableTextTrack.h"
+#include "core/html/track/TextTrack.h"
 
 namespace WebCore {
 

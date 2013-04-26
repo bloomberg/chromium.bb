@@ -27,8 +27,8 @@
 #define DateTimeFieldElements_h
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeNumericFieldElement.h"
-#include "DateTimeSymbolicFieldElement.h"
+#include "core/html/shadow/DateTimeNumericFieldElement.h"
+#include "core/html/shadow/DateTimeSymbolicFieldElement.h"
 
 namespace WebCore {
 

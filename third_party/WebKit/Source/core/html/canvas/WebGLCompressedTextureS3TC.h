@@ -26,8 +26,8 @@
 #ifndef WebGLCompressedTextureS3TC_h
 #define WebGLCompressedTextureS3TC_h
 
-#include "WebGLExtension.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

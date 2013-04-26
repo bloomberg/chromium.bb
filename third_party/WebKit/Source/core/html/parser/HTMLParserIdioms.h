@@ -25,8 +25,8 @@
 #ifndef HTMLParserIdioms_h
 #define HTMLParserIdioms_h
 
-#include "HTMLIdentifier.h"
 #include "core/dom/QualifiedName.h"
+#include "core/html/parser/HTMLIdentifier.h"
 #include <wtf/Forward.h>
 #include <wtf/text/WTFString.h>
 #include <wtf/unicode/Unicode.h>

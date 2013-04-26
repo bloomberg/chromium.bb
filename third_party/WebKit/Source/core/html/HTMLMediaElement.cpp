@@ -34,7 +34,6 @@
 #include "HTMLSourceElement.h"
 #include "HTMLVideoElement.h"
 #include "MediaController.h"
-#include "MediaControls.h"
 #include "MediaDocument.h"
 #include "MediaError.h"
 #include "MediaFragmentURIParser.h"
@@ -59,6 +58,7 @@
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/WebCoreMemoryInstrumentation.h"
+#include "core/html/shadow/MediaControls.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
@@ -90,9 +90,9 @@
 #include <wtf/Uint8Array.h>
 
 #include "HTMLTrackElement.h"
-#include "InbandTextTrack.h"
-#include "TextTrackCueList.h"
-#include "TextTrackList.h"
+#include "core/html/track/InbandTextTrack.h"
+#include "core/html/track/TextTrackCueList.h"
+#include "core/html/track/TextTrackList.h"
 #include "core/page/CaptionUserPreferences.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"

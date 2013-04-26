@@ -31,7 +31,7 @@
 #ifndef ContentDistributor_h
 #define ContentDistributor_h
 
-#include "SelectRuleFeatureSet.h"
+#include "core/html/shadow/SelectRuleFeatureSet.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/RefCounted.h>

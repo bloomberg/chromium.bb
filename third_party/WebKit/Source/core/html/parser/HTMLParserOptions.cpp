@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLParserOptions.h"
+#include "core/html/parser/HTMLParserOptions.h"
 
 #include "ScriptController.h"
 #include "core/dom/Document.h"

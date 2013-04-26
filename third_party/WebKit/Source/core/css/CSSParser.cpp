@@ -29,7 +29,6 @@
 
 #include <limits.h>
 #include "CSSValueKeywords.h"
-#include "HTMLParserIdioms.h"
 #include "SVGParserUtilities.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSBasicShapes.h"
@@ -75,6 +74,7 @@
 #include "core/css/WebKitCSSRegionRule.h"
 #include "core/css/WebKitCSSTransformValue.h"
 #include "core/dom/Document.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Page.h"
 #include "core/page/PageConsole.h"
 #include "core/page/RuntimeEnabledFeatures.h"

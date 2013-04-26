@@ -30,7 +30,7 @@
 
 #include "config.h"
 
-#include "WebVTTTokenizer.h"
+#include "core/html/track/WebVTTTokenizer.h"
 
 #include "core/xml/parser/MarkupTokenizerInlines.h"
 

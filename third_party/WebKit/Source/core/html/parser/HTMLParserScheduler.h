@@ -27,7 +27,7 @@
 #define HTMLParserScheduler_h
 
 #include <limits.h>
-#include "NestingLevelIncrementer.h"
+#include "core/html/parser/NestingLevelIncrementer.h"
 #include "core/platform/Timer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/PassOwnPtr.h>

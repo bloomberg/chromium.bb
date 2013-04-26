@@ -25,7 +25,7 @@
 
 #include "config.h"
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeFieldElement.h"
+#include "core/html/shadow/DateTimeFieldElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/KeyboardEvent.h"

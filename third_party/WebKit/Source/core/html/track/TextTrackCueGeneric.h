@@ -26,7 +26,7 @@
 #ifndef TextTrackCueGeneric_h
 #define TextTrackCueGeneric_h
 
-#include "TextTrackCue.h"
+#include "core/html/track/TextTrackCue.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/RefCounted.h>
 

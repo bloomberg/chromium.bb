@@ -52,10 +52,6 @@
       '<(bindings_dir)/v8',
       '<(bindings_dir)/v8/custom',
       '../html',
-      '../html/canvas',
-      '../html/parser',
-      '../html/shadow',
-      '../html/track',
       '../inspector',
       '../platform/graphics/skia',
       '../plugins',
@@ -331,6 +327,7 @@
         # FIXME: Remove these once the bindings script generates qualified
         # includes for these correctly. (Sequences don't work yet.)
         '../dom',
+        '../html/shadow',
         '../page',
       ],
       'sources': [

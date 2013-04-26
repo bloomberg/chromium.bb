@@ -32,10 +32,10 @@
 
 #if ENABLE(WEBVTT_REGIONS)
 
-#include "TextTrackRegion.h"
+#include "core/html/track/TextTrackRegion.h"
 
-#include "WebVTTParser.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/html/track/WebVTTParser.h"
 #include "core/platform/Logging.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>

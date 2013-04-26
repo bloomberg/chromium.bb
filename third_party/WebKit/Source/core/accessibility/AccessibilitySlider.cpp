@@ -30,8 +30,8 @@
 #include "core/accessibility/AccessibilitySlider.h"
 
 #include "HTMLInputElement.h"
-#include "SliderThumbElement.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/html/shadow/SliderThumbElement.h"
 
 namespace WebCore {
     

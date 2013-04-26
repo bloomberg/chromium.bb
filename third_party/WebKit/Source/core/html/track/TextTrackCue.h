@@ -34,8 +34,8 @@
 
 #include "HTMLDivElement.h"
 #include "HTMLElement.h"
-#include "TextTrack.h"
 #include "core/dom/EventTarget.h"
+#include "core/html/track/TextTrack.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 

@@ -25,9 +25,9 @@
 
 #include "config.h"
 
-#include "WebGLVertexArrayObjectOES.h"
+#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 #include "core/platform/graphics/Extensions3D.h"
 
 namespace WebCore {

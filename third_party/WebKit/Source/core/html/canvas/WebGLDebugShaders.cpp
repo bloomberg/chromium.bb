@@ -25,10 +25,10 @@
 
 #include "config.h"
 
-#include "WebGLDebugShaders.h"
+#include "core/html/canvas/WebGLDebugShaders.h"
 
-#include "WebGLRenderingContext.h"
-#include "WebGLShader.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLShader.h"
 #include "core/platform/graphics/Extensions3D.h"
 
 #include <wtf/OwnArrayPtr.h>

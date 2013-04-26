@@ -29,7 +29,6 @@
 #include "ContentSearchUtils.h"
 #include "HTMLHeadElement.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "InspectorCSSAgent.h"
 #include "InspectorPageAgent.h"
 #include "InspectorValues.h"
@@ -54,6 +53,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/text/RegularExpression.h"
 

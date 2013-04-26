@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/dom/SpaceSplitString.h"
 
-#include "HTMLParserIdioms.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/AtomicStringHash.h>

@@ -28,12 +28,12 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "HTMLTableElement.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/StylePropertySet.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 
 namespace WebCore {
 

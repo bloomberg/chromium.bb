@@ -25,9 +25,9 @@
 
 #include "config.h"
 
-#include "WebGLDebugRendererInfo.h"
+#include "core/html/canvas/WebGLDebugRendererInfo.h"
 
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 
 namespace WebCore {
 

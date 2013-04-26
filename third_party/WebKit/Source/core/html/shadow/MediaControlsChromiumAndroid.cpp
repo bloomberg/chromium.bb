@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "MediaControlsChromiumAndroid.h"
+#include "core/html/shadow/MediaControlsChromiumAndroid.h"
 
 namespace WebCore {
 

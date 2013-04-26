@@ -25,7 +25,7 @@
 
 #include "config.h"
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
-#include "DateTimeNumericFieldElement.h"
+#include "core/html/shadow/DateTimeNumericFieldElement.h"
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"

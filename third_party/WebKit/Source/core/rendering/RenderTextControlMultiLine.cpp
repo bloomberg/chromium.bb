@@ -24,8 +24,8 @@
 
 #include "HTMLNames.h"
 #include "HTMLTextAreaElement.h"
-#include "TextControlInnerElements.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/shadow/TextControlInnerElements.h"
 #include "core/page/Frame.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/style/StyleInheritedData.h"

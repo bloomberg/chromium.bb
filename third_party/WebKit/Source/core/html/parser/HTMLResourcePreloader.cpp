@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "HTMLResourcePreloader.h"
+#include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
 #include "core/loader/cache/CachedResourceLoader.h"

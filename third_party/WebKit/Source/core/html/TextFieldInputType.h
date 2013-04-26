@@ -32,8 +32,8 @@
 #define TextFieldInputType_h
 
 #include "InputType.h"
-#include "SpinButtonElement.h"
-#include "TextControlInnerElements.h"
+#include "core/html/shadow/SpinButtonElement.h"
+#include "core/html/shadow/TextControlInnerElements.h"
 
 namespace WebCore {
 

@@ -26,8 +26,8 @@
 #ifndef TrackEvent_h
 #define TrackEvent_h
 
-#include "TrackBase.h"
 #include "core/dom/Event.h"
+#include "core/html/track/TrackBase.h"
 
 namespace WebCore {
 

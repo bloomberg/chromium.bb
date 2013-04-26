@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "InsertionPoint.h"
+#include "core/html/shadow/InsertionPoint.h"
 
 #include "HTMLNames.h"
 #include "core/dom/ElementShadow.h"

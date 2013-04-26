@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/dom/EventPathWalker.h"
 
-#include "ContentDistributor.h"
-#include "InsertionPoint.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/html/shadow/ContentDistributor.h"
+#include "core/html/shadow/InsertionPoint.h"
 
 namespace WebCore {
 

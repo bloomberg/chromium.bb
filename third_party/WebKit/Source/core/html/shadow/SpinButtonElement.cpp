@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "SpinButtonElement.h"
+#include "core/html/shadow/SpinButtonElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/EventNames.h"

@@ -25,12 +25,12 @@
 #include "HTMLFrameElementBase.h"
 
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "ScriptController.h"
 #include "ScriptEventListener.h"
 #include "core/dom/Attribute.h"
 #include "core/dom/Document.h"
 #include "core/dom/EventNames.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"

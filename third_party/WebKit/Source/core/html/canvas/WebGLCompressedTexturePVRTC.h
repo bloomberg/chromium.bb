@@ -26,7 +26,7 @@
 #ifndef WebGLCompressedTexturePVRTC_h
 #define WebGLCompressedTexturePVRTC_h
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

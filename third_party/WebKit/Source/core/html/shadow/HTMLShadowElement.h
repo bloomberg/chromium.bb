@@ -31,7 +31,7 @@
 #ifndef HTMLShadowElement_h
 #define HTMLShadowElement_h
 
-#include "InsertionPoint.h"
+#include "core/html/shadow/InsertionPoint.h"
 #include <wtf/Forward.h>
 
 namespace WebCore {

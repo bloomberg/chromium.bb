@@ -26,7 +26,7 @@
 #ifndef WebGLBuffer_h
 #define WebGLBuffer_h
 
-#include "WebGLSharedObject.h"
+#include "core/html/canvas/WebGLSharedObject.h"
 
 #include <wtf/ArrayBuffer.h>
 #include <wtf/Forward.h>

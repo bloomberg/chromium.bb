@@ -31,8 +31,8 @@
 #ifndef WebVTTTokenizer_h
 #define WebVTTTokenizer_h
 
-#include "InputStreamPreprocessor.h"
-#include "WebVTTToken.h"
+#include "core/html/parser/InputStreamPreprocessor.h"
+#include "core/html/track/WebVTTToken.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

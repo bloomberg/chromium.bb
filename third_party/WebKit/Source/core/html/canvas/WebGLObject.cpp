@@ -25,18 +25,18 @@
 
 #include "config.h"
 
-#include "WebGLObject.h"
+#include "core/html/canvas/WebGLObject.h"
 
-#include "EXTTextureFilterAnisotropic.h"
-#include "OESStandardDerivatives.h"
-#include "OESTextureFloat.h"
-#include "OESVertexArrayObject.h"
-#include "WebGLCompressedTextureS3TC.h"
-#include "WebGLContextGroup.h"
-#include "WebGLDebugRendererInfo.h"
-#include "WebGLDebugShaders.h"
-#include "WebGLLoseContext.h"
-#include "WebGLRenderingContext.h"
+#include "core/html/canvas/EXTTextureFilterAnisotropic.h"
+#include "core/html/canvas/OESStandardDerivatives.h"
+#include "core/html/canvas/OESTextureFloat.h"
+#include "core/html/canvas/OESVertexArrayObject.h"
+#include "core/html/canvas/WebGLCompressedTextureS3TC.h"
+#include "core/html/canvas/WebGLContextGroup.h"
+#include "core/html/canvas/WebGLDebugRendererInfo.h"
+#include "core/html/canvas/WebGLDebugShaders.h"
+#include "core/html/canvas/WebGLLoseContext.h"
+#include "core/html/canvas/WebGLRenderingContext.h"
 
 namespace WebCore {
 

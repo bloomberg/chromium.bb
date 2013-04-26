@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "EXTDrawBuffers.h"
+#include "core/html/canvas/EXTDrawBuffers.h"
 
 #include "core/platform/graphics/Extensions3D.h"
 

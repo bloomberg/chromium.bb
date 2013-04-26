@@ -28,7 +28,6 @@
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "HTMLTableCaptionElement.h"
 #include "HTMLTableRowElement.h"
 #include "HTMLTableRowsCollection.h"
@@ -41,6 +40,7 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/Text.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTable.h"
 
 namespace WebCore {

@@ -26,7 +26,7 @@
 #ifndef CaptionUserPreferences_h
 #define CaptionUserPreferences_h
 
-#include "TextTrack.h"
+#include "core/html/track/TextTrack.h"
 #include "core/platform/Language.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/Timer.h"

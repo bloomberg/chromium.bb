@@ -160,9 +160,9 @@ sub AddIncludesForType
     # additional includes (things needed to compile the bindings but not the header)
 
     if ($type eq "CanvasRenderingContext2D") {
-        AddToImplIncludes("CanvasGradient.h");
-        AddToImplIncludes("CanvasPattern.h");
-        AddToImplIncludes("CanvasStyle.h");
+        AddToImplIncludes("core/html/canvas/CanvasGradient.h");
+        AddToImplIncludes("core/html/canvas/CanvasPattern.h");
+        AddToImplIncludes("core/html/canvas/CanvasStyle.h");
     }
 
     if ($type eq "CanvasGradient" or $type eq "XPathNSResolver") {

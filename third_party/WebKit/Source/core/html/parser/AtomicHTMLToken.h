@@ -26,9 +26,9 @@
 #ifndef AtomicHTMLToken_h
 #define AtomicHTMLToken_h
 
-#include "CompactHTMLToken.h"
-#include "HTMLToken.h"
 #include "core/dom/Attribute.h"
+#include "core/html/parser/CompactHTMLToken.h"
+#include "core/html/parser/HTMLToken.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 

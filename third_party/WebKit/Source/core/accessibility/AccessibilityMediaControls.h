@@ -30,8 +30,8 @@
 #ifndef AccessibilityMediaControls_h
 #define AccessibilityMediaControls_h
 
-#include "MediaControlElements.h"
 #include "core/accessibility/AccessibilitySlider.h"
+#include "core/html/shadow/MediaControlElements.h"
 
 namespace WebCore {
 

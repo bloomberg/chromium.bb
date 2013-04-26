@@ -26,15 +26,15 @@
 #ifndef BackgroundHTMLParser_h
 #define BackgroundHTMLParser_h
 
-#include "BackgroundHTMLInputStream.h"
-#include "CompactHTMLToken.h"
-#include "HTMLParserOptions.h"
-#include "HTMLPreloadScanner.h"
-#include "HTMLSourceTracker.h"
-#include "HTMLToken.h"
-#include "HTMLTokenizer.h"
-#include "HTMLTreeBuilderSimulator.h"
-#include "XSSAuditorDelegate.h"
+#include "core/html/parser/BackgroundHTMLInputStream.h"
+#include "core/html/parser/CompactHTMLToken.h"
+#include "core/html/parser/HTMLParserOptions.h"
+#include "core/html/parser/HTMLPreloadScanner.h"
+#include "core/html/parser/HTMLSourceTracker.h"
+#include "core/html/parser/HTMLToken.h"
+#include "core/html/parser/HTMLTokenizer.h"
+#include "core/html/parser/HTMLTreeBuilderSimulator.h"
+#include "core/html/parser/XSSAuditorDelegate.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

@@ -21,13 +21,13 @@
 #include "config.h"
 #include "HTMLDetailsElement.h"
 
-#include "HTMLContentElement.h"
 #include "HTMLNames.h"
 #include "HTMLSummaryElement.h"
 #include "core/dom/MouseEvent.h"
 #include "core/dom/NodeRenderingContext.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/Text.h"
+#include "core/html/shadow/HTMLContentElement.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/rendering/RenderBlock.h"
 

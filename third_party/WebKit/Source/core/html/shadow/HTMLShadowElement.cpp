@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "HTMLShadowElement.h"
+#include "core/html/shadow/HTMLShadowElement.h"
 
 #include "HTMLNames.h"
 #include "core/dom/ShadowRoot.h"

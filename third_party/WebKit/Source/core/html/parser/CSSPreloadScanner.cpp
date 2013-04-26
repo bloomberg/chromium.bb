@@ -26,10 +26,10 @@
  */
 
 #include "config.h"
-#include "CSSPreloadScanner.h"
+#include "core/html/parser/CSSPreloadScanner.h"
 
-#include "HTMLIdentifier.h"
-#include "HTMLParserIdioms.h"
+#include "core/html/parser/HTMLIdentifier.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
 
 namespace WebCore {

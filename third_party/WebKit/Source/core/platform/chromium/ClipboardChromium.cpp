@@ -28,7 +28,6 @@
 #include "core/platform/chromium/ClipboardChromium.h"
 
 #include "HTMLNames.h"
-#include "HTMLParserIdioms.h"
 #include "core/dom/DataTransferItemList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -40,6 +39,7 @@
 #include "core/editing/markup.h"
 #include "core/fileapi/File.h"
 #include "core/fileapi/FileList.h"
+#include "core/html/parser/HTMLParserIdioms.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"
 #include "core/platform/DragData.h"

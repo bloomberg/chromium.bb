@@ -26,14 +26,14 @@
 
 #include "config.h"
 
-#include "WebGLGetInfo.h"
+#include "core/html/canvas/WebGLGetInfo.h"
 
-#include "WebGLBuffer.h"
-#include "WebGLFramebuffer.h"
-#include "WebGLProgram.h"
-#include "WebGLRenderbuffer.h"
-#include "WebGLTexture.h"
-#include "WebGLVertexArrayObjectOES.h"
+#include "core/html/canvas/WebGLBuffer.h"
+#include "core/html/canvas/WebGLFramebuffer.h"
+#include "core/html/canvas/WebGLProgram.h"
+#include "core/html/canvas/WebGLRenderbuffer.h"
+#include "core/html/canvas/WebGLTexture.h"
+#include "core/html/canvas/WebGLVertexArrayObjectOES.h"
 #include <wtf/Float32Array.h>
 #include <wtf/Int32Array.h>
 #include <wtf/Uint32Array.h>

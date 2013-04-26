@@ -26,7 +26,7 @@
 #ifndef WebGLSharedObject_h
 #define WebGLSharedObject_h
 
-#include "WebGLObject.h"
+#include "core/html/canvas/WebGLObject.h"
 
 namespace WebCore {
 

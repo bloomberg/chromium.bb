@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "WebGLExtension.h"
+#include "core/html/canvas/WebGLExtension.h"
 
 namespace WebCore {
 
