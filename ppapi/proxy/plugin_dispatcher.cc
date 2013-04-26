@@ -20,6 +20,7 @@
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/interface_list.h"
 #include "ppapi/proxy/interface_proxy.h"
+#include "ppapi/proxy/plugin_globals.h"
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/plugin_resource_tracker.h"
 #include "ppapi/proxy/plugin_var_serialization_rules.h"
@@ -77,6 +78,8 @@ PluginDispatcher::PluginDispatcher(PP_GetInterface_Func get_interface,
 }
 
 PluginDispatcher::~PluginDispatcher() {
+  PluginGlobals::Get()->plugin_var_tracker()->DidDeleteDispatcher(this);
+
   if (plugin_delegate_)
     plugin_delegate_->Unregister(plugin_dispatcher_id_);
 

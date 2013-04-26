@@ -39,6 +39,8 @@ class PPAPI_PROXY_EXPORT ProxyObjectVar : public Var {
   // it's creating IDs.
   void AssignVarID(int32 id);
 
+  void clear_dispatcher() { dispatcher_ = NULL; }
+
  private:
   proxy::PluginDispatcher* dispatcher_;
   int32 host_var_id_;

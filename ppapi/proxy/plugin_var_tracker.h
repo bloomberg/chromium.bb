@@ -59,7 +59,7 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
                          const PP_Var& host_object);
 
   // VarTracker public overrides.
-  void DidDeleteInstance(PP_Instance instance) OVERRIDE;
+  virtual void DidDeleteInstance(PP_Instance instance) OVERRIDE;
   virtual int TrackSharedMemoryHandle(PP_Instance instance,
                                       base::SharedMemoryHandle file,
                                       uint32 size_in_bytes) OVERRIDE;
@@ -86,6 +86,8 @@ class PPAPI_PROXY_EXPORT PluginVarTracker : public VarTracker {
   // living plugin object.
   bool ValidatePluginObjectCall(const PPP_Class_Deprecated* ppp_class,
                                 void* user_data);
+
+  void DidDeleteDispatcher(PluginDispatcher* dispatcher);
 
  private:
   // VarTracker protected overrides.

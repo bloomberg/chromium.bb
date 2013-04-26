@@ -19,11 +19,11 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
+#include "ppapi/shared_impl/var.h"
 
 namespace ppapi {
 
 class ArrayBufferVar;
-class Var;
 
 // Tracks non-POD (refcounted) var objects held by a plugin.
 //
@@ -121,7 +121,7 @@ class PPAPI_SHARED_EXPORT VarTracker {
       uint32* size_in_bytes) = 0;
 
  protected:
-  struct VarInfo {
+  struct PPAPI_SHARED_EXPORT VarInfo {
     VarInfo();
     VarInfo(Var* v, int input_ref_count);
 

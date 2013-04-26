@@ -188,6 +188,16 @@ void PluginVarTracker::DidDeleteInstance(PP_Instance instance) {
   }
 }
 
+void PluginVarTracker::DidDeleteDispatcher(PluginDispatcher* dispatcher) {
+  for (size_t i = 0; i < live_vars_.size(); ++i) {
+    if (live_vars_[i].var.get() == NULL)
+      continue;
+    ProxyObjectVar* object = live_vars_[i].var->AsProxyObjectVar();
+    if (object && object->dispatcher() == dispatcher)
+      object->clear_dispatcher();
+  }
+}
+
 ArrayBufferVar* PluginVarTracker::CreateArrayBuffer(uint32 size_in_bytes) {
   return new PluginArrayBufferVar(size_in_bytes);
 }
@@ -340,14 +350,18 @@ PP_Var PluginVarTracker::GetOrCreateObjectVarID(ProxyObjectVar* object) {
 void PluginVarTracker::SendAddRefObjectMsg(
     const ProxyObjectVar& proxy_object) {
   int unused;
-  proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_AddRefObject(
-      API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id(), &unused));
+  if (proxy_object.dispatcher()) {
+    proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_AddRefObject(
+        API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id(), &unused));
+  }
 }
 
 void PluginVarTracker::SendReleaseObjectMsg(
     const ProxyObjectVar& proxy_object) {
-  proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_ReleaseObject(
-      API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id()));
+  if (proxy_object.dispatcher()) {
+    proxy_object.dispatcher()->Send(new PpapiHostMsg_PPBVar_ReleaseObject(
+        API_ID_PPB_VAR_DEPRECATED, proxy_object.host_var_id()));
+  }
 }
 
 scoped_refptr<ProxyObjectVar> PluginVarTracker::FindOrMakePluginVarFromHostVar(
