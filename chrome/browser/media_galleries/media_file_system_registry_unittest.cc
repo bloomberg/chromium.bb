@@ -736,7 +736,6 @@ void MediaFileSystemRegistryTest::SetUp() {
       new test::TestPortableDeviceWatcherWin;
   test::TestVolumeMountWatcherWin* mount_watcher =
       new test::TestVolumeMountWatcherWin;
-  mount_watcher->SetAttachedDevicesFake();
   portable_device_watcher->set_use_dummy_mtp_storage_info(true);
   monitor_.reset(new test::TestStorageMonitorWin(
       mount_watcher, portable_device_watcher));

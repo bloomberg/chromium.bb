@@ -185,11 +185,10 @@ void StorageMonitorWinTest::DoMassStorageDevicesDetachedTest(
   for (DeviceIndices::const_iterator it = device_indices.begin();
        it != device_indices.end(); ++it) {
     volume_broadcast.dbcv_unitmask |= 0x1 << *it;
-    bool removable;
+    StorageInfo info;
     ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-        VolumeMountWatcherWin::DriveNumberToFilePath(*it), NULL, NULL,
-        NULL, &removable, NULL));
-    if (removable)
+        VolumeMountWatcherWin::DriveNumberToFilePath(*it), &info));
+    if (MediaStorageUtil::IsRemovableDevice(info.device_id))
       expect_detach_calls++;
   }
   monitor_->InjectDeviceChange(DBT_DEVICEREMOVECOMPLETE,
@@ -267,18 +266,14 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
   device_indices.push_back(13);  // N
   DoMassStorageDeviceAttachedTest(device_indices);
 
-  string16 location;
-  std::string unique_id;
-  string16 name;
-  bool removable;
-  EXPECT_TRUE(monitor_->volume_mount_watcher()->GetDeviceInfo(
-      base::FilePath(ASCIIToUTF16("F:\\")),
-      &location, &unique_id, &name, &removable, NULL));
-  EXPECT_EQ(ASCIIToUTF16("F:\\"), location);
-  EXPECT_EQ("\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\", unique_id);
-  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), name);
-
   StorageInfo info;
+  EXPECT_TRUE(monitor_->volume_mount_watcher()->GetDeviceInfo(
+      base::FilePath(ASCIIToUTF16("F:\\")), &info));
+  EXPECT_EQ(ASCIIToUTF16("F:\\"), info.location);
+  EXPECT_EQ("dcim:\\\\?\\Volume{F0000000-0000-0000-0000-000000000000}\\",
+            info.device_id);
+  EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
+
   EXPECT_FALSE(monitor_->GetStorageInfoForPath(
       base::FilePath(ASCIIToUTF16("G:\\")), &info));
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(
@@ -292,6 +287,45 @@ TEST_F(StorageMonitorWinTest, DevicesAttached) {
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info.name);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info1.name);
   EXPECT_EQ(ASCIIToUTF16("F:\\ Drive"), info2.name);
+}
+
+TEST_F(StorageMonitorWinTest, PathMountDevices) {
+  PreAttachDevices();
+
+  volume_mount_watcher_->AddDeviceForTesting(
+      base::FilePath(FILE_PATH_LITERAL("F:\\mount1")),
+      "dcim:mount1", L"mount1", 100);
+  volume_mount_watcher_->AddDeviceForTesting(
+      base::FilePath(FILE_PATH_LITERAL("F:\\mount1\\subdir")),
+      "dcim:mount1subdir", L"mount1subdir", 100);
+  volume_mount_watcher_->AddDeviceForTesting(
+      base::FilePath(FILE_PATH_LITERAL("F:\\mount2")),
+      "dcim:mount2", L"mount2", 100);
+  RunUntilIdle();
+  EXPECT_EQ(9, monitor_->GetAttachedStorage().size());
+
+  StorageInfo info;
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\dir")), &info));
+  EXPECT_EQ(L"F:\\ Drive", info.name);
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\mount1")), &info));
+  EXPECT_EQ(L"mount1", info.name);
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\mount1\\dir")), &info));
+  EXPECT_EQ(L"mount1", info.name);
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\mount2\\dir")), &info));
+  EXPECT_EQ(L"mount2", info.name);
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\mount1\\subdir")), &info));
+  EXPECT_EQ(L"mount1subdir", info.name);
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\mount1\\subdir\\dir")), &info));
+  EXPECT_EQ(L"mount1subdir", info.name);
+  EXPECT_TRUE(monitor_->GetStorageInfoForPath(
+      base::FilePath(ASCIIToUTF16("F:\\mount1\\subdir\\dir\\dir")), &info));
+  EXPECT_EQ(L"mount1subdir", info.name);
 }
 
 TEST_F(StorageMonitorWinTest, DevicesAttachedHighBoundary) {
@@ -361,6 +395,12 @@ TEST_F(StorageMonitorWinTest, DevicesDetachedAdjacentBits) {
 }
 
 TEST_F(StorageMonitorWinTest, DuplicateAttachCheckSuppressed) {
+  // Make sure the original C: mount notification makes it all the
+  // way through.
+  RunUntilIdle();
+  volume_mount_watcher_->FlushWorkerPoolForTesting();
+  RunUntilIdle();
+
   volume_mount_watcher_->BlockDeviceCheckForTesting();
   base::FilePath kAttachedDevicePath =
       VolumeMountWatcherWin::DriveNumberToFilePath(8);  // I:
@@ -424,34 +464,24 @@ TEST_F(StorageMonitorWinTest, DeviceInfoForPath) {
   StorageInfo device_info;
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(removable_device, &device_info));
 
-  std::string unique_id;
-  string16 device_name;
-  string16 location;
-  bool removable;
-  uint64 total_size_in_bytes;
-  ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-      removable_device, &location, &unique_id, &device_name, &removable,
-      &total_size_in_bytes));
-  EXPECT_TRUE(removable);
-  std::string device_id = MediaStorageUtil::MakeDeviceId(
-      MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM, unique_id);
-  EXPECT_EQ(device_id, device_info.device_id);
-  EXPECT_EQ(device_name, device_info.name);
-  EXPECT_EQ(removable_device.value(), device_info.location);
-  EXPECT_EQ(1000000, total_size_in_bytes);
+  StorageInfo info;
+  ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(removable_device, &info));
+  EXPECT_TRUE(MediaStorageUtil::IsRemovableDevice(info.device_id));
+  EXPECT_EQ(info.device_id, device_info.device_id);
+  EXPECT_EQ(info.name, device_info.name);
+  EXPECT_EQ(info.location, device_info.location);
+  EXPECT_EQ(1000000, info.total_size_in_bytes);
 
   // A fixed device.
   base::FilePath fixed_device(L"N:\\");
   EXPECT_TRUE(monitor_->GetStorageInfoForPath(fixed_device, &device_info));
 
   ASSERT_TRUE(volume_mount_watcher_->GetDeviceInfo(
-      fixed_device, &location, &unique_id, &device_name, &removable, NULL));
-  EXPECT_FALSE(removable);
-  device_id = MediaStorageUtil::MakeDeviceId(
-      MediaStorageUtil::FIXED_MASS_STORAGE, unique_id);
-  EXPECT_EQ(device_id, device_info.device_id);
-  EXPECT_EQ(device_name, device_info.name);
-  EXPECT_EQ(fixed_device.value(), device_info.location);
+      fixed_device, &info));
+  EXPECT_FALSE(MediaStorageUtil::IsRemovableDevice(info.device_id));
+  EXPECT_EQ(info.device_id, device_info.device_id);
+  EXPECT_EQ(info.name, device_info.name);
+  EXPECT_EQ(info.location, device_info.location);
 }
 
 // Test to verify basic MTP storage attach and detach notifications.

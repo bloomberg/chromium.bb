@@ -9,14 +9,16 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/storage_monitor/media_storage_util.h"
 
 namespace chrome {
 namespace test {
 
 namespace {
 
-std::vector<base::FilePath> NoAttachedDevices() {
+std::vector<base::FilePath> FakeGetSingleAttachedDevice() {
   std::vector<base::FilePath> result;
+  result.push_back(VolumeMountWatcherWin::DriveNumberToFilePath(2));  // C
   return result;
 }
 
@@ -37,11 +39,7 @@ std::vector<base::FilePath> FakeGetAttachedDevices() {
 // |device_path| inputs of 'A:\' - 'Z:\' are valid. 'N:\' is not removable.
 // 'C:\' is not removable (so that auto-added paths are correctly handled).
 bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
-                                 string16* device_location,
-                                 std::string* unique_id,
-                                 string16* name,
-                                 bool* removable,
-                                 uint64* total_size_in_bytes) {
+                                 StorageInfo* info) {
   // Truncate to root path.
   base::FilePath path(device_path);
   if (device_path.value().length() > 3) {
@@ -51,20 +49,23 @@ bool GetMassStorageDeviceDetails(const base::FilePath& device_path,
     return false;
   }
 
-  if (device_location)
-    *device_location = path.value();
-  if (total_size_in_bytes)
-    *total_size_in_bytes = 1000000;
-  if (unique_id) {
-    *unique_id = "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
-    (*unique_id)[11] = device_path.value()[0];
+  if (info) {
+    info->location = path.value();
+    info->total_size_in_bytes = 1000000;
+
+    std::string unique_id =
+        "\\\\?\\Volume{00000000-0000-0000-0000-000000000000}\\";
+    unique_id[11] = device_path.value()[0];
+    chrome::MediaStorageUtil::Type type =
+        chrome::MediaStorageUtil::FIXED_MASS_STORAGE;
+    if (path.value() != ASCIIToUTF16("N:\\") &&
+        path.value() != ASCIIToUTF16("C:\\")) {
+      type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
+    }
+    info->device_id = chrome::MediaStorageUtil::MakeDeviceId(type, unique_id);
+    info->name = path.Append(L" Drive").LossyDisplayName();
   }
-  if (name)
-    *name = path.Append(L" Drive").LossyDisplayName();
-  if (removable) {
-    *removable = (path.value() != ASCIIToUTF16("N:\\") &&
-                  path.value() != ASCIIToUTF16("C:\\"));
-  }
+
   return true;
 }
 
@@ -81,16 +82,12 @@ TestVolumeMountWatcherWin::~TestVolumeMountWatcherWin() {
 void TestVolumeMountWatcherWin::AddDeviceForTesting(
     const base::FilePath& device_path,
     const std::string& device_id,
-    const std::string& unique_id,
     const string16& device_name,
-    bool removable,
     uint64 total_size_in_bytes) {
-  VolumeMountWatcherWin::MountPointInfo info;
+  StorageInfo info;
   info.device_id = device_id;
   info.location = device_path.value();
-  info.unique_id = unique_id;
   info.name = device_name;
-  info.removable = removable;
   info.total_size_in_bytes = total_size_in_bytes;
   HandleDeviceAttachEventOnUIThread(device_path, info);
 }
@@ -113,6 +110,7 @@ void TestVolumeMountWatcherWin::DeviceCheckComplete(
 
 void TestVolumeMountWatcherWin::BlockDeviceCheckForTesting() {
   device_check_complete_event_.reset(new base::WaitableEvent(false, false));
+  devices_checked_.clear();
 }
 
 void TestVolumeMountWatcherWin::ReleaseDeviceCheck() {
@@ -122,19 +120,23 @@ void TestVolumeMountWatcherWin::ReleaseDeviceCheck() {
 bool TestVolumeMountWatcherWin::GetDeviceRemovable(
     const base::FilePath& device_path,
     bool* removable) const {
-  return GetMassStorageDeviceDetails(
-      device_path, NULL, NULL, NULL, removable, NULL);
+  StorageInfo info;
+  bool success = GetMassStorageDeviceDetails(device_path, &info);
+  *removable = MediaStorageUtil::IsRemovableDevice(info.device_id);
+  return success;
 }
 
 VolumeMountWatcherWin::GetDeviceDetailsCallbackType
-  TestVolumeMountWatcherWin::GetDeviceDetailsCallback() const {
+TestVolumeMountWatcherWin::GetDeviceDetailsCallback() const {
   return base::Bind(&GetMassStorageDeviceDetails);
 }
 
 VolumeMountWatcherWin::GetAttachedDevicesCallbackType
   TestVolumeMountWatcherWin::GetAttachedDevicesCallback() const {
-  return attached_devices_fake_ ?
-      base::Bind(&FakeGetAttachedDevices) : base::Bind(&NoAttachedDevices);
+  if (attached_devices_fake_)
+    return base::Bind(&FakeGetAttachedDevices);
+
+  return base::Bind(&FakeGetSingleAttachedDevice);
 }
 
 void TestVolumeMountWatcherWin::ShutdownWorkerPool() {

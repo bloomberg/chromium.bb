@@ -83,17 +83,12 @@ uint64 GetVolumeSize(const string16& mount_point) {
 }
 
 // Gets mass storage device information given a |device_path|. On success,
-// returns true and fills in |device_location|, |unique_id|, |name|,
-// |removable|, and |total_size_in_bytes|.
+// returns true and fills in |info|.
 // The following msdn blog entry is helpful for understanding disk volumes
 // and how they are treated in Windows:
 // http://blogs.msdn.com/b/adioltean/archive/2005/04/16/408947.aspx.
 bool GetDeviceDetails(const base::FilePath& device_path,
-                      string16* device_location,
-                      std::string* unique_id,
-                      string16* name,
-                      bool* removable,
-                      uint64* total_size_in_bytes) {
+                      chrome::StorageInfo* info) {
   string16 mount_point;
   if (!GetVolumePathName(device_path.value().c_str(),
                          WriteInto(&mount_point, kMaxPathBufLen),
@@ -101,17 +96,10 @@ bool GetDeviceDetails(const base::FilePath& device_path,
     return false;
   }
 
-  DeviceType device_type = GetDeviceType(mount_point);
-  if (removable)
-    *removable = (device_type == REMOVABLE);
-
-  if (device_location)
-    *device_location = mount_point;
-
   // Note: experimentally this code does not spin a floppy drive. It
   // returns a GUID associated with the device, not the volume.
-  if (unique_id) {
-    string16 guid;
+  string16 guid;
+  if (info) {
     if (!GetVolumeNameForVolumeMountPoint(mount_point.c_str(),
                                           WriteInto(&guid, kMaxPathBufLen),
                                           kMaxPathBufLen)) {
@@ -123,37 +111,56 @@ bool GetDeviceDetails(const base::FilePath& device_path,
                                           kMaxPathBufLen)) {
       return false;
     }
-    *unique_id = UTF16ToUTF8(guid);
     VLOG(1) << "guid=" << guid;
   }
 
   // If we're adding a floppy drive, return without querying any more
   // drive metadata -- it will cause the floppy drive to seek.
+  // Note: treats FLOPPY as FIXED_MASS_STORAGE. This is intentional.
+  DeviceType device_type = GetDeviceType(mount_point);
   if (device_type == FLOPPY) {
-    DCHECK(!unique_id || !unique_id->empty());
     VLOG(1) << "Returning floppy";
+    if (info) {
+      info->device_id = chrome::MediaStorageUtil::MakeDeviceId(
+          chrome::MediaStorageUtil::FIXED_MASS_STORAGE, UTF16ToUTF8(guid));
+    }
     return true;
   }
 
-  if (total_size_in_bytes)
-    *total_size_in_bytes = GetVolumeSize(mount_point);
+  if (!info)
+    return true;
 
-  if (name) {
-    // NOTE: experimentally, this function returns false if there is no volume
-    // name set.
-    string16 volume_label;
-    GetVolumeInformationW(device_path.value().c_str(),
-                          WriteInto(&volume_label, kMaxPathBufLen),
-                          kMaxPathBufLen, NULL, NULL, NULL, NULL, 0);
-
-    // TODO(gbillock): if volume_label.empty(), get the vendor/model information
-    // for the volume.
-
-    *name = !volume_label.empty() ? volume_label
-                                  : device_path.LossyDisplayName();
+  chrome::MediaStorageUtil::Type type =
+      chrome::MediaStorageUtil::FIXED_MASS_STORAGE;
+  if (device_type == REMOVABLE) {
+    type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
+    if (chrome::MediaStorageUtil::HasDcim(base::FilePath(mount_point)))
+       type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
   }
 
-  DCHECK(!unique_id || !unique_id->empty());
+  // NOTE: experimentally, this function returns false if there is no volume
+  // name set.
+  string16 volume_label;
+  GetVolumeInformationW(device_path.value().c_str(),
+                        WriteInto(&volume_label, kMaxPathBufLen),
+                        kMaxPathBufLen, NULL, NULL, NULL, NULL, 0);
+
+  info->location = mount_point;
+  info->total_size_in_bytes = GetVolumeSize(mount_point);
+  info->device_id = chrome::MediaStorageUtil::MakeDeviceId(
+      type, UTF16ToUTF8(guid));
+
+  // TODO(gbillock): if volume_label.empty(), get the vendor/model information
+  // for the volume.
+  info->vendor_name = string16();
+  info->model_name = string16();
+
+  string16 name = !volume_label.empty() ? volume_label
+                                        : device_path.LossyDisplayName();
+  info->name = chrome::MediaStorageUtil::GetDisplayNameForDevice(
+      info->total_size_in_bytes, name);
+  info->storage_label = volume_label;
+
   return true;
 }
 
@@ -254,35 +261,13 @@ void VolumeMountWatcherWin::RetrieveInfoForDeviceAndAdd(
     const base::FilePath& device_path,
     const GetDeviceDetailsCallbackType& get_device_details_callback,
     base::WeakPtr<chrome::VolumeMountWatcherWin> volume_watcher) {
-  string16 device_location;
-  std::string unique_id;
-  string16 device_name;
-  bool removable;
-  uint64 total_size_in_bytes;
-  if (!get_device_details_callback.Run(device_path, &device_location,
-                                       &unique_id, &device_name, &removable,
-                                       &total_size_in_bytes)) {
+  StorageInfo info;
+  if (!get_device_details_callback.Run(device_path, &info)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
         &chrome::VolumeMountWatcherWin::DeviceCheckComplete,
         volume_watcher, device_path));
     return;
   }
-  DCHECK(!unique_id.empty());
-
-  chrome::MediaStorageUtil::Type type =
-      chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_NO_DCIM;
-  if (MediaStorageUtil::HasDcim(device_path))
-    type = chrome::MediaStorageUtil::REMOVABLE_MASS_STORAGE_WITH_DCIM;
-  std::string device_id =
-      chrome::MediaStorageUtil::MakeDeviceId(type, unique_id);
-
-  chrome::VolumeMountWatcherWin::MountPointInfo info;
-  info.device_id = device_id;
-  info.location = device_location;
-  info.unique_id = unique_id;
-  info.name = device_name;
-  info.removable = removable;
-  info.total_size_in_bytes = total_size_in_bytes;
 
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, base::Bind(
       &chrome::VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread,
@@ -306,8 +291,7 @@ VolumeMountWatcherWin::GetDeviceDetailsCallbackType
 }
 
 bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
-    string16* device_location, std::string* unique_id, string16* name,
-    bool* removable, uint64* total_size_in_bytes) const {
+                                          StorageInfo* info) const {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   base::FilePath path(device_path);
   MountPointDeviceMetadataMap::const_iterator iter =
@@ -317,21 +301,11 @@ bool VolumeMountWatcherWin::GetDeviceInfo(const base::FilePath& device_path,
     iter = device_metadata_.find(path.value());
   }
 
-  // If the requested device hasn't been scanned yet,
-  // synchronously get the device info.
   if (iter == device_metadata_.end())
     return false;
 
-  if (device_location)
-    *device_location = iter->second.location;
-  if (unique_id)
-    *unique_id = iter->second.unique_id;
-  if (name)
-    *name = iter->second.name;
-  if (removable)
-    *removable = iter->second.removable;
-  if (total_size_in_bytes)
-    *total_size_in_bytes = iter->second.total_size_in_bytes;
+  if (info)
+    *info = iter->second;
 
   return true;
 }
@@ -378,7 +352,7 @@ VolumeMountWatcherWin::~VolumeMountWatcherWin() {
 
 void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
     const base::FilePath& device_path,
-    const MountPointInfo& info) {
+    const StorageInfo& info) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   device_metadata_[device_path.value()] = info;
@@ -386,17 +360,11 @@ void VolumeMountWatcherWin::HandleDeviceAttachEventOnUIThread(
   DeviceCheckComplete(device_path);
 
   // Don't call removable storage observers for fixed volumes.
-  if (!info.removable)
+  if (!MediaStorageUtil::IsRemovableDevice(info.device_id))
     return;
 
-  if (notifications_) {
-    string16 display_name = MediaStorageUtil::GetDisplayNameForDevice(
-        info.total_size_in_bytes, info.name);
-
-    StorageInfo info(info.device_id, display_name, device_path.value(),
-                     string16(), string16(), string16(), 0);
+  if (notifications_)
     notifications_->ProcessAttach(info);
-  }
 }
 
 void VolumeMountWatcherWin::HandleDeviceDetachEventOnUIThread(

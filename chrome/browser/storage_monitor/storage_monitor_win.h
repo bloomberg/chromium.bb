@@ -56,11 +56,7 @@ class StorageMonitorWin : public StorageMonitor {
   // returns true and fills in |device_location|, |unique_id|, |name| and
   // |removable|, and |total_size_in_bytes|.
   bool GetDeviceInfo(const base::FilePath& device_path,
-                     string16* device_location,
-                     std::string* unique_id,
-                     string16* name,
-                     bool* removable,
-                     uint64* total_size_in_bytes) const;
+                     StorageInfo* info) const;
 
   static LRESULT CALLBACK WndProcThunk(HWND hwnd, UINT message, WPARAM wparam,
                                        LPARAM lparam);

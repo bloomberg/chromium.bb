@@ -76,49 +76,32 @@ void StorageMonitorWin::Init() {
 
 bool StorageMonitorWin::GetStorageInfoForPath(const base::FilePath& path,
                                               StorageInfo* device_info) const {
-  string16 location;
-  std::string unique_id;
-  string16 name;
-  bool removable = false;
-  uint64 total_size_in_bytes = 0;
-  if (!GetDeviceInfo(path, &location, &unique_id, &name, &removable,
-                     &total_size_in_bytes)) {
-    return false;
-  }
-
-  // To compute the device id, the device type is needed.  For removable
-  // devices, that requires knowing if there's a DCIM directory, which would
-  // require bouncing over to the file thread.  Instead, just iterate the
-  // devices.
-  std::string device_id;
-  if (removable) {
-    std::vector<StorageInfo> attached_devices = GetAttachedStorage();
-    bool found = false;
-    for (size_t i = 0; i < attached_devices.size(); i++) {
-      MediaStorageUtil::Type type;
-      std::string id;
-      MediaStorageUtil::CrackDeviceId(attached_devices[i].device_id, &type,
-                                      &id);
-      if (id == unique_id) {
-        found = true;
-        device_id = attached_devices[i].device_id;
-        break;
+  // TODO(gbillock): Move this logic up to StorageMonitor.
+  // If we already know the StorageInfo for the path, just return it.
+  // This will account for portable devices as well.
+  std::vector<StorageInfo> attached_devices = GetAttachedStorage();
+  size_t best_parent = attached_devices.size();
+  size_t best_length = 0;
+  for (size_t i = 0; i < attached_devices.size(); i++) {
+    base::FilePath relative;
+    if (base::FilePath(attached_devices[i].location).AppendRelativePath(
+            path, &relative)) {
+      // Note: the relative path is longer for shorter shared path between
+      // the path and the device mount point, so we want the shortest
+      // relative path.
+      if (relative.value().size() < best_length) {
+        best_parent = i;
+        best_length = relative.value().size();
       }
     }
-    if (!found)
-      return false;
-  } else {
-    device_id = MediaStorageUtil::MakeDeviceId(
-        MediaStorageUtil::FIXED_MASS_STORAGE, unique_id);
+  }
+  if (best_parent != attached_devices.size()) {
+    if (device_info)
+      *device_info = attached_devices[best_parent];
+    return true;
   }
 
-  if (device_info) {
-    device_info->device_id = device_id;
-    device_info->name = name;
-    device_info->location = location;
-    device_info->total_size_in_bytes = total_size_in_bytes;
-  }
-  return true;
+  return GetDeviceInfo(path, device_info);
 }
 
 bool StorageMonitorWin::GetMTPStorageInfoFromDeviceId(
@@ -156,17 +139,11 @@ LRESULT CALLBACK StorageMonitorWin::WndProc(HWND hwnd, UINT message,
 }
 
 bool StorageMonitorWin::GetDeviceInfo(const base::FilePath& device_path,
-                                      string16* device_location,
-                                      std::string* unique_id,
-                                      string16* name,
-                                      bool* removable,
-                                      uint64* total_size_in_bytes) const {
+                                      StorageInfo* info) const {
   // TODO(kmadhusu) Implement PortableDeviceWatcherWin::GetDeviceInfo()
   // function when we have the functionality to add a sub directory of
   // portable device as a media gallery.
-  return volume_mount_watcher_->GetDeviceInfo(device_path, device_location,
-                                              unique_id, name, removable,
-                                              total_size_in_bytes);
+  return volume_mount_watcher_->GetDeviceInfo(device_path, info);
 }
 
 void StorageMonitorWin::OnDeviceChange(UINT event_type, LPARAM data) {
