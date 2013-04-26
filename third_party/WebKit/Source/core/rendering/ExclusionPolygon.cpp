@@ -28,6 +28,7 @@
  */
 
 #include "config.h"
+#include "core/platform/graphics/LayoutPoint.h"
 #include "core/rendering/ExclusionPolygon.h"
 
 #include <wtf/MathExtras.h>
@@ -129,6 +130,12 @@ static inline void appendArc(Vector<FloatPoint>& vertices, const FloatPoint& arc
     vertices.append(endArcVertex);
 }
 
+static inline void snapVerticesToLayoutUnitGrid(Vector<FloatPoint>& vertices)
+{
+    for (unsigned i = 0; i < vertices.size(); ++i)
+        vertices[i] = flooredLayoutPoint(vertices[i]);
+}
+
 static inline FloatPolygon* computeShapePaddingBounds(const FloatPolygon& polygon, float padding, WindRule fillRule)
 {
     Vector<FloatPoint>* paddedVertices = new Vector<FloatPoint>();
@@ -146,6 +153,7 @@ static inline FloatPolygon* computeShapePaddingBounds(const FloatPolygon& polygo
             appendArc(*paddedVertices, thisEdge.vertex1(), padding, prevOffsetEdge.vertex2(), thisOffsetEdge.vertex1(), true);
     }
 
+    snapVerticesToLayoutUnitGrid(*paddedVertices);
     return new FloatPolygon(adoptPtr(paddedVertices), fillRule);
 }
 
@@ -166,6 +174,7 @@ static inline FloatPolygon* computeShapeMarginBounds(const FloatPolygon& polygon
             appendArc(*marginVertices, thisEdge.vertex1(), margin, prevOffsetEdge.vertex2(), thisOffsetEdge.vertex1(), false);
     }
 
+    snapVerticesToLayoutUnitGrid(*marginVertices);
     return new FloatPolygon(adoptPtr(marginVertices), fillRule);
 }
 
