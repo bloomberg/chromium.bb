@@ -36,6 +36,7 @@ var CLASSES = {
   GOOGLE_PAGE: 'google-page', // shows the Google logo and fakebox
   HIDE_BLACKLIST_BUTTON: 'mv-x-hide', // hides blacklist button during animation
   HIDE_NOTIFICATION: 'mv-notice-hide',
+  HIDE_NTP: 'hide-ntp', // hides NTP and disables scrollbars
   HIDE_TILE: 'mv-tile-hide', // hides tiles on small browser width
   HOVERED: 'hovered',
   PENDING_SUGGESTIONS_CONTAINER: 'pending-suggestions-container',
@@ -159,11 +160,18 @@ var ntpApiHandle;
 var WHITE = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
 /**
- * Should be equal to mv-tile's -webkit-margin-start + width.
- * @type {number}
+ * Total tile width. Should be equal to mv-tile's width + 2 * border-width.
+ * @private {number}
  * @const
  */
-var TILE_WIDTH = 160;
+var TILE_WIDTH = 140;
+
+/**
+ * Margin between tiles. Should be equal to mv-tile's -webkit-margin-start.
+ * @private {number}
+ * @const
+ */
+var TILE_MARGIN_START = 20;
 
 /**
  * The height of the most visited section.
@@ -190,7 +198,7 @@ var NUM_ROWS = 2;
  * @type {number}
  * @const
  */
-var MIN_TOTAL_HORIZONTAL_PADDING = 188;
+var MIN_TOTAL_HORIZONTAL_PADDING = 200;
 
 /**
  * A Tile is either a rendering of a Most Visited page or "filler" used to
@@ -450,9 +458,13 @@ function onResize() {
     topMarginElement.style.marginTop =
         Math.max(0, (clientHeight - MOST_VISITED_HEIGHT) / 2) + 'px';
   }
-  var clientWidth = document.documentElement.clientWidth;
-  var numColumnsToShow = Math.floor(
-      (clientWidth - MIN_TOTAL_HORIZONTAL_PADDING) / TILE_WIDTH);
+
+  var tileRequiredWidth = TILE_WIDTH + TILE_MARGIN_START;
+  // Adds margin-start to the available width to compensate the extra margin
+  // counted above for the first tile (which does not have a margin-start).
+  var availableWidth = document.documentElement.clientWidth +
+      TILE_MARGIN_START - MIN_TOTAL_HORIZONTAL_PADDING;
+  var numColumnsToShow = Math.floor(availableWidth / tileRequiredWidth);
   numColumnsToShow = Math.max(MIN_NUM_COLUMNS,
                               Math.min(MAX_NUM_COLUMNS, numColumnsToShow));
   if (numColumnsToShow != numColumnsShown) {
@@ -476,32 +488,21 @@ function getTileByRid(rid) {
 }
 
 /**
- * @param {boolean} visible True to show the NTP.
+ * Hides the NTP.
  */
-function updateNtpVisibility(visible) {
-  if (visible && !isNtpVisible()) {
-    if (fakebox) {
-      // Stop any fakebox animation animation in progress and restore the NTP.
-      fakebox.removeEventListener('webkitTransitionEnd', fakeboxAnimationDone);
-      document.body.classList.remove(CLASSES.FAKEBOX_ANIMATE);
-    }
-    ntpContents.hidden = false;
-    onThemeChange();
-  } else if (!visible && isNtpVisible()) {
-    if (fakebox && isFakeboxFocused()) {
-      // The user has typed in the fakebox - initiate the fakebox animation,
-      // which upon termination will hide the NTP.
-      document.body.classList.remove(CLASSES.FAKEBOX_FOCUS);
-      // Don't show the suggestions until the animation termintes.
-      $(IDS.SUGGESTIONS_CONTAINER).hidden = true;
-      fakebox.addEventListener('webkitTransitionEnd', fakeboxAnimationDone);
-      document.body.classList.add(CLASSES.FAKEBOX_ANIMATE);
-    } else if (!fakebox ||
-        !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
-      // The user has typed in the omnibox - hide the NTP immediately.
-      ntpContents.hidden = true;
-      clearCustomTheme();
-    }
+function hideNtp() {
+  if (fakebox && isFakeboxFocused() &&
+      !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
+    // The user has typed in the fakebox - initiate the fakebox animation,
+    // which upon termination will hide the NTP.
+    document.body.classList.remove(CLASSES.FAKEBOX_FOCUS);
+    fakebox.addEventListener('webkitTransitionEnd', fakeboxAnimationDone);
+    document.body.classList.add(CLASSES.FAKEBOX_ANIMATE);
+  } else if (!fakebox ||
+      !document.body.classList.contains(CLASSES.FAKEBOX_ANIMATE)) {
+    // The user has typed in the omnibox - hide the NTP immediately.
+    document.body.classList.add(CLASSES.HIDE_NTP);
+    clearCustomTheme();
   }
 }
 
@@ -517,7 +518,7 @@ function clearCustomTheme() {
  * @return {boolean} True if the NTP is visible.
  */
 function isNtpVisible() {
-  return !ntpContents.hidden;
+  return !document.body.classList.contains(CLASSES.HIDE_NTP);
 }
 
 /**
@@ -541,8 +542,7 @@ function isFakeboxClick(event) {
  */
 function fakeboxAnimationDone(event) {
   if (event.propertyName == '-webkit-transform') {
-    ntpContents.hidden = true;
-    $(IDS.SUGGESTIONS_CONTAINER).hidden = false;
+    document.body.classList.add(CLASSES.HIDE_NTP);
     clearCustomTheme();
     document.body.classList.remove(CLASSES.FAKEBOX_ANIMATE);
     fakebox.removeEventListener('webkitTransitionEnd', fakeboxAnimationDone);
@@ -683,6 +683,12 @@ var iframePool;
  * @type {number}
  */
 var nextRequestId = 0;
+
+/**
+ * The omnibox input value during the last onnativesuggestions event.
+ * @type {string}
+ */
+var lastInputValue = '';
 
 /**
  * @param {Object} suggestion A suggestion.
@@ -1192,13 +1198,25 @@ function updateSuggestions() {
       suggestions.shift();
   }
   var inputValue = searchboxApiHandle.value;
-  if (!!inputValue && suggestions.length) {
+
+  // Hide the NTP if input has made it into the omnibox.
+  if (inputValue && isNtpVisible())
+    hideNtp();
+
+  if (inputValue && suggestions.length) {
     pendingBox = new SuggestionsBox(inputValue,
         suggestions.slice(0, MAX_SUGGESTIONS_TO_SHOW), selectedIndex);
+    searchboxApiHandle.hideBars();
     pendingBox.loadSuggestions();
-  } else {
+  } else if (lastInputValue != inputValue) {
+    // To prevent flickering of the suggestions box due to multiple
+    // onnativesuggestion events firing on the same input value. Only clear if
+    // the first such event actually dictates to do so.
     hideActiveSuggestions();
+    searchboxApiHandle.showBars();
   }
+
+  lastInputValue = inputValue;
 }
 
 /**
@@ -1409,7 +1427,6 @@ function init() {
     if (!value) {
       // Interpret onsubmit with an empty query as an ESC key press.
       hideActiveSuggestions();
-      updateNtpVisibility(true);
     }
   };
   $qs('.' + CLASSES.ACTIVE_SUGGESTIONS_CONTAINER).dir =

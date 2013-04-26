@@ -9,13 +9,31 @@ body {
   overflow-x: hidden;
 }
 
+body.hide-ntp {
+  overflow: hidden;
+}
+
 #ntp-contents {
   text-align: -webkit-center;
+}
+
+body.hide-ntp #ntp-contents {
+  display: none;
 }
 
 body.fakebox-animate #ntp-contents {
   -webkit-transition: opacity 100ms linear;
   opacity: 0.2;
+}
+
+/* Hide suggestions during the fakebox animation. */
+body.fakebox-animate .active-suggestions-container {
+  height: 0;
+  visibility: hidden;
+}
+
+body.fakebox-animate .suggestion-contents {
+  visibility: hidden;
 }
 
 body.google-page #mv-top-margin {
@@ -27,8 +45,8 @@ body.google-page #mv-top-margin {
       url(images/google_logo.png) 1x,
       url(images/2x/google_logo.png) 2x) no-repeat;
   height: 95px;
-  margin-bottom: 20px;
-  margin-top: 144px;
+  margin-bottom: 24px;
+  margin-top: 134px;
   width: 275px;
 }
 
@@ -100,7 +118,7 @@ body.fakebox-focused #cursor {
 
 #most-visited {
   -webkit-user-select: none;
-  margin-top: 50px;
+  margin-top: 51px;
   text-align: -webkit-center;
 }
 
@@ -120,21 +138,22 @@ body.fakebox-focused #cursor {
   -webkit-transform: translate3d(0, 0, 0);
   height: 260px;
   overflow: hidden;
+  padding: 0 1em;
   white-space: nowrap;
   width: 304px;
 }
 
-@media only screen and (min-width:666px) {
+@media only screen and (min-width:660px) {
   #fakebox,
   #mv-tiles {
-    width: 466px;
+    width: 458px;
   }
 }
 
-@media only screen and (min-width:828px) {
+@media only screen and (min-width:820px) {
   #fakebox,
   #mv-tiles {
-    width: 628px;
+    width: 618px;
   }
 }
 
@@ -143,7 +162,7 @@ body.fakebox-focused #cursor {
 }
 
 .mv-tile:first-child {
-  -webkit-margin-start: 0;
+  -webkit-margin-start: -1px;
 }
 
 .mv-tile {
@@ -152,8 +171,8 @@ body.fakebox-focused #cursor {
   -webkit-transition-duration: 200ms;
   -webkit-transition-property: -webkit-transform, margin, opacity, width;
   display: inline-block;
-  height: 85px;
-  width: 140px;
+  height: 83px;
+  width: 138px;
 }
 
 .mv-tile.mv-tile-hide {
