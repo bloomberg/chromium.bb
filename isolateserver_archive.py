@@ -127,16 +127,25 @@ def upload_hash_content_to_blobstore(
   logging.debug('Generating url to directly upload file to blobstore')
   assert isinstance(hash_key, str), hash_key
   assert isinstance(content, str), (hash_key, content)
-  upload_url = url_open(generate_upload_url, data=data).read()
-
-  if not upload_url:
-    logging.error('Unable to generate upload url')
-    return
-
-  # TODO(maruel): Support large files.
+  # TODO(maruel): Support large files. This would require streaming support.
   content_type, body = encode_multipart_formdata(
-       data, [('content', hash_key, content)])
-  return url_open(upload_url, data=body, content_type=content_type)
+      data, [('content', hash_key, content)])
+  for _ in range(run_isolated.MAX_URL_OPEN_ATTEMPTS):
+    # Retry HTTP 50x here.
+    response = run_isolated.url_open(generate_upload_url, data=data)
+    if not response:
+      raise run_isolated.MappingError(
+          'Unable to connect to server %s' % generate_upload_url)
+    upload_url = response.read()
+
+    # Do not retry this request on HTTP 50x. Regenerate an upload url each time
+    # since uploading "consumes" the upload url.
+    result = run_isolated.url_open(
+        upload_url, data=body, content_type=content_type, retry_50x=False)
+    if result:
+      return result.read()
+  raise run_isolated.MappingError(
+      'Unable to connect to server %s' % generate_upload_url)
 
 
 class UploadRemote(run_isolated.Remote):

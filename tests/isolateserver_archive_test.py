@@ -142,7 +142,7 @@ class IsolateServerTest(unittest.TestCase):
       ),
       (
         'an_url/',
-        {'data': body, 'content_type': content_type},
+        {'data': body, 'content_type': content_type, 'retry_50x': False},
         StringIO.StringIO('ok'),
       ),
     ]
@@ -187,6 +187,65 @@ class IsolateServerTest(unittest.TestCase):
       self.assertEqual(expected, actual)
     finally:
       isolateserver_archive.update_files_to_upload = old
+
+  def test_upload_blobstore_simple(self):
+    content = 'blob_content'
+    s = hashlib.sha1(content).hexdigest()
+    path = 'http://example.com:80/'
+    data = [('token', 'foo bar')]
+    content_type, body = isolateserver_archive.encode_multipart_formdata(
+        data[:], [('content', s, 'blob_content')])
+    self._requests = [
+      (
+        path + 'gen_url?foo#bar',
+        {'data': data[:]},
+        StringIO.StringIO('an_url/'),
+      ),
+      (
+        'an_url/',
+        {'data': body, 'content_type': content_type, 'retry_50x': False},
+        StringIO.StringIO('ok42'),
+      ),
+    ]
+    result = isolateserver_archive.upload_hash_content_to_blobstore(
+        path + 'gen_url?foo#bar', data[:], s, content)
+    self.assertEqual('ok42', result)
+
+  def test_upload_blobstore_retry_500(self):
+    content = 'blob_content'
+    s = hashlib.sha1(content).hexdigest()
+    path = 'http://example.com:80/'
+    data = [('token', 'foo bar')]
+    content_type, body = isolateserver_archive.encode_multipart_formdata(
+        data[:], [('content', s, 'blob_content')])
+    self._requests = [
+      (
+        path + 'gen_url?foo#bar',
+        {'data': data[:]},
+        StringIO.StringIO('an_url/'),
+      ),
+      (
+        'an_url/',
+        {'data': body, 'content_type': content_type, 'retry_50x': False},
+        # Let's say an HTTP 500 was returned.
+        None,
+      ),
+      # In that case, a new url must be generated since the last one may have
+      # been "consumed".
+      (
+        path + 'gen_url?foo#bar',
+        {'data': data[:]},
+        StringIO.StringIO('an_url/'),
+      ),
+      (
+        'an_url/',
+        {'data': body, 'content_type': content_type, 'retry_50x': False},
+        StringIO.StringIO('ok42'),
+      ),
+    ]
+    result = isolateserver_archive.upload_hash_content_to_blobstore(
+        path + 'gen_url?foo#bar', data[:], s, content)
+    self.assertEqual('ok42', result)
 
 
 if __name__ == '__main__':

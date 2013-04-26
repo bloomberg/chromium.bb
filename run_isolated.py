@@ -536,7 +536,7 @@ class HttpService(object):
 
     return self._retry_loop(make_request, **kwargs)
 
-  def _retry_loop(self, make_request, retry_404=False):
+  def _retry_loop(self, make_request, retry_404=False, retry_50x=True):
     """Runs internal request-retry loop."""
     authenticated = False
     last_error = None
@@ -564,7 +564,8 @@ class HttpService(object):
               request.get_full_url(), self._format_exception(e, verbose=True))
           return None
 
-        if e.code < 500 and not (retry_404 and e.code == 404):
+        if ((e.code < 500 and not (retry_404 and e.code == 404)) or
+            (e.code >= 500 and not retry_50x)):
           # This HTTPError means we reached the server and there was a problem
           # with the request, so don't retry.
           logging.error(
