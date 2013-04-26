@@ -68,7 +68,7 @@ class NetworkReaderProxy : public ReaderProxy {
   // to cancel the job. |job_canceller| should be the callback to run the
   // cancelling.
   NetworkReaderProxy(
-      int64 content_length, const base::Closure& job_canceller);
+      int64 offset, int64 content_length, const base::Closure& job_canceller);
   virtual ~NetworkReaderProxy();
 
   // ReaderProxy overrides.
@@ -80,6 +80,9 @@ class NetworkReaderProxy : public ReaderProxy {
  private:
   // The data received from the server, but not yet read.
   ScopedVector<std::string> pending_data_;
+
+  // The number of bytes to be skipped.
+  int64 remaining_offset_;
 
   // The number of bytes of remaining data (including the data not yet
   // received from the server).

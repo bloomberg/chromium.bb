@@ -109,9 +109,11 @@ void LocalReaderProxy::OnCompleted(FileError error) {
 }
 
 NetworkReaderProxy::NetworkReaderProxy(
+    int64 offset,
     int64 content_length,
     const base::Closure& job_canceller)
-    : remaining_content_length_(content_length),
+    : remaining_offset_(offset),
+      remaining_content_length_(content_length),
       error_code_(net::OK),
       buffer_length_(0),
       job_canceller_(job_canceller) {
@@ -146,6 +148,11 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
     return 0;
   }
 
+  if (buffer_length > remaining_content_length_) {
+    // Here, narrowing cast should be safe.
+    buffer_length = static_cast<int>(remaining_content_length_);
+  }
+
   if (pending_data_.empty()) {
     // No data is available. Keep the arguments, and return pending status.
     buffer_ = buffer;
@@ -163,6 +170,18 @@ int NetworkReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
 void NetworkReaderProxy::OnGetContent(scoped_ptr<std::string> data) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(data && !data->empty());
+
+  if (remaining_offset_ >= static_cast<int64>(data->length())) {
+    // Skip unneeded leading data.
+    remaining_offset_ -= data->length();
+    return;
+  }
+
+  if (remaining_offset_ > 0) {
+    // Erase unnecessary leading bytes.
+    data->erase(0, static_cast<size_t>(remaining_offset_));
+    remaining_offset_ = 0;
+  }
 
   pending_data_.push_back(data.release());
   if (!buffer_) {
@@ -316,7 +335,7 @@ void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
     // The file is not cached, and being downloaded.
     reader_proxy_.reset(
         new internal::NetworkReaderProxy(
-            entry->file_info().size(),
+            0, entry->file_info().size(),
             base::Bind(&internal::CancelGetFile,
                        drive_file_system_getter_, drive_file_path)));
     callback.Run(FILE_ERROR_OK, entry.Pass());
