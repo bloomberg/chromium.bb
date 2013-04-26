@@ -291,7 +291,7 @@ public:
     virtual void startDragging(WebKit::WebFrame* frame, const WebKit::WebDragData& data, WebKit::WebDragOperationsMask mask, const WebKit::WebImage& image, const WebKit::WebPoint& point)
     {
         WebTestProxyBase::startDragging(frame, data, mask, image, point);
-        Base::startDragging(frame, data, mask, image, point);
+        // Don't forward this call to Base because we don't want to do a real drag-and-drop.
     }
     virtual bool shouldBeginEditing(const WebKit::WebRange& range)
     {
