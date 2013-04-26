@@ -178,13 +178,13 @@ void Picture::Record(ContentLayerClient* painter,
   canvas->drawRect(layer_skrect, paint);
 
   gfx::RectF opaque_layer_rect;
-  base::TimeTicks begin_paint_time;
+  base::TimeTicks begin_record_time;
   if (stats)
-    begin_paint_time = base::TimeTicks::Now();
+    begin_record_time = base::TimeTicks::Now();
   painter->PaintContents(canvas, layer_rect_, &opaque_layer_rect);
   if (stats) {
-    stats->total_paint_time += base::TimeTicks::Now() - begin_paint_time;
-    stats->total_pixels_painted +=
+    stats->total_record_time += base::TimeTicks::Now() - begin_record_time;
+    stats->total_pixels_recorded +=
         layer_rect_.width() * layer_rect_.height();
   }
 

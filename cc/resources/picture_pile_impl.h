@@ -9,6 +9,7 @@
 #include <map>
 #include <vector>
 
+#include "base/time.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/picture_pile_base.h"
 #include "skia/ext/analysis_canvas.h"
@@ -28,14 +29,29 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
   // Get paint-safe version of this picture for a specific thread.
   PicturePileImpl* GetCloneForDrawingOnThread(unsigned thread_index) const;
 
+  struct CC_EXPORT RasterStats {
+    // Minimum rasterize time from N runs
+    // N=max(1,slow-down-raster-scale-factor)
+    base::TimeDelta best_rasterize_time;
+    // Total rasterize time for all N runs
+    base::TimeDelta total_rasterize_time;
+    // Total number of pixels rasterize in all N runs
+    int64 total_pixels_rasterized;
+  };
+
   // Raster a subrect of this PicturePileImpl into the given canvas.
-  // It's only safe to call paint on a cloned version.
-  // It is assumed that contents_scale has already been applied to this canvas.
-  // Return value is the total number of pixels rasterized.
-  int64 Raster(
+  // It's only safe to call paint on a cloned version.  It is assumed
+  // that contents_scale has already been applied to this canvas.
+  // Writes the total number of pixels rasterized and the time spent
+  // rasterizing to the stats if the respective pointer is not
+  // NULL. When slow-down-raster-scale-factor is set to a value
+  // greater than 1, the reported rasterize time is the minimum
+  // measured value over all runs.
+  void Raster(
       SkCanvas* canvas,
       gfx::Rect canvas_rect,
-      float contents_scale);
+      float contents_scale,
+      RasterStats* raster_stats);
 
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 

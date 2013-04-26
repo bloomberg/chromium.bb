@@ -921,7 +921,6 @@ void RenderWidget::PaintRect(const gfx::Rect& rect,
   if (kEnableGpuBenchmarking) {
     int64 num_pixels_processed = rect.width() * rect.height();
     software_stats_.total_pixels_painted += num_pixels_processed;
-    software_stats_.total_pixels_rasterized += num_pixels_processed;
   }
 }
 
@@ -2252,10 +2251,6 @@ void RenderWidget::GetRenderingStats(
       software_stats_.total_paint_time;
   stats.rendering_stats.total_pixels_painted +=
       software_stats_.total_pixels_painted;
-  stats.rendering_stats.total_rasterize_time +=
-      software_stats_.total_rasterize_time;
-  stats.rendering_stats.total_pixels_rasterized +=
-      software_stats_.total_pixels_rasterized;
 }
 
 bool RenderWidget::GetGpuRenderingStats(GpuRenderingStats* stats) const {

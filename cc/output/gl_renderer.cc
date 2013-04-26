@@ -1467,7 +1467,8 @@ void GLRenderer::DrawPictureQuad(const DrawingFrame* frame,
   SkDevice device(on_demand_tile_raster_bitmap_);
   SkCanvas canvas(&device);
 
-  quad->picture_pile->Raster(&canvas, quad->content_rect, quad->contents_scale);
+  quad->picture_pile->Raster(&canvas, quad->content_rect, quad->contents_scale,
+                             NULL);
 
   resource_provider_->SetPixels(
       on_demand_tile_raster_resource_id_,

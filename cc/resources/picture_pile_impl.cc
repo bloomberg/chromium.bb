@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <algorithm>
+#include <limits>
+
 #include "base/debug/trace_event.h"
 #include "cc/base/region.h"
 #include "cc/debug/debug_colors.h"
@@ -71,10 +74,11 @@ PicturePileImpl* PicturePileImpl::GetCloneForDrawingOnThread(
   return clones_for_drawing_.clones_[thread_index];
 }
 
-int64 PicturePileImpl::Raster(
+void PicturePileImpl::Raster(
     SkCanvas* canvas,
     gfx::Rect canvas_rect,
-    float contents_scale) {
+    float contents_scale,
+    RasterStats* raster_stats) {
 
   DCHECK(contents_scale >= min_contents_scale_);
 
@@ -120,7 +124,12 @@ int64 PicturePileImpl::Raster(
                    SkRegion::kReplace_Op);
   Region unclipped(content_rect);
 
-  int64 total_pixels_rasterized = 0;
+  if (raster_stats) {
+    raster_stats->total_pixels_rasterized = 0;
+    raster_stats->total_rasterize_time = base::TimeDelta::FromSeconds(0);
+    raster_stats->best_rasterize_time = base::TimeDelta::FromSeconds(0);
+  }
+
   for (TilingData::Iterator tile_iter(&tiling_, layer_rect);
        tile_iter; ++tile_iter) {
     PictureListMap::iterator map_iter =
@@ -146,11 +155,33 @@ int64 PicturePileImpl::Raster(
       if (!unclipped.Intersects(content_clip))
         continue;
 
-      if (slow_down_raster_scale_factor_for_debug_) {
-        for (int j = 0; j < slow_down_raster_scale_factor_for_debug_; ++j)
-          (*i)->Raster(canvas, content_clip, contents_scale, enable_lcd_text_);
-      } else {
+      base::TimeDelta total_duration =
+          base::TimeDelta::FromInternalValue(0);
+      base::TimeDelta best_duration =
+          base::TimeDelta::FromInternalValue(std::numeric_limits<int64>::max());
+      int repeat_count = std::max(1, slow_down_raster_scale_factor_for_debug_);
+
+      for (int j = 0; j < repeat_count; ++j) {
+        base::TimeTicks start_time;
+        if (raster_stats)
+          start_time = base::TimeTicks::HighResNow();
+
         (*i)->Raster(canvas, content_clip, contents_scale, enable_lcd_text_);
+
+        if (raster_stats) {
+          base::TimeDelta duration = base::TimeTicks::HighResNow() - start_time;
+          total_duration += duration;
+          best_duration = std::min(best_duration, duration);
+        }
+      }
+
+      if (raster_stats) {
+        gfx::Rect raster_rect = canvas_rect;
+        raster_rect.Intersect(content_clip);
+        raster_stats->total_pixels_rasterized +=
+            repeat_count * raster_rect.width() * raster_rect.height();
+        raster_stats->total_rasterize_time += total_duration;
+        raster_stats->best_rasterize_time += best_duration;
       }
 
       if (show_debug_picture_borders_) {
@@ -174,9 +205,6 @@ int64 PicturePileImpl::Raster(
           gfx::RectToSkRect(content_clip),
           SkRegion::kDifference_Op);
       unclipped.Subtract(content_clip);
-
-      total_pixels_rasterized +=
-          content_clip.width() * content_clip.height();
     }
   }
 
@@ -194,8 +222,6 @@ int64 PicturePileImpl::Raster(
   DCHECK(!unclipped.Contains(content_rect));
 
   canvas->restore();
-
-  return total_pixels_rasterized;
 }
 
 skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
@@ -211,7 +237,7 @@ skia::RefPtr<SkPicture> PicturePileImpl::GetFlattenedPicture() {
       layer_rect.height(),
       SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
-  Raster(canvas, layer_rect, 1.0);
+  Raster(canvas, layer_rect, 1.0, NULL);
   picture->endRecording();
 
   return picture;
@@ -233,7 +259,7 @@ void PicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
   skia::AnalysisDevice device(empty_bitmap);
   skia::AnalysisCanvas canvas(&device);
 
-  Raster(&canvas, content_rect, contents_scale);
+  Raster(&canvas, content_rect, contents_scale, NULL);
 
   analysis->is_transparent = canvas.isTransparent();
   analysis->is_solid_color = canvas.getColorIfSolid(&analysis->solid_color);

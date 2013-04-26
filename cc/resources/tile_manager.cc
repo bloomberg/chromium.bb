@@ -925,20 +925,16 @@ void TileManager::RunRasterTask(
   SkDevice device(bitmap);
   SkCanvas canvas(&device);
 
-  base::TimeTicks start_time = stats_instrumentation->StartRecording();
-
-  int64 total_pixels_rasterized =
-      picture_pile->Raster(&canvas, rect, contents_scale);
-
-  base::TimeDelta duration = stats_instrumentation->EndRecording(start_time);
-
   if (stats_instrumentation->record_rendering_stats()) {
-    stats_instrumentation->AddRaster(duration,
-                                     total_pixels_rasterized,
+    PicturePileImpl::RasterStats raster_stats;
+    picture_pile->Raster(&canvas, rect, contents_scale, &raster_stats);
+    stats_instrumentation->AddRaster(raster_stats.total_rasterize_time,
+                                     raster_stats.best_rasterize_time,
+                                     raster_stats.total_pixels_rasterized,
                                      metadata.is_tile_in_pending_tree_now_bin);
 
     HISTOGRAM_CUSTOM_COUNTS("Renderer4.PictureRasterTimeUS",
-                            duration.InMicroseconds(),
+                            raster_stats.total_rasterize_time.InMicroseconds(),
                             0,
                             100000,
                             100);
@@ -947,7 +943,8 @@ void TileManager::RunRasterTask(
       PicturePileImpl::Analysis analysis;
       picture_pile->AnalyzeInRect(rect, contents_scale, &analysis);
       bool is_predicted_cheap = analysis.is_cheap_to_raster;
-      bool is_actually_cheap = duration.InMillisecondsF() <= 1.0f;
+      bool is_actually_cheap =
+          raster_stats.best_rasterize_time.InMillisecondsF() <= 1.0f;
       RecordCheapnessPredictorResults(is_predicted_cheap, is_actually_cheap);
 
       DCHECK_EQ(bitmap.rowBytes(),
@@ -960,6 +957,8 @@ void TileManager::RunRasterTask(
           analysis.solid_color,
           analysis.is_transparent);
     }
+  } else {
+    picture_pile->Raster(&canvas, rect, contents_scale, NULL);
   }
 }
 

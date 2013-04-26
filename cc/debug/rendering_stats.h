@@ -16,11 +16,14 @@ struct CC_EXPORT RenderingStats {
   int64 screen_frame_count;
   int64 dropped_frame_count;
   base::TimeDelta total_paint_time;
+  base::TimeDelta total_record_time;
   base::TimeDelta total_rasterize_time;
   base::TimeDelta total_rasterize_time_for_now_bins_on_pending_tree;
   base::TimeDelta total_commit_time;
+  base::TimeDelta best_rasterize_time;
   int64 total_commit_count;
   int64 total_pixels_painted;
+  int64 total_pixels_recorded;
   int64 total_pixels_rasterized;
   int64 num_impl_thread_scrolls;
   int64 num_main_thread_scrolls;

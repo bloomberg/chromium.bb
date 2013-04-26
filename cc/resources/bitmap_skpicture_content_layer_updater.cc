@@ -31,12 +31,7 @@ void BitmapSkPictureContentLayerUpdater::Resource::Update(
   bitmap_.setIsOpaque(updater_->layer_is_opaque());
   SkDevice device(bitmap_);
   SkCanvas canvas(&device);
-  base::TimeTicks paint_begin_time;
-  if (stats)
-    paint_begin_time = base::TimeTicks::Now();
   updater_->PaintContentsRect(&canvas, source_rect, stats);
-  if (stats)
-    stats->total_paint_time += base::TimeTicks::Now() - paint_begin_time;
 
   ResourceUpdate upload = ResourceUpdate::Create(
       texture(), &bitmap_, source_rect, source_rect, dest_offset);

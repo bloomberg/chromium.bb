@@ -12,6 +12,7 @@ RenderingStats::RenderingStats()
       dropped_frame_count(0),
       total_commit_count(0),
       total_pixels_painted(0),
+      total_pixels_recorded(0),
       total_pixels_rasterized(0),
       num_impl_thread_scrolls(0),
       num_main_thread_scrolls(0),
@@ -27,6 +28,8 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddInt64("droppedFrameCount", dropped_frame_count);
   enumerator->AddDouble("totalPaintTimeInSeconds",
                         total_paint_time.InSecondsF());
+  enumerator->AddDouble("totalRecordTimeInSeconds",
+                        total_record_time.InSecondsF());
   enumerator->AddDouble("totalRasterizeTimeInSeconds",
                         total_rasterize_time.InSecondsF());
   enumerator->AddDouble(
@@ -34,8 +37,11 @@ void RenderingStats::EnumerateFields(Enumerator* enumerator) const {
       total_rasterize_time_for_now_bins_on_pending_tree.InSecondsF());
   enumerator->AddDouble("totalCommitTimeInSeconds",
                         total_commit_time.InSecondsF());
+  enumerator->AddDouble("bestRasterizeTimeInSeconds",
+                        best_rasterize_time.InSecondsF());
   enumerator->AddInt64("totalCommitCount", total_commit_count);
   enumerator->AddInt64("totalPixelsPainted", total_pixels_painted);
+  enumerator->AddInt64("totalPixelsRecorded", total_pixels_recorded);
   enumerator->AddInt64("totalPixelsRasterized", total_pixels_rasterized);
   enumerator->AddInt64("numImplThreadScrolls", num_impl_thread_scrolls);
   enumerator->AddInt64("numMainThreadScrolls", num_main_thread_scrolls);
@@ -58,12 +64,15 @@ void RenderingStats::Add(const RenderingStats& other) {
   screen_frame_count += other.screen_frame_count;
   dropped_frame_count += other.dropped_frame_count;
   total_paint_time += other.total_paint_time;
+  total_record_time += other.total_record_time;
   total_rasterize_time += other.total_rasterize_time;
   total_rasterize_time_for_now_bins_on_pending_tree +=
       other.total_rasterize_time_for_now_bins_on_pending_tree;
   total_commit_time += other.total_commit_time;
+  best_rasterize_time += other.best_rasterize_time;
   total_commit_count += other.total_commit_count;
   total_pixels_painted += other.total_pixels_painted;
+  total_pixels_recorded += other.total_pixels_recorded;
   total_pixels_rasterized += other.total_pixels_rasterized;
   num_impl_thread_scrolls += other.num_impl_thread_scrolls;
   num_main_thread_scrolls += other.num_main_thread_scrolls;
