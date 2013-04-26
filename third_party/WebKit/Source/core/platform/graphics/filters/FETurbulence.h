@@ -116,9 +116,6 @@ private:
     FETurbulence(Filter*, TurbulenceType, float, float, int, float, bool);
 
     virtual void applySoftware() OVERRIDE;
-    virtual bool platformApplySkia();
-    virtual SkImageFilter* createImageFilter(SkiaImageFilterBuilder*);
-    SkShader* createShader(const IntRect& filterRegion) const;
 
     inline void initPaint(PaintingData&);
     float noise2D(int channel, PaintingData&, StitchData&, const FloatPoint&);
