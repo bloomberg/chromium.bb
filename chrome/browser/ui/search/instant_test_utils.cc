@@ -44,14 +44,15 @@ InstantTestModelObserver::~InstantTestModelObserver() {
   model_->RemoveObserver(this);
 }
 
-SearchMode::Type InstantTestModelObserver::WaitForExpectedOverlayState() {
+bool InstantTestModelObserver::WaitForExpectedOverlayState() {
   run_loop_.Run();
-  return observed_mode_type_;
+  return observed_mode_type_ == expected_mode_type_;
 }
 
 void InstantTestModelObserver::OverlayStateChanged(
     const InstantOverlayModel& model) {
   observed_mode_type_ = model.mode().mode;
+  EXPECT_EQ(expected_mode_type_, observed_mode_type_);
   run_loop_.Quit();
 }
 
@@ -144,23 +145,10 @@ void InstantTestBase::SetOmniboxText(const std::string& text) {
 
 bool InstantTestBase::SetOmniboxTextAndWaitForOverlayToShow(
     const std::string& text) {
-  // The order of events may be:
-  //   { hide, show } or just { show } depending on the order things
-  // flow in from GWS and Chrome's response to hiding the infobar and/or
-  // bookmark bar.  Note, the GWS response is relevant because of the
-  // Instant "MANUAL_*" tests.
-  InstantTestModelObserver first_observer(
-      instant()->model(), SearchMode::MODE_DEFAULT);
+  InstantTestModelObserver observer(
+      instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
   SetOmniboxText(text);
-
-  SearchMode::Type observed = first_observer.WaitForExpectedOverlayState();
-  if (observed == SearchMode::MODE_DEFAULT) {
-    InstantTestModelObserver second_observer(
-        instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
-    observed = second_observer.WaitForExpectedOverlayState();
-  }
-  EXPECT_EQ(SearchMode::MODE_SEARCH_SUGGESTIONS, observed);
-  return observed == SearchMode::MODE_SEARCH_SUGGESTIONS;
+  return observer.WaitForExpectedOverlayState();
 }
 
 void InstantTestBase::SetOmniboxTextAndWaitForSuggestion(

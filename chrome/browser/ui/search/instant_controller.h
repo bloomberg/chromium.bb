@@ -230,8 +230,6 @@ class InstantController : public InstantPage::Delegate,
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, LocalNTPIsNotPreloaded);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
                            MANUAL_OmniboxFocusLoadsInstant);
-  FRIEND_TEST_ALL_PREFIXES(InstantExtendedManualTest,
-                           MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate);
   FRIEND_TEST_ALL_PREFIXES(InstantExtendedTest, OnDefaultSearchProviderChanged);
 
   // Overridden from content::NotificationObserver:

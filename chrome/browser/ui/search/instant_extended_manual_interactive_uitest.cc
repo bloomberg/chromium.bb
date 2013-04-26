@@ -84,8 +84,7 @@ class InstantExtendedManualTest : public InProcessBrowserTest,
   bool PressBackspaceAndWaitForOverlayToShow() {
     InstantTestModelObserver observer(
         instant()->model(), SearchMode::MODE_SEARCH_SUGGESTIONS);
-    return PressBackspace() && observer.WaitForExpectedOverlayState() ==
-        SearchMode::MODE_SEARCH_SUGGESTIONS;
+    return PressBackspace() && observer.WaitForExpectedOverlayState();
   }
 
   void PressEnterAndWaitForNavigation() {
@@ -205,8 +204,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
       ASCIIToUTF16("fa - Google Search")));
 }
 
+// TODO: http://crbug.com/230537
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromUrlToNonSelectedUrlAndSearch) {
+                       DISABLED_BackspaceFromUrlToNonSelectedUrlAndSearch) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -265,16 +265,18 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
+// TODO: http://crbug.com/230537
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_BackspaceFromQueryToSelectedUrlAndNavigate) {
+                       DISABLED_BackspaceFromQueryToSelectedUrlAndNavigate) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
 
-  // Type "a.cop" and expect top match to be a search, not a url.
+  // Type "a.cop" and expect Google to set gray text to "land" to suggest the
+  // query [a.copland].
   ASSERT_TRUE(SetOmniboxTextAndWaitForOverlayToShow("a.cop"));
   EXPECT_EQ(ASCIIToUTF16("a.cop"), omnibox()->GetText());
-  EXPECT_TRUE(instant()->last_match_was_search_);
+  EXPECT_EQ(ASCIIToUTF16("land"), GetGrayText());
 
   // Backspace to the text "a.co". Expect no suggestion text, but the
   // first suggestion should be selected URL "a.co".
@@ -362,8 +364,9 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   EXPECT_TRUE(GetActiveTabURL().DomainIs("facebook.com"));
 }
 
+// TODO: http://crbug.com/230537
 IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
-                       MANUAL_PasteURLAndPressEnter) {
+                       DISABLED_PasteURLAndPressEnter) {
   set_browser(browser());
   FocusOmniboxAndWaitForInstantExtendedSupport();
   EXPECT_TRUE(OverlayIsGoogle());
@@ -376,8 +379,7 @@ IN_PROC_BROWSER_TEST_F(InstantExtendedManualTest,
   omnibox()->model()->on_paste();
   SetOmniboxText("www.facebook.com");
   omnibox()->OnAfterPossibleChange();
-  ASSERT_EQ(SearchMode::MODE_SEARCH_SUGGESTIONS,
-            observer.WaitForExpectedOverlayState());
+  ASSERT_TRUE(observer.WaitForExpectedOverlayState());
   EXPECT_EQ(ASCIIToUTF16("www.facebook.com"), omnibox()->GetText());
   EXPECT_EQ(string16(), GetBlueText());
   bool selected = false;

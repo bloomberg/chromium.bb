@@ -746,7 +746,7 @@ IN_PROC_BROWSER_TEST_F(InstantTest, MAYBE_NewWindowDismissesInstant) {
                                     SearchMode::MODE_DEFAULT);
   chrome::NewEmptyWindow(browser()->profile(),
                          chrome::HOST_DESKTOP_TYPE_NATIVE);
-  ASSERT_EQ(SearchMode::MODE_DEFAULT, observer.WaitForExpectedOverlayState());
+  ASSERT_TRUE(observer.WaitForExpectedOverlayState());
 
   // Even though we just created a new Browser object (for the new window), the
   // browser() accessor should still give us the first window's Browser object.
