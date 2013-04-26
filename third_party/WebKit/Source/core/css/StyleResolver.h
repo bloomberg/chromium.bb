@@ -210,7 +210,6 @@ public:
 
     ScopedStyleResolver* ensureScopeResolver()
     {
-        ASSERT(RuntimeEnabledFeatures::shadowDOMEnabled() || RuntimeEnabledFeatures::styleScopedEnabled());
         if (!m_scopeResolver)
             m_scopeResolver = adoptPtr(new ScopedStyleResolver());
         return m_scopeResolver.get();

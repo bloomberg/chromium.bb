@@ -83,8 +83,6 @@ Position::Position(PassRefPtr<Node> anchorNode, LegacyEditingOffset offset)
     , m_anchorType(anchorTypeForLegacyEditingPosition(m_anchorNode.get(), m_offset))
     , m_isLegacyEditingPosition(true)
 {
-    ASSERT((m_anchorNode && RuntimeEnabledFeatures::shadowDOMEnabled())
-           || !m_anchorNode || !m_anchorNode->isShadowRoot());
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
 }
 
@@ -94,9 +92,6 @@ Position::Position(PassRefPtr<Node> anchorNode, AnchorType anchorType)
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT((m_anchorNode && RuntimeEnabledFeatures::shadowDOMEnabled())
-           || !m_anchorNode || !m_anchorNode->isShadowRoot());
-
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
 
     ASSERT(anchorType != PositionIsOffsetInAnchor);
@@ -110,9 +105,6 @@ Position::Position(PassRefPtr<Node> anchorNode, int offset, AnchorType anchorTyp
     , m_anchorType(anchorType)
     , m_isLegacyEditingPosition(false)
 {
-    ASSERT((m_anchorNode && RuntimeEnabledFeatures::shadowDOMEnabled())
-           || !m_anchorNode || !editingIgnoresContent(m_anchorNode.get()) || !m_anchorNode->isShadowRoot());
-
     ASSERT(!m_anchorNode || !m_anchorNode->isPseudoElement());
 
     ASSERT(anchorType == PositionIsOffsetInAnchor);
@@ -856,12 +848,7 @@ bool Position::nodeIsUserSelectNone(Node* node)
 
 ContainerNode* Position::findParent(const Node* node)
 {
-    // FIXME: See http://web.ug/82697
-
-    if (RuntimeEnabledFeatures::shadowDOMEnabled())
-        return node->parentNode();
-
-    return node->nonShadowBoundaryParentNode();
+    return node->parentNode();
 }
 
 #if ENABLE(USERSELECT_ALL)

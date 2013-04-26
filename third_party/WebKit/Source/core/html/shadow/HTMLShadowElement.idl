@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    EnabledAtRuntime=shadowDOM
-] interface HTMLShadowElement : HTMLElement {
+interface HTMLShadowElement : HTMLElement {
     attribute boolean resetStyleInheritance;
     readonly attribute ShadowRoot olderShadowRoot;
 };

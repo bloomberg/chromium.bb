@@ -337,16 +337,6 @@ bool WebRuntimeFeatures::isGamepadEnabled()
     return RuntimeEnabledFeatures::webkitGetGamepadsEnabled();
 }
 
-void WebRuntimeFeatures::enableShadowDOM(bool enable)
-{
-    RuntimeEnabledFeatures::setShadowDOMEnabled(enable);
-}
-
-bool WebRuntimeFeatures::isShadowDOMEnabled()
-{
-    return RuntimeEnabledFeatures::shadowDOMEnabled();
-}
-
 void WebRuntimeFeatures::enableExperimentalShadowDOM(bool enable)
 {
     RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(enable);

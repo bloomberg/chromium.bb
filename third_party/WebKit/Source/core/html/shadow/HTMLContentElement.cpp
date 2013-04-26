@@ -42,8 +42,6 @@ using HTMLNames::selectAttr;
 
 const QualifiedName& HTMLContentElement::contentTagName(Document*)
 {
-    if (!RuntimeEnabledFeatures::shadowDOMEnabled())
-        return HTMLNames::webkitShadowContentTag;
     return HTMLNames::contentTag;
 }
 
@@ -62,8 +60,7 @@ HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document* docu
     , m_shouldParseSelectorList(false)
     , m_isValidSelector(true)
 {
-    if (RuntimeEnabledFeatures::shadowDOMEnabled())
-        ScriptWrappable::init(this);
+    ScriptWrappable::init(this);
 }
 
 HTMLContentElement::~HTMLContentElement()

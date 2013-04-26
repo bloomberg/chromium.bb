@@ -355,9 +355,9 @@
     attribute EntityReferenceConstructor EntityReference;
     [EnabledAtRuntime=canvasPath] attribute DOMPathConstructor Path;
     attribute ProcessingInstructionConstructor ProcessingInstruction;
-    [EnabledAtRuntime=shadowDOM] attribute ShadowRootConstructor WebKitShadowRoot;
-    [EnabledAtRuntime=shadowDOM] attribute HTMLContentElementConstructor HTMLContentElement;
-    [EnabledAtRuntime=shadowDOM] attribute HTMLShadowElementConstructor HTMLShadowElement;
+    attribute ShadowRootConstructor WebKitShadowRoot;
+    attribute HTMLContentElementConstructor HTMLContentElement;
+    attribute HTMLShadowElementConstructor HTMLShadowElement;
 
     attribute DOMSelectionConstructor Selection;
     attribute DOMWindowConstructor Window;

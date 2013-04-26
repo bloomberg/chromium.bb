@@ -52,7 +52,6 @@ public:
 
         bool m_originalCSSExclusionsEnabled;
         bool m_originalCSSVariablesEnabled;
-        bool m_originalShadowDOMEnabled;
         bool m_originalAuthorShadowDOMForAnyElementEnabled;
         bool m_originalExperimentalShadowDOMEnabled;
         bool m_originalStyleScoped;
@@ -87,7 +86,6 @@ public:
     void setMockScrollbarsEnabled(bool enabled, ExceptionCode&);
     void setUsesOverlayScrollbars(bool enabled, ExceptionCode&);
     void setTouchEventEmulationEnabled(bool enabled, ExceptionCode&);
-    void setShadowDOMEnabled(bool enabled, ExceptionCode&);
     void setAuthorShadowDOMForAnyElementEnabled(bool);
     void setExperimentalShadowDOMEnabled(bool enabled);
     void setStyleScopedEnabled(bool);

@@ -116,9 +116,6 @@ public:
     WEBKIT_EXPORT static void enableGamepad(bool);
     WEBKIT_EXPORT static bool isGamepadEnabled();
 
-    WEBKIT_EXPORT static void enableShadowDOM(bool);
-    WEBKIT_EXPORT static bool isShadowDOMEnabled();
-
     WEBKIT_EXPORT static void enableExperimentalShadowDOM(bool);
     WEBKIT_EXPORT static bool isExperimentalShadowDOMEnabled();
 
@@ -142,7 +139,7 @@ public:
 
     WEBKIT_EXPORT static void enableCanvasPath(bool);
     WEBKIT_EXPORT static bool isCanvasPathEnabled();
-    
+
     WEBKIT_EXPORT static void enableCSSExclusions(bool);
     WEBKIT_EXPORT static bool isCSSExclusionsEnabled();
 
@@ -151,7 +148,7 @@ public:
 
     WEBKIT_EXPORT static void enableCSSRegions(bool);
     WEBKIT_EXPORT static bool isCSSRegionsEnabled();
-    
+
     WEBKIT_EXPORT static void enableCSSCompositing(bool);
     WEBKIT_EXPORT static bool isCSSCompositingEnabled();
 

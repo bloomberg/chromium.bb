@@ -68,7 +68,6 @@ namespace WebCore {
 InternalSettings::Backup::Backup(Settings* settings)
     : m_originalCSSExclusionsEnabled(RuntimeEnabledFeatures::cssExclusionsEnabled())
     , m_originalCSSVariablesEnabled(settings->cssVariablesEnabled())
-    , m_originalShadowDOMEnabled(RuntimeEnabledFeatures::shadowDOMEnabled())
     , m_originalAuthorShadowDOMForAnyElementEnabled(RuntimeEnabledFeatures::authorShadowDOMForAnyElementEnabled())
     , m_originalExperimentalShadowDOMEnabled(RuntimeEnabledFeatures::experimentalShadowDOMEnabled())
     , m_originalStyleScoped(RuntimeEnabledFeatures::styleScopedEnabled())
@@ -94,7 +93,6 @@ void InternalSettings::Backup::restoreTo(Settings* settings)
 {
     RuntimeEnabledFeatures::setCSSExclusionsEnabled(m_originalCSSExclusionsEnabled);
     settings->setCSSVariablesEnabled(m_originalCSSVariablesEnabled);
-    RuntimeEnabledFeatures::setShadowDOMEnabled(m_originalShadowDOMEnabled);
     RuntimeEnabledFeatures::setAuthorShadowDOMForAnyElementEnabled(m_originalAuthorShadowDOMForAnyElementEnabled);
     RuntimeEnabledFeatures::setExperimentalShadowDOMEnabled(m_originalExperimentalShadowDOMEnabled);
     RuntimeEnabledFeatures::setStyleScopedEnabled(m_originalStyleScoped);
@@ -177,24 +175,6 @@ void InternalSettings::setMockScrollbarsEnabled(bool enabled, ExceptionCode& ec)
 {
     InternalSettingsGuardForSettings();
     settings()->setMockScrollbarsEnabled(enabled);
-}
-
-static bool urlIsWhitelistedForSetShadowDOMEnabled(const String& url)
-{
-    // This check is just for preventing fuzzers from crashing because of unintended API calls.
-    // You can list your test if needed.
-    return notFound != url.find("fast/dom/shadow/content-shadow-unknown.html")
-        || notFound != url.find("fast/dom/shadow/insertion-points-with-shadow-disabled.html");
-}
-
-void InternalSettings::setShadowDOMEnabled(bool enabled, ExceptionCode& ec)
-{
-    if (!urlIsWhitelistedForSetShadowDOMEnabled(page()->mainFrame()->document()->url().string())) {
-        ec = INVALID_ACCESS_ERR;
-        return;
-    }
-
-    RuntimeEnabledFeatures::setShadowDOMEnabled(enabled);
 }
 
 void InternalSettings::setAuthorShadowDOMForAnyElementEnabled(bool isEnabled)

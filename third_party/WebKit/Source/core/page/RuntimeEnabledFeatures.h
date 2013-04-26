@@ -196,9 +196,6 @@ public:
     static void setWebkitVideoTrackEnabled(bool isEnabled) { isWebkitVideoTrackEnabled = isEnabled; }
     static bool webkitVideoTrackEnabled() { return isWebkitVideoTrackEnabled; }
 
-    static void setShadowDOMEnabled(bool isEnabled) { isShadowDOMEnabled = isEnabled; }
-    static bool shadowDOMEnabled() { return isShadowDOMEnabled; }
-
     static void setExperimentalShadowDOMEnabled(bool isEnabled) { isExperimentalShadowDOMEnabled = isEnabled; }
     static bool experimentalShadowDOMEnabled() { return isExperimentalShadowDOMEnabled; }
 

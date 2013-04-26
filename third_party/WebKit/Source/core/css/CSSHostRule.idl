@@ -19,9 +19,7 @@
  */
 
 // Introduced in Shadow DOM spec:
-[
-    EnabledAtRuntime=shadowDOM
-] interface CSSHostRule : CSSRule {
+interface CSSHostRule : CSSRule {
     readonly attribute CSSRuleList cssRules;
     
     [RaisesException] unsigned long      insertRule([Default=Undefined] optional DOMString rule, 

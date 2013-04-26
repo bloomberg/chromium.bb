@@ -75,7 +75,6 @@ TestInterfaces::TestInterfaces()
     WebRuntimeFeatures::enableWebMIDI(true);
     WebRuntimeFeatures::enableVideoTrack(true);
     WebRuntimeFeatures::enableGamepad(true);
-    WebRuntimeFeatures::enableShadowDOM(true);
     WebRuntimeFeatures::enableCustomDOMElements(true);
     WebRuntimeFeatures::enableStyleScoped(true);
     WebRuntimeFeatures::enableScriptedSpeech(true);

@@ -290,17 +290,9 @@ DOMSelection* TreeScope::getSelection() const
         return m_selection.get();
 
     // FIXME: The correct selection in Shadow DOM requires that Position can have a ShadowRoot
-    // as a container. It is now enabled only if runtime Shadow DOM feature is enabled.
+    // as a container.
     // See https://bugs.webkit.org/show_bug.cgi?id=82697
-    if (RuntimeEnabledFeatures::shadowDOMEnabled()) {
-        m_selection = DOMSelection::create(this);
-        return m_selection.get();
-    }
-
-    if (this != rootNode()->document())
-        return rootNode()->document()->getSelection();
-
-    m_selection = DOMSelection::create(rootNode()->document());
+    m_selection = DOMSelection::create(this);
     return m_selection.get();
 }
 
