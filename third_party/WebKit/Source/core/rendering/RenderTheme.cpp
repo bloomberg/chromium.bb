@@ -490,11 +490,6 @@ String RenderTheme::formatMediaControlsCurrentTime(float currentTime, float /*du
     return formatMediaControlsTime(currentTime);
 }
 
-String RenderTheme::formatMediaControlsRemainingTime(float currentTime, float duration) const
-{
-    return formatMediaControlsTime(currentTime - duration);
-}
-
 Color RenderTheme::activeSelectionBackgroundColor() const
 {
     if (!m_activeSelectionBackgroundColor.isValid())

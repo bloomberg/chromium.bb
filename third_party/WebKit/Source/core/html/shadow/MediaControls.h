@@ -77,7 +77,7 @@ class MediaControls : public HTMLDivElement {
     virtual void playbackStopped();
 
     virtual void updateStatusDisplay() { };
-    virtual void updateCurrentTimeDisplay();
+    virtual void updateCurrentTimeDisplay() = 0;
     virtual void showVolumeSlider();
 
     virtual void changedMute();

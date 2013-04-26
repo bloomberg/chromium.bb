@@ -1966,11 +1966,6 @@ String RenderThemeChromiumMac::formatMediaControlsCurrentTime(float currentTime,
     return RenderMediaControlsChromium::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
-String RenderThemeChromiumMac::formatMediaControlsRemainingTime(float currentTime, float duration) const
-{
-    return RenderThemeChromiumMac::formatMediaControlsRemainingTime(currentTime, duration);
-}
-
 bool RenderThemeChromiumMac::paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);

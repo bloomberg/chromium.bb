@@ -406,11 +406,6 @@ String RenderThemeChromiumSkia::formatMediaControlsCurrentTime(float currentTime
     return RenderMediaControlsChromium::formatMediaControlsCurrentTime(currentTime, duration);
 }
 
-String RenderThemeChromiumSkia::formatMediaControlsRemainingTime(float currentTime, float duration) const
-{
-    return RenderMediaControlsChromium::formatMediaControlsRemainingTime(currentTime, duration);
-}
-
 bool RenderThemeChromiumSkia::paintMediaFullscreenButton(RenderObject* object, const PaintInfo& paintInfo, const IntRect& rect)
 {
     return RenderMediaControlsChromium::paintMediaControlsPart(MediaEnterFullscreenButton, object, paintInfo, rect);

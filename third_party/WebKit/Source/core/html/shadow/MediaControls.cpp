@@ -209,18 +209,6 @@ void MediaControls::playbackStopped()
     stopHideFullscreenControlsTimer();
 }
 
-void MediaControls::updateCurrentTimeDisplay()
-{
-    double now = m_mediaController->currentTime();
-
-    Page* page = document()->page();
-    if (!page)
-        return;
-
-    m_currentTimeDisplay->setInnerText(page->theme()->formatMediaControlsTime(now), IGNORE_EXCEPTION);
-    m_currentTimeDisplay->setCurrentValue(now);
-}
-
 void MediaControls::showVolumeSlider()
 {
     if (!m_mediaController->hasAudio())

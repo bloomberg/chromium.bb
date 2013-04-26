@@ -44,7 +44,6 @@ public:
     static void adjustMediaSliderThumbSize(RenderStyle*);
     static String formatMediaControlsTime(float time);
     static String formatMediaControlsCurrentTime(float currentTime, float duration);
-    static String formatMediaControlsRemainingTime(float currentTime, float duration);
 };
 
 } // namespace WebCore

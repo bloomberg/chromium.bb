@@ -451,9 +451,4 @@ String RenderMediaControlsChromium::formatMediaControlsCurrentTime(float current
     return formatChromiumMediaControlsTime(currentTime, duration);
 }
 
-String RenderMediaControlsChromium::formatMediaControlsRemainingTime(float currentTime, float duration)
-{
-    return formatChromiumMediaControlsTime(currentTime - duration, duration);
-}
-
 } // namespace WebCore
