@@ -137,7 +137,9 @@ class ExternalInstallGlobalError : public ExternalInstallMenuAlert {
   virtual void BubbleViewCancelButtonPressed(Browser* browser) OVERRIDE;
 
  protected:
-  // Manages its own lifetime.
+  // Ref-counted, but needs to be disposed of if we are dismissed without
+  // having been clicked (perhaps because the user enabled the extension
+  // manually).
   ExternalInstallDialogDelegate* delegate_;
   const ExtensionInstallPrompt::Prompt* prompt_;
 };
@@ -301,6 +303,8 @@ ExternalInstallGlobalError::ExternalInstallGlobalError(
 }
 
 ExternalInstallGlobalError::~ExternalInstallGlobalError() {
+  if (delegate_)
+    delegate_->Release();
 }
 
 void ExternalInstallGlobalError::ExecuteMenuItem(Browser* browser) {
@@ -344,11 +348,13 @@ void ExternalInstallGlobalError::OnBubbleViewDidClose(Browser* browser) {
 void ExternalInstallGlobalError::BubbleViewAcceptButtonPressed(
     Browser* browser) {
   delegate_->InstallUIProceed();
+  delegate_ = NULL;
 }
 
 void ExternalInstallGlobalError::BubbleViewCancelButtonPressed(
     Browser* browser) {
   delegate_->InstallUIAbort(true);
+  delegate_ = NULL;
 }
 
 // Public interface ---------------------------------------------------------

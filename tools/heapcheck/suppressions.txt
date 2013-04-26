@@ -1884,27 +1884,6 @@
    fun:content::ResourceDispatcherHostTest_*_Test::TestBody
 }
 {
-   bug_234741_a
-   Heapcheck:Leak
-   ...
-   fun:ExternalInstallGlobalError
-   fun:extensions::AddExternalInstallError
-   fun:ExtensionService::UpdateExternalExtensionAlert
-   fun:ExtensionService::FinishInstallation
-   fun:ExtensionService::AddNewOrUpdatedExtension
-   fun:ExtensionService::OnExtensionInstalled
-}
-{
-   bug_234741_b
-   Heapcheck:Leak
-   fun:extensions::PermissionSet::CreateUnion
-   fun:ExtensionService::InitializePermissions
-   fun:ExtensionService::AddExtension
-   fun:ExtensionService::FinishInstallation
-   fun:ExtensionService::AddNewOrUpdatedExtension
-   fun:ExtensionService::OnExtensionInstalled
-}
-{
    bug_234754
    Heapcheck:Leak
    fun:MessageLoop
