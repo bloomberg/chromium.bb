@@ -285,6 +285,10 @@ cr.define('print_preview', function() {
           this.printTicketStore_.color,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onTicketChange_.bind(this));
+      this.tracker.add(
+          this.printTicketStore_.cssBackground,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onTicketChange_.bind(this));
 
       if (this.checkPluginCompatibility_()) {
         this.previewGenerator_ = new print_preview.PreviewGenerator(

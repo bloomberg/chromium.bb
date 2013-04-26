@@ -171,7 +171,7 @@ cr.define('print_preview', function() {
       this.pageRanges_ = this.printTicketStore_.getPageRanges();
       this.marginsType_ = this.printTicketStore_.getMarginsType();
       this.isCssBackgroundEnabled_ =
-          this.printTicketStore_.isCssBackgroundEnabled();
+          this.printTicketStore_.cssBackground.getValue();
       this.isSelectionOnlyEnabled_ =
           this.printTicketStore_.isSelectionOnlyEnabled();
       this.selectedDestination_ = this.destinationStore_.selectedDestination;
@@ -279,7 +279,7 @@ cr.define('print_preview', function() {
               print_preview.ticket_items.MarginsType.Value.CUSTOM &&
               !ticketStore.getCustomMargins().equals(
                   this.documentInfo_.margins)) ||
-          (ticketStore.isCssBackgroundEnabled() !=
+          !ticketStore.cssBackground.isValueEqual(
               this.isCssBackgroundEnabled_) ||
           (ticketStore.isSelectionOnlyEnabled() !=
               this.isSelectionOnlyEnabled_) ||

@@ -32,6 +32,13 @@ cr.define('print_preview', function() {
     this.fitToPageTicketItem_ = printTicketStore.fitToPage;
 
     /**
+     * Enable CSS backgrounds ticket item, used to read/write.
+     * @type {!print_preview.ticket_items.CssBackground}
+     * @private
+     */
+    this.cssBackgroundTicketItem_ = printTicketStore.cssBackground;
+
+    /**
      * Used to monitor the state of the print ticket.
      * @type {!print_preview.PrintTicketStore}
      * @private
@@ -167,6 +174,10 @@ cr.define('print_preview', function() {
           this.fitToPageTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
           this.onFitToPageChange_.bind(this));
+      this.tracker.add(
+          this.cssBackgroundTicketItem_,
+          print_preview.ticket_items.TicketItem.EventType.CHANGE,
+          this.onCssBackgroundChange_.bind(this));
     },
 
     /** @override */
@@ -216,7 +227,7 @@ cr.define('print_preview', function() {
       if (this.printTicketStore_.hasHeaderFooterCapability() ||
           this.fitToPageTicketItem_.isCapabilityAvailable() ||
           this.duplexTicketItem_.isCapabilityAvailable() ||
-          this.printTicketStore_.hasCssBackgroundCapability() ||
+          this.cssBackgroundTicketItem_.isCapabilityAvailable() ||
           this.printTicketStore_.hasSelectionOnlyCapability()) {
         fadeInOption(this.getElement());
       } else {
@@ -257,7 +268,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onCssBackgroundCheckboxClick_: function() {
-      this.printTicketStore_.updateCssBackground(
+      this.cssBackgroundTicketItem_.updateValue(
           this.cssBackgroundCheckbox_.checked);
     },
 
@@ -282,10 +293,6 @@ cr.define('print_preview', function() {
       this.headerFooterCheckbox_.checked =
           this.printTicketStore_.isHeaderFooterEnabled();
 
-      setIsVisible(this.cssBackgroundContainer_,
-                   this.printTicketStore_.hasCssBackgroundCapability());
-      this.cssBackgroundCheckbox_.checked =
-          this.printTicketStore_.isCssBackgroundEnabled();
 
       setIsVisible(this.selectionOnlyContainer_,
                    this.printTicketStore_.hasSelectionOnlyCapability());
@@ -316,6 +323,19 @@ cr.define('print_preview', function() {
       setIsVisible(this.fitToPageContainer_,
                    this.fitToPageTicketItem_.isCapabilityAvailable());
       this.fitToPageCheckbox_.checked = this.fitToPageTicketItem_.getValue();
+      this.updateContainerState_();
+    },
+
+    /**
+     * Called when the CSS background ticket item has changed. Updates the
+     * CSS background checkbox.
+     * @private
+     */
+    onCssBackgroundChange_: function() {
+      setIsVisible(this.cssBackgroundContainer_,
+                   this.cssBackgroundTicketItem_.isCapabilityAvailable());
+      this.cssBackgroundCheckbox_.checked =
+          this.cssBackgroundTicketItem_.getValue();
       this.updateContainerState_();
     }
   };

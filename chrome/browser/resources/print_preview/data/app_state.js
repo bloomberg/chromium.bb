@@ -104,11 +104,6 @@ cr.define('print_preview', function() {
       return this.state_[AppState.Field.IS_LANDSCAPE_ENABLED];
     },
 
-    /** @return {?boolean} Whether printing CSS backgrounds is enabled. */
-    get isCssBackgroundEnabled() {
-      return this.state_[AppState.Field.IS_CSS_BACKGROUND_ENABLED];
-    },
-
     /**
      * @param {!print_preview.AppState.Field} field App state field to check if
      *     set.
@@ -219,17 +214,6 @@ cr.define('print_preview', function() {
      */
     persistIsLandscapeEnabled: function(isLandscapeEnabled) {
       this.state_[AppState.Field.IS_LANDSCAPE_ENABLED] = isLandscapeEnabled;
-      this.persist_();
-    },
-
-    /**
-     * Persists whether printing CSS backgrounds is enabled.
-     * @param {?boolean} isCssBackgroundEnabled Whether printing CSS
-     *     backgrounds is enabled.
-     */
-    persistIsCssBackgroundEnabled: function(isCssBackgroundEnabled) {
-      this.state_[AppState.Field.IS_CSS_BACKGROUND_ENABLED] =
-          isCssBackgroundEnabled;
       this.persist_();
     },
 

@@ -177,7 +177,7 @@ cr.define('print_preview', function() {
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),
-        'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled(),
+        'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
         'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled()
       };
 
@@ -236,7 +236,7 @@ cr.define('print_preview', function() {
             NativeLayer.DuplexMode.LONG_EDGE : NativeLayer.DuplexMode.SIMPLEX,
         'copies': printTicketStore.copies.getValueAsNumber(),
         'collate': printTicketStore.collate.getValue(),
-        'shouldPrintBackgrounds': printTicketStore.isCssBackgroundEnabled(),
+        'shouldPrintBackgrounds': printTicketStore.cssBackground.getValue(),
         'shouldPrintSelectionOnly': printTicketStore.isSelectionOnlyEnabled(),
         'previewModifiable': documentInfo.isModifiable,
         'printToPDF': destination.id ==

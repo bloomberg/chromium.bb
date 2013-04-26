@@ -8,20 +8,20 @@ cr.define('print_preview.ticket_items', function() {
   /**
    * Ticket item whose value is a {@code boolean} that represents whether to
    * print CSS backgrounds.
+   * @param {!print_preview.AppState} appState App state to persist CSS
+   *     background value.
    * @param {!print_preview.DocumentInfo} documentInfo Information about the
    *     document to print.
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function CssBackground(documentInfo) {
-    print_preview.ticket_items.TicketItem.call(this);
-
-    /**
-     * Information about the document to print.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+  function CssBackground(appState, documentInfo) {
+    print_preview.ticket_items.TicketItem.call(
+        this,
+        appState,
+        print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED,
+        null /*destinationStore*/,
+        documentInfo);
   };
 
   CssBackground.prototype = {
@@ -34,7 +34,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable: function() {
-      return this.documentInfo_.isModifiable;
+      return this.getDocumentInfoInternal().isModifiable;
     },
 
     /** @override */

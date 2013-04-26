@@ -146,8 +146,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.ticket_items.CssBackground}
      * @private
      */
-    this.cssBackground_ =
-        new print_preview.ticket_items.CssBackground(this.documentInfo_);
+    this.cssBackground_ = new print_preview.ticket_items.CssBackground(
+        this.appState_, this.documentInfo_);
 
     /**
      * Print selection only ticket item.
@@ -191,6 +191,10 @@ cr.define('print_preview', function() {
 
     get copies() {
       return this.copies_;
+    },
+
+    get cssBackground() {
+      return this.cssBackground_;
     },
 
     get duplex() {
@@ -244,7 +248,11 @@ cr.define('print_preview', function() {
         this.collate_.updateValue(this.appState_.getField(
             print_preview.AppState.Field.IS_COLLATE_ENABLED));
       }
-      this.cssBackground_.updateValue(this.appState_.isCssBackgroundEnabled);
+      if (this.appState_.hasField(
+          print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED)) {
+        this.cssBackground_.updateValue(this.appState_.getField(
+            print_preview.AppState.Field.IS_CSS_BACKGROUND_ENABLED));
+      }
     },
 
     /** @return {boolean} Whether the header-footer capability is available. */
@@ -442,34 +450,6 @@ cr.define('print_preview', function() {
     updatePageRange: function(pageRangeStr) {
       if (this.pageRange_.getValue() != pageRangeStr) {
         this.pageRange_.updateValue(pageRangeStr);
-        cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
-      }
-    },
-
-    /**
-     * @return {boolean} Whether the print CSS backgrounds capability is
-     *     available.
-     */
-    hasCssBackgroundCapability: function() {
-      return this.cssBackground_.isCapabilityAvailable();
-    },
-
-    /**
-     * @return {boolean} Whether the print CSS backgrounds capability is
-     *     enabled.
-     */
-    isCssBackgroundEnabled: function() {
-      return this.cssBackground_.getValue();
-    },
-
-    /**
-     * @param {boolean} isCssBackgroundEnabled Whether to enable the
-     *     print CSS backgrounds capability.
-     */
-    updateCssBackground: function(isCssBackgroundEnabled) {
-      if (this.cssBackground_.getValue() != isCssBackgroundEnabled) {
-        this.cssBackground_.updateValue(isCssBackgroundEnabled);
-        this.appState_.persistIsCssBackgroundEnabled(isCssBackgroundEnabled);
         cr.dispatchSimpleEvent(this, PrintTicketStore.EventType.TICKET_CHANGE);
       }
     },
