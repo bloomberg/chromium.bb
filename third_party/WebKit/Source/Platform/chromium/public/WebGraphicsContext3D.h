@@ -145,6 +145,14 @@ public:
         virtual ~WebGraphicsMemoryAllocationChangedCallbackCHROMIUM() { }
     };
 
+    class WebGraphicsSyncPointCallback {
+    public:
+        virtual void onSyncPointReached() = 0;
+
+    protected:
+        virtual ~WebGraphicsSyncPointCallback() { }
+    };
+
     // This destructor needs to be public so that using classes can destroy instances if initialization fails.
     virtual ~WebGraphicsContext3D() { }
 
@@ -181,6 +189,7 @@ public:
 
     virtual unsigned insertSyncPoint() { return 0; }
     virtual void waitSyncPoint(unsigned) { }
+    virtual void signalSyncPoint(unsigned syncPoint, WebGraphicsSyncPointCallback*) { }
 
     // Helper for software compositing path. Reads back the frame buffer into
     // the memory region pointed to by "pixels" with size "bufferSize". It is
