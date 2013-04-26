@@ -112,7 +112,7 @@ class QuadCullerTest : public testing::Test {
                    TiledLayerImpl* layer,
                    LayerIteratorType* it,
                    OcclusionTrackerImpl* occlusion_tracker) {
-    occlusion_tracker->EnterLayer(*it);
+    occlusion_tracker->EnterLayer(*it, false);
     QuadCuller quad_culler(
         quad_list, shared_state_list, layer, *occlusion_tracker, false, false);
     AppendQuadsData data;

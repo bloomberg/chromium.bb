@@ -594,7 +594,9 @@ bool LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     RenderPass* target_render_pass =
         frame->render_passes_by_id[target_render_pass_id];
 
-    occlusion_tracker.EnterLayer(it);
+    bool prevent_occlusion =
+        it.target_render_surface_layer()->HasRequestCopyCallback();
+    occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     AppendQuadsData append_quads_data(target_render_pass->id);
 

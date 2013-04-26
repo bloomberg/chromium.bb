@@ -964,7 +964,9 @@ bool LayerTreeHost::PaintLayerContents(
            LayerIteratorType::Begin(&render_surface_layer_list);
        it != end;
        ++it) {
-    occlusion_tracker.EnterLayer(it);
+    bool prevent_occlusion =
+        it.target_render_surface_layer()->HasRequestCopyCallback();
+    occlusion_tracker.EnterLayer(it, prevent_occlusion);
 
     if (it.represents_target_render_surface()) {
       DCHECK(it->render_surface()->draw_opacity() ||
