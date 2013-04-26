@@ -2,7 +2,6 @@
   'variables': {
     'modules_include_dirs': [
       'battery',
-      'device_orientation',
       'donottrack',
       'filesystem',
       'gamepad',
