@@ -183,6 +183,7 @@ public:
     unsigned touchEventHandlerCount(Document*, ExceptionCode&);
     PassRefPtr<ClientRectList> touchEventTargetClientRects(Document*, ExceptionCode&);
 
+    // This is used to test rect based hit testing like what's done on touch screens.
     PassRefPtr<NodeList> nodesFromRect(Document*, int x, int y, unsigned topPadding, unsigned rightPadding,
         unsigned bottomPadding, unsigned leftPadding, bool ignoreClipping, bool allowShadowContent, bool allowChildFrameContent, ExceptionCode&) const;
 
