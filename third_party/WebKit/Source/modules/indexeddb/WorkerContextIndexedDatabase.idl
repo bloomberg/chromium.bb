@@ -24,9 +24,7 @@
  *
  */
 
-[
-    Supplemental=WorkerContext
-] interface WorkerContextIndexedDatabase {
+partial interface WorkerContext {
     [ImplementedAs=indexedDB,EnabledAtRuntime=indexedDB] readonly attribute IDBFactory webkitIndexedDB;
 
     attribute IDBCursorConstructor webkitIDBCursor;

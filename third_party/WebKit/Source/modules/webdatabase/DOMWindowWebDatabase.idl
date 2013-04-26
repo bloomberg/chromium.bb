@@ -24,9 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Supplemental=DOMWindow
-] interface DOMWindowWebDatabase {
+partial interface DOMWindow {
     [EnabledAtRuntime=database, MeasureAs=OpenWebDatabase, PerWorldBindings, ActivityLog=AccessForIsolatedWorlds, RaisesException] Database openDatabase(DOMString name, DOMString version, DOMString displayName, unsigned long estimatedSize, [Callback] optional DatabaseCallback creationCallback);
     attribute SQLExceptionConstructor SQLException;
 };

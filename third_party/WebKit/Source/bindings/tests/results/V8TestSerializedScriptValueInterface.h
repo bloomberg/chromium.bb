@@ -63,10 +63,6 @@ inline v8::Handle<v8::Object> wrap(TestSerializedScriptValueInterface* impl, v8:
 {
     ASSERT(impl);
     ASSERT(DOMDataStore::getWrapper(impl, isolate).IsEmpty());
-    if (ScriptWrappable::wrapperCanBeStoredInObject(impl)) {
-        const WrapperTypeInfo* actualInfo = ScriptWrappable::getTypeInfoFromObject(impl);
-        RELEASE_ASSERT(actualInfo == &V8TestSerializedScriptValueInterface::info);
-    }
     return V8TestSerializedScriptValueInterface::createWrapper(impl, creationContext, isolate);
 }
 

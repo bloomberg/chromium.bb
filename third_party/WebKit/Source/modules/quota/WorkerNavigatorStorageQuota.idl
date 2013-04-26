@@ -17,9 +17,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-[
-    Supplemental=WorkerNavigator
-] interface WorkerNavigatorStorageQuota {
+partial interface WorkerNavigator {
     readonly attribute StorageQuota webkitTemporaryStorage;
     readonly attribute StorageQuota webkitPersistentStorage;
 };

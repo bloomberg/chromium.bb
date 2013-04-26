@@ -23,9 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Supplemental=DOMWindow
-] interface DOMWindowSpeech {
+partial interface DOMWindow {
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionConstructor webkitSpeechRecognition;
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionErrorConstructor webkitSpeechRecognitionError;
     [EnabledAtRuntime=scriptedSpeech] attribute SpeechRecognitionEventConstructor webkitSpeechRecognitionEvent;

@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Supplemental=Navigator
-] interface NavigatorDoNotTrack {
+partial interface Navigator {
     [TreatReturnedNullStringAs=Null] readonly attribute DOMString doNotTrack;
 };
 

@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Supplemental=HTMLInputElement
-] interface HTMLInputElementFileSystem {
+partial interface HTMLInputElement {
     [EnabledAtRuntime=FileSystem,CallWith=ScriptExecutionContext] readonly attribute EntryArray webkitEntries;
 };
 

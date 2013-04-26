@@ -90,7 +90,7 @@
     'target_name': 'supplemental_dependencies',
     'type': 'none',
     'actions': [{
-      'action_name': 'generateSupplementalDependency',
+      'action_name': 'generatePartialInterfacesDependency',
       'variables': {
         # Write sources into a file, so that the action command line won't
         # exceed OS limits.
@@ -118,7 +118,7 @@
          '--supplementalDependencyFile',
          '<(SHARED_INTERMEDIATE_DIR)/supplemental_dependency.tmp',
        ],
-       'message': 'Resolving [Supplemental=XXX] dependencies in all IDL files',
+       'message': 'Resolving partial interfaces dependencies in all IDL files',
       }]
     },
     {

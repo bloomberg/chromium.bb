@@ -28,20 +28,18 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""This file returns a list of all the files that have the
-Supplemental attribute."""
+"""This file returns a list of all the IDL files that contain a partial interface."""
 
 import re
 import sys
 
-supplemental_regex = re.compile(r'\[.+Supplemental=(\w+).+\]', re.M | re.S)
-
+partial_interface_regex = re.compile(r'partial\s+interface\s+(\w+).+\]', re.M | re.S)
 
 def DoMain(filenames):
-    supplemental_files = set()
+    partial_files = set()
     for filename in filenames:
         with open(filename) as f:
-            match = re.search(supplemental_regex, f.read())
+            match = re.search(partial_interface_regex, f.read())
             if match:
-                supplemental_files.add(filename)
-    return '\n'.join(supplemental_files)
+                partial_files.add(filename)
+    return '\n'.join(partial_files)

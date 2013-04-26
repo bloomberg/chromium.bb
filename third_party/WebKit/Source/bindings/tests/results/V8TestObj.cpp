@@ -4014,7 +4014,7 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
     // Attribute 'staticStringAttr' (Type: 'attribute' ExtAttr: '')
     {"staticStringAttr", TestObjV8Internal::staticStringAttrAttrGetterCallback, TestObjV8Internal::staticStringAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'TestSubObj' (Type: 'readonly attribute' ExtAttr: '')
-    {"TestSubObj", TestObjV8Internal::TestObjConstructorGetter, 0, 0, 0, &V8TestSubObj::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"TestSubObj", TestObjV8Internal::TestObjConstructorGetter, 0, 0, 0, &V8TestSubObj::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
     // Attribute 'enumAttr' (Type: 'attribute' ExtAttr: '')
     {"enumAttr", TestObjV8Internal::enumAttrAttrGetterCallback, TestObjV8Internal::enumAttrAttrSetterCallback, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     // Attribute 'readOnlyEnumAttr' (Type: 'readonly attribute' ExtAttr: '')
@@ -4103,15 +4103,15 @@ static const V8DOMConfiguration::BatchedAttribute V8TestObjAttrs[] = {
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 #if ENABLE(Condition1)
     // Attribute 'conditionalAttr4' (Type: 'attribute' ExtAttr: 'Conditional')
-    {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectA::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"conditionalAttr4", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectA::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1)
 #if ENABLE(Condition1) && ENABLE(Condition2)
     // Attribute 'conditionalAttr5' (Type: 'attribute' ExtAttr: 'Conditional')
-    {"conditionalAttr5", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectB::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"conditionalAttr5", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectB::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1) && ENABLE(Condition2)
 #if ENABLE(Condition1) || ENABLE(Condition2)
     // Attribute 'conditionalAttr6' (Type: 'attribute' ExtAttr: 'Conditional')
-    {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectC::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"conditionalAttr6", TestObjV8Internal::TestObjConstructorGetter, TestObjV8Internal::TestObjReplaceableAttrSetterCallback, 0, 0, &V8TestObjectC::info, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None | v8::DontEnum), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
     // Attribute 'cachedAttribute1' (Type: 'readonly attribute' ExtAttr: 'CachedAttribute')
     {"cachedAttribute1", TestObjV8Internal::cachedAttribute1AttrGetterCallback, 0, 0, 0, 0 /* no data */, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
@@ -4326,92 +4326,92 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestObjTemplate(v8::Persi
     const int voidMethodWithArgsArgc = 3;
     v8::Handle<v8::FunctionTemplate> voidMethodWithArgsArgv[voidMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObj::info, currentWorldType) };
     v8::Handle<v8::Signature> voidMethodWithArgsSignature = v8::Signature::New(desc, voidMethodWithArgsArgc, voidMethodWithArgsArgv);
-    proto->Set(v8::String::NewSymbol("voidMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature));
+    proto->Set(v8::String::NewSymbol("voidMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::voidMethodWithArgsMethodCallback, v8Undefined(), voidMethodWithArgsSignature, 3));
 
     // Custom Signature 'longMethodWithArgs'
     const int longMethodWithArgsArgc = 3;
     v8::Handle<v8::FunctionTemplate> longMethodWithArgsArgv[longMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObj::info, currentWorldType) };
     v8::Handle<v8::Signature> longMethodWithArgsSignature = v8::Signature::New(desc, longMethodWithArgsArgc, longMethodWithArgsArgv);
-    proto->Set(v8::String::NewSymbol("longMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature));
+    proto->Set(v8::String::NewSymbol("longMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::longMethodWithArgsMethodCallback, v8Undefined(), longMethodWithArgsSignature, 3));
 
     // Custom Signature 'objMethodWithArgs'
     const int objMethodWithArgsArgc = 3;
     v8::Handle<v8::FunctionTemplate> objMethodWithArgsArgv[objMethodWithArgsArgc] = { v8::Handle<v8::FunctionTemplate>(), v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObj::info, currentWorldType) };
     v8::Handle<v8::Signature> objMethodWithArgsSignature = v8::Signature::New(desc, objMethodWithArgsArgc, objMethodWithArgsArgv);
-    proto->Set(v8::String::NewSymbol("objMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature));
+    proto->Set(v8::String::NewSymbol("objMethodWithArgs"), v8::FunctionTemplate::New(TestObjV8Internal::objMethodWithArgsMethodCallback, v8Undefined(), objMethodWithArgsSignature, 3));
 
     // Custom Signature 'methodWithSequenceArg'
     const int methodWithSequenceArgArgc = 1;
     v8::Handle<v8::FunctionTemplate> methodWithSequenceArgArgv[methodWithSequenceArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8sequence<ScriptProfile>::info, currentWorldType) };
     v8::Handle<v8::Signature> methodWithSequenceArgSignature = v8::Signature::New(desc, methodWithSequenceArgArgc, methodWithSequenceArgArgv);
-    proto->Set(v8::String::NewSymbol("methodWithSequenceArg"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithSequenceArgMethodCallback, v8Undefined(), methodWithSequenceArgSignature));
+    proto->Set(v8::String::NewSymbol("methodWithSequenceArg"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithSequenceArgMethodCallback, v8Undefined(), methodWithSequenceArgSignature, 1));
 
     // Custom Signature 'methodThatRequiresAllArgsAndThrows'
     const int methodThatRequiresAllArgsAndThrowsArgc = 2;
     v8::Handle<v8::FunctionTemplate> methodThatRequiresAllArgsAndThrowsArgv[methodThatRequiresAllArgsAndThrowsArgc] = { v8::Handle<v8::FunctionTemplate>(), V8PerIsolateData::from(isolate)->rawTemplate(&V8TestObj::info, currentWorldType) };
     v8::Handle<v8::Signature> methodThatRequiresAllArgsAndThrowsSignature = v8::Signature::New(desc, methodThatRequiresAllArgsAndThrowsArgc, methodThatRequiresAllArgsAndThrowsArgv);
-    proto->Set(v8::String::NewSymbol("methodThatRequiresAllArgsAndThrows"), v8::FunctionTemplate::New(TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature));
-    desc->Set(v8::String::NewSymbol("staticMethodWithCallbackAndOptionalArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
-    desc->Set(v8::String::NewSymbol("staticMethodWithCallbackArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
-    desc->Set(v8::String::NewSymbol("classMethod"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
-    desc->Set(v8::String::NewSymbol("classMethodWithOptional"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodWithOptionalMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
-    desc->Set(v8::String::NewSymbol("classMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::classMethod2MethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
+    proto->Set(v8::String::NewSymbol("methodThatRequiresAllArgsAndThrows"), v8::FunctionTemplate::New(TestObjV8Internal::methodThatRequiresAllArgsAndThrowsMethodCallback, v8Undefined(), methodThatRequiresAllArgsAndThrowsSignature, 2));
+    desc->Set(v8::String::NewSymbol("staticMethodWithCallbackAndOptionalArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackAndOptionalArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    desc->Set(v8::String::NewSymbol("staticMethodWithCallbackArg"), v8::FunctionTemplate::New(TestObjV8Internal::staticMethodWithCallbackArgMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
+    desc->Set(v8::String::NewSymbol("classMethod"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    desc->Set(v8::String::NewSymbol("classMethodWithOptional"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodWithOptionalMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
+    desc->Set(v8::String::NewSymbol("classMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::classMethod2MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
 #if ENABLE(Condition1)
-    desc->Set(v8::String::NewSymbol("overloadedMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::overloadedMethod1MethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
+    desc->Set(v8::String::NewSymbol("overloadedMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::overloadedMethod1MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
 #endif // ENABLE(Condition1)
     if (RuntimeEnabledFeatures::enabledAtRuntimeMethod1Enabled())
-        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod1MethodCallback, v8Undefined(), defaultSignature));
+        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod1MethodCallback, v8Undefined(), defaultSignature, 1));
     if (RuntimeEnabledFeatures::featureNameEnabled())
-        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod2MethodCallback, v8Undefined(), defaultSignature));
+        proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethod2MethodCallback, v8Undefined(), defaultSignature, 1));
 
     // Custom Signature 'methodWithUnsignedLongSequence'
     const int methodWithUnsignedLongSequenceArgc = 1;
     v8::Handle<v8::FunctionTemplate> methodWithUnsignedLongSequenceArgv[methodWithUnsignedLongSequenceArgc] = { v8::Handle<v8::FunctionTemplate>() };
     v8::Handle<v8::Signature> methodWithUnsignedLongSequenceSignature = v8::Signature::New(desc, methodWithUnsignedLongSequenceArgc, methodWithUnsignedLongSequenceArgv);
-    proto->Set(v8::String::NewSymbol("methodWithUnsignedLongSequence"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, v8Undefined(), methodWithUnsignedLongSequenceSignature));
+    proto->Set(v8::String::NewSymbol("methodWithUnsignedLongSequence"), v8::FunctionTemplate::New(TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, v8Undefined(), methodWithUnsignedLongSequenceSignature, 1));
 
     // Custom Signature 'stringArrayFunction'
     const int stringArrayFunctionArgc = 1;
     v8::Handle<v8::FunctionTemplate> stringArrayFunctionArgv[stringArrayFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMString[]::info, currentWorldType) };
     v8::Handle<v8::Signature> stringArrayFunctionSignature = v8::Signature::New(desc, stringArrayFunctionArgc, stringArrayFunctionArgv);
-    proto->Set(v8::String::NewSymbol("stringArrayFunction"), v8::FunctionTemplate::New(TestObjV8Internal::stringArrayFunctionMethodCallback, v8Undefined(), stringArrayFunctionSignature));
+    proto->Set(v8::String::NewSymbol("stringArrayFunction"), v8::FunctionTemplate::New(TestObjV8Internal::stringArrayFunctionMethodCallback, v8Undefined(), stringArrayFunctionSignature, 1));
 
     // Custom Signature 'domStringListFunction'
     const int domStringListFunctionArgc = 1;
     v8::Handle<v8::FunctionTemplate> domStringListFunctionArgv[domStringListFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8DOMStringList::info, currentWorldType) };
     v8::Handle<v8::Signature> domStringListFunctionSignature = v8::Signature::New(desc, domStringListFunctionArgc, domStringListFunctionArgv);
-    proto->Set(v8::String::NewSymbol("domStringListFunction"), v8::FunctionTemplate::New(TestObjV8Internal::domStringListFunctionMethodCallback, v8Undefined(), domStringListFunctionSignature));
+    proto->Set(v8::String::NewSymbol("domStringListFunction"), v8::FunctionTemplate::New(TestObjV8Internal::domStringListFunctionMethodCallback, v8Undefined(), domStringListFunctionSignature, 1));
 
     // Custom Signature 'convert1'
     const int convert1Argc = 1;
     v8::Handle<v8::FunctionTemplate> convert1Argv[convert1Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8a::info, currentWorldType) };
     v8::Handle<v8::Signature> convert1Signature = v8::Signature::New(desc, convert1Argc, convert1Argv);
-    proto->Set(v8::String::NewSymbol("convert1"), v8::FunctionTemplate::New(TestObjV8Internal::convert1MethodCallback, v8Undefined(), convert1Signature));
+    proto->Set(v8::String::NewSymbol("convert1"), v8::FunctionTemplate::New(TestObjV8Internal::convert1MethodCallback, v8Undefined(), convert1Signature, 1));
 
     // Custom Signature 'convert2'
     const int convert2Argc = 1;
     v8::Handle<v8::FunctionTemplate> convert2Argv[convert2Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8b::info, currentWorldType) };
     v8::Handle<v8::Signature> convert2Signature = v8::Signature::New(desc, convert2Argc, convert2Argv);
-    proto->Set(v8::String::NewSymbol("convert2"), v8::FunctionTemplate::New(TestObjV8Internal::convert2MethodCallback, v8Undefined(), convert2Signature));
+    proto->Set(v8::String::NewSymbol("convert2"), v8::FunctionTemplate::New(TestObjV8Internal::convert2MethodCallback, v8Undefined(), convert2Signature, 1));
 
     // Custom Signature 'convert4'
     const int convert4Argc = 1;
     v8::Handle<v8::FunctionTemplate> convert4Argv[convert4Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8d::info, currentWorldType) };
     v8::Handle<v8::Signature> convert4Signature = v8::Signature::New(desc, convert4Argc, convert4Argv);
-    proto->Set(v8::String::NewSymbol("convert4"), v8::FunctionTemplate::New(TestObjV8Internal::convert4MethodCallback, v8Undefined(), convert4Signature));
+    proto->Set(v8::String::NewSymbol("convert4"), v8::FunctionTemplate::New(TestObjV8Internal::convert4MethodCallback, v8Undefined(), convert4Signature, 1));
 
     // Custom Signature 'convert5'
     const int convert5Argc = 1;
     v8::Handle<v8::FunctionTemplate> convert5Argv[convert5Argc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8e::info, currentWorldType) };
     v8::Handle<v8::Signature> convert5Signature = v8::Signature::New(desc, convert5Argc, convert5Argv);
-    proto->Set(v8::String::NewSymbol("convert5"), v8::FunctionTemplate::New(TestObjV8Internal::convert5MethodCallback, v8Undefined(), convert5Signature));
+    proto->Set(v8::String::NewSymbol("convert5"), v8::FunctionTemplate::New(TestObjV8Internal::convert5MethodCallback, v8Undefined(), convert5Signature, 1));
 
     // Custom Signature 'variadicNodeMethod'
     const int variadicNodeMethodArgc = 2;
     v8::Handle<v8::FunctionTemplate> variadicNodeMethodArgv[variadicNodeMethodArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType), V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType) };
     v8::Handle<v8::Signature> variadicNodeMethodSignature = v8::Signature::New(desc, variadicNodeMethodArgc, variadicNodeMethodArgv);
-    proto->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature));
-    desc->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>()));
+    proto->Set(v8::String::NewSymbol("variadicNodeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::variadicNodeMethodMethodCallback, v8Undefined(), variadicNodeMethodSignature, 2));
+    desc->Set(v8::String::NewSymbol("deprecatedStaticMethod"), v8::FunctionTemplate::New(TestObjV8Internal::deprecatedStaticMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     V8DOMConfiguration::batchConfigureConstants(desc, proto, V8TestObjConsts, WTF_ARRAY_LENGTH(V8TestObjConsts), isolate);
 
     // Custom toString template
@@ -4472,10 +4472,10 @@ void V8TestObj::installPerContextPrototypeProperties(v8::Handle<v8::Object> prot
 
     ScriptExecutionContext* context = toScriptExecutionContext(proto->CreationContext());
     if (context && context->isDocument() && ContextFeatures::enabledPerContextMethod1Enabled(toDocument(context))) {
-        proto->Set(v8::String::NewSymbol("enabledPerContextMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod1MethodCallback, v8Undefined(), defaultSignature)->GetFunction());
+        proto->Set(v8::String::NewSymbol("enabledPerContextMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod1MethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
     }
     if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context))) {
-        proto->Set(v8::String::NewSymbol("enabledPerContextMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod2MethodCallback, v8Undefined(), defaultSignature)->GetFunction());
+        proto->Set(v8::String::NewSymbol("enabledPerContextMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::enabledPerContextMethod2MethodCallback, v8Undefined(), defaultSignature, 1)->GetFunction());
     }
 }
 

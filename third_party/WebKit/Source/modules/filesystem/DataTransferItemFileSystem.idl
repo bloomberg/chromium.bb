@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Supplemental=DataTransferItem
-] interface DataTransferItemFileSystem {
+partial interface DataTransferItem {
     [CallWith=ScriptExecutionContext] Entry webkitGetAsEntry();
 };
 

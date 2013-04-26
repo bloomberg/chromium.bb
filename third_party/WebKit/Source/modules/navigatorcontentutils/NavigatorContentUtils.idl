@@ -19,9 +19,7 @@
 */
 
 // http://www.w3.org/TR/html5/system-state-and-capabilities.html#custom-handlers
-[
-    Supplemental=Navigator
-] interface NavigatorContentUtils {
+partial interface Navigator {
     [Conditional=NAVIGATOR_CONTENT_UTILS, RaisesException] void registerProtocolHandler(DOMString scheme, DOMString url, DOMString title);
     [Conditional=NAVIGATOR_CONTENT_UTILS&CUSTOM_SCHEME_HANDLER, RaisesException] DOMString isProtocolHandlerRegistered(DOMString scheme, DOMString url);
     [Conditional=NAVIGATOR_CONTENT_UTILS&CUSTOM_SCHEME_HANDLER, RaisesException] void unregisterProtocolHandler(DOMString scheme, DOMString url);

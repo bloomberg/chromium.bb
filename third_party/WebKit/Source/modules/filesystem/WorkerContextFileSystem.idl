@@ -24,9 +24,7 @@
  *
  */
 
-[
-    Supplemental=WorkerContext
-] interface WorkerContextFileSystem {
+partial interface WorkerContext {
     const unsigned short TEMPORARY = 0;
     const unsigned short PERSISTENT = 1;
 

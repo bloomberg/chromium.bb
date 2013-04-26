@@ -28,9 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-[
-    Supplemental=DOMWindow
-] interface DOMWindowWebMIDI {
+partial interface DOMWindow {
     [EnabledAtRuntime=webMIDI] attribute MIDIConnectionEventConstructor MIDIConnectionEvent;
     [EnabledAtRuntime=webMIDI] attribute MIDIMessageEventConstructor MIDIMessageEvent;
 };

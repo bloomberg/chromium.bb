@@ -149,7 +149,7 @@ static v8::Handle<v8::Value> postMessageAttrGetter(v8::Local<v8::String> name, c
     static const char* privateTemplateUniqueKey = "postMessagePrivateTemplate";
     WrapperWorldType currentWorldType = worldType(info.GetIsolate());
     V8PerIsolateData* data = V8PerIsolateData::from(info.GetIsolate());
-    v8::Persistent<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)));
+    v8::Persistent<v8::FunctionTemplate> privateTemplate = data->privateTemplate(currentWorldType, &privateTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)), 1);
 
     v8::Handle<v8::Object> holder = info.This()->FindInstanceInPrototypeChain(V8TestActiveDOMObject::GetTemplate(info.GetIsolate(), currentWorldType));
     if (holder.IsEmpty()) {
@@ -160,7 +160,7 @@ static v8::Handle<v8::Value> postMessageAttrGetter(v8::Local<v8::String> name, c
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
     if (!BindingSecurity::shouldAllowAccessToFrame(BindingState::instance(), imp->frame(), DoNotReportSecurityError)) {
         static const char* sharedTemplateUniqueKey = "postMessageSharedTemplate";
-        v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)));
+        v8::Persistent<v8::FunctionTemplate> sharedTemplate = data->privateTemplate(currentWorldType, &sharedTemplateUniqueKey, TestActiveDOMObjectV8Internal::postMessageMethodCallback, v8Undefined(), v8::Signature::New(V8PerIsolateData::from(info.GetIsolate())->rawTemplate(&V8TestActiveDOMObject::info, currentWorldType)), 1);
         return sharedTemplate->GetFunction();
     }
 
@@ -214,7 +214,7 @@ static v8::Persistent<v8::FunctionTemplate> ConfigureV8TestActiveDOMObjectTempla
     const int excitingFunctionArgc = 1;
     v8::Handle<v8::FunctionTemplate> excitingFunctionArgv[excitingFunctionArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8Node::info, currentWorldType) };
     v8::Handle<v8::Signature> excitingFunctionSignature = v8::Signature::New(desc, excitingFunctionArgc, excitingFunctionArgv);
-    proto->Set(v8::String::NewSymbol("excitingFunction"), v8::FunctionTemplate::New(TestActiveDOMObjectV8Internal::excitingFunctionMethodCallback, v8Undefined(), excitingFunctionSignature));
+    proto->Set(v8::String::NewSymbol("excitingFunction"), v8::FunctionTemplate::New(TestActiveDOMObjectV8Internal::excitingFunctionMethodCallback, v8Undefined(), excitingFunctionSignature, 1));
 
     // Function 'postMessage' (ExtAttr: 'DoNotCheckSecurity')
     proto->SetAccessor(v8::String::NewSymbol("postMessage"), TestActiveDOMObjectV8Internal::postMessageAttrGetterCallback, TestActiveDOMObjectV8Internal::TestActiveDOMObjectDomainSafeFunctionSetter, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>(v8::DontDelete));

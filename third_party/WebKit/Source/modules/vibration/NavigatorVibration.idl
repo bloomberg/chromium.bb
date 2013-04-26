@@ -19,8 +19,7 @@
 
 [
     Conditional=VIBRATION,
-    Supplemental=Navigator
-] interface NavigatorVibration {
+] partial interface Navigator {
     [RaisesException] void vibrate(sequence<unsigned long> pattern);
     [RaisesException] void vibrate(unsigned long time);
 };

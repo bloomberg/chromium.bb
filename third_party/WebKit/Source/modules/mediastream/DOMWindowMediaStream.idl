@@ -26,8 +26,7 @@
 
 [
     Conditional=MEDIA_STREAM,
-    Supplemental=DOMWindow
-] interface DOMWindowMediaStream {
+] partial interface DOMWindow {
     [EnabledAtRuntime=mediaStream] attribute MediaStreamConstructor webkitMediaStream;
     [EnabledAtRuntime=peerConnection] attribute RTCPeerConnectionConstructor webkitRTCPeerConnection;
     attribute RTCSessionDescriptionConstructor RTCSessionDescription;

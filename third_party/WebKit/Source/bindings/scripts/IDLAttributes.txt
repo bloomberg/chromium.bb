@@ -84,7 +84,6 @@ ReturnNewObject
 SetterRaisesException
 SkipVTableValidation
 StrictTypeChecking
-Supplemental=*
 SuppressToJSObject
 TreatNullAs=NullString
 TreatReturnedNullStringAs=Null|Undefined
