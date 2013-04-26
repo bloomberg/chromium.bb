@@ -21,6 +21,7 @@
 #include "sslerr.h"
 #include "ssl3prot.h"
 #include "hasht.h"
+#include "keythi.h"
 #include "nssilock.h"
 #include "pkcs11t.h"
 #if defined(XP_UNIX) || defined(XP_BEOS)
@@ -1793,7 +1794,7 @@ extern void ssl_FreePlatformKey(PlatformKey key);
 // Implement the client CertificateVerify message for SSL3/TLS1.0
 extern SECStatus ssl3_PlatformSignHashes(SSL3Hashes *hash,
                                          PlatformKey key, SECItem *buf,
-                                         PRBool isTLS);
+                                         PRBool isTLS, KeyType keyType);
 
 // Converts a CERTCertList* (A collection of CERTCertificates) into a
 // CERTCertificateList* (A collection of SECItems), or returns NULL if

@@ -5365,8 +5365,9 @@ ssl3_SendCertificateVerify(sslSocket *ss)
     isTLS = (PRBool)(ss->ssl3.pwSpec->version > SSL_LIBRARY_VERSION_3_0);
     if (ss->ssl3.platformClientKey) {
 #ifdef NSS_PLATFORM_CLIENT_AUTH
-	rv = ssl3_PlatformSignHashes(&hashes, ss->ssl3.platformClientKey,
-				     &buf, isTLS);
+	rv = ssl3_PlatformSignHashes(
+	    &hashes, ss->ssl3.platformClientKey, &buf, isTLS, 
+	    CERT_GetCertKeyType(&ss->ssl3.clientCertificate->subjectPublicKeyInfo));
 	ssl_FreePlatformKey(ss->ssl3.platformClientKey);
 	ss->ssl3.platformClientKey = (PlatformKey)NULL;
 #endif /* NSS_PLATFORM_CLIENT_AUTH */

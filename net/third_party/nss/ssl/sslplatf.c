@@ -111,14 +111,12 @@ ssl_FreePlatformKey(PlatformKey key)
 
 SECStatus
 ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf, 
-                        PRBool isTLS)
+                        PRBool isTLS, KeyType keyType)
 {
     SECStatus    rv             = SECFailure;
     PRBool       doDerEncode    = PR_FALSE;
     SECItem      hashItem;
-    HCRYPTKEY    hKey           = 0;
     DWORD        argLen         = 0;
-    ALG_ID       keyAlg         = 0;
     DWORD        signatureLen   = 0;
     ALG_ID       hashAlg        = 0;
     HCRYPTHASH   hHash          = 0;
@@ -126,31 +124,16 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
     unsigned int i              = 0;
 
     buf->data = NULL;
-    if (!CryptGetUserKey(key->hCryptProv, key->dwKeySpec, &hKey)) {
-        if (GetLastError() == NTE_NO_KEY) {
-            PORT_SetError(SEC_ERROR_NO_KEY);
-        } else {
-            PORT_SetError(SEC_ERROR_INVALID_KEY);
-        }
-        goto done;
-    }
 
-    argLen = sizeof(keyAlg);
-    if (!CryptGetKeyParam(hKey, KP_ALGID, (BYTE*)&keyAlg, &argLen, 0)) {
-        PORT_SetError(SEC_ERROR_INVALID_KEY);
-        goto done;
-    }
-
-    switch (keyAlg) {
-        case CALG_RSA_KEYX:
-        case CALG_RSA_SIGN:
+    switch (keyType) {
+        case rsaKey:
             hashAlg       = CALG_SSL3_SHAMD5;
             hashItem.data = hash->md5;
             hashItem.len  = sizeof(SSL3Hashes);
             break;
-        case CALG_DSS_SIGN:
-        case CALG_ECDSA:
-            if (keyAlg == CALG_ECDSA) {
+        case dsaKey:
+        case ecKey:
+            if (keyType == ecKey) {
                 doDerEncode = PR_TRUE;
             } else {
                 doDerEncode = isTLS;
@@ -223,8 +206,6 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
 done:
     if (hHash)
         CryptDestroyHash(hHash);
-    if (hKey)
-        CryptDestroyKey(hKey);
     if (rv != SECSuccess && buf->data) {
         PORT_Free(buf->data);
         buf->data = NULL;
@@ -243,7 +224,7 @@ ssl_FreePlatformKey(PlatformKey key)
 
 SECStatus
 ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf, 
-                        PRBool isTLS)
+                        PRBool isTLS, KeyType keyType)
 {
     SECStatus       rv                  = SECFailure;
     PRBool          doDerEncode         = PR_FALSE;
@@ -287,16 +268,19 @@ ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
         goto done;    /* error code was set. */
 
     sigAlg = cssmKey->KeyHeader.AlgorithmId;
-    switch (sigAlg) {
-        case CSSM_ALGID_RSA:
+    switch (keyType) {
+        case rsaKey:
+            PORT_Assert(sigAlg == CSSM_ALGID_RSA);
             hashData.Data   = hash->md5;
             hashData.Length = sizeof(SSL3Hashes);
             break;
-        case CSSM_ALGID_ECDSA:
-        case CSSM_ALGID_DSA:
-            if (sigAlg == CSSM_ALGID_ECDSA) {
+        case dsaKey:
+        case ecKey:
+            if (keyType == ecKey) {
+                PORT_Assert(sigAlg == CSSM_ALGID_ECDSA);
                 doDerEncode = PR_TRUE;
             } else {
+                PORT_Assert(sigAlg == CSSM_ALGID_DSA);
                 doDerEncode = isTLS;
             }
             hashData.Data   = hash->sha;
@@ -389,7 +373,7 @@ ssl_FreePlatformKey(PlatformKey key)
 
 SECStatus
 ssl3_PlatformSignHashes(SSL3Hashes *hash, PlatformKey key, SECItem *buf,
-                        PRBool isTLS)
+                        PRBool isTLS, KeyType keyType)
 {
     PORT_SetError(PR_NOT_IMPLEMENTED_ERROR);
     return SECFailure;
