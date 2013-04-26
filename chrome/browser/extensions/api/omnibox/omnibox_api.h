@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
+#include "chrome/common/extensions/api/omnibox.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/base/window_open_disposition.h"
@@ -147,44 +148,6 @@ class OmniboxSetDefaultSuggestionFunction : public SyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
-struct ExtensionOmniboxSuggestion {
-  ExtensionOmniboxSuggestion();
-  ~ExtensionOmniboxSuggestion();
-
-  // Populate a suggestion value from a DictionaryValue. If |require_content|
-  // is false, then we won't fail if |content| is missing, to support
-  // default suggestions.
-  bool Populate(const base::DictionaryValue& value, bool require_content);
-
-  // Converts a list of style ranges from the extension into the format expected
-  // by the autocomplete system.
-  bool ReadStylesFromValue(const base::ListValue& value);
-
-  // Converts this structure to a DictionaryValue suitable for saving to disk.
-  scoped_ptr<base::DictionaryValue> ToValue() const;
-
-  // The text that gets put in the edit box.
-  string16 content;
-
-  // The text that is displayed in the drop down.
-  string16 description;
-
-  // Contains style ranges for the description.
-  ACMatchClassifications description_styles;
-};
-
-struct ExtensionOmniboxSuggestions {
-  ExtensionOmniboxSuggestions();
-  ~ExtensionOmniboxSuggestions();
-
-  int request_id;
-  std::vector<ExtensionOmniboxSuggestion> suggestions;
-
- private:
-  // This class is passed around by pointer.
-  DISALLOW_COPY_AND_ASSIGN(ExtensionOmniboxSuggestions);
-};
-
 // If the extension has set a custom default suggestion via
 // omnibox.setDefaultSuggestion, apply that to |match|. Otherwise, do nothing.
 void ApplyDefaultSuggestionForExtensionKeyword(
@@ -192,6 +155,11 @@ void ApplyDefaultSuggestionForExtensionKeyword(
     const TemplateURL* keyword,
     const string16& remaining_input,
     AutocompleteMatch* match);
+
+// This function converts style information populated by the JSON schema
+// // compiler into an ACMatchClassifications object.
+ACMatchClassifications StyleTypesToACMatchClassifications(
+    const api::omnibox::SuggestResult &suggestion);
 
 }  // namespace extensions
 

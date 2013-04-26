@@ -84,6 +84,16 @@ function parseOmniboxDescription(input) {
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
 
+  apiFunctions.setUpdateArgumentsPreValidate('setDefaultSuggestion',
+                                             function(suggestResult) {
+    if (suggestResult.content != undefined) {  // null, etc.
+      throw new Error(
+          'setDefaultSuggestion cannot contain the "content" field');
+    }
+    suggestResult.content = '';
+    return [suggestResult];
+  });
+
   apiFunctions.setHandleRequest('setDefaultSuggestion', function(details) {
     var parseResult = parseOmniboxDescription(details.description);
     sendRequest(this.name, [parseResult], this.definition.parameters);

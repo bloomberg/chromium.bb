@@ -20,6 +20,7 @@
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/common/chrome_notification_types.h"
+#include "chrome/common/extensions/api/omnibox.h"
 #include "chrome/common/extensions/api/omnibox/omnibox_handler.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
@@ -34,6 +35,10 @@ const char kOnInputCancelled[] = "omnibox.onInputCancelled";
 }  // namespace events
 
 namespace extensions {
+
+namespace omnibox = api::omnibox;
+namespace SendSuggestions = omnibox::SendSuggestions;
+namespace SetDefaultSuggestion = omnibox::SetDefaultSuggestion;
 
 namespace {
 
@@ -236,38 +241,27 @@ void ProfileKeyedAPIFactory<OmniboxAPI>::DeclareFactoryDependencies() {
 }
 
 bool OmniboxSendSuggestionsFunction::RunImpl() {
-  ExtensionOmniboxSuggestions suggestions;
-  ListValue* suggestions_value;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(0, &suggestions.request_id));
-  EXTENSION_FUNCTION_VALIDATE(args_->GetList(1, &suggestions_value));
-
-  suggestions.suggestions.resize(suggestions_value->GetSize());
-  for (size_t i = 0; i < suggestions_value->GetSize(); ++i) {
-    ExtensionOmniboxSuggestion& suggestion = suggestions.suggestions[i];
-    DictionaryValue* suggestion_value;
-    EXTENSION_FUNCTION_VALIDATE(suggestions_value->GetDictionary(
-        i, &suggestion_value));
-    EXTENSION_FUNCTION_VALIDATE(suggestion.Populate(*suggestion_value, true));
-  }
+  scoped_ptr<SendSuggestions::Params> params(
+      SendSuggestions::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
       content::Source<Profile>(profile_->GetOriginalProfile()),
-      content::Details<ExtensionOmniboxSuggestions>(&suggestions));
+      content::Details<SendSuggestions::Params>(params.get()));
 
   return true;
 }
 
 bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
-  ExtensionOmniboxSuggestion suggestion;
-  DictionaryValue* suggestion_value;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetDictionary(0, &suggestion_value));
-  EXTENSION_FUNCTION_VALIDATE(suggestion.Populate(*suggestion_value, false));
+  scoped_ptr<SetDefaultSuggestion::Params> params(
+      SetDefaultSuggestion::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
 
   ExtensionPrefs* prefs =
       ExtensionSystem::Get(profile())->extension_service()->extension_prefs();
   if (prefs)
-    prefs->SetOmniboxDefaultSuggestion(extension_id(), suggestion);
+    prefs->SetOmniboxDefaultSuggestion(extension_id(), params->suggestion);
 
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_EXTENSION_OMNIBOX_DEFAULT_SUGGESTION_CHANGED,
@@ -277,122 +271,59 @@ bool OmniboxSetDefaultSuggestionFunction::RunImpl() {
   return true;
 }
 
-ExtensionOmniboxSuggestion::ExtensionOmniboxSuggestion() {}
+// This function converts style information populated by the JSON schema
+// compiler into an ACMatchClassifications object.
+ACMatchClassifications StyleTypesToACMatchClassifications(
+    const omnibox::SuggestResult &suggestion) {
+  ACMatchClassifications match_classifications;
+  if (suggestion.description_styles) {
+    string16 description = UTF8ToUTF16(suggestion.description);
+    std::vector<int> styles(description.length(), 0);
 
-ExtensionOmniboxSuggestion::~ExtensionOmniboxSuggestion() {}
+    for (std::vector<linked_ptr<omnibox::SuggestResult::DescriptionStylesType> >
+         ::iterator i = suggestion.description_styles->begin();
+         i != suggestion.description_styles->end(); ++i) {
+      omnibox::SuggestResult::DescriptionStylesType* style = i->get();
 
-bool ExtensionOmniboxSuggestion::Populate(const base::DictionaryValue& value,
-                                          bool require_content) {
-  if (!value.GetString(kSuggestionContent, &content) && require_content)
-    return false;
+      int length = description.length();
+      if (style->length)
+        length = *style->length;
 
-  if (!value.GetString(kSuggestionDescription, &description))
-    return false;
+      size_t offset = style->offset >= 0 ? style->offset :
+          std::max(0, static_cast<int>(description.length()) + style->offset);
 
-  description_styles.clear();
-  if (value.HasKey(kSuggestionDescriptionStyles)) {
-    // This version comes from the extension.
-    const ListValue* styles = NULL;
-    if (!value.GetList(kSuggestionDescriptionStyles, &styles) ||
-        !ReadStylesFromValue(*styles)) {
-      return false;
+      int type_class;
+      switch (style->type) {
+        case omnibox::SuggestResult::DescriptionStylesType::TYPE_URL:
+          type_class = AutocompleteMatch::ACMatchClassification::URL;
+          break;
+        case omnibox::SuggestResult::DescriptionStylesType::TYPE_MATCH:
+          type_class = AutocompleteMatch::ACMatchClassification::MATCH;
+          break;
+        case omnibox::SuggestResult::DescriptionStylesType::TYPE_DIM:
+          type_class = AutocompleteMatch::ACMatchClassification::DIM;
+          break;
+        default:
+          type_class = AutocompleteMatch::ACMatchClassification::NONE;
+          return match_classifications;
+      }
+
+      for (size_t j = offset; j < offset + length && j < styles.size(); ++j)
+        styles[j] |= type_class;
     }
-  } else if (value.HasKey(kSuggestionDescriptionStylesRaw)) {
-    // This version comes from ToValue(), which we use to persist to disk.
-    const ListValue* styles = NULL;
-    if (!value.GetList(kSuggestionDescriptionStylesRaw, &styles) ||
-        styles->empty()) {
-      return false;
-    }
-    for (size_t i = 0; i < styles->GetSize(); ++i) {
-      const base::DictionaryValue* style = NULL;
-      int offset, type;
-      if (!styles->GetDictionary(i, &style))
-        return false;
-      if (!style->GetInteger(kDescriptionStylesType, &type))
-        return false;
-      if (!style->GetInteger(kDescriptionStylesOffset, &offset))
-        return false;
-      description_styles.push_back(ACMatchClassification(offset, type));
+
+    for (size_t i = 0; i < styles.size(); ++i) {
+      if (i == 0 || styles[i] != styles[i-1])
+        match_classifications.push_back(
+            ACMatchClassification(i, styles[i]));
     }
   } else {
-    description_styles.push_back(
+    match_classifications.push_back(
         ACMatchClassification(0, ACMatchClassification::NONE));
   }
 
-  return true;
+  return match_classifications;
 }
-
-bool ExtensionOmniboxSuggestion::ReadStylesFromValue(
-    const ListValue& styles_value) {
-  description_styles.clear();
-
-  // Step 1: Build a vector of styles, 1 per character of description text.
-  std::vector<int> styles;
-  styles.resize(description.length());  // sets all styles to 0
-
-  for (size_t i = 0; i < styles_value.GetSize(); ++i) {
-    const DictionaryValue* style;
-    std::string type;
-    int offset;
-    int length;
-    if (!styles_value.GetDictionary(i, &style))
-      return false;
-    if (!style->GetString(kDescriptionStylesType, &type))
-      return false;
-    if (!style->GetInteger(kDescriptionStylesOffset, &offset))
-      return false;
-    if (!style->GetInteger(kDescriptionStylesLength, &length) || length < 0)
-      length = description.length();
-
-    if (offset < 0)
-      offset = std::max(0, static_cast<int>(description.length()) + offset);
-
-    int type_class =
-        (type == "url") ? ACMatchClassification::URL :
-        (type == "match") ? ACMatchClassification::MATCH :
-        (type == "dim") ? ACMatchClassification::DIM : -1;
-    if (type_class == -1)
-      return false;
-
-    for (int j = offset;
-         j < offset + length && j < static_cast<int>(styles.size()); ++j)
-      styles[j] |= type_class;
-  }
-
-  // Step 2: Convert the vector into continuous runs of common styles.
-  for (size_t i = 0; i < styles.size(); ++i) {
-    if (i == 0 || styles[i] != styles[i-1])
-      description_styles.push_back(ACMatchClassification(i, styles[i]));
-  }
-
-  return true;
-}
-
-scoped_ptr<base::DictionaryValue> ExtensionOmniboxSuggestion::ToValue() const {
-  scoped_ptr<base::DictionaryValue> value(new base::DictionaryValue());
-
-  value->SetString(kSuggestionContent, content);
-  value->SetString(kSuggestionDescription, description);
-
-  if (description_styles.size() > 0) {
-    base::ListValue* styles_value = new base::ListValue();
-    for (size_t i = 0; i < description_styles.size(); ++i) {
-      base::DictionaryValue* style = new base::DictionaryValue();
-      style->SetInteger(kDescriptionStylesOffset, description_styles[i].offset);
-      style->SetInteger(kDescriptionStylesType, description_styles[i].style);
-      styles_value->Append(style);
-    }
-
-    value->Set(kSuggestionDescriptionStylesRaw, styles_value);
-  }
-
-  return value.Pass();
-}
-
-ExtensionOmniboxSuggestions::ExtensionOmniboxSuggestions() : request_id(0) {}
-
-ExtensionOmniboxSuggestions::~ExtensionOmniboxSuggestions() {}
 
 void ApplyDefaultSuggestionForExtensionKeyword(
     Profile* profile,
@@ -406,21 +337,21 @@ void ApplyDefaultSuggestionForExtensionKeyword(
   if (!prefs)
     return;
 
-  ExtensionOmniboxSuggestion suggestion =
-      prefs->GetOmniboxDefaultSuggestion(keyword->GetExtensionId());
-  if (suggestion.description.empty())
+  scoped_ptr<omnibox::SuggestResult> suggestion(
+      prefs->GetOmniboxDefaultSuggestion(keyword->GetExtensionId()));
+  if (!suggestion || suggestion->description.empty())
     return;  // fall back to the universal default
 
   const string16 kPlaceholderText(ASCIIToUTF16("%s"));
   const string16 kReplacementText(ASCIIToUTF16("<input>"));
 
-  string16 description = suggestion.description;
+  string16 description = UTF8ToUTF16(suggestion->description);
   ACMatchClassifications& description_styles = match->contents_class;
-  description_styles = suggestion.description_styles;
+  description_styles = StyleTypesToACMatchClassifications(*suggestion);
 
   // Replace "%s" with the user's input and adjust the style offsets to the
   // new length of the description.
-  size_t placeholder(suggestion.description.find(kPlaceholderText, 0));
+  size_t placeholder(description.find(kPlaceholderText, 0));
   if (placeholder != string16::npos) {
     string16 replacement =
         remaining_input.empty() ? kReplacementText : remaining_input;

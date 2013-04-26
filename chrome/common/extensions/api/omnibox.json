@@ -14,12 +14,43 @@
           "content": {
             "type": "string",
             "minLength": 1,
-            "description": "The text that is put into the URL bar, and that is sent to the extension when the user chooses this entry."
+            "description": "The text that is put into the URL bar, and that is sent to the extension when the user chooses this entry. This field must be blank for $ref:setDefaultSuggestion."
           },
           "description": {
             "type": "string",
             "minLength": 1,
             "description": "The text that is displayed in the URL dropdown. Can contain XML-style markup for styling. The supported tags are 'url' (for a literal URL), 'match' (for highlighting text that matched what the user's query), and 'dim' (for dim helper text). The styles can be nested, eg. <dim><match>dimmed match</match></dim>."
+          },
+          "descriptionStyles": {
+            "nodoc": true,
+            "optional": true,
+            "type": "array",
+            "description": "The style ranges for the description, as provided by the extension.",
+            "items": {
+              "type": "object",
+              "name": "matchClassification",
+              "description": "Placeholder description.",
+              "properties": {
+                "offset": { "type": "integer" },
+                "type": { "description": "The style type", "type": "string", "enum": ["url", "match", "dim"]},
+                "length": { "type": "integer", "optional": true }
+              }
+            }
+          },
+          "descriptionStylesRaw": {
+            "nodoc": true,
+            "optional": true,
+            "type": "array",
+            "description": "The style ranges for the description, as provided by ToValue().",
+            "items": {
+              "type": "object",
+              "name": "matchClassification",
+              "description": "Placeholder description.",
+              "properties": {
+                "offset": { "type": "integer" },
+                "type": { "type": "integer" }
+              }
+            }
           }
         }
       }
@@ -35,10 +66,9 @@
           {
             "name": "suggestResults",
             "type": "array",
-            "description": "Array of suggest results",
+            "description": "An array of suggest results",
             "items": {
-              "type": "object",
-              "additionalProperties": { "type": "any" }
+              "$ref": "SuggestResult"
             }
           }
         ]
@@ -49,16 +79,9 @@
         "description": "Sets the description and styling for the default suggestion. The default suggestion is the text that is displayed in the first suggestion row underneath the URL bar.",
         "parameters": [
           {
-            "type": "object",
             "name": "suggestion",
-            "description": "A partial SuggestResult object, without the 'content' parameter. See SuggestResult for a description of the parameters.",
-            "properties": {
-              "description": {
-                "type": "string",
-                "minLength": 1,
-                "description": "The text to display in the default suggestion. The placeholder string '%s' can be included and will be replaced with the user's input."
-              }
-            }
+            "$ref": "SuggestResult",
+            "description": "A partial SuggestResult object, without the 'content' parameter. See SuggestResult for a description of the parameters."
           }
         ]
       }

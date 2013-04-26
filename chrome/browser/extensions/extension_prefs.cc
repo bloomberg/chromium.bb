@@ -1150,22 +1150,26 @@ void ExtensionPrefs::GetSavedFileEntries(
   }
 }
 
-ExtensionOmniboxSuggestion
+scoped_ptr<api::omnibox::SuggestResult>
 ExtensionPrefs::GetOmniboxDefaultSuggestion(const std::string& extension_id) {
-  ExtensionOmniboxSuggestion suggestion;
+  scoped_ptr<api::omnibox::SuggestResult> suggestion;
 
   const DictionaryValue* extension = GetExtensionPref(extension_id);
   const DictionaryValue* dict = NULL;
-  if (extension && extension->GetDictionary(kOmniboxDefaultSuggestion, &dict))
-    suggestion.Populate(*dict, false);
+  if (extension && extension->GetDictionary(kOmniboxDefaultSuggestion, &dict)) {
+    suggestion.reset(new api::omnibox::SuggestResult);
+    api::omnibox::SuggestResult::Populate(*dict, suggestion.get());
+  }
 
-  return suggestion;
+  return suggestion.Pass();
 }
 
 void ExtensionPrefs::SetOmniboxDefaultSuggestion(
     const std::string& extension_id,
-    const ExtensionOmniboxSuggestion& suggestion) {
-  scoped_ptr<base::DictionaryValue> dict = suggestion.ToValue().Pass();
+    const api::omnibox::SuggestResult& suggestion) {
+  scoped_ptr<base::DictionaryValue> dict = suggestion.ToValue();
+  // A default suggestion should not have the content field set.
+  dict->Remove("content", NULL);
   UpdateExtensionPref(extension_id, kOmniboxDefaultSuggestion, dict.release());
 }
 

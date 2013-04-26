@@ -4,10 +4,15 @@
 
 #include "base/values.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
+#include "chrome/common/extensions/api/omnibox.h"
+#include "chrome/common/extensions/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
 namespace extensions {
+
+namespace omnibox = api::omnibox;
+namespace SendSuggestions = omnibox::SendSuggestions;
 
 namespace {
 
@@ -15,16 +20,6 @@ const int kNone = ACMatchClassification::NONE;
 const int kUrl = ACMatchClassification::URL;
 const int kMatch = ACMatchClassification::MATCH;
 const int kDim = ACMatchClassification::DIM;
-
-void AppendStyle(const std::string& type,
-                 int offset, int length,
-                 ListValue* styles) {
-  DictionaryValue* style = new DictionaryValue;
-  style->SetString("type", type);
-  style->SetInteger("offset", offset);
-  style->SetInteger("length", length);
-  styles->Append(style);
-}
 
 void CompareClassification(const ACMatchClassifications& expected,
                            const ACMatchClassifications& actual) {
@@ -45,9 +40,21 @@ void CompareClassification(const ACMatchClassifications& expected,
 // +       ddd
 // = nmmmmndddn
 TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
-  ListValue styles_value;
-  AppendStyle("match", 1, 4, &styles_value);
-  AppendStyle("dim", 6, 3, &styles_value);
+  scoped_ptr<ListValue> list = ListBuilder()
+      .Append(42)
+      .Append(ListBuilder()
+        .Append(DictionaryBuilder()
+          .Set("content", "content")
+          .Set("description", "description")
+          .Set("descriptionStyles", ListBuilder()
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 1)
+              .Set("length", 4))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 6)
+              .Set("length", 3))))).Build();
 
   ACMatchClassifications styles_expected;
   styles_expected.push_back(ACMatchClassification(0, kNone));
@@ -56,17 +63,36 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
   styles_expected.push_back(ACMatchClassification(6, kDim));
   styles_expected.push_back(ACMatchClassification(9, kNone));
 
-  ExtensionOmniboxSuggestion suggestions;
-  suggestions.description.resize(10);
-  EXPECT_TRUE(suggestions.ReadStylesFromValue(styles_value));
-  CompareClassification(styles_expected, suggestions.description_styles);
+  scoped_ptr<SendSuggestions::Params> params(
+      SendSuggestions::Params::Create(*list));
+  EXPECT_TRUE(params);
+  EXPECT_TRUE(params->suggest_results[0].get());
+  CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
+      *params->suggest_results[0]));
 
   // Same input, but swap the order. Ensure it still works.
-  styles_value.Clear();
-  AppendStyle("dim", 6, 3, &styles_value);
-  AppendStyle("match", 1, 4, &styles_value);
-  EXPECT_TRUE(suggestions.ReadStylesFromValue(styles_value));
-  CompareClassification(styles_expected, suggestions.description_styles);
+  scoped_ptr<ListValue> swap_list = ListBuilder()
+      .Append(42)
+      .Append(ListBuilder()
+        .Append(DictionaryBuilder()
+          .Set("content", "content")
+          .Set("description", "description")
+          .Set("descriptionStyles", ListBuilder()
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 6)
+              .Set("length", 3))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 1)
+              .Set("length", 4))))).Build();
+
+  scoped_ptr<SendSuggestions::Params> swapped_params(
+      SendSuggestions::Params::Create(*swap_list));
+  EXPECT_TRUE(swapped_params);
+  EXPECT_TRUE(swapped_params->suggest_results[0].get());
+  CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
+      *swapped_params->suggest_results[0]));
 }
 
 //   0123456789
@@ -77,12 +103,33 @@ TEST(ExtensionOmniboxTest, DescriptionStylesSimple) {
 // +  dd
 // = 3773unnnn66
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
-  ListValue styles_value;
-  AppendStyle("url", 0, 5, &styles_value);
-  AppendStyle("dim", 9, 2, &styles_value);
-  AppendStyle("match", 9, 2, &styles_value);
-  AppendStyle("match", 0, 4, &styles_value);
-  AppendStyle("dim", 1, 2, &styles_value);
+  scoped_ptr<ListValue> list = ListBuilder()
+      .Append(42)
+      .Append(ListBuilder()
+        .Append(DictionaryBuilder()
+          .Set("content", "content")
+          .Set("description", "description")
+          .Set("descriptionStyles", ListBuilder()
+            .Append(DictionaryBuilder()
+              .Set("type", "url")
+              .Set("offset", 0)
+              .Set("length", 5))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 9)
+              .Set("length", 2))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 9)
+              .Set("length", 2))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 0)
+              .Set("length", 4))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 1)
+              .Set("length", 2))))).Build();
 
   ACMatchClassifications styles_expected;
   styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch));
@@ -92,21 +139,49 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
   styles_expected.push_back(ACMatchClassification(5, kNone));
   styles_expected.push_back(ACMatchClassification(9, kMatch | kDim));
 
-  ExtensionOmniboxSuggestion suggestions;
-  suggestions.description.resize(10);
-  EXPECT_TRUE(suggestions.ReadStylesFromValue(styles_value));
-  CompareClassification(styles_expected, suggestions.description_styles);
+  scoped_ptr<SendSuggestions::Params> params(
+      SendSuggestions::Params::Create(*list));
+  EXPECT_TRUE(params);
+  EXPECT_TRUE(params->suggest_results[0].get());
+  CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
+      *params->suggest_results[0]));
 
   // Try moving the "dim/match" style pair at offset 9. Output should be the
   // same.
-  styles_value.Clear();
-  AppendStyle("url", 0, 5, &styles_value);
-  AppendStyle("match", 0, 4, &styles_value);
-  AppendStyle("dim", 9, 2, &styles_value);
-  AppendStyle("match", 9, 2, &styles_value);
-  AppendStyle("dim", 1, 2, &styles_value);
-  EXPECT_TRUE(suggestions.ReadStylesFromValue(styles_value));
-  CompareClassification(styles_expected, suggestions.description_styles);
+  scoped_ptr<ListValue> moved_list = ListBuilder()
+      .Append(42)
+      .Append(ListBuilder()
+        .Append(DictionaryBuilder()
+          .Set("content", "content")
+          .Set("description", "description")
+          .Set("descriptionStyles", ListBuilder()
+            .Append(DictionaryBuilder()
+              .Set("type", "url")
+              .Set("offset", 0)
+              .Set("length", 5))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 0)
+              .Set("length", 4))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 9)
+              .Set("length", 2))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 9)
+              .Set("length", 2))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 1)
+              .Set("length", 2))))).Build();
+
+  scoped_ptr<SendSuggestions::Params> moved_params(
+      SendSuggestions::Params::Create(*moved_list));
+  EXPECT_TRUE(moved_params);
+  EXPECT_TRUE(moved_params->suggest_results[0].get());
+  CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
+      *moved_params->suggest_results[0]));
 }
 
 //   0123456789
@@ -117,21 +192,44 @@ TEST(ExtensionOmniboxTest, DescriptionStylesCombine) {
 // + ddd
 // = 77777nnnnn
 TEST(ExtensionOmniboxTest, DescriptionStylesCombine2) {
-  ListValue styles_value;
-  AppendStyle("url", 0, 5, &styles_value);
-  AppendStyle("match", 0, 5, &styles_value);
-  AppendStyle("match", 0, 3, &styles_value);
-  AppendStyle("dim", 2, 3, &styles_value);
-  AppendStyle("dim", 0, 3, &styles_value);
+  scoped_ptr<ListValue> list = ListBuilder()
+      .Append(42)
+      .Append(ListBuilder()
+        .Append(DictionaryBuilder()
+          .Set("content", "content")
+          .Set("description", "description")
+          .Set("descriptionStyles", ListBuilder()
+            .Append(DictionaryBuilder()
+              .Set("type", "url")
+              .Set("offset", 0)
+              .Set("length", 5))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 0)
+              .Set("length", 5))
+            .Append(DictionaryBuilder()
+              .Set("type", "match")
+              .Set("offset", 0)
+              .Set("length", 3))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 2)
+              .Set("length", 3))
+            .Append(DictionaryBuilder()
+              .Set("type", "dim")
+              .Set("offset", 0)
+              .Set("length", 3))))).Build();
 
   ACMatchClassifications styles_expected;
   styles_expected.push_back(ACMatchClassification(0, kUrl | kMatch | kDim));
   styles_expected.push_back(ACMatchClassification(5, kNone));
 
-  ExtensionOmniboxSuggestion suggestions;
-  suggestions.description.resize(10);
-  EXPECT_TRUE(suggestions.ReadStylesFromValue(styles_value));
-  CompareClassification(styles_expected, suggestions.description_styles);
+  scoped_ptr<SendSuggestions::Params> params(
+      SendSuggestions::Params::Create(*list));
+  EXPECT_TRUE(params);
+  EXPECT_TRUE(params->suggest_results[0].get());
+  CompareClassification(styles_expected, StyleTypesToACMatchClassifications(
+      *params->suggest_results[0]));
 }
 
 }  // namespace extensions

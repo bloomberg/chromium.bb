@@ -638,8 +638,8 @@ enum NotificationType {
   NOTIFICATION_EXTENSION_DOWNLOADS_EVENT,
 
   // Sent when an omnibox extension has sent back omnibox suggestions. The
-  // source is the profile, and the details are an ExtensionOmniboxSuggestions
-  // object.
+  // source is the profile, and the details are an
+  // extensions::api::omnibox::SendSuggestions::Params object.
   NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY,
 
   // Sent when the user accepts the input in an extension omnibox keyword

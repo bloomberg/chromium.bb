@@ -27,6 +27,8 @@
 #include "net/base/net_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
+namespace omnibox_api = extensions::api::omnibox;
+
 // Helper functor for Start(), for ending keyword mode unless explicitly told
 // otherwise.
 class KeywordProvider::ScopedEndExtensionKeywordMode {
@@ -558,9 +560,9 @@ void KeywordProvider::Observe(int type,
     }
 
     case chrome::NOTIFICATION_EXTENSION_OMNIBOX_SUGGESTIONS_READY: {
-      const extensions::ExtensionOmniboxSuggestions& suggestions =
-        *content::Details<
-            extensions::ExtensionOmniboxSuggestions>(details).ptr();
+      const omnibox_api::SendSuggestions::Params& suggestions =
+          *content::Details<
+              omnibox_api::SendSuggestions::Params>(details).ptr();
       if (suggestions.request_id != current_input_id_)
         return;  // This is an old result. Just ignore.
 
@@ -572,9 +574,9 @@ void KeywordProvider::Observe(int type,
 
       // TODO(mpcomplete): consider clamping the number of suggestions to
       // AutocompleteProvider::kMaxMatches.
-      for (size_t i = 0; i < suggestions.suggestions.size(); ++i) {
-        const extensions::ExtensionOmniboxSuggestion& suggestion =
-            suggestions.suggestions[i];
+      for (size_t i = 0; i < suggestions.suggest_results.size(); ++i) {
+        const omnibox_api::SuggestResult& suggestion =
+            *suggestions.suggest_results[i];
         // We want to order these suggestions in descending order, so start with
         // the relevance of the first result (added synchronously in Start()),
         // and subtract 1 for each subsequent suggestion from the extension.
@@ -584,11 +586,12 @@ void KeywordProvider::Observe(int type,
             input.prefer_keyword(), input.allow_exact_keyword_match());
         extension_suggest_matches_.push_back(CreateAutocompleteMatch(
             model, keyword, input, keyword.length(),
-            suggestion.content, first_relevance - (i + 1)));
+            UTF8ToUTF16(suggestion.content), first_relevance - (i + 1)));
 
         AutocompleteMatch* match = &extension_suggest_matches_.back();
-        match->contents.assign(suggestion.description);
-        match->contents_class = suggestion.description_styles;
+        match->contents.assign(UTF8ToUTF16(suggestion.description));
+        match->contents_class =
+            extensions::StyleTypesToACMatchClassifications(suggestion);
         match->description.clear();
         match->description_class.clear();
       }

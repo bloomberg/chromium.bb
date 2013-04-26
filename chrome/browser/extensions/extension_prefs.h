@@ -29,7 +29,12 @@ class PrefRegistrySyncable;
 namespace extensions {
 class ExtensionPrefsUninstallExtension;
 class URLPatternSet;
-struct ExtensionOmniboxSuggestion;
+
+namespace api {
+namespace omnibox {
+struct SuggestResult;
+}
+}
 
 namespace app_file_handler_util {
 struct SavedFileEntry;
@@ -324,11 +329,11 @@ class ExtensionPrefs : public ContentSettingsStore::Observer,
       std::vector<app_file_handler_util::SavedFileEntry>* out);
 
   // Controls the omnibox default suggestion as set by the extension.
-  ExtensionOmniboxSuggestion GetOmniboxDefaultSuggestion(
+  scoped_ptr<api::omnibox::SuggestResult> GetOmniboxDefaultSuggestion(
       const std::string& extension_id);
   void SetOmniboxDefaultSuggestion(
       const std::string& extension_id,
-      const ExtensionOmniboxSuggestion& suggestion);
+      const api::omnibox::SuggestResult& suggestion);
 
   // Returns true if the user enabled this extension to be loaded in incognito
   // mode.
