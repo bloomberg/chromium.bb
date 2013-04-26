@@ -2521,7 +2521,7 @@ webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-alpha.html [ Pass Ima
 webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-no-alpha.html [ Pass ImageOnlyFailure ]
 webkit.org/b/97816 [ Linux ] compositing/plugins/webplugin-reflection.html [ Pass ImageOnlyFailure ]
 
-crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-alpha.html [ Crash ]
+crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-alpha.html [ Crash Timeout ]
 crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-no-alpha.html [ Crash Timeout ]
 crbug.com/230257 virtual/softwarecompositing/plugins/webplugin-reflection.html [ Crash Timeout ]
 
@@ -3063,6 +3063,13 @@ crbug.com/234891 fast/dom/timer-throttling-hidden-page.html [ Pass Failure ]
 
 crbug.com/235529 inspector-protocol/heap-profiler/heap-objects-tracking.html [ Pass Failure ]
 
+Bug(eseidel) fast/css/variables/var-inside-shape.html [ ImageOnlyFailure ]
+
+crbug.com/234758 [ Debug ] fast/js/dfg-inline-many-blocks.html [ Timeout Pass ]
+crbug.com/234758 [ Debug ] inspector-protocol/nmi-webaudio-leak-test.html [ Timeout Crash Pass ]
+crbug.com/234758 [ Win Debug ] tables/mozilla/other/test3.html [ Pass Crash ]
+crbug.com/234758 [ Debug ] fast/js/toInt32UInt32.html [ Pass Timeout ]
+crbug.com/234758 inspector/debugger/script-formatter-breakpoints.html [ Timeout Pass Failure ]
 crbug.com/234758 [ Debug ] jquery/traversing.html [ Timeout Crash ]
 crbug.com/234758 inspector/profiler/canvas2d/canvas2d-gradient-capturing.html [ Pass Crash ]
 crbug.com/234758 [ SnowLeopard ] virtual/softwarecompositing/transitions/singular-scale-transition.html [ Pass Crash ]
