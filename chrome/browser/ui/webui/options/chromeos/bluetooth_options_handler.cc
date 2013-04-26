@@ -353,6 +353,10 @@ void BluetoothOptionsHandler::ConnectError(
     device::BluetoothDevice::ConnectErrorCode error_code) {
   const char* error_name = NULL;
 
+  // Invalidate the local cache.
+  pairing_device_address_.clear();
+  pairing_device_entered_ = kInvalidEntered;
+
   VLOG(1) << "Failed to connect to device: " << address;
   switch (error_code) {
     case device::BluetoothDevice::ERROR_UNKNOWN:
