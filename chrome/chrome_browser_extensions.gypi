@@ -483,8 +483,6 @@
         'browser/extensions/api/webstore_private/webstore_private_api.h',
         'browser/extensions/api/webview/webview_api.cc',
         'browser/extensions/api/webview/webview_api.h',
-        'browser/extensions/app_host_installer_win.cc',
-        'browser/extensions/app_host_installer_win.h',
         'browser/extensions/app_icon_loader.h',
         'browser/extensions/app_icon_loader_impl.cc',
         'browser/extensions/app_icon_loader_impl.h',

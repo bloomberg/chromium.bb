@@ -45,11 +45,6 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if defined(OS_WIN)
-#include "chrome/browser/extensions/app_host_installer_win.h"
-#include "chrome/installer/util/browser_distribution.h"
-#endif
-
 using content::GpuDataManager;
 
 namespace extensions {
