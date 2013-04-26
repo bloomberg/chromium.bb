@@ -267,21 +267,6 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     return '%s_%s_%s_' % (self.wrapper_prefix, release, iface.GetName())
 
 
-  def GetReturnArgs(self, ret_type, args_spec):
-    if ret_type != 'void':
-      ret = 'return '
-    else:
-      ret = ''
-    if args_spec:
-      args = []
-      for arg in args_spec:
-        args.append(arg[1])
-      args = ', '.join(args)
-    else:
-      args = ''
-    return (ret, args)
-
-
   def GenerateWrapperForPPBMethod(self, iface, member):
     result = []
     func_prefix = self.WrapperMethodPrefix(iface.node, iface.release)
@@ -358,7 +343,6 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
               member, iface.release, 'return',
               prefix='',
               func_as_ptr=True,
-              ptr_prefix='',
               include_name=False)
         else:
           cast = ''
@@ -440,8 +424,6 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     # Generate the includes.
     self.GenerateIncludes(iface_releases, out)
 
-    out.Write(self.GetGuardStart())
-
     # Write out static helper functions (mystrcmp).
     self.GenerateHelperFunctions(out)
 
@@ -462,6 +444,5 @@ const void *__%(wrapper_prefix)s_PPPGetInterface(const char *name) {
     # Write out the IDL-invariant functions.
     self.GenerateFixedFunctions(out)
 
-    out.Write(self.GetGuardEnd())
     out.Close()
     return 0

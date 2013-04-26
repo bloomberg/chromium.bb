@@ -398,7 +398,7 @@ class CGen(object):
 
 
   def Compose(self, rtype, name, arrayspec, callspec, prefix, func_as_ptr,
-              ptr_prefix, include_name, unsized_as_ptr):
+              include_name, unsized_as_ptr):
     self.LogEnter('Compose: %s %s' % (rtype, name))
     arrayspec = ''.join(arrayspec)
 
@@ -417,10 +417,10 @@ class CGen(object):
       params = []
       for ptype, pname, parray, pspec in callspec:
         params.append(self.Compose(ptype, pname, parray, pspec, '', True,
-                                   ptr_prefix='', include_name=True,
+                                   include_name=True,
                                    unsized_as_ptr=unsized_as_ptr))
       if func_as_ptr:
-        name = '(%s*%s)' % (ptr_prefix, name)
+        name = '(*%s)' % name
       if not params:
         params = ['void']
       out = '%s %s(%s)' % (rtype, name, ', '.join(params))
@@ -433,14 +433,13 @@ class CGen(object):
   # Returns the 'C' style signature of the object
   #  prefix - A prefix for the object's name
   #  func_as_ptr - Formats a function as a function pointer
-  #  ptr_prefix - A prefix that goes before the "*" for a function pointer
   #  include_name - If true, include member name in the signature.
-  #                 If false, leave it out. In any case, prefix and ptr_prefix
-  #                 are always included.
+  #                 If false, leave it out. In any case, prefix is always
+  #                 included.
   #  include_version - if True, include version in the member name
   #
   def GetSignature(self, node, release, mode, prefix='', func_as_ptr=True,
-                   ptr_prefix='', include_name=True, include_version=False):
+                   include_name=True, include_version=False):
     self.LogEnter('GetSignature %s %s as func=%s' %
                   (node, mode, func_as_ptr))
     rtype, name, arrayspec, callspec = self.GetComponents(node, release, mode)
@@ -451,7 +450,7 @@ class CGen(object):
     unsized_as_ptr = not callspec
 
     out = self.Compose(rtype, name, arrayspec, callspec, prefix,
-                       func_as_ptr, ptr_prefix, include_name, unsized_as_ptr)
+                       func_as_ptr, include_name, unsized_as_ptr)
 
     self.LogExit('Exit GetSignature: %s' % out)
     return out

@@ -37,11 +37,11 @@ struct some_struct2 {
 };
 
 /*
- * static __attribute__((pnaclcall)) int32_t
- * Pnacl_M15_PPB_Iface_struct_wrap_foo1(int32_t a, struct some_struct b) {
+ * static int32_t
+ * Pnacl_M15_PPB_Iface_struct_wrap_foo1(int32_t a, struct some_struct* b) {
  *   const struct PPB_Iface_struct_wrap_2_0 *iface =
  *     Pnacl_WrapperInfo_PPB_Iface_struct_wrap_2_0.real_iface;
- *   return iface->foo1(a, b);
+ *   return iface->foo1(a, *b);
  * }
  */
 [version=2.0]
@@ -50,11 +50,11 @@ interface PPB_Iface_struct_wrap {
 };
 
 /*
- * static __attribute__((pnaclcall)) int32_t
- * Pnacl_M15_PPB_Iface_union_wrap_foo1(int32_t a, union some_union b) {
+ * static int32_t
+ * Pnacl_M15_PPB_Iface_union_wrap_foo1(int32_t a, union some_union* b) {
  *   const struct PPB_Iface_union_wrap_2_0 *iface =
  *     Pnacl_WrapperInfo_PPB_Iface_union_wrap_2_0.real_iface;
- *   return iface->foo1(a, b);
+ *   return iface->foo1(a, *b);
  * }
  */
 [version=2.0]
@@ -70,18 +70,19 @@ interface PPB_Iface_nowrap {
 
 
 /*
- * static __attribute__((pnaclcall))
- *   int32_t Pnacl_M13_PPB_SomeWrap_foo1(struct some_struct a) {
+ * static
+ * int32_t Pnacl_M13_PPB_SomeWrap_foo1(struct some_struct* a) {
  *   const struct PPB_SomeWrap_0_0 *iface =
  *     Pnacl_WrapperInfo_PPB_SomeWrap_0_0.real_iface;
- *   return iface->foo1(a);
+ *   return iface->foo1(*a);
  * }
  * 
- * static __attribute__((pnaclcall))
- * struct some_struct Pnacl_M13_PPB_SomeWrap_foo2(int32_t a) {
+ * static
+ * void Pnacl_M13_PPB_SomeWrap_foo2(struct some_struct* _struct_result,
+ *                                  int32_t a) {
  *   const struct PPB_SomeWrap_0_0 *iface =
  *     Pnacl_WrapperInfo_PPB_SomeWrap_0_0.real_iface;
- *   return iface->foo2(a);
+ *   *_struct_result = iface->foo2(a);
  * }
  */
 [version=0.0]
@@ -105,32 +106,36 @@ interface PPB_SomeWrap {
  * static int32_t Pnacl_M13_PPP_SomeWrap_foo1(struct some_struct a) {
  *   const struct PPP_SomeWrap_0_0 *iface =
  *     Pnacl_WrapperInfo_PPP_SomeWrap_0_0.real_iface;
- *   int32_t (__attribute__((pnaclcall)) *temp_fp)(struct some_struct a) =
- *  ((int32_t (__attribute__((pnaclcall)) *)(struct some_struct a))iface->foo1);
- *   return temp_fp(a);
+ *   int32_t (*temp_fp)(struct some_struct* a) =
+ *     ((int32_t (*)(struct some_struct* a))iface->foo1);
+ *   return temp_fp(&a);
  * }
  *
  * static struct some_struct Pnacl_M13_PPP_SomeWrap_foo2(int32_t a) {
  *   const struct PPP_SomeWrap_0_0 *iface =
  *     Pnacl_WrapperInfo_PPP_SomeWrap_0_0.real_iface;
- *   struct some_struct (__attribute__((pnaclcall)) *temp_fp)(int32_t a) =
- *  ((struct some_struct (__attribute__((pnaclcall)) *)(int32_t a))iface->foo2);
- *   return temp_fp(a);
+ *   void (*temp_fp)(struct some_struct* _struct_result, int32_t a) =
+ *     ((void (*)(struct some_struct* _struct_result, int32_t a))iface->foo2);
+ *   struct some_struct _struct_result;
+ *   temp_fp(&_struct_result, a);
+ *   return _struct_result;
  * }
  *
  * static struct some_struct Pnacl_M14_PPP_SomeWrap_foo2(int32_t a) {
  *   const struct PPP_SomeWrap_1_0 *iface =
  *     Pnacl_WrapperInfo_PPP_SomeWrap_1_0.real_iface;
- * struct some_struct (__attribute__((pnaclcall)) *temp_fp)(int32_t a) =
- * ((struct some_struct (__attribute__((pnaclcall)) *)(int32_t a))iface->foo2);
- *   return temp_fp(a);
+ *   void (*temp_fp)(struct some_struct* _struct_result, int32_t a) =
+ *     ((void (*)(struct some_struct* _struct_result, int32_t a))iface->foo2);
+ *   struct some_struct _struct_result;
+ *   temp_fp(&_struct_result, a);
+ *   return _struct_result;
  * }
  *
  * static int32_t Pnacl_M14_PPP_SomeWrap_foo1(const struct some_struct a[]) {
  *   const struct PPP_SomeWrap_1_0 *iface =
  *     Pnacl_WrapperInfo_PPP_SomeWrap_1_0.real_iface;
- *   int32_t (__attribute__((pnaclcall)) *temp_fp)(const struct some_struct a[]) =
- *  ((int32_t (__attribute__((pnaclcall)) *)(const struct some_struct a[]))iface->foo1);
+ *   int32_t (*temp_fp)(const struct some_struct a[]) =
+ *     ((int32_t (*)(const struct some_struct a[]))iface->foo1);
  *   return temp_fp(a);
  * }
  */

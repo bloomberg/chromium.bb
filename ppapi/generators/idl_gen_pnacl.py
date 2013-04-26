@@ -42,7 +42,6 @@ class PnaclGen(WrapperGen):
                         'Generate the PNaCl shim.')
     self.cgen = CGen()
     self._skip_opt = False
-    self._pnacl_attribute = '__attribute__((pnaclcall))'
 
   ############################################################
 
@@ -50,13 +49,6 @@ class PnaclGen(WrapperGen):
     """Return the header file that specifies the API of this wrapper.
     We do not generate the header files.  """
     return 'ppapi/generators/pnacl_shim.h'
-
-  def GetGuardStart(self):
-    return ('\n/* The PNaCl PPAPI shims are only needed on x86-64 and arm. */\n'
-            '#if defined(__x86_64__) || defined(__arm__)\n\n')
-
-  def GetGuardEnd(self):
-    return '\n#endif\n'
 
 
   def InterfaceVersionNeedsWrapping(self, iface, version):
@@ -108,20 +100,62 @@ class PnaclGen(WrapperGen):
   ############################################################
 
 
+  def ConvertByValueReturnType(self, ret, args_spec):
+    if self.TypeNeedsWrapping(ret, array_dims=[]):
+      args_spec = [(ret, '_struct_result', [], None)] + args_spec
+      ret2 = 'void'
+      wrap_return = True
+    else:
+      ret2 = ret
+      wrap_return = False
+    return wrap_return, ret2, args_spec
+
+
+  def ConvertByValueArguments(self, args_spec):
+    args = []
+    for type_str, name, array_dims, more_args in args_spec:
+      if self.TypeNeedsWrapping(type_str, array_dims):
+        type_str += '*'
+      args.append((type_str, name, array_dims, more_args))
+    return args
+
+
+  def FormatArgs(self, c_operator, args_spec):
+    args = []
+    for type_str, name, array_dims, more_args in args_spec:
+      if self.TypeNeedsWrapping(type_str, array_dims):
+        args.append(c_operator + name)
+      else:
+        args.append(name)
+    return ', '.join(args)
+
+
   def GenerateWrapperForPPBMethod(self, iface, member):
     result = []
     func_prefix = self.WrapperMethodPrefix(iface.node, iface.release)
-    sig = self.cgen.GetSignature(member, iface.release, 'store',
-                                 func_prefix, False)
-    result.append('static %s\n%s {\n' % (self._pnacl_attribute, sig))
-    result.append('  const struct %s *iface = %s.real_iface;\n' %
-                  (iface.struct_name, self.GetWrapperInfoName(iface)))
     ret, name, array, cspec = self.cgen.GetComponents(member,
                                                       iface.release,
                                                       'store')
-    ret_str, args_str = self.GetReturnArgs(ret, cspec)
-    result.append('  %siface->%s(%s);\n}\n\n' % (ret_str,
-                                                 member.GetName(), args_str))
+    wrap_return, ret2, cspec2 = self.ConvertByValueReturnType(ret, cspec)
+    cspec2 = self.ConvertByValueArguments(cspec2)
+    sig = self.cgen.Compose(ret2, name, array, cspec2,
+                            prefix=func_prefix,
+                            func_as_ptr=False,
+                            include_name=True,
+                            unsized_as_ptr=False)
+    result.append('static %s {\n' % sig)
+    result.append('  const struct %s *iface = %s.real_iface;\n' %
+                  (iface.struct_name, self.GetWrapperInfoName(iface)))
+
+    return_prefix = ''
+    if wrap_return:
+      return_prefix = '*_struct_result = '
+    elif ret != 'void':
+      return_prefix = 'return '
+
+    result.append('  %siface->%s(%s);\n}\n\n' % (return_prefix,
+                                                 member.GetName(),
+                                                 self.FormatArgs('*', cspec)))
     return result
 
 
@@ -133,24 +167,35 @@ class PnaclGen(WrapperGen):
     result.append('static %s {\n' % sig)
     result.append('  const struct %s *iface = %s.real_iface;\n' %
                   (iface.struct_name, self.GetWrapperInfoName(iface)))
-    temp_fp = self.cgen.GetSignature(member, iface.release, 'return',
-                                     'temp_fp',
-                                     func_as_ptr=True,
-                                     ptr_prefix=self._pnacl_attribute + ' ',
-                                     include_name=False)
-    cast = self.cgen.GetSignature(member, iface.release, 'return',
-                                  prefix='',
-                                  func_as_ptr=True,
-                                  ptr_prefix=self._pnacl_attribute + ' ',
-                                  include_name=False)
-    result.append('  %s = ((%s)iface->%s);\n' % (temp_fp,
-                                                 cast,
-                                                 member.GetName()))
     ret, name, array, cspec = self.cgen.GetComponents(member,
                                                       iface.release,
                                                       'store')
-    ret_str, args_str = self.GetReturnArgs(ret, cspec)
-    result.append('  %stemp_fp(%s);\n}\n\n' % (ret_str, args_str))
+    wrap_return, ret2, cspec = self.ConvertByValueReturnType(ret, cspec)
+    cspec2 = self.ConvertByValueArguments(cspec)
+    temp_fp = self.cgen.Compose(ret2, name, array, cspec2,
+                                prefix='temp_fp',
+                                func_as_ptr=True,
+                                include_name=False,
+                                unsized_as_ptr=False)
+    cast = self.cgen.Compose(ret2, name, array, cspec2,
+                             prefix='',
+                             func_as_ptr=True,
+                             include_name=False,
+                             unsized_as_ptr=False)
+    result.append('  %s =\n    ((%s)iface->%s);\n' % (temp_fp,
+                                                      cast,
+                                                      member.GetName()))
+    return_prefix = ''
+    if wrap_return:
+      result.append('  %s _struct_result;\n' % ret)
+    elif ret != 'void':
+      return_prefix = 'return '
+
+    result.append('  %stemp_fp(%s);\n' % (return_prefix,
+                                          self.FormatArgs('&', cspec)))
+    if wrap_return:
+      result.append('  return _struct_result;\n')
+    result.append('}\n\n')
     return result
 
 
