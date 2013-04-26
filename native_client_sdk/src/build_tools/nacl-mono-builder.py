@@ -87,12 +87,19 @@ def main(args):
     git_url = 'git://github.com/elijahtaylor/mono.git'
     git_rev = 'HEAD'
   if buildbot_revision:
-    # Unfortunately, we use different git revisions for ARM and x86 now,
-    # so ignore buildbot_revision variable for ARM.
+    # Unfortunately, we use different git branches/revisions
+    # for ARM and x86 now, so ignore buildbot_revision variable for ARM.
     # Need to rethink this approach, if we'll plan to support
     # more flexible repo selection mechanism.
     if options.arch != 'arm':
       git_rev = buildbot_revision.split(':')[1]
+  # ARM and x86 is built out of different git trees, so distinguish
+  # them by appending the arch. It also makes 32 and 64 bit x86 separated,
+  # which is good.
+  # TODO(olonho): maybe we need to avoid modifications of global.
+  global MONO_DIR
+  tag = options.arch
+  MONO_DIR = "%s-%s" % (MONO_DIR, tag)
   if not os.path.exists(MONO_DIR):
     buildbot_common.MakeDir(MONO_DIR)
     buildbot_common.Run(['git', 'clone', git_url, MONO_DIR])
