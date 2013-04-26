@@ -26,6 +26,8 @@ function test()
 {
     InspectorTest.importScript("../../../../inspector-protocol/heap-profiler/resources/heap-snapshot-common.js");
 
+    var gotLastSeenObjectIdEvent = false;
+    var gotHeapStatsUpdateEvent = false;
     function trackingStarted()
     {
         InspectorTest.log("SUCCESS: tracking started");
@@ -33,6 +35,10 @@ function test()
 
     function trackingStopped()
     {
+        if (gotHeapStatsUpdateEvent)
+            InspectorTest.log("SUCCESS: heapStatsUpdate arrived");
+        if (gotLastSeenObjectIdEvent)
+            InspectorTest.log("SUCCESS: lastSeenObjectId arrived");
         InspectorTest.log("SUCCESS: tracking stopped");
         InspectorTest.completeTest();
     }
@@ -40,18 +46,18 @@ function test()
     var fragments = [];
     InspectorTest.eventHandler["HeapProfiler.lastSeenObjectId"] = function(messageObject)
     {
-        InspectorTest.log("SUCCESS: lastSeenObjectId arrived");
+
         var params = messageObject["params"];
         InspectorTest.assert(params, "no params found in event HeapProfiler.lastSeenObjectId");
         InspectorTest.assert(params.lastSeenObjectId, "lastSeenObjectId is missing in event HeapProfiler.lastSeenObjectId");
         InspectorTest.assert(params.timestamp, "timestamp is missing in event HeapProfiler.lastSeenObjectId");
         InspectorTest.assert(fragments.length, "a heap stats fragment didn't arrive before HeapProfiler.lastSeenObjectId");
         InspectorTest.sendCommand("HeapProfiler.stopTrackingHeapObjects", {}, trackingStopped);
+        gotLastSeenObjectIdEvent = true;
     }
 
     InspectorTest.eventHandler["HeapProfiler.heapStatsUpdate"] = function(messageObject)
     {
-        InspectorTest.log("SUCCESS: heapStatsUpdate arrived");
         var params = messageObject["params"];
         InspectorTest.assert(params, "no params found in event HeapProfiler.heapStatsUpdate");
         var statsUpdate = params.statsUpdate;
@@ -63,6 +69,7 @@ function test()
         InspectorTest.assert(statsUpdate[1], "statsUpdate: total count of objects should be not zero");
         InspectorTest.assert(statsUpdate[2], "statsUpdate: total size of objects should be not zero");
         fragments.push(statsUpdate);
+        gotHeapStatsUpdateEvent = true;
     }
 
     InspectorTest.sendCommand("HeapProfiler.startTrackingHeapObjects", {}, trackingStarted);
