@@ -24,6 +24,6 @@
  */
 
 partial interface DOMWindow {
-    [MeasureAs=StorageInfo] readonly attribute StorageInfo webkitStorageInfo;
+    [DeprecateAs=StorageInfo] readonly attribute StorageInfo webkitStorageInfo;
 };
 

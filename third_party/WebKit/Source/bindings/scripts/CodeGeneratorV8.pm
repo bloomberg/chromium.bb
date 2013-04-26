@@ -969,7 +969,7 @@ sub GenerateDeprecationNotification
     my $deprecateAs = shift;
     if ($deprecateAs) {
         AddToImplIncludes("PageConsole.h");
-        return GenerateFeatureObservation($deprecateAs) . "\n    PageConsole::reportDeprecation(activeDOMWindow(BindingState::instance()), PageConsole::${deprecateAs});\n";
+        return "    UseCounter::measureDeprecatedFeature(activeDOMWindow(BindingState::instance()), UseCounter::${deprecateAs});\n";
     }
     return "";
 }

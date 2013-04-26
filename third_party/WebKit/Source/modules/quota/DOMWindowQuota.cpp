@@ -73,10 +73,8 @@ StorageInfo* DOMWindowQuota::webkitStorageInfo(DOMWindow* window)
 
 StorageInfo* DOMWindowQuota::webkitStorageInfo() const
 {
-    if (!m_storageInfo && frame()) {
-        PageConsole::reportDeprecation(frame()->document(), PageConsole::PrefixedStorageInfo);
+    if (!m_storageInfo && frame())
         m_storageInfo = StorageInfo::create();
-    }
     return m_storageInfo.get();
 }
 

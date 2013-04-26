@@ -26,15 +26,17 @@
 #ifndef UseCounter_h
 #define UseCounter_h
 
-#include <wtf/BitVector.h>
-#include <wtf/Noncopyable.h>
-#include <wtf/OwnPtr.h>
-#include <wtf/PassOwnPtr.h>
+#include "wtf/BitVector.h"
+#include "wtf/Noncopyable.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/PassOwnPtr.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class DOMWindow;
 class Document;
+class ScriptExecutionContext;
 
 // UseCounter is used for counting the number of times features of
 // Blink are used on real web pages and help us know commonly
@@ -125,6 +127,9 @@ public:
         PrefixedUserTiming,
         WindowEvent,
         ContentSecurityPolicyWithBaseElement,
+        PrefixedMediaAddKey,
+        PrefixedMediaGenerateKeyRequest,
+        WebAudioLooping,
         // Add new features above this line. Don't change assigned numbers of each items.
         NumberOfFeatures, // This enum value must be last.
     };
@@ -132,10 +137,21 @@ public:
     // "observe" sets the bit for this feature to 1. Repeated calls are ignored.
     static void observe(Document*, Feature);
     static void observe(DOMWindow*, Feature);
+
+    // "measureDeprecatedFeature" sets the bit for this feature to 1, and sends a deprecation
+    // warning to the console. Repeated calls are ignored.
+    //
+    // Be considerate to developers' consoles: features should only send deprecation warnings
+    // when we're actively interested in removing them from the platform.
+    static void measureDeprecatedFeature(DOMWindow*, Feature);
+    static void measureDeprecatedFeature(ScriptExecutionContext*, Feature);
+    static void measureDeprecatedFeature(Document*, Feature);
+    String deprecationMessage(Feature);
+
     void didCommitLoad();
 
 private:
-    void didObserve(Feature feature)
+    bool recordObservation(Feature feature)
     {
         ASSERT(feature != PageDestruction); // PageDestruction is reserved as a scaling factor.
         ASSERT(feature < NumberOfFeatures);
@@ -143,7 +159,12 @@ private:
             m_countBits = adoptPtr(new BitVector(NumberOfFeatures));
             m_countBits->clearAll();
         }
+
+        if (m_countBits->quickGet(feature))
+            return false;
+
         m_countBits->quickSet(feature);
+        return true;
     }
 
     void updateMeasurements();

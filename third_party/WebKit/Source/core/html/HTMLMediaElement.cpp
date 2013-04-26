@@ -2293,10 +2293,6 @@ void HTMLMediaElement::setSourceState(const String& state)
 #if ENABLE(ENCRYPTED_MEDIA)
 void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, PassRefPtr<Uint8Array> initData, ExceptionCode& ec)
 {
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-    PageConsole::reportDeprecation(scriptExecutionContext(), PrefixedMediaGenerateKeyRequest);
-#endif
-
     if (keySystem.isEmpty()) {
         ec = SYNTAX_ERR;
         return;
@@ -2325,10 +2321,6 @@ void HTMLMediaElement::webkitGenerateKeyRequest(const String& keySystem, Excepti
 
 void HTMLMediaElement::webkitAddKey(const String& keySystem, PassRefPtr<Uint8Array> key, PassRefPtr<Uint8Array> initData, const String& sessionId, ExceptionCode& ec)
 {
-#if ENABLE(ENCRYPTED_MEDIA_V2)
-    PageConsole::reportDeprecation(scriptExecutionContext(), PrefixedMediaAddKey);
-#endif
-
     if (keySystem.isEmpty()) {
         ec = SYNTAX_ERR;
         return;

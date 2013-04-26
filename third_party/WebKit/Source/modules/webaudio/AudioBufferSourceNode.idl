@@ -48,7 +48,7 @@
     [MeasureAs=WebAudioStart, ImplementedAs=startGrain] void start(double when, double grainOffset, double grainDuration);
     void stop(double when);
 
-    attribute boolean looping; // This is an alias for the .loop attribute for backwards compatibility.
+    [DeprecateAs=WebAudioLooping, ImplementedAs=loop] attribute boolean looping; // This is an alias for the .loop attribute for backwards compatibility.
 
     [MeasureAs=LegacyWebAudio] void noteOn(double when);
     [MeasureAs=LegacyWebAudio] void noteGrainOn(double when, double grainOffset, double grainDuration);

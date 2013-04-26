@@ -79,10 +79,6 @@ public:
     void setLoopStart(double loopStart) { m_loopStart = loopStart; }
     void setLoopEnd(double loopEnd) { m_loopEnd = loopEnd; }
 
-    // Deprecated.
-    bool looping();
-    void setLooping(bool);
-
     AudioParam* gain() { return m_gain.get(); }
     AudioParam* playbackRate() { return m_playbackRate.get(); }
 

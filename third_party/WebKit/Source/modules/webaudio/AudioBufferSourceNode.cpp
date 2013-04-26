@@ -450,20 +450,6 @@ double AudioBufferSourceNode::totalPitchRate()
     return totalRate;
 }
 
-bool AudioBufferSourceNode::looping()
-{
-    PageConsole::reportDeprecation(context()->scriptExecutionContext(), PageConsole::WebAudioLooping);
-
-    return m_isLooping;
-}
-
-void AudioBufferSourceNode::setLooping(bool looping)
-{
-    PageConsole::reportDeprecation(context()->scriptExecutionContext(), PageConsole::WebAudioLooping);
-
-    m_isLooping = looping;
-}
-
 bool AudioBufferSourceNode::propagatesSilence() const
 {
     return !isPlayingOrScheduled() || hasFinished() || !m_buffer;

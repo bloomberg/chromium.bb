@@ -26,10 +26,13 @@
 #include "config.h"
 #include "core/page/UseCounter.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Page.h"
+#include "core/page/PageConsole.h"
 #include "core/platform/HistogramSupport.h"
+#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
@@ -75,13 +78,77 @@ void UseCounter::observe(Document* document, Feature feature)
     if (!page)
         return;
 
-    page->useCounter()->didObserve(feature);
+    ASSERT(page->useCounter()->deprecationMessage(feature)->isEmpty());
+    page->useCounter()->recordObservation(feature);
 }
 
 void UseCounter::observe(DOMWindow* domWindow, Feature feature)
 {
     ASSERT(domWindow);
     observe(domWindow->document(), feature);
+}
+
+void UseCounter::measureDeprecatedFeature(ScriptExecutionContext* context, Feature feature)
+{
+    if (!context || !context->isDocument())
+        return;
+    UseCounter::measureDeprecatedFeature(toDocument(context), feature);
+}
+
+void UseCounter::measureDeprecatedFeature(DOMWindow* window, Feature feature)
+{
+    if (!window)
+        return;
+    UseCounter::measureDeprecatedFeature(window->document(), feature);
+}
+
+void UseCounter::measureDeprecatedFeature(Document* document, Feature feature)
+{
+    if (!document)
+        return;
+
+    Page* page = document->page();
+    if (!page)
+        return;
+
+    if (page->useCounter()->recordObservation(feature)) {
+        ASSERT(!page->useCounter()->deprecationMessage(feature)->isEmpty());
+        page->console()->addMessage(DeprecationMessageSource, WarningMessageLevel, page->useCounter()->deprecationMessage(feature));
+    }
+}
+
+String UseCounter::deprecationMessage(Feature feature)
+{
+    switch (feature) {
+    // Content Security Policy
+    case PrefixedContentSecurityPolicy:
+    case PrefixedContentSecurityPolicyReportOnly:
+        return "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.";
+
+    // HTMLMediaElement
+    case PrefixedMediaAddKey:
+        return "'HTMLMediaElement.webkitAddKey()' is deprecated. Please use 'MediaKeySession.update()' instead.";
+    case PrefixedMediaGenerateKeyRequest:
+        return "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated. Please use 'MediaKeys.createSession()' instead.";
+
+    // Quota
+    case StorageInfo:
+        return "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.";
+
+    // Performance
+    case PrefixedPerformanceTimeline:
+        return "'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.";
+    case PrefixedUserTiming:
+        return "'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.";
+
+    // Web Audio
+    case WebAudioLooping:
+        return "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.";
+
+    // Features that aren't deprecated don't have a deprecation message.
+    default:
+        return String();
+    }
 }
 
 } // namespace WebCore

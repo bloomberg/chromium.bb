@@ -58,33 +58,10 @@ namespace {
 
 int muteCount = 0;
 
-// Ensure that this stays in sync with the DeprecatedFeature enum.
-static const char* const deprecationMessages[] = {
-    // CSP
-    "The 'X-WebKit-CSP' headers are deprecated; please consider using the canonical 'Content-Security-Policy' header instead.",
-
-    // HTMLMediaElement
-    "'HTMLMediaElement.webkitAddKey()' is deprecated. Please use 'MediaKeySession.update()' instead.",
-    "'HTMLMediaElement.webkitGenerateKeyRequest()' is deprecated. Please use 'MediaKeys.createSession()' instead.",
-
-    // Performance
-    "'window.performance.webkitGet*' methods have been deprecated. Please use the unprefixed 'performance.get*' methods instead.",
-    "'window.performance.webkit*' methods have been deprecated. Please use the unprefixed 'window.performance.*' methods instead.",
-
-    // Quota
-    "'window.webkitStorageInfo' is deprecated. Please use 'navigator.webkitTemporaryStorage' or 'navigator.webkitPersistentStorage' instead.",
-
-    // Web Audio
-    "AudioBufferSourceNode 'looping' attribute is deprecated.  Use 'loop' instead.",
-};
-
-COMPILE_ASSERT(WTF_ARRAY_LENGTH(deprecationMessages) == static_cast<int>(WebCore::PageConsole::NumberOfFeatures), DeprecationMessages_matches_enum);
-
 }
 
 PageConsole::PageConsole(Page* page)
     : m_page(page)
-    , m_deprecationNotifications(NumberOfFeatures)
 {
 }
 
@@ -140,45 +117,6 @@ void PageConsole::unmute()
 {
     ASSERT(muteCount > 0);
     muteCount--;
-}
-
-void PageConsole::reportDeprecation(DOMWindow* window, DeprecatedFeature feature)
-{
-    if (!window)
-        return;
-    PageConsole::reportDeprecation(window->document(), feature);
-}
-
-// static
-void PageConsole::reportDeprecation(ScriptExecutionContext* context, DeprecatedFeature feature)
-{
-    if (!context || !context->isDocument())
-        return;
-    PageConsole::reportDeprecation(toDocument(context), feature);
-}
-
-// static
-void PageConsole::reportDeprecation(Document* document, DeprecatedFeature feature)
-{
-    if (!document)
-        return;
-
-    Page* page = document->page();
-    if (!page || !page->console())
-        return;
-
-    page->console()->addDeprecationMessage(feature);
-}
-
-void PageConsole::addDeprecationMessage(DeprecatedFeature feature)
-{
-    ASSERT(feature < NumberOfFeatures);
-
-    if (m_deprecationNotifications.quickGet(feature))
-        return;
-
-    m_deprecationNotifications.quickSet(feature);
-    addMessage(DeprecationMessageSource, WarningMessageLevel, ASCIILiteral(deprecationMessages[feature]));
 }
 
 } // namespace WebCore

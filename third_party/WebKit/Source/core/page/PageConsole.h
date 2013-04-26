@@ -45,28 +45,6 @@ class ScriptExecutionContext;
 
 class PageConsole {
 public:
-    enum DeprecatedFeature {
-        // CSP
-        PrefixedContentSecurityPolicyHeader,
-
-        // HTMLMediaElement
-        PrefixedMediaAddKey,
-        PrefixedMediaGenerateKeyRequest,
-
-        // Performance
-        PrefixedPerformanceTimeline,
-        PrefixedUserTiming,
-
-        // Quota
-        PrefixedStorageInfo,
-
-        // Web Audio
-        WebAudioLooping,
-
-        // Add newly deprecated features above this line.
-        NumberOfFeatures, // Sentinel.
-    };
-
     static PassOwnPtr<PageConsole> create(Page* page) { return adoptPtr(new PageConsole(page)); }
     virtual ~PageConsole();
 
@@ -74,22 +52,15 @@ public:
     void addMessage(MessageSource, MessageLevel, const String& message, PassRefPtr<ScriptCallStack>);
     void addMessage(MessageSource, MessageLevel, const String& message, unsigned long requestIdentifier = 0, Document* = 0);
 
-    static void reportDeprecation(DOMWindow*, DeprecatedFeature);
-    static void reportDeprecation(ScriptExecutionContext*, DeprecatedFeature);
-    static void reportDeprecation(Document*, DeprecatedFeature);
-
     static void mute();
     static void unmute();
 
 private:
     PageConsole(Page*);
 
-    void addDeprecationMessage(DeprecatedFeature);
-
     Page* page() { return m_page; };
 
     Page* m_page;
-    BitVector m_deprecationNotifications;
 };
 
 } // namespace WebCore
