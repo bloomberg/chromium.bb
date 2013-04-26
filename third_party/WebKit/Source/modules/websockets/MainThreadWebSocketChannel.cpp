@@ -32,6 +32,7 @@
 
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 
+#include "bindings/v8/ScriptCallStackFactory.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/dom/ScriptExecutionContext.h"
@@ -87,6 +88,7 @@ MainThreadWebSocketChannel::MainThreadWebSocketChannel(Document* document, WebSo
     , m_closeEventCode(CloseEventCodeAbnormalClosure)
     , m_outgoingFrameQueueStatus(OutgoingFrameQueueOpen)
     , m_blobLoaderStatus(BlobLoaderNotStarted)
+    , m_callFrameAtConnection("", "", 0)
 {
     if (Page* page = m_document->page())
         m_identifier = createUniqueIdentifier();
@@ -108,6 +110,8 @@ void MainThreadWebSocketChannel::connect(const KURL& url, const String& protocol
         InspectorInstrumentation::didCreateWebSocket(m_document, m_identifier, url, m_document->url(), protocol);
     ref();
     m_handle = SocketStreamHandle::create(m_handshake->url(), this);
+    RefPtr<ScriptCallStack> callstack = createScriptCallStack(1, true);
+    m_callFrameAtConnection = callstack && callstack->size() > 0 ? callstack->at(0) : ScriptCallFrame("", "", 0);
 }
 
 String MainThreadWebSocketChannel::subprotocol()
@@ -196,7 +200,19 @@ void MainThreadWebSocketChannel::fail(const String& reason)
     ASSERT(!m_suspended);
     if (m_document) {
         InspectorInstrumentation::didReceiveWebSocketFrameError(m_document, m_identifier, reason);
-        m_document->addConsoleMessage(NetworkMessageSource, ErrorMessageLevel, "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: " + reason);
+        const String message = "WebSocket connection to '" + m_handshake->url().elidedString() + "' failed: " + reason;
+        RefPtr<ScriptCallStack> callstack = createScriptCallStack(1, true);
+        if (callstack && callstack->size() > 0) {
+            // We are in a JS callstack.
+            // So, the addConsoleMessage method will show the stack appropriately.
+            m_document->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message);
+        } else {
+            // We are not in a JS callstack.
+            // Then show the source file and the line number at the connection initiation.
+            const String& url = m_callFrameAtConnection.sourceURL();
+            unsigned lineNumber = m_callFrameAtConnection.lineNumber();
+            static_cast<ScriptExecutionContext*>(m_document)->addConsoleMessage(JSMessageSource, ErrorMessageLevel, message, url, lineNumber, 0, 0);
+        }
     }
 
     // Hybi-10 specification explicitly states we must not continue to handle incoming data

@@ -32,6 +32,7 @@
 #define MainThreadWebSocketChannel_h
 
 #include "core/fileapi/FileReaderLoaderClient.h"
+#include "core/inspector/ScriptCallFrame.h"
 #include "core/platform/Timer.h"
 #include "core/platform/network/SocketStreamHandleClient.h"
 #include "modules/websockets/WebSocketChannel.h"
@@ -197,6 +198,7 @@ private:
     OwnPtr<FileReaderLoader> m_blobLoader;
     BlobLoaderStatus m_blobLoaderStatus;
 
+    ScriptCallFrame m_callFrameAtConnection;
     WebSocketDeflateFramer m_deflateFramer;
 };
 
