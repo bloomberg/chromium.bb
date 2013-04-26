@@ -107,6 +107,9 @@ class ChromeAppViewAsh
   HRESULT OnVisibilityChanged(winui::Core::ICoreWindow* sender,
                               winui::Core::IVisibilityChangedEventArgs* args);
 
+  HRESULT OnWindowActivated(winui::Core::ICoreWindow* sender,
+                            winui::Core::IWindowActivatedEventArgs* args);
+
   mswr::ComPtr<winui::Core::ICoreWindow> window_;
   mswr::ComPtr<winapp::Core::ICoreApplicationView> view_;
   EventRegistrationToken activated_token_;

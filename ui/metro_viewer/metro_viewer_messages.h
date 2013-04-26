@@ -131,3 +131,8 @@ IPC_MESSAGE_CONTROL4(MetroViewerHostMsg_DisplayFileOpen,
 // Requests the viewer to display the select folder dialog.
 IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_DisplaySelectFolder,
                      string16)   /* title */
+
+// Informs the browser about the viewer activation state, i.e. active, lost
+// activation etc.
+IPC_MESSAGE_CONTROL1(MetroViewerHostMsg_WindowActivated,
+                     bool) /* active */

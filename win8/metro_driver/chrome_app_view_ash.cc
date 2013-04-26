@@ -50,6 +50,10 @@ typedef winfoundtn::ITypedEventHandler<
     winui::Core::CoreWindow*,
     winui::Core::VisibilityChangedEventArgs*> VisibilityChangedHandler;
 
+typedef winfoundtn::ITypedEventHandler<
+    winui::Core::CoreWindow*,
+    winui::Core::WindowActivatedEventArgs*> WindowActivatedHandler;
+
 // This function is exported by chrome.exe.
 typedef int (__cdecl *BreakpadExceptionHandler)(EXCEPTION_POINTERS* info);
 
@@ -368,6 +372,11 @@ ChromeAppViewAsh::SetWindow(winui::Core::ICoreWindow* window) {
   hr = window_->add_VisibilityChanged(mswr::Callback<VisibilityChangedHandler>(
       this, &ChromeAppViewAsh::OnVisibilityChanged).Get(),
       &visibility_changed_token_);
+  CheckHR(hr);
+
+  hr = window_->add_Activated(mswr::Callback<WindowActivatedHandler>(
+      this, &ChromeAppViewAsh::OnWindowActivated).Get(),
+      &window_activated_token_);
   CheckHR(hr);
 
   // By initializing the direct 3D swap chain with the corewindow
@@ -783,6 +792,19 @@ HRESULT ChromeAppViewAsh::OnVisibilityChanged(
     return hr;
 
   ui_channel_->Send(new MetroViewerHostMsg_VisibilityChanged(!!visible));
+  return S_OK;
+}
+
+HRESULT ChromeAppViewAsh::OnWindowActivated(
+    winui::Core::ICoreWindow* sender,
+    winui::Core::IWindowActivatedEventArgs* args) {
+  winui::Core::CoreWindowActivationState state;
+  HRESULT hr = args->get_WindowActivationState(&state);
+  if (FAILED(hr))
+    return hr;
+  DVLOG(1) << "Window activation state: "  << state;
+  ui_channel_->Send(new MetroViewerHostMsg_WindowActivated(
+      state != winui::Core::CoreWindowActivationState_Deactivated));
   return S_OK;
 }
 

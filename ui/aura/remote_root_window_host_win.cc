@@ -154,6 +154,8 @@ bool RemoteRootWindowHostWin::OnMessageReceived(const IPC::Message& message) {
                         OnMultiFileOpenDone)
     IPC_MESSAGE_HANDLER(MetroViewerHostMsg_SelectFolderDone,
                         OnSelectFolderDone)
+    IPC_MESSAGE_HANDLER(MetroViewerHostMsg_WindowActivated,
+                        OnWindowActivated)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -460,6 +462,10 @@ void RemoteRootWindowHostWin::OnSelectFolderDone(
     select_folder_completion_callback_.Run(base::FilePath(folder), 0, NULL);
   }
   select_folder_completion_callback_.Reset();
+}
+
+void RemoteRootWindowHostWin::OnWindowActivated(bool active) {
+  active ? GetRootWindow()->Focus() : GetRootWindow()->Blur();
 }
 
 void RemoteRootWindowHostWin::DispatchKeyboardMessage(ui::EventType type,
