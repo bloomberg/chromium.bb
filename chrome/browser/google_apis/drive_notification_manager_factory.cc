@@ -6,6 +6,7 @@
 
 #include "chrome/browser/google_apis/drive_notification_manager.h"
 #include "chrome/browser/profiles/profile_dependency_manager.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 
 namespace google_apis {
@@ -13,6 +14,9 @@ namespace google_apis {
 // static
 DriveNotificationManager*
 DriveNotificationManagerFactory::GetForProfile(Profile* profile) {
+  if (!ProfileSyncService::IsSyncEnabled())
+    return NULL;
+
   return static_cast<DriveNotificationManager*>(
       GetInstance()->GetServiceForProfile(profile, true));
 }

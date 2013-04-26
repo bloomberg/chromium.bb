@@ -46,14 +46,6 @@ const base::FilePath::CharType kTempDirName[] = FILE_PATH_LITERAL("tmp");
 const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
 
-// Incremental sync polling interval.
-// TODO(calvinlo): Improve polling algorithm dependent on whether push
-// notifications are on or off.
-const int64 kMinimumPollingDelaySeconds = 5;
-const int64 kMaximumPollingDelaySeconds = 10 * 60;  // 10 min
-const int64 kPollingDelaySecondsWithNotification = 4 * 60 * 60;  // 4 hr
-const double kDelayMultiplier = 1.6;
-
 bool CreateTemporaryFile(const base::FilePath& dir_path,
                          base::FilePath* temp_file) {
   return file_util::CreateDirectory(dir_path) &&
@@ -275,7 +267,6 @@ DriveFileSyncService::DriveFileSyncService(Profile* profile)
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
-      polling_delay_seconds_(kMinimumPollingDelaySeconds),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
       conflict_resolution_(kDefaultPolicy),
@@ -309,8 +300,8 @@ DriveFileSyncService::~DriveFileSyncService() {
 
   google_apis::DriveNotificationManager* drive_notification_manager =
       google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
-  DCHECK(drive_notification_manager);
-  drive_notification_manager->RemoveObserver(this);
+  if (drive_notification_manager)
+    drive_notification_manager->RemoveObserver(this);
 }
 
 // static
@@ -555,11 +546,6 @@ void DriveFileSyncService::SetSyncEnabled(bool enabled) {
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(GetCurrentState(), status_message));
-
-  if (GetCurrentState() == REMOTE_SERVICE_OK) {
-    UpdatePollingDelay(kMinimumPollingDelaySeconds);
-    SchedulePolling();
-  }
 }
 
 SyncStatusCode DriveFileSyncService::SetConflictResolutionPolicy(
@@ -630,7 +616,6 @@ void DriveFileSyncService::OnAuthenticated() {
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(GetCurrentState(), "Authenticated"));
-  UpdatePollingDelay(kMinimumPollingDelaySeconds);
 
   may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
@@ -646,7 +631,6 @@ void DriveFileSyncService::OnNetworkConnected() {
   FOR_EACH_OBSERVER(
       Observer, service_observers_,
       OnRemoteServiceStateUpdated(GetCurrentState(), "Network connected"));
-  UpdatePollingDelay(kMinimumPollingDelaySeconds);
 
   may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
@@ -663,7 +647,6 @@ DriveFileSyncService::DriveFileSyncService(
       state_(REMOTE_SERVICE_OK),
       sync_enabled_(true),
       largest_fetched_changestamp_(0),
-      polling_delay_seconds_(-1),
       may_have_unfetched_changes_(false),
       remote_change_processor_(NULL),
       conflict_resolution_(kDefaultPolicy),
@@ -714,10 +697,6 @@ void DriveFileSyncService::NotifyTaskDone(SyncStatusCode status,
     RemoteServiceState old_state = GetCurrentState();
     UpdateServiceState();
 
-    // Reset the polling delay. This will adjust the polling timer
-    // based on the current service state.
-    UpdatePollingDelay(polling_delay_seconds_);
-
     // Notify remote sync service state if the state has been changed.
     if (!token_->description().empty() || old_state != GetCurrentState()) {
       FOR_EACH_OBSERVER(
@@ -739,8 +718,6 @@ void DriveFileSyncService::NotifyTaskDone(SyncStatusCode status,
     return;
 
   MaybeStartFetchChanges();
-
-  SchedulePolling();
 
   // Notify observer of the update of |pending_changes_|.
   FOR_EACH_OBSERVER(Observer, service_observers_,
@@ -847,8 +824,8 @@ void DriveFileSyncService::DidInitializeMetadataStore(
 
   google_apis::DriveNotificationManager* drive_notification_manager =
       google_apis::DriveNotificationManagerFactory::GetForProfile(profile_);
-  DCHECK(drive_notification_manager);
-  drive_notification_manager->AddObserver(this);
+  if (drive_notification_manager)
+    drive_notification_manager->AddObserver(this);
 }
 
 void DriveFileSyncService::UpdateRegisteredOrigins() {
@@ -1011,7 +988,8 @@ void DriveFileSyncService::DidGetDirectoryContentForBatchSync(
     metadata_store_->MoveBatchSyncOriginToIncremental(origin);
   }
 
-  CheckForUpdates();
+  may_have_unfetched_changes_ = true;
+  MaybeStartFetchChanges();
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
 }
 
@@ -2084,7 +2062,7 @@ void DriveFileSyncService::MaybeStartFetchChanges() {
   }
 }
 
-void DriveFileSyncService::CheckForUpdates() {
+void DriveFileSyncService::OnNotificationReceived() {
   // TODO(calvinlo): Try to eliminate may_have_unfetched_changes_ variable.
   may_have_unfetched_changes_ = true;
   MaybeStartFetchChanges();
@@ -2174,15 +2152,6 @@ void DriveFileSyncService::DidFetchChangesForIncrementalSync(
   if (!changes->entries().empty())
     largest_fetched_changestamp_ = changes->entries().back()->changestamp();
 
-  if (has_new_changes) {
-    UpdatePollingDelay(kMinimumPollingDelaySeconds);
-  } else {
-    // If the change_queue_ was not updated, update the polling delay to wait
-    // longer.
-    UpdatePollingDelay(static_cast<int64>(
-        kDelayMultiplier * polling_delay_seconds_));
-  }
-
   NotifyTaskDone(SYNC_STATUS_OK, token.Pass());
 }
 
@@ -2212,49 +2181,6 @@ bool DriveFileSyncService::GetOriginForEntry(
     return true;
   }
   return false;
-}
-
-void DriveFileSyncService::SchedulePolling() {
-  if (polling_timer_.IsRunning() ||
-      polling_delay_seconds_ < 0 ||
-      GetCurrentState() == REMOTE_SERVICE_DISABLED)
-    return;
-
-  DVLOG(1) << "Polling scheduled"
-           << " (delay:" << polling_delay_seconds_ << "s)";
-
-  polling_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(polling_delay_seconds_),
-      base::Bind(&DriveFileSyncService::OnPollingTimerFired, AsWeakPtr()));
-}
-
-void DriveFileSyncService::OnPollingTimerFired() {
-  may_have_unfetched_changes_ = true;
-  MaybeStartFetchChanges();
-}
-
-void DriveFileSyncService::UpdatePollingDelay(int64 new_delay_sec) {
-  // polling_delay_seconds_ made negative to disable polling for testing.
-  if (polling_delay_seconds_ < 0)
-    return;
-
-  if (state_ == REMOTE_SERVICE_TEMPORARY_UNAVAILABLE) {
-    // If the service state is TEMPORARY_UNAVAILABLE, poll the service
-    // with a modest duration (but more frequently than
-    // kPollingDelaySecondsWithNotification) so that we have a mild chance
-    // to recover the state.
-    polling_delay_seconds_ = kMaximumPollingDelaySeconds;
-    polling_timer_.Stop();
-    return;
-  }
-
-  int64 old_delay = polling_delay_seconds_;
-
-  // Push notifications off.
-  polling_delay_seconds_ = std::min(new_delay_sec, kMaximumPollingDelaySeconds);
-
-  if (polling_delay_seconds_ < old_delay)
-    polling_timer_.Stop();
 }
 
 void DriveFileSyncService::NotifyObserversFileStatusChanged(
