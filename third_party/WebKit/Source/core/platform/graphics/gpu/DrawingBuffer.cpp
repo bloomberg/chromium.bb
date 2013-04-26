@@ -152,6 +152,9 @@ DrawingBuffer::~DrawingBuffer()
 
 unsigned DrawingBuffer::prepareTexture(WebKit::WebTextureUpdater& updater)
 {
+    if (!m_colorBuffer)
+        return 0;
+
     prepareBackBuffer();
 
     m_context->flush();
@@ -171,7 +174,7 @@ WebKit::WebGraphicsContext3D* DrawingBuffer::context()
 
 bool DrawingBuffer::prepareMailbox(WebKit::WebExternalTextureMailbox* outMailbox)
 {
-    if (!m_contentsChanged)
+    if (!m_contentsChanged || !m_lastColorBuffer)
         return false;
 
     m_context->makeContextCurrent();
