@@ -33,8 +33,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_system_service.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #endif

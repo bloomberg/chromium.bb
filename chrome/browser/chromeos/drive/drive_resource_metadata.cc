@@ -9,8 +9,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_info.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
 #include "chrome/browser/chromeos/drive/drive_resource_metadata_storage.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

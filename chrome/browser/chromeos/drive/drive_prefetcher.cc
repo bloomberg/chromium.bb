@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/stringprintf.h"
 #include "chrome/browser/chromeos/drive/drive_file_system_interface.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"

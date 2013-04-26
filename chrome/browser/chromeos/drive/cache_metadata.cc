@@ -10,7 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/drive/drive.pb.h"
 #include "chrome/browser/chromeos/drive/drive_cache.h"
-#include "chrome/browser/chromeos/drive/drive_file_system_util.h"
+#include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 namespace drive {
