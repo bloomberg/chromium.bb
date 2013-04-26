@@ -86,6 +86,42 @@ static Abi::RegDef RegsArm[] = {
   MINIDEF(uint32_t, cpsr, GENERAL),
 };
 
+static Abi::RegDef RegsMips[] = {
+  MINIDEF(uint32_t, zero, READ_ONLY),
+  MINIDEF(uint32_t, at, GENERAL),
+  MINIDEF(uint32_t, v0, GENERAL),
+  MINIDEF(uint32_t, v1, GENERAL),
+  MINIDEF(uint32_t, a0, GENERAL),
+  MINIDEF(uint32_t, a1, GENERAL),
+  MINIDEF(uint32_t, a2, GENERAL),
+  MINIDEF(uint32_t, a3, GENERAL),
+  MINIDEF(uint32_t, t0, GENERAL),
+  MINIDEF(uint32_t, t1, GENERAL),
+  MINIDEF(uint32_t, t2, GENERAL),
+  MINIDEF(uint32_t, t3, GENERAL),
+  MINIDEF(uint32_t, t4, GENERAL),
+  MINIDEF(uint32_t, t5, GENERAL),
+  MINIDEF(uint32_t, t6, GENERAL),
+  MINIDEF(uint32_t, t7, GENERAL),
+  MINIDEF(uint32_t, s0, GENERAL),
+  MINIDEF(uint32_t, s1, GENERAL),
+  MINIDEF(uint32_t, s2, GENERAL),
+  MINIDEF(uint32_t, s3, GENERAL),
+  MINIDEF(uint32_t, s4, GENERAL),
+  MINIDEF(uint32_t, s5, GENERAL),
+  MINIDEF(uint32_t, s6, GENERAL),
+  MINIDEF(uint32_t, s7, GENERAL),
+  MINIDEF(uint32_t, t8, GENERAL),
+  MINIDEF(uint32_t, t9, GENERAL),
+  MINIDEF(uint32_t, k0, READ_ONLY),
+  MINIDEF(uint32_t, k1, READ_ONLY),
+  MINIDEF(uint32_t, gp, GENERAL),
+  MINIDEF(uint32_t, sp, GENERAL),
+  MINIDEF(uint32_t, fp, GENERAL),
+  MINIDEF(uint32_t, ra, GENERAL),
+  MINIDEF(uint32_t, pc, GENERAL),
+};
+
 // Without this XML description, ARM GDB assumes a default register
 // set with floating point registers f0-f7 and fps between pc and
 // cpsr, and GDB queries CPSR via the "p" command for reading a single
@@ -109,6 +145,87 @@ static const char XmlArm[] =
   "  <reg name=\"lr\" bitsize=\"32\"/>\n"
   "  <reg name=\"pc\" bitsize=\"32\" type=\"code_ptr\"/>\n"
   "  <reg name=\"cpsr\" bitsize=\"32\" regnum=\"25\"/>\n"
+  "</feature>\n";
+
+// XML description for MIPS.
+static const char XmlMips[] =
+  "<feature name=\"org.gnu.gdb.mips.cpu\">\n"
+  "  <reg name=\"r0\" bitsize=\"32\" regnum=\"0\"/>\n"
+  "  <reg name=\"r1\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r2\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r3\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r4\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r5\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r6\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r7\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r8\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r9\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r10\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r11\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r12\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r13\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r14\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r15\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r16\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r17\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r18\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r19\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r20\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r21\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r22\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r23\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r24\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r25\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r26\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r27\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r28\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r29\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r30\" bitsize=\"32\"/>\n"
+  "  <reg name=\"r31\" bitsize=\"32\"/>\n"
+  "  <reg name=\"lo\" bitsize=\"32\" regnum=\"33\"/>\n"
+  "  <reg name=\"hi\" bitsize=\"32\" regnum=\"34\"/>\n"
+  "  <reg name=\"pc\" bitsize=\"32\" regnum=\"32\"/>\n"
+  "</feature>\n"
+  "<feature name=\"org.gnu.gdb.mips.cp0\">\n"
+  "  <reg name=\"status\" bitsize=\"32\" regnum=\"37\"/>\n"
+  "  <reg name=\"badvaddr\" bitsize=\"32\" regnum=\"35\"/>\n"
+  "  <reg name=\"cause\" bitsize=\"32\" regnum=\"36\"/>\n"
+  "</feature>\n"
+  "<feature name=\"org.gnu.gdb.mips.fpu\">\n"
+  "  <reg name=\"f0\" bitsize=\"32\"  type=\"ieee_single\" regnum=\"38\"/>\n"
+  "  <reg name=\"f1\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f2\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f3\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f4\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f5\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f6\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f7\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f8\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f9\" bitsize=\"32\"  type=\"ieee_single\"/>\n"
+  "  <reg name=\"f10\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f11\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f12\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f13\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f14\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f15\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f16\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f17\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f18\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f19\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f20\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f21\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f22\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f23\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f24\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f25\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f26\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f27\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f28\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f29\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f30\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"f31\" bitsize=\"32\" type=\"ieee_single\"/>\n"
+  "  <reg name=\"fcsr\" bitsize=\"32\" group=\"float\"/>\n"
+  "  <reg name=\"fir\" bitsize=\"32\" group=\"float\"/>\n"
   "</feature>\n";
 
 // Although INT3 is the traditional instruction for a debugger to use
@@ -136,6 +253,12 @@ static Abi::BPDef breakpoint_arm = {
   (uint8_t *) breakpoint_code_arm
 };
 
+static uint8_t breakpoint_code_mips[] = { 0xd, 0x0, 0x0, 0x0 /* break */ };
+static Abi::BPDef breakpoint_mips = {
+  sizeof(breakpoint_code_mips),
+  breakpoint_code_mips,
+};
+
 static AbiMap_t *GetAbis() {
   static AbiMap_t *_abis = new AbiMap_t();
   return _abis;
@@ -158,6 +281,10 @@ static bool AbiInit() {
   Abi::Register("iwmmxt",
                 RegsArm, sizeof(RegsArm), 15 /* pc */,
                 &breakpoint_arm, XmlArm);
+
+  Abi::Register("mips",
+                RegsMips, sizeof(RegsMips), 32 /* pc */,
+                &breakpoint_mips, XmlMips);
 
   return true;
 }
@@ -223,6 +350,8 @@ const Abi* Abi::Get() {
       abi = Abi::Find("i386");
     } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm) {
       abi = Abi::Find("iwmmxt");
+    } else if (NACL_ARCH(NACL_BUILD_ARCH) == NACL_mips) {
+      abi = Abi::Find("mips");
     } else {
       NaClLog(LOG_FATAL, "Abi::Get: Unknown CPU architecture\n");
     }

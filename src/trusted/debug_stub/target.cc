@@ -65,7 +65,7 @@ bool Target::Init() {
   // Set a more specific result which won't change.
   properties_["target.xml"] = targ_xml;
   properties_["Supported"] =
-    "PacketSize=7cf;qXfer:features:read+";
+    "PacketSize=1000;qXfer:features:read+";
 
   NaClXMutexCtor(&mutex_);
   ctx_ = new uint8_t[abi_->GetContextSize()];
@@ -849,7 +849,7 @@ IThread* Target::GetRegThread() {
   ThreadMap_t::const_iterator itr;
 
   switch (reg_thread_) {
-    // If we wany "any" then try the signal'd thread first
+    // If we want "any" then try the signal'd thread first
     case 0:
     case 0xFFFFFFFF:
       itr = threads_.begin();

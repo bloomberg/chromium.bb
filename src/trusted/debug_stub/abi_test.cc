@@ -1,7 +1,7 @@
 /*
- * Copyright 2010 The Native Client Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can
- * be found in the LICENSE file.
+ * Copyright (c) 2010 The Native Client Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
  */
 
 #include <stdio.h>
@@ -101,6 +101,7 @@ int TestAbi() {
   errs += VerifyAbi("iwmmxt", 17);
   errs += VerifyAbi("i386", 16);
   errs += VerifyAbi("i386:x86-64", 24);
+  errs += VerifyAbi("mips", 33);
 
   // Get the default ABI
   const Abi* abi = Abi::Get();
