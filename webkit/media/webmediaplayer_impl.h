@@ -342,7 +342,7 @@ class WebMediaPlayerImpl
   //
   // |demuxer_| will contain the appropriate demuxer based on which resource
   // load strategy we're using.
-  scoped_refptr<BufferedDataSource> data_source_;
+  scoped_ptr<BufferedDataSource> data_source_;
   scoped_ptr<media::Demuxer> demuxer_;
   media::ChunkDemuxer* chunk_demuxer_;
 

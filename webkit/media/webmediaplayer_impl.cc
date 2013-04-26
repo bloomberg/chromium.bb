@@ -252,9 +252,9 @@ void WebMediaPlayerImpl::load(const WebKit::WebURL& url, CORSMode cors_mode) {
 
   // Otherwise it's a regular request which requires resolving the URL first.
   GURL gurl(url);
-  data_source_ = new BufferedDataSource(
+  data_source_.reset(new BufferedDataSource(
       main_loop_, frame_, media_log_, base::Bind(
-          &WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr()));
+          &WebMediaPlayerImpl::NotifyDownloading, AsWeakPtr())));
   data_source_->Initialize(
       url, static_cast<BufferedResourceLoader::CORSMode>(cors_mode),
       base::Bind(
@@ -1072,7 +1072,7 @@ void WebMediaPlayerImpl::StartPipeline(WebKit::WebMediaSource* media_source) {
     DCHECK(data_source_);
 
     demuxer_.reset(new media::FFmpegDemuxer(
-        media_thread_.message_loop_proxy(), data_source_,
+        media_thread_.message_loop_proxy(), data_source_.get(),
         BIND_TO_RENDER_LOOP_2(&WebMediaPlayerImpl::OnNeedKey, "", "")));
   } else {
     DCHECK(!chunk_demuxer_);
@@ -1214,8 +1214,8 @@ void WebMediaPlayerImpl::Destroy() {
   media_thread_.Stop();
 
   // Release any final references now that everything has stopped.
-  data_source_ = NULL;
   demuxer_.reset();
+  data_source_.reset();
 }
 
 WebKit::WebMediaPlayerClient* WebMediaPlayerImpl::GetClient() {

@@ -17,8 +17,9 @@ class DataSourceLogger : public media::DataSource {
   // |streaming| when set to true will override the implementation
   // IsStreaming() to always return true, otherwise it will delegate to
   // |data_source|.
-  DataSourceLogger(const scoped_refptr<DataSource>& data_source,
+  DataSourceLogger(scoped_ptr<DataSource> data_source,
                    bool force_streaming);
+  virtual ~DataSourceLogger();
 
   // media::DataSource implementation.
   virtual void set_host(media::DataSourceHost* host) OVERRIDE;
@@ -30,11 +31,8 @@ class DataSourceLogger : public media::DataSource {
   virtual bool IsStreaming() OVERRIDE;
   virtual void SetBitrate(int bitrate) OVERRIDE;
 
- protected:
-  virtual ~DataSourceLogger();
-
  private:
-  scoped_refptr<media::DataSource> data_source_;
+  scoped_ptr<media::DataSource> data_source_;
   bool streaming_;
 
   DISALLOW_COPY_AND_ASSIGN(DataSourceLogger);

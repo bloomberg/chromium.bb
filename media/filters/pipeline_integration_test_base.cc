@@ -205,13 +205,15 @@ scoped_ptr<FilterCollection>
 PipelineIntegrationTestBase::CreateFilterCollection(
     const base::FilePath& file_path,
     Decryptor* decryptor) {
-  scoped_refptr<FileDataSource> data_source = new FileDataSource();
-  CHECK(data_source->Initialize(file_path));
+  FileDataSource* file_data_source = new FileDataSource();
+  CHECK(file_data_source->Initialize(file_path));
+  data_source_.reset(file_data_source);
+
   media::FFmpegNeedKeyCB need_key_cb =
       base::Bind(&PipelineIntegrationTestBase::DemuxerNeedKeyCB,
                  base::Unretained(this));
   scoped_ptr<Demuxer> demuxer(new FFmpegDemuxer(
-      message_loop_.message_loop_proxy(), data_source, need_key_cb));
+      message_loop_.message_loop_proxy(), data_source_.get(), need_key_cb));
   return CreateFilterCollection(demuxer.Pass(), decryptor);
 }
 

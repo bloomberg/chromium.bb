@@ -82,7 +82,9 @@ BufferedDataSource::BufferedDataSource(
     WebFrame* frame,
     media::MediaLog* media_log,
     const DownloadingCB& downloading_cb)
-    : cors_mode_(BufferedResourceLoader::kUnspecified),
+    : weak_factory_(this),
+      weak_this_(weak_factory_.GetWeakPtr()),
+      cors_mode_(BufferedResourceLoader::kUnspecified),
       total_bytes_(kPositionNotSpecified),
       assume_fully_buffered_(false),
       streaming_(false),
@@ -158,9 +160,9 @@ void BufferedDataSource::Initialize(
   }
 
   loader_->Start(
-      base::Bind(&BufferedDataSource::StartCallback, this),
-      base::Bind(&BufferedDataSource::LoadingStateChangedCallback, this),
-      base::Bind(&BufferedDataSource::ProgressCallback, this),
+      base::Bind(&BufferedDataSource::StartCallback, weak_this_),
+      base::Bind(&BufferedDataSource::LoadingStateChangedCallback, weak_this_),
+      base::Bind(&BufferedDataSource::ProgressCallback, weak_this_),
       frame_);
 }
 
@@ -200,17 +202,17 @@ void BufferedDataSource::Stop(const base::Closure& closure) {
   closure.Run();
 
   render_loop_->PostTask(FROM_HERE,
-      base::Bind(&BufferedDataSource::StopLoader, this));
+      base::Bind(&BufferedDataSource::StopLoader, weak_this_));
 }
 
 void BufferedDataSource::SetPlaybackRate(float playback_rate) {
   render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::SetPlaybackRateTask, this, playback_rate));
+      &BufferedDataSource::SetPlaybackRateTask, weak_this_, playback_rate));
 }
 
 void BufferedDataSource::SetBitrate(int bitrate) {
   render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::SetBitrateTask, this, bitrate));
+      &BufferedDataSource::SetBitrateTask, weak_this_, bitrate));
 }
 
 void BufferedDataSource::Read(
@@ -232,7 +234,7 @@ void BufferedDataSource::Read(
   }
 
   render_loop_->PostTask(FROM_HERE, base::Bind(
-      &BufferedDataSource::ReadTask, this));
+      &BufferedDataSource::ReadTask, weak_this_));
 }
 
 bool BufferedDataSource::GetSize(int64* size_out) {
@@ -338,7 +340,7 @@ void BufferedDataSource::ReadInternal() {
   // Perform the actual read with BufferedResourceLoader.
   loader_->Read(
       position, size, intermediate_read_buffer_.get(),
-      base::Bind(&BufferedDataSource::ReadCallback, this));
+      base::Bind(&BufferedDataSource::ReadCallback, weak_this_));
 }
 
 
@@ -375,17 +377,14 @@ void BufferedDataSource::StartCallback(
 
   // TODO(scherkus): we shouldn't have to lock to signal host(), see
   // http://crbug.com/113712 for details.
-  scoped_refptr<BufferedDataSource> destruction_guard(this);
-  {
-    base::AutoLock auto_lock(lock_);
-    if (stop_signal_received_)
-      return;
+  base::AutoLock auto_lock(lock_);
+  if (stop_signal_received_)
+    return;
 
-    if (success)
-      UpdateHostState_Locked();
+  if (success)
+    UpdateHostState_Locked();
 
-    base::ResetAndReturn(&init_cb_).Run(success);
-  }
+  base::ResetAndReturn(&init_cb_).Run(success);
 }
 
 void BufferedDataSource::PartialReadStartCallback(
@@ -435,9 +434,10 @@ void BufferedDataSource::ReadCallback(
       loader_.reset(CreateResourceLoader(
           read_op_->position(), kPositionNotSpecified));
       loader_->Start(
-          base::Bind(&BufferedDataSource::PartialReadStartCallback, this),
-          base::Bind(&BufferedDataSource::LoadingStateChangedCallback, this),
-          base::Bind(&BufferedDataSource::ProgressCallback, this),
+          base::Bind(&BufferedDataSource::PartialReadStartCallback, weak_this_),
+          base::Bind(&BufferedDataSource::LoadingStateChangedCallback,
+                     weak_this_),
+          base::Bind(&BufferedDataSource::ProgressCallback, weak_this_),
           frame_);
       return;
     }

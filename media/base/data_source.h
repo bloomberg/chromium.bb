@@ -6,7 +6,6 @@
 #define MEDIA_BASE_DATA_SOURCE_H_
 
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/time.h"
 #include "media/base/media_export.h"
 
@@ -30,13 +29,14 @@ class MEDIA_EXPORT DataSourceHost {
   virtual ~DataSourceHost();
 };
 
-class MEDIA_EXPORT DataSource : public base::RefCountedThreadSafe<DataSource> {
+class MEDIA_EXPORT DataSource {
  public:
   typedef base::Callback<void(int64, int64)> StatusCallback;
   typedef base::Callback<void(int)> ReadCB;
   static const int kReadError;
 
   DataSource();
+  virtual ~DataSource();
 
   virtual void set_host(DataSourceHost* host);
 
@@ -66,10 +66,6 @@ class MEDIA_EXPORT DataSource : public base::RefCountedThreadSafe<DataSource> {
   virtual void SetBitrate(int bitrate) = 0;
 
  protected:
-  // Only allow scoped_refptr<> to delete DataSource.
-  friend class base::RefCountedThreadSafe<DataSource>;
-  virtual ~DataSource();
-
   DataSourceHost* host();
 
  private:

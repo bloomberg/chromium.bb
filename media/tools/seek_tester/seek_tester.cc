@@ -65,7 +65,7 @@ int main(int argc, char** argv) {
   CHECK_EQ(argc, 3) << "\nUsage: " << argv[0] << " <file> <seekTimeInMs>";
   uint64 seek_target_ms;
   CHECK(base::StringToUint64(argv[2], &seek_target_ms));
-  scoped_refptr<media::FileDataSource> file_data_source(
+  scoped_ptr<media::FileDataSource> file_data_source(
       new media::FileDataSource());
   CHECK(file_data_source->Initialize(base::FilePath::FromUTF8Unsafe(argv[1])));
 
@@ -74,7 +74,7 @@ int main(int argc, char** argv) {
   media::PipelineStatusCB quitter = base::Bind(&QuitMessageLoop, &loop);
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
   scoped_ptr<media::FFmpegDemuxer> demuxer(new media::FFmpegDemuxer(
-      loop.message_loop_proxy(), file_data_source, need_key_cb));
+      loop.message_loop_proxy(), file_data_source.get(), need_key_cb));
   demuxer->Initialize(&host, quitter);
   loop.Run();
 

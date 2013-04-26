@@ -136,7 +136,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
 class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
  public:
   FFmpegDemuxer(const scoped_refptr<base::MessageLoopProxy>& message_loop,
-                const scoped_refptr<DataSource>& data_source,
+                DataSource* data_source,
                 const FFmpegNeedKeyCB& need_key_cb);
   virtual ~FFmpegDemuxer();
 
@@ -222,9 +222,9 @@ class MEDIA_EXPORT FFmpegDemuxer : public Demuxer {
   typedef ScopedVector<FFmpegDemuxerStream> StreamVector;
   StreamVector streams_;
 
-  // Reference to the data source. Asynchronous read requests are submitted to
-  // this object.
-  scoped_refptr<DataSource> data_source_;
+  // Provides asynchronous IO to this demuxer. Consumed by |url_protocol_| to
+  // integrate with libavformat.
+  DataSource* data_source_;
 
   // Derived bitrate after initialization has completed.
   int bitrate_;

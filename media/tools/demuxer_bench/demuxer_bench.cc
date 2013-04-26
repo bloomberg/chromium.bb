@@ -178,13 +178,12 @@ int main(int argc, char** argv) {
   base::FilePath file_path(cmd_line->GetArgs()[0]);
 
   // Setup.
-  scoped_refptr<media::FileDataSource> data_source =
-      new media::FileDataSource();
+  scoped_ptr<media::FileDataSource> data_source(new media::FileDataSource());
   CHECK(data_source->Initialize(file_path));
 
   media::FFmpegNeedKeyCB need_key_cb = base::Bind(&NeedKey);
   scoped_ptr<media::FFmpegDemuxer> demuxer(new media::FFmpegDemuxer(
-      message_loop.message_loop_proxy(), data_source, need_key_cb));
+      message_loop.message_loop_proxy(), data_source.get(), need_key_cb));
 
   demuxer->Initialize(&demuxer_host, base::Bind(
       &QuitLoopWithStatus, &message_loop));

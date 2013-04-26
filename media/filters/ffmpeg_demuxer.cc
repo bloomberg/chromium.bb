@@ -284,7 +284,7 @@ base::TimeDelta FFmpegDemuxerStream::ConvertStreamTimestamp(
 //
 FFmpegDemuxer::FFmpegDemuxer(
     const scoped_refptr<base::MessageLoopProxy>& message_loop,
-    const scoped_refptr<DataSource>& data_source,
+    DataSource* data_source,
     const FFmpegNeedKeyCB& need_key_cb)
     : host_(NULL),
       message_loop_(message_loop),
@@ -312,6 +312,12 @@ void FFmpegDemuxer::Stop(const base::Closure& callback) {
   data_source_->Stop(BindToCurrentLoop(base::Bind(
       &FFmpegDemuxer::OnDataSourceStopped, weak_this_,
       BindToCurrentLoop(callback))));
+
+  // TODO(scherkus): Reenable after figuring why Stop() gets called multiple
+  // times, see http://crbug.com/235933
+#if 0
+  data_source_ = NULL;
+#endif
 }
 
 void FFmpegDemuxer::Seek(base::TimeDelta time, const PipelineStatusCB& cb) {

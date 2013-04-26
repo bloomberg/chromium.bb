@@ -84,7 +84,7 @@ class FFmpegDemuxerTest : public testing::Test {
     media::FFmpegNeedKeyCB need_key_cb =
         base::Bind(&FFmpegDemuxerTest::NeedKeyCB, base::Unretained(this));
     demuxer_.reset(new FFmpegDemuxer(
-        message_loop_.message_loop_proxy(), data_source_, need_key_cb));
+        message_loop_.message_loop_proxy(), data_source_.get(), need_key_cb));
   }
 
   MOCK_METHOD1(CheckPoint, void(int v));
@@ -150,7 +150,7 @@ class FFmpegDemuxerTest : public testing::Test {
   }
 
   // Fixture members.
-  scoped_refptr<FileDataSource> data_source_;
+  scoped_ptr<FileDataSource> data_source_;
   scoped_ptr<FFmpegDemuxer> demuxer_;
   StrictMock<MockDemuxerHost> host_;
   base::MessageLoop message_loop_;
@@ -185,7 +185,7 @@ class FFmpegDemuxerTest : public testing::Test {
         .Append(FILE_PATH_LITERAL("data"))
         .AppendASCII(name);
 
-    data_source_ = new FileDataSource();
+    data_source_.reset(new FileDataSource());
     EXPECT_TRUE(data_source_->Initialize(file_path));
   }
 

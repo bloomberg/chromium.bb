@@ -45,12 +45,12 @@ static bool g_running = false;
 
 media::AudioManager* g_audio_manager = NULL;
 
-scoped_refptr<media::FileDataSource> CreateFileDataSource(
-    const std::string& file_path) {
-  scoped_refptr<media::FileDataSource> file_data_source(
-      new media::FileDataSource());
+scoped_ptr<media::DataSource> CreateDataSource(const std::string& file_path) {
+  media::FileDataSource* file_data_source = new media::FileDataSource();
   CHECK(file_data_source->Initialize(base::FilePath(file_path)));
-  return file_data_source;
+
+  scoped_ptr<media::DataSource> data_source(file_data_source);
+  return data_source.Pass();
 }
 
 // Initialize X11. Returns true if successful. This method creates the X11
@@ -280,11 +280,11 @@ int main(int argc, char** argv) {
         &X11VideoRenderer::Paint, new X11VideoRenderer(g_display, g_window));
   }
 
-  scoped_refptr<media::DataSource> data_source(
-      new DataSourceLogger(CreateFileDataSource(filename),
-                           command_line->HasSwitch("streaming")));
+  scoped_ptr<media::DataSource> data_source(new DataSourceLogger(
+      CreateDataSource(filename), command_line->HasSwitch("streaming")));
   scoped_ptr<media::Demuxer> demuxer(new media::FFmpegDemuxer(
-      media_thread.message_loop_proxy(), data_source, base::Bind(&NeedKey)));
+      media_thread.message_loop_proxy(), data_source.get(),
+      base::Bind(&NeedKey)));
 
   InitPipeline(media_thread.message_loop_proxy(), demuxer.get(),
                paint_cb, command_line->HasSwitch("audio"), &pipeline,

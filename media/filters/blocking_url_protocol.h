@@ -23,8 +23,7 @@ class MEDIA_EXPORT BlockingUrlProtocol : public FFmpegURLProtocol {
   //
   // TODO(scherkus): After all blocking operations are isolated on a separate
   // thread we should be able to eliminate |error_cb|.
-  BlockingUrlProtocol(const scoped_refptr<DataSource>& data_source,
-                      const base::Closure& error_cb);
+  BlockingUrlProtocol(DataSource* data_source, const base::Closure& error_cb);
   virtual ~BlockingUrlProtocol();
 
   // Aborts any pending reads by returning a read error. After this method
@@ -43,7 +42,7 @@ class MEDIA_EXPORT BlockingUrlProtocol : public FFmpegURLProtocol {
   // has completed.
   void SignalReadCompleted(int size);
 
-  scoped_refptr<DataSource> data_source_;
+  DataSource* data_source_;
   base::Closure error_cb_;
 
   // Used to unblock the thread during shutdown and when reads complete.

@@ -50,11 +50,11 @@ TEST(FileDataSourceTest, OpenFile) {
   EXPECT_CALL(host, SetTotalBytes(10));
   EXPECT_CALL(host, AddBufferedByteRange(0, 10));
 
-  scoped_refptr<FileDataSource> filter(new FileDataSource());
-  filter->set_host(&host);
-  EXPECT_TRUE(filter->Initialize(TestFileURL()));
+  FileDataSource data_source;
+  data_source.set_host(&host);
+  EXPECT_TRUE(data_source.Initialize(TestFileURL()));
 
-  filter->Stop(NewExpectedClosure());
+  data_source.Stop(NewExpectedClosure());
 }
 
 // Use the mock filter host to directly call the Read and GetPosition methods.
@@ -64,37 +64,37 @@ TEST(FileDataSourceTest, ReadData) {
 
   // Create our mock filter host and initialize the data source.
   NiceMock<MockDataSourceHost> host;
-  scoped_refptr<FileDataSource> filter(new FileDataSource());
+  FileDataSource data_source;
 
-  filter->set_host(&host);
-  EXPECT_TRUE(filter->Initialize(TestFileURL()));
+  data_source.set_host(&host);
+  EXPECT_TRUE(data_source.Initialize(TestFileURL()));
 
-  EXPECT_TRUE(filter->GetSize(&size));
+  EXPECT_TRUE(data_source.GetSize(&size));
   EXPECT_EQ(10, size);
 
   ReadCBHandler handler;
   EXPECT_CALL(handler, ReadCB(10));
-  filter->Read(0, 10, ten_bytes, base::Bind(
+  data_source.Read(0, 10, ten_bytes, base::Bind(
       &ReadCBHandler::ReadCB, base::Unretained(&handler)));
   EXPECT_EQ('0', ten_bytes[0]);
   EXPECT_EQ('5', ten_bytes[5]);
   EXPECT_EQ('9', ten_bytes[9]);
 
   EXPECT_CALL(handler, ReadCB(1));
-  filter->Read(9, 1, ten_bytes, base::Bind(
+  data_source.Read(9, 1, ten_bytes, base::Bind(
       &ReadCBHandler::ReadCB, base::Unretained(&handler)));
   EXPECT_EQ('9', ten_bytes[0]);
 
   EXPECT_CALL(handler, ReadCB(0));
-  filter->Read(10, 10, ten_bytes, base::Bind(
+  data_source.Read(10, 10, ten_bytes, base::Bind(
       &ReadCBHandler::ReadCB, base::Unretained(&handler)));
 
   EXPECT_CALL(handler, ReadCB(5));
-  filter->Read(5, 10, ten_bytes, base::Bind(
+  data_source.Read(5, 10, ten_bytes, base::Bind(
       &ReadCBHandler::ReadCB, base::Unretained(&handler)));
   EXPECT_EQ('5', ten_bytes[0]);
 
-  filter->Stop(NewExpectedClosure());
+  data_source.Stop(NewExpectedClosure());
 }
 
 }  // namespace media

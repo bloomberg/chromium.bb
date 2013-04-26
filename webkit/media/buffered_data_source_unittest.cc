@@ -46,6 +46,7 @@ class MockBufferedDataSource : public BufferedDataSource {
         downloading_(false),
         loading_(false) {
   }
+  virtual ~MockBufferedDataSource() {}
 
   MOCK_METHOD2(CreateResourceLoader, BufferedResourceLoader*(int64, int64));
   BufferedResourceLoader* CreateMockResourceLoader(int64 first_byte_position,
@@ -74,8 +75,6 @@ class MockBufferedDataSource : public BufferedDataSource {
   void set_downloading(bool downloading) { downloading_ = downloading; }
 
  private:
-  virtual ~MockBufferedDataSource() {}
-
   // Whether the resource is downloading or deferred.
   bool downloading_;
 
@@ -98,8 +97,8 @@ class BufferedDataSourceTest : public testing::Test {
       : view_(WebView::create(NULL)) {
     view_->initializeMainFrame(&client_);
 
-    data_source_ = new MockBufferedDataSource(
-        message_loop_.message_loop_proxy(), view_->mainFrame());
+    data_source_.reset(new MockBufferedDataSource(
+        message_loop_.message_loop_proxy(), view_->mainFrame()));
     data_source_->set_host(&host_);
   }
 
@@ -207,7 +206,7 @@ class BufferedDataSourceTest : public testing::Test {
   int loader_bitrate() { return loader()->bitrate_; }
   int loader_playback_rate() { return loader()->playback_rate_; }
 
-  scoped_refptr<MockBufferedDataSource> data_source_;
+  scoped_ptr<MockBufferedDataSource> data_source_;
 
   scoped_ptr<TestResponseGenerator> response_generator_;
   MockWebFrameClient client_;

@@ -11,7 +11,7 @@
 namespace media {
 
 BlockingUrlProtocol::BlockingUrlProtocol(
-    const scoped_refptr<DataSource>& data_source,
+    DataSource* data_source,
     const base::Closure& error_cb)
     : data_source_(data_source),
       error_cb_(error_cb),

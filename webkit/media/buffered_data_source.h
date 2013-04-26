@@ -41,6 +41,7 @@ class BufferedDataSource : public media::DataSource {
                      WebKit::WebFrame* frame,
                      media::MediaLog* media_log,
                      const DownloadingCB& downloading_cb);
+  virtual ~BufferedDataSource();
 
   // Initialize this object using |url| and |cors_mode|, executing |init_cb|
   // with the result of initialization when it has completed.
@@ -84,8 +85,6 @@ class BufferedDataSource : public media::DataSource {
   virtual void SetBitrate(int bitrate) OVERRIDE;
 
  protected:
-  virtual ~BufferedDataSource();
-
   // A factory method to create a BufferedResourceLoader based on the read
   // parameters. We can override this file to object a mock
   // BufferedResourceLoader for testing.
@@ -134,6 +133,9 @@ class BufferedDataSource : public media::DataSource {
   void ReportOrQueueBufferedBytes(int64 start, int64 end);
 
   void UpdateHostState_Locked();
+
+  base::WeakPtrFactory<BufferedDataSource> weak_factory_;
+  base::WeakPtr<BufferedDataSource> weak_this_;
 
   // URL of the resource requested.
   GURL url_;
