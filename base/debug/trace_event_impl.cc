@@ -265,19 +265,17 @@ TraceEvent::TraceEvent()
   memset(arg_values_, 0, sizeof(arg_values_));
 }
 
-TraceEvent::TraceEvent(
-    int thread_id,
-    TimeTicks timestamp,
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
-    unsigned char flags)
+TraceEvent::TraceEvent(int thread_id,
+                       TimeTicks timestamp,
+                       char phase,
+                       const unsigned char* category_group_enabled,
+                       const char* name,
+                       unsigned long long id,
+                       int num_args,
+                       const char** arg_names,
+                       const unsigned char* arg_types,
+                       const unsigned long long* arg_values,
+                       unsigned char flags)
     : timestamp_(timestamp),
       id_(id),
       category_group_enabled_(category_group_enabled),
@@ -290,17 +288,12 @@ TraceEvent::TraceEvent(
   int i = 0;
   for (; i < num_args; ++i) {
     arg_names_[i] = arg_names[i];
+    arg_values_[i].as_uint = arg_values[i];
     arg_types_[i] = arg_types[i];
-
-    if (arg_types[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      convertable_values_[i].reset(convertable_values[i].release());
-    else
-      arg_values_[i].as_uint = arg_values[i];
   }
   for (; i < kTraceMaxNumArgs; ++i) {
     arg_names_[i] = NULL;
     arg_values_[i].as_uint = 0u;
-    convertable_values_[i].reset();
     arg_types_[i] = TRACE_VALUE_TYPE_UINT;
   }
 
@@ -317,10 +310,6 @@ TraceEvent::TraceEvent(
 
   bool arg_is_copy[kTraceMaxNumArgs];
   for (i = 0; i < num_args; ++i) {
-    // No copying of convertable types, we retain ownership.
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      continue;
-
     // We only take a copy of arg_vals if they are of type COPY_STRING.
     arg_is_copy[i] = (arg_types_[i] == TRACE_VALUE_TYPE_COPY_STRING);
     if (arg_is_copy[i])
@@ -334,70 +323,15 @@ TraceEvent::TraceEvent(
     const char* end = ptr + alloc_size;
     if (copy) {
       CopyTraceEventParameter(&ptr, &name_, end);
-      for (i = 0; i < num_args; ++i) {
+      for (i = 0; i < num_args; ++i)
         CopyTraceEventParameter(&ptr, &arg_names_[i], end);
-      }
     }
     for (i = 0; i < num_args; ++i) {
-      if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-        continue;
       if (arg_is_copy[i])
         CopyTraceEventParameter(&ptr, &arg_values_[i].as_string, end);
     }
     DCHECK_EQ(end, ptr) << "Overrun by " << ptr - end;
   }
-}
-
-TraceEvent::TraceEvent(const TraceEvent& other)
-    : timestamp_(other.timestamp_),
-      id_(other.id_),
-      category_group_enabled_(other.category_group_enabled_),
-      name_(other.name_),
-      thread_id_(other.thread_id_),
-      phase_(other.phase_),
-      flags_(other.flags_) {
-  parameter_copy_storage_ = other.parameter_copy_storage_;
-
-  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
-    arg_values_[i] = other.arg_values_[i];
-    arg_names_[i] = other.arg_names_[i];
-    arg_types_[i] = other.arg_types_[i];
-
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-      convertable_values_[i].reset(
-          const_cast<TraceEvent*>(&other)->convertable_values_[i].release());
-    } else {
-      convertable_values_[i].reset();
-    }
-  }
-}
-
-TraceEvent& TraceEvent::operator=(const TraceEvent& other) {
-  if (this == &other)
-    return *this;
-
-  timestamp_ = other.timestamp_;
-  id_ = other.id_;
-  category_group_enabled_ = other.category_group_enabled_;
-  name_ = other.name_;
-  parameter_copy_storage_ = other.parameter_copy_storage_;
-  thread_id_ = other.thread_id_;
-  phase_ = other.phase_;
-  flags_ = other.flags_;
-
-  for (int i = 0; i < kTraceMaxNumArgs; ++i) {
-    arg_values_[i] = other.arg_values_[i];
-    arg_names_[i] = other.arg_names_[i];
-    arg_types_[i] = other.arg_types_[i];
-
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE) {
-      convertable_values_[i].reset(
-          const_cast<TraceEvent*>(&other)->convertable_values_[i].release());
-    } else {
-      convertable_values_[i].reset();
-    }
-  }
-  return *this;
 }
 
 TraceEvent::~TraceEvent() {
@@ -470,11 +404,7 @@ void TraceEvent::AppendAsJSON(std::string* out) const {
     *out += "\"";
     *out += arg_names_[i];
     *out += "\":";
-
-    if (arg_types_[i] == TRACE_VALUE_TYPE_CONVERTABLE)
-      convertable_values_[i]->AppendAsTraceFormat(out);
-    else
-      AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
+    AppendValueAsJSON(arg_types_[i], arg_values_[i], out);
   }
   *out += "}";
 
@@ -636,7 +566,7 @@ void TraceSamplingThread::DefaultSampleCallback(TraceBucketData* bucket_data) {
   ExtractCategoryAndName(combined, &category_group, &name);
   TRACE_EVENT_API_ADD_TRACE_EVENT(TRACE_EVENT_PHASE_SAMPLE,
       TraceLog::GetCategoryGroupEnabled(category_group),
-      name, 0, 0, NULL, NULL, NULL, NULL, 0);
+      name, 0, 0, NULL, NULL, NULL, 0);
 }
 
 void TraceSamplingThread::GetSamples() {
@@ -1027,23 +957,20 @@ void TraceLog::Flush(const TraceLog::OutputCallback& cb) {
   }
 }
 
-void TraceLog::AddTraceEvent(
-    char phase,
-    const unsigned char* category_group_enabled,
-    const char* name,
-    unsigned long long id,
-    int num_args,
-    const char** arg_names,
-    const unsigned char* arg_types,
-    const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
-    unsigned char flags) {
+void TraceLog::AddTraceEvent(char phase,
+                             const unsigned char* category_group_enabled,
+                             const char* name,
+                             unsigned long long id,
+                             int num_args,
+                             const char** arg_names,
+                             const unsigned char* arg_types,
+                             const unsigned long long* arg_values,
+                             unsigned char flags) {
   int thread_id = static_cast<int>(base::PlatformThread::CurrentId());
   base::TimeTicks now = base::TimeTicks::NowFromSystemTraceTime();
   AddTraceEventWithThreadIdAndTimestamp(phase, category_group_enabled, name, id,
                                         thread_id, now, num_args, arg_names,
-                                        arg_types, arg_values,
-                                        convertable_values, flags);
+                                        arg_types, arg_values, flags);
 }
 
 void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
@@ -1057,7 +984,6 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     const char** arg_names,
     const unsigned char* arg_types,
     const unsigned long long* arg_values,
-    scoped_ptr<ConvertableToTraceFormat> convertable_values[],
     unsigned char flags) {
   DCHECK(name);
 
@@ -1114,7 +1040,7 @@ void TraceLog::AddTraceEventWithThreadIdAndTimestamp(
     logged_events_->AddEvent(TraceEvent(thread_id,
         now, phase, category_group_enabled, name, id,
         num_args, arg_names, arg_types, arg_values,
-        convertable_values, flags));
+        flags));
 
     if (logged_events_->IsFull())
       notifier.AddNotificationWhileLocked(TRACE_BUFFER_FULL);
@@ -1202,7 +1128,7 @@ void TraceLog::AddThreadNameMetadataEvents() {
           TimeTicks(), TRACE_EVENT_PHASE_METADATA,
           &g_category_group_enabled[g_category_metadata],
           "thread_name", trace_event_internal::kNoEventId,
-          num_args, &arg_name, &arg_type, &arg_value, NULL,
+          num_args, &arg_name, &arg_type, &arg_value,
           TRACE_EVENT_FLAG_NONE));
     }
   }
@@ -1401,7 +1327,6 @@ ScopedTrace::ScopedTrace(
         NULL,                       // arg_names
         NULL,                       // arg_types
         NULL,                       // arg_values
-        NULL,                       // convertable_values
         TRACE_EVENT_FLAG_NONE);     // flags
   } else {
     category_group_enabled_ = NULL;
@@ -1419,7 +1344,6 @@ ScopedTrace::~ScopedTrace() {
         NULL,                    // arg_names
         NULL,                    // arg_types
         NULL,                    // arg_values
-        NULL,                    // convertable values
         TRACE_EVENT_FLAG_NONE);  // flags
   }
 }

@@ -46,19 +46,6 @@ class WaitableEvent;
 
 namespace debug {
 
-// For any argument of type TRACE_VALUE_TYPE_CONVERTABLE the provided
-// class must implement this interface.
-class ConvertableToTraceFormat {
- public:
-  virtual ~ConvertableToTraceFormat() {}
-
-  // Append the class info to the provided |out| string. The appended
-  // data must be a valid JSON object. Strings must be propertly quoted, and
-  // escaped. There is no processing applied to the content after it is
-  // appended.
-  virtual void AppendAsTraceFormat(std::string* out) const = 0;
-};
-
 const int kTraceMaxNumArgs = 2;
 
 // Output records are "Events" and can be obtained via the
@@ -87,10 +74,7 @@ class BASE_EXPORT TraceEvent {
              const char** arg_names,
              const unsigned char* arg_types,
              const unsigned long long* arg_values,
-             scoped_ptr<ConvertableToTraceFormat> convertable_values[],
              unsigned char flags);
-  TraceEvent(const TraceEvent& other);
-  TraceEvent& operator=(const TraceEvent& other);
   ~TraceEvent();
 
   // Serialize event data to JSON
@@ -125,7 +109,6 @@ class BASE_EXPORT TraceEvent {
   unsigned long long id_;
   TraceValue arg_values_[kTraceMaxNumArgs];
   const char* arg_names_[kTraceMaxNumArgs];
-  scoped_ptr<ConvertableToTraceFormat> convertable_values_[kTraceMaxNumArgs];
   const unsigned char* category_group_enabled_;
   const char* name_;
   scoped_refptr<base::RefCountedString> parameter_copy_storage_;
@@ -380,7 +363,6 @@ class BASE_EXPORT TraceLog {
                      const char** arg_names,
                      const unsigned char* arg_types,
                      const unsigned long long* arg_values,
-                     scoped_ptr<ConvertableToTraceFormat> convertable_values[],
                      unsigned char flags);
   void AddTraceEventWithThreadIdAndTimestamp(
       char phase,
@@ -393,7 +375,6 @@ class BASE_EXPORT TraceLog {
       const char** arg_names,
       const unsigned char* arg_types,
       const unsigned long long* arg_values,
-      scoped_ptr<ConvertableToTraceFormat> convertable_values[],
       unsigned char flags);
   static void AddTraceEventEtw(char phase,
                                const char* category_group,
