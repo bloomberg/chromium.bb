@@ -5,6 +5,7 @@
 import copy
 import logging
 import os
+import collections
 
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
@@ -26,6 +27,43 @@ def _RemoveNoDocs(item):
     for i in to_remove:
       item.remove(i)
   return False
+
+
+def _InlineDocs(schema):
+  """Replace '$ref's that refer to inline_docs with the json for those docs.
+  """
+  types = schema.get('types')
+  if types is None:
+    return
+
+  inline_docs = {}
+  types_without_inline_doc = []
+
+  # Gather the types with inline_doc.
+  for type_ in types:
+    if type_.get('inline_doc'):
+      inline_docs[type_['id']] = type_
+      if type_.get('description'):
+        del type_['description']
+      del type_['inline_doc']
+      del type_['id']
+    else:
+      types_without_inline_doc.append(type_)
+  schema['types'] = types_without_inline_doc
+
+  def apply_inline(node):
+    if isinstance(node, list):
+      for i in node:
+        apply_inline(i)
+    elif isinstance(node, collections.Mapping):
+      ref = node.get('$ref')
+      if ref and ref in inline_docs:
+        node.update(inline_docs[ref])
+        del node['$ref']
+      for k, v in node.iteritems():
+        apply_inline(v)
+
+  apply_inline(schema)
 
 def _CreateId(node, prefix):
   if node.parent is not None and not isinstance(node.parent, model.Namespace):
@@ -49,6 +87,7 @@ class _JSCModel(object):
     if _RemoveNoDocs(clean_json):
       self._namespace = None
     else:
+      _InlineDocs(clean_json)
       self._namespace = model.Namespace(clean_json, clean_json['namespace'])
 
   def _FormatDescription(self, description):

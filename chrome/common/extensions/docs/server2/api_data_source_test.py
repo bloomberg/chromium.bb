@@ -3,6 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import copy
 import json
 import os
 import sys
@@ -11,13 +12,13 @@ import unittest
 from api_data_source import (APIDataSource,
                              _JSCModel,
                              _FormatValue,
-                             _RemoveNoDocs)
+                             _RemoveNoDocs,
+                             _InlineDocs)
 from compiled_file_system import CompiledFileSystem
 from file_system import FileNotFoundError
 from local_file_system import LocalFileSystem
 from object_store_creator import ObjectStoreCreator
 from reference_resolver import ReferenceResolver
-import third_party.json_schema_compiler.model as model
 
 def _MakeLink(href, text):
   return '<a href="%s">%s</a>' % (href, text)
@@ -111,6 +112,71 @@ class APIDataSourceTest(unittest.TestCase):
     d = self._LoadJSON('nodoc_test.json')
     _RemoveNoDocs(d)
     self.assertEqual(self._LoadJSON('expected_nodoc.json'), d)
+
+  def testInlineDocs(self):
+    schema = {
+      "namespace": "storage",
+      "properties": {
+        "key2": {
+          "description": "second key",
+          "$ref": "Key"
+        },
+        "key1": {
+          "description": "first key",
+          "$ref": "Key"
+        }
+      },
+      "types": [
+        {
+          "inline_doc": True,
+          "type": "string",
+          "id": "Key",  # Should be inlined into both properties and be removed
+                        # from types.
+          "description": "This is a key.",  # This description should disappear.
+          "marker": True  # This should appear three times in the output.
+        },
+        {
+          "items": {
+            "$ref": "Key"
+          },
+          "type": "array",
+          "id": "KeyList",
+          "description": "A list of keys"
+        }
+      ]
+    }
+
+    expected_schema = {
+      "namespace": "storage",
+      "properties": {
+        "key2": {
+          "marker": True,
+          "type": "string",
+          "description": "second key"
+        },
+        "key1": {
+          "marker": True,
+          "type": "string",
+          "description": "first key"
+        }
+      },
+      "types": [
+        {
+          "items": {
+            "marker": True,
+            "type": "string"
+          },
+          "type": "array",
+          "id": "KeyList",
+          "description": "A list of keys"
+        }
+      ]
+    }
+
+    inlined_schema = copy.deepcopy(schema)
+    _InlineDocs(inlined_schema)
+    self.assertEqual(expected_schema, inlined_schema)
+
 
 if __name__ == '__main__':
   unittest.main()

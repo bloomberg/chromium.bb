@@ -22,9 +22,9 @@ namespace downloads {
   // </dl>
   [inline_doc] enum FilenameConflictAction {uniquify, overwrite, prompt};
 
-  // $ref:onDeterminingFilename listeners may pass a $ref:FilenameSuggestion
-  // object to <code>suggest()</code> in order to override a download's target
-  // filename.
+  // $ref:onDeterminingFilename listeners may pass a
+  // <code>FilenameSuggestion</code> object to <code>suggest()</code> in order
+  // to override a download's target filename.
   [inline_doc] dictionary FilenameSuggestion {
     // The $ref:DownloadItem's new target $ref:DownloadItem.filename, as a path
     // relative to the user's default Downloads directory, possibly containing
@@ -32,7 +32,8 @@ namespace downloads {
     // back-references ".." will be ignored.
     DOMString filename;
 
-    // The action to take if $ref:FilenameSuggestion.filename already exists.
+    // The action to take if <code>FilenameSuggestion.filename</code> already
+    // exists.
     FilenameConflictAction? conflict_action;
   };
 
@@ -465,15 +466,15 @@ namespace downloads {
     // until all listeners have called <code>suggest</code>. Listeners may call
     // <code>suggest</code> without any arguments in order to allow the download
     // to use <code>downloadItem.filename</code> for its filename, or pass a
-    // $ref:FilenameSuggestion object to <code>suggest</code> in order to
-    // override the target filename. If more than one extension overrides the
+    // <code>FilenameSuggestion</code> object to <code>suggest</code> in order
+    // to override the target filename. If more than one extension overrides the
     // filename, then the last extension installed whose listener passes a
-    // $ref:FilenameSuggestion object to <code>suggest</code> wins. In order to
-    // avoid confusion regarding which extension will win, users should not
-    // install extensions that may conflict. If the download is initiated by
+    // <code>FilenameSuggestion</code> object to <code>suggest</code> wins. In
+    // order to avoid confusion regarding which extension will win, users should
+    // not install extensions that may conflict. If the download is initiated by
     // $ref:download and the target filename is known before the MIME type and
     // tentative filename have been determined, use
-    // $ref:DownloadOptions.filename instead.
+    // <code>DownloadOptions.filename</code> instead.
     [maxListeners=1] static void onDeterminingFilename(
         DownloadItem downloadItem, SuggestFilenameCallback suggest);
   };
