@@ -45,6 +45,11 @@ const struct {
   { "mozc", "\xe3\x81\x82" },  // U+3042, Japanese Hiragana letter A in UTF-8.
   { "mozc-dv", "\xe3\x81\x82" },
   { "mozc-jp", "\xe3\x81\x82" },
+  // TODO(nona): Make following variables configurable. http://crbug.com/232260.
+  { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_us", "\xe3\x81\x82" },
+  { "_comp_ime_fpfbhcjppmaeaijcidgiibchfbnhbeljnacl_mozc_jp", "\xe3\x81\x82" },
+  { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_us", "\xe3\x81\x82" },
+  { "_comp_ime_bbaiamgfapehflhememkfglaehiobjnknacl_mozc_jp", "\xe3\x81\x82" },
   // For simplified Chinese input methods
   { "pinyin", "\xe6\x8b\xbc" },  // U+62FC
   { "pinyin-dv", "\xe6\x8b\xbc" },
