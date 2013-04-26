@@ -4,6 +4,9 @@
 
 #include "chrome/browser/notifications/message_center_settings_controller.h"
 
+#include <algorithm>
+
+#include "base/i18n/string_compare.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/extensions/app_icon_loader_impl.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -18,6 +21,29 @@
 #include "ui/gfx/image/image.h"
 #include "ui/message_center/message_center_constants.h"
 
+using message_center::Notifier;
+
+namespace {
+
+class NotifierComparator {
+ public:
+  explicit NotifierComparator(icu::Collator* collator) : collator_(collator) {}
+
+  bool operator() (Notifier* n1, Notifier* n2) {
+    return base::i18n::CompareString16WithCollator(
+        collator_, n1->name, n2->name) == UCOL_LESS;
+  }
+
+ private:
+  icu::Collator* collator_;
+};
+
+bool SimpleCompareNotifiers(Notifier* n1, Notifier* n2) {
+  return n1->name < n2->name;
+}
+
+}  // namespace
+
 MessageCenterSettingsController::MessageCenterSettingsController()
     : delegate_(NULL) {
 }
@@ -31,12 +57,18 @@ void MessageCenterSettingsController::ShowSettingsDialog(
 }
 
 void MessageCenterSettingsController::GetNotifierList(
-    std::vector<message_center::Notifier*>* notifiers) {
+    std::vector<Notifier*>* notifiers) {
   DCHECK(notifiers);
   // TODO(mukai): Fix this for multi-profile.
   Profile* profile = ProfileManager::GetDefaultProfile();
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
+
+  UErrorCode error;
+  scoped_ptr<icu::Collator> collator(icu::Collator::createInstance(error));
+  scoped_ptr<NotifierComparator> comparator;
+  if (!U_FAILURE(error))
+    comparator.reset(new NotifierComparator(collator.get()));
 
   ExtensionService* extension_service = profile->GetExtensionService();
   const ExtensionSet* extension_set = extension_service->extensions();
@@ -55,12 +87,18 @@ void MessageCenterSettingsController::GetNotifierList(
       continue;
     }
 
-    notifiers->push_back(new message_center::Notifier(
+    notifiers->push_back(new Notifier(
         extension->id(),
         UTF8ToUTF16(extension->name()),
         notification_service->IsExtensionEnabled(extension->id())));
     app_icon_loader_->FetchImage(extension->id());
   }
+
+  if (comparator)
+    std::sort(notifiers->begin(), notifiers->end(), *comparator);
+  else
+    std::sort(notifiers->begin(), notifiers->end(), SimpleCompareNotifiers);
+  int app_count = notifiers->size();
 
   ContentSettingsForOneType settings;
   notification_service->GetNotificationsSettings(&settings);
@@ -79,7 +117,7 @@ void MessageCenterSettingsController::GetNotifierList(
     std::string url_pattern = iter->primary_pattern.ToString();
     string16 name = UTF8ToUTF16(url_pattern);
     GURL url(url_pattern);
-    notifiers->push_back(new message_center::Notifier(
+    notifiers->push_back(new Notifier(
         url,
         name,
         notification_service->GetContentSetting(url) == CONTENT_SETTING_ALLOW));
@@ -96,10 +134,17 @@ void MessageCenterSettingsController::GetNotifierList(
                    base::Unretained(this), url),
         favicon_tracker_.get());
   }
+
+  if (comparator) {
+    std::sort(notifiers->begin() + app_count, notifiers->end(), *comparator);
+  } else {
+    std::sort(notifiers->begin() + app_count, notifiers->end(),
+              SimpleCompareNotifiers);
+  }
 }
 
 void MessageCenterSettingsController::SetNotifierEnabled(
-    const message_center::Notifier& notifier,
+    const Notifier& notifier,
     bool enabled) {
   // TODO(mukai): Fix this for multi-profile.
   Profile* profile = ProfileManager::GetDefaultProfile();
@@ -107,10 +152,10 @@ void MessageCenterSettingsController::SetNotifierEnabled(
       DesktopNotificationServiceFactory::GetForProfile(profile);
 
   switch (notifier.type) {
-    case message_center::Notifier::APPLICATION:
+    case Notifier::APPLICATION:
       notification_service->SetExtensionEnabled(notifier.id, enabled);
       break;
-    case message_center::Notifier::WEB_PAGE: {
+    case Notifier::WEB_PAGE: {
       ContentSetting default_setting =
           notification_service->GetDefaultContentSetting(NULL);
       DCHECK(default_setting == CONTENT_SETTING_ALLOW ||
