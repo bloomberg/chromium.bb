@@ -27,6 +27,12 @@
 # Note: absolute paths into static content (e.g. /static/css/site.css) will be
 # relative paths (e.g. static/css/site.css) for convenient sandboxing.
 
+# NOTE: RUN THIS FIRST. Or all third_party imports will fail.
+import build_server
+# Copy all the files necessary to run the server. These are cleaned up when the
+# server quits.
+build_server.main()
+
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 from local_renderer import LocalRenderer
 import logging
@@ -34,11 +40,6 @@ import optparse
 import os
 import sys
 import time
-
-import build_server
-# Copy all the files necessary to run the server. These are cleaned up when the
-# server quits.
-build_server.main()
 
 def _GetLocalPath():
   if os.sep in sys.argv[0]:
