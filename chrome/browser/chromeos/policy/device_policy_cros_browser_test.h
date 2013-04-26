@@ -10,7 +10,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "chrome/browser/chromeos/cros/cros_in_process_browser_test.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
-#include "chrome/browser/chromeos/policy/proto/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

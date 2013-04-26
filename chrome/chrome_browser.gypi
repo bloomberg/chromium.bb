@@ -3025,13 +3025,13 @@
       'target_name': 'cloud_policy_proto',
       'type': 'static_library',
       'sources': [
-        'browser/policy/cloud/proto/chrome_extension_policy.proto',
-        'browser/policy/cloud/proto/device_management_backend.proto',
-        'browser/policy/cloud/proto/device_management_local.proto',
+        'browser/policy/proto/cloud/chrome_extension_policy.proto',
+        'browser/policy/proto/cloud/device_management_backend.proto',
+        'browser/policy/proto/cloud/device_management_local.proto',
       ],
       'variables': {
-        'proto_in_dir': 'browser/policy/cloud/proto',
-        'proto_out_dir': 'chrome/browser/policy/cloud/proto',
+        'proto_in_dir': 'browser/policy/proto/cloud',
+        'proto_out_dir': 'chrome/browser/policy/proto/cloud',
       },
       'includes': [ '../build/protoc.gypi' ]
     },

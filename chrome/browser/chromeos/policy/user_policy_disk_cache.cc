@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
 #include "chrome/browser/policy/cloud/enterprise_metrics.h"
-#include "chrome/browser/policy/cloud/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "content/public/browser/browser_thread.h"
 
 using content::BrowserThread;

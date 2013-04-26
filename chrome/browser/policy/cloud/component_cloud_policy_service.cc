@@ -14,8 +14,8 @@
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud/component_cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/component_cloud_policy_updater.h"
-#include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
 

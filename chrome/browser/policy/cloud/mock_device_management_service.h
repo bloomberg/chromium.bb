@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
-#include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
+#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace policy {

@@ -9,8 +9,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
-#include "chrome/browser/policy/cloud/proto/device_management_backend.pb.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 
 namespace policy {
 

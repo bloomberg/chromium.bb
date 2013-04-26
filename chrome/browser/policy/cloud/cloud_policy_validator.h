@@ -14,7 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time.h"
-#include "chrome/browser/policy/cloud/proto/chrome_extension_policy.pb.h"
+#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "policy/proto/cloud_policy.pb.h"
 
 namespace base {

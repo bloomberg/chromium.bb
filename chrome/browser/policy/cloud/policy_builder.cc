@@ -8,7 +8,7 @@
 
 #include "base/stl_util.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
-#include "chrome/browser/policy/cloud/proto/chrome_extension_policy.pb.h"
+#include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
 #include "crypto/signature_creator.h"
 #include "policy/proto/cloud_policy.pb.h"
 

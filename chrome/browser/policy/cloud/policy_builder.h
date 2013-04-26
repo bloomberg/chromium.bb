@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
-#include "chrome/browser/policy/cloud/proto/device_management_local.pb.h"
+#include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
 #include "crypto/rsa_private_key.h"
 
 namespace enterprise_management {

@@ -178,8 +178,8 @@ bool LocalPolicyTestServer::SetPythonPath() const {
                      .AppendASCII("chrome")
                      .AppendASCII("browser")
                      .AppendASCII("policy")
-                     .AppendASCII("cloud")
-                     .AppendASCII("proto"));
+                     .AppendASCII("proto")
+                     .AppendASCII("cloud"));
   AppendToPythonPath(pyproto_dir
                      .AppendASCII("policy")
                      .AppendASCII("proto"));
@@ -187,9 +187,9 @@ bool LocalPolicyTestServer::SetPythonPath() const {
   AppendToPythonPath(pyproto_dir
                      .AppendASCII("chrome")
                      .AppendASCII("browser")
-                     .AppendASCII("chromeos")
                      .AppendASCII("policy")
-                     .AppendASCII("proto"));
+                     .AppendASCII("proto")
+                     .AppendASCII("chromeos"));
 #endif
 
   return true;
