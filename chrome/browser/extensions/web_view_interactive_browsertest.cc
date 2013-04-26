@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, PointerLock) {
 #endif  // (defined(OS_WIN) || defined(OS_LINUX))
 
 // Tests that setting focus on the <webview> sets focus on the guest.
-IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, Focus) {
+IN_PROC_BROWSER_TEST_F(WebViewInteractiveTest, DISABLED_Focus) {
   ASSERT_TRUE(StartTestServer());  // For serving guest pages.
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/web_view/focus"))
       << message_;
