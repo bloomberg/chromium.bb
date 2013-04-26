@@ -34,7 +34,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
     self.namespace = ('temporary' + str(long(time.time())).split('.', 1)[0]
                       + '-gzip')
     url = ISOLATE_SERVER + '/content/get_token?from_smoke_test=1'
-    self.token = urllib.quote(isolateserver_archive.url_open(url, None).read())
+    self.token = urllib.quote(isolateserver_archive.url_open(url).read())
 
   def _archive_given_files(self, files):
     """Given a list of files, call isolateserver_archive.py with them. Then
@@ -78,7 +78,7 @@ class IsolateServerArchiveSmokeTest(unittest.TestCase):
       # until the database becomes consistent with regard to these entities.
       response = isolateserver_archive.url_open(
           contains_hash_url,
-          body,
+          data=body,
           content_type='application/octet-stream').read()
       if response == expected:
         break

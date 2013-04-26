@@ -104,8 +104,8 @@ def sha1_file(filepath):
   return digest.hexdigest()
 
 
-def url_open(url, *args, **kwargs):
-  result = run_isolated.url_open(url, *args, **kwargs)
+def url_open(url, **kwargs):
+  result = run_isolated.url_open(url, **kwargs)
   if not result:
     # If we get no response from the server, assume it is down and raise an
     # exception.
@@ -127,7 +127,7 @@ def upload_hash_content_to_blobstore(
   logging.debug('Generating url to directly upload file to blobstore')
   assert isinstance(hash_key, str), hash_key
   assert isinstance(content, str), (hash_key, content)
-  upload_url = url_open(generate_upload_url, data).read()
+  upload_url = url_open(generate_upload_url, data=data).read()
 
   if not upload_url:
     logging.error('Unable to generate upload url')
@@ -136,7 +136,7 @@ def upload_hash_content_to_blobstore(
   # TODO(maruel): Support large files.
   content_type, body = encode_multipart_formdata(
        data, [('content', hash_key, content)])
-  return url_open(upload_url, body, content_type=content_type)
+  return url_open(upload_url, data=body, content_type=content_type)
 
 
 class UploadRemote(run_isolated.Remote):
@@ -161,7 +161,7 @@ class UploadRemote(run_isolated.Remote):
       else:
         url = '%sstore/%s/%s?token=%s' % (
             content_url, self.namespace, hash_key, self._token)
-        url_open(url, content, content_type='application/octet-stream')
+        url_open(url, data=content, content_type='application/octet-stream')
     return upload_file
 
 
@@ -177,7 +177,7 @@ def update_files_to_upload(query_url, queries, upload):
   assert (len(body) % 20) == 0, repr(body)
 
   response = url_open(
-      query_url, body, content_type='application/octet-stream').read()
+      query_url, data=body, content_type='application/octet-stream').read()
   if len(queries) != len(response):
     raise run_isolated.MappingError(
         'Got an incorrect number of responses from the server. Expected %d, '

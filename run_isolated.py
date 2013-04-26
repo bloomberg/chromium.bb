@@ -394,7 +394,7 @@ def fix_python_path(cmd):
   return out
 
 
-def url_open(url, data=None, retry_404=False, content_type=None):
+def url_open(url, **kwargs):
   """Attempts to open the given url multiple times.
 
   |data| can be either:
@@ -406,22 +406,30 @@ def url_open(url, data=None, retry_404=False, content_type=None):
   Returns a file-like object, where the response may be read from, or None
   if it was unable to connect.
   """
+  urlhost, urlpath = split_server_request_url(url)
+  service = get_http_service(urlhost)
+  return service.request(urlpath, **kwargs)
+
+
+def split_server_request_url(url):
+  """Splits the url into scheme+netloc and path+params+query+fragment."""
   url_parts = list(urlparse.urlparse(url))
-  server_url = '%s://%s' % (url_parts[0], url_parts[1])
-  request_url = urlparse.urlunparse(['', ''] + url_parts[2:])
-  service = get_http_service(server_url)
-  return service.request(request_url, data, retry_404, content_type)
+  urlhost = '%s://%s' % (url_parts[0], url_parts[1])
+  urlpath = urlparse.urlunparse(['', ''] + url_parts[2:])
+  return urlhost, urlpath
 
 
-def get_http_service(url):
+def get_http_service(urlhost):
   """Returns existing or creates new instance of HttpService that can send
-  requests to given base url.
+  requests to given base urlhost.
   """
+  # Ensure consistency.
+  urlhost = str(urlhost).lower().rstrip('/')
   with _http_services_lock:
-    service = _http_services.get(url)
+    service = _http_services.get(urlhost)
     if not service:
-      service = AppEngineService(url)
-      _http_services[url] = service
+      service = AppEngineService(urlhost)
+      _http_services[urlhost] = service
     return service
 
 
@@ -440,8 +448,8 @@ class HttpService(object):
   _cookie_jar = None
   _cookie_jar_lock = threading.Lock()
 
-  def __init__(self, url):
-    self.url = str(url.rstrip('/'))
+  def __init__(self, urlhost):
+    self.urlhost = urlhost
     self.cookie_jar = self.load_cookie_jar()
     self.opener = self.create_url_opener()
 
@@ -474,10 +482,10 @@ class HttpService(object):
     Can be reimplemented in subclasses."""
     return urllib2.build_opener(urllib2.HTTPCookieProcessor(self.cookie_jar))
 
-  def request(self, url, data=None, retry_404=False, content_type=None):
+  def request(self, urlpath, data=None, content_type=None, **kwargs):
     """Attempts to open the given url multiple times.
 
-    |url| is relative to the server root, i.e. '/some/request?param=1'.
+    |urlpath| is relative to the server root, i.e. '/some/request?param=1'.
 
     |data| can be either:
       -None for a GET request
@@ -488,7 +496,7 @@ class HttpService(object):
     Returns a file-like object, where the response may be read from, or None
     if it was unable to connect.
     """
-    assert url and url[0] == '/'
+    assert urlpath and urlpath[0] == '/'
 
     if isinstance(data, dict) and COUNT_KEY in data:
       logging.error('%s already existed in the data passed into UlrOpen. It '
@@ -510,7 +518,7 @@ class HttpService(object):
           payload = data[:]
         payload.extend(extra.iteritems())
         payload = urllib.urlencode(payload)
-      new_url = urlparse.urljoin(self.url, url.lstrip('/'))
+      new_url = urlparse.urljoin(self.urlhost, urlpath[1:])
       if isinstance(data, str) or data is None:
         # In these cases, add the extra parameter to the query part of the url.
         url_parts = list(urlparse.urlparse(new_url))
@@ -526,7 +534,7 @@ class HttpService(object):
         request.add_header('Content-Length', len(payload))
       return request
 
-    return self._retry_loop(make_request, retry_404)
+    return self._retry_loop(make_request, **kwargs)
 
   def _retry_loop(self, make_request, retry_404=False):
     """Runs internal request-retry loop."""
@@ -626,8 +634,8 @@ class AppEngineService(HttpService):
   # login prompts.
   _auth_lock = threading.Lock()
 
-  def __init__(self, url, email=None, password=None):
-    super(AppEngineService, self).__init__(url)
+  def __init__(self, urlhost, email=None, password=None):
+    super(AppEngineService, self).__init__(urlhost)
     self.email = email
     self.password = password
     self._keyring = None
@@ -661,7 +669,7 @@ class AppEngineService(HttpService):
         save_cookie_jar()
         return self.authenticated
     with AppEngineService._auth_lock:
-      rpc_server = AuthServer(self.url, self.get_credentials)
+      rpc_server = AuthServer(self.urlhost, self.get_credentials)
       return rpc_server.PerformAuthentication()
 
   def get_credentials(self):
@@ -675,8 +683,8 @@ class AppEngineService(HttpService):
     if self.email and self.password:
       return (self.email, self.password)
     if not self._keyring:
-      self._keyring = upload.KeyringCreds(self.url,
-                                          self.url.lower(),
+      self._keyring = upload.KeyringCreds(self.urlhost,
+                                          self.urlhost,
                                           self.email)
     return self._keyring.GetUserCredentials()
 

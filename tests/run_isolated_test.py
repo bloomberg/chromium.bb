@@ -127,7 +127,7 @@ class RunIsolatedTest(unittest.TestCase):
   def test_zip_header_error(self):
     old_urlopen = run_isolated.url_open
     try:
-      run_isolated.url_open = lambda *_args, **_kwargs: StringIO.StringIO('111')
+      run_isolated.url_open = lambda _url, **_kwargs: StringIO.StringIO('111')
       remote = run_isolated.Remote('https://fake-CAD.com/')
 
       # Both files will fail to be unzipped due to incorrect headers,

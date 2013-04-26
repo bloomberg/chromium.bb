@@ -126,7 +126,7 @@ class Manifest(object):
     url = '%s%s?priority=0&token=%s' % (
         self.data_server_storage, self.zip_file_hash, self.token())
     response = run_isolated.url_open(
-        url, zip_contents, content_type='application/octet-stream')
+        url, data=zip_contents, content_type='application/octet-stream')
     if response is None:
       print >> sys.stderr, 'Failed to upload the zip file: %s' % url
       return False
@@ -202,7 +202,7 @@ def ProcessManifest(file_sha1, test_name, shards, test_filter, options):
   print 'Sending test requests to swarm'
   test_url = options.swarm_url.rstrip('/') + '/test'
   manifest_text = manifest.to_json()
-  result = run_isolated.url_open(test_url, {'request': manifest_text})
+  result = run_isolated.url_open(test_url, data={'request': manifest_text})
   if not result:
     print >> sys.stderr, 'Failed to send test for %s\n%s' % (
         test_name, test_url)
