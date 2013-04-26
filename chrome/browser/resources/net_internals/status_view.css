@@ -15,12 +15,35 @@
   background: rgb(136, 136, 204);
 }
 
-/* Only want the SELECT's arrow to show */
+#capture-status-view {
+  -webkit-align-items: center;
+  display: -webkit-flex;
+}
+
+/* Completely un-style the SELECT. Will place an arrow over it manually. */
 #capture-status-view-actions {
+  -webkit-appearance: none;
   background: none;
   border: none;
-  float: right;
+  height: 25px;
   outline: none;
-  padding-right: 2ex;
-  width: 2ex;
+  width: 30px;
+}
+
+.capture-status-view-arrow {
+  display: inline-block;
+  position: relative;
+}
+
+.capture-status-view-arrow::after {
+  color: black;
+  content: '\25bc';
+  font-size: 9px;
+  left: 0;
+  line-height: 25px;
+  pointer-events: none;
+  position: absolute;
+  text-align: center;
+  top: 0;
+  width: 100%;
 }

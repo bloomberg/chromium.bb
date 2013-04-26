@@ -7,14 +7,38 @@ found in the LICENSE file.
 <!-- Status bar at top of screen -->
 
 <style>
+
+/**
+ * This SELECT dropdown is styled so the dropdown arrow is hidden. This is
+ * necessary because it looks bad on Windows. Instead, an arrow is added
+ * manually by overlaying U+25BC over the dropdown and making it un-clickable.
+ **/
 #top-bar-view-tab-selecter {
+  -webkit-appearance: none;
   background: white;
-  border: 1px solid #aaa;
   border-radius: 6px;
+  border: 1px solid #aaa;
+  font-size: 13px;
+  height: 25px;
   outline: none;
-  padding: 2px 2px 2px 8px;
-  margin-left: 5px;
+  padding: 0 18px 2px 0.5em;
+}
+
+.top-bar-view-arrow {
+  display: inline-block;
   margin-right: 10px;
+  position:relative;
+}
+
+.top-bar-view-arrow::after {
+  color: black;
+  content: '\25bc';
+  font-size: 9px;
+  line-height: 23px;
+  pointer-events: none;
+  position: absolute;
+  right: 12px;
+  top: 1px;
 }
 
 #top-bar-view-tab-selecter:focus {
@@ -22,20 +46,19 @@ found in the LICENSE file.
 }
 
 #top-bar-view {
-  color: #eee;
+  -webkit-align-items: center;
   border-bottom: 1px solid gray;
-  padding: 2px;
+  color: #eee;
+  display: -webkit-flex;
+  padding: 2px 2px 4px 7px;
 }
 </style>
 
 <div id=top-bar-view>
-  <!-- TODO(eroman): Use flexbox instead of funky table -->
-  <table width=100% cellpadding=0 cellspacing=0><tr>
-    <td width="0.1%">
-      <select id=top-bar-view-tab-selecter></select>
-    </td>
-    <td id=top-bar-view-status width=100%>
-      <include src="status_view.html"/>
-    </td>
-  </tr></table>
+  <span class=top-bar-view-arrow>
+    <select id=top-bar-view-tab-selecter></select>
+  </span>
+  <div style="-webkit-flex-grow: 1">
+    <include src="status_view.html"/>
+  </div>
 </div>

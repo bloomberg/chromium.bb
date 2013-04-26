@@ -6,19 +6,23 @@ found in the LICENSE file.
 
 <!-- Status bar at top of screen when in capture mode. -->
 <div id=capture-status-view style="display:none">
-  Capturing network events
-  (<span id=capture-status-view-captured-events-count
-         title='Number of events captured to this window'></span>)
-  <select id=capture-status-view-actions>
-    <optgroup label="Capture">
-      <option value=stop>Stop</option>
-      <option value=reset>Reset</option>
-    </optgroup>
-    <optgroup label="Tools">
-      <option value=clear-cache>Clear cache</option>
-      <option value=flush-sockets>Flush sockets</option>
-    </optgroup>
-  </select>
+  <span style='-webkit-flex-grow: 1'>
+    Capturing network events
+    (<span id=capture-status-view-captured-events-count
+           title='Number of events captured to this window'></span>)
+  </span>
+  <span class=capture-status-view-arrow>
+    <select id=capture-status-view-actions>
+      <optgroup label="Capture">
+        <option value=stop>Stop</option>
+        <option value=reset>Reset</option>
+      </optgroup>
+      <optgroup label="Tools">
+        <option value=clear-cache>Clear cache</option>
+        <option value=flush-sockets>Flush sockets</option>
+      </optgroup>
+    </select>
+  </span>
 </div>
 
 <!-- Status bar at top of screen when capturing is stopped -->
