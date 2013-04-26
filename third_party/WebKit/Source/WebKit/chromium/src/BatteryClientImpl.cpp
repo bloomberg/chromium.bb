@@ -35,8 +35,8 @@
 
 #include "BatteryController.h"
 #include "BatteryStatus.h"
-#include "EventNames.h"
 #include "WebBatteryStatusClient.h"
+#include "core/dom/EventNames.h"
 #include <wtf/RefPtr.h>
 
 namespace WebKit {

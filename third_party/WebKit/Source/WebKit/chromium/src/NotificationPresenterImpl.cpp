@@ -34,7 +34,7 @@
 #if ENABLE(NOTIFICATIONS) || ENABLE(LEGACY_NOTIFICATIONS)
 
 #include "Notification.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/KURL.h"
 

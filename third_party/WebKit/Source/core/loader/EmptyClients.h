@@ -29,9 +29,8 @@
 #ifndef EmptyClients_h
 #define EmptyClients_h
 
-#include "DeviceMotionClient.h"
-#include "DeviceOrientationClient.h"
 #include "InspectorClient.h"
+#include "core/dom/DeviceOrientationClient.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
@@ -42,6 +41,7 @@
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/network/ResourceError.h"
 #include "core/platform/text/TextCheckerClient.h"
+#include "modules/device_orientation/DeviceMotionClient.h"
 
 #include <v8.h>
 

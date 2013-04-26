@@ -30,7 +30,7 @@
 #define ImplicitAnimation_h
 
 #include "CSSPropertyNames.h"
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/animation/AnimationBase.h"
 
 namespace WebCore {

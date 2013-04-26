@@ -26,10 +26,10 @@
 #ifndef HTMLSelectElement_h
 #define HTMLSelectElement_h
 
-#include "Event.h"
 #include "HTMLFormControlElementWithState.h"
 #include "HTMLOptionsCollection.h"
 #include "TypeAhead.h"
+#include "core/dom/Event.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

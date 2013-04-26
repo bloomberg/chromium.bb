@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/css/CSSCrossfadeValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSImageValue.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/graphics/CrossfadeGeneratedImage.h"

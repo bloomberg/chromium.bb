@@ -34,8 +34,8 @@
 
 #include "TextTrackRegion.h"
 
-#include "ExceptionCodePlaceholder.h"
 #include "WebVTTParser.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/Logging.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>

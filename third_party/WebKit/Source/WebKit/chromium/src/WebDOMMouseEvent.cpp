@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebDOMMouseEvent.h"
 
-#include "MouseEvent.h"
+#include "core/dom/MouseEvent.h"
 
 using namespace WebCore;
 

@@ -25,12 +25,12 @@
 #include "config.h"
 #include "HTMLOptGroupElement.h"
 
-#include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLSelectElement.h"
-#include "NodeRenderStyle.h"
-#include "NodeRenderingContext.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Document.h"
+#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/RenderMenuList.h"
 #include <wtf/StdLibExtras.h>
 

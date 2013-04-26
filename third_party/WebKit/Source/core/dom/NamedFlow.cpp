@@ -28,13 +28,13 @@
  */
 
 #include "config.h"
-#include "NamedFlow.h"
+#include "core/dom/NamedFlow.h"
 
-#include "EventNames.h"
-#include "NamedFlowCollection.h"
-#include "ScriptExecutionContext.h"
-#include "StaticNodeList.h"
-#include "UIEvent.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/NamedFlowCollection.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/StaticNodeList.h"
+#include "core/dom/UIEvent.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/RenderRegion.h"
 

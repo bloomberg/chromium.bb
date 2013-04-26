@@ -26,7 +26,7 @@
 #ifndef SetNodeAttributeCommand_h
 #define SetNodeAttributeCommand_h
 
-#include "QualifiedName.h"
+#include "core/dom/QualifiedName.h"
 #include "core/editing/EditCommand.h"
 
 namespace WebCore {

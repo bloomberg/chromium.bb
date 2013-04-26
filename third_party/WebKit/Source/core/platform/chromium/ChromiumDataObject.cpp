@@ -31,9 +31,9 @@
 #include "config.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 
-#include "DataTransferItem.h"
-#include "ExceptionCode.h"
-#include "ExceptionCodePlaceholder.h"
+#include "core/dom/DataTransferItem.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include "core/platform/chromium/ClipboardUtilitiesChromium.h"
 

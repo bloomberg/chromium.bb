@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/editing/FrameSelection.h"
 
-#include "Document.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {

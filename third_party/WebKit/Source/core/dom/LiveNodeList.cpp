@@ -21,12 +21,12 @@
  */
 
 #include "config.h"
-#include "LiveNodeList.h"
+#include "core/dom/LiveNodeList.h"
 
-#include "Document.h"
-#include "Element.h"
 #include "HTMLCollection.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

@@ -34,7 +34,7 @@
 #include <limits>
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "KeyboardEvent.h"
+#include "core/dom/KeyboardEvent.h"
 #include "core/platform/text/PlatformLocale.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/DateMath.h>

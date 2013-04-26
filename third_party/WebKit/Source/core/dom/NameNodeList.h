@@ -24,7 +24,7 @@
 #ifndef NameNodeList_h
 #define NameNodeList_h
 
-#include "LiveNodeList.h"
+#include "core/dom/LiveNodeList.h"
 #include <wtf/Forward.h>
 #include <wtf/text/AtomicString.h>
 

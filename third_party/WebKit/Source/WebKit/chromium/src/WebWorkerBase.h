@@ -31,10 +31,10 @@
 #ifndef WebWorkerBase_h
 #define WebWorkerBase_h
 
-#include "ScriptExecutionContext.h"
 #include "WebCommonWorkerClient.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerObjectProxy.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

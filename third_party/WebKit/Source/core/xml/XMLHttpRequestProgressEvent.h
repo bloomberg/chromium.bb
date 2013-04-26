@@ -27,8 +27,8 @@
 #ifndef XMLHttpRequestProgressEvent_h
 #define XMLHttpRequestProgressEvent_h
 
-#include "EventNames.h"
-#include "ProgressEvent.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/ProgressEvent.h"
 
 namespace WebCore {
 

@@ -34,16 +34,16 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "GestureEvent.h"
-#include "KeyboardEvent.h"
-#include "MouseEvent.h"
-#include "Touch.h"
-#include "TouchEvent.h"
-#include "TouchList.h"
 #include "URLTestHelpers.h"
 #include "WebFrame.h"
 #include "WebSettings.h"
 #include "WebViewImpl.h"
+#include "core/dom/GestureEvent.h"
+#include "core/dom/KeyboardEvent.h"
+#include "core/dom/MouseEvent.h"
+#include "core/dom/Touch.h"
+#include "core/dom/TouchEvent.h"
+#include "core/dom/TouchList.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 

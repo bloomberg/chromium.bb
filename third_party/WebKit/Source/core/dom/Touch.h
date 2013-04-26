@@ -26,7 +26,7 @@
 #ifndef Touch_h
 #define Touch_h
 
-#include "EventTarget.h"
+#include "core/dom/EventTarget.h"
 #include "core/platform/graphics/LayoutPoint.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

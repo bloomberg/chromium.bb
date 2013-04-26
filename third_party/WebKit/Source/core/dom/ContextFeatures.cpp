@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "ContextFeatures.h"
+#include "core/dom/ContextFeatures.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/Page.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 

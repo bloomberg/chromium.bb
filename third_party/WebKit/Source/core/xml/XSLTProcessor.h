@@ -23,10 +23,10 @@
 #ifndef XSLTProcessor_h
 #define XSLTProcessor_h
 
-#include "Node.h"
-#include "XSLStyleSheet.h"
 #include <libxml/parserInternals.h>
 #include <libxslt/documents.h>
+#include "XSLStyleSheet.h"
+#include "core/dom/Node.h"
 #include <wtf/HashMap.h>
 #include <wtf/text/StringHash.h>
 

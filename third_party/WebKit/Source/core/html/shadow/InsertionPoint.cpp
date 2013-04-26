@@ -31,11 +31,11 @@
 #include "config.h"
 #include "InsertionPoint.h"
 
-#include "ElementShadow.h"
 #include "HTMLNames.h"
-#include "QualifiedName.h"
-#include "ShadowRoot.h"
-#include "StaticNodeList.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/StaticNodeList.h"
 
 namespace WebCore {
 

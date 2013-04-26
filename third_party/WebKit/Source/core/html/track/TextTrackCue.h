@@ -32,10 +32,10 @@
 #ifndef TextTrackCue_h
 #define TextTrackCue_h
 
-#include "EventTarget.h"
 #include "HTMLDivElement.h"
 #include "HTMLElement.h"
 #include "TextTrack.h"
+#include "core/dom/EventTarget.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 

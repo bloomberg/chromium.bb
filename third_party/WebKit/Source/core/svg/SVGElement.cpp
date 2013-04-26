@@ -26,11 +26,7 @@
 #if ENABLE(SVG)
 #include "SVGElement.h"
 
-#include "DOMImplementation.h"
-#include "Document.h"
-#include "Event.h"
 #include "HTMLNames.h"
-#include "NodeRenderingContext.h"
 #include "SVGCursorElement.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGElementInstance.h"
@@ -42,6 +38,10 @@
 #include "ScriptEventListener.h"
 #include "XMLNames.h"
 #include "core/css/CSSCursorImageValue.h"
+#include "core/dom/DOMImplementation.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -217,7 +217,7 @@ SVGElement* SVGElement::viewportElement() const
 SVGDocumentExtensions* SVGElement::accessDocumentSVGExtensions()
 {
     // This function is provided for use by SVGAnimatedProperty to avoid
-    // global inclusion of Document.h in SVG code.
+    // global inclusion of core/dom/Document.h in SVG code.
     return document() ? document()->accessSVGExtensions() : 0;
 }
  

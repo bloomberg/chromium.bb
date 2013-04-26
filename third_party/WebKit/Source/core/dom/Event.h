@@ -24,10 +24,10 @@
 #ifndef Event_h
 #define Event_h
 
-#include "DOMTimeStamp.h"
-#include "EventContext.h"
-#include "EventNames.h"
 #include "ScriptWrappable.h"
+#include "core/dom/DOMTimeStamp.h"
+#include "core/dom/EventContext.h"
+#include "core/dom/EventNames.h"
 #include <wtf/HashMap.h>
 #include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>

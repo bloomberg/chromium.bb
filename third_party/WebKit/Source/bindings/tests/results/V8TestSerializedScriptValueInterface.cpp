@@ -23,13 +23,13 @@
 #include "V8TestSerializedScriptValueInterface.h"
 
 #include "BindingState.h"
-#include "ContextFeatures.h"
-#include "MessagePort.h"
 #include "ScriptController.h"
 #include "SerializedScriptValue.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
 #include "V8MessagePort.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/MessagePort.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>

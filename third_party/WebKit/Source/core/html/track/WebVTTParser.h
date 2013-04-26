@@ -31,11 +31,11 @@
 #ifndef WebVTTParser_h
 #define WebVTTParser_h
 
-#include "DocumentFragment.h"
 #include "HTMLNames.h"
 #include "TextTrackCue.h"
 #include "TextTrackRegion.h"
 #include "WebVTTTokenizer.h"
+#include "core/dom/DocumentFragment.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 

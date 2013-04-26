@@ -27,10 +27,10 @@
 #include "config.h"
 #include "SpinButtonElement.h"
 
-#include "EventNames.h"
 #include "HTMLNames.h"
-#include "MouseEvent.h"
-#include "WheelEvent.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/MouseEvent.h"
+#include "core/dom/WheelEvent.h"
 #include "core/page/Chrome.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

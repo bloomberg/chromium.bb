@@ -25,8 +25,8 @@
 #include "config.h"
 #include "DOMTokenList.h"
 
-#include "ExceptionCode.h"
 #include "HTMLParserIdioms.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

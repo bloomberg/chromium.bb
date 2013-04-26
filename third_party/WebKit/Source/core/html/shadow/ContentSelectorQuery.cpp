@@ -28,10 +28,10 @@
 #include "ContentSelectorQuery.h"
 
 #include "InsertionPoint.h"
-#include "ShadowRoot.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/SelectorChecker.h"
 #include "core/css/SiblingTraversalStrategies.h"
+#include "core/dom/ShadowRoot.h"
 
 namespace WebCore {
 

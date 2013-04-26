@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/css/CSSLineBoxContainValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 

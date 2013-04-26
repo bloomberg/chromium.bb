@@ -27,7 +27,7 @@
 
 #include "core/rendering/FilterEffectRenderer.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/ColorSpace.h"
 #include "core/platform/graphics/filters/FEColorMatrix.h"

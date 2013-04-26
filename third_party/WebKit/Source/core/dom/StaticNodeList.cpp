@@ -27,9 +27,9 @@
  */
 
 #include "config.h"
-#include "StaticNodeList.h"
+#include "core/dom/StaticNodeList.h"
 
-#include "Element.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 

@@ -28,8 +28,8 @@
 #ifndef ScriptExecutionContext_h
 #define ScriptExecutionContext_h
 
-#include "ActiveDOMObject.h"
-#include "SecurityContext.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/SecurityContext.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"

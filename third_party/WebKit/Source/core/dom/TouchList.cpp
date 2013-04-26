@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "TouchList.h"
+#include "core/dom/TouchList.h"
 
 namespace WebCore {
 

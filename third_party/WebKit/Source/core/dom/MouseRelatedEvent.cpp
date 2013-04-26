@@ -21,9 +21,9 @@
  */
 
 #include "config.h"
-#include "MouseRelatedEvent.h"
+#include "core/dom/MouseRelatedEvent.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

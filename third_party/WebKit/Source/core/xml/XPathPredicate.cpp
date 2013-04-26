@@ -28,11 +28,11 @@
 #include "config.h"
 #include "XPathPredicate.h"
 
-#include "Node.h"
+#include <math.h>
 #include "XPathFunctions.h"
 #include "XPathUtil.h"
 #include "XPathValue.h"
-#include <math.h>
+#include "core/dom/Node.h"
 #include <wtf/MathExtras.h>
 
 namespace WebCore {

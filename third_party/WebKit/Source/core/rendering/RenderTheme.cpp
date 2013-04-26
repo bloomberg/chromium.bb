@@ -23,7 +23,6 @@
 #include "core/rendering/RenderTheme.h"
 
 #include "CSSValueKeywords.h"
-#include "Document.h"
 #include "FileList.h"
 #include "HTMLInputElement.h"
 #include "HTMLMeterElement.h"
@@ -31,6 +30,7 @@
 #include "MediaControlElements.h"
 #include "SpinButtonElement.h"
 #include "TextControlInnerElements.h"
+#include "core/dom/Document.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/FocusController.h"
 #include "core/page/Frame.h"
@@ -52,11 +52,11 @@
 #endif
 
 #if ENABLE(DATALIST_ELEMENT)
-#include "ElementShadow.h"
 #include "HTMLCollection.h"
 #include "HTMLDataListElement.h"
 #include "HTMLOptionElement.h"
 #include "HTMLParserIdioms.h"
+#include "core/dom/ElementShadow.h"
 #endif
 
 // The methods in this file are shared by all themes on every platform.

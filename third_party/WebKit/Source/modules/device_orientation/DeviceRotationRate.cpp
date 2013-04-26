@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DeviceRotationRate.h"
+#include "modules/device_orientation/DeviceRotationRate.h"
 
 namespace WebCore {
 

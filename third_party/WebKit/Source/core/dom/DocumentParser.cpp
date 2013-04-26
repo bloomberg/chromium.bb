@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DocumentParser.h"
+#include "core/dom/DocumentParser.h"
 
 #include <wtf/Assertions.h>
 

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebPluginContainer.h"
 
-#include "Element.h"
+#include <gtest/gtest.h>
 #include "FakeWebPlugin.h"
 #include "FrameTestHelpers.h"
 #include "URLTestHelpers.h"
@@ -45,7 +45,7 @@
 #include "WebSettings.h"
 #include "WebView.h"
 #include "WebViewImpl.h"
-#include <gtest/gtest.h>
+#include "core/dom/Element.h"
 #include <public/Platform.h>
 #include <public/WebThread.h>
 #include <public/WebUnitTestSupport.h>

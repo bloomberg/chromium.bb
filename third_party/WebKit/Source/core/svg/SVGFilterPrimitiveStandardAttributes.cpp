@@ -24,13 +24,13 @@
 #if ENABLE(SVG)
 #include "SVGFilterPrimitiveStandardAttributes.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
+#include "core/dom/Attribute.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/rendering/svg/RenderSVGResourceFilterPrimitive.h"
 

@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 #include "core/rendering/RenderBlock.h"
 #include "core/rendering/RenderBox.h"

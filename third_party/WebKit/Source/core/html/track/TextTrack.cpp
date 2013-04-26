@@ -33,13 +33,13 @@
 
 #include "TextTrack.h"
 
-#include "Event.h"
-#include "ExceptionCode.h"
 #include "HTMLMediaElement.h"
 #include "TextTrackCueList.h"
 #include "TextTrackList.h"
 #include "TextTrackRegionList.h"
 #include "TrackBase.h"
+#include "core/dom/Event.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

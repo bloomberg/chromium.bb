@@ -25,7 +25,7 @@
 #ifndef LabelsNodeList_h
 #define LabelsNodeList_h
 
-#include "LiveNodeList.h"
+#include "core/dom/LiveNodeList.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

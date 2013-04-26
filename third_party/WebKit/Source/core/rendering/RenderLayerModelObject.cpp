@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/rendering/RenderLayerModelObject.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderView.h"
 

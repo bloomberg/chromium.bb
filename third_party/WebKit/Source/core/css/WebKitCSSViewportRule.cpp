@@ -33,10 +33,10 @@
 
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

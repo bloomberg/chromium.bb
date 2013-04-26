@@ -34,12 +34,12 @@
 #include "DOMEditor.h"
 
 #include "DOMPatchSupport.h"
-#include "Document.h"
-#include "Element.h"
-#include "ExceptionCode.h"
 #include "InspectorHistory.h"
-#include "Node.h"
-#include "Text.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/Node.h"
+#include "core/dom/Text.h"
 
 #include "core/editing/markup.h"
 

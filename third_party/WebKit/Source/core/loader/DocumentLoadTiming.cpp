@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/loader/DocumentLoadTiming.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

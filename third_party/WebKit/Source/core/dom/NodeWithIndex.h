@@ -26,7 +26,7 @@
 #ifndef NodeWithIndex_h
 #define NodeWithIndex_h
 
-#include "Node.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

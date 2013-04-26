@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "DocumentMarker.h"
+#include "core/dom/DocumentMarker.h"
 
 namespace WebCore {
 

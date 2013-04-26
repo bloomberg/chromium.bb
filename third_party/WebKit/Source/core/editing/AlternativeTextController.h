@@ -26,8 +26,8 @@
 #ifndef AlternativeTextController_h
 #define AlternativeTextController_h
 
-#include "DocumentMarker.h"
-#include "Range.h"
+#include "core/dom/DocumentMarker.h"
+#include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/VisibleSelection.h"
 #include "core/page/AlternativeTextClient.h"

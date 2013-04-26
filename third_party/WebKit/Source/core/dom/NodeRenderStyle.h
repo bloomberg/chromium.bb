@@ -25,7 +25,7 @@
 #ifndef NodeRenderStyle_h
 #define NodeRenderStyle_h
 
-#include "Node.h"
+#include "core/dom/Node.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"
 

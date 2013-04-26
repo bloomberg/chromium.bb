@@ -25,9 +25,6 @@
 #include "config.h"
 #include "HTMLViewSourceDocument.h"
 
-#include "Attribute.h"
-#include "DOMImplementation.h"
-#include "DocumentStyleSheetCollection.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLBRElement.h"
 #include "HTMLBaseElement.h"
@@ -41,8 +38,11 @@
 #include "HTMLTableSectionElement.h"
 #include "HTMLToken.h"
 #include "HTMLViewSourceParser.h"
-#include "Text.h"
 #include "TextViewSourceParser.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/DOMImplementation.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/Text.h"
 #include "core/platform/text/SegmentedString.h"
 
 namespace WebCore {

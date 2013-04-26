@@ -29,12 +29,12 @@
 #include "config.h"
 #include "core/css/DocumentRuleSets.h"
 
-#include "DocumentStyleSheetCollection.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleResolver.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 
 namespace WebCore {
 

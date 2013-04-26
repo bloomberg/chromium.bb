@@ -68,7 +68,7 @@
 #include "PageDebuggerAgent.h"
 #include "PageRuntimeAgent.h"
 #include "ScriptObject.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/GraphicsContext.h"

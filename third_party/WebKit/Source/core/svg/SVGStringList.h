@@ -22,8 +22,8 @@
 #define SVGStringList_h
 
 #if ENABLE(SVG)
-#include "QualifiedName.h"
 #include "SVGPropertyTraits.h"
+#include "core/dom/QualifiedName.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

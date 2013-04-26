@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/SplitElementCommand.h"
 
-#include "Element.h"
 #include "HTMLNames.h"
+#include "core/dom/Element.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

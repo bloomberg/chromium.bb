@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "ScriptedAnimationController.h"
+#include "core/dom/ScriptedAnimationController.h"
 
-#include "Document.h"
 #include "InspectorInstrumentation.h"
-#include "RequestAnimationFrameCallback.h"
+#include "core/dom/Document.h"
+#include "core/dom/RequestAnimationFrameCallback.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/FrameView.h"
 

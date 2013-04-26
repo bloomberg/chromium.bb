@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareInheritedData.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/CursorList.h"
 #include "core/rendering/style/QuotesData.h"
 #include "core/rendering/style/RenderStyle.h"

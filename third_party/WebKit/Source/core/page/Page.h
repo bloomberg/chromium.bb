@@ -21,7 +21,7 @@
 #ifndef Page_h
 #define Page_h
 
-#include "ViewportArguments.h"
+#include "core/dom/ViewportArguments.h"
 #include "core/editing/FindOptions.h"
 #include "core/history/BackForwardList.h"
 #include "core/loader/FrameLoaderTypes.h"

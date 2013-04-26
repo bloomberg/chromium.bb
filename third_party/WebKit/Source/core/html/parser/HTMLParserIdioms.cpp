@@ -27,7 +27,7 @@
 
 #include <limits>
 #include "HTMLIdentifier.h"
-#include "QualifiedName.h"
+#include "core/dom/QualifiedName.h"
 #include "core/platform/Decimal.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/AtomicString.h>

@@ -29,10 +29,10 @@
 #define MessageEvent_h
 
 #include "Blob.h"
-#include "Event.h"
-#include "MessagePort.h"
 #include "ScriptValue.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/Event.h"
+#include "core/dom/MessagePort.h"
 #include "core/page/DOMWindow.h"
 #include <wtf/ArrayBuffer.h>
 

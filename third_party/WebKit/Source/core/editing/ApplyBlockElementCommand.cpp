@@ -29,7 +29,7 @@
 
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "Text.h"
+#include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"

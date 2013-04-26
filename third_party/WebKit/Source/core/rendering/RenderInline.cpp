@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/rendering/RenderInline.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"

@@ -31,7 +31,7 @@
 
 #include "core/rendering/RenderFlowThread.h"
 
-#include "Node.h"
+#include "core/dom/Node.h"
 #include "core/platform/PODIntervalTree.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/FlowThreadController.h"

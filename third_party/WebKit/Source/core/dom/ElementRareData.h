@@ -23,11 +23,11 @@
 #define ElementRareData_h
 
 #include "ClassList.h"
-#include "DatasetDOMStringMap.h"
-#include "ElementShadow.h"
-#include "NamedNodeMap.h"
-#include "NodeRareData.h"
-#include "PseudoElement.h"
+#include "core/dom/DatasetDOMStringMap.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/NamedNodeMap.h"
+#include "core/dom/NodeRareData.h"
+#include "core/dom/PseudoElement.h"
 #include "core/rendering/style/StyleInheritedData.h"
 #include <wtf/OwnPtr.h>
 

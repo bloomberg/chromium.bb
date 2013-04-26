@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "ClientRect.h"
+#include "core/dom/ClientRect.h"
 
 namespace WebCore {
 

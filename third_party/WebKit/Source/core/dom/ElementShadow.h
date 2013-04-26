@@ -28,8 +28,8 @@
 #define ElementShadow_h
 
 #include "ContentDistributor.h"
-#include "ExceptionCode.h"
-#include "ShadowRoot.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ShadowRoot.h"
 #include <wtf/DoublyLinkedList.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/PassOwnPtr.h>

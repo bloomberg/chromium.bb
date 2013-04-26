@@ -27,7 +27,6 @@
 #include "config.h"
 #include "XSSAuditor.h"
 
-#include "Document.h"
 #include "FormDataList.h"
 #include "HTMLDocumentParser.h"
 #include "HTMLNames.h"
@@ -38,6 +37,7 @@
 #include "InspectorValues.h"
 #include "XLinkNames.h"
 #include "XSSAuditorDelegate.h"
+#include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/PingLoader.h"

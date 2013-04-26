@@ -25,12 +25,12 @@
 #include "config.h"
 #include "HTMLLabelElement.h"
 
-#include "Document.h"
-#include "Event.h"
-#include "EventNames.h"
 #include "FormAssociatedElement.h"
 #include "HTMLNames.h"
-#include "NodeTraversal.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/NodeTraversal.h"
 
 namespace WebCore {
 

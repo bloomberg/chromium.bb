@@ -26,17 +26,17 @@
  */
 
 #include "config.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 #include "DatabaseContext.h"
-#include "ErrorEvent.h"
-#include "EventTarget.h"
-#include "MessagePort.h"
 #include "PublicURLManager.h"
 #include "ScriptCallStack.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "WorkerContext.h"
 #include "WorkerThread.h"
+#include "core/dom/ErrorEvent.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/MessagePort.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedScript.h"
 #include "core/page/DOMTimer.h"
 #include <wtf/MainThread.h>

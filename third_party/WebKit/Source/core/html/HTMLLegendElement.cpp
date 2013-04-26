@@ -28,7 +28,7 @@
 #include "HTMLFieldSetElement.h"
 #include "HTMLFormControlElement.h"
 #include "HTMLNames.h"
-#include "NodeTraversal.h"
+#include "core/dom/NodeTraversal.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

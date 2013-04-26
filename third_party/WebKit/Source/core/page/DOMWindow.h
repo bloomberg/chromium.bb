@@ -27,8 +27,8 @@
 #ifndef DOMWindow_h
 #define DOMWindow_h
 
-#include "ContextDestructionObserver.h"
-#include "EventTarget.h"
+#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/EventTarget.h"
 #include "core/page/FrameDestructionObserver.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Supplementable.h"

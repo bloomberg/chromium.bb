@@ -26,7 +26,7 @@
 #ifndef VisiblePosition_h
 #define VisiblePosition_h
 
-#include "Position.h"
+#include "core/dom/Position.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/platform/text/TextDirection.h"
 

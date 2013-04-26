@@ -27,9 +27,9 @@
 
 #include "core/platform/graphics/MediaPlayer.h"
 
-#include "Document.h"
 #include "MediaSource.h"
 #include "TimeRanges.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Settings.h"

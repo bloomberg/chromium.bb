@@ -25,13 +25,13 @@
  */
 
 #include "config.h"
-#include "ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 
 #include "ContentDistributor.h"
-#include "ElementShadow.h"
 #include "InsertionPoint.h"
-#include "Text.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/Text.h"
 #include "core/editing/markup.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/HistogramSupport.h"

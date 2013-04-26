@@ -23,8 +23,8 @@
 #if ENABLE(SVG)
 #include "SVGSwitchElement.h"
 
-#include "NodeRenderingContext.h"
 #include "SVGNames.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGTransformableContainer.h"
 
 namespace WebCore {

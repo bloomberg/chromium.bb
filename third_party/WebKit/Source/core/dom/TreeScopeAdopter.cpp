@@ -23,15 +23,15 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "TreeScopeAdopter.h"
+#include "core/dom/TreeScopeAdopter.h"
 
-#include "Attr.h"
-#include "Document.h"
-#include "ElementRareData.h"
-#include "ElementShadow.h"
-#include "NodeRareData.h"
-#include "NodeTraversal.h"
-#include "ShadowRoot.h"
+#include "core/dom/Attr.h"
+#include "core/dom/Document.h"
+#include "core/dom/ElementRareData.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/NodeRareData.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

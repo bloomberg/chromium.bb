@@ -26,8 +26,8 @@
 #ifndef EventDispatcher_h
 #define EventDispatcher_h
 
-#include "EventContext.h"
-#include "SimulatedClickOptions.h"
+#include "core/dom/EventContext.h"
+#include "core/dom/SimulatedClickOptions.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>

@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "VisitedLinkState.h"
+#include "core/dom/VisitedLinkState.h"
 
 #include "HTMLAnchorElement.h"
 #include "HTMLNames.h"
-#include "NodeTraversal.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/VisitedLinks.h"

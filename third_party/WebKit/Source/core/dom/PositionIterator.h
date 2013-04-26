@@ -26,8 +26,8 @@
 #ifndef PositionIterator_h
 #define PositionIterator_h
 
-#include "Node.h"
-#include "Position.h"
+#include "core/dom/Node.h"
+#include "core/dom/Position.h"
 
 namespace WebCore {
 

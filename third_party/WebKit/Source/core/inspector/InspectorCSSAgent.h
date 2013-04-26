@@ -29,8 +29,8 @@
 #include "InspectorDOMAgent.h"
 #include "InspectorStyleSheet.h"
 #include "InspectorValues.h"
-#include "SecurityContext.h"
 #include "core/css/CSSSelector.h"
+#include "core/dom/SecurityContext.h"
 #include "core/page/ContentSecurityPolicy.h"
 
 #include <wtf/HashMap.h>

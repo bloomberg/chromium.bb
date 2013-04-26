@@ -24,17 +24,17 @@
 #include "config.h"
 #include "HTMLStyleElement.h"
 
-#include "Attribute.h"
-#include "ContextFeatures.h"
-#include "Document.h"
-#include "Event.h"
-#include "EventSender.h"
 #include "HTMLNames.h"
 #include "ScriptEventListener.h"
-#include "ScriptableDocumentParser.h"
-#include "ShadowRoot.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventSender.h"
+#include "core/dom/ScriptableDocumentParser.h"
+#include "core/dom/ShadowRoot.h"
 
 namespace WebCore {
 

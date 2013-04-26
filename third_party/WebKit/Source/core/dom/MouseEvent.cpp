@@ -21,13 +21,13 @@
  */
 
 #include "config.h"
-#include "MouseEvent.h"
+#include "core/dom/MouseEvent.h"
 
-#include "Clipboard.h"
-#include "EventDispatcher.h"
-#include "EventNames.h"
-#include "EventRetargeter.h"
 #include "HTMLIFrameElement.h"
+#include "core/dom/Clipboard.h"
+#include "core/dom/EventDispatcher.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventRetargeter.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/PlatformMouseEvent.h"

@@ -27,13 +27,13 @@
 
 #include "LinkHighlight.h"
 
-#include "Node.h"
 #include "NonCompositedContentHost.h"
 #include "PlatformContextSkia.h"
 #include "SkMatrix44.h"
 #include "WebFrameImpl.h"
 #include "WebKit.h"
 #include "WebViewImpl.h"
+#include "core/dom/Node.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/Color.h"

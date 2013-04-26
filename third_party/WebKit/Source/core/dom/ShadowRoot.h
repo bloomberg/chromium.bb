@@ -27,12 +27,12 @@
 #ifndef ShadowRoot_h
 #define ShadowRoot_h
 
-#include "ContainerNode.h"
-#include "Document.h"
-#include "DocumentFragment.h"
-#include "Element.h"
-#include "ExceptionCode.h"
-#include "TreeScope.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/TreeScope.h"
 #include <wtf/DoublyLinkedList.h>
 
 namespace WebCore {

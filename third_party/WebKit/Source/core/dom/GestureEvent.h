@@ -26,9 +26,9 @@
 #ifndef GestureEvent_h
 #define GestureEvent_h
 
-#include "EventDispatcher.h"
-#include "EventNames.h"
-#include "MouseRelatedEvent.h"
+#include "core/dom/EventDispatcher.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/MouseRelatedEvent.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/platform/PlatformEvent.h"

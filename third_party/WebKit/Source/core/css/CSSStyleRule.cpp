@@ -22,14 +22,14 @@
 #include "config.h"
 #include "core/css/CSSStyleRule.h"
 
-#include "Document.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

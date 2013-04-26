@@ -21,9 +21,9 @@
 #include "config.h"
 #include "core/page/PageGroupLoadDeferrer.h"
 
-#include "Document.h"
-#include "DocumentParser.h"
-#include "ScriptRunner.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentParser.h"
+#include "core/dom/ScriptRunner.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/PageGroup.h"

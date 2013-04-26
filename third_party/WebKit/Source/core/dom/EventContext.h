@@ -27,9 +27,9 @@
 #ifndef EventContext_h
 #define EventContext_h
 
-#include "EventTarget.h"
-#include "Node.h"
-#include "TreeScope.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/Node.h"
+#include "core/dom/TreeScope.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

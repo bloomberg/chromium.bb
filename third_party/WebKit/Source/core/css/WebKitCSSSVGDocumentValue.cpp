@@ -27,9 +27,9 @@
 #if ENABLE(SVG)
 #include "core/css/WebKitCSSSVGDocumentValue.h"
 
-#include "Document.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSParser.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"

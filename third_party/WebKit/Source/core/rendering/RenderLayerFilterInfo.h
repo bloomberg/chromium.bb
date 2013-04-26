@@ -39,7 +39,7 @@
 #include "core/platform/graphics/filters/custom/CustomFilterProgramClient.h"
 
 #if ENABLE(SVG)
-#include "Element.h"
+#include "core/dom/Element.h"
 #include "core/loader/cache/CachedSVGDocument.h"
 #endif
 

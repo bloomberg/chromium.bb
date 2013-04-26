@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "TransitionEvent.h"
+#include "core/dom/TransitionEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

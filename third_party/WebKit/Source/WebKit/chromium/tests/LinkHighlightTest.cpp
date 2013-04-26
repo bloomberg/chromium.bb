@@ -28,7 +28,6 @@
 
 #include <gtest/gtest.h>
 #include "FrameTestHelpers.h"
-#include "Node.h"
 #include "URLTestHelpers.h"
 #include "WebCompositorInitializer.h"
 #include "WebFrame.h"
@@ -36,6 +35,7 @@
 #include "WebInputEvent.h"
 #include "WebInputEventConversion.h"
 #include "WebViewImpl.h"
+#include "core/dom/Node.h"
 #include "core/page/FrameView.h"
 #include "core/platform/graphics/IntRect.h"
 #include <public/WebContentLayer.h>

@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/page/DeviceController.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/DeviceClient.h"
 #include "core/page/Page.h"
 

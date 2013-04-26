@@ -26,10 +26,10 @@
 #include "config.h"
 #include "XPathNodeSet.h"
 
-#include "Attr.h"
-#include "Element.h"
-#include "Node.h"
-#include "NodeTraversal.h"
+#include "core/dom/Attr.h"
+#include "core/dom/Element.h"
+#include "core/dom/Node.h"
+#include "core/dom/NodeTraversal.h"
 
 namespace WebCore {
 namespace XPath {

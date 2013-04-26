@@ -31,11 +31,11 @@
  */
 
 #include "config.h"
-#include "EventListenerMap.h"
+#include "core/dom/EventListenerMap.h"
 
-#include "Event.h"
-#include "EventException.h"
-#include "EventTarget.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventTarget.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>

@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "PopStateEvent.h"
+#include "core/dom/PopStateEvent.h"
 
-#include "EventNames.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/EventNames.h"
 #include "core/page/History.h"
 
 namespace WebCore {

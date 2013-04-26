@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "PageTransitionEvent.h"
+#include "core/dom/PageTransitionEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

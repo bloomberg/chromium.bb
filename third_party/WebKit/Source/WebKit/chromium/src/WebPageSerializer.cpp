@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebPageSerializer.h"
 
-#include "Element.h"
 #include "HTMLAllCollection.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLInputElement.h"
@@ -42,6 +41,7 @@
 #include "WebPageSerializerImpl.h"
 #include "WebView.h"
 #include "WebViewImpl.h"
+#include "core/dom/Element.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/archive/MHTMLArchive.h"
 #include "core/page/Frame.h"

@@ -32,8 +32,8 @@
 #ifndef EventTarget_h
 #define EventTarget_h
 
-#include "EventListenerMap.h"
-#include "EventNames.h"
+#include "core/dom/EventListenerMap.h"
+#include "core/dom/EventNames.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/text/AtomicStringHash.h>

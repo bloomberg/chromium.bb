@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/editing/SurroundingText.h"
 
-#include "Document.h"
-#include "Range.h"
+#include "core/dom/Document.h"
+#include "core/dom/Range.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleSelection.h"

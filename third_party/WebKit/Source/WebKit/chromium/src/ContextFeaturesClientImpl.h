@@ -31,7 +31,7 @@
 #ifndef ContextFeaturesClientImpl_h
 #define ContextFeaturesClientImpl_h
 
-#include "ContextFeatures.h"
+#include "core/dom/ContextFeatures.h"
 
 namespace WebKit {
 

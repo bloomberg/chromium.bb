@@ -26,7 +26,6 @@
 #if ENABLE(SVG)
 #include "SVGPathSegListBuilder.h"
 
-#include "ExceptionCode.h"
 #include "SVGPathElement.h"
 #include "SVGPathSegArc.h"
 #include "SVGPathSegClosePath.h"
@@ -39,6 +38,7 @@
 #include "SVGPathSegLinetoVertical.h"
 #include "SVGPathSegList.h"
 #include "SVGPathSegMoveto.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

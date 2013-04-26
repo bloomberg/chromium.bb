@@ -32,7 +32,7 @@
 #define WebIconURL_h
 
 #if WEBKIT_IMPLEMENTATION
-#include "IconURL.h"
+#include "core/dom/IconURL.h"
 #endif
 #include "../../../Platform/chromium/public/WebURL.h"
 

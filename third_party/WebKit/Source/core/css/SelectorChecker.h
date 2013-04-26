@@ -29,8 +29,8 @@
 #define SelectorChecker_h
 
 #include "InspectorInstrumentation.h"
-#include "SpaceSplitString.h"
 #include "core/css/CSSSelector.h"
+#include "core/dom/SpaceSplitString.h"
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>
 

@@ -30,9 +30,9 @@
 #include "ContentDistributor.h"
 #include "ContentSelectorQuery.h"
 #include "HTMLNames.h"
-#include "QualifiedName.h"
-#include "ShadowRoot.h"
 #include "core/css/CSSParser.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/StdLibExtras.h>
 

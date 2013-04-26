@@ -33,14 +33,14 @@
 #include "FrameLoaderClientImpl.h"
 
 #include "BackForwardListChromium.h"
-#include "Document.h"
 #include "FrameNetworkingContextImpl.h"
 #include "HTMLAppletElement.h"
 #include "HTMLFormElement.h"  // needed by core/loader/FormState.h
 #include "HTMLNames.h"
-#include "MessageEvent.h"
-#include "MouseEvent.h"
 #include "PluginData.h"
+#include "core/dom/Document.h"
+#include "core/dom/MessageEvent.h"
+#include "core/dom/MouseEvent.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FormState.h"
@@ -61,7 +61,6 @@
 #endif
 #include <v8.h>
 #include "ScriptController.h"
-#include "UserGestureIndicator.h"
 #include "WebAutofillClient.h"
 #include "WebCachedURLRequest.h"
 #include "WebDOMEvent.h"
@@ -80,6 +79,7 @@
 #include "WebSecurityOrigin.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/page/Settings.h"
 #include "core/page/WindowFeatures.h"
 #include "core/platform/chromium/support/WrappedResourceRequest.h"

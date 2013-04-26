@@ -27,8 +27,8 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/SVGRenderSupport.h"
 
-#include "NodeRenderStyle.h"
 #include "SVGStyledElement.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/platform/graphics/transforms/TransformState.h"
 #include "core/rendering/RenderGeometryMap.h"
 #include "core/rendering/RenderLayer.h"

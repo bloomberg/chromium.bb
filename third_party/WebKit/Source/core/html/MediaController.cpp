@@ -27,9 +27,9 @@
 
 #include "MediaController.h"
 
-#include "ExceptionCode.h"
 #include "HTMLMediaElement.h"
 #include "TimeRanges.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/Clock.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/StdLibExtras.h>

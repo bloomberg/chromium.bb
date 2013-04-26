@@ -32,7 +32,7 @@
 #include "MemoryInstrumentationImpl.h"
 
 #include "HeapGraphSerializer.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/Assertions.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

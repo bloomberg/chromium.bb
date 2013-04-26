@@ -19,8 +19,8 @@
 #include "config.h"
 #include "DOMParser.h"
 
-#include "DOMImplementation.h"
-#include "Document.h"
+#include "core/dom/DOMImplementation.h"
+#include "core/dom/Document.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

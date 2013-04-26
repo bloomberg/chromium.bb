@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/css/CSSFontFaceSource.h"
 
-#include "Document.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontSelector.h"
+#include "core/dom/Document.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/platform/graphics/FontCache.h"

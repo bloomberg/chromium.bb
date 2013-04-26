@@ -25,9 +25,9 @@
 #if ENABLE(SVG)
 #include "SVGAnimateTransformElement.h"
 
-#include "Attribute.h"
 #include "SVGNames.h"
 #include "SVGTransformable.h"
+#include "core/dom/Attribute.h"
 
 namespace WebCore {
 

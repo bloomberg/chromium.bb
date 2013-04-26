@@ -34,7 +34,7 @@
 
 #include "HTMLInputElement.h"
 #include "InputTypeNames.h"
-#include "KeyboardEvent.h"
+#include "core/dom/KeyboardEvent.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 

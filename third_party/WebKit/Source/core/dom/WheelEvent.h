@@ -24,8 +24,8 @@
 #ifndef WheelEvent_h
 #define WheelEvent_h
 
-#include "EventDispatchMediator.h"
-#include "MouseEvent.h"
+#include "core/dom/EventDispatchMediator.h"
+#include "core/dom/MouseEvent.h"
 #include "core/platform/graphics/FloatPoint.h"
 
 namespace WebCore {

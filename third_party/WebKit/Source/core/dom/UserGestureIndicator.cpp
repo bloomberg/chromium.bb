@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "UserGestureIndicator.h"
+#include "core/dom/UserGestureIndicator.h"
 
 namespace WebCore {
 

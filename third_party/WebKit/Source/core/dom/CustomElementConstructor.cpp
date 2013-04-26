@@ -30,14 +30,14 @@
 
 #include "config.h"
 
-#include "CustomElementConstructor.h"
+#include "core/dom/CustomElementConstructor.h"
 
 #include "CustomElementHelpers.h"
-#include "Document.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
+#include "core/dom/Document.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

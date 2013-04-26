@@ -30,12 +30,12 @@
 
 #include "config.h"
 
-#include "MutationRecord.h"
+#include "core/dom/MutationRecord.h"
 
-#include "Node.h"
-#include "NodeList.h"
-#include "QualifiedName.h"
-#include "StaticNodeList.h"
+#include "core/dom/Node.h"
+#include "core/dom/NodeList.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/StaticNodeList.h"
 #include <wtf/Assertions.h>
 #include <wtf/StdLibExtras.h>
 

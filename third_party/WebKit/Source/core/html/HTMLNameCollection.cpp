@@ -23,12 +23,12 @@
 #include "config.h"
 #include "HTMLNameCollection.h"
 
-#include "Element.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
-#include "NodeRareData.h"
-#include "NodeTraversal.h"
+#include "core/dom/Element.h"
+#include "core/dom/NodeRareData.h"
+#include "core/dom/NodeTraversal.h"
 
 namespace WebCore {
 

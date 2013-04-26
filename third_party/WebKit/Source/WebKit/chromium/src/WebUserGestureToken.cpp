@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebUserGestureToken.h"
 
-#include "UserGestureIndicator.h"
+#include "core/dom/UserGestureIndicator.h"
 
 namespace WebKit {
 

@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/rendering/HitTestLocation.h"
 
-#include "DocumentMarkerController.h"
 #include "HTMLAnchorElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
@@ -31,6 +30,7 @@
 #include "HTMLParserIdioms.h"
 #include "HTMLPlugInImageElement.h"
 #include "HTMLVideoElement.h"
+#include "core/dom/DocumentMarkerController.h"
 #include "core/editing/FrameSelection.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Frame.h"

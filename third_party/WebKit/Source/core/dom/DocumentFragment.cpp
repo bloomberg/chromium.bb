@@ -21,10 +21,10 @@
  */
 
 #include "config.h"
-#include "DocumentFragment.h"
+#include "core/dom/DocumentFragment.h"
 
-#include "Document.h"
 #include "HTMLDocumentParser.h"
+#include "core/dom/Document.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/xml/parser/XMLDocumentParser.h"

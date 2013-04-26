@@ -26,7 +26,7 @@
 #include "config.h"
 #include "CanvasPattern.h"
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

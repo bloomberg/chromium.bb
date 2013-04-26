@@ -26,10 +26,10 @@
  */
 
 #include "config.h"
-#include "ViewportArguments.h"
+#include "core/dom/ViewportArguments.h"
 
-#include "Document.h"
-#include "ScriptableDocumentParser.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/page/Chrome.h"
 #include "core/page/Console.h"
 #include "core/page/DOMWindow.h"

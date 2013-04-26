@@ -32,8 +32,8 @@
 #ifndef FrameLoader_h
 #define FrameLoader_h
 
-#include "IconURL.h"
-#include "SecurityContext.h"
+#include "core/dom/IconURL.h"
+#include "core/dom/SecurityContext.h"
 #include "core/loader/FrameLoaderStateMachine.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/HistoryController.h"

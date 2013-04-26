@@ -22,10 +22,10 @@
 #define SVGFitToViewBox_h
 
 #if ENABLE(SVG)
-#include "Attribute.h"
-#include "QualifiedName.h"
 #include "SVGNames.h"
 #include "SVGPreserveAspectRatio.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/QualifiedName.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <wtf/HashSet.h>
 

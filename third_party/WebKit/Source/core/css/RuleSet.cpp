@@ -30,7 +30,6 @@
 #include "core/css/RuleSet.h"
 
 #include "HTMLNames.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
@@ -43,6 +42,7 @@
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/WebKitCSSKeyframesRule.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/SecurityOrigin.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

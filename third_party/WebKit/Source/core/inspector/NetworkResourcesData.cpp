@@ -29,7 +29,7 @@
 #include "config.h"
 #include "NetworkResourcesData.h"
 
-#include "DOMImplementation.h"
+#include "core/dom/DOMImplementation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResource.h"
 #include "core/platform/SharedBuffer.h"

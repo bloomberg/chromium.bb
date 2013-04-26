@@ -22,11 +22,11 @@
 #if ENABLE(SVG)
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 
-#include "Element.h"
 #include "SVGElement.h"
 #include "SVGMaskElement.h"
 #include "SVGStyledElement.h"
 #include "SVGUnitTypes.h"
+#include "core/dom/Element.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/GraphicsContext.h"

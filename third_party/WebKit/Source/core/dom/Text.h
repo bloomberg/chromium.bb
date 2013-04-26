@@ -23,7 +23,7 @@
 #ifndef Text_h
 #define Text_h
 
-#include "CharacterData.h"
+#include "core/dom/CharacterData.h"
 
 namespace WebCore {
 

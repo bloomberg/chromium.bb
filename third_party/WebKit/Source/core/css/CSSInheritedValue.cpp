@@ -21,7 +21,7 @@
 #include "config.h"
 #include "core/css/CSSInheritedValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

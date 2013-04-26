@@ -24,21 +24,21 @@
  */
 
 #include "config.h"
-#include "EventDispatcher.h"
+#include "core/dom/EventDispatcher.h"
 
-#include "ContainerNode.h"
-#include "ElementShadow.h"
-#include "EventContext.h"
-#include "EventDispatchMediator.h"
-#include "EventPathWalker.h"
-#include "EventRetargeter.h"
 #include "HTMLMediaElement.h"
 #include "InsertionPoint.h"
 #include "InspectorInstrumentation.h"
-#include "MouseEvent.h"
-#include "ScopedEventQueue.h"
-#include "ShadowRoot.h"
-#include "WindowEventContext.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/EventContext.h"
+#include "core/dom/EventDispatchMediator.h"
+#include "core/dom/EventPathWalker.h"
+#include "core/dom/EventRetargeter.h"
+#include "core/dom/MouseEvent.h"
+#include "core/dom/ScopedEventQueue.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/WindowEventContext.h"
 #include "core/page/FrameView.h"
 #include <wtf/RefPtr.h>
 #include <wtf/UnusedParam.h>

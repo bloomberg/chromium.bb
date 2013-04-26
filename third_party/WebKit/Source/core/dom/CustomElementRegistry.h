@@ -31,10 +31,10 @@
 #ifndef CustomElementRegistry_h
 #define CustomElementRegistry_h
 
-#include "ContextDestructionObserver.h"
-#include "ExceptionCode.h"
-#include "QualifiedName.h"
 #include "ScriptValue.h"
+#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/QualifiedName.h"
 #include "core/platform/Supplementable.h"
 #include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>

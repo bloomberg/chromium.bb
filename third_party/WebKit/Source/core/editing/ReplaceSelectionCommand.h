@@ -26,7 +26,7 @@
 #ifndef ReplaceSelectionCommand_h
 #define ReplaceSelectionCommand_h
 
-#include "NodeTraversal.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/editing/CompositeEditCommand.h"
 
 namespace WebCore {

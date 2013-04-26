@@ -27,7 +27,7 @@
 #include "DataView.h"
 
 #include "CheckedInt.h"
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace {
 

@@ -26,13 +26,13 @@
 #if ENABLE(SVG)
 #include "SVGFilterElement.h"
 
-#include "Attr.h"
-#include "NodeRenderingContext.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/Attr.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
 
 namespace WebCore {

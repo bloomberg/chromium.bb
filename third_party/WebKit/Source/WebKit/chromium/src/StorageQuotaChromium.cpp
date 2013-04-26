@@ -31,9 +31,6 @@
 #include "config.h"
 #include "StorageQuota.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "ScriptExecutionContext.h"
 #include "StorageErrorCallback.h"
 #include "StorageQuotaCallback.h"
 #include "StorageUsageCallback.h"
@@ -45,6 +42,9 @@
 #include "WorkerContext.h"
 #include "WorkerStorageQuotaCallbacksBridge.h"
 #include "WorkerThread.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include <wtf/Threading.h>
 
 using namespace WebKit;

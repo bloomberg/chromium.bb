@@ -28,10 +28,10 @@
 
 #if ENABLE(CSS_IMAGE_SET)
 
-#include "Document.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

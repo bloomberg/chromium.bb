@@ -24,14 +24,14 @@
 #if ENABLE(SVG)
 #include "SVGDocumentExtensions.h"
 
-#include "Document.h"
-#include "EventListener.h"
 #include "SMILTimeContainer.h"
 #include "SVGElement.h"
 #include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
-#include "ScriptableDocumentParser.h"
 #include "XLinkNames.h"
+#include "core/dom/Document.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Console.h"
 #include "core/page/DOMWindow.h"

@@ -24,11 +24,11 @@
 #if ENABLE(SVG)
 #include "SVGFEImageElement.h"
 
-#include "Attr.h"
-#include "Document.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGPreserveAspectRatio.h"
+#include "core/dom/Attr.h"
+#include "core/dom/Document.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

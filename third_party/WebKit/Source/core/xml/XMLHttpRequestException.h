@@ -29,7 +29,7 @@
 #ifndef XMLHttpRequestException_h
 #define XMLHttpRequestException_h
 
-#include "ExceptionBase.h"
+#include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 

@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "TreeWalker.h"
+#include "core/dom/TreeWalker.h"
 
-#include "ExceptionCode.h"
-#include "ContainerNode.h"
-#include "NodeFilter.h"
-#include "NodeTraversal.h"
 #include "ScriptState.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeFilter.h"
+#include "core/dom/NodeTraversal.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

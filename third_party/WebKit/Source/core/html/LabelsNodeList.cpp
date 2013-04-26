@@ -24,10 +24,10 @@
 #include "config.h"
 #include "LabelsNodeList.h"
 
-#include "Element.h"
 #include "HTMLLabelElement.h"
 #include "HTMLNames.h"
-#include "NodeRareData.h"
+#include "core/dom/Element.h"
+#include "core/dom/NodeRareData.h"
 
 namespace WebCore {
 

@@ -22,10 +22,10 @@
 #include "V8TestException.h"
 
 #include "BindingState.h"
-#include "ContextFeatures.h"
 #include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
+#include "core/dom/ContextFeatures.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>

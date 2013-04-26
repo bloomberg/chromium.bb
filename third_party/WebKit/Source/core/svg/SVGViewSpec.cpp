@@ -22,13 +22,13 @@
 #if ENABLE(SVG)
 #include "SVGViewSpec.h"
 
-#include "Document.h"
 #include "SVGAnimatedTransformList.h"
 #include "SVGFitToViewBox.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "SVGSVGElement.h"
 #include "SVGTransformable.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

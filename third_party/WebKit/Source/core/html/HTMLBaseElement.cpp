@@ -23,10 +23,10 @@
 #include "config.h"
 #include "HTMLBaseElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/loader/TextResourceDecoder.h"
 
 namespace WebCore {

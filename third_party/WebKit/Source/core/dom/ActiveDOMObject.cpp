@@ -25,12 +25,12 @@
  */
 
 #include "config.h"
-#include "ActiveDOMObject.h"
+#include "core/dom/ActiveDOMObject.h"
 
-#include "ScriptExecutionContext.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "WorkerContext.h"
 #include "WorkerThread.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

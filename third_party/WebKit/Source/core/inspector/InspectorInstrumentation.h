@@ -32,9 +32,6 @@
 #define InspectorInstrumentation_h
 
 #include "ConsoleAPITypes.h"
-#include "Element.h"
-#include "EventContext.h"
-#include "ScriptExecutionContext.h"
 #include "ScriptState.h"
 #include "WebSocketFrame.h"
 #include "WebSocketHandshakeRequest.h"
@@ -43,6 +40,9 @@
 #include "core/css/CSSRule.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/Element.h"
+#include "core/dom/EventContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ConsoleTypes.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

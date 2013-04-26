@@ -29,7 +29,7 @@
 
 #include "MediaKeyEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 #include <wtf/Uint8Array.h>
 
 namespace WebCore {

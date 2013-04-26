@@ -26,8 +26,8 @@
 #define StyledElement_h
 
 #include "CSSPropertyNames.h"
-#include "Element.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 

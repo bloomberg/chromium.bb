@@ -28,7 +28,7 @@
 #include "core/loader/cache/CachedFont.h"
 
 #include "FontCustomPlatformData.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
@@ -39,12 +39,12 @@
 #include <wtf/Vector.h>
 
 #if ENABLE(SVG_FONTS)
-#include "NodeList.h"
 #include "SVGDocument.h"
 #include "SVGElement.h"
 #include "SVGFontElement.h"
 #include "SVGGElement.h"
 #include "SVGNames.h"
+#include "core/dom/NodeList.h"
 #endif
 
 namespace WebCore {

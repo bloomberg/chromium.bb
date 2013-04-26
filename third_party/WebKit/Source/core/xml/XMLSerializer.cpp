@@ -20,8 +20,8 @@
 #include "config.h"
 #include "XMLSerializer.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/editing/markup.h"
 #include <wtf/text/WTFString.h>
 

@@ -24,12 +24,12 @@
 #include "core/loader/cache/MemoryCache.h"
 
 #include <stdio.h>
-#include "CrossThreadTask.h"
-#include "Document.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/cache/CachedResource.h"

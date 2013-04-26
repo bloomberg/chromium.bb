@@ -26,7 +26,7 @@
 #ifndef DatasetDOMStringMap_h
 #define DatasetDOMStringMap_h
 
-#include "DOMStringMap.h"
+#include "core/dom/DOMStringMap.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

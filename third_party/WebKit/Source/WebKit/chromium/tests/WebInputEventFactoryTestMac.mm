@@ -33,9 +33,9 @@
 #import <Cocoa/Cocoa.h>
 #include <gtest/gtest.h>
 
-#include "KeyboardEvent.h"
 #include "WebInputEvent.h"
 #include "WebInputEventFactory.h"
+#include "core/dom/KeyboardEvent.h"
 #include "core/platform/WindowsKeyboardCodes.h"
 
 using WebKit::WebInputEventFactory;

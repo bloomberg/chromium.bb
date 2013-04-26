@@ -22,9 +22,9 @@
 #include "config.h"
 #include "core/css/CSSCursorImageValue.h"
 
-#include "TreeScope.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSImageValue.h"
+#include "core/dom/TreeScope.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/rendering/style/StyleCachedImage.h"

@@ -23,7 +23,7 @@
 #include "config.h"
 #include "core/rendering/RenderTextFragment.h"
 
-#include "Text.h"
+#include "core/dom/Text.h"
 #include "core/rendering/RenderBlock.h"
 
 namespace WebCore {

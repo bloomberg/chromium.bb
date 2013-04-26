@@ -26,7 +26,7 @@
 #ifndef CachedResourceRequest_h
 #define CachedResourceRequest_h
 
-#include "Element.h"
+#include "core/dom/Element.h"
 #include "core/loader/ResourceLoaderOptions.h"
 #include "core/platform/network/ResourceLoadPriority.h"
 #include "core/platform/network/ResourceRequest.h"

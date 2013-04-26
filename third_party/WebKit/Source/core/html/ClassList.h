@@ -26,9 +26,9 @@
 #define ClassList_h
 
 #include "DOMTokenList.h"
-#include "Element.h"
 #include "HTMLNames.h"
-#include "SpaceSplitString.h"
+#include "core/dom/Element.h"
+#include "core/dom/SpaceSplitString.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/Vector.h>

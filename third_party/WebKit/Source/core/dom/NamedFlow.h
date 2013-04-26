@@ -30,7 +30,7 @@
 #ifndef NamedFlow_h
 #define NamedFlow_h
 
-#include "EventTarget.h"
+#include "core/dom/EventTarget.h"
 
 #include <wtf/ListHashSet.h>
 #include <wtf/RefCounted.h>

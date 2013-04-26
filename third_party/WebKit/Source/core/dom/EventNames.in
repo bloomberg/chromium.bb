@@ -3,7 +3,7 @@ namespace="Event"
 Event
 Events interfaceName=Event
 HTMLEvents interfaceName=Event
-BeforeLoadEvent
+core/dom/BeforeLoadEvent
 CloseEvent
 CompositionEvent
 CustomEvent
@@ -54,7 +54,7 @@ MediaKeyEvent conditional=ENCRYPTED_MEDIA
 MediaKeyMessageEvent conditional=ENCRYPTED_MEDIA_V2
 MediaKeyNeededEvent conditional=ENCRYPTED_MEDIA_V2
 TrackEvent
-AutocompleteErrorEvent
+core/dom/AutocompleteErrorEvent
 core/css/CSSFontFaceLoadEvent
 SecurityPolicyViolationEvent
 MIDIConnectionEvent

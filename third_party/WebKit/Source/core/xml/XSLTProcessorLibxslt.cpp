@@ -28,11 +28,11 @@
 #include <libxslt/security.h>
 #include <libxslt/variables.h>
 #include <libxslt/xsltutils.h>
-#include "Document.h"
-#include "TransformSource.h"
 #include "XSLStyleSheet.h"
 #include "XSLTExtensions.h"
 #include "XSLTUnicodeSort.h"
+#include "core/dom/Document.h"
+#include "core/dom/TransformSource.h"
 #include "core/editing/markup.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/page/Frame.h"

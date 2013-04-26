@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WorkerFileSystemCallbacksBridge.h"
 
-#include "CrossThreadTask.h"
 #include "WebCommonWorkerClient.h"
 #include "WebFileSystemCallbacksImpl.h"
 #include "WebWorkerBase.h"
@@ -39,6 +38,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
 #include "core/platform/KURL.h"
 #include "core/platform/network/BlobData.h"
 #include <public/WebFileInfo.h>

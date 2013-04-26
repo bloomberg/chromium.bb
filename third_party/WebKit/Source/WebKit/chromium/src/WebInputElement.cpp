@@ -31,16 +31,16 @@
 #include "config.h"
 #include "WebInputElement.h"
 
-#include "ElementShadow.h"
 #include "HTMLDataListElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "ShadowRoot.h"
 #include "TextControlInnerElements.h"
 #include "TextFieldDecorationElement.h"
 #include "TextFieldDecoratorImpl.h"
 #include "WebNodeCollection.h"
 #include "WebTextFieldDecoratorClient.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 

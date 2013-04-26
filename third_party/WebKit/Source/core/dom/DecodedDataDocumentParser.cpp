@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DecodedDataDocumentParser.h"
+#include "core/dom/DecodedDataDocumentParser.h"
 
 #include "core/loader/DocumentWriter.h"
 #include "core/loader/TextResourceDecoder.h"

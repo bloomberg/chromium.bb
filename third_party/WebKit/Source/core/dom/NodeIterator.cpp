@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "NodeIterator.h"
+#include "core/dom/NodeIterator.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "NodeFilter.h"
-#include "NodeTraversal.h"
 #include "ScriptState.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeFilter.h"
+#include "core/dom/NodeTraversal.h"
 
 namespace WebCore {
 

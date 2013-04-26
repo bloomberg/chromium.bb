@@ -33,7 +33,7 @@
 #ifndef EventListenerMap_h
 #define EventListenerMap_h
 
-#include "RegisteredEventListener.h"
+#include "core/dom/RegisteredEventListener.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/AtomicStringHash.h>

@@ -26,8 +26,8 @@
 #ifndef RenderObject_h
 #define RenderObject_h
 
-#include "DocumentStyleSheetCollection.h"
-#include "Element.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/Element.h"
 #include "core/editing/TextAffinity.h"
 #include "core/loader/cache/CachedImageClient.h"
 #include "core/platform/graphics/FloatQuad.h"

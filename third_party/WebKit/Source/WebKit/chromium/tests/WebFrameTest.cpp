@@ -33,10 +33,8 @@
 #include "WebFrame.h"
 
 #include <gtest/gtest.h>
-#include "DocumentMarkerController.h"
 #include "FrameTestHelpers.h"
 #include "PlatformContextSkia.h"
-#include "Range.h"
 #include "SkBitmap.h"
 #include "SkCanvas.h"
 #include "URLTestHelpers.h"
@@ -58,6 +56,8 @@
 #include "WebTextCheckingResult.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/DocumentMarkerController.h"
+#include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

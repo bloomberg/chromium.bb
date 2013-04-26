@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/loader/SubstituteData.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

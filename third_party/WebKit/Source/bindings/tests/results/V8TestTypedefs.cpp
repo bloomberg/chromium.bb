@@ -22,9 +22,6 @@
 #include "V8TestTypedefs.h"
 
 #include "BindingState.h"
-#include "ContextFeatures.h"
-#include "DOMStringList.h"
-#include "ExceptionCode.h"
 #include "SVGPropertyTearOff.h"
 #include "ScriptController.h"
 #include "SerializedScriptValue.h"
@@ -35,6 +32,9 @@
 #include "V8SerializedScriptValue.h"
 #include "V8TestCallback.h"
 #include "V8TestSubObj.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/DOMStringList.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>

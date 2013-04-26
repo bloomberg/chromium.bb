@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "PlatformMessagePortChannelChromium.h"
+#include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 
-#include "MessagePort.h"
-#include "ScriptExecutionContext.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/MessagePort.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 #include <public/Platform.h>
 #include <public/WebMessagePortChannel.h>

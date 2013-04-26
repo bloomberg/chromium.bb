@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

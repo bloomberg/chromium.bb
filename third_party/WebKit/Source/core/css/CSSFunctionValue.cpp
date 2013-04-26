@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/css/CSSFunctionValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSParserValues.h"
 #include "core/css/CSSValueList.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/text/StringBuilder.h>
 

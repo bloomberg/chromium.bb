@@ -22,8 +22,8 @@
 #include "config.h"
 #include "XSLImportRule.h"
 
-#include "Document.h"
 #include "XSLStyleSheet.h"
+#include "core/dom/Document.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"

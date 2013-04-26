@@ -25,12 +25,12 @@
 #ifndef InspectorStyleSheet_h
 #define InspectorStyleSheet_h
 
-#include "ExceptionCode.h"
 #include "InspectorStyleTextEditor.h"
 #include "InspectorTypeBuilder.h"
 #include "InspectorValues.h"
 #include "core/css/CSSPropertySourceData.h"
 #include "core/css/CSSStyleDeclaration.h"
+#include "core/dom/ExceptionCode.h"
 
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

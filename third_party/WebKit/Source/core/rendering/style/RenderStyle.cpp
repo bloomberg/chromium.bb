@@ -25,8 +25,8 @@
 
 #include <algorithm>
 #include "CSSPropertyNames.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/FontSelector.h"
 #include "core/platform/graphics/transforms/ScaleTransformOperation.h"

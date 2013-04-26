@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/SimplifyMarkupCommand.h"
 
-#include "NodeRenderStyle.h"
-#include "NodeTraversal.h"
+#include "core/dom/NodeRenderStyle.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/style/RenderStyle.h"

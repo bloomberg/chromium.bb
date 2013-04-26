@@ -30,7 +30,7 @@
 #ifndef FrameLoaderClient_h
 #define FrameLoaderClient_h
 
-#include "IconURL.h"
+#include "core/dom/IconURL.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/LayoutMilestones.h"
 #include "core/platform/network/ResourceLoadPriority.h"

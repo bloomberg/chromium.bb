@@ -32,10 +32,10 @@
 
 #include "HTMLTemplateElement.h"
 
-#include "DOMImplementation.h"
-#include "DocumentFragment.h"
 #include "HTMLDocument.h"
-#include "TemplateContentDocumentFragment.h"
+#include "core/dom/DOMImplementation.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/TemplateContentDocumentFragment.h"
 #include "core/editing/markup.h"
 
 namespace WebCore {

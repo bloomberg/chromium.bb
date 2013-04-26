@@ -30,7 +30,7 @@
 #ifndef StaticHashSetNodeList_h
 #define StaticHashSetNodeList_h
 
-#include "NodeList.h"
+#include "core/dom/NodeList.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

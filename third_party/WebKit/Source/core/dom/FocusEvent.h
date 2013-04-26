@@ -26,8 +26,8 @@
 #ifndef FocusEvent_h
 #define FocusEvent_h
 
-#include "EventTarget.h"
-#include "UIEvent.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/UIEvent.h"
 
 namespace WebCore {
 

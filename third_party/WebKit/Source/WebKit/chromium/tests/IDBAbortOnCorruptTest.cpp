@@ -25,7 +25,6 @@
 
 #include "config.h"
 #include <gtest/gtest.h>
-#include "DOMStringList.h"
 #include "IDBCallbacks.h"
 #include "IDBCursorBackendInterface.h"
 #include "IDBDatabaseBackendInterface.h"
@@ -34,6 +33,7 @@
 #include "IDBFakeBackingStore.h"
 #include "IDBKey.h"
 #include "IndexedDB.h"
+#include "core/dom/DOMStringList.h"
 #include "core/page/SecurityOrigin.h"
 #include <wtf/Vector.h>
 

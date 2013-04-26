@@ -26,9 +26,9 @@
 #ifndef DOMApplicationCache_h
 #define DOMApplicationCache_h
 
-#include "EventNames.h"
-#include "EventTarget.h"
 #include "ScriptWrappable.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/DOMWindowProperty.h"
 #include <wtf/Forward.h>

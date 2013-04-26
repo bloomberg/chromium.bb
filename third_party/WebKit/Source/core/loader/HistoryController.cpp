@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/loader/HistoryController.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/DocumentLoader.h"

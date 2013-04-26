@@ -26,9 +26,9 @@
 #define XMLDocumentParser_h
 
 #include <libxml/tree.h>
-#include "FragmentScriptingPermission.h"
-#include "ScriptableDocumentParser.h"
 #include "XMLErrors.h"
+#include "core/dom/FragmentScriptingPermission.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/platform/text/SegmentedString.h"

@@ -25,9 +25,9 @@
 #include "config.h"
 #include "core/rendering/RenderTableRow.h"
 
-#include "Document.h"
 #include "HTMLNames.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/PaintInfo.h"

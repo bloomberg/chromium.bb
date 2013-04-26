@@ -32,10 +32,10 @@
 #include "config.h"
 #include "ResetInputType.h"
 
-#include "Event.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "InputTypeNames.h"
+#include "core/dom/Event.h"
 #include "core/platform/LocalizedStrings.h"
 #include <wtf/PassOwnPtr.h>
 

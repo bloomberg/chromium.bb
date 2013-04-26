@@ -32,13 +32,13 @@
 
 #include "AbstractWorker.h"
 
-#include "ErrorEvent.h"
-#include "Event.h"
-#include "EventException.h"
-#include "EventNames.h"
-#include "ExceptionCode.h"
 #include "InspectorInstrumentation.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/ErrorEvent.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/SecurityOrigin.h"
 

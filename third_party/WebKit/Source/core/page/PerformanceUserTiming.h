@@ -26,8 +26,8 @@
 #ifndef PerformanceUserTiming_h
 #define PerformanceUserTiming_h
 
-#include "EventException.h"
-#include "ExceptionCode.h"
+#include "core/dom/EventException.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Performance.h"
 #include "core/page/PerformanceTiming.h"
 #include <wtf/HashMap.h>

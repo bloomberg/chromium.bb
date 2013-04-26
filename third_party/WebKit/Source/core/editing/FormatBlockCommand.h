@@ -26,7 +26,7 @@
 #ifndef FormatBlockCommand_h
 #define FormatBlockCommand_h
 
-#include "QualifiedName.h"
+#include "core/dom/QualifiedName.h"
 #include "core/editing/ApplyBlockElementCommand.h"
 #include "core/editing/EditAction.h"
 

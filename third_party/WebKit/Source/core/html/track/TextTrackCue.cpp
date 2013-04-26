@@ -35,17 +35,17 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "DocumentFragment.h"
-#include "Event.h"
 #include "HTMLDivElement.h"
 #include "HTMLMediaElement.h"
 #include "HTMLSpanElement.h"
-#include "NodeTraversal.h"
-#include "Text.h"
 #include "TextTrack.h"
 #include "TextTrackCueList.h"
 #include "WebVTTElement.h"
 #include "WebVTTParser.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Event.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/Text.h"
 #include "core/rendering/RenderTextTrackCue.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>

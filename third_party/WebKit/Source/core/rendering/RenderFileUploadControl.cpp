@@ -22,11 +22,11 @@
 #include "core/rendering/RenderFileUploadControl.h"
 
 #include <math.h>
-#include "ElementShadow.h"
 #include "FileList.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "ShadowRoot.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/graphics/Font.h"

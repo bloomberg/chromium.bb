@@ -28,8 +28,8 @@
 #include "DateTimeFieldElement.h"
 
 #include "HTMLNames.h"
-#include "KeyboardEvent.h"
-#include "Text.h"
+#include "core/dom/KeyboardEvent.h"
+#include "core/dom/Text.h"
 #include "core/platform/DateComponents.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"

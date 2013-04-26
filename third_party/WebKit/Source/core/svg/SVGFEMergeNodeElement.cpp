@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGFEMergeNodeElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 

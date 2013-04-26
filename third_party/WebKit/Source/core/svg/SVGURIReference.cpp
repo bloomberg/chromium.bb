@@ -23,9 +23,9 @@
 #if ENABLE(SVG)
 #include "SVGURIReference.h"
 
-#include "Attribute.h"
-#include "Document.h"
-#include "Element.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/platform/KURL.h"
 
 namespace WebCore {

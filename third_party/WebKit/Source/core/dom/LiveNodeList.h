@@ -25,9 +25,9 @@
 #define LiveNodeList_h
 
 #include "CollectionType.h"
-#include "Document.h"
 #include "HTMLNames.h"
-#include "NodeList.h"
+#include "core/dom/Document.h"
+#include "core/dom/NodeList.h"
 #include <wtf/Forward.h>
 #include <wtf/RefPtr.h>
 

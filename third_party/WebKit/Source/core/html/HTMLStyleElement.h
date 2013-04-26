@@ -24,7 +24,7 @@
 #define HTMLStyleElement_h
 
 #include "HTMLElement.h"
-#include "StyleElement.h"
+#include "core/dom/StyleElement.h"
 
 namespace WebCore {
 

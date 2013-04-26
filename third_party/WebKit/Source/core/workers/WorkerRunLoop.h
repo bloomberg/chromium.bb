@@ -31,7 +31,7 @@
 #ifndef WorkerRunLoop_h
 #define WorkerRunLoop_h
 
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include <wtf/MessageQueue.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

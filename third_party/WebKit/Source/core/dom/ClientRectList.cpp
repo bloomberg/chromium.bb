@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "ClientRectList.h"
+#include "core/dom/ClientRectList.h"
 
-#include "ExceptionCode.h"
-#include "ClientRect.h"
+#include "core/dom/ClientRect.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

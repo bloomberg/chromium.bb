@@ -23,15 +23,15 @@
 #include "config.h"
 #include "HTMLCollection.h"
 
-#include "ClassNodeList.h"
 #include "HTMLDocument.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
 #include "HTMLOptionElement.h"
-#include "NodeList.h"
-#include "NodeRareData.h"
-#include "NodeTraversal.h"
+#include "core/dom/ClassNodeList.h"
+#include "core/dom/NodeList.h"
+#include "core/dom/NodeRareData.h"
+#include "core/dom/NodeTraversal.h"
 
 #include <utility>
 

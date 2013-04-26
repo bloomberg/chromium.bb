@@ -21,12 +21,12 @@
 #include "config.h"
 #include "V8TestCallback.h"
 
-#include "ScriptExecutionContext.h"
 #include "V8Binding.h"
 #include "V8Callback.h"
 #include "V8Class1.h"
 #include "V8Class2.h"
 #include "V8DOMStringList.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include <wtf/GetPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

@@ -29,10 +29,10 @@
 #include "config.h"
 #include "XMLErrors.h"
 
-#include "Document.h"
-#include "Element.h"
 #include "HTMLNames.h"
-#include "Text.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/Text.h"
 #include "core/page/Frame.h"
 #include <wtf/text/WTFString.h>
 

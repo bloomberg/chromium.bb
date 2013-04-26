@@ -51,9 +51,6 @@
       '<(bindings_dir)',
       '<(bindings_dir)/v8',
       '<(bindings_dir)/v8/custom',
-      '../dom',
-      '../dom/default',
-      '../dom/default/chromium',
       '../fileapi',
       '../html',
       '../html/canvas',
@@ -335,9 +332,9 @@
         '<(SHARED_INTERMEDIATE_DIR)/webkit/bindings',
         '<@(webcore_include_dirs)',
 
-        # FIXME: It's not clear if the bindings generation scripts should have
-        # a map from header name to absolute include path. For now, let the
-        # generated bindings files use relative paths.
+        # FIXME: Remove these once the bindings script generates qualified
+        # includes for these correctly. (Sequences don't work yet.)
+        '../dom',
         '../page',
       ],
       'sources': [

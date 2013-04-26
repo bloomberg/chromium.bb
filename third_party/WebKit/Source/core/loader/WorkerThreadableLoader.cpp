@@ -32,11 +32,11 @@
 
 #include "core/loader/WorkerThreadableLoader.h"
 
-#include "CrossThreadTask.h"
-#include "Document.h"
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/ThreadableLoader.h"
 #include "core/platform/network/ResourceError.h"

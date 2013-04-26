@@ -31,7 +31,7 @@
 #ifndef IconController_h
 #define IconController_h
 
-#include "IconURL.h"
+#include "core/dom/IconURL.h"
 
 namespace WebCore {
 

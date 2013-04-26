@@ -27,7 +27,7 @@
 #ifndef TreeScope_h
 #define TreeScope_h
 
-#include "DocumentOrderedMap.h"
+#include "core/dom/DocumentOrderedMap.h"
 #include <wtf/Forward.h>
 #include <wtf/text/AtomicString.h>
 

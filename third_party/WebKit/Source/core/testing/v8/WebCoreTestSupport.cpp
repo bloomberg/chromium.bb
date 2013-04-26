@@ -26,11 +26,11 @@
 #include "config.h"
 #include "WebCoreTestSupport.h"
 
-#include "Document.h"
 #include "InternalSettings.h"
 #include "Internals.h"
-#include "ScriptExecutionContext.h"
 #include "V8Internals.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/Frame.h"
 
 #include <v8.h>

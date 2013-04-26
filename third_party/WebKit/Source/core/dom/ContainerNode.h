@@ -24,8 +24,8 @@
 #ifndef ContainerNode_h
 #define ContainerNode_h
 
-#include "ExceptionCodePlaceholder.h"
-#include "Node.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/Node.h"
 
 #include <wtf/OwnPtr.h>
 #include <wtf/Vector.h>
@@ -114,7 +114,7 @@ public:
     virtual void scheduleSetNeedsStyleRecalc(StyleChangeType = FullStyleChange) OVERRIDE;
 
     // -----------------------------------------------------------------------------
-    // Notification of document structure changes (see Node.h for more notification methods)
+    // Notification of document structure changes (see core/dom/Node.h for more notification methods)
 
     // Notifies the node that it's list of children have changed (either by adding or removing child nodes), or a child
     // node that is of the type CDATA_SECTION_NODE, TEXT_NODE or COMMENT_NODE has changed its value.

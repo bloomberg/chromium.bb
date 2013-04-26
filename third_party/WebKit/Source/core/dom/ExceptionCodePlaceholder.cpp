@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "ExceptionCodePlaceholder.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 
 namespace WebCore {
 

@@ -24,7 +24,6 @@
 #if ENABLE(SVG)
 #include "SVGAnimateMotionElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGMPathElement.h"
 #include "SVGNames.h"
@@ -32,6 +31,7 @@
 #include "SVGPathElement.h"
 #include "SVGPathUtilities.h"
 #include "SVGTransformList.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/SVGPathData.h"

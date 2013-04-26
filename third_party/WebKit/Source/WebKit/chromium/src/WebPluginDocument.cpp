@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebPluginDocument.h"
 
-#include "Document.h"
 #include "PluginDocument.h"
+#include "core/dom/Document.h"
 
 #include "WebPluginContainerImpl.h"
 

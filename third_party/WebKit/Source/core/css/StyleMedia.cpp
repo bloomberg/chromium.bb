@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/css/StyleMedia.h"
 
-#include "Document.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 

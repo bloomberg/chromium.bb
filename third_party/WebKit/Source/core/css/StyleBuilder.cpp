@@ -25,8 +25,6 @@
 #include "config.h"
 #include "core/css/StyleBuilder.h"
 
-#include "Document.h"
-#include "Element.h"
 #include "core/css/BasicShapeFunctions.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSCalculationValue.h"
@@ -37,6 +35,8 @@
 #include "core/css/Pair.h"
 #include "core/css/Rect.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/page/Settings.h"
 #include "core/rendering/ClipPathOperation.h"
 #include "core/rendering/RenderObject.h"

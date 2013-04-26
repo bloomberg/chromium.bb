@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/css/MediaQuery.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/MediaQueryExp.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 #include <wtf/NonCopyingSort.h>
 #include <wtf/text/StringBuilder.h>

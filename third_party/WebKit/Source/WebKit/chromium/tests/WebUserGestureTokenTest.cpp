@@ -32,10 +32,10 @@
 
 #include "WebUserGestureToken.h"
 
-#include "UserGestureIndicator.h"
+#include <gtest/gtest.h>
 #include "WebScopedUserGesture.h"
 #include "WebUserGestureIndicator.h"
-#include <gtest/gtest.h>
+#include "core/dom/UserGestureIndicator.h"
 
 using namespace WebKit;
 using namespace WebCore;

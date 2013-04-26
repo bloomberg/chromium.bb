@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/page/PageGroup.h"
 
-#include "Document.h"
-#include "DocumentStyleSheetCollection.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 #include "core/page/CaptionUserPreferences.h"
 #include "core/page/Frame.h"
 #include "core/page/GroupSettings.h"

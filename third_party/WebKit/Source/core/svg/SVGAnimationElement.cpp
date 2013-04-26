@@ -27,9 +27,7 @@
 #if ENABLE(SVG)
 #include "SVGAnimationElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
-#include "Document.h"
 #include "SVGAnimateElement.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
@@ -37,6 +35,8 @@
 #include "SVGStyledElement.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
 #include "core/css/CSSParser.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/platform/FloatConversion.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/MathExtras.h>

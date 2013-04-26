@@ -32,7 +32,7 @@
 #define WorkerObjectProxy_h
 
 #include "WorkerReportingProxy.h"
-#include "MessagePort.h"
+#include "core/dom/MessagePort.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

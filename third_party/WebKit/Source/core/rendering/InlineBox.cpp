@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/InlineBox.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"
 #include "core/platform/graphics/FontMetrics.h"

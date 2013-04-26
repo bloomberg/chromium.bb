@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "DeviceMotionEvent.h"
+#include "modules/device_orientation/DeviceMotionEvent.h"
 
-#include "DeviceAcceleration.h"
-#include "DeviceMotionData.h"
-#include "DeviceRotationRate.h"
-#include "EventNames.h"
+#include "modules/device_orientation/DeviceAcceleration.h"
+#include "modules/device_orientation/DeviceMotionData.h"
+#include "modules/device_orientation/DeviceRotationRate.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

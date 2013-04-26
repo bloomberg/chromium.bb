@@ -31,8 +31,8 @@
 #ifndef SelectRuleFeatureSet_h
 #define SelectRuleFeatureSet_h
 
-#include "Element.h"
 #include "core/css/RuleFeature.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 

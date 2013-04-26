@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "Position.h"
+#include "core/dom/Position.h"
 
 #include <stdio.h>
 #include "HTMLNames.h"
-#include "PositionIterator.h"
-#include "Text.h"
 #include "core/css/CSSComputedStyleDeclaration.h"
+#include "core/dom/PositionIterator.h"
+#include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"

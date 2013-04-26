@@ -25,9 +25,9 @@
 #ifndef NodeIterator_h
 #define NodeIterator_h
 
-#include "NodeFilter.h"
 #include "ScriptWrappable.h"
-#include "Traversal.h"
+#include "core/dom/NodeFilter.h"
+#include "core/dom/Traversal.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 

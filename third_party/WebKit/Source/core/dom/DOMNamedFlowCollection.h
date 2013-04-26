@@ -29,7 +29,7 @@
 #ifndef DOMNamedFlowCollection_h
 #define DOMNamedFlowCollection_h
 
-#include "NamedFlowCollection.h"
+#include "core/dom/NamedFlowCollection.h"
 #include <wtf/ListHashSet.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

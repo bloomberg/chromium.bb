@@ -24,12 +24,12 @@
 #if ENABLE(SVG)
 #include "SVGLength.h"
 
-#include "ExceptionCode.h"
-#include "ExceptionCodePlaceholder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
 #include "core/css/CSSHelper.h"
 #include "core/css/CSSPrimitiveValue.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/FloatConversion.h"
 
 #include <wtf/MathExtras.h>

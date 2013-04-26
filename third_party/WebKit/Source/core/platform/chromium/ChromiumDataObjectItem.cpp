@@ -32,10 +32,10 @@
 #include "core/platform/chromium/ChromiumDataObjectItem.h"
 
 #include "Blob.h"
-#include "Clipboard.h"
-#include "DataTransferItem.h"
 #include "File.h"
-#include "StringCallback.h"
+#include "core/dom/Clipboard.h"
+#include "core/dom/DataTransferItem.h"
+#include "core/dom/StringCallback.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/chromium/ClipboardChromium.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"

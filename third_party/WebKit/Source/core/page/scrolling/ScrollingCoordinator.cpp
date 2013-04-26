@@ -27,8 +27,8 @@
 
 #include "core/page/scrolling/ScrollingCoordinator.h"
 
-#include "Document.h"
 #include "PluginViewBase.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"

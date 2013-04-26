@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGTextElement.h"
 
-#include "Attribute.h"
-#include "NodeRenderingContext.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGTSpanElement.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include "core/rendering/style/SVGRenderStyle.h"

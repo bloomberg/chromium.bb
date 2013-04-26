@@ -33,12 +33,12 @@
 
 #include "SharedWorker.h"
 
-#include "ExceptionCode.h"
 #include "InspectorInstrumentation.h"
-#include "MessageChannel.h"
-#include "MessagePort.h"
-#include "ScriptExecutionContext.h"
 #include "SharedWorkerRepository.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessageChannel.h"
+#include "core/dom/MessagePort.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/page/UseCounter.h"
 #include "core/platform/KURL.h"

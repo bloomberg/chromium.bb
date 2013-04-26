@@ -31,6 +31,7 @@
 #include "config.h"
 #include "TestInterfaces.h"
 
+#include <string>
 #include "AccessibilityControllerChromium.h"
 #include "EventSender.h"
 #include "GamepadController.h"
@@ -41,7 +42,6 @@
 #include "WebRuntimeFeatures.h"
 #include <public/WebString.h>
 #include <public/WebURL.h>
-#include <string>
 
 using namespace WebKit;
 using namespace std;

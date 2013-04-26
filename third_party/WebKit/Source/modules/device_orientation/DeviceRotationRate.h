@@ -26,7 +26,7 @@
 #ifndef DeviceRotationRate_h
 #define DeviceRotationRate_h
 
-#include "DeviceMotionData.h"
+#include "modules/device_orientation/DeviceMotionData.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

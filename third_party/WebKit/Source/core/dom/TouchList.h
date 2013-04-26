@@ -26,7 +26,7 @@
 #ifndef TouchList_h
 #define TouchList_h
 
-#include "Touch.h"
+#include "core/dom/Touch.h"
 #include <wtf/RefCounted.h>
 #include <wtf/Vector.h>
 

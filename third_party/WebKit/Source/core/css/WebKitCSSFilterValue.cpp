@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/css/WebKitCSSFilterValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSValueList.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/text/WTFString.h>
 

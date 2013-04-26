@@ -21,10 +21,10 @@
 #include "config.h"
 #include "core/css/CSSProperty.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSVariableValue.h"
 #include "core/css/StylePropertyShorthand.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 
 #include <wtf/text/StringBuilder.h>

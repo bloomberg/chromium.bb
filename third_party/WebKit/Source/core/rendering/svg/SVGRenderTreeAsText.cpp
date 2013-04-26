@@ -33,7 +33,6 @@
 
 #include "HTMLNames.h"
 #include "LinearGradientAttributes.h"
-#include "NodeRenderStyle.h"
 #include "PatternAttributes.h"
 #include "RadialGradientAttributes.h"
 #include "SVGCircleElement.h"
@@ -50,6 +49,7 @@
 #include "SVGRectElement.h"
 #include "SVGStopElement.h"
 #include "SVGStyledElement.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/platform/graphics/GraphicsTypes.h"
 #include "core/platform/graphics/Path.h"
 #include "core/rendering/InlineTextBox.h"

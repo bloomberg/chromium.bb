@@ -24,8 +24,8 @@
 #ifndef TagNodeList_h
 #define TagNodeList_h
 
-#include "Element.h"
-#include "LiveNodeList.h"
+#include "core/dom/Element.h"
+#include "core/dom/LiveNodeList.h"
 #include <wtf/text/AtomicString.h>
 
 namespace WebCore {

@@ -27,7 +27,7 @@
 #ifndef TemplateContentDocumentFragment_h
 #define TemplateContentDocumentFragment_h
 
-#include "DocumentFragment.h"
+#include "core/dom/DocumentFragment.h"
 
 namespace WebCore {
 

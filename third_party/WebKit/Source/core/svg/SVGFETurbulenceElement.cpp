@@ -23,10 +23,10 @@
 #if ENABLE(SVG)
 #include "SVGFETurbulenceElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/Attribute.h"
 
 namespace WebCore {
 

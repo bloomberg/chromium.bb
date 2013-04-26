@@ -29,14 +29,14 @@
  */
 
 #include "config.h"
-#include "DocumentOrderedMap.h"
+#include "core/dom/DocumentOrderedMap.h"
 
-#include "Element.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
-#include "NodeTraversal.h"
-#include "TreeScope.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Element.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/TreeScope.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>
 #include <wtf/MemoryInstrumentationHashMap.h>
 

@@ -22,17 +22,14 @@
  */
 
 #include "config.h"
-#include "StyledElement.h"
+#include "core/dom/StyledElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "ClassList.h"
 #include "DOMTokenList.h"
-#include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
-#include "ScriptableDocumentParser.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSStyleSheet.h"
@@ -40,6 +37,9 @@
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/platform/graphics/Color.h"
 #include <wtf/HashFunctions.h>

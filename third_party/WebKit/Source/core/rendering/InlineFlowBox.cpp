@@ -21,9 +21,9 @@
 #include "core/rendering/InlineFlowBox.h"
 
 #include "CSSPropertyNames.h"
-#include "Document.h"
-#include "Text.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Document.h"
+#include "core/dom/Text.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"

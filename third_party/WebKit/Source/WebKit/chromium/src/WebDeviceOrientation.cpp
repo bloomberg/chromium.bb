@@ -26,7 +26,7 @@
 #include "config.h"
 #include "WebDeviceOrientation.h"
 
-#include "DeviceOrientationData.h"
+#include "core/dom/DeviceOrientationData.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebKit {

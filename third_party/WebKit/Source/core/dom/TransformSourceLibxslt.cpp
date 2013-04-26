@@ -25,7 +25,7 @@
 
 #include "config.h"
 
-#include "TransformSource.h"
+#include "core/dom/TransformSource.h"
 
 #include <libxml/tree.h>
 

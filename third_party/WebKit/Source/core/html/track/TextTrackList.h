@@ -27,8 +27,8 @@
 #define TextTrackList_h
 
 #include <algorithm>
-#include "EventListener.h"
-#include "EventTarget.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventTarget.h"
 #include "core/platform/Timer.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

@@ -30,10 +30,10 @@
 #include "config.h"
 #include "core/platform/DragData.h"
 
-#include "Document.h"
-#include "DocumentFragment.h"
 #include "DraggedIsolatedFileSystem.h"
-#include "Range.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Range.h"
 #include "core/editing/markup.h"
 #include "core/page/Frame.h"
 #include "core/platform/FileSystem.h"

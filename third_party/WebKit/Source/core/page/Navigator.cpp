@@ -25,10 +25,10 @@
 
 #include "DOMMimeTypeArray.h"
 #include "DOMPluginArray.h"
-#include "Document.h"
 #include "Geolocation.h"
 #include "PluginData.h"
 #include "ScriptController.h"
+#include "core/dom/Document.h"
 #include "core/loader/CookieJar.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"

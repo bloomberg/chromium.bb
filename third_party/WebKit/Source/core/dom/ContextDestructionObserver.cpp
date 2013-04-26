@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "ContextDestructionObserver.h"
+#include "core/dom/ContextDestructionObserver.h"
 
-#include "ScriptExecutionContext.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

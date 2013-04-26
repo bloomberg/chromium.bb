@@ -35,8 +35,8 @@
 #include "InjectedScriptManager.h"
 #include "InspectorAgent.h"
 #include "InspectorDOMAgent.h"
-#include "Node.h"
 #include "ScriptObject.h"
+#include "core/dom/Node.h"
 #include "core/page/DOMWindow.h"
 
 namespace WebCore {

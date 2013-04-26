@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/RootInlineBox.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"

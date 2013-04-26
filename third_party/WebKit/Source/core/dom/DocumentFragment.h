@@ -24,8 +24,8 @@
 #ifndef DocumentFragment_h
 #define DocumentFragment_h
 
-#include "ContainerNode.h"
-#include "FragmentScriptingPermission.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/FragmentScriptingPermission.h"
 
 namespace WebCore {
 

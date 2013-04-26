@@ -22,14 +22,14 @@
 #include "V8TestOverloadedConstructors.h"
 
 #include "BindingState.h"
-#include "ContextFeatures.h"
-#include "ExceptionCode.h"
 #include "ScriptController.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
 #include "V8Binding.h"
 #include "V8Blob.h"
 #include "V8DOMWrapper.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/ArrayBuffer.h>

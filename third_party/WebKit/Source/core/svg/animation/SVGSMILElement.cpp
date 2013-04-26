@@ -28,11 +28,7 @@
 #if ENABLE(SVG)
 #include "SVGSMILElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
-#include "Document.h"
-#include "Event.h"
-#include "EventListener.h"
 #include "HTMLNames.h"
 #include "SMILTimeContainer.h"
 #include "SVGDocumentExtensions.h"
@@ -41,6 +37,10 @@
 #include "SVGSVGElement.h"
 #include "SVGURIReference.h"
 #include "XLinkNames.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventListener.h"
 #include "core/page/FrameView.h"
 #include "core/platform/FloatConversion.h"
 #include <wtf/MathExtras.h>

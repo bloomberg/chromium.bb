@@ -26,7 +26,6 @@
 #if ENABLE(SVG)
 #include "SVGRadialGradientElement.h"
 
-#include "Attribute.h"
 #include "RadialGradientAttributes.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
@@ -34,6 +33,7 @@
 #include "SVGTransform.h"
 #include "SVGTransformList.h"
 #include "SVGUnitTypes.h"
+#include "core/dom/Attribute.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/svg/RenderSVGResourceRadialGradient.h"

@@ -22,11 +22,11 @@
 #if ENABLE(SVG)
 #include "SVGFEConvolveMatrixElement.h"
 
-#include "Attr.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/Attr.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/IntPoint.h"
 #include "core/platform/graphics/IntSize.h"

@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/page/SuspendableTimer.h"
 
-#include "ScriptExecutionContext.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 namespace WebCore {
 

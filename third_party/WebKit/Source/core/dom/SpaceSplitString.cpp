@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "SpaceSplitString.h"
+#include "core/dom/SpaceSplitString.h"
 
 #include "HTMLParserIdioms.h"
 #include <wtf/ASCIICType.h>

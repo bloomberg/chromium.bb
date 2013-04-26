@@ -24,8 +24,8 @@
 #define HTMLCollection_h
 
 #include "CollectionType.h"
-#include "LiveNodeList.h"
 #include "ScriptWrappable.h"
+#include "core/dom/LiveNodeList.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>

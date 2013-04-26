@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "EventException.h"
+#include "core/dom/EventException.h"
 
 namespace WebCore {
 

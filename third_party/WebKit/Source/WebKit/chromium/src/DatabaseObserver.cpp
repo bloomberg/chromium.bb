@@ -31,11 +31,8 @@
 #include "config.h"
 #include "DatabaseObserver.h"
 
-#include "CrossThreadTask.h"
 #include "DatabaseBackendBase.h"
 #include "DatabaseBackendContext.h"
-#include "Document.h"
-#include "ScriptExecutionContext.h"
 #include "WebCommonWorkerClient.h"
 #include "WebDatabase.h"
 #include "WebDatabaseObserver.h"
@@ -49,6 +46,9 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/CrossThreadCopier.h"
 
 using namespace WebKit;

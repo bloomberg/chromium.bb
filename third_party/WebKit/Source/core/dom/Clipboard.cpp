@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "Clipboard.h"
+#include "core/dom/Clipboard.h"
 
 #include "FileList.h"
 #include "core/loader/FrameLoader.h"

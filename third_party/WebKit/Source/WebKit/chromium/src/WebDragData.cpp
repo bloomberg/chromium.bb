@@ -30,8 +30,8 @@
 
 #include "config.h"
 
-#include "DataTransferItem.h"
 #include "DraggedIsolatedFileSystem.h"
+#include "core/dom/DataTransferItem.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
 #include "core/platform/chromium/ClipboardMimeTypes.h"
 #include <public/WebData.h>

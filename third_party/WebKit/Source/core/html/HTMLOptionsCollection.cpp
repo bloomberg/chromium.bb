@@ -21,9 +21,9 @@
 #include "config.h"
 #include "HTMLOptionsCollection.h"
 
-#include "ExceptionCode.h"
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

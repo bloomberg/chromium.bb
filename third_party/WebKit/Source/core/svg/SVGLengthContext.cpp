@@ -25,10 +25,10 @@
 #if ENABLE(SVG)
 #include "SVGLengthContext.h"
 
-#include "ExceptionCode.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
 #include "core/css/CSSHelper.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/platform/graphics/FontMetrics.h"
 #include "core/rendering/RenderPart.h"

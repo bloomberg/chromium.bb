@@ -24,8 +24,8 @@
 #ifndef KeyboardEvent_h
 #define KeyboardEvent_h
 
-#include "EventDispatchMediator.h"
-#include "UIEventWithKeyState.h"
+#include "core/dom/EventDispatchMediator.h"
+#include "core/dom/UIEventWithKeyState.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

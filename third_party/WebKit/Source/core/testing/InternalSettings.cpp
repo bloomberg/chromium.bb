@@ -27,8 +27,8 @@
 #include "config.h"
 #include "InternalSettings.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/CaptionUserPreferences.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

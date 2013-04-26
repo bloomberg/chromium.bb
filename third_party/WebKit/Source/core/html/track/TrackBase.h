@@ -26,7 +26,7 @@
 #ifndef TrackBase_h
 #define TrackBase_h
 
-#include "EventTarget.h"
+#include "core/dom/EventTarget.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

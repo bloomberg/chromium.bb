@@ -37,7 +37,7 @@
 #include "InspectorFrontend.h"
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
-#include "PseudoElement.h"
+#include "core/dom/PseudoElement.h"
 #include "core/platform/graphics/IntRect.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerBacking.h"

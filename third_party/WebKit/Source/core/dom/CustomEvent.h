@@ -26,9 +26,9 @@
 #ifndef CustomEvent_h
 #define CustomEvent_h
 
-#include "Event.h"
 #include "ScriptValue.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/Event.h"
 
 namespace WebCore {
 

@@ -28,9 +28,9 @@
 #include "core/editing/RemoveFormatCommand.h"
 
 #include "CSSValueKeywords.h"
-#include "Element.h"
 #include "HTMLNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Element.h"
 #include "core/editing/ApplyStyleCommand.h"
 #include "core/editing/EditingStyle.h"
 #include "core/editing/FrameSelection.h"

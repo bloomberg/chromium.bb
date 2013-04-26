@@ -26,8 +26,8 @@
 #ifndef SpellChecker_h
 #define SpellChecker_h
 
-#include "Element.h"
-#include "Range.h"
+#include "core/dom/Element.h"
+#include "core/dom/Range.h"
 #include "core/platform/Timer.h"
 #include "core/platform/text/TextChecking.h"
 #include <wtf/Deque.h>

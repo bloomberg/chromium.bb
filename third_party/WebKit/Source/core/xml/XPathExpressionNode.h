@@ -27,11 +27,11 @@
 #ifndef XPathExpressionNode_h
 #define XPathExpressionNode_h
 
-#include "Node.h"
 #include "XPathValue.h"
+#include "core/dom/Node.h"
 #include <wtf/HashMap.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -25,8 +25,8 @@
 #if ENABLE(SVG)
 #include "SVGParserUtilities.h"
 
-#include "Document.h"
 #include "SVGPointList.h"
+#include "core/dom/Document.h"
 #include "core/platform/graphics/FloatRect.h"
 
 #include <limits>

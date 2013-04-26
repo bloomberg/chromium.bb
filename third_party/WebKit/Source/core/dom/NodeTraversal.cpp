@@ -23,9 +23,9 @@
  */
 
 #include "config.h"
-#include "NodeTraversal.h"
+#include "core/dom/NodeTraversal.h"
 
-#include "ContainerNode.h"
+#include "core/dom/ContainerNode.h"
 
 namespace WebCore {
 namespace NodeTraversal {

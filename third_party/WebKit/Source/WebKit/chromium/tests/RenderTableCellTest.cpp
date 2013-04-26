@@ -27,11 +27,11 @@
 
 #include "core/rendering/RenderTableCell.h"
 
-#include "Document.h"
 #include "FrameTestHelpers.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebView.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderArena.h"
 

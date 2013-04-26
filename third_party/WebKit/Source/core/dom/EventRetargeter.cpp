@@ -18,18 +18,18 @@
  */
 
 #include "config.h"
-#include "EventRetargeter.h"
+#include "core/dom/EventRetargeter.h"
 
-#include "ContainerNode.h"
-#include "EventContext.h"
-#include "EventPathWalker.h"
-#include "FocusEvent.h"
-#include "MouseEvent.h"
-#include "ShadowRoot.h"
-#include "Touch.h"
-#include "TouchEvent.h"
-#include "TouchList.h"
-#include "TreeScope.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/EventContext.h"
+#include "core/dom/EventPathWalker.h"
+#include "core/dom/FocusEvent.h"
+#include "core/dom/MouseEvent.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/Touch.h"
+#include "core/dom/TouchEvent.h"
+#include "core/dom/TouchList.h"
+#include "core/dom/TreeScope.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
 #include <wtf/Vector.h>

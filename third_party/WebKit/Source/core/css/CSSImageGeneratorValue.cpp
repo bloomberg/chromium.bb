@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/css/CSSImageGeneratorValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSCanvasValue.h"
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSGradientValue.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/Image.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/MemoryInstrumentationHashCountedSet.h>

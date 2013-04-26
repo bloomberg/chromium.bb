@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/mock/DeviceOrientationClientMock.h"
 
-#include "DeviceOrientationController.h"
+#include "core/dom/DeviceOrientationController.h"
 
 namespace WebCore {
 

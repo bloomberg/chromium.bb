@@ -26,7 +26,7 @@
 #ifndef AnimationEvent_h
 #define AnimationEvent_h
 
-#include "Event.h"
+#include "core/dom/Event.h"
 
 namespace WebCore {
 

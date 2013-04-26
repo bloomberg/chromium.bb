@@ -26,7 +26,7 @@
 #ifndef IgnoreDestructiveWriteCountIncrementer_h
 #define IgnoreDestructiveWriteCountIncrementer_h
 
-#include "Document.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #define PlatformMessagePortChannelChromium_h
 
 
-#include "MessagePortChannel.h"
+#include "core/dom/MessagePortChannel.h"
 #include <public/WebMessagePortChannelClient.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/Threading.h>
@@ -53,7 +53,7 @@ public:
     static PassRefPtr<PlatformMessagePortChannel> create();
     static PassRefPtr<PlatformMessagePortChannel> create(WebKit::WebMessagePortChannel*);
 
-    // APIs delegated from MessagePortChannel.h
+    // APIs delegated from core/dom/MessagePortChannel.h
     bool entangleIfOpen(MessagePort*);
     void disentangle();
     void postMessageToRemote(PassRefPtr<SerializedScriptValue>, PassOwnPtr<MessagePortChannelArray>);

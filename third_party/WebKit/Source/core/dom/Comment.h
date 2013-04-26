@@ -23,7 +23,7 @@
 #ifndef Comment_h
 #define Comment_h
 
-#include "CharacterData.h"
+#include "core/dom/CharacterData.h"
 
 namespace WebCore {
 

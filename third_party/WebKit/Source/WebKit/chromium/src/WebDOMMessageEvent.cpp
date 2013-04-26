@@ -31,14 +31,14 @@
 #include "config.h"
 #include "WebDOMMessageEvent.h"
 
-#include "Document.h"
-#include "MessageEvent.h"
-#include "MessagePort.h"
-#include "PlatformMessagePortChannelChromium.h"
 #include "SerializedScriptValue.h"
 #include "WebFrame.h"
 #include "WebFrameImpl.h"
 #include "WebSerializedScriptValue.h"
+#include "core/dom/Document.h"
+#include "core/dom/MessageEvent.h"
+#include "core/dom/MessagePort.h"
+#include "core/dom/default/chromium/PlatformMessagePortChannelChromium.h"
 #include "core/page/DOMWindow.h"
 #include <public/WebString.h>
 

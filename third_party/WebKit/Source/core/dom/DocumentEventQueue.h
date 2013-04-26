@@ -27,7 +27,7 @@
 #ifndef DocumentEventQueue_h
 #define DocumentEventQueue_h
 
-#include "EventQueue.h"
+#include "core/dom/EventQueue.h"
 #include <wtf/Forward.h>
 #include <wtf/HashSet.h>
 #include <wtf/ListHashSet.h>

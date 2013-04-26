@@ -26,11 +26,11 @@
 #include "config.h"
 #include "HTMLTrackElement.h"
 
-#include "Event.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
 #include "ScriptCallStack.h"
 #include "ScriptEventListener.h"
+#include "core/dom/Event.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include "core/platform/Logging.h"

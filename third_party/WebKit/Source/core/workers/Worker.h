@@ -28,12 +28,12 @@
 #define Worker_h
 
 #include "AbstractWorker.h"
-#include "ActiveDOMObject.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
-#include "MessagePort.h"
 #include "WorkerScriptLoaderClient.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/MessagePort.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

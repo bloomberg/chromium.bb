@@ -32,12 +32,12 @@
 #include "WorkerFileWriterCallbacksBridge.h"
 
 #include "AsyncFileWriterClient.h"
-#include "CrossThreadTask.h"
 #include "WebFileWriter.h"
 #include "WebWorkerBase.h"
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
 #include <public/Platform.h>
 #include <public/WebCString.h>
 #include <public/WebFileSystem.h>

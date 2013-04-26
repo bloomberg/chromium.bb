@@ -29,11 +29,9 @@
 #include "config.h"
 #include "IDBFactoryBackendProxy.h"
 
-#include "CrossThreadTask.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "IDBDatabaseCallbacks.h"
 #include "IDBDatabaseError.h"
-#include "ScriptExecutionContext.h"
 #include "WebFrameImpl.h"
 #include "WebIDBCallbacksImpl.h"
 #include "WebIDBDatabase.h"
@@ -49,6 +47,8 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerScriptController.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/SecurityOrigin.h"
 #include <public/WebVector.h>
 

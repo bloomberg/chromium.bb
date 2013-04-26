@@ -22,7 +22,7 @@
 #ifndef CSSSelector_h
 #define CSSSelector_h
 
-#include "QualifiedName.h"
+#include "core/dom/QualifiedName.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>

@@ -27,21 +27,21 @@
 #ifndef HTMLTreeBuilder_h
 #define HTMLTreeBuilder_h
 
-#include "FragmentScriptingPermission.h"
 #include "HTMLConstructionSite.h"
 #include "HTMLElementStack.h"
 #include "HTMLFormattingElementList.h"
 #include "HTMLParserOptions.h"
 #include "HTMLTokenizer.h"
+#include "core/dom/FragmentScriptingPermission.h"
 #include <wtf/Noncopyable.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/TextPosition.h>
 #include <wtf/unicode/Unicode.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

@@ -33,7 +33,6 @@
 
 #include "BindingState.h"
 #include "NPV8Object.h"  // for PrivateIdentifier
-#include "Range.h"
 #include "ScriptController.h"
 #include "V8ArrayBuffer.h"
 #include "V8ArrayBufferView.h"
@@ -45,6 +44,7 @@
 #include "WebArrayBufferView.h"
 #include "WebElement.h"
 #include "WebRange.h"
+#include "core/dom/Range.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"
 #include "npruntime_impl.h"

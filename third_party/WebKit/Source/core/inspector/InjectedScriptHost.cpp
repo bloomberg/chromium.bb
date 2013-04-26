@@ -32,7 +32,6 @@
 #include "InjectedScriptHost.h"
 
 #include "Database.h"
-#include "Element.h"
 #include "HTMLFrameOwnerElement.h"
 #include "InjectedScript.h"
 #include "InspectorAgent.h"
@@ -44,6 +43,7 @@
 #include "InspectorDebuggerAgent.h"
 #include "InspectorFrontend.h"
 #include "InspectorValues.h"
+#include "core/dom/Element.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/platform/Pasteboard.h"

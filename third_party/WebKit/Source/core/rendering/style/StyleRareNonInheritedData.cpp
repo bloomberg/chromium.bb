@@ -22,8 +22,8 @@
 #include "config.h"
 #include "core/rendering/style/StyleRareNonInheritedData.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/RenderCounter.h"
 #include "core/rendering/style/ContentData.h"
 #include "core/rendering/style/RenderStyle.h"

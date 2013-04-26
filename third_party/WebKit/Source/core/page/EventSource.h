@@ -32,8 +32,8 @@
 #ifndef EventSource_h
 #define EventSource_h
 
-#include "ActiveDOMObject.h"
-#include "EventTarget.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/platform/KURL.h"
 #include "core/platform/Timer.h"

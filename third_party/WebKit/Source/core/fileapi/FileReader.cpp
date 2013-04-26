@@ -32,11 +32,11 @@
 
 #include "FileReader.h"
 
-#include "CrossThreadTask.h"
-#include "ExceptionCode.h"
 #include "File.h"
-#include "ProgressEvent.h"
-#include "ScriptExecutionContext.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ProgressEvent.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/Logging.h"
 #include <wtf/ArrayBuffer.h>
 #include <wtf/CurrentTime.h>

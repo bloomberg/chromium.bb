@@ -19,9 +19,9 @@
  */
 
 #include "config.h"
-#include "EntityReference.h"
+#include "core/dom/EntityReference.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

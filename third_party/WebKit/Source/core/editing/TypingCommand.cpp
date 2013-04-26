@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/editing/TypingCommand.h"
 
-#include "Document.h"
-#include "Element.h"
 #include "HTMLNames.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/editing/BreakBlockquoteCommand.h"
 #include "core/editing/DeleteSelectionCommand.h"
 #include "core/editing/Editor.h"

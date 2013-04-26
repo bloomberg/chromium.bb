@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/loader/cache/CachedXSLStyleSheet.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"
 #include "core/loader/cache/CachedStyleSheetClient.h"

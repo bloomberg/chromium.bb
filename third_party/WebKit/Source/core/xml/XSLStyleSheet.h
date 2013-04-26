@@ -25,8 +25,8 @@
 
 #include <libxml/tree.h>
 #include <libxslt/transform.h>
-#include "ProcessingInstruction.h"
 #include "core/css/StyleSheet.h"
+#include "core/dom/ProcessingInstruction.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

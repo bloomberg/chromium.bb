@@ -20,7 +20,7 @@
 #include "config.h"
 #include "core/rendering/EllipsisBox.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/TextRun.h"

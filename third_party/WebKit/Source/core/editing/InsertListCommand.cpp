@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "DocumentFragment.h"
-#include "Element.h"
-#include "ExceptionCodePlaceholder.h"
 #include "HTMLElement.h"
 #include "HTMLNames.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Element.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/editing/InsertListCommand.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisibleUnits.h"

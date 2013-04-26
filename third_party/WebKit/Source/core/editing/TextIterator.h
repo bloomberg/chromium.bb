@@ -26,7 +26,7 @@
 #ifndef TextIterator_h
 #define TextIterator_h
 
-#include "Range.h"
+#include "core/dom/Range.h"
 #include "core/editing/FindOptions.h"
 #include <wtf/Vector.h>
 

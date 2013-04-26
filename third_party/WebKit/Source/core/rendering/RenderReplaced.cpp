@@ -24,7 +24,7 @@
 #include "config.h"
 #include "core/rendering/RenderReplaced.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

@@ -30,13 +30,13 @@
  */
 
 #include "config.h"
-#include "EventTarget.h"
+#include "core/dom/EventTarget.h"
 
-#include "Event.h"
-#include "EventException.h"
 #include "InspectorInstrumentation.h"
 #include "ScriptController.h"
-#include "TransitionEvent.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/TransitionEvent.h"
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/Vector.h>

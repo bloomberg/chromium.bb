@@ -29,7 +29,7 @@
 #ifndef SiblingTraversalStrategies_h
 #define SiblingTraversalStrategies_h
 
-#include "Element.h"
+#include "core/dom/Element.h"
 #include "core/rendering/style/RenderStyle.h"
 
 #include <wtf/UnusedParam.h>

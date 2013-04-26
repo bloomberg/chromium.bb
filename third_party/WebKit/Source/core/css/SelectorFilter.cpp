@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/css/SelectorFilter.h"
 
-#include "StyledElement.h"
 #include "core/css/CSSSelector.h"
+#include "core/dom/StyledElement.h"
 
 namespace WebCore {
 

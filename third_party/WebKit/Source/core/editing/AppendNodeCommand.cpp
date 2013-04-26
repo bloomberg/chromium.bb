@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/editing/AppendNodeCommand.h"
 
-#include "Document.h"
-#include "ExceptionCodePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/editing/htmlediting.h"
 
 namespace WebCore {

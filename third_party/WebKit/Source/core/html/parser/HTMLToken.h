@@ -26,8 +26,8 @@
 #ifndef HTMLToken_h
 #define HTMLToken_h
 
-#include "Attribute.h"
 #include "HTMLToken.h"
+#include "core/dom/Attribute.h"
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
 

@@ -26,11 +26,11 @@
 #ifndef RadioNodeList_h
 #define RadioNodeList_h
 
-#include "LiveNodeList.h"
+#include "core/dom/LiveNodeList.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

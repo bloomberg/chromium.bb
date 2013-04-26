@@ -27,11 +27,11 @@
 #include "config.h"
 #include "HTMLElementStack.h"
 
-#include "DocumentFragment.h"
-#include "Element.h"
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Element.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

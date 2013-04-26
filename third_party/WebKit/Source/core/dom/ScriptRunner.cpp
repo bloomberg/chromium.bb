@@ -24,12 +24,12 @@
  */
 
 #include "config.h"
-#include "ScriptRunner.h"
+#include "core/dom/ScriptRunner.h"
 
-#include "Document.h"
-#include "Element.h"
-#include "PendingScript.h"
-#include "ScriptElement.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/PendingScript.h"
+#include "core/dom/ScriptElement.h"
 #include "core/loader/cache/CachedScript.h"
 
 namespace WebCore {

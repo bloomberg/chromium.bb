@@ -32,8 +32,6 @@
 #include "WebView.h"
 
 #include <gtest/gtest.h>
-#include "Document.h"
-#include "Element.h"
 #include "FrameTestHelpers.h"
 #include "HTMLDocument.h"
 #include "URLTestHelpers.h"
@@ -48,6 +46,8 @@
 #include "WebSettings.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/page/FrameView.h"
 #include <public/Platform.h>
 #include <public/WebSize.h>

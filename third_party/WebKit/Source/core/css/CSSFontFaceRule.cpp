@@ -22,10 +22,10 @@
 #include "config.h"
 #include "core/css/CSSFontFaceRule.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/StringBuilder.h>
 
 namespace WebCore {

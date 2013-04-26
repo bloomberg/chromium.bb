@@ -25,15 +25,15 @@
 #include "config.h"
 #include "HTMLKeygenElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
-#include "ElementShadow.h"
 #include "FormDataList.h"
 #include "HTMLNames.h"
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
-#include "ShadowRoot.h"
-#include "Text.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/Text.h"
 #include "core/platform/SSLKeyGenerator.h"
 #include <wtf/StdLibExtras.h>
 

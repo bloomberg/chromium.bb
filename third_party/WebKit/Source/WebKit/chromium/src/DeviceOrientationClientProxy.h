@@ -26,9 +26,9 @@
 #ifndef DeviceOrientationClientProxy_h
 #define DeviceOrientationClientProxy_h
 
-#include "DeviceOrientationClient.h"
-#include "DeviceOrientationData.h"
 #include "WebDeviceOrientationClient.h"
+#include "core/dom/DeviceOrientationClient.h"
+#include "core/dom/DeviceOrientationData.h"
 #include <wtf/RefPtr.h>
 
 namespace WebCore {

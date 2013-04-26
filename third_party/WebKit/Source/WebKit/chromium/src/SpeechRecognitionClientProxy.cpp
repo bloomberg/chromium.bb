@@ -26,7 +26,6 @@
 #include "config.h"
 #include "SpeechRecognitionClientProxy.h"
 
-#include "ScriptExecutionContext.h"
 #include "SpeechGrammarList.h"
 #include "SpeechRecognition.h"
 #include "SpeechRecognitionError.h"
@@ -38,6 +37,7 @@
 #include "WebSpeechRecognitionParams.h"
 #include "WebSpeechRecognitionResult.h"
 #include "WebSpeechRecognizer.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/SecurityOrigin.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

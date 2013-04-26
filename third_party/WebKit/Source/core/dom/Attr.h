@@ -25,8 +25,8 @@
 #ifndef Attr_h
 #define Attr_h
 
-#include "ContainerNode.h"
-#include "QualifiedName.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/QualifiedName.h"
 
 namespace WebCore {
 

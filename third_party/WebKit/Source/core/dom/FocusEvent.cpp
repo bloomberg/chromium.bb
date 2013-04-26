@@ -24,13 +24,13 @@
  */
 
 #include "config.h"
-#include "FocusEvent.h"
+#include "core/dom/FocusEvent.h"
 
-#include "Event.h"
-#include "EventDispatcher.h"
-#include "EventNames.h"
-#include "EventRetargeter.h"
-#include "Node.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventDispatcher.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventRetargeter.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

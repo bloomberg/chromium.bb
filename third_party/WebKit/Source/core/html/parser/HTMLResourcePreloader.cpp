@@ -26,7 +26,7 @@
 #include "config.h"
 #include "HTMLResourcePreloader.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 
 #include "core/css/MediaList.h"

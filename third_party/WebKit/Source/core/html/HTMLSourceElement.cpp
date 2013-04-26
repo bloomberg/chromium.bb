@@ -26,11 +26,11 @@
 #include "config.h"
 #include "HTMLSourceElement.h"
 
-#include "Event.h"
-#include "EventNames.h"
 #include "HTMLDocument.h"
 #include "HTMLMediaElement.h"
 #include "HTMLNames.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
 #include "core/platform/Logging.h"
 
 using namespace std;

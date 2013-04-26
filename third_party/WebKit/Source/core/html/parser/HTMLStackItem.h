@@ -27,10 +27,10 @@
 #define HTMLStackItem_h
 
 #include "AtomicHTMLToken.h"
-#include "Element.h"
 #include "HTMLNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
+#include "core/dom/Element.h"
 
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

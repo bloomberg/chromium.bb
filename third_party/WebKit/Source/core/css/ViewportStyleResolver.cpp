@@ -33,10 +33,10 @@
 #if ENABLE(CSS_DEVICE_ADAPTATION)
 
 #include "CSSValueKeywords.h"
-#include "Document.h"
-#include "ViewportArguments.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/Document.h"
+#include "core/dom/ViewportArguments.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderView.h"
 

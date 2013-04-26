@@ -31,10 +31,10 @@
 #include "config.h"
 #include "core/loader/ThreadableLoader.h"
 
-#include "Document.h"
-#include "ScriptExecutionContext.h"
 #include "WorkerContext.h"
 #include "WorkerRunLoop.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/loader/DocumentThreadableLoader.h"
 #include "core/loader/WorkerThreadableLoader.h"
 

@@ -28,7 +28,6 @@
 #include "HTMLTreeBuilder.h"
 
 #include "AtomicHTMLToken.h"
-#include "DocumentFragment.h"
 #include "HTMLDocument.h"
 #include "HTMLDocumentParser.h"
 #include "HTMLFormElement.h"
@@ -43,6 +42,7 @@
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/dom/DocumentFragment.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/NotImplemented.h"
 #include <wtf/MainThread.h>

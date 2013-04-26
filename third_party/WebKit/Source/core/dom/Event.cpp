@@ -21,13 +21,13 @@
  */
 
 #include "config.h"
-#include "Event.h"
+#include "core/dom/Event.h"
 
-#include "EventDispatcher.h"
-#include "EventNames.h"
-#include "EventTarget.h"
-#include "UserGestureIndicator.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/EventDispatcher.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/UserGestureIndicator.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/text/AtomicString.h>
 

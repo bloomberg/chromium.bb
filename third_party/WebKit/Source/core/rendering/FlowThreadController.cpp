@@ -31,7 +31,7 @@
 
 #include "core/rendering/FlowThreadController.h"
 
-#include "NamedFlowCollection.h"
+#include "core/dom/NamedFlowCollection.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderNamedFlowThread.h"
 #include "core/rendering/style/StyleInheritedData.h"

@@ -27,7 +27,7 @@
 #ifndef ActiveDOMObject_h
 #define ActiveDOMObject_h
 
-#include "ContextDestructionObserver.h"
+#include "core/dom/ContextDestructionObserver.h"
 #include <wtf/Assertions.h>
 #include <wtf/Forward.h>
 

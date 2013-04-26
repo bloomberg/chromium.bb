@@ -1156,7 +1156,7 @@ END
     my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"GetterRaisesException"};
     my $isNullable = $attribute->signature->isNullable;
     if ($useExceptions) {
-        AddToImplIncludes("ExceptionCode.h");
+        AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "    ExceptionCode ec = 0;\n";
     }
 
@@ -1397,7 +1397,7 @@ sub GenerateCustomElementInvocationScopeIfNeeded
             die "IDL error: [Reflect] and [DeliverCustomElementCallbacks] cannot coexist yet";
         }
 
-        AddToImplIncludes("CustomElementRegistry.h");
+        AddToImplIncludes("core/dom/CustomElementRegistry.h");
         $code .= <<END;
     CustomElementRegistry::CallbackDeliveryScope deliveryScope;
 END
@@ -1482,7 +1482,7 @@ sub GenerateNormalAttrSetter
     $svgNativeType* imp = ${v8InterfaceName}::toNative(info.Holder());
 END
         } else {
-            AddToImplIncludes("ExceptionCode.h");
+            AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $svgNativeType* wrapper = ${v8InterfaceName}::toNative(info.Holder());\n";
             $code .= "    if (wrapper->isReadOnly()) {\n";
             $code .= "        setDOMException(NO_MODIFICATION_ALLOWED_ERR, info.GetIsolate());\n";
@@ -1566,7 +1566,7 @@ END
     my $useExceptions = 1 if $attribute->signature->extendedAttributes->{"SetterRaisesException"};
 
     if ($useExceptions) {
-        AddToImplIncludes("ExceptionCode.h");
+        AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "    ExceptionCode ec = 0;\n";
     }
 
@@ -1881,7 +1881,7 @@ END
         if ($interfaceName =~ /List$/) {
             $code .= "    $nativeClassName imp = ${v8InterfaceName}::toNative(args.Holder());\n";
         } else {
-            AddToImplIncludes("ExceptionCode.h");
+            AddToImplIncludes("core/dom/ExceptionCode.h");
             $code .= "    $nativeClassName wrapper = ${v8InterfaceName}::toNative(args.Holder());\n";
             $code .= "    if (wrapper->isReadOnly())\n";
             $code .= "        return setDOMException(NO_MODIFICATION_ALLOWED_ERR, args.GetIsolate());\n";
@@ -1917,7 +1917,7 @@ END
     }
 
     if ($raisesExceptions) {
-        AddToImplIncludes("ExceptionCode.h");
+        AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "    ExceptionCode ec = 0;\n";
         $code .= "    {\n";
         # The brace here is needed to prevent the ensuing 'goto fail's from jumping past constructors
@@ -2053,7 +2053,7 @@ sub GenerateParametersCheck
             next;
         }
 
-        AddToImplIncludes("ExceptionCode.h");
+        AddToImplIncludes("core/dom/ExceptionCode.h");
         if ($parameter->extendedAttributes->{"Callback"}) {
             my $v8InterfaceName = "V8" . $parameter->type;
             AddToImplIncludes("$v8InterfaceName.h");
@@ -2257,7 +2257,7 @@ END
     }
 
     if ($raisesExceptions) {
-        AddToImplIncludes("ExceptionCode.h");
+        AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "\n";
         $code .= "    ExceptionCode ec = 0;\n";
     }
@@ -2512,7 +2512,7 @@ END
     $code .= GenerateArgumentsCountCheck($function, $interface);
 
     if ($raisesExceptions) {
-        AddToImplIncludes("ExceptionCode.h");
+        AddToImplIncludes("core/dom/ExceptionCode.h");
         $code .= "\n";
         $code .= "    ExceptionCode ec = 0;\n";
     }
@@ -3065,7 +3065,7 @@ sub GenerateImplementation
     push(@implContentHeader, GenerateImplementationContentHeader($interface));
 
     AddToImplIncludes("BindingState.h");
-    AddToImplIncludes("ContextFeatures.h");
+    AddToImplIncludes("core/dom/ContextFeatures.h");
     AddToImplIncludes("V8Binding.h");
     AddToImplIncludes("V8DOMWrapper.h");
     AddToImplIncludes("core/page/RuntimeEnabledFeatures.h");
@@ -3890,7 +3890,7 @@ sub GenerateCallbackImplementation
     # - Add default header template
     push(@implContentHeader, GenerateImplementationContentHeader($interface));
 
-    AddToImplIncludes("ScriptExecutionContext.h");
+    AddToImplIncludes("core/dom/ScriptExecutionContext.h");
     AddToImplIncludes("V8Binding.h");
     AddToImplIncludes("V8Callback.h");
 
@@ -4434,7 +4434,7 @@ sub TypeCanFailConversion
     my $signature = shift;
     my $type = $signature->type;
 
-    AddToImplIncludes("ExceptionCode.h") if $type eq "Attr";
+    AddToImplIncludes("core/dom/ExceptionCode.h") if $type eq "Attr";
     return 1 if $type eq "Attr";
     return 0;
 }
@@ -4529,7 +4529,7 @@ sub GetV8HeaderName
 {
     my $type = shift;
     return "V8Event.h" if $type eq "DOMTimeStamp";
-    return "EventListener.h" if $type eq "EventListener";
+    return "core/dom/EventListener.h" if $type eq "EventListener";
     return "SerializedScriptValue.h" if $type eq "SerializedScriptValue";
     return "ScriptValue.h" if $type eq "any";
     return "V8${type}.h";
@@ -4561,7 +4561,7 @@ sub CreateCustomSignature
                 if ($arrayOrSequenceType) {
                     if ($arrayType eq "DOMString") {
                         AddToImplIncludes("V8DOMStringList.h");
-                        AddToImplIncludes("DOMStringList.h");
+                        AddToImplIncludes("core/dom/DOMStringList.h");
 
                     } elsif ($codeGenerator->IsRefPtrType($arrayOrSequenceType)) {
                         AddToImplIncludes(GetV8HeaderName($arrayOrSequenceType));
@@ -4763,7 +4763,7 @@ sub NativeToJSValue
     if ($arrayOrSequenceType) {
         if ($arrayType eq "DOMString") {
             AddToImplIncludes("V8DOMStringList.h");
-            AddToImplIncludes("DOMStringList.h");
+            AddToImplIncludes("core/dom/DOMStringList.h");
 
         } elsif ($codeGenerator->IsRefPtrType($arrayOrSequenceType)) {
             AddToImplIncludes(GetV8HeaderName($arrayOrSequenceType));

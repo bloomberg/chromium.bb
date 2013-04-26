@@ -33,7 +33,7 @@
 #include "HTMLImageElement.h"
 #include "HTMLMapElement.h"
 #include "HTMLNames.h"
-#include "Node.h"
+#include "core/dom/Node.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameTree.h"
 #include "core/page/FrameView.h"

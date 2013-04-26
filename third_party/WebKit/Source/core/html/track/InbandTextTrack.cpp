@@ -28,11 +28,11 @@
 #include "InbandTextTrack.h"
 
 #include <math.h>
-#include "Document.h"
-#include "Event.h"
-#include "ExceptionCodePlaceholder.h"
 #include "TextTrackCueGeneric.h"
 #include "TextTrackCueList.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/Logging.h"
 #include "core/platform/graphics/InbandTextTrackPrivate.h"
 #include "core/platform/graphics/MediaPlayer.h"

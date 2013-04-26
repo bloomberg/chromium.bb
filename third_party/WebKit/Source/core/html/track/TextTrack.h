@@ -27,8 +27,8 @@
 #ifndef TextTrack_h
 #define TextTrack_h
 
-#include "ExceptionCode.h"
 #include "TrackBase.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/WTFString.h>

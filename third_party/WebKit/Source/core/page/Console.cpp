@@ -31,7 +31,6 @@
 
 #include <stdio.h>
 #include "ConsoleAPITypes.h"
-#include "Document.h"
 #include "InspectorConsoleInstrumentation.h"
 #include "InspectorController.h"
 #include "ScriptArguments.h"
@@ -40,7 +39,8 @@
 #include "ScriptProfile.h"
 #include "ScriptProfiler.h"
 #include "ScriptValue.h"
-#include "ScriptableDocumentParser.h"
+#include "core/dom/Document.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"

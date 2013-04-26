@@ -23,13 +23,13 @@
 #include "config.h"
 #include "HTMLScriptElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
-#include "Event.h"
-#include "EventNames.h"
 #include "HTMLNames.h"
 #include "ScriptEventListener.h"
-#include "Text.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/Text.h"
 
 namespace WebCore {
 

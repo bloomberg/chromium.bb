@@ -25,15 +25,15 @@
  */
 
 #include "config.h"
-#include "EventContext.h"
+#include "core/dom/EventContext.h"
 
-#include "Document.h"
-#include "Event.h"
-#include "FocusEvent.h"
-#include "MouseEvent.h"
-#include "Node.h"
-#include "TouchEvent.h"
-#include "TouchList.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/FocusEvent.h"
+#include "core/dom/MouseEvent.h"
+#include "core/dom/Node.h"
+#include "core/dom/TouchEvent.h"
+#include "core/dom/TouchList.h"
 #include "core/page/DOMWindow.h"
 
 namespace WebCore {

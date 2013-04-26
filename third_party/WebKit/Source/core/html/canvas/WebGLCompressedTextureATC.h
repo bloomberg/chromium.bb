@@ -26,8 +26,8 @@
 #ifndef WebGLCompressedTextureATC_h
 #define WebGLCompressedTextureATC_h
 
-#include "ExceptionCode.h"
 #include "WebGLExtension.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/PassOwnPtr.h>
 
 namespace WebCore {

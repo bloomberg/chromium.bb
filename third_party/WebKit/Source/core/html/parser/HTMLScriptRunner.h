@@ -26,10 +26,10 @@
 #ifndef HTMLScriptRunner_h
 #define HTMLScriptRunner_h
 
-#include "PendingScript.h"
+#include "core/dom/PendingScript.h"
 #include <wtf/Deque.h>
-#include <wtf/text/TextPosition.h>
 #include <wtf/PassRefPtr.h>
+#include <wtf/text/TextPosition.h>
 
 namespace WebCore {
 

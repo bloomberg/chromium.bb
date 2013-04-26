@@ -26,9 +26,9 @@
 #include "config.h"
 #include "WebGeolocationPermissionRequest.h"
 
-#include "Document.h"
 #include "Geolocation.h"
 #include "WebSecurityOrigin.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"
 #include <public/WebURL.h>

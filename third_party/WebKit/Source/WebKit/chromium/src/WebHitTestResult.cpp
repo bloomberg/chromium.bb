@@ -26,10 +26,10 @@
 #include "config.h"
 #include "WebHitTestResult.h"
 
-#include "Element.h"
-#include "Node.h"
 #include "WebElement.h"
 #include "WebNode.h"
+#include "core/dom/Element.h"
+#include "core/dom/Node.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/platform/KURL.h"
 #include "core/rendering/HitTestResult.h"

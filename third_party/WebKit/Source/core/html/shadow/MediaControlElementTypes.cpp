@@ -32,10 +32,10 @@
 #include "MediaControlElementTypes.h"
 
 #include "CSSValueKeywords.h"
-#include "ExceptionCodePlaceholder.h"
 #include "HTMLNames.h"
-#include "MouseEvent.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/MouseEvent.h"
 #include "core/rendering/RenderMedia.h"
 #include "core/rendering/RenderMediaControlElements.h"
 

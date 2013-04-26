@@ -30,15 +30,15 @@
 
 #include "config.h"
 
-#include "CustomElementRegistry.h"
+#include "core/dom/CustomElementRegistry.h"
 
-#include "CustomElementConstructor.h"
 #include "CustomElementHelpers.h"
 #include "Dictionary.h"
-#include "Document.h"
-#include "Element.h"
 #include "HTMLNames.h"
 #include "HTMLUnknownElement.h"
+#include "core/dom/CustomElementConstructor.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/HashSet.h>

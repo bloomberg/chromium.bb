@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "CheckedRadioButtons.h"
+#include "core/dom/CheckedRadioButtons.h"
 
 #include "HTMLInputElement.h"
 #include <wtf/HashSet.h>

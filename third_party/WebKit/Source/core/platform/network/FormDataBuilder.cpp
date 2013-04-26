@@ -25,7 +25,7 @@
 #include "config.h"
 #include "core/platform/network/FormDataBuilder.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/platform/text/TextEncoding.h"

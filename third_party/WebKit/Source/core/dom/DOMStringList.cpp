@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DOMStringList.h"
+#include "core/dom/DOMStringList.h"
 
 namespace WebCore {
 

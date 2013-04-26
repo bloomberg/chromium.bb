@@ -25,11 +25,11 @@
 #include "config.h"
 #include "HTMLTableCellElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "HTMLTableElement.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/RenderTableCell.h"
 
 using std::max;

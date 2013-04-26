@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/loader/cache/CachedScript.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedResourceClient.h"
 #include "core/loader/cache/CachedResourceClientWalker.h"

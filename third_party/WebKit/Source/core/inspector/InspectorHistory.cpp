@@ -31,8 +31,8 @@
 #include "config.h"
 #include "InspectorHistory.h"
 
-#include "ExceptionCodePlaceholder.h"
-#include "Node.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

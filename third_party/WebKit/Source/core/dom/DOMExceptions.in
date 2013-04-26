@@ -1,9 +1,9 @@
 namespace=Exception
 
-DOMCoreException
-EventException
+core/dom/DOMCoreException
+core/dom/EventException
 FileException
-RangeException
+core/dom/RangeException
 SQLException
 SVGException conditional=SVG
 XMLHttpRequestException

@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/SplitTextNodeContainingElementCommand.h"
 
-#include "Element.h"
-#include "Text.h"
+#include "core/dom/Element.h"
+#include "core/dom/Text.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/Assertions.h>
 

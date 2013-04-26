@@ -23,13 +23,13 @@
  */
 
 #include "config.h"
-#include "NamedNodeMap.h"
+#include "core/dom/NamedNodeMap.h"
 
-#include "Attr.h"
-#include "Document.h"
-#include "Element.h"
-#include "ExceptionCode.h"
 #include "HTMLNames.h"
+#include "core/dom/Attr.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

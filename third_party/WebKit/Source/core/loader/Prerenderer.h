@@ -32,7 +32,7 @@
 #ifndef Prerenderer_h
 #define Prerenderer_h
 
-#include "ActiveDOMObject.h"
+#include "core/dom/ActiveDOMObject.h"
 #include "core/platform/KURL.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

@@ -21,8 +21,8 @@
 #include "config.h"
 #include "core/rendering/RenderDetailsMarker.h"
 
-#include "Element.h"
 #include "HTMLNames.h"
+#include "core/dom/Element.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/PaintInfo.h"
 

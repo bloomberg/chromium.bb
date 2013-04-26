@@ -22,15 +22,15 @@
 #if ENABLE(SVG)
 #include "SVGDocument.h"
 
-#include "EventNames.h"
-#include "ExceptionCode.h"
-#include "NodeRenderingContext.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
 #include "SVGSVGElement.h"
 #include "SVGViewSpec.h"
 #include "SVGZoomAndPan.h"
 #include "SVGZoomEvent.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeRenderingContext.h"
 #include "core/page/FrameView.h"
 #include "core/rendering/RenderView.h"
 

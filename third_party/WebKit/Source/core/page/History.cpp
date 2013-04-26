@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/page/History.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/FrameLoader.h"

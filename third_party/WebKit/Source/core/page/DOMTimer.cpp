@@ -29,8 +29,8 @@
 
 #include "InspectorInstrumentation.h"
 #include "ScheduledAction.h"
-#include "ScriptExecutionContext.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/HashSet.h>
 #include <wtf/StdLibExtras.h>

@@ -26,17 +26,17 @@
 #ifndef XMLHttpRequestUpload_h
 #define XMLHttpRequestUpload_h
 
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
 #include "XMLHttpRequest.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/AtomicStringHash.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

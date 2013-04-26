@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "DeviceAcceleration.h"
+#include "modules/device_orientation/DeviceAcceleration.h"
 
 namespace WebCore {
 

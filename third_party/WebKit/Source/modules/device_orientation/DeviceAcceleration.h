@@ -26,7 +26,7 @@
 #ifndef DeviceAcceleration_h
 #define DeviceAcceleration_h
 
-#include "DeviceMotionData.h"
+#include "modules/device_orientation/DeviceMotionData.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

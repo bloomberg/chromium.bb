@@ -27,9 +27,9 @@
 
 #include "TimeRanges.h"
 
-#include "ExceptionCode.h"
-#include "ExceptionCodePlaceholder.h"
 #include <math.h>
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 
 using namespace WebCore;
 using namespace std;

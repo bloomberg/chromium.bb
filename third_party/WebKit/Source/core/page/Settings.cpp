@@ -28,9 +28,9 @@
 
 #include <limits>
 #include "Database.h"
-#include "Document.h"
 #include "HTMLMediaElement.h"
 #include "InspectorInstrumentation.h"
+#include "core/dom/Document.h"
 #include "core/history/BackForwardController.h"
 #include "core/history/HistoryItem.h"
 #include "core/loader/cache/CachedResourceLoader.h"

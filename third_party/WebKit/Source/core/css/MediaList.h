@@ -21,12 +21,12 @@
 #ifndef MediaList_h
 #define MediaList_h
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

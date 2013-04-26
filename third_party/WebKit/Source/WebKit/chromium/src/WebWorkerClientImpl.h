@@ -31,11 +31,11 @@
 #ifndef WebWorkerClientImpl_h
 #define WebWorkerClientImpl_h
 
-#include "ScriptExecutionContext.h"
 #include "WorkerContextProxy.h"
 #include "WorkerLoaderProxy.h"
 #include "WorkerMessagingProxy.h"
 #include "WorkerObjectProxy.h"
+#include "core/dom/ScriptExecutionContext.h"
 
 #include "WebWorkerBase.h"
 #include <public/WebFileSystem.h>

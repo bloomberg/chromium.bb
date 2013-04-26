@@ -33,18 +33,18 @@
 
 #include "DOMPatchSupport.h"
 
-#include "Attribute.h"
-#include "ContextFeatures.h"
 #include "DOMEditor.h"
-#include "Document.h"
-#include "DocumentFragment.h"
 #include "HTMLDocument.h"
 #include "HTMLDocumentParser.h"
 #include "HTMLElement.h"
 #include "HTMLHeadElement.h"
 #include "HTMLNames.h"
 #include "InspectorHistory.h"
-#include "Node.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/Node.h"
 #include "core/xml/parser/XMLDocumentParser.h"
 
 #include <wtf/Deque.h>

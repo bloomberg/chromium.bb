@@ -31,9 +31,9 @@
 #include <algorithm>
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/htmlediting.h"

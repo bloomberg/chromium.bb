@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebWorkerBase.h"
 
-#include "CrossThreadTask.h"
+#include "core/dom/CrossThreadTask.h"
 
 #include "WorkerContext.h"
 #include "WorkerLoaderProxy.h"

@@ -32,7 +32,7 @@
 #include "WebNodeCollection.h"
 
 #include "HTMLCollection.h"
-#include "Node.h"
+#include "core/dom/Node.h"
 #include <wtf/PassRefPtr.h>
 
 #include "WebNode.h"

@@ -32,10 +32,10 @@
 
 #include "SharedWorkerContext.h"
 
-#include "EventNames.h"
-#include "MessageEvent.h"
 #include "ScriptCallStack.h"
 #include "SharedWorkerThread.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/MessageEvent.h"
 #include "core/page/DOMWindow.h"
 #include "core/platform/NotImplemented.h"
 

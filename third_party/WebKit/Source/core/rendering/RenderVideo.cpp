@@ -27,9 +27,9 @@
 
 #include "core/rendering/RenderVideo.h"
 
-#include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLVideoElement.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"

@@ -21,15 +21,15 @@
  * Boston, MA 02110-1301, USA.
  */
 #include "config.h"
-#include "Attr.h"
+#include "core/dom/Attr.h"
 
-#include "ExceptionCode.h"
 #include "HTMLNames.h"
-#include "ScopedEventQueue.h"
-#include "StyledElement.h"
-#include "Text.h"
 #include "XMLNSNames.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ScopedEventQueue.h"
+#include "core/dom/StyledElement.h"
+#include "core/dom/Text.h"
 #include <wtf/text/AtomicString.h>
 #include <wtf/text/StringBuilder.h>
 

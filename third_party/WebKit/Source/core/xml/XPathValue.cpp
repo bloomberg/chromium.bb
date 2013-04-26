@@ -27,10 +27,10 @@
 #include "config.h"
 #include "XPathValue.h"
 
-#include "Node.h"
+#include <limits>
 #include "XPathExpressionNode.h"
 #include "XPathUtil.h"
-#include <limits>
+#include "core/dom/Node.h"
 #include <wtf/MathExtras.h>
 #include <wtf/StdLibExtras.h>
 

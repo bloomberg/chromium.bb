@@ -33,7 +33,6 @@
 
 #include "WebSharedWorker.h"
 
-#include "ScriptExecutionContext.h"
 #include "WebCommonWorkerClient.h"
 #include "WebContentSecurityPolicy.h"
 #include "WebFrameClient.h"
@@ -42,6 +41,7 @@
 #include "WorkerLoaderProxy.h"
 #include "WorkerObjectProxy.h"
 #include "WorkerThread.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefPtr.h>
 

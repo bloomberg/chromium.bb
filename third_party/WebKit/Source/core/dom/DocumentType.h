@@ -24,7 +24,7 @@
 #ifndef DocumentType_h
 #define DocumentType_h
 
-#include "Node.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

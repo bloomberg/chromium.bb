@@ -23,15 +23,15 @@
 #if ENABLE(SVG)
 #include "SVGScriptElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
-#include "Event.h"
-#include "EventNames.h"
 #include "HTMLNames.h"
 #include "SVGAnimatedStaticPropertyTearOff.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "ScriptEventListener.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

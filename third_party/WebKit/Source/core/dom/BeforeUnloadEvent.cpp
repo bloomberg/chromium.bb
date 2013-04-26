@@ -21,9 +21,9 @@
  */
 
 #include "config.h"
-#include "BeforeUnloadEvent.h"
+#include "core/dom/BeforeUnloadEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

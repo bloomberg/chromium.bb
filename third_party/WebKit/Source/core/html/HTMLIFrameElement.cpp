@@ -25,12 +25,12 @@
 #include "config.h"
 #include "HTMLIFrameElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
-#include "NodeRenderingContext.h"
-#include "ScriptableDocumentParser.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/NodeRenderingContext.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/page/Frame.h"
 #include "core/rendering/RenderIFrame.h"
 #include <wtf/text/TextPosition.h>

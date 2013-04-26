@@ -25,9 +25,9 @@
 #include "config.h"
 #include "core/page/PointerLockController.h"
 
-#include "Element.h"
-#include "Event.h"
 #include "VoidCallback.h"
+#include "core/dom/Element.h"
+#include "core/dom/Event.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

@@ -33,8 +33,6 @@
 
 #include "config.h"
 
-#include "DocumentMarker.h"
-#include "ExceptionCode.h"
 #include "FileError.h"
 #include "FileSystemType.h"
 #include "GeolocationError.h"
@@ -48,7 +46,6 @@
 #include "IDBKey.h"
 #include "IDBKeyPath.h"
 #include "IDBMetadata.h"
-#include "IconURL.h"
 #include "NotificationClient.h"
 #include "SpeechRecognitionError.h"
 #include "StorageQuota.h"
@@ -88,6 +85,9 @@
 #include "WebView.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityObject.h"
+#include "core/dom/DocumentMarker.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/IconURL.h"
 #include "core/editing/EditorInsertAction.h"
 #include "core/editing/TextAffinity.h"
 #include "core/loader/appcache/ApplicationCacheHost.h"

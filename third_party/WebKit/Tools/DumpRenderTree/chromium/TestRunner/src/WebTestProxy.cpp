@@ -63,8 +63,8 @@
 #include "WebUserMediaClientMock.h"
 #include "WebView.h"
 // FIXME: Including platform_canvas.h here is a layering violation.
-#include "skia/ext/platform_canvas.h"
 #include <cctype>
+#include "skia/ext/platform_canvas.h"
 #include <public/WebCString.h>
 #include <public/WebURLError.h>
 #include <public/WebURLRequest.h>

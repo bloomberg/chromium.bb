@@ -27,11 +27,11 @@
 
 #include <math.h>
 #include <algorithm>
-#include "Document.h"
 #include "HTMLElement.h"
 #include "HTMLFrameOwnerElement.h"
 #include "HTMLNames.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/htmlediting.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/page/Chrome.h"

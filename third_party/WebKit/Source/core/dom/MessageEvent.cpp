@@ -26,9 +26,9 @@
  */
 
 #include "config.h"
-#include "MessageEvent.h"
+#include "core/dom/MessageEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 #include "core/page/DOMWindow.h"
 
 namespace WebCore {

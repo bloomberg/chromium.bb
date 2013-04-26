@@ -24,11 +24,11 @@
  */
 
 #include "config.h"
-#include "DatasetDOMStringMap.h"
+#include "core/dom/DatasetDOMStringMap.h"
 
-#include "Attribute.h"
-#include "Element.h"
-#include "ExceptionCode.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/ASCIICType.h>
 #include <wtf/text/StringBuilder.h>
 

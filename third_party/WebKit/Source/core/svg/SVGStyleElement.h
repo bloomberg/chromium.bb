@@ -24,7 +24,7 @@
 #if ENABLE(SVG)
 #include "SVGElement.h"
 #include "SVGLangSpace.h"
-#include "StyleElement.h"
+#include "core/dom/StyleElement.h"
 
 namespace WebCore {
 

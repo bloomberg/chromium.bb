@@ -21,9 +21,9 @@
 #include "config.h"
 #include "core/rendering/RenderButton.h"
 
-#include "Document.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
+#include "core/dom/Document.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/rendering/RenderTextFragment.h"
 #include "core/rendering/RenderTheme.h"

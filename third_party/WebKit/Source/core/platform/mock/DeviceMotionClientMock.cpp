@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/platform/mock/DeviceMotionClientMock.h"
 
-#include "DeviceMotionController.h"
+#include "modules/device_orientation/DeviceMotionController.h"
 
 namespace WebCore {
 

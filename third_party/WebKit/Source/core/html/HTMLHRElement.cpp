@@ -23,12 +23,12 @@
 #include "config.h"
 #include "HTMLHRElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Attribute.h"
 
 namespace WebCore {
 

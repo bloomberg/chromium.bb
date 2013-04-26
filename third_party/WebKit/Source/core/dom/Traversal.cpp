@@ -23,10 +23,10 @@
  */
 
 #include "config.h"
-#include "Traversal.h"
+#include "core/dom/Traversal.h"
 
-#include "Node.h"
-#include "NodeFilter.h"
+#include "core/dom/Node.h"
+#include "core/dom/NodeFilter.h"
 
 namespace WebCore {
 

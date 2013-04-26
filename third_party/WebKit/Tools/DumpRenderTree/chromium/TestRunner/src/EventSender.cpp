@@ -43,6 +43,7 @@
 #include "config.h"
 #include "EventSender.h"
 
+#include <deque>
 #include "KeyCodeMapping.h"
 #include "MockSpellCheck.h"
 #include "TestCommon.h"
@@ -51,7 +52,6 @@
 #include "WebTestDelegate.h"
 #include "WebTouchPoint.h"
 #include "WebView.h"
-#include <deque>
 #include <public/WebDragData.h>
 #include <public/WebPoint.h>
 #include <public/WebString.h>

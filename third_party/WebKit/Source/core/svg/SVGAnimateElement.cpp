@@ -26,12 +26,12 @@
 #include "SVGAnimateElement.h"
 
 #include "CSSPropertyNames.h"
-#include "QualifiedName.h"
 #include "SVGAnimatorFactory.h"
 #include "SVGNames.h"
 #include "SVGStyledElement.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/QualifiedName.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {

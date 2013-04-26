@@ -21,11 +21,11 @@
  */
 
 #include "config.h"
-#include "NameNodeList.h"
+#include "core/dom/NameNodeList.h"
 
-#include "Element.h"
 #include "HTMLNames.h"
-#include "NodeRareData.h"
+#include "core/dom/Element.h"
+#include "core/dom/NodeRareData.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

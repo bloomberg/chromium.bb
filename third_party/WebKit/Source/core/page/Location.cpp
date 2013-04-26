@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/page/Location.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/Frame.h"

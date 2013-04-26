@@ -31,8 +31,8 @@
 #include "config.h"
 #include "ViewportAnchor.h"
 
-#include "ContainerNode.h"
-#include "Node.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/Node.h"
 #include "core/page/EventHandler.h"
 #include "core/rendering/HitTestResult.h"
 

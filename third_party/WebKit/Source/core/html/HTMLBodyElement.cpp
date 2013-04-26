@@ -24,9 +24,7 @@
 #include "config.h"
 #include "HTMLBodyElement.h"
 
-#include "Attribute.h"
 #include "CSSValueKeywords.h"
-#include "EventNames.h"
 #include "HTMLFrameElementBase.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
@@ -34,6 +32,8 @@
 #include "core/css/CSSImageValue.h"
 #include "core/css/CSSParser.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/EventNames.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"

@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/loader/FrameLoadRequest.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 
 namespace WebCore {

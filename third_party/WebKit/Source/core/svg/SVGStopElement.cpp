@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGStopElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
 #include "SVGElementInstance.h"
 #include "SVGGradientElement.h"
 #include "SVGNames.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/rendering/svg/RenderSVGGradientStop.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 

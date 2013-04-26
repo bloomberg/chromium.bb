@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/RemoveNodePreservingChildrenCommand.h"
 
-#include "Node.h"
+#include "core/dom/Node.h"
 #include <wtf/Assertions.h>
 
 namespace WebCore {

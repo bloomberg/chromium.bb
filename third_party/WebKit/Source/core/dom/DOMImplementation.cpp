@@ -23,12 +23,8 @@
  */
 
 #include "config.h"
-#include "DOMImplementation.h"
+#include "core/dom/DOMImplementation.h"
 
-#include "ContextFeatures.h"
-#include "DocumentType.h"
-#include "Element.h"
-#include "ExceptionCode.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "HTMLViewSourceDocument.h"
@@ -41,6 +37,10 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/DocumentType.h"
+#include "core/dom/Element.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Frame.h"

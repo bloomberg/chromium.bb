@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/loader/CookieJar.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/Frame.h"
 #include "core/platform/Cookie.h"
 #include "core/platform/network/NetworkingContext.h"

@@ -33,10 +33,10 @@
 #include "BlobBuilder.h"
 
 #include "Blob.h"
-#include "Document.h"
-#include "ExceptionCode.h"
 #include "File.h"
 #include "ScriptCallStack.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/HistogramSupport.h"
 #include "core/platform/text/LineEnding.h"
 #include "core/platform/text/TextEncoding.h"

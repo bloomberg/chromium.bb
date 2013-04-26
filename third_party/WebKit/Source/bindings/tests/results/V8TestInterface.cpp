@@ -23,14 +23,14 @@
 #include "V8TestInterface.h"
 
 #include "BindingState.h"
-#include "ContextFeatures.h"
-#include "ExceptionCode.h"
 #include "ScriptController.h"
 #include "TestPartialInterface.h"
 #include "V8Binding.h"
 #include "V8DOMWrapper.h"
 #include "V8Node.h"
 #include "V8TestObj.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/GetPtr.h>

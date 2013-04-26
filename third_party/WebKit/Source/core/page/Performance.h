@@ -32,8 +32,8 @@
 #ifndef Performance_h
 #define Performance_h
 
-#include "EventTarget.h"
 #include "ScriptWrappable.h"
+#include "core/dom/EventTarget.h"
 #include "core/page/DOMWindowProperty.h"
 #include "core/page/MemoryInfo.h"
 #include "core/page/PerformanceEntry.h"

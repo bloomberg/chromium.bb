@@ -20,13 +20,13 @@
 #include "config.h"
 #include "core/css/MediaQueryMatcher.h"
 
-#include "Document.h"
-#include "Element.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/MediaQueryList.h"
 #include "core/css/MediaQueryListListener.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"
 

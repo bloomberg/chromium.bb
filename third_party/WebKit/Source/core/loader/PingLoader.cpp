@@ -32,8 +32,8 @@
 #include "config.h"
 #include "core/loader/PingLoader.h"
 
-#include "Document.h"
 #include "InspectorInstrumentation.h"
+#include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/loader/UniqueIdentifier.h"

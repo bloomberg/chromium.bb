@@ -28,12 +28,12 @@
 #include "config.h"
 #include "XPathFunctions.h"
 
-#include "Element.h"
-#include "ProcessingInstruction.h"
-#include "TreeScope.h"
 #include "XMLNames.h"
 #include "XPathUtil.h"
 #include "XPathValue.h"
+#include "core/dom/Element.h"
+#include "core/dom/ProcessingInstruction.h"
+#include "core/dom/TreeScope.h"
 #include <wtf/MathExtras.h>
 #include <wtf/text/StringBuilder.h>
 

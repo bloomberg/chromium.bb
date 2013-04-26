@@ -30,8 +30,8 @@
 #include "core/page/SecurityOrigin.h"
 
 #include "BlobURL.h"
-#include "Document.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/dom/Document.h"
 #include "core/page/SecurityPolicy.h"
 #include "core/platform/FileSystem.h"
 #include "core/platform/KURL.h"

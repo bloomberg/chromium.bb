@@ -24,7 +24,7 @@
 #ifndef ChildNodeList_h
 #define ChildNodeList_h
 
-#include "LiveNodeList.h"
+#include "core/dom/LiveNodeList.h"
 #include <wtf/PassRefPtr.h>
 
 namespace WebCore {

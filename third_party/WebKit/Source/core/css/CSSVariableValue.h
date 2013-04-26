@@ -30,9 +30,9 @@
 #define CSSVariableValue_h
 
 #include "CSSPropertyNames.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSParserValues.h"
 #include "core/css/CSSValue.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

@@ -27,8 +27,8 @@
 #include "core/history/HistoryItem.h"
 
 #include <stdio.h>
-#include "Document.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/Document.h"
 #include "core/platform/SharedBuffer.h"
 #include "core/platform/network/ResourceRequest.h"
 #include <wtf/CurrentTime.h>

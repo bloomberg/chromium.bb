@@ -30,7 +30,7 @@
 #ifndef PopupListBox_h
 #define PopupListBox_h
 
-#include "Node.h"
+#include "core/dom/Node.h"
 #include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/text/TextDirection.h"
 #include <wtf/text/WTFString.h>

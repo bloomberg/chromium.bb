@@ -26,11 +26,11 @@
 #include "config.h"
 #include "XMLHttpRequestUpload.h"
 
-#include "Event.h"
-#include "EventException.h"
-#include "EventNames.h"
 #include "XMLHttpRequest.h"
 #include "XMLHttpRequestProgressEvent.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventNames.h"
 #include <wtf/Assertions.h>
 #include <wtf/text/AtomicString.h>
 

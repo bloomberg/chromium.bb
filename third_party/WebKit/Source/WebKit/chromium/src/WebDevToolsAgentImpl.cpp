@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebDevToolsAgentImpl.h"
 
-#include "ExceptionCode.h"
 #include "InjectedScriptHost.h"
 #include "InspectorBackendDispatcher.h"
 #include "InspectorController.h"
@@ -48,6 +47,7 @@
 #include "WebMemoryUsageInfo.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/cache/MemoryCache.h"
 #include "core/page/Frame.h"
 #include "core/page/FrameView.h"

@@ -31,7 +31,7 @@
 #ifndef EventListenerWrapper_h
 #define EventListenerWrapper_h
 
-#include "EventListener.h"
+#include "core/dom/EventListener.h"
 
 namespace WebCore {
 class ScriptExecutionContext;

@@ -29,13 +29,8 @@
 
 #include "WorkerContext.h"
 
-#include "ActiveDOMObject.h"
 #include "DOMURL.h"
-#include "ErrorEvent.h"
-#include "Event.h"
-#include "EventException.h"
 #include "InspectorConsoleInstrumentation.h"
-#include "MessagePort.h"
 #include "ScheduledAction.h"
 #include "ScriptCallStack.h"
 #include "ScriptSourceCode.h"
@@ -46,6 +41,11 @@
 #include "WorkerScriptLoader.h"
 #include "WorkerThread.h"
 #include "XMLHttpRequestException.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/ErrorEvent.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/MessagePort.h"
 #include "core/loader/WorkerThreadableLoader.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/DOMTimer.h"
@@ -61,7 +61,7 @@
 #include "NotificationCenter.h"
 #endif
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 
 namespace WebCore {
 

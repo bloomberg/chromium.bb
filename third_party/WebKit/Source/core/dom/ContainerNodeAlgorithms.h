@@ -22,10 +22,10 @@
 #ifndef ContainerNodeAlgorithms_h
 #define ContainerNodeAlgorithms_h
 
-#include "Document.h"
 #include "HTMLFrameOwnerElement.h"
 #include "InspectorInstrumentation.h"
-#include "NodeTraversal.h"
+#include "core/dom/Document.h"
+#include "core/dom/NodeTraversal.h"
 #include "core/page/Frame.h"
 #include <wtf/Assertions.h>
 

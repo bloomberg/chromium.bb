@@ -28,12 +28,12 @@
  */
 
 #include "config.h"
-#include "NamedFlowCollection.h"
+#include "core/dom/NamedFlowCollection.h"
 
-#include "DOMNamedFlowCollection.h"
-#include "Document.h"
 #include "InspectorInstrumentation.h"
-#include "NamedFlow.h"
+#include "core/dom/DOMNamedFlowCollection.h"
+#include "core/dom/Document.h"
+#include "core/dom/NamedFlow.h"
 
 #include <wtf/text/StringHash.h>
 #include <wtf/text/WTFString.h>

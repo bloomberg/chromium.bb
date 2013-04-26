@@ -29,7 +29,6 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Document.h"
 #include "WebKitFontFamilyNames.h"
 #include "core/css/CSSFontFace.h"
 #include "core/css/CSSFontFaceRule.h"
@@ -42,6 +41,7 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleResolver.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"

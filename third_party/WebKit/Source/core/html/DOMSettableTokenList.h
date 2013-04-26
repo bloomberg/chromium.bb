@@ -26,7 +26,7 @@
 #define DOMSettableTokenList_h
 
 #include "DOMTokenList.h"
-#include "SpaceSplitString.h"
+#include "core/dom/SpaceSplitString.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/text/AtomicString.h>

@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSCanvasValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/text/StringBuilder.h>

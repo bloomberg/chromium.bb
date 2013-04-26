@@ -30,16 +30,16 @@
 
 #include "config.h"
 
-#include "MutationObserver.h"
+#include "core/dom/MutationObserver.h"
 
-#include "Dictionary.h"
-#include "Document.h"
-#include "ExceptionCode.h"
-#include "MutationCallback.h"
-#include "MutationObserverRegistration.h"
-#include "MutationRecord.h"
-#include "Node.h"
 #include <algorithm>
+#include "Dictionary.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MutationCallback.h"
+#include "core/dom/MutationObserverRegistration.h"
+#include "core/dom/MutationRecord.h"
+#include "core/dom/Node.h"
 #include <wtf/HashSet.h>
 #include <wtf/MainThread.h>
 #include <wtf/Vector.h>

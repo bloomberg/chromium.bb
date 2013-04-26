@@ -24,8 +24,8 @@
 #if ENABLE(SVG)
 #include "SVGPreserveAspectRatio.h"
 
-#include "ExceptionCode.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/transforms/AffineTransform.h"
 #include <wtf/text/WTFString.h>

@@ -24,14 +24,14 @@
 #if ENABLE(SVG)
 #include "SVGElementInstance.h"
 
-#include "ContainerNodeAlgorithms.h"
-#include "Event.h"
-#include "EventException.h"
-#include "EventListener.h"
-#include "EventNames.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGElementInstanceList.h"
 #include "SVGUseElement.h"
+#include "core/dom/ContainerNodeAlgorithms.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
 #include "core/page/FrameView.h"
 
 #include <wtf/RefCountedLeakCounter.h>

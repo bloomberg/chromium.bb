@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/MoveSelectionCommand.h"
 
-#include "DocumentFragment.h"
+#include "core/dom/DocumentFragment.h"
 #include "core/editing/ReplaceSelectionCommand.h"
 
 namespace WebCore {

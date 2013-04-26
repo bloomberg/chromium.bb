@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "PositionIterator.h"
+#include "core/dom/PositionIterator.h"
 
 #include "HTMLNames.h"
-#include "Node.h"
+#include "core/dom/Node.h"
 #include "core/editing/htmlediting.h"
 #include "core/rendering/RenderBlock.h"
 

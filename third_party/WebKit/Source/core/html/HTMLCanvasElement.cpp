@@ -30,18 +30,18 @@
 
 #include <math.h>
 #include <stdio.h>
-#include "Attribute.h"
 #include "CanvasContextAttributes.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "CanvasRenderingContext2D.h"
 #include "CanvasStyle.h"
-#include "Document.h"
-#include "ExceptionCode.h"
 #include "HTMLNames.h"
 #include "ImageData.h"
 #include "ScriptController.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/page/Chrome.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/editing/InsertTextCommand.h"
 
-#include "Document.h"
-#include "Element.h"
-#include "Text.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/Text.h"
 #include "core/editing/Editor.h"
 #include "core/editing/HTMLInterchange.h"
 #include "core/editing/VisibleUnits.h"

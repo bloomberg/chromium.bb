@@ -24,9 +24,9 @@
 #include "core/platform/network/FormData.h"
 
 #include "BlobURL.h"
-#include "Document.h"
 #include "File.h"
 #include "FormDataList.h"
+#include "core/dom/Document.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"

@@ -32,7 +32,6 @@
 
 #include "core/accessibility/AXObjectCache.h"
 
-#include "Document.h"
 #include "HTMLAreaElement.h"
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
@@ -62,6 +61,7 @@
 #include "core/accessibility/AccessibilityTableColumn.h"
 #include "core/accessibility/AccessibilityTableHeaderContainer.h"
 #include "core/accessibility/AccessibilityTableRow.h"
+#include "core/dom/Document.h"
 #include "core/editing/Editor.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"

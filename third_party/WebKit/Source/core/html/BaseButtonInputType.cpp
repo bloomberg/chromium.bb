@@ -34,7 +34,7 @@
 
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "KeyboardEvent.h"
+#include "core/dom/KeyboardEvent.h"
 #include "core/rendering/RenderButton.h"
 
 namespace WebCore {

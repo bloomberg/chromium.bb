@@ -29,7 +29,7 @@
 #ifndef KeyframeAnimation_h
 #define KeyframeAnimation_h
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/page/animation/AnimationBase.h"
 #include "core/rendering/style/KeyframeList.h"
 

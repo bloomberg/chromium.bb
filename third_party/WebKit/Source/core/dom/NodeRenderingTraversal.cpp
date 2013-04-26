@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "NodeRenderingTraversal.h"
+#include "core/dom/NodeRenderingTraversal.h"
 
-#include "ComposedShadowTreeWalker.h"
-#include "PseudoElement.h"
+#include "core/dom/ComposedShadowTreeWalker.h"
+#include "core/dom/PseudoElement.h"
 
 namespace WebCore {
 

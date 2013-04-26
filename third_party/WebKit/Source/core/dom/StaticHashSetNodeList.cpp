@@ -28,9 +28,9 @@
  */
 
 #include "config.h"
-#include "StaticHashSetNodeList.h"
+#include "core/dom/StaticHashSetNodeList.h"
 
-#include "Element.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 

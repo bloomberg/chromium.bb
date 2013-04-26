@@ -30,7 +30,6 @@
 #include "core/css/MediaQueryEvaluator.h"
 
 #include "CSSValueKeywords.h"
-#include "NodeRenderStyle.h"
 #include "core/css/CSSAspectRatioValue.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/css/CSSValueList.h"
@@ -39,6 +38,7 @@
 #include "core/css/MediaQuery.h"
 #include "core/css/MediaQueryExp.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/NodeRenderStyle.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/DOMWindow.h"

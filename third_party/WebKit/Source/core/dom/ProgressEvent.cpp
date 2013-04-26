@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "ProgressEvent.h"
+#include "core/dom/ProgressEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

@@ -35,10 +35,10 @@
 #include "HTMLLabelElement.h"
 #include "HTMLSelectElement.h"
 #include "HTMLTextAreaElement.h"
-#include "NodeTraversal.h"
-#include "Text.h"
-#include "UserGestureIndicator.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/Text.h"
+#include "core/dom/UserGestureIndicator.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/unicode/CharacterNames.h>

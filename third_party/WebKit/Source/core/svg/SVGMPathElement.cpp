@@ -22,10 +22,10 @@
 #if ENABLE(SVG)
 #include "SVGMPathElement.h"
 
-#include "Document.h"
 #include "SVGAnimateMotionElement.h"
 #include "SVGNames.h"
 #include "SVGPathElement.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

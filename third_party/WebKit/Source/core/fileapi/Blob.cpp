@@ -34,8 +34,8 @@
 #include "BlobURL.h"
 #include "File.h"
 #include "ScriptCallStack.h"
-#include "ScriptExecutionContext.h"
 #include "ThreadableBlobRegistry.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/platform/HistogramSupport.h"
 
 namespace WebCore {

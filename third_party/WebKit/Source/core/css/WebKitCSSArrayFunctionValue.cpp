@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/css/WebKitCSSArrayFunctionValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

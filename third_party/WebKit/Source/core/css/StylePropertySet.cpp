@@ -23,7 +23,6 @@
 #include "core/css/StylePropertySet.h"
 
 #include "CSSValueKeywords.h"
-#include "Document.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
@@ -31,6 +30,7 @@
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertyShorthand.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/Document.h"
 #include "core/page/RuntimeCSSEnabled.h"
 #include <wtf/BitArray.h>
 #include <wtf/MemoryInstrumentationVector.h>

@@ -33,7 +33,7 @@
 #include "BaseClickableWithKeyInputType.h"
 
 #include "HTMLInputElement.h"
-#include "KeyboardEvent.h"
+#include "core/dom/KeyboardEvent.h"
 
 namespace WebCore {
 

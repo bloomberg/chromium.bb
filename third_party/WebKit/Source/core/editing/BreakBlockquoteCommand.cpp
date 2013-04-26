@@ -28,8 +28,8 @@
 
 #include "HTMLElement.h"
 #include "HTMLNames.h"
-#include "NodeTraversal.h"
-#include "Text.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/Text.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/htmlediting.h"
 #include "core/rendering/RenderListItem.h"

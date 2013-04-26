@@ -22,8 +22,8 @@
 #ifndef CSSUnknownRule_h
 #define CSSUnknownRule_h
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSRule.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

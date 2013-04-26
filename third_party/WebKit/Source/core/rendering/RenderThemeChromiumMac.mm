@@ -23,8 +23,6 @@
 
 #import "CSSValueKeywords.h"
 #import "ColorMac.h"
-#import "Document.h"
-#import "Element.h"
 #import "FileList.h"
 #import "HTMLInputElement.h"
 #import "HTMLMediaElement.h"
@@ -40,6 +38,8 @@
 #import "WebCoreSystemInterface.h"
 #import "core/css/CSSValueList.h"
 #import "core/css/StyleResolver.h"
+#import "core/dom/Document.h"
+#import "core/dom/Element.h"
 #import "core/page/FrameView.h"
 #import "core/platform/LayoutTestSupport.h"
 #import "core/platform/LocalizedStrings.h"

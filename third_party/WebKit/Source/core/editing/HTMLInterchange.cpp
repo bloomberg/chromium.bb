@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/HTMLInterchange.h"
 
-#include "Text.h"
+#include "core/dom/Text.h"
 #include "core/editing/TextIterator.h"
 #include "core/rendering/RenderObject.h"
 #include <wtf/StdLibExtras.h>

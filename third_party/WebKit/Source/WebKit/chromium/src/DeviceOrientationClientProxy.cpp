@@ -26,9 +26,9 @@
 #include "config.h"
 #include "DeviceOrientationClientProxy.h"
 
-#include "DeviceOrientationData.h"
 #include "WebDeviceOrientation.h"
 #include "WebDeviceOrientationController.h"
+#include "core/dom/DeviceOrientationData.h"
 #include <wtf/OwnPtr.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

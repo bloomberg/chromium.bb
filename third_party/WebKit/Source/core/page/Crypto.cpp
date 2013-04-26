@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/page/Crypto.h"
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/ArrayBufferView.h>
 #include <wtf/CryptographicallyRandomNumber.h>
 

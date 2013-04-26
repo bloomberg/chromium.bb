@@ -22,7 +22,7 @@
 #ifndef EntityReference_h
 #define EntityReference_h
 
-#include "ContainerNode.h"
+#include "core/dom/ContainerNode.h"
 
 namespace WebCore {
 

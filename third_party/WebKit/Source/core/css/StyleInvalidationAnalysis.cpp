@@ -26,12 +26,12 @@
 #include "config.h"
 #include "core/css/StyleInvalidationAnalysis.h"
 
-#include "Document.h"
-#include "NodeTraversal.h"
-#include "StyledElement.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/StyleRuleImport.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/Document.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/StyledElement.h"
 
 namespace WebCore {
 

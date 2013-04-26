@@ -21,11 +21,11 @@
 #include "config.h"
 #include "core/css/StyleSheetList.h"
 
-#include "Document.h"
-#include "DocumentStyleSheetCollection.h"
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

@@ -31,9 +31,7 @@
 #include "config.h"
 #include "WebAccessibilityObject.h"
 
-#include "Document.h"
 #include "HTMLNames.h"
-#include "Node.h"
 #include "WebDocument.h"
 #include "WebNode.h"
 #include "core/accessibility/AXObjectCache.h"
@@ -43,6 +41,8 @@
 #include "core/accessibility/AccessibilityTableColumn.h"
 #include "core/accessibility/AccessibilityTableRow.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameView.h"
 #include "core/platform/PlatformKeyboardEvent.h"

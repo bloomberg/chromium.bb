@@ -26,11 +26,11 @@
 #if ENABLE(SVG)
 #include "SVGMaskElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGUnitTypes.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGResourceMasker.h"
 #include "core/rendering/svg/SVGRenderSupport.h"
 

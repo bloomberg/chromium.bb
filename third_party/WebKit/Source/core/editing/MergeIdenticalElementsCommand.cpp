@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/editing/MergeIdenticalElementsCommand.h"
 
-#include "Element.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 

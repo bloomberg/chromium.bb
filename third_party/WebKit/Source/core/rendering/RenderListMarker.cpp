@@ -25,8 +25,8 @@
 #include "config.h"
 #include "core/rendering/RenderListMarker.h"
 
-#include "Document.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/platform/graphics/Font.h"
 #include "core/platform/graphics/GraphicsContext.h"

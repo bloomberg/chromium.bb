@@ -32,7 +32,7 @@
 #ifndef LinkRelAttribute_h
 #define LinkRelAttribute_h
 
-#include "IconURL.h"
+#include "core/dom/IconURL.h"
 
 namespace WebCore {
 

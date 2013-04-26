@@ -25,15 +25,15 @@
 #include "config.h"
 #include "HTMLTablePartElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "HTMLTableElement.h"
 #include "core/css/CSSImageValue.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

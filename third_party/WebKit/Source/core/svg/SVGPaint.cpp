@@ -26,7 +26,7 @@
 
 #include "SVGException.h"
 #include "SVGURIReference.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

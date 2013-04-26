@@ -31,8 +31,8 @@
 #include "config.h"
 #include "FindInPageCoordinates.h"
 
-#include "Node.h"
-#include "Range.h"
+#include "core/dom/Node.h"
+#include "core/dom/Range.h"
 #include "core/page/Frame.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/platform/graphics/FloatQuad.h"

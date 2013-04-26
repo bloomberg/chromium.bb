@@ -26,10 +26,10 @@
 #ifndef XPathNodeSet_h
 #define XPathNodeSet_h
 
-#include <wtf/Vector.h>
 #include <wtf/Forward.h>
+#include <wtf/Vector.h>
 
-#include "Node.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

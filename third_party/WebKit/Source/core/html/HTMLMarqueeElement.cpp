@@ -23,11 +23,11 @@
 #include "config.h"
 #include "HTMLMarqueeElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "ExceptionCode.h"
 #include "HTMLNames.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderMarquee.h"
 

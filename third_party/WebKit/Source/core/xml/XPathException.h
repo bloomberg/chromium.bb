@@ -29,7 +29,7 @@
 #ifndef XPathException_h
 #define XPathException_h
 
-#include "ExceptionBase.h"
+#include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 

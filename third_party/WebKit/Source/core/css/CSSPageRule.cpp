@@ -22,13 +22,13 @@
 #include "config.h"
 #include "core/css/CSSPageRule.h"
 
-#include "Document.h"
 #include "core/css/CSSParser.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/PropertySetCSSStyleDeclaration.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/Document.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/Vector.h>
 

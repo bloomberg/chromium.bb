@@ -27,12 +27,12 @@
 #include "config.h"
 #include "XPathEvaluator.h"
 
-#include "ExceptionCode.h"
 #include "NativeXPathNSResolver.h"
-#include "Node.h"
 #include "XPathExpression.h"
 #include "XPathResult.h"
 #include "XPathUtil.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

@@ -27,7 +27,7 @@
 #include "SVGElement.h"
 #include "SVGExternalResourcesRequired.h"
 #include "SVGURIReference.h"
-#include "ScriptElement.h"
+#include "core/dom/ScriptElement.h"
 
 namespace WebCore {
 

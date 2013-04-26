@@ -35,7 +35,7 @@
 #include "config.h"
 #include "CanvasPathMethods.h"
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatRect.h"
 #include <wtf/MathExtras.h>
 

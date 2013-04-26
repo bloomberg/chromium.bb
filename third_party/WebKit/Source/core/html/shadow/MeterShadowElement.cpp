@@ -35,8 +35,8 @@
 #include "CSSPropertyNames.h"
 #include "HTMLMeterElement.h"
 #include "HTMLNames.h"
-#include "ShadowRoot.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/rendering/RenderMeter.h"
 #include "core/rendering/RenderTheme.h"
 

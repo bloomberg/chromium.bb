@@ -26,10 +26,10 @@
 #include "config.h"
 #include "core/editing/InsertIntoTextNodeCommand.h"
 
-#include "Document.h"
-#include "ExceptionCodePlaceholder.h"
-#include "Text.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/Text.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderText.h"
 

@@ -24,7 +24,7 @@
 #ifndef MouseRelatedEvent_h
 #define MouseRelatedEvent_h
 
-#include "UIEventWithKeyState.h"
+#include "core/dom/UIEventWithKeyState.h"
 #include "core/platform/graphics/LayoutPoint.h"
 
 namespace WebCore {

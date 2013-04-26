@@ -23,12 +23,12 @@
 #if ENABLE(SVG)
 #include "SVGCircleElement.h"
 
-#include "Attribute.h"
-#include "ExceptionCode.h"
 #include "SVGElementInstance.h"
 #include "SVGException.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/svg/RenderSVGEllipse.h"
 #include "core/rendering/svg/RenderSVGPath.h"

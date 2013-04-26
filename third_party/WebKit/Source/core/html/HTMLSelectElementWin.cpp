@@ -28,8 +28,8 @@
 
 #if OS(WINDOWS)
 
-#include "Element.h"
-#include "KeyboardEvent.h"
+#include "core/dom/Element.h"
+#include "core/dom/KeyboardEvent.h"
 #include "core/rendering/RenderMenuList.h"
 
 namespace WebCore {

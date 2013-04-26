@@ -27,9 +27,9 @@
 #ifndef MessagePort_h
 #define MessagePort_h
 
-#include "EventListener.h"
-#include "EventTarget.h"
-#include "MessagePortChannel.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/MessagePortChannel.h"
 #include <wtf/Forward.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/PassOwnPtr.h>

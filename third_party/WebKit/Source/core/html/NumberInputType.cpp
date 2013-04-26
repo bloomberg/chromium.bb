@@ -33,13 +33,13 @@
 #include "NumberInputType.h"
 
 #include <limits>
-#include "BeforeTextInsertedEvent.h"
-#include "ExceptionCode.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
-#include "KeyboardEvent.h"
+#include "core/dom/BeforeTextInsertedEvent.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/KeyboardEvent.h"
 #include "core/platform/LocalizedStrings.h"
 #include "core/platform/text/PlatformLocale.h"
 #include "core/rendering/RenderTextControl.h"

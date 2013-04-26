@@ -25,9 +25,9 @@
 #ifndef Range_h
 #define Range_h
 
-#include "ExceptionCodePlaceholder.h"
-#include "FragmentScriptingPermission.h"
-#include "RangeBoundaryPoint.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/FragmentScriptingPermission.h"
+#include "core/dom/RangeBoundaryPoint.h"
 #include "core/platform/graphics/FloatRect.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/Forward.h>

@@ -23,10 +23,10 @@
 #if ENABLE(SVG)
 #include "SVGCursorElement.h"
 
-#include "Attr.h"
-#include "Document.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
+#include "core/dom/Attr.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

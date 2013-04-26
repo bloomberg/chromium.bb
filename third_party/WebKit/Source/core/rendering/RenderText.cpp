@@ -25,10 +25,10 @@
 #include "config.h"
 #include "core/rendering/RenderText.h"
 
-#include "Range.h"
-#include "Text.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/accessibility/AXObjectCache.h"
+#include "core/dom/Range.h"
+#include "core/dom/Text.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/page/FrameView.h"

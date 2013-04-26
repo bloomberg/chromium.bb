@@ -22,12 +22,12 @@
 #ifndef XMLHttpRequest_h
 #define XMLHttpRequest_h
 
-#include "ActiveDOMObject.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
 #include "ScriptWrappable.h"
 #include "XMLHttpRequestProgressEventThrottle.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/network/FormData.h"

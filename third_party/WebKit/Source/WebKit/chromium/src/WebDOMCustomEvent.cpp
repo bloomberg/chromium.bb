@@ -31,9 +31,9 @@
 #include "config.h"
 #include "WebDOMCustomEvent.h"
 
-#include "CustomEvent.h"
 #include "SerializedScriptValue.h"
 #include "WebSerializedScriptValue.h"
+#include "core/dom/CustomEvent.h"
 #include <public/WebString.h>
 
 using namespace WebCore;

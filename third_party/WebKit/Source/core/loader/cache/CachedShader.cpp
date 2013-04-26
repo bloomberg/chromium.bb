@@ -29,7 +29,7 @@
 
 #include "config.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/TextResourceDecoder.h"
 #include "core/loader/cache/CachedShader.h"
 #include "core/platform/SharedBuffer.h"

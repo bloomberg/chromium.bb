@@ -26,7 +26,7 @@
 #ifndef NodeRenderingContext_h
 #define NodeRenderingContext_h
 
-#include "NodeRenderingTraversal.h"
+#include "core/dom/NodeRenderingTraversal.h"
 
 #include <wtf/Noncopyable.h>
 #include <wtf/RefPtr.h>

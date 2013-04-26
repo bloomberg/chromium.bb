@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebPagePopupImpl.h"
 
-#include "ContextFeatures.h"
 #include "PageWidgetDelegate.h"
 #include "WebCursorInfo.h"
 #include "WebInputEventConversion.h"
@@ -40,6 +39,7 @@
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
 #include "WebWidgetClient.h"
+#include "core/dom/ContextFeatures.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/EmptyClients.h"
 #include "core/page/Chrome.h"

@@ -31,7 +31,7 @@
 #ifndef DataTransferItemList_h
 #define DataTransferItemList_h
 
-#include "DataTransferItem.h"
+#include "core/dom/DataTransferItem.h"
 #include <wtf/Forward.h>
 #include <wtf/RefCounted.h>
 

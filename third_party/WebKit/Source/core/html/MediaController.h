@@ -26,11 +26,11 @@
 #ifndef MediaController_h
 #define MediaController_h
 
-#include "ActiveDOMObject.h"
-#include "Event.h"
-#include "EventListener.h"
-#include "EventTarget.h"
 #include "MediaControllerInterface.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/Event.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventTarget.h"
 #include "core/platform/Timer.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

@@ -23,9 +23,9 @@
 #if ENABLE(SVG)
 #include "SVGExternalResourcesRequired.h"
 
-#include "Attr.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
+#include "core/dom/Attr.h"
 
 namespace WebCore {
 

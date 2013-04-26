@@ -26,7 +26,7 @@
 #ifndef ProgressEvent_h
 #define ProgressEvent_h
 
-#include "Event.h"
+#include "core/dom/Event.h"
 
 namespace WebCore {
 

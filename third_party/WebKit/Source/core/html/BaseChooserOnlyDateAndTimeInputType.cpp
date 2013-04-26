@@ -30,7 +30,7 @@
 #include "HTMLDivElement.h"
 #include "HTMLInputElement.h"
 #include "ScriptController.h"
-#include "ShadowRoot.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 

@@ -22,11 +22,11 @@
 #if ENABLE(SVG)
 #include "SVGFEMorphologyElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/Attribute.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 
 namespace WebCore {

@@ -24,10 +24,10 @@
  */
 
 #include "config.h"
-#include "UserTypingGestureIndicator.h"
+#include "core/dom/UserTypingGestureIndicator.h"
 
-#include "Document.h"
-#include "Node.h"
+#include "core/dom/Document.h"
+#include "core/dom/Node.h"
 #include "core/page/Frame.h"
 #include <wtf/StdLibExtras.h>
 

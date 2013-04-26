@@ -31,10 +31,10 @@
 #ifndef WorkerStorageQuotaCallbacksBridge_h
 #define WorkerStorageQuotaCallbacksBridge_h
 
-#include "ScriptExecutionContext.h"
-#include "core/storage/StorageArea.h"
 #include <WebStorageQuotaError.h>
 #include <WebStorageQuotaType.h>
+#include "core/dom/ScriptExecutionContext.h"
+#include "core/storage/StorageArea.h"
 #include <public/WebVector.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

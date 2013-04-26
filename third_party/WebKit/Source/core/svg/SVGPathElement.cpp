@@ -23,7 +23,6 @@
 #if ENABLE(SVG)
 #include "SVGPathElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGMPathElement.h"
 #include "SVGNames.h"
@@ -42,6 +41,7 @@
 #include "SVGPathSegMoveto.h"
 #include "SVGPathUtilities.h"
 #include "SVGSVGElement.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 

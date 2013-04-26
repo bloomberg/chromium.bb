@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebDocumentType.h"
 
-#include "DocumentType.h"
+#include "core/dom/DocumentType.h"
 #include <public/WebString.h>
 #include <wtf/PassRefPtr.h>
 

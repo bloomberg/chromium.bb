@@ -25,11 +25,11 @@
 #include "config.h"
 #include "HTMLTableColElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "HTMLNames.h"
 #include "HTMLTableElement.h"
-#include "Text.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Text.h"
 #include "core/rendering/RenderTableCol.h"
 
 namespace WebCore {

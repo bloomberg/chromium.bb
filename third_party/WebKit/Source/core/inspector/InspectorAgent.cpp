@@ -31,7 +31,6 @@
 #include "config.h"
 #include "InspectorAgent.h"
 
-#include "Document.h"
 #include "InjectedScriptHost.h"
 #include "InjectedScriptManager.h"
 #include "InspectorController.h"
@@ -43,6 +42,7 @@
 #include "ScriptController.h"
 #include "ScriptFunctionCall.h"
 #include "ScriptObject.h"
+#include "core/dom/Document.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

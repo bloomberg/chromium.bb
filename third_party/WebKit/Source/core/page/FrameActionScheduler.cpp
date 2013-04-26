@@ -26,9 +26,9 @@
 #include "config.h"
 #include "core/page/FrameActionScheduler.h"
 
-#include "Event.h"
-#include "ExceptionCodePlaceholder.h"
-#include "Node.h"
+#include "core/dom/Event.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
+#include "core/dom/Node.h"
 #include <wtf/Vector.h>
 
 namespace WebCore {

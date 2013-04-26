@@ -25,14 +25,14 @@
  */
 
 #include "config.h"
-#include "MessagePort.h"
+#include "core/dom/MessagePort.h"
 
-#include "Document.h"
-#include "EventException.h"
-#include "EventNames.h"
-#include "ExceptionCode.h"
-#include "MessageEvent.h"
 #include "WorkerContext.h"
+#include "core/dom/Document.h"
+#include "core/dom/EventException.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/MessageEvent.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/Timer.h"

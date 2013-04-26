@@ -25,11 +25,11 @@
 #ifndef Node_h
 #define Node_h
 
-#include "EventTarget.h"
-#include "MutationObserver.h"
 #include "ScriptWrappable.h"
-#include "SimulatedClickOptions.h"
-#include "TreeScope.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/MutationObserver.h"
+#include "core/dom/SimulatedClickOptions.h"
+#include "core/dom/TreeScope.h"
 #include "core/editing/EditingBoundary.h"
 #include "core/page/FocusDirection.h"
 #include "core/platform/KURLHash.h"

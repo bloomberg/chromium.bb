@@ -26,7 +26,7 @@
 #ifndef TypeAhead_h
 #define TypeAhead_h
 
-#include "DOMTimeStamp.h"
+#include "core/dom/DOMTimeStamp.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/WTFString.h>
 

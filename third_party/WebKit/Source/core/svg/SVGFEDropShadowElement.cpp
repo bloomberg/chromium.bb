@@ -22,11 +22,11 @@
 #if ENABLE(SVG)
 #include "SVGFEDropShadowElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGFilterBuilder.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/style/RenderStyle.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 

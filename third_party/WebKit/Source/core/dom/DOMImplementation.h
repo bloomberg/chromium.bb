@@ -24,7 +24,7 @@
 #ifndef DOMImplementation_h
 #define DOMImplementation_h
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>

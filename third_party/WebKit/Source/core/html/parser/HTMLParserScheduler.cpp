@@ -26,8 +26,8 @@
 #include "config.h"
 #include "HTMLParserScheduler.h"
 
-#include "Document.h"
 #include "HTMLDocumentParser.h"
+#include "core/dom/Document.h"
 #include "core/page/FrameView.h"
 #include "core/page/Page.h"
 

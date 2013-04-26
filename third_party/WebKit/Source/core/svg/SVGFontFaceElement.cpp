@@ -25,10 +25,8 @@
 #include "SVGFontFaceElement.h"
 
 #include <math.h>
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-#include "Document.h"
 #include "SVGDocumentExtensions.h"
 #include "SVGFontElement.h"
 #include "SVGFontFaceSrcElement.h"
@@ -41,6 +39,8 @@
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleResolver.h"
 #include "core/css/StyleRule.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/platform/graphics/Font.h"
 
 namespace WebCore {

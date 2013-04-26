@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "TextEvent.h"
+#include "core/dom/TextEvent.h"
 
-#include "DocumentFragment.h"
-#include "EventNames.h"
+#include "core/dom/DocumentFragment.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

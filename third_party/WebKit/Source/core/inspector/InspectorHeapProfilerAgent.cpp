@@ -36,7 +36,7 @@
 #include "InspectorState.h"
 #include "InstrumentingAgents.h"
 #include "ScriptProfiler.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/platform/Timer.h"
 #include <wtf/CurrentTime.h>
 #include <wtf/MemoryInstrumentationHashMap.h>

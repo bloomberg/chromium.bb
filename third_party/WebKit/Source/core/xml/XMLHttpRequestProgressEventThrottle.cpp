@@ -27,8 +27,8 @@
 #include "config.h"
 #include "XMLHttpRequestProgressEventThrottle.h"
 
-#include "EventTarget.h"
 #include "XMLHttpRequestProgressEvent.h"
+#include "core/dom/EventTarget.h"
 
 namespace WebCore {
 

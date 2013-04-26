@@ -29,7 +29,7 @@
 #ifndef EventException_h
 #define EventException_h
 
-#include "ExceptionBase.h"
+#include "core/dom/ExceptionBase.h"
 
 namespace WebCore {
 

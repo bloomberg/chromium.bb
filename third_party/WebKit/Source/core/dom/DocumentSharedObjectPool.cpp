@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "DocumentSharedObjectPool.h"
+#include "core/dom/DocumentSharedObjectPool.h"
 
-#include "Element.h"
+#include "core/dom/Element.h"
 
 namespace WebCore {
 

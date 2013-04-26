@@ -29,9 +29,9 @@
  */
 
 #include "config.h"
-#include "ElementRareData.h"
+#include "core/dom/ElementRareData.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/rendering/style/RenderStyle.h"
 
 namespace WebCore {

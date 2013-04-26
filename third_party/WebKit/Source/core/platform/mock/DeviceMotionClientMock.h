@@ -26,8 +26,8 @@
 #ifndef DeviceMotionClientMock_h
 #define DeviceMotionClientMock_h
 
-#include "DeviceMotionClient.h"
-#include "DeviceMotionData.h"
+#include "modules/device_orientation/DeviceMotionClient.h"
+#include "modules/device_orientation/DeviceMotionData.h"
 #include "core/platform/Timer.h"
 
 #include <wtf/PassRefPtr.h>

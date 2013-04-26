@@ -25,12 +25,12 @@
 #define QNAME_DEFAULT_CONSTRUCTOR
 #endif
 
-#include "QualifiedName.h"
 #include "HTMLNames.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "XLinkNames.h"
 #include "XMLNSNames.h"
 #include "XMLNames.h"
+#include "core/dom/QualifiedName.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/Assertions.h>
 #include <wtf/HashSet.h>
 #include <wtf/StaticConstructors.h>

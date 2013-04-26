@@ -27,11 +27,11 @@
 #include "SMILTimeContainer.h"
 
 #if ENABLE(SVG)
-#include "Document.h"
-#include "NodeTraversal.h"
 #include "SVGNames.h"
 #include "SVGSMILElement.h"
 #include "SVGSVGElement.h"
+#include "core/dom/Document.h"
+#include "core/dom/NodeTraversal.h"
 #include <wtf/CurrentTime.h>
 
 using namespace std;

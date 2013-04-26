@@ -27,9 +27,9 @@
 #include "config.h"
 #include "core/editing/TextCheckingHelper.h"
 
-#include "Document.h"
-#include "DocumentMarkerController.h"
-#include "Range.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentMarkerController.h"
+#include "core/dom/Range.h"
 #include "core/editing/TextIterator.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"

@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGTests.h"
 
-#include "Attribute.h"
-#include "DOMImplementation.h"
 #include "SVGElement.h"
 #include "SVGNames.h"
 #include "SVGStringList.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/DOMImplementation.h"
 #include "core/platform/Language.h"
 
 namespace WebCore {

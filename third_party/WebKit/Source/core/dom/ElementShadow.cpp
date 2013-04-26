@@ -25,10 +25,10 @@
  */
 
 #include "config.h"
-#include "ElementShadow.h"
+#include "core/dom/ElementShadow.h"
 
-#include "ContainerNodeAlgorithms.h"
 #include "InspectorInstrumentation.h"
+#include "core/dom/ContainerNodeAlgorithms.h"
 
 namespace WebCore {
 

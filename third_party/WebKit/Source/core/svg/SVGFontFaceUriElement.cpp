@@ -23,12 +23,12 @@
 #if ENABLE(SVG_FONTS)
 #include "SVGFontFaceUriElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
 #include "SVGFontFaceElement.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/css/CSSFontFaceSrcValue.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/loader/cache/CachedFont.h"
 #include "core/loader/cache/CachedResourceLoader.h"
 #include "core/loader/cache/CachedResourceRequest.h"

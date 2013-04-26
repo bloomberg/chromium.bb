@@ -31,8 +31,6 @@
 #include "InspectorDatabaseAgent.h"
 
 #include "Database.h"
-#include "ExceptionCode.h"
-#include "ExceptionCodePlaceholder.h"
 #include "InspectorDatabaseResource.h"
 #include "InspectorFrontend.h"
 #include "InspectorState.h"
@@ -47,6 +45,8 @@
 #include "SQLTransactionCallback.h"
 #include "SQLTransactionErrorCallback.h"
 #include "VoidCallback.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/ExceptionCodePlaceholder.h"
 #include "core/platform/sql/SQLValue.h"
 
 #include <wtf/Vector.h>

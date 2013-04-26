@@ -29,7 +29,6 @@
 #include "config.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 
-#include "DocumentStyleSheetCollection.h"
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSHostRule.h"
 #include "core/css/CSSImportRule.h"
@@ -40,6 +39,7 @@
 #include "core/css/CSSSupportsRule.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/WebKitCSSRegionRule.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
 
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>

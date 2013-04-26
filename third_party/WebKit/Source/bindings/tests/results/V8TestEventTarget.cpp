@@ -22,8 +22,6 @@
 #include "V8TestEventTarget.h"
 
 #include "BindingState.h"
-#include "ContextFeatures.h"
-#include "ExceptionCode.h"
 #include "ScriptController.h"
 #include "V8Binding.h"
 #include "V8Collection.h"
@@ -31,6 +29,8 @@
 #include "V8Event.h"
 #include "V8EventListenerList.h"
 #include "V8Node.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/page/Frame.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 #include <wtf/UnusedParam.h>

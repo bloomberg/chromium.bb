@@ -27,7 +27,6 @@
 #include "core/css/FontLoader.h"
 
 #include "Dictionary.h"
-#include "Document.h"
 #include "core/css/CSSFontFaceLoadEvent.h"
 #include "core/css/CSSFontFaceSource.h"
 #include "core/css/CSSFontSelector.h"
@@ -35,6 +34,7 @@
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/StylePropertySet.h"
 #include "core/css/StyleResolver.h"
+#include "core/dom/Document.h"
 #include "core/page/FrameView.h"
 
 namespace WebCore {

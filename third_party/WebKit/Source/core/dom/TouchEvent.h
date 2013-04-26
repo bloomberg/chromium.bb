@@ -27,9 +27,9 @@
 #ifndef TouchEvent_h
 #define TouchEvent_h
 
-#include "EventDispatchMediator.h"
-#include "MouseRelatedEvent.h"
-#include "TouchList.h"
+#include "core/dom/EventDispatchMediator.h"
+#include "core/dom/MouseRelatedEvent.h"
+#include "core/dom/TouchList.h"
 
 namespace WebCore {
 

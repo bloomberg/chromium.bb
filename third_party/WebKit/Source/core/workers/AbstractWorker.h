@@ -31,10 +31,10 @@
 #ifndef AbstractWorker_h
 #define AbstractWorker_h
 
-#include "ActiveDOMObject.h"
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
+#include "core/dom/ActiveDOMObject.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>
 #include <wtf/RefPtr.h>

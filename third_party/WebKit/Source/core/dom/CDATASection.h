@@ -23,7 +23,7 @@
 #ifndef CDATASection_h
 #define CDATASection_h
 
-#include "Text.h"
+#include "core/dom/Text.h"
 
 namespace WebCore {
 

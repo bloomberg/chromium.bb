@@ -31,8 +31,6 @@
 #include "config.h"
 #include "LocalFileSystem.h"
 
-#include "CrossThreadTask.h"
-#include "Document.h"
 #include "ErrorCallback.h"
 #include "FileSystemCallback.h"
 #include "FileSystemCallbacks.h"
@@ -46,11 +44,13 @@
 #include "WorkerContext.h"
 #include "WorkerFileSystemCallbacksBridge.h"
 #include "WorkerThread.h"
+#include "core/dom/CrossThreadTask.h"
+#include "core/dom/Document.h"
 #include <public/WebFileError.h>
 #include <public/WebFileSystem.h>
 #include <public/WebFileSystemType.h>
-#include <wtf/Threading.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Threading.h>
 
 using namespace WebKit;
 

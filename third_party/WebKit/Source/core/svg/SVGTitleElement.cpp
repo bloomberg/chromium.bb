@@ -22,8 +22,8 @@
 #if ENABLE(SVG)
 #include "SVGTitleElement.h"
 
-#include "Document.h"
 #include "SVGNames.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

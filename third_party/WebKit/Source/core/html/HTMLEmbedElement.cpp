@@ -24,7 +24,6 @@
 #include "config.h"
 #include "HTMLEmbedElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "HTMLDocument.h"
 #include "HTMLImageLoader.h"
@@ -32,6 +31,7 @@
 #include "HTMLObjectElement.h"
 #include "HTMLParserIdioms.h"
 #include "PluginDocument.h"
+#include "core/dom/Attribute.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"

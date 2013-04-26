@@ -32,7 +32,7 @@
 #include "InspectorBaseAgent.h"
 
 #include "InspectorState.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 
 namespace WebCore {
 

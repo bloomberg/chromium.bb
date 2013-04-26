@@ -31,8 +31,8 @@
 #ifndef FileThreadTask_h
 #define FileThreadTask_h
 
-#include "CrossThreadTask.h"
 #include "FileThread.h"
+#include "core/dom/CrossThreadTask.h"
 #include "core/platform/CrossThreadCopier.h"
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>

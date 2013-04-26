@@ -32,8 +32,8 @@
 #include "config.h"
 #include "core/loader/Prerenderer.h"
 
-#include "Document.h"
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/Document.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/PrerendererClient.h"
 #include "core/page/Frame.h"

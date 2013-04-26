@@ -26,7 +26,7 @@
 #include "SVGLocatable.h"
 #include "SVGParsingError.h"
 #include "SVGPropertyInfo.h"
-#include "StyledElement.h"
+#include "core/dom/StyledElement.h"
 #include "core/platform/Timer.h"
 #include <wtf/HashMap.h>
 

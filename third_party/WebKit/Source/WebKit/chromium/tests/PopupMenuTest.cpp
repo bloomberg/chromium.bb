@@ -31,7 +31,6 @@
 #include "config.h"
 
 #include <gtest/gtest.h>
-#include "Element.h"
 #include "HTMLSelectElement.h"
 #include "URLTestHelpers.h"
 #include "WebDocument.h"
@@ -46,6 +45,7 @@
 #include "WebView.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"
+#include "core/dom/Element.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameView.h"
 #include "core/page/RuntimeEnabledFeatures.h"

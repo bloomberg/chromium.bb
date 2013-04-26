@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/loader/MixedContentChecker.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/page/Console.h"

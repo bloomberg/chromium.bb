@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "RangeException.h"
+#include "core/dom/RangeException.h"
 
 namespace WebCore {
 

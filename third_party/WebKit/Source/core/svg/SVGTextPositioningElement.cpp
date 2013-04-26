@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGTextPositioningElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGLengthList.h"
 #include "SVGNames.h"
 #include "SVGNumberList.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 #include "core/rendering/svg/RenderSVGText.h"
 

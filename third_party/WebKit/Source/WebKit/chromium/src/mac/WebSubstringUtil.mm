@@ -35,12 +35,12 @@
 #import <Cocoa/Cocoa.h>
 
 #include "ColorMac.h"
-#include "Document.h"
-#include "Element.h"
 #include "HTMLElement.h"
-#include "Node.h"
-#include "Range.h"
 #include "WebFrameImpl.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/Node.h"
+#include "core/dom/Range.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/TextIterator.h"
 #include "core/page/Frame.h"

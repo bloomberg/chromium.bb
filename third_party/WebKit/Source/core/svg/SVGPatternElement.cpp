@@ -24,8 +24,6 @@
 #if ENABLE(SVG)
 #include "SVGPatternElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
 #include "PatternAttributes.h"
 #include "SVGElementInstance.h"
 #include "SVGFitToViewBox.h"
@@ -33,6 +31,8 @@
 #include "SVGSVGElement.h"
 #include "SVGStyledTransformableElement.h"
 #include "SVGTransformable.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/platform/FloatConversion.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/ImageBuffer.h"

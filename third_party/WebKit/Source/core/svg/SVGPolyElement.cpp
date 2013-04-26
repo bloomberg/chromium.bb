@@ -23,12 +23,12 @@
 #if ENABLE(SVG)
 #include "SVGPolyElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
 #include "SVGAnimatedPointList.h"
 #include "SVGElementInstance.h"
 #include "SVGNames.h"
 #include "SVGParserUtilities.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"

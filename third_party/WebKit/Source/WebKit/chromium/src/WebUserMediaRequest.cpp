@@ -34,10 +34,10 @@
 
 #include "WebUserMediaRequest.h"
 
-#include "Document.h"
 #include "UserMediaRequest.h"
 #include "WebDocument.h"
 #include "WebSecurityOrigin.h"
+#include "core/dom/Document.h"
 #include "core/page/SecurityOrigin.h"
 #include "core/platform/mediastream/MediaConstraints.h"
 #include "core/platform/mediastream/MediaStreamDescriptor.h"

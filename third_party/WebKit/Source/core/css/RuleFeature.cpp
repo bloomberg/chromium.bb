@@ -29,8 +29,8 @@
 #include "config.h"
 #include "core/css/RuleFeature.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSSelector.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>

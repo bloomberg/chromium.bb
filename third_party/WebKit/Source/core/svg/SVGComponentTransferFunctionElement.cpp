@@ -23,11 +23,11 @@
 #if ENABLE(SVG)
 #include "SVGComponentTransferFunctionElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGFEComponentTransferElement.h"
 #include "SVGNames.h"
 #include "SVGNumberList.h"
+#include "core/dom/Attribute.h"
 
 namespace WebCore {
 

@@ -31,9 +31,9 @@
 #ifndef CustomElementConstructor_h
 #define CustomElementConstructor_h
 
-#include "ContextDestructionObserver.h"
-#include "Document.h"
-#include "QualifiedName.h"
+#include "core/dom/ContextDestructionObserver.h"
+#include "core/dom/Document.h"
+#include "core/dom/QualifiedName.h"
 #include <wtf/Forward.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefCounted.h>

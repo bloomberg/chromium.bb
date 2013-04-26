@@ -23,9 +23,9 @@
 #include "config.h"
 #include "HTMLMetaElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
 #include "HTMLNames.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
 
 namespace WebCore {
 

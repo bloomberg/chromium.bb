@@ -27,8 +27,8 @@
 #ifndef TextEvent_h
 #define TextEvent_h
 
-#include "TextEventInputType.h"
-#include "UIEvent.h"
+#include "core/dom/TextEventInputType.h"
+#include "core/dom/UIEvent.h"
 #include "core/editing/DictationAlternative.h"
 
 namespace WebCore {

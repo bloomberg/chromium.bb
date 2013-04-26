@@ -19,16 +19,16 @@
  */
 
 #include "config.h"
-#include "StyleElement.h"
+#include "core/dom/StyleElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
-#include "DocumentStyleSheetCollection.h"
-#include "Element.h"
-#include "ScriptableDocumentParser.h"
 #include "core/css/MediaList.h"
 #include "core/css/MediaQueryEvaluator.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/Element.h"
+#include "core/dom/ScriptableDocumentParser.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/TextPosition.h>

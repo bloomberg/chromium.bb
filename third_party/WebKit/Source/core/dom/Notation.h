@@ -22,7 +22,7 @@
 #ifndef Notation_h
 #define Notation_h
 
-#include "ContainerNode.h"
+#include "core/dom/ContainerNode.h"
 
 namespace WebCore {
 

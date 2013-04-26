@@ -26,8 +26,8 @@
 #include "config.h"
 #include "core/editing/SpellingCorrectionCommand.h"
 
-#include "Document.h"
-#include "DocumentFragment.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentFragment.h"
 #include "core/editing/AlternativeTextController.h"
 #include "core/editing/Editor.h"
 #include "core/editing/InsertTextCommand.h"

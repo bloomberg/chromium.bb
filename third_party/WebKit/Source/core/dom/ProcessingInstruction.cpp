@@ -19,15 +19,15 @@
  */
 
 #include "config.h"
-#include "ProcessingInstruction.h"
+#include "core/dom/ProcessingInstruction.h"
 
-#include "Document.h"
-#include "DocumentStyleSheetCollection.h"
-#include "ExceptionCode.h"
 #include "XSLStyleSheet.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/MediaList.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/dom/Document.h"
+#include "core/dom/DocumentStyleSheetCollection.h"
+#include "core/dom/ExceptionCode.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/cache/CachedCSSStyleSheet.h"
 #include "core/loader/cache/CachedResourceLoader.h"

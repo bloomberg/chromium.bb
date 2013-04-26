@@ -25,7 +25,7 @@
 #ifndef TreeScopeAdopter_h
 #define TreeScopeAdopter_h
 
-#include "Node.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

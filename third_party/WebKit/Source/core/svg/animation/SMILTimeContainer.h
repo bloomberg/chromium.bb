@@ -28,8 +28,8 @@
 
 #if ENABLE(SVG)
 
-#include "QualifiedName.h"
 #include "SMILTime.h"
+#include "core/dom/QualifiedName.h"
 #include "core/platform/Timer.h"
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>

@@ -31,11 +31,11 @@
 #ifndef InspectorHistory_h
 #define InspectorHistory_h
 
-#include "ExceptionCode.h"
+#include "core/dom/ExceptionCode.h"
 
 #include <wtf/OwnPtr.h>
-#include <wtf/Vector.h>
 #include <wtf/text/WTFString.h>
+#include <wtf/Vector.h>
 
 namespace WebCore {
 

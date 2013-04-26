@@ -23,7 +23,7 @@
 #ifndef CSSRule_h
 #define CSSRule_h
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/RefCounted.h>
 
 namespace WebCore {

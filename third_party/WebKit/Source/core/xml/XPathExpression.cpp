@@ -27,14 +27,14 @@
 #include "config.h"
 #include "XPathExpression.h"
 
-#include "Document.h"
-#include "ExceptionCode.h"
 #include "XPathException.h"
 #include "XPathExpressionNode.h"
 #include "XPathNSResolver.h"
 #include "XPathParser.h"
 #include "XPathResult.h"
 #include "XPathUtil.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

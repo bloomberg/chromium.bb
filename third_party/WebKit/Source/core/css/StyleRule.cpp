@@ -22,7 +22,6 @@
 #include "config.h"
 #include "core/css/StyleRule.h"
 
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSCharsetRule.h"
 #include "core/css/CSSFontFaceRule.h"
 #include "core/css/CSSHostRule.h"
@@ -39,6 +38,7 @@
 #include "core/css/WebKitCSSKeyframesRule.h"
 #include "core/css/WebKitCSSRegionRule.h"
 #include "core/css/WebKitCSSViewportRule.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationVector.h>
 
 namespace WebCore {

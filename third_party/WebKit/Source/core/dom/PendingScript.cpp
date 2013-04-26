@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "PendingScript.h"
+#include "core/dom/PendingScript.h"
 
-#include "Element.h"
+#include "core/dom/Element.h"
 #include "core/loader/cache/CachedScript.h"
 
 namespace WebCore {

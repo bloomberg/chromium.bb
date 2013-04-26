@@ -26,8 +26,8 @@
 #ifndef ScriptableDocumentParser_h
 #define ScriptableDocumentParser_h
 
-#include "DecodedDataDocumentParser.h"
-#include "FragmentScriptingPermission.h"
+#include "core/dom/DecodedDataDocumentParser.h"
+#include "core/dom/FragmentScriptingPermission.h"
 #include <wtf/text/TextPosition.h>
 
 namespace WebCore {

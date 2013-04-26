@@ -24,8 +24,8 @@
 #ifndef MutationEvent_h
 #define MutationEvent_h
 
-#include "Event.h"
-#include "Node.h"
+#include "core/dom/Event.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

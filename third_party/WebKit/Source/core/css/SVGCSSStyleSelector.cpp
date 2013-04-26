@@ -33,7 +33,6 @@
 
 #include <stdlib.h>
 #include "CSSPropertyNames.h"
-#include "Document.h"
 #include "SVGColor.h"
 #include "SVGNames.h"
 #include "SVGPaint.h"
@@ -42,6 +41,7 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/ShadowValue.h"
+#include "core/dom/Document.h"
 #include "core/rendering/style/SVGRenderStyle.h"
 #include "core/rendering/style/SVGRenderStyleDefs.h"
 #include <wtf/MathExtras.h>

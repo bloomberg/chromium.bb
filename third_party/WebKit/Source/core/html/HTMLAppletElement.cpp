@@ -24,10 +24,10 @@
 #include "config.h"
 #include "HTMLAppletElement.h"
 
-#include "Attribute.h"
 #include "HTMLDocument.h"
 #include "HTMLNames.h"
 #include "HTMLParamElement.h"
+#include "core/dom/Attribute.h"
 #include "core/loader/FrameLoader.h"
 #include "core/page/Frame.h"
 #include "core/page/SecurityOrigin.h"

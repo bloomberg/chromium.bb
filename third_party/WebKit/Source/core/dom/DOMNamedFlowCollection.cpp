@@ -27,10 +27,10 @@
  * SUCH DAMAGE.
  */
 #include "config.h"
-#include "DOMNamedFlowCollection.h"
+#include "core/dom/DOMNamedFlowCollection.h"
 
-#include "NamedFlow.h"
-#include "NamedFlowCollection.h"
+#include "core/dom/NamedFlow.h"
+#include "core/dom/NamedFlowCollection.h"
 
 namespace WebCore {
 

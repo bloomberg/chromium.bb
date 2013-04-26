@@ -22,7 +22,7 @@
 #include "config.h"
 #include "core/rendering/RenderBR.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/rendering/InlineTextBox.h"
 

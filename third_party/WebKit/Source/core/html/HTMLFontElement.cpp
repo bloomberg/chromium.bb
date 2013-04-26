@@ -23,7 +23,6 @@
 #include "config.h"
 #include "HTMLFontElement.h"
 
-#include "Attribute.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
@@ -32,6 +31,7 @@
 #include "core/css/CSSValueList.h"
 #include "core/css/CSSValuePool.h"
 #include "core/css/StylePropertySet.h"
+#include "core/dom/Attribute.h"
 #include <wtf/text/StringBuilder.h>
 
 using namespace WTF;

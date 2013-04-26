@@ -28,7 +28,7 @@
 
 #include "config.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 #include "core/page/animation/AnimationControllerPrivate.h"
 #include "core/page/animation/CSSPropertyAnimation.h"
 #include "core/page/animation/CompositeAnimation.h"

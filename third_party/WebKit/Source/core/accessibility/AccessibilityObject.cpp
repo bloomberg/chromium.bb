@@ -29,10 +29,10 @@
 #include "config.h"
 #include "core/accessibility/AccessibilityObject.h"
 
-#include "NodeTraversal.h"
-#include "UserGestureIndicator.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/accessibility/AccessibilityTable.h"
+#include "core/dom/NodeTraversal.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/editing/Editor.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/RenderedPosition.h"

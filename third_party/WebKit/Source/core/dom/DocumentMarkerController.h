@@ -27,7 +27,7 @@
 #ifndef DocumentMarkerController_h
 #define DocumentMarkerController_h
 
-#include "DocumentMarker.h"
+#include "core/dom/DocumentMarker.h"
 #include "core/platform/graphics/IntRect.h"
 #include <wtf/HashMap.h>
 #include <wtf/Vector.h>

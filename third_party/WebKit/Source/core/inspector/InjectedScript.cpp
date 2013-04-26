@@ -36,9 +36,9 @@
 #include "InjectedScriptHost.h"
 #include "InjectedScriptModule.h"
 #include "InspectorValues.h"
-#include "Node.h"
 #include "ScriptFunctionCall.h"
 #include "SerializedScriptValue.h"
+#include "core/dom/Node.h"
 #include <wtf/text/WTFString.h>
 
 using WebCore::TypeBuilder::Array;

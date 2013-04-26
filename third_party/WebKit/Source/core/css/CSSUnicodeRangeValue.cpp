@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/css/CSSUnicodeRangeValue.h"
 
-#include "WebCoreMemoryInstrumentation.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

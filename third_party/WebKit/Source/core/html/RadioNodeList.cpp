@@ -26,12 +26,12 @@
 #include "config.h"
 #include "RadioNodeList.h"
 
-#include "Element.h"
 #include "HTMLFormElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "HTMLObjectElement.h"
-#include "NodeRareData.h"
+#include "core/dom/Element.h"
+#include "core/dom/NodeRareData.h"
 
 namespace WebCore {
 

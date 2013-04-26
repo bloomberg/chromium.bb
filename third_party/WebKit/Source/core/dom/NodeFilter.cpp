@@ -23,9 +23,9 @@
  */
 
 #include "config.h"
-#include "NodeFilter.h"
+#include "core/dom/NodeFilter.h"
 
-#include "Node.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

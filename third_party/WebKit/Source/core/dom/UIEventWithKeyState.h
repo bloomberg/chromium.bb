@@ -24,7 +24,7 @@
 #ifndef UIEventWithKeyState_h
 #define UIEventWithKeyState_h
 
-#include "UIEvent.h"
+#include "core/dom/UIEvent.h"
 
 namespace WebCore {
     

@@ -27,12 +27,12 @@
 #ifndef WorkerContext_h
 #define WorkerContext_h
 
-#include "EventListener.h"
-#include "EventNames.h"
-#include "EventTarget.h"
-#include "ScriptExecutionContext.h"
 #include "WorkerEventQueue.h"
 #include "WorkerScriptController.h"
+#include "core/dom/EventListener.h"
+#include "core/dom/EventNames.h"
+#include "core/dom/EventTarget.h"
+#include "core/dom/ScriptExecutionContext.h"
 #include "core/page/ContentSecurityPolicy.h"
 #include "core/page/GroupSettings.h"
 #include <wtf/Assertions.h>

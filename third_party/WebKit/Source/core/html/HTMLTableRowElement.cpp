@@ -25,14 +25,14 @@
 #include "config.h"
 #include "HTMLTableRowElement.h"
 
-#include "ExceptionCode.h"
 #include "HTMLCollection.h"
 #include "HTMLNames.h"
 #include "HTMLTableCellElement.h"
 #include "HTMLTableElement.h"
 #include "HTMLTableSectionElement.h"
-#include "NodeList.h"
-#include "Text.h"
+#include "core/dom/ExceptionCode.h"
+#include "core/dom/NodeList.h"
+#include "core/dom/Text.h"
 
 namespace WebCore {
 

@@ -32,7 +32,7 @@
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 #include "PickerIndicatorElement.h"
 
-#include "Event.h"
+#include "core/dom/Event.h"
 #include "core/page/Chrome.h"
 #include "core/page/Page.h"
 #include "core/rendering/RenderDetailsMarker.h"

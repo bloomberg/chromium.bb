@@ -32,7 +32,7 @@
 
 #include "core/loader/archive/MHTMLArchive.h"
 
-#include "Document.h"
+#include "core/dom/Document.h"
 #include "core/loader/archive/MHTMLParser.h"
 #include "core/page/Frame.h"
 #include "core/page/Page.h"

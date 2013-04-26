@@ -31,8 +31,8 @@
 #ifndef WorkerContextProxy_h
 #define WorkerContextProxy_h
 
-#include "MessagePort.h"
 #include "WorkerThread.h"
+#include "core/dom/MessagePort.h"
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 

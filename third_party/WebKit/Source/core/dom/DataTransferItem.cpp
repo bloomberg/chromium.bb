@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "DataTransferItem.h"
+#include "core/dom/DataTransferItem.h"
 
 namespace WebCore {
 

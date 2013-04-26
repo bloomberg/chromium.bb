@@ -24,9 +24,9 @@
  */
 
 #include "config.h"
-#include "AnimationEvent.h"
+#include "core/dom/AnimationEvent.h"
 
-#include "EventNames.h"
+#include "core/dom/EventNames.h"
 
 namespace WebCore {
 

@@ -20,9 +20,9 @@
 #ifndef EventRetargeter_h
 #define EventRetargeter_h
 
-#include "ContainerNode.h"
-#include "EventContext.h"
-#include "ShadowRoot.h"
+#include "core/dom/ContainerNode.h"
+#include "core/dom/EventContext.h"
+#include "core/dom/ShadowRoot.h"
 #include <wtf/HashMap.h>
 #include <wtf/PassRefPtr.h>
 #include <wtf/RefPtr.h>

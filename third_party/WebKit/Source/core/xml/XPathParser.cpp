@@ -28,12 +28,12 @@
 #include "config.h"
 #include "XPathParser.h"
 
-#include "ExceptionCode.h"
 #include "XPathEvaluator.h"
 #include "XPathException.h"
 #include "XPathNSResolver.h"
 #include "XPathPath.h"
 #include "XPathStep.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringHash.h>
 

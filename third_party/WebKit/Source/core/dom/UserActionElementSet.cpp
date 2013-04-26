@@ -25,11 +25,11 @@
  */
 
 #include "config.h"
-#include "UserActionElementSet.h"
+#include "core/dom/UserActionElementSet.h"
 
-#include "Document.h"
-#include "Element.h"
-#include "Node.h"
+#include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/Node.h"
 
 namespace WebCore {
 

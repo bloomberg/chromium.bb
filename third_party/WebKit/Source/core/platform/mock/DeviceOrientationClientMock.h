@@ -26,8 +26,8 @@
 #ifndef DeviceOrientationClientMock_h
 #define DeviceOrientationClientMock_h
 
-#include "DeviceOrientationClient.h"
-#include "DeviceOrientationData.h"
+#include "core/dom/DeviceOrientationClient.h"
+#include "core/dom/DeviceOrientationData.h"
 #include "core/platform/Timer.h"
 
 #include <wtf/PassRefPtr.h>

@@ -28,16 +28,16 @@
 #include "core/css/ScopedStyleResolver.h"
 
 #include "ContentDistributor.h"
-#include "ContextFeatures.h"
-#include "ElementShadow.h"
 #include "HTMLNames.h"
 #include "HTMLStyleElement.h"
-#include "ShadowRoot.h"
-#include "WebCoreMemoryInstrumentation.h"
 #include "core/css/CSSStyleRule.h"
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
+#include "core/dom/ContextFeatures.h"
+#include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/WebCoreMemoryInstrumentation.h"
 #include <wtf/MemoryInstrumentationHashMap.h>
 #include <wtf/MemoryInstrumentationHashSet.h>
 #include <wtf/MemoryInstrumentationVector.h>

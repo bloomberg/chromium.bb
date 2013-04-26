@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/loader/SinkDocument.h"
 
-#include "RawDataDocumentParser.h"
+#include "core/dom/RawDataDocumentParser.h"
 
 namespace WebCore {
 

@@ -24,8 +24,8 @@
 #ifndef Clipboard_h
 #define Clipboard_h
 
-#include "ClipboardAccessPolicy.h"
-#include "Node.h"
+#include "core/dom/ClipboardAccessPolicy.h"
+#include "core/dom/Node.h"
 #include "core/loader/cache/CachedResourceHandle.h"
 #include "core/page/DragActions.h"
 #include "core/platform/DragImage.h"

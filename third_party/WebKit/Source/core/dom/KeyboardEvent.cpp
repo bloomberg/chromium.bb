@@ -21,11 +21,11 @@
  */
 
 #include "config.h"
-#include "KeyboardEvent.h"
+#include "core/dom/KeyboardEvent.h"
 
-#include "Document.h"
-#include "EventDispatcher.h"
-#include "EventNames.h"
+#include "core/dom/Document.h"
+#include "core/dom/EventDispatcher.h"
+#include "core/dom/EventNames.h"
 #include "core/page/DOMWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/page/Frame.h"

@@ -23,7 +23,7 @@
 #ifndef CharacterData_h
 #define CharacterData_h
 
-#include "Node.h"
+#include "core/dom/Node.h"
 #include <wtf/text/WTFString.h>
 
 namespace WebCore {

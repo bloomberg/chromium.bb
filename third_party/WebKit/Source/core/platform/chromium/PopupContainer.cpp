@@ -32,8 +32,8 @@
 #include "core/platform/chromium/PopupContainer.h"
 
 #include <limits>
-#include "Document.h"
-#include "UserGestureIndicator.h"
+#include "core/dom/Document.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Frame.h"

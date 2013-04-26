@@ -31,8 +31,8 @@
 #include "config.h"
 #include "WebNodeList.h"
 
-#include "Node.h"
-#include "NodeList.h"
+#include "core/dom/Node.h"
+#include "core/dom/NodeList.h"
 #include <wtf/PassRefPtr.h>
 
 #include "WebNode.h"

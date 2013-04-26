@@ -24,13 +24,13 @@
 #if ENABLE(SVG)
 #include "SVGFELightElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGFEDiffuseLightingElement.h"
 #include "SVGFESpecularLightingElement.h"
 #include "SVGFilterElement.h"
 #include "SVGFilterPrimitiveStandardAttributes.h"
 #include "SVGNames.h"
+#include "core/dom/Attribute.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/svg/RenderSVGResource.h"
 

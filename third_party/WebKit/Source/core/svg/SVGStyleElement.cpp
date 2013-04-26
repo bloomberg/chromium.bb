@@ -25,11 +25,11 @@
 #if ENABLE(SVG)
 #include "SVGStyleElement.h"
 
-#include "Attribute.h"
-#include "Document.h"
-#include "ExceptionCode.h"
 #include "SVGNames.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/dom/Attribute.h"
+#include "core/dom/Document.h"
+#include "core/dom/ExceptionCode.h"
 #include <wtf/StdLibExtras.h>
 
 namespace WebCore {

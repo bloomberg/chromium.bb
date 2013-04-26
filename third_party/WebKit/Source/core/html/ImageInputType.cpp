@@ -30,7 +30,7 @@
 #include "HTMLNames.h"
 #include "HTMLParserIdioms.h"
 #include "InputTypeNames.h"
-#include "MouseEvent.h"
+#include "core/dom/MouseEvent.h"
 #include "core/loader/cache/CachedImage.h"
 #include "core/rendering/RenderImage.h"
 #include <wtf/PassOwnPtr.h>

@@ -23,10 +23,10 @@
 #if ENABLE(SVG)
 #include "SVGLineElement.h"
 
-#include "Attribute.h"
 #include "SVGElementInstance.h"
 #include "SVGLength.h"
 #include "SVGNames.h"
+#include "core/dom/Attribute.h"
 #include "core/platform/graphics/FloatPoint.h"
 #include "core/rendering/svg/RenderSVGPath.h"
 #include "core/rendering/svg/RenderSVGResource.h"
