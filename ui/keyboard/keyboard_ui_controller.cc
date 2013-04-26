@@ -30,11 +30,13 @@ content::WebUIDataSource* CreateKeyboardUIDataSource() {
   source->AddResourcePath("images/shift_down.svg",
       IDR_KEYBOARD_IMAGES_SHIFT_DOWN);
   source->AddResourcePath("images/tab.svg", IDR_KEYBOARD_IMAGES_TAB);
-  source->AddResourcePath("layout_us.js", IDR_KEYBOARD_LAYOUT_US_JS);
-  source->AddResourcePath("main.css", IDR_KEYBOARD_MAIN_CSS);
   source->AddResourcePath("main.js", IDR_KEYBOARD_MAIN_JS);
+
+  // These files are specific to the WebUI version
+  source->AddResourcePath("layout_us.js", IDR_KEYBOARD_WEBUI_LAYOUT_US_JS);
+  source->AddResourcePath("main.css", IDR_KEYBOARD_WEBUI_MAIN_CSS);
   source->AddResourcePath("send_key_event.js",
-      IDR_KEYBOARD_SEND_KEY_EVENT_WEBUI_JS);
+      IDR_KEYBOARD_WEBUI_SEND_KEY_EVENT_JS);
 
   return source;
 }
