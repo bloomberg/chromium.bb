@@ -168,8 +168,18 @@ void SpellCheckProvider::checkTextOfParagraph(
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.paragraph", text.length());
 }
 
+// TODO(rouslan): Remove this version of requestCheckingOfText() method.
 void SpellCheckProvider::requestCheckingOfText(
     const WebString& text,
+    WebTextCheckingCompletion* completion) {
+  RequestTextChecking(text, completion);
+  UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());
+}
+
+void SpellCheckProvider::requestCheckingOfText(
+    const WebString& text,
+    const WebVector<uint32_t>& markers,
+    const WebVector<int>& marker_offsets,
     WebTextCheckingCompletion* completion) {
   RequestTextChecking(text, completion);
   UMA_HISTOGRAM_COUNTS("SpellCheck.api.async", text.length());

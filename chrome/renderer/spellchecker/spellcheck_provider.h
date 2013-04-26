@@ -75,9 +75,20 @@ class SpellCheckProvider
       const WebKit::WebString& text,
       WebKit::WebTextCheckingTypeMask mask,
       WebKit::WebVector<WebKit::WebTextCheckingResult>* results) OVERRIDE;
+
+  // TODO(rouslan): Remove this version of requestCheckingOfText() method.
   virtual void requestCheckingOfText(
       const WebKit::WebString& text,
-      WebKit::WebTextCheckingCompletion* completion) OVERRIDE;
+      WebKit::WebTextCheckingCompletion* completion);
+
+  // TODO(rouslan): Add OVERRIDE to this version of requestCheckingOfText()
+  // method.
+  virtual void requestCheckingOfText(
+      const WebKit::WebString& text,
+      const WebKit::WebVector<uint32_t>& markers,
+      const WebKit::WebVector<int>& marker_offsets,
+      WebKit::WebTextCheckingCompletion* completion);
+
   virtual WebKit::WebString autoCorrectWord(
       const WebKit::WebString& misspelled_word) OVERRIDE;
   virtual void showSpellingUI(bool show) OVERRIDE;
