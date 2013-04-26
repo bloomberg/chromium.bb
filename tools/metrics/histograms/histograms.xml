@@ -144,6 +144,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Autocheckout.UiLatencyToShow" units="ms">
+  <summary>
+    Measures the duration of time it takes for the Autocheckout UI to be
+    actionable by the user after it is shown.
+  </summary>
+</histogram>
+
 <histogram name="Autocheckout.WalletErrors" enum="WalletErrors">
   <summary>
     Measures the frequency of errors in communicating with the Google Online
@@ -4862,6 +4869,13 @@ other types of suffix sets.
 <histogram name="RequestAutocomplete.UiEvents" enum="AutofillDialogUiEvents">
   <summary>
     Measures how users are interacting with the requestAutocomplete() dialog UI.
+  </summary>
+</histogram>
+
+<histogram name="RequestAutocomplete.UiLatencyToShow" units="ms">
+  <summary>
+    Measures the duration of time it takes for the requestAutocomplete() UI to
+    be actionable by the user after it is shown.
   </summary>
 </histogram>
 
