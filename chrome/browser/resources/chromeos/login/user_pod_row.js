@@ -248,6 +248,14 @@ cr.define('login', function() {
     },
 
     /**
+     * Gets user type icon area.
+     * @type {!HTMLInputElement}
+     */
+    get userTypeIconAreaElement() {
+      return this.querySelector('.user-type-icon-area');
+    },
+
+    /**
      * Gets action box menu.
      * @type {!HTMLInputElement}
      */
@@ -316,6 +324,7 @@ cr.define('login', function() {
       this.passwordElement.setAttribute('aria-label', loadTimeData.getStringF(
           'passwordFieldAccessibleName', this.user_.emailAddress));
       this.signinButtonElement.hidden = !needSignin;
+      this.userTypeIconAreaElement.hidden = !this.user_.locallyManagedUser;
     },
 
     /**

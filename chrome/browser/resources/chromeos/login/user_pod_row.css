@@ -205,6 +205,32 @@ html[dir=rtl] .pod .capslock-hint {
   width: 13px;
 }
 
+.user-type-icon-area {
+  background-color: white;
+  border-radius: 2px;
+  box-shadow: none;
+  height: 26px;
+  left: 0;
+  margin: 0;
+  outline: none;
+  padding: 0;
+  position: absolute;
+  top: 0;
+  width: 26px;
+  z-index: 1;
+}
+
+.user-type-icon-image {
+  background-color: transparent;
+  background-image: url('chrome://theme/IDR_OOBE_ACTION_BOX_BUTTON_NORMAL');
+  border: 0 !important;
+  height: 16px;
+  margin: 5px;
+  padding: 0;
+  width: 16px;
+}
+
+
 html[dir=rtl] .action-box-area {
   left: 0;
   right: auto;
