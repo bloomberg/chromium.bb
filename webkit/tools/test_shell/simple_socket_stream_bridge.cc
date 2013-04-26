@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop.h"
-#include "base/utf_string_conversions.h"
 #include "googleurl/src/gurl.h"
 #include "net/socket_stream/socket_stream_job.h"
 #include "net/websockets/websocket_job.h"
@@ -49,7 +48,6 @@ class WebSocketStreamHandleBridgeImpl
   virtual void OnReceivedData(net::SocketStream* req,
                               const char* data, int len) OVERRIDE;
   virtual void OnClose(net::SocketStream* req) OVERRIDE;
-  virtual void OnError(const net::SocketStream* req, int error_code) OVERRIDE;
 
  private:
   virtual ~WebSocketStreamHandleBridgeImpl();
@@ -64,7 +62,6 @@ class WebSocketStreamHandleBridgeImpl
   void DoOnSentData(int amount_sent);
   void DoOnReceivedData(std::vector<char>* data);
   void DoOnClose();
-  void DoOnError(int error_code, const char* error_msg);
 
   int socket_id_;
   MessageLoop* message_loop_;
@@ -157,15 +154,6 @@ void WebSocketStreamHandleBridgeImpl::OnClose(net::SocketStream* socket) {
       base::Bind(&WebSocketStreamHandleBridgeImpl::DoOnClose, this));
 }
 
-void WebSocketStreamHandleBridgeImpl::OnError(
-    const net::SocketStream* socket, int error_code) {
-  base::subtle::NoBarrier_AtomicIncrement(&num_pending_tasks_, 1);
-  message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(&WebSocketStreamHandleBridgeImpl::DoOnError, this,
-                 error_code, net::ErrorToString(error_code)));
-}
-
 void WebSocketStreamHandleBridgeImpl::DoConnect(const GURL& url) {
   DCHECK(MessageLoop::current() == g_io_thread);
   socket_ = net::SocketStreamJob::CreateSocketStreamJob(
@@ -227,14 +215,6 @@ void WebSocketStreamHandleBridgeImpl::DoOnClose() {
   if (delegate)
     delegate->DidClose(handle_);
   Release();
-}
-
-void WebSocketStreamHandleBridgeImpl::DoOnError(
-    int error_code, const char* error_msg) {
-  DCHECK(MessageLoop::current() == message_loop_);
-  base::subtle::NoBarrier_AtomicIncrement(&num_pending_tasks_, -1);
-  if (delegate_)
-    delegate_->DidFail(handle_, error_code, ASCIIToUTF16(error_msg));
 }
 
 }  // namespace

@@ -39,8 +39,7 @@ SocketStreamHost::SocketStreamHost(
 }
 
 /* static */
-int SocketStreamHost::SocketIdFromSocketStream(
-    const net::SocketStream* socket) {
+int SocketStreamHost::SocketIdFromSocketStream(net::SocketStream* socket) {
   net::SocketStream::UserData* d = socket->GetUserData(kSocketIdKey);
   if (d) {
     SocketStreamId* socket_stream_id = static_cast<SocketStreamId*>(d);

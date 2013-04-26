@@ -359,8 +359,7 @@ void SocketStream::Finish(int result) {
   Delegate* delegate = delegate_;
   delegate_ = NULL;
   if (delegate) {
-    if (result != ERR_CONNECTION_CLOSED)
-      delegate->OnError(this, result);
+    delegate->OnError(this, result);
     if (result != ERR_PROTOCOL_SWITCHED)
       delegate->OnClose(this);
   }
