@@ -690,6 +690,7 @@ const char kClearPropertiesFunction[] = "ClearProperties";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
 const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
 const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
+const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
