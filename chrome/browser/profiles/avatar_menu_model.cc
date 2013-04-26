@@ -26,6 +26,8 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/site_instance.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -58,6 +60,47 @@ void OnProfileCreated(bool always_create,
 const char kShowProfileSwitcherFieldTrialName[] = "ShowProfileSwitcher";
 const char kAlwaysShowSwitcherGroupName[] = "AlwaysShow";
 
+
+class SignoutTracker : public content::WebContentsObserver {
+ public:
+  SignoutTracker(Profile* profile, const GURL& signout_landing_url,
+                 content::WebContents* contents);
+
+  virtual void WebContentsDestroyed(content::WebContents* contents) OVERRIDE;
+  virtual void DidStopLoading(content::RenderViewHost* render_view_host)
+      OVERRIDE;
+
+ private:
+  scoped_ptr<content::WebContents> contents_;
+  GURL signout_landing_url_;
+  Profile* profile_;
+
+  DISALLOW_COPY_AND_ASSIGN(SignoutTracker);
+};
+
+
+SignoutTracker::SignoutTracker(Profile* profile,
+                               const GURL& signout_landing_url,
+                               content::WebContents* contents)
+  : WebContentsObserver(contents),
+    contents_(contents),
+    signout_landing_url_(signout_landing_url),
+    profile_(profile) {
+}
+
+void SignoutTracker::DidStopLoading(content::RenderViewHost* render_view_host) {
+  // Only close when we reach the final landing; ignore redirects until then.
+  if (web_contents()->GetURL() == signout_landing_url_) {
+    Observe(NULL);
+    BrowserList::CloseAllBrowsersWithProfile(profile_);
+    delete this;  /* success */
+  }
+}
+
+void SignoutTracker::WebContentsDestroyed(content::WebContents* contents) {
+  delete this;  /* failure */
+}
+
 }  // namespace
 
 AvatarMenuModel::AvatarMenuModel(ProfileInfoInterface* profile_cache,
@@ -85,6 +128,7 @@ AvatarMenuModel::Item::Item(size_t model_index, const gfx::Image& icon)
     : icon(icon),
       active(false),
       signed_in(false),
+      signin_required(false),
       model_index(model_index) {
 }
 
@@ -137,6 +181,11 @@ void AvatarMenuModel::AddNewProfile(ProfileMetrics::ProfileAdd type) {
   }
   chrome::ShowSettingsSubPage(browser, chrome::kCreateProfileSubPage);
   ProfileMetrics::LogProfileAddNewUser(type);
+}
+
+base::FilePath AvatarMenuModel::GetProfilePath(size_t index) {
+  const Item& item = GetItemAt(index);
+  return profile_info_->GetPathOfProfileAtIndex(item.model_index);
 }
 
 size_t AvatarMenuModel::GetNumberOfItems() {
@@ -227,10 +276,45 @@ void AvatarMenuModel::RebuildMenu() {
       base::FilePath path = profile_info_->GetPathOfProfileAtIndex(i);
       item->active = browser_->profile()->GetPath() == path;
     }
+    item->signin_required = profile_info_->ProfileIsSigninRequiredAtIndex(i);
     items_.push_back(item);
   }
 }
 
 void AvatarMenuModel::ClearMenu() {
   STLDeleteElements(&items_);
+}
+
+
+content::WebContents* AvatarMenuModel::BeginSignOut(
+    const char* logout_override) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  Profile* current_profile = browser_->profile();
+
+  ProfileInfoCache& cache = profile_manager->GetProfileInfoCache();
+  size_t index = cache.GetIndexOfProfileWithPath(current_profile->GetPath());
+  cache.SetProfileSigninRequiredAtIndex(index, true);
+
+  std::string landing_url = SyncPromoUI::GetSyncLandingURL("close", 1);
+  GURL logout_url(GaiaUrls::GetInstance()->service_logout_url() +
+                  "?continue=" + landing_url);
+  if (logout_override) {
+    // We're testing...
+    landing_url = logout_override;
+    logout_url = GURL(logout_override);
+  }
+
+  content::WebContents::CreateParams create_params(current_profile);
+  create_params.site_instance =
+      content::SiteInstance::CreateForURL(current_profile, logout_url);
+  content::WebContents* contents = content::WebContents::Create(create_params);
+  contents->GetController().LoadURL(
+    logout_url, content::Referrer(),
+    content::PAGE_TRANSITION_GENERATED, std::string());
+
+  // This object may be destructed when the menu closes but we need something
+  // around to finish the sign-out process and close the profile windows.
+  new SignoutTracker(current_profile, GURL(landing_url), contents);
+
+  return contents;  // returned for testing purposes
 }

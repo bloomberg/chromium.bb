@@ -11577,6 +11577,21 @@ experiment id: "<ph name="EXPERIMENT_ID">$5<ex>ar1</ex></ph>"
       <message name="IDS_PROFILES_CREATE_NEW_PROFILE_LINK" desc="Link in the avatar menu bubble view to create a new profile.">
         New user
       </message>
+      <message name="IDS_PROFILES_MANAGE_PROFILES_BUTTON" desc="Button in the avatar menu bubble view to manage profiles.">
+        Manage
+      </message>
+      <message name="IDS_PROFILES_MANAGE_PROFILES_BUTTON_TIP" desc="Tool-tip text shown for button in the avatar menu bubble view to manage profiles.">
+        Create, change, or delete profiles.
+      </message>
+      <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON" desc="Button in the avatar menu bubble view to sign-out the current profile.">
+        Sign-out
+      </message>
+      <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON_TIP" desc="Tool-tip text shown for button in the avatar menu bubble view to sign-out the current profile.">
+        Sign-out user <ph name="PROFILE_USERNAME">$1<ex>user@gmail.com</ex></ph>.
+      </message>
+      <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON_TIP_UNAVAILABLE" desc="Tool-tip text shown for button in the avatar menu bubble view to sign-out the current profile when that button is not available because the profile has not been signed-in.">
+        Sign-out is possible only when signed in.
+      </message>
       <message name="IDS_PROFILES_EDIT_PROFILE_LINK" desc="Link in the avatar menu bubble to edit a profile.">
         edit
       </message>

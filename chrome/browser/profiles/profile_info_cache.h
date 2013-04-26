@@ -75,6 +75,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   virtual bool IsUsingGAIAPictureOfProfileAtIndex(
       size_t index) const OVERRIDE;
   virtual bool ProfileIsManagedAtIndex(size_t index) const OVERRIDE;
+  virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const OVERRIDE;
 
   size_t GetAvatarIconIndexOfProfileAtIndex(size_t index) const;
 
@@ -88,6 +89,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void SetIsUsingGAIANameOfProfileAtIndex(size_t index, bool value);
   void SetGAIAPictureOfProfileAtIndex(size_t index, const gfx::Image* image);
   void SetIsUsingGAIAPictureOfProfileAtIndex(size_t index, bool value);
+  void SetProfileSigninRequiredAtIndex(size_t index, bool value);
 
   // Returns unique name that can be assigned to a newly created profile.
   string16 ChooseNameForNewProfile(size_t icon_index) const;

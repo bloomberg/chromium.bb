@@ -1457,6 +1457,7 @@
         'browser/printing/print_preview_dialog_controller_browsertest.cc',
         'browser/printing/printing_layout_browsertest.cc',
         'browser/process_singleton_browsertest.cc',
+        'browser/profiles/avatar_menu_model_browsertest.cc',
         'browser/profiles/profile_browsertest.cc',
         'browser/profiles/profile_manager_browsertest.cc',
         'browser/referrer_policy_browsertest.cc',

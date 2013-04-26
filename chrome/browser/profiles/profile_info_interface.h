@@ -51,6 +51,9 @@ class ProfileInfoInterface {
 
   virtual bool ProfileIsManagedAtIndex(size_t index) const = 0;
 
+  // This profile is associated with an account but has been signed-out.
+  virtual bool ProfileIsSigninRequiredAtIndex(size_t index) const = 0;
+
  protected:
   virtual ~ProfileInfoInterface() {}
 };

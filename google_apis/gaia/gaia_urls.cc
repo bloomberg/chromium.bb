@@ -18,6 +18,7 @@ const char kCaptchaUrlPrefixSuffix[] = "/";
 // API calls from accounts.google.com
 const char kClientLoginUrlSuffix[] = "/ClientLogin";
 const char kServiceLoginUrlSuffix[] = "/ServiceLogin";
+const char kServiceLogoutUrlSuffix[] = "/Logout";
 const char kIssueAuthTokenUrlSuffix[] = "/IssueAuthToken";
 const char kGetUserInfoUrlSuffix[] = "/GetUserInfo";
 const char kTokenAuthUrlSuffix[] = "/TokenAuth";
@@ -100,6 +101,7 @@ GaiaUrls::GaiaUrls() {
   gaia_login_form_realm_ = gaia_url_base + "/";
   client_login_url_ = gaia_url_base + kClientLoginUrlSuffix;
   service_login_url_ = gaia_url_base + kServiceLoginUrlSuffix;
+  service_logout_url_ = gaia_url_base + kServiceLogoutUrlSuffix;
   issue_auth_token_url_ = gaia_url_base + kIssueAuthTokenUrlSuffix;
   get_user_info_url_ = gaia_url_base + kGetUserInfoUrlSuffix;
   token_auth_url_ = gaia_url_base + kTokenAuthUrlSuffix;
@@ -162,6 +164,10 @@ const std::string& GaiaUrls::client_login_url() {
 
 const std::string& GaiaUrls::service_login_url() {
   return service_login_url_;
+}
+
+const std::string& GaiaUrls::service_logout_url() {
+  return service_logout_url_;
 }
 
 const std::string& GaiaUrls::issue_auth_token_url() {

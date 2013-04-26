@@ -211,7 +211,10 @@ class ProfileManager : public base::NonThreadSafe,
   // Autoloads profiles if they are running background apps.
   void AutoloadProfiles();
 
-  // Registers and adds testing profile to the ProfileManager.
+  // Sign-Out a profile against use until re-authentication.
+  void SignOutProfile(Profile* profile);
+
+  // Register and add testing profile to the ProfileManager. Use ONLY in tests.
   // This allows the creation of Profiles outside of the standard creation path
   // for testing. If |addToCache|, adds to ProfileInfoCache as well.
   // If |start_deferred_task_runners|, starts the deferred task runners.

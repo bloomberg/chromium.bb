@@ -20,6 +20,7 @@ class GaiaUrls {
   const std::string& gaia_origin_url();
   const std::string& client_login_url();
   const std::string& service_login_url();
+  const std::string& service_logout_url();
   const std::string& issue_auth_token_url();
   const std::string& get_user_info_url();
   const std::string& token_auth_url();
@@ -57,6 +58,7 @@ class GaiaUrls {
   std::string google_apis_origin_url_;
   std::string client_login_url_;
   std::string service_login_url_;
+  std::string service_logout_url_;
   std::string issue_auth_token_url_;
   std::string get_user_info_url_;
   std::string token_auth_url_;

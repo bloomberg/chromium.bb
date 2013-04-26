@@ -13,10 +13,13 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "ui/gfx/image/image.h"
 
 class AvatarMenuModelObserver;
 class Browser;
+class Profile;
 class ProfileInfoInterface;
 
 // This class is the model for the menu-like interface that appears when the
@@ -46,6 +49,9 @@ class AvatarMenuModel : public content::NotificationObserver {
     // expected to be the email of the signed in user.
     bool signed_in;
 
+    // Whether or not the current profile requires sign-in before use.
+    bool signin_required;
+
     // The index in the |profile_cache| that this Item represents.
     size_t model_index;
   };
@@ -68,6 +74,9 @@ class AvatarMenuModel : public content::NotificationObserver {
   void EditProfile(size_t index);
   // Creates a new profile.
   void AddNewProfile(ProfileMetrics::ProfileAdd type);
+
+  // Gets the path associated with the profile at |index|.
+  base::FilePath GetProfilePath(size_t index);
 
   // Gets the number of profiles.
   size_t GetNumberOfItems();
@@ -92,6 +101,12 @@ class AvatarMenuModel : public content::NotificationObserver {
 
   // True if avatar menu should be displayed.
   static bool ShouldShowAvatarMenu();
+
+  // Start the sign-out process for this profile.
+  // Parameter |logout_override| alows changing the destination URL for the
+  // sign-out process and return value (the WebContents executing the sign-out)
+  // are for testing; pass NULL for normal use.
+  content::WebContents* BeginSignOut(const char* logout_override);
 
  private:
   // Rebuilds the menu from the cache and notifies the |observer_|.

@@ -250,6 +250,7 @@ extern const char kNaClLoaderCmdPrefix[];
 extern const char kNaClLoaderProcess[];
 extern const char kNativeMessagingHosts[];
 extern const char kNetLogLevel[];
+extern const char kNewProfileManagement[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoDisplayingInsecureContent[];
 extern const char kNoEvents[];

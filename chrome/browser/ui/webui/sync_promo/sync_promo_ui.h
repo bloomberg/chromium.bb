@@ -52,6 +52,9 @@ class SyncPromoUI : public content::WebUIController {
   // Registers the preferences the Sync Promo UI needs.
   static void RegisterUserPrefs(PrefRegistrySyncable* registry);
 
+  // Gets the sync landing page URL.
+  static std::string GetSyncLandingURL(const char* option, int value);
+
   // Returns the sync promo URL wth the given arguments in the query.
   // |next_page| is the URL to navigate to when the user completes or skips the
   // promo. If an empty URL is given then the promo will navigate to the NTP.

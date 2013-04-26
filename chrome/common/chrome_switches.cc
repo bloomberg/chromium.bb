@@ -929,6 +929,10 @@ const char kNativeMessagingHosts[]          = "native-messaging-hosts";
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
 
+// Use new profile management system, including profile sign-out and new
+// choosers.
+const char kNewProfileManagement[]    = "new-profile-management";
+
 // Disables the default browser check. Useful for UI/browser tests where we
 // want to avoid having the default browser info-bar displayed.
 const char kNoDefaultBrowserCheck[]         = "no-default-browser-check";

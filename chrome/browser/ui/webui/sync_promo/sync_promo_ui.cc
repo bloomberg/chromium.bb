@@ -56,7 +56,7 @@ const char kSyncPromoQueryKeySource[] = "source";
 
 // Gaia cannot support about:blank as a continue URL, so using a hosted blank
 // page instead.
-const char kContinueUrlPrefix[] =
+const char kSyncLandingUrlPrefix[] =
     "https://www.google.com/intl/%s/chrome/blank.html";
 
 // The maximum number of times we want to show the sync promo at startup.
@@ -219,6 +219,14 @@ void SyncPromoUI::SetUserSkippedSyncPromo(Profile* profile) {
 }
 
 // static
+std::string SyncPromoUI::GetSyncLandingURL(const char* option, int value) {
+  const std::string& locale = g_browser_process->GetApplicationLocale();
+  std::string url = base::StringPrintf(kSyncLandingUrlPrefix, locale.c_str());
+  base::StringAppendF(&url, "?%s=%d", option, value);
+  return url;
+}
+
+// static
 GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
                                   Source source,
                                   bool auto_close) {
@@ -242,11 +250,8 @@ GURL SyncPromoUI::GetSyncPromoURL(const GURL& next_page,
     url_string = GaiaUrls::GetInstance()->service_login_url();
     url_string.append("?service=chromiumsync&sarp=1");
 
-    const std::string& locale = g_browser_process->GetApplicationLocale();
-    std::string continue_url = base::StringPrintf(kContinueUrlPrefix,
-                                                  locale.c_str());
-    base::StringAppendF(&continue_url, "?%s=%d", kSyncPromoQueryKeySource,
-                        static_cast<int>(source));
+    std::string continue_url = GetSyncLandingURL(
+        kSyncPromoQueryKeySource, static_cast<int>(source));
 
     base::StringAppendF(&url_string, "&%s=%s", kSyncPromoQueryKeyContinue,
                         net::EscapeQueryParamValue(
@@ -321,7 +326,7 @@ bool SyncPromoUI::IsContinueUrlForWebBasedSigninFlow(const GURL& url) {
   replacements.ClearQuery();
   const std::string& locale = g_browser_process->GetApplicationLocale();
   return url.ReplaceComponents(replacements) ==
-      GURL(base::StringPrintf(kContinueUrlPrefix, locale.c_str()));
+      GURL(base::StringPrintf(kSyncLandingUrlPrefix, locale.c_str()));
 }
 
 // static
