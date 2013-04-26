@@ -86,13 +86,6 @@ enum FileSystemType {
   // the handlers of kFileSystemTypeExternal.
   kFileSystemTypeNativeForPlatformApp,
 
-  // Indicates an isolated filesystem which is supposed to contain one
-  // temporary which is supposed to go away when the last reference of
-  // its snapshot is dropped.
-  // This type is useful for creating a blob reference for a temporary
-  // file which must go away when the blob's last reference is dropped.
-  kFileSystemTypeForTransientFile,
-
   // --------------------------------------------------------------------
   // Marks the end of internal type enum. (This is not the actual fs type)
   // New internal filesystem types must be added above this line.

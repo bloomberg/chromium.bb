@@ -111,8 +111,6 @@
       '../fileapi/task_runner_bound_observer_list.h',
       '../fileapi/test_mount_point_provider.cc',
       '../fileapi/test_mount_point_provider.h',
-      '../fileapi/transient_file_util.cc',
-      '../fileapi/transient_file_util.h',
       '../fileapi/upload_file_system_file_element_reader.cc',
       '../fileapi/upload_file_system_file_element_reader.h',
       '../fileapi/webfilewriter_base.cc',

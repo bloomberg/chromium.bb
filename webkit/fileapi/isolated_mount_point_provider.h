@@ -61,7 +61,6 @@ class IsolatedMountPointProvider : public FileSystemMountPointProvider {
  private:
   scoped_ptr<AsyncFileUtilAdapter> isolated_file_util_;
   scoped_ptr<AsyncFileUtilAdapter> dragged_file_util_;
-  scoped_ptr<AsyncFileUtilAdapter> transient_file_util_;
 };
 
 }  // namespace fileapi
