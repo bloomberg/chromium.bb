@@ -17,7 +17,7 @@ MINIMUM_DARWIN_RELEASE = 'B'  # Release B = 10.8.1.
 
 MINIMUM_IB_VERSION = 2549  # Xcode 4.4.1.
 MAXIMUM_IB_VERSION = 3084  # Xcode 4.6.x.
-HUMAN_IB_VERSION = '4.4.x, x >= 1'
+HUMAN_IB_VERSION = '>= 4.4.1, <= 4.6.x'
 
 SYSTEM_VERSION_RE = r'<string key="IBDocument\.SystemVersion">' + \
     '([0-9]{,2})([A-Z])([0-9]+)</string>'
@@ -67,7 +67,7 @@ def _CheckXIBSystemAndXcodeVersions(input_api, output_api, error_type):
       continue
 
     if ib_version is None or int(ib_version) < MINIMUM_IB_VERSION or \
-       int(ib_version) >= MAXIMUM_IB_VERSION:
+       int(ib_version) > MAXIMUM_IB_VERSION:
       incorrect_ib_versions.append(xib.LocalPath())
       continue
 
@@ -78,7 +78,7 @@ def _CheckXIBSystemAndXcodeVersions(input_api, output_api, error_type):
         items=incorrect_system_versions))
   if incorrect_ib_versions:
     problems.append(error_type(
-        'XIB files need to be saved using Xcode ' + HUMAN_IB_VERSION,
+        'XIB files need to be saved using Xcode version ' + HUMAN_IB_VERSION,
         items=incorrect_ib_versions))
   return problems
 
