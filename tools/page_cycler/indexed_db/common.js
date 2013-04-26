@@ -16,6 +16,17 @@ function setup() {
   return false;
 }
 
+function getOrAddElement(id, type) {
+  var elem = document.getElementById(id);
+  if (!elem) {
+    elem = document.createElement(type);
+    elem.id = id;
+    document.body.appendChild(elem);
+  }
+  return elem;
+}
+
 function log(msg) {
-  document.write(msg + '<br>');
+  var logElem = getOrAddElement('logElem', 'DIV');
+  logElem.innerHTML += msg + '<br>';
 }
