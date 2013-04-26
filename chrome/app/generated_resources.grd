@@ -7158,6 +7158,48 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_MAX_TILES_FOR_INTEREST_AREA_VENTI" desc="">
         512
       </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME" desc="Name of about:flags option for default tile width.">
+        Default tile width
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_DESCRIPTION" desc="Description of about:flags option for default tile width.">
+        Specify the default tile width.
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_DEFAULT" desc="">
+        Default
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_SHORT" desc="">
+        128
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_TALL" desc="">
+        256
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_GRANDE" desc="">
+        512
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_WIDTH_VENTI" desc="">
+        1024
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_NAME" desc="Name of about:flags option for default tile height.">
+        Default tile height
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_DESCRIPTION" desc="Description of about:flags option for default tile height.">
+        Specify the default tile height.
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_DEFAULT" desc="">
+        Default
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_SHORT" desc="">
+        128
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_TALL" desc="">
+        256
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_GRANDE" desc="">
+        512
+      </message>
+      <message name="IDS_FLAGS_DEFAULT_TILE_HEIGHT_VENTI" desc="">
+        1024
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

@@ -210,6 +210,30 @@ const Experiment::Choice kMaxTilesForInterestAreaChoices[] = {
     cc::switches::kMaxTilesForInterestArea, "512"}
 };
 
+const Experiment::Choice kDefaultTileWidthChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_DEFAULT_TILE_WIDTH_SHORT,
+    switches::kDefaultTileWidth, "128"},
+  { IDS_FLAGS_DEFAULT_TILE_WIDTH_TALL,
+    switches::kDefaultTileWidth, "256"},
+  { IDS_FLAGS_DEFAULT_TILE_WIDTH_GRANDE,
+    switches::kDefaultTileWidth, "512"},
+  { IDS_FLAGS_DEFAULT_TILE_WIDTH_VENTI,
+    switches::kDefaultTileWidth, "1024"}
+};
+
+const Experiment::Choice kDefaultTileHeightChoices[] = {
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
+  { IDS_FLAGS_DEFAULT_TILE_HEIGHT_SHORT,
+    switches::kDefaultTileHeight, "128"},
+  { IDS_FLAGS_DEFAULT_TILE_HEIGHT_TALL,
+    switches::kDefaultTileHeight, "256"},
+  { IDS_FLAGS_DEFAULT_TILE_HEIGHT_GRANDE,
+    switches::kDefaultTileHeight, "512"},
+  { IDS_FLAGS_DEFAULT_TILE_HEIGHT_VENTI,
+    switches::kDefaultTileHeight, "1024"}
+};
+
 const Experiment::Choice kSimpleCacheBackendChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
@@ -1318,6 +1342,20 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_OFFLINE_MODE_DESCRIPTION,
     kOsAll,
     SINGLE_VALUE_TYPE(switches::kEnableOfflineCacheAccess)
+  },
+  {
+    "default-tile-width",
+    IDS_FLAGS_DEFAULT_TILE_WIDTH_NAME,
+    IDS_FLAGS_DEFAULT_TILE_WIDTH_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kDefaultTileWidthChoices)
+  },
+  {
+    "default-tile-height",
+    IDS_FLAGS_DEFAULT_TILE_HEIGHT_NAME,
+    IDS_FLAGS_DEFAULT_TILE_HEIGHT_DESCRIPTION,
+    kOsAll,
+    MULTI_VALUE_TYPE(kDefaultTileHeightChoices)
   },
   // TODO(sky): ifdef needed until focus sorted out in DesktopNativeWidgetAura.
 #if !defined(USE_AURA)
