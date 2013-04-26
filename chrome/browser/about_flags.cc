@@ -4,8 +4,6 @@
 
 #include "chrome/browser/about_flags.h"
 
-#include <string.h>
-
 #include <algorithm>
 #include <iterator>
 #include <map>
@@ -22,7 +20,6 @@
 #include "chrome/browser/prefs/scoped_user_pref_update.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/chromium_strings.h"
@@ -256,15 +253,6 @@ const Experiment::Choice kSimpleCacheBackendChoices[] = {
 //
 // When adding a new choice, add it to the end of the list.
 const Experiment kExperiments[] = {
-#if defined(OS_ANDROID)
-  {
-     "enable-spdy-proxy-auth",
-     IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_NAME,
-     IDS_FLAGS_ENABLE_SPDY_PROXY_AUTH_DESCRIPTION,
-     kOsAndroid,
-     SINGLE_VALUE_TYPE(switches::kEnableSpdyProxyAuth)
-  },
-#endif
   {
     "expose-for-tabs",  // FLAGS:RECORD_UMA
     IDS_FLAGS_TABPOSE_NAME,
@@ -1625,15 +1613,6 @@ ListValue* GetFlagsExperimentsData(PrefService* prefs, FlagAccess access) {
   ListValue* experiments_data = new ListValue();
   for (size_t i = 0; i < num_experiments; ++i) {
     const Experiment& experiment = experiments[i];
-
-#if defined(OS_ANDROID)
-    // Special case enable-spdy-proxy-auth, because it should only
-    // be available on Dev and Beta channels.
-    if (!strcmp("enable-spdy-proxy-auth", experiment.internal_name) &&
-        chrome::VersionInfo::GetChannel() ==
-            chrome::VersionInfo::CHANNEL_STABLE)
-      continue;
-#endif
 
     DictionaryValue* data = new DictionaryValue();
     data->SetString("internal_name", experiment.internal_name);
