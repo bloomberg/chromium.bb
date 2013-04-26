@@ -46,11 +46,6 @@
 
 namespace WebCore {
 
-bool AsyncFileSystem::isAvailable()
-{
-    return true;
-}
-
 PassOwnPtr<AsyncFileSystem> AsyncFileSystem::create()
 {
     return AsyncFileSystemChromium::create();

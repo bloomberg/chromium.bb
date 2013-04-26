@@ -52,8 +52,6 @@ public:
     virtual void stop() { }
     virtual bool hasPendingActivity() { return false; }
 
-    static bool isAvailable();
-
     // Subclass must implement this if it supports synchronous operations.
     // This should return false if there are no pending operations.
     virtual bool waitForOperationToComplete() { return false; }

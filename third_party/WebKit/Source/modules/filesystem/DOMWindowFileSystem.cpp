@@ -58,7 +58,7 @@ void DOMWindowFileSystem::webkitRequestFileSystem(DOMWindow* window, int type, l
     if (!document)
         return;
 
-    if (!AsyncFileSystem::isAvailable() || !document->securityOrigin()->canAccessFileSystem()) {
+    if (!document->securityOrigin()->canAccessFileSystem()) {
         DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
@@ -83,7 +83,7 @@ void DOMWindowFileSystem::webkitResolveLocalFileSystemURL(DOMWindow* window, con
 
     SecurityOrigin* securityOrigin = document->securityOrigin();
     KURL completedURL = document->completeURL(url);
-    if (!AsyncFileSystem::isAvailable() || !securityOrigin->canAccessFileSystem() || !securityOrigin->canRequest(completedURL)) {
+    if (!securityOrigin->canAccessFileSystem() || !securityOrigin->canRequest(completedURL)) {
         DOMFileSystem::scheduleCallback(document, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }

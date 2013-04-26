@@ -31,8 +31,6 @@
 #include "config.h"
 #include "core/page/RuntimeEnabledFeatures.h"
 
-#include "WebSocket.h"
-#include "core/platform/AsyncFileSystem.h"
 #include "core/platform/graphics/MediaPlayer.h"
 #include "core/workers/SharedWorkerRepository.h"
 
@@ -101,11 +99,6 @@ bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
 bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 bool RuntimeEnabledFeatures::isExperimentalWebSocketEnabled = false;
 bool RuntimeEnabledFeatures::isIMEAPIEnabled = false;
-
-bool RuntimeEnabledFeatures::fileSystemEnabled()
-{
-    return isFileSystemEnabled && AsyncFileSystem::isAvailable();
-}
 
 bool RuntimeEnabledFeatures::mediaEnabled()
 {

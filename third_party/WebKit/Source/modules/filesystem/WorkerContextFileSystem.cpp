@@ -21,7 +21,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  */
 
@@ -49,7 +49,7 @@ namespace WebCore {
 void WorkerContextFileSystem::webkitRequestFileSystem(WorkerContext* worker, int type, long long size, PassRefPtr<FileSystemCallback> successCallback, PassRefPtr<ErrorCallback> errorCallback)
 {
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
-    if (!AsyncFileSystem::isAvailable() || !secureContext->securityOrigin()->canAccessFileSystem()) {
+    if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         DOMFileSystem::scheduleCallback(worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
@@ -67,7 +67,7 @@ PassRefPtr<DOMFileSystemSync> WorkerContextFileSystem::webkitRequestFileSystemSy
 {
     ec = 0;
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
-    if (!AsyncFileSystem::isAvailable() || !secureContext->securityOrigin()->canAccessFileSystem()) {
+    if (!secureContext->securityOrigin()->canAccessFileSystem()) {
         ec = FileException::SECURITY_ERR;
         return 0;
     }
@@ -87,7 +87,7 @@ void WorkerContextFileSystem::webkitResolveLocalFileSystemURL(WorkerContext* wor
 {
     KURL completedURL = worker->completeURL(url);
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
-    if (!AsyncFileSystem::isAvailable() || !secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
+    if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
         DOMFileSystem::scheduleCallback(worker, errorCallback, FileError::create(FileError::SECURITY_ERR));
         return;
     }
@@ -107,7 +107,7 @@ PassRefPtr<EntrySync> WorkerContextFileSystem::webkitResolveLocalFileSystemSyncU
     ec = 0;
     KURL completedURL = worker->completeURL(url);
     ScriptExecutionContext* secureContext = worker->scriptExecutionContext();
-    if (!AsyncFileSystem::isAvailable() || !secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
+    if (!secureContext->securityOrigin()->canAccessFileSystem() || !secureContext->securityOrigin()->canRequest(completedURL)) {
         ec = FileException::SECURITY_ERR;
         return 0;
     }

@@ -126,7 +126,7 @@ public:
     static bool scriptedSpeechEnabled() { return isScriptedSpeechEnabled; }
 
     static void setFileSystemEnabled(bool isEnabled) { isFileSystemEnabled = isEnabled; }
-    static bool fileSystemEnabled();
+    static bool fileSystemEnabled() { return isFileSystemEnabled; }
 
 #if ENABLE(JAVASCRIPT_I18N_API)
     static void setJavaScriptI18NAPIEnabled(bool isEnabled) { isJavaScriptI18NAPIEnabled = isEnabled; }
