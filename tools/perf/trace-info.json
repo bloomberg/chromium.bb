@@ -399,9 +399,6 @@
   "texture_upload_count": {
     "description": "The number of textures uploaded to the GPU."
   },
-  "total_paint_time": {
-    "description": ""
-  },
   "average_commit_time": {
     "description": "Time spent pushing the layer tree from the main thread to the compositor thread.  Is zero if software rendering."
   },
@@ -417,12 +414,6 @@
   "dropped_percent": {
     "description": "Number of frames that missed vsync.  The metric is slightly different in each rendering mode but roughly approximates how janky the page was."
   },
-  "megapixels_painted_per_second": {
-    "description": "Time spent painting, normalized by the amount of pixels we painted."
-  },
-  "megapixels_rasterized_per_second": {
-    "description": "Time spent rasterizing, normalized by the amount of pixels rasterized."
-  },
   "percent_impl_scrolled": {
     "description": "The percent of input events that caused fast scrolling on the impl thread.  If you see numbers between 0 and 100, it's probably because the page changed halfway through and became slow scrolling, or vice versa."
   },
@@ -433,18 +424,6 @@
     "description": ""
   },
   "total_image_cache_hit_count": {
-    "description": ""
-  },
-  "total_paint_and_rasterize_time": {
-    "description": "The sum of rasterize and painting times."
-  },
-  "total_pixels_painted": {
-    "description": ""
-  },
-  "total_pixels_rasterized": {
-    "description": ""
-  },
-  "total_rasterize_time": {
     "description": ""
   },
   "dom_content_loaded_time": {

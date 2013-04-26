@@ -53,33 +53,6 @@ def CalcScrollResults(rendering_stats_deltas, results):
   results.Add('average_num_missing_tiles', '', round(num_missing_tiles, 1),
               data_type='unimportant')
 
-def CalcPaintingResults(rendering_stats_deltas, results):
-  totalPaintTime = rendering_stats_deltas.get('totalPaintTimeInSeconds', 0)
-  totalRasterizeTime = rendering_stats_deltas.get(
-    'totalRasterizeTimeInSeconds', 0)
-  totalPixelsPainted = rendering_stats_deltas.get('totalPixelsPainted', 0)
-  totalPixelsRasterized = rendering_stats_deltas.get('totalPixelsRasterized', 0)
-
-  megapixelsPaintedPerSecond = DivideIfPossibleOrZero(
-      (totalPixelsPainted / 1000000.0), totalPaintTime)
-
-  megapixelsRasterizedPerSecond = DivideIfPossibleOrZero(
-      (totalPixelsRasterized / 1000000.0), totalRasterizeTime)
-
-  results.Add('total_paint_time', 'seconds', totalPaintTime)
-  results.Add('total_rasterize_time', 'seconds', totalRasterizeTime,
-              data_type='unimportant')
-  results.Add('total_pixels_painted', '', totalPixelsPainted,
-              data_type='unimportant')
-  results.Add('total_pixels_rasterized', '', totalPixelsRasterized,
-              data_type='unimportant')
-  results.Add('megapixels_painted_per_second', '', megapixelsPaintedPerSecond,
-              data_type='unimportant')
-  results.Add('megapixels_rasterized_per_second', '',
-              megapixelsRasterizedPerSecond, data_type='unimportant')
-  results.Add('total_paint_and_rasterize_time', 'seconds', totalPaintTime +
-              totalRasterizeTime, data_type='unimportant')
-
 def CalcTextureUploadResults(rendering_stats_deltas, results):
   if (('totalCommitCount' not in rendering_stats_deltas)
       or rendering_stats_deltas['totalCommitCount'] == 0) :
@@ -197,7 +170,6 @@ class SmoothnessBenchmark(page_benchmark.PageBenchmark):
 
     CalcFirstPaintTimeResults(results, tab)
     CalcScrollResults(rendering_stats_deltas, results)
-    CalcPaintingResults(rendering_stats_deltas, results)
     CalcTextureUploadResults(rendering_stats_deltas, results)
     CalcImageDecodingResults(rendering_stats_deltas, results)
 
