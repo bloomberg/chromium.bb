@@ -1400,11 +1400,24 @@ void ResourceDispatcherHostImpl::CancelRequestsForRoute(int child_id,
   }
 
   // Cleanup the offline state for the route.
-  OfflineMap::iterator it = offline_policy_map_.find(
-      GlobalRoutingID(child_id, route_id));
-  if (offline_policy_map_.end() != it) {
-    delete it->second;
-    offline_policy_map_.erase(it);
+  if (-1 != route_id) {
+    OfflineMap::iterator it = offline_policy_map_.find(
+        GlobalRoutingID(child_id, route_id));
+    if (offline_policy_map_.end() != it) {
+      delete it->second;
+      offline_policy_map_.erase(it);
+    }
+  } else {
+    for (OfflineMap::iterator it = offline_policy_map_.begin();
+         offline_policy_map_.end() != it;) {
+      // Increment iterator so deletion doesn't invalidate it.
+      OfflineMap::iterator current_it = it++;
+
+      if (child_id == current_it->first.child_id) {
+        delete current_it->second;
+        offline_policy_map_.erase(current_it);
+      }
+    }
   }
 }
 

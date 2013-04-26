@@ -535,6 +535,14 @@ class ResourceDispatcherHostTest : public testing::Test,
     filter_ = new ForwardingFilter(
         this, browser_context_->GetResourceContext());
   }
+
+  ~ResourceDispatcherHostTest() {
+    for (std::set<int>::iterator it = child_ids_.begin();
+         it != child_ids_.end(); ++it) {
+      host_.CancelRequestsForProcess(*it);
+    }
+  }
+
   // IPC::Sender implementation
   virtual bool Send(IPC::Message* msg) OVERRIDE {
     accum_.AddMessage(*msg);
@@ -719,6 +727,7 @@ class ResourceDispatcherHostTest : public testing::Test,
   net::URLRequest::ProtocolFactory* old_factory_;
   ResourceType::Type resource_type_;
   bool send_data_received_acks_;
+  std::set<int> child_ids_;
   static ResourceDispatcherHostTest* test_fixture_;
   static bool delay_start_;
   static bool delay_complete_;
@@ -741,6 +750,9 @@ void ResourceDispatcherHostTest::MakeTestRequest(
     int render_view_id,
     int request_id,
     const GURL& url) {
+  // If it's already there, this'll be dropped on the floor, which is fine.
+  child_ids_.insert(filter->child_id());
+
   ResourceHostMsg_Request request =
       CreateResourceRequest("GET", resource_type_, url);
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
@@ -1759,6 +1771,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigation) {
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
 
+  // For cleanup.
+  child_ids_.insert(second_filter->child_id());
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
   bool msg_was_ok;
@@ -1819,6 +1833,8 @@ TEST_F(ResourceDispatcherHostTest, TransferNavigationAndThenRedirect) {
   request.transferred_request_child_id = filter_->child_id();
   request.transferred_request_request_id = request_id;
 
+  // For cleanup.
+  child_ids_.insert(second_filter->child_id());
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
   bool msg_was_ok;

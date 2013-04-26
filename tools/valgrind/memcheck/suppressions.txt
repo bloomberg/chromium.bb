@@ -7082,17 +7082,6 @@
    fun:_ZN2cc13LayerTreeHost12UpdateLayersEPNS_5LayerEPNS_19ResourceUpdateQueueE
 }
 {
-   bug_233961
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN7content26ResourceDispatcherHostImpl12BeginRequestEiRK23ResourceHostMsg_RequestPN3IPC7MessageEi
-   fun:_ZN7content26ResourceDispatcherHostImpl17OnRequestResourceERKN3IPC7MessageEiRK23ResourceHostMsg_Request
-   fun:_ZN31ResourceHostMsg_RequestResource8DispatchIN7content26ResourceDispatcherHostImplES2_iRK23ResourceHostMsg_RequestEEbPKN3IPC7MessageEPT_PT0_MSA_FvRS8_T1_T2_E
-   fun:_ZN7content26ResourceDispatcherHostImpl17OnMessageReceivedERKN3IPC7MessageEPNS_21ResourceMessageFilterEPb
-   ...
-   fun:_ZN7content*ResourceDispatcherHostTest_*_Test8TestBodyEv
-}
-{
    bug_234845
    Memcheck:Leak
    fun:malloc

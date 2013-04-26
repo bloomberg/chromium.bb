@@ -1874,16 +1874,6 @@
    fun:DiskCacheBackendTest_SimpleDoom*
 }
 {
-   bug_233961
-   Heapcheck:Leak
-   fun:content::ResourceDispatcherHostImpl::BeginRequest
-   fun:content::ResourceDispatcherHostImpl::OnRequestResource
-   fun:ResourceHostMsg_RequestResource::Dispatch
-   fun:content::ResourceDispatcherHostImpl::OnMessageReceived
-   ...
-   fun:content::ResourceDispatcherHostTest_*_Test::TestBody
-}
-{
    bug_234754
    Heapcheck:Leak
    fun:MessageLoop
