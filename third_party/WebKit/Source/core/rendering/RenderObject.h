@@ -286,6 +286,7 @@ private:
     void addAbsoluteRectForLayer(LayoutRect& result);
     void setLayerNeedsFullRepaint();
     void setLayerNeedsFullRepaintForPositionedMovementLayout();
+    bool requiresAnonymousTableWrappers(const RenderObject*) const;
 
 public:
 #ifndef NDEBUG

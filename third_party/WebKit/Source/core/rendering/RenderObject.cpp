@@ -309,6 +309,26 @@ void RenderObject::setFlowThreadStateIncludingDescendants(FlowThreadState state)
     }
 }
 
+bool RenderObject::requiresAnonymousTableWrappers(const RenderObject* newChild) const
+{
+    // Check should agree with:
+    // CSS 2.1 Tables: 17.2.1 Anonymous table objects
+    // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
+    if (newChild->isRenderTableCol()) {
+        const RenderTableCol* newTableColumn = toRenderTableCol(newChild);
+        bool isColumnInColumnGroup = newTableColumn->isTableColumn() && isRenderTableCol();
+        return !isTable() && !isColumnInColumnGroup;
+    } else if (newChild->isTableCaption())
+        return !isTable();
+    else if (newChild->isTableSection())
+        return !isTable();
+    else if (newChild->isTableRow())
+        return !isTableSection();
+    else if (newChild->isTableCell())
+        return !isTableRow();
+    return false;
+}
+
 void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
 {
     RenderObjectChildList* children = virtualChildren();
@@ -316,22 +336,10 @@ void RenderObject::addChild(RenderObject* newChild, RenderObject* beforeChild)
     if (!children)
         return;
 
-    bool needsTable = false;
-
-    if (newChild->isRenderTableCol()) {
-        RenderTableCol* newTableColumn = toRenderTableCol(newChild);
-        bool isColumnInColumnGroup = newTableColumn->isTableColumn() && isRenderTableCol();
-        needsTable = !isTable() && !isColumnInColumnGroup;
-    } else if (newChild->isTableCaption())
-        needsTable = !isTable();
-    else if (newChild->isTableSection())
-        needsTable = !isTable();
-    else if (newChild->isTableRow())
-        needsTable = !isTableSection();
-    else if (newChild->isTableCell())
-        needsTable = !isTableRow();
-
-    if (needsTable) {
+    if (requiresAnonymousTableWrappers(newChild)) {
+        // Generate an anonymous table or reuse existing one from previous child
+        // Per: 17.2.1 Anonymous table objects 3. Generate missing parents
+        // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
         RenderTable* table;
         RenderObject* afterChild = beforeChild ? beforeChild->previousSibling() : children->lastChild();
         if (afterChild && afterChild->isAnonymous() && afterChild->isTable() && !afterChild->isBeforeContent())
