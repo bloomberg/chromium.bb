@@ -30,14 +30,11 @@
 
 #include "core/platform/text/TextCodec.h"
 #include "core/platform/text/TextEncodingRegistry.h"
+#include <unicode/unorm.h>
 #include <wtf/OwnPtr.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
-
-#if USE(ICU_UNICODE)
-#include <unicode/unorm.h>
-#endif
 
 namespace WebCore {
 

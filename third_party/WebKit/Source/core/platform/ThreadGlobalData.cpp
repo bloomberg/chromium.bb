@@ -31,14 +31,11 @@
 #include "InspectorCounters.h"
 #include "core/loader/cache/CachedResourceRequestInitiators.h"
 #include "core/platform/ThreadTimers.h"
+#include "core/platform/text/TextCodecICU.h"
 #include <wtf/MainThread.h>
 #include <wtf/text/StringImpl.h>
 #include <wtf/UnusedParam.h>
 #include <wtf/WTFThreadData.h>
-
-#if USE(ICU_UNICODE)
-#include "core/platform/text/TextCodecICU.h"
-#endif
 
 #include <wtf/Threading.h>
 #include <wtf/ThreadSpecific.h>
@@ -55,9 +52,7 @@ ThreadGlobalData::ThreadGlobalData()
 #ifndef NDEBUG
     , m_isMainThread(isMainThread())
 #endif
-#if USE(ICU_UNICODE)
     , m_cachedConverterICU(adoptPtr(new ICUConverterWrapper))
-#endif
     , m_inspectorCounters(adoptPtr(new ThreadLocalInspectorCounters()))
 {
     // This constructor will have been called on the main thread before being called on
@@ -75,9 +70,7 @@ ThreadGlobalData::~ThreadGlobalData()
 void ThreadGlobalData::destroy()
 {
 
-#if USE(ICU_UNICODE)
     m_cachedConverterICU.clear();
-#endif
 
     m_inspectorCounters.clear();
 

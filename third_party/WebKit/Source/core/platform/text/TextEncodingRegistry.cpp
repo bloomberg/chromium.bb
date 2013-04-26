@@ -30,20 +30,16 @@
 #include "core/platform/text/TextCodecLatin1.h"
 #include "core/platform/text/TextCodecUTF16.h"
 #include "core/platform/text/TextCodecUTF8.h"
+#include "core/platform/text/TextCodecICU.h"
 #include "core/platform/text/TextCodecUserDefined.h"
 #include "core/platform/text/TextEncoding.h"
 #include <wtf/ASCIICType.h>
+#include <wtf/CurrentTime.h>
 #include <wtf/HashMap.h>
 #include <wtf/HashSet.h>
 #include <wtf/MainThread.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/StringExtras.h>
-
-#if USE(ICU_UNICODE)
-#include "core/platform/text/TextCodecICU.h"
-#endif
-
-#include <wtf/CurrentTime.h>
 #include <wtf/text/CString.h>
 
 using namespace WTF;
@@ -282,10 +278,8 @@ bool shouldShowBackslashAsCurrencySymbolIn(const char* canonicalEncodingName)
 
 static void extendTextCodecMaps()
 {
-#if USE(ICU_UNICODE)
     TextCodecICU::registerEncodingNames(addToTextEncodingNameMap);
     TextCodecICU::registerCodecs(addToTextCodecMap);
-#endif
 
     pruneBlacklistedCodecs();
     buildQuirksSets();

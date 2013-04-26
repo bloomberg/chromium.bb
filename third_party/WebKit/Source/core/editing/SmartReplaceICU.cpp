@@ -30,7 +30,7 @@
 #include "config.h"
 #include "core/editing/SmartReplace.h"
 
-#if !USE(CF) && USE(ICU_UNICODE)
+#if !USE(CF)
 #include <unicode/uset.h>
 #include <wtf/Assertions.h>
 #include <wtf/text/WTFString.h>
@@ -97,4 +97,4 @@ bool isCharacterSmartReplaceExempt(UChar32 c, bool isPreviousCharacter)
 
 }
 
-#endif // !USE(CF) && USE(ICU_UNICODE)
+#endif // !USE(CF)

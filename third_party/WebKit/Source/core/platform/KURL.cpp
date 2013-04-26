@@ -32,6 +32,7 @@
 #include "core/platform/PlatformMemoryInstrumentation.h"
 #include "core/platform/text/DecodeEscapeSequences.h"
 #include "core/platform/text/TextEncoding.h"
+#include <unicode/uidna.h>
 #include <wtf/HashMap.h>
 #include <wtf/HexNumber.h>
 #include <wtf/MemoryInstrumentationString.h>
@@ -39,10 +40,6 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/StringBuilder.h>
 #include <wtf/text/StringHash.h>
-
-#if USE(ICU_UNICODE)
-#include <unicode/uidna.h>
-#endif
 
 // FIXME: This file makes too much use of the + operator on String.
 // We either have to optimize that operator so it doesn't involve

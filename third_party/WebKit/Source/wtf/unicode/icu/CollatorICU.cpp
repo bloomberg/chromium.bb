@@ -29,7 +29,7 @@
 #include "config.h"
 #include <wtf/unicode/Collator.h>
 
-#if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+#if !UCONFIG_NO_COLLATION
 
 #include <wtf/Assertions.h>
 #include <wtf/StringExtras.h>
@@ -150,4 +150,4 @@ void Collator::releaseCollator()
 
 } // namespace WTF
 
-#endif // USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+#endif // !UCONFIG_NO_COLLATION

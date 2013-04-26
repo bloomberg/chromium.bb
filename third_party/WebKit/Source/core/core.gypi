@@ -775,7 +775,6 @@
             'editing/SetSelectionCommand.cpp',
             'editing/SetSelectionCommand.h',
             'editing/SimplifyMarkupCommand.cpp',
-            'editing/SmartReplace.cpp',
             'editing/SmartReplaceCF.cpp',
             'editing/SmartReplaceICU.cpp',
             'editing/SpellChecker.cpp',

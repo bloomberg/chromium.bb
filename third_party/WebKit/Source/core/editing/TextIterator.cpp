@@ -51,7 +51,7 @@
 #include <wtf/text/CString.h>
 #include <wtf/unicode/CharacterNames.h>
 
-#if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+#if !UCONFIG_NO_COLLATION
 #include <unicode/usearch.h>
 #include "core/platform/text/TextBreakIteratorInternalICU.h"
 #endif
@@ -86,7 +86,7 @@ public:
     size_t search(size_t& startOffset);
     bool atBreak() const;
 
-#if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+#if !UCONFIG_NO_COLLATION
 
 private:
     bool isBadMatch(const UChar*, size_t length) const;
@@ -1644,7 +1644,7 @@ static inline void foldQuoteMarksAndSoftHyphens(String& s)
     s.replace(softHyphen, 0);
 }
 
-#if USE(ICU_UNICODE) && !UCONFIG_NO_COLLATION
+#if !UCONFIG_NO_COLLATION
 
 static inline void foldQuoteMarksAndSoftHyphens(UChar* data, size_t length)
 {
@@ -2234,7 +2234,7 @@ nextMatch:
     return matchedLength;
 }
 
-#else // !ICU_UNICODE
+#else // !UCONFIG_NO_COLLATION
 
 inline SearchBuffer::SearchBuffer(const String& target, FindOptions options)
     : m_target(options & CaseInsensitive ? target.foldCase() : target)
@@ -2344,7 +2344,7 @@ size_t SearchBuffer::length() const
     return length;
 }
 
-#endif // !ICU_UNICODE
+#endif // !UCONFIG_NO_COLLATION
 
 // --------
 

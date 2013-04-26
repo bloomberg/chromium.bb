@@ -58,9 +58,7 @@ namespace WebCore {
         EventNames& eventNames() { return *m_eventNames; }
         ThreadTimers& threadTimers() { return *m_threadTimers; }
 
-#if USE(ICU_UNICODE)
         ICUConverterWrapper& cachedConverterICU() { return *m_cachedConverterICU; }
-#endif
 
         ThreadLocalInspectorCounters& inspectorCounters() { return *m_inspectorCounters; }
 
@@ -73,9 +71,7 @@ namespace WebCore {
         bool m_isMainThread;
 #endif
 
-#if USE(ICU_UNICODE)
         OwnPtr<ICUConverterWrapper> m_cachedConverterICU;
-#endif
 
         OwnPtr<ThreadLocalInspectorCounters> m_inspectorCounters;
 

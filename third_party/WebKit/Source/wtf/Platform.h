@@ -393,8 +393,6 @@
 #define WTF_USE_QCMSLIB 1
 #endif
 
-#define WTF_USE_ICU_UNICODE 1
-
 #if OS(DARWIN)
 #define WTF_USE_CF 1
 #define WTF_USE_WK_SCROLLBAR_PAINTER 1

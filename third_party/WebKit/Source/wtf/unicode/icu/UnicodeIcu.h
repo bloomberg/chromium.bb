@@ -23,8 +23,6 @@
 #ifndef WTF_UNICODE_ICU_H
 #define WTF_UNICODE_ICU_H
 
-#if USE(ICU_UNICODE)
-
 #include <stdlib.h>
 #include <unicode/uchar.h>
 #include <unicode/uscript.h>
@@ -231,7 +229,5 @@ inline int umemcasecmp(const UChar* a, const UChar* b, int len)
 } // namespace Unicode
 
 } // namespace WTF
-
-#endif // USE(ICU_UNICODE)
 
 #endif // WTF_UNICODE_ICU_H

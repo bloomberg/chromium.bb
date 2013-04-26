@@ -23,9 +23,7 @@
 #include "config.h"
 #include "core/platform/graphics/SurrogatePairAwareTextIterator.h"
 
-#if USE(ICU_UNICODE)
 #include <unicode/unorm.h>
-#endif
 
 using namespace WTF;
 using namespace Unicode;
@@ -83,14 +81,12 @@ UChar32 SurrogatePairAwareTextIterator::normalizeVoicingMarks()
         return 0;
 
     if (combiningClass(m_characters[1]) == hiraganaKatakanaVoicingMarksCombiningClass) {
-#if USE(ICU_UNICODE)
         // Normalize into composed form using 3.2 rules.
         UChar normalizedCharacters[2] = { 0, 0 };
         UErrorCode uStatus = U_ZERO_ERROR;  
         int32_t resultLength = unorm_normalize(m_characters, 2, UNORM_NFC, UNORM_UNICODE_3_2, &normalizedCharacters[0], 2, &uStatus);
         if (resultLength == 1 && !uStatus)
             return normalizedCharacters[0];
-#endif
     }
 
     return 0;
