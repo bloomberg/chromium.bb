@@ -5,22 +5,11 @@
 #ifndef CHROME_SERVICE_CHROME_SERVICE_APPLICATION_MAC_H_
 #define CHROME_SERVICE_CHROME_SERVICE_APPLICATION_MAC_H_
 
-#ifdef __OBJC__
+namespace chrome_service_mac {
 
-#import <AppKit/AppKit.h>
+// To be used to instantiate kAECloudPrintClass event handler from C++ code.
+void RegisterServiceEventHandler();
 
-// Top level Mac Application for the service process.
-@interface ServiceApplication : NSApplication
-
-@end
-
-#endif  // __OBJC__
-
-namespace chrome_service_application_mac {
-
-// To be used to instantiate ServiceApplication from C++ code.
-void RegisterServiceApp();
-
-}  // namespace chrome_service_application_mac
+}  // namespace chrome_service_mac
 
 #endif  // CHROME_SERVICE_CHROME_SERVICE_APPLICATION_MAC_H_

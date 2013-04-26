@@ -24,7 +24,7 @@ int ServiceProcessMain(const content::MainFunctionParams& parameters) {
   net::URLRequest::SetDefaultCookiePolicyToBlock();
 
 #if defined(OS_MACOSX)
-  chrome_service_application_mac::RegisterServiceApp();
+  chrome_service_mac::RegisterServiceEventHandler();
 #endif
 
   MessageLoopForUI main_message_loop;
