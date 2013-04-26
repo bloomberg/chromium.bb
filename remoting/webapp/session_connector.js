@@ -124,7 +124,8 @@ remoting.SessionConnector.prototype.reset = function() {
   this.fetchPin_ = function(onPinFetched) {};
 
   /**
-   * @type {function(string, string, function(string, string):void): void}
+   * @type {function(string, string, string,
+   *                 function(string, string):void): void}
    * @private
    */
   this.fetchThirdPartyToken_ = function(
@@ -147,7 +148,8 @@ remoting.SessionConnector.prototype.reset = function() {
  * @param {remoting.Host} host The Me2Me host to which to connect.
  * @param {function(function(string):void):void} fetchPin Function to
  *     interactively obtain the PIN from the user.
- * @param {function(string, string, function(string, string): void): void}
+ * @param {function(string, string, string,
+ *                  function(string, string): void): void}
  *     fetchThirdPartyToken Function to obtain a token from a third party
  *     authenticaiton server.
  * @return {void} Nothing.

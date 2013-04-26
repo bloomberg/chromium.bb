@@ -30,7 +30,8 @@ var remoting = remoting || {};
  * @param {string} accessCode The IT2Me access code. Blank for Me2Me.
  * @param {function(function(string): void): void} fetchPin Called by Me2Me
  *     connections when a PIN needs to be obtained interactively.
- * @param {function(string, string, function(string, string): void): void}
+ * @param {function(string, string, string,
+ *                  function(string, string): void): void}
  *     fetchThirdPartyToken Called by Me2Me connections when a third party
  *     authentication token must be obtained.
  * @param {string} authenticationMethods Comma-separated list of

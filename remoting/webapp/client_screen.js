@@ -251,11 +251,12 @@ remoting.connectMe2MeHostVersionAcknowledged_ = function(host) {
   }
   remoting.setMode(remoting.AppMode.CLIENT_CONNECTING);
 
-/**
- * @param {string} tokenUrl Token-issue URL received from the host.
- * @param {string} scope OAuth scope to request the token for.
- * @param {function(string, string):void} onThirdPartyTokenFetched Callback.
- */
+  /**
+   * @param {string} tokenUrl Token-issue URL received from the host.
+   * @param {string} scope OAuth scope to request the token for.
+   * @param {string} hostPublicKey Host public key (DER and Base64 encoded).
+   * @param {function(string, string):void} onThirdPartyTokenFetched Callback.
+   */
   var fetchThirdPartyToken = function(
       tokenUrl, hostPublicKey, scope, onThirdPartyTokenFetched) {
     var thirdPartyTokenFetcher = new remoting.ThirdPartyTokenFetcher(
