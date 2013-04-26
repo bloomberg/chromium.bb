@@ -112,12 +112,12 @@ class WEBKIT_STORAGE_EXPORT_PRIVATE ObfuscatedFileUtil
   virtual base::PlatformFileError DeleteDirectory(
       FileSystemOperationContext* context,
       const FileSystemURL& url) OVERRIDE;
-  virtual base::PlatformFileError CreateSnapshotFile(
+  virtual webkit_blob::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
+      base::PlatformFileError* error,
       base::PlatformFileInfo* file_info,
-      base::FilePath* platform_path,
-      SnapshotFilePolicy* policy) OVERRIDE;
+      base::FilePath* platform_path) OVERRIDE;
 
   // Same as the other CreateFileEnumerator, but with recursive support.
   scoped_ptr<AbstractFileEnumerator> CreateFileEnumerator(

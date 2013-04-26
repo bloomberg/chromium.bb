@@ -31,6 +31,7 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
+#include "webkit/blob/scoped_file.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/syncable/sync_file_metadata.h"
 #include "webkit/fileapi/syncable/sync_file_type.h"
@@ -47,22 +48,17 @@ const base::FilePath::CharType kSyncFileSystemDir[] =
     FILE_PATH_LITERAL("Sync FileSystem");
 
 bool CreateTemporaryFile(const base::FilePath& dir_path,
-                         base::FilePath* temp_file) {
-  return file_util::CreateDirectory(dir_path) &&
-      file_util::CreateTemporaryFileInDir(dir_path, temp_file);
-}
-
-void DeleteTemporaryFile(const base::FilePath& file_path) {
-  if (!content::BrowserThread::CurrentlyOn(content::BrowserThread::FILE)) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::FILE, FROM_HERE,
-        base::Bind(&DeleteTemporaryFile, file_path));
-    return;
-  }
-
-  if (!file_util::Delete(file_path, true))
-    LOG(ERROR) << "Leaked temporary file for Sync FileSystem: "
-               << file_path.value();
+                         webkit_blob::ScopedFile* temp_file) {
+  base::FilePath temp_file_path;
+  const bool success = file_util::CreateDirectory(dir_path) &&
+      file_util::CreateTemporaryFileInDir(dir_path, &temp_file_path);
+  if (!success)
+    return success;
+  *temp_file = webkit_blob::ScopedFile(
+      temp_file_path,
+      webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
+      base::MessageLoopProxy::current());
+  return success;
 }
 
 void EmptyStatusCallback(SyncStatusCode status) {}
@@ -151,7 +147,7 @@ struct DriveFileSyncService::ProcessRemoteChangeParam {
   DriveMetadata drive_metadata;
   SyncFileMetadata local_metadata;
   bool metadata_updated;
-  base::FilePath temporary_file_path;
+  webkit_blob::ScopedFile temporary_file;
   std::string md5_checksum;
   SyncAction sync_action;
   bool clear_local_changes;
@@ -1568,13 +1564,10 @@ void DriveFileSyncService::DidResolveConflictToLocalChange(
 
 void DriveFileSyncService::DownloadForRemoteSync(
     scoped_ptr<ProcessRemoteChangeParam> param) {
-  // TODO(tzik): Use ShareableFileReference here after we get thread-safe
-  // version of it. crbug.com/162598
-  base::FilePath* temporary_file_path = &param->temporary_file_path;
+  webkit_blob::ScopedFile* temporary_file = &param->temporary_file;
   content::BrowserThread::PostTaskAndReplyWithResult(
       content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateTemporaryFile,
-                 temporary_file_dir_, temporary_file_path),
+      base::Bind(&CreateTemporaryFile, temporary_file_dir_, temporary_file),
       base::Bind(&DriveFileSyncService::DidGetTemporaryFileForDownload,
                  AsWeakPtr(), base::Passed(&param)));
 }
@@ -1587,8 +1580,9 @@ void DriveFileSyncService::DidGetTemporaryFileForDownload(
     return;
   }
 
-  const base::FilePath& temporary_file_path = param->temporary_file_path;
+  const base::FilePath& temporary_file_path = param->temporary_file.path();
   std::string resource_id = param->remote_change.resource_id;
+  DCHECK(!temporary_file_path.empty());
 
   // We should not use the md5 in metadata for FETCH type to avoid the download
   // finishes due to NOT_MODIFIED.
@@ -1623,7 +1617,7 @@ void DriveFileSyncService::DidDownloadFileForRemoteSync(
 
   param->drive_metadata.set_md5_checksum(md5_checksum);
   const FileChange& change = param->remote_change.change;
-  const base::FilePath& temporary_file_path = param->temporary_file_path;
+  const base::FilePath& temporary_file_path = param->temporary_file.path();
   const FileSystemURL& url = param->remote_change.url;
   remote_change_processor_->ApplyRemoteChange(
       change, temporary_file_path, url,
@@ -1724,8 +1718,6 @@ void DriveFileSyncService::FinalizeRemoteSync(
     return;
   }
 
-  if (!param->temporary_file_path.empty())
-    DeleteTemporaryFile(param->temporary_file_path);
   NotifyTaskDone(status, param->token.Pass());
   if (status == SYNC_STATUS_OK && param->sync_action != SYNC_ACTION_NONE) {
     NotifyObserversFileStatusChanged(param->remote_change.url,

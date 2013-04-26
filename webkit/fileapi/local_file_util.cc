@@ -246,21 +246,18 @@ PlatformFileError LocalFileUtil::DeleteDirectory(
   return NativeFileUtil::DeleteDirectory(file_path);
 }
 
-base::PlatformFileError LocalFileUtil::CreateSnapshotFile(
+webkit_blob::ScopedFile LocalFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
+    base::PlatformFileError* error,
     base::PlatformFileInfo* file_info,
-    base::FilePath* platform_path,
-    SnapshotFilePolicy* policy) {
-  DCHECK(policy);
+    base::FilePath* platform_path) {
   DCHECK(file_info);
   // We're just returning the local file information.
-  *policy = kSnapshotFileLocal;
-  base::PlatformFileError error =
-      GetFileInfo(context, url, file_info, platform_path);
-  if (error == base::PLATFORM_FILE_OK && file_info->is_directory)
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
-  return error;
+  *error = GetFileInfo(context, url, file_info, platform_path);
+  if (*error == base::PLATFORM_FILE_OK && file_info->is_directory)
+    *error = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+  return webkit_blob::ScopedFile();
 }
 
 }  // namespace fileapi

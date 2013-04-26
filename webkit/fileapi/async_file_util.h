@@ -9,11 +9,14 @@
 #include "base/callback_forward.h"
 #include "base/files/file_util_proxy.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/file_snapshot_policy.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
 class Time;
+}
+
+namespace webkit_blob {
+class ShareableFileReference;
 }
 
 namespace fileapi {
@@ -55,7 +58,8 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
       void(base::PlatformFileError result,
            const base::PlatformFileInfo& file_info,
            const base::FilePath& platform_path,
-           SnapshotFilePolicy policy)> CreateSnapshotFileCallback;
+           const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref
+           )> CreateSnapshotFileCallback;
 
   AsyncFileUtil() {}
   virtual ~AsyncFileUtil() {}
@@ -297,9 +301,17 @@ class WEBKIT_STORAGE_EXPORT AsyncFileUtil {
   //
   // In the callback, it returns:
   // |file_info| is the metadata of the snapshot file created.
-  // |platform_path| is the path to the snapshot file created.
-  // |policy| should indicate the policy how the fileapi backend
-  // should handle the returned file.
+  // |platform_path| is the full absolute platform path to the snapshot
+  // file created.  If a file is not backed by a real local file in
+  // the implementor's FileSystem, the implementor must create a
+  // local snapshot file and return the path of the created file.
+  //
+  // If implementors creates a temporary file for snapshotting and wants
+  // FileAPI backend to take care of the lifetime of the file (so that
+  // it won't get deleted while JS layer has any references to the created
+  // File/Blob object), it should return non-empty |file_ref|.
+  // Via the |file_ref| implementors can schedule a file deletion
+  // or arbitrary callbacks when the last reference of File/Blob is dropped.
   //
   // LocalFileSystemOperation::CreateSnapshotFile calls this.
   //

@@ -8,7 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/platform_file.h"
-#include "webkit/fileapi/file_snapshot_policy.h"
+#include "webkit/blob/scoped_file.h"
 #include "webkit/storage/webkit_storage_export.h"
 
 namespace base {
@@ -170,12 +170,12 @@ class WEBKIT_STORAGE_EXPORT FileSystemFileUtil {
   //
   // See header comments for AsyncFileUtil::CreateSnapshotFile() for
   // more details.
-  virtual base::PlatformFileError CreateSnapshotFile(
+  virtual webkit_blob::ScopedFile CreateSnapshotFile(
       FileSystemOperationContext* context,
       const FileSystemURL& url,
+      base::PlatformFileError* error,
       base::PlatformFileInfo* file_info,
-      base::FilePath* platform_path,
-      SnapshotFilePolicy* policy) = 0;
+      base::FilePath* platform_path) = 0;
 
  protected:
   FileSystemFileUtil() {}

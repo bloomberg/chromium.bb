@@ -857,22 +857,19 @@ PlatformFileError ObfuscatedFileUtil::DeleteDirectory(
   return base::PLATFORM_FILE_OK;
 }
 
-base::PlatformFileError ObfuscatedFileUtil::CreateSnapshotFile(
+webkit_blob::ScopedFile ObfuscatedFileUtil::CreateSnapshotFile(
     FileSystemOperationContext* context,
     const FileSystemURL& url,
+    base::PlatformFileError* error,
     base::PlatformFileInfo* file_info,
-    base::FilePath* platform_path,
-    SnapshotFilePolicy* policy) {
-  DCHECK(policy);
+    base::FilePath* platform_path) {
   // We're just returning the local file information.
-  *policy = kSnapshotFileLocal;
-  base::PlatformFileError error = GetFileInfo(
-      context, url, file_info, platform_path);
-  if (error == base::PLATFORM_FILE_OK && file_info->is_directory) {
+  *error = GetFileInfo(context, url, file_info, platform_path);
+  if (*error == base::PLATFORM_FILE_OK && file_info->is_directory) {
     *file_info = base::PlatformFileInfo();
-    return base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+    *error = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
   }
-  return error;
+  return webkit_blob::ScopedFile();
 }
 
 scoped_ptr<FileSystemFileUtil::AbstractFileEnumerator>

@@ -7,19 +7,21 @@
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_file_util.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_system_util.h"
 
-namespace fileapi {
-
 using base::Bind;
 using base::Callback;
 using base::Owned;
 using base::PlatformFileError;
 using base::Unretained;
+using webkit_blob::ShareableFileReference;
+
+namespace fileapi {
 
 namespace {
 
@@ -47,8 +49,7 @@ class EnsureFileExistsHelper {
 class GetFileInfoHelper {
  public:
   GetFileInfoHelper()
-      : error_(base::PLATFORM_FILE_OK),
-        snapshot_policy_(kSnapshotFileUnknown) {}
+      : error_(base::PLATFORM_FILE_OK) {}
 
   void GetFileInfo(FileSystemFileUtil* file_util,
                    FileSystemOperationContext* context,
@@ -59,8 +60,8 @@ class GetFileInfoHelper {
   void CreateSnapshotFile(FileSystemFileUtil* file_util,
                           FileSystemOperationContext* context,
                           const FileSystemURL& url) {
-    error_ = file_util->CreateSnapshotFile(
-        context, url, &file_info_, &platform_path_, &snapshot_policy_);
+    scoped_file_ = file_util->CreateSnapshotFile(
+        context, url, &error_, &file_info_, &platform_path_);
   }
 
   void ReplyFileInfo(const AsyncFileUtil::GetFileInfoCallback& callback) {
@@ -70,16 +71,16 @@ class GetFileInfoHelper {
 
   void ReplySnapshotFile(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback) {
-    DCHECK(snapshot_policy_ != kSnapshotFileUnknown);
     if (!callback.is_null())
-      callback.Run(error_, file_info_, platform_path_, snapshot_policy_);
+      callback.Run(error_, file_info_, platform_path_,
+                   ShareableFileReference::GetOrCreate(scoped_file_.Pass()));
   }
 
  private:
   base::PlatformFileError error_;
   base::PlatformFileInfo file_info_;
   base::FilePath platform_path_;
-  SnapshotFilePolicy snapshot_policy_;
+  webkit_blob::ScopedFile scoped_file_;
   DISALLOW_COPY_AND_ASSIGN(GetFileInfoHelper);
 };
 

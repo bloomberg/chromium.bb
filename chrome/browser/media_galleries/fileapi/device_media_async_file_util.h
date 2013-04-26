@@ -11,6 +11,7 @@
 #include "webkit/fileapi/async_file_util.h"
 
 namespace base {
+class SequencedTaskRunner;
 class Time;
 }
 
@@ -142,6 +143,7 @@ class DeviceMediaAsyncFileUtil : public fileapi::AsyncFileUtil {
   // the CreateSnapshotFile request.
   void OnDidCreateSnapshotFile(
       const AsyncFileUtil::CreateSnapshotFileCallback& callback,
+      base::SequencedTaskRunner* media_task_runner,
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path);
 

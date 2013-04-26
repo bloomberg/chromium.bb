@@ -12,6 +12,7 @@
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_map_service.h"
+#include "webkit/blob/shareable_file_reference.h"
 #include "webkit/fileapi/file_system_context.h"
 #include "webkit/fileapi/file_system_operation_context.h"
 #include "webkit/fileapi/file_system_task_runners.h"
@@ -20,6 +21,7 @@
 
 using fileapi::FileSystemOperationContext;
 using fileapi::FileSystemURL;
+using webkit_blob::ShareableFileReference;
 
 namespace chrome {
 
@@ -309,11 +311,16 @@ void DeviceMediaAsyncFileUtil::OnReadDirectoryError(
 
 void DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile(
     const AsyncFileUtil::CreateSnapshotFileCallback& callback,
+    base::SequencedTaskRunner* media_task_runner,
     const base::PlatformFileInfo& file_info,
     const base::FilePath& platform_path) {
-  if (!callback.is_null())
-    callback.Run(base::PLATFORM_FILE_OK, file_info, platform_path,
-                 fileapi::kSnapshotFileTemporary);
+  if (callback.is_null())
+    return;
+  callback.Run(base::PLATFORM_FILE_OK, file_info, platform_path,
+               ShareableFileReference::GetOrCreate(
+                   platform_path,
+                   ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+                   media_task_runner));
 }
 
 void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
@@ -321,7 +328,7 @@ void DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError(
     base::PlatformFileError error) {
   if (!callback.is_null())
     callback.Run(error, base::PlatformFileInfo(), base::FilePath(),
-                 fileapi::kSnapshotFileTemporary);
+                 scoped_refptr<ShareableFileReference>());
 }
 
 void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
@@ -344,7 +351,8 @@ void DeviceMediaAsyncFileUtil::OnSnapshotFileCreatedRunTask(
       *snapshot_file_path,
       base::Bind(&DeviceMediaAsyncFileUtil::OnDidCreateSnapshotFile,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback),
+                 callback,
+                 make_scoped_refptr(context->task_runner())),
       base::Bind(&DeviceMediaAsyncFileUtil::OnCreateSnapshotFileError,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));

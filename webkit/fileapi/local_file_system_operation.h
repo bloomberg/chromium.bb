@@ -9,7 +9,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "webkit/fileapi/file_snapshot_policy.h"
+#include "webkit/blob/scoped_file.h"
 #include "webkit/fileapi/file_system_operation.h"
 #include "webkit/fileapi/file_system_url.h"
 #include "webkit/fileapi/file_writer_delegate.h"
@@ -281,10 +281,10 @@ class WEBKIT_STORAGE_EXPORT LocalFileSystemOperation
                    bool created);
   void DidCreateSnapshotFile(
       const SnapshotFileCallback& callback,
-      base::PlatformFileError rv,
+      base::PlatformFileError result,
       const base::PlatformFileInfo& file_info,
       const base::FilePath& platform_path,
-      SnapshotFilePolicy snapshot_policy);
+      const scoped_refptr<webkit_blob::ShareableFileReference>& file_ref);
 
   // Checks the validity of a given |url| and populates |file_util| for |mode|.
   base::PlatformFileError SetUp(
