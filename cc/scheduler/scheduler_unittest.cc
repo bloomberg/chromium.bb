@@ -69,8 +69,8 @@ class FakeSchedulerClient : public SchedulerClient {
   virtual void ScheduledActionActivatePendingTreeIfNeeded() OVERRIDE {
     actions_.push_back("ScheduledActionActivatePendingTreeIfNeeded");
   }
-  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {
-    actions_.push_back("ScheduledActionBeginOutputSurfaceCreation");
+  virtual void ScheduledActionBeginContextRecreation() OVERRIDE {
+    actions_.push_back("ScheduledActionBeginContextRecreation");
   }
   virtual void ScheduledActionAcquireLayerTexturesForMainThread() OVERRIDE {
     actions_.push_back("ScheduledActionAcquireLayerTexturesForMainThread");
@@ -92,14 +92,9 @@ TEST(SchedulerTest, RequestCommit) {
       Scheduler::Create(&client,
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-
-  EXPECT_EQ(1, client.num_actions_());
-  EXPECT_STREQ("ScheduledActionBeginOutputSurfaceCreation", client.Action(0));
-  client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   // SetNeedsCommit should begin the frame.
   scheduler->SetNeedsCommit();
@@ -134,14 +129,9 @@ TEST(SchedulerTest, RequestCommitAfterBeginFrame) {
       Scheduler::Create(&client,
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-
-  EXPECT_EQ(1, client.num_actions_());
-  EXPECT_STREQ("ScheduledActionBeginOutputSurfaceCreation", client.Action(0));
-  client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   // SetNedsCommit should begin the frame.
   scheduler->SetNeedsCommit();
@@ -176,14 +166,9 @@ TEST(SchedulerTest, TextureAcquisitionCollision) {
       Scheduler::Create(&client,
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-
-  EXPECT_EQ(1, client.num_actions_());
-  EXPECT_STREQ("ScheduledActionBeginOutputSurfaceCreation", client.Action(0));
-  client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   scheduler->SetNeedsCommit();
   scheduler->SetMainThreadNeedsLayerTextures();
@@ -225,14 +210,9 @@ TEST(SchedulerTest, VisibilitySwitchWithTextureAcquisition) {
       Scheduler::Create(&client,
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-
-  EXPECT_EQ(1, client.num_actions_());
-  EXPECT_STREQ("ScheduledActionBeginOutputSurfaceCreation", client.Action(0));
-  client.Reset();
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   scheduler->SetNeedsCommit();
   scheduler->BeginFrameComplete();
@@ -277,7 +257,7 @@ class SchedulerClientThatsetNeedsDrawInsideDraw : public FakeSchedulerClient {
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {}
-  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {}
+  virtual void ScheduledActionBeginContextRecreation() OVERRIDE {}
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
 
  protected:
@@ -297,10 +277,9 @@ TEST(SchedulerTest, RequestRedrawInsideDraw) {
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
   client.SetScheduler(scheduler.get());
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -328,11 +307,9 @@ TEST(SchedulerTest, RequestRedrawInsideFailedDraw) {
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
   client.SetScheduler(scheduler.get());
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
-
   client.SetDrawWillHappen(false);
 
   scheduler->SetNeedsRedraw();
@@ -388,7 +365,7 @@ class SchedulerClientThatsetNeedsCommitInsideDraw : public FakeSchedulerClient {
   }
 
   virtual void ScheduledActionCommit() OVERRIDE {}
-  virtual void ScheduledActionBeginOutputSurfaceCreation() OVERRIDE {}
+  virtual void ScheduledActionBeginContextRecreation() OVERRIDE {}
   virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
 
  protected:
@@ -406,10 +383,9 @@ TEST(SchedulerTest, RequestCommitInsideDraw) {
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
   client.SetScheduler(scheduler.get());
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   scheduler->SetNeedsRedraw();
   EXPECT_TRUE(scheduler->RedrawPending());
@@ -438,11 +414,9 @@ TEST(SchedulerTest, RequestCommitInsideFailedDraw) {
                         make_scoped_ptr(new FrameRateController(time_source)),
                         default_scheduler_settings);
   client.SetScheduler(scheduler.get());
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
-
   client.SetDrawWillHappen(false);
 
   scheduler->SetNeedsRedraw();
@@ -488,10 +462,9 @@ TEST(SchedulerTest, NoBeginFrameWhenDrawFails) {
                         controller.PassAs<FrameRateController>(),
                         default_scheduler_settings);
   client.SetScheduler(scheduler.get());
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   EXPECT_EQ(0, controller_ptr->NumFramesPending());
 
@@ -557,10 +530,9 @@ TEST(SchedulerTest, RecreateOutputSurfaceClearsPendingDrawCount) {
                         controller.PassAs<FrameRateController>(),
                         default_scheduler_settings);
 
-  scheduler->SetCanStart();
+  scheduler->SetCanBeginFrame(true);
   scheduler->SetVisible(true);
   scheduler->SetCanDraw(true);
-  scheduler->DidCreateAndInitializeOutputSurface();
 
   // Draw successfully, this starts a new frame.
   scheduler->SetNeedsRedraw();
@@ -571,7 +543,7 @@ TEST(SchedulerTest, RecreateOutputSurfaceClearsPendingDrawCount) {
   // Verifying that it's 1 so that we know that it's reset on recreate.
   EXPECT_EQ(1, controller_ptr->NumFramesPending());
 
-  scheduler->DidCreateAndInitializeOutputSurface();
+  scheduler->DidRecreateOutputSurface();
   EXPECT_EQ(0, controller_ptr->NumFramesPending());
 }
 

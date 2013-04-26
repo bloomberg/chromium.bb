@@ -45,10 +45,8 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
   // If no commit needed, do nothing.
   {
     StateMachine state(default_scheduler_settings);
-    state.SetCanStart();
-    state.UpdateState(state.NextAction());
-    state.DidCreateAndInitializeOutputSurface();
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
+    state.SetCanBeginFrame(true);
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
 
@@ -81,7 +79,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
   {
     StateMachine state(default_scheduler_settings);
     state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_IDLE);
-    state.SetCanStart();
+    state.SetCanBeginFrame(true);
     state.SetNeedsRedraw(false);
     state.SetVisible(true);
     EXPECT_FALSE(state.VSyncCallbackNeeded());
@@ -90,9 +88,7 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsFrameIfNeeded) {
   // Begin the frame, make sure needs_commit and commit_state update correctly.
   {
     StateMachine state(default_scheduler_settings);
-    state.SetCanStart();
-    state.UpdateState(state.NextAction());
-    state.DidCreateAndInitializeOutputSurface();
+    state.SetCanBeginFrame(true);
     state.SetVisible(true);
     state.UpdateState(SchedulerStateMachine::ACTION_BEGIN_FRAME);
     EXPECT_EQ(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS,
@@ -115,9 +111,7 @@ TEST(SchedulerStateMachineTest,
      TestFailedDrawSetsNeedsCommitAndDoesNotDrawAgain) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
@@ -144,10 +138,7 @@ TEST(SchedulerStateMachineTest,
      TestsetNeedsRedrawDuringFailedDrawDoesNotRemoveNeedsRedraw) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
-
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
@@ -177,9 +168,7 @@ TEST(SchedulerStateMachineTest,
      TestCommitAfterFailedDrawAllowsDrawInSameFrame) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -218,9 +207,7 @@ TEST(SchedulerStateMachineTest,
      TestCommitAfterFailedAndSuccessfulDrawDoesNotAllowDrawInSameFrame) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -270,9 +257,7 @@ TEST(SchedulerStateMachineTest,
      TestFailedDrawsWillEventuallyForceADrawAfterTheNextCommit) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetMaximumNumberOfFailedDrawsBeforeDrawIsForced(1);
@@ -312,9 +297,7 @@ TEST(SchedulerStateMachineTest,
 TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -345,9 +328,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedNextVSync) {
 TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsRedraw();
@@ -382,9 +362,6 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
   for (size_t i = 0; i < num_commit_states; ++i) {
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
-      state.SetCanStart();
-      state.UpdateState(state.NextAction());
-      state.DidCreateAndInitializeOutputSurface();
       state.SetCommitState(all_commit_states[i]);
       bool visible = j;
       if (!visible) {
@@ -410,9 +387,6 @@ TEST(SchedulerStateMachineTest, TestNextActionDrawsOnVSync) {
   for (size_t i = 0; i < num_commit_states; ++i) {
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
-      state.SetCanStart();
-      state.UpdateState(state.NextAction());
-      state.DidCreateAndInitializeOutputSurface();
       state.SetCanDraw(true);
       state.SetCommitState(all_commit_states[i]);
       bool forced_draw = j;
@@ -455,9 +429,6 @@ TEST(SchedulerStateMachineTest, TestNoCommitStatesRedrawWhenInvisible) {
     // There shouldn't be any drawing regardless of vsync.
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
-      state.SetCanStart();
-      state.UpdateState(state.NextAction());
-      state.DidCreateAndInitializeOutputSurface();
       state.SetCommitState(all_commit_states[i]);
       state.SetVisible(false);
       state.SetNeedsRedraw(true);
@@ -486,9 +457,6 @@ TEST(SchedulerStateMachineTest, TestCanRedraw_StopsDraw) {
     // There shouldn't be any drawing regardless of vsync.
     for (size_t j = 0; j < 2; ++j) {
       StateMachine state(default_scheduler_settings);
-      state.SetCanStart();
-      state.UpdateState(state.NextAction());
-      state.DidCreateAndInitializeOutputSurface();
       state.SetCommitState(all_commit_states[i]);
       state.SetVisible(false);
       state.SetNeedsRedraw(true);
@@ -507,11 +475,9 @@ TEST(SchedulerStateMachineTest,
      TestCanRedrawWithWaitingForFirstDrawMakesProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
   state.SetCommitState(
       SchedulerStateMachine::COMMIT_STATE_WAITING_FOR_FIRST_DRAW);
+  state.SetCanBeginFrame(true);
   state.SetNeedsCommit();
   state.SetNeedsRedraw(true);
   state.SetVisible(true);
@@ -522,9 +488,7 @@ TEST(SchedulerStateMachineTest,
 TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetNeedsCommit();
   state.SetVisible(true);
   state.SetCanDraw(true);
@@ -566,9 +530,7 @@ TEST(SchedulerStateMachineTest, TestsetNeedsCommitIsNotLost) {
 TEST(SchedulerStateMachineTest, TestFullCycle) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -614,9 +576,7 @@ TEST(SchedulerStateMachineTest, TestFullCycle) {
 TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -666,9 +626,6 @@ TEST(SchedulerStateMachineTest, TestFullCycleWithCommitRequestInbetween) {
 TEST(SchedulerStateMachineTest, TestRequestCommitInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
   state.SetNeedsCommit();
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 }
@@ -676,9 +633,7 @@ TEST(SchedulerStateMachineTest, TestRequestCommitInvisible) {
 TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -717,39 +672,16 @@ TEST(SchedulerStateMachineTest, TestGoesInvisibleBeforeBeginFrameCompletes) {
             state.CommitState());
 }
 
-TEST(SchedulerStateMachineTest, TestFirstContextCreation) {
-  SchedulerSettings default_scheduler_settings;
-  StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.SetVisible(true);
-  state.SetCanDraw(true);
-
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
-
-  // Check that the first init does not SetNeedsCommit.
-  state.SetNeedsCommit();
-  EXPECT_NE(SchedulerStateMachine::ACTION_NONE, state.NextAction());
-}
-
 TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
-
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
-  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
   state.DidLoseOutputSurface();
 
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
   state.UpdateState(state.NextAction());
 
@@ -757,7 +689,7 @@ TEST(SchedulerStateMachineTest, TestContextLostWhenCompletelyIdle) {
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Recreate the context.
-  state.DidCreateAndInitializeOutputSurface();
+  state.DidRecreateOutputSurface();
 
   // When the context is recreated, we should begin a commit.
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
@@ -768,17 +700,13 @@ TEST(SchedulerStateMachineTest,
      TestContextLostWhenIdleAndCommitRequestedWhileRecreating) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
-  EXPECT_NE(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
-            state.NextAction());
   state.DidLoseOutputSurface();
 
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
   state.UpdateState(state.NextAction());
 
@@ -790,7 +718,7 @@ TEST(SchedulerStateMachineTest,
   EXPECT_EQ(SchedulerStateMachine::ACTION_NONE, state.NextAction());
 
   // Recreate the context
-  state.DidCreateAndInitializeOutputSurface();
+  state.DidRecreateOutputSurface();
 
   // When the context is recreated, we should begin a commit
   EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_FRAME, state.NextAction());
@@ -810,9 +738,7 @@ TEST(SchedulerStateMachineTest,
 TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -848,10 +774,10 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
 
   // Expect to be told to begin context recreation, independent of vsync state.
   state.DidEnterVSync();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
   state.DidLeaveVSync();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
 }
 
@@ -859,9 +785,7 @@ TEST(SchedulerStateMachineTest,
      TestContextLostWhileCommitInProgressAndAnotherCommitRequested) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -898,19 +822,16 @@ TEST(SchedulerStateMachineTest,
 
   // Expect to be told to begin context recreation, independent of vsync state
   state.DidEnterVSync();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
   state.DidLeaveVSync();
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
 }
 
 TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -927,7 +848,7 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
   state.SetNeedsForcedRedraw(false);
 
   // Expect to be told to begin context recreation, independent of vsync state
-  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_CREATION,
+  EXPECT_EQ(SchedulerStateMachine::ACTION_BEGIN_OUTPUT_SURFACE_RECREATION,
             state.NextAction());
   state.UpdateState(state.NextAction());
 
@@ -941,9 +862,7 @@ TEST(SchedulerStateMachineTest, TestFinishAllRenderingWhileContextLost) {
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenInvisibleAndForceCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(false);
   state.SetNeedsCommit();
   state.SetNeedsForcedCommit();
@@ -954,9 +873,6 @@ TEST(SchedulerStateMachineTest,
      TestBeginFrameWhenCanBeginFrameFalseAndForceCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsCommit();
@@ -967,9 +883,7 @@ TEST(SchedulerStateMachineTest,
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(false);
   state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
   state.SetNeedsCommit();
@@ -987,9 +901,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenCommitInProgress) {
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenForcedCommitInProgress) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(false);
   state.SetCommitState(SchedulerStateMachine::COMMIT_STATE_FRAME_IN_PROGRESS);
   state.SetNeedsCommit();
@@ -1010,9 +922,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenForcedCommitInProgress) {
 TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
   state.SetNeedsCommit();
@@ -1024,9 +934,7 @@ TEST(SchedulerStateMachineTest, TestBeginFrameWhenContextLost) {
 TEST(SchedulerStateMachineTest, TestImmediateBeginFrame) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -1059,9 +967,7 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrame) {
 TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -1098,9 +1004,7 @@ TEST(SchedulerStateMachineTest, TestImmediateBeginFrameDuringCommit) {
 TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(true);
 
@@ -1144,9 +1048,7 @@ TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileInvisible) {
 TEST(SchedulerStateMachineTest, ImmediateBeginFrameWhileCantDraw) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetVisible(true);
   state.SetCanDraw(false);
 
@@ -1203,9 +1105,7 @@ TEST(SchedulerStateMachineTest, ReportIfNotDrawing) {
 TEST(SchedulerStateMachineTest, ReportIfNotDrawingFromAcquiredTextures) {
   SchedulerSettings default_scheduler_settings;
   SchedulerStateMachine state(default_scheduler_settings);
-  state.SetCanStart();
-  state.UpdateState(state.NextAction());
-  state.DidCreateAndInitializeOutputSurface();
+  state.SetCanBeginFrame(true);
   state.SetCanDraw(true);
   state.SetVisible(true);
   EXPECT_FALSE(state.DrawSuspendedUntilCommit());

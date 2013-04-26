@@ -84,8 +84,9 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       client_(client),
       commit_number_(0),
       rendering_stats_instrumentation_(RenderingStatsInstrumentation::Create()),
-      output_surface_can_be_initialized_(true),
-      output_surface_lost_(true),
+      renderer_can_be_initialized_(true),
+      renderer_initialized_(false),
+      output_surface_lost_(false),
       num_failed_recreate_attempts_(0),
       settings_(settings),
       debug_state_(settings.initial_debug_state),
@@ -122,25 +123,18 @@ bool LayerTreeHost::InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing) {
 bool LayerTreeHost::InitializeProxy(scoped_ptr<Proxy> proxy) {
   TRACE_EVENT0("cc", "LayerTreeHost::InitializeForReal");
 
-  scoped_ptr<OutputSurface> output_surface(CreateOutputSurface());
-  if (!output_surface)
-    return false;
-
   proxy_ = proxy.Pass();
-  proxy_->Start(output_surface.Pass());
-  return true;
+  proxy_->Start();
+  return proxy_->InitializeOutputSurface();
 }
 
 LayerTreeHost::~LayerTreeHost() {
-  TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
   if (root_layer_)
     root_layer_->SetLayerTreeHost(NULL);
-
-  if (proxy_) {
-    DCHECK(proxy_->IsMainThread());
-    proxy_->Stop();
-  }
-
+  DCHECK(proxy_);
+  DCHECK(proxy_->IsMainThread());
+  TRACE_EVENT0("cc", "LayerTreeHost::~LayerTreeHost");
+  proxy_->Stop();
   s_num_layer_tree_instances--;
   RateLimiterMap::iterator it = rate_limiters_.begin();
   if (it != rate_limiters_.end())
@@ -158,65 +152,72 @@ void LayerTreeHost::SetSurfaceReady() {
   proxy_->SetSurfaceReady();
 }
 
-LayerTreeHost::CreateResult
-LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted(bool success) {
-  TRACE_EVENT1("cc",
-               "LayerTreeHost::OnCreateAndInitializeOutputSurfaceAttempted",
-               "success",
-               success);
-
-  DCHECK(output_surface_lost_);
-  if (success) {
-    output_surface_lost_ = false;
-
-    // Update settings_ based on capabilities that we got back from the
-    // renderer.
-    settings_.accelerate_painting =
-        proxy_->GetRendererCapabilities().using_accelerated_painting;
-
-    // Update settings_ based on partial update capability.
-    size_t max_partial_texture_updates = 0;
-    if (proxy_->GetRendererCapabilities().allow_partial_texture_updates &&
-        !settings_.impl_side_painting) {
-      max_partial_texture_updates = std::min(
-          settings_.max_partial_texture_updates,
-          proxy_->MaxPartialTextureUpdates());
-    }
-    settings_.max_partial_texture_updates = max_partial_texture_updates;
-
-    if (!contents_texture_manager_) {
-      contents_texture_manager_ =
-          PrioritizedResourceManager::Create(proxy_.get());
-      surface_memory_placeholder_ =
-          contents_texture_manager_->CreateTexture(gfx::Size(), GL_RGBA);
-    }
-
-    client_->DidRecreateOutputSurface(true);
-    return CreateSucceeded;
+void LayerTreeHost::InitializeRenderer() {
+  TRACE_EVENT0("cc", "LayerTreeHost::InitializeRenderer");
+  if (!proxy_->InitializeRenderer()) {
+    // Uh oh, better tell the client that we can't do anything with this output
+    // surface.
+    renderer_can_be_initialized_ = false;
+    client_->DidRecreateOutputSurface(false);
+    return;
   }
 
-  // Failure path.
+  // Update settings_ based on capabilities that we got back from the renderer.
+  settings_.accelerate_painting =
+      proxy_->GetRendererCapabilities().using_accelerated_painting;
 
-  client_->DidFailToInitializeOutputSurface();
+  // Update settings_ based on partial update capability.
+  size_t max_partial_texture_updates = 0;
+  if (proxy_->GetRendererCapabilities().allow_partial_texture_updates &&
+      !settings_.impl_side_painting) {
+    max_partial_texture_updates = std::min(
+        settings_.max_partial_texture_updates,
+        proxy_->MaxPartialTextureUpdates());
+  }
+  settings_.max_partial_texture_updates = max_partial_texture_updates;
+
+  contents_texture_manager_ = PrioritizedResourceManager::Create(proxy_.get());
+  surface_memory_placeholder_ =
+      contents_texture_manager_->CreateTexture(gfx::Size(), GL_RGBA);
+
+  renderer_initialized_ = true;
+}
+
+LayerTreeHost::RecreateResult LayerTreeHost::RecreateOutputSurface() {
+  TRACE_EVENT0("cc", "LayerTreeHost::RecreateOutputSurface");
+  DCHECK(output_surface_lost_);
+
+  if (proxy_->RecreateOutputSurface()) {
+    client_->DidRecreateOutputSurface(true);
+    output_surface_lost_ = false;
+    return RecreateSucceeded;
+  }
+
+  client_->WillRetryRecreateOutputSurface();
 
   // Tolerate a certain number of recreation failures to work around races
   // in the output-surface-lost machinery.
-  ++num_failed_recreate_attempts_;
-  if (num_failed_recreate_attempts_ >= 5) {
-    // We have tried too many times to recreate the output surface. Tell the
-    // host to fall back to software rendering.
-    output_surface_can_be_initialized_ = false;
-    client_->DidRecreateOutputSurface(false);
-    return CreateFailedAndGaveUp;
+  num_failed_recreate_attempts_++;
+  if (num_failed_recreate_attempts_ < 5) {
+    // FIXME: The single thread does not self-schedule output surface
+    // recreation. So force another recreation attempt to happen by requesting
+    // another commit.
+    if (!proxy_->HasImplThread())
+      SetNeedsCommit();
+    return RecreateFailedButTryAgain;
   }
 
-  return CreateFailedButTryAgain;
+  // We have tried too many times to recreate the output surface. Tell the
+  // host to fall back to software rendering.
+  renderer_can_be_initialized_ = false;
+  client_->DidRecreateOutputSurface(false);
+  return RecreateFailedAndGaveUp;
 }
 
 void LayerTreeHost::DeleteContentsTexturesOnImplThread(
     ResourceProvider* resource_provider) {
   DCHECK(proxy_->IsImplThread());
-  if (contents_texture_manager_)
+  if (renderer_initialized_)
     contents_texture_manager_->ClearAllMemory(resource_provider);
 }
 
@@ -498,12 +499,8 @@ scoped_ptr<LayerTreeHostImpl> LayerTreeHost::CreateLayerTreeHostImpl(
 void LayerTreeHost::DidLoseOutputSurface() {
   TRACE_EVENT0("cc", "LayerTreeHost::DidLoseOutputSurface");
   DCHECK(proxy_->IsMainThread());
-
-  if (output_surface_lost_)
-    return;
-
-  num_failed_recreate_attempts_ = 0;
   output_surface_lost_ = true;
+  num_failed_recreate_attempts_ = 0;
   SetNeedsCommit();
 }
 
@@ -516,6 +513,8 @@ bool LayerTreeHost::CompositeAndReadback(void* pixels,
 }
 
 void LayerTreeHost::FinishAllRendering() {
+  if (!renderer_initialized_)
+    return;
   proxy_->FinishAllRendering();
 }
 
@@ -721,18 +720,27 @@ void LayerTreeHost::ScheduleComposite() {
   client_->ScheduleComposite();
 }
 
-bool LayerTreeHost::InitializeOutputSurfaceIfNeeded() {
-  if (!output_surface_can_be_initialized_)
+bool LayerTreeHost::InitializeRendererIfNeeded() {
+  if (!renderer_can_be_initialized_)
     return false;
 
-  if (output_surface_lost_)
-    proxy_->CreateAndInitializeOutputSurface();
-  return !output_surface_lost_;
+  if (!renderer_initialized_) {
+    InitializeRenderer();
+    // If we couldn't initialize, then bail since we're returning to software
+    // mode.
+    if (!renderer_initialized_)
+      return false;
+  }
+  if (output_surface_lost_) {
+    if (RecreateOutputSurface() != RecreateSucceeded)
+      return false;
+  }
+  return true;
 }
 
 void LayerTreeHost::UpdateLayers(ResourceUpdateQueue* queue,
                                  size_t memory_allocation_limit_bytes) {
-  DCHECK(!output_surface_lost_);
+  DCHECK(renderer_initialized_);
 
   if (!root_layer())
     return;

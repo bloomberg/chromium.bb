@@ -88,7 +88,6 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
                                           scoped_ptr<Thread> impl_thread);
   virtual ~LayerTreeHost();
 
-  // TODO(boliu): Rename to SetLayerTreeHostClientReady.
   void SetSurfaceReady();
 
   // Returns true if any LayerTreeHost is alive.
@@ -118,19 +117,18 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
       LayerTreeHostImplClient* client);
   void DidLoseOutputSurface();
-  bool output_surface_lost() const { return output_surface_lost_; }
-  enum CreateResult {
-    CreateSucceeded,
-    CreateFailedButTryAgain,
-    CreateFailedAndGaveUp,
+  enum RecreateResult {
+    RecreateSucceeded,
+    RecreateFailedButTryAgain,
+    RecreateFailedAndGaveUp,
   };
-  CreateResult OnCreateAndInitializeOutputSurfaceAttempted(bool success);
+  RecreateResult RecreateOutputSurface();
   void DidCommitAndDrawFrame() { client_->DidCommitAndDrawFrame(); }
   void DidCompleteSwapBuffers() { client_->DidCompleteSwapBuffers(); }
   void DeleteContentsTexturesOnImplThread(ResourceProvider* resource_provider);
   virtual void AcquireLayerTextures();
   // Returns false if we should abort this frame due to initialization failure.
-  bool InitializeOutputSurfaceIfNeeded();
+  bool InitializeRendererIfNeeded();
   void UpdateLayers(ResourceUpdateQueue* queue,
                     size_t contents_memory_limit_bytes);
 
@@ -261,6 +259,7 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
 
  private:
   bool InitializeProxy(scoped_ptr<Proxy> proxy);
+  void InitializeRenderer();
 
   bool PaintLayerContents(const LayerList& render_surface_layer_list,
                           ResourceUpdateQueue* quue);
@@ -293,7 +292,8 @@ class CC_EXPORT LayerTreeHost : NON_EXPORTED_BASE(public RateLimiterClient) {
   int commit_number_;
   scoped_ptr<RenderingStatsInstrumentation> rendering_stats_instrumentation_;
 
-  bool output_surface_can_be_initialized_;
+  bool renderer_can_be_initialized_;
+  bool renderer_initialized_;
   bool output_surface_lost_;
   int num_failed_recreate_attempts_;
 

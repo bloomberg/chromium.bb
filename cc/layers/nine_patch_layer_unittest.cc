@@ -65,7 +65,7 @@ TEST_F(NinePatchLayerTest, TriggerFullUploadOnceWhenChangingBitmap) {
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
 
-  layer_tree_host_->InitializeOutputSurfaceIfNeeded();
+  layer_tree_host_->InitializeRendererIfNeeded();
 
   PriorityCalculator calculator;
   ResourceUpdateQueue queue;
