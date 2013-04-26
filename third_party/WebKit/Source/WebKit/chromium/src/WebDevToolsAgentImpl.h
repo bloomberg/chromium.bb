@@ -110,8 +110,6 @@ public:
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
     virtual void setTraceEventCallback(TraceEventCallback);
 
-    virtual bool captureScreenshot(WTF::String* data);
-
     int hostId() { return m_hostId; }
 
     // WebPageOverlay
@@ -132,7 +130,6 @@ private:
     WebViewImpl* m_webViewImpl;
     bool m_attached;
     OwnPtr<DeviceMetricsSupport> m_metricsSupport;
-    BrowserDataHint m_sendWithBrowserDataHint;
 };
 
 } // namespace WebKit

@@ -82,10 +82,6 @@ static const int highlight = 99;
 
 namespace WebKit {
 
-namespace BrowserDataHintStringValues {
-static const char screenshot[] = "screenshot";
-}
-
 class ClientMessageLoopAdapter : public PageScriptDebugServer::ClientMessageLoop {
 public:
     static void ensureClientMessageLoopCreated(WebDevToolsAgentClient* client)
@@ -373,7 +369,6 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     , m_client(client)
     , m_webViewImpl(webViewImpl)
     , m_attached(false)
-    , m_sendWithBrowserDataHint(BrowserDataHintNone)
 {
     ASSERT(m_hostId > 0);
 }
@@ -598,14 +593,6 @@ void WebDevToolsAgentImpl::dumpUncountedAllocatedObjects(const HashMap<const voi
     m_client->dumpUncountedAllocatedObjects(&provider);
 }
 
-bool WebDevToolsAgentImpl::captureScreenshot(String* data)
-{
-    // Value is going to be substituted with the actual data in the browser process.
-    *data = "{screenshot-placeholder}";
-    m_sendWithBrowserDataHint = BrowserDataHintScreenshot;
-    return true;
-}
-
 void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
 {
     m_client->setTraceEventCallback(callback);
@@ -667,39 +654,12 @@ void WebDevToolsAgentImpl::hideHighlight()
     m_webViewImpl->removePageOverlay(this);
 }
 
-static String browserHintToString(WebDevToolsAgent::BrowserDataHint dataHint)
-{
-    switch (dataHint) {
-    case WebDevToolsAgent::BrowserDataHintScreenshot:
-        return BrowserDataHintStringValues::screenshot;
-    case WebDevToolsAgent::BrowserDataHintNone:
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    return String();
-}
-
-static WebDevToolsAgent::BrowserDataHint browserHintFromString(const String& value)
-{
-    if (value == BrowserDataHintStringValues::screenshot)
-        return WebDevToolsAgent::BrowserDataHintScreenshot;
-    ASSERT_NOT_REACHED();
-    return WebDevToolsAgent::BrowserDataHintNone;
-}
-
 bool WebDevToolsAgentImpl::sendMessageToFrontend(const String& message)
 {
     WebDevToolsAgentImpl* devToolsAgent = static_cast<WebDevToolsAgentImpl*>(m_webViewImpl->devToolsAgent());
     if (!devToolsAgent)
         return false;
-
-    if (m_sendWithBrowserDataHint != BrowserDataHintNone) {
-        String prefix = browserHintToString(m_sendWithBrowserDataHint);
-        m_client->sendMessageToInspectorFrontend(makeString("<", prefix, ">", message));
-    } else
-        m_client->sendMessageToInspectorFrontend(message);
-
-    m_sendWithBrowserDataHint = BrowserDataHintNone;
+    m_client->sendMessageToInspectorFrontend(message);
     return true;
 }
 
@@ -794,53 +754,6 @@ WebString WebDevToolsAgent::workerDisconnectedFromWorkerEvent()
     InspectorFrontend::Worker inspector(&channel);
     inspector.disconnectedFromWorker();
     return channel.m_message;
-}
-
-WebDevToolsAgent::BrowserDataHint WebDevToolsAgent::shouldPatchWithBrowserData(const char* message, size_t messageLength)
-{
-    if (!messageLength || message[0] != '<')
-        return BrowserDataHintNone;
-
-    String messageString(message, messageLength);
-    size_t hintEnd = messageString.find(">", 1);
-    if (hintEnd == notFound)
-        return BrowserDataHintNone;
-    messageString = messageString.substring(1, hintEnd - 1);
-    return browserHintFromString(messageString);
-}
-
-WebString WebDevToolsAgent::patchWithBrowserData(const WebString& message, BrowserDataHint dataHint, const WebString& hintData)
-{
-    String messageString = message;
-    size_t hintEnd = messageString.find(">");
-    if (hintEnd == notFound) {
-        ASSERT_NOT_REACHED();
-        return message;
-    }
-
-    messageString = messageString.substring(hintEnd + 1);
-    RefPtr<InspectorValue> messageObject = InspectorValue::parseJSON(messageString);
-    if (!messageObject || messageObject->type() != InspectorValue::TypeObject) {
-        ASSERT_NOT_REACHED();
-        return messageString;
-    }
-
-    RefPtr<InspectorObject> resultObject = messageObject->asObject()->getObject("result");
-    if (!resultObject) {
-        ASSERT_NOT_REACHED();
-        return messageString;
-    }
-
-    // Patch message below.
-    switch (dataHint) {
-    case BrowserDataHintScreenshot:
-        resultObject->setString("data", hintData);
-        break;
-    case BrowserDataHintNone:
-    default:
-        ASSERT_NOT_REACHED();
-    }
-    return messageObject->toJSONString();
 }
 
 } // namespace WebKit
