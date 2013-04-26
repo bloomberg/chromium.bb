@@ -111,6 +111,7 @@ class Notification {
   void Click() const { delegate()->Click(); }
   void ButtonClick(int index) const { delegate()->ButtonClick(index); }
   void Close(bool by_user) const { delegate()->Close(by_user); }
+  void DoneRendering() { delegate()->ReleaseRenderViewHost(); }
 
   std::string notification_id() const { return delegate()->id(); }
 

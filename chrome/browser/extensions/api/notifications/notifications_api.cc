@@ -76,10 +76,17 @@ class NotificationsApiDelegate : public NotificationDelegate {
   }
 
   virtual content::RenderViewHost* GetRenderViewHost() const OVERRIDE {
-    // We're holding a reference to api_function_, so we know it'll be valid as
-    // long as we are, and api_function_ (as a UIThreadExtensionFunction)
-    // will zero out its copy of render_view_host when the RVH goes away.
+    // We're holding a reference to api_function_, so we know it'll be valid
+    // until ReleaseRVH is called, and api_function_ (as a
+    // UIThreadExtensionFunction) will zero out its copy of render_view_host
+    // when the RVH goes away.
+    if (!api_function_)
+      return NULL;
     return api_function_->render_view_host();
+  }
+
+  virtual void ReleaseRenderViewHost() OVERRIDE {
+    api_function_ = NULL;
   }
 
  private:

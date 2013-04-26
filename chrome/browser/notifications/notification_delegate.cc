@@ -6,3 +6,6 @@
 
 void NotificationDelegate::ButtonClick(int button_index) {
 }
+
+void NotificationDelegate::ReleaseRenderViewHost() {
+}

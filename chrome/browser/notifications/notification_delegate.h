@@ -44,6 +44,9 @@ class NotificationDelegate
   // Returns the RenderViewHost that generated the notification, or NULL.
   virtual content::RenderViewHost* GetRenderViewHost() const = 0;
 
+  // Lets the delegate know that no more rendering will be necessary.
+  virtual void ReleaseRenderViewHost();
+
  protected:
   virtual ~NotificationDelegate() {}
 

@@ -258,14 +258,20 @@ void MessageCenterNotificationManager::OnNotificationDisplayed(
 // ImageDownloads
 
 MessageCenterNotificationManager::ImageDownloads::ImageDownloads(
-    message_center::MessageCenter* message_center)
-    : message_center_(message_center) {
+    message_center::MessageCenter* message_center,
+    ImageDownloadsObserver* observer)
+    : message_center_(message_center),
+      pending_downloads_(0),
+      observer_(observer) {
 }
 
 MessageCenterNotificationManager::ImageDownloads::~ImageDownloads() { }
 
 void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
     const Notification& notification) {
+  // In case all downloads are synchronous, assume a pending download.
+  AddPendingDownload();
+
   // Notification primary icon.
   StartDownloadWithImage(
       notification,
@@ -299,6 +305,9 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloads(
       base::Bind(&message_center::MessageCenter::SetNotificationButtonIcon,
                  base::Unretained(message_center_),
                  notification.notification_id(), 1));
+
+  // This should tell the observer we're done if everything was synchronous.
+  PendingDownloadCompleted();
 }
 
 void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
@@ -330,6 +339,8 @@ void MessageCenterNotificationManager::ImageDownloads::StartDownloadWithImage(
     return;
   }
 
+  AddPendingDownload();
+
   contents->DownloadImage(
       url,
       false,
@@ -359,10 +370,25 @@ void MessageCenterNotificationManager::ImageDownloads::DownloadComplete(
     const GURL& image_url,
     int requested_size,
     const std::vector<SkBitmap>& bitmaps) {
+  PendingDownloadCompleted();
+
   if (bitmaps.empty())
     return;
   gfx::Image image = gfx::Image::CreateFrom1xBitmap(bitmaps[0]);
   callback.Run(image);
+}
+
+// Private methods.
+
+void MessageCenterNotificationManager::ImageDownloads::AddPendingDownload() {
+  ++pending_downloads_;
+}
+
+void
+MessageCenterNotificationManager::ImageDownloads::PendingDownloadCompleted() {
+  DCHECK(pending_downloads_ > 0);
+  if (--pending_downloads_ == 0 && observer_)
+    observer_->OnDownloadsCompleted();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -374,7 +400,7 @@ MessageCenterNotificationManager::ProfileNotification::ProfileNotification(
     message_center::MessageCenter* message_center)
     : profile_(profile),
       notification_(notification),
-      downloads_(new ImageDownloads(message_center)) {
+      downloads_(new ImageDownloads(message_center, this)) {
   DCHECK(profile);
 }
 
@@ -384,6 +410,12 @@ MessageCenterNotificationManager::ProfileNotification::~ProfileNotification() {
 void MessageCenterNotificationManager::ProfileNotification::StartDownloads() {
   downloads_->StartDownloads(notification_);
 }
+
+void
+MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
+  notification_.DoneRendering();
+}
+
 
 std::string
     MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {
