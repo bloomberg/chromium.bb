@@ -61,6 +61,12 @@ void ShadowDistributedRules::reportMemoryUsage(MemoryObjectInfo* memoryObjectInf
     info.addMember(m_shadowDistributedRuleSetMap, "shadowDistributedRuleSetMap");
 }
 
+void ShadowDistributedRules::collectFeaturesTo(RuleFeatureSet& features)
+{
+    for (ShadowDistributedRuleSetMap::iterator it = m_shadowDistributedRuleSetMap.begin(); it != m_shadowDistributedRuleSetMap.end(); ++it)
+        features.add(it->value->features());
+}
+
 DocumentRuleSets::DocumentRuleSets()
 {
 }
@@ -149,6 +155,7 @@ void DocumentRuleSets::collectFeatures(bool isViewSource, ScopedStyleResolver* s
         scopeResolver->collectFeaturesTo(m_features);
     if (m_userStyle)
         m_features.add(m_userStyle->features());
+    m_shadowDistributedRules.collectFeaturesTo(m_features);
 
     m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
     m_uncommonAttributeRuleSet = makeRuleSet(m_features.uncommonAttributeRules);
