@@ -5729,6 +5729,46 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sqlite.AppCache.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite for the appcache db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Cookie.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite the cookie db.</summary>
+</histogram>
+
+<histogram name="Sqlite.DatabaseTracker.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite the websqldb tracker db.</summary>
+</histogram>
+
+<histogram name="Sqlite.DomStorageDatabase.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite for the domstorage db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite for all databases.</summary>
+</histogram>
+
+<histogram name="Sqlite.History.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite for the history db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Quota.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite for the quota db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Text.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite the full text db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Thumbnail.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite for the thumbnail db.</summary>
+</histogram>
+
+<histogram name="Sqlite.Web.Error" enum="SqliteErrorCode">
+  <summary>Error codes returned by sqlite the web db.</summary>
+</histogram>
+
 <histogram name="Variations.DisabledNoEntropyProvider" enum="BooleanHit">
   <summary>
     A count of the number of times we hit the code where a field trial is
@@ -9063,6 +9103,65 @@ other types of suffix sets.
 <enum name="SpdySettingsSent" type="int">
   <int value="0" label="not sent"/>
   <int value="1" label="sent"/>
+</enum>
+
+<enum name="SqliteErrorCode" type="int">
+  <summary>Error codes returned by SQLite - see sqlite.h</summary>
+  <int value="0" label="SQLITE_OK">Successful result</int>
+  <int value="1" label="SQLITE_ERROR">SQL error or missing database</int>
+  <int value="2" label="SQLITE_INTERNAL">
+    NOT USED. Internal logic error in SQLite
+  </int>
+  <int value="3" label="SQLITE_PERM">Access permission denied</int>
+  <int value="4" label="SQLITE_ABORT">Callback routine requested an abort</int>
+  <int value="5" label="SQLITE_BUSY">The database file is locked</int>
+  <int value="6" label="SQLITE_LOCKED">A table in the database is locked</int>
+  <int value="7" label="SQLITE_NOMEM">A malloc() failed</int>
+  <int value="8" label="SQLITE_READONLY">
+    Attempt to write a readonly database
+  </int>
+  <int value="9" label="SQLITE_INTERRUPT">
+    Operation terminated by sqlite3_interrupt()
+  </int>
+  <int value="10" label="SQLITE_IOERR">
+    Some kind of disk I/O error occurred
+  </int>
+  <int value="11" label="SQLITE_CORRUPT">
+    The database disk image is malformed
+  </int>
+  <int value="12" label="SQLITE_NOTFOUND">
+    NOT USED. Table or record not found
+  </int>
+  <int value="13" label="SQLITE_FULL">
+    Insertion failed because database is full
+  </int>
+  <int value="14" label="SQLITE_CANTOPEN">Unable to open the database file</int>
+  <int value="15" label="SQLITE_PROTOCOL">
+    NOT USED. Database lock protocol error
+  </int>
+  <int value="16" label="SQLITE_EMPTY">Database is empty</int>
+  <int value="17" label="SQLITE_SCHEMA">The database schema changed</int>
+  <int value="18" label="SQLITE_TOOBIG">String or BLOB exceeds size limit</int>
+  <int value="19" label="SQLITE_CONSTRAINT">
+    Abort due to contraint violation
+  </int>
+  <int value="20" label="SQLITE_MISMATCH">Data type mismatch</int>
+  <int value="21" label="SQLITE_MISUSE">Library used incorrectly</int>
+  <int value="22" label="SQLITE_NOLFS">
+    Uses OS features not supported on host
+  </int>
+  <int value="23" label="SQLITE_AUTH">Authorization denied</int>
+  <int value="24" label="SQLITE_FORMAT">Auxiliary database format error</int>
+  <int value="25" label="SQLITE_RANGE">
+    2nd parameter to sqlite3_bind out of range
+  </int>
+  <int value="26" label="SQLITE_NOTADB">
+    File opened that is not a database file
+  </int>
+  <int value="100" label="SQLITE_ROW">sqlite3_step() has another row ready</int>
+  <int value="101" label="SQLITE_DONE">
+    sqlite3_step() has finished executing
+  </int>
 </enum>
 
 <enum name="TcpSocketStatus" type="int">
