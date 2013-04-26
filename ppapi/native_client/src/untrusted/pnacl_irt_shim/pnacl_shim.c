@@ -70,8 +70,6 @@
 #include "ppapi/c/ppb_url_response_info.h"
 #include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_var_array_buffer.h"
-#include "ppapi/c/ppb_video_reader.h"
-#include "ppapi/c/ppb_video_writer.h"
 #include "ppapi/c/ppb_view.h"
 #include "ppapi/c/ppb_websocket.h"
 #include "ppapi/c/ppp_graphics_3d.h"
@@ -102,6 +100,8 @@
 #include "ppapi/c/private/ppb_tcp_socket_private.h"
 #include "ppapi/c/private/ppb_udp_socket_private.h"
 #include "ppapi/c/private/ppb_uma_private.h"
+#include "ppapi/c/private/ppb_video_destination_private.h"
+#include "ppapi/c/private/ppb_video_source_private.h"
 #include "ppapi/c/private/ppb_x509_certificate_private.h"
 #include "ppapi/c/private/ppp_content_decryptor_private.h"
 #include "ppapi/c/private/ppp_flash_browser_operations.h"
@@ -168,8 +168,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_URLResponseInfo_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoReader_0_1;
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoWriter_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_View_1_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_WebSocket_1_0;
@@ -275,6 +273,8 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_ContentDecryptor_Private_0_6;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPP_Flash_BrowserOperations_1_0;
@@ -1263,74 +1263,6 @@ void Pnacl_M18_PPB_VarArrayBuffer_Unmap(struct PP_Var array) {
 }
 
 /* End wrapper methods for PPB_VarArrayBuffer_1_0 */
-
-/* Begin wrapper methods for PPB_VideoReader_0_1 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M28_PPB_VideoReader_Create(PP_Instance instance) {
-  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
-  return iface->Create(instance);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M28_PPB_VideoReader_IsVideoReader(PP_Resource resource) {
-  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
-  return iface->IsVideoReader(resource);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_VideoReader_Open(PP_Resource reader, struct PP_Var stream_id, struct PP_CompletionCallback callback) {
-  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
-  return iface->Open(reader, stream_id, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_VideoReader_GetFrame(PP_Resource reader, struct PP_VideoFrame* frame, struct PP_CompletionCallback callback) {
-  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
-  return iface->GetFrame(reader, frame, callback);
-}
-
-static __attribute__((pnaclcall))
-void Pnacl_M28_PPB_VideoReader_Close(PP_Resource reader) {
-  const struct PPB_VideoReader_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoReader_0_1.real_iface;
-  iface->Close(reader);
-}
-
-/* End wrapper methods for PPB_VideoReader_0_1 */
-
-/* Begin wrapper methods for PPB_VideoWriter_0_1 */
-
-static __attribute__((pnaclcall))
-PP_Resource Pnacl_M28_PPB_VideoWriter_Create(PP_Instance instance) {
-  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
-  return iface->Create(instance);
-}
-
-static __attribute__((pnaclcall))
-PP_Bool Pnacl_M28_PPB_VideoWriter_IsVideoWriter(PP_Resource resource) {
-  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
-  return iface->IsVideoWriter(resource);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_VideoWriter_Open(PP_Resource writer, struct PP_Var* stream_id, struct PP_CompletionCallback callback) {
-  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
-  return iface->Open(writer, stream_id, callback);
-}
-
-static __attribute__((pnaclcall))
-int32_t Pnacl_M28_PPB_VideoWriter_PutFrame(PP_Resource writer, const struct PP_VideoFrame* frame) {
-  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
-  return iface->PutFrame(writer, frame);
-}
-
-static __attribute__((pnaclcall))
-void Pnacl_M28_PPB_VideoWriter_Close(PP_Resource writer) {
-  const struct PPB_VideoWriter_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoWriter_0_1.real_iface;
-  iface->Close(writer);
-}
-
-/* End wrapper methods for PPB_VideoWriter_0_1 */
 
 /* Not generating wrapper methods for PPB_View_1_0 */
 
@@ -3920,6 +3852,74 @@ void Pnacl_M18_PPB_UMA_Private_HistogramEnumeration(struct PP_Var name, int32_t 
 
 /* End wrapper methods for PPB_UMA_Private_0_1 */
 
+/* Begin wrapper methods for PPB_VideoDestination_Private_0_1 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M28_PPB_VideoDestination_Private_Create(PP_Instance instance) {
+  const struct PPB_VideoDestination_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M28_PPB_VideoDestination_Private_IsVideoDestination(PP_Resource resource) {
+  const struct PPB_VideoDestination_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1.real_iface;
+  return iface->IsVideoDestination(resource);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoDestination_Private_Open(PP_Resource destination, struct PP_Var stream_url, struct PP_CompletionCallback callback) {
+  const struct PPB_VideoDestination_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1.real_iface;
+  return iface->Open(destination, stream_url, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoDestination_Private_PutFrame(PP_Resource destination, const struct PP_VideoFrame_Private* frame) {
+  const struct PPB_VideoDestination_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1.real_iface;
+  return iface->PutFrame(destination, frame);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M28_PPB_VideoDestination_Private_Close(PP_Resource destination) {
+  const struct PPB_VideoDestination_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1.real_iface;
+  iface->Close(destination);
+}
+
+/* End wrapper methods for PPB_VideoDestination_Private_0_1 */
+
+/* Begin wrapper methods for PPB_VideoSource_Private_0_1 */
+
+static __attribute__((pnaclcall))
+PP_Resource Pnacl_M28_PPB_VideoSource_Private_Create(PP_Instance instance) {
+  const struct PPB_VideoSource_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1.real_iface;
+  return iface->Create(instance);
+}
+
+static __attribute__((pnaclcall))
+PP_Bool Pnacl_M28_PPB_VideoSource_Private_IsVideoSource(PP_Resource resource) {
+  const struct PPB_VideoSource_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1.real_iface;
+  return iface->IsVideoSource(resource);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoSource_Private_Open(PP_Resource source, struct PP_Var stream_url, struct PP_CompletionCallback callback) {
+  const struct PPB_VideoSource_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1.real_iface;
+  return iface->Open(source, stream_url, callback);
+}
+
+static __attribute__((pnaclcall))
+int32_t Pnacl_M28_PPB_VideoSource_Private_GetFrame(PP_Resource source, struct PP_VideoFrame_Private* frame, struct PP_CompletionCallback callback) {
+  const struct PPB_VideoSource_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1.real_iface;
+  return iface->GetFrame(source, frame, callback);
+}
+
+static __attribute__((pnaclcall))
+void Pnacl_M28_PPB_VideoSource_Private_Close(PP_Resource source) {
+  const struct PPB_VideoSource_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1.real_iface;
+  iface->Close(source);
+}
+
+/* End wrapper methods for PPB_VideoSource_Private_0_1 */
+
 /* Begin wrapper methods for PPB_X509Certificate_Private_0_1 */
 
 static __attribute__((pnaclcall))
@@ -4398,22 +4398,6 @@ struct PPB_VarArrayBuffer_1_0 Pnacl_Wrappers_PPB_VarArrayBuffer_1_0 = {
     .ByteLength = (PP_Bool (*)(struct PP_Var array, uint32_t* byte_length))&Pnacl_M18_PPB_VarArrayBuffer_ByteLength,
     .Map = (void* (*)(struct PP_Var array))&Pnacl_M18_PPB_VarArrayBuffer_Map,
     .Unmap = (void (*)(struct PP_Var array))&Pnacl_M18_PPB_VarArrayBuffer_Unmap
-};
-
-struct PPB_VideoReader_0_1 Pnacl_Wrappers_PPB_VideoReader_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoReader_Create,
-    .IsVideoReader = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoReader_IsVideoReader,
-    .Open = (int32_t (*)(PP_Resource reader, struct PP_Var stream_id, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoReader_Open,
-    .GetFrame = (int32_t (*)(PP_Resource reader, struct PP_VideoFrame* frame, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoReader_GetFrame,
-    .Close = (void (*)(PP_Resource reader))&Pnacl_M28_PPB_VideoReader_Close
-};
-
-struct PPB_VideoWriter_0_1 Pnacl_Wrappers_PPB_VideoWriter_0_1 = {
-    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoWriter_Create,
-    .IsVideoWriter = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoWriter_IsVideoWriter,
-    .Open = (int32_t (*)(PP_Resource writer, struct PP_Var* stream_id, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoWriter_Open,
-    .PutFrame = (int32_t (*)(PP_Resource writer, const struct PP_VideoFrame* frame))&Pnacl_M28_PPB_VideoWriter_PutFrame,
-    .Close = (void (*)(PP_Resource writer))&Pnacl_M28_PPB_VideoWriter_Close
 };
 
 /* Not generating wrapper interface for PPB_View_1_0 */
@@ -5061,6 +5045,22 @@ struct PPB_UMA_Private_0_1 Pnacl_Wrappers_PPB_UMA_Private_0_1 = {
     .HistogramEnumeration = (void (*)(struct PP_Var name, int32_t sample, int32_t boundary_value))&Pnacl_M18_PPB_UMA_Private_HistogramEnumeration
 };
 
+struct PPB_VideoDestination_Private_0_1 Pnacl_Wrappers_PPB_VideoDestination_Private_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoDestination_Private_Create,
+    .IsVideoDestination = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoDestination_Private_IsVideoDestination,
+    .Open = (int32_t (*)(PP_Resource destination, struct PP_Var stream_url, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoDestination_Private_Open,
+    .PutFrame = (int32_t (*)(PP_Resource destination, const struct PP_VideoFrame_Private* frame))&Pnacl_M28_PPB_VideoDestination_Private_PutFrame,
+    .Close = (void (*)(PP_Resource destination))&Pnacl_M28_PPB_VideoDestination_Private_Close
+};
+
+struct PPB_VideoSource_Private_0_1 Pnacl_Wrappers_PPB_VideoSource_Private_0_1 = {
+    .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M28_PPB_VideoSource_Private_Create,
+    .IsVideoSource = (PP_Bool (*)(PP_Resource resource))&Pnacl_M28_PPB_VideoSource_Private_IsVideoSource,
+    .Open = (int32_t (*)(PP_Resource source, struct PP_Var stream_url, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoSource_Private_Open,
+    .GetFrame = (int32_t (*)(PP_Resource source, struct PP_VideoFrame_Private* frame, struct PP_CompletionCallback callback))&Pnacl_M28_PPB_VideoSource_Private_GetFrame,
+    .Close = (void (*)(PP_Resource source))&Pnacl_M28_PPB_VideoSource_Private_Close
+};
+
 struct PPB_X509Certificate_Private_0_1 Pnacl_Wrappers_PPB_X509Certificate_Private_0_1 = {
     .Create = (PP_Resource (*)(PP_Instance instance))&Pnacl_M19_PPB_X509Certificate_Private_Create,
     .IsX509CertificatePrivate = (PP_Bool (*)(PP_Resource resource))&Pnacl_M19_PPB_X509Certificate_Private_IsX509CertificatePrivate,
@@ -5316,18 +5316,6 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Var_1_1 = {
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0 = {
   .iface_macro = PPB_VAR_ARRAY_BUFFER_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VarArrayBuffer_1_0,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoReader_0_1 = {
-  .iface_macro = PPB_VIDEOREADER_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoReader_0_1,
-  .real_iface = NULL
-};
-
-static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoWriter_0_1 = {
-  .iface_macro = PPB_VIDEOWRITER_INTERFACE_0_1,
-  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoWriter_0_1,
   .real_iface = NULL
 };
 
@@ -5961,6 +5949,18 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_UMA_Private_0_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1 = {
+  .iface_macro = PPB_VIDEODESTINATION_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoDestination_Private_0_1,
+  .real_iface = NULL
+};
+
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1 = {
+  .iface_macro = PPB_VIDEOSOURCE_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_VideoSource_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1 = {
   .iface_macro = PPB_X509CERTIFICATE_PRIVATE_INTERFACE_0_1,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_X509Certificate_Private_0_1,
@@ -6049,8 +6049,6 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Var_1_0,
   &Pnacl_WrapperInfo_PPB_Var_1_1,
   &Pnacl_WrapperInfo_PPB_VarArrayBuffer_1_0,
-  &Pnacl_WrapperInfo_PPB_VideoReader_0_1,
-  &Pnacl_WrapperInfo_PPB_VideoWriter_0_1,
   &Pnacl_WrapperInfo_PPB_View_1_0,
   &Pnacl_WrapperInfo_PPB_View_1_1,
   &Pnacl_WrapperInfo_PPB_WebSocket_1_0,
@@ -6138,6 +6136,8 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_3,
   &Pnacl_WrapperInfo_PPB_UDPSocket_Private_0_4,
   &Pnacl_WrapperInfo_PPB_UMA_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_VideoDestination_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_VideoSource_Private_0_1,
   &Pnacl_WrapperInfo_PPB_X509Certificate_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Ext_Alarms_Dev_0_1,
   &Pnacl_WrapperInfo_PPB_Ext_Events_Dev_0_1,
