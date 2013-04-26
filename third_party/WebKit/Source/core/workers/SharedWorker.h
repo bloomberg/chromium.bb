@@ -34,8 +34,6 @@
 
 #include "AbstractWorker.h"
 
-#if ENABLE(SHARED_WORKERS)
-
 namespace WebCore {
 
     class SharedWorker : public AbstractWorker {
@@ -54,7 +52,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)
 
 #endif // SharedWorker_h

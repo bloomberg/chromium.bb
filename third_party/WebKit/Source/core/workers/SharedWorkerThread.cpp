@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SHARED_WORKERS)
-
 #include "SharedWorkerThread.h"
 
 #include "SharedWorkerContext.h"
@@ -59,5 +57,3 @@ PassRefPtr<WorkerContext> SharedWorkerThread::createWorkerContext(const KURL& ur
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)

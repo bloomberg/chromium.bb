@@ -30,8 +30,6 @@
 #ifndef SharedWorkerThread_h
 #define SharedWorkerThread_h
 
-#if ENABLE(SHARED_WORKERS)
-
 #include "WorkerThread.h"
 #include "core/page/ContentSecurityPolicy.h"
 
@@ -51,7 +49,5 @@ namespace WebCore {
         String m_name;
     };
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)
 
 #endif // SharedWorkerThread_h

@@ -69,7 +69,6 @@ using namespace WebCore;
 
 namespace WebKit {
 
-#if ENABLE(SHARED_WORKERS)
 // This function is called on the main thread to force to initialize some static
 // values used in WebKit before any worker thread is started. This is because in
 // our worker processs, we do not run any WebKit code in main thread and thus
@@ -459,6 +458,5 @@ WebSharedWorker* WebSharedWorker::create(WebSharedWorkerClient* client)
 {
     return new WebSharedWorkerImpl(client);
 }
-#endif // ENABLE(SHARED_WORKERS)
 
 } // namespace WebKit

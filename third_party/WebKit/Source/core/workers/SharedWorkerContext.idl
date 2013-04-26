@@ -29,7 +29,6 @@
  */
 
 [
-    Conditional=SHARED_WORKERS,
     IsWorkerContext,
 ] interface SharedWorkerContext : WorkerContext {
 

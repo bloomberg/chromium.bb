@@ -29,9 +29,6 @@
  */
 
 #include "config.h"
-
-#if ENABLE(SHARED_WORKERS)
-
 #include "SharedWorkerRepository.h"
 
 #include "Event.h"
@@ -269,5 +266,3 @@ bool SharedWorkerRepository::hasSharedWorkers(Document* document)
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)

@@ -31,8 +31,6 @@
 
 #include "config.h"
 
-#if ENABLE(SHARED_WORKERS)
-
 #include "SharedWorker.h"
 
 #include "ExceptionCode.h"
@@ -93,5 +91,3 @@ const AtomicString& SharedWorker::interfaceName() const
 }
 
 } // namespace WebCore
-
-#endif  // ENABLE(SHARED_WORKERS)

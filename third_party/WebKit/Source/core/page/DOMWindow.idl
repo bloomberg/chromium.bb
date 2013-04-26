@@ -538,7 +538,7 @@
     attribute ClipboardConstructor Clipboard;
 
     attribute WorkerConstructor Worker; // Usable with the new operator
-    [Conditional=SHARED_WORKERS, EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
+    [EnabledAtRuntime] attribute SharedWorkerConstructor SharedWorker; // Usable with the new operator
 
     attribute FileConstructor File;
     attribute FileListConstructor FileList;

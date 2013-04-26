@@ -108,10 +108,6 @@
 #include <wtf/text/CString.h>
 #include <wtf/text/WTFString.h>
 
-#if ENABLE(SHARED_WORKERS)
-#include "SharedWorkerRepository.h"
-#endif
-
 #if ENABLE(SVG)
 #include "SVGDocument.h"
 #include "SVGLocatable.h"

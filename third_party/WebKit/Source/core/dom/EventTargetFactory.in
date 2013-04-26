@@ -28,8 +28,8 @@ RTCDataChannel conditional=MEDIA_STREAM
 RTCDTMFSender conditional=MEDIA_STREAM
 RTCPeerConnection conditional=MEDIA_STREAM
 SVGElementInstance conditional=SVG
-SharedWorker conditional=SHARED_WORKERS
-SharedWorkerContext conditional=SHARED_WORKERS
+SharedWorker
+SharedWorkerContext
 SourceBufferList
 SpeechRecognition
 SpeechSynthesisUtterance conditional=SPEECH_SYNTHESIS

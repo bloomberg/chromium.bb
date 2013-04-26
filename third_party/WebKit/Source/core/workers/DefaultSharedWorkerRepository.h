@@ -31,8 +31,6 @@
 #ifndef DefaultSharedWorkerRepository_h
 #define DefaultSharedWorkerRepository_h
 
-#if ENABLE(SHARED_WORKERS)
-
 #include "core/page/ContentSecurityPolicy.h"
 #include <wtf/Forward.h>
 #include <wtf/HashMap.h>
@@ -87,7 +85,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)
 
 #endif // DefaultSharedWorkerRepository_h

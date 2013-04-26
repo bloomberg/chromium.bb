@@ -114,10 +114,8 @@ bool WorkerScriptController::initializeContextIfNeeded()
 
     // Create a new JS object and use it as the prototype for the shadow global object.
     WrapperTypeInfo* contextType = &V8DedicatedWorkerContext::info;
-#if ENABLE(SHARED_WORKERS)
     if (!m_workerContext->isDedicatedWorkerContext())
         contextType = &V8SharedWorkerContext::info;
-#endif
     v8::Handle<v8::Function> workerContextConstructor = m_perContextData->constructorForType(contextType);
     v8::Local<v8::Object> jsWorkerContext = V8ObjectConstructor::newInstance(workerContextConstructor);
     if (jsWorkerContext.IsEmpty()) {

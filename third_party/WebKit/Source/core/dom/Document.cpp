@@ -106,6 +106,7 @@
 #include "ScriptedAnimationController.h"
 #include "SelectorQuery.h"
 #include "ShadowRoot.h"
+#include "SharedWorkerRepository.h"
 #include "StylePropertySet.h"
 #include "StyleResolver.h"
 #include "StyleSheetContents.h"
@@ -196,10 +197,6 @@
 #include <wtf/PassRefPtr.h>
 #include <wtf/StdLibExtras.h>
 #include <wtf/text/StringBuffer.h>
-
-#if ENABLE(SHARED_WORKERS)
-#include "SharedWorkerRepository.h"
-#endif
 
 #if ENABLE(SVG)
 #include "SVGDocumentExtensions.h"
@@ -1915,9 +1912,7 @@ void Document::detach()
 
     documentWillBecomeInactive();
 
-#if ENABLE(SHARED_WORKERS)
     SharedWorkerRepository::documentDetached(this);
-#endif
 
     if (m_frame) {
         FrameView* view = m_frame->view();

@@ -30,8 +30,6 @@
 
 #include "config.h"
 
-#if ENABLE(SHARED_WORKERS)
-
 #include "SharedWorkerContext.h"
 
 #include "EventNames.h"
@@ -85,5 +83,3 @@ void SharedWorkerContext::logExceptionToConsole(const String& errorMessage, cons
 }
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)

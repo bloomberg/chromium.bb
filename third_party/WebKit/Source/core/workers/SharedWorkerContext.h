@@ -31,8 +31,6 @@
 #ifndef SharedWorkerContext_h
 #define SharedWorkerContext_h
 
-#if ENABLE(SHARED_WORKERS)
-
 #include "WorkerContext.h"
 #include "core/page/ContentSecurityPolicy.h"
 
@@ -68,7 +66,5 @@ namespace WebCore {
     PassRefPtr<MessageEvent> createConnectEvent(PassRefPtr<MessagePort>);
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)
 
 #endif // SharedWorkerContext_h

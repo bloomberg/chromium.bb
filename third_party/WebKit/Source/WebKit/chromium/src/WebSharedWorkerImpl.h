@@ -33,7 +33,6 @@
 
 #include "WebSharedWorker.h"
 
-#if ENABLE(SHARED_WORKERS)
 #include "ScriptExecutionContext.h"
 #include "WebCommonWorkerClient.h"
 #include "WebContentSecurityPolicy.h"
@@ -183,7 +182,5 @@ private:
 };
 
 } // namespace WebKit
-
-#endif // ENABLE(SHARED_WORKERS)
 
 #endif

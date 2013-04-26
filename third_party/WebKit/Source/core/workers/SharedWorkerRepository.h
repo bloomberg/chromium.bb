@@ -31,8 +31,6 @@
 #ifndef SharedWorkerRepository_h
 #define SharedWorkerRepository_h
 
-#if ENABLE(SHARED_WORKERS)
-
 #include <wtf/Forward.h>
 #include <wtf/PassOwnPtr.h>
 #include <wtf/PassRefPtr.h>
@@ -65,7 +63,5 @@ namespace WebCore {
     };
 
 } // namespace WebCore
-
-#endif // ENABLE(SHARED_WORKERS)
 
 #endif // SharedWorkerRepository_h
