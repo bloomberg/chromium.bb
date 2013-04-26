@@ -218,6 +218,13 @@ bool InputMethodEngineIBus::SetCandidateWindowVisible(bool visible,
 
 void InputMethodEngineIBus::SetCandidateWindowCursorVisible(bool visible) {
   table_->set_is_cursor_visible(visible);
+  // IBus shows candidates on a page where the cursor is placed, so we need to
+  // set the cursor position appropriately so IBus shows the right page.
+  // In the case that the cursor is not visible, we always show the first page.
+  // This trick works because only extension IMEs use this method and extension
+  // IMEs do not depend on the pagination feature of IBus.
+  if (!visible)
+    table_->set_cursor_position(0);
   if (active_)
     GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
 }
