@@ -39,7 +39,7 @@ class ResourceMetadataStorage {
   bool Initialize();
 
   // Sets the largest changestamp.
-  void SetLargestChangestamp(int64 largest_changestamp);
+  bool SetLargestChangestamp(int64 largest_changestamp);
 
   // Gets the largest changestamp.
   int64 GetLargestChangestamp();
@@ -72,7 +72,7 @@ class ResourceMetadataStorage {
                                       const std::string& child_name);
 
   // Puts header.
-  void PutHeader(const ResourceMetadataHeader& header);
+  bool PutHeader(const ResourceMetadataHeader& header);
 
   // Gets header.
   scoped_ptr<ResourceMetadataHeader> GetHeader();

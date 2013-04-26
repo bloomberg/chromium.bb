@@ -252,7 +252,13 @@ void DriveFileSystem::Initialize() {
   InitializePreferenceObserver();
 }
 
-void DriveFileSystem::ReloadAfterReset() {
+void DriveFileSystem::ReloadAfterReset(FileError error) {
+  if (error != FILE_ERROR_OK) {
+    LOG(ERROR) << "Failed to reset the resource metadata: "
+               << FileErrorToString(error);
+    return;
+  }
+
   SetupChangeListLoader();
 
   change_list_loader_->LoadIfNeeded(

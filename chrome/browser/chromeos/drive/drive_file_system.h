@@ -179,7 +179,7 @@ class DriveFileSystem : public DriveFileSystemInterface,
   struct AddUploadedFileParams;
 
   // Used to implement Reload().
-  void ReloadAfterReset();
+  void ReloadAfterReset(FileError error);
 
   // Sets up ChangeListLoader.
   void SetupChangeListLoader();

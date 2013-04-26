@@ -75,7 +75,7 @@ class ResourceMetadataStorageTest : public testing::Test {
 
 TEST_F(ResourceMetadataStorageTest, LargestChangestamp) {
   const int64 kLargestChangestamp = 1234567890;
-  storage_->SetLargestChangestamp(kLargestChangestamp);
+  EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
   EXPECT_EQ(kLargestChangestamp, storage_->GetLargestChangestamp());
 }
 
@@ -263,7 +263,7 @@ TEST_F(ResourceMetadataStorageTest, IncompatibleDB) {
   entry.set_resource_id(key1);
 
   // Put some data.
-  storage_->SetLargestChangestamp(kLargestChangestamp);
+  EXPECT_TRUE(storage_->SetLargestChangestamp(kLargestChangestamp));
   EXPECT_TRUE(storage_->PutEntry(entry));
   EXPECT_TRUE(storage_->GetEntry(key1));
 

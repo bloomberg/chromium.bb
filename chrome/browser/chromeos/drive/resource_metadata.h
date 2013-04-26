@@ -141,7 +141,7 @@ class ResourceMetadata {
   void Destroy();
 
   // Resets this object.
-  void Reset(const base::Closure& callback);
+  void Reset(const FileOperationCallback& callback);
 
   // Largest change timestamp that was the source of content for the current
   // state of the root directory.
@@ -221,9 +221,6 @@ class ResourceMetadata {
       const std::string& resource_id,
       const GetChildDirectoriesCallback& changed_dirs_callback);
 
-  // Removes all files/directories under root (not including root).
-  void RemoveAll(const base::Closure& callback);
-
   // Iterates over entries and runs |iterate_callback| for each entry with
   // |blocking_task_runner_|. Runs |completion_callback| after iterating over
   // all entries.
@@ -238,13 +235,13 @@ class ResourceMetadata {
   FileError InitializeOnBlockingPool() WARN_UNUSED_RESULT;
 
   // Sets up entries which should be present by default.
-  void SetUpDefaultEntries();
+  bool SetUpDefaultEntries();
 
   // Used to implement Destroy().
   void DestroyOnBlockingPool();
 
   // Used to implement Reset().
-  void ResetOnBlockingPool();
+  FileError ResetOnBlockingPool();
 
   // Used to implement GetLargestChangestamp().
   int64 GetLargestChangestampOnBlockingPool();
@@ -300,9 +297,6 @@ class ResourceMetadata {
   // Used to implement GetChildDirectories().
   scoped_ptr<std::set<base::FilePath> > GetChildDirectoriesOnBlockingPool(
       const std::string& resource_id);
-
-  // Used to implement RemoveAll().
-  void RemoveAllOnBlockingPool();
 
   // Used to implement IterateEntries().
   void IterateEntriesOnBlockingPool(const IterateCallback& callback);

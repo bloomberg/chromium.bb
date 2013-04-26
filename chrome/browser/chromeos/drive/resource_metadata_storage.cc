@@ -136,11 +136,14 @@ bool ResourceMetadataStorage::Initialize() {
       // Set up header.
       ResourceMetadataHeader header;
       header.set_version(kDBVersion);
-      PutHeader(header);
+      if (!PutHeader(header)) {
+        init_result = DB_INIT_FAILED;
+        resource_map_.reset();
+      }
     } else {
       LOG(ERROR) << "Failed to create resource map DB: " << status.ToString();
+      init_result = LevelDBStatusToDBInitStatus(status);
     }
-    init_result = LevelDBStatusToDBInitStatus(status);
   }
 
   UMA_HISTOGRAM_ENUMERATION("Drive.MetadataDBInitResult",
@@ -149,20 +152,26 @@ bool ResourceMetadataStorage::Initialize() {
   return resource_map_;
 }
 
-void ResourceMetadataStorage::SetLargestChangestamp(
+bool ResourceMetadataStorage::SetLargestChangestamp(
     int64 largest_changestamp) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   scoped_ptr<ResourceMetadataHeader> header = GetHeader();
-  DCHECK(header);
+  if (!header) {
+    DLOG(ERROR) << "Failed to get the header.";
+    return false;
+  }
   header->set_largest_changestamp(largest_changestamp);
-  PutHeader(*header);
+  return PutHeader(*header);
 }
 
 int64 ResourceMetadataStorage::GetLargestChangestamp() {
   base::ThreadRestrictions::AssertIOAllowed();
   scoped_ptr<ResourceMetadataHeader> header = GetHeader();
-  DCHECK(header);
+  if (!header) {
+    DLOG(ERROR) << "Failed to get the header.";
+    return 0;
+  }
   return header->largest_changestamp();
 }
 
@@ -302,21 +311,21 @@ std::string ResourceMetadataStorage::GetChildEntryKey(
   return key;
 }
 
-void ResourceMetadataStorage::PutHeader(
+bool ResourceMetadataStorage::PutHeader(
     const ResourceMetadataHeader& header) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   std::string serialized_header;
   if (!header.SerializeToString(&serialized_header)) {
     DLOG(ERROR) << "Failed to serialize the header";
-    return;
+    return false;
   }
 
   const leveldb::Status status = resource_map_->Put(
       leveldb::WriteOptions(),
       leveldb::Slice(GetHeaderDBKey()),
       leveldb::Slice(serialized_header));
-  DCHECK(status.ok());
+  return status.ok();
 }
 
 scoped_ptr<ResourceMetadataHeader>

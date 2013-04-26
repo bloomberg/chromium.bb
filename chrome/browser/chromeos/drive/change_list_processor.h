@@ -96,6 +96,9 @@ class ChangeListProcessor {
   void ApplyEntryProtoMap(
       bool is_delta_feed,
       scoped_ptr<google_apis::AboutResource> about_resource);
+  void ApplyEntryProtoMapAfterReset(
+      scoped_ptr<google_apis::AboutResource> about_resource,
+      FileError error);
 
   // Apply the next item from entry_proto_map_ to the file system. The async
   // version posts to the message loop to avoid recursive stack-overflow.

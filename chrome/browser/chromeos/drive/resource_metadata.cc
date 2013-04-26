@@ -168,11 +168,12 @@ void ResourceMetadata::Destroy() {
                  base::Unretained(this)));
 }
 
-void ResourceMetadata::Reset(const base::Closure& callback) {
+void ResourceMetadata::Reset(const FileOperationCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  blocking_task_runner_->PostTaskAndReply(
+  base::PostTaskAndReplyWithResult(
+      blocking_task_runner_,
       FROM_HERE,
       base::Bind(&ResourceMetadata::ResetOnBlockingPool,
                  base::Unretained(this)),
@@ -193,12 +194,13 @@ FileError ResourceMetadata::InitializeOnBlockingPool() {
   if (!storage_->Initialize())
     return FILE_ERROR_FAILED;
 
-  SetUpDefaultEntries();
+  if (!SetUpDefaultEntries())
+    return FILE_ERROR_FAILED;
 
   return FILE_ERROR_OK;
 }
 
-void ResourceMetadata::SetUpDefaultEntries() {
+bool ResourceMetadata::SetUpDefaultEntries() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
   // Initialize the grand root and "other" entries. "/drive" and "/drive/other".
@@ -208,11 +210,14 @@ void ResourceMetadata::SetUpDefaultEntries() {
     root.mutable_file_info()->set_is_directory(true);
     root.set_resource_id(util::kDriveGrandRootSpecialResourceId);
     root.set_title(util::kDriveGrandRootDirName);
-    storage_->PutEntry(CreateEntryWithProperBaseName(root));
+    if (!storage_->PutEntry(CreateEntryWithProperBaseName(root)))
+      return false;
   }
   if (!storage_->GetEntry(util::kDriveOtherDirSpecialResourceId)) {
-    PutEntryUnderDirectory(util::CreateOtherDirEntry());
+    if (!PutEntryUnderDirectory(util::CreateOtherDirEntry()))
+      return false;
   }
+  return true;
 }
 
 void ResourceMetadata::DestroyOnBlockingPool() {
@@ -220,17 +225,18 @@ void ResourceMetadata::DestroyOnBlockingPool() {
   delete this;
 }
 
-void ResourceMetadata::ResetOnBlockingPool() {
+FileError ResourceMetadata::ResetOnBlockingPool() {
   DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
 
-  // TODO(hashimoto): Return FILE_ERROR_NO_SPACE here.
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
-    LOG(ERROR) << "Required disk space not available.";
-    return;
-  }
+  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_))
+    return FILE_ERROR_NO_SPACE;
 
-  RemoveAllOnBlockingPool();
-  storage_->SetLargestChangestamp(0);
+  if (!storage_->SetLargestChangestamp(0) ||
+      !RemoveEntryRecursively(util::kDriveGrandRootSpecialResourceId) ||
+      !SetUpDefaultEntries())
+    return FILE_ERROR_FAILED;
+
+  return FILE_ERROR_OK;
 }
 
 void ResourceMetadata::GetLargestChangestamp(
@@ -428,16 +434,6 @@ void ResourceMetadata::GetChildDirectories(
                  resource_id),
       base::Bind(&RunGetChildDirectoriesCallbackWithResult,
                  changed_dirs_callback));
-}
-
-void ResourceMetadata::RemoveAll(const base::Closure& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  DCHECK(!callback.is_null());
-  blocking_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::Bind(&ResourceMetadata::RemoveAllOnBlockingPool,
-                 base::Unretained(this)),
-      callback);
 }
 
 void ResourceMetadata::IterateEntries(
@@ -831,19 +827,6 @@ void ResourceMetadata::GetDescendantDirectoryPaths(
       GetDescendantDirectoryPaths(entry->resource_id(), child_directories);
     }
   }
-}
-
-void ResourceMetadata::RemoveAllOnBlockingPool() {
-  DCHECK(blocking_task_runner_->RunsTasksOnCurrentThread());
-
-  // TODO(hashimoto): Return FILE_ERROR_NO_SPACE here.
-  if (!EnoughDiskSpaceIsAvailableForDBOperation(data_directory_path_)) {
-    LOG(ERROR) << "Required disk space not available.";
-    return;
-  }
-
-  RemoveEntryRecursively(util::kDriveGrandRootSpecialResourceId);
-  SetUpDefaultEntries();
 }
 
 void ResourceMetadata::IterateEntriesOnBlockingPool(

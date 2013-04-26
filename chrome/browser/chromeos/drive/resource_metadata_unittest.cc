@@ -1144,7 +1144,7 @@ TEST_F(ResourceMetadataTest, GetChildDirectories) {
       "drive/root/dir2/dir101/dir102/dir105/dir106/dir107")));
 }
 
-TEST_F(ResourceMetadataTest, RemoveAll) {
+TEST_F(ResourceMetadataTest, Reset) {
   // The grand root has "root" which is not empty.
   scoped_ptr<DriveEntryProtoVector> entries;
   entries = ReadDirectoryByPathSync(
@@ -1152,12 +1152,22 @@ TEST_F(ResourceMetadataTest, RemoveAll) {
   ASSERT_TRUE(entries.get());
   ASSERT_FALSE(entries->empty());
 
-  // remove all children.
-  resource_metadata_->RemoveAll(base::Bind(&base::DoNothing));
+  // Reset.
+  FileError error = FILE_ERROR_FAILED;
+  resource_metadata_->Reset(
+      google_apis::test_util::CreateCopyResultCallback(&error));
   google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(FILE_ERROR_OK, error);
 
   base::FilePath drive_file_path;
   scoped_ptr<DriveEntryProto> entry_proto;
+
+  // change stamp should be reset.
+  int64 changestamp = -1;
+  resource_metadata_->GetLargestChangestamp(
+      google_apis::test_util::CreateCopyResultCallback(&changestamp));
+  google_apis::test_util::RunBlockingPoolTask();
+  EXPECT_EQ(0, changestamp);
 
   // root should continue to exist.
   entry_proto = GetEntryInfoByPathSync(base::FilePath::FromUTF8Unsafe("drive"));
