@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -44,43 +44,69 @@ bool RuntimeEnabledFeatures::isSessionStorageEnabled = true;
 bool RuntimeEnabledFeatures::isWebkitNotificationsEnabled = false;
 bool RuntimeEnabledFeatures::isApplicationCacheEnabled = true;
 bool RuntimeEnabledFeatures::isGeolocationEnabled = true;
-bool RuntimeEnabledFeatures::isIndexedDBEnabled = false;
-bool RuntimeEnabledFeatures::isWebAudioEnabled = false;
+bool RuntimeEnabledFeatures::isWebkitIndexedDBEnabled = false;
+bool RuntimeEnabledFeatures::isCanvasPathEnabled = false;
+#if ENABLE(CSS_EXCLUSIONS)
+bool RuntimeEnabledFeatures::isCSSExclusionsEnabled = false;
+#endif
+#if ENABLE(CSS_REGIONS)
+bool RuntimeEnabledFeatures::isCSSRegionsEnabled = false;
+#endif
+#if ENABLE(CSS_COMPOSITING)
+bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
+#endif
+bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
+bool RuntimeEnabledFeatures::isWebkitFullScreenAPIEnabled = true;
+#if ENABLE(WEB_AUDIO)
+bool RuntimeEnabledFeatures::isWebkitAudioContextEnabled = false;
+#endif
 bool RuntimeEnabledFeatures::isWebMIDIEnabled = false;
 bool RuntimeEnabledFeatures::isTouchEnabled = true;
 bool RuntimeEnabledFeatures::isDeviceMotionEnabled = true;
 bool RuntimeEnabledFeatures::isDeviceOrientationEnabled = true;
 bool RuntimeEnabledFeatures::isSpeechInputEnabled = true;
-bool RuntimeEnabledFeatures::isCanvasPathEnabled = false;
-bool RuntimeEnabledFeatures::isCSSExclusionsEnabled = false;
-bool RuntimeEnabledFeatures::isCSSRegionsEnabled = false;
-bool RuntimeEnabledFeatures::isCSSCompositingEnabled = false;
-bool RuntimeEnabledFeatures::isLangAttributeAwareFormControlUIEnabled = false;
-bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
 bool RuntimeEnabledFeatures::isScriptedSpeechEnabled = false;
-bool RuntimeEnabledFeatures::isExperimentalWebSocketEnabled = false;
-
+bool RuntimeEnabledFeatures::isFileSystemEnabled = false;
+#if ENABLE(JAVASCRIPT_I18N_API)
+bool RuntimeEnabledFeatures::isJavaScriptI18NAPIEnabled = false;
+#endif
 #if ENABLE(MEDIA_STREAM)
 bool RuntimeEnabledFeatures::isMediaStreamEnabled = true;
+#endif
+#if ENABLE(MEDIA_STREAM)
 bool RuntimeEnabledFeatures::isPeerConnectionEnabled = true;
 #endif
-
-bool RuntimeEnabledFeatures::isGamepadEnabled = false;
-bool RuntimeEnabledFeatures::isFileSystemEnabled = false;
+bool RuntimeEnabledFeatures::isWebkitGetGamepadsEnabled = false;
+bool RuntimeEnabledFeatures::isQuotaEnabled = false;
+bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
+#if ENABLE(ENCRYPTED_MEDIA)
+bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;
+#endif
+bool RuntimeEnabledFeatures::isWebkitVideoTrackEnabled = true;
+bool RuntimeEnabledFeatures::isShadowDOMEnabled = true;
+bool RuntimeEnabledFeatures::isExperimentalShadowDOMEnabled = false;
+bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
+bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;
+bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
+#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
+bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
+#endif
+bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
+bool RuntimeEnabledFeatures::isDialogElementEnabled = false;
+bool RuntimeEnabledFeatures::isLazyLayoutEnabled = false;
+bool RuntimeEnabledFeatures::isExperimentalContentSecurityPolicyFeaturesEnabled = false;
+bool RuntimeEnabledFeatures::isSeamlessIFramesEnabled = false;
+bool RuntimeEnabledFeatures::isLangAttributeAwareFormControlUIEnabled = false;
+bool RuntimeEnabledFeatures::isRequestAutocompleteEnabled = false;
+bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
+bool RuntimeEnabledFeatures::isDirectoryUploadEnabled = true;
+bool RuntimeEnabledFeatures::isExperimentalWebSocketEnabled = false;
+bool RuntimeEnabledFeatures::isIMEAPIEnabled = false;
 
 bool RuntimeEnabledFeatures::fileSystemEnabled()
 {
     return isFileSystemEnabled && AsyncFileSystem::isAvailable();
 }
-
-#if ENABLE(JAVASCRIPT_I18N_API)
-bool RuntimeEnabledFeatures::isJavaScriptI18NAPIEnabled = false;
-
-bool RuntimeEnabledFeatures::javaScriptI18NAPIEnabled()
-{
-    return isJavaScriptI18NAPIEnabled;
-}
-#endif
 
 bool RuntimeEnabledFeatures::audioEnabled()
 {
@@ -138,49 +164,5 @@ bool RuntimeEnabledFeatures::openDatabaseSyncEnabled()
 {
     return DatabaseManager::manager().isAvailable();
 }
-
-bool RuntimeEnabledFeatures::isQuotaEnabled = false;
-
-bool RuntimeEnabledFeatures::isFullScreenAPIEnabled = true;
-
-bool RuntimeEnabledFeatures::isMediaSourceEnabled = false;
-
-bool RuntimeEnabledFeatures::isVideoTrackEnabled = true;
-
-#if ENABLE(ENCRYPTED_MEDIA)
-bool RuntimeEnabledFeatures::isEncryptedMediaEnabled = false;
-#endif
-
-bool RuntimeEnabledFeatures::isShadowDOMEnabled = true;
-
-bool RuntimeEnabledFeatures::isExperimentalShadowDOMEnabled = false;
-
-bool RuntimeEnabledFeatures::isAuthorShadowDOMForAnyElementEnabled = false;
-
-bool RuntimeEnabledFeatures::isCustomDOMElementsEnabled = false;
-
-bool RuntimeEnabledFeatures::isStyleScopedEnabled = false;
-
-#if ENABLE(INPUT_TYPE_DATETIME_INCOMPLETE)
-bool RuntimeEnabledFeatures::isInputTypeDateTimeEnabled = false;
-#endif
-
-bool RuntimeEnabledFeatures::isInputTypeWeekEnabled = true;
-
-bool RuntimeEnabledFeatures::isDialogElementEnabled = false;
-
-bool RuntimeEnabledFeatures::isLazyLayoutEnabled = false;
-
-bool RuntimeEnabledFeatures::isRequestAutocompleteEnabled = false;
-
-bool RuntimeEnabledFeatures::areExperimentalContentSecurityPolicyFeaturesEnabled = false;
-
-bool RuntimeEnabledFeatures::areSeamlessIFramesEnabled = false;
-
-bool RuntimeEnabledFeatures::isFontLoadEventsEnabled = false;
-
-bool RuntimeEnabledFeatures::isWebPInAcceptHeaderEnabled = false;
-
-bool RuntimeEnabledFeatures::isIMEAPIEnabled = false;
 
 } // namespace WebCore
