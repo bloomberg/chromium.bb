@@ -271,4 +271,36 @@ void RequestTextCheck(int document_tag,
       }];
 }
 
+class SpellcheckerStateInternal {
+ public:
+  SpellcheckerStateInternal();
+  ~SpellcheckerStateInternal();
+
+ private:
+  BOOL automaticallyIdentifiesLanguages_;
+  NSString* language_;
+};
+
+SpellcheckerStateInternal::SpellcheckerStateInternal() {
+  language_ = [SharedSpellChecker() language];
+  automaticallyIdentifiesLanguages_ =
+      [SharedSpellChecker() automaticallyIdentifiesLanguages];
+  [SharedSpellChecker() setLanguage:@"en"];
+  [SharedSpellChecker() setAutomaticallyIdentifiesLanguages:NO];
+}
+
+SpellcheckerStateInternal::~SpellcheckerStateInternal() {
+  [SharedSpellChecker() setLanguage:language_];
+  [SharedSpellChecker() setAutomaticallyIdentifiesLanguages:
+      automaticallyIdentifiesLanguages_];
+}
+
+ScopedEnglishLanguageForTest::ScopedEnglishLanguageForTest()
+    : state_(new SpellcheckerStateInternal) {
+}
+
+ScopedEnglishLanguageForTest::~ScopedEnglishLanguageForTest() {
+  delete state_;
+}
+
 }  // namespace spellcheck_mac

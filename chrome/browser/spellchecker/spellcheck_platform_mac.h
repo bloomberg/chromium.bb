@@ -94,6 +94,19 @@ void RequestTextCheck(int document_tag,
                       const string16& text,
                       TextCheckCompleteCallback callback);
 
+// Internal state, to restore system state after testing.
+// Not public since it contains Cocoa data types.
+class SpellcheckerStateInternal;
+
+// Test helper, forces the system spellchecker to en-US for its lifetime.
+class ScopedEnglishLanguageForTest {
+ public:
+  ScopedEnglishLanguageForTest();
+  ~ScopedEnglishLanguageForTest();
+ private:
+  SpellcheckerStateInternal* state_;
+};
+
 }  // namespace spellcheck_mac
 
 #endif  // CHROME_BROWSER_SPELLCHECKER_SPELLCHECK_PLATFORM_MAC_H_
