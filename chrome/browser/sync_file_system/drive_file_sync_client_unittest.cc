@@ -67,7 +67,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   google_apis::DRIVE_UPLOAD_OK,
+                   google_apis::HTTP_SUCCESS,
                    drive_file_path,
                    local_file_path,
                    base::Passed(&file_entry)));
@@ -94,7 +94,7 @@ class FakeDriveUploader : public google_apis::DriveUploaderInterface {
     base::MessageLoopProxy::current()->PostTask(
         FROM_HERE,
         base::Bind(callback,
-                   google_apis::DRIVE_UPLOAD_OK,
+                   google_apis::HTTP_SUCCESS,
                    drive_file_path,
                    local_file_path,
                    base::Passed(&file_entry)));

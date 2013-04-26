@@ -611,7 +611,6 @@
         'browser/google_apis/drive_service_interface.h',
         'browser/google_apis/drive_switches.cc',
         'browser/google_apis/drive_switches.h',
-        'browser/google_apis/drive_upload_error.h',
         'browser/google_apis/drive_upload_mode.h',
         'browser/google_apis/drive_uploader.cc',
         'browser/google_apis/drive_uploader.h',

@@ -845,8 +845,8 @@ TEST_F(JobSchedulerTest, JobInfoProgress) {
   // Upload job.
   path = temp_dir.path().AppendASCII("new_file.txt");
   file_util::WriteFile(path, "Hello", 5);
-  google_apis::DriveUploadError upload_error =
-      google_apis::DRIVE_UPLOAD_ERROR_ABORT;
+  google_apis::GDataErrorCode upload_error =
+      google_apis::GDATA_OTHER_ERROR;
   scoped_ptr<google_apis::ResourceEntry> entry;
 
   scheduler_->UploadNewFile(

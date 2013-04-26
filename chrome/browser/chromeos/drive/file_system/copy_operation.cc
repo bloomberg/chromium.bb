@@ -16,7 +16,6 @@
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/drive/job_scheduler.h"
 #include "chrome/browser/chromeos/drive/resource_entry_conversion.h"
-#include "chrome/browser/google_apis/drive_upload_error.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/mime_util.h"
 
@@ -373,19 +372,19 @@ void CopyOperation::StartFileUploadAfterGetEntryInfo(
 
 void CopyOperation::OnTransferCompleted(
     const FileOperationCallback& callback,
-    google_apis::DriveUploadError error,
+    google_apis::GDataErrorCode error,
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
     scoped_ptr<ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  if (error == google_apis::DRIVE_UPLOAD_OK && resource_entry.get()) {
+  if (error == google_apis::HTTP_SUCCESS && resource_entry.get()) {
     drive_file_system_->AddUploadedFile(resource_entry.Pass(),
                                         file_path,
                                         callback);
   } else {
-    callback.Run(DriveUploadErrorToFileError(error));
+    callback.Run(util::GDataToFileError(error));
   }
 }
 

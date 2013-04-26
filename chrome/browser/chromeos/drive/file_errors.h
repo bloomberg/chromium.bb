@@ -7,7 +7,6 @@
 
 #include "base/callback_forward.h"
 #include "base/platform_file.h"
-#include "chrome/browser/google_apis/drive_upload_error.h"
 
 namespace drive {
 
@@ -40,10 +39,6 @@ std::string FileErrorToString(FileError error);
 
 // Returns a PlatformFileError that corresponds to the FileError provided.
 base::PlatformFileError FileErrorToPlatformError(FileError error);
-
-// Returns a FileError that corresponds to the DriveUploadError provided.
-FileError DriveUploadErrorToFileError(
-    google_apis::DriveUploadError error);
 
 }  // namespace drive
 

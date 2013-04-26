@@ -130,27 +130,4 @@ base::PlatformFileError FileErrorToPlatformError(FileError error) {
   return base::PLATFORM_FILE_ERROR_FAILED;
 }
 
-FileError DriveUploadErrorToFileError(
-    google_apis::DriveUploadError error) {
-  switch (error) {
-    case google_apis::DRIVE_UPLOAD_OK:
-      return FILE_ERROR_OK;
-
-    case google_apis::DRIVE_UPLOAD_ERROR_NOT_FOUND:
-      return FILE_ERROR_NOT_FOUND;
-
-    case google_apis::DRIVE_UPLOAD_ERROR_NO_SPACE:
-      return FILE_ERROR_NO_SPACE;
-
-    case google_apis::DRIVE_UPLOAD_ERROR_CONFLICT:
-      return FILE_ERROR_THROTTLED;
-
-    case google_apis::DRIVE_UPLOAD_ERROR_ABORT:
-      return FILE_ERROR_ABORT;
-  }
-
-  NOTREACHED();
-  return FILE_ERROR_FAILED;
-}
-
 }  // namespace drive

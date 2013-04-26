@@ -357,7 +357,7 @@ class JobScheduler
   // Callback for job finishing with a UploadCompletionCallback.
   void OnUploadCompletionJobDone(
       scoped_ptr<QueueEntry> queue_entry,
-      google_apis::DriveUploadError error,
+      google_apis::GDataErrorCode error,
       const base::FilePath& drive_path,
       const base::FilePath& file_path,
       scoped_ptr<google_apis::ResourceEntry> resource_entry);

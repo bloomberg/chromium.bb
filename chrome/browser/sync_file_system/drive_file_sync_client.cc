@@ -17,7 +17,6 @@
 #include "chrome/browser/google_apis/gdata_wapi_service.h"
 #include "chrome/browser/google_apis/gdata_wapi_url_generator.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/sync_file_system/drive_file_sync_util.h"
 #include "chrome/common/extensions/extension.h"
 #include "extensions/common/constants.h"
 #include "net/base/escape.h"
@@ -113,11 +112,11 @@ void EntryAdapter(scoped_ptr<google_apis::ResourceEntry> entry,
 
 void UploadResultAdapter(
     const DriveFileSyncClient::ResourceEntryCallback& callback,
-    google_apis::DriveUploadError error,
+    google_apis::GDataErrorCode error,
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> entry) {
-  callback.Run(DriveUploadErrorToGDataErrorCode(error), entry.Pass());
+  callback.Run(error, entry.Pass());
 }
 
 }  // namespace

@@ -229,7 +229,7 @@ void DriveUploader::OpenCompletionCallback(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   if (file_size < 0) {
-    UploadFailed(upload_file_info.Pass(), DRIVE_UPLOAD_ERROR_NOT_FOUND);
+    UploadFailed(upload_file_info.Pass(), HTTP_NOT_FOUND);
     return;
   }
 
@@ -288,10 +288,10 @@ void DriveUploader::OnUploadLocationReceived(
     // TODO(achuith): Handle error codes from Google Docs server.
     if (code == HTTP_PRECONDITION) {
       // ETag mismatch.
-      UploadFailed(upload_file_info.Pass(), DRIVE_UPLOAD_ERROR_CONFLICT);
+      UploadFailed(upload_file_info.Pass(), HTTP_CONFLICT);
       return;
     }
-    UploadFailed(upload_file_info.Pass(), DRIVE_UPLOAD_ERROR_ABORT);
+    UploadFailed(upload_file_info.Pass(), code);
     return;
   }
 
@@ -349,7 +349,7 @@ void DriveUploader::ReadCompletionCallback(
   if (bytes_read < 0) {
     LOG(ERROR) << "Error reading from file "
                << upload_file_info->file_path.value();
-    UploadFailed(upload_file_info.Pass(), DRIVE_UPLOAD_ERROR_ABORT);
+    UploadFailed(upload_file_info.Pass(), GDATA_FILE_ERROR);
     return;
   }
 
@@ -397,7 +397,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
              << upload_file_info->drive_path.value() << "]";
 
     // Done uploading.
-    upload_file_info->completion_callback.Run(DRIVE_UPLOAD_OK,
+    upload_file_info->completion_callback.Run(HTTP_SUCCESS,
                                               upload_file_info->drive_path,
                                               upload_file_info->file_path,
                                               entry.Pass());
@@ -406,7 +406,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
 
   // ETag mismatch.
   if (response.code == HTTP_PRECONDITION) {
-    UploadFailed(upload_file_info.Pass(), DRIVE_UPLOAD_ERROR_CONFLICT);
+    UploadFailed(upload_file_info.Pass(), HTTP_CONFLICT);
     return;
   }
 
@@ -425,7 +425,7 @@ void DriveUploader::OnUploadRangeResponseReceived(
         << ", expected end range=" << upload_file_info->next_send_position;
     UploadFailed(upload_file_info.Pass(),
                  response.code == HTTP_FORBIDDEN ?
-                     DRIVE_UPLOAD_ERROR_NO_SPACE : DRIVE_UPLOAD_ERROR_ABORT);
+                     GDATA_NO_SPACE : response.code);
     return;
   }
 
@@ -447,7 +447,7 @@ void DriveUploader::OnUploadProgress(const ProgressCallback& callback,
 }
 
 void DriveUploader::UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
-                                 DriveUploadError error) {
+                                 GDataErrorCode error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   LOG(ERROR) << "Upload failed " << upload_file_info->DebugString();

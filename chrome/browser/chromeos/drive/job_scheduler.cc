@@ -878,11 +878,11 @@ void JobScheduler::OnDownloadActionJobDone(
 
 void JobScheduler::OnUploadCompletionJobDone(
     scoped_ptr<QueueEntry> queue_entry,
-    google_apis::DriveUploadError error,
+    google_apis::GDataErrorCode error,
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
-  FileError drive_error(DriveUploadErrorToFileError(error));
+  FileError drive_error(util::GDataToFileError(error));
 
   queue_entry = OnJobDone(queue_entry.Pass(), drive_error);
 

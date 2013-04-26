@@ -12,7 +12,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/google_apis/drive_service_interface.h"
-#include "chrome/browser/google_apis/drive_upload_error.h"
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 
@@ -27,7 +26,7 @@ class DriveServiceInterface;
 struct UploadRangeResponse;
 
 // Callback to be invoked once the upload has completed.
-typedef base::Callback<void(DriveUploadError error,
+typedef base::Callback<void(GDataErrorCode error,
                             const base::FilePath& drive_path,
                             const base::FilePath& file_path,
                             scoped_ptr<ResourceEntry> resource_entry)>
@@ -175,7 +174,7 @@ class DriveUploader : public DriveUploaderInterface {
 
   // Handle failed uploads.
   void UploadFailed(scoped_ptr<UploadFileInfo> upload_file_info,
-                    DriveUploadError error);
+                    GDataErrorCode error);
 
   // Pointers to DriveServiceInterface object owned by DriveSystemService.
   // The lifetime of this object is guaranteed to exceed that of the

@@ -115,14 +115,14 @@ void UpdateOperation::OnGetFileCompleteForUpdateFile(
 
 void UpdateOperation::OnUpdatedFileUploaded(
     const FileOperationCallback& callback,
-    google_apis::DriveUploadError error,
+    google_apis::GDataErrorCode error,
     const base::FilePath& drive_path,
     const base::FilePath& file_path,
     scoped_ptr<google_apis::ResourceEntry> resource_entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  FileError drive_error = DriveUploadErrorToFileError(error);
+  FileError drive_error = util::GDataToFileError(error);
   if (drive_error != FILE_ERROR_OK) {
     callback.Run(drive_error);
     return;
