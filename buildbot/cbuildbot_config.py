@@ -70,6 +70,7 @@ def OverrideConfigForTrybot(build_config, options):
       useflags.remove(constants.USE_CHROME_PDF)
 
     my_config['upload_symbols'] = False
+    my_config['chromeos_official'] = False
     my_config['push_image'] = False
     if options.hwtest:
       if not my_config['hw_tests']:
@@ -365,6 +366,9 @@ _settings = dict(
 
 # upload_symbols -- Do we upload debug symbols.
   upload_symbols=False,
+
+# hwqual -- Whether we upload a hwqual tarball.
+  hwqual=False,
 
 # manifest_repo_url -- git repository URL for our manifests.
 #   External: https://git.chromium.org/git/chromiumos/manifest
@@ -1173,6 +1177,7 @@ _release = full.derive(official, internal,
   upload_hw_test_artifacts=True,
   signer_tests=True,
   trybot_list=True,
+  hwqual=True,
   description="Release Builds (canary) (internal)",
 )
 

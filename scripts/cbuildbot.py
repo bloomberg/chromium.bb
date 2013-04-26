@@ -145,7 +145,6 @@ class Builder(object):
     self.build_config = build_config
     self.options = options
 
-    # TODO, Remove here and in config after bug chromium-os:14649 is fixed.
     if self.build_config['chromeos_official']:
       os.environ['CHROMEOS_OFFICIAL'] = '1'
 

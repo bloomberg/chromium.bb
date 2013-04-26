@@ -2143,7 +2143,7 @@ class ArchiveStage(ArchivingStage):
       autotest_built = config['build_tests'] and self._options.tests and (
           config['upload_hw_test_artifacts'] or config['archive_build_debug'])
 
-      if config['chromeos_official'] and autotest_built:
+      if config['hwqual'] and autotest_built:
         # Build the full autotest tarball for hwqual image. We don't upload it,
         # as it's fairly large and only needed by the hwqual tarball.
         cros_build_lib.Info('Archiving full autotest tarball locally ...')
