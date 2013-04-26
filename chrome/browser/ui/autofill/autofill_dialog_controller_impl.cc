@@ -388,6 +388,8 @@ void AutofillDialogControllerImpl::Show() {
   // TODO(aruslan): UMA metrics for sign-in.
   if (account_chooser_model_.WalletIsSelected())
     GetWalletItems();
+  else
+    LogDialogLatencyToShow();
 }
 
 void AutofillDialogControllerImpl::Hide() {
@@ -554,6 +556,8 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
         signin_helper_.reset(new wallet::WalletSigninHelper(
             this, profile_->GetRequestContext()));
         signin_helper_->StartUserNameFetch();
+      } else {
+        LogDialogLatencyToShow();
       }
       break;
 
@@ -593,6 +597,7 @@ void AutofillDialogControllerImpl::OnWalletSigninError() {
   signin_helper_.reset();
   account_chooser_model_.SetHadWalletSigninError();
   GetWalletClient()->CancelRequests();
+  LogDialogLatencyToShow();
 }
 
 void AutofillDialogControllerImpl::EnsureLegalDocumentsText() {
@@ -1666,7 +1671,8 @@ AutofillDialogControllerImpl::AutofillDialogControllerImpl(
           ::prefs::kAutofillDialogPayWithoutWallet)),
       is_submitting_(false),
       autocheckout_is_running_(false),
-      had_autocheckout_error_(false) {
+      had_autocheckout_error_(false),
+      was_ui_latency_logged_(false) {
   // TODO(estade): remove duplicates from |form_structure|?
   DCHECK(!callback_.is_null());
 }
@@ -2299,6 +2305,16 @@ void AutofillDialogControllerImpl::LogSuggestionItemSelectedMetric(
   }
 
   GetMetricLogger().LogDialogUiEvent(dialog_type_, dialog_ui_event);
+}
+
+void AutofillDialogControllerImpl::LogDialogLatencyToShow() {
+  if (was_ui_latency_logged_)
+    return;
+
+  GetMetricLogger().LogDialogLatencyToShow(
+      dialog_type_,
+      base::Time::Now() - dialog_shown_timestamp_);
+  was_ui_latency_logged_ = true;
 }
 
 AutofillMetrics::DialogInitialUserStateMetric

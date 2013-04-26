@@ -368,6 +368,14 @@ void AutofillMetrics::LogDialogInitialUserState(
       name, user_type, NUM_DIALOG_INITIAL_USER_STATE_METRICS);
 }
 
+void AutofillMetrics::LogDialogLatencyToShow(
+    autofill::DialogType dialog_type,
+    const base::TimeDelta& duration) const {
+  std::string name =
+      GetPrefixForDialogType(dialog_type) + ".UiLatencyToShow";
+  LogUMAHistogramTimes(name, duration);
+}
+
 void AutofillMetrics::LogDialogPopupEvent(autofill::DialogType dialog_type,
                                           DialogPopupEvent event) const {
   std::string name = GetPrefixForDialogType(dialog_type) + ".PopupInDialog";

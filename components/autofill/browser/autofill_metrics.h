@@ -401,6 +401,11 @@ class AutofillMetrics {
       autofill::DialogType dialog_type,
       DialogInitialUserStateMetric user_type) const;
 
+  // Logs the time elapsed between the dialog being shown for |dialog_type| and
+  // when it is ready for user interaction.
+  virtual void LogDialogLatencyToShow(autofill::DialogType dialog_type,
+                                         const base::TimeDelta& duration) const;
+
   // Logs |event| to the popup events histogram for |dialog_type|.
   virtual void LogDialogPopupEvent(autofill::DialogType dialog_type,
                                    DialogPopupEvent event) const;

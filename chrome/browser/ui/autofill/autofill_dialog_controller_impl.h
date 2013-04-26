@@ -418,6 +418,10 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
   // Logs metrics when a suggestion item from the given |model| is selected.
   void LogSuggestionItemSelectedMetric(const SuggestionsMenuModel& model);
 
+  // Logs the time elapsed from when the dialog was shown to when the user could
+  // interact with it.
+  void LogDialogLatencyToShow();
+
   // Returns the metric corresponding to the user's initial state when
   // interacting with this dialog.
   AutofillMetrics::DialogInitialUserStateMetric GetInitialUserState() const;
@@ -535,6 +539,9 @@ class AutofillDialogControllerImpl : public AutofillDialogController,
 
   // Whether or not there was an error in the Autocheckout flow.
   bool had_autocheckout_error_;
+
+  // Whether the latency to display to the UI was logged to UMA yet.
+  bool was_ui_latency_logged_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillDialogControllerImpl);
 };
