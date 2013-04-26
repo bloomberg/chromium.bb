@@ -421,7 +421,7 @@ void RTCPeerConnectionHandler::setLocalDescription(
   }
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSetSessionDescription(
-        this, native_desc, PeerConnectionTracker::SOURCE_LOCAL);
+        this, description, PeerConnectionTracker::SOURCE_LOCAL);
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
       new talk_base::RefCountedObject<SetSessionDescriptionRequest>(
@@ -446,7 +446,7 @@ void RTCPeerConnectionHandler::setRemoteDescription(
   }
   if (peer_connection_tracker_)
     peer_connection_tracker_->TrackSetSessionDescription(
-        this, native_desc, PeerConnectionTracker::SOURCE_REMOTE);
+        this, description, PeerConnectionTracker::SOURCE_REMOTE);
 
   scoped_refptr<SetSessionDescriptionRequest> set_request(
       new talk_base::RefCountedObject<SetSessionDescriptionRequest>(

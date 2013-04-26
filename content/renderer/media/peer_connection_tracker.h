@@ -11,12 +11,14 @@
 #include "content/public/renderer/render_process_observer.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebMediaStream.h"
 #include "third_party/WebKit/Source/Platform/chromium/public/WebRTCPeerConnectionHandlerClient.h"
+#include "third_party/WebKit/Source/Platform/chromium/public/WebRTCSessionDescription.h"
 #include "third_party/libjingle/source/talk/app/webrtc/peerconnectioninterface.h"
 
 namespace WebKit {
 class WebFrame;
 class WebRTCICECandidate;
 class WebString;
+class WebRTCSessionDescription;
 }  // namespace WebKit
 
 namespace webrtc {
@@ -84,7 +86,7 @@ class CONTENT_EXPORT PeerConnectionTracker : public RenderProcessObserver {
   // Sends an update when setLocalDescription or setRemoteDescription is called.
   virtual void TrackSetSessionDescription(
       RTCPeerConnectionHandler* pc_handler,
-      const webrtc::SessionDescriptionInterface* desc, Source source);
+      const WebKit::WebRTCSessionDescription& desc, Source source);
 
   // Sends an update when Ice candidates are updated.
   virtual void TrackUpdateIce(

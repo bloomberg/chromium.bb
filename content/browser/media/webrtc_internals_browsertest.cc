@@ -15,6 +15,34 @@
 using std::string;
 namespace content {
 
+struct SsrcEntry {
+  string GetSsrcAttributeString() const {
+    std::stringstream ss;
+    ss << "a=ssrc:" << id;
+    std::map<string, string>::const_iterator iter;
+    for (iter = properties.begin(); iter != properties.end(); ++iter) {
+      ss << " " << iter->first << ":" << iter->second;
+    }
+    return ss.str();
+  }
+
+  string GetAsJSON() const {
+    std::stringstream ss;
+    ss << "{";
+    std::map<string, string>::const_iterator iter;
+    for (iter = properties.begin(); iter != properties.end(); ++iter) {
+      if (iter != properties.begin())
+        ss << ",";
+      ss << "\"" << iter->first << "\":\"" << iter->second << "\"";
+    }
+    ss << "}";
+    return ss.str();
+  }
+
+  string id;
+  std::map<string, string> properties;
+};
+
 struct EventEntry {
   string type;
   string value;
@@ -25,7 +53,7 @@ struct StatsUnit {
     std::stringstream ss;
     ss << "{timestamp:" << timestamp << ", values:[";
     std::map<string, string>::const_iterator iter;
-    for (iter = values.begin(); iter != values.end(); iter++) {
+    for (iter = values.begin(); iter != values.end(); ++iter) {
       ss << "'" << iter->first << "','" << iter->second << "',";
     }
     ss << "]}";
@@ -61,7 +89,7 @@ class PeerConnectionEntry {
 
   string getLogIdString() const {
     std::stringstream ss;
-    ss << pid_ << "-" << lid_ << "-log";
+    ss << pid_ << "-" << lid_ << "-update-log";
     return ss.str();
   }
 
@@ -162,12 +190,10 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
       std::stringstream ss;
       ss << "var row = $('" << log_id << "').rows[" << (i + 1) << "];"
             "var cell = row.lastChild;"
-            "var type = cell.firstChild.textContent;"
-            "var value = cell.lastChild.lastChild.value;"
-            "window.domAutomationController.send(type + ':' + value);";
+            "window.domAutomationController.send(cell.firstChild.textContent);";
       ASSERT_TRUE(ExecuteScriptAndExtractString(
           shell()->web_contents(), ss.str(), &result));
-      EXPECT_EQ(pc.events_[i].type + ":" + pc.events_[i].value, result);
+      EXPECT_EQ(pc.events_[i].type + pc.events_[i].value, result);
     }
   }
 
@@ -262,7 +288,7 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
     ASSERT_TRUE(ExecuteScriptAndExtractBool(
         shell()->web_contents(),
         "window.domAutomationController.send("
-        "   graphViews['" + graph_id + "'] != null)",
+           "graphViews['" + graph_id + "'] != null)",
         &result));
     EXPECT_TRUE(result);
 
@@ -274,6 +300,17 @@ class WebRTCInternalsBrowserTest: public ContentBrowserTest {
     ASSERT_TRUE(ExecuteScriptAndExtractString(
         shell()->web_contents(), ss.str(), &actual_value));
     EXPECT_EQ(value, actual_value);
+  }
+
+  // Get the JSON string of the ssrc info from the page.
+  string GetSsrcInfo(const string& ssrc_id) {
+    string result;
+    EXPECT_TRUE(ExecuteScriptAndExtractString(
+        shell()->web_contents(),
+        "window.domAutomationController.send(JSON.stringify("
+           "ssrcInfoManager.streamInfoContainer_['" + ssrc_id + "']))",
+        &result));
+    return result;
   }
 };
 
@@ -329,8 +366,21 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, UpdatePeerConnection) {
   PeerConnectionEntry pc_2(1, 1);
   ExecuteAddPeerConnectionJs(pc_2);
 
-  ExecuteAndVerifyUpdatePeerConnection(pc_2, "e2", "v2");
-  ExecuteAndVerifyUpdatePeerConnection(pc_2, "e3", "v3");
+  SsrcEntry ssrc1, ssrc2;
+  ssrc1.id = "ssrcid1";
+  ssrc1.properties["msid"] = "mymsid";
+  ssrc2.id = "ssrcid2";
+  ssrc2.properties["label"] = "mylabel";
+  ssrc2.properties["cname"] = "mycname";
+
+  ExecuteAndVerifyUpdatePeerConnection(pc_2, "setRemoteDescription",
+      ssrc1.GetSsrcAttributeString());
+
+  ExecuteAndVerifyUpdatePeerConnection(pc_2, "setLocalDescription",
+      ssrc2.GetSsrcAttributeString());
+
+  EXPECT_EQ(ssrc1.GetAsJSON(), GetSsrcInfo(ssrc1.id));
+  EXPECT_EQ(ssrc2.GetAsJSON(), GetSsrcInfo(ssrc2.id));
 }
 
 // Tests that adding random named stats updates the dataSeries and graphs.
@@ -466,17 +516,22 @@ IN_PROC_BROWSER_TEST_F(WebRTCInternalsBrowserTest, withRealPeerConnectionCall) {
   // Verifies the the event tables.
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
       shell2->web_contents(),
-      "window.domAutomationController.send("
-          "$('peer-connections-list').getElementsByClassName('log-table')[0]"
-              ".rows.length);",
+      "window.domAutomationController.send($('peer-connections-list')"
+          ".getElementsByClassName('update-log-table').length);",
+      &count));
+  EXPECT_EQ(NUMBER_OF_PEER_CONNECTIONS, count);
+
+  ASSERT_TRUE(ExecuteScriptAndExtractInt(
+      shell2->web_contents(),
+      "window.domAutomationController.send($('peer-connections-list')"
+          ".getElementsByClassName('update-log-table')[0].rows.length);",
       &count));
   EXPECT_GT(count, 1);
 
   ASSERT_TRUE(ExecuteScriptAndExtractInt(
       shell2->web_contents(),
-      "window.domAutomationController.send("
-          "$('peer-connections-list').getElementsByClassName('log-table')[1]"
-              ".rows.length);",
+      "window.domAutomationController.send($('peer-connections-list')"
+          ".getElementsByClassName('update-log-table')[1].rows.length);",
       &count));
   EXPECT_GT(count, 1);
 

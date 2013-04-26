@@ -2,209 +2,159 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-<include src="stats_graph_helper.js"/>
 
 var peerConnectionsListElem = null;
+var ssrcInfoManager = null;
+var peerConnectionUpdateTable = null;
+var statsTable = null;
+
+<include src="ssrc_info_manager.js"/>
+<include src="stats_graph_helper.js"/>
+<include src="stats_table.js"/>
+<include src="peer_connection_update_table.js"/>
 
 function initialize() {
   peerConnectionsListElem = $('peer-connections-list');
+  ssrcInfoManager = new SsrcInfoManager();
+  peerConnectionUpdateTable = new PeerConnectionUpdateTable();
+  statsTable = new StatsTable(ssrcInfoManager);
+
   chrome.send('getAllUpdates');
-  startGetStats();
-}
 
-// Polls stats from all PeerConnections every second.
-function startGetStats() {
-  if (document.getElementsByTagName('li').length)
-    chrome.send('getAllStats');
-  window.setTimeout(startGetStats, 1000);
+  // Requests stats from all peer connections every second.
+  window.setInterval(function() {
+    if (peerConnectionsListElem.getElementsByTagName('li').length > 0)
+      chrome.send('getAllStats');
+  }, 1000);
 }
+document.addEventListener('DOMContentLoaded', initialize);
 
+
+/**
+ * A helper function for getting a peer connection element id.
+ *
+ * @param {!Object.<string, number>} data The object containing the pid and lid
+ *     of the peer connection.
+ * @return {string} The peer connection element id.
+ */
 function getPeerConnectionId(data) {
   return data.pid + '-' + data.lid;
 }
 
-// Makes sure a LI element representing a PeerConnection is created
-// and appended to peerConnectionListElem.
-function ensurePeerConnectionElement(id) {
-  var element = $(id);
-  if (!element) {
-    element = document.createElement('li');
-    peerConnectionsListElem.appendChild(element);
-    element.id = id;
-  }
-  return element;
-}
 
-// Makes sure the table representing the PeerConnection event log is created
-// and appended to peerConnectionElement.
-function ensurePeerConnectionLog(peerConnectionElement) {
-  var logId = peerConnectionElement.id + '-log';
-  var logElement = $(logId);
-  if (!logElement) {
-    var container = document.createElement('div');
-    container.className = 'log-container';
-    peerConnectionElement.appendChild(container);
-
-    logElement = document.createElement('table');
-    logElement.id = logId;
-    logElement.className = 'log-table';
-    logElement.border = 1;
-    container.appendChild(logElement);
-    logElement.innerHTML = '<tr><th>Time</th>' +
-                           '<th class="log-header-event">Event</th></tr>';
-  }
-  return logElement;
-}
-
-// Add the update to the log table as a new row. The type of the update is set
-// as the text of the cell; clicking the cell will reveal or hide the details
-// as the content of a TextArea element.
-function addToPeerConnectionLog(logElement, update) {
-  var row = document.createElement('tr');
-  logElement.appendChild(row);
-
-  var expandable = (update.value.length > 0);
-  // details.open is true initially so that we can get the real scrollHeight
-  // of the textareas.
-  row.innerHTML =
-      '<td>' + (new Date()).toLocaleString() + '</td>' +
-      (expandable ?
-          '<td><details open><summary>' + update.type + '</summary>' +
-              '</details></td>' :
-          '<td>' + update.type + '</td>');
-  if (!expandable)
-    return;
-
-  var valueContainer = document.createElement('textarea');
-  var details = row.cells[1].childNodes[0];
-  details.appendChild(valueContainer);
-  valueContainer.value = update.value;
-  valueContainer.style.height = valueContainer.scrollHeight + 'px';
-  details.open = false;
-}
-
-// Ensure the DIV container for the stats tables is created as a child of
-// |peerConnectionElement|.
-function ensureStatsTableContainer(peerConnectionElement) {
-  var containerId = peerConnectionElement.id + '-table-container';
-  var container = $(containerId);
-  if (!container) {
-    container = document.createElement('div');
-    container.id = containerId;
-    container.className = 'stats-table-container';
-    peerConnectionElement.appendChild(container);
-  }
-  return container;
-}
-
-// Ensure the stats table for track |statsId| of PeerConnection
-// |peerConnectionElement| is created as a child of the stats table container.
-function ensureStatsTable(peerConnectionElement, statsId) {
-  var tableId = peerConnectionElement.id + '-table-' + statsId;
-  var table = $(tableId);
-  if (!table) {
-    var container = ensureStatsTableContainer(peerConnectionElement);
-    table = document.createElement('table');
-    container.appendChild(table);
-    table.id = tableId;
-    table.border = 1;
-    table.innerHTML = '<th>Statistics ' + statsId + '</th>';
-  }
-  return table;
-}
-
-// Update the value column of the stats row of |rowName| to |value|.
-// A new row is created is this is the first report of this stats.
-function updateStatsTableRow(statsTable, rowName, value) {
-  var trId = statsTable.id + '-' + rowName;
-  var trElement = $(trId);
-  if (!trElement) {
-    trElement = document.createElement('tr');
-    trElement.id = trId;
-    statsTable.appendChild(trElement);
-    trElement.innerHTML = '<td>' + rowName + '</td><td></td>';
-  }
-  trElement.cells[1].textContent = value;
-}
-
-// Add |singleReport| to the stats table.
-function addSingleReportToTable(statsTable, singleReport) {
-  if (!singleReport || !singleReport.values || singleReport.values.length == 0)
-    return;
-
-  var date = Date(singleReport.timestamp);
-  updateStatsTableRow(statsTable, 'timestamp', date.toLocaleString());
-  for (var i = 0; i < singleReport.values.length - 1; i = i + 2) {
-    updateStatsTableRow(statsTable, singleReport.values[i],
-                        singleReport.values[i + 1]);
+/**
+ * Extracts ssrc info from a setLocal/setRemoteDescription update.
+ *
+ * @param {!PeerConnectionUpdateEntry} data The peer connection update data.
+ */
+function extractSsrcInfo(data) {
+  if (data.type == 'setLocalDescription' ||
+      data.type == 'setRemoteDescription') {
+    ssrcInfoManager.addSsrcStreamInfo(data.value);
   }
 }
 
-//
-// Browser message handlers.
-//
 
-// data = {pid:|integer|, lid:|integer|}.
+/**
+ * Browser message handlers.
+ */
+
+
+/**
+ * Removes all information about a peer connection.
+ *
+ * @param {!Object.<string, number>} data The object containing the pid and lid
+ *     of a peer connection.
+ */
 function removePeerConnection(data) {
   var element = $(getPeerConnectionId(data));
   if (element)
     peerConnectionsListElem.removeChild(element);
 }
 
-// data = {pid:|integer|, lid:|integer|,
-//         url:|string|, servers:|string|, constraints:|string|}.
+
+/**
+ * Adds a peer connection.
+ *
+ * @param {!Object} data The object containing the pid, lid, url, servers, and
+ *     constraints of a peer connection.
+ */
 function addPeerConnection(data) {
-  var peerConnectionElement = ensurePeerConnectionElement(
-      getPeerConnectionId(data));
+  var peerConnectionElement = $(getPeerConnectionId(data));
+  if (!peerConnectionElement) {
+    peerConnectionElement = document.createElement('li');
+    peerConnectionsListElem.appendChild(peerConnectionElement);
+    peerConnectionElement.id = getPeerConnectionId(data);
+  }
   peerConnectionElement.innerHTML =
       '<h3>PeerConnection ' + peerConnectionElement.id + '</h3>' +
       '<div>' + data.url + ' ' + data.servers + ' ' + data.constraints +
       '</div>';
+
+  // Clicking the heading can expand or collapse the peer connection item.
+  peerConnectionElement.firstChild.title = 'Click to collapse or expand';
+  peerConnectionElement.firstChild.addEventListener('click', function(e) {
+    if (e.target.parentElement.className == '')
+      e.target.parentElement.className = 'peer-connection-hidden';
+    else
+      e.target.parentElement.className = '';
+  });
   return peerConnectionElement;
 }
 
-// data = {pid:|integer|, lid:|integer|, type:|string|, value:|string|}.
+
+/**
+ * Adds a peer connection update.
+ *
+ * @param {!PeerConnectionUpdateEntry} data The peer connection update data.
+ */
 function updatePeerConnection(data) {
-  var peerConnectionElement = ensurePeerConnectionElement(
-      getPeerConnectionId(data));
-  var logElement = ensurePeerConnectionLog(peerConnectionElement);
-  addToPeerConnectionLog(logElement, data);
+  var peerConnectionElement = $(getPeerConnectionId(data));
+  peerConnectionUpdateTable.addPeerConnectionUpdate(
+      peerConnectionElement, data);
+  extractSsrcInfo(data);
 }
 
-// data is an array and each entry is
-// {pid:|integer|, lid:|integer|,
-//  url:|string|, servers:|string|, constraints:|string|, log:|array|},
-// each entry of log is {type:|string|, value:|string|}.
+
+/**
+ * Adds the information of all peer connections created so far.
+ *
+ * @param {Array.<!Object>} data An array of the information of all peer
+ *     connections. Each array item contains pid, lid, url, servers,
+ *     constraints, and an array of updates as the log.
+ */
 function updateAllPeerConnections(data) {
   for (var i = 0; i < data.length; ++i) {
     var peerConnection = addPeerConnection(data[i]);
-    var logElement = ensurePeerConnectionLog(peerConnection);
 
     var log = data[i].log;
     for (var j = 0; j < log.length; ++j) {
-      addToPeerConnectionLog(logElement, log[j]);
+      peerConnectionUpdateTable.addPeerConnectionUpdate(
+          peerConnection, log[j]);
+      extractSsrcInfo(log[j]);
     }
   }
 }
 
-// data = {pid:|integer|, lid:|integer|, reports:|array|}.
-// Each entry of reports =
-// {id:|string|, type:|string|, stats:|object|},
-// where |stats| = {timestamp: |double|, values: |array|},
-// where |values| is an array of strings, whose even index entry represents
-// the name of the stat, and the odd index entry represents the value of
-// the stat.
+
+/**
+ * Handles the report of stats.
+ *
+ * @param {!Object} data The object containing pid, lid, and reports, where
+ *     reports is an array of stats reports. Each report contains id, type,
+ *     and stats, where stats is the object containing timestamp and values,
+ *     which is an array of strings, whose even index entry is the name of the
+ *     stat, and the odd index entry is the value.
+ */
 function addStats(data) {
-  var peerConnectionElement = ensurePeerConnectionElement(
-      getPeerConnectionId(data));
+  var peerConnectionElement = $(getPeerConnectionId(data));
+  if (!peerConnectionElement)
+    return;
+
   for (var i = 0; i < data.reports.length; ++i) {
     var report = data.reports[i];
-    var reportName = report.type + '-' + report.id;
-    var statsTable = ensureStatsTable(peerConnectionElement, reportName);
-
-    addSingleReportToTable(statsTable, report.stats);
-    drawSingleReport(peerConnectionElement, reportName, report.stats);
+    statsTable.addStatsReport(peerConnectionElement, report);
+    drawSingleReport(peerConnectionElement,
+                     report.type, report.id, report.stats);
   }
 }
-
-document.addEventListener('DOMContentLoaded', initialize);

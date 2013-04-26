@@ -14,6 +14,8 @@
 <include src="data_series.js"/>
 <include src="timeline_graph_view.js"/>
 
+var STATS_GRAPH_CONTAINER_HEADING_CLASS = 'stats-graph-container-heading';
+
 // Specifies which stats should be drawn on the 'bweCompound' graph and how.
 var bweCompoundGraphConfig = {
   googAvailableSendBandwidth: {color: 'red'},
@@ -82,9 +84,12 @@ var dataSeries = {};
 
 // Adds the stats report |singleReport| to the timeline graph for the given
 // |peerConnectionElement| and |reportName|.
-function drawSingleReport(peerConnectionElement, reportName, singleReport) {
+function drawSingleReport(
+    peerConnectionElement, reportType, reportId, singleReport) {
   if (!singleReport || !singleReport.values)
     return;
+
+  var reportName = reportType + '-' + reportId;
   for (var i = 0; i < singleReport.values.length - 1; i = i + 2) {
     var rawLabel = singleReport.values[i];
     var rawValue = parseInt(singleReport.values[i + 1]);
@@ -124,7 +129,7 @@ function drawSingleReport(peerConnectionElement, reportName, singleReport) {
 
     if (!graphViews[graphViewId]) {
       graphViews[graphViewId] = createStatsGraphView(peerConnectionElement,
-                                                     reportName,
+                                                     reportType, reportId,
                                                      graphType);
       var date = new Date(singleReport.timestamp);
       graphViews[graphViewId].setDateRange(date, date);
@@ -150,41 +155,43 @@ function addDataSeriesPoint(dataSeriesId, time, label, value) {
   dataSeries[dataSeriesId].addPoint(time, value);
 }
 
-// Ensures a div container to hold all stats graphs for a report type
-// is created as a child of |peerConnectionElement|.
-function ensureStatsGraphTopContainer(peerConnectionElement, reportName) {
+// Ensures a div container to hold all stats graphs for one track is created as
+// a child of |peerConnectionElement|.
+function ensureStatsGraphTopContainer(
+    peerConnectionElement, reportType, reportId) {
   var containerId = peerConnectionElement.id + '-' +
-                    reportName + '-graph-container';
+      reportType + '-' + reportId + '-graph-container';
   var container = $(containerId);
   if (!container) {
-    container = document.createElement('div');
+    container = document.createElement('details');
     container.id = containerId;
-    container.className = 'stats-graph-container-collapsed';
+    container.className = 'stats-graph-container';
 
     peerConnectionElement.appendChild(container);
-    container.innerHTML =
-        '<button>Expand/Collapse Graphs for ' + reportName + '</button>';
+    container.innerHTML ='<summary><span></span></summary>';
+    container.firstChild.firstChild.className =
+        STATS_GRAPH_CONTAINER_HEADING_CLASS;
+    container.firstChild.firstChild.textContent =
+        'Stats graphs for ' + reportType + '-' + reportId;
 
-    // Expands or collapses the graphs on click.
-    container.childNodes[0].addEventListener('click', function(event) {
-      var element = event.target.parentNode;
-      if (element.className == 'stats-graph-container-collapsed')
-        element.className = 'stats-graph-container';
-      else
-        element.className = 'stats-graph-container-collapsed';
-    });
+    if (reportType == 'ssrc') {
+      var ssrcInfoElement = document.createElement('div');
+      container.firstChild.appendChild(ssrcInfoElement);
+      ssrcInfoManager.populateSsrcInfo(ssrcInfoElement, reportId);
+    }
   }
   return container;
 }
 
 // Creates the container elements holding a timeline graph
 // and the TimelineGraphView object.
-function createStatsGraphView(peerConnectionElement, reportName, statsName) {
+function createStatsGraphView(
+    peerConnectionElement, reportType, reportId, statsName) {
   var topContainer = ensureStatsGraphTopContainer(peerConnectionElement,
-                                                  reportName);
+                                                  reportType, reportId);
 
-  var graphViewId =
-      peerConnectionElement.id + '-' + reportName + '-' + statsName;
+  var graphViewId = peerConnectionElement.id + '-' +
+      reportType + '-' + reportId + '-' + statsName;
   var divId = graphViewId + '-div';
   var canvasId = graphViewId + '-canvas';
   var container = document.createElement("div");
@@ -194,9 +201,10 @@ function createStatsGraphView(peerConnectionElement, reportName, statsName) {
   container.innerHTML = '<div>' + statsName + '</div>' +
       '<div id=' + divId + '><canvas id=' + canvasId + '></canvas></div>';
   if (statsName == 'bweCompound') {
-      container.insertBefore(createBweCompoundLegend(peerConnectionElement,
-                                                     reportName),
-                             $(divId));
+      container.insertBefore(
+          createBweCompoundLegend(
+              peerConnectionElement, reportType + '-' + reportId),
+          $(divId));
   }
   return new TimelineGraphView(divId, canvasId);
 }

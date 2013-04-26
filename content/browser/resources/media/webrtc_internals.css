@@ -2,25 +2,28 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-.log-container {
+
+.peer-connection-hidden > *:not(h3) {
+  display:none;
+}
+
+.update-log-container {
   float: left;
 }
 
-.stats-graph-container,
-.stats-graph-container-collapsed {
+.ssrc-info-block {
+  color: #999;
+  font-size: 0.8em;
+}
+
+.stats-graph-container {
   clear: both;
   margin: 0.5em 0 0.5em 0;
 }
 
-.stats-graph-container button,
-.stats-graph-container-collapsed button {
-  display: block;
-  margin: 0;
-  padding: 0;
-}
-
-.stats-graph-container-collapsed .stats-graph-sub-container {
-  display: none;
+.stats-graph-container-heading {
+  font-size: 0.8em;
+  font-weight: bold;
 }
 
 .stats-graph-sub-container {
@@ -47,7 +50,7 @@ body {
 }
 
 details {
-  width: 30em;
+  min-width: 30em;
 }
 
 h3 + div {
@@ -64,9 +67,11 @@ h2 {
 }
 
 h3 {
-  color: #666;
+  color: #555;
+  cursor: pointer;
   font-size: 0.9em;
-  margin: 1em 0 0.5em 0;
+  margin: 2em 0 0.5em 0;
+  text-decoration: underline;
 }
 
 li {
@@ -89,12 +94,6 @@ td {
 
 td:first-child {
   padding-top: 0.3em;
-}
-
-textarea {
-  border: none;
-  outline: none;
-  width: 100%;
 }
 
 table > tr {

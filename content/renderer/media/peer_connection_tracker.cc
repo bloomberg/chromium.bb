@@ -313,12 +313,12 @@ void PeerConnectionTracker::TrackCreateAnswer(
 
 void PeerConnectionTracker::TrackSetSessionDescription(
     RTCPeerConnectionHandler* pc_handler,
-    const webrtc::SessionDescriptionInterface* desc,
+    const WebKit::WebRTCSessionDescription& desc,
     Source source) {
-  string sdp;
-  desc->ToString(&sdp);
+  string sdp = UTF16ToUTF8(desc.sdp());
+  string type = UTF16ToUTF8(desc.type());
 
-  string value = "type: " + desc->type() + ", sdp: " + sdp;
+  string value = "type: " + type + ", sdp: " + sdp;
   SendPeerConnectionUpdate(
       pc_handler,
       source == SOURCE_LOCAL ? "setLocalDescription" : "setRemoteDescription",
