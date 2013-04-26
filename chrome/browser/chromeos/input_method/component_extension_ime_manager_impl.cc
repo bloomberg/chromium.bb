@@ -107,8 +107,7 @@ scoped_ptr<DictionaryValue> ComponentExtensionIMEManagerImpl::GetManifest(
   return manifest.Pass();
 }
 
-void ComponentExtensionIMEManagerImpl::Initialize(
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
+void ComponentExtensionIMEManagerImpl::InitializeAsync(
     const base::Closure& callback) {
   DCHECK(!is_initialized_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -122,7 +121,8 @@ void ComponentExtensionIMEManagerImpl::Initialize(
 
   std::vector<ComponentExtensionIME>* component_extension_ime_list
       = new std::vector<ComponentExtensionIME>;
-  file_task_runner->PostTaskAndReply(
+  BrowserThread::PostTaskAndReply(
+      BrowserThread::FILE,
       FROM_HERE,
       base::Bind(&ComponentExtensionIMEManagerImpl::ReadComponentExtensionsInfo,
                  base::Unretained(component_extension_ime_list)),

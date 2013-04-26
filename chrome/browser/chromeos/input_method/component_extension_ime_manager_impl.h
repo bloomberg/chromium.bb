@@ -34,9 +34,7 @@ class ComponentExtensionIMEManagerImpl
 
   // Loads extension list and reads their manifest file. After finished
   // initialization, |callback| will be called on original thread.
-  void Initialize(
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner,
-      const base::Closure& callback);
+  void InitializeAsync(const base::Closure& callback);
 
   // Returns true if this class is initialized and ready to use, otherwise
   // returns false.

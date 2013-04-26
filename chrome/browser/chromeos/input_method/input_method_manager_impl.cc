@@ -665,21 +665,17 @@ void InputMethodManagerImpl::OnDisconnected() {
   }
 }
 
-void InputMethodManagerImpl::InitializeComponentExtension(
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
+void InputMethodManagerImpl::InitializeComponentExtension() {
   ComponentExtensionIMEManagerImpl* impl =
       new ComponentExtensionIMEManagerImpl();
   scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate(impl);
-  impl->Initialize(file_task_runner,
-                   base::Bind(
+  impl->InitializeAsync(base::Bind(
                        &InputMethodManagerImpl::OnComponentExtensionInitialized,
                        weak_ptr_factory_.GetWeakPtr(),
                        base::Passed(&delegate)));
 }
 
-void InputMethodManagerImpl::Init(
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-    const scoped_refptr<base::SequencedTaskRunner>& file_task_runner) {
+void InputMethodManagerImpl::Init(base::SequencedTaskRunner* ui_task_runner) {
   DCHECK(!ibus_controller_.get());
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -692,8 +688,7 @@ void InputMethodManagerImpl::Init(
   ui_task_runner->PostTask(
       FROM_HERE,
       base::Bind(&InputMethodManagerImpl::InitializeComponentExtension,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 file_task_runner));
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void InputMethodManagerImpl::SetIBusControllerForTesting(

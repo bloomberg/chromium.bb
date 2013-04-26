@@ -42,8 +42,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   // to the InputMethodManagerImpl object. You don't have to call this function
   // if you attach them yourself (e.g. in unit tests) using the protected
   // setters.
-  void Init(const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
-            const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+  void Init(base::SequencedTaskRunner* ui_task_runner);
 
   // Receives notification of an InputMethodManager::State transition.
   void SetState(State new_state);
@@ -149,8 +148,7 @@ class InputMethodManagerImpl : public InputMethodManager,
   // Called when the ComponentExtensionIMEManagerDelegate is initialized.
   void OnComponentExtensionInitialized(
       scoped_ptr<ComponentExtensionIMEManagerDelegate> delegate);
-  void InitializeComponentExtension(
-      const scoped_refptr<base::SequencedTaskRunner>& file_task_runner);
+  void InitializeComponentExtension();
 
   // Loads necessary component extensions.
   // TODO(nona): Support dynamical unloading.
