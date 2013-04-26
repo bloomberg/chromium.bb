@@ -45,6 +45,7 @@ extern const char kUsageKey[];
 extern const char kUsageTitleKey[];
 extern const char kVerticalKey[];
 extern const char kVisibleKey[];
+extern const char kWindowPositionKey[];
 
 };  // namespace extension_input_module_constants
 

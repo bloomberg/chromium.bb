@@ -41,5 +41,6 @@ const char kUsageKey[] = "usage";
 const char kUsageTitleKey[] = "title";
 const char kVerticalKey[] = "vertical";
 const char kVisibleKey[] = "visible";
+const char kWindowPositionKey[] = "windowPosition";
 
 }  // namespace extension_input_module_constants

@@ -209,6 +209,12 @@
                     "type": "boolean",
                     "optional": true,
                     "description": "True to display the auxiliary text, false to hide it."
+                  },
+                  "windowPosition": {
+                    "type": "string",
+                    "description": "Where to display the candidate window. If set to 'cursor', the window follows the cursor. If set to 'composition', the window is locked to the beginning of the composition.",
+                    "enum": ["cursor", "composition"],
+                    "optional": true
                   }
                 }
               }

@@ -24,6 +24,7 @@ const char kStyleNone[] = "none";
 const char kStyleCheck[] = "check";
 const char kStyleRadio[] = "radio";
 const char kStyleSeparator[] = "separator";
+const char kWindowPositionComposition[] = "composition";
 
 const char kErrorEngineNotAvailable[] = "Engine is not available";
 const char kErrorBadCandidateList[] = "Invalid candidate list provided";
@@ -666,6 +667,20 @@ bool SetCandidateWindowPropertiesFunction::RunImpl() {
         keys::kAuxiliaryTextVisibleKey,
         &visible));
     engine->SetCandidateWindowAuxTextVisible(visible);
+  }
+
+  if (properties->HasKey(keys::kWindowPositionKey)) {
+    // TODO(nona): Switch to scheme compiler. (crbug.com/235552)
+    chromeos::InputMethodEngine::CandidateWindowPosition window_position =
+      chromeos::InputMethodEngine::WINDOW_POS_CURSOR;
+    std::string position_in_str;
+    EXTENSION_FUNCTION_VALIDATE(properties->GetString(
+        keys::kWindowPositionKey,
+        &position_in_str));
+    window_position = (position_in_str == kWindowPositionComposition) ?
+        chromeos::InputMethodEngine::WINDOW_POS_COMPOSITTION :
+        chromeos::InputMethodEngine::WINDOW_POS_CURSOR;
+    engine->SetCandidateWindowPosition(window_position);
   }
 
   SetResult(Value::CreateBooleanValue(true));

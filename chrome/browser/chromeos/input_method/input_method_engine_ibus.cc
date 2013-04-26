@@ -255,6 +255,13 @@ void InputMethodEngineIBus::SetCandidateWindowAuxTextVisible(bool visible) {
   }
 }
 
+void InputMethodEngineIBus::SetCandidateWindowPosition(
+    CandidateWindowPosition position) {
+  table_->set_show_window_at_composition(position == WINDOW_POS_COMPOSITTION);
+  if (active_)
+    GetCurrentService()->UpdateLookupTable(*table_.get(), window_visible_);
+}
+
 bool InputMethodEngineIBus::SetCandidates(
     int context_id,
     const std::vector<Candidate>& candidates,
